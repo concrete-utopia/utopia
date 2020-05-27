@@ -1,0 +1,179 @@
+/* APPLICATION WIDE BUTTON CONTROL */
+
+button,
+.button{
+    height: var(--ui-height-small);
+    font-size: 10px;
+    font-weight: 500;
+    box-sizing: border-box;
+    display: inline-block;
+    text-align: center;
+    vertical-align: top;
+    position: relative;
+    margin: 0px;
+    overflow: hidden;
+}
+
+.button.primary{
+  background: var(emphasis-color);
+}
+
+.inverted{
+  color: white;
+}
+
+.button.incognito.inverted:hover{
+  background: black;
+}
+
+.button.incognito.inverted:hover,
+.button.incognito.menu-open,
+{
+  color: white;
+  background: var(--emphasis-color);
+}
+
+
+.button.incognito.inverted.primary{
+  background: initial;
+}
+
+.button.incognito.inverted.primary:hover{
+  background: var(--emphasis-color);
+  animation: var(--anim-huerotate-short);
+}
+
+
+button.incognito,
+.button.incognito{
+  background: transparent;
+  opacity: .8;
+  border: 1px solid transparent;
+}
+
+button.incognito:hover,
+.button.incognito:hover
+{
+  
+  background: rgba(0,0,0,0.05);
+  opacity: .9;
+  border: 1px solid rgba(0,0,0,0.02);
+}
+
+button.incognito:active,
+.button.incognito:active{
+  opacity: 1;
+  color: var(--emphasis-color);
+}
+
+button.incognito.selected,
+.button.incognito.selected,{
+  opacity: 1;
+  color: var(--emphasis-color);
+}
+
+
+.button.magnifyIcon *{
+  transition: transform .05s ease-in-out;
+  transform: scale(.95);
+}
+
+.button.magnifyIcon:hover *{
+  transform: scale(1)
+}
+
+.button.emphasis:hover:before {
+  display: block;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  height: 150%;
+  width: 30px;
+  transform-origin: 100% 100%;
+  background-color: rgba(255,255,255,.2);
+  content: '';
+  transform: rotate(15deg);
+  z-index: 1;
+}
+
+.beta:before{
+  display: block;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  height: 8px;
+  width: 8px;
+  transform-origin: 100% 100%;
+  background-color: red;
+  content: '';
+  transform: rotate(15deg);
+  z-index: 1;
+}
+
+
+button:focus::after,
+.button:focus::after
+{
+    /* todo replace with a css class has a synthetic focus state */
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    right: 0;
+    outline: 1px solid black;
+    z-index: 999;
+    content: ' '
+}
+
+button:hover,
+.button:hover,{
+  background: #e0e0e0;
+}
+
+button:active, button .is-active,
+.button:active, .button .is-active,
+{
+  background: #d5d5d5;
+  border: var(--emphasis-color);
+}
+
+
+button.set,
+.button.set
+  {
+  opacity: 1
+}
+
+
+button.notset,
+.button.notset {
+  opacity: .6
+}
+
+
+button > span,
+.button > span {
+  vertical-align: middle;
+}
+button.primary,
+.button.primary
+{
+  background: var(--emphasis-color);
+  color: white;
+}
+
+button.primary .has-focus{
+  background: rgb(0, 152, 255);
+  }
+
+button.primary:hover{
+  background: rgb(0, 142, 255);
+}
+
+button.primary:active, button.primary .is-active{
+  background: rgb(0, 142, 255);
+}
+
+button:focus{
+  outline: 1px solid darkslategray;
+}

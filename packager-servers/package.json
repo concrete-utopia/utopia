@@ -1,0 +1,18 @@
+{
+  "name": "packager-servers",
+  "version": "1.0.0",
+  "description": "This package just starts the two webpack packager servers (webpack-packager and webpack-dll)",
+  "scripts": {
+    "packager": "cd webpack-packager && mkdir -p packages && npm install && npm start",
+    "dll": "cd webpack-dll && npm install && npm start",
+    "mongodb": "mkdir -p database && mongod --dbpath database",
+    "clean-db": "rm -rf database",
+    "start": "concurrently \"npm:mongodb\" \"npm:packager\" \"npm:dll\" ",
+    "start-clean": "npm run clean-db && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0"
+  },
+  "author": "",
+  "license": ""
+}

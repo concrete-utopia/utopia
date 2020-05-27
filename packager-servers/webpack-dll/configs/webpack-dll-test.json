@@ -1,0 +1,12 @@
+{
+  "clientDllOrigin": "https://webpack-sandbox.herokuapp.com",
+  "clientQueryOrigin": "https://webpackbin-test.firebaseapp.com",
+  "packagerServiceUrls": [
+    "http://45.32.65.145"
+  ],
+  "packageServiceTimeout": 2000000,
+  "cleanQueueTimeout": 300000,
+  "connectTimeout": 2000000,
+  "cacheMaxAge": 30,
+  "statsUpdateInterval": 300000
+}

@@ -1,0 +1,55 @@
+/* 
+<label class="toggle">
+    <input type="checkbox" class="toggle-check-input" />
+    <span class="slider"> </span>
+</label>
+*/
+
+.toggle {
+  margin-top: 6px;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0px;height: 0px;
+  padding: 0px;
+  margin: 0px;
+}
+
+.toggle .slider {
+    display: inline-block;
+    background: #999;
+    position: relative;
+    border-radius: 1px;
+    width: 26px;
+    height: 12px;
+    transition: background-color 0.1s;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+}
+
+.toggle input:focus + .slider {
+    box-shadow: 0 0 0 1px var(--control-focused-color);
+}
+
+.toggle .slider:after {
+    /* the main toggle */
+    content: ' ';
+    display: block;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 12px;
+    height: 12px;
+    transition: left 0.15s, margin-left 0.1s;
+    background: #F8F8F8;
+    box-shadow: 0 0 1px 0 rgba(0,0,0,0.17);
+    border-radius: 1px;    
+}
+
+.toggle input:checked ~ .slider {
+  background: #19DA77;
+}
+
+.toggle input:checked ~ .slider:after {
+  left: calc(100% - 12px);
+}

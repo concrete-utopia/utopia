@@ -1,0 +1,13 @@
+{
+  "name": "dll_bundle",
+  "content": {
+    "./node_modules/react-draggable": 0,
+    "./node_modules/react-draggable/interfaces/dom.js": 1
+  },
+  "externals": {
+    "react-draggable": "dll_bundle(0)",
+    "./react-draggable": "dll_bundle(0)",
+    "react-draggable/interfaces/dom.js": "dll_bundle(1)",
+    "react-draggable/interfaces/dom": "dll_bundle(1)"
+  }
+}

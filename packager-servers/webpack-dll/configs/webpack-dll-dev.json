@@ -1,0 +1,12 @@
+{
+  "clientDllOrigin": "*",
+  "clientQueryOrigin": "*",
+  "packagerServiceUrls": [
+    "http://localhost:5500"
+  ],
+  "packageServiceTimeout": 2000000,
+  "cleanQueueTimeout": 300000,
+  "connectTimeout": 2000000,
+  "cacheMaxAge": 86400,
+  "statsUpdateInterval": 10000
+}

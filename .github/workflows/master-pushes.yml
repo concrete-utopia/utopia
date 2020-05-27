@@ -1,0 +1,97 @@
+name: Build And Release On Push To Master
+on:
+  push:
+    branches: [master]
+
+jobs:
+  test-editor:
+    name: Test Editor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel existing runs on this branch
+        uses: fauguste/auto-cancellation-running-action@0.1.4
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache editor modules
+        uses: actions/cache@v1
+        with:
+          path: editor/node_modules
+          key: ${{ runner.os }}-node-editor-master-${{ hashFiles('editor/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-editor-master-
+      - name: Cache utopia-api modules
+        uses: actions/cache@v1
+        with:
+          path: utopia-api/node_modules
+          key: ${{ runner.os }}-node-utopia-api-master-${{ hashFiles('utopia-api/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-utopia-api-master-
+      - name: Cache website modules
+        uses: actions/cache@v1
+        with:
+          path: website/node_modules
+          key: ${{ runner.os }}-node-website-master-${{ hashFiles('website/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-website-master-
+      - name: Install nix
+        uses: Rheeseyb/install-nix-action@master
+      - name: Run the tests
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-all-ci
+      - name: Send Notification
+        uses: bayssmekanique/action-simple-slack-notifier@v1.2.5
+        if: failure()
+        with:
+          token: ${{ secrets.BUILD_NOTIFIER_SLACK_BOT_TOKEN }}
+          status: ${{ job.status }}
+          channel: '#builds'
+          action: 'Editor Tests'
+          name: master
+
+  test-server:
+    name: Test Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache ~/.cabal/packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.cabal/packages
+          key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-packages-2
+      - name: Cache ~/.cabal/store
+        uses: actions/cache@v1
+        with:
+          path: ~/.cabal/store
+          key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-store-2
+      - name: Cache dist-newstyle
+        uses: actions/cache@v1
+        with:
+          path: server/dist-newstyle
+          key: ${{ runner.os }}-${{ matrix.ghc }}-server-dist-newstyle-2
+      - name: Install nix
+        uses: Rheeseyb/install-nix-action@master
+      - name: Run the tests
+        run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --run test-server-ci
+      - name: Send Notification
+        uses: bayssmekanique/action-simple-slack-notifier@v1.2.5
+        if: failure()
+        with:
+          token: ${{ secrets.BUILD_NOTIFIER_SLACK_BOT_TOKEN }}
+          status: ${{ job.status }}
+          channel: '#builds'
+          action: 'Server Tests'
+          name: master
+
+  trigger-deploy:
+    name: Trigger Deploy
+    needs: [test-editor, test-server]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use repository dispatch event to trigger deploy
+        uses: peter-evans/repository-dispatch@v1.1.0
+        with:
+          token: ${{ secrets.DEPLOY_REPO_ACCESS_TOKEN }}
+          repository: concrete-utopia/utopia-deploy
+          event-type: trigger-deploy

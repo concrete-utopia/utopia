@@ -1,0 +1,133 @@
+body {
+  --control-set-fontStyle: normal;
+  --control-disabled-fontStyle: italic;
+  --control-border-radius: 4px;
+  --control-focused-color: #027aff;
+}
+
+.inspector {
+  outline: none;
+  transform: translateZ(0);
+}
+
+.inspector .panel-shell {
+  font-weight: 600;
+}
+
+/* HEADER */
+
+#inspector,
+.grid,
+.control,
+.control--binding,
+.control-header,
+.addable-list,
+.section-properties,
+.section-events,
+.properties-container,
+.events-container,
+.add-property-container,
+.add-event-container,
+.event,
+.event-control-expression {
+  -webkit-user-select: none;
+}
+
+.inspector--subsection {
+  font-weight: 600;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+/* CONTROLS */
+
+.origin-label {
+  color: var(--light-text-color);
+  font-size: var(--font-size-smaller);
+}
+
+/* states: check section-widget for those */
+
+.label-mini-control {
+  font-size: 9px;
+  color: var(--main-color);
+  padding-top: 2px;
+  text-transform: capitalize;
+}
+
+.label:active .label-text {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.prevent-text-selection .input {
+  /* todo tachyon */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.property-unit {
+  font-size: 9px;
+  line-height: 16px;
+  font-weight: 400;
+}
+
+.select-control {
+  width: 100%;
+}
+
+.inspector-control .control-drag-area {
+  cursor: ew-resize;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 13px;
+}
+
+.option-control {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Inspector Layout */
+
+/* inspector controls */
+.widget-color-control {
+  display: flex;
+}
+
+/* spectre-bootstrap */
+
+.divider-above {
+  /*TODO UTOPION */
+  border-top-width: 1px;
+  padding-top: 12px;
+  border-top-color: #e4e4e4; /*TOODO COLOR */
+  border-top-style: solid;
+}
+
+.seriously {
+  vertical-align: -8px;
+}
+
+/* See More */
+.see-more-container {
+  display: block;
+  text-align: center;
+  position: relative;
+}
+
+.see-more-container::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -6px;
+  height: calc(6px + 6px + 8px);
+  width: 100%;
+}
+
+.see-more-img {
+  display: block;
+  margin: 0 auto;
+}

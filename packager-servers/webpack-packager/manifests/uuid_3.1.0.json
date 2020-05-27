@@ -1,0 +1,37 @@
+{
+  "name": "dll_bundle",
+  "content": {
+    "./node_modules/uuid/lib/rng-browser.js": 0,
+    "/node_modules/uuid/lib/rng.js": 0,
+    "./node_modules/uuid/lib/sha1-browser.js": 1,
+    "/node_modules/uuid/lib/sha1.js": 1,
+    "./node_modules/uuid/lib/bytesToUuid.js": 2,
+    "./node_modules/uuid/v1.js": 3,
+    "./node_modules/uuid/v4.js": 4,
+    "./node_modules/uuid": 5,
+    "./node_modules/uuid/v5.js": 6,
+    "./node_modules/webpack/buildin/global.js": 7
+  },
+  "externals": {
+    "uuid/lib/rng-browser.js": "dll_bundle(0)",
+    "uuid/lib/rng-browser": "dll_bundle(0)",
+    "uuid/lib/rng.js": "dll_bundle(0)",
+    "uuid/lib/rng": "dll_bundle(0)",
+    "uuid/lib/sha1-browser.js": "dll_bundle(1)",
+    "uuid/lib/sha1-browser": "dll_bundle(1)",
+    "uuid/lib/sha1.js": "dll_bundle(1)",
+    "uuid/lib/sha1": "dll_bundle(1)",
+    "uuid/lib/bytesToUuid.js": "dll_bundle(2)",
+    "uuid/lib/bytesToUuid": "dll_bundle(2)",
+    "uuid/v1.js": "dll_bundle(3)",
+    "uuid/v1": "dll_bundle(3)",
+    "uuid/v4.js": "dll_bundle(4)",
+    "uuid/v4": "dll_bundle(4)",
+    "uuid": "dll_bundle(5)",
+    "./uuid": "dll_bundle(5)",
+    "uuid/v5.js": "dll_bundle(6)",
+    "uuid/v5": "dll_bundle(6)",
+    "webpack/buildin/global.js": "dll_bundle(7)",
+    "webpack/buildin/global": "dll_bundle(7)"
+  }
+}

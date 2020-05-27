@@ -1,0 +1,121 @@
+.style-production-alert:active:hover {
+  background-color: #333;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.menu-container {
+  font-weight: 400;
+}
+
+.top-menu-button > div {
+  white-space: nowrap;
+}
+
+.formulabar-shell {
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  color: #333;
+}
+
+.formulabar {
+  display: flex;
+}
+
+/* expression-related properties for the new editor */
+.override-wrapper {
+  /* the container for a single override tag */
+  display: inline-block;
+}
+
+.override-wrapper:last-of-type {
+  margin-right: 0px;
+}
+
+.control--binding,
+.expression {
+  display: inline-block;
+  margin-right: 8px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 4px;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: capitalize;
+}
+
+.expression.selected {
+  border: 1px solid white;
+  box-shadow: 0px 0px 0px 1px var(--emphasis-color);
+}
+
+.expression.node-graph {
+  background-color: var(--color-green);
+}
+
+.overrides-label {
+  color: var(--emphasis-color);
+  font-weight: bold;
+}
+
+.editor-message {
+  font-weight: 600;
+  font-size: 9px;
+  text-align: right;
+}
+.error-message {
+  color: rgba(255, 56, 93, 1); /* TODO COLOR */
+}
+
+.result-message {
+  color: var(--emphasis-color);
+}
+
+.tag-container .inspector-row {
+  padding-top: 0;
+  padding-bottom: 0;
+  white-space: nowrap;
+}
+
+.codeeditor {
+  flex: 7;
+  line-height: 23px;
+  background-color: white;
+  font-size: 11px;
+}
+
+.codeeditor .editor-message {
+  float: right;
+}
+.codeeditor .ReactCodeMirror {
+  display: inline-block;
+}
+.codeeditor .ReactCodeMirror .CodeMirror {
+  height: 23px;
+}
+
+/* segment control */
+
+.center {
+  text-align: center;
+  justify-content: center;
+}
+
+.menu-open > .utopia-button > .dropdown {
+  transform: rotateX(180deg);
+}
+
+.menubar-highlight .delete-decorator {
+  transition: color 100ms linear;
+}
+
+.menubar-highlight:hover {
+  background-color: hsl(0, 0%, 98%);
+  color: hsl(0, 0%, 30%) !important;
+  transition: background-color 100ms linear;
+}

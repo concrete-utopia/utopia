@@ -1,0 +1,48 @@
+name: Run Tests On PR Pushes
+on: [pull_request]
+
+jobs:
+  test-editor:
+    name: Test Editor PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel existing runs on this branch
+        uses: fauguste/auto-cancellation-running-action@0.1.4
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache editor modules
+        uses: actions/cache@v1
+        with:
+          path: editor/node_modules
+          key: ${{ runner.os }}-node-editor-PRs-${{ hashFiles('editor/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-editor-PRs-
+      - name: Cache utopia-api modules
+        uses: actions/cache@v1
+        with:
+          path: utopia-api/node_modules
+          key: ${{ runner.os }}-node-utopia-api-PRs-${{ hashFiles('utopia-api/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-utopia-api-PRs-
+      - name: Cache website modules
+        uses: actions/cache@v1
+        with:
+          path: website/node_modules
+          key: ${{ runner.os }}-node-website-PRs-${{ hashFiles('website/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-website-PRs-
+      - name: Install nix
+        uses: Rheeseyb/install-nix-action@master
+      - name: Run the tests
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-all-ci
+      - name: Send Notification
+        uses: bayssmekanique/action-simple-slack-notifier@v1.2.5
+        if: failure()
+        with:
+          token: ${{ secrets.BUILD_NOTIFIER_SLACK_BOT_TOKEN }}
+          status: ${{ job.status }}
+          channel: '#builds'
+          action: 'PR Tests'
+          name: ${{ github.event.pull_request.title }}

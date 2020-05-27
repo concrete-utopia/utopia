@@ -1,0 +1,56 @@
+.nodegraph-select__control {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  height: 16px;
+  border-width: 0;
+  min-height: 0;
+  padding: 2px 0;
+}
+.nodegraph-select__value-container {
+  padding: 0;
+  height: 100%;
+  width: calc(100% - 18px);
+  overflow: hidden;
+}
+.nodegraph-select__single-value {
+  padding: 0px 4px;
+  color: hsl(0, 0%, 20%);
+  overflow: visible;
+  font-size: 9px;
+  font-weight: 700;
+}
+.nodegraph-select__input {
+  padding: 0 4px;
+  font-size: 9px;
+  color: hsl(0, 0%, 20%) !important;
+}
+.nodegraph-select__input input {
+  font-weight: 700;
+}
+.nodegraph-select__placeholder {
+  padding: 0 4px;
+  color: hsla(0, 0%, 20%, 0.8);
+}
+.nodegraph-select__option {
+  min-height: 22px;
+  padding: 8px;
+  color: hsl(0, 0%, 20%);
+}
+.nodegraph-select__menu {
+  overflow: hidden;
+  width: 200px;
+}
+.nodegraph-select__menu-list {
+  padding: 0;
+}
+.nodegraph-select__indicator-separator {
+  display: none;
+}
+.nodegraph-select__indicators {
+  width: 13px;
+  text-align: center;
+  padding: 1px 0 0;
+}
+.nodegraph-select__dropdown-indicator {
+  padding: 0;
+}

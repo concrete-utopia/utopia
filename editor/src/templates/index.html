@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- ogTags -->
+    <link rel="icon" type="image/png" href="/editor/icons/favicons/favicon128.png?hash=%GITHUB_SHA%" />
+    <link href="https://fonts.googleapis.com/css?family=Inter&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/editor/editor.css?hash=%GITHUB_SHA%" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/editor/css/light/monaco-overrides.css?hash=%GITHUB_SHA%"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/editor/css/codicons.css?hash=%GITHUB_SHA%"
+    />    
+    <link rel="stylesheet" type="text/css" href="/editor/cursors.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/css/utopions.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/ReactContexify.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/css/topmenu.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/canvas.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/spreadsheet-grid.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/node-graph.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/inspector.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/show-hint.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/css/react-spinner.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/css/loadscreen.css?hash=%GITHUB_SHA%" />
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/editor/css/control-iconcheckbox.css?hash=%GITHUB_SHA%"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/editor/css/control-button.css?hash=%GITHUB_SHA%"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/editor/css/control-slider.css?hash=%GITHUB_SHA%"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/editor/css/control-toggle.css?hash=%GITHUB_SHA%"
+    />
+    <link rel="stylesheet" type="text/css" href="/editor/slider.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/draft.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/utopia-light.css?hash=%GITHUB_SHA%" />
+    <link rel="stylesheet" type="text/css" href="/editor/preview.css?hash=%GITHUB_SHA%" />
+    <!-- dom-to-image -->
+    <script
+      src="https://cdn.jsdelivr.net/gh/mcklayin/dom-to-image-improved@v2.8.0/dist/dom-to-image-more.min.js"
+      integrity="sha256-SWiKkXQIRpzbpHAKgzvEE/LefY3As3O7OH79qVhxRV4="
+      crossorigin="anonymous">
+    </script>
+  </head>
+  <body>
+    <!-- projectIDScript -->
+    <div id="portal-target"></div>
+    <div id="text-field-placeholder"></div>
+    <div id="application-wrapper" style="width: 100%; height: 100%;">
+      <div
+        id="editor"
+        class="body flex-column"
+        style="width: 100%; height: 100%; display: flex; align-items: stretch; justify-content: stretch;"
+      >
+        <!-- loading content-->
+        <div class='login-bar flex flex-row items-stretch border2b h32' ></div> 
+        <div class="loading-screen flex flex-row flex-grow items-stretch">
+          <!-- start left column-->
+          <div class="leftCol  border2l border2t border2b flex flex-column items-center pt8 w44">
+            <div class=" stripes2 w24 h24 br2 mb20"></div>
+            <div class=" stripes2 w24 h24 br2 mb20"></div>
+            <div class=" stripes2 w24 h24 br2 mb20"></div>
+            <div class=" stripes2 w24 h24 br2 mb20"></div>
+          </div>
+          <!-- end left column-->
+          <!-- start navigator-->
+          <div class="navigator border2 flex flex-column " style="width: 250px;border-right: none;">
+            <div class=" border1l pt8 pl8 pr8 flex flex-column  " style="height: 500px;"></div>
+          </div>
+          <!-- end navigator-->
+          <!-- start canvas etc-->
+          <div class="centerCol border2l flex flex-grow-1 flex-column  h100pct">
+            <div class="filetabs border2t border2r flex flex-row items-stretch relative h32">
+              <div class="tab border2r flex flex-row items-center pa8 w120">
+                <div class="text stripes2 w100 h14 br5"></div>
+              </div>
+            </div>
+            <div class="border2 innerShell flex flex-row items-stretch flex-grow h32">
+              <div class="code border2r flex-grow items-stretch flex flex-column  ">
+                <div class="codeContent stripes4 flex-grow-1 pa16"></div>
+                <div class="codeTabs flex-grow-0 border2t h32 flex flex-row">
+                  <div class="problems tab border2r flex flex-row items-center pa8 w120">
+                    <div class="text stripes2 w100 h14 br5"></div>
+                  </div>
+                  <div class="problems tab border2r flex flex-row items-center pa8 w120">
+                    <div class="text stripes2 w100 h14 br5"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="canvas flex-grow-2 relative  ">
+                <div
+                  class="absolute"
+                  style="
+                  bottom: 30px;
+                  right: 30px;
+                  font-size: 90px;
+                  font-family: Akkurat, Garamond;
+                  -webkit-text-stroke: var(--stroke1);
+                  -webkit-text-stroke-width: 1px;
+                  color: transparent
+                "
+                >
+                  Utopia
+                </div>
+                <div
+                  class="the-app  border3 absolute overflow-hidden br5"
+                  style="left: 50px; top: 50px;height: 812px; width: 375px
+                "
+                >
+                  <div
+                    class="loadingAnimation stripes1"
+                    style=" width: 1575px; height: 812px "
+                  ></div>
+                </div>
+              </div>
+              <div class="border2l w240 pt8">
+                <div class="h24 border2b"></div>
+                <div style="height: 25%" class="icons border2b">
+                  <div class="flex flex-row items-center  h36 ">
+                    <span class="subheader">
+                  </div>
+                </div>
+                <div style="height: 25%" class="icons border2b">
+                  <div class="pl8 pr8 flex flex-row items-center h36   ">
+                    <span class="subheader">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- end canvas etc-->
+        </div>
+        <!-- ends loading content-->
+      </div>
+    </div>
+  </body>
+</html>

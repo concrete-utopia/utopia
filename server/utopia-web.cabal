@@ -1,0 +1,231 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.32.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 8b3ec12769c9b902104802b97bdae549218b7552dbae6557016c0939c3ccaf86
+
+name:           utopia-web
+version:        0.1.0.4
+synopsis:       Utopia Web
+description:    Utopia Web
+category:       Development
+homepage:       https://github.com/concrete-utopia/utopia#readme
+bug-reports:    https://github.com/concrete-utopia/utopia/issues
+license:        MIT
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/concrete-utopia/utopia
+
+executable utopia-web
+  main-is: Main.hs
+  other-modules:
+      Utopia.Web.Assets
+      Utopia.Web.Auth
+      Utopia.Web.Auth.Session
+      Utopia.Web.Auth.Types
+      Utopia.Web.Database
+      Utopia.Web.Database.Types
+      Utopia.Web.EditorPreviewConnection
+      Utopia.Web.Ekg
+      Utopia.Web.Endpoints
+      Utopia.Web.Exceptions
+      Utopia.Web.Executors.Common
+      Utopia.Web.Executors.Development
+      Utopia.Web.Executors.Production
+      Utopia.Web.JSON
+      Utopia.Web.Metrics
+      Utopia.Web.Proxy
+      Utopia.Web.Redis
+      Utopia.Web.Servant
+      Utopia.Web.Server
+      Utopia.Web.ServiceTypes
+      Utopia.Web.Types
+      Utopia.Web.Utils.Files
+      Utopia.Web.Websockets
+      Utopia.Web.Websockets.Types
+      Paths_utopia_web
+  hs-source-dirs:
+      src
+  default-extensions: NoImplicitPrelude
+  ghc-options: -Wall -Werror -threaded
+  extra-libraries:
+      z
+  build-depends:
+      aeson
+    , aeson-pretty
+    , amazonka
+    , amazonka-core
+    , amazonka-s3
+    , base >=4.7 && <5
+    , base16-bytestring
+    , binary
+    , blaze-html
+    , bytestring
+    , case-insensitive
+    , conduit
+    , cookie
+    , cryptohash-sha256
+    , directory
+    , ekg-core
+    , ekg-json
+    , exceptions
+    , filepath
+    , free
+    , hedis
+    , http-api-data
+    , http-client
+    , http-client-tls
+    , http-media
+    , http-types
+    , lens
+    , lens-aeson
+    , lifted-base
+    , mime-types
+    , monad-control
+    , monad-logger
+    , mtl
+    , network-uri
+    , path-pieces
+    , persistent <2.10.0
+    , persistent-postgresql
+    , persistent-sqlite
+    , persistent-template
+    , protolude
+    , resource-pool
+    , servant ==0.15
+    , servant-blaze
+    , servant-client ==0.15
+    , servant-rawm ==0.3.0.0
+    , servant-server ==0.15
+    , servant-websockets
+    , serversession
+    , serversession-backend-persistent
+    , split
+    , text
+    , time
+    , transformers
+    , unordered-containers
+    , uuid
+    , wai
+    , wai-app-static
+    , wai-extra ==3.0.29.1
+    , wai-websockets
+    , warp
+    , websockets
+    , wreq
+  default-language: Haskell2010
+
+test-suite utopia-web-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Test.Utopia.Web.Endpoints
+      Test.Utopia.Web.Executors.Test
+      Main
+      Utopia.Web.Assets
+      Utopia.Web.Auth
+      Utopia.Web.Auth.Session
+      Utopia.Web.Auth.Types
+      Utopia.Web.Database
+      Utopia.Web.Database.Types
+      Utopia.Web.EditorPreviewConnection
+      Utopia.Web.Ekg
+      Utopia.Web.Endpoints
+      Utopia.Web.Exceptions
+      Utopia.Web.Executors.Common
+      Utopia.Web.Executors.Development
+      Utopia.Web.Executors.Production
+      Utopia.Web.JSON
+      Utopia.Web.Metrics
+      Utopia.Web.Proxy
+      Utopia.Web.Redis
+      Utopia.Web.Servant
+      Utopia.Web.Server
+      Utopia.Web.ServiceTypes
+      Utopia.Web.Types
+      Utopia.Web.Utils.Files
+      Utopia.Web.Websockets
+      Utopia.Web.Websockets.Types
+      Paths_utopia_web
+  hs-source-dirs:
+      test
+      src
+  default-extensions: NoImplicitPrelude
+  ghc-options: -Wall -Werror -threaded
+  extra-libraries:
+      z
+  build-depends:
+      aeson
+    , aeson-pretty
+    , amazonka
+    , amazonka-core
+    , amazonka-s3
+    , base >=4.7 && <5
+    , base16-bytestring
+    , binary
+    , blaze-html
+    , bytestring
+    , case-insensitive
+    , conduit
+    , cookie
+    , cryptohash-sha256
+    , directory
+    , ekg-core
+    , ekg-json
+    , exceptions
+    , filepath
+    , free
+    , hedis
+    , hspec
+    , http-api-data
+    , http-client
+    , http-client-tls
+    , http-media
+    , http-types
+    , lens
+    , lens-aeson
+    , lifted-base
+    , mime-types
+    , monad-control
+    , monad-logger
+    , mtl
+    , network-uri
+    , path-pieces
+    , persistent <2.10.0
+    , persistent-postgresql
+    , persistent-sqlite
+    , persistent-template
+    , port-utils
+    , protolude
+    , resource-pool
+    , servant ==0.15
+    , servant-blaze
+    , servant-client ==0.15
+    , servant-client-core
+    , servant-rawm ==0.3.0.0
+    , servant-server ==0.15
+    , servant-websockets
+    , serversession
+    , serversession-backend-persistent
+    , split
+    , tasty
+    , tasty-hedgehog
+    , tasty-hspec
+    , tasty-hunit
+    , text
+    , time
+    , transformers
+    , unordered-containers
+    , uuid
+    , wai
+    , wai-app-static
+    , wai-extra ==3.0.29.1
+    , wai-websockets
+    , warp
+    , websockets
+    , wreq
+  default-language: Haskell2010

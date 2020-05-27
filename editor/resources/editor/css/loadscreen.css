@@ -1,0 +1,171 @@
+.loading-screen {
+  /* background-image: linear-gradient(180deg, #baf0ff 0%, #84dcff 100%); */
+  /* background-image: linear-gradient(180deg, #fff4ba 0%, #84dcff 100%); */
+  --stroke1: rgba(46, 179, 255, 0.5);
+  --background: white;
+}
+
+@keyframes loadingKeyframes {
+  from {
+    /* transform: rotateZ(0deg); */
+    /* height: 0px; */
+    transform: translateY(812px) translateX(-440px);
+  }
+  to {
+    /* transform: rotateZ(300deg); */
+    /* height: 412px; */
+    transform: translateY(0) translateX(0px);
+  }
+}
+
+.loading-screen .loadingAnimation {
+  /* transition: 1s ease-in-out; */
+  animation-name: loadingKeyframes;
+  animation-duration: 30s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.loading-screen .top-nav {
+  height: 22px;
+  background-color: white;
+  border-bottom: 1px solid black;
+  position: absolute;
+  padding-left: 4px;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+}
+
+.loading-screen .borderless-window {
+  background: #ffffff;
+  box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.15), inset 1px 1px 0 0 #ffffff,
+    inset -1px -1px 0 0 #000000, inset 0 0 1px 7px #f7cbca, inset 0 0 0 8px #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+
+.loading-screen h1 {
+  display: 'block';
+  width: 80%;
+  border-radius: 10px 10px 0px 0px;
+  border: 1px solid black;
+
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: garamond;
+  font-size: 48px;
+  font-weight: 100;
+  -webkit-font-smoothing: none;
+  text-rendering: geometricPrecision;
+}
+
+.loading-screen .border2 {
+  border: 1px dashed var(--stroke1);
+}
+
+.loading-screen .border2r {
+  border-right: 1px dashed var(--stroke1);
+}
+
+.loading-screen .border2l {
+  border-left: 1px dashed var(--stroke1);
+}
+.loading-screen .border2t {
+  border-top: 1px dashed var(--stroke1);
+}
+.loading-screen .border2b {
+  border-bottom: 1px dashed var(--stroke1);
+}
+
+.loading-screen .border3 {
+  border: 1px dotted var(--stroke1);
+}
+
+.loading-screen .stripes1 {
+  background-image: linear-gradient(
+    45deg,
+    var(--stroke1) 6.25%,
+    transparent 6.25%,
+    transparent 50%,
+    var(--stroke1) 50%,
+    var(--stroke1) 56.25%,
+    transparent 56.25%,
+    transparent 100%
+  );
+  background-size: 11.31px 11.31px;
+}
+
+.loading-screen .stripes2 {
+  background-image: linear-gradient(
+    135deg,
+    var(--stroke1) 16.67%,
+    transparent 16.67%,
+    transparent 50%,
+    var(--stroke1) 50%,
+    var(--stroke1) 66.67%,
+    transparent 66.67%,
+    transparent 100%
+  );
+  background-size: 4.24px 4.24px;
+}
+
+.loading-screen .stripes3 {
+  background-image: linear-gradient(
+    0deg,
+    var(--stroke1) 8.33%,
+    transparent 8.33%,
+    transparent 50%,
+    var(--stroke1) 50%,
+    var(--stroke1) 58.33%,
+    transparent 58.33%,
+    transparent 100%
+  );
+  background-size: 12px 12px;
+}
+
+.loading-screen .stripes4 {
+  background-image: linear-gradient(
+    135deg,
+    var(--stroke1) 16.67%,
+    transparent 16.67%,
+    transparent 50%,
+    var(--stroke1) 50%,
+    var(--stroke1) 66.67%,
+    transparent 66.67%,
+    transparent 100%
+  );
+  background-size: 3px 3px;
+}
+
+.loading-screen .stripes5 {
+  background-image: linear-gradient(
+    135deg,
+    var(--stroke1) 16.67%,
+    transparent 16.67%,
+    transparent 50%,
+    var(--stroke1) 50%,
+    var(--stroke1) 66.67%,
+    transparent 66.67%,
+    transparent 100%
+  );
+  background-size: 6px 6px;
+}
+
+.loading-screen .grid1 {
+  background-size: 8px 8px;
+  background-image: linear-gradient(to right, var(--stroke1) 88 0.5px, transparent 0.5px),
+    linear-gradient(to bottom, var(--stroke1) 88 0.5px, transparent 0.5px);
+}
+
+.loading-screen .grid2 {
+  background-size: 20px 20px;
+  background-image: linear-gradient(to right, var(--stroke1) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--stroke1) 1px, transparent 1px);
+}

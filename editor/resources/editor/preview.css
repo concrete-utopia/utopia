@@ -1,0 +1,119 @@
+::-webkit-scrollbar {
+  display: none;
+}
+body #preview * {
+  -webkit-user-select: none;
+}
+body {
+  margin: 0;
+  background-color: transparent;
+}
+
+#preview {
+  font-size: 10px;
+  position: absolute;
+  margin: 0;
+  display: flex;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+}
+
+#preview * {
+  cursor: -webkit-image-set(
+        url('/editor/cursors/cursor-thumb.png') 1x,
+        url('/editor/cursors/cursor-thumb@2x.png') 2x
+      )
+      24 24,
+    default;
+}
+
+.tab-link-container {
+  padding-left: 60px;
+}
+
+.tab-content-container {
+  overflow: visible !important;
+}
+
+.preview-topmenu-select-container {
+  width: 120px;
+}
+
+.preview-slider {
+  margin-right: 5px;
+  margin-left: 5px;
+  flex: 1;
+}
+
+.grid-background {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQoU2N8+vTpfwY0IC0tzYguxjgUFKI7GsTH5m4M3w1ChQCSiSZxVZTxMgAAAABJRU5ErkJggg==)
+    repeat white;
+}
+
+.loading-spinner {
+  width: 10px;
+  height: 10px;
+  position: relative;
+  text-align: center;
+  -webkit-animation: loading-spinner-rotate 2s infinite linear;
+  animation: loading-spinner-rotate 2s infinite linear;
+}
+
+.loading-spinner .loading-spinner-dot {
+  width: 50%;
+  height: 50%;
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  background-color: rgb(134, 134, 134);
+  border-radius: 100%;
+  -webkit-animation: loading-spinner-bounce 2s infinite ease-in-out;
+  animation: loading-spinner-bounce 2s infinite ease-in-out;
+}
+
+.loading-spinner .second-dot {
+  top: auto;
+  bottom: 0;
+  -webkit-animation-delay: -1s;
+  animation-delay: -1s;
+}
+
+@-webkit-keyframes loading-spinner-rotate {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading-spinner-rotate {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@-webkit-keyframes loading-spinner-bounce {
+  0%,
+  100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+  50% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+@keyframes loading-spinner-bounce {
+  0%,
+  100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+  50% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}

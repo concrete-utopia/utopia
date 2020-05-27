@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="36px" height="36px" viewBox="0 0 36 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 47.1 (45422) - http://www.bohemiancoding.com/sketch -->
+    <title>cursor-ew-resize</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M17.5,17.5 L13.5450788,17.5 L13.5450788,16 L11.0102807,17.9036922 L13.5450788,20 L13.5450788,18.5 L17.5,18.5 L17.5,19.5 L18.5,19.5 L18.5,18.5 L22.5,18.5 L22.5,17.5 L18.5,17.5 L18.5,16.5 L17.5,16.5 L17.5,17.5 Z M22.5102807,15.9036922 L25.0450788,18 L22.5102807,19.9036922 L22.5102807,15.9036922 Z" id="path-1"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="cursor-ew-resize">
+            <g id="Combined-Shape">
+                <use fill="#000000" fill-rule="evenodd" xlink:href="#path-1"></use>
+                <path stroke="#FFFFFF" stroke-width="1" d="M17,17 L17,16 L19,16 L19,17 L23,17 L23,19 L19,19 L19,20 L17,20 L17,19 L14.0450788,19 L14.0450788,21.0623411 L10.2028574,17.8847788 L14.0450788,14.9991813 L14.0450788,17 L17,17 Z M22.0102807,14.8413512 L25.8525022,18.0189134 L22.0102807,20.9045109 L22.0102807,14.8413512 Z"></path>
+            </g>
+        </g>
+    </g>
+</svg>

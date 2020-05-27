@@ -1,0 +1,21 @@
+/* SLIDER CONTROL */
+
+.slider-control-container {
+  /* display: inline-block;
+  vertical-align: -12px;
+  width: 50px;
+  flex: 2; */
+}
+
+.slider-number-combo {
+  display: flex;
+  align-items: center;
+}
+
+.slider-number-combo .slider-control-container {
+  margin-right: 8px;
+}
+
+.slider-number-combo .number-control {
+  flex: 1;
+}

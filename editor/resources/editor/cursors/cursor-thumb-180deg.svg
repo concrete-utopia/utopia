@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.2 (57519) - http://www.bohemiancoding.com/sketch -->
+    <title>cursor-thumb-180deg</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <radialGradient cx="50.7663131%" cy="65.1072359%" fx="50.7663131%" fy="65.1072359%" r="60.7623864%" id="radialGradient-1">
+            <stop stop-color="#EEEEEE" stop-opacity="0.266276042" offset="0%"></stop>
+            <stop stop-color="#F7F7F7" stop-opacity="0.364187047" offset="100%"></stop>
+        </radialGradient>
+        <circle id="path-2" cx="24" cy="24" r="18.75"></circle>
+        <filter x="-28.0%" y="-20.0%" width="156.0%" height="156.0%" filterUnits="objectBoundingBox" id="filter-3">
+            <feOffset dx="0" dy="3" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="3" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.785475128   0 0 0 0 0.785475128   0 0 0 0 0.785475128  0 0 0 0.5 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <filter x="-32.0%" y="-24.0%" width="164.0%" height="164.0%" filterUnits="objectBoundingBox" id="filter-4">
+            <feGaussianBlur stdDeviation="4.5" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="-3" dy="3" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 1   0 0 0 0 1   0 0 0 0 1  0 0 0 0.5 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="cursor-thumb-180deg" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Oval-3" transform="translate(24.000000, 24.000000) scale(1, -1) translate(-24.000000, -24.000000) ">
+            <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+            <use fill="url(#radialGradient-1)" fill-rule="evenodd" xlink:href="#path-2"></use>
+            <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-2"></use>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,39 @@
+import * as React from 'react'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { DragState } from '../canvas-types'
+import { MultiselectResizeControl } from './multiselect-resize-control'
+import { ControlProps } from './new-canvas-controls'
+import { anyInstanceYogaLayouted } from './select-mode/yoga-utils'
+
+export interface ConstraintsControlProps extends ControlProps {
+  dragState: DragState | null
+}
+
+export class ConstraintsControls extends React.Component<ConstraintsControlProps> {
+  render() {
+    const anySelectedElementIsYogaLayouted = anyInstanceYogaLayouted(
+      this.props.componentMetadata,
+      this.props.selectedViews,
+    )
+    const anyUnknownElements = MetadataUtils.anyUnknownOrGeneratedElements(
+      this.props.rootComponents,
+      this.props.componentMetadata,
+      this.props.selectedViews,
+    )
+
+    return (
+      <>
+        {anySelectedElementIsYogaLayouted || anyUnknownElements ? null : (
+          <MultiselectResizeControl
+            {...this.props}
+            dragState={
+              this.props.dragState != null && this.props.dragState.type === 'RESIZE_DRAG_STATE'
+                ? this.props.dragState
+                : null
+            }
+          />
+        )}
+      </>
+    )
+  }
+}

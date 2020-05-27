@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="36px" height="36px" viewBox="0 0 36 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 47.1 (45422) - http://www.bohemiancoding.com/sketch -->
+    <title>cursor-nwse-resize</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M17.5,17.5 L12.1308653,17.5 L12.1308653,16 L9.59606718,17.9036922 L12.1308653,20 L12.1308653,18.5 L17.5,18.5 L17.5,19.5 L18.5,19.5 L18.5,18.5 L23.7928932,18.5 L23.7928932,17.5 L18.5,17.5 L18.5,16.5 L17.5,16.5 L17.5,17.5 Z M23.9244943,15.9036922 L26.4592924,18 L23.9244943,19.9036922 L23.9244943,15.9036922 Z" id="path-1"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="cursor-nwse-resize">
+            <g id="Combined-Shape" transform="translate(18.027680, 17.951846) rotate(45.000000) translate(-18.027680, -17.951846) ">
+                <use fill="#000000" fill-rule="evenodd" xlink:href="#path-1"></use>
+                <path stroke="#FFFFFF" stroke-width="1" d="M17,17 L17,16 L19,16 L19,17 L24.2928932,17 L24.2928932,19 L19,19 L19,20 L17,20 L17,19 L12.6308653,19 L12.6308653,21.0623411 L8.78864382,17.8847788 L12.6308653,14.9991813 L12.6308653,17 L17,17 Z M23.4244943,14.8413512 L27.2667158,18.0189134 L23.4244943,20.9045109 L23.4244943,14.8413512 Z"></path>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,60 @@
+::-webkit-scrollbar {
+  display: none;
+}
+
+
+body #preview * {
+  -webkit-user-select: none;
+
+}
+body {
+  margin: 0;
+  font-size: 10px;
+  background-color: transparent;
+  overflow: hidden;
+}
+
+.disabled {
+  opacity: 0.65;
+}
+
+svg {
+  overflow: visible;
+}
+
+#preview {
+  margin: 0;
+  display: flex;
+  overflow: hidden;
+  color: rgba(83,83,83,1);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+}
+
+.mirror-ui {
+  padding-top: 100px;
+  text-align: center;
+}
+
+.title-text {
+  font-size: 14px;
+  padding-bottom: 15px;
+}
+
+.id-input {
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.error-message {
+  color: red;
+}
+
+.load-button {
+  margin-top: 15px;
+  font-size: 20px;
+}
+

@@ -1,0 +1,7 @@
+id_rsa
+id_rsa.pub
+dll.js
+manifest.json
+node_modules
+*.log
+packages/**/*

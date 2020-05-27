@@ -1,0 +1,36 @@
+{
+  "name": "dll_bundle",
+  "content": {
+    "./node_modules/@cycle/run/lib/adapt.js": 0,
+    "./node_modules/webpack/buildin/global.js": 1,
+    "./node_modules/@cycle/run/dist/cycle-run.js": 2,
+    "./node_modules/@cycle/run": 3,
+    "./node_modules/webpack/buildin/module.js": 4,
+    "./node_modules/symbol-observable/index.js": 5,
+    "./node_modules/symbol-observable/lib/index.js": 6,
+    "./node_modules/symbol-observable/lib/ponyfill.js": 7,
+    "./node_modules/xstream/index.js": 8
+  },
+  "externals": {
+    "@cycle/run/lib/adapt.js": "dll_bundle(0)",
+    "@cycle/run/lib/adapt": "dll_bundle(0)",
+    "webpack/buildin/global.js": "dll_bundle(1)",
+    "webpack/buildin/global": "dll_bundle(1)",
+    "@cycle/run/dist/cycle-run.js": "dll_bundle(2)",
+    "@cycle/run/dist/cycle-run": "dll_bundle(2)",
+    "@cycle/run": "dll_bundle(3)",
+    "webpack/buildin/module.js": "dll_bundle(4)",
+    "webpack/buildin/module": "dll_bundle(4)",
+    "symbol-observable/index.js": "dll_bundle(5)",
+    "symbol-observable/index": "dll_bundle(5)",
+    "symbol-observable": "dll_bundle(5)",
+    "symbol-observable/lib/index.js": "dll_bundle(6)",
+    "symbol-observable/lib/index": "dll_bundle(6)",
+    "symbol-observable/lib": "dll_bundle(6)",
+    "symbol-observable/lib/ponyfill.js": "dll_bundle(7)",
+    "symbol-observable/lib/ponyfill": "dll_bundle(7)",
+    "xstream/index.js": "dll_bundle(8)",
+    "xstream/index": "dll_bundle(8)",
+    "xstream": "dll_bundle(8)"
+  }
+}

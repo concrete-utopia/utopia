@@ -1,0 +1,176 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SWITCH_LAYOUT_SYSTEM switches from flex to pins correctly 1`] = `
+Array [
+  Object {
+    "arbitraryJSBlock": null,
+    "isFunction": true,
+    "name": "App",
+    "param": null,
+    "propsUsed": Array [],
+    "rootElement": Object {
+      "children": Array [],
+      "metadata": null,
+      "name": Object {
+        "baseVariable": "View",
+        "propertyPath": Object {
+          "propertyElements": Array [],
+        },
+      },
+      "props": Object {
+        "data-uid": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": "aaa",
+        },
+        "layout": Object {
+          "content": Array [
+            Object {
+              "key": "layoutSystem",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": "pinSystem",
+              },
+            },
+          ],
+          "type": "ATTRIBUTE_NESTED_OBJECT",
+        },
+        "style": Object {
+          "content": Array [
+            Object {
+              "key": "backgroundColor",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": "#FFFFFF",
+              },
+            },
+            Object {
+              "key": "width",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "key": "height",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "key": "left",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "key": "top",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+          ],
+          "type": "ATTRIBUTE_NESTED_OBJECT",
+        },
+      },
+      "type": "JSX_ELEMENT",
+    },
+    "type": "UTOPIA_JSX_COMPONENT",
+  },
+]
+`;
+
+exports[`SWITCH_LAYOUT_SYSTEM switches from pins to flex correctly 1`] = `
+Array [
+  Object {
+    "arbitraryJSBlock": null,
+    "isFunction": true,
+    "name": "App",
+    "param": null,
+    "propsUsed": Array [],
+    "rootElement": Object {
+      "children": Array [],
+      "metadata": null,
+      "name": Object {
+        "baseVariable": "View",
+        "propertyPath": Object {
+          "propertyElements": Array [],
+        },
+      },
+      "props": Object {
+        "data-uid": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": "aaa",
+        },
+        "layout": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": Object {},
+        },
+        "style": Object {
+          "content": Array [
+            Object {
+              "key": "backgroundColor",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": "#FFFFFF",
+              },
+            },
+            Object {
+              "key": "display",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": "flex",
+              },
+            },
+            Object {
+              "key": "left",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "key": "top",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "key": "width",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "key": "height",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+          ],
+          "type": "ATTRIBUTE_NESTED_OBJECT",
+        },
+      },
+      "type": "JSX_ELEMENT",
+    },
+    "type": "UTOPIA_JSX_COMPONENT",
+  },
+]
+`;

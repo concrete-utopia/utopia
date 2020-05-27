@@ -1,0 +1,40 @@
+.node-graph-insert-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -250px;
+  margin-top: -150px;
+  width: 500px;
+  height: 300px;
+  box-shadow: 0px 0px 25px 0px rgba(0,0,0,.4);
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.node-graph-insert-dialog > * {
+  width: 100%;
+}
+
+.node-graph-insert-dialog-input {
+  font-size: 24px;
+  outline: none;
+  border: none;
+  width: 100%;
+  padding: 12px;
+  border-radius: 15px;
+  font-weight: 500;
+  color: rgba(0,0,0,.8)
+}
+
+.node-graph-insert-dialog-description {
+  position: absolute;
+  bottom: 0;
+  height: 40px;
+  width: 100%;
+  padding: 8px;
+  font-size: 11px;
+  background-color: rgb(244,244,244);
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}

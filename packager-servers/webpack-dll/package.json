@@ -1,0 +1,50 @@
+{
+  "name": "webpack-dll",
+  "version": "1.0.0",
+  "description": "A service that converts a package into a DLL and manifest",
+  "main": "test.js",
+  "scripts": {
+    "heroku-postbuild": "npm run build",
+    "build": "next build src/homepage",
+    "start": "WEBPACK_DLL_ENV=webpack-dll-dev DEBUG=true node src/index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "compression": "^1.6.2",
+    "cors": "^2.8.1",
+    "express": "^4.13.4",
+    "express-ws": "^3.0.0",
+    "gridfs-stream": "^1.1.1",
+    "memory-fs": "^0.3.0",
+    "mime": "^1.3.4",
+    "mongodb": "^2.2.25",
+    "next": "^2.2.0",
+    "node-pre-gyp": "^0.6.23",
+    "nopt": "^3.0.6",
+    "npm-registry": "^0.1.13",
+    "npm-registry-client": "^7.0.9",
+    "rc": "^1.1.6",
+    "react": "^15.5.4",
+    "react-dom": "^15.5.4",
+    "recursive": "0.0.2",
+    "recursive-readdir": "^1.3.0",
+    "registry-url": "^3.1.0",
+    "rmdir": "^1.2.0",
+    "semver": "^5.1.0",
+    "string-hash": "^1.1.0",
+    "tar": "^2.2.1",
+    "tar-pack": "^3.1.3",
+    "usage": "^0.7.1",
+    "uuid": "^2.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cerebral/webpack-dll.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cerebral/webpack-dll/issues"
+  },
+  "homepage": "https://github.com/cerebral/webpack-dll#readme"
+}

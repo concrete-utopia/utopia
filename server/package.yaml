@@ -1,0 +1,92 @@
+name: utopia-web
+version: 0.1.0.4
+synopsis: Utopia Web
+description: Utopia Web
+github: concrete-utopia/utopia
+category: Development
+license: MIT
+ghc-options: -Wall -Werror -threaded
+dependencies:
+  - aeson
+  - aeson-pretty
+  - amazonka
+  - amazonka-core
+  - amazonka-s3
+  - base >= 4.7 && < 5
+  - base16-bytestring
+  - binary
+  - blaze-html
+  - bytestring
+  - case-insensitive
+  - conduit
+  - cookie
+  - cryptohash-sha256
+  - directory
+  - ekg-core
+  - ekg-json
+  - exceptions
+  - filepath
+  - free
+  - hedis
+  - http-api-data
+  - http-client
+  - http-client-tls
+  - http-media
+  - http-types
+  - lens
+  - lens-aeson
+  - lifted-base
+  - mime-types
+  - monad-control
+  - monad-logger
+  - mtl
+  - network-uri
+  - path-pieces
+  - persistent <2.10.0
+  - persistent-postgresql
+  - persistent-sqlite
+  - persistent-template
+  - protolude
+  - resource-pool
+  - servant ==0.15
+  - servant-blaze
+  - servant-client ==0.15
+  - servant-rawm ==0.3.0.0
+  - servant-server ==0.15
+  - servant-websockets
+  - serversession
+  - serversession-backend-persistent
+  - split
+  - text
+  - time
+  - transformers
+  - unordered-containers
+  - uuid
+  - wai
+  - wai-app-static
+  - wai-extra ==3.0.29.1
+  - wai-websockets
+  - warp
+  - websockets
+  - wreq
+extra-libraries:
+  - z
+default-extensions:
+  - NoImplicitPrelude
+executable:
+  main: Main.hs
+  source-dirs: src
+tests:
+  utopia-web-test:
+    main: Main.hs
+    source-dirs:
+      - test
+      - src
+    dependencies:
+      - servant-client-core
+      - hspec
+      - port-utils
+      - tasty
+      - tasty-hedgehog
+      - tasty-hspec
+      - tasty-hunit

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="15px" height="8px" viewBox="0 0 15 8" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>iconConnectionsOutbound</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="100%" x2="50%" y2="9.79352679%" id="linearGradient-1">
+            <stop stop-color="#E2E2E2" offset="0%"></stop>
+            <stop stop-color="#FFFFFF" offset="100%"></stop>
+        </linearGradient>
+        <circle id="path-2" cx="4" cy="4" r="4"></circle>
+        <circle id="path-3" cx="4" cy="4" r="1.14285714"></circle>
+        <linearGradient x1="29.2096078%" y1="100%" x2="29.2096077%" y2="0%" id="linearGradient-4">
+            <stop stop-color="#B2B2B2" offset="0%"></stop>
+            <stop stop-color="#FFFFFF" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Editor" transform="translate(-306.000000, -271.000000)">
+            <g id="Group" transform="translate(261.000000, 265.000000)">
+                <g id="iconConnectionsOutbound" transform="translate(52.500000, 10.000000) scale(-1, 1) translate(-52.500000, -10.000000) translate(45.000000, 6.000000)">
+                    <g id="Group-11" transform="translate(7.000000, 0.000000)">
+                        <g id="Oval-9">
+                            <use fill="url(#linearGradient-1)" fill-rule="evenodd" xlink:href="#path-2"></use>
+                            <circle stroke="#919191" stroke-width="0.5" cx="4" cy="4" r="3.75"></circle>
+                        </g>
+                        <g id="Oval-9">
+                            <use fill="#D9D8D9" fill-rule="evenodd" xlink:href="#path-3"></use>
+                            <circle stroke="#919191" stroke-width="0.5" cx="4" cy="4" r="1.39285714"></circle>
+                        </g>
+                    </g>
+                    <path d="M0,1 L3.79320763,1 L7.55509829,3 L11.3473423,3 C11.7824474,3.40890842 12,3.73442925 12,3.9765625 C12,4.21869575 11.7824474,4.55984158 11.3473423,5 L7.61291423,5 L3.29984492,3 L0,3" id="Rectangle-37" fill="url(#linearGradient-4)"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

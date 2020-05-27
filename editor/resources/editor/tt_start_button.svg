@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 45.1 (43504) - http://www.bohemiancoding.com/sketch -->
+    <title>TTP - Record</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="8" cy="8" r="8"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Time-Traveling-Preview---Icons" transform="translate(-5.000000, -34.000000)">
+            <g id="TTP---Record" transform="translate(5.000000, 34.000000)">
+                <g id="Oval-6">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+                    <circle stroke="#FF385D" stroke-width="1" cx="8" cy="8" r="7.5"></circle>
+                </g>
+                <rect id="Rectangle-23" fill="#FF385D" x="3.5" y="3.5" width="9" height="9" rx="4.5"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,68 @@
+{
+  "name": "utopia-api",
+  "version": "0.4.2",
+  "description": "Utopia API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf dist/",
+    "test": "jest",
+    "test-watch": "jest --watch",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dts-bundle": "npm-dts generate && node update-dts.js index.d.ts ../editor/src/components/editor/npm-dependency/utopia-api-typings.ts",
+    "postinstall": "patch-package"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/concrete-utopia/utopia"
+  },
+  "jest": {
+    "testEnvironment": "jest-environment-jsdom-global",
+    "preset": "ts-jest",
+    "testRegex": "src/.*\\.spec\\.(jsx?|tsx?)$",
+    "moduleDirectories": [
+      "node_modules",
+      "<rootDir>/node_modules"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
+  },
+  "author": "",
+  "license": "",
+  "homepage": "https://utopia.app",
+  "peerDependencies": {
+    "react": "16.13.1"
+  },
+  "dependencies": {
+    "@emotion/core": "10.0.28",
+    "@emotion/styled": "10.0.27",
+    "draft-js": "git://github.com/concrete-utopia/draft-js.git#6b21131",
+    "draft-js-custom-styles": "2.0.1",
+    "uuid": "3.3.2"
+  },
+  "devDependencies": {
+    "@types/draft-js": "0.10.19",
+    "@types/jest": "23.3.3",
+    "@types/prettier": "^1.18.4",
+    "@types/react": "16.9.35",
+    "@types/react-dom": "16.9.8",
+    "@types/uuid": "3.4.5",
+    "jest": "24.4.0",
+    "jest-environment-jsdom-global": "^1.2.0",
+    "lint-staged": "^9.4.3",
+    "npm-dts": "1.2.0",
+    "patch-package": "6.1.2",
+    "prettier": "^1.19.1",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "ts-jest": "24.1.0",
+    "typescript": "3.9.2"
+  }
+}

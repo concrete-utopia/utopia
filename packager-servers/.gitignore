@@ -1,0 +1,8 @@
+node_modules
+.git
+.DS_Store
+*.log
+.vscode
+*.code-workspace
+*/.vs/
+database/**/*

@@ -1,0 +1,44 @@
+/* these are overrides that are not apparently controllable
+   via the Monaco component */
+
+/* Scrollbars to resemble standard Mac application */
+
+.vs .monaco-scrollable-element .slider {
+  width: 7px !important;
+  border-radius: 8px;
+}
+
+.vs .monaco-scrollable-element .slider {
+  width: 7px !important;
+  border-radius: 8px;
+}
+
+.vs .monaco-scrollable-element .decorationsOverviewRuler {
+  width: 7px !important;
+}
+
+.vs .monaco-scrollable-element > .invisible > .slider {
+  opacity: 0.1;
+}
+
+.vs .monaco-scrollable-element > .visible > .slider {
+  /* these need to be partially transparent since the error indicators
+       show up underneath them */
+  background: hsla(0, 0%, 80%, 0.2);
+}
+
+.vs .monaco-scrollable-element > .visible > .slider:active {
+  /* these need to be partially transparent since the error indicators
+       show up underneath them */
+  background: hsla(0, 0%, 0%, 0.5);
+}
+
+/* Various selected element highlight colors */
+.highlight-selected-view-background-color {
+  border-left: 3px solid #007aff;
+  z-index: -1;
+}
+
+.highlight-highlighted-view-background-color {
+  border-left: 3px solid #007aff11;
+}

@@ -1,0 +1,209 @@
+/* React Spreadsheet Grid overrides */
+
+.SpreadsheetGridContainer {
+  flex-direction: column;
+}
+
+.SpreadsheetGrid {
+  width: 100%;
+  border-collapse: collapse;
+  position: absolute;
+  top: 0;
+  background-color: white;
+  box-sizing: border-box;
+}
+
+.SpreadsheetGrid__header {
+  display: flex;
+  white-space: nowrap;
+}
+
+.SpreadsheetGridInput {
+  height: 100%;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  font-size: 11px;
+  line-height: 13px;
+  outline: none;
+  font-family: inherit;
+  background: transparent;
+  text-overflow: ellipsis;
+}
+
+.SpreadsheetGridScrollDummy {
+  position: relative;
+  min-width: 100%;
+}
+
+.SpreadsheetGridScrollWrapper {
+  position: relative;
+  transition: height 0.3s;
+  border-bottom: 1px solid #e6e1e8;
+  overflow-y: scroll;
+  flex-direction: column;
+}
+
+.SpreadsheetGrid {
+  background-color: transparent;
+}
+
+.SpreadsheetGrid__headCell {
+  display: inline-flex;
+  position: relative;
+  color: inherit;
+  font-size: 9px;
+  line-height: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-bottom: none;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  align-items: center;
+  border-bottom: 1px solid rgba(37, 33, 40, 0.12);
+}
+
+.SpreadsheetGrid__headCell:first-of-type {
+  border-left: 1px solid rgba(37, 33, 40, 0.12);
+}
+
+.SpreadsheetGrid__headCell {
+  border-right: 1px solid rgba(37, 33, 40, 0.12);
+}
+
+.SpreadsheetGrid__row {
+  background-color: transparent;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.SpreadsheetGrid__cell {
+  position: relative;
+  color: #333;
+  cursor: inherit;
+  border-top: none;
+  vertical-align: middle;
+  white-space: normal;
+  font-size: 11px;
+  line-height: default;
+  text-overflow: ellipsis;
+  padding: 2px 8px;
+  height: 100%;
+  display: inline-flex;
+}
+
+.SpreadsheetGrid__cell > * {
+  pointer-events: none;
+}
+
+.SpreadsheetGrid__cell:first-of-type {
+  border-left: 1px solid #e6e1e8;
+}
+
+.SpreadsheetGrid__cell {
+  border-right: 1px solid #e6e1e8;
+}
+
+.SpreadsheetGrid__cell:last-child {
+  text-align: right;
+}
+
+.SpreadsheetGrid__cell_active {
+  box-shadow: inset 0 0 0 2px var(--emphasis-color);
+  z-index: 2;
+}
+
+.SpreadsheetGrid__cell_active > *,
+.SpreadsheetGrid__cell_focused > * {
+  pointer-events: auto;
+}
+
+.SpreadsheetGrid__cell_focused > * {
+  position: relative;
+}
+
+.SpreadsheetGrid__cell_focused::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.SpreadsheetGrid__cell_disabled {
+  background: rgba(239, 236, 236, 0.3);
+}
+
+.SpreadsheetGrid__cell_disabled > * {
+  opacity: 0.3;
+}
+
+.SpreadsheetGrid__placeholder {
+  text-align: center;
+  height: 21px;
+  background: #fff;
+  padding: 2px;
+}
+
+.SpreadsheetGrid__resizer {
+  width: 10px;
+  position: absolute;
+  top: 0;
+  right: -5px;
+  cursor: ew-resize;
+  z-index: 2;
+}
+
+.SpreadsheetGridSelectHeader {
+  position: relative;
+  font-size: 11px;
+  line-height: 13px;
+  font-family: inherit;
+  color: #333;
+  vertical-align: middle;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.SpreadsheetGridSelectValue {
+  width: calc(100% - 20px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.SpreadsheetGridSelectHeader:after {
+  position: absolute;
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 3px solid #333;
+  top: calc(50% - 2px);
+  right: 5px;
+}
+
+.SpreadsheetGridSelectHeader_open:after {
+  border-top-color: var(--emphasis-color);
+}
+
+.SpreadsheetGridSelectItem {
+  font-weight: 400;
+  font-size: 11px;
+  padding: 2px 4px;
+  cursor: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.SpreadsheetGridSelectItem_selected {
+  background-color: #f0eef3;
+  color: var(--emphasis-color);
+  border-radius: 3px;
+}

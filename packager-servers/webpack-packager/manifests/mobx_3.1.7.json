@@ -1,0 +1,13 @@
+{
+  "name": "dll_bundle",
+  "content": {
+    "./node_modules/mobx": 0,
+    "./node_modules/webpack/buildin/global.js": 1
+  },
+  "externals": {
+    "mobx": "dll_bundle(0)",
+    "./mobx": "dll_bundle(0)",
+    "webpack/buildin/global.js": "dll_bundle(1)",
+    "webpack/buildin/global": "dll_bundle(1)"
+  }
+}

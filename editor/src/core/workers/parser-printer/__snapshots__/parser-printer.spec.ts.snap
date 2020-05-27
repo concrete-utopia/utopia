@@ -1,0 +1,692 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Babel transpile can transpile jsx fragment 1`] = `
+Object {
+  "type": "RIGHT",
+  "value": Object {
+    "code": "var App = function App(props) {
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(View, {
+    style: { ...(props.style || {}),
+      backgroundColor: '#FFFFFF'
+    },
+    layout: {
+      layoutSystem: 'pinSystem'
+    },
+    \\"data-uid\\": 'aaa'
+  }));
+};",
+    "sourceMap": Object {
+      "file": "test.js",
+      "mappings": "AAcEA,IAAAA,GAAAA,GAAAA,SAAAA,GAAAA,CAAAA,KAAAA,EAAAA;AACDA,sBACcC,uDACJD,oBAAAA,IAAAA;AACJA,IAAAA,KAAAA,EAAAA,EAAAA,IAAAA,KAAAA,CAAAA,KAAAA,IAAAA,EAAAA,CAAAA;AAAAA,MAAAA,eAAAA,EAAAA;AAAAA,KADIA;AAECA,IAAAA,MAAAA,EAAAA;AAAAA,MAAAA,YAAAA,EAAAA;AAAAA,KAFDA;AAGFE,gBAAaC;AAHXH,IADIC,CADdD;AASKI,CAVJJ",
+      "names": Array [
+        "
+",
+        " ",
+        "style",
+        "props",
+        "/",
+      ],
+      "sources": Array [
+        "/src/app.ui.js",
+      ],
+      "sourcesContent": Array [
+        "/** @jsx jsx */
+import * as React from 'react'
+import { View, jsx } from 'utopia-api'
+
+export var canvasMetadata = {
+  scenes: [
+    {
+      component: 'App',
+      frame: { height: 812, left: 0, width: 375, top: 0 },
+      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },
+      container: { layoutSystem: 'pinSystem' },
+    },
+  ],
+  elementMetadata: {},
+}
+
+export var App = (props) => {
+  return (
+    <>
+      <View
+        style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+        layout={{ layoutSystem: 'pinSystem' }}
+        data-uid={'aaa'}
+      ></View>
+    </>
+  )
+}
+",
+      ],
+      "version": 3,
+    },
+  },
+}
+`;
+
+exports[`JSX parser parses back and forth as a function, with an arbitrary piece of JavaScript 1`] = `
+Object {
+  "type": "RIGHT",
+  "value": Object {
+    "canvasMetadata": Object {
+      "type": "RIGHT",
+      "value": Object {},
+    },
+    "code": "import { cake } from 'cake'
+import * as React from 'react'
+import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+export var canvasMetadata = {
+  scenes: [],
+  elementMetadata: {},
+}
+function cakeFn(n) {
+  return n
+}
+function otherFn(n) {
+  return n
+}
+export var whatever = (props) => {
+  return (
+    <View data-uid={'aaa'}>
+      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    </View>
+  )
+}
+",
+    "dependencyOrdering": Array [
+      "",
+      "whatever",
+    ],
+    "highlightBounds": Object {
+      "aaa": Object {
+        "endCol": 11,
+        "endLine": 17,
+        "startCol": 4,
+        "startLine": 15,
+        "uid": "aaa",
+      },
+      "aab": Object {
+        "endCol": 63,
+        "endLine": 16,
+        "startCol": 6,
+        "startLine": 16,
+        "uid": "aab",
+      },
+    },
+    "imports": Object {
+      "cake": Object {
+        "importedAs": null,
+        "importedFromWithin": Array [
+          Object {
+            "alias": "cake",
+            "name": "cake",
+          },
+        ],
+        "importedWithName": null,
+      },
+      "react": Object {
+        "importedAs": "React",
+        "importedFromWithin": Array [],
+        "importedWithName": null,
+      },
+      "utopia-api": Object {
+        "importedAs": null,
+        "importedFromWithin": Array [
+          Object {
+            "alias": "Ellipse",
+            "name": "Ellipse",
+          },
+          Object {
+            "alias": "Image",
+            "name": "Image",
+          },
+          Object {
+            "alias": "Rectangle",
+            "name": "Rectangle",
+          },
+          Object {
+            "alias": "Storyboard",
+            "name": "Storyboard",
+          },
+          Object {
+            "alias": "Text",
+            "name": "Text",
+          },
+          Object {
+            "alias": "UtopiaUtils",
+            "name": "UtopiaUtils",
+          },
+          Object {
+            "alias": "View",
+            "name": "View",
+          },
+        ],
+        "importedWithName": null,
+      },
+    },
+    "jsxFactoryFunction": null,
+    "projectContainedOldSceneMetadata": true,
+    "topLevelElements": Array [
+      Object {
+        "definedElsewhere": Array [],
+        "definedWithin": Array [
+          "cakeFn",
+          "otherFn",
+        ],
+        "javascript": "function cakeFn(n) {
+  return n;
+}
+function otherFn(n) {
+  return n;
+}",
+        "sourceMap": Object {
+          "file": "code.tsx",
+          "mappings": "AAOCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
+          "names": Array [
+            "function",
+            "cakeFn",
+            "n",
+            "{",
+            "return",
+            "
+",
+            "otherFn",
+            "}",
+          ],
+          "sources": Array [
+            "code.tsx",
+          ],
+          "sourcesContent": Array [
+            "import { cake } from 'cake'
+import * as React from 'react'
+import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+export var canvasMetadata = {
+  scenes: [],
+  elementMetadata: {},
+}
+function cakeFn(n) {
+  return n
+}
+function otherFn(n) {
+  return n
+}
+export var whatever = (props) => {
+  return (
+    <View data-uid={'aaa'}>
+      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    </View>
+  )
+}
+",
+          ],
+          "version": 3,
+        },
+        "transpiledJavascript": "function cakeFn(n) {
+  return n;
+}
+
+function otherFn(n) {
+  return n;
+}
+return { cakeFn: cakeFn, otherFn: otherFn };",
+        "type": "ARBITRARY_JS_BLOCK",
+        "uniqueID": "",
+      },
+      Object {
+        "arbitraryJSBlock": null,
+        "isFunction": true,
+        "name": "whatever",
+        "param": Object {
+          "boundParam": Object {
+            "defaultExpression": null,
+            "paramName": "props",
+            "type": "REGULAR_PARAM",
+          },
+          "dotDotDotToken": false,
+          "type": "PARAM",
+        },
+        "propsUsed": Array [],
+        "rootElement": Object {
+          "children": Array [
+            Object {
+              "children": Array [],
+              "metadata": null,
+              "name": Object {
+                "baseVariable": "cake",
+                "propertyPath": Object {
+                  "propertyElements": Array [],
+                },
+              },
+              "props": Object {
+                "data-uid": Object {
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "aab",
+                },
+                "left": Object {
+                  "definedElsewhere": Array [
+                    "cakeFn",
+                    "otherFn",
+                  ],
+                  "javascript": "cakeFn(otherFn('b') + 2)",
+                  "sourceMap": Object {
+                    "file": "code.tsx",
+                    "mappings": "OAgBoCA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
+                    "names": Array [
+                      "cakeFn",
+                      "otherFn",
+                      "'",
+                      "b",
+                      ")",
+                    ],
+                    "sources": Array [
+                      "code.tsx",
+                    ],
+                    "sourcesContent": Array [
+                      "import { cake } from 'cake'
+import * as React from 'react'
+import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+export var canvasMetadata = {
+  scenes: [],
+  elementMetadata: {},
+}
+function cakeFn(n) {
+  return n
+}
+function otherFn(n) {
+  return n
+}
+export var whatever = (props) => {
+  return (
+    <View data-uid={'aaa'}>
+      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    </View>
+  )
+}
+",
+                    ],
+                    "version": 3,
+                  },
+                  "transpiledJavascript": "return cakeFn(otherFn('b') + 2);",
+                  "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                  "uniqueID": "",
+                },
+              },
+              "type": "JSX_ELEMENT",
+            },
+          ],
+          "metadata": null,
+          "name": Object {
+            "baseVariable": "View",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Object {
+            "data-uid": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
+            },
+          },
+          "type": "JSX_ELEMENT",
+        },
+        "type": "UTOPIA_JSX_COMPONENT",
+      },
+      Object {
+        "arbitraryJSBlock": null,
+        "isFunction": false,
+        "name": "storyboard",
+        "param": null,
+        "propsUsed": Array [],
+        "rootElement": Object {
+          "children": Array [],
+          "metadata": null,
+          "name": Object {
+            "baseVariable": "Storyboard",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Object {
+            "data-uid": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": "utopia-storyboard-uid",
+            },
+          },
+          "type": "JSX_ELEMENT",
+        },
+        "type": "UTOPIA_JSX_COMPONENT",
+      },
+    ],
+  },
+}
+`;
+
+exports[`JSX parser parses the code when it has a JSX block with an object defined inside 1`] = `
+Object {
+  "type": "RIGHT",
+  "value": Object {
+    "canvasMetadata": Object {
+      "type": "RIGHT",
+      "value": Object {},
+    },
+    "code": "import * as React from \\"react\\";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from \\"utopia-api\\";
+const a = \\"cake\\"
+export var App = (props) => <View data-uid={'bbb'}>
+  {{a: a}}
+</View>
+",
+    "dependencyOrdering": Array [
+      "",
+      "App",
+    ],
+    "highlightBounds": Object {
+      "bbb": Object {
+        "endCol": 7,
+        "endLine": 13,
+        "startCol": 28,
+        "startLine": 11,
+        "uid": "bbb",
+      },
+    },
+    "imports": Object {
+      "react": Object {
+        "importedAs": "React",
+        "importedFromWithin": Array [],
+        "importedWithName": null,
+      },
+      "utopia-api": Object {
+        "importedAs": null,
+        "importedFromWithin": Array [
+          Object {
+            "alias": "Ellipse",
+            "name": "Ellipse",
+          },
+          Object {
+            "alias": "Image",
+            "name": "Image",
+          },
+          Object {
+            "alias": "Rectangle",
+            "name": "Rectangle",
+          },
+          Object {
+            "alias": "Storyboard",
+            "name": "Storyboard",
+          },
+          Object {
+            "alias": "Text",
+            "name": "Text",
+          },
+          Object {
+            "alias": "UtopiaUtils",
+            "name": "UtopiaUtils",
+          },
+          Object {
+            "alias": "View",
+            "name": "View",
+          },
+        ],
+        "importedWithName": null,
+      },
+    },
+    "jsxFactoryFunction": null,
+    "projectContainedOldSceneMetadata": false,
+    "topLevelElements": Array [
+      Object {
+        "definedElsewhere": Array [],
+        "definedWithin": Array [
+          "a",
+        ],
+        "javascript": "const a = \\"cake\\";",
+        "sourceMap": Object {
+          "file": "code.tsx",
+          "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
+          "names": Array [
+            "const",
+            "a",
+            " ",
+            "\\"",
+          ],
+          "sources": Array [
+            "code.tsx",
+          ],
+          "sourcesContent": Array [
+            "import * as React from \\"react\\";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from \\"utopia-api\\";
+const a = \\"cake\\"
+export var App = (props) => <View data-uid={'bbb'}>
+  {{a: a}}
+</View>
+",
+          ],
+          "version": 3,
+        },
+        "transpiledJavascript": "var a = \\"cake\\";
+return { a: a };",
+        "type": "ARBITRARY_JS_BLOCK",
+        "uniqueID": "",
+      },
+      Object {
+        "arbitraryJSBlock": null,
+        "isFunction": true,
+        "name": "App",
+        "param": Object {
+          "boundParam": Object {
+            "defaultExpression": null,
+            "paramName": "props",
+            "type": "REGULAR_PARAM",
+          },
+          "dotDotDotToken": false,
+          "type": "PARAM",
+        },
+        "propsUsed": Array [],
+        "rootElement": Object {
+          "children": Array [
+            Object {
+              "definedElsewhere": Array [],
+              "elementsWithin": Object {},
+              "javascript": "({ a: a });",
+              "originalJavascript": "{a: a}",
+              "sourceMap": Object {
+                "file": "code.tsx",
+                "mappings": "OAAA,CAAC;AAAE,KAAH;AAAC,CAAD",
+                "names": Array [],
+                "sources": Array [
+                  "code.tsx",
+                ],
+                "sourcesContent": Array [
+                  "import * as React from \\"react\\";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from \\"utopia-api\\";
+const a = \\"cake\\"
+export var App = (props) => <View data-uid={'bbb'}>
+  {{a: a}}
+</View>
+",
+                ],
+                "version": 3,
+              },
+              "transpiledJavascript": "return ({
+  a: a
+});",
+              "type": "JSX_ARBITRARY_BLOCK",
+              "uniqueID": "",
+            },
+          ],
+          "metadata": null,
+          "name": Object {
+            "baseVariable": "View",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Object {
+            "data-uid": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": "bbb",
+            },
+          },
+          "type": "JSX_ELEMENT",
+        },
+        "type": "UTOPIA_JSX_COMPONENT",
+      },
+      Object {
+        "arbitraryJSBlock": null,
+        "isFunction": false,
+        "name": "storyboard",
+        "param": null,
+        "propsUsed": Array [],
+        "rootElement": Object {
+          "children": Array [],
+          "metadata": null,
+          "name": Object {
+            "baseVariable": "Storyboard",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Object {
+            "data-uid": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": "utopia-storyboard-uid",
+            },
+          },
+          "type": "JSX_ELEMENT",
+        },
+        "type": "UTOPIA_JSX_COMPONENT",
+      },
+    ],
+  },
+}
+`;
+
+exports[`JSX parser returns a circular reference error where there is one. 1`] = `
+Object {
+  "type": "LEFT",
+  "value": Object {
+    "code": "import * as React from \\"react\\";
+import {
+  View
+} from \\"utopia-api\\";
+const a = (n) => n > 0 ? n : b(10)
+export var whatever = (props) => <View data-uid={'aaa'} />
+const b = (n) => n > 0 ? n : a(10)
+",
+    "diagnostics": null,
+    "errorMessage": null,
+    "errorMessages": Array [
+      Object {
+        "codeSnippet": "   7 | const b = (n) => n > 0 ? n : a(10)
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+",
+        "endColumn": 34,
+        "endLine": 6,
+        "errorCode": "",
+        "fileName": "code.tsx",
+        "message": "Circular dependency detected. While this is valid javascript, the Utopia editor cannot currently handle circular dependencies.",
+        "passTime": null,
+        "severity": "fatal",
+        "source": "utopia-parser",
+        "startColumn": 0,
+        "startLine": 6,
+        "type": "",
+      },
+    ],
+    "parsedJSONFailure": null,
+  },
+}
+`;
+
+exports[`getHighlightBounds gets some bounds 1`] = `
+Array [
+  Object {
+    "endCol": 15,
+    "endLine": 32,
+    "startCol": 8,
+    "startLine": 21,
+  },
+]
+`;
+
+exports[`lintAndParse returns a syntax error from eslint when something is broken 1`] = `
+Object {
+  "type": "LEFT",
+  "value": Object {
+    "code": "
+    import {
+      Ellipse,
+      UtopiaUtils,
+      Image,
+      Rectangle,
+      Text,
+      View
+    } from \\"utopia-api\\";
+    export var canvasMetadata = {
+      scenes: [],
+      elementMetadata: {}
+    }
+    
+    export var App = props => {
+      const a = 20
+      const b = 40
+    
+      return (
+        <View
+          style={{ backgroundColor: \\"darkgrey\\", position: \\"absolute\\" }, ...hello}
+        >
+        </View>
+      )
+    })",
+    "diagnostics": null,
+    "errorMessage": null,
+    "errorMessages": Array [
+      Object {
+        "codeSnippet": "  19 |       return (
+  20 |         <View
+> 21 |           style={{ backgroundColor: \\"darkgrey\\", position: \\"absolute\\" }, ...hello}
+     |                                                                         ^
+  22 |         >
+  23 |         </View>
+  24 |       )",
+        "endColumn": undefined,
+        "endLine": undefined,
+        "errorCode": null,
+        "fileName": "test.ui.js",
+        "message": "Parsing error: Unexpected token",
+        "passTime": 12345678,
+        "severity": "fatal",
+        "source": "eslint",
+        "startColumn": 73,
+        "startLine": 21,
+        "type": "fatal",
+      },
+    ],
+    "parsedJSONFailure": null,
+  },
+}
+`;
