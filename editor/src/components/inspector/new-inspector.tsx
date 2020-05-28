@@ -86,6 +86,7 @@ import { WarningSubsection } from './sections/layout-section/warning-subsection/
 import { SceneSection } from './sections/scene-inspector/scene-section'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { StyleSection } from './sections/style-section/style-section'
+import { ClassNameControl } from './sections/style-section/className-subsection/className-control'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -396,6 +397,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
+          <ClassNameControl />
           <StyleSection />
         </React.Fragment>
       )

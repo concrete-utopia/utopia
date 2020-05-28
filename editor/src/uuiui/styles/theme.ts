@@ -429,6 +429,7 @@ export const UtopiaTheme = {
       tall: 47,
     },
     inputHeight: {
+      small: 18,
       default: 22,
       tall: 26,
     },

@@ -4084,6 +4084,7 @@ export interface ParsedMetadataProperties {
   alt: string
   src: ImageURL
   textSizing: TextSizing
+  className: string
 }
 
 export type ParsedMetadataPropertiesKeys = keyof ParsedMetadataProperties
@@ -4092,6 +4093,7 @@ const metadataEmptyValues: ParsedMetadataProperties = {
   alt: '',
   src: '/',
   textSizing: 'fixed',
+  className: '',
 }
 
 type MetadataParsers = {
@@ -4102,6 +4104,7 @@ const metadataParsers: MetadataParsers = {
   alt: parseString,
   src: parseString,
   textSizing: parseTextSizing,
+  className: parseString,
 }
 
 type MetadataPrinters = {
@@ -4112,6 +4115,7 @@ const metadataPrinters: MetadataPrinters = {
   alt: printStringAsAttributeValue,
   src: printStringAsAttributeValue,
   textSizing: printTextSizing,
+  className: printStringAsAttributeValue,
 }
 
 interface ParsedLayoutProperties {

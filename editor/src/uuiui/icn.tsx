@@ -34,6 +34,24 @@ export interface IcnProps {
   onMouseLeave?: (event: React.MouseEvent<HTMLImageElement>) => void
 }
 
+/**
+ *  You really shouldn't be using this unless you absolutely need to. E.g.
+ *  you've got some logic that needs to be handled with CSS and a
+ *  backgroundImage URL. Otherwise, use `<Icons.NiceIconName />`.
+ */
+export function UNSAFE_getIconURL(
+  type: string,
+  color: IcnProps['color'] = 'darkgray',
+  category = 'semantic',
+  width: number = 16,
+  height: number = 16,
+): string {
+  const theme = 'light'
+  return getPossiblyHashedURL(
+    `/editor/icons/${theme}/${category}/${type}-${color}-${width}x${height}@2x.png`,
+  )
+}
+
 export const Icn = betterReactMemo(
   'Icn',
   ({
