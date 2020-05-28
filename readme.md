@@ -310,18 +310,6 @@ When VSCode asks you to pick a formatter, just pick Prettier. If it wouldn't ask
 },
 ```
 
-## Advanced options:
-
-See `package.json` for other npm commands. For support, contact @devtools on slack.
-
-## Packaging:
-
-To package up the app, use the following command line:
-
-```
-CSC_KEY_PASSWORD=<SECRET_CERT_PASSWORD> npm run package
-```
-
 ## Running the Server
 
 To run the server, checkout the [readme](server/readme.md) in the `/server` directory
