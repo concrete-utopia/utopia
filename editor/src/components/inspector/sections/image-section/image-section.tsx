@@ -9,11 +9,8 @@ import utils from '../../../../utils/utils'
 import { NewInspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { StringControl } from '../../controls/string-control'
-import { addOnUnsetValues } from '../../new-inspector/context-menu-items'
-import {
-  useInspectorMetadataInfo,
-  useIsSubSectionVisible,
-} from '../../new-inspector/new-inspector-hooks'
+import { addOnUnsetValues } from '../../common/context-menu-items'
+import { useInspectorMetadataInfo, useIsSubSectionVisible } from '../../common/property-path-hooks'
 import { GridRow } from '../../widgets/grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'

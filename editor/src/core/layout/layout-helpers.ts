@@ -9,7 +9,6 @@ import {
   UtopiaComponentProps,
 } from 'utopia-api'
 import { FullFrame } from '../../components/frame'
-import { getDefaultValueForPath } from '../../components/inspector/schema-stuff'
 import {
   applicative2Either,
   defaultEither,
@@ -43,8 +42,6 @@ import { createLayoutPropertyPath, pinnedPropForFramePoint } from './layout-help
 import { getLayoutProperty, getLayoutPropertyOr } from './getLayoutProperty'
 import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element-metadata-utils'
 import { EdgePosition } from '../../components/canvas/canvas-types'
-
-// TODO kill all getDefaultValueForPath calls
 
 export const PinLayoutHelpers = {
   setLayoutPropsToPinsWithFrame(
@@ -132,14 +129,14 @@ export const FlexLayoutHelpers = {
     props: JSXAttributes,
   ): 'row' | 'row-reverse' | 'column' | 'column-reverse' {
     return getLayoutPropertyOr(
-      getDefaultValueForPath('flex.container.flexDirection', 'base'), // TODO kill all getDefaultValueForPath calls
+      'row', // TODO read this value from spy
       'flexDirection',
       right(props),
     )
   },
   getFlexWrap: function(props: JSXAttributes): 'wrap' | 'wrap-reverse' | 'nowrap' {
     return getLayoutPropertyOr(
-      getDefaultValueForPath('flex.container.flexWrap', 'base'), // TODO kill all getDefaultValueForPath calls
+      'nowrap', // TODO read this value from spy
       'flexWrap',
       right(props),
     )

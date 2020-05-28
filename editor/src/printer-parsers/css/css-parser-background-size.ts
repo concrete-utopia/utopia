@@ -4,7 +4,7 @@ import {
   cssBGSize,
   CSSBGSizeCurlyBraceValueValue,
   cssDefault,
-} from '../../components/inspector/new-inspector/css-utils'
+} from '../../components/inspector/common/css-utils'
 import { Either, isRight, left, mapEither, traverseEither } from '../../core/shared/either'
 import { descriptionParseError, parseAlternative, Parser } from '../../utils/value-parser-utils'
 import {

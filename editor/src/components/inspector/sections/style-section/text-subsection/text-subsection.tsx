@@ -38,7 +38,7 @@ import {
   CSSTextDecorationLine,
   CSSFontStyle,
   cssNumber,
-} from '../../../new-inspector/css-utils'
+} from '../../../common/css-utils'
 import {
   InspectorCallbackContext,
   useInspectorStyleInfo,
@@ -47,10 +47,10 @@ import {
   useInspectorMetadataInfo,
   useInspectorInfo,
   stylePropPathMappingFn,
-} from '../../../new-inspector/new-inspector-hooks'
+} from '../../../common/property-path-hooks'
 import { filterScenes } from '../../../../../core/shared/template-path'
 import utils from '../../../../../utils/utils'
-import { addOnUnsetValues } from '../../../new-inspector/context-menu-items'
+import { addOnUnsetValues } from '../../../common/context-menu-items'
 import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { betterReactMemo } from 'uuiui-deps'
 

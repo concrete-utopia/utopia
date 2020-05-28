@@ -14,7 +14,7 @@ import {
   toggleShadow,
   toggleSimple,
   toggleBorder,
-} from './inspector/new-inspector/css-utils'
+} from './inspector/common/css-utils'
 import * as PP from '../core/shared/property-path'
 import Utils from '../utils/utils'
 

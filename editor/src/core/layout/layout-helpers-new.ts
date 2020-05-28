@@ -2,7 +2,7 @@ import { FramePin, FlexLength, LayoutSystem, FramePoint } from 'utopia-api'
 import { PropertyPath, PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { ElementInstanceMetadata } from '../shared/element-template'
-import { ParsedCSSProperties } from '../../components/inspector/new-inspector/css-utils'
+import { ParsedCSSProperties } from '../../components/inspector/common/css-utils'
 
 export type LayoutDimension = 'Width' | 'Height'
 

@@ -2,21 +2,19 @@ import * as React from 'react'
 import { PopupList } from 'uuiui'
 import { CheckboxInput } from '../../../../../uuiui'
 import { betterReactMemo, NewInspectorContextMenuWrapper } from '../../../../../uuiui-deps'
-import { ImageThumbnailControl } from '../../../common/image-thumbnail-control'
-import { StringControl } from '../../../controls/string-control'
-import { removeRow } from '../../../new-inspector/context-menu-items'
+import { removeRow } from '../../../common/context-menu-items'
 import {
-  CSSBackground,
+  CSSBackgroundLayer,
   CSSBackgroundLayers,
   CSSUnknownArrayItem,
   CSSURLFunctionBackgroundLayer,
   EmptyInputValue,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   isCSSImageURLBackgroundLayer,
-  CSSBackgroundLayer,
-} from '../../../new-inspector/css-utils'
-import { getIndexedSpliceArrayItem } from '../../../new-inspector/inspector-utils'
-import { stopPropagation } from '../../../utils'
+} from '../../../common/css-utils'
+import { getIndexedSpliceArrayItem, stopPropagation } from '../../../common/inspector-utils'
+import { ImageThumbnailControl } from '../../../controls/image-thumbnail-control'
+import { StringControl } from '../../../controls/string-control'
 import { GridRow } from '../../../widgets/grid-row'
 import {
   BackgroundLayerProps,

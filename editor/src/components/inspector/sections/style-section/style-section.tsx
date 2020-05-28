@@ -1,15 +1,13 @@
 import * as React from 'react'
-import { InspectorSectionHeader } from 'uuiui'
-import { InspectorPartProps } from '../../inspector-core'
-import { PropertyRow } from '../../widgets/property-row'
-import { BackgroundSubsection } from './background-subsection/background-subsection'
-import { ShadowSubsection } from './shadow-subsection/shadow-subsection'
-import { BorderSubsection } from './border-subsection/border-subsection'
-import { AutosizingTextSubsection } from './text-subsection/text-subsection'
-import { TextShadowSubsection } from './text-subsection/text-shadow-subsection'
-import { TransformSubsection } from './transform-subsection/transform-subsection'
 import { betterReactMemo } from 'uuiui-deps'
+import { InspectorPartProps } from '../../inspector'
+import { BackgroundSubsection } from './background-subsection/background-subsection'
+import { BorderSubsection } from './border-subsection/border-subsection'
 import { ContainerSubsection } from './containter-subsection/container-subsection'
+import { ShadowSubsection } from './shadow-subsection/shadow-subsection'
+import { TextShadowSubsection } from './text-subsection/text-shadow-subsection'
+import { AutosizingTextSubsection } from './text-subsection/text-subsection'
+import { TransformSubsection } from './transform-subsection/transform-subsection'
 
 export enum StyleSubsection {
   Layer = 'Layer',

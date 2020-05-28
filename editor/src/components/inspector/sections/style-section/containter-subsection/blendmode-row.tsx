@@ -7,7 +7,7 @@ import {
   NewInspectorContextMenuWrapper,
   SelectOption,
 } from 'uuiui-deps'
-import { useInspectorStyleInfo } from '../../../new-inspector/new-inspector-hooks'
+import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { GridRow } from '../../../widgets/grid-row'
 import { PopupList } from '../../../../../uuiui'
 

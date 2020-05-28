@@ -2,8 +2,9 @@ import React = require('react')
 import * as R from 'ramda'
 import { UtopiaTheme } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
-import { isRight } from '../../../../../core/shared/either'
-import { StringControl } from '../../../controls/string-control'
+import { UseSubmitValueFactory } from '../common/property-path-hooks'
+import { isRight } from '../../../core/shared/either'
+import { ControlStatus, ControlStyles } from '../common/control-status'
 import {
   CSSBackground,
   CSSBackgroundLayer,
@@ -18,10 +19,9 @@ import {
   printConicGradientBackgroundLayer,
   printLinearGradientBackgroundLayer,
   printRadialGradientBackgroundLayer,
-} from '../../../new-inspector/css-utils'
-import { UseSubmitValueFactory } from '../../../new-inspector/new-inspector-hooks'
-import { ControlStatus, ControlStyles } from '../../../widgets/control-status'
-import { BackgroundPicker } from './background-picker'
+} from '../common/css-utils'
+import { BackgroundPicker } from '../sections/style-section/background-subsection/background-picker'
+import { StringControl } from './string-control'
 
 export interface BackgroundThumbnailControlProps {
   value: CSSBackgroundLayer

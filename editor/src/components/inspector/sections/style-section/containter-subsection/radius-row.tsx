@@ -19,11 +19,8 @@ import {
   fallbackOnEmptyInputValueToCSSEmptyValue,
   framePinToCSSNumber,
   getCSSNumberValue,
-} from '../../../new-inspector/css-utils'
-import {
-  useInspectorLayoutInfo,
-  useInspectorStyleInfo,
-} from '../../../new-inspector/new-inspector-hooks'
+} from '../../../common/css-utils'
+import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { GridRow } from '../../../widgets/grid-row'
 
 function updateRadiusType(

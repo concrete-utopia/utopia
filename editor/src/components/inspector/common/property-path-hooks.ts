@@ -2,55 +2,13 @@ import * as deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import * as React from 'react'
 import { createContext, useContextSelector } from 'use-context-selector'
-import {
-  createLayoutPropertyPath,
-  LayoutProp,
-  StyleLayoutProp,
-} from '../../../core/layout/layout-helpers-new'
-import {
-  findElementAtPath,
-  MetadataUtils,
-  findJSXElementAtPath,
-} from '../../../core/model/element-metadata-utils'
-import {
-  getJSXElementNameLastPart,
-  isJSXElement,
-  JSXAttributes,
-  JSXElement,
-  UtopiaJSXComponent,
-  getJSXElementNameNoPathName,
-} from '../../../core/shared/element-template'
-import {
-  GetModifiableAttributeResult,
-  getModifiableJSXAttributeAtPath,
-  jsxSimpleAttributeToValue,
-  ModifiableAttribute,
-} from '../../../core/shared/jsx-attributes'
-import { isHTMLComponent, isUtopiaAPIComponent } from '../../../core/model/project-file-utils'
 import { PropertyControls } from 'utopia-api'
-import { PropertyPath } from '../../../core/shared/project-file-types'
-import {
-  defaultEither,
-  Either,
-  eitherToMaybe,
-  flatMapEither,
-  isRight,
-  left,
-  mapEither,
-  foldEither,
-  forEachRight,
-} from '../../../core/shared/either'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { default as Utils } from '../../../utils/utils'
 import {
   getOpenImportsFromState,
   getOpenUIJSFileKey,
   getOpenUtopiaJSXComponentsFromState,
-  getOpenUIJSFile,
-} from '../../editor/store/editor-state'
-import { useEditorState } from '../../editor/store/store-hook'
-import * as PP from '../../../core/shared/property-path'
-import * as TP from '../../../core/shared/template-path'
+} from '../../../components/editor/store/editor-state'
+import { useEditorState } from '../../../components/editor/store/store-hook'
 import {
   calculateMultiPropertyStatusForSelection,
   calculateMultiStringPropertyStatusForSelection,
@@ -59,10 +17,13 @@ import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
   PropertyStatus,
-} from '../widgets/control-status'
+} from '../../../components/inspector/common/control-status'
 import {
   emptyValues,
   isCSSUnknownFunctionParameters,
+  isLayoutPropDetectedInCSS,
+  maybePrintCSSValue,
+  parseAnyParseableValue,
   ParsedCSSProperties,
   ParsedCSSPropertiesKeys,
   ParsedCSSPropertiesKeysNoLayout,
@@ -71,25 +32,57 @@ import {
   ParsedProperties,
   ParsedPropertiesKeys,
   ParsedPropertiesValues,
-  isLayoutPropDetectedInCSS,
-  parseAnyParseableValue,
   printCSSValue,
-  maybePrintCSSValue,
-} from './css-utils'
-import { pluck, addUniquely, uniq } from '../../../core/shared/array-utils'
-import { optionalMap, forEachOptional } from '../../../core/shared/optional-utils'
-import { ParseResult } from '../../../utils/value-parser-utils'
+} from '../../../components/inspector/common/css-utils'
+import {
+  createLayoutPropertyPath,
+  LayoutProp,
+  StyleLayoutProp,
+} from '../../../core/layout/layout-helpers-new'
+import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { isHTMLComponent, isUtopiaAPIComponent } from '../../../core/model/project-file-utils'
 import {
   ParsedPropertyControls,
   parsePropertyControls,
 } from '../../../core/property-controls/property-controls-parser'
 import {
-  getDefaultPropsFromParsedControls,
-  findMissingDefaults,
   filterSpecialProps,
+  findMissingDefaults,
+  getDefaultPropsFromParsedControls,
+  removeIgnored,
 } from '../../../core/property-controls/property-controls-utils'
+import { addUniquely, pluck } from '../../../core/shared/array-utils'
+import {
+  defaultEither,
+  Either,
+  eitherToMaybe,
+  flatMapEither,
+  foldEither,
+  isRight,
+  left,
+  mapEither,
+} from '../../../core/shared/either'
+import {
+  getJSXElementNameLastPart,
+  getJSXElementNameNoPathName,
+  isJSXElement,
+  JSXAttributes,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
+import {
+  GetModifiableAttributeResult,
+  getModifiableJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
+  ModifiableAttribute,
+} from '../../../core/shared/jsx-attributes'
+import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
+import { PropertyPath } from '../../../core/shared/project-file-types'
+import * as PP from '../../../core/shared/property-path'
+import * as TP from '../../../core/shared/template-path'
 import { fastForEach } from '../../../core/shared/utils'
-import { removeIgnored } from '../../../core/property-controls/property-controls-utils'
+import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import { default as Utils } from '../../../utils/utils'
+import { ParseResult } from '../../../utils/value-parser-utils'
 
 export interface InspectorPropsContextData {
   editedMultiSelectedProps: readonly JSXAttributes[]

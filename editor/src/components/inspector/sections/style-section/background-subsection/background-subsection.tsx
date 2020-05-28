@@ -6,7 +6,7 @@ import utils from '../../../../../utils/utils'
 import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import { FakeUnknownArrayItem, UnknownArrayItem } from '../../../controls/unknown-array-item'
-import { addOnUnsetValues } from '../../../new-inspector/context-menu-items'
+import { addOnUnsetValues } from '../../../common/context-menu-items'
 import {
   CSSBackgroundLayer,
   CSSBackgroundLayers,
@@ -23,14 +23,14 @@ import {
   defaultSolidBackgroundLayer,
   isCSSBackgroundLayerWithBGSize,
   isCSSSolidBackgroundLayer,
-} from '../../../new-inspector/css-utils'
-import { useGetSubsectionHeaderStyle } from '../../../new-inspector/inspector-utils'
+} from '../../../common/css-utils'
+import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import {
   stylePropPathMappingFn,
   useInspectorInfo,
   useIsSubSectionVisible,
   useKeepReferenceEqualityIfPossible,
-} from '../../../new-inspector/new-inspector-hooks'
+} from '../../../common/property-path-hooks'
 import { ConicGradientBackgroundLayer } from './conic-gradient-layer'
 import { LinearGradientBackgroundLayer } from './linear-gradient-layer'
 import { RadialGradientBackgroundLayer } from './radial-gradient-layer'

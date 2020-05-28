@@ -10,10 +10,7 @@ import {
   Utils,
 } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
-import {
-  useInspectorStyleInfo,
-  useIsSubSectionVisible,
-} from '../../../new-inspector/new-inspector-hooks'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { NumberInput, useWrappedEmptyOnSubmitValue } from 'uuiui'
 
 const sliderControlOptions = {

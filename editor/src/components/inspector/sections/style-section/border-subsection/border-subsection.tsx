@@ -15,7 +15,7 @@ import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper
 import { ColorControl, StringColorControl } from '../../../controls/color-control'
 import { OptionControl } from '../../../controls/option-control'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
-import { addOnUnsetValues } from '../../../new-inspector/context-menu-items'
+import { addOnUnsetValues } from '../../../common/context-menu-items'
 import {
   CSSBorderWidthSplit,
   CSSBoxShadowAndBorderOrUnknown,
@@ -30,13 +30,10 @@ import {
   isCSSUnknownFunctionParameters,
   isEmptyInputValue,
   parseColor,
-} from '../../../new-inspector/css-utils'
-import { useGetSubsectionHeaderStyle } from '../../../new-inspector/inspector-utils'
-import {
-  useInspectorStyleInfo,
-  useIsSubSectionVisible,
-} from '../../../new-inspector/new-inspector-hooks'
-import { getControlStyles } from '../../../widgets/control-status'
+} from '../../../common/css-utils'
+import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
+import { getControlStyles } from '../../../common/control-status'
 import { GridRow } from '../../../widgets/grid-row'
 
 export function updateBorderEnabled(

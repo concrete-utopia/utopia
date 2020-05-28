@@ -17,9 +17,9 @@ import {
   EmptyInputValue,
   emptyURLFunctionBackgroundLayer,
   isEmptyInputValue,
-} from '../../../new-inspector/css-utils'
-import { UseSubmitValueFactory } from '../../../new-inspector/new-inspector-hooks'
-import { ControlStatus, ControlStyles } from '../../../widgets/control-status'
+} from '../../../common/css-utils'
+import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
+import { ControlStatus, ControlStyles } from '../../../common/control-status'
 
 export interface BackgroundLayerProps {
   value: CSSBackgroundLayer

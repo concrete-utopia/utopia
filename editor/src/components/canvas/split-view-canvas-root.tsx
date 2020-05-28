@@ -10,7 +10,7 @@ import * as EditorActions from '../editor/actions/actions'
 import { ConsoleLog } from '../editor/store/editor-state'
 
 import { useEditorState } from '../editor/store/store-hook'
-import { NewInspectorEntryPoint } from '../inspector/new-inspector'
+import { NewInspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
 

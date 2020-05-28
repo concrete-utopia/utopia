@@ -11,16 +11,12 @@ import { LocalRectangle } from '../../../../../core/shared/math-utils'
 import Utils from '../../../../../utils/utils'
 import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { FullFrame, getFullFrame } from '../../../../frame'
-import { unsetPropertyMenuItem } from '../../../new-inspector/context-menu-items'
-import {
-  CSSNumber,
-  cssNumberToFramePin,
-  framePinToCSSNumber,
-} from '../../../new-inspector/css-utils'
-import { FramePinsInfo, usePinToggling } from '../../../new-inspector/layout-hooks'
-import { useInspectorLayoutInfo } from '../../../new-inspector/new-inspector-hooks'
+import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
+import { CSSNumber, cssNumberToFramePin, framePinToCSSNumber } from '../../../common/css-utils'
+import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-path-hooks'
+import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { GridRow } from '../../../widgets/grid-row'
-import { PinControl, PinHeightControl, PinWidthControl } from '../../../widgets/pin-control'
+import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { ResolvedLayoutProps } from '../layout-section'
 import { SelfLayoutTab } from './self-layout-subsection'

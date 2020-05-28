@@ -2,14 +2,14 @@ import * as React from 'react'
 import { ChainedNumberInput, CheckboxInput, FlexRow, PopupList } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { removeRow } from '../../../new-inspector/context-menu-items'
+import { removeRow } from '../../../common/context-menu-items'
 import {
   CSSUnknownArrayItem,
   CSSConicGradientBackgroundLayer,
   CSSBackgroundLayer,
-} from '../../../new-inspector/css-utils'
-import { getIndexedSpliceArrayItem } from '../../../new-inspector/inspector-utils'
-import { stopPropagation } from '../../../utils'
+} from '../../../common/css-utils'
+import { getIndexedSpliceArrayItem } from '../../../common/inspector-utils'
+import { stopPropagation } from '../../../common/inspector-utils'
 import { GridRow } from '../../../widgets/grid-row'
 import {
   BackgroundLayerProps,
@@ -20,7 +20,7 @@ import {
   getIndexedUpdateRadialOrConicGradientCenterX,
   getIndexedUpdateRadialOrConicGradientCenterY,
 } from './background-layer-helpers'
-import { BackgroundSolidOrGradientThumbnailControl } from './background-solid-or-gradient-thumbnail-control'
+import { BackgroundSolidOrGradientThumbnailControl } from '../../../controls/background-solid-or-gradient-thumbnail-control'
 
 interface ConicGradientBackgroundLayerProps extends BackgroundLayerProps {
   value: CSSConicGradientBackgroundLayer

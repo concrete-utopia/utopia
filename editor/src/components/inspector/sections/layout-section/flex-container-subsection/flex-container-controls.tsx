@@ -6,19 +6,16 @@ import {
   ChainedNumberInput,
   useWrappedEmptyOnSubmitValue,
 } from 'uuiui'
-import { ControlStatus, ControlStyles, getControlStyles } from '../../../widgets/control-status'
+import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { FlexDirection } from 'utopia-api'
 import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { SliderControl, SliderControlOptions } from '../../../controls/slider-control'
-import {
-  useInspectorLayoutInfo,
-  useInspectorStyleInfo,
-} from '../../../new-inspector/new-inspector-hooks'
+import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { betterReactMemo, OnSubmitValueOrEmpty } from 'uuiui-deps'
 import { SelectOption } from '../../../controls/select-control'
 import { OptionsType } from 'react-select'
-import { unsetPropertyMenuItem } from '../../../new-inspector/context-menu-items'
+import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { GridRow } from '../../../widgets/grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'

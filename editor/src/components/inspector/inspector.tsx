@@ -2,6 +2,12 @@ import * as ObjectPath from 'object-path'
 import * as React from 'react'
 import { colorTheme, Icn } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
+import {
+  InspectorCallbackContext,
+  InspectorPropsContext,
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from './common/property-path-hooks'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
 import {
@@ -58,20 +64,9 @@ import {
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { InspectorPartProps } from './inspector-core'
-import { CSSPosition } from './new-inspector/css-utils'
-import { HeaderSection, HeaderSectionCoreProps } from './new-inspector/header-section'
-import {
-  InspectorCallbackContext,
-  InspectorPropsContext,
-  useKeepReferenceEqualityIfPossible,
-  useKeepShallowReferenceEquality,
-} from './new-inspector/new-inspector-hooks'
-import {
-  TargetSelectorSection,
-  TargetSelectorSectionProps,
-} from './new-inspector/target-selector-section'
+import { CSSPosition } from './common/css-utils'
 import { ComponentSection } from './sections/component-section/component-section'
+import { HeaderSection, HeaderSectionCoreProps } from './sections/header-section/header-section'
 import { ElementPathElement } from './sections/header-section/element-path'
 import { LayoutWrapperCoreProps } from './sections/header-section/layout-wrapper-section'
 import { NameRowProps } from './sections/header-section/name-row'
@@ -86,6 +81,10 @@ import { WarningSubsection } from './sections/layout-section/warning-subsection/
 import { SceneSection } from './sections/scene-inspector/scene-section'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { StyleSection } from './sections/style-section/style-section'
+import {
+  TargetSelectorSection,
+  TargetSelectorSectionProps,
+} from './sections/target-selector-section'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -98,6 +97,10 @@ export interface InspectorModel {
   parentFlexAxis: 'horizontal' | 'vertical' | null
 }
 
+export interface InspectorPartProps<T> {
+  input: T
+  onSubmitValue: (output: T, paths: Array<PropertyPath>) => void
+}
 export interface InspectorProps
   extends InspectorPartProps<InspectorModel>,
     HeaderSectionCoreProps,

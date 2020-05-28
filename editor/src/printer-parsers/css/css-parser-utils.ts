@@ -10,7 +10,7 @@ import {
   ParsedCurlyBrace,
   parsedCurlyBrace,
   LengthUnit,
-} from '../../components/inspector/new-inspector/css-utils'
+} from '../../components/inspector/common/css-utils'
 import { Either, isRight, left, right, Right, sequenceEither } from '../../core/shared/either'
 import * as csstreemissing from '../../missing-types/css-tree'
 import {

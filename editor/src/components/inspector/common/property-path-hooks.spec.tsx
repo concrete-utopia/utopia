@@ -20,7 +20,7 @@ import {
   cssBackgroundLayerArrayToBackgroundImagesAndColor,
   backgroundLonghandPaths,
 } from '../sections/style-section/background-subsection/background-subsection'
-import { ControlStatus } from '../widgets/control-status'
+import { ControlStatus } from './control-status'
 import {
   blackHexCSSColor,
   CSSBackgroundLayers,
@@ -40,7 +40,7 @@ import {
   useCallbackFactory,
   useInspectorInfo,
   useInspectorStyleInfo,
-} from './new-inspector-hooks'
+} from './property-path-hooks'
 import { UtopiaUtils } from 'utopia-api'
 import { betterReactMemo } from 'uuiui-deps'
 
