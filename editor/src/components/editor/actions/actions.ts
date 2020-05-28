@@ -3140,7 +3140,7 @@ export const UPDATE_FNS = {
           npmDependency(depName, deps[depName]),
         ) // TODO: this should REPLACE the dependencies and not add them
         fetchNodeModules(npmDependenciesArr).then((nodeModules) =>
-          dispatch([updateNodeModulesContents(nodeModules)]),
+          dispatch([updateNodeModulesContents(nodeModules, true)]),
         )
 
         // bundleAndDispatchNpmPackages(dispatch, deps)
@@ -3831,13 +3831,18 @@ export const UPDATE_FNS = {
     action: UpdateNodeModulesContents,
     editor: EditorState,
   ): EditorState => {
-    const updatedEditor = produce(editor, (draft) => {
-      draft.nodeModules.files = {
-        ...draft.nodeModules.files,
-        ...action.contentsToAdd,
-      }
-    })
-    return updatedEditor
+    if (action.startFromScratch) {
+      return produce(editor, (draft) => {
+        draft.nodeModules.files = action.contentsToAdd
+      })
+    } else {
+      return produce(editor, (draft) => {
+        draft.nodeModules.files = {
+          ...draft.nodeModules.files,
+          ...action.contentsToAdd,
+        }
+      })
+    }
   },
   UPDATE_PACKAGE_JSON: (action: UpdatePackageJson, editor: EditorState): EditorState => {
     const dependencies = action.dependencies.reduce((acc: NpmDependencies, curr: NpmDependency) => {
@@ -4099,7 +4104,7 @@ export async function newProject(
   }
 
   const require = getRequireFn(
-    (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd)]),
+    (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, false)]),
     nodeModules,
   )
 
@@ -4168,7 +4173,7 @@ export async function load(
   }
 
   const require = getRequireFn(
-    (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd)]),
+    (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, false)]),
     nodeModules,
   )
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
@@ -5170,10 +5175,14 @@ export function resetPropToDefault(
   }
 }
 
-export function updateNodeModulesContents(contentsToAdd: NodeModules): UpdateNodeModulesContents {
+export function updateNodeModulesContents(
+  contentsToAdd: NodeModules,
+  startFromScratch: boolean,
+): UpdateNodeModulesContents {
   return {
     action: 'UPDATE_NODE_MODULES_CONTENTS',
     contentsToAdd: contentsToAdd,
+    startFromScratch: startFromScratch,
   }
 }
 

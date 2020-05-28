@@ -14,6 +14,7 @@ import {
   TemplatePath,
   isUIJSFile,
   CodeFile,
+  esCodeFile,
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
@@ -747,12 +748,18 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     expect(mockDispatch).toBeCalledWith([{ action: 'POP_TOAST' }], 'everyone')
   })
 
-  it('action UPDATE_NODE_MODULES', () => {
+  it('action UPDATE_NODE_MODULES incrementally', () => {
     const { editor, derivedState } = createEditorStates('/src/app.ui.js')
     const mockDispatch = jest.fn()
+    editor.nodeModules = {
+      skipDeepFreeze: true,
+      files: {
+        '/node_modules/example.js': esCodeFile('nothing to see here', null),
+      },
+    }
 
     const nodeModules = createNodeModules(fileWithImports.contents)
-    const action = updateNodeModulesContents(nodeModules)
+    const action = updateNodeModulesContents(nodeModules, false)
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
@@ -763,6 +770,29 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       mockDispatch,
     )
 
+    expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeDefined()
+    expect(
+      updatedEditor.nodeModules.files['/node_modules/mypackage/code-using-module-exports.js'],
+    ).toEqual(nodeModules['/node_modules/mypackage/code-using-module-exports.js'])
+  })
+
+  it('action UPDATE_NODE_MODULES from scratch', () => {
+    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const mockDispatch = jest.fn()
+
+    const nodeModules = createNodeModules(fileWithImports.contents)
+    const action = updateNodeModulesContents(nodeModules, true)
+    const updatedEditor = runLocalEditorAction(
+      editor,
+      derivedState,
+      notLoggedIn,
+      workers,
+      action,
+      History.init(editor, derivedState),
+      mockDispatch,
+    )
+
+    expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeUndefined()
     expect(updatedEditor.nodeModules.files).toEqual(nodeModules)
   })
 

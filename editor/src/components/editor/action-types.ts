@@ -713,6 +713,7 @@ export interface ResetPropToDefault {
 export interface UpdateNodeModulesContents {
   action: 'UPDATE_NODE_MODULES_CONTENTS'
   contentsToAdd: NodeModules
+  startFromScratch: boolean
 }
 
 export interface UpdatePackageJson {

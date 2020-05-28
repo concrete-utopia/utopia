@@ -253,7 +253,21 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       // TODO: implement removing dependency
       // bundleAndDispatchNpmPackages(this.props.editorDispatch, depsFromModel).then(() => {
       //   this.setState({ dependencyLoadingStatus: 'not-loading' })
-      // })
+      // }))
+
+      const npmDependenciesArr = Utils.stripNulls(
+        Object.keys(depsFromModel).map((depName) =>
+          depsFromModel![depName] == null ? null : npmDependency(depName, depsFromModel![depName]),
+        ),
+      )
+
+      this.props.editorDispatch([EditorActions.updatePackageJson(npmDependenciesArr)])
+
+      fetchNodeModules(npmDependenciesArr).then((nodeModules) => {
+        this.props.editorDispatch([EditorActions.updateNodeModulesContents(nodeModules, true)])
+        this.setState({ dependencyLoadingStatus: 'not-loading' })
+      })
+
       this.setState({ dependencyLoadingStatus: 'removing' })
 
       this.setState((prevState) => {
@@ -371,7 +385,9 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
             fetchNodeModules([npmDependency(editedPackageName, editedPackageVersion!)])
               .then((nodeModules) => {
                 this.packagesUpdateSuccess(editedPackageName)
-                this.props.editorDispatch([EditorActions.updateNodeModulesContents(nodeModules)])
+                this.props.editorDispatch([
+                  EditorActions.updateNodeModulesContents(nodeModules, false),
+                ])
               })
               .catch((e) => this.packagesUpdateFailed(e, editedPackageName)) // TODO: temporary, just to test packager response
 

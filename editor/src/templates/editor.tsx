@@ -127,7 +127,7 @@ export class Editor {
               msg.exportsInfo,
               getRequireFn(
                 (newModules) =>
-                  this.boundDispatch([EditorActions.updateNodeModulesContents(newModules)]),
+                  this.boundDispatch([EditorActions.updateNodeModulesContents(newModules, false)]),
                 this.storedState.editor.nodeModules.files,
               ),
               msg.fullBuild,
