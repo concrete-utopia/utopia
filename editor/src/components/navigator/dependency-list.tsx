@@ -11,7 +11,7 @@ import {
   SquareButton,
   Title,
 } from 'uuiui'
-import { NpmDependencies } from '../../core/shared/npm-dependency-types'
+import { NpmDependencies, npmDependency } from '../../core/shared/npm-dependency-types'
 import { ProjectFile } from '../../core/shared/project-file-types'
 import { betterReactMemo } from '../../utils/react-performance'
 import Utils from '../../utils/utils'
@@ -20,13 +20,13 @@ import { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/actions'
 import { clearSelection, pushToast } from '../editor/actions/actions'
 import {
-  bundleAndDispatchNpmPackages,
   dependenciesFromPackageJson,
   findLatestVersion,
 } from '../editor/npm-dependency/npm-dependency'
 import { packageJsonFileFromModel } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
+import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -250,9 +250,10 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     if (depsFromModel != null) {
       depsFromModel = R.omit([key], depsFromModel)
 
-      bundleAndDispatchNpmPackages(this.props.editorDispatch, depsFromModel).then(() => {
-        this.setState({ dependencyLoadingStatus: 'not-loading' })
-      })
+      // TODO: implement removing dependency
+      // bundleAndDispatchNpmPackages(this.props.editorDispatch, depsFromModel).then(() => {
+      //   this.setState({ dependencyLoadingStatus: 'not-loading' })
+      // })
       this.setState({ dependencyLoadingStatus: 'removing' })
 
       this.setState((prevState) => {
@@ -361,17 +362,18 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
               'loading',
               dependencyBeingEdited,
             )
-
-            bundleAndDispatchNpmPackages(
-              this.props.editorDispatch,
-              dependenciesFromPackageDetails(updatedPackages),
+            const updatedNpmDeps = Utils.stripNulls(
+              updatedPackages.map((pack) =>
+                pack.version == null ? null : npmDependency(pack.name, pack.version),
+              ),
             )
-              .then(() => {
+            this.props.editorDispatch([EditorActions.updatePackageJson(updatedNpmDeps)])
+            fetchNodeModules([npmDependency(editedPackageName, editedPackageVersion!)])
+              .then((nodeModules) => {
                 this.packagesUpdateSuccess(editedPackageName)
+                this.props.editorDispatch([EditorActions.updateNodeModulesContents(nodeModules)])
               })
-              .catch((e) => {
-                this.packagesUpdateFailed(e, editedPackageName)
-              })
+              .catch((e) => this.packagesUpdateFailed(e, editedPackageName)) // TODO: temporary, just to test packager response
 
             return {
               dependencyLoadingStatus: 'adding',

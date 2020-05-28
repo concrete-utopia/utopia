@@ -34,6 +34,7 @@ import { ErrorMessage } from '../../shared/error-messages'
 import { fastForEach } from '../../shared/utils'
 import { getCodeFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
+import { transformCssSystemModule } from '../../shared/css-style-loader'
 
 const TS_LIB_FILES: { [key: string]: string } = {
   'lib.d.ts': libfile,
@@ -694,7 +695,7 @@ function watch(
       const content = fs.readFileSync(filename, 'utf8')
       return {
         errors: [],
-        transpiledCode: transformCss(filename, content),
+        transpiledCode: transformCssSystemModule(filename, content),
         sourceMap: null,
       }
     } else {
@@ -768,33 +769,4 @@ export function isJsOrTsFile(filename: string) {
 
 export function isTsLib(filename: string) {
   return TS_LIB_FILES[filename] != null
-}
-
-function transformCss(filename: string, content: string): string {
-  return `
-System.register([], function(exports_1, context_1) {
-  'use strict'
-  
-  return {
-    setters: [],
-    execute: function execute() {
-      const filename = ${JSON.stringify(filename)}
-      const content = ${JSON.stringify(content)}
-      const maybeExistingTag = document.getElementById(filename);
-      if (maybeExistingTag != null) {
-        if (maybeExistingTag.textContent === content) {
-          return;
-        } else {
-          maybeExistingTag.parentElement.removeChild(maybeExistingTag);
-        }
-      }
-      const styleTag = document.createElement("style");
-      styleTag.type = "text/css";
-      styleTag.id = filename;
-      styleTag.appendChild(document.createTextNode(content));
-      document.querySelector("head").appendChild(styleTag);
-    },
-  }
-})
-`
 }

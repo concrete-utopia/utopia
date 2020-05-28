@@ -1,0 +1,17 @@
+{
+  "default": "/lib/index.min.js",
+  "files": [
+    {
+      "name": "/dist/style.css",
+      "hash": "p6hu1Xny9U7cg4VC/rNfJFlFczbp/7QIfQbRiMVoIlU=",
+      "time": "1985-10-26T08:15:00.000Z",
+      "size": 724363
+    },
+    {
+      "name": "/dist/antd.css",
+      "hash": "p6hu1Xny9U7cg4VC/rNfJFlFczbp/7QIfQbRiMVoIlU=",
+      "time": "1985-10-26T08:15:00.000Z",
+      "size": 724363
+    }
+  ]
+}

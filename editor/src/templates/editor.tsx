@@ -36,7 +36,7 @@ import {
   startPreviewConnectedMonitoring,
 } from '../components/editor/preview-report-handler'
 import { getLoginState } from '../components/editor/server'
-import { editorDispatch } from '../components/editor/store/dispatch'
+import { editorDispatch, simpleStringifyActions } from '../components/editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
@@ -61,6 +61,7 @@ import '../utils/react-shim'
 import Utils from '../utils/utils'
 import { HeartbeatRequestMessage } from '../core/workers/watchdog-worker'
 import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
+import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -124,7 +125,11 @@ export class Editor {
             const codeResultCache = generateCodeResultCache(
               msg.buildResult,
               msg.exportsInfo,
-              this.storedState.editor.resolvedDependencies.npmRequireFn,
+              getRequireFn(
+                (newModules) =>
+                  this.boundDispatch([EditorActions.updateNodeModulesContents(newModules)]),
+                this.storedState.editor.nodeModules.files,
+              ),
               msg.fullBuild,
             )
 
@@ -230,7 +235,6 @@ export class Editor {
   dispatch(dispatchedActions: readonly EditorAction[]) {
     const runDispatch = () => {
       const result = editorDispatch(this.boundDispatch, dispatchedActions, this.storedState)
-
       this.storedState = result
 
       if (!result.nothingChanged) {

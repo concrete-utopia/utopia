@@ -103,6 +103,8 @@ import {
   NpmDependencies,
   RequireFn,
   TypeDefinitions,
+  npmDependency,
+  NpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import {
   InstancePath,
@@ -123,6 +125,9 @@ import {
   UIJSFile,
   importAlias,
   isAssetFile,
+  ESCodeFile,
+  esCodeFile,
+  NodeModules,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -288,7 +293,6 @@ import {
   UpdateFromWorker,
   UpdateJSXElementName,
   UpdateKeysPressed,
-  UpdateNpmDependencies,
   UpdatePreviewConnected,
   UpdateThumbnailGenerated,
   WrapInLayoutable,
@@ -299,6 +303,8 @@ import {
   PopToast,
   InsertDroppedImage,
   ResetPropToDefault,
+  UpdateNodeModulesContents,
+  UpdatePackageJson,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -312,11 +318,10 @@ import {
 import * as History from '../history'
 import { StateHistory } from '../history'
 import {
-  bundleAndDispatchNpmPackages,
-  bundleNpmPackages,
   dependenciesFromModel,
   dependenciesFromPackageJsonContents,
   updateDependenciesInEditorState,
+  updateDependenciesInPackageJson,
 } from '../npm-dependency/npm-dependency'
 import { updateRemoteThumbnail } from '../persistence'
 import { deleteAssetFile, saveAsset as saveAssetToServer, updateAssetFileName } from '../server'
@@ -390,6 +395,11 @@ import {
 import { Notice } from '../../common/notices'
 import { dropExtension } from '../../../core/shared/string-utils'
 import { objectMap } from '../../../core/shared/object-utils'
+import {
+  getRequireFn,
+  getDependencyTypeDefinitions,
+} from '../../../core/es-modules/package-manager/package-manager'
+import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 
 export function clearSelection(): EditorAction {
   return {
@@ -775,10 +785,10 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     domMetadataKILLME: poppedEditor.domMetadataKILLME,
     jsxMetadataKILLME: poppedEditor.jsxMetadataKILLME,
     projectContents: poppedEditor.projectContents,
+    nodeModules: currentEditor.nodeModules,
     openFiles: poppedEditor.openFiles,
     cursorPositions: poppedEditor.cursorPositions,
     selectedFile: poppedEditor.selectedFile,
-    resolvedDependencies: currentEditor.resolvedDependencies,
     codeResultCache: currentEditor.codeResultCache,
     selectedViews: poppedEditor.selectedViews,
     highlightedViews: poppedEditor.highlightedViews,
@@ -1193,12 +1203,15 @@ export const UPDATE_FNS = {
   NEW: (action: NewProject, oldEditor: EditorModel, workers: UtopiaTsWorkers): EditorModel => {
     const newPersistentModel = applyMigrations(action.persistentModel)
     const newModel = editorModelFromPersistentModel(newPersistentModel)
-    workers.sendInitMessage(action.npmBundleResult.typeDefinitions, newModel.projectContents)
+    workers.sendInitMessage(
+      getDependencyTypeDefinitions(action.nodeModules),
+      newModel.projectContents,
+    )
     return {
       ...loadModel(newModel, oldEditor),
-      resolvedDependencies: {
-        npmRequireFn: action.npmBundleResult.require,
-        typeDefinitions: action.npmBundleResult.typeDefinitions,
+      nodeModules: {
+        skipDeepFreeze: true,
+        files: action.nodeModules,
       },
       codeResultCache: action.codeResultCache,
     }
@@ -1209,9 +1222,9 @@ export const UPDATE_FNS = {
       ...editorModelFromPersistentModel(migratedModel),
       projectName: action.title,
       id: action.projectId,
-      resolvedDependencies: {
-        npmRequireFn: action.npmBundleResult.require,
-        typeDefinitions: action.npmBundleResult.typeDefinitions,
+      nodeModules: {
+        skipDeepFreeze: true,
+        files: action.nodeModules,
       },
       codeResultCache: action.codeResultCache,
       safeMode: action.safeMode,
@@ -2856,41 +2869,6 @@ export const UPDATE_FNS = {
       id: action.id,
     }
   },
-  UPDATE_NPM_DEPENDENCIES: (
-    action: UpdateNpmDependencies,
-    editor: EditorModel,
-    workers: UtopiaTsWorkers,
-  ): EditorModel => {
-    const withResolvedDependencies: EditorModel = {
-      ...editor,
-      resolvedDependencies: {
-        npmRequireFn: action.npmRequireFn,
-        typeDefinitions: action.typeDefinitions,
-      },
-    }
-
-    workers.sendInitMessage(action.typeDefinitions, editor.projectContents)
-    const depsFromModel = dependenciesFromModel(editor)
-    // Try to avoid recreating the value.
-    let updatedEditorState = withResolvedDependencies
-    if (!Utils.shallowEqual(depsFromModel, action.npmDependencies)) {
-      updatedEditorState = updateDependenciesInEditorState(
-        withResolvedDependencies,
-        action.npmDependencies,
-      )
-    }
-    return {
-      ...updatedEditorState,
-      codeResultCache: {
-        skipDeepFreeze: true,
-        cache: {},
-        requireFn: action.npmRequireFn,
-        exportsInfo: [], // TODO double check
-        propertyControlsInfo: {},
-        error: null,
-      },
-    }
-  },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {
     return {
       ...editor,
@@ -2900,7 +2878,6 @@ export const UPDATE_FNS = {
           ...(editor.codeResultCache == null ? {} : editor.codeResultCache.cache),
           ...action.codeResultCache.cache,
         },
-        requireFn: action.codeResultCache.requireFn,
         exportsInfo: action.codeResultCache.exportsInfo,
         propertyControlsInfo: action.codeResultCache.propertyControlsInfo,
         error: action.codeResultCache.error,
@@ -3159,7 +3136,14 @@ export const UPDATE_FNS = {
     if (action.filePath === '/package.json' && isCodeFile(file)) {
       const deps = dependenciesFromPackageJsonContents(file.fileContents)
       if (deps != null) {
-        bundleAndDispatchNpmPackages(dispatch, deps)
+        const npmDependenciesArr = Object.keys(deps).map((depName) =>
+          npmDependency(depName, deps[depName]),
+        ) // TODO: this should REPLACE the dependencies and not add them
+        fetchNodeModules(npmDependenciesArr).then((nodeModules) =>
+          dispatch([updateNodeModulesContents(nodeModules)]),
+        )
+
+        // bundleAndDispatchNpmPackages(dispatch, deps)
       }
     }
 
@@ -3843,6 +3827,27 @@ export const UPDATE_FNS = {
       return editor
     }
   },
+  UPDATE_NODE_MODULES_CONTENTS: (
+    action: UpdateNodeModulesContents,
+    editor: EditorState,
+  ): EditorState => {
+    const updatedEditor = produce(editor, (draft) => {
+      draft.nodeModules.files = {
+        ...draft.nodeModules.files,
+        ...action.contentsToAdd,
+      }
+    })
+    return updatedEditor
+  },
+  UPDATE_PACKAGE_JSON: (action: UpdatePackageJson, editor: EditorState): EditorState => {
+    const dependencies = action.dependencies.reduce((acc: NpmDependencies, curr: NpmDependency) => {
+      return {
+        ...acc,
+        [curr.name]: curr.version,
+      }
+    }, {} as NpmDependencies)
+    return updateDependenciesInEditorState(editor, dependencies)
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -4080,18 +4085,28 @@ export async function newProject(
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
   const npmDependencies = dependenciesFromModel(defaultPersistentModel) || {}
-  let bundlerResult: NpmBundleResult
+  let nodeModules: NodeModules = {}
   try {
-    bundlerResult = await bundleNpmPackages(npmDependencies, true)
+    const npmDependenciesArr = Object.keys(npmDependencies).map((depName) =>
+      npmDependency(depName, npmDependencies[depName]),
+    )
+    nodeModules = await fetchNodeModules(npmDependenciesArr)
+    // bundlerResult = await bundleNpmPackages(npmDependencies, true)
   } catch (e) {
     // note: we rely on the fact that bundleNpmPackages called with {} dependencies won't attempt to fetch
-    bundlerResult = await bundleNpmPackages({}, true)
+    // TODO: do we have to do something here?
+    // bundlerResult = await bundleNpmPackages({}, true)
   }
+
+  const require = getRequireFn(
+    (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd)]),
+    nodeModules,
+  )
 
   const codeResultCache = generateCodeResultCache(
     SampleFileBuildResult,
     SampleFileBundledExportsInfo,
-    bundlerResult.require,
+    require,
     true,
   )
 
@@ -4100,7 +4115,7 @@ export async function newProject(
     [
       {
         action: 'NEW',
-        npmBundleResult: bundlerResult,
+        nodeModules: nodeModules,
         persistentModel: defaultPersistentModel,
         codeResultCache: codeResultCache,
       },
@@ -4135,36 +4150,45 @@ export async function load(
   // this action is now async!
 
   const npmDependencies = dependenciesFromModel(model)
-  let bundlerResult: NpmBundleResult
+  let nodeModules: NodeModules = {}
   try {
     if (npmDependencies == null) {
-      bundlerResult = await bundleNpmPackages({}, true)
+      // TODO: do we have to do something in this case?
+      // bundlerResult = await bundleNpmPackages({}, true)
     } else {
-      bundlerResult = await bundleNpmPackages(npmDependencies, true)
+      const npmDependenciesArr = Object.keys(npmDependencies).map((depName) =>
+        npmDependency(depName, npmDependencies[depName]),
+      )
+      nodeModules = await fetchNodeModules(npmDependenciesArr)
     }
   } catch (e) {
+    // TODO: do we have to do something in this case?
     // note: we rely on the fact that bundleNpmPackages called with {} dependencies won't attempt to fetch
-    bundlerResult = await bundleNpmPackages({}, true)
+    // bundlerResult = await bundleNpmPackages({}, true)
   }
+
+  const require = getRequireFn(
+    (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd)]),
+    nodeModules,
+  )
+  const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
 
   let codeResultCache: CodeResultCache = {
     skipDeepFreeze: true,
     cache: {},
-    requireFn: Utils.NO_OP,
     exportsInfo: [],
     propertyControlsInfo: {},
     error: null,
   }
   if (model.exportsInfo.length > 0) {
-    workers.sendInitMessage(bundlerResult.typeDefinitions, model.projectContents)
-    codeResultCache = generateCodeResultCache(
-      model.buildResult,
-      model.exportsInfo,
-      bundlerResult.require,
-      true,
-    )
+    workers.sendInitMessage(typeDefinitions, model.projectContents)
+    codeResultCache = generateCodeResultCache(model.buildResult, model.exportsInfo, require, true)
   } else {
-    const loadedResult = await loadCodeResult(workers, bundlerResult, model.projectContents)
+    const loadedResult = await loadCodeResult(
+      workers,
+      { require: require, typeDefinitions: typeDefinitions },
+      model.projectContents,
+    )
     if (loadedResult != null) {
       codeResultCache = loadedResult
     }
@@ -4182,7 +4206,7 @@ export async function load(
       {
         action: 'LOAD',
         model: model,
-        npmBundleResult: bundlerResult,
+        nodeModules: nodeModules,
         codeResultCache: codeResultCache,
         title: title,
         projectId: projectId,
@@ -4745,19 +4769,6 @@ export function updateCodeResultCache(codeResultCache: CodeResultCache): UpdateC
   }
 }
 
-export function updateNpmDependencies(
-  packages: NpmDependencies,
-  require: RequireFn,
-  typeDefinitions: TypeDefinitions,
-): UpdateNpmDependencies {
-  return {
-    action: 'UPDATE_NPM_DEPENDENCIES',
-    npmDependencies: packages,
-    npmRequireFn: require,
-    typeDefinitions: typeDefinitions,
-  }
-}
-
 export function setCodeEditorVisibility(value: boolean): SetCodeEditorVisibility {
   return {
     action: 'SET_CODE_EDITOR_VISIBILITY',
@@ -5156,5 +5167,19 @@ export function resetPropToDefault(
     action: 'RESET_PROP_TO_DEFAULT',
     target: target,
     path: path,
+  }
+}
+
+export function updateNodeModulesContents(contentsToAdd: NodeModules): UpdateNodeModulesContents {
+  return {
+    action: 'UPDATE_NODE_MODULES_CONTENTS',
+    contentsToAdd: contentsToAdd,
+  }
+}
+
+export function updatePackageJson(dependencies: Array<NpmDependency>): UpdatePackageJson {
+  return {
+    action: 'UPDATE_PACKAGE_JSON',
+    dependencies: dependencies,
   }
 }

@@ -211,6 +211,54 @@ export function isCodeOrUiJsFile(file: ProjectFile): file is CodeFile | UIJSFile
   return file.type === 'CODE_FILE' || file.type === 'UI_JS_FILE'
 }
 
+interface EvalResult {
+  exports: {}
+}
+
+export interface ESCodeFile {
+  type: 'ES_CODE_FILE'
+  fileContents: string
+  evalResultCache: EvalResult | null
+}
+
+export function esCodeFile(fileContents: string, evalResultCache: EvalResult | null): ESCodeFile {
+  return {
+    type: 'ES_CODE_FILE',
+    fileContents: fileContents,
+    evalResultCache: evalResultCache,
+  }
+}
+
+export function isEsCodeFile(projectFile: any): projectFile is ESCodeFile {
+  return projectFile != null && projectFile.type === 'ES_CODE_FILE'
+}
+
+export interface ESRemoteDependencyPlaceholder {
+  type: 'ES_REMOTE_DEPENDENCY_PLACEHOLDER'
+  packagename: string
+  version: string
+  downloadStarted: boolean
+}
+
+export function esRemoteDependencyPlaceholder(
+  packageName: string,
+  version: string,
+  downloadStarted: boolean,
+): ESRemoteDependencyPlaceholder {
+  return {
+    type: 'ES_REMOTE_DEPENDENCY_PLACEHOLDER',
+    packagename: packageName,
+    version: version,
+    downloadStarted: downloadStarted,
+  }
+}
+
+export function isEsRemoteDependencyPlaceholder(
+  projectFile: any,
+): projectFile is ESRemoteDependencyPlaceholder {
+  return projectFile != null && projectFile.type === 'ES_REMOTE_DEPENDENCY_PLACEHOLDER'
+}
+
 export interface ImageFile {
   type: 'IMAGE_FILE'
   imageType?: string
@@ -236,8 +284,12 @@ export type ProjectFile = UIJSFile | CodeFile | ImageFile | Directory | AssetFil
 
 export type ProjectFileType = ProjectFile['type']
 
+export type NodeModules = {
+  [filepath: string]: ESCodeFile | ESRemoteDependencyPlaceholder // TODO maybe ESCodeFile is too strict, eventually we want to have ProjectFile here
+}
+
 // Key here is the full filename.
-export type ProjectContents = { [key: string]: ProjectFile }
+export type ProjectContents = { [filepath: string]: ProjectFile }
 
 export type ElementOriginType =
   // Mostly self explanatory, this is a scene.
