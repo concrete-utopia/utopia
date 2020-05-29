@@ -65,11 +65,9 @@ function useLayoutSystemData() {
   const dispatch = useEditorState((store) => store.dispatch)
 
   const onLayoutSystemChange = React.useCallback(
-    (layoutSystem: LayoutSystem | 'flow' | 'grid') => {
+    (layoutSystem: LayoutSystem | 'grid') => {
       switch (layoutSystem) {
-        case 'flow':
-          // TODO switching to 'flow' system is not implemented, for now does nothing
-          break
+        case LayoutSystem.Flow:
         case LayoutSystem.Flex:
         case LayoutSystem.PinSystem:
           dispatch([switchLayoutSystem(layoutSystem)], 'everyone')

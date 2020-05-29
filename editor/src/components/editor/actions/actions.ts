@@ -66,6 +66,7 @@ import {
   setJSXValueAtPath,
   unsetJSXValueAtPath,
   getModifiableJSXAttributeAtPath,
+  unsetJSXValuesAtPaths,
 } from '../../../core/shared/jsx-attributes'
 import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
 import {
@@ -526,62 +527,111 @@ function switchAndUpdateFrames(
   const originalComponents = getOpenUtopiaJSXComponentsFromState(editor)
 
   let withUpdatedLayoutSystem: EditorModel = editor
-  if (layoutSystem === LayoutSystem.Flex) {
-    withUpdatedLayoutSystem = setPropertyOnTarget(withUpdatedLayoutSystem, target, (attributes) => {
-      return unsetJSXValueAtPath(attributes, layoutSystemPath)
-    })
-    withUpdatedLayoutSystem = setPropertyOnTarget(withUpdatedLayoutSystem, target, (attributes) => {
-      return setJSXValueAtPath(attributes, styleDisplayPath, jsxAttributeValue('flex'))
-    })
-  } else {
-    withUpdatedLayoutSystem = setPropertyOnTarget(withUpdatedLayoutSystem, target, (attributes) => {
-      return unsetJSXValueAtPath(attributes, styleDisplayPath)
-    })
-    withUpdatedLayoutSystem = setPropertyOnTarget(
-      withUpdatedLayoutSystem,
-      target,
-      LayoutHelpers.setLayoutAttribute(layoutSystem),
-    )
+  switch (layoutSystem) {
+    case LayoutSystem.Flex:
+      withUpdatedLayoutSystem = setPropertyOnTarget(
+        withUpdatedLayoutSystem,
+        target,
+        (attributes) => {
+          return unsetJSXValueAtPath(attributes, layoutSystemPath)
+        },
+      )
+      withUpdatedLayoutSystem = setPropertyOnTarget(
+        withUpdatedLayoutSystem,
+        target,
+        (attributes) => {
+          return setJSXValueAtPath(attributes, styleDisplayPath, jsxAttributeValue('flex'))
+        },
+      )
+      break
+    case LayoutSystem.Flow:
+      const propsToRemove = [
+        layoutSystemPath,
+        createLayoutPropertyPath('PinnedLeft'),
+        createLayoutPropertyPath('PinnedTop'),
+        createLayoutPropertyPath('PinnedRight'),
+        createLayoutPropertyPath('PinnedBottom'),
+        createLayoutPropertyPath('PinnedCenterX'),
+        createLayoutPropertyPath('PinnedCenterY'),
+        createLayoutPropertyPath('position'),
+      ]
+      withUpdatedLayoutSystem = setPropertyOnTarget(
+        withUpdatedLayoutSystem,
+        target,
+        (attributes) => {
+          return unsetJSXValuesAtPaths(attributes, propsToRemove)
+        },
+      )
+      break
+    case LayoutSystem.PinSystem:
+    case LayoutSystem.Group:
+    default:
+      withUpdatedLayoutSystem = setPropertyOnTarget(
+        withUpdatedLayoutSystem,
+        target,
+        (attributes) => {
+          return unsetJSXValueAtPath(attributes, styleDisplayPath)
+        },
+      )
+      withUpdatedLayoutSystem = setPropertyOnTarget(
+        withUpdatedLayoutSystem,
+        target,
+        LayoutHelpers.setLayoutAttribute(layoutSystem),
+      )
   }
 
   // This "fixes" an issue where inside `setCanvasFramesInnerNew` looks at the layout type in the
   // metadata which causes a problem as it's effectively out of date after the above call.
-  if (layoutSystem === LayoutSystem.Flex) {
-    withUpdatedLayoutSystem = {
-      ...withUpdatedLayoutSystem,
-      jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-        withUpdatedLayoutSystem.jsxMetadataKILLME,
-        target,
-        layoutSystemPath,
-      ),
-    }
-    withUpdatedLayoutSystem = {
-      ...withUpdatedLayoutSystem,
-      jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-        withUpdatedLayoutSystem.jsxMetadataKILLME,
-        target,
-        styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-        'flex',
-      ),
-    }
-  } else {
-    withUpdatedLayoutSystem = {
-      ...withUpdatedLayoutSystem,
-      jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-        withUpdatedLayoutSystem.jsxMetadataKILLME,
-        target,
-        styleDisplayPath,
-      ),
-    }
-    withUpdatedLayoutSystem = {
-      ...withUpdatedLayoutSystem,
-      jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-        withUpdatedLayoutSystem.jsxMetadataKILLME,
-        target,
-        styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-        layoutSystem,
-      ),
-    }
+  switch (layoutSystem) {
+    case LayoutSystem.Flex:
+      withUpdatedLayoutSystem = {
+        ...withUpdatedLayoutSystem,
+        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadataKILLME,
+          target,
+          layoutSystemPath,
+        ),
+      }
+      withUpdatedLayoutSystem = {
+        ...withUpdatedLayoutSystem,
+        jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadataKILLME,
+          target,
+          styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
+          'flex',
+        ),
+      }
+      break
+    case LayoutSystem.Flow:
+      withUpdatedLayoutSystem = {
+        ...withUpdatedLayoutSystem,
+        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadataKILLME,
+          target,
+          layoutSystemPath,
+        ),
+      }
+      break
+    case LayoutSystem.PinSystem:
+    case LayoutSystem.Group:
+    default:
+      withUpdatedLayoutSystem = {
+        ...withUpdatedLayoutSystem,
+        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadataKILLME,
+          target,
+          styleDisplayPath,
+        ),
+      }
+      withUpdatedLayoutSystem = {
+        ...withUpdatedLayoutSystem,
+        jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadataKILLME,
+          target,
+          styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
+          layoutSystem,
+        ),
+      }
   }
 
   function layoutSystemToSet(): DetectedLayoutSystem {
@@ -591,6 +641,7 @@ function switchAndUpdateFrames(
       case LayoutSystem.PinSystem:
         return 'nonfixed'
       case LayoutSystem.Group:
+      default:
         return 'flow'
     }
   }
@@ -615,11 +666,14 @@ function switchAndUpdateFrames(
   }, withUpdatedLayoutSystem)
 
   let framesAndTargets: Array<PinOrFlexFrameChange> = []
-  const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-    target,
-    withChildrenUpdated.jsxMetadataKILLME,
-  )
-  framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
+  if (layoutSystem !== LayoutSystem.Flow) {
+    const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      target,
+      withChildrenUpdated.jsxMetadataKILLME,
+    )
+    framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
+  }
+
   Utils.fastForEach(targetMetadata.children, (child) => {
     if (child.globalFrame != null) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it
