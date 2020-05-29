@@ -9,7 +9,8 @@
 
 module Utopia.Web.Executors.Common where
 
-import           Control.Lens
+import Data.Binary.Builder
+import           Control.Lens hiding ((.=))
 import           Control.Monad.Catch         hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
 import           Data.Aeson
@@ -44,6 +45,7 @@ import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Utopia.Web.Websockets.Types
 import           Web.Cookie
+import Utopia.Web.Packager.NPM
 
 {-|
   When running the 'ServerMonad' type this is the type that we will
@@ -229,3 +231,16 @@ emptyAssetsCaches _assetPathDetails = do
   _hashCache <- newIORef mempty
   _assetResultCache <- newIORef $ AssetResultCache (toJSON $ object []) mempty
   return $ AssetsCaches{..}
+
+contentText :: Text
+contentText = "content"
+
+contentsText :: Text
+contentsText = "contents"
+
+getPackagerContent :: Text -> Text -> IO BL.ByteString
+getPackagerContent javascriptPackageName javascriptPackageVersion = do
+  filesAndContent <- withInstalledProject javascriptPackageName javascriptPackageVersion getRelevantFiles
+  let contents = foldMap (\(filename, fileContent) -> M.singleton filename (M.singleton contentText fileContent)) filesAndContent
+  let encodingResult = toEncoding $ M.singleton contentsText contents
+  return $ toLazyByteString $ fromEncoding encodingResult

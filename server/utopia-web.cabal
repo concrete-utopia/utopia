@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8b3ec12769c9b902104802b97bdae549218b7552dbae6557016c0939c3ccaf86
+-- hash: b7d40ee807cd086cecb3609198ba1e33f4ba8de7a747983ebad76521ca184273
 
 name:           utopia-web
 version:        0.1.0.4
@@ -38,6 +38,7 @@ executable utopia-web
       Utopia.Web.Executors.Production
       Utopia.Web.JSON
       Utopia.Web.Metrics
+      Utopia.Web.Packager.NPM
       Utopia.Web.Proxy
       Utopia.Web.Redis
       Utopia.Web.Servant
@@ -90,10 +91,12 @@ executable utopia-web
     , mtl
     , network-uri
     , path-pieces
+    , pathwalk
     , persistent <2.10.0
     , persistent-postgresql
     , persistent-sqlite
     , persistent-template
+    , process
     , protolude
     , resource-pool
     , servant ==0.15
@@ -105,6 +108,7 @@ executable utopia-web
     , serversession
     , serversession-backend-persistent
     , split
+    , temporary
     , text
     , time
     , transformers
@@ -125,6 +129,7 @@ test-suite utopia-web-test
   other-modules:
       Test.Utopia.Web.Endpoints
       Test.Utopia.Web.Executors.Test
+      Test.Utopia.Web.Packager.NPM
       Main
       Utopia.Web.Assets
       Utopia.Web.Auth
@@ -141,6 +146,7 @@ test-suite utopia-web-test
       Utopia.Web.Executors.Production
       Utopia.Web.JSON
       Utopia.Web.Metrics
+      Utopia.Web.Packager.NPM
       Utopia.Web.Proxy
       Utopia.Web.Redis
       Utopia.Web.Servant
@@ -195,11 +201,13 @@ test-suite utopia-web-test
     , mtl
     , network-uri
     , path-pieces
+    , pathwalk
     , persistent <2.10.0
     , persistent-postgresql
     , persistent-sqlite
     , persistent-template
     , port-utils
+    , process
     , protolude
     , resource-pool
     , servant ==0.15
@@ -216,6 +224,7 @@ test-suite utopia-web-test
     , tasty-hedgehog
     , tasty-hspec
     , tasty-hunit
+    , temporary
     , text
     , time
     , transformers
