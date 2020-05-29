@@ -1,12 +1,7 @@
 import * as json5 from 'json5'
 import * as R from 'ramda'
-import * as ImportedReact from 'react'
-import * as ImportedReactDOM from 'react-dom'
 import { MapLike } from 'typescript'
-import * as UtopiaAPI from 'utopia-api'
-import * as UUIUI from 'uuiui'
-import * as UUIUIDeps from 'uuiui-deps'
-import { PACKAGER_ENTRY_POINT, UTOPIA_BACKEND } from '../../../common/env-vars'
+import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { sameCodeFile } from '../../../core/model/project-file-utils'
 import {
   NpmBundleResult,
