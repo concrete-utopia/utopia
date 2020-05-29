@@ -4,7 +4,7 @@ import { v4 as UUID } from 'uuid'
 import { PackageType } from '../core/shared/project-file-types'
 import { AnyJson, JsonMap } from '../missing-types/json'
 import { JsonSchema, PropSchema } from '../missing-types/json-schema'
-import { ControlStyles } from '../components/inspector/widgets/control-status'
+import { ControlStyles } from '../components/inspector/common/control-status'
 import { NormalisedFrame } from 'utopia-api'
 import { fastForEach, NO_OP } from '../core/shared/utils'
 import {

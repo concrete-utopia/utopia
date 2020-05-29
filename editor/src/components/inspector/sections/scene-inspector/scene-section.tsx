@@ -1,54 +1,47 @@
 import * as React from 'react'
-import * as TP from '../../../../core/shared/template-path'
-import * as PP from '../../../../core/shared/property-path'
+import { FramePoint, NormalisedFrame } from 'utopia-api'
 import {
   InspectorSectionHeader,
   InspectorSubsectionHeader,
-  useWrappedEmptyOnSubmitValue,
   NumberInput,
   PopupList,
+  SimpleNumberInput,
+  useWrappedEmptyOnSubmitValue,
 } from 'uuiui'
-import { SelectControl, SelectOption } from '../../controls/select-control'
-import { ControlStatus, getControlStyles } from '../../widgets/control-status'
-import { PropertyRow } from '../../widgets/property-row'
-import { useEditorState } from '../../../editor/store/store-hook'
-import {
-  getOpenUtopiaJSXComponentsFromState,
-  getOpenFilename,
-} from '../../../editor/store/editor-state'
-import { NormalisedFrame, FramePoint } from 'utopia-api'
-import { SimpleNumberInput } from 'uuiui'
-import { ComponentSection } from '../component-section/component-section'
-import { SceneContainerSections } from './scene-container-section'
 import { betterReactMemo } from 'uuiui-deps'
+import {
+  InspectorInfo,
+  useInspectorInfoSimpleUntyped,
+  useInspectorLayoutInfo,
+  useKeepReferenceEqualityIfPossible,
+} from '../../common/property-path-hooks'
 import { pinnedPropForFramePoint } from '../../../../core/layout/layout-helpers-new'
 import {
-  EmptyInputValue,
-  fallbackOnEmptyInputValueToCSSEmptyValue,
-  CSSNumber,
-} from '../../new-inspector/css-utils'
-import { pinLabels } from '../layout-section/self-layout-subsection/gigantic-size-pins-subsection'
-import {
-  useInspectorLayoutInfo,
-  InspectorInfo,
-  useInspectorMetadataInfo,
-  useInspectorInfoSimpleUntyped,
-  useKeepReferenceEqualityIfPossible,
-} from '../../new-inspector/new-inspector-hooks'
-import {
-  PathForSceneComponent,
   BakedInStoryboardVariableName,
+  PathForSceneComponent,
 } from '../../../../core/model/scene-utils'
-import {
-  jsxAttributeOtherJavaScript,
-  isJSXAttributeOtherJavaScript,
-} from '../../../../core/shared/element-template'
-import { getWarningIconProps } from '../../../../uuiui/warning-icon'
 import {
   defaultPropertiesForComponentInFile,
   findMissingDefaultsAndGetWarning,
 } from '../../../../core/property-controls/property-controls-utils'
+import {
+  isJSXAttributeOtherJavaScript,
+  jsxAttributeOtherJavaScript,
+} from '../../../../core/shared/element-template'
 import { dropExtension } from '../../../../core/shared/string-utils'
+import { getWarningIconProps } from '../../../../uuiui/warning-icon'
+import {
+  getOpenFilename,
+  getOpenUtopiaJSXComponentsFromState,
+} from '../../../editor/store/editor-state'
+import { useEditorState } from '../../../editor/store/store-hook'
+import { ControlStatus, getControlStyles } from '../../common/control-status'
+import { CSSNumber } from '../../common/css-utils'
+import { SelectOption } from '../../controls/select-control'
+import { PropertyRow } from '../../widgets/property-row'
+import { ComponentSection } from '../component-section/component-section'
+import { pinLabels } from '../layout-section/self-layout-subsection/gigantic-size-pins-subsection'
+import { SceneContainerSections } from './scene-container-section'
 
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)

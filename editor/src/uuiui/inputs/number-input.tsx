@@ -1,47 +1,36 @@
 /** @jsx jsx */
 import { jsx, ObjectInterpolation } from '@emotion/core'
-import * as Chroma from 'chroma-js'
-import * as React from 'react'
-import { Icn, IcnProps } from '../icn'
-import { UtopiaTheme, colorTheme } from '../styles/theme'
 import * as classNames from 'classnames'
-import { FlexRow } from '../widgets/layout/flex-row'
+import * as React from 'react'
 import {
-  CSSUtils,
-  EitherUtils,
+  betterReactMemo,
+  ControlStatus,
   CSSCursor,
+  EitherUtils,
+  getControlStyles,
   OnSubmitValue,
   OnSubmitValueOrEmpty,
   usePropControlledState,
-  ControlStatusUtils,
-  ReactPerformance,
 } from 'uuiui-deps'
-import { getControlStatusTransparentBackgroundColorCSS } from '../../components/inspector/widgets/control-status'
 import {
+  cssNumber,
+  CSSNumber,
+  cssNumberToString,
+  CSSNumberType,
+  CSSNumberUnit,
   emptyInputValue,
   EmptyInputValue,
+  getCSSNumberUnit,
   isEmptyInputValue,
-} from '../../components/inspector/new-inspector/css-utils'
-import { OnUnsetValues } from '../../components/inspector/new-inspector/new-inspector-hooks'
-import { clampValue } from '../../core/shared/math-utils'
-import { BoxCorners, ChainedType, getBorderRadiusStyles, InspectorInput } from './base-input'
-
-const { getControlStyles } = ControlStatusUtils
-const { isRight, mapEither, unwrapEither } = EitherUtils
-const { betterReactMemo } = ReactPerformance
-const {
-  cssNumber,
   parseCSSNumber,
   setCSSNumberValue,
-  cssNumberToString,
-  getCSSNumberUnit,
-} = CSSUtils
-
-type ControlStatus = ControlStatusUtils.ControlStatus
-type CSSNumber = CSSUtils.CSSNumber
-type CSSNumberType = CSSUtils.CSSNumberType
-type CSSNumberUnit = CSSUtils.CSSNumberUnit
-type Either<L, R> = EitherUtils.Either<L, R>
+} from '../../components/inspector/common/css-utils'
+import { OnUnsetValues } from '../../components/inspector/common/property-path-hooks'
+import { clampValue } from '../../core/shared/math-utils'
+import { Icn, IcnProps } from '../icn'
+import { colorTheme, UtopiaTheme } from '../styles/theme'
+import { FlexRow } from '../widgets/layout/flex-row'
+import { BoxCorners, ChainedType, getBorderRadiusStyles, InspectorInput } from './base-input'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
@@ -64,9 +53,9 @@ const parseDisplayValue = (
   input: string,
   numberType: CSSNumberType,
   defaultUnit: CSSNumberUnit | null,
-): Either<string, CSSNumber> => {
+): EitherUtils.Either<string, CSSNumber> => {
   const parsedInput = parseCSSNumber(input, numberType)
-  return mapEither((value: CSSNumber) => {
+  return EitherUtils.mapEither((value: CSSNumber) => {
     if (value.unit == null) {
       return cssNumber(value.value, defaultUnit)
     } else {
@@ -126,7 +115,6 @@ interface AbstractNumberInputProps<T extends CSSNumber | number> {
   stepSize?: number
   incrementControls?: boolean
   chained?: ChainedType
-  textAlign?: 'left' | 'right' | 'center'
   height?: number
   roundCorners?: BoxCorners
   submitOnEnter?: boolean
@@ -162,7 +150,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     stepSize: unscaledStepSize,
     incrementControls = true,
     chained = 'not-chained',
-    textAlign = 'left',
     height = UtopiaTheme.layout.inputHeight.default,
     roundCorners = 'all',
     submitOnEnter = true,
@@ -178,10 +165,10 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const controlStyles = getControlStyles(controlStatus)
-    const backgroundImage = React.useMemo(() => {
-      const colorCss = getControlStatusTransparentBackgroundColorCSS(controlStatus)
-      return `linear-gradient(to right, ${colorCss} 0, ${controlStyles.backgroundColor} 6px)`
-    }, [controlStatus, controlStyles])
+    const backgroundImage = React.useMemo(
+      () => `linear-gradient(to right, transparent 0, ${controlStyles.backgroundColor} 6px)`,
+      [controlStyles],
+    )
 
     const [mixed, setMixed] = React.useState<boolean>(controlStyles.mixed)
     const [showValue, setShowValue] = React.useState<boolean>(showContent)
@@ -198,8 +185,8 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       [defaultUnitToHide, setStateValueDirectly],
     )
     const parsedStateValue = parseDisplayValue(stateValue, numberType, defaultUnitToHide)
-    const parsedStateValueUnit = unwrapEither(
-      mapEither((v) => v.unit, parsedStateValue),
+    const parsedStateValueUnit = EitherUtils.unwrapEither(
+      EitherUtils.mapEither((v) => v.unit, parsedStateValue),
       null,
     )
 
@@ -473,7 +460,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             if (stateValue === '') {
               onSubmitValue(emptyInputValue())
               forceStateValueToUpdateFromProps()
-            } else if (isRight(parsedStateValue)) {
+            } else if (EitherUtils.isRight(parsedStateValue)) {
               onSubmitValue(parsedStateValue.value)
             } else {
               forceStateValueToUpdateFromProps()
@@ -680,7 +667,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                   width: '100%',
                   height: '100%',
                   color: controlStyles.secondaryColor,
-                  textAlign: 'center',
                 }}
               >
                 {typeof labelInner === 'object' && 'type' in labelInner ? (
@@ -866,7 +852,6 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
               return (
                 <NumberInput
                   id={`${idPrefix}-${i}`}
-                  textAlign='center'
                   {...props}
                   chained='first'
                   roundCorners='left'
@@ -877,7 +862,6 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
               return (
                 <NumberInput
                   id={`${idPrefix}-${i}`}
-                  textAlign='center'
                   {...props}
                   chained='last'
                   roundCorners='right'
@@ -888,7 +872,6 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
               return (
                 <NumberInput
                   id={`${idPrefix}-${i}`}
-                  textAlign='center'
                   {...props}
                   chained='middle'
                   roundCorners='none'

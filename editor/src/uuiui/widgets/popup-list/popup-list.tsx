@@ -10,18 +10,23 @@ import Select, {
   MenuListComponentProps,
   OptionProps,
   OptionsType,
-  ValueType,
   SingleValueProps,
+  ValueType,
 } from 'react-select'
 import { MenuPortalProps } from 'react-select/src/components/Menu'
 import { styleFn } from 'react-select/src/styles'
-import { CommonUtils, SelectOption, ControlStatusUtils, betterReactMemo } from 'uuiui-deps'
+import {
+  betterReactMemo,
+  CommonUtils,
+  ControlStyles,
+  getControlStyles,
+  SelectOption,
+} from 'uuiui-deps'
 import { Icn, IcnProps, IcnSpacer } from '../../icn'
 import { colorTheme, UtopiaTheme } from '../../styles/theme'
 import { FlexRow } from '../layout/flex-row'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
-type ControlStyles = ControlStatusUtils.ControlStyles
 
 interface PopupListProps {
   id?: string
@@ -478,7 +483,7 @@ export const PopupList = betterReactMemo<PopupListProps>(
     onSubmitValue,
     style,
     containerMode = 'default',
-    controlStyles = ControlStatusUtils.getControlStyles('simple'),
+    controlStyles = getControlStyles('simple'),
     disabled = !controlStyles.interactive,
   }) => {
     const selectOnSubmitValue = React.useCallback(

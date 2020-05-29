@@ -25,7 +25,7 @@ import {
   parseCSSLength,
   CSSPosition,
   positionValues,
-} from '../inspector/new-inspector/css-utils'
+} from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {

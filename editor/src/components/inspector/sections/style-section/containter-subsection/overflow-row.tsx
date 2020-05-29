@@ -4,12 +4,12 @@ import { PropertyLabel } from '../../../widgets/property-label'
 import {
   betterReactMemo,
   CSSUtils,
-  NewInspectorContextMenuWrapper,
-  NewInspectorContextMenuItems,
+  InspectorContextMenuWrapper,
+  InspectorContextMenuItems,
   Utils,
 } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
-import { useInspectorStyleInfo } from '../../../new-inspector/new-inspector-hooks'
+import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 
 const overflowProp = [PP.create(['style', 'overflow'])]
@@ -36,14 +36,14 @@ export const OverflowRow = betterReactMemo('OverflowRow', () => {
     onUnsetValues,
   } = useInspectorStyleInfo('overflow')
 
-  const overflowContextMenuItems = NewInspectorContextMenuItems.optionalAddOnUnsetValues(
+  const overflowContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     value != null,
     ['overflow'],
     onUnsetValues,
   )
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id='overflow-row-context-menu'
       data={null}
       items={overflowContextMenuItems}
@@ -60,6 +60,6 @@ export const OverflowRow = betterReactMemo('OverflowRow', () => {
           controlStyles={controlStyles}
         />
       </GridRow>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })

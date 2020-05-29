@@ -11,9 +11,9 @@ import { EditorDispatch } from '../../editor/action-types'
 import { EditorStore, modifyOpenJsxElementAtStaticPath } from '../../editor/store/editor-state'
 import { EditorStateContext, EditorStateContextData } from '../../editor/store/store-hook'
 import * as TP from '../../../core/shared/template-path'
-import { InspectorContextProvider } from '../new-inspector'
-import { getControlStyles, PropertyStatus } from '../widgets/control-status'
-import { InspectorInfo } from './new-inspector-hooks'
+import { InspectorContextProvider } from '../inspector'
+import { getControlStyles, PropertyStatus } from './control-status'
+import { InspectorInfo } from './property-path-hooks'
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file'
 
 type UpdateFunctionHelpers = {

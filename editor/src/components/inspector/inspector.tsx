@@ -58,21 +58,16 @@ import {
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { InspectorPartProps } from './inspector-core'
-import { CSSPosition } from './new-inspector/css-utils'
-import { HeaderSection, HeaderSectionCoreProps } from './new-inspector/header-section'
+import { CSSPosition } from './common/css-utils'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
-} from './new-inspector/new-inspector-hooks'
-import {
-  TargetSelectorSection,
-  TargetSelectorSectionProps,
-} from './new-inspector/target-selector-section'
+} from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { ElementPathElement } from './sections/header-section/element-path'
+import { HeaderSection, HeaderSectionCoreProps } from './sections/header-section/header-section'
 import { LayoutWrapperCoreProps } from './sections/header-section/layout-wrapper-section'
 import { NameRowProps } from './sections/header-section/name-row'
 import {
@@ -85,8 +80,12 @@ import { LayoutSection, ResolvedLayoutProps } from './sections/layout-section/la
 import { WarningSubsection } from './sections/layout-section/warning-subsection/warning-subsection'
 import { SceneSection } from './sections/scene-inspector/scene-section'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
-import { StyleSection } from './sections/style-section/style-section'
 import { ClassNameControl } from './sections/style-section/className-subsection/className-control'
+import { StyleSection } from './sections/style-section/style-section'
+import {
+  TargetSelectorSection,
+  TargetSelectorSectionProps,
+} from './sections/target-selector-section'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -99,6 +98,10 @@ export interface InspectorModel {
   parentFlexAxis: 'horizontal' | 'vertical' | null
 }
 
+export interface InspectorPartProps<T> {
+  input: T
+  onSubmitValue: (output: T, paths: Array<PropertyPath>) => void
+}
 export interface InspectorProps
   extends InspectorPartProps<InspectorModel>,
     HeaderSectionCoreProps,
@@ -406,7 +409,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
 
   return (
     <div
-      id='new-inspector'
+      id='inspector'
       style={{
         height: '100%',
         width: '100%',
@@ -421,7 +424,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     </div>
   )
 })
-Inspector.displayName = 'NewInspector'
+Inspector.displayName = 'Inspector'
 
 function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
   let result: Array<InstancePath> = []
@@ -436,8 +439,8 @@ function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
-export const NewInspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
-  'NewInspectorEntryPoint',
+export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
+  'InspectorEntryPoint',
   () => {
     const {
       dispatch,
@@ -707,7 +710,7 @@ export const NewInspectorEntryPoint: React.FunctionComponent<{}> = betterReactMe
       [dispatch, refElementsToTargetForUpdates],
     )
 
-    const newInspector = isUIJSFile ? (
+    const inspector = isUIJSFile ? (
       <InspectorContextProvider targetPath={selectedTarget}>
         <Inspector
           input={inspectorModelMemoized}
@@ -727,10 +730,10 @@ export const NewInspectorEntryPoint: React.FunctionComponent<{}> = betterReactMe
       </InspectorContextProvider>
     ) : null
 
-    return newInspector
+    return inspector
   },
 )
-NewInspectorEntryPoint.displayName = 'NewInspectorEntryPoint'
+InspectorEntryPoint.displayName = 'InspectorEntryPoint'
 
 export const InspectorContextProvider = betterReactMemo<{
   targetPath: Array<string>

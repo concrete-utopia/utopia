@@ -11,11 +11,11 @@ import {
   isHSL,
   isKeyword,
   parseAlphaFromCSSColor,
-} from '../new-inspector/css-utils'
+} from '../common/css-utils'
 import { inspectorEdgePadding } from '../sections/style-section/background-subsection/background-picker'
-import { ControlStyleDefaults } from '../widgets/control-status'
+import { ControlStyleDefaults } from '../common/control-status'
 import { InspectorModal } from '../widgets/inspector-modal'
-import { checkerboardBackground } from '../utils'
+import { checkerboardBackground } from '../common/inspector-utils'
 
 export interface ColorPickerProps extends ColorPickerInnerProps {
   closePopup: () => void

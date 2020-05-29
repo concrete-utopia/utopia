@@ -1,20 +1,20 @@
 import * as React from 'react'
 import { colorTheme, UtopiaTheme, Section, H2, Icons, UtopiaStyles } from 'uuiui'
 import { FlexRow } from 'uuiui'
-import { ExpandableIndicator } from '../../navigator/navigator-item/expandable-indicator'
-import * as TP from '../../../core/shared/template-path'
+import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
+import * as TP from '../../../../core/shared/template-path'
 import { betterReactMemo } from 'uuiui-deps'
-import { JSXElementName, jsxElementName } from '../../../core/shared/element-template'
-import { useToggle, SeeMoreButton, SeeMoreHOC } from '../widgets/see-more'
-import { GridRow } from '../widgets/grid-row'
-import { NameRow, NameRowInnerProps } from '../sections/header-section/name-row'
-import { ElementPathButtons, ElementPathProps } from '../sections/header-section/element-path'
+import { JSXElementName, jsxElementName } from '../../../../core/shared/element-template'
+import { useToggle, SeeMoreButton, SeeMoreHOC } from '../../widgets/see-more'
+import { GridRow } from '../../widgets/grid-row'
+import { NameRow, NameRowInnerProps } from './name-row'
+import { ElementPathButtons, ElementPathProps } from './element-path'
 import {
   LayoutWrapperRow,
   LayoutWrapperCoreProps,
   LayoutWrapperRowProps,
-} from '../sections/header-section/layout-wrapper-section'
-import { allHtmlElements } from '../../../utils/html-elements'
+} from './layout-wrapper-section'
+import { allHtmlElements } from '../../../../utils/html-elements'
 
 export interface HeaderSectionCoreProps extends ElementPathProps {
   onElementTypeChange: (value: JSXElementName) => void

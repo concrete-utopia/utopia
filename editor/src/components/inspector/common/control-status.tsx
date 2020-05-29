@@ -1,4 +1,3 @@
-import * as Chroma from 'chroma-js'
 import * as deepEqual from 'fast-deep-equal'
 import { UtopiaUtils } from 'utopia-api'
 import { colorTheme } from 'uuiui'
@@ -13,8 +12,8 @@ import {
 import { GetModifiableAttributeResult } from '../../../core/shared/jsx-attributes'
 import { isLeft, isRight } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
-import { ParsedPropertiesKeys } from '../new-inspector/css-utils'
-import { MultiselectAtProps, MultiselectAtStringProps } from '../new-inspector/new-inspector-hooks'
+import { ParsedPropertiesKeys } from './css-utils'
+import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
 
 export interface ControlStyles {
   fontStyle: string
@@ -101,7 +100,7 @@ export type ControlStatus =
   | 'multiselect-unoverwritable' // at least one element in the multi-selection is 'unoverwritable'
   | 'multiselect-disabled' // at least one element in the multi-selection is 'disabled' or 'set-disabled'
 
-export const AllControlStatuses: Array<ControlStatus> = [
+const AllControlStatuses: Array<ControlStatus> = [
   'off',
   'simple',
   'simple-disabled',
@@ -308,23 +307,7 @@ export function getControlStyles(controlStatus: ControlStatus): ControlStyles {
   return controlStylesByStatus[controlStatus]
 }
 
-const transparentBackgroundColorsCSS: { [key: string]: string } = Utils.mapArrayToDictionary(
-  AllControlStatuses,
-  (status: ControlStatus) => status,
-  (status: ControlStatus): string => {
-    return Chroma(getControlStyles(status).backgroundColor)
-      .alpha(0)
-      .css()
-  },
-)
-
-export function getControlStatusTransparentBackgroundColorCSS(
-  controlStatus: ControlStatus,
-): string {
-  return transparentBackgroundColorsCSS[controlStatus]
-}
-
-export interface SinglePropertyStatus {
+interface SinglePropertyStatus {
   controlled: boolean
   set: boolean
   overwritable: boolean
@@ -431,7 +414,7 @@ function isOverwritable(modifiableAttributeResult: GetModifiableAttributeResult)
   return isRight(modifiableAttributeResult)
 }
 
-export function calculatePropertyStatusPerProperty(
+function calculatePropertyStatusPerProperty(
   modifiableAttributeResult: GetModifiableAttributeResult,
 ): SinglePropertyStatus {
   return {
@@ -442,7 +425,7 @@ export function calculatePropertyStatusPerProperty(
 }
 
 // TODO MEMOIZE ME!
-export function calculatePropertyStatusForSelection(
+function calculatePropertyStatusForSelection(
   modifiableAttributeResult: ReadonlyArray<GetModifiableAttributeResult>,
 ): PropertyStatus {
   const selectionLength = modifiableAttributeResult.length

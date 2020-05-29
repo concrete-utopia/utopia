@@ -5,7 +5,7 @@ import {
   ControlStatus,
   getControlStyles,
   ControlStyles,
-} from '../../components/inspector/widgets/control-status'
+} from '../../components/inspector/common/control-status'
 import { UtopiaTheme } from '../styles/theme'
 import { betterReactMemo } from 'uuiui-deps'
 

@@ -1,11 +1,11 @@
 import * as React from 'react'
 import Utils from '../../../utils/utils'
-import { ControlStatus, ControlStyles, getControlStyles } from './control-status'
+import { ControlStatus, ControlStyles, getControlStyles } from '../common/control-status'
 import { FramePoint } from 'utopia-api'
 import { UtopiaTheme } from 'uuiui'
 import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { SquareButton } from 'uuiui'
-import { FramePinsInfo } from '../new-inspector/layout-hooks'
+import { FramePinsInfo } from '../common/layout-property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
 
 interface PinControlProps {

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { getControlStyles } from '../../widgets/control-status'
+import { getControlStyles } from '../../common/control-status'
 import { PopupList } from 'uuiui'
 import { SelectOption } from '../../controls/select-control'
 import { JSXElementName, jsxElementName } from '../../../../core/shared/element-template'
