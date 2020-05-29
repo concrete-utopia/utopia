@@ -2,13 +2,13 @@ module Utopia.Web.Packager.NPM where
 
 import           Control.Monad
 import           Data.List                 (isSuffixOf, stripPrefix)
+import qualified Data.Text.Lazy            as TL
+import qualified Data.Text.Lazy.IO         as TL
 import           Protolude
 import           System.Directory.PathWalk
 import           System.FilePath
 import           System.IO.Temp
 import           System.Process
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.IO as TL
 
 withInstalledProject :: Text -> Text -> (FilePath -> IO a) -> IO a
 withInstalledProject jsPackageName jsPackageVersion withInstalledPath = do

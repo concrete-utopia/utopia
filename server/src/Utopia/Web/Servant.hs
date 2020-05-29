@@ -22,7 +22,7 @@ import qualified Data.ByteString.Lazy     as BL
 import           Network.HTTP.Media       hiding (Accept)
 import           Protolude
 import           Servant.API
-
+import           Servant.HTML.Blaze
 
 data BMP
 
@@ -82,6 +82,10 @@ instance MimeRender SVG BL.ByteString where
 
 instance MimeUnrender SVG BL.ByteString where
   mimeUnrender _ bytes = Right bytes
+
+
+instance MimeUnrender HTML Text where
+  mimeUnrender _ bytes = Right $ toS bytes
 
 
 data PrettyJSON
