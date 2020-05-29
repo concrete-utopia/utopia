@@ -13,13 +13,9 @@ Utopia runs in the browser! To run it, you'll need to run the server (locally) a
 - [nix-shell](https://nixos.org/download.html). Scroll down if you're on Catalina.
 - Optionally: [direnv](https://direnv.net/docs/installation.html). Scroll down for setup instructions. If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands.
 
-## Contributing
+## Contributing and Bug Reporting
 
-We welcome contributions. Utopia is a big project with a learning curve, but we're here to help. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/pD8SrEJ).
-
-## Bug reporting
-
-If you find a bug, three things help us tremendously in the report: sample code (or a link to the project), reproduction steps, and video - especially for interaction bugs. If you're unsure, file an issue and we'll respond there.
+We welcome contributions. Utopia is a big project with a learning curve, but we're here to help. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/pD8SrEJ). Please read our [contributing](contributing.md) doc to get started
 
 # Run the Editor
 
@@ -308,18 +304,6 @@ When VSCode asks you to pick a formatter, just pick Prettier. If it wouldn't ask
 "[javascript]": {
   "editor.defaultFormatter": "esbenp.prettier-vscode"
 },
-```
-
-## Advanced options:
-
-See `package.json` for other npm commands. For support, contact @devtools on slack.
-
-## Packaging:
-
-To package up the app, use the following command line:
-
-```
-CSC_KEY_PASSWORD=<SECRET_CERT_PASSWORD> npm run package
 ```
 
 ## Running the Server
