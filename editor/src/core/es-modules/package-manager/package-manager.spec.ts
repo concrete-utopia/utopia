@@ -130,8 +130,6 @@ describe('ES Dependency Manager — Real-life packages', () => {
     expect(antd).toHaveProperty('Button')
     req('/src/index.js', 'antd/dist/antd.css')
   })
-
-  // TODO TEST CIRCULAR DEPENDENCY https://nodejs.org/api/modules.html#modules_cycles
 })
 
 describe('ES Dependency Manager — d.ts', () => {
