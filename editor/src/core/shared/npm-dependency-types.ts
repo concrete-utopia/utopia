@@ -20,27 +20,13 @@ export interface NpmBundleResult {
   typeDefinitions: TypeDefinitions
 }
 
-interface PackagerServerDependency {
-  name: string
-  version: string
-}
-
 export interface PackagerServerFileDescriptor {
   content: string
-  isModule: boolean
-  requires: Array<string>
 }
 
 export interface PackagerServerResponse {
   contents: {
     [filepath: string]: PackagerServerFileDescriptor
-  }
-  dependency: PackagerServerDependency
-  peerDependencies: {
-    [packageName: string]: PackagerServerDependency
-  }
-  dependencyDependencies: {
-    [packageName: string]: PackagerServerDependency
   }
 }
 
