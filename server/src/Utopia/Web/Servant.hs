@@ -9,7 +9,6 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 
-{-# OPTIONS_GHC -Wno-warnings-deprecations #-}
 {-|
   Provides some additional utilities for interacting with the servant library.
   Including appropriate mime types and accept headers for a bunch of image types.
@@ -22,7 +21,7 @@ import qualified Data.ByteString.Lazy     as BL
 import           Network.HTTP.Media       hiding (Accept)
 import           Protolude
 import           Servant.API
-
+import           Servant.HTML.Blaze
 
 data BMP
 
@@ -35,7 +34,6 @@ instance MimeRender BMP BL.ByteString where
 instance MimeUnrender BMP BL.ByteString where
   mimeUnrender _ bytes = Right bytes
 
-
 data GIF
 
 instance Accept GIF where
@@ -46,7 +44,6 @@ instance MimeRender GIF BL.ByteString where
 
 instance MimeUnrender GIF BL.ByteString where
   mimeUnrender _ bytes = Right bytes
-
 
 data JPG
 
@@ -59,7 +56,6 @@ instance MimeRender JPG BL.ByteString where
 instance MimeUnrender JPG BL.ByteString where
   mimeUnrender _ bytes = Right bytes
 
-
 data PNG
 
 instance Accept PNG where
@@ -70,7 +66,6 @@ instance MimeRender PNG BL.ByteString where
 
 instance MimeUnrender PNG BL.ByteString where
   mimeUnrender _ bytes = Right bytes
-
 
 data SVG
 
@@ -83,6 +78,8 @@ instance MimeRender SVG BL.ByteString where
 instance MimeUnrender SVG BL.ByteString where
   mimeUnrender _ bytes = Right bytes
 
+instance MimeUnrender HTML Text where
+  mimeUnrender _ bytes = Right $ toS bytes
 
 data PrettyJSON
 
@@ -91,14 +88,3 @@ instance Accept PrettyJSON where
 
 instance ToJSON a => MimeRender PrettyJSON a where
   mimeRender _ val = encodePretty val
-
-
-data ForcedJSON
-
-instance Accept ForcedJSON where
-  contentType _ = "application" // "json"
-
-instance MimeRender ForcedJSON BL.ByteString where
-  mimeRender _ bytes =  bytes
-
-

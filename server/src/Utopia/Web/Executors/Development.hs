@@ -251,9 +251,6 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask
   AssetResultCache{..} <- liftIO $ readIORef _assetResultCache
   return $ action _editorMappings
-innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptPackageVersion action) = do
-  packagerContent <- liftIO $ getPackagerContent javascriptPackageName javascriptPackageVersion
-  return $ action packagerContent
 
 readIndexHtmlFromDisk :: Text -> IO Text
 readIndexHtmlFromDisk fileName = readFile $ toS $ "../editor/lib/" <> fileName

@@ -353,11 +353,6 @@ getPackageJSONEndpoint javascriptPackageName = do
 hashedAssetPathsEndpoint :: ServerMonad Value
 hashedAssetPathsEndpoint = getHashedAssetPaths
 
-packagePackagerEndpoint :: Text -> Text -> ServerMonad BL.ByteString
-packagePackagerEndpoint javascriptPackageName javascriptPackageVersionAndSuffix = do
-  let javascriptPackageVersion = fromMaybe javascriptPackageVersionAndSuffix $ T.stripSuffix ".json" javascriptPackageVersionAndSuffix
-  getPackagePackagerContent javascriptPackageName javascriptPackageVersion
-
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -391,7 +386,6 @@ unprotected = authenticate
          :<|> loadProjectThumbnailEndpoint
          :<|> websocketsEndpoint
          :<|> monitoringEndpoint
-         :<|> packagePackagerEndpoint
          :<|> getPackageJSONEndpoint
          :<|> hashedAssetPathsEndpoint
          :<|> editorAssetsEndpoint "./editor"
