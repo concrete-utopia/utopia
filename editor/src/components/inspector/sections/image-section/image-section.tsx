@@ -10,7 +10,7 @@ import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { StringControl } from '../../controls/string-control'
 import { addOnUnsetValues } from '../../common/context-menu-items'
-import { useInspectorMetadataInfo, useIsSubSectionVisible } from '../../common/property-path-hooks'
+import { useInspectorElementInfo, useIsSubSectionVisible } from '../../common/property-path-hooks'
 import { GridRow } from '../../widgets/grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
@@ -38,7 +38,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
     controlStatus: srcControlStatus,
     onSubmitValue: srcOnSubmitValue,
     onUnsetValues: srcOnUnsetValues,
-  } = useInspectorMetadataInfo('src')
+  } = useInspectorElementInfo('src')
 
   const {
     value: altValue,
@@ -46,7 +46,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
     controlStatus: altControlStatus,
     onSubmitValue: altOnSubmitValue,
     onUnsetValues: altOnUnsetValues,
-  } = useInspectorMetadataInfo('alt')
+  } = useInspectorElementInfo('alt')
 
   const isVisible = useIsSubSectionVisible('img')
 

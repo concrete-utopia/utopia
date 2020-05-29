@@ -27,8 +27,8 @@ import {
   ParsedCSSProperties,
   ParsedCSSPropertiesKeys,
   ParsedCSSPropertiesKeysNoLayout,
-  ParsedMetadataProperties,
-  ParsedMetadataPropertiesKeys,
+  ParsedElementProperties,
+  ParsedElementPropertiesKeys,
   ParsedProperties,
   ParsedPropertiesKeys,
   ParsedPropertiesValues,
@@ -266,12 +266,12 @@ export function useCallbackFactory<T>(
 }
 /* eslint-enable react-hooks/rules-of-hooks, react-hooks/exhaustive-deps */
 
-export function metadataPathMappingFn<P extends ParsedMetadataPropertiesKeys>(p: P) {
+function elementPathMappingFn<P extends ParsedElementPropertiesKeys>(p: P) {
   return PP.create([p])
 }
 
-export function useInspectorMetadataInfo<P extends ParsedMetadataPropertiesKeys>(prop: P) {
-  type T = ParsedMetadataProperties[P]
+export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(prop: P) {
+  type T = ParsedElementProperties[P]
   const transformValue: (parsedValues: ParsedValues<P>) => T = (parsedValues) => parsedValues[prop]
 
   const untransformValue = (transformedType: T) =>
@@ -279,7 +279,7 @@ export function useInspectorMetadataInfo<P extends ParsedMetadataPropertiesKeys>
       [prop]: transformedType,
     } as Partial<ParsedValues<P>>)
 
-  return useInspectorInfo([prop], transformValue, untransformValue, metadataPathMappingFn)
+  return useInspectorInfo([prop], transformValue, untransformValue, elementPathMappingFn)
 }
 
 export function stylePropPathMappingFn<P extends ParsedCSSPropertiesKeys>(

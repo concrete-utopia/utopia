@@ -42,6 +42,10 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr',
   },
+  '<------50%------><------50%------>': {
+    gridColumnGap: 4,
+    gridTemplateColumns: 'repeat(2, calc(50% - 2px))',
+  },
 } as const
 
 interface GridRowProps {

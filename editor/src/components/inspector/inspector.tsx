@@ -2,12 +2,6 @@ import * as ObjectPath from 'object-path'
 import * as React from 'react'
 import { colorTheme, Icn } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
-import {
-  InspectorCallbackContext,
-  InspectorPropsContext,
-  useKeepReferenceEqualityIfPossible,
-  useKeepShallowReferenceEquality,
-} from './common/property-path-hooks'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
 import {
@@ -65,9 +59,16 @@ import {
 } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { CSSPosition } from './common/css-utils'
+import {
+  InspectorCallbackContext,
+  InspectorPropsContext,
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
-import { HeaderSection, HeaderSectionCoreProps } from './sections/header-section/header-section'
+import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
 import { ElementPathElement } from './sections/header-section/element-path'
+import { HeaderSection, HeaderSectionCoreProps } from './sections/header-section/header-section'
 import { LayoutWrapperCoreProps } from './sections/header-section/layout-wrapper-section'
 import { NameRowProps } from './sections/header-section/name-row'
 import {
@@ -399,6 +400,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
+          <EventHandlersSection />
           <StyleSection />
         </React.Fragment>
       )
