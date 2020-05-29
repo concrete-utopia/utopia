@@ -120,7 +120,7 @@ setShowcaseClient = client (Proxy :: Proxy SetShowcaseAPI)
 saveProjectAssetClient :: Maybe Text -> Text -> [Text] -> (Request -> Request) -> ClientM Response
 saveProjectAssetClient = client (Proxy :: Proxy (AuthCookie :> SaveProjectAssetAPI))
 
-deleteProjectAssetClient :: Maybe Text -> Text -> [Text] -> ClientM NoContent 
+deleteProjectAssetClient :: Maybe Text -> Text -> [Text] -> ClientM NoContent
 deleteProjectAssetClient = client (Proxy :: Proxy (AuthCookie :> DeleteProjectAssetAPI))
 
 loadProjectAssetClient :: Text -> Text -> [Text] -> (Request -> Request) -> ClientM Response
@@ -187,8 +187,8 @@ deleteAssetSpec =
         (Left _)                          -> expectationFailure "Unexpected response type."
         (Right _)                         -> expectationFailure "Unexpected successful response."
 
-routingTest :: Spec
-routingTest = around_ withServer $ do
+routingSpec :: Spec
+routingSpec = around_ withServer $ do
   describe "GET /authenticate" $ do
     it "should set a cookie for valid login" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       result <- runClientM (authenticateClient (Just "logmein") (Just "")) clientEnv
