@@ -25,14 +25,14 @@ export const ClassNameControl = betterReactMemo('ClassNameSection', () => {
     controlStatus,
   } = useInspectorMetadataInfo('className')
   const onChange = (newValues: ValueType<SelectOption>) => {
-    if (Array.isArray(newValues)) {
+    if (Array.isArray(newValues) && newValues.length > 0) {
       onSubmitValue(
         Utils.stripNulls(
           newValues.map((newValue) => {
             const newValueValue = newValue.value
             if (typeof newValueValue === 'string' && newValueValue.length > 0) {
               const trimmed = newValueValue.trim()
-              return trimmed.startsWith('.') ? trimmed.slice(1, trimmed.length) : trimmed
+              return trimmed.startsWith('.') ? trimmed.slice(1) : trimmed
             } else {
               return null
             }
@@ -44,7 +44,7 @@ export const ClassNameControl = betterReactMemo('ClassNameSection', () => {
     }
   }
   const selectValues: ReadonlyArray<SelectOption> =
-    value !== '' ? value.split(' ').map((v) => ({ value: v, label: `.${v}` })) : []
+    value === '' ? [] : value.split(' ').map((v) => ({ value: v, label: `.${v}` }))
 
   const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 

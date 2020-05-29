@@ -35,9 +35,9 @@ export interface IcnProps {
 }
 
 /**
- *  You really shouldn't be using this unless you absolutely need to. E.g.
- *  you've got some logic that needs to be handled with CSS and a
- *  backgroundImage URL. Otherwise, use `<Icons.NiceIconName />`.
+ *  This should only be used by the below component and where
+ *  absolutely needed. Namely: logic that is better handled with
+ *  CSS backgroundImage. Otherwise, use `<Icons.NiceIconName />`.
  */
 export function UNSAFE_getIconURL(
   type: string,
