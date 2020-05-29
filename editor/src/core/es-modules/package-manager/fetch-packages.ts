@@ -51,7 +51,7 @@ export function resetDepPackagerCache() {
 
 // TODO this function is ugly and probably should be split to two functions
 // Update: there will be a single request for js and d.ts files, so this will be simplified anyway
-export async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | null> {
+async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | null> {
   if (PACKAGES_TO_SKIP.indexOf(dep.name) > -1) {
     return null
   }
