@@ -25,7 +25,7 @@ import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/p
 import { stopPropagation } from '../../../common/inspector-utils'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { SquareButton } from 'uuiui'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import utils from '../../../../../utils/utils'
 import { betterReactMemo } from 'uuiui-deps'
@@ -273,7 +273,7 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
 
   if (isVisible) {
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id='text-shadow-subsection-context-menu'
         items={contextMenuItems}
         data={null}
@@ -335,7 +335,7 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
             })
           )}
         </div>
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   } else {
     return null

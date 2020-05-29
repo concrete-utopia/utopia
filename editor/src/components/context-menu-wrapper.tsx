@@ -164,7 +164,7 @@ export class ContextMenuWrapper<T> extends ReactComponent<
   }
 }
 
-export class NewInspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWrapperProps<T>> {
+export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWrapperProps<T>> {
   getData = () => this.props.data
   render() {
     const name = `${this.props.id}-context-menu-wrapper`

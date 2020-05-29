@@ -6,7 +6,7 @@ import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-te
 import * as PP from '../../../../core/shared/property-path'
 import { filterScenes } from '../../../../core/shared/template-path'
 import utils from '../../../../utils/utils'
-import { NewInspectorContextMenuWrapper } from '../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { StringControl } from '../../controls/string-control'
 import { addOnUnsetValues } from '../../common/context-menu-items'
@@ -73,7 +73,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
   return (
     <>
       <InspectorSectionHeader>Image {naturalDimensionsNode}</InspectorSectionHeader>
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id='image-section-src-context-menu'
         items={srcContextMenuItems}
         style={{ gridColumn: '1 / span 4' }}
@@ -90,8 +90,8 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
             controlStatus={srcControlStatus}
           />
         </GridRow>
-      </NewInspectorContextMenuWrapper>
-      <NewInspectorContextMenuWrapper
+      </InspectorContextMenuWrapper>
+      <InspectorContextMenuWrapper
         id='image-section-alt-context-menu'
         items={altContextMenuItems}
         style={{ gridColumn: '1 / span 4' }}
@@ -108,7 +108,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
             controlStatus={altControlStatus}
           />
         </GridRow>
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
       <GridRow padded type='<---1fr--->|------172px-------|'>
         <PropertyLabel target={imgAltProp}>Density</PropertyLabel>
         <ImageDensityControl

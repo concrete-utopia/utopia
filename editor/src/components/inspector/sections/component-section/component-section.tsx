@@ -16,7 +16,7 @@ import { jsxAttributeValue } from '../../../../core/shared/element-template'
 import { ControlDescription, ControlType } from 'utopia-api'
 import { foldEither, right, Either } from '../../../../core/shared/either'
 import Utils from '../../../../utils/utils'
-import { NewInspectorContextMenuWrapper } from '../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import * as PP from '../../../../core/shared/property-path'
 import { BooleanControl } from '../../controls/boolean-control'
 import { ColorControl } from '../../controls/color-control'
@@ -291,7 +291,7 @@ const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
       </Tooltip>
     )
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id={`context-menu-for-${props.propName}`}
       items={contextMenuItems}
       data={null}
@@ -311,7 +311,7 @@ const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
           <ParseErrorControl parseError={props.propertyError} />
         )}
       </GridRow>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 

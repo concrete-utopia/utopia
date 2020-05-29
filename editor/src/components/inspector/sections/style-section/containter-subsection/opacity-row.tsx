@@ -5,8 +5,8 @@ import {
   betterReactMemo,
   CSSUtils,
   SliderControl,
-  NewInspectorContextMenuItems,
-  NewInspectorContextMenuWrapper,
+  InspectorContextMenuItems,
+  InspectorContextMenuWrapper,
   Utils,
 } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
@@ -37,7 +37,7 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
     },
   )
 
-  const opacityContextMenuItems = NewInspectorContextMenuItems.optionalAddOnUnsetValues(
+  const opacityContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     opacity != null,
     ['opacity'],
     opacityMetadata.onUnsetValues,
@@ -57,7 +57,7 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
   }
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id='opacity-row-context-menu'
       items={opacityContextMenuItems}
       data={null}
@@ -89,6 +89,6 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
           />
         </GridRow>
       </GridRow>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })

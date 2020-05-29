@@ -407,7 +407,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
 
   return (
     <div
-      id='new-inspector'
+      id='inspector'
       style={{
         height: '100%',
         width: '100%',
@@ -422,7 +422,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     </div>
   )
 })
-Inspector.displayName = 'NewInspector'
+Inspector.displayName = 'Inspector'
 
 function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
   let result: Array<InstancePath> = []
@@ -437,8 +437,8 @@ function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
-export const NewInspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
-  'NewInspectorEntryPoint',
+export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
+  'InspectorEntryPoint',
   () => {
     const {
       dispatch,
@@ -708,7 +708,7 @@ export const NewInspectorEntryPoint: React.FunctionComponent<{}> = betterReactMe
       [dispatch, refElementsToTargetForUpdates],
     )
 
-    const newInspector = isUIJSFile ? (
+    const inspector = isUIJSFile ? (
       <InspectorContextProvider targetPath={selectedTarget}>
         <Inspector
           input={inspectorModelMemoized}
@@ -728,10 +728,10 @@ export const NewInspectorEntryPoint: React.FunctionComponent<{}> = betterReactMe
       </InspectorContextProvider>
     ) : null
 
-    return newInspector
+    return inspector
   },
 )
-NewInspectorEntryPoint.displayName = 'NewInspectorEntryPoint'
+InspectorEntryPoint.displayName = 'InspectorEntryPoint'
 
 export const InspectorContextProvider = betterReactMemo<{
   targetPath: Array<string>

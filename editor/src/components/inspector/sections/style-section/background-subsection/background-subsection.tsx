@@ -3,7 +3,7 @@ import { animated } from 'react-spring'
 import { FlexRow, Icn, InspectorSubsectionHeader, SquareButton, UtopiaTheme } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import utils from '../../../../../utils/utils'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import { FakeUnknownArrayItem, UnknownArrayItem } from '../../../controls/unknown-array-item'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
@@ -291,7 +291,7 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
   }
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id='background-layer-subsection-context-menu'
       items={unsetContextMenuItem}
       data={null}
@@ -337,7 +337,7 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
           })}
         </div>
       )}
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 BackgroundSubsection.displayName = 'BackgroundSubsection'

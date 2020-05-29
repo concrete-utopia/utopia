@@ -11,7 +11,7 @@ import {
 import { betterReactMemo } from 'uuiui-deps'
 import { isRight } from '../../../../../core/shared/either'
 import utils from '../../../../../utils/utils'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { ColorControl, StringColorControl } from '../../../controls/color-control'
 import { OptionControl } from '../../../controls/option-control'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
@@ -440,7 +440,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
     return null
   }
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id='border-subsection-context-menu'
       items={contextMenuItems}
       data={null}
@@ -504,7 +504,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
           </GridRow>
         )
       ) : null}
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 BorderSubsection.displayName = 'BorderSubsection'

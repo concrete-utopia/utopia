@@ -28,7 +28,7 @@ import { CSSCursor } from '../components/canvas/canvas-types'
 import { OnSubmitValue, OnSubmitValueOrEmpty } from '../components/inspector/controls/control'
 import { usePropControlledState } from '../components/inspector/common/inspector-utils'
 import * as InspectorHooks from '../components/inspector/common/property-path-hooks'
-import * as NewInspectorContextMenuItems from '../components/inspector/common/context-menu-items'
+import * as InspectorContextMenuItems from '../components/inspector/common/context-menu-items'
 
 export const Resizable = _Resizable
 export type ResizableProps = _ResizableProps
@@ -57,7 +57,7 @@ export {
   OnSubmitValueOrEmpty,
   usePropControlledState,
   InspectorHooks,
-  NewInspectorContextMenuItems,
+  InspectorContextMenuItems,
 }
 
 // These exports are experimental, to be able to make an OpacitySubsection inside Utopia

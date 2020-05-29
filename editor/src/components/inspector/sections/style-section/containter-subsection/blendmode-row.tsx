@@ -3,8 +3,8 @@ import * as PP from '../../../../../core/shared/property-path'
 import { PropertyLabel } from '../../../widgets/property-label'
 import {
   betterReactMemo,
-  NewInspectorContextMenuItems,
-  NewInspectorContextMenuWrapper,
+  InspectorContextMenuItems,
+  InspectorContextMenuWrapper,
   SelectOption,
 } from 'uuiui-deps'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
@@ -29,14 +29,14 @@ export const BlendModeRow = betterReactMemo('BlendModeRow', () => {
 
   const whichBlendModeOption = blendModeOptions.find((option) => option.value === blendMode)
 
-  const blendModeContextMenuItems = NewInspectorContextMenuItems.optionalAddOnUnsetValues(
+  const blendModeContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     blendMode != null,
     ['mixBlendMode'],
     blendModeMetadata.onUnsetValues,
   )
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id='blendmode-row-context-menu'
       items={blendModeContextMenuItems}
       data={null}
@@ -51,6 +51,6 @@ export const BlendModeRow = betterReactMemo('BlendModeRow', () => {
           controlStyles={blendModeMetadata.controlStyles}
         />
       </GridRow>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })

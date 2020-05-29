@@ -26,7 +26,7 @@ import { stopPropagation } from '../../../common/inspector-utils'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { SquareButton } from 'uuiui'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues, removeRow } from '../../../common/context-menu-items'
 import utils from '../../../../../utils/utils'
 import { betterReactMemo } from 'uuiui-deps'
@@ -248,7 +248,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
   }, [shadowsLength, spliceFn, onUnsetValues, borderIsDefined])
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id={`shadow-row-context-menu-${props.index}`}
       items={[removeShadow, ...props.contextMenuItems]}
       data={null}
@@ -317,7 +317,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
           ]}
         />
       </GridRow>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 
@@ -381,7 +381,7 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
     return null
   }
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id='shadow-subsection-context-menu'
       items={contextMenuItems}
       data={null}
@@ -455,7 +455,7 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
           })
         )}
       </div>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 ShadowSubsection.displayName = 'ShadowSubsection'

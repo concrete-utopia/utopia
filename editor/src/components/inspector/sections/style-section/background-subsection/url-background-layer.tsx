@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { PopupList } from 'uuiui'
 import { CheckboxInput } from '../../../../../uuiui'
-import { betterReactMemo, NewInspectorContextMenuWrapper } from '../../../../../uuiui-deps'
+import { betterReactMemo, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
 import { removeRow } from '../../../common/context-menu-items'
 import {
   CSSBackgroundLayer,
@@ -74,7 +74,7 @@ export const URLBackgroundLayer = betterReactMemo<URLBackgroundLayerProps>(
     )
 
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id={`background-layer-subsection-context-menu-row-${props.index}`}
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
@@ -118,7 +118,7 @@ export const URLBackgroundLayer = betterReactMemo<URLBackgroundLayerProps>(
             />
           </GridRow>
         </GridRow>
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   },
 )

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ChainedNumberInput, CheckboxInput, FlexRow, PopupList } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'
 import {
   CSSUnknownArrayItem,
@@ -55,7 +55,7 @@ export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackg
       getIndexedSpliceArrayItem<CSSBackgroundLayer | CSSUnknownArrayItem>(props.index),
     )
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id={`background-layer-subsection-context-menu-row-${props.index}`}
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
@@ -119,7 +119,7 @@ export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackg
             />
           </GridRow>
         </GridRow>
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   },
 )

@@ -8,7 +8,7 @@ import {
 } from 'uuiui'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { FlexDirection } from 'utopia-api'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { SliderControl, SliderControlOptions } from '../../../controls/slider-control'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
@@ -72,7 +72,7 @@ export const FlexDirectionControl = betterReactMemo(
   'FlexDirectionControl',
   (props: FlexDirectionControlProps) => {
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id={`flexDirection-context-menu`}
         items={[unsetPropertyMenuItem('Flex Direction', props.onUnset)]}
         data={{}}
@@ -93,7 +93,7 @@ export const FlexDirectionControl = betterReactMemo(
           options={flexDirectionOptions(props.flexWrap)}
           onSubmitValue={props.onSubmitValue}
         />
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   },
 )
@@ -115,7 +115,7 @@ export const FlexAlignItemsControl = betterReactMemo(
           flexDirection: 'row',
         }}
       >
-        <NewInspectorContextMenuWrapper
+        <InspectorContextMenuWrapper
           id={`alignItems-context-menu`}
           items={[unsetPropertyMenuItem('Align Items', props.onUnset)]}
           data={{}}
@@ -133,7 +133,7 @@ export const FlexAlignItemsControl = betterReactMemo(
             )}
             onSubmitValue={props.onSubmitValue}
           />
-        </NewInspectorContextMenuWrapper>
+        </InspectorContextMenuWrapper>
       </div>
     )
   },
@@ -166,7 +166,7 @@ export const FlexWrapControl = betterReactMemo('FlexWrapControl', (props: FlexWr
   )
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id={`flexWrap-context-menu`}
       items={[unsetPropertyMenuItem('Flex Wrap', props.onUnset)]}
       data={{}}
@@ -183,7 +183,7 @@ export const FlexWrapControl = betterReactMemo('FlexWrapControl', (props: FlexWr
         onSubmitValue={onSubmitValue}
         containerMode='showBorderOnHover'
       />
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 
@@ -197,7 +197,7 @@ export const FlexJustifyContentControl = betterReactMemo(
   'FlexJustifyContentControl',
   (props: FlexJustifyContentControlProps) => {
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id={`justifyContent-context-menu`}
         items={[unsetPropertyMenuItem('Justify Content', props.onUnset)]}
         data={{}}
@@ -222,7 +222,7 @@ export const FlexJustifyContentControl = betterReactMemo(
           controlStatus={props.controlStatus}
           controlStyles={props.controlStyles}
         />
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   },
 )
@@ -242,7 +242,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
   return (
     <>
       <GridRow padded={false} type='<--------auto-------->|--45px--|'>
-        <NewInspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
+        <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
           <SliderControl
             id='flex.container.gap.main'
             key='flex.container.gap.main'
@@ -261,8 +261,8 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             controlStatus={props.controlStatus}
             controlStyles={props.controlStyles}
           />
-        </NewInspectorContextMenuWrapper>
-        <NewInspectorContextMenuWrapper id={`gap-main-context-menu`} items={menuItems} data={{}}>
+        </InspectorContextMenuWrapper>
+        <InspectorContextMenuWrapper id={`gap-main-context-menu`} items={menuItems} data={{}}>
           <SimpleNumberInput
             id='flex.container.gap.main'
             key='flex.container.gap.main'
@@ -275,7 +275,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             controlStatus={props.controlStatus}
             disabled={!props.controlStyles.interactive}
           />
-        </NewInspectorContextMenuWrapper>
+        </InspectorContextMenuWrapper>
       </GridRow>
     </>
   )
@@ -291,7 +291,7 @@ export const FlexAlignContentControl = betterReactMemo(
   'FlexAlignContentControl',
   (props: FlexAlignContentControlProps) => {
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id={`alignContent-context-menu`}
         items={[unsetPropertyMenuItem('Align Content', props.onUnset)]}
         data={{}}
@@ -314,7 +314,7 @@ export const FlexAlignContentControl = betterReactMemo(
           controlStatus={props.controlStatus}
           controlStyles={props.controlStyles}
         />
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   },
 )

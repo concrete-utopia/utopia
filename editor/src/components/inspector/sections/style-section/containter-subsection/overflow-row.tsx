@@ -4,8 +4,8 @@ import { PropertyLabel } from '../../../widgets/property-label'
 import {
   betterReactMemo,
   CSSUtils,
-  NewInspectorContextMenuWrapper,
-  NewInspectorContextMenuItems,
+  InspectorContextMenuWrapper,
+  InspectorContextMenuItems,
   Utils,
 } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
@@ -36,14 +36,14 @@ export const OverflowRow = betterReactMemo('OverflowRow', () => {
     onUnsetValues,
   } = useInspectorStyleInfo('overflow')
 
-  const overflowContextMenuItems = NewInspectorContextMenuItems.optionalAddOnUnsetValues(
+  const overflowContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     value != null,
     ['overflow'],
     onUnsetValues,
   )
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id='overflow-row-context-menu'
       data={null}
       items={overflowContextMenuItems}
@@ -60,6 +60,6 @@ export const OverflowRow = betterReactMemo('OverflowRow', () => {
           controlStyles={controlStyles}
         />
       </GridRow>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })

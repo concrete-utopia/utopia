@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { CheckboxInput, FlexRow, NumberInput, PopupList } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'
 import {
   CSSBackgroundLayer,
@@ -75,7 +75,7 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
 
     const enabled = props.value.enabled
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id={`background-layer-subsection-context-menu-row-${props.index}`}
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
@@ -123,7 +123,7 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
             />
           </GridRow>
         </GridRow>
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   },
 )

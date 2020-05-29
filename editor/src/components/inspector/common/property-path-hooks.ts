@@ -241,13 +241,13 @@ export function useInspectorInfoFromMultiselectMultiPropAttribute(
 
 /* eslint-disable react-hooks/rules-of-hooks, react-hooks/exhaustive-deps */
 /**
- * DO NOT USE useCallbackFactory outside of new-inspector-hooks.ts,
+ * DO NOT USE useCallbackFactory outside of inspector-hooks.ts,
  * it is only exported for testing purposes
  *
  * useCallbackFactory is a meta-hook that returns a callback factory hook.
  * As you might see from the disabled linter, this goes a bit against the grain of the Rules of Hooks
  *
- * consult new-inspector-hooks.spec.ts to see what were the goals / known limitations
+ * consult inspector-hooks.spec.ts to see what were the goals / known limitations
  */
 export function useCallbackFactory<T>(
   oldValue: T,

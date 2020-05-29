@@ -7,7 +7,7 @@ import { Icn } from 'uuiui'
 import { NumberInput } from 'uuiui'
 import { InspectorSubsectionHeader } from 'uuiui'
 import { FlexRow } from 'uuiui'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { BooleanControl } from '../../../controls/boolean-control'
 import { OnSubmitValue } from '../../../controls/control'
 import { LightSelectControl } from '../../../controls/lightselect-control'
@@ -538,7 +538,7 @@ export const TransformSubsection = betterReactMemo('TransformSubsection', () => 
     return null
   } else {
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id='transform-subsection-context-menu'
         items={transformContextMenuItems}
         data={null}
@@ -632,7 +632,7 @@ export const TransformSubsection = betterReactMemo('TransformSubsection', () => 
             })}
           </div>
         )}
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   }
 })
