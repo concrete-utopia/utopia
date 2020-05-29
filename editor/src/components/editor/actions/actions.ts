@@ -4092,11 +4092,8 @@ export async function newProject(
   let nodeModules: NodeModules = {}
   try {
     nodeModules = await fetchNodeModules(npmDependencies)
-    // bundlerResult = await bundleNpmPackages(npmDependencies, true)
   } catch (e) {
-    // note: we rely on the fact that bundleNpmPackages called with {} dependencies won't attempt to fetch
-    // TODO: do we have to do something here?
-    // bundlerResult = await bundleNpmPackages({}, true)
+    // Note: no error management here, missing packages will throw error later when there is an import from them
   }
 
   const require = getRequireFn(
@@ -4153,16 +4150,9 @@ export async function load(
   const npmDependencies = dependenciesFromModel(model)
   let nodeModules: NodeModules = {}
   try {
-    if (npmDependencies == null) {
-      // TODO: do we have to do something in this case?
-      // bundlerResult = await bundleNpmPackages({}, true)
-    } else {
-      nodeModules = await fetchNodeModules(npmDependencies)
-    }
+    nodeModules = await fetchNodeModules(npmDependencies)
   } catch (e) {
-    // TODO: do we have to do something in this case?
-    // note: we rely on the fact that bundleNpmPackages called with {} dependencies won't attempt to fetch
-    // bundlerResult = await bundleNpmPackages({}, true)
+    // Note: no error management here, missing packages will throw error later when there is an import from them
   }
 
   const require = getRequireFn(

@@ -107,7 +107,7 @@ export async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeMod
       }
     }
   }
-  // TODO: Error management! What if a package doesn't exist
+  // Note: no error management, imports will show an error
   return result
 }
 

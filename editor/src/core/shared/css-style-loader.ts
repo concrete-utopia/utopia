@@ -15,7 +15,6 @@ export function transformCssNodeModule(filename: string, content: string): strin
   styleTag.type = "text/css";
   styleTag.id = filename;
   styleTag.appendChild(document.createTextNode(content));
-  console.log('### Szia Balint', filename) // TODO DELETE ME :)
   document.querySelector("head").appendChild(styleTag);
 `
 }

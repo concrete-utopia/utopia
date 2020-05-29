@@ -252,11 +252,6 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     if (npmDependencies != null) {
       npmDependencies = npmDependencies.filter((dep) => dep.name != key)
 
-      // TODO: implement removing dependency
-      // bundleAndDispatchNpmPackages(this.props.editorDispatch, depsFromModel).then(() => {
-      //   this.setState({ dependencyLoadingStatus: 'not-loading' })
-      // }))
-
       this.props.editorDispatch([EditorActions.updatePackageJson(npmDependencies)])
 
       fetchNodeModules(npmDependencies).then((nodeModules) => {
@@ -385,7 +380,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
                   EditorActions.updateNodeModulesContents(nodeModules, false),
                 ])
               })
-              .catch((e) => this.packagesUpdateFailed(e, editedPackageName)) // TODO: temporary, just to test packager response
+              .catch((e) => this.packagesUpdateFailed(e, editedPackageName))
 
             return {
               dependencyLoadingStatus: 'adding',
