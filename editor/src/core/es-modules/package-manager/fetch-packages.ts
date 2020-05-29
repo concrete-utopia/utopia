@@ -134,7 +134,7 @@ export async function fetchNodeModules(newDeps: Array<NpmDependency>): Promise<N
          */
         return mangleNodeModulePaths(newDep.name, packagerResponse)
       } else {
-        return {}
+        return Promise.resolve({})
       }
     }),
   )
