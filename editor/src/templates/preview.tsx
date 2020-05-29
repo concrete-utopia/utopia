@@ -163,11 +163,8 @@ const initPreview = () => {
 
   const previewRender = async (model: PersistentModel | null) => {
     if (model != null) {
-      const npmDependencies = Utils.defaultIfNull({}, dependenciesFromModel(model))
-      const npmDependenciesArr = Object.keys(npmDependencies).map((depName) =>
-        npmDependency(depName, npmDependencies[depName]),
-      )
-      let nodeModules = await fetchNodeModules(npmDependenciesArr)
+      const npmDependencies = dependenciesFromModel(model)
+      let nodeModules = await fetchNodeModules(npmDependencies)
       const require = getRequireFn((modulesToAdd) => {
         // MUTATION
         Object.assign(nodeModules, modulesToAdd)

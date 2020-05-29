@@ -10,7 +10,7 @@ import {
   ProjectContents,
   TemplatePath,
 } from '../../core/shared/project-file-types'
-import { NpmDependencies, TypeDefinitions } from '../../core/shared/npm-dependency-types'
+import { TypeDefinitions, NpmDependency } from '../../core/shared/npm-dependency-types'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { CodeEditorTheme } from './code-editor-themes'
 import {
@@ -38,7 +38,7 @@ export interface CodeEditorProps {
   enabled: boolean
   autoSave: boolean
   npmTypeDefinitions: {
-    npmDependencies: NpmDependencies
+    npmDependencies: Array<NpmDependency>
     typeDefinitions: TypeDefinitions
   }
   allErrors: Array<ErrorMessage> | null

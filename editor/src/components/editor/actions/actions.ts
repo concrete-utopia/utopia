@@ -100,7 +100,6 @@ import {
 } from '../../../core/shared/either'
 import {
   NpmBundleResult,
-  NpmDependencies,
   RequireFn,
   TypeDefinitions,
   npmDependency,
@@ -3136,10 +3135,7 @@ export const UPDATE_FNS = {
     if (action.filePath === '/package.json' && isCodeFile(file)) {
       const deps = dependenciesFromPackageJsonContents(file.fileContents)
       if (deps != null) {
-        const npmDependenciesArr = Object.keys(deps).map((depName) =>
-          npmDependency(depName, deps[depName]),
-        ) // TODO: this should REPLACE the dependencies and not add them
-        fetchNodeModules(npmDependenciesArr).then((nodeModules) =>
+        fetchNodeModules(deps).then((nodeModules) =>
           dispatch([updateNodeModulesContents(nodeModules, true)]),
         )
 
@@ -3845,12 +3841,15 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_PACKAGE_JSON: (action: UpdatePackageJson, editor: EditorState): EditorState => {
-    const dependencies = action.dependencies.reduce((acc: NpmDependencies, curr: NpmDependency) => {
-      return {
-        ...acc,
-        [curr.name]: curr.version,
-      }
-    }, {} as NpmDependencies)
+    const dependencies = action.dependencies.reduce(
+      (acc: Array<NpmDependency>, curr: NpmDependency) => {
+        return {
+          ...acc,
+          [curr.name]: curr.version,
+        }
+      },
+      {} as Array<NpmDependency>,
+    )
     return updateDependenciesInEditorState(editor, dependencies)
   },
 }
@@ -4089,13 +4088,10 @@ export async function newProject(
   renderEditorRoot: () => void,
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
-  const npmDependencies = dependenciesFromModel(defaultPersistentModel) || {}
+  const npmDependencies = dependenciesFromModel(defaultPersistentModel)
   let nodeModules: NodeModules = {}
   try {
-    const npmDependenciesArr = Object.keys(npmDependencies).map((depName) =>
-      npmDependency(depName, npmDependencies[depName]),
-    )
-    nodeModules = await fetchNodeModules(npmDependenciesArr)
+    nodeModules = await fetchNodeModules(npmDependencies)
     // bundlerResult = await bundleNpmPackages(npmDependencies, true)
   } catch (e) {
     // note: we rely on the fact that bundleNpmPackages called with {} dependencies won't attempt to fetch
@@ -4161,10 +4157,7 @@ export async function load(
       // TODO: do we have to do something in this case?
       // bundlerResult = await bundleNpmPackages({}, true)
     } else {
-      const npmDependenciesArr = Object.keys(npmDependencies).map((depName) =>
-        npmDependency(depName, npmDependencies[depName]),
-      )
-      nodeModules = await fetchNodeModules(npmDependenciesArr)
+      nodeModules = await fetchNodeModules(npmDependencies)
     }
   } catch (e) {
     // TODO: do we have to do something in this case?

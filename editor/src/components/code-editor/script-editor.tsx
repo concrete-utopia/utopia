@@ -348,7 +348,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
   const newErrorsForFile = errors.filter((error) => error.fileName === filePath)
   const errorsForFile = useKeepReferenceEqualityIfPossible(newErrorsForFile)
 
-  const newNpmDependencies = Utils.defaultIfNull({}, dependenciesFromPackageJson(packageJsonFile))
+  const newNpmDependencies = dependenciesFromPackageJson(packageJsonFile)
   const npmDependencies = useKeepReferenceEqualityIfPossible(newNpmDependencies)
 
   if (filePath == null || openFile == null) {

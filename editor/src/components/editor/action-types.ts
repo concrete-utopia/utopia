@@ -34,7 +34,6 @@ import { RightMenuTab } from '../canvas/right-menu'
 import { Mode } from './editor-modes'
 import {
   NpmBundleResult,
-  NpmDependencies,
   RequireFn,
   TypeDefinitions,
   NpmDependency,

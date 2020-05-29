@@ -5,12 +5,12 @@ import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { sameCodeFile } from '../../../core/model/project-file-utils'
 import {
   NpmBundleResult,
-  NpmDependencies,
   RequireFn,
   TypeDefinitions,
   NpmDependency,
   PackagerServerResponse,
   TypingsServerResponse,
+  npmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import {
   isCodeFile,
@@ -59,27 +59,27 @@ export async function findLatestVersion(packageName: string): Promise<string> {
   }
 }
 
-export function dependenciesFromPackageJsonContents(packageJson: string): NpmDependencies | null {
+export function dependenciesFromPackageJsonContents(packageJson: string): Array<NpmDependency> {
   try {
     const parsedJSON = json5.parse(packageJson)
 
     const dependenciesJSON = R.path<any>(['dependencies'], parsedJSON)
     if (typeof dependenciesJSON === 'object') {
-      let result: NpmDependencies = {}
+      let result: Array<NpmDependency> = []
       for (const dependencyKey of Object.keys(dependenciesJSON)) {
         const dependencyValue = dependenciesJSON[dependencyKey]
         if (typeof dependencyValue === 'string') {
-          result[dependencyKey] = dependencyValue
+          result.push(npmDependency(dependencyKey, dependencyValue))
         } else {
-          return null
+          return []
         }
       }
       return result
     } else {
-      return null
+      return []
     }
   } catch (error) {
-    return null
+    return []
   }
 }
 
@@ -87,16 +87,16 @@ export function dependenciesFromPackageJsonContents(packageJson: string): NpmDep
 // IMPORTANT: This caching is relied upon indirectly by monaco-wrapper.tsx
 interface PackageJsonAndDeps {
   packageJsonFile: ProjectFile
-  npmDependencies: NpmDependencies
+  npmDependencies: Array<NpmDependency>
 }
 
 let cachedDependencies: PackageJsonAndDeps | null = null
 
 export function dependenciesFromPackageJson(
   packageJsonFile: ProjectFile | null,
-): NpmDependencies | null {
+): Array<NpmDependency> {
   if (packageJsonFile == null) {
-    return {}
+    return []
   } else {
     if (
       cachedDependencies != null &&
@@ -124,14 +124,14 @@ export function dependenciesFromPackageJson(
 
 export function dependenciesFromModel(model: {
   projectContents: ProjectContents
-}): NpmDependencies | null {
+}): Array<NpmDependency> {
   const packageJsonFile = packageJsonFileFromModel(model)
   return dependenciesFromPackageJson(packageJsonFile)
 }
 
 export function updateDependenciesInPackageJson(
   packageJson: string,
-  npmDependencies: NpmDependencies,
+  npmDependencies: Array<NpmDependency>,
 ): string {
   function updateDeps(parsedPackageJson: any): string {
     return JSON.stringify(
@@ -151,7 +151,7 @@ export function updateDependenciesInPackageJson(
 
 export function updateDependenciesInEditorState(
   editor: EditorState,
-  npmDependencies: NpmDependencies,
+  npmDependencies: Array<NpmDependency>,
 ): EditorState {
   const transformPackageJson = (packageJson: string) => {
     return updateDependenciesInPackageJson(packageJson, npmDependencies)

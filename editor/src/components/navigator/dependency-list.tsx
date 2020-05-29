@@ -11,7 +11,7 @@ import {
   SquareButton,
   Title,
 } from 'uuiui'
-import { NpmDependencies, npmDependency } from '../../core/shared/npm-dependency-types'
+import { npmDependency, NpmDependency } from '../../core/shared/npm-dependency-types'
 import { ProjectFile } from '../../core/shared/project-file-types'
 import { betterReactMemo } from '../../utils/react-performance'
 import Utils from '../../utils/utils'
@@ -38,6 +38,7 @@ type DependencyListProps = {
 
 type PackageStatus = 'version-lookup' | 'loading' | 'loaded' | 'error' | 'default-package'
 
+// TODO: this should just contain an NpmDependency and a status
 export interface PackageDetails {
   name: string
   version: string | null
@@ -94,14 +95,14 @@ function addInPackage(
   return updatedPackages
 }
 
-function dependenciesFromPackageDetails(packages: Array<PackageDetails>): NpmDependencies {
-  const result: NpmDependencies = {}
+function dependenciesFromPackageDetails(packages: Array<PackageDetails>): Array<NpmDependency> {
+  const result: Array<NpmDependency> = []
   Utils.fastForEach(packages, (p) => {
     if (
       (p.status === 'loaded' || p.status === 'loading' || p.status === 'default-package') &&
       p.version != null
     ) {
-      result[p.name] = p.version
+      result.push(npmDependency(p.name, p.version))
     }
   })
   return result
@@ -145,16 +146,17 @@ export const DefaultPackagesList: Array<PackageDetails> = [
   },
 ]
 
-function packageDetailsFromDependencies(npmDependencies: NpmDependencies): Array<PackageDetails> {
+function packageDetailsFromDependencies(
+  npmDependencies: Array<NpmDependency>,
+): Array<PackageDetails> {
   const userAddedPackages: Array<PackageDetails> = []
-  Utils.fastForEach(Object.keys(npmDependencies), (npmDependencyKey) => {
-    const npmDependencyVersion = npmDependencies[npmDependencyKey]
-    const foundDefaultDependency = DefaultPackagesList.find((p) => p.name === npmDependencyKey)
+  Utils.fastForEach(npmDependencies, (dep) => {
+    const foundDefaultDependency = DefaultPackagesList.find((p) => p.name === dep.name)
     const status =
-      foundDefaultDependency != null && foundDefaultDependency.version === npmDependencyVersion
+      foundDefaultDependency != null && foundDefaultDependency.version === dep.version
         ? 'default-package'
         : 'loaded'
-    userAddedPackages.push(packageDetails(npmDependencyKey, npmDependencyVersion, status))
+    userAddedPackages.push(packageDetails(dep.name, dep.version, status))
   })
 
   return userAddedPackages
@@ -245,25 +247,19 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
   }
 
   removeDependency = (key: string) => {
-    let depsFromModel = dependenciesFromPackageJson(this.props.packageJsonFile)
+    let npmDependencies = dependenciesFromPackageJson(this.props.packageJsonFile)
     // If we can't get the dependencies that implies something is broken, so avoid changing it.
-    if (depsFromModel != null) {
-      depsFromModel = R.omit([key], depsFromModel)
+    if (npmDependencies != null) {
+      npmDependencies = npmDependencies.filter((dep) => dep.name != key)
 
       // TODO: implement removing dependency
       // bundleAndDispatchNpmPackages(this.props.editorDispatch, depsFromModel).then(() => {
       //   this.setState({ dependencyLoadingStatus: 'not-loading' })
       // }))
 
-      const npmDependenciesArr = Utils.stripNulls(
-        Object.keys(depsFromModel).map((depName) =>
-          depsFromModel![depName] == null ? null : npmDependency(depName, depsFromModel![depName]),
-        ),
-      )
+      this.props.editorDispatch([EditorActions.updatePackageJson(npmDependencies)])
 
-      this.props.editorDispatch([EditorActions.updatePackageJson(npmDependenciesArr)])
-
-      fetchNodeModules(npmDependenciesArr).then((nodeModules) => {
+      fetchNodeModules(npmDependencies).then((nodeModules) => {
         this.props.editorDispatch([EditorActions.updateNodeModulesContents(nodeModules, true)])
         this.setState({ dependencyLoadingStatus: 'not-loading' })
       })

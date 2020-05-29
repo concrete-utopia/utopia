@@ -3,17 +3,12 @@ export type TypeDefinitions = {
   [fileName: string]: string
 } // the strings are the contents of .d.ts files
 
-type NpmDependencyVersion = string
-export type NpmDependencies = {
-  [dependencyName: string]: NpmDependencyVersion
-}
-
 export type NpmDependency = {
   name: string
-  version: NpmDependencyVersion
+  version: string
 }
 
-export function npmDependency(name: string, version: NpmDependencyVersion) {
+export function npmDependency(name: string, version: string) {
   return {
     name: name,
     version: version,
