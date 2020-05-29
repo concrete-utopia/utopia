@@ -18,6 +18,8 @@ import { getPackagerUrl, getTypingsUrl } from './packager-url'
 
 let depPackagerCache: { [key: string]: NodeModules } = {}
 
+const PACKAGES_TO_SKIP = ['utopia-api', 'react', 'react-dom']
+
 function extractNodeModulesFromPackageResponse(response: PackagerServerResponse): NodeModules {
   return objectMap((file) => esCodeFile(file.content, null), response.contents)
 }
@@ -49,6 +51,9 @@ export function resetDepPackagerCache() {
 
 // TODO this function is ugly and probably should be split to two functions
 export async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | null> {
+  if (PACKAGES_TO_SKIP.indexOf(dep.name) > -1) {
+    return null
+  }
   const packagesUrl = getPackagerUrl(dep)
   const typingsUrl = getTypingsUrl(dep)
   const jsdelivrUrl = `https://data.jsdelivr.com/v1/package/npm/${dep.name}@${dep.version}/flat`
