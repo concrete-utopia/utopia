@@ -1,11 +1,9 @@
-import styled from '@emotion/styled'
 import { ObjectInterpolation } from '@emotion/core'
+import styled from '@emotion/styled'
+import { getChainSegmentEdge } from '../../utils/utils'
+import { ControlStyles } from '../../uuiui-deps'
 import { IcnProps } from '../icn'
 import { UtopiaTheme } from '../styles/theme'
-import { ControlStatusUtils } from 'uuiui-deps'
-import { getChainSegmentEdge } from '../../utils/utils'
-
-type ControlStyles = ControlStatusUtils.ControlStyles
 
 export type ChainedType = 'not-chained' | 'first' | 'last' | 'middle'
 

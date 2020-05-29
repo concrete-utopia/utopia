@@ -7,10 +7,10 @@ import {
   ControlStatus,
   ControlStyles,
   getControlStyles,
-} from '../../components/inspector/widgets/control-status'
+} from '../../components/inspector/common/control-status'
 import { UtopiaTheme } from '../styles/theme'
 import { OnSubmitValue } from '../../components/inspector/controls/control'
-import { stopPropagation } from '../../components/inspector/utils'
+import { stopPropagation } from '../../components/inspector/common/inspector-utils'
 import { betterReactMemo } from 'uuiui-deps'
 import { InspectorInput } from './base-input'
 

@@ -2,8 +2,8 @@ import * as React from 'react'
 import { CheckboxInput, SimplePercentInput } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { isRight } from '../../../../../core/shared/either'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { removeRow } from '../../../new-inspector/context-menu-items'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { removeRow } from '../../../common/context-menu-items'
 import {
   CSSBackgroundLayer,
   CSSBackgroundLayers,
@@ -15,9 +15,9 @@ import {
   parseAlphaFromCSSColor,
   parseColor,
   isCSSSolidBackgroundLayer,
-} from '../../../new-inspector/css-utils'
-import { getIndexedSpliceArrayItem } from '../../../new-inspector/inspector-utils'
-import { stopPropagation } from '../../../utils'
+} from '../../../common/css-utils'
+import { getIndexedSpliceArrayItem } from '../../../common/inspector-utils'
+import { stopPropagation } from '../../../common/inspector-utils'
 import { GridRow } from '../../../widgets/grid-row'
 import {
   BackgroundLayerProps,
@@ -27,7 +27,7 @@ import {
 import {
   BackgroundSolidOrGradientThumbnailControl,
   StringBackgroundColorControl,
-} from './background-solid-or-gradient-thumbnail-control'
+} from '../../../controls/background-solid-or-gradient-thumbnail-control'
 
 function getIndexedUpdateStringCSSBackgroundLayerSolidColor(index: number) {
   return function indexedUpdateStringCSSBackgroundLayerSolidColor(
@@ -101,7 +101,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
 
     const alpha = parseAlphaFromCSSColor(props.value.color)
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id={`background-layer-subsection-context-menu-row-${props.index}`}
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
@@ -158,7 +158,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
             />
           </GridRow>
         </GridRow>
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   },
 )

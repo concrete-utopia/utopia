@@ -2,9 +2,9 @@ import * as React from 'react'
 
 import { SelectOption, SelectControl } from '../../../controls/select-control'
 import { OptionChainOption, OptionChainControl } from '../../../controls/option-chain-control'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { addSetProperty, unsetPropertyMenuItem } from '../../../new-inspector/context-menu-items'
-import { useInspectorLayoutInfo } from '../../../new-inspector/new-inspector-hooks'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
+import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
 import { ChainedNumberInput, useWrappedEmptyOnSubmitValue } from 'uuiui'
 
@@ -12,7 +12,7 @@ export const PositionControl = betterReactMemo('PositionControl', () => {
   const position = useInspectorLayoutInfo('position')
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id={`flex-element-position-context-menu`}
       items={[unsetPropertyMenuItem('Position', position.onUnsetValues)]}
       data={{}}
@@ -54,7 +54,7 @@ export const PositionControl = betterReactMemo('PositionControl', () => {
         controlStatus={position.controlStatus}
         controlStyles={position.controlStyles}
       />
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 
@@ -62,7 +62,7 @@ export const AlignSelfControl = betterReactMemo('AlignSelfControl', () => {
   const alignSelf = useInspectorLayoutInfo('alignSelf')
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id={`align-self-context-menu`}
       items={[unsetPropertyMenuItem('Align Self', alignSelf.onUnsetValues)]}
       data={{}}
@@ -99,7 +99,7 @@ export const AlignSelfControl = betterReactMemo('AlignSelfControl', () => {
         controlStatus={alignSelf.controlStatus}
         controlStyles={alignSelf.controlStyles}
       />
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 

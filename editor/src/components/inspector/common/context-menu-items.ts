@@ -1,6 +1,6 @@
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import { ContextMenuItem } from '../../context-menu-items'
-import { OnUnsetValues } from './new-inspector-hooks'
+import { OnUnsetValues } from './property-path-hooks'
 
 export const addSetProperty = {
   name: 'Set with Visual script',

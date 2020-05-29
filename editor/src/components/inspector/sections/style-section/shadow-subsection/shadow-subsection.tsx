@@ -5,7 +5,7 @@ import { InspectorSubsectionHeader } from 'uuiui'
 import { FlexRow } from 'uuiui'
 import { BooleanControl } from '../../../controls/boolean-control'
 import { ColorControl } from '../../../controls/color-control'
-import { ControlStatus, ControlStyles } from '../../../widgets/control-status'
+import { ControlStatus, ControlStyles } from '../../../common/control-status'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import {
   CSSBoxShadow,
@@ -20,17 +20,14 @@ import {
   EmptyInputValue,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
-} from '../../../new-inspector/css-utils'
-import {
-  useInspectorStyleInfo,
-  useIsSubSectionVisible,
-} from '../../../new-inspector/new-inspector-hooks'
-import { stopPropagation } from '../../../utils'
+} from '../../../common/css-utils'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
+import { stopPropagation } from '../../../common/inspector-utils'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
-import { useGetSubsectionHeaderStyle } from '../../../new-inspector/inspector-utils'
+import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { SquareButton } from 'uuiui'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { addOnUnsetValues, removeRow } from '../../../new-inspector/context-menu-items'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { addOnUnsetValues, removeRow } from '../../../common/context-menu-items'
 import utils from '../../../../../utils/utils'
 import { betterReactMemo } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
@@ -251,7 +248,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
   }, [shadowsLength, spliceFn, onUnsetValues, borderIsDefined])
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id={`shadow-row-context-menu-${props.index}`}
       items={[removeShadow, ...props.contextMenuItems]}
       data={null}
@@ -320,7 +317,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
           ]}
         />
       </GridRow>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 
@@ -384,7 +381,7 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
     return null
   }
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id='shadow-subsection-context-menu'
       items={contextMenuItems}
       data={null}
@@ -458,7 +455,7 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
           })
         )}
       </div>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 ShadowSubsection.displayName = 'ShadowSubsection'

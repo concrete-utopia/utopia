@@ -164,7 +164,7 @@ import { openMenu } from '../../context-menu-wrapper'
 import { CodeResultCache, generateCodeResultCache } from '../../custom-code/code-file'
 import { ElementContextMenuInstance } from '../../element-context-menu'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
-import { FontSettings } from '../../inspector/new-inspector/css-utils'
+import { FontSettings } from '../../inspector/common/css-utils'
 import { CSSTarget } from '../../inspector/sections/header-section/target-selector'
 import {
   LeftMenuTab,

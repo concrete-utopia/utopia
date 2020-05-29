@@ -12,7 +12,7 @@ import {
   StringControlDescription,
   IgnoreControlDescription,
 } from 'utopia-api'
-import { parseColor } from '../../components/inspector/new-inspector/css-utils'
+import { parseColor } from '../../components/inspector/common/css-utils'
 import {
   descriptionParseError,
   objectFieldNotPresentParseError,
