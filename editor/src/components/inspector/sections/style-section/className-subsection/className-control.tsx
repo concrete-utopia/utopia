@@ -5,9 +5,9 @@ import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
 import { UNSAFE_getIconURL, InspectorSubsectionHeader, Section, UtopiaTheme } from 'uuiui'
 import { betterReactMemo, SelectOption, Utils } from 'uuiui-deps'
-import { useGetSubsectionHeaderStyle } from '../../../new-inspector/inspector-utils'
-import { useInspectorMetadataInfo } from '../../../new-inspector/new-inspector-hooks'
 import { GridRow } from '../../../widgets/grid-row'
+import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
+import { useInspectorMetadataInfo } from '../../../common/property-path-hooks'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<SelectOption>> = () =>
   null
