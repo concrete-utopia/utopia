@@ -89,16 +89,16 @@ function has(importOrigin: string, name: string) {
 export var System = {
   get: get,
   has: has,
-  setModule: function(name: string, sourceMap: RawSourceMap | null) {
+  setModule: function (name: string, sourceMap: RawSourceMap | null) {
     currentModule = normalizeName('/', name)
     if (sourceMap != null) {
       sourceMapRegistry[currentModule] = sourceMap
     }
   },
-  getModule: function(importOrigin: string, name: string, skipRegistering: boolean) {
+  getModule: function (importOrigin: string, name: string, skipRegistering: boolean) {
     return get(importOrigin, name, skipRegistering)
   },
-  register: function(deps: Array<string>, wrapper: any) {
+  register: function (deps: Array<string>, wrapper: any) {
     if (currentModule == null) {
       throw Error('No module name set')
     }
@@ -114,17 +114,17 @@ export var System = {
       // exported values
       values: values,
       // normalized deps
-      deps: deps.map(function(dep) {
+      deps: deps.map(function (dep) {
         return normalizeName(name, dep)
       }),
       // other modules that depends on this so we can push updates into those modules
       dependants: [],
       // method used to push updates of deps into the module body
-      update: function(moduleName: string, moduleObj: any) {
+      update: function (moduleName: string, moduleObj: any) {
         meta.setters[mod.deps.indexOf(moduleName)](moduleObj)
       },
-      execute: function() {
-        mod.deps.forEach(function(dep: string) {
+      execute: function () {
+        mod.deps.forEach(function (dep: string) {
           var imports = externalRegistry[dep] || requireFn('/', dep)
           if (imports) {
             mod.update(dep, imports)
@@ -152,11 +152,11 @@ export var System = {
       internalRegistry[name].values['default'] = values
     }
     // collecting execute() and setters[]
-    meta = wrapper(function(identifierOrModule: any, value: any) {
+    meta = wrapper(function (identifierOrModule: any, value: any) {
       if (typeof identifierOrModule === 'string') {
         values[identifierOrModule] = value
         mod.lock = true // locking down the updates on the module to avoid infinite loop
-        mod.dependants.forEach(function(moduleName: string) {
+        mod.dependants.forEach(function (moduleName: string) {
           if (internalRegistry[moduleName] && !internalRegistry[moduleName].lock) {
             internalRegistry[moduleName].update(name, values)
           }
@@ -165,7 +165,7 @@ export var System = {
         if (!Object.getOwnPropertyDescriptor(proxy, identifierOrModule)) {
           Object.defineProperty(proxy, identifierOrModule, {
             enumerable: true,
-            get: function() {
+            get: function () {
               return values[identifierOrModule]
             },
           })
@@ -178,7 +178,7 @@ export var System = {
             values[key] = valueFromModule
             Object.defineProperty(proxy, key, {
               enumerable: true,
-              get: function() {
+              get: function () {
                 return valueFromModule
               },
             })

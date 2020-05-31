@@ -134,7 +134,7 @@ export const FlexLayoutHelpers = {
       right(props),
     )
   },
-  getFlexWrap: function(props: JSXAttributes): 'wrap' | 'wrap-reverse' | 'nowrap' {
+  getFlexWrap: function (props: JSXAttributes): 'wrap' | 'wrap-reverse' | 'nowrap' {
     return getLayoutPropertyOr(
       'nowrap', // TODO read this value from spy
       'flexWrap',

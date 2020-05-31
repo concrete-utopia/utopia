@@ -576,7 +576,7 @@ function watch(
 ) {
   const fileVersions: TS.MapLike<FileVersion> = {}
 
-    // Initialize the code file version with 0
+  // Initialize the code file version with 0
   ;[...codeFilesToWatch, ...otherFilesToWatch].forEach((filename) => {
     fileVersions[filename] = { versionNr: 0, emitted: false, asStringCached: null }
   })

@@ -460,7 +460,7 @@ export const MetadataUtils = {
       return null
     }
   },
-  getYogaDirection: function(
+  getYogaDirection: function (
     instance: ElementInstanceMetadata | null,
   ): 'row' | 'row-reverse' | 'column' | 'column-reverse' {
     if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
@@ -478,7 +478,7 @@ export const MetadataUtils = {
       path == null || TP.isScenePath(path) ? null : this.getElementByInstancePathMaybe(scenes, path)
     return this.getYogaDirection(instance)
   },
-  getYogaWrap: function(
+  getYogaWrap: function (
     instance: ElementInstanceMetadata | null,
   ): 'wrap' | 'wrap-reverse' | 'nowrap' {
     if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
@@ -1001,7 +1001,7 @@ export const MetadataUtils = {
       return Utils.optionalMap((e) => e.localFrame, element)
     }
   },
-  getFrameRelativeTo: function(
+  getFrameRelativeTo: function (
     parent: TemplatePath | null,
     metadata: Array<ComponentMetadata>,
     frame: CanvasRectangle,
@@ -1133,7 +1133,7 @@ export const MetadataUtils = {
       return null
     }
   },
-  getTargetParentForPaste: function(
+  getTargetParentForPaste: function (
     imports: Imports,
     selectedViews: Array<TemplatePath>,
     scenes: Array<ComponentMetadata>,

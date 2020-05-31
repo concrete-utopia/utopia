@@ -141,9 +141,7 @@ export const BackgroundSolidOrGradientThumbnailControl = betterReactMemo(
         <StringControl
           id={`string-${props.id}`}
           key={'color-string'}
-          value={cssColorToChromaColorOrDefault(props.value.color)
-            .hex()
-            .toUpperCase()}
+          value={cssColorToChromaColorOrDefault(props.value.color).hex().toUpperCase()}
           readOnly={props.controlStyles.interactive}
           onSubmitValue={props.onSubmitSolidStringValue}
           controlStatus={props.controlStatus}
@@ -218,9 +216,7 @@ export const StringBackgroundColorControl = betterReactMemo(
         id={`string-${props.id}`}
         key={'color-string'}
         style={props.style}
-        value={cssColorToChromaColorOrDefault(value.color)
-          .hex()
-          .toUpperCase()}
+        value={cssColorToChromaColorOrDefault(value.color).hex().toUpperCase()}
         readOnly={props.controlStyles.interactive}
         onSubmitValue={props.onSubmitSolidStringValue}
         controlStatus={props.controlStatus}

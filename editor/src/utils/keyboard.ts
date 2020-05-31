@@ -146,25 +146,25 @@ function keyCharacterFromCode(keyCode: number): KeyCharacter {
 }
 
 export const Keyboard = {
-  keyFromEvent: function(event: KeyboardEvent): Key {
+  keyFromEvent: function (event: KeyboardEvent): Key {
     return {
       character: keyCharacterFromCode(event.keyCode).toLowerCase() as KeyCharacter,
       modifiers: modifiersForEvent(event),
     }
   },
-  key: function(character: KeyCharacter, modifiers: Array<Modifier> = []): Key {
+  key: function (character: KeyCharacter, modifiers: Array<Modifier> = []): Key {
     return {
       character: character,
       modifiers: modifiers,
     }
   },
-  areSameKey: function(key1: Key, key2: Key): boolean {
+  areSameKey: function (key1: Key, key2: Key): boolean {
     return (
       key1.character === key2.character && R.equals(key1.modifiers.sort(), key2.modifiers.sort())
     )
   },
   keyCharacterForCode: keyCharacterFromCode,
-  keyIsModifier: function(key: KeyCharacter): boolean {
+  keyIsModifier: function (key: KeyCharacter): boolean {
     return R.any(
       (char) => {
         return char === key
@@ -172,7 +172,7 @@ export const Keyboard = {
       ['alt', 'cmd', 'ctrl', 'shift'],
     )
   },
-  keyTriggersScroll: function(key: KeyCharacter, keysPressed: KeysPressed): boolean {
+  keyTriggersScroll: function (key: KeyCharacter, keysPressed: KeysPressed): boolean {
     return (
       R.any(
         (char) => {

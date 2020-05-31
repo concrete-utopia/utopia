@@ -80,7 +80,7 @@ export const Devices: { [key: string]: DeviceModel } = {
 }
 
 export const Device = {
-  fitIn: function(area: CanvasRectangle, device: DeviceModel): DeviceModel {
+  fitIn: function (area: CanvasRectangle, device: DeviceModel): DeviceModel {
     let scale = Math.min(area.width / device.frame.width, area.height / device.frame.height)
     const scaledFrame = Utils.scaleRect(device.frame, scale)
 
@@ -97,7 +97,7 @@ export const Device = {
     }
   },
 
-  asScreenOnly: function(device: DeviceModel): DeviceModel {
+  asScreenOnly: function (device: DeviceModel): DeviceModel {
     const viewport = {
       width: device.viewport.width,
       height: device.viewport.height,

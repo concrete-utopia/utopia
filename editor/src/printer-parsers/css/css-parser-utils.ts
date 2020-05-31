@@ -70,7 +70,7 @@ export const parseCSSKeyword: Parser<CSSKeyword> = (match: unknown) => {
 }
 
 export function parseCSSValidKeyword<T extends string>(valid: Array<T>): Parser<CSSKeyword<T>> {
-  return function(value: unknown) {
+  return function (value: unknown) {
     const parsed = parseCSSKeyword(value)
     if (isRight(parsed)) {
       if (valid.includes(parsed.value.value as T)) {
@@ -136,7 +136,7 @@ export const parseLengthPercentage: Parser<CSSNumber> = (value: unknown) => {
 }
 
 export function parseWholeValue<T>(parser: Parser<T>): Parser<T> {
-  return function(match: unknown) {
+  return function (match: unknown) {
     if (Array.isArray(match) && match.length === 1) {
       return parser(match[0])
     } else {
@@ -151,7 +151,7 @@ export function parseCurlyBraces<T>(
   max: number,
   parsers: Array<Parser<T>>,
 ): Parser<ParsedCurlyBrace<T>> {
-  return function(match: unknown) {
+  return function (match: unknown) {
     if (Array.isArray(match) && match.length >= min && match.length <= max) {
       const parsed = sequenceEither(
         match.map((m) => parseAlternative(parsers, 'Match is not valid curly brace value.')(m)),
