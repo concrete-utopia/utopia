@@ -316,7 +316,7 @@ const FileBrowserActionSheet = betterReactMemo(
       [dispatch],
     )
     const addCodeFileClick = React.useCallback(
-      () => dispatch([EditorActions.addCodeFile('')], 'everyone'),
+      () => dispatch([EditorActions.addCodeFile('', 'unnamed file')], 'everyone'),
       [dispatch],
     )
     if (props.visible) {

@@ -3296,7 +3296,7 @@ export const UPDATE_FNS = {
   },
   ADD_CODE_FILE: (action: AddCodeFile, editor: EditorModel): EditorModel => {
     const pathPrefix = action.parentPath == '' ? '' : action.parentPath + '/'
-    const newFileKey = uniqueProjectContentID(pathPrefix + 'code.js', editor.projectContents)
+    const newFileKey = uniqueProjectContentID(pathPrefix + action.fileName, editor.projectContents)
     const newCodeFile = codeFile('', null)
 
     const updatedProjectContents = ensureDirectoriesExist({
@@ -4924,9 +4924,10 @@ export function clearImageFileBlob(uiFilePath: string, elementID: string): Clear
   }
 }
 
-export function addCodeFile(parentPath: string): AddCodeFile {
+export function addCodeFile(parentPath: string, fileName: string): AddCodeFile {
   return {
     action: 'ADD_CODE_FILE',
+    fileName: fileName,
     parentPath: parentPath,
   }
 }
