@@ -733,7 +733,7 @@ class FileBrowserItemInner extends React.PureComponent<
               alignItems: 'center',
             }}
           >
-            <input
+            <StringInput
               value={this.state.isAddingChildName}
               autoFocus
               onKeyDown={inputLabelKeyDown}
