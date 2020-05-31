@@ -117,6 +117,7 @@ data ServiceCallsF a = NotFound
                      | GetEditorIndexHtml (Text -> a)
                      | GetPreviewIndexHtml (Text -> a)
                      | GetHashedAssetPaths (Value -> a)
+                     | GetPackagePackagerContent Text Text (BL.ByteString -> a)
                      deriving Functor
 
 {-

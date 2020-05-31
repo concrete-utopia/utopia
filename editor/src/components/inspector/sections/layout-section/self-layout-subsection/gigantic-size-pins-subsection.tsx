@@ -9,18 +9,14 @@ import {
 } from '../../../../../core/layout/layout-helpers-new'
 import { LocalRectangle } from '../../../../../core/shared/math-utils'
 import Utils from '../../../../../utils/utils'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { FullFrame, getFullFrame } from '../../../../frame'
-import { unsetPropertyMenuItem } from '../../../new-inspector/context-menu-items'
-import {
-  CSSNumber,
-  cssNumberToFramePin,
-  framePinToCSSNumber,
-} from '../../../new-inspector/css-utils'
-import { FramePinsInfo, usePinToggling } from '../../../new-inspector/layout-hooks'
-import { useInspectorLayoutInfo } from '../../../new-inspector/new-inspector-hooks'
+import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
+import { CSSNumber, cssNumberToFramePin, framePinToCSSNumber } from '../../../common/css-utils'
+import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-path-hooks'
+import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { GridRow } from '../../../widgets/grid-row'
-import { PinControl, PinHeightControl, PinWidthControl } from '../../../widgets/pin-control'
+import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { ResolvedLayoutProps } from '../layout-section'
 import { SelfLayoutTab } from './self-layout-subsection'
@@ -66,7 +62,7 @@ export const PinsLayoutNumberControl = betterReactMemo(
     )
 
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id={`position-${props.prop}-context-menu`}
         items={[unsetPropertyMenuItem(framePoint, pointInfo.onUnsetValues)]}
         data={{}}
@@ -80,7 +76,7 @@ export const PinsLayoutNumberControl = betterReactMemo(
           controlStatus={pointInfo.controlStatus}
           numberType={'UnitlessPercent'}
         />
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   },
 )
@@ -124,7 +120,7 @@ export const FlexStyleNumberControl = betterReactMemo(
       layoutPropInfo.onUnsetValues,
     )
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id={`position-${props.styleProp}-context-menu`}
         items={[unsetPropertyMenuItem(props.styleProp, layoutPropInfo.onUnsetValues)]}
         data={{}}
@@ -138,7 +134,7 @@ export const FlexStyleNumberControl = betterReactMemo(
           numberType={'UnitlessPercent'}
           labelInner={props.label}
         />
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   },
 )
@@ -169,7 +165,7 @@ export const FlexLayoutNumberControl = betterReactMemo(
     )
 
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id={`position-${props.layoutProp}-context-menu`}
         items={[unsetPropertyMenuItem(props.layoutProp, layoutPropInfo.onUnsetValues)]}
         data={{}}
@@ -183,7 +179,7 @@ export const FlexLayoutNumberControl = betterReactMemo(
           numberType={'UnitlessPercent'}
           labelInner={props.label}
         />
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   },
 )
@@ -203,14 +199,14 @@ const PinControls = betterReactMemo('PinControls', (props: PinControlsProps) => 
   }
 
   return (
-    <NewInspectorContextMenuWrapper id='pins-context-menu' items={[resetPinsItem]} data={null}>
+    <InspectorContextMenuWrapper id='pins-context-menu' items={[resetPinsItem]} data={null}>
       <PinControl
         framePoints={props.framePins}
         controlStatus='simple'
         handlePinMouseDown={props.togglePin}
         style={{ paddingTop: 7 }}
       />
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 

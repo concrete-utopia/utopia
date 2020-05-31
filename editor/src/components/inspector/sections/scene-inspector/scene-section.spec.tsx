@@ -1,10 +1,7 @@
 import * as React from 'react'
 import { render, fireEvent, act } from '@testing-library/react'
 
-import {
-  getStoreHook,
-  TestInspectorContextProvider,
-} from '../../new-inspector/inspector-test-utils'
+import { getStoreHook, TestInspectorContextProvider } from '../../common/inspector-test-utils'
 import utils from '../../../../utils/utils'
 import { CanvasVector } from '../../../../core/shared/math-utils'
 import { SceneSection } from './scene-section'

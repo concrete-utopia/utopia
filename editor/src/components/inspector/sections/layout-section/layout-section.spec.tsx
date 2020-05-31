@@ -13,7 +13,7 @@ import {
   editPropOfSelectedView,
   getStoreHook,
   TestInspectorContextProvider,
-} from '../../new-inspector/inspector-test-utils'
+} from '../../common/inspector-test-utils'
 import { LayoutSection } from './layout-section'
 
 describe('Layout Section', () => {

@@ -4,7 +4,7 @@ import * as classNames from 'classnames'
 import * as React from 'react'
 import { StringInput } from 'uuiui'
 import { ControlProps, GenericControlOptions } from './control'
-import { usePropControlledState } from '../utils'
+import { usePropControlledState } from '../common/inspector-utils'
 import { betterReactMemo } from 'uuiui-deps'
 
 export interface StringControlOptions extends GenericControlOptions {

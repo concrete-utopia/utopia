@@ -34,7 +34,7 @@ import {
   toggleShadow,
   toggleSimple,
   toggleStyleProp,
-} from '../inspector/new-inspector/css-utils'
+} from '../inspector/common/css-utils'
 import { LeftMenuTab } from '../navigator/left-pane'
 import * as PP from '../../core/shared/property-path'
 import * as TP from '../../core/shared/template-path'

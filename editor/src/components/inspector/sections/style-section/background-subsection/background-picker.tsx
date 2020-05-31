@@ -24,10 +24,10 @@ import {
   isCSSRadialGradientBackgroundLayer,
   isCSSSolidBackgroundLayer,
   isCSSBackgroundLayerWithBGSize,
-} from '../../../new-inspector/css-utils'
-import { UseSubmitValueFactory } from '../../../new-inspector/new-inspector-hooks'
-import { stopPropagation, useHandleCloseOnESCOrEnter } from '../../../utils'
-import { ControlStatus } from '../../../widgets/control-status'
+} from '../../../common/css-utils'
+import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
+import { stopPropagation, useHandleCloseOnESCOrEnter } from '../../../common/inspector-utils'
+import { ControlStatus } from '../../../common/control-status'
 import { InspectorModal } from '../../../widgets/inspector-modal'
 import {
   backgroundLayerTypeSelectOptions,
@@ -44,8 +44,8 @@ import {
 import { GradientStopsEditor } from './gradient-stop-editor'
 import { getIndexedUpdateCSSBackgroundLayerLinearGradientAngle } from './linear-gradient-layer'
 import { PickerImagePreview } from './picker-image-preview'
-import { URLBackgroundLayerMetadataControls } from './url-background-layer-metadata-controls'
-import { BGSizeMetadataControl } from './bg-size-metadata-control'
+import { URLBackgroundLayerMetadataControls } from '../../../controls/url-background-layer-metadata-controls'
+import { BGSizeMetadataControl } from '../../../controls/bg-size-metadata-control'
 
 const backgroundLayerOptionsByValue: {
   [key in CSSBackgroundLayerType]: CSSBackgroundLayerTypeSelectOption

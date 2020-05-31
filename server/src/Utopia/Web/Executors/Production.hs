@@ -197,6 +197,9 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask
   AssetResultCache{..} <- liftIO $ readIORef _assetResultCache
   return $ action _editorMappings
+innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptPackageVersion action) = do
+  packagerContent <- liftIO $ getPackagerContent javascriptPackageName javascriptPackageVersion
+  return $ action packagerContent
 
 {-|
   Invokes a service call using the supplied resources.

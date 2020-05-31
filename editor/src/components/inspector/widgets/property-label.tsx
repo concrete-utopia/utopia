@@ -2,9 +2,9 @@ import * as React from 'react'
 import * as R from 'ramda'
 
 import * as PP from '../../../core/shared/property-path'
-import { betterReactMemo, NewInspectorContextMenuWrapper } from 'uuiui-deps'
-import { useInspectorInfoSimpleUntyped } from '../new-inspector/new-inspector-hooks'
-import { optionalAddOnUnsetValues } from '../new-inspector/context-menu-items'
+import { betterReactMemo, InspectorContextMenuWrapper } from 'uuiui-deps'
+import { useInspectorInfoSimpleUntyped } from '../common/property-path-hooks'
+import { optionalAddOnUnsetValues } from '../common/context-menu-items'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 
 type PropertyLabelProps = {
@@ -30,7 +30,7 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
     metadata.onUnsetValues,
   )
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id={`property-label-${props.target}`}
       data={null}
       items={contextMenuItems}
@@ -40,6 +40,6 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
       }}
     >
       {props.children}
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })

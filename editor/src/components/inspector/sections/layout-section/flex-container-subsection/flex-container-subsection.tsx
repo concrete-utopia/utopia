@@ -1,10 +1,7 @@
 import * as React from 'react'
 import { FlexWrap } from 'utopia-api'
-import { ControlStatus, ControlStyles, getControlStyles } from '../../../widgets/control-status'
-import {
-  useInspectorLayoutInfo,
-  useInspectorStyleInfo,
-} from '../../../new-inspector/new-inspector-hooks'
+import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
+import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
 import {

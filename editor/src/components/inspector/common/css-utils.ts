@@ -26,26 +26,6 @@ import {
 } from 'utopia-api'
 import { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import {
-  isJSXAttributeFunctionCall,
-  JSXAttributeFunctionCall,
-  jsxAttributeFunctionCall,
-  jsxAttributeValue,
-  JSXAttributeValue,
-  JSXElement,
-  JSXAttributes,
-  isJSXAttributeNotFound,
-  isPartOfJSXAttributeValue,
-  isRegularJSXAttribute,
-} from '../../../core/shared/element-template'
-import {
-  getModifiableJSXAttributeAtPath,
-  jsxFunctionAttributeToRawValue,
-  jsxSimpleAttributeToValue,
-  ModifiableAttribute,
-  setJSXValueAtPath,
-} from '../../../core/shared/jsx-attributes'
-import { PropertyPath } from '../../../core/shared/project-file-types'
-import {
   applicative2Either,
   bimapEither,
   Either,
@@ -58,17 +38,37 @@ import {
   right,
   traverseEither,
 } from '../../../core/shared/either'
+import {
+  isJSXAttributeFunctionCall,
+  isJSXAttributeNotFound,
+  isPartOfJSXAttributeValue,
+  isRegularJSXAttribute,
+  JSXAttributeFunctionCall,
+  jsxAttributeFunctionCall,
+  JSXAttributes,
+  jsxAttributeValue,
+  JSXAttributeValue,
+  JSXElement,
+} from '../../../core/shared/element-template'
+import {
+  getModifiableJSXAttributeAtPath,
+  jsxFunctionAttributeToRawValue,
+  jsxSimpleAttributeToValue,
+  ModifiableAttribute,
+  setJSXValueAtPath,
+} from '../../../core/shared/jsx-attributes'
+import {
+  NumberOrPercent,
+  numberOrPercentToNumber,
+  parseNumber,
+  parseNumberOrPercent,
+} from '../../../core/shared/math-utils'
+import { PropertyPath } from '../../../core/shared/project-file-types'
+import { PrimitiveType, ValueOf } from '../../../core/shared/utils'
+import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
 import Utils from '../../../utils/utils'
 import { updateBorderEnabled } from '../sections/style-section/border-subsection/border-subsection'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
-import { ValueOf, PrimitiveType } from '../../../core/shared/utils'
-import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
-import {
-  NumberOrPercent,
-  parseNumberOrPercent,
-  numberOrPercentToNumber,
-  parseNumber,
-} from '../../../core/shared/math-utils'
 
 var combineRegExp = function(regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''

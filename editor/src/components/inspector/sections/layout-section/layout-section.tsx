@@ -3,7 +3,7 @@ import { CanvasRectangle, LocalRectangle } from '../../../../core/shared/math-ut
 import { betterReactMemo } from 'uuiui-deps'
 import { LayoutSystemSubsection } from './layout-system-subsection/layout-system-subsection'
 import { SelfLayoutSubsection } from './self-layout-subsection/self-layout-subsection'
-import { CSSPosition } from '../../new-inspector/css-utils'
+import { CSSPosition } from '../../common/css-utils'
 
 export interface ResolvedLayoutProps {
   frame: LocalRectangle | null

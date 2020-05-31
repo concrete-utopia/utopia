@@ -7,7 +7,7 @@ import { InspectorSubsectionHeader } from 'uuiui'
 import { FlexRow } from 'uuiui'
 import { BooleanControl } from '../../../controls/boolean-control'
 import { ColorControl } from '../../../controls/color-control'
-import { ControlStatus, ControlStyles } from '../../../widgets/control-status'
+import { ControlStatus, ControlStyles } from '../../../common/control-status'
 import { PropertyRow, PropertyRowHeightWithLabel } from '../../../widgets/property-row'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import {
@@ -20,16 +20,13 @@ import {
   EmptyInputValue,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
-} from '../../../new-inspector/css-utils'
-import {
-  useInspectorStyleInfo,
-  useIsSubSectionVisible,
-} from '../../../new-inspector/new-inspector-hooks'
-import { stopPropagation } from '../../../utils'
+} from '../../../common/css-utils'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
+import { stopPropagation } from '../../../common/inspector-utils'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { SquareButton } from 'uuiui'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { addOnUnsetValues } from '../../../new-inspector/context-menu-items'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { addOnUnsetValues } from '../../../common/context-menu-items'
 import utils from '../../../../../utils/utils'
 import { betterReactMemo } from 'uuiui-deps'
 
@@ -276,7 +273,7 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
 
   if (isVisible) {
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id='text-shadow-subsection-context-menu'
         items={contextMenuItems}
         data={null}
@@ -338,7 +335,7 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
             })
           )}
         </div>
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   } else {
     return null

@@ -1,15 +1,11 @@
 import * as React from 'react'
-import { LayoutSystem } from 'utopia-api'
 import { betterReactMemo } from 'uuiui-deps'
-import { jsxAttributeValue } from '../../../../core/shared/element-template'
 import Utils from '../../../../utils/utils'
 import { useWrappedEmptyOnSubmitValue } from '../../../../uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
-import * as PP from '../../../../core/shared/property-path'
-import * as TP from '../../../../core/shared/template-path'
+import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
+import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
+import { useInspectorLayoutInfo } from '../../common/property-path-hooks'
 import { OptionChainControl, OptionChainOption } from '../../controls/option-chain-control'
-import { cssEmptyValues, layoutEmptyValues } from '../../new-inspector/css-utils'
-import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../widgets/control-status'
 import { PropertyRow } from '../../widgets/property-row'
 import {
   FlexAlignContentControl,
@@ -20,7 +16,6 @@ import {
   FlexWrapControl,
   getDirectionAwareLabels,
 } from '../layout-section/flex-container-subsection/flex-container-controls'
-import { useInspectorLayoutInfo } from '../../new-inspector/new-inspector-hooks'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 

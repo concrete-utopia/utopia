@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { colorTheme, FlexRow, Icn, Tooltip, UtopiaTheme } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
-import { CSSURLFunctionBackgroundLayer } from '../new-inspector/css-utils'
+import { CSSURLFunctionBackgroundLayer } from '../common/css-utils'
 import { BackgroundPicker } from '../sections/style-section/background-subsection/background-picker'
 import {
   backgroundControlContainerStyle,
   BackgroundThumbnailControlProps,
-} from '../sections/style-section/background-subsection/background-solid-or-gradient-thumbnail-control'
-import { clampString } from '../utils'
+} from './background-solid-or-gradient-thumbnail-control'
+import { clampString } from '../common/inspector-utils'
 
 interface ImageThumbnailControlProps extends BackgroundThumbnailControlProps {
   value: CSSURLFunctionBackgroundLayer

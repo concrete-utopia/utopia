@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { NumberInput, PopupList } from '../../../../../uuiui'
-import { SelectOption } from '../../../../../uuiui-deps'
+import { NumberInput, PopupList } from '../../../uuiui'
+import { SelectOption } from '../../../uuiui-deps'
 import {
   CSSBackgroundLayers,
   cssBGSize,
@@ -20,10 +20,10 @@ import {
   isEmptyInputValue,
   isParsedCurlyBrace,
   parsedCurlyBrace,
-} from '../../../new-inspector/css-utils'
-import { ControlStatus } from '../../../widgets/control-status'
-import { UseSubmitTransformedValuesFactory } from './background-layer-helpers'
-import { MetadataControlsStyle } from './background-picker'
+} from '../common/css-utils'
+import { ControlStatus } from '../common/control-status'
+import { UseSubmitTransformedValuesFactory } from '../sections/style-section/background-subsection/background-layer-helpers'
+import { MetadataControlsStyle } from '../sections/style-section/background-subsection/background-picker'
 
 interface BGSizeMetadataControlProps {
   index: number

@@ -7,17 +7,17 @@ import { Icn } from 'uuiui'
 import { NumberInput } from 'uuiui'
 import { InspectorSubsectionHeader } from 'uuiui'
 import { FlexRow } from 'uuiui'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { BooleanControl } from '../../../controls/boolean-control'
 import { OnSubmitValue } from '../../../controls/control'
 import { LightSelectControl } from '../../../controls/lightselect-control'
 import { SelectOption } from '../../../controls/select-control'
 import { FakeUnknownArrayItem, UnknownArrayItem } from '../../../controls/unknown-array-item'
-import { stopPropagation } from '../../../utils'
-import { ControlStatus, ControlStyles } from '../../../widgets/control-status'
+import { stopPropagation } from '../../../common/inspector-utils'
+import { ControlStatus, ControlStyles } from '../../../common/control-status'
 import { PropertyRow } from '../../../widgets/property-row'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
-import { addOnUnsetValues } from '../../../new-inspector/context-menu-items'
+import { addOnUnsetValues } from '../../../common/context-menu-items'
 import {
   CSSTransformDoubleLengthItem,
   CSSTransformItem,
@@ -52,16 +52,16 @@ import {
   cssDefault,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   CSSDefault,
-} from '../../../new-inspector/css-utils'
+} from '../../../common/css-utils'
 import {
   useGetSubsectionHeaderStyle,
   getIndexedSpliceArrayItem,
-} from '../../../new-inspector/inspector-utils'
+} from '../../../common/inspector-utils'
 import {
   useInspectorStyleInfo,
   useIsSubSectionVisible,
   UseSubmitValueFactory,
-} from '../../../new-inspector/new-inspector-hooks'
+} from '../../../common/property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
 
 const ObjectPathImmutable: any = OPI
@@ -538,7 +538,7 @@ export const TransformSubsection = betterReactMemo('TransformSubsection', () => 
     return null
   } else {
     return (
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id='transform-subsection-context-menu'
         items={transformContextMenuItems}
         data={null}
@@ -632,7 +632,7 @@ export const TransformSubsection = betterReactMemo('TransformSubsection', () => 
             })}
           </div>
         )}
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
     )
   }
 })

@@ -10,9 +10,9 @@ import {
   orderStops,
   printColor,
   printLinearGradientBackgroundLayer,
-} from '../../../new-inspector/css-utils'
-import { checkerboardBackground } from '../../../utils'
-import { ControlStyleDefaults } from '../../../widgets/control-status'
+} from '../../../common/css-utils'
+import { checkerboardBackground } from '../../../common/inspector-utils'
+import { ControlStyleDefaults } from '../../../common/control-status'
 import { inspectorEdgePadding } from './background-picker'
 
 interface GradientStopProps {

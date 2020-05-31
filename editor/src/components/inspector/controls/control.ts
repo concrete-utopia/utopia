@@ -2,10 +2,9 @@ import { OptionChainOption } from './option-chain-control'
 import { OptionControlOptions } from './option-control'
 import { SelectControlOptions, SelectOption } from './select-control'
 import { SliderControlOptions } from './slider-control'
-import { ControlType } from '../integration-types'
 import { StringControlOptions } from './string-control'
-import { ControlStatus, ControlStyles } from '../widgets/control-status'
-import { EmptyInputValue } from '../new-inspector/css-utils'
+import { ControlStatus, ControlStyles } from '../common/control-status'
+import { EmptyInputValue } from '../common/css-utils'
 
 export interface GenericControlOptions {
   tooltip?: React.ReactElement<any> | string

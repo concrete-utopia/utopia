@@ -10,6 +10,7 @@ import {
   valueToUseForPin,
   VerticalFramePoints,
 } from 'utopia-api'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import {
   createLayoutPropertyPath,
   framePointForPinnedProp,
@@ -17,20 +18,19 @@ import {
   pinnedPropForFramePoint,
 } from '../../../core/layout/layout-helpers-new'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isJSXElement, jsxAttributeValue } from '../../../core/shared/element-template'
 import { isLeft, right } from '../../../core/shared/either'
-import { InstancePath } from '../../../core/shared/project-file-types'
-import Utils from '../../../utils/utils'
+import { isJSXElement, jsxAttributeValue } from '../../../core/shared/element-template'
 import { LocalRectangle } from '../../../core/shared/math-utils'
+import { InstancePath } from '../../../core/shared/project-file-types'
+import * as TP from '../../../core/shared/template-path'
+import Utils from '../../../utils/utils'
 import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/actions'
 import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { getFullFrame } from '../../frame'
-import * as TP from '../../../core/shared/template-path'
-import { InspectorInfo, useInspectorLayoutInfo } from './new-inspector-hooks'
+import { InspectorInfo, useInspectorLayoutInfo } from './property-path-hooks'
 
 import React = require('react')
-import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 
 const HorizontalPinPreference = [
   FramePoint.Left,
