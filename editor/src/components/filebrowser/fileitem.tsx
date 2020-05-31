@@ -610,7 +610,6 @@ class FileBrowserItemInner extends React.PureComponent<
       this.state.isHovered && this.props.fileType != null && this.props.fileType === 'DIRECTORY'
     const displayDelete = this.state.isHovered
 
-    //@ts-ignore
     const showAddingFileRow = () =>
       this.setState({
         isAddingChild: true,
@@ -619,7 +618,7 @@ class FileBrowserItemInner extends React.PureComponent<
       })
 
     const confirmAddingFile = () => {
-      // this.props.Expand(this.props.path)
+      this.props.Expand(this.props.path)
       this.props.dispatch(
         [EditorActions.addCodeFile(this.props.path, this.state.isAddingChildName)],
         'everyone',
