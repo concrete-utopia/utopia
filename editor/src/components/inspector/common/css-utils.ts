@@ -4099,6 +4099,7 @@ const cssPrinters: CSSPrinters = {
 
 export interface UtopianElementProperties {
   textSizing: TextSizing
+  className: string
 }
 
 interface DOMIMGAttributeProperties {
@@ -4269,10 +4270,10 @@ export const DOMEventHandlerNames = [
   'onTransitionEnd',
   'onTransitionEndCapture',
 ] as const
-export type DOMEventHandler = typeof DOMEventHandlerNames[number]
+export type DOMEventHandler = NonNullable<typeof DOMEventHandlerNames[number]>
 
 type DOMEventAttributeProperties = {
-  [key in DOMEventHandler]: DOMEventHandlerMetadata // or a jsx attribute ... variable? 🤔
+  [key in DOMEventHandler]: DOMEventHandlerMetadata
 }
 
 export interface ParsedElementProperties
@@ -4292,6 +4293,7 @@ const elementPropertiesEmptyValues: ParsedElementProperties = {
   src: '/',
   textSizing: 'fixed',
   ...DOMEventHandlerEmptyValues,
+  className: '',
 }
 
 type MetadataParsers = {
@@ -4308,6 +4310,7 @@ const elementPropertiesParsers: MetadataParsers = {
   src: parseString,
   textSizing: parseTextSizing,
   ...DOMEventHandlerParsers,
+  className: parseString,
 }
 
 type MetadataPrinters = {
@@ -4324,6 +4327,7 @@ const elementPropertiesPrinters: MetadataPrinters = {
   src: printStringAsAttributeValue,
   textSizing: printTextSizing,
   ...DOMEventHandlerPrinters,
+  className: printStringAsAttributeValue,
 }
 
 interface ParsedLayoutProperties {

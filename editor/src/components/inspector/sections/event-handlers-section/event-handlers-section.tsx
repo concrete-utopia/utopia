@@ -13,17 +13,25 @@ import { PropertyLabel } from '../../widgets/property-label'
 
 const ppCreate = (p: string) => PP.create([p])
 
+const regularArrayDOMEventHandlerNames = [...DOMEventHandlerNames]
+
 export const EventHandlersSection = betterReactMemo('EventHandlersSection', () => {
   const { value, onUnsetValues } = useInspectorInfo<DOMEventHandler, ParsedValues<DOMEventHandler>>(
-    DOMEventHandlerNames,
+    regularArrayDOMEventHandlerNames,
     identity,
     identity,
     ppCreate,
   )
 
   const eventHandlersContextMenuItems = utils.stripNulls([
-    value != null ? addOnUnsetValues(DOMEventHandlerNames, onUnsetValues) : null,
+    value != null ? addOnUnsetValues(regularArrayDOMEventHandlerNames, onUnsetValues) : null,
   ])
+
+  const valueKeys = Object.keys(value)
+
+  if (valueKeys.length === 0) {
+    return null
+  }
 
   return (
     <>
@@ -34,7 +42,7 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
         style={{ gridColumn: '1 / span 4' }}
         data={null}
       >
-        {Object.keys(value).map((handlerName) => {
+        {valueKeys.map((handlerName) => {
           if (value.hasOwnProperty(handlerName)) {
             const attributeValue = value[handlerName as DOMEventHandler]
             if (isJSXAttributeOtherJavaScript(attributeValue)) {
