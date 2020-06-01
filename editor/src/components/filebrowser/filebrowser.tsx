@@ -311,10 +311,6 @@ const FileBrowserActionSheet = betterReactMemo(
       () => dispatch([EditorActions.addFolder('')], 'everyone'),
       [dispatch],
     )
-    const addUIJSFileClick = React.useCallback(
-      () => dispatch([EditorActions.addUIJSFile()], 'everyone'),
-      [dispatch],
-    )
     const addCodeFileClick = React.useCallback(
       () => dispatch([EditorActions.addCodeFile('', 'unnamed file')], 'everyone'),
       [dispatch],
