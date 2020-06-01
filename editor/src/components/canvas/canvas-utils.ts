@@ -66,6 +66,7 @@ import {
   RevisionsState,
   TemplatePath,
   importAlias,
+  PropertyPath,
 } from '../../core/shared/project-file-types'
 import {
   getOrDefaultScenes,
@@ -82,6 +83,7 @@ import {
   forEachRight,
   isRight,
   right,
+  isLeft,
 } from '../../core/shared/either'
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
@@ -156,6 +158,8 @@ import {
   PathForSceneStyle,
   BakedInStoryboardUID,
 } from '../../core/model/scene-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
+import { fastForEach } from '../../core/shared/utils'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -291,14 +295,13 @@ export function updateFramesOfScenesAndComponents(
 ): Array<UtopiaJSXComponent> {
   let workingComponentsResult = [...components]
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
-    if (TP.isScenePath(frameAndTarget.target)) {
-      const sceneTarget = frameAndTarget.target
+    const { target } = frameAndTarget
+    if (TP.isScenePath(target)) {
       switch (frameAndTarget.type) {
         case 'PIN_FRAME_CHANGE':
         case 'PIN_MOVE_CHANGE':
           // Update scene with pin based frame.
-
-          const sceneStaticpath = createSceneTemplatePath(sceneTarget)
+          const sceneStaticpath = createSceneTemplatePath(target)
           workingComponentsResult = transformJSXComponentAtPath(
             workingComponentsResult,
             sceneStaticpath,
@@ -330,9 +333,7 @@ export function updateFramesOfScenesAndComponents(
         case 'FLEX_MOVE':
         case 'FLEX_RESIZE':
           throw new Error(
-            `Attempted to change a scene with a flex change ${JSON.stringify(
-              frameAndTarget.target,
-            )}.`,
+            `Attempted to change a scene with a flex change ${JSON.stringify(target)}.`,
           )
         default:
           const _exhaustiveCheck: never = frameAndTarget
@@ -340,8 +341,8 @@ export function updateFramesOfScenesAndComponents(
       }
     } else {
       // Realign to aim at the static version, not the dynamic one.
-      const originalTarget = frameAndTarget.target
-      const staticTarget = MetadataUtils.dynamicPathToStaticPath(metadata, frameAndTarget.target)
+      const originalTarget = target
+      const staticTarget = MetadataUtils.dynamicPathToStaticPath(metadata, target)
       if (staticTarget == null) {
         return
       }
@@ -362,6 +363,7 @@ export function updateFramesOfScenesAndComponents(
         frameAndTarget.type !== 'PIN_FRAME_CHANGE' && frameAndTarget.type !== 'PIN_MOVE_CHANGE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
 
       let propsToSet: Array<ValueAtPath> = []
+      let propsToSkip: Array<PropertyPath> = []
       if (isFlexContainer) {
         if (TP.isInstancePath(staticParentPath)) {
           switch (frameAndTarget.type) {
@@ -452,13 +454,15 @@ export function updateFramesOfScenesAndComponents(
                 parentOffset,
                 frameAndTarget.frame,
               )
+              const currentLocalFrame = MetadataUtils.getFrame(target, metadata)
+              const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
               const fullFrame = Frame.getFullFrame(newLocalFrame)
               const elementProps = element.props
 
               // Pinning layout.
               const frameProps = LayoutPinnedProps.filter((p) => {
                 const value = getLayoutProperty(p, right(elementProps))
-                return isRight(value) && value.value != null
+                return isLeft(value) || value.value != null
               }).map(framePointForPinnedProp)
 
               function whichPropsToUpdate() {
@@ -543,31 +547,34 @@ export function updateFramesOfScenesAndComponents(
                 }
 
                 const absoluteValue = fullFrame[propToUpdate]
-                const existingProp: FramePin | null = eitherToMaybe(
-                  getLayoutProperty(pinnedPropForFramePoint(propToUpdate), right(elementProps)),
-                )
-                const pinIsPercentage =
-                  existingProp != null
-                    ? // what if the prop is not a simple value? what if it was coming from props?
-                      // TODO MISSING FEATURE figure out how to prevent
-                      // us from bulldozing over something like an expression
-                      isPercentPin(existingProp)
-                    : false
-                let valueToUse: string | number
-                if (parentFrame == null) {
-                  valueToUse = absoluteValue
+                const previousValue =
+                  currentFullFrame == null ? null : currentFullFrame[propToUpdate]
+
+                const pinnedPropToUpdate = pinnedPropForFramePoint(propToUpdate)
+                const propPathToUpdate = createLayoutPropertyPath(pinnedPropToUpdate)
+                const existingProp = getLayoutProperty(pinnedPropToUpdate, right(elementProps))
+                if (absoluteValue === previousValue || isLeft(existingProp)) {
+                  // Only update pins that have actually changed or aren't set via code
+                  propsToSkip.push(propPathToUpdate)
                 } else {
-                  valueToUse = valueToUseForPin(
-                    propToUpdate,
-                    absoluteValue,
-                    pinIsPercentage,
-                    parentFrame,
-                  )
+                  const pinIsPercentage =
+                    existingProp.value == null ? false : isPercentPin(existingProp.value)
+                  let valueToUse: string | number
+                  if (parentFrame == null) {
+                    valueToUse = absoluteValue
+                  } else {
+                    valueToUse = valueToUseForPin(
+                      propToUpdate,
+                      absoluteValue,
+                      pinIsPercentage,
+                      parentFrame,
+                    )
+                  }
+                  propsToSet.push({
+                    path: propPathToUpdate,
+                    value: jsxAttributeValue(valueToUse),
+                  })
                 }
-                propsToSet.push({
-                  path: createLayoutPropertyPath(pinnedPropForFramePoint(propToUpdate)),
-                  value: jsxAttributeValue(valueToUse),
-                })
               })
             }
             break
@@ -586,25 +593,31 @@ export function updateFramesOfScenesAndComponents(
       }
 
       if (propsToSet.length > 0) {
+        const propsToNotDelete = [...propsToSet.map((p) => p.path), ...propsToSkip]
         workingComponentsResult = transformJSXComponentAtPath(
           workingComponentsResult,
           staticTarget,
           (e: JSXElement) => {
             // Remove the pinning and flex props first...
-            const propsToRemove =
+            const propsToMaybeRemove =
               frameAndTarget.type === 'PIN_MOVE_CHANGE'
                 ? PinningAndFlexPointsExceptSize // for PIN_MOVE_CHANGE, we don't want to remove the size props, we just keep them intact
                 : PinningAndFlexPoints
-            const layoutPropsRemoved = unsetJSXValuesAtPaths(
-              e.props,
-              propsToRemove.map((p) => {
-                if (isFramePoint(p)) {
-                  return createLayoutPropertyPath(pinnedPropForFramePoint(p))
-                } else {
-                  return createLayoutPropertyPath(p as LayoutProp)
-                }
-              }),
-            )
+            let propsToRemove: Array<PropertyPath> = []
+            function createPropPathForProp(prop: string): PropertyPath {
+              if (isFramePoint(prop)) {
+                return createLayoutPropertyPath(pinnedPropForFramePoint(prop))
+              } else {
+                return createLayoutPropertyPath(prop as LayoutProp)
+              }
+            }
+            fastForEach(propsToMaybeRemove, (prop) => {
+              const propPath = createPropPathForProp(prop)
+              if (!PP.contains(propsToNotDelete, propPath)) {
+                propsToRemove.push(propPath)
+              }
+            })
+            const layoutPropsRemoved = unsetJSXValuesAtPaths(e.props, propsToRemove)
             // ...Add in the updated properties.
 
             const layoutPropsAdded = flatMapEither(

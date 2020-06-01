@@ -132,6 +132,10 @@ export function pathsEqual(l: PropertyPath | null, r: PropertyPath | null): bool
   }
 }
 
+export function contains(paths: Array<PropertyPath>, path: PropertyPath): boolean {
+  return paths.some((p) => pathsEqual(p, path))
+}
+
 export function containsAll(l: PropertyPath, elements: Array<PropertyPathPart>): boolean {
   const propertyElements = getElements(l)
   return elements.every(
