@@ -6,7 +6,7 @@ import {
 } from './property-controls-parser'
 import { PropertyControls, getDefaultProps, ControlDescription } from 'utopia-api'
 import { isRight, foldEither } from '../shared/either'
-import { forEachValue, objectMap } from '../shared/object-utils'
+import { forEachValue } from '../shared/object-utils'
 import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
 import { joinSpecial } from '../shared/array-utils'
