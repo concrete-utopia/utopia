@@ -45,9 +45,7 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
       <StringControl
         id={`string-${props.id}`}
         key={'color-string'}
-        value={cssColorToChromaColorOrDefault(props.value)
-          .hex('rgba')
-          .toUpperCase()}
+        value={cssColorToChromaColorOrDefault(props.value).hex('rgba').toUpperCase()}
         readOnly={props.controlStyles.interactive}
         onSubmitValue={props.onSubmitSolidStringValue}
         controlStatus={props.controlStatus}
@@ -145,9 +143,7 @@ export const StringColorControl = betterReactMemo(
         id={`string-${props.id}`}
         key={'color-string'}
         style={props.style}
-        value={cssColorToChromaColorOrDefault(color)
-          .hex('rgba')
-          .toUpperCase()}
+        value={cssColorToChromaColorOrDefault(color).hex('rgba').toUpperCase()}
         readOnly={props.controlStyles.interactive}
         onSubmitValue={props.onSubmitSolidStringValue}
         controlStatus={props.controlStatus}

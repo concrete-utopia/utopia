@@ -119,7 +119,7 @@ module.exports = async (options, loaderContext) => {
   const printedSanitizedResult = JSON.stringify(resultObject, null, 2).replace(/\\/g, '\\\\')
 
   return new Promise((resolve, reject) => {
-    setTimeout(function() {
+    setTimeout(function () {
       resolve({ code: `module.exports = JSON.parse(\`${printedSanitizedResult}\`)` })
     }, 1000)
   })

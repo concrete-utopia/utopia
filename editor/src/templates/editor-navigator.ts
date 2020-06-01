@@ -32,7 +32,7 @@ export function createDragSelections(
   return selections
 }
 
-export const runLocalNavigatorAction = function(
+export const runLocalNavigatorAction = function (
   model: EditorState,
   derivedState: DerivedState,
   action: LocalNavigatorAction,

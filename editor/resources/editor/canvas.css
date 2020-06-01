@@ -1,4 +1,3 @@
-
 #canvas-root-wrapper {
   width: 100%;
   flex: 1;
@@ -7,15 +6,15 @@
 #canvas-root {
   position: relative;
   overflow: hidden;
-  height: 100%
+  height: 100%;
 }
 
-.canvas-text.canvas-text-editable, .canvas-text.canvas-text-editable * {
+.canvas-text.canvas-text-editable,
+.canvas-text.canvas-text-editable * {
   user-select: text;
   -webkit-user-select: text !important;
   cursor: text;
 }
-
 
 /* #canvas-controls.focused::before  {
   content: ' ';
@@ -28,8 +27,8 @@
   border: 1px solid #0F91E6;
 } */
 
-.scene{
-  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2);
+.scene {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
   /* please leave this in */
 }
 
@@ -40,25 +39,23 @@ svg {
 /* the dot: basic, highlighted, selected */
 
 .physics-snap-point {
-  fill: rgba(0, 214, 114, .8);
+  fill: rgba(0, 214, 114, 0.8);
   stroke: #fff;
   position: relative;
-  -webkit-filter: drop-shadow(0px 1px 3px rgba(0,0,0,0.1));      
-          filter: drop-shadow(0px 1px 3px rgba(0,0,0,0.1));  
-
+  -webkit-filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.1));
 }
 
 .physics-snap-point:hover {
-  fill: rgba(0, 214, 114, .9);
+  fill: rgba(0, 214, 114, 0.9);
 }
-
 
 .physics-snap-point-selected {
   fill: rgba(0, 214, 114, 1);
 }
 
 .physics-snap-point-highlighted {
-  fill: rgba(0, 214, 114, .8);
+  fill: rgba(0, 214, 114, 0.8);
   stroke: #fff;
 }
 
@@ -67,87 +64,86 @@ svg {
   stroke: rgba(255, 56, 93, 1);
   /* the blur syntax does not work for us, I have no idea why */
   /* https://webkit.org/demos/backdrop-filter/ */
-  -webkit-svg-shadow: 0px 1px 2px rgba(83,83,83,.5);
+  -webkit-svg-shadow: 0px 1px 2px rgba(83, 83, 83, 0.5);
 }
 
 .physics #control-highlight-outline {
   stroke: rgba(255, 56, 93, 1);
-  -webkit-svg-shadow: 0px 1px 2px rgba(83,83,83,.5);
+  -webkit-svg-shadow: 0px 1px 2px rgba(83, 83, 83, 0.5);
 }
 
 .physics-stroke-1 {
-  stroke: #00D572
+  stroke: #00d572;
 }
 
 .physics-stroke-2 {
-  stroke: #00D572
+  stroke: #00d572;
 }
 
 .physics-stroke-3 {
-  stroke: #00D572
+  stroke: #00d572;
 }
 .physics-stroke-4 {
-  stroke: #00D572
+  stroke: #00d572;
 }
 
 .physics-stroke-5 {
-  stroke: #00D572
+  stroke: #00d572;
 }
 
 .physics-stroke-6 {
-  stroke: #00D572
+  stroke: #00d572;
 }
 
 .physics-stroke-7 {
-  stroke: #a65628
+  stroke: #a65628;
 }
 
 .physics-stroke-8 {
-  stroke: #f781bf
+  stroke: #f781bf;
 }
 
 .physics-fill-1 {
-  fill: #e41a1c
+  fill: #e41a1c;
 }
 
 .physics-fill-2 {
-  fill: #377eb8
+  fill: #377eb8;
 }
 
 .physics-fill-3 {
-  fill: #4daf4a
+  fill: #4daf4a;
 }
 .physics-fill-4 {
-  fill: #984ea3
+  fill: #984ea3;
 }
 
 .physics-fill-5 {
-  fill: #ff7f00
+  fill: #ff7f00;
 }
 
 .physics-fill-6 {
-  fill: #ffff33
+  fill: #ffff33;
 }
 
 .physics-fill-7 {
-  fill: #a65628
+  fill: #a65628;
 }
 
 .physics-fill-8 {
-  fill: #f781bf
+  fill: #f781bf;
 }
-
 
 /* affected area */
 
 .physics-component-affected-area {
-  stroke: rgba(255, 56, 93, .5);
-  fill: rgba(255, 255, 255, .5);
+  stroke: rgba(255, 56, 93, 0.5);
+  fill: rgba(255, 255, 255, 0.5);
   stroke-width: 1px;
 }
 
 .physics-component-affected-area-highlight {
-  stroke: rgba(255, 56, 93, .7);
+  stroke: rgba(255, 56, 93, 0.7);
   fill: rgba(255, 255, 255, 0.7);
 }
 
@@ -155,7 +151,6 @@ svg {
   stroke: rgba(255, 56, 93, 1);
   fill: rgba(255, 255, 255, 0.9);
 }
-
 
 .physics-snap-anchor {
   fill: rgba(255, 255, 255, 1);
@@ -169,7 +164,6 @@ svg {
   stroke: rgba(56, 255, 93, 1);
   fill: rgba(255, 255, 255, 0.9);
 }
-
 
 .physics-spring-end {
   fill: rgba(255, 255, 255, 1);
@@ -200,12 +194,12 @@ svg {
 /* this is the control outline for ALL selection */
 .highlight-outline {
   fill: none;
-  stroke: var(--emphasis-color-luminous)
+  stroke: var(--emphasis-color-luminous);
 }
 
 .highlight-outline-link {
   fill: none;
-  stroke: #574BE2;
+  stroke: #574be2;
 }
 
 .select-outline {
@@ -225,13 +219,13 @@ svg {
   pointer-events: none;
 }
 #control-reference-outline-0 {
-  fill: rgba(255, 156, 53, .3);
+  fill: rgba(255, 156, 53, 0.3);
   stroke: rgba(255, 156, 53, 1);
   stroke-width: 2px;
 }
 
 #control-reference-outline-1 {
-    fill: rgba(255, 56, 93, .3);
+  fill: rgba(255, 56, 93, 0.3);
   stroke: rgba(255, 56, 93, 1);
   stroke-width: 2px;
 }
@@ -246,7 +240,7 @@ svg {
 }
 
 .template-outline {
-  fill: rgba(135, 76, 242, .2);
+  fill: rgba(135, 76, 242, 0.2);
   stroke: rgba(135, 76, 242, 1);
   pointer-events: none;
 }
@@ -289,7 +283,8 @@ svg {
   fill: var(--ruler-dimension-indicator);
 }
 
-#control-insert-outline, #control-insert-outline-mirror {
+#control-insert-outline,
+#control-insert-outline-mirror {
   fill: var(--emphasis-color-60pct);
   stroke: var(--emphasis-color);
 }
@@ -356,12 +351,11 @@ svg {
 }
 
 .custom-component-error::after {
-  content: "Error";
+  content: 'Error';
 }
 
 .canvas-ruler {
   fill: rgb(252, 252, 252);
-
 }
 
 .canvas-ruler-border {
@@ -388,7 +382,8 @@ svg {
   fill: var(--canvascontrol-cropmarks);
 }
 
-#control-insert-outline, #control-insert-outline-mirror {
+#control-insert-outline,
+#control-insert-outline-mirror {
   fill: var(--emphasis-color-60pct);
   stroke: var(--emphasis-color);
 }

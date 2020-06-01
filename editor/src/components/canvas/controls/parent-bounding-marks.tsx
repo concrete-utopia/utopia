@@ -23,8 +23,9 @@ function createBoundingMark(
         style={{
           stroke: strokeColor,
         }}
-        d={`M 0 ${yDirection * (BoundingMarkGap / scale)} L 0 ${yDirection *
-          (BoundingMarkLength / scale)}`}
+        d={`M 0 ${yDirection * (BoundingMarkGap / scale)} L 0 ${
+          yDirection * (BoundingMarkLength / scale)
+        }`}
         strokeWidth={1 / scale}
         id={`${BoundsHighlightOutlineID}-${idSuffix}-1`}
       />
@@ -32,8 +33,9 @@ function createBoundingMark(
         style={{
           stroke: strokeColor,
         }}
-        d={`M ${xDirection * (BoundingMarkGap / scale)} 0 L ${xDirection *
-          (BoundingMarkLength / scale)} 0`}
+        d={`M ${xDirection * (BoundingMarkGap / scale)} 0 L ${
+          xDirection * (BoundingMarkLength / scale)
+        } 0`}
         id={`${BoundsHighlightOutlineID}-${idSuffix}-2`}
         strokeWidth={1 / scale}
       />

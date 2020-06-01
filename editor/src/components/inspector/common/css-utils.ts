@@ -70,7 +70,7 @@ import Utils from '../../../utils/utils'
 import { updateBorderEnabled } from '../sections/style-section/border-subsection/border-subsection'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
 
-var combineRegExp = function(regexpList: Array<RegExp | string>, flags?: string) {
+var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
   for (let i = 0; i < regexpList.length; i++) {
     const item = regexpList[i]
@@ -2248,10 +2248,7 @@ export function giveCSSColorNewAlpha(newAlpha: number, color: CSSColor): CSSColo
     case 'Hex':
       return {
         type: 'Hex',
-        hex: Chroma(color.hex)
-          .alpha(newAlpha)
-          .hex()
-          .toUpperCase(),
+        hex: Chroma(color.hex).alpha(newAlpha).hex().toUpperCase(),
       }
     case 'Keyword':
       if (color.keyword === 'transparent') {

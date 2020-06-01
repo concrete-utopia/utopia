@@ -180,7 +180,7 @@ function spliceShadowAtIndex(
   onBoxShadowAndBorderSubmitValue: (newValue: CSSBoxShadowAndBorder) => void,
   cssBoxShadowAndBorder: CSSBoxShadowAndBorder,
 ) {
-  return function() {
+  return function () {
     if (cssBoxShadowAndBorder != null && cssBoxShadowAndBorder.boxShadows != null) {
       let newCSSBoxShadow = [...cssBoxShadowAndBorder.boxShadows]
       newCSSBoxShadow.splice(index, 1)

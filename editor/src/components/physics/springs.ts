@@ -161,13 +161,13 @@ export const UtopiaSprings = {
 
   // installs the plugin where `base` is `Matter`
   // you should not need to call this directly.
-  install: function(base: any) {
-    base.after('Engine.create', function() {
+  install: function (base: any) {
+    base.after('Engine.create', function () {
       // @ts-ignore
       UtopiaSprings.Engine.init(this)
     })
 
-    base.before('Engine.update', function(engine: any, timePassed: number) {
+    base.before('Engine.update', function (engine: any, timePassed: number) {
       UtopiaSprings.Engine.beforeUpdate(engine, timePassed)
     })
 
@@ -175,17 +175,17 @@ export const UtopiaSprings = {
   },
 
   Engine: {
-    init: function(engine: any) {
+    init: function (engine: any) {
       engine.world.plugin.utopiaSprings = engine.world.plugin.utopiaSprings || []
     },
 
-    beforeUpdate: function(engine: any, timePassed: number) {
+    beforeUpdate: function (engine: any, timePassed: number) {
       const world = engine.world
       updateSprings(world.plugin.utopiaSprings, timePassed)
     },
   },
 
-  create: function(options: SpringOptions): UtopiaSpring {
+  create: function (options: SpringOptions): UtopiaSpring {
     return {
       bodyA: options.bodyA || null,
       bodyB: options.bodyB || null,
@@ -198,7 +198,7 @@ export const UtopiaSprings = {
     }
   },
 
-  stepSpring: function(
+  stepSpring: function (
     timePassed: number,
     p1: LocalPoint,
     p2: LocalPoint,
