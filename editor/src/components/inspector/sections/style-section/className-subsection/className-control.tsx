@@ -24,6 +24,56 @@ interface ClassNameControlProps<T extends string> {
   onUnsetValues: () => void
 }
 
+const valueContainer: styleFn = (base) => ({
+  ...base,
+  padding: 0,
+  height: '100%',
+  width: '100%',
+})
+
+const multiValueLabel: styleFn = (base) => ({
+  ...base,
+  label: 'multiValueLabel',
+  display: 'flex',
+  alignItems: 'center',
+  paddingTop: 2,
+  paddingBottom: 2,
+  paddingLeft: 6,
+  paddingRight: 2,
+  fontSize: 9,
+})
+
+const multiValueRemove: styleFn = (base, state) => ({
+  label: 'multiValueRemove',
+  width: 16,
+  height: UtopiaTheme.layout.inputHeight.small,
+  display: 'flex',
+  alignItems: 'center',
+  padding: 0,
+  overflow: 'hidden',
+  marginRight: 2,
+  backgroundImage: `url(${
+    state.isFocused
+      ? UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')
+      : UNSAFE_getIconURL('cross-small')
+  })`,
+  backgroundSize: 16,
+  backgroundPosition: 'center center',
+  ':hover': {
+    backgroundImage: `url(${UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')})`,
+  },
+})
+
+const placeholder: styleFn = (base) => ({
+  ...base,
+  paddingTop: 2,
+  paddingBottom: 2,
+  paddingLeft: 6,
+  paddingRight: 6,
+})
+
+const menu: styleFn = () => ({ display: 'none' })
+
 const ClassNameControl = betterReactMemo(
   'ClassNameControl',
   <T extends string>({
@@ -57,6 +107,30 @@ const ClassNameControl = betterReactMemo(
 
     const valuesLength = values.length
 
+    const input: styleFn = React.useCallback(
+      (base) => ({
+        ...base,
+        borderRadius: UtopiaTheme.inputBorderRadius,
+        fontSize: 9,
+        height: UtopiaTheme.layout.inputHeight.small,
+        paddingTop: 0,
+        paddingBottom: 2,
+        paddingLeft: 6,
+        paddingRight: 6,
+        minWidth: 90,
+        display: 'flex',
+        alignItems: 'center',
+        '.className-inspector-control:hover &, &:focus-within': {
+          boxShadow: `inset 0 0 0 1px ${controlStyles.borderColor}`,
+        },
+        '& input': {
+          fontFamily: 'Consolas, Menlo, monospace',
+          color: UtopiaTheme.color.emphasizedForeground.value,
+        },
+      }),
+      [controlStyles],
+    )
+
     const container: styleFn = React.useCallback(
       (base) => ({
         ...base,
@@ -83,15 +157,6 @@ const ClassNameControl = betterReactMemo(
       }),
       [controlStyles],
     )
-    const valueContainer: styleFn = React.useCallback(
-      (base) => ({
-        ...base,
-        padding: 0,
-        height: '100%',
-        width: '100%',
-      }),
-      [],
-    )
     const multiValue: styleFn = React.useCallback(
       (base, state) => ({
         label: 'multiValue',
@@ -113,77 +178,6 @@ const ClassNameControl = betterReactMemo(
       }),
       [controlStyles],
     )
-    const multiValueLabel: styleFn = React.useCallback(
-      (base) => ({
-        ...base,
-        label: 'multiValueLabel',
-        display: 'flex',
-        alignItems: 'center',
-        paddingTop: 2,
-        paddingBottom: 2,
-        paddingLeft: 6,
-        paddingRight: 2,
-        fontSize: 9,
-      }),
-      [],
-    )
-    const multiValueRemove: styleFn = React.useCallback(
-      (base, state) => ({
-        label: 'multiValueRemove',
-        width: 16,
-        height: UtopiaTheme.layout.inputHeight.small,
-        display: 'flex',
-        alignItems: 'center',
-        padding: 0,
-        overflow: 'hidden',
-        marginRight: 2,
-        backgroundImage: `url(${
-          state.isFocused
-            ? UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')
-            : UNSAFE_getIconURL('cross-small')
-        })`,
-        backgroundSize: 16,
-        backgroundPosition: 'center center',
-        ':hover': {
-          backgroundImage: `url(${UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')})`,
-        },
-      }),
-      [],
-    )
-    const input: styleFn = React.useCallback(
-      (base) => ({
-        ...base,
-        borderRadius: UtopiaTheme.inputBorderRadius,
-        fontSize: 9,
-        height: UtopiaTheme.layout.inputHeight.small,
-        paddingTop: 0,
-        paddingBottom: 2,
-        paddingLeft: 6,
-        paddingRight: 6,
-        minWidth: 90,
-        display: 'flex',
-        alignItems: 'center',
-        '.className-inspector-control:hover &, &:focus-within': {
-          boxShadow: `inset 0 0 0 1px ${controlStyles.borderColor}`,
-        },
-        '& input': {
-          fontFamily: 'Consolas, Menlo, monospace',
-          color: UtopiaTheme.color.emphasizedForeground.value,
-        },
-      }),
-      [controlStyles],
-    )
-    const placeholder: styleFn = React.useCallback(
-      (base) => ({
-        ...base,
-        paddingTop: 2,
-        paddingBottom: 2,
-        paddingLeft: 6,
-        paddingRight: 6,
-      }),
-      [],
-    )
-    const menu: styleFn = React.useCallback(() => ({ display: 'none' }), [])
 
     return (
       <CreatableSelect
