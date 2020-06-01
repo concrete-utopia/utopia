@@ -14,10 +14,12 @@ import { PropertyLabel } from '../../widgets/property-label'
 const ppCreate = (p: string) => PP.create([p])
 
 export const EventHandlersSection = betterReactMemo('EventHandlersSection', () => {
-  const { value, controlStyles, controlStatus, onSubmitValue, onUnsetValues } = useInspectorInfo<
-    DOMEventHandler,
-    ParsedValues<DOMEventHandler>
-  >(DOMEventHandlerNames, identity, identity, ppCreate)
+  const { value, onUnsetValues } = useInspectorInfo<DOMEventHandler, ParsedValues<DOMEventHandler>>(
+    DOMEventHandlerNames,
+    identity,
+    identity,
+    ppCreate,
+  )
 
   const eventHandlersContextMenuItems = utils.stripNulls([
     value != null ? addOnUnsetValues(DOMEventHandlerNames, onUnsetValues) : null,
@@ -38,8 +40,8 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
             if (isJSXAttributeOtherJavaScript(attributeValue)) {
               const eventHandlerValue = attributeValue.javascript
               return (
-                <GridRow padded={true} type='<------50%------><------50%------>'>
-                  <PropertyLabel target={[ppCreate(handlerName)]}>{handlerName}</PropertyLabel>
+                <GridRow padded={true} type='<--1fr--><--1fr-->'>
+                  <PropertyLabel target={[PP.create([handlerName])]}>{handlerName}</PropertyLabel>
                   <StringInput value={eventHandlerValue} controlStatus='disabled' />
                 </GridRow>
               )

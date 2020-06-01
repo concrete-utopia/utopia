@@ -3779,10 +3779,6 @@ function isNumberParser(simpleValue: unknown): Either<string, number> {
 
 type DOMEventHandlerMetadata = ModifiableAttribute
 
-function domEventHandlerMetadata(): DOMEventHandlerMetadata {
-  return jsxAttributeValue('stonks')
-}
-
 export function parseDOMEventHandlerMetadata(
   _: unknown,
   attribute: ModifiableAttribute | null,
@@ -4111,169 +4107,7 @@ interface DOMIMGAttributeProperties {
 }
 
 /** copied from @types/react/index.d.ts DOMAttributes */
-export type DOMEventHandler =
-  | 'onCopy'
-  | 'onCopyCapture'
-  | 'onCut'
-  | 'onCutCapture'
-  | 'onPaste'
-  | 'onPasteCapture'
-  | 'onCompositionEnd'
-  | 'onCompositionEndCapture'
-  | 'onCompositionStart'
-  | 'onCompositionStartCapture'
-  | 'onCompositionUpdate'
-  | 'onCompositionUpdateCapture'
-  | 'onFocus'
-  | 'onFocusCapture'
-  | 'onBlur'
-  | 'onBlurCapture'
-  | 'onChange'
-  | 'onChangeCapture'
-  | 'onBeforeInput'
-  | 'onBeforeInputCapture'
-  | 'onInput'
-  | 'onInputCapture'
-  | 'onReset'
-  | 'onResetCapture'
-  | 'onSubmit'
-  | 'onSubmitCapture'
-  | 'onInvalid'
-  | 'onInvalidCapture'
-  | 'onLoad'
-  | 'onLoadCapture'
-  | 'onError'
-  | 'onErrorCapture'
-  | 'onKeyDown'
-  | 'onKeyDownCapture'
-  | 'onKeyPress'
-  | 'onKeyPressCapture'
-  | 'onKeyUp'
-  | 'onKeyUpCapture'
-  | 'onAbort'
-  | 'onAbortCapture'
-  | 'onCanPlay'
-  | 'onCanPlayCapture'
-  | 'onCanPlayThrough'
-  | 'onCanPlayThroughCapture'
-  | 'onDurationChange'
-  | 'onDurationChangeCapture'
-  | 'onEmptied'
-  | 'onEmptiedCapture'
-  | 'onEncrypted'
-  | 'onEncryptedCapture'
-  | 'onEnded'
-  | 'onEndedCapture'
-  | 'onLoadedData'
-  | 'onLoadedDataCapture'
-  | 'onLoadedMetadata'
-  | 'onLoadedMetadataCapture'
-  | 'onLoadStart'
-  | 'onLoadStartCapture'
-  | 'onPause'
-  | 'onPauseCapture'
-  | 'onPlay'
-  | 'onPlayCapture'
-  | 'onPlaying'
-  | 'onPlayingCapture'
-  | 'onProgress'
-  | 'onProgressCapture'
-  | 'onRateChange'
-  | 'onRateChangeCapture'
-  | 'onSeeked'
-  | 'onSeekedCapture'
-  | 'onSeeking'
-  | 'onSeekingCapture'
-  | 'onStalled'
-  | 'onStalledCapture'
-  | 'onSuspend'
-  | 'onSuspendCapture'
-  | 'onTimeUpdate'
-  | 'onTimeUpdateCapture'
-  | 'onVolumeChange'
-  | 'onVolumeChangeCapture'
-  | 'onWaiting'
-  | 'onWaitingCapture'
-  | 'onAuxClick'
-  | 'onAuxClickCapture'
-  | 'onClick'
-  | 'onClickCapture'
-  | 'onContextMenu'
-  | 'onContextMenuCapture'
-  | 'onDoubleClick'
-  | 'onDoubleClickCapture'
-  | 'onDrag'
-  | 'onDragCapture'
-  | 'onDragEnd'
-  | 'onDragEndCapture'
-  | 'onDragEnter'
-  | 'onDragEnterCapture'
-  | 'onDragExit'
-  | 'onDragExitCapture'
-  | 'onDragLeave'
-  | 'onDragLeaveCapture'
-  | 'onDragOver'
-  | 'onDragOverCapture'
-  | 'onDragStart'
-  | 'onDragStartCapture'
-  | 'onDrop'
-  | 'onDropCapture'
-  | 'onMouseDown'
-  | 'onMouseDownCapture'
-  | 'onMouseEnter'
-  | 'onMouseLeave'
-  | 'onMouseMove'
-  | 'onMouseMoveCapture'
-  | 'onMouseOut'
-  | 'onMouseOutCapture'
-  | 'onMouseOver'
-  | 'onMouseOverCapture'
-  | 'onMouseUp'
-  | 'onMouseUpCapture'
-  | 'onSelect'
-  | 'onSelectCapture'
-  | 'onTouchCancel'
-  | 'onTouchCancelCapture'
-  | 'onTouchEnd'
-  | 'onTouchEndCapture'
-  | 'onTouchMove'
-  | 'onTouchMoveCapture'
-  | 'onTouchStart'
-  | 'onTouchStartCapture'
-  | 'onPointerDown'
-  | 'onPointerDownCapture'
-  | 'onPointerMove'
-  | 'onPointerMoveCapture'
-  | 'onPointerUp'
-  | 'onPointerUpCapture'
-  | 'onPointerCancel'
-  | 'onPointerCancelCapture'
-  | 'onPointerEnter'
-  | 'onPointerEnterCapture'
-  | 'onPointerLeave'
-  | 'onPointerLeaveCapture'
-  | 'onPointerOver'
-  | 'onPointerOverCapture'
-  | 'onPointerOut'
-  | 'onPointerOutCapture'
-  | 'onGotPointerCapture'
-  | 'onGotPointerCaptureCapture'
-  | 'onLostPointerCapture'
-  | 'onLostPointerCaptureCapture'
-  | 'onScroll'
-  | 'onScrollCapture'
-  | 'onWheel'
-  | 'onWheelCapture'
-  | 'onAnimationStart'
-  | 'onAnimationStartCapture'
-  | 'onAnimationEnd'
-  | 'onAnimationEndCapture'
-  | 'onAnimationIteration'
-  | 'onAnimationIterationCapture'
-  | 'onTransitionEnd'
-  | 'onTransitionEndCapture'
-
-export const DOMEventHandlerNames: Array<DOMEventHandler> = [
+export const DOMEventHandlerNames = [
   'onCopy',
   'onCopyCapture',
   'onCut',
@@ -4434,7 +4268,8 @@ export const DOMEventHandlerNames: Array<DOMEventHandler> = [
   'onAnimationIterationCapture',
   'onTransitionEnd',
   'onTransitionEndCapture',
-]
+] as const
+export type DOMEventHandler = typeof DOMEventHandlerNames[number]
 
 type DOMEventAttributeProperties = {
   [key in DOMEventHandler]: DOMEventHandlerMetadata // or a jsx attribute ... variable? 🤔
@@ -4448,7 +4283,7 @@ export interface ParsedElementProperties
 export type ParsedElementPropertiesKeys = keyof ParsedElementProperties
 
 const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, item) => {
-  current[item] = domEventHandlerMetadata()
+  current[item] = jsxAttributeValue(undefined)
   return current
 }, {} as DOMEventAttributeProperties)
 

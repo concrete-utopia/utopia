@@ -35,7 +35,7 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
       style={{
         color: metadata.controlStyles.mainColor,
         overflow: 'hidden',
-        ...(props.style ?? {}),
+        ...props.style,
       }}
     >
       <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
