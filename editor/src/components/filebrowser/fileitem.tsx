@@ -630,8 +630,8 @@ class FileBrowserItemInner extends React.PureComponent<
       })
     }
 
-    const inputLabelChange = (event: React.FormEvent<HTMLElement>) => {
-      this.setState({ isAddingChildName: (event.target as any).value })
+    const inputLabelChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      this.setState({ isAddingChildName: event.target.value })
     }
 
     const abandonAddingFile = () =>
