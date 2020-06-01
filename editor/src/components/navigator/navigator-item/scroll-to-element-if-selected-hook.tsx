@@ -6,7 +6,7 @@ function isElementVisible(element: HTMLElement) {
   const rect = element.getBoundingClientRect()
   const vWidth = window.innerWidth || document.documentElement!.clientWidth
   const vHeight = window.innerHeight || document.documentElement!.clientHeight
-  const elementFromPoint = function(x: number, y: number) {
+  const elementFromPoint = function (x: number, y: number) {
     return document.elementFromPoint(x, y)
   }
 

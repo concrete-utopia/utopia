@@ -2,10 +2,8 @@
   display: none;
 }
 
-
 body #preview * {
   -webkit-user-select: none;
-
 }
 body {
   margin: 0;
@@ -26,7 +24,7 @@ svg {
   margin: 0;
   display: flex;
   overflow: hidden;
-  color: rgba(83,83,83,1);
+  color: rgba(83, 83, 83, 1);
   top: 0;
   left: 0;
   right: 0;
@@ -57,4 +55,3 @@ svg {
   margin-top: 15px;
   font-size: 20px;
 }
-

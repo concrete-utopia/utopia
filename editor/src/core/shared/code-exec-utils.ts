@@ -10,7 +10,7 @@ import { NO_OP } from './utils'
 import { take } from './array-utils'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export const AsyncFunction = Object.getPrototypeOf(async function() {}).constructor
+export const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
 export interface FancyError extends Error {
   stackFrames?: StackFrame[]
@@ -62,7 +62,7 @@ export function processErrorWithSourceMap(
 }
 
 export const SafeFunctionCurriedErrorHandler = {
-  [UTOPIA_FUNCTION_ROOT_NAME]: function(
+  [UTOPIA_FUNCTION_ROOT_NAME]: function (
     async: boolean,
     cacheableContext: any,
     code: string,

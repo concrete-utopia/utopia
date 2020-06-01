@@ -52,7 +52,7 @@ const permanentRegister = function proxyConsole(type: string, callback: ConsoleP
           }
         } catch (err) {
           // Warnings must never crash. Rethrow with a clean stack.
-          setTimeout(function() {
+          setTimeout(function () {
             throw err
           })
         }

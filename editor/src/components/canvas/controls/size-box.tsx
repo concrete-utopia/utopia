@@ -279,8 +279,9 @@ const DimensionableControlVertical = (props: DimensionableControlProps) => {
         backgroundColor: 'white',
         borderRadius: `${5 / props.scale}px`,
         // These just about work. I can clean them up afterwards
-        boxShadow: `0px 0px 0px ${0.3 / props.scale}px hsla(0,0%,0%,.7), 0px ${1 /
-          props.scale}px ${3 / props.scale}px rgba(140,140,140,.9)`,
+        boxShadow: `0px 0px 0px ${0.3 / props.scale}px hsla(0,0%,0%,.7), 0px ${1 / props.scale}px ${
+          3 / props.scale
+        }px rgba(140,140,140,.9)`,
         height: controlLength / props.scale,
         width: controlWidth / props.scale,
         left: props.centerX + (props.edge === 'before' ? -(controlWidth + 2) : 2) / props.scale,
@@ -304,8 +305,9 @@ const DimensionableControlHorizontal = (props: DimensionableControlProps) => {
         backgroundColor: 'white',
         borderRadius: `${5 / props.scale}px`,
         // These just about work. I can clean them up afterwards
-        boxShadow: `0px 0px 0px ${0.3 / props.scale}px hsla(0,0%,0%,.7), 0px ${1 /
-          props.scale}px ${3 / props.scale}px rgba(140,140,140,.9)`,
+        boxShadow: `0px 0px 0px ${0.3 / props.scale}px hsla(0,0%,0%,.7), 0px ${1 / props.scale}px ${
+          3 / props.scale
+        }px rgba(140,140,140,.9)`,
         height: controlLength / props.scale,
         width: controlWidth / props.scale,
         left: props.centerX + scaledControlOffsetLeft,
@@ -371,10 +373,11 @@ class ResizePoint extends React.Component<ResizePointProps, {}> {
             borderRadius: '10%',
             borderStyle: 'none',
             borderColor: 'transparent',
-            boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px ${1 /
-              this.props.scale}px, ${
-              colorTheme.canvasControlsSizeBoxShadowColor.o(21).value
-            } 0px ${1 / this.props.scale}px ${2 / this.props.scale}px ${1 / this.props.scale}px `,
+            boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px ${
+              1 / this.props.scale
+            }px, ${colorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px ${
+              1 / this.props.scale
+            }px ${2 / this.props.scale}px ${1 / this.props.scale}px `,
           }}
         />
         {mouseCatcher}

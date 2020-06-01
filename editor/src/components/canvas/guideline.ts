@@ -157,7 +157,7 @@ type GuidelinePoints = EdgeGuidelinePoints | CornerGuidelinePoint
 
 export const Guidelines = {
   applyDirectionConstraint: applyDirectionConstraint,
-  convertGuidelineToPoints: function(guideline: Guideline): GuidelinePoints {
+  convertGuidelineToPoints: function (guideline: Guideline): GuidelinePoints {
     switch (guideline.type) {
       case 'XAxisGuideline':
         return edgeGuidelinePoints(
@@ -231,7 +231,7 @@ export const Guidelines = {
       guidelines,
     )
   },
-  guidelinesForFrame: function(
+  guidelinesForFrame: function (
     frame: LocalRectangle | CanvasRectangle,
     includeCentre: boolean,
   ): Array<Guideline> {
@@ -254,7 +254,7 @@ export const Guidelines = {
 
     return [...xGuidelines, ...yGuidelines]
   },
-  distanceFromPointToGuideline: function<C extends CoordinateMarker>(
+  distanceFromPointToGuideline: function <C extends CoordinateMarker>(
     point: Point<C>,
     guideline: Guideline,
   ): { distance: number; from: Point<C>; to: Point<C> } {
@@ -283,7 +283,7 @@ export const Guidelines = {
         throw 'Unexpected value for guideline of type: ' + (guideline as any).type // TODO ts-migration
     }
   },
-  distanceFromFrameToGuideline: function<C extends CoordinateMarker>(
+  distanceFromFrameToGuideline: function <C extends CoordinateMarker>(
     frame: Rectangle<C>,
     guideline: Guideline,
     includeCentre: boolean,
@@ -334,7 +334,7 @@ export const Guidelines = {
         throw 'Unexpected value for guideline of type: ' + (guideline as any).type
     }
   },
-  getOffsetToSnapToXGuideline: function(
+  getOffsetToSnapToXGuideline: function (
     xs: Array<number>,
     guideline: XAxisGuideline,
     constrainedDragAxis: ConstrainedDragAxis | null,
@@ -357,7 +357,7 @@ export const Guidelines = {
       return { x: mininum, y: 0 }
     }
   },
-  getOffsetToSnapToYGuideline: function(
+  getOffsetToSnapToYGuideline: function (
     ys: Array<number>,
     guideline: YAxisGuideline,
     constrainedDragAxis: ConstrainedDragAxis | null,
@@ -380,7 +380,7 @@ export const Guidelines = {
       return { x: 0, y: mininum }
     }
   },
-  getOffsetToSnapToCornerGuideline: function(
+  getOffsetToSnapToCornerGuideline: function (
     corners: Array<Point<any>>,
     guideline: CornerGuideline,
   ): Vector<any> {
@@ -398,7 +398,7 @@ export const Guidelines = {
     })
     return nearestOffset
   },
-  getOffsetToSnapToGuideline: function(
+  getOffsetToSnapToGuideline: function (
     xs: Array<number>,
     ys: Array<number>,
     corners: Array<Point<any>>,
@@ -543,7 +543,7 @@ export const Guidelines = {
       (g) => Utils.magnitude(g.snappingVector) < (snappingThreshold / scale) * 2,
     )
   },
-  offsetGuideline: function(guideline: Guideline, offset: Point<any>): Guideline {
+  offsetGuideline: function (guideline: Guideline, offset: Point<any>): Guideline {
     switch (guideline.type) {
       case 'XAxisGuideline':
         return xAxisGuideline(
@@ -569,7 +569,7 @@ export const Guidelines = {
         throw 'Unexpected value for guideline of type: ' + (guideline as any).type // TODO ts-migration
     }
   },
-  guidelineIntersection: function(guidelines: Array<Guideline>): CanvasPoint | null {
+  guidelineIntersection: function (guidelines: Array<Guideline>): CanvasPoint | null {
     if (guidelines.length === 2) {
       const maybePoint = guidelines.reduce((point, guideline) => {
         if (guideline.type === 'XAxisGuideline') {

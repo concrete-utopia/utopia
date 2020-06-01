@@ -11,20 +11,20 @@ import {
 
 const CanvasControl = {
   emptyControlEventHandlers: {
-    onMouseDown: function(clickPoint: CanvasPoint): Array<EditorAction> {
+    onMouseDown: function (clickPoint: CanvasPoint): Array<EditorAction> {
       return []
     },
-    onDoubleClick: function(point: CanvasPoint): Array<EditorAction> {
+    onDoubleClick: function (point: CanvasPoint): Array<EditorAction> {
       return []
     },
-    onKeyDown: function(key: KeyCharacter, keysPressed: KeysPressed): Array<EditorAction> {
+    onKeyDown: function (key: KeyCharacter, keysPressed: KeysPressed): Array<EditorAction> {
       return []
     },
   },
-  isAnchorControlType: function(controlType: string): boolean {
+  isAnchorControlType: function (controlType: string): boolean {
     return controlType === 'circle' || controlType === 'rect'
   },
-  anchorControlCenterPoint: function(control: SvgFragmentControl): CanvasPoint {
+  anchorControlCenterPoint: function (control: SvgFragmentControl): CanvasPoint {
     switch (control.type) {
       case 'circle':
         return { x: control.props.cx, y: control.props.cy } as CanvasPoint
@@ -37,10 +37,10 @@ const CanvasControl = {
         throw `Invalid control type ${control.type} used as anchor`
     }
   },
-  dontScale: function(props: any, scale: number): any {
+  dontScale: function (props: any, scale: number): any {
     return props
   },
-  scaleCircleAnchor: function<T extends CircleControlProps>(props: T, scale: number): T {
+  scaleCircleAnchor: function <T extends CircleControlProps>(props: T, scale: number): T {
     const r = props.r / scale
     return R.merge(props, {
       cx: props.cx,
@@ -49,7 +49,7 @@ const CanvasControl = {
       strokeWidth: props.strokeWidth / scale,
     } as T)
   },
-  scaleEllipseAnchor: function<T extends EllipseControlProps>(props: T, scale: number): T {
+  scaleEllipseAnchor: function <T extends EllipseControlProps>(props: T, scale: number): T {
     return R.merge(props, {
       cx: props.cx,
       cy: props.cy,
@@ -58,7 +58,7 @@ const CanvasControl = {
       strokeWidth: props.strokeWidth / scale,
     } as T)
   },
-  scaleRectAnchor: function<T extends RectControlProps>(props: T, scale: number): T {
+  scaleRectAnchor: function <T extends RectControlProps>(props: T, scale: number): T {
     const width = props.width / scale
     const height = props.height / scale
     const xOffset = (props.width - width) / 2
@@ -71,14 +71,17 @@ const CanvasControl = {
       strokeWidth: props.strokeWidth / scale,
     } as T)
   },
-  scaleLine: function(x: number, y: number): (props: { transform?: string }, scale: number) => any {
+  scaleLine: function (
+    x: number,
+    y: number,
+  ): (props: { transform?: string }, scale: number) => any {
     return (props: { transform?: string }, scale: number): any => {
       return R.merge(props, {
         transform: `${props.transform || ''} translate(${x}, ${y}) scale(${1 / scale})`,
       })
     }
   },
-  scaleStrokeOnly: function<P extends { strokeWidth: number; strokeDasharray?: string }>(
+  scaleStrokeOnly: function <P extends { strokeWidth: number; strokeDasharray?: string }>(
     props: P,
     scale: number,
   ): P {
@@ -95,7 +98,7 @@ const CanvasControl = {
       strokeDasharray: scaledStrokeDasharray,
     } as P)
   },
-  scaleViaTransform: function(props: { transform?: string }, scale: number): any {
+  scaleViaTransform: function (props: { transform?: string }, scale: number): any {
     return R.merge(props, {
       transform: `${props.transform || ''} scale(${1 / scale})`,
     })
