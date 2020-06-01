@@ -55,15 +55,11 @@ export function UNSAFE_getIconURL(
 export const Icn = betterReactMemo(
   'Icn',
   ({
-    category = 'semantic',
-    width = 16,
-    height = 16,
-    color = 'darkgray',
+    width = defaultIcnWidth,
+    height = defaultIcnHeight,
     isDisabled = false,
     ...props
   }: IcnProps) => {
-    const theme = 'light'
-
     const disabledStyle = isDisabled ? { opacity: 0.5 } : undefined
 
     const { onMouseDown: propsOnMouseDown, onClick } = props
@@ -89,9 +85,7 @@ export const Icn = betterReactMemo(
         className={props.className}
         width={width}
         height={height}
-        src={getPossiblyHashedURL(
-          `/editor/icons/${theme}/${category}/${props.type}-${color}-${width}x${height}@2x.png`,
-        )}
+        src={UNSAFE_getIconURL(props.type, props.color, props.category, width, height)}
         draggable={false}
         onClick={isDisabled ? undefined : props.onClick}
         onDoubleClick={isDisabled ? undefined : props.onDoubleClick}
