@@ -48,8 +48,6 @@ export const ClassNameControl = betterReactMemo('ClassNameSection', () => {
 
   const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 
-  const mixed = controlStyles.mixed
-
   return (
     <Section>
       <InspectorSubsectionHeader style={{ ...headerStyle, height: 22 }}>
@@ -60,7 +58,7 @@ export const ClassNameControl = betterReactMemo('ClassNameSection', () => {
           placeholder='Add class…'
           isMulti
           value={
-            mixed
+            controlStyles.mixed
               ? [
                   {
                     value: '',

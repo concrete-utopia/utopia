@@ -34,6 +34,9 @@ export interface IcnProps {
   onMouseLeave?: (event: React.MouseEvent<HTMLImageElement>) => void
 }
 
+const defaultIcnWidth = 16
+const defaultIcnHeight = 16
+
 /**
  *  This should only be used by the below component and where
  *  absolutely needed. Namely: logic that is better handled with
