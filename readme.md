@@ -283,13 +283,29 @@ On macOS, when trying to watch, you might run into an error message about number
 brew install watchman
 ```
 
-## VSCode format on save
+## VSCode linting, formatting with prettier etc
 
 To enable format-on-save, you should install the VSCode plugin `esbenp.prettier-vscode`, and `dbaeumer.vscode-eslint` and then in your workspace settings, enable format on save, and tell prettier to use the eslint integration mode:
 
 ```
-"editor.formatOnSave": true,
-"prettier.eslintIntegration": true,
+
+  "eslint.workingDirectories": ["./editor", "./utopia-api"],
+  "editor.formatOnSave": true,
+  "prettier.eslintIntegration": true,
+  "prettier.useEditorConfig": false,
+  "prettier.requireConfig": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 ```
 
 When VSCode asks you to pick a formatter, just pick Prettier. If it wouldn't ask you for any reason, you can store your preferences like so (for minimal impact put it in your workspace settings):
