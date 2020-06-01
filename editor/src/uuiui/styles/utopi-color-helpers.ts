@@ -56,9 +56,7 @@ function opacity(this: UtopiColor, value: number): UtopiColor {
   }
   if (opacitycache[this.value][value] == null) {
     const alpha = value / 100
-    opacitycache[this.value][value] = Chroma(this.value)
-      .alpha(alpha)
-      .css('rgba')
+    opacitycache[this.value][value] = Chroma(this.value).alpha(alpha).css('rgba')
   }
   return createUtopiColor(opacitycache[this.value][value], this.label, this.fileNameFragment)
 }

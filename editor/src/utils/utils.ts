@@ -255,9 +255,7 @@ function colorToRGBA(unsafe: Color): string {
 
 function colorToHex(unsafe: Color): string {
   const color = safeColor(unsafe)
-  return chroma(color.red, color.green, color.blue)
-    .hex()
-    .toUpperCase()
+  return chroma(color.red, color.green, color.blue).hex().toUpperCase()
 }
 
 function colorToRGBAWithoutOpacity(unsafe: Color): string {
@@ -694,7 +692,7 @@ function proxyValue(
       }
 
       return new Proxy(withWrappedChildren, {
-        set: function(target: any, property: any, value: any, receiver: any): boolean {
+        set: function (target: any, property: any, value: any, receiver: any): boolean {
           if (typeof value === 'symbol') {
             target[property] = value
           } else {
@@ -714,7 +712,7 @@ function proxyValue(
   return wrapInProxy(valueToProxy, [])
 }
 
-const createSimpleClock = function(): Clock {
+const createSimpleClock = function (): Clock {
   return {
     now: () => {
       return Date.now()

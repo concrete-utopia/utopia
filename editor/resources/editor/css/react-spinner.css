@@ -20,16 +20,28 @@
 }
 
 @keyframes react-spinner_spin {
- 0% { opacity: 1; }
- 100% { opacity: 0.15; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.15;
+  }
 }
 
 @-moz-keyframes react-spinner_spin {
- 0% { opacity: 1; }
- 100% { opacity: 0.15; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.15;
+  }
 }
 
 @-webkit-keyframes react-spinner_spin {
- 0% { opacity: 1; }
- 100% { opacity: 0.15; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.15;
+  }
 }

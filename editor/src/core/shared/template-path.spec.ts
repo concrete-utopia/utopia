@@ -3,29 +3,29 @@ import * as TP from './template-path'
 import { BakedInStoryboardUID } from '../model/scene-utils'
 const chaiExpect = Chai.expect
 
-describe('serialization', function() {
-  it('path survives serialization', function() {
+describe('serialization', function () {
+  it('path survives serialization', function () {
     const path = TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], ['VIEW1', 'VIEW2'])
     const pathString = TP.toComponentId(path)
     const restoredPath = TP.fromString(pathString)
     chaiExpect(restoredPath).to.deep.equal(path)
   })
 
-  it('empty path survives serialization', function() {
+  it('empty path survives serialization', function () {
     const path = TP.instancePath([], [])
     const pathString = TP.toComponentId(path)
     const restoredPath = TP.fromString(pathString)
     chaiExpect(restoredPath).to.deep.equal(path)
   })
 
-  it('ScenePath survives serialization', function() {
+  it('ScenePath survives serialization', function () {
     const path = TP.scenePath([BakedInStoryboardUID, 'scene-aaa'])
     const pathString = TP.toString(path)
     const restoredPath = TP.fromString(pathString)
     chaiExpect(restoredPath).to.deep.equal(path)
   })
 
-  it('Empty ScenePath survives serialization', function() {
+  it('Empty ScenePath survives serialization', function () {
     const path = TP.scenePath([])
     const pathString = TP.toString(path)
     const restoredPath = TP.fromString(pathString)
