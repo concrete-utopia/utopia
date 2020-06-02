@@ -241,6 +241,6 @@ contentsText = "contents"
 getPackagerContent :: Text -> Text -> IO BL.ByteString
 getPackagerContent javascriptPackageName javascriptPackageVersion = do
   filesAndContent <- withInstalledProject javascriptPackageName javascriptPackageVersion getRelevantFiles
-  let contents = foldMap (\(filename, fileContent) -> M.singleton filename (M.singleton contentText fileContent)) filesAndContent
+  let contents = fmap (\fileContent -> (M.singleton contentText fileContent)) filesAndContent
   let encodingResult = toEncoding $ M.singleton contentsText contents
   return $ toLazyByteString $ fromEncoding encodingResult
