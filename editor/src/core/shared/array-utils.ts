@@ -89,12 +89,16 @@ export function mapArrayToDictionary<From, Values, Keys extends string | number>
 ): {
   [key in Keys]: Values
 } {
-  let working = {} as { [key in Keys]: Values }
-  fastForEach(arr, (next, index) => {
-    const key = keyFn(next, index)
-    working[key] = mapFn(next, index)
-  })
-  return working
+  return arr.reduce(
+    (working, next, index) => {
+      const key = keyFn(next, index)
+      working[key] = mapFn(next, index)
+      return working
+    },
+    {} as {
+      [key in Keys]: Values
+    },
+  )
 }
 // taken from Ramda.move: https://github.com/ramda/ramda/blob/v0.26.1/source/move.js
 
