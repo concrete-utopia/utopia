@@ -66,6 +66,7 @@ import {
   useKeepShallowReferenceEquality,
 } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
+import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
 import { ElementPathElement } from './sections/header-section/element-path'
 import { HeaderSection, HeaderSectionCoreProps } from './sections/header-section/header-section'
 import { LayoutWrapperCoreProps } from './sections/header-section/layout-wrapper-section'
@@ -400,6 +401,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
+          <EventHandlersSection />
           <ClassNameSubsection />
           <StyleSection />
         </React.Fragment>

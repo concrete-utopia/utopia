@@ -21,6 +21,7 @@ const sliderControlOptions = {
   filled: true,
 }
 
+// TODO: path should match target
 const opacityProp = [PP.create(['style', 'opacity'])]
 
 export const OpacityRow = betterReactMemo('OpacityRow', () => {

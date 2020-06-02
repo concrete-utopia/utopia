@@ -3777,6 +3777,26 @@ function isNumberParser(simpleValue: unknown): Either<string, number> {
   }
 }
 
+type DOMEventHandlerMetadata = ModifiableAttribute
+
+export function parseDOMEventHandlerMetadata(
+  _: unknown,
+  attribute: ModifiableAttribute | null,
+): Either<string, DOMEventHandlerMetadata> {
+  if (attribute == null) {
+    return left('found no event handler')
+  }
+  if (attribute.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+    return right(attribute)
+  } else {
+    return left('Event handler value is not ATTRIBUTE_OTHER_JAVASCRIPT')
+  }
+}
+
+export function printDOMEventHandlerMetadata(value: ModifiableAttribute): ModifiableAttribute {
+  return value
+}
+
 export interface ParsedCSSProperties {
   backgroundColor: CSSSolidColor | undefined
   backgroundImage: CSSBackgrounds
@@ -4077,41 +4097,236 @@ const cssPrinters: CSSPrinters = {
   display: printStringAsAttributeValue,
 }
 
-export interface ParsedMetadataProperties {
-  alt: string
-  src: ImageURL
+export interface UtopianElementProperties {
   textSizing: TextSizing
   className: string
 }
 
-export type ParsedMetadataPropertiesKeys = keyof ParsedMetadataProperties
+interface DOMIMGAttributeProperties {
+  alt: string
+  src: ImageURL
+}
 
-const metadataEmptyValues: ParsedMetadataProperties = {
+/** copied from @types/react/index.d.ts DOMAttributes */
+export const DOMEventHandlerNames = [
+  'onCopy',
+  'onCopyCapture',
+  'onCut',
+  'onCutCapture',
+  'onPaste',
+  'onPasteCapture',
+  'onCompositionEnd',
+  'onCompositionEndCapture',
+  'onCompositionStart',
+  'onCompositionStartCapture',
+  'onCompositionUpdate',
+  'onCompositionUpdateCapture',
+  'onFocus',
+  'onFocusCapture',
+  'onBlur',
+  'onBlurCapture',
+  'onChange',
+  'onChangeCapture',
+  'onBeforeInput',
+  'onBeforeInputCapture',
+  'onInput',
+  'onInputCapture',
+  'onReset',
+  'onResetCapture',
+  'onSubmit',
+  'onSubmitCapture',
+  'onInvalid',
+  'onInvalidCapture',
+  'onLoad',
+  'onLoadCapture',
+  'onError',
+  'onErrorCapture',
+  'onKeyDown',
+  'onKeyDownCapture',
+  'onKeyPress',
+  'onKeyPressCapture',
+  'onKeyUp',
+  'onKeyUpCapture',
+  'onAbort',
+  'onAbortCapture',
+  'onCanPlay',
+  'onCanPlayCapture',
+  'onCanPlayThrough',
+  'onCanPlayThroughCapture',
+  'onDurationChange',
+  'onDurationChangeCapture',
+  'onEmptied',
+  'onEmptiedCapture',
+  'onEncrypted',
+  'onEncryptedCapture',
+  'onEnded',
+  'onEndedCapture',
+  'onLoadedData',
+  'onLoadedDataCapture',
+  'onLoadedMetadata',
+  'onLoadedMetadataCapture',
+  'onLoadStart',
+  'onLoadStartCapture',
+  'onPause',
+  'onPauseCapture',
+  'onPlay',
+  'onPlayCapture',
+  'onPlaying',
+  'onPlayingCapture',
+  'onProgress',
+  'onProgressCapture',
+  'onRateChange',
+  'onRateChangeCapture',
+  'onSeeked',
+  'onSeekedCapture',
+  'onSeeking',
+  'onSeekingCapture',
+  'onStalled',
+  'onStalledCapture',
+  'onSuspend',
+  'onSuspendCapture',
+  'onTimeUpdate',
+  'onTimeUpdateCapture',
+  'onVolumeChange',
+  'onVolumeChangeCapture',
+  'onWaiting',
+  'onWaitingCapture',
+  'onAuxClick',
+  'onAuxClickCapture',
+  'onClick',
+  'onClickCapture',
+  'onContextMenu',
+  'onContextMenuCapture',
+  'onDoubleClick',
+  'onDoubleClickCapture',
+  'onDrag',
+  'onDragCapture',
+  'onDragEnd',
+  'onDragEndCapture',
+  'onDragEnter',
+  'onDragEnterCapture',
+  'onDragExit',
+  'onDragExitCapture',
+  'onDragLeave',
+  'onDragLeaveCapture',
+  'onDragOver',
+  'onDragOverCapture',
+  'onDragStart',
+  'onDragStartCapture',
+  'onDrop',
+  'onDropCapture',
+  'onMouseDown',
+  'onMouseDownCapture',
+  'onMouseEnter',
+  'onMouseLeave',
+  'onMouseMove',
+  'onMouseMoveCapture',
+  'onMouseOut',
+  'onMouseOutCapture',
+  'onMouseOver',
+  'onMouseOverCapture',
+  'onMouseUp',
+  'onMouseUpCapture',
+  'onSelect',
+  'onSelectCapture',
+  'onTouchCancel',
+  'onTouchCancelCapture',
+  'onTouchEnd',
+  'onTouchEndCapture',
+  'onTouchMove',
+  'onTouchMoveCapture',
+  'onTouchStart',
+  'onTouchStartCapture',
+  'onPointerDown',
+  'onPointerDownCapture',
+  'onPointerMove',
+  'onPointerMoveCapture',
+  'onPointerUp',
+  'onPointerUpCapture',
+  'onPointerCancel',
+  'onPointerCancelCapture',
+  'onPointerEnter',
+  'onPointerEnterCapture',
+  'onPointerLeave',
+  'onPointerLeaveCapture',
+  'onPointerOver',
+  'onPointerOverCapture',
+  'onPointerOut',
+  'onPointerOutCapture',
+  'onGotPointerCapture',
+  'onGotPointerCaptureCapture',
+  'onLostPointerCapture',
+  'onLostPointerCaptureCapture',
+  'onScroll',
+  'onScrollCapture',
+  'onWheel',
+  'onWheelCapture',
+  'onAnimationStart',
+  'onAnimationStartCapture',
+  'onAnimationEnd',
+  'onAnimationEndCapture',
+  'onAnimationIteration',
+  'onAnimationIterationCapture',
+  'onTransitionEnd',
+  'onTransitionEndCapture',
+] as const
+export type DOMEventHandler = NonNullable<typeof DOMEventHandlerNames[number]>
+
+type DOMEventAttributeProperties = {
+  [key in DOMEventHandler]: DOMEventHandlerMetadata
+}
+
+export interface ParsedElementProperties
+  extends UtopianElementProperties,
+    DOMIMGAttributeProperties,
+    DOMEventAttributeProperties {}
+
+export type ParsedElementPropertiesKeys = keyof ParsedElementProperties
+
+const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, item) => {
+  current[item] = jsxAttributeValue(undefined)
+  return current
+}, {} as DOMEventAttributeProperties)
+
+const elementPropertiesEmptyValues: ParsedElementProperties = {
   alt: '',
   src: '/',
   textSizing: 'fixed',
+  ...DOMEventHandlerEmptyValues,
   className: '',
 }
 
 type MetadataParsers = {
-  [key in keyof ParsedMetadataProperties]: Parser<ParsedMetadataProperties[key]>
+  [key in keyof ParsedElementProperties]: Parser<ParsedElementProperties[key]>
 }
 
-const metadataParsers: MetadataParsers = {
+const DOMEventHandlerParsers = DOMEventHandlerNames.reduce((current, item) => {
+  current[item] = parseDOMEventHandlerMetadata
+  return current
+}, {} as { [key in DOMEventHandler]: Parser<DOMEventHandlerMetadata> })
+
+const elementPropertiesParsers: MetadataParsers = {
   alt: parseString,
   src: parseString,
   textSizing: parseTextSizing,
+  ...DOMEventHandlerParsers,
   className: parseString,
 }
 
 type MetadataPrinters = {
-  [key in keyof ParsedMetadataProperties]: Printer<ParsedMetadataProperties[key]>
+  [key in keyof ParsedElementProperties]: Printer<ParsedElementProperties[key]>
 }
 
-const metadataPrinters: MetadataPrinters = {
+const DOMEventHandlerPrinters = DOMEventHandlerNames.reduce((current, item) => {
+  current[item] = printDOMEventHandlerMetadata
+  return current
+}, {} as { [key in DOMEventHandler]: Printer<DOMEventHandlerMetadata> })
+
+const elementPropertiesPrinters: MetadataPrinters = {
   alt: printStringAsAttributeValue,
   src: printStringAsAttributeValue,
   textSizing: printTextSizing,
+  ...DOMEventHandlerPrinters,
   className: printStringAsAttributeValue,
 }
 
@@ -4246,7 +4461,7 @@ const layoutPrintersNew: LayoutPrintersNew = {
 }
 
 export interface ParsedProperties
-  extends ParsedMetadataProperties,
+  extends ParsedElementProperties,
     ParsedCSSProperties,
     ParsedLayoutProperties,
     LayoutPropertyTypes {}
@@ -4256,7 +4471,7 @@ export type ParsedPropertiesKeys = keyof ParsedProperties
 export type ParsedPropertiesValues = ParsedProperties[ParsedPropertiesKeys]
 
 export const emptyValues: ParsedProperties = {
-  ...metadataEmptyValues,
+  ...elementPropertiesEmptyValues,
   ...cssEmptyValues,
   ...layoutEmptyValues,
   ...layoutEmptyValuesNew,
@@ -4282,13 +4497,13 @@ function parseValueFactory<T, K extends keyof T>(
   }
 }
 
-const parseMetadataValue = parseValueFactory(metadataParsers)
+const parseMetadataValue = parseValueFactory(elementPropertiesParsers)
 const parseCSSValue = parseValueFactory(cssParsers)
 const parseOldLayoutValue = parseValueFactory(layoutParsers)
 const parseNewLayoutValue = parseValueFactory(layoutParsersNew)
 
-function isMetadataProp(prop: unknown): prop is keyof ParsedMetadataProperties {
-  return typeof prop === 'string' && prop in metadataEmptyValues
+function isMetadataProp(prop: unknown): prop is keyof ParsedElementProperties {
+  return typeof prop === 'string' && prop in elementPropertiesEmptyValues
 }
 
 function isCSSProp(prop: unknown): prop is keyof ParsedCSSProperties {
@@ -4327,16 +4542,15 @@ export function parseAnyParseableValue<K extends keyof ParsedProperties>(
   }
 }
 
-type PrintedValue =
-  | JSXAttributeValue<string | number | object | undefined>
-  | JSXAttributeFunctionCall
+// hmmmm
+type PrintedValue = ModifiableAttribute
 
 type Printer<V extends ValueOf<ParsedProperties>> = (value: V) => PrintedValue
 
 interface Printers extends MetadataPrinters, CSSPrinters, LayoutPrinters, LayoutPrintersNew {}
 
 const printers: Printers = {
-  ...metadataPrinters,
+  ...elementPropertiesPrinters,
   ...cssPrinters,
   ...layoutPrinters,
   ...layoutPrintersNew,

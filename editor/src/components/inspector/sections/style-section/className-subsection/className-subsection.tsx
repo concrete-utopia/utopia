@@ -7,7 +7,7 @@ import { UNSAFE_getIconURL, InspectorSubsectionHeader, Section, UtopiaTheme } fr
 import { betterReactMemo, SelectOption, Utils, ControlStyles } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
-import { useInspectorMetadataInfo } from '../../../common/property-path-hooks'
+import { useInspectorElementInfo } from '../../../common/property-path-hooks'
 import { styleFn } from 'react-select/src/styles'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<SelectOption>> = () =>
@@ -224,7 +224,7 @@ export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => 
     onUnsetValues,
     controlStyles,
     controlStatus,
-  } = useInspectorMetadataInfo('className')
+  } = useInspectorElementInfo('className')
 
   const values: ReadonlyArray<SelectOption> =
     value === '' ? [] : value.split(' ').map((v) => ({ value: v, label: `.${v}` }))
