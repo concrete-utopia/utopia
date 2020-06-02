@@ -128,9 +128,7 @@
     },
     {
       "name": "meta.brace.square",
-      "scope": [
-        " meta.brace.square"
-      ],
+      "scope": [" meta.brace.square"],
       "settings": {
         "foreground": "#abb2bf"
       }
@@ -159,137 +157,105 @@
     },
     {
       "name": "elements to dim",
-      "scope": [
-        "punctuation.definition.tag.xi"
-      ],
+      "scope": ["punctuation.definition.tag.xi"],
       "settings": {
         "foreground": "#5c6370"
       }
     },
     {
       "name": "language operators like '+', '-' etc",
-      "scope": [
-        "constant.other.color.rgb-value.xi"
-      ],
+      "scope": ["constant.other.color.rgb-value.xi"],
       "settings": {
         "foreground": "#ffffff"
       }
     },
     {
       "name": "wikiword",
-      "scope": [
-        "wikiword.xi"
-      ],
+      "scope": ["wikiword.xi"],
       "settings": {
         "foreground": "#d19a66"
       }
     },
     {
       "name": "accent",
-      "scope": [
-        "accent.xi"
-      ],
+      "scope": ["accent.xi"],
       "settings": {
         "foreground": "#61afef"
       }
     },
     {
       "name": "link",
-      "scope": [
-        "constant.character.xi"
-      ],
+      "scope": ["constant.character.xi"],
       "settings": {
         "foreground": "#61afef"
       }
     },
     {
       "name": "comments",
-      "scope": [
-        "beginning.punctuation.definition.list.markdown.xi"
-      ],
+      "scope": ["beginning.punctuation.definition.list.markdown.xi"],
       "settings": {
         "foreground": "#7f848e"
       }
     },
     {
       "name": "string",
-      "scope": [
-        "beginning.punctuation.definition.quote.markdown.xi"
-      ],
+      "scope": ["beginning.punctuation.definition.quote.markdown.xi"],
       "settings": {
         "foreground": "#98c379"
       }
     },
     {
       "name": "heading 6, number",
-      "scope": [
-        "invalid.xi"
-      ],
+      "scope": ["invalid.xi"],
       "settings": {
         "foreground": "#abb2bf"
       }
     },
     {
       "name": "heading 5, enums, preprocessor, constant, decorator",
-      "scope": [
-        "keyword.control.xi"
-      ],
+      "scope": ["keyword.control.xi"],
       "settings": {
         "foreground": "#56b6c2"
       }
     },
     {
       "name": "heading 4, type, class, interface",
-      "scope": [
-        "constant.regexp.xi"
-      ],
+      "scope": ["constant.regexp.xi"],
       "settings": {
         "foreground": "#c678dd"
       }
     },
     {
       "name": "heading 3, property",
-      "scope": [
-        "constant.character.character-class.regexp.xi"
-      ],
+      "scope": ["constant.character.character-class.regexp.xi"],
       "settings": {
         "foreground": "#e06c75"
       }
     },
     {
       "name": "heading 2, callable",
-      "scope": [
-        "entity.name.class.xi"
-      ],
+      "scope": ["entity.name.class.xi"],
       "settings": {
         "foreground": "#56b6c2"
       }
     },
     {
       "name": "heading 1, keyword",
-      "scope": [
-        "entity.name.function.xi"
-      ],
+      "scope": ["entity.name.function.xi"],
       "settings": {
         "foreground": "#e5c07b"
       }
     },
     {
       "name": "types",
-      "scope": [
-        "support.type.swift",
-        "support.type.vb.asp"
-      ],
+      "scope": ["support.type.swift", "support.type.vb.asp"],
       "settings": {
         "foreground": "#e5c07b"
       }
     },
     {
       "name": "SQL Variables",
-      "scope": [
-        "text.variable",
-        "text.bracketed"
-      ],
+      "scope": ["text.variable", "text.bracketed"],
       "settings": {
         "foreground": "#e06c75"
       }
@@ -310,109 +276,84 @@
     },
     {
       "name": "HLSL Semantic",
-      "scope": [
-        "support.variable.semantic.hlsl"
-      ],
+      "scope": ["support.variable.semantic.hlsl"],
       "settings": {
         "foreground": "#e5c07b"
       }
     },
     {
       "name": "Groovy Inheritance",
-      "scope": [
-        "meta.definition.class.inherited.classes.groovy"
-      ],
+      "scope": ["meta.definition.class.inherited.classes.groovy"],
       "settings": {
         "foreground": "#98c379"
       }
     },
     {
       "name": "Groovy Variables",
-      "scope": [
-        "meta.definition.variable.name.groovy"
-      ],
+      "scope": ["meta.definition.variable.name.groovy"],
       "settings": {
         "foreground": "#e06c75"
       }
     },
     {
       "name": "Groovy Methods",
-      "scope": [
-        "meta.method.groovy"
-      ],
+      "scope": ["meta.method.groovy"],
       "settings": {
         "foreground": "#61afef"
       }
     },
     {
       "name": "Groovy import names",
-      "scope": [
-        "storage.modifier.import.groovy"
-      ],
+      "scope": ["storage.modifier.import.groovy"],
       "settings": {
         "foreground": "#e5c07b"
       }
     },
     {
       "name": "Makefile text colour",
-      "scope": [
-        "source.makefile"
-      ],
+      "scope": ["source.makefile"],
       "settings": {
         "foreground": "#e5c07b"
       }
     },
     {
       "name": "Makefile prerequisities",
-      "scope": [
-        "meta.scope.prerequisites.makefile"
-      ],
+      "scope": ["meta.scope.prerequisites.makefile"],
       "settings": {
         "foreground": "#e06c75"
       }
     },
     {
       "name": "Ini Default Text",
-      "scope": [
-        "source.ini"
-      ],
+      "scope": ["source.ini"],
       "settings": {
         "foreground": "#98c379"
       }
     },
     {
       "name": "CoffeeScript Function Argument",
-      "scope": [
-        "meta.arguments.coffee",
-        "variable.parameter.function.coffee"
-      ],
+      "scope": ["meta.arguments.coffee", "variable.parameter.function.coffee"],
       "settings": {
         "foreground": "#e06c75"
       }
     },
     {
       "name": "Clojure constants",
-      "scope": [
-        "constant.keyword.clojure"
-      ],
+      "scope": ["constant.keyword.clojure"],
       "settings": {
         "foreground": "#56b6c2"
       }
     },
     {
       "name": "Clojure symbols",
-      "scope": [
-        "meta.symbol.clojure"
-      ],
+      "scope": ["meta.symbol.clojure"],
       "settings": {
         "foreground": "#e06c75"
       }
     },
     {
       "name": "Clojure globals",
-      "scope": [
-        "entity.global.clojure"
-      ],
+      "scope": ["entity.global.clojure"],
       "settings": {
         "foreground": "#e5c07b"
       }
@@ -429,154 +370,119 @@
     },
     {
       "name": "html/pug (jade) escaped characters and entities",
-      "scope": [
-        "constant.character.entity"
-      ],
+      "scope": ["constant.character.entity"],
       "settings": {
         "foreground": "#e06c75"
       }
     },
     {
       "name": "template literal",
-      "scope": [
-        "punctuation.quasi.element"
-      ],
+      "scope": ["punctuation.quasi.element"],
       "settings": {
         "foreground": "#c678dd"
       }
     },
     {
       "name": "elm constant",
-      "scope": [
-        "support.constant.elm"
-      ],
+      "scope": ["support.constant.elm"],
       "settings": {
         "foreground": "#d19a66"
       }
     },
     {
       "name": "elm prelude",
-      "scope": [
-        "support.type.prelude.elm"
-      ],
+      "scope": ["support.type.prelude.elm"],
       "settings": {
         "foreground": "#56b6c2"
       }
     },
     {
       "name": "Go package name",
-      "scope": [
-        "entity.name.package.go"
-      ],
+      "scope": ["entity.name.package.go"],
       "settings": {
         "foreground": "#e5c07b"
       }
     },
     {
       "name": "go operator",
-      "scope": [
-        "keyword.operator.assignment.go",
-        "keyword.operator.address.go"
-      ],
+      "scope": ["keyword.operator.assignment.go", "keyword.operator.address.go"],
       "settings": {
         "foreground": "#e5c07b"
       }
     },
     {
       "name": "js operator.assignment",
-      "scope": [
-        "keyword.operator.assignment"
-      ],
+      "scope": ["keyword.operator.assignment"],
       "settings": {
         "foreground": "#56b6c2"
       }
     },
     {
       "name": "js template literals variable braces end",
-      "scope": [
-        "keyword.other.substitution.end"
-      ],
+      "scope": ["keyword.other.substitution.end"],
       "settings": {
         "foreground": "#98c379"
       }
     },
     {
       "name": "js template literals variable braces begin",
-      "scope": [
-        "keyword.other.substitution.begin"
-      ],
+      "scope": ["keyword.other.substitution.begin"],
       "settings": {
         "foreground": "#98c379"
       }
     },
     {
       "name": "js template literals end",
-      "scope": [
-        "keyword.other.template.end"
-      ],
+      "scope": ["keyword.other.template.end"],
       "settings": {
         "foreground": "#98c379"
       }
     },
     {
       "name": "js template literals begin",
-      "scope": [
-        "keyword.other.template.begin"
-      ],
+      "scope": ["keyword.other.template.begin"],
       "settings": {
         "foreground": "#98c379"
       }
     },
     {
       "name": "js func parameter",
-      "scope": [
-        "variable.parameter.function.js"
-      ],
+      "scope": ["variable.parameter.function.js"],
       "settings": {
         "foreground": "#e06c75"
       }
     },
     {
       "name": "js class prop",
-      "scope": [
-        "meta.property.object"
-      ],
+      "scope": ["meta.property.object"],
       "settings": {
         "foreground": "#e06c75"
       }
     },
     {
       "name": "js Flow",
-      "scope": [
-        "support.type.primitive"
-      ],
+      "scope": ["support.type.primitive"],
       "settings": {
         "foreground": "#e5c07b"
       }
     },
     {
       "name": "js Flowtype",
-      "scope": [
-        "support.type.type.flowtype"
-      ],
+      "scope": ["support.type.type.flowtype"],
       "settings": {
         "foreground": "#61afef"
       }
     },
     {
       "name": "Import module JS",
-      "scope": [
-        "keyword.operator.module"
-      ],
+      "scope": ["keyword.operator.module"],
       "settings": {
         "foreground": "#c678dd"
       }
     },
     {
       "name": "Reset JavaScript string interpolation expression",
-      "scope": [
-        "meta.template.expression"
-      ],
+      "scope": ["meta.template.expression"],
       "settings": {
         "foreground": "#abb2bf"
       }
@@ -968,9 +874,7 @@
     },
     {
       "name": "beginning.punctuation.definition.list.markdown",
-      "scope": [
-        "beginning.punctuation.definition.list.markdown"
-      ],
+      "scope": ["beginning.punctuation.definition.list.markdown"],
       "settings": {
         "foreground": "#e06c75"
       }
@@ -1272,11 +1176,7 @@
     },
     {
       "name": "Class name",
-      "scope": [
-        "entity.name.class",
-        "variable.other.class.js",
-        "variable.other.class.ts"
-      ],
+      "scope": ["entity.name.class", "variable.other.class.js", "variable.other.class.ts"],
       "settings": {
         "foreground": "#e5c07b"
       }
@@ -1665,10 +1565,7 @@
     },
     {
       "name": "java type",
-      "scope": [
-        "storage.type.annotation.java",
-        "storage.type.object.array.java"
-      ],
+      "scope": ["storage.type.annotation.java", "storage.type.object.array.java"],
       "settings": {
         "foreground": "#e5c07b"
       }

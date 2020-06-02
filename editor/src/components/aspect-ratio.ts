@@ -1,17 +1,17 @@
-import { getValueOrDefaultFallbackForPath } from './inspector/schema-stuff'
+import { foldEither, isLeft, isRight } from '../core/shared/either'
 import { ElementInstanceMetadata, isJSXElement } from '../core/shared/element-template'
-import { isRight, isLeft, foldEither } from '../core/shared/either'
 import {
-  jsxSimpleAttributeToValue,
   getModifiableJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
 } from '../core/shared/jsx-attributes'
 import * as PP from '../core/shared/property-path'
+import * as ObjectPath from 'object-path'
 
 export const AspectRatioPath = 'aspectRatio'
 export const AspectRatioEnabledPath = `${AspectRatioPath}.enabled`
 
 export function isAspectRatioLockedFromProps(props: any): boolean {
-  return getValueOrDefaultFallbackForPath(AspectRatioEnabledPath, props)
+  return ObjectPath.get(props, AspectRatioEnabledPath) ?? false
 }
 
 export function isAspectRatioLockedNew(component: ElementInstanceMetadata): boolean {

@@ -3,10 +3,10 @@ import { jsx } from '@emotion/core'
 import { OptionsType } from 'react-select'
 import { FramePin } from 'utopia-api'
 import { ChainedNumberInput, NumberInput, PopupList, useWrappedEmptyOnSubmitValue } from 'uuiui'
-import { betterReactMemo, NewInspectorContextMenuItems } from 'uuiui-deps'
+import { betterReactMemo, InspectorContextMenuItems } from 'uuiui-deps'
 import { isLeft, isRight, left, right } from '../../../../../core/shared/either'
 import utils from '../../../../../utils/utils'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { SelectOption } from '../../../controls/select-control'
 import { SliderControl } from '../../../controls/slider-control'
 import {
@@ -19,11 +19,8 @@ import {
   fallbackOnEmptyInputValueToCSSEmptyValue,
   framePinToCSSNumber,
   getCSSNumberValue,
-} from '../../../new-inspector/css-utils'
-import {
-  useInspectorLayoutInfo,
-  useInspectorStyleInfo,
-} from '../../../new-inspector/new-inspector-hooks'
+} from '../../../common/css-utils'
+import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { GridRow } from '../../../widgets/grid-row'
 
 function updateRadiusType(
@@ -201,7 +198,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
     updateBorderRadiusBR,
   )
 
-  const borderRadiusContextMenuItems = NewInspectorContextMenuItems.optionalAddOnUnsetValues(
+  const borderRadiusContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     borderRadiusValue != null,
     ['borderRadius'],
     onUnsetValues,
@@ -219,7 +216,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
   )
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id='borderRadius-subsection-context-menu'
       items={borderRadiusContextMenuItems}
       data={null}
@@ -304,6 +301,6 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
           </GridRow>
         )}
       </GridRow>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })

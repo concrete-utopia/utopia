@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { InspectorSubsectionHeader } from 'uuiui'
 import { betterReactMemo, usePropControlledState } from 'uuiui-deps'
-import { CSSPosition } from '../../../new-inspector/css-utils'
+import { CSSPosition } from '../../../common/css-utils'
 import { GridRow } from '../../../widgets/grid-row'
 import { FlexElementSubsection } from '../flex-element-subsection/flex-element-subsection'
 import { ResolvedLayoutProps } from '../layout-section'

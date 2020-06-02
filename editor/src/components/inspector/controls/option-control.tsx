@@ -5,7 +5,7 @@ import { ControlProps, GenericControlOptions } from './control'
 import { Icn, IcnProps } from 'uuiui'
 import { Tooltip } from 'uuiui'
 import { focusTextEditorIfPresent } from '../../editor/text-editor'
-import { ControlStyleDefaults } from '../widgets/control-status'
+import { ControlStyleDefaults } from '../common/control-status'
 import { UtopiaTheme } from 'uuiui'
 
 export interface OptionControlOptions extends GenericControlOptions {
@@ -27,9 +27,11 @@ export interface OptionControlOptions extends GenericControlOptions {
   height?: number
 }
 
-export const OptionControl: React.FunctionComponent<ControlProps<boolean> & {
-  className?: string
-}> = (props) => {
+export const OptionControl: React.FunctionComponent<
+  ControlProps<boolean> & {
+    className?: string
+  }
+> = (props) => {
   const isChecked = props.value
   const propsOnSubmitValue = props.onSubmitValue
   const onSubmitValue = React.useCallback(() => {

@@ -13,13 +13,9 @@ Utopia runs in the browser! To run it, you'll need to run the server (locally) a
 - [nix-shell](https://nixos.org/download.html). Scroll down if you're on Catalina.
 - Optionally: [direnv](https://direnv.net/docs/installation.html). Scroll down for setup instructions. If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands.
 
-## Contributing
+## Contributing and Bug Reporting
 
-We welcome contributions. Utopia is a big project with a learning curve, but we're here to help. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/pD8SrEJ).
-
-## Bug reporting
-
-If you find a bug, three things help us tremendously in the report: sample code (or a link to the project), reproduction steps, and video - especially for interaction bugs. If you're unsure, file an issue and we'll respond there.
+We welcome contributions. Utopia is a big project with a learning curve, but we're here to help. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/pD8SrEJ). Please read our [contributing](contributing.md) doc to get started
 
 # Run the Editor
 
@@ -287,40 +283,32 @@ On macOS, when trying to watch, you might run into an error message about number
 brew install watchman
 ```
 
-## VSCode format on save
+## VSCode linting, formatting with prettier etc
 
 To enable format-on-save, you should install the VSCode plugin `esbenp.prettier-vscode`, and `dbaeumer.vscode-eslint` and then in your workspace settings, enable format on save, and tell prettier to use the eslint integration mode:
 
 ```
-"editor.formatOnSave": true,
-"prettier.eslintIntegration": true,
-```
-
-When VSCode asks you to pick a formatter, just pick Prettier. If it wouldn't ask you for any reason, you can store your preferences like so (for minimal impact put it in your workspace settings):
-
-```
-"[typescript]": {
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
-},
-"[typescriptreact]": {
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
-},
-"[javascript]": {
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
-},
-```
-
-## Advanced options:
-
-See `package.json` for other npm commands. For support, contact @devtools on slack.
-
-## Packaging:
-
-To package up the app, use the following command line:
+  "eslint.workingDirectories": ["./editor", "./utopia-api"],
+  "editor.formatOnSave": true,
+  "prettier.eslintIntegration": true,
+  "prettier.useEditorConfig": false,
+  "prettier.requireConfig": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 
 ```
-CSC_KEY_PASSWORD=<SECRET_CERT_PASSWORD> npm run package
-```
+
+Select prettier as the default formatter in your settings; VSCode may prompt you to do so. The last four line items, starting with `[typescript]` reflect this. You should restart VSCode after this.
 
 ## Running the Server
 

@@ -28,8 +28,8 @@ function sortResults(
   }
 }
 
-describe('evaluateExpressions', function() {
-  it('evaluates two expressions with dependencies on each other', function() {
+describe('evaluateExpressions', function () {
+  it('evaluates two expressions with dependencies on each other', function () {
     const expression1: Expression<string> = {
       id: 'expression1',
       path: 'expression1',
@@ -87,7 +87,7 @@ describe('evaluateExpressions', function() {
 
     expect(sortResults(actualResult)).to.deep.equal(expectedResult)
   })
-  it('evaluates a web of expressions', function() {
+  it('evaluates a web of expressions', function () {
     const expression1: Expression<string> = {
       id: 'expression1',
       path: 'expression1',
@@ -233,7 +233,7 @@ describe('evaluateExpressions', function() {
 
     expect(sortResults(actualResult)).to.deep.equal(expectedResult)
   })
-  it('evaluates two expressions with a dependency from one to the other', function() {
+  it('evaluates two expressions with a dependency from one to the other', function () {
     const expression1: Expression<string> = {
       id: 'expression1',
       path: 'expression1',
@@ -303,7 +303,7 @@ describe('evaluateExpressions', function() {
     expect(sortResults(actualResult1First)).to.deep.equal(expectedResult)
     expect(sortResults(actualResult2First)).to.deep.equal(expectedResult)
   })
-  it('evaluates two independent expressions', function() {
+  it('evaluates two independent expressions', function () {
     const expression1: Expression<string> = {
       id: 'expression1',
       path: 'expression1',
@@ -377,7 +377,7 @@ describe('evaluateExpressions', function() {
 
     expect(sortResults(actualResult)).to.deep.equal(expectedResult)
   })
-  it('evaluates an expression that depends on a value', function() {
+  it('evaluates an expression that depends on a value', function () {
     const expression2: Expression<string> = {
       id: 'expression2',
       path: 'expression2',

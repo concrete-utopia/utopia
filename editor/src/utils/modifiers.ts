@@ -6,7 +6,7 @@ export type Modifiers = {
 }
 
 export const Modifier = {
-  modifiersForKeyboardEvent: function(event: KeyboardEvent): Modifiers {
+  modifiersForKeyboardEvent: function (event: KeyboardEvent): Modifiers {
     let result: Modifiers = { ...Modifier.modifiersForEvent(event) }
     if (event.key === 'Meta' || event.key === 'OS') {
       if (event.type === 'keydown') {
@@ -17,7 +17,7 @@ export const Modifier = {
     }
     return result
   },
-  modifiersForEvent: function(event: {
+  modifiersForEvent: function (event: {
     altKey: boolean
     metaKey: boolean
     ctrlKey: boolean
@@ -30,7 +30,7 @@ export const Modifier = {
       shift: event.shiftKey,
     }
   },
-  none: function(modifiers: Modifiers): boolean {
+  none: function (modifiers: Modifiers): boolean {
     return !(modifiers.alt || modifiers.cmd || modifiers.ctrl || modifiers.shift)
   },
 }

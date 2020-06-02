@@ -1,8 +1,5 @@
 import * as Chai from 'chai'
 import * as R from 'ramda'
-import { MainSchema } from '../components/inspector/schema-stuff'
-import { JsonMap } from '../missing-types/json'
-import { JsonSchema } from '../missing-types/json-schema'
 import Utils from './utils'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../core/shared/math-utils'
 import { longestCommonArray } from '../core/shared/utils'
@@ -36,54 +33,6 @@ describe('longestCommonArray', () => {
   })
   it('returns an empty array if the first element does not match', () => {
     expect(longestCommonArray(['ddd', 'bbb', 'ccc'], ['aaa', 'bbb', 'ccc'])).to.deep.equal([])
-  })
-})
-
-describe('Utils.traverseJsonSchema', () => {
-  it('works where there are no $refs', () => {
-    const subSchema = Utils.traverseJsonSchema(['frame', 'derived', 'height'], MainSchema)
-    expect(subSchema).to.not.equal(null)
-    expect(subSchema!.type).to.equal('number')
-    expect(subSchema!.alias).to.equal('H')
-  })
-
-  it('works with refs', () => {
-    const subSchema = Utils.traverseJsonSchema(['fill', 'color', 'red'], MainSchema) as JsonSchema
-    expect(subSchema).to.not.equal(null)
-    expect(subSchema.type).to.equal('number')
-  })
-})
-
-describe('Utils.compileDefaultForSchema', () => {
-  it('works in a simple query', () => {
-    const subSchema = Utils.traverseJsonSchema(['frame', 'derived', 'height'], MainSchema)
-    const compiledDefault = Utils.compileDefaultForSchema(subSchema!, 'base', '', false, MainSchema)
-    expect(compiledDefault).to.equal(100)
-  })
-
-  it('works with shallow refs', () => {
-    const subSchema = Utils.traverseJsonSchema(['fill'], MainSchema) as JsonSchema
-    const compiledDefault = Utils.compileDefaultForSchema(
-      subSchema!,
-      'base',
-      '',
-      false,
-      MainSchema,
-    ) as JsonMap
-    expect(compiledDefault!.enabled).to.equal(false)
-    expect((compiledDefault as any).color.red).to.equal(221)
-  })
-
-  it('works with deep refs', () => {
-    const subSchema = Utils.traverseJsonSchema(['fill', 'color'], MainSchema) as JsonSchema
-    const compiledDefault = Utils.compileDefaultForSchema(
-      subSchema!,
-      'base',
-      '',
-      false,
-      MainSchema,
-    ) as JsonMap
-    expect((compiledDefault as any).red).to.equal(221)
   })
 })
 

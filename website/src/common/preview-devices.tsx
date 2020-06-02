@@ -23,9 +23,11 @@ interface PreviewReactSelectDeviceSelectorProps {
   caratOffset: number
 }
 
-export const PreviewReactSelectDeviceSelector: React.FunctionComponent<
-  PreviewReactSelectDeviceSelectorProps
-> = ({ value, onChange, caratOffset }) => {
+export const PreviewReactSelectDeviceSelector: React.FunctionComponent<PreviewReactSelectDeviceSelectorProps> = ({
+  value,
+  onChange,
+  caratOffset,
+}) => {
   const PreviewReactSelectSingleValue = (singleValueProps: any) => {
     return (
       components.SingleValue && (

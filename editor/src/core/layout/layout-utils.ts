@@ -47,7 +47,7 @@ import {
   StyleLayoutProp,
 } from './layout-helpers-new'
 import { getLayoutPropertyOr } from './getLayoutProperty'
-import { CSSPosition } from '../../components/inspector/new-inspector/css-utils'
+import { CSSPosition } from '../../components/inspector/common/css-utils'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]

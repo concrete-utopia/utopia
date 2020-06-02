@@ -15,6 +15,7 @@ export enum LayoutSystem {
   Flex = 'flex',
   PinSystem = 'pinSystem',
   Group = 'group',
+  Flow = 'flow',
 }
 
 export interface LayoutProps extends Frame, FlexElementProps, FlexParentProps {

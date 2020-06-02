@@ -2,8 +2,8 @@ import * as React from 'react'
 import { colorTheme, FlexRow, Icn, UtopiaTheme } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { MetadataEditorModalPreviewHeight } from '../../../controls/color-picker'
-import { CSSURLFunctionBackgroundLayer } from '../../../new-inspector/css-utils'
-import { checkerboardBackground } from '../../../utils'
+import { CSSURLFunctionBackgroundLayer } from '../../../common/css-utils'
+import { checkerboardBackground } from '../../../common/inspector-utils'
 
 interface PickerImagePreviewProps {
   value: CSSURLFunctionBackgroundLayer

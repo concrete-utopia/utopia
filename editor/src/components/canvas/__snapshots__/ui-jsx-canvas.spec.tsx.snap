@@ -3,14 +3,30 @@
 exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
-    <div style=\\"position:absolute;left:0;top:0;right:0;bottom:0\\" data-uid=\\"aaa\\">
+    <div
+      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
+      data-uid=\\"aaa\\"
+    >
       <div
         data-uid=\\"bbb-1\\"
         data-label=\\"Plane\\"
@@ -273,15 +289,28 @@ Object {
 exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"position:absolute;left:0;top:0;right:0;bottom:0\\"
+      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
       data-uid=\\"aaa\\"
       data-label=\\"Hat\\"
     ></div>
@@ -455,14 +484,27 @@ Object {
 exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:567\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
-    <input data-uid=\\"567\\" style=\\"top:10px\\" />
+    <input data-uid=\\"567\\" style=\\"top: 10px;\\" />
   </div>
 </div>
 "
@@ -548,12 +590,25 @@ Object {
 exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbitrary jsx block 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">1</div>
@@ -768,12 +823,25 @@ Object {
 exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbitrary jsx block inside an element inside an arbitrary jsx block 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/aaa/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">
@@ -1102,12 +1170,25 @@ Object {
 exports[`UiJsxCanvas render class component is available from arbitrary block in JSX element 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa\\">Thing</div>
@@ -1406,15 +1487,28 @@ Object {
 exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"position:absolute;left:0;top:0;right:0;bottom:0\\"
+      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
       data-uid=\\"aaa\\"
     ></div>
   </div>
@@ -1584,12 +1678,25 @@ Object {
 exports[`UiJsxCanvas render does not crash if the metadata scenes are not the appropriate value 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -1806,12 +1913,25 @@ Object {
 exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -2028,12 +2148,25 @@ Object {
 exports[`UiJsxCanvas render function component is available from arbitrary block in JSX element 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa\\">Thing</div>
@@ -2332,12 +2465,25 @@ Object {
 exports[`UiJsxCanvas render function component works inside a map 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
@@ -2502,18 +2648,41 @@ Object {
 exports[`UiJsxCanvas render handles a component that destructures its props object 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
-    style=\\"position:absolute;width:200px;height:200px;left:59px;top:79px;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      left: 59px;
+      top: 79px;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"position:absolute;width:100%;height:100%;left:0;top:0;background-color:#FFFFFF\\"
+      style=\\"
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background-color: #ffffff;
+      \\"
       data-uid=\\"aaa\\"
     >
-      <div style=\\"position:absolute;background-color:#000000\\" data-uid=\\"bbb\\">
+      <div
+        style=\\"position: absolute; background-color: #000000;\\"
+        data-uid=\\"bbb\\"
+      >
         Hi there!
       </div>
     </div>
@@ -2964,15 +3133,35 @@ Array [
 exports[`UiJsxCanvas render handles a component that renames its props object 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
-    style=\\"position:absolute;width:200px;height:200px;left:59px;top:79px;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      left: 59px;
+      top: 79px;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"position:absolute;width:100%;height:100%;left:0;top:0;background-color:#FFFFFF\\"
+      style=\\"
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background-color: #ffffff;
+      \\"
       data-uid=\\"aaa\\"
     >
       <div data-uid=\\"bbb\\">Hi there!</div>
@@ -3412,18 +3601,41 @@ Object {
 exports[`UiJsxCanvas render handles a component with a props object written by someone that wants to watch the world burn 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
-    style=\\"position:absolute;width:200px;height:200px;left:59px;top:79px;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      left: 59px;
+      top: 79px;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"position:absolute;width:100%;height:100%;left:0;top:0;background-color:#FFFFFF\\"
+      style=\\"
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background-color: #ffffff;
+      \\"
       data-uid=\\"aaa\\"
     >
-      <div style=\\"position:absolute;background-color:#000000\\" data-uid=\\"bbb\\">
+      <div
+        style=\\"position: absolute; background-color: #000000;\\"
+        data-uid=\\"bbb\\"
+      >
         Hi there! - and hello!
       </div>
     </div>
@@ -3916,18 +4128,41 @@ Object {
 exports[`UiJsxCanvas render handles a component with a props object written by someone that wants to watch the world burn and also loves defaults 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
-    style=\\"position:absolute;width:200px;height:200px;left:59px;top:79px;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      left: 59px;
+      top: 79px;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"position:absolute;width:100%;height:100%;left:0;top:0;background-color:#FFFFFF\\"
+      style=\\"
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background-color: #ffffff;
+      \\"
       data-uid=\\"aaa\\"
     >
-      <div style=\\"position:absolute;background-color:#000000\\" data-uid=\\"bbb\\">
+      <div
+        style=\\"position: absolute; background-color: #000000;\\"
+        data-uid=\\"bbb\\"
+      >
         Hi there! - and hello! - Now begone!
       </div>
     </div>
@@ -4420,24 +4655,44 @@ Object {
 exports[`UiJsxCanvas render handles an undefined component gracefully 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"padding:2px 4px;border:1px solid [object Object];border-radius:1px;background-color:white;color:rgba(77,77,77,1);flex-shrink:0\\"
+      style=\\"
+        padding: 2px 4px;
+        border: 1px solid [object Object];
+        border-radius: 1px;
+        background-color: white;
+        color: rgba(77, 77, 77, 1);
+        flex-shrink: 0;
+      \\"
       class=\\"css-4pbagp\\"
     >
       <img
-        style=\\"user-select:none\\"
+        style=\\"user-select: none;\\"
         width=\\"16\\"
         height=\\"16\\"
         src=\\"/editor/icons/light/semantic/warningtriangle-gray-16x16@2x.png\\"
         draggable=\\"false\\"
-      /><span style=\\"margin-left:4px\\">Can&#x27;t find MyCard</span>
+      /><span style=\\"margin-left: 4px;\\">Can&#x27;t find MyCard</span>
     </div>
   </div>
 </div>
@@ -4449,12 +4704,25 @@ exports[`UiJsxCanvas render handles an undefined component gracefully 2`] = `Obj
 exports[`UiJsxCanvas render handles chaining dependencies into the appropriate order 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"bbb\\"></div>
   </div>
@@ -4542,19 +4810,48 @@ Object {
 exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/03a utopia-storyboard-uid/scene-aaa:aaa/03a/834 utopia-storyboard-uid/scene-aaa:aaa/03a/999 utopia-storyboard-uid/scene-aaa:aaa/03a/999/000\\"
-    style=\\"position:absolute;width:375px;height:812px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 375px;
+      height: 812px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"position:absolute;width:376px;height:812px;left:0;top:0;right:0;bottom:0;font-size:12px;font-family:Inter;color:#237AFF;background-color:#171111\\"
+      style=\\"
+        position: absolute;
+        width: 376px;
+        height: 812px;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        font-size: 12px;
+        font-family: Inter;
+        color: #237aff;
+        background-color: #171111;
+      \\"
       data-uid=\\"aaa\\"
     >
       <div
-        style=\\"display:grid;grid-template-columns:2fr 1fr;grid-auto-rows:31px\\"
+        style=\\"
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          grid-auto-rows: 31px;
+        \\"
         data-uid=\\"03a\\"
       >
         <div data-uid=\\"834-1\\" data-label=\\"Copy\\" data-utopia-original-uid=\\"834\\">
@@ -4563,17 +4860,17 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
         <div data-uid=\\"999-2\\" data-label=\\"⌘,⎇,C\\" data-utopia-original-uid=\\"999\\">
           <span data-uid=\\"000\\"
             ><span
-              style=\\"padding:6px\\"
+              style=\\"padding: 6px;\\"
               data-uid=\\"726-1\\"
               data-utopia-original-uid=\\"726\\"
               >⌘</span
             ><span
-              style=\\"padding:6px\\"
+              style=\\"padding: 6px;\\"
               data-uid=\\"726-2\\"
               data-utopia-original-uid=\\"726\\"
               >⎇</span
             ><span
-              style=\\"padding:6px\\"
+              style=\\"padding: 6px;\\"
               data-uid=\\"726-3\\"
               data-utopia-original-uid=\\"726\\"
               >C</span
@@ -4586,17 +4883,17 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
         <div data-uid=\\"999-4\\" data-label=\\"⌘⎇V\\" data-utopia-original-uid=\\"999\\">
           <span data-uid=\\"000\\"
             ><span
-              style=\\"padding:6px\\"
+              style=\\"padding: 6px;\\"
               data-uid=\\"726-1\\"
               data-utopia-original-uid=\\"726\\"
               >⌘</span
             ><span
-              style=\\"padding:6px\\"
+              style=\\"padding: 6px;\\"
               data-uid=\\"726-2\\"
               data-utopia-original-uid=\\"726\\"
               >⎇</span
             ><span
-              style=\\"padding:6px\\"
+              style=\\"padding: 6px;\\"
               data-uid=\\"726-3\\"
               data-utopia-original-uid=\\"726\\"
               >V</span
@@ -4609,17 +4906,17 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
         <div data-uid=\\"999-6\\" data-label=\\"⌘⎇C\\" data-utopia-original-uid=\\"999\\">
           <span data-uid=\\"000\\"
             ><span
-              style=\\"padding:6px\\"
+              style=\\"padding: 6px;\\"
               data-uid=\\"726-1\\"
               data-utopia-original-uid=\\"726\\"
               >⌘</span
             ><span
-              style=\\"padding:6px\\"
+              style=\\"padding: 6px;\\"
               data-uid=\\"726-2\\"
               data-utopia-original-uid=\\"726\\"
               >⎇</span
             ><span
-              style=\\"padding:6px\\"
+              style=\\"padding: 6px;\\"
               data-uid=\\"726-3\\"
               data-utopia-original-uid=\\"726\\"
               >C</span
@@ -6413,12 +6710,25 @@ exports[`UiJsxCanvas render mutated variable refers to code component 1`] = `
 exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block inside a text range 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa\\">Hello World!!</div>
@@ -6735,12 +7045,25 @@ Object {
 exports[`UiJsxCanvas render refs are handled and triggered correctly in a class component 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"aaa\\">Thing</div>
   </div>
@@ -6882,15 +7205,28 @@ Object {
 exports[`UiJsxCanvas render refs are handled and triggered correctly in a functional component 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"position:absolute;left:0;top:0;right:0;bottom:0\\"
+      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
       data-uid=\\"aaa\\"
     ></div>
   </div>
@@ -7107,31 +7443,75 @@ Object {
 exports[`UiJsxCanvas render renders a 1st party component with uids correctly, using the passed uid instead inside App 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/d59 utopia-storyboard-uid/scene-aaa:aaa/d59/dd5\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"position:absolute;left:0;top:0;right:0;bottom:0;background-color:lightgrey\\"
+      style=\\"
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background-color: lightgrey;
+      \\"
       data-uid=\\"aaa\\"
     >
       <div
-        style=\\"width:221px;height:348px;left:28px;top:27px;background-color:#DDDDDD\\"
+        style=\\"
+          width: 221px;
+          height: 348px;
+          left: 28px;
+          top: 27px;
+          background-color: #dddddd;
+        \\"
         data-uid=\\"d59\\"
       >
         <div
-          style=\\"height:30px;left:10px;top:10px;right:10px;background-color:#000000\\"
+          style=\\"
+            height: 30px;
+            left: 10px;
+            top: 10px;
+            right: 10px;
+            background-color: #000000;
+          \\"
           data-uid=\\"d03\\"
         ></div>
         <div
-          style=\\"width:193px;height:244px;left:14px;top:21px;background-color:#fff\\"
+          style=\\"
+            width: 193px;
+            height: 244px;
+            left: 14px;
+            top: 21px;
+            background-color: #fff;
+          \\"
           data-uid=\\"dd5\\"
         ></div>
         <div
-          style=\\"height:30px;left:10px;top:100px;right:10px;background-color:#000000\\"
+          style=\\"
+            height: 30px;
+            left: 10px;
+            top: 100px;
+            right: 10px;
+            background-color: #000000;
+          \\"
           data-uid=\\"41e\\"
         ></div>
       </div>
@@ -7610,18 +7990,38 @@ Object {
 exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard component 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
-    style=\\"position:absolute;width:200px;height:200px;left:59px;top:79px;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      left: 59px;
+      top: 79px;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
-      style=\\"position:absolute;width:100%;height:100%;left:0;top:0;background-color:#FFFFFF\\"
+      style=\\"
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background-color: #ffffff;
+      \\"
       data-uid=\\"aaa\\"
     >
-      <div style=\\"position:absolute\\" data-uid=\\"bbb\\">hi</div>
+      <div style=\\"position: absolute;\\" data-uid=\\"bbb\\">hi</div>
     </div>
   </div>
 </div>
@@ -7949,12 +8349,25 @@ Object {
 exports[`UiJsxCanvas render renders a component used in an arbitrary block correctly 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -8173,12 +8586,25 @@ Object {
 exports[`UiJsxCanvas render renders a component used in an arbitrary block correctly, with an HTML element name as a parameter name 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -8398,12 +8824,25 @@ Object {
 exports[`UiJsxCanvas render renders a component used in an arbitrary block with eye-stabbingly awful nested destructuring correctly 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -8629,12 +9068,25 @@ Object {
 exports[`UiJsxCanvas render renders img tag 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"aaa\\">
       <img
@@ -8862,12 +9314,25 @@ Object {
 exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"aaa\\" data-factory-function-works=\\"true\\">Utopia</div>
   </div>
@@ -8956,12 +9421,25 @@ Object {
 exports[`UiJsxCanvas render supports passing down the scope to children of components 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb utopia-storyboard-uid/scene-aaa:aaa/bbb/ccc\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">
@@ -9212,16 +9690,29 @@ Object {
 exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElement 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/cloner utopia-storyboard-uid/scene-aaa:zzz/cloner/cloned\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"cloner\\">
-        <div data-uid=\\"cloned\\" style=\\"color:red;font-weight:800\\">ha</div>
+        <div data-uid=\\"cloned\\" style=\\"color: red; font-weight: 800;\\">ha</div>
       </div>
     </div>
   </div>
@@ -9561,14 +10052,30 @@ Object {
 exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
-    <div data-uid=\\"aaa\\" style=\\"width:50px;height:50px;left:15px;top:15px\\">
+    <div
+      data-uid=\\"aaa\\"
+      style=\\"width: 50px; height: 50px; left: 15px; top: 15px;\\"
+    >
       Utopia
     </div>
   </div>
@@ -9656,17 +10163,30 @@ Object {
 exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"all:initial;position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
-    style=\\"position:absolute;width:400px;height:400px;left:0;top:0;background-color:rgba(255,255,255,1);box-shadow:0px 0px 1px 0px rgba(26,26,26,0.3)\\"
+    style=\\"
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
   >
     <div
       data-uid=\\"aaa\\"
       class=\\"css-f9xk9e\\"
-      style=\\"width:50px;height:50px;left:15px;top:15px\\"
+      style=\\"width: 50px; height: 50px; left: 15px; top: 15px;\\"
     >
       Utopia
     </div>

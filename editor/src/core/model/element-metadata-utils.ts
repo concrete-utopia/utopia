@@ -2,11 +2,13 @@ import * as OPI from 'object-path-immutable'
 import * as R from 'ramda'
 import { FlexLength, LayoutSystem, Sides } from 'utopia-api'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
-import { modifyParseSuccessWithSimple } from '../../components/editor/store/editor-state'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
-import { getDefaultValueForPath } from '../../components/inspector/schema-stuff'
-import * as PP from '../shared/property-path'
-import * as TP from '../shared/template-path'
+import { foldThese, makeThat, makeThis, mergeThese, setThat, These } from '../../utils/these'
+import Utils, { IndexPosition } from '../../utils/utils'
+import { getLayoutProperty } from '../layout/getLayoutProperty'
+import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
+import { LayoutProp } from '../layout/layout-helpers-new'
+import { flattenArray, mapDropNulls, pluck, stripNulls } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesAsStrings,
   intrinsicHTMLElementNamesThatSupportChildren,
@@ -15,6 +17,7 @@ import {
   alternativeEither,
   Either,
   eitherToMaybe,
+  flatMapEither,
   foldEither,
   forEachRight,
   isLeft,
@@ -23,11 +26,28 @@ import {
   mapEither,
   right,
   traverseEither,
-  flatMapEither,
 } from '../shared/either'
-import { foldThese, makeThat, makeThis, mergeThese, setThat, These } from '../../utils/these'
-import Utils, { IndexPosition } from '../../utils/utils'
-import { mapDropNulls, pluck, flattenArray, stripNulls } from '../shared/array-utils'
+import {
+  ComponentMetadata,
+  ComponentMetadataWithoutRootElement,
+  ElementInstanceMetadata,
+  ElementsByUID,
+  getJSXElementNameLastPart,
+  getJSXElementNameNoPathName,
+  isComponentMetadata,
+  isJSXArbitraryBlock,
+  isJSXElement,
+  isJSXTextBlock,
+  JSXAttributes,
+  JSXElement,
+  JSXElementChild,
+  MetadataWithoutChildren,
+  UtopiaJSXComponent,
+} from '../shared/element-template'
+import {
+  getModifiableJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
+} from '../shared/jsx-attributes'
 import {
   CanvasPoint,
   CanvasRectangle,
@@ -38,55 +58,22 @@ import {
   Size,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
-import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
-import { LayoutProp } from '../layout/layout-helpers-new'
 import {
-  ElementCanvasMetadata,
   ElementOriginType,
   id,
   Imports,
   InstancePath,
-  ParseSuccess,
   PropertyPath,
   ScenePath,
   StaticInstancePath,
   StaticTemplatePath,
   TemplatePath,
 } from '../shared/project-file-types'
-import {
-  ComponentMetadata,
-  ElementInstanceMetadata,
-  ElementsByUID,
-  getJSXElementNameAsString,
-  getJSXElementNameLastPart,
-  getJSXElementNameNoPathName,
-  isJSXElement,
-  JSXElement,
-  JSXElementChild,
-  MetadataWithoutChildren,
-  UtopiaJSXComponent,
-  JSXAttributes,
-  ComponentMetadataWithoutRootElement,
-  isComponentMetadata,
-  isJSXTextBlock,
-  isJSXArbitraryBlock,
-} from '../shared/element-template'
-import {
-  findJSXElementChildAtPath,
-  getUtopiaID,
-  transformJSXComponentAtPath,
-} from './element-template-utils'
-import {
-  emptyElementCanvasMetadata,
-  isUtopiaAPIComponent,
-  isGivenUtopiaAPIElement,
-} from './project-file-utils'
-import {
-  getModifiableJSXAttributeAtPath,
-  jsxSimpleAttributeToValue,
-} from '../shared/jsx-attributes'
-import { getLayoutProperty } from '../layout/getLayoutProperty'
-import { EmptyScenePathForStoryboard, isSceneElement } from './scene-utils'
+import * as PP from '../shared/property-path'
+import * as TP from '../shared/template-path'
+import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
+import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
+import { EmptyScenePathForStoryboard } from './scene-utils'
 const ObjectPathImmutable: any = OPI
 
 export const UTOPIA_ORIGINAL_ID_KEY = 'data-utopia-original-uid'
@@ -473,13 +460,13 @@ export const MetadataUtils = {
       return null
     }
   },
-  getYogaDirection: function(
+  getYogaDirection: function (
     instance: ElementInstanceMetadata | null,
   ): 'row' | 'row-reverse' | 'column' | 'column-reverse' {
     if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
       return FlexLayoutHelpers.getFlexDirectionFromProps(instance.element.value.props)
     } else {
-      return getDefaultValueForPath('flex.container.flexDirection', 'base') // TODO kill all getDefaultValueForPath calls
+      return 'row' // TODO read this value from spy
     }
   },
   getYogaDirectionAtPath(
@@ -491,13 +478,13 @@ export const MetadataUtils = {
       path == null || TP.isScenePath(path) ? null : this.getElementByInstancePathMaybe(scenes, path)
     return this.getYogaDirection(instance)
   },
-  getYogaWrap: function(
+  getYogaWrap: function (
     instance: ElementInstanceMetadata | null,
   ): 'wrap' | 'wrap-reverse' | 'nowrap' {
     if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
       return FlexLayoutHelpers.getFlexWrap(instance.element.value.props)
     } else {
-      return getDefaultValueForPath('flex.container.flexWrap', 'base') // TODO kill all getDefaultValueForPath calls
+      return 'nowrap' // TODO read this value from spy
     }
   },
   isAutoSizingView(element: ElementInstanceMetadata | null): boolean {
@@ -1014,7 +1001,7 @@ export const MetadataUtils = {
       return Utils.optionalMap((e) => e.localFrame, element)
     }
   },
-  getFrameRelativeTo: function(
+  getFrameRelativeTo: function (
     parent: TemplatePath | null,
     metadata: Array<ComponentMetadata>,
     frame: CanvasRectangle,
@@ -1146,7 +1133,7 @@ export const MetadataUtils = {
       return null
     }
   },
-  getTargetParentForPaste: function(
+  getTargetParentForPaste: function (
     imports: Imports,
     selectedViews: Array<TemplatePath>,
     scenes: Array<ComponentMetadata>,

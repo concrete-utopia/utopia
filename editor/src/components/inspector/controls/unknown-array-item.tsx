@@ -6,11 +6,11 @@ import {
   EmptyInputValue,
   isCSSUnknownArrayItem,
   isEmptyInputValue,
-} from '../new-inspector/css-utils'
-import { CSSArrayItem, getIndexedSpliceArrayItem } from '../new-inspector/inspector-utils'
-import { UseSubmitValueFactory } from '../new-inspector/new-inspector-hooks'
-import { stopPropagation } from '../utils'
-import { ControlStatus, ControlStyles } from '../widgets/control-status'
+} from '../common/css-utils'
+import { CSSArrayItem, getIndexedSpliceArrayItem } from '../common/inspector-utils'
+import { UseSubmitValueFactory } from '../common/property-path-hooks'
+import { stopPropagation } from '../common/inspector-utils'
+import { ControlStatus, ControlStyles } from '../common/control-status'
 import { PropertyRow } from '../widgets/property-row'
 import { StringControl } from './string-control'
 

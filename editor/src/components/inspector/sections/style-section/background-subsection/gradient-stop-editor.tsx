@@ -10,9 +10,9 @@ import {
   orderStops,
   printColor,
   printLinearGradientBackgroundLayer,
-} from '../../../new-inspector/css-utils'
-import { checkerboardBackground } from '../../../utils'
-import { ControlStyleDefaults } from '../../../widgets/control-status'
+} from '../../../common/css-utils'
+import { checkerboardBackground } from '../../../common/inspector-utils'
+import { ControlStyleDefaults } from '../../../common/control-status'
 import { inspectorEdgePadding } from './background-picker'
 
 interface GradientStopProps {
@@ -207,8 +207,9 @@ const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) 
             height: 0,
             borderColor: 'white transparent transparent transparent',
             borderStyle: 'solid',
-            borderWidth: `${GradientStopCaratSize - 1}px ${GradientStopCaratSize -
-              1}px 0 ${GradientStopCaratSize - 1}px`,
+            borderWidth: `${GradientStopCaratSize - 1}px ${GradientStopCaratSize - 1}px 0 ${
+              GradientStopCaratSize - 1
+            }px`,
             transform: 'translateY(-.5px)',
           }}
         />
@@ -269,9 +270,7 @@ function calculateIntermediateStopColor(
 
       const color1 = cssColorToChromaColorOrDefault(orderedStops[i].color)
       const color2 = cssColorToChromaColorOrDefault(orderedStops[i + 1].color)
-      const hex = Chroma.mix(color1, color2, localStopPosition, 'rgb')
-        .hex()
-        .toUpperCase()
+      const hex = Chroma.mix(color1, color2, localStopPosition, 'rgb').hex().toUpperCase()
       return {
         hex,
         type: 'Hex',

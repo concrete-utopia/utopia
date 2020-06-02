@@ -28,7 +28,7 @@ function StackFrameCodeBlock(props: StackFrameCodeBlockPropsType) {
   const { lines, lineNum, columnNum, contextSize, main } = props
   const sourceCode: Array<string> = []
   let whiteSpace = Infinity
-  lines.forEach(function(e) {
+  lines.forEach(function (e) {
     const { content: text } = e
     const m = text.match(/^\s*/)
     if (text === '') {
@@ -40,7 +40,7 @@ function StackFrameCodeBlock(props: StackFrameCodeBlockPropsType) {
       whiteSpace = 0
     }
   })
-  lines.forEach(function(e) {
+  lines.forEach(function (e) {
     let { content: text } = e
     const { lineNumber: line } = e
 

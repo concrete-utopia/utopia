@@ -2,9 +2,9 @@ import React = require('react')
 import * as R from 'ramda'
 import { isRight } from '../../../core/shared/either'
 import { ColorPicker } from './color-picker'
-import { CSSColor, parseColor, cssColorToChromaColorOrDefault } from '../new-inspector/css-utils'
+import { CSSColor, parseColor, cssColorToChromaColorOrDefault } from '../common/css-utils'
 import { StringControl } from './string-control'
-import { ControlStatus, ControlStyles } from '../widgets/control-status'
+import { ControlStatus, ControlStyles } from '../common/control-status'
 import { UtopiaTheme } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 
@@ -45,9 +45,7 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
       <StringControl
         id={`string-${props.id}`}
         key={'color-string'}
-        value={cssColorToChromaColorOrDefault(props.value)
-          .hex('rgba')
-          .toUpperCase()}
+        value={cssColorToChromaColorOrDefault(props.value).hex('rgba').toUpperCase()}
         readOnly={props.controlStyles.interactive}
         onSubmitValue={props.onSubmitSolidStringValue}
         controlStatus={props.controlStatus}
@@ -145,9 +143,7 @@ export const StringColorControl = betterReactMemo(
         id={`string-${props.id}`}
         key={'color-string'}
         style={props.style}
-        value={cssColorToChromaColorOrDefault(color)
-          .hex('rgba')
-          .toUpperCase()}
+        value={cssColorToChromaColorOrDefault(color).hex('rgba').toUpperCase()}
         readOnly={props.controlStyles.interactive}
         onSubmitValue={props.onSubmitSolidStringValue}
         controlStatus={props.controlStatus}

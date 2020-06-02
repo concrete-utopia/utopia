@@ -15,7 +15,7 @@ function deepFreezeImpl(o: any) {
   var oIsFunction = typeof o === 'function'
   var hasOwnProp = Object.prototype.hasOwnProperty
 
-  Object.getOwnPropertyNames(o).forEach(function(prop) {
+  Object.getOwnPropertyNames(o).forEach(function (prop) {
     if (
       hasOwnProp.call(o, prop) &&
       (oIsFunction ? prop !== 'caller' && prop !== 'callee' && prop !== 'arguments' : true) &&

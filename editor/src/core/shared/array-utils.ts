@@ -112,10 +112,7 @@ export function move<T>(from: number, to: number, list: Array<T>): Array<T> {
   ) {
     return list
   } else {
-    return result
-      .slice(0, positiveTo)
-      .concat(item)
-      .concat(result.slice(positiveTo, list.length))
+    return result.slice(0, positiveTo).concat(item).concat(result.slice(positiveTo, list.length))
   }
 }
 

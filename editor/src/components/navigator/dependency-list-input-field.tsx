@@ -10,7 +10,7 @@ import {
   SelectControl,
 } from '../inspector/controls/select-control'
 import { top1000NPMPackagesOptions } from './top1000NPMPackagesOptions'
-import { getControlStyles } from '../inspector/widgets/control-status'
+import { getControlStyles } from '../inspector/common/control-status'
 
 interface DependencyListInputFieldProps {
   showVersionField: boolean
