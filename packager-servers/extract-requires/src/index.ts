@@ -1,6 +1,2 @@
-export function main() {
-  console.log('hello world!', process.argv)
-
-}
-
-main()
+import { resolveRequirePath } from './extract-require'
+import * as path from 'path'
