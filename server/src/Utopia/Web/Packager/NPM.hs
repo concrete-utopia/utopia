@@ -49,25 +49,26 @@ getRelevantFiles projectPath = do
       let fileWithContent = fmap (Map.singleton (toS entryFilename)) $ T.readFile fullFilename
       if relevant then fileWithContent else mempty
 
-getTransitiveImportsForPackage :: Text -> IO [FilePath]
-getTransitiveImportsForPackage javascriptPackageName = do
+getTransitiveImportsForPackage :: FilePath -> Text -> IO [FilePath]
+getTransitiveImportsForPackage projectPath javascriptPackageName = do
   withSystemTempFile "import-analysis-result.txt" $ \importResultFile -> \_ -> do
     removeFile importResultFile
-    let baseProc = proc "npm" ["start", toS javascriptPackageName, importResultFile]
+    let baseProc = proc "npm" ["start", projectPath </> "node_modules" </> toS javascriptPackageName, importResultFile]
     -- Currently assumes these live near each other.
     let procWithCwd = baseProc { cwd = Just "../packager-servers/extract-requires" }
     _ <- readCreateProcess procWithCwd ""
     jsonValueOrError <- eitherDecodeFileStrict' importResultFile
     either fail return jsonValueOrError
 
-readFileAddToMap :: FilesAndContents -> FilePath -> IO FilesAndContents
-readFileAddToMap currentMap filename = do
+readFileAddToMap :: FilePath -> FilesAndContents -> FilePath -> IO FilesAndContents
+readFileAddToMap projectPath currentMap filename = do
+  let strippedPath = fromMaybe filename $ stripPrefix projectPath filename
   fileContents <- T.readFile filename
-  return $ Map.insert (toS filename) fileContents currentMap
+  return $ Map.insert (toS strippedPath) fileContents currentMap
 
 getModuleAndDependenciesFiles :: Text -> FilePath -> IO FilesAndContents
 getModuleAndDependenciesFiles javascriptPackageName projectPath = do
   relevantFiles <- getRelevantFiles projectPath
-  transitivelyImportedFiles <- getTransitiveImportsForPackage javascriptPackageName
-  moduleAndDependencies <- foldM readFileAddToMap mempty transitivelyImportedFiles
+  transitivelyImportedFiles <- getTransitiveImportsForPackage projectPath javascriptPackageName
+  moduleAndDependencies <- foldM (readFileAddToMap projectPath) mempty transitivelyImportedFiles
   return (relevantFiles <> moduleAndDependencies)
