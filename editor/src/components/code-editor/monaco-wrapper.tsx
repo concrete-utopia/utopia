@@ -685,9 +685,16 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
     }
 
     const changeRange = lastChange.range
+    const textChangeArray = lastChange.text.split('\n')
+    const textChangeNewLines = textChangeArray.length - 1
+    const textChangeEndLineNumber = changeRange.startLineNumber + textChangeNewLines
+    const textChangeEndColumnNumber =
+      textChangeNewLines === 0
+        ? changeRange.startColumn + lastChange.text.length
+        : textChangeArray[textChangeNewLines].length + 1
 
-    const rangeBefore = new monaco.Range(0, 0, changeRange.startLineNumber, changeRange.startColumn)
-    const contentBefore = model.getValueInRange(rangeBefore) + '>'
+    const rangeBefore = new monaco.Range(0, 0, textChangeEndLineNumber, textChangeEndColumnNumber)
+    const contentBefore = model.getValueInRange(rangeBefore)
 
     const fullContent = model.getValue()
     const contentAfter = fullContent.slice(contentBefore.length, fullContent.length)
