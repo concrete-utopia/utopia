@@ -71,4 +71,5 @@ getModuleAndDependenciesFiles javascriptPackageName projectPath = do
   relevantFiles <- getRelevantFiles projectPath
   transitivelyImportedFiles <- getTransitiveImportsForPackage projectPath javascriptPackageName
   moduleAndDependencies <- foldM (readFileAddToMap projectPath) mempty transitivelyImportedFiles
-  return (relevantFiles <> moduleAndDependencies)
+  let combinedResult = relevantFiles <> moduleAndDependencies
+  return combinedResult
