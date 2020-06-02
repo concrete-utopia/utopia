@@ -51,6 +51,7 @@ import { CodeEditor } from './code-editor'
 import { CursorPosition } from './code-editor-utils'
 import { forceServerSave } from '../editor/persistence'
 import { Notice } from '../common/notices'
+import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
 
 function getFileContents(file: ProjectFile): string {
   switch (file.type) {
@@ -213,7 +214,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
         store.editor.selectedFile == null ? null : store.editor.selectedFile.initialCursorPosition,
       savedCursorPosition: openFilePath == null ? null : store.editor.cursorPositions[openFilePath],
       packageJsonFile: packageJsonFileFromModel(store.editor),
-      typeDefinitions: store.editor.resolvedDependencies.typeDefinitions,
+      typeDefinitions: getDependencyTypeDefinitions(store.editor.nodeModules.files),
       lintErrors: getAllLintErrors(store.editor),
       parserPrinterErrors: parseFailureAsErrorMessages(openUIJSFileKey, openUIJSFile),
       projectContents: store.editor.projectContents,
@@ -347,7 +348,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
   const newErrorsForFile = errors.filter((error) => error.fileName === filePath)
   const errorsForFile = useKeepReferenceEqualityIfPossible(newErrorsForFile)
 
-  const newNpmDependencies = Utils.defaultIfNull({}, dependenciesFromPackageJson(packageJsonFile))
+  const newNpmDependencies = dependenciesFromPackageJson(packageJsonFile)
   const npmDependencies = useKeepReferenceEqualityIfPossible(newNpmDependencies)
 
   if (filePath == null || openFile == null) {

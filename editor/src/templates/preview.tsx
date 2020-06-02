@@ -5,15 +5,16 @@ import { getProjectID, PREVIEW_IS_EMBEDDED, BASE_URL, getQueryParam } from '../c
 import { fetchLocalProject } from '../common/persistence'
 import { processModuleCodes } from '../components/custom-code/code-file'
 import { sendPreviewModel } from '../components/editor/actions/actions'
-import {
-  bundleNpmPackages,
-  dependenciesFromModel,
-} from '../components/editor/npm-dependency/npm-dependency'
+import { dependenciesFromModel } from '../components/editor/npm-dependency/npm-dependency'
 import { projectIsStoredLocally } from '../components/editor/persistence'
 import { loadProject } from '../components/editor/server'
 import { isPersistentModel, PersistentModel } from '../components/editor/store/editor-state'
 import Utils from '../utils/utils'
-import { isCodeFile } from '../core/shared/project-file-types'
+import { isCodeFile, ESCodeFile, esCodeFile } from '../core/shared/project-file-types'
+import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
+import { npmDependency } from '../core/shared/npm-dependency-types'
+import { objectMap } from '../core/shared/object-utils'
+import { fetchNodeModules } from '../core/es-modules/package-manager/fetch-packages'
 
 interface PolledLoadParams {
   projectId: string
@@ -162,10 +163,12 @@ const initPreview = () => {
 
   const previewRender = async (model: PersistentModel | null) => {
     if (model != null) {
-      const bundleResult = await bundleNpmPackages(
-        Utils.defaultIfNull({}, dependenciesFromModel(model)),
-        true, // TODO Change this to false when we are running the App as a real project (i.e. loading its HTML inside an iframe)
-      )
+      const npmDependencies = dependenciesFromModel(model)
+      let nodeModules = await fetchNodeModules(npmDependencies)
+      const require = getRequireFn((modulesToAdd) => {
+        // MUTATION
+        Object.assign(nodeModules, modulesToAdd)
+      }, nodeModules)
 
       // replacing the document body first
       const packageJson = model.projectContents['/package.json']
@@ -199,7 +202,7 @@ const initPreview = () => {
           const previewJSPath = `/public/${previewJsFileName}`
           const file = model.projectContents[previewJSPath]
           if (file != null && isCodeFile(file)) {
-            processModuleCodes(model.buildResult, bundleResult.require, true)
+            processModuleCodes(model.buildResult, require, true)
           }
         }
       }

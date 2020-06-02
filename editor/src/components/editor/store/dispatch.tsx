@@ -65,6 +65,7 @@ import {
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { arrayEquals } from '../../../core/shared/utils'
+import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -477,6 +478,7 @@ function editorDispatchInner(
         Utils.NO_OP,
         Utils.NO_OP,
         Utils.NO_OP,
+        boundDispatch,
       )
       let priorCanvasProps = pickUiJsxCanvasProps(
         storedState.editor,
@@ -486,6 +488,7 @@ function editorDispatchInner(
         Utils.NO_OP,
         Utils.NO_OP,
         Utils.NO_OP,
+        boundDispatch,
       )
       try {
         if (deepEquals(canvasProps, priorCanvasProps)) {
@@ -675,7 +678,7 @@ function notifyTsWorker(
 
   if (shouldInitTsWorker) {
     workers.sendInitMessage(
-      newEditorState.resolvedDependencies.typeDefinitions,
+      getDependencyTypeDefinitions(newEditorState.nodeModules.files),
       newEditorState.projectContents,
     )
   } else {

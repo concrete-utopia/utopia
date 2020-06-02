@@ -51,6 +51,7 @@ import {
   TemplatePath,
   isParseSuccess,
   StaticInstancePath,
+  NodeModules,
 } from '../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
 import { applyUIDMonkeyPatch, makeCanvasElementPropsSafe } from '../../utils/canvas-react-utils'
@@ -80,6 +81,8 @@ import {
   EmptyScenePathForStoryboard,
 } from '../../core/model/scene-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
+import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import { EditorDispatch } from '../editor/action-types'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -147,6 +150,7 @@ export function pickUiJsxCanvasProps(
   onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
+  dispatch: EditorDispatch,
 ): UiJsxCanvasProps {
   const defaultedFileBlobs = Utils.defaultIfNull(
     emptyFileBlobs,
@@ -176,7 +180,7 @@ export function pickUiJsxCanvasProps(
     offset: editor.canvas.roundedCanvasOffset,
     scale: editor.canvas.scale,
     uiFilePath: getOpenUIJSFileKey(editor),
-    requireFn: editor.codeResultCache == null ? null : editor.codeResultCache.requireFn,
+    requireFn: getMemoizedRequireFn(editor.nodeModules.files, dispatch),
     hiddenInstances: editor.hiddenInstances,
     editedTextElement: Utils.optionalMap((textEd) => textEd.templatePath, editor.canvas.textEditor),
     fileBlobs: defaultedFileBlobs,
