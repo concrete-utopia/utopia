@@ -4141,12 +4141,7 @@ export async function newProject(
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
   const npmDependencies = dependenciesFromModel(defaultPersistentModel)
-  let nodeModules: NodeModules = {}
-  try {
-    nodeModules = await fetchNodeModules(npmDependencies)
-  } catch (e) {
-    // Note: no error management here, missing packages will throw error later when there is an import from them
-  }
+  const nodeModules = await fetchNodeModules(npmDependencies)
 
   const require = getRequireFn(
     (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, false)]),
@@ -4200,12 +4195,7 @@ export async function load(
   // this action is now async!
 
   const npmDependencies = dependenciesFromModel(model)
-  let nodeModules: NodeModules = {}
-  try {
-    nodeModules = await fetchNodeModules(npmDependencies)
-  } catch (e) {
-    // Note: no error management here, missing packages will throw error later when there is an import from them
-  }
+  const nodeModules = await fetchNodeModules(npmDependencies)
 
   const require = getRequireFn(
     (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, false)]),

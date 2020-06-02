@@ -56,7 +56,6 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
     return null
   }
   const packagesUrl = getPackagerUrl(dep)
-  const typingsUrl = getTypingsUrl(dep)
   const jsdelivrUrl = `https://data.jsdelivr.com/v1/package/npm/${dep.name}@${dep.version}/flat`
   let result: NodeModules = {}
   if (depPackagerCache[packagesUrl] != null) {
@@ -68,23 +67,6 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
       const convertedResult = extractNodeModulesFromPackageResponse(resp)
       depPackagerCache[packagesUrl] = convertedResult
       result = convertedResult
-    }
-  }
-  if (depPackagerCache[typingsUrl] != null) {
-    result = {
-      ...result,
-      ...depPackagerCache[typingsUrl],
-    }
-  } else {
-    const typingsResponse = await fetch(typingsUrl)
-    if (typingsResponse.ok) {
-      const resp = (await typingsResponse.json()) as TypingsServerResponse
-      const nodeModulesFromResp = extractNodeModulesFromTypingsResponse(resp)
-      depPackagerCache[typingsUrl] = nodeModulesFromResp
-      result = {
-        ...result,
-        ...nodeModulesFromResp,
-      }
     }
   }
   if (depPackagerCache[jsdelivrUrl] != null) {
@@ -115,26 +97,31 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
 export async function fetchNodeModules(newDeps: Array<NpmDependency>): Promise<NodeModules> {
   const nodeModulesArr = await Promise.all(
     newDeps.map(async (newDep) => {
-      const packagerResponse = await fetchPackagerResponse(newDep)
-      if (packagerResponse != null) {
-        /**
-         * to avoid clashing transitive dependencies,
-         * we "move" all transitive dependencies into a subfolder at
-         * /node_modules/<main_package>/node_modules/<transitive_dep>/
-         *
-         * the module resolution won't mind this, the only downside to this approach is
-         * that if two main dependencies share the exact same version of a transitive
-         * dependency, they will not share that transitive dependency in memory,
-         * so this is wasting a bit of memory.
-         *
-         * but it avoids two of the same transitive dependencies with different versions from
-         * overwriting each other.
-         *
-         * the real nice solution would be to apply npm's module resolution logic that
-         * pulls up shared transitive dependencies to the main /node_modules/ folder.
-         */
-        return mangleNodeModulePaths(newDep.name, packagerResponse)
-      } else {
+      try {
+        const packagerResponse = await fetchPackagerResponse(newDep)
+        if (packagerResponse != null) {
+          /**
+           * to avoid clashing transitive dependencies,
+           * we "move" all transitive dependencies into a subfolder at
+           * /node_modules/<main_package>/node_modules/<transitive_dep>/
+           *
+           * the module resolution won't mind this, the only downside to this approach is
+           * that if two main dependencies share the exact same version of a transitive
+           * dependency, they will not share that transitive dependency in memory,
+           * so this is wasting a bit of memory.
+           *
+           * but it avoids two of the same transitive dependencies with different versions from
+           * overwriting each other.
+           *
+           * the real nice solution would be to apply npm's module resolution logic that
+           * pulls up shared transitive dependencies to the main /node_modules/ folder.
+           */
+          return mangleNodeModulePaths(newDep.name, packagerResponse)
+        } else {
+          return {}
+        }
+      } catch (e) {
+        // TODO: proper error handling, now we don't show error for a missing package. The error will be visible when you try to import
         return Promise.resolve({})
       }
     }),
