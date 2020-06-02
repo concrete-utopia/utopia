@@ -340,7 +340,7 @@ export function initBrowserFS(
   })
 
   Object.keys(typeDefinitions).forEach((fileName) => {
-    writeFile(fs, filename, typeDefinitions[fileName])
+    writeFile(fs, fileName, typeDefinitions[fileName])
   })
 
   fs.mkdirSync('/build')
