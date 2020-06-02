@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b6f37503cd77417c0810290e01a72d97e317bb0cd21eff04592ac7f1e215d7b3
+-- hash: b7d40ee807cd086cecb3609198ba1e33f4ba8de7a747983ebad76521ca184273
 
 name:           utopia-web
 version:        0.1.0.4
@@ -84,7 +84,6 @@ executable utopia-web
     , http-types
     , lens
     , lens-aeson
-    , lifted-async
     , lifted-base
     , mime-types
     , monad-control
@@ -195,7 +194,6 @@ test-suite utopia-web-test
     , http-types
     , lens
     , lens-aeson
-    , lifted-async
     , lifted-base
     , mime-types
     , monad-control

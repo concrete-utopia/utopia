@@ -4,24 +4,18 @@
 
 module Utopia.Web.Packager.NPM where
 
-import           Control.Lens
 import           Control.Monad
-import           Control.Monad.Catch       hiding (finally)
 import           Data.Aeson
-import           Data.Aeson.Lens
 import           Data.List                 (isSuffixOf, stripPrefix)
 import qualified Data.Text.IO              as T
 import           Protolude
-import           System.Directory.PathWalk
 import           System.Directory
+import           System.Directory.PathWalk
 import           System.FilePath
 import           System.IO.Temp
 import           System.Process
 
-import           Control.Monad.RWS.Strict
 import qualified Data.HashMap.Strict       as Map
-import qualified Data.HashSet              as Set
-import Control.Concurrent.Async.Lifted
 
 withSemaphore :: QSem -> IO a -> IO a
 withSemaphore semaphore action = (flip finally) (signalQSem semaphore) $ do
@@ -55,57 +49,25 @@ getRelevantFiles projectPath = do
       let fileWithContent = fmap (Map.singleton (toS entryFilename)) $ T.readFile fullFilename
       if relevant then fileWithContent else mempty
 
--- Replace with call to node tool.
-getImportsFromJSFile :: (MonadIO m, MonadMask m, MonadReader QSem m) => FilePath -> m [FilePath]
-getImportsFromJSFile fileToAnalyse = do
-  semaphore <- ask
+getTransitiveImportsForPackage :: Text -> IO [FilePath]
+getTransitiveImportsForPackage javascriptPackageName = do
   withSystemTempFile "import-analysis-result.txt" $ \importResultFile -> \_ -> do
-    liftIO $ removeFile importResultFile
-    _ <- liftIO $ withSemaphore semaphore $ do
-      let baseProc = proc "npm" ["start", fileToAnalyse, importResultFile]
-      -- Currently assumes these live near each other.
-      let procWithCwd = baseProc { cwd = Just "../packager-servers/extract-requires" }
-      readCreateProcess procWithCwd ""
-    jsonValueOrError <- liftIO $ eitherDecodeFileStrict' importResultFile
+    removeFile importResultFile
+    let baseProc = proc "npm" ["start", toS javascriptPackageName, importResultFile]
+    -- Currently assumes these live near each other.
+    let procWithCwd = baseProc { cwd = Just "../packager-servers/extract-requires" }
+    _ <- readCreateProcess procWithCwd ""
+    jsonValueOrError <- eitherDecodeFileStrict' importResultFile
     either fail return jsonValueOrError
 
-getMainFile :: (MonadIO m) => FilePath -> Text -> m (Maybe FilePath)
-getMainFile projectPath javascriptPackageName = do
-  let baseProjectPath = projectPath </> "node_modules" </> toS javascriptPackageName
-  jsonValueOrError <- liftIO $ eitherDecodeFileStrict' (baseProjectPath </> "package.json")
-  jsonValue <- either fail return jsonValueOrError
-  let browser = (jsonValue :: Value) ^? key "browser" . _String
-  let main = jsonValue ^? key "main" . _String
-  let mainFile = fmap (\p -> baseProjectPath </> toS p) (browser <|> main)
-  return mainFile
-
-type NPMRWS = RWST QSem FilesAndContents (Set.HashSet FilePath) IO
-
-addFile :: FilePath -> FilePath -> NPMRWS ()
-addFile projectPath filePath = do
-  fileContents <- liftIO $ T.readFile filePath
-  let strippedPath = fromMaybe filePath $ stripPrefix projectPath filePath
-  tell $ Map.singleton (toS strippedPath) fileContents
-
-processImport :: FilePath -> FilePath -> NPMRWS ()
-processImport projectPath importedFile = do
-  modify (Set.insert importedFile)
-  addFile projectPath (toS importedFile)
-  importsFromFile <- getImportsFromJSFile (toS importedFile)
-  results <- forConcurrently importsFromFile $ addToRequiredFiles projectPath
-  return $ mconcat results
-
-addToRequiredFiles :: FilePath -> FilePath -> NPMRWS ()
-addToRequiredFiles projectPath requiredFile = do
-  alreadyProcessedImports <- get
-  let alreadyProcessed = Set.member requiredFile alreadyProcessedImports
-  unless alreadyProcessed $ processImport projectPath requiredFile
+readFileAddToMap :: FilesAndContents -> FilePath -> IO FilesAndContents
+readFileAddToMap currentMap filename = do
+  fileContents <- T.readFile filename
+  return $ Map.insert (toS filename) fileContents currentMap
 
 getModuleAndDependenciesFiles :: Text -> FilePath -> IO FilesAndContents
 getModuleAndDependenciesFiles javascriptPackageName projectPath = do
-  dependenciesSemaphore <- newQSem 5
   relevantFiles <- getRelevantFiles projectPath
-  initialMainFile <- getMainFile projectPath javascriptPackageName
-  let requiredFilesRWST = traverse_ (addToRequiredFiles projectPath) initialMainFile
-  (_, _, moduleAndDependencies) <- runRWST requiredFilesRWST dependenciesSemaphore mempty
+  transitivelyImportedFiles <- getTransitiveImportsForPackage javascriptPackageName
+  moduleAndDependencies <- foldM readFileAddToMap mempty transitivelyImportedFiles
   return (relevantFiles <> moduleAndDependencies)
