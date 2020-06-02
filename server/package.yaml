@@ -35,6 +35,7 @@ dependencies:
   - http-types
   - lens
   - lens-aeson
+  - lifted-async
   - lifted-base
   - mime-types
   - monad-control

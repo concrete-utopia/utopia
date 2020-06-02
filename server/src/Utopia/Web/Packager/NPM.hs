@@ -21,6 +21,7 @@ import           System.Process
 import           Control.Monad.RWS.Strict
 import qualified Data.HashMap.Strict       as Map
 import qualified Data.HashSet              as Set
+import Control.Concurrent.Async.Lifted
 
 withSemaphore :: QSem -> IO a -> IO a
 withSemaphore semaphore action = (flip finally) (signalQSem semaphore) $ do
@@ -32,12 +33,9 @@ withInstalledProject semaphore jsPackageName jsPackageVersion withInstalledPath 
   -- Create temporary folder.
   withSystemTempDirectory "packager" $ \tempDir -> do
     -- Run `npm install "packageName@packageVersion"`.
-    let commandString = "npm install --loglevel=error " <> jsPackageName <> "@" <> jsPackageVersion
-    print ("Starting" :: Text, commandString)
     let baseProc = proc "npm" ["install", "--loglevel=error", toS jsPackageName <> "@" <> toS jsPackageVersion]
     let procWithCwd = baseProc { cwd = Just tempDir }
     _ <- withSemaphore semaphore $ readCreateProcess procWithCwd ""
-    print ("Finished" :: Text, commandString)
     -- Invoke action against path.
     withInstalledPath tempDir
 
@@ -63,13 +61,11 @@ getImportsFromJSFile fileToAnalyse = do
   semaphore <- ask
   withSystemTempFile "import-analysis-result.txt" $ \importResultFile -> \_ -> do
     liftIO $ removeFile importResultFile
-    print ("Import Analysis Result File" :: Text, importResultFile)
     _ <- liftIO $ withSemaphore semaphore $ do
       let baseProc = proc "npm" ["start", fileToAnalyse, importResultFile]
       -- Currently assumes these live near each other.
       let procWithCwd = baseProc { cwd = Just "../packager-servers/extract-requires" }
       readCreateProcess procWithCwd ""
-    putText "Finished call to npm."
     jsonValueOrError <- liftIO $ eitherDecodeFileStrict' importResultFile
     either fail return jsonValueOrError
 
@@ -96,7 +92,8 @@ processImport projectPath importedFile = do
   modify (Set.insert importedFile)
   addFile projectPath (toS importedFile)
   importsFromFile <- getImportsFromJSFile (toS importedFile)
-  forM_ importsFromFile $ addToRequiredFiles projectPath
+  results <- forConcurrently importsFromFile $ addToRequiredFiles projectPath
+  return $ mconcat results
 
 addToRequiredFiles :: FilePath -> FilePath -> NPMRWS ()
 addToRequiredFiles projectPath requiredFile = do
@@ -104,10 +101,11 @@ addToRequiredFiles projectPath requiredFile = do
   let alreadyProcessed = Set.member requiredFile alreadyProcessedImports
   unless alreadyProcessed $ processImport projectPath requiredFile
 
-getModuleAndDependenciesFiles :: QSem -> Text -> FilePath -> IO FilesAndContents
-getModuleAndDependenciesFiles semaphore javascriptPackageName projectPath = do
+getModuleAndDependenciesFiles :: Text -> FilePath -> IO FilesAndContents
+getModuleAndDependenciesFiles javascriptPackageName projectPath = do
+  dependenciesSemaphore <- newQSem 5
   relevantFiles <- getRelevantFiles projectPath
   initialMainFile <- getMainFile projectPath javascriptPackageName
   let requiredFilesRWST = traverse_ (addToRequiredFiles projectPath) initialMainFile
-  (_, _, moduleAndDependencies) <- runRWST requiredFilesRWST semaphore mempty
+  (_, _, moduleAndDependencies) <- runRWST requiredFilesRWST dependenciesSemaphore mempty
   return (relevantFiles <> moduleAndDependencies)
