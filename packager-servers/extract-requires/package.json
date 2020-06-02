@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "develop": "ts-node src/index.ts",
+    "compile-and-start": "ts-node src/index.ts",
     "test": "jest"
   },
   "jest": {
