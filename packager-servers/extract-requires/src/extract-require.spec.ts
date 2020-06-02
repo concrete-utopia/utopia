@@ -3,8 +3,8 @@ import { resolveRequirePath } from './extract-require'
 
 describe('resolveRequirePath', () => {
   it('resolves a module in a sibling folder', () => {
-    const absoluteUrl = path.resolve('./test-folder/test-a/index.js')
-    const result = resolveRequirePath(absoluteUrl)
+    const absoluteUrl = path.resolve('./test-folder/test-a')
+    const result = resolveRequirePath(absoluteUrl, 'test-a')
     const expectedResult = [
       path.resolve('./test-folder/test-a/index.js'),
       path.resolve('./test-folder/test-a/node_modules/test-package-b/index.js'),
