@@ -77,7 +77,7 @@ export const GridRow: React.FunctionComponent<GridRowProps> = (props) => (
       overflow: 'hidden',
       alignItems: props.alignItems ?? 'center',
       ...gridTemplates[props.type],
-      ...(props.style ?? {}),
+      ...props.style,
     }}
   >
     {props.children}

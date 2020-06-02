@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import * as React from 'react'
-import { onClickOutside } from 'uuiui-deps'
+import onClickOutside from 'react-onclickoutside'
 
 export interface OnClickOutsideHOCProps {
   onClickOutside?: (e: MouseEvent) => void

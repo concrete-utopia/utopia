@@ -81,6 +81,10 @@ instance MimeUnrender SVG BL.ByteString where
 instance MimeUnrender HTML Text where
   mimeUnrender _ bytes = Right $ toS bytes
 
+instance MimeUnrender HTML Text where
+  mimeUnrender _ bytes = Right $ toS bytes
+
+
 data PrettyJSON
 
 instance Accept PrettyJSON where

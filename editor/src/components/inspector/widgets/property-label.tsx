@@ -1,11 +1,9 @@
 import * as React from 'react'
-import * as R from 'ramda'
-
-import * as PP from '../../../core/shared/property-path'
-import { betterReactMemo, NewInspectorContextMenuWrapper } from 'uuiui-deps'
-import { useInspectorInfoSimpleUntyped } from '../new-inspector/new-inspector-hooks'
-import { optionalAddOnUnsetValues } from '../new-inspector/context-menu-items'
+import { betterReactMemo, InspectorContextMenuWrapper } from 'uuiui-deps'
 import { PropertyPath } from '../../../core/shared/project-file-types'
+import * as PP from '../../../core/shared/property-path'
+import { optionalAddOnUnsetValues } from '../common/context-menu-items'
+import { useInspectorInfoSimpleUntyped } from '../common/property-path-hooks'
 
 type PropertyLabelProps = {
   target: ReadonlyArray<PropertyPath>
@@ -30,16 +28,19 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
     metadata.onUnsetValues,
   )
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id={`property-label-${props.target}`}
       data={null}
       items={contextMenuItems}
       style={{
         color: metadata.controlStyles.mainColor,
-        ...(props.style ?? {}),
+        overflow: 'hidden',
+        ...props.style,
       }}
     >
-      {props.children}
-    </NewInspectorContextMenuWrapper>
+      <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+        {props.children}
+      </div>
+    </InspectorContextMenuWrapper>
   )
 })

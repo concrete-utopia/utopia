@@ -45,7 +45,7 @@ import {
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { useKeepReferenceEqualityIfPossible } from '../inspector/new-inspector/new-inspector-hooks'
+import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import * as TP from '../../core/shared/template-path'
 import { CodeEditor } from './code-editor'
 import { CursorPosition } from './code-editor-utils'

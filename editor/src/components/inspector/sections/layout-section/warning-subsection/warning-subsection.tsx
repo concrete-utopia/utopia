@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { betterReactMemo } from 'uuiui-deps'
 import { FlexRow, Tooltip } from 'uuiui'
-import { useInspectorWarningStatus } from '../../../new-inspector/new-inspector-hooks'
+import { useInspectorWarningStatus } from '../../../common/property-path-hooks'
 import { WarningIcon } from '../../../../../uuiui/warning-icon'
 import { InfoBox } from '../../../../common/notices'
 

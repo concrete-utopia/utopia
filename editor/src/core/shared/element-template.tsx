@@ -17,7 +17,8 @@ import { fastForEach } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
 import { parseUID } from './uid-utils'
-import { CSSPosition } from '../../components/inspector/new-inspector/css-utils'
+import { CSSPosition } from '../../components/inspector/common/css-utils'
+import { ModifiableAttribute } from './jsx-attributes'
 
 export interface JSXAttributeValue<T> {
   type: 'ATTRIBUTE_VALUE'
@@ -287,7 +288,7 @@ export function isPartOfJSXAttributeValue(
 }
 
 export function isJSXAttributeOtherJavaScript(
-  attribute: JSXAttribute,
+  attribute: ModifiableAttribute,
 ): attribute is JSXAttributeOtherJavaScript {
   return attribute != null && attribute.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
 }

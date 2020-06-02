@@ -9,10 +9,11 @@
 
 module Utopia.Web.Executors.Common where
 
-import           Control.Lens
+import           Control.Lens                hiding ((.=))
 import           Control.Monad.Catch         hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
 import           Data.Aeson
+import           Data.Binary.Builder
 import qualified Data.ByteString.Lazy        as BL
 import qualified Data.HashMap.Strict         as M
 import           Data.IORef
@@ -39,6 +40,7 @@ import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types       (Auth0Resources)
 import qualified Utopia.Web.Database         as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files

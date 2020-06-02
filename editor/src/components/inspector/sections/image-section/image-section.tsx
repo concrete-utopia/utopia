@@ -6,14 +6,11 @@ import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-te
 import * as PP from '../../../../core/shared/property-path'
 import { filterScenes } from '../../../../core/shared/template-path'
 import utils from '../../../../utils/utils'
-import { NewInspectorContextMenuWrapper } from '../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { StringControl } from '../../controls/string-control'
-import { addOnUnsetValues } from '../../new-inspector/context-menu-items'
-import {
-  useInspectorMetadataInfo,
-  useIsSubSectionVisible,
-} from '../../new-inspector/new-inspector-hooks'
+import { addOnUnsetValues } from '../../common/context-menu-items'
+import { useInspectorElementInfo, useIsSubSectionVisible } from '../../common/property-path-hooks'
 import { GridRow } from '../../widgets/grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
@@ -41,7 +38,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
     controlStatus: srcControlStatus,
     onSubmitValue: srcOnSubmitValue,
     onUnsetValues: srcOnUnsetValues,
-  } = useInspectorMetadataInfo('src')
+  } = useInspectorElementInfo('src')
 
   const {
     value: altValue,
@@ -49,7 +46,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
     controlStatus: altControlStatus,
     onSubmitValue: altOnSubmitValue,
     onUnsetValues: altOnUnsetValues,
-  } = useInspectorMetadataInfo('alt')
+  } = useInspectorElementInfo('alt')
 
   const isVisible = useIsSubSectionVisible('img')
 
@@ -76,7 +73,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
   return (
     <>
       <InspectorSectionHeader>Image {naturalDimensionsNode}</InspectorSectionHeader>
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id='image-section-src-context-menu'
         items={srcContextMenuItems}
         style={{ gridColumn: '1 / span 4' }}
@@ -93,8 +90,8 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
             controlStatus={srcControlStatus}
           />
         </GridRow>
-      </NewInspectorContextMenuWrapper>
-      <NewInspectorContextMenuWrapper
+      </InspectorContextMenuWrapper>
+      <InspectorContextMenuWrapper
         id='image-section-alt-context-menu'
         items={altContextMenuItems}
         style={{ gridColumn: '1 / span 4' }}
@@ -111,7 +108,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
             controlStatus={altControlStatus}
           />
         </GridRow>
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
       <GridRow padded type='<---1fr--->|------172px-------|'>
         <PropertyLabel target={imgAltProp}>Density</PropertyLabel>
         <ImageDensityControl

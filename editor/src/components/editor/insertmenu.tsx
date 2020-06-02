@@ -29,7 +29,7 @@ import {
   defaultTextElement,
   defaultViewElement,
 } from './defaults'
-import { FontSettings } from '../inspector/new-inspector/css-utils'
+import { FontSettings } from '../inspector/common/css-utils'
 import { existingUIDs } from '../navigator/left-pane'
 import { EditorAction, EditorDispatch } from './action-types'
 import { enableInsertModeForJSXElement, enableInsertModeForScene } from './actions/actions'

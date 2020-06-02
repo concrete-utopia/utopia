@@ -16,15 +16,15 @@ import { jsxAttributeValue } from '../../../../core/shared/element-template'
 import { ControlDescription, ControlType } from 'utopia-api'
 import { foldEither, right, Either } from '../../../../core/shared/either'
 import Utils from '../../../../utils/utils'
-import { NewInspectorContextMenuWrapper } from '../../../context-menu-wrapper'
+import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import * as PP from '../../../../core/shared/property-path'
 import { BooleanControl } from '../../controls/boolean-control'
 import { ColorControl } from '../../controls/color-control'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { SelectControl, SelectOption } from '../../controls/select-control'
 import { StringControl } from '../../controls/string-control'
-import { addOnUnsetValues } from '../../new-inspector/context-menu-items'
-import { CSSColor, parseColor, printColor } from '../../new-inspector/css-utils'
+import { addOnUnsetValues } from '../../common/context-menu-items'
+import { CSSColor, parseColor, printColor } from '../../common/css-utils'
 import {
   InspectorInfo,
   useInspectorInfoSimpleUntyped,
@@ -32,7 +32,7 @@ import {
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
   useUsedPropsWithoutDefaults,
-} from '../../new-inspector/new-inspector-hooks'
+} from '../../common/property-path-hooks'
 import { PropertyRow } from '../../widgets/property-row'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { GridRow } from '../../widgets/grid-row'
@@ -41,7 +41,7 @@ import { ParseError, getParseErrorDetails } from '../../../../utils/value-parser
 import { InfoBox } from '../../../common/notices'
 import { showContextMenu } from '../../../editor/actions/actions'
 import { useEditorState } from '../../../editor/store/store-hook'
-import { InstanceContextMenu } from '../../new-inspector/instance-context-menu'
+import { InstanceContextMenu } from '../../common/instance-context-menu'
 import {
   getMissingDefaultsWarning,
   getMissingPropertyControlsWarning,
@@ -291,7 +291,7 @@ const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
       </Tooltip>
     )
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id={`context-menu-for-${props.propName}`}
       items={contextMenuItems}
       data={null}
@@ -311,7 +311,7 @@ const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
           <ParseErrorControl parseError={props.propertyError} />
         )}
       </GridRow>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })
 

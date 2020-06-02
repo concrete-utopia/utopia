@@ -158,6 +158,7 @@ export function calculateChildStylesToPrepend(
     case undefined:
       return computeNonGroupChildren(children, layout)
     case LayoutSystem.Group:
+    case LayoutSystem.Flow:
       return []
     default:
       const _exhaustiveCheck: never = layout.layoutSystem
@@ -188,6 +189,7 @@ export function calculateChildStylesThatOverwriteStyle(
       return childPositionStyles
     case LayoutSystem.Flex:
     case LayoutSystem.PinSystem:
+    case LayoutSystem.Flow:
     case undefined:
       return []
     default:
@@ -216,6 +218,7 @@ function calculateContainerProps(
       return {
         position: parentLayoutSystem === LayoutSystem.PinSystem ? 'absolute' : 'relative',
       }
+    case LayoutSystem.Flow:
     case undefined:
       return {}
     default:

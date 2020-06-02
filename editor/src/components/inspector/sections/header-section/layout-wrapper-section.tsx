@@ -5,7 +5,7 @@ import { LayoutWrapper } from '../../../../core/shared/project-file-types'
 import * as Utils from '../../../../utils/utils'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { SelectOption } from '../../controls/select-control'
-import { getControlStyles } from '../../widgets/control-status'
+import { getControlStyles } from '../../common/control-status'
 import { GridRow } from '../../widgets/grid-row'
 import { NO_OP } from '../../../../core/shared/utils'
 

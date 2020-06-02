@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { ControlStyleDefaults } from '../../../widgets/control-status'
+import { ControlStyleDefaults } from '../../../common/control-status'
 import { betterReactMemo } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
 import { PositionControl, MarginControl, AlignSelfControl } from './flex-element-controls'

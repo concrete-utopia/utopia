@@ -38,20 +38,20 @@ import {
   CSSTextDecorationLine,
   CSSFontStyle,
   cssNumber,
-} from '../../../new-inspector/css-utils'
+} from '../../../common/css-utils'
 import {
   InspectorCallbackContext,
   useInspectorStyleInfo,
   useIsSubSectionVisible,
   useKeepShallowReferenceEquality,
-  useInspectorMetadataInfo,
+  useInspectorElementInfo,
   useInspectorInfo,
   stylePropPathMappingFn,
-} from '../../../new-inspector/new-inspector-hooks'
+} from '../../../common/property-path-hooks'
 import { filterScenes } from '../../../../../core/shared/template-path'
 import utils from '../../../../../utils/utils'
-import { addOnUnsetValues } from '../../../new-inspector/context-menu-items'
-import { NewInspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { addOnUnsetValues } from '../../../common/context-menu-items'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { betterReactMemo } from 'uuiui-deps'
 
 const ObjectPathImmutable: any = OPI
@@ -179,7 +179,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
 
   const textAlignMetadata = useInspectorStyleInfo('textAlign')
 
-  const textSizingMetadata = useInspectorMetadataInfo('textSizing')
+  const textSizingMetadata = useInspectorElementInfo('textSizing')
 
   const textDecorationLineMetadata = useInspectorStyleInfo('textDecorationLine')
   const [onUnderlinedSubmitValue] = textDecorationLineMetadata.useSubmitValueFactory(
@@ -320,7 +320,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
 
   return (
     <>
-      <NewInspectorContextMenuWrapper
+      <InspectorContextMenuWrapper
         id='text-subsection-context-menu'
         items={subsectionContextMenuItems}
         data={null}
@@ -335,9 +335,9 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           </div>
           <Icons.Gear color={expanded ? 'darkgray' : 'lightgray'} onClick={toggleExpanded} />
         </InspectorSubsectionHeader>
-      </NewInspectorContextMenuWrapper>
+      </InspectorContextMenuWrapper>
       <PropertyRow style={{ gridColumnGap: 8, marginBottom: 8 }}>
-        <NewInspectorContextMenuWrapper
+        <InspectorContextMenuWrapper
           id='fontFamily-context-menu'
           items={fontFamilyContextMenuItems}
           data={null}
@@ -357,10 +357,10 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             }}
             options={getFontFamilyOptions()}
           />
-        </NewInspectorContextMenuWrapper>
+        </InspectorContextMenuWrapper>
       </PropertyRow>
       <PropertyRow style={{ gridColumnGap: 8, gridTemplateColumns: '130px 55px 28px' }}>
-        <NewInspectorContextMenuWrapper
+        <InspectorContextMenuWrapper
           id='fontWeightAndStyle-context-menu'
           items={fontWeightAndStyleContextMenuItems}
           data={null}
@@ -377,8 +377,8 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               controlStyles={fontWeightAndStyleMetadata.controlStyles}
             />
           </Tooltip>
-        </NewInspectorContextMenuWrapper>
-        <NewInspectorContextMenuWrapper
+        </InspectorContextMenuWrapper>
+        <InspectorContextMenuWrapper
           id='fontSize-context-menu'
           items={fontSizeContextMenuItems}
           data={null}
@@ -394,8 +394,8 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             numberType='Length'
             defaultUnitToHide='px'
           />
-        </NewInspectorContextMenuWrapper>
-        <NewInspectorContextMenuWrapper
+        </InspectorContextMenuWrapper>
+        <InspectorContextMenuWrapper
           id='color-context-menu'
           items={colorContextMenuItems}
           data={null}
@@ -411,10 +411,10 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             controlStatus={colorMetadata.controlStatus}
             controlStyles={colorMetadata.controlStyles}
           />
-        </NewInspectorContextMenuWrapper>
+        </InspectorContextMenuWrapper>
       </PropertyRow>
       <PropertyRow style={{ gridColumnGap: 8 }}>
-        <NewInspectorContextMenuWrapper
+        <InspectorContextMenuWrapper
           id='textSizing-context-menu'
           items={textSizingContextMenuItems}
           data={null}
@@ -454,8 +454,8 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               ] as Array<OptionChainOption<string | number>>
             }
           />
-        </NewInspectorContextMenuWrapper>
-        <NewInspectorContextMenuWrapper
+        </InspectorContextMenuWrapper>
+        <InspectorContextMenuWrapper
           id='textAlign-context-menu'
           items={textAlignContextMenuItems}
           data={null}
@@ -511,11 +511,11 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               },
             ]}
           />
-        </NewInspectorContextMenuWrapper>
+        </InspectorContextMenuWrapper>
       </PropertyRow>
       {expanded ? (
         <PropertyRow style={{ gridColumnGap: 8 }}>
-          <NewInspectorContextMenuWrapper
+          <InspectorContextMenuWrapper
             id='italic-context-menu'
             items={italicContextMenuItems}
             data={null}
@@ -539,8 +539,8 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
                 },
               }}
             />
-          </NewInspectorContextMenuWrapper>
-          <NewInspectorContextMenuWrapper
+          </InspectorContextMenuWrapper>
+          <InspectorContextMenuWrapper
             id='textDecorationLine-context-menu'
             items={underlineContextMenuItems}
             data={null}
@@ -564,8 +564,8 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
                 },
               }}
             />
-          </NewInspectorContextMenuWrapper>
-          <NewInspectorContextMenuWrapper
+          </InspectorContextMenuWrapper>
+          <InspectorContextMenuWrapper
             id='letterSpacing-context-menu'
             items={letterSpacingContextMenuItems}
             data={null}
@@ -587,8 +587,8 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               numberType='Length'
               defaultUnitToHide='px'
             />
-          </NewInspectorContextMenuWrapper>
-          <NewInspectorContextMenuWrapper
+          </InspectorContextMenuWrapper>
+          <InspectorContextMenuWrapper
             id='lineHeight-context-menu'
             items={lineHeightContextMenuItems}
             data={null}
@@ -609,7 +609,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               stepSize={0.01}
               numberType='Length'
             />
-          </NewInspectorContextMenuWrapper>
+          </InspectorContextMenuWrapper>
         </PropertyRow>
       ) : null}
     </>

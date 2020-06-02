@@ -5,15 +5,12 @@ import {
   betterReactMemo,
   CSSUtils,
   SliderControl,
-  NewInspectorContextMenuItems,
-  NewInspectorContextMenuWrapper,
+  InspectorContextMenuItems,
+  InspectorContextMenuWrapper,
   Utils,
 } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
-import {
-  useInspectorStyleInfo,
-  useIsSubSectionVisible,
-} from '../../../new-inspector/new-inspector-hooks'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { NumberInput, useWrappedEmptyOnSubmitValue } from 'uuiui'
 
 const sliderControlOptions = {
@@ -24,6 +21,7 @@ const sliderControlOptions = {
   filled: true,
 }
 
+// TODO: path should match target
 const opacityProp = [PP.create(['style', 'opacity'])]
 
 export const OpacityRow = betterReactMemo('OpacityRow', () => {
@@ -40,7 +38,7 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
     },
   )
 
-  const opacityContextMenuItems = NewInspectorContextMenuItems.optionalAddOnUnsetValues(
+  const opacityContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     opacity != null,
     ['opacity'],
     opacityMetadata.onUnsetValues,
@@ -60,7 +58,7 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
   }
 
   return (
-    <NewInspectorContextMenuWrapper
+    <InspectorContextMenuWrapper
       id='opacity-row-context-menu'
       items={opacityContextMenuItems}
       data={null}
@@ -92,6 +90,6 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
           />
         </GridRow>
       </GridRow>
-    </NewInspectorContextMenuWrapper>
+    </InspectorContextMenuWrapper>
   )
 })

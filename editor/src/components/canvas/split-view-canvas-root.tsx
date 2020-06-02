@@ -10,7 +10,7 @@ import * as EditorActions from '../editor/actions/actions'
 import { ConsoleLog } from '../editor/store/editor-state'
 
 import { useEditorState } from '../editor/store/store-hook'
-import { NewInspectorEntryPoint } from '../inspector/new-inspector'
+import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
 
@@ -131,7 +131,7 @@ export const SplitViewCanvasRoot = betterReactMemo(
               flexShrink: 0,
             }}
           >
-            {isInsertMenuSelected ? <InsertMenuPane /> : <NewInspectorEntryPoint />}
+            {isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
           </SimpleFlexRow>
         ) : null}
       </SimpleFlexRow>
