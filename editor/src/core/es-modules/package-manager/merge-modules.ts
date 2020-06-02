@@ -34,9 +34,6 @@ export function mangleNodeModulePaths(
 export function mergeNodeModules(nodeModulesArr: Array<NodeModules>): NodeModules {
   // TODO: we need a more sophisticated merge
   return nodeModulesArr.reduce((acc, curr) => {
-    return {
-      ...acc,
-      ...curr,
-    }
+    return Object.assign(acc, curr)
   }, {} as NodeModules)
 }
