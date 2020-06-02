@@ -14,28 +14,20 @@ export function mangleNodeModulePaths(
     if (packagePath.startsWith(`/node_modules/`)) {
       if (packagePath.startsWith(mainPackagePath)) {
         // we leave these in place
-        return {
-          ...newContents,
-          [packagePath]: nodeModulesContents[packagePath],
-        }
+        newContents[packagePath] = nodeModulesContents[packagePath]
       } else {
         // this package is not the main package, we move this under
         // /node_modules/<mainpackage>/node_modules
         // to avoid clashing transitive dependencies
         // TODO implement the npm module merging logic
         const mangledPath = movePathInsidePackage(mainPackage, packagePath)
-        return {
-          ...newContents,
-          [mangledPath]: nodeModulesContents[packagePath],
-        }
+        newContents[mangledPath] = nodeModulesContents[packagePath]
       }
     } else {
       // this is a file outside /node_modules/, leave it as is
-      return {
-        ...newContents,
-        [packagePath]: nodeModulesContents[packagePath],
-      }
+      newContents[packagePath] = nodeModulesContents[packagePath]
     }
+    return newContents
   }, {} as NodeModules)
 }
 
