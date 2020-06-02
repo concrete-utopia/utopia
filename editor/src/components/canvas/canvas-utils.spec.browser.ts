@@ -861,7 +861,7 @@ describe('moveTemplate', () => {
         <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View data-uid={'eee'}>
             <View
-              style={{ backgroundColor: '#DDDDDD', width: 256, height: 202, left: 52, top: -141 }}
+              style={{ backgroundColor: '#DDDDDD', left: 52, width: 256, height: 202, top: -141 }}
               layout={{ layoutSystem: 'pinSystem'  }}
               data-uid={'bbb'}
             >
@@ -869,8 +869,8 @@ describe('moveTemplate', () => {
                 <View data-uid={'ddd'} />
               </View>
             </View>
-            <View data-uid={'ggg'} style={{ left: 0, top: 0, width: 400, height: 0 }} />
-            <View data-uid={'hhh'} style={{ left: 0, top: 0, width: 400, height: 0 }} />
+            <View data-uid={'ggg'} />
+            <View data-uid={'hhh'} style={{ top: 0 }} />
           </View>
           <View data-uid={'fff'} />
         </View>
@@ -910,7 +910,7 @@ describe('moveTemplate', () => {
         <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View data-uid={'eee'}>
             <View
-              style={{ backgroundColor: '#DDDDDD', width: 256, height: 202, left: 52, top: -141 }}
+              style={{ backgroundColor: '#DDDDDD', left: 52, width: 256, height: 202, top: -141 }}
               layout={{ layoutSystem: 'pinSystem' }}
               data-uid={'bbb'}
             >
@@ -955,9 +955,9 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View data-uid={'eee'}>
-            <View data-uid={'ddd'} style={{ left: 52, top: -141, width: 0, height: 0 }} />
+            <View data-uid={'ddd'} style={{ left: 52, top: -141 }} />
             <View
-              style={{ backgroundColor: '#DDDDDD', width: 256, height: 202, left: 52, top: -141 }}
+              style={{ backgroundColor: '#DDDDDD', left: 52, width: 256, height: 202, top: -141 }}
               layout={{ layoutSystem: 'pinSystem' }}
               data-uid={'bbb'}
             >

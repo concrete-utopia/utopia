@@ -45,38 +45,6 @@ Array [
                 "value": "#FFFFFF",
               },
             },
-            Object {
-              "key": "width",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": 0,
-              },
-            },
-            Object {
-              "key": "height",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": 0,
-              },
-            },
-            Object {
-              "key": "left",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": 0,
-              },
-            },
-            Object {
-              "key": "top",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": 0,
-              },
-            },
           ],
           "type": "ATTRIBUTE_NESTED_OBJECT",
         },
@@ -130,38 +98,6 @@ Array [
               "value": Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": "flex",
-              },
-            },
-            Object {
-              "key": "left",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": 0,
-              },
-            },
-            Object {
-              "key": "top",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": 0,
-              },
-            },
-            Object {
-              "key": "width",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": 0,
-              },
-            },
-            Object {
-              "key": "height",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": 0,
               },
             },
           ],
