@@ -13,6 +13,7 @@ import           Data.List                 (isSuffixOf, stripPrefix)
 import qualified Data.Text.IO              as T
 import           Protolude
 import           System.Directory.PathWalk
+import           System.Directory
 import           System.FilePath
 import           System.IO.Temp
 import           System.Process
@@ -61,6 +62,7 @@ getImportsFromJSFile :: (MonadIO m, MonadMask m, MonadReader QSem m) => FilePath
 getImportsFromJSFile fileToAnalyse = do
   semaphore <- ask
   withSystemTempFile "import-analysis-result.txt" $ \importResultFile -> \_ -> do
+    liftIO $ removeFile importResultFile
     print ("Import Analysis Result File" :: Text, importResultFile)
     _ <- liftIO $ withSemaphore semaphore $ do
       let baseProc = proc "npm" ["start", fileToAnalyse, importResultFile]
