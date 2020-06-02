@@ -9,10 +9,8 @@ function monkeyPatchRequire(extensionsToMutate: NodeJS.RequireExtensions, fileEx
   extensionsToMutate[fileExtension] = (...args) => {
     try {
       const realResult = realRequire!(...args)
-      console.log('resolved module', args[1])
       return realResult
     } catch (e) {
-      console.log('failed to resolve module, returning mock')
       return {}
     }
   }
