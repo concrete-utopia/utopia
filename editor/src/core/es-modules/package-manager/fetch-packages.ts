@@ -18,7 +18,7 @@ import { getPackagerUrl, getTypingsUrl } from './packager-url'
 
 let depPackagerCache: { [key: string]: NodeModules } = {}
 
-const PACKAGES_TO_SKIP = ['utopia-api', 'react', 'react-dom']
+const PACKAGES_TO_SKIP = ['utopia-api', 'react', 'react-dom', 'uuiui', 'uuiui-deps']
 
 function extractNodeModulesFromPackageResponse(response: PackagerServerResponse): NodeModules {
   return objectMap((file) => esCodeFile(file.content, null), response.contents)
