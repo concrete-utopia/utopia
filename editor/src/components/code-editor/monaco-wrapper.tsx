@@ -288,7 +288,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
 
     const definitions = this.props.npmTypeDefinitions.typeDefinitions
     Object.keys(definitions).forEach((filename) => {
-      const fileUri = monaco.Uri.file(`node_modules/${filename}`).toString()
+      const fileUri = monaco.Uri.file(filename).toString()
 
       const extraLib = extraLibs[fileUri]
       if (extraLib) {

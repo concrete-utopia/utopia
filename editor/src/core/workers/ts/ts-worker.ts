@@ -340,8 +340,7 @@ export function initBrowserFS(
   })
 
   Object.keys(typeDefinitions).forEach((fileName) => {
-    const nodeModules = '/node_modules/' + fileName
-    writeFile(fs, nodeModules, typeDefinitions[fileName])
+    writeFile(fs, filename, typeDefinitions[fileName])
   })
 
   fs.mkdirSync('/build')
