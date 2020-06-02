@@ -6,6 +6,7 @@ module Utopia.Web.Packager.NPM where
 
 import           Control.Lens
 import           Control.Monad
+import           Control.Monad.Catch hiding (finally)
 import           Data.Aeson
 import           Data.Aeson.Lens
 import           Data.List                 (isSuffixOf, stripPrefix)
@@ -43,12 +44,6 @@ withInstalledProject semaphore jsPackageName jsPackageVersion withInstalledPath 
 isRelevantFilename :: FilePath -> Bool
 isRelevantFilename path = isSuffixOf "package.json" path || isSuffixOf ".d.ts" path
 
-data JSImport = ModuleImport Text
-              | FileImport Text
-              deriving (Eq, Show, Ord, Generic)
-
-instance Hashable JSImport
-
 type FilesAndContents = Map.HashMap Text TL.Text
 
 getRelevantFiles :: FilePath -> IO FilesAndContents
@@ -63,10 +58,12 @@ getRelevantFiles projectPath = do
       if relevant then fileWithContent else mempty
 
 -- Replace with call to node tool.
-getImportsFromJSFile :: (MonadIO m, MonadReader QSem m) => FilePath -> m [JSImport]
+getImportsFromJSFile :: (MonadIO m, MonadMask m, MonadReader QSem m) => FilePath -> m [FilePath]
 getImportsFromJSFile _ = do
   semaphore <- ask
-  liftIO $ withSemaphore semaphore $ pure []
+  withSystemTempFile "import-analysis-result.txt" $ \filename -> \_ -> do
+    print ("Import Analysis Result File" :: Text, filename)
+    liftIO $ withSemaphore semaphore $ pure []
 
 getMainFile :: (MonadIO m) => FilePath -> Text -> m (Maybe FilePath)
 getMainFile projectPath javascriptPackageName = do
@@ -78,7 +75,7 @@ getMainFile projectPath javascriptPackageName = do
   let mainFile = fmap (\p -> baseProjectPath </> toS p) (browser <|> main)
   return mainFile
 
-type NPMRWS = RWST QSem FilesAndContents (Set.HashSet JSImport) IO
+type NPMRWS = RWST QSem FilesAndContents (Set.HashSet FilePath) IO
 
 addFile :: FilePath -> FilePath -> NPMRWS ()
 addFile projectPath filePath = do
@@ -86,28 +83,23 @@ addFile projectPath filePath = do
   let strippedPath = fromMaybe filePath $ stripPrefix projectPath filePath
   tell $ Map.singleton (toS strippedPath) fileContents
 
-processImport :: FilePath -> JSImport -> NPMRWS ()
-processImport projectPath jsImport@(ModuleImport importedModule) = do
-  modify (Set.insert jsImport)
-  possibleMainFile <- getMainFile projectPath importedModule
-  -- If there isn't a main file for it just ignore it.
-  forM_ possibleMainFile $ \mainFile -> do
-    addToRequiredFiles projectPath (FileImport $ toS mainFile)
-processImport projectPath jsImport@(FileImport importedFile) = do
-  modify (Set.insert jsImport)
+processImport :: FilePath -> FilePath -> NPMRWS ()
+processImport projectPath importedFile = do
+  modify (Set.insert importedFile)
   addFile projectPath (toS importedFile)
   importsFromFile <- getImportsFromJSFile (toS importedFile)
   forM_ importsFromFile $ addToRequiredFiles projectPath
 
-addToRequiredFiles :: FilePath -> JSImport -> NPMRWS ()
-addToRequiredFiles projectPath jsImport = do
+addToRequiredFiles :: FilePath -> FilePath -> NPMRWS ()
+addToRequiredFiles projectPath requiredFile = do
   alreadyProcessedImports <- get
-  let alreadyProcessed = Set.member jsImport alreadyProcessedImports
-  unless alreadyProcessed $ processImport projectPath jsImport
+  let alreadyProcessed = Set.member requiredFile alreadyProcessedImports
+  unless alreadyProcessed $ processImport projectPath requiredFile
 
 getModuleAndDependenciesFiles :: QSem -> Text -> FilePath -> IO FilesAndContents
 getModuleAndDependenciesFiles semaphore javascriptPackageName projectPath = do
   relevantFiles <- getRelevantFiles projectPath
-  let requiredFilesRWST = addToRequiredFiles projectPath (ModuleImport javascriptPackageName)
+  initialMainFile <- getMainFile projectPath javascriptPackageName
+  let requiredFilesRWST = traverse_ (addToRequiredFiles projectPath) initialMainFile
   (_, _, moduleAndDependencies) <- runRWST requiredFilesRWST semaphore mempty
   return (relevantFiles <> moduleAndDependencies)
