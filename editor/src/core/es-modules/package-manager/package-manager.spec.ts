@@ -14,7 +14,7 @@ import { ESCodeFile } from '../../shared/project-file-types'
 import { NO_OP } from '../../shared/utils'
 import { NodeModules } from '../../shared/project-file-types'
 import { npmDependency } from '../../shared/npm-dependency-types'
-import { getPackagerUrl, getTypingsUrl } from './packager-url'
+import { getPackagerUrl, getJsDelivrListUrl } from './packager-url'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -71,12 +71,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
         switch (request.url) {
           case getPackagerUrl(npmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
-          case getTypingsUrl(npmDependency('react-spring', '8.0.27')):
-            return Promise.resolve({
-              status: 200,
-              body: JSON.stringify(reactSpringTypingsServerResponse),
-            })
-          case 'https://data.jsdelivr.com/v1/package/npm/react-spring@8.0.27/flat':
+          case getJsDelivrListUrl(npmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 404 }) // we don't care about the jsdelivr response now
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
@@ -96,12 +91,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
         switch (request.url) {
           case getPackagerUrl(npmDependency('antd', '4.2.5')):
             return Promise.resolve({ status: 200, body: JSON.stringify(antdPackagerResponse) })
-          case getTypingsUrl(npmDependency('antd', '4.2.5')):
-            return Promise.resolve({
-              status: 200,
-              body: JSON.stringify(antdTypingsResponse),
-            })
-          case 'https://data.jsdelivr.com/v1/package/npm/antd@4.2.5/flat':
+          case getJsDelivrListUrl(npmDependency('antd', '4.2.5')):
             return Promise.resolve({ status: 200, body: JSON.stringify(jsdelivrApiResponse) })
           case 'https://cdn.jsdelivr.net/npm/antd@4.2.5/dist/antd.css':
             return Promise.resolve({ body: simpleCssContent })
@@ -139,12 +129,7 @@ describe('ES Dependency Manager — d.ts', () => {
         switch (request.url) {
           case getPackagerUrl(npmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
-          case getTypingsUrl(npmDependency('react-spring', '8.0.27')):
-            return Promise.resolve({
-              status: 200,
-              body: JSON.stringify(reactSpringTypingsServerResponse),
-            })
-          case 'https://data.jsdelivr.com/v1/package/npm/react-spring@8.0.27/flat':
+          case getJsDelivrListUrl(npmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 404 }) // we don't care about the jsdelivr response now
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
@@ -173,9 +158,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         switch (request.url) {
           case getPackagerUrl(npmDependency('mypackage', '0.0.1')):
             return Promise.resolve({ status: 200, body: JSON.stringify(fileNoImports) })
-          case getTypingsUrl(npmDependency('mypackage', '0.0.1')):
-            return Promise.resolve({ status: 404 }) // for the typings fetch we respond with a 404
-          case 'https://data.jsdelivr.com/v1/package/npm/mypackage@0.0.1/flat':
+          case getJsDelivrListUrl(npmDependency('mypackage', '0.0.1')):
             return Promise.resolve({ status: 200, body: JSON.stringify(jsdelivrApiResponse) })
           case 'https://cdn.jsdelivr.net/npm/mypackage@0.0.1/dist/style.css':
             return Promise.resolve({ body: simpleCssContent })

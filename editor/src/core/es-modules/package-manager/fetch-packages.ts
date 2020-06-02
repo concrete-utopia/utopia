@@ -8,13 +8,12 @@ import {
 import {
   NpmDependency,
   PackagerServerResponse,
-  TypingsServerResponse,
   JsdelivrResponse,
 } from '../../shared/npm-dependency-types'
 import { mapArrayToDictionary } from '../../shared/array-utils'
 import { objectMap } from '../../shared/object-utils'
 import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
-import { getPackagerUrl, getTypingsUrl } from './packager-url'
+import { getPackagerUrl, getJsDelivrListUrl } from './packager-url'
 
 let depPackagerCache: { [key: string]: NodeModules } = {}
 
@@ -22,14 +21,6 @@ const PACKAGES_TO_SKIP = ['utopia-api', 'react', 'react-dom', 'uuiui', 'uuiui-de
 
 function extractNodeModulesFromPackageResponse(response: PackagerServerResponse): NodeModules {
   return objectMap((file) => esCodeFile(file.content, null), response.contents)
-}
-
-function extractNodeModulesFromTypingsResponse(response: TypingsServerResponse): NodeModules {
-  return mapArrayToDictionary(
-    Object.keys(response.files),
-    (filepath) => `/node_modules${filepath}`,
-    (filepath) => esCodeFile(response.files[filepath].module.code, null),
-  )
 }
 
 function extractNodeModulesFromJsdelivrResponse(
@@ -56,7 +47,7 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
     return null
   }
   const packagesUrl = getPackagerUrl(dep)
-  const jsdelivrUrl = `https://data.jsdelivr.com/v1/package/npm/${dep.name}@${dep.version}/flat`
+  const jsdelivrUrl = getJsDelivrListUrl(dep)
   let result: NodeModules = {}
   if (depPackagerCache[packagesUrl] != null) {
     result = depPackagerCache[packagesUrl]

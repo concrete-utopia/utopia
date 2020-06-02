@@ -30,16 +30,6 @@ export interface PackagerServerResponse {
   }
 }
 
-export interface TypingsServerResponse {
-  files: {
-    [filepath: string]: {
-      module: {
-        code: string
-      }
-    }
-  }
-}
-
 export interface JsdelivrResponse {
   default: string
   files: Array<{
