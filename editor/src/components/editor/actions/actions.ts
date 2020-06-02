@@ -3192,8 +3192,6 @@ export const UPDATE_FNS = {
         fetchNodeModules(deps).then((nodeModules) =>
           dispatch([updateNodeModulesContents(nodeModules, true)]),
         )
-
-        // bundleAndDispatchNpmPackages(dispatch, deps)
       }
     }
 
