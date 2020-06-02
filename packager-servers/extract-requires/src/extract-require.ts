@@ -23,11 +23,15 @@ function monkeyPatchExtensions(extensionsToMutate: NodeJS.RequireExtensions) {
 }
 
 export function resolveRequirePath(packageEntryPath: string, toRequire: string) {
-  const localRequire = createRequire(packageEntryPath)
-  monkeyPatchExtensions(localRequire.extensions)
-  const before = Object.keys(localRequire.cache)
-  localRequire(packageEntryPath)
-  const after = Object.keys(localRequire.cache)
-  const newImports = R.difference(after, before)
-  return newImports
+  try {
+    const localRequire = createRequire(packageEntryPath)
+    monkeyPatchExtensions(localRequire.extensions)
+    const before = Object.keys(localRequire.cache)
+    localRequire(packageEntryPath)
+    const after = Object.keys(localRequire.cache)
+    const newImports = R.difference(after, before)
+    return newImports
+  } catch (e) {
+    return []
+  }
 }
