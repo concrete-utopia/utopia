@@ -18,13 +18,16 @@ npmSpec :: Spec
 npmSpec = do
   describe "withInstalledProject" $ do
     it "should have the various dependencies in node_modules for react" $ do
-      result <- withInstalledProject "react" "16.13.1" getNodeModulesSubDirectories
+      semaphore <- newQSem 1
+      result <- withInstalledProject semaphore "react" "16.13.1" getNodeModulesSubDirectories
       result `shouldBe` [".bin", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
     it "should fail for a non-existent project" $ do
-      withInstalledProject "non-existent-project-that-will-never-exist" "9.9.9.9.9.9" getNodeModulesSubDirectories `shouldThrow` anyIOException
+      semaphore <- newQSem 1
+      withInstalledProject semaphore "non-existent-project-that-will-never-exist" "9.9.9.9.9.9" getNodeModulesSubDirectories `shouldThrow` anyIOException
   describe "getModuleAndDependenciesFiles" $ do
     it "should get a bunch of .js, .d.ts and package.json files" $ do
-      result <- withInstalledProject "react" "16.13.1" $ getModuleAndDependenciesFiles "react"
+      semaphore <- newQSem 1
+      result <- withInstalledProject semaphore "react" "16.13.1" $ getModuleAndDependenciesFiles semaphore "react"
       let sortedFilenames = sort $ Map.keys result
       sortedFilenames `shouldBe` [
         "/node_modules/js-tokens/package.json",
@@ -36,7 +39,8 @@ npmSpec = do
         "/node_modules/react/package.json" ]
   describe "getRelevantFiles" $ do
     it "should get a bunch of .d.ts and package.json files" $ do
-      result <- withInstalledProject "react" "16.13.1" getRelevantFiles
+      semaphore <- newQSem 1
+      result <- withInstalledProject semaphore "react" "16.13.1" getRelevantFiles
       let sortedFilenames = sort $ Map.keys result
       sortedFilenames `shouldBe` [
         "/node_modules/js-tokens/package.json",

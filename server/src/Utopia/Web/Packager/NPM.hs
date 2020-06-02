@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Utopia.Web.Packager.NPM where
@@ -20,14 +21,22 @@ import           Control.Monad.RWS.Strict
 import qualified Data.HashMap.Strict       as Map
 import qualified Data.HashSet              as Set
 
-withInstalledProject :: Text -> Text -> (FilePath -> IO a) -> IO a
-withInstalledProject jsPackageName jsPackageVersion withInstalledPath = do
+withSemaphore :: QSem -> IO a -> IO a
+withSemaphore semaphore action = (flip finally) (signalQSem semaphore) $ do
+  waitQSem semaphore
+  action
+
+withInstalledProject :: QSem -> Text -> Text -> (FilePath -> IO a) -> IO a
+withInstalledProject semaphore jsPackageName jsPackageVersion withInstalledPath = do
   -- Create temporary folder.
   withSystemTempDirectory "packager" $ \tempDir -> do
     -- Run `npm install "packageName@packageVersion"`.
+    let commandString = "npm install --loglevel=error " <> jsPackageName <> "@" <> jsPackageVersion
+    print ("Starting" :: Text, commandString)
     let baseProc = proc "npm" ["install", "--loglevel=error", toS jsPackageName <> "@" <> toS jsPackageVersion]
     let procWithCwd = baseProc { cwd = Just tempDir }
-    _ <- readCreateProcess procWithCwd ""
+    _ <- withSemaphore semaphore $ readCreateProcess procWithCwd ""
+    print ("Finished" :: Text, commandString)
     -- Invoke action against path.
     withInstalledPath tempDir
 
@@ -54,8 +63,10 @@ getRelevantFiles projectPath = do
       if relevant then fileWithContent else mempty
 
 -- Replace with call to node tool.
-getImportsFromJSFile :: (MonadIO m) => FilePath -> m [JSImport]
-getImportsFromJSFile _ = pure []
+getImportsFromJSFile :: (MonadIO m, MonadReader QSem m) => FilePath -> m [JSImport]
+getImportsFromJSFile _ = do
+  semaphore <- ask
+  liftIO $ withSemaphore semaphore $ pure []
 
 getMainFile :: (MonadIO m) => FilePath -> Text -> m (Maybe FilePath)
 getMainFile projectPath javascriptPackageName = do
@@ -65,10 +76,9 @@ getMainFile projectPath javascriptPackageName = do
   let browser = (jsonValue :: Value) ^? key "browser" . _String
   let main = jsonValue ^? key "main" . _String
   let mainFile = fmap (\p -> baseProjectPath </> toS p) (browser <|> main)
-  print ("mainFile" :: Text, mainFile)
   return mainFile
 
-type NPMRWS = RWST () FilesAndContents (Set.HashSet JSImport) IO
+type NPMRWS = RWST QSem FilesAndContents (Set.HashSet JSImport) IO
 
 addFile :: FilePath -> FilePath -> NPMRWS ()
 addFile projectPath filePath = do
@@ -95,9 +105,9 @@ addToRequiredFiles projectPath jsImport = do
   let alreadyProcessed = Set.member jsImport alreadyProcessedImports
   unless alreadyProcessed $ processImport projectPath jsImport
 
-getModuleAndDependenciesFiles :: Text -> FilePath -> IO FilesAndContents
-getModuleAndDependenciesFiles javascriptPackageName projectPath = do
+getModuleAndDependenciesFiles :: QSem -> Text -> FilePath -> IO FilesAndContents
+getModuleAndDependenciesFiles semaphore javascriptPackageName projectPath = do
   relevantFiles <- getRelevantFiles projectPath
   let requiredFilesRWST = addToRequiredFiles projectPath (ModuleImport javascriptPackageName)
-  (_, _, moduleAndDependencies) <- runRWST requiredFilesRWST () mempty
+  (_, _, moduleAndDependencies) <- runRWST requiredFilesRWST semaphore mempty
   return (relevantFiles <> moduleAndDependencies)

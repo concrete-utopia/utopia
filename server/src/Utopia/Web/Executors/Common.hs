@@ -238,9 +238,10 @@ contentText = "content"
 contentsText :: Text
 contentsText = "contents"
 
-getPackagerContent :: Text -> Text -> IO BL.ByteString
-getPackagerContent javascriptPackageName javascriptPackageVersion = do
-  filesAndContent <- withInstalledProject javascriptPackageName javascriptPackageVersion getRelevantFiles
+getPackagerContent :: QSem -> Text -> Text -> IO BL.ByteString
+getPackagerContent semaphore javascriptPackageName javascriptPackageVersion = do
+  filesAndContent <- withInstalledProject semaphore javascriptPackageName javascriptPackageVersion $ do
+    getModuleAndDependenciesFiles semaphore javascriptPackageName
   let contents = fmap (\fileContent -> (M.singleton contentText fileContent)) filesAndContent
   let encodingResult = toEncoding $ M.singleton contentsText contents
   return $ toLazyByteString $ fromEncoding encodingResult
