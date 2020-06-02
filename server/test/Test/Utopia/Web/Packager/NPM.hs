@@ -32,9 +32,13 @@ npmSpec = do
       sortedFilenames `shouldBe` [
         "/node_modules/js-tokens/package.json",
         "/node_modules/loose-envify/package.json",
+        "/node_modules/object-assign/index.js",
         "/node_modules/object-assign/package.json",
+        "/node_modules/prop-types/checkPropTypes.js",
+        "/node_modules/prop-types/lib/ReactPropTypesSecret.js",
         "/node_modules/prop-types/package.json",
         "/node_modules/react-is/package.json",
+        "/node_modules/react/cjs/react.development.js",
         "/node_modules/react/index.js",
         "/node_modules/react/package.json" ]
   describe "getRelevantFiles" $ do
