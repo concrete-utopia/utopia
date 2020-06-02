@@ -1,5 +1,7 @@
 import { fetchMissingFileDependency, resetDepPackagerCache } from './fetch-packages'
 import { esRemoteDependencyPlaceholder } from '../../shared/project-file-types'
+import { getJsDelivrFileUrl } from './packager-url'
+import { npmDependency } from '../../shared/npm-dependency-types'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -10,7 +12,7 @@ describe('Fetch missing file dependency', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case 'https://cdn.jsdelivr.net/npm/mypackage@0.0.1/dist/style.css':
+          case getJsDelivrFileUrl(npmDependency('mypackage', '0.0.1'), '/dist/style.css'):
             return Promise.resolve({ body: simpleCssContent })
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)

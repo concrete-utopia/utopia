@@ -9,11 +9,12 @@ import {
   NpmDependency,
   PackagerServerResponse,
   JsdelivrResponse,
+  npmDependency,
 } from '../../shared/npm-dependency-types'
 import { mapArrayToDictionary } from '../../shared/array-utils'
 import { objectMap } from '../../shared/object-utils'
 import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
-import { getPackagerUrl, getJsDelivrListUrl } from './packager-url'
+import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
 
 let depPackagerCache: { [key: string]: NodeModules } = {}
 
@@ -132,7 +133,10 @@ export async function fetchMissingFileDependency(
   filepath: string,
 ): Promise<void> {
   const localFilePath = extractFilePath(dependency.packagename, filepath)
-  const jsdelivrUrl = `https://cdn.jsdelivr.net/npm/${dependency.packagename}@${dependency.version}${localFilePath}`
+  const jsdelivrUrl = getJsDelivrFileUrl(
+    npmDependency(dependency.packagename, dependency.version),
+    localFilePath,
+  )
   const jsdelivrResponse = await fetch(jsdelivrUrl)
   const responseAsString = await jsdelivrResponse.text()
   const newFile: ESCodeFile = esCodeFile(responseAsString, null)

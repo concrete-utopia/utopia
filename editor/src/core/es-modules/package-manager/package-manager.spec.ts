@@ -12,7 +12,7 @@ import { ESCodeFile } from '../../shared/project-file-types'
 import { NO_OP } from '../../shared/utils'
 import { NodeModules } from '../../shared/project-file-types'
 import { npmDependency } from '../../shared/npm-dependency-types'
-import { getPackagerUrl, getJsDelivrListUrl } from './packager-url'
+import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -91,7 +91,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
             return Promise.resolve({ status: 200, body: JSON.stringify(antdPackagerResponse) })
           case getJsDelivrListUrl(npmDependency('antd', '4.2.5')):
             return Promise.resolve({ status: 200, body: JSON.stringify(jsdelivrApiResponse) })
-          case 'https://cdn.jsdelivr.net/npm/antd@4.2.5/dist/antd.css':
+          case getJsDelivrFileUrl(npmDependency('antd', '4.2.5'), '/dist/antd.css'):
             return Promise.resolve({ body: simpleCssContent })
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
@@ -158,7 +158,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
             return Promise.resolve({ status: 200, body: JSON.stringify(fileNoImports) })
           case getJsDelivrListUrl(npmDependency('mypackage', '0.0.1')):
             return Promise.resolve({ status: 200, body: JSON.stringify(jsdelivrApiResponse) })
-          case 'https://cdn.jsdelivr.net/npm/mypackage@0.0.1/dist/style.css':
+          case getJsDelivrFileUrl(npmDependency('mypackage', '0.0.1'), '/dist/style.css'):
             return Promise.resolve({ body: simpleCssContent })
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
