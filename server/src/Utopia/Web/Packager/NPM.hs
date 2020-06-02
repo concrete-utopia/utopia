@@ -6,12 +6,11 @@ module Utopia.Web.Packager.NPM where
 
 import           Control.Lens
 import           Control.Monad
-import           Control.Monad.Catch hiding (finally)
+import           Control.Monad.Catch       hiding (finally)
 import           Data.Aeson
 import           Data.Aeson.Lens
 import           Data.List                 (isSuffixOf, stripPrefix)
-import qualified Data.Text.Lazy            as TL
-import qualified Data.Text.Lazy.IO         as TL
+import qualified Data.Text.IO              as T
 import           Protolude
 import           System.Directory.PathWalk
 import           System.FilePath
@@ -44,7 +43,7 @@ withInstalledProject semaphore jsPackageName jsPackageVersion withInstalledPath 
 isRelevantFilename :: FilePath -> Bool
 isRelevantFilename path = isSuffixOf "package.json" path || isSuffixOf ".d.ts" path
 
-type FilesAndContents = Map.HashMap Text TL.Text
+type FilesAndContents = Map.HashMap Text Text
 
 getRelevantFiles :: FilePath -> IO FilesAndContents
 getRelevantFiles projectPath = do
@@ -54,7 +53,7 @@ getRelevantFiles projectPath = do
       let relevant = isRelevantFilename file
       let entryFilename = strippedDir </> file
       let fullFilename = projectPath </> dir </> file
-      let fileWithContent = fmap (Map.singleton (toS entryFilename)) $ TL.readFile fullFilename
+      let fileWithContent = fmap (Map.singleton (toS entryFilename)) $ T.readFile fullFilename
       if relevant then fileWithContent else mempty
 
 -- Replace with call to node tool.
@@ -86,7 +85,7 @@ type NPMRWS = RWST QSem FilesAndContents (Set.HashSet FilePath) IO
 
 addFile :: FilePath -> FilePath -> NPMRWS ()
 addFile projectPath filePath = do
-  fileContents <- liftIO $ TL.readFile filePath
+  fileContents <- liftIO $ T.readFile filePath
   let strippedPath = fromMaybe filePath $ stripPrefix projectPath filePath
   tell $ Map.singleton (toS strippedPath) fileContents
 
