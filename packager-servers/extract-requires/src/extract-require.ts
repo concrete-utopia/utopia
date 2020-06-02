@@ -22,11 +22,11 @@ function monkeyPatchExtensions(extensionsToMutate: NodeJS.RequireExtensions) {
   )
 }
 
-export function resolveRequirePath(absoluteFilePath: string) {
-  const localRequire = createRequire(absoluteFilePath)
+export function resolveRequirePath(packageEntryPath: string, toRequire: string) {
+  const localRequire = createRequire(packageEntryPath)
   monkeyPatchExtensions(localRequire.extensions)
   const before = Object.keys(localRequire.cache)
-  localRequire(absoluteFilePath)
+  localRequire(packageEntryPath)
   const after = Object.keys(localRequire.cache)
   const newImports = R.difference(after, before)
   return newImports
