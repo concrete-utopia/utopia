@@ -59,11 +59,18 @@ getRelevantFiles projectPath = do
 
 -- Replace with call to node tool.
 getImportsFromJSFile :: (MonadIO m, MonadMask m, MonadReader QSem m) => FilePath -> m [FilePath]
-getImportsFromJSFile _ = do
+getImportsFromJSFile fileToAnalyse = do
   semaphore <- ask
-  withSystemTempFile "import-analysis-result.txt" $ \filename -> \_ -> do
-    print ("Import Analysis Result File" :: Text, filename)
-    liftIO $ withSemaphore semaphore $ pure []
+  withSystemTempFile "import-analysis-result.txt" $ \importResultFile -> \_ -> do
+    print ("Import Analysis Result File" :: Text, importResultFile)
+    _ <- liftIO $ withSemaphore semaphore $ do
+      let baseProc = proc "npm" ["start", fileToAnalyse, importResultFile]
+      -- Currently assumes these live near each other.
+      let procWithCwd = baseProc { cwd = Just "../packager-servers/extract-requires" }
+      readCreateProcess procWithCwd ""
+    putText "Finished call to npm."
+    jsonValueOrError <- liftIO $ eitherDecodeFileStrict' importResultFile
+    either fail return jsonValueOrError
 
 getMainFile :: (MonadIO m) => FilePath -> Text -> m (Maybe FilePath)
 getMainFile projectPath javascriptPackageName = do
