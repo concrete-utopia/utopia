@@ -17,9 +17,7 @@ export function useGetSubsectionHeaderStyle(controlStatus: ControlStatus): React
   // TODO instead of this, make the inspector hook return the `PropertyStatus` too, and just use PropertyStatus.controlled
   const isControlled =
     controlStatus === 'controlled' ||
-    controlStatus === 'controlled-nodegraph' ||
     controlStatus === 'multiselect-controlled' ||
-    controlStatus === 'multiselect-identical-controlled-nodegraph' ||
     controlStatus === 'unoverwritable' ||
     controlStatus === 'multiselect-unoverwritable'
 

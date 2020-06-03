@@ -18,24 +18,16 @@ input.icon-checkbox:checked {
   background-image: url('/editor/icons/icon-layout-arLock-locked-gray-16x16@2x.png');
 }
 
-input.icon-checkbox:checked.widget-status-controlled-nodegraph {
+input.icon-checkbox:checked.widget-status-controlled {
   background-image: url('/editor/icons/icon-layout-arLock-locked-blue-16x16@2x.png');
-}
-
-input.icon-checkbox:checked.widget-status-controlled-component {
-  background-image: url('/editor/icons/icon-layout-arLock-locked-purple-16x16@2x.png');
 }
 
 input.icon-checkbox:not(:checked) {
   background-image: url('/editor/icons/icon-layout-arLock-unlocked-gray-16x16@2x.png');
 }
 
-input.icon-checkbox:not(:checked).widget-status-controlled-nodegraph {
+input.icon-checkbox:not(:checked).widget-status-controlled {
   background-image: url('/editor/icons/icon-layout-arLock-unlocked-blue-16x16@2x.png');
-}
-
-input.icon-checkbox:not(:checked).widget-status-controlled-component {
-  background-image: url('/editor/icons/icon-layout-arLock-unlocked-purple-16x16@2x.png');
 }
 
 input.icon-checkbox:indeterminate {
