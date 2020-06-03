@@ -20,12 +20,7 @@ function evaluateJs(
   // evaluating the module code https://nodejs.org/api/modules.html#modules_the_module_wrapper
   SafeFunction(false, { require: requireFn, exports: exports, module: module }, moduleCode)()
 
-  if (module.exports !== exports) {
-    // module.exports has precedence, we overwrite the value of the exports object
-    exports = module.exports
-  }
-
-  return exports
+  return module.exports
 }
 
 function evaluateCss(
