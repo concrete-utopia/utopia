@@ -243,7 +243,14 @@ function renderComponentUsingJsxFactoryFunction(
       throw new Error(`Unable to find factory function ${factoryFunctionName} in scope.`)
     }
   }
-  return factoryFunction.call(null, type, props, ...children)
+  // This is disgusting, but we want to make sure that if there is only one child it isn't wrapped in an array,
+  // since that code that uses `React.Children.only`
+  const childrenToRender = children.map((innerChildren) =>
+    innerChildren != null && Array.isArray(innerChildren) && innerChildren.length === 1
+      ? innerChildren[0]
+      : innerChildren,
+  )
+  return factoryFunction.call(null, type, props, ...childrenToRender)
 }
 
 interface MutableUtopiaContextProps {
