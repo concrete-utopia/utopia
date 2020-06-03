@@ -17,8 +17,19 @@ function evaluateJs(
     exports: exports,
   }
 
+  // https://nodejs.org/api/process.html#process_process_env
+  let process = {
+    env: {
+      NODE_ENV: 'production',
+    },
+  }
+
   // evaluating the module code https://nodejs.org/api/modules.html#modules_the_module_wrapper
-  SafeFunction(false, { require: requireFn, exports: exports, module: module }, moduleCode)()
+  SafeFunction(
+    false,
+    { require: requireFn, exports: exports, module: module, process: process },
+    moduleCode,
+  )()
 
   return module.exports
 }
