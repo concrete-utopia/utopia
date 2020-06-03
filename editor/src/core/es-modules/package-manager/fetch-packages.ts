@@ -16,7 +16,8 @@ import { objectMap } from '../../shared/object-utils'
 import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
 import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
 
-let depPackagerCache: { [key: string]: NodeModules } = {}
+let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
+let jsDelivrCache: { [key: string]: JsdelivrResponse } = {}
 
 const PACKAGES_TO_SKIP = ['utopia-api', 'react', 'react-dom', 'uuiui', 'uuiui-deps']
 
@@ -51,31 +52,31 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
   const jsdelivrUrl = getJsDelivrListUrl(dep)
   let result: NodeModules = {}
   if (depPackagerCache[packagesUrl] != null) {
-    result = depPackagerCache[packagesUrl]
+    result = extractNodeModulesFromPackageResponse(depPackagerCache[packagesUrl])
   } else {
     const packagerResponse = await fetch(packagesUrl)
     if (packagerResponse.ok) {
       const resp = (await packagerResponse.json()) as PackagerServerResponse
+      depPackagerCache[packagesUrl] = resp
       const convertedResult = extractNodeModulesFromPackageResponse(resp)
-      depPackagerCache[packagesUrl] = convertedResult
       result = convertedResult
     }
   }
-  if (depPackagerCache[jsdelivrUrl] != null) {
+  if (jsDelivrCache[jsdelivrUrl] != null) {
     result = {
       ...result,
-      ...depPackagerCache[jsdelivrUrl],
+      ...extractNodeModulesFromJsdelivrResponse(dep.name, dep.version, jsDelivrCache[jsdelivrUrl]),
     }
   } else {
     const jsdelivrResponse = await fetch(jsdelivrUrl)
     if (jsdelivrResponse.ok) {
       const resp = (await jsdelivrResponse.json()) as JsdelivrResponse
+      jsDelivrCache[jsdelivrUrl] = resp
       const nodeModulesFromResp = extractNodeModulesFromJsdelivrResponse(
         dep.name,
         dep.version,
         resp,
       )
-      depPackagerCache[jsdelivrUrl] = nodeModulesFromResp
       result = {
         ...nodeModulesFromResp, // we are deliberately merging this as the lower priority
         ...result, // because if there's a real .js or .d.ts, that should win
