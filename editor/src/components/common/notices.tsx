@@ -33,16 +33,16 @@ interface NoticeProps extends Notice {
 }
 
 export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
-  let resultingStyle = UtopiaStyles.darkNoticeStyles.info
+  let resultingStyle = UtopiaStyles.noticeStyles.info
 
   if (level === 'WARNING') {
-    resultingStyle = UtopiaStyles.darkNoticeStyles.warning
+    resultingStyle = UtopiaStyles.noticeStyles.warning
   } else if (level === 'ERROR') {
-    resultingStyle = UtopiaStyles.darkNoticeStyles.error
+    resultingStyle = UtopiaStyles.noticeStyles.error
   } else if (level === 'SUCCESS') {
-    resultingStyle = UtopiaStyles.darkNoticeStyles.success
+    resultingStyle = UtopiaStyles.noticeStyles.success
   } else if (level === 'PRIMARY') {
-    resultingStyle = UtopiaStyles.darkNoticeStyles.primary
+    resultingStyle = UtopiaStyles.noticeStyles.primary
   }
   return resultingStyle
 }
@@ -56,10 +56,10 @@ export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
 export const Toast: React.FunctionComponent<NoticeProps> = (props) => (
   <div
     key={'toast-item'}
-    // className={'fadeout'}
+    className={'fadeout'}
     style={{
       ...getStylesForLevel(props.level || 'INFO'),
-      opacity: 1,
+      boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
       borderRadius: 3,
       overflowWrap: 'break-word',
       wordWrap: 'break-word',

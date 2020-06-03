@@ -511,7 +511,7 @@ const backgroundURLs = {
 
 // see type AlertLevel in editor-state.ts
 
-const darkNoticeStyles = {
+const noticeStyles = {
   success: { background: backgroundURLs.green, color: 'white' },
   info: { background: 'white', color: colorTheme.darkPrimary.value },
   primary: { background: backgroundURLs.blue, color: 'white' },
@@ -519,6 +519,15 @@ const darkNoticeStyles = {
   warning: { background: backgroundURLs.red, color: 'white' },
   error: { background: backgroundURLs.almostBlack, color: 'white' },
   disconnected: { background: backgroundURLs.noise, color: 'white' },
+}
+
+const shadowStyles = {
+  small: {
+    boxShadow: `0px 1p 3px 0px rgba(0,0,0,.2)`,
+  },
+  medium: {
+    boxShadow: '0px 2px 4px 1px rgba(0,0,0,0.2)',
+  },
 }
 
 const textBackgroundStyles = {
@@ -534,8 +543,9 @@ export const UtopiaStyles = {
   backgrounds: {
     ...backgroundURLs,
   },
-  darkNoticeStyles,
+  darkNoticeStyles: noticeStyles,
   textBackgroundStyles,
+  shadowStyles,
   input,
   flexRow,
   flexColumn,
