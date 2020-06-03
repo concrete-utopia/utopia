@@ -64,6 +64,7 @@ data ProductionServerResources = ProductionServerResources
                                , _redisConnection      :: Redis.Connection
                                , _registryManager      :: Manager
                                , _assetsCaches         :: AssetsCaches
+                               , _nodeSemaphore        :: QSem
                                }
 
 $(makeFieldsNoPrefix ''ProductionServerResources)
@@ -198,7 +199,8 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   AssetResultCache{..} <- liftIO $ readIORef _assetResultCache
   return $ action _editorMappings
 innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptPackageVersion action) = do
-  packagerContent <- liftIO $ getPackagerContent javascriptPackageName javascriptPackageVersion
+  semaphore <- fmap _nodeSemaphore ask
+  packagerContent <- liftIO $ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion
   return $ action packagerContent
 
 {-|
@@ -244,6 +246,7 @@ initialiseResources = do
   _redisConnection <- createRedisConnectionFromEnvironment
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
+  _nodeSemaphore <- newQSem 1
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop
