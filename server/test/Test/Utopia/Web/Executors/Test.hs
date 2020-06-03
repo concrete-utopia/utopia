@@ -28,6 +28,7 @@ initialiseTestResources = do
   redisConn <- createRedisConnectionFromEnvironment
   npmRegistryManager <- newManager tlsManagerSettings
   testAssetsCaches <- emptyAssetsCaches []
+  semaphoreForNode <- newQSem 1
   return $ DevServerResources
          { _commitHash = "nocommit"
          , _projectPool = pool
@@ -45,6 +46,7 @@ initialiseTestResources = do
          , _redisConnection = redisConn
          , _registryManager = npmRegistryManager
          , _assetsCaches = testAssetsCaches
+         , _nodeSemaphore = semaphoreForNode
          }
 
 testEnvironmentRuntime :: EnvironmentRuntime DevServerResources

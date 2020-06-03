@@ -1,0 +1,1 @@
+!node_modules #we need node modules for the test to work because it is testing the node module resolution algorithm

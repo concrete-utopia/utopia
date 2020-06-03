@@ -353,10 +353,10 @@ getPackageJSONEndpoint javascriptPackageName = do
 hashedAssetPathsEndpoint :: ServerMonad Value
 hashedAssetPathsEndpoint = getHashedAssetPaths
 
-packagePackagerEndpoint :: Text -> Text -> ServerMonad BL.ByteString
+packagePackagerEndpoint :: Text -> Text -> ServerMonad (Headers '[Header "Cache-Control" Text] BL.ByteString)
 packagePackagerEndpoint javascriptPackageName javascriptPackageVersionAndSuffix = do
   let javascriptPackageVersion = fromMaybe javascriptPackageVersionAndSuffix $ T.stripSuffix ".json" javascriptPackageVersionAndSuffix
-  getPackagePackagerContent javascriptPackageName javascriptPackageVersion
+  fmap (addHeader "public, immutable, max-age=86400") $ getPackagePackagerContent javascriptPackageName javascriptPackageVersion
 
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
