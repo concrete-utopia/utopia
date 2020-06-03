@@ -18,6 +18,7 @@ function evaluateJs(
   }
 
   // https://nodejs.org/api/process.html#process_process_env
+  // This is a hacky solution, ideally we'd want a transpiler / loader that replaces process.env.NODE_ENV with a user-defined value
   let process = {
     env: {
       NODE_ENV: 'production',
