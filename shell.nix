@@ -118,6 +118,7 @@ let
       #!/usr/bin/env bash
       set -e
       cabal-update
+      build-extract-requires
       ${pkgs.parallel}/bin/parallel --delay 10 --halt now,done=1 --line-buffer --tag ::: redis-server test-server-inner
     '')
   ];
