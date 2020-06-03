@@ -76,7 +76,6 @@ export const ControlStyleDefaults = {
 export type ControlStatus =
   | 'off' // nothing is selected on the canvas
   | 'simple' // this single-selected element's property is set in code literally
-  | 'simple-disabled' // special case for input props editor
   | 'simple-unknown-css' // this single-selected element's property is defined by a string or number that is not able to be successfully parsed
   | 'unset' // this single-selected element's property is not set in code literally, nor controlled
   | 'disabled' // this single-selected element's property is disabled due to some other style property or metadata (e.g. a hex string input for a border that is disabled)
@@ -88,12 +87,11 @@ export type ControlStatus =
   | 'multiselect-mixed-simple-or-unset' // all elements in the multi-selection are 'simple' or 'unset', with at least one non-identical value
   | 'multiselect-controlled' // at least one element in the multiselection is 'controlled', and the rest are 'simple', 'unset', or 'unknown-css'
   | 'multiselect-unoverwritable' // at least one element in the multi-selection is 'unoverwritable'
-  | 'multiselect-disabled' // at least one element in the multi-selection is 'disabled' or 'set-disabled'
+  | 'multiselect-disabled' // at least one element in the multi-selection is 'disabled'
 
 const AllControlStatuses: Array<ControlStatus> = [
   'off',
   'simple',
-  'simple-disabled',
   'simple-unknown-css',
   'unset',
   'disabled',
@@ -115,7 +113,6 @@ export function isControlledStatus(controlStatus: ControlStatus): boolean {
       return true
     case 'off':
     case 'simple':
-    case 'simple-disabled':
     case 'simple-unknown-css':
     case 'unset':
     case 'disabled':
@@ -157,9 +154,6 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
     switch (status) {
       case 'simple':
       case 'multiselect-identical-simple':
-        break
-      case 'simple-disabled':
-        interactive = false
         break
       case 'multiselect-mixed-simple-or-unset':
         set = false
