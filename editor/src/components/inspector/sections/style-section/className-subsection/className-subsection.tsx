@@ -9,6 +9,7 @@ import { GridRow } from '../../../widgets/grid-row'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorElementInfo } from '../../../common/property-path-hooks'
 import { styleFn } from 'react-select/src/styles'
+import { utopionsStyles } from '../../../../../experimental/pseudo-utopions-css'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<SelectOption>> = () =>
   null
@@ -72,7 +73,7 @@ const placeholder: styleFn = (base) => ({
   paddingRight: 6,
 })
 
-const menu: styleFn = () => ({ display: 'none' })
+const menu: styleFn = () => ({ zIndex: 999999, boxShadow: '0px 2px 4px 1px #00000022' })
 
 const ClassNameControl = betterReactMemo(
   'ClassNameControl',
@@ -120,15 +121,12 @@ const ClassNameControl = betterReactMemo(
         minWidth: 90,
         display: 'flex',
         alignItems: 'center',
-        '.className-inspector-control:hover &, &:focus-within': {
-          boxShadow: `inset 0 0 0 1px ${controlStyles.borderColor}`,
-        },
         '& input': {
-          fontFamily: 'Consolas, Menlo, monospace',
+          fontFamily: 'Inter',
           color: UtopiaTheme.color.emphasizedForeground.value,
         },
       }),
-      [controlStyles],
+      [],
     )
 
     const container: styleFn = React.useCallback(
@@ -136,6 +134,7 @@ const ClassNameControl = betterReactMemo(
         ...base,
         transform: valuesLength === 0 && !controlStyles.mixed ? 'translateX(-8px)' : undefined,
         minHeight: UtopiaTheme.layout.inputHeight.default,
+        backgroundColor: 'white',
         paddingTop: 2,
         paddingBottom: 2,
       }),
@@ -157,31 +156,29 @@ const ClassNameControl = betterReactMemo(
       }),
       [controlStyles],
     )
+    // the actual 'tag'
     const multiValue: styleFn = React.useCallback(
       (base, state) => ({
         label: 'multiValue',
-        fontFamily: 'Consolas, Menlo, monospace',
         color: UtopiaTheme.color.emphasizedForeground.value,
         borderRadius: UtopiaTheme.inputBorderRadius,
+        fontWeight: 600,
+        backgroundColor: '#FFD43E',
         display: 'flex',
         marginRight: 4,
         marginTop: 2,
         marginBottom: 2,
         minWidth: 0,
         height: UtopiaTheme.layout.inputHeight.small,
-        boxShadow: `inset 0 0 0 1px ${
-          state.isFocused
-            ? UtopiaTheme.color.inspectorFocusedColor.value
-            : controlStyles.borderColor
-        }`,
         overflow: 'hidden',
       }),
-      [controlStyles],
+      [],
     )
 
     return (
       <CreatableSelect
-        placeholder='Add class…'
+        isClearable
+        placeholder='add css class name'
         isMulti
         value={
           controlStyles.mixed
@@ -194,6 +191,7 @@ const ClassNameControl = betterReactMemo(
               ]
             : values
         }
+        options={utopionsStyles}
         isDisabled={!controlStyles.interactive}
         onChange={onChange}
         components={{
@@ -218,25 +216,22 @@ const ClassNameControl = betterReactMemo(
 )
 
 export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => {
-  const {
-    value,
-    onSubmitValue,
-    onUnsetValues,
-    controlStyles,
-    controlStatus,
-  } = useInspectorElementInfo('className')
+  const { value, onSubmitValue, onUnsetValues, controlStyles } = useInspectorElementInfo(
+    'className',
+  )
 
   const values: ReadonlyArray<SelectOption> =
     value === '' ? [] : value.split(' ').map((v) => ({ value: v, label: `.${v}` }))
 
-  const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
+  // const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 
   return (
     <Section>
-      <InspectorSubsectionHeader style={{ ...headerStyle, height: 22 }}>
-        Class names
-      </InspectorSubsectionHeader>
-      <GridRow padded type='<-------------1fr------------->' style={{ height: undefined }}>
+      <GridRow
+        padded
+        type='<-------------1fr------------->'
+        style={{ height: undefined, overflow: 'visible' }}
+      >
         <ClassNameControl
           values={values}
           controlStyles={controlStyles}

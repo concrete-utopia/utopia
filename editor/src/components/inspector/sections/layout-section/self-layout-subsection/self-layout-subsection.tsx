@@ -39,7 +39,6 @@ export const SelfLayoutSubsection = betterReactMemo(
 
     return (
       <>
-        <InspectorSubsectionHeader>Position and Dimensions</InspectorSubsectionHeader>
         <GridRow padded type='<-------------1fr------------->'>
           <LayoutTypePicker value={activeTab} setActiveTab={setActiveTab} />
         </GridRow>

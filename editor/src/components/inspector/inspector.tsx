@@ -368,6 +368,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         <React.Fragment>
           <AlignmentButtons numberOfTargets={instancePaths.length} />
           <div>{props.onSelect}</div>
+
           <HeaderSection
             elementPath={props.elementPath}
             onSelect={props.onSelect}
@@ -378,6 +379,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onUnwrap={props.onUnwrap}
             value={props.input.layoutWrapper}
           />
+          <ClassNameSubsection />
           <WarningSubsection />
 
           <RenderedLayoutSection
@@ -401,9 +403,9 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          <EventHandlersSection />
-          <ClassNameSubsection />
+
           <StyleSection />
+          <EventHandlersSection />
         </React.Fragment>
       )
     }
