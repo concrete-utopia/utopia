@@ -133,6 +133,14 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
+  parentIsFlex = (parentPath: TemplatePath | null | undefined): boolean => {
+    const parentInstance =
+      parentPath != null && TP.isInstancePath(parentPath)
+        ? MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, parentPath)
+        : null
+    return MetadataUtils.isFlexLayoutedContainer(parentInstance)
+  }
+
   onHover = (target: TemplatePath) => {
     // The goal of highlight in insert mode is to show which component will be the parent of the
     // newly inserted component. If the user already started to draw the new component, then we should
@@ -291,6 +299,7 @@ export class InsertModeControlContainer extends React.Component<
 
       const parentAttributes = this.getParentAttributes(this.props.highlightedViews[0])
       const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
+        this.parentIsFlex(this.props.highlightedViews[0]),
         parentAttributes,
         attributes,
         frame,
@@ -327,6 +336,7 @@ export class InsertModeControlContainer extends React.Component<
         const attributes = element.props
         const parentAttributes = this.getParentAttributes(this.props.highlightedViews[0])
         const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
+          this.parentIsFlex(this.props.highlightedViews[0]),
           parentAttributes,
           attributes,
           frame,
@@ -380,6 +390,7 @@ export class InsertModeControlContainer extends React.Component<
 
     const parentAttributes = this.getParentAttributes(this.props.highlightedViews[0])
     const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
+      this.parentIsFlex(this.props.highlightedViews[0]),
       parentAttributes,
       attributes,
       frame,
