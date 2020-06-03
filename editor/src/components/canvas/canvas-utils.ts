@@ -256,7 +256,7 @@ export function clearDragState(
 ): EditorState {
   let result: EditorState = model
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
-    const producedTransientCanvasState = produceCanvasTransientState(result)
+    const producedTransientCanvasState = produceCanvasTransientState(result, false)
     const producedTransientFileState = producedTransientCanvasState.fileState
     if (producedTransientFileState != null) {
       result = modifyOpenParseSuccess((success) => {
@@ -1070,7 +1070,15 @@ export function produceResizeCanvasTransientState(
   editorState: EditorState,
   parseSuccess: ParseSuccess,
   dragState: ResizeDragState,
+  preventAnimations: boolean,
 ): TransientCanvasState {
+  const elementsToTarget = determineElementsToOperateOnForDragging(
+    dragState.draggedElements,
+    editorState.jsxMetadataKILLME,
+    false,
+    true,
+  )
+
   const newSize = calculateNewBounds(editorState, dragState)
   let framesAndTargets: Array<PinOrFlexFrameChange> = []
   let globalFrames: Array<CanvasRectangle> = []
@@ -1084,41 +1092,41 @@ export function produceResizeCanvasTransientState(
   if (boundingBox == null) {
     return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null)
   } else {
-    Utils.fastForEach(
-      determineElementsToOperateOnForDragging(
-        dragState.draggedElements,
-        editorState.jsxMetadataKILLME,
-        false,
-        true,
-      ),
-      (target) => {
-        const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, target)
-        if (originalFrame != null) {
-          const newTargetFrame = Utils.transformFrameUsingBoundingBox(
-            newSize,
-            boundingBox,
-            originalFrame,
-          )
-          const roundedFrame = {
-            x: Math.floor(newTargetFrame.x),
-            y: Math.floor(newTargetFrame.y),
-            width: Math.ceil(newTargetFrame.width),
-            height: Math.ceil(newTargetFrame.height),
-          } as CanvasRectangle
-          const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-            target,
-            editorState.jsxMetadataKILLME,
-          )
-          if (isFlexContainer) {
-            framesAndTargets.push(flexResizeChange(target, roundedFrame, dragState.edgePosition))
-          } else {
-            framesAndTargets.push(pinFrameChange(target, roundedFrame, dragState.edgePosition))
-          }
+    Utils.fastForEach(elementsToTarget, (target) => {
+      const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, target)
+      if (originalFrame != null) {
+        const newTargetFrame = Utils.transformFrameUsingBoundingBox(
+          newSize,
+          boundingBox,
+          originalFrame,
+        )
+        const roundedFrame = {
+          x: Math.floor(newTargetFrame.x),
+          y: Math.floor(newTargetFrame.y),
+          width: Math.ceil(newTargetFrame.width),
+          height: Math.ceil(newTargetFrame.height),
+        } as CanvasRectangle
+        const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+          target,
+          editorState.jsxMetadataKILLME,
+        )
+        if (isFlexContainer) {
+          framesAndTargets.push(flexResizeChange(target, roundedFrame, dragState.edgePosition))
+        } else {
+          framesAndTargets.push(pinFrameChange(target, roundedFrame, dragState.edgePosition))
         }
-      },
-    )
+      }
+    })
 
-    const openComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+    // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
+    const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+    const openComponents = preventAnimations
+      ? preventAnimationsOnTargets(
+          untouchedOpenComponents,
+          editorState.jsxMetadataKILLME,
+          elementsToTarget,
+        )
+      : untouchedOpenComponents
 
     const componentsIncludingFakeUtopiaScene = openComponents
 
@@ -1143,7 +1151,10 @@ export function produceResizeCanvasTransientState(
   }
 }
 
-export function produceCanvasTransientState(editorState: EditorState): TransientCanvasState {
+export function produceCanvasTransientState(
+  editorState: EditorState,
+  preventAnimations: boolean,
+): TransientCanvasState {
   function noFileTransientCanvasState(): TransientCanvasState {
     return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
   }
@@ -1219,9 +1230,19 @@ export function produceCanvasTransientState(editorState: EditorState): Transient
               const dragState = editorState.canvas.dragState
               switch (dragState.type) {
                 case 'MOVE_DRAG_STATE':
-                  return produceMoveTransientCanvasState(editorState, dragState, parseSuccess)
+                  return produceMoveTransientCanvasState(
+                    editorState,
+                    dragState,
+                    parseSuccess,
+                    preventAnimations,
+                  )
                 case 'RESIZE_DRAG_STATE':
-                  return produceResizeCanvasTransientState(editorState, parseSuccess, dragState)
+                  return produceResizeCanvasTransientState(
+                    editorState,
+                    parseSuccess,
+                    dragState,
+                    preventAnimations,
+                  )
 
                 case 'INSERT_DRAG_STATE':
                   throw new Error(`Unable to use insert drag state in select mode.`)
@@ -1596,26 +1617,73 @@ export function moveTemplate(
   }
 }
 
+function preventAnimationsOnTargets(
+  components: UtopiaJSXComponent[],
+  metadata: ComponentMetadata[],
+  targets: TemplatePath[],
+): UtopiaJSXComponent[] {
+  let workingComponentsResult = [...components]
+  Utils.fastForEach(targets, (target) => {
+    const staticPath = TP.isScenePath(target)
+      ? createSceneTemplatePath(target)
+      : MetadataUtils.dynamicPathToStaticPath(metadata, target)
+    if (staticPath != null) {
+      workingComponentsResult = transformJSXComponentAtPath(
+        workingComponentsResult,
+        staticPath,
+        (element) => {
+          const styleUpdated = setJSXValuesAtPaths(element.props, [
+            {
+              path: PP.create(['style', 'transition']),
+              value: jsxAttributeValue('none'),
+            },
+          ])
+          return foldEither(
+            () => element,
+            (updatedProps) => {
+              return {
+                ...element,
+                props: updatedProps,
+              }
+            },
+            styleUpdated,
+          )
+        },
+      )
+    }
+  })
+  return workingComponentsResult
+}
+
 function produceMoveTransientCanvasState(
   editorState: EditorState,
   dragState: MoveDragState,
   parseSuccess: ParseSuccess,
+  preventAnimations: boolean,
 ): TransientCanvasState {
-  let utopiaComponentsIncludingScenes: Array<UtopiaJSXComponent> = getUtopiaJSXComponentsFromSuccess(
-    parseSuccess,
-  )
   let selectedViews: Array<TemplatePath> = dragState.draggedElements
   let metadata: Array<ComponentMetadata> = editorState.jsxMetadataKILLME
   let originalFrames: Array<CanvasFrameAndTarget> = dragState.originalFrames
   let highlightedViews: Array<TemplatePath> = editorState.highlightedViews
 
+  const elementsToTarget = determineElementsToOperateOnForDragging(
+    selectedViews,
+    metadata,
+    true,
+    false,
+  )
+
+  // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
+  const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+  let utopiaComponentsIncludingScenes = preventAnimations
+    ? preventAnimationsOnTargets(
+        untouchedOpenComponents,
+        editorState.jsxMetadataKILLME,
+        elementsToTarget,
+      )
+    : untouchedOpenComponents
+
   if (dragState.reparent) {
-    const elementsToTarget = determineElementsToOperateOnForDragging(
-      selectedViews,
-      metadata,
-      true,
-      false,
-    )
     const reparentTarget = getReparentTarget(
       editorState,
       elementsToTarget,
@@ -1656,11 +1724,7 @@ function produceMoveTransientCanvasState(
     }
   } else if (dragState.duplicate) {
     const parentTarget = MetadataUtils.getDuplicationParentTargets(selectedViews)
-    const duplicateResult = duplicate(
-      determineElementsToOperateOnForDragging(selectedViews, metadata, true, false),
-      parentTarget,
-      editorState,
-    )
+    const duplicateResult = duplicate(elementsToTarget, parentTarget, editorState)
     if (duplicateResult != null) {
       utopiaComponentsIncludingScenes = duplicateResult.utopiaComponents
       selectedViews = duplicateResult.selectedViews

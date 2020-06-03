@@ -854,7 +854,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(editorState),
+      transientState: produceCanvasTransientState(editorState, false),
     },
   }
 }
@@ -1074,7 +1074,7 @@ export function deriveState(
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
-      transientState: produceCanvasTransientState(editor),
+      transientState: produceCanvasTransientState(editor, true),
     },
   }
 

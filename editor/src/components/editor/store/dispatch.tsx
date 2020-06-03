@@ -447,18 +447,17 @@ function editorDispatchInner(
     // IMPORTANT This code assumes only a single ui file can be open at a time. If we ever want to
     // support multiple ui files side by side in a multi-tabbed view we'll need to rethink
     // how and where we store the jsx metadata
-    const isNewUiFileSelected =
-      fileTypeFromFileName(getOpenFilename(result.editor)) === 'UI_JS_FILE'
+    const isUiJsFileSelected = fileTypeFromFileName(getOpenFilename(result.editor)) === 'UI_JS_FILE'
     let spyResult: ComponentMetadata[]
 
-    if (isNewUiFileSelected) {
+    if (isUiJsFileSelected) {
       // Needs to run here as changes may have been made which need to be reflected in the
       // spy result, which only runs if the canvas props are determined to have changed.
       result.derived = {
         ...result.derived,
         canvas: {
           ...result.derived.canvas,
-          transientState: produceCanvasTransientState(result.editor),
+          transientState: produceCanvasTransientState(result.editor, true),
         },
       }
 

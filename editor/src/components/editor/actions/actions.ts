@@ -940,7 +940,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
-      transientState: produceCanvasTransientState(history.current.editor),
+      transientState: produceCanvasTransientState(history.current.editor, true),
     },
   }
 }
