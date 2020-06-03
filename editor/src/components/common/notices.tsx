@@ -54,15 +54,19 @@ export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
  * **Level**: see NoticeLevel jsdoc
  */
 export const Toast: React.FunctionComponent<NoticeProps> = (props) => (
-  <FlexRow
+  <div
     key={'toast-item'}
-    className={'fadeout'}
+    // className={'fadeout'}
     style={{
       ...getStylesForLevel(props.level || 'INFO'),
       opacity: 1,
       borderRadius: 3,
-      maxWidth: 200,
-      overflow: 'wrap',
+      overflowWrap: 'break-word',
+      wordWrap: 'break-word',
+      hyphens: 'auto',
+      whiteSpace: 'normal',
+      maxWidth: 400,
+      width: 400,
       padding: 12,
       fontWeight: 500,
       letterSpacing: 0.2,
@@ -70,7 +74,7 @@ export const Toast: React.FunctionComponent<NoticeProps> = (props) => (
     }}
   >
     {props.message}
-  </FlexRow>
+  </div>
 )
 
 /**
