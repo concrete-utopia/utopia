@@ -30,7 +30,7 @@ function extractNodeModulesFromJsdelivrResponse(
   version: string,
   response: JsdelivrResponse,
 ): NodeModules {
-  const filteredFiles = response.files.filter((file) => file.name.endsWith('.css'))
+  const filteredFiles = response.files
   return mapArrayToDictionary(
     filteredFiles,
     (file) => `/node_modules/${packageName}${file.name}`,
