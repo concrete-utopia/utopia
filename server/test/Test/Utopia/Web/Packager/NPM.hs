@@ -2,7 +2,7 @@
 
 module Test.Utopia.Web.Packager.NPM where
 
-import qualified Data.HashMap.Strict     as Map
+-- import qualified Data.HashMap.Strict     as Map
 import           Protolude
 import           System.Directory
 import           System.FilePath
