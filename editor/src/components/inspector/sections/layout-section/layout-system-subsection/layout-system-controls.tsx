@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import * as PP from '../../../../../core/shared/property-path'
 import { betterReactMemo } from 'uuiui-deps'
-import { OptionChainControl } from '../../../controls/option-chain-control'
+import { OptionChainControl } from '../../../controls/segment-control'
 import {
   useInspectorLayoutInfo,
   InspectorCallbackContext,

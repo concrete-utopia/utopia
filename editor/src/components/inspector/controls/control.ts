@@ -1,4 +1,4 @@
-import { OptionChainOption } from './option-chain-control'
+import { OptionChainOption } from './segment-control'
 import { OptionControlOptions } from './option-control'
 import { SelectControlOptions, SelectOption } from './select-control'
 import { SliderControlOptions } from './slider-control'

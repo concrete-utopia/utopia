@@ -3,7 +3,7 @@ import { betterReactMemo } from 'uuiui-deps'
 import { InstancePath } from '../../../../core/shared/project-file-types'
 import { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import { showToast, updateFrameDimensions } from '../../../editor/actions/actions'
-import { OptionChainControl } from '../../controls/option-chain-control'
+import { OptionChainControl } from '../../controls/segment-control'
 import { getControlStyles } from '../../common/control-status'
 
 interface ImageDensityControl {

@@ -9,7 +9,7 @@ import {
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { FlexDirection } from 'utopia-api'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl, OptionChainOption } from '../../../controls/segment-control'
 import { SliderControl, SliderControlOptions } from '../../../controls/slider-control'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { betterReactMemo, OnSubmitValueOrEmpty } from 'uuiui-deps'

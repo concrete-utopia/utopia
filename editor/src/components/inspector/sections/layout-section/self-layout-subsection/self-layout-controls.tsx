@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { betterReactMemo } from 'uuiui-deps'
-import { OptionChainControl } from '../../../controls/option-chain-control'
+import { OptionChainControl } from '../../../controls/segment-control'
 import { useInspectorLayoutInStyleInfo_UNSAFE } from '../../../common/property-path-hooks'
 import { SelfLayoutTab } from './self-layout-subsection'
 import { getControlStyles } from '../../../common/control-status'

@@ -18,7 +18,7 @@ import { useRefEditorState } from '../../../../editor/store/store-hook'
 import * as PP from '../../../../../core/shared/property-path'
 import { measureTextFieldNew } from '../../../../text-utils'
 import { ColorControl } from '../../../controls/color-control'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl, OptionChainOption } from '../../../controls/segment-control'
 import { OptionControl } from '../../../controls/option-control'
 import { SelectControl, SelectOption } from '../../../controls/select-control'
 import {

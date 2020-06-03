@@ -5,7 +5,7 @@ import { useWrappedEmptyOnSubmitValue } from '../../../../uuiui'
 import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
 import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
 import { useInspectorLayoutInfo } from '../../common/property-path-hooks'
-import { OptionChainControl, OptionChainOption } from '../../controls/option-chain-control'
+import { OptionChainControl, OptionChainOption } from '../../controls/segment-control'
 import { PropertyRow } from '../../widgets/property-row'
 import {
   FlexAlignContentControl,

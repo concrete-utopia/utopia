@@ -10,7 +10,7 @@ import {
 } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl, OptionChainOption } from '../../../controls/segment-control'
 
 const overflowProp = [PP.create(['style', 'overflow'])]
 

@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import { SelectOption, SelectControl } from '../../../controls/select-control'
-import { OptionChainOption, OptionChainControl } from '../../../controls/option-chain-control'
+import { OptionChainOption, OptionChainControl } from '../../../controls/segment-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
