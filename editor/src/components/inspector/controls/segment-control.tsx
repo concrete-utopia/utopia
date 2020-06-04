@@ -1,3 +1,5 @@
+/** @jsx jsx */
+import { jsx } from '@emotion/core'
 import * as React from 'react'
 import { animated, useSpring } from 'react-spring'
 import { UtopiaTheme } from 'uuiui'
@@ -31,7 +33,6 @@ export const SegmentControl = <T extends string | number>(props: SegmentControlP
     position: 'absolute',
     left: `${selectedIndex * (100 / options.length)}%`,
     backgroundColor: props.controlStyles.segmentSelectorColor,
-    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 0px rgba(0, 0, 0, 0.05)',
     borderRadius: 2,
   } as React.CSSProperties)
 
@@ -47,11 +48,18 @@ export const SegmentControl = <T extends string | number>(props: SegmentControlP
       }}
     >
       <div
-        style={{
+        className='segment-control-track'
+        css={{
           width: '100%',
           height: UtopiaTheme.layout.inputHeight.tall,
-          backgroundColor: props.controlStyles.segmentTrackColor,
+          boxShadow: props.controlStyles.set
+            ? `0 0 0 1px ${props.controlStyles.borderColor} inset`
+            : undefined,
+          ':hover': {
+            boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
+          },
           alignItems: 'center',
+          borderRadius: UtopiaTheme.inputBorderRadius,
         }}
       >
         <div
@@ -78,6 +86,7 @@ export const SegmentControl = <T extends string | number>(props: SegmentControlP
                 option={option}
                 selected={selectedIndex === index}
                 onSubmitValue={props.onSubmitValue}
+                controlStyles={props.controlStyles}
               />
             ))}
           </div>
