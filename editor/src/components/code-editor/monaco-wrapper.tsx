@@ -685,7 +685,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
     }
 
     const changeRange = lastChange.range
-    const textChangeArray = lastChange.text.split(/[\n\r]/g)
+    const textChangeArray = lastChange.text.replace(/(\\n)/g, '').split(/[\n\r]/g)
     const textChangeNewLines = textChangeArray.length - 1
     const textChangeEndLineNumber = changeRange.startLineNumber + textChangeNewLines
     const textChangeEndColumnNumber =
