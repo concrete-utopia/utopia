@@ -41,7 +41,7 @@ describe('Layout Section', () => {
           aspectRatioLocked={false}
           parentFlexAxis={null}
           toggleAspectRatioLock={toggleAspectRatioLock}
-          isFlexComponent={false}
+          layoutSystem={null}
           position='static'
           input={{
             frame: {

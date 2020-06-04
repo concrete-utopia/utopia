@@ -75,6 +75,12 @@ let
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
 
   serverBaseScripts = [
+    (pkgs.writeScriptBin "build-extract-requires" ''
+      #!/usr/bin/env bash
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/packager-servers/extract-requires
+      ${node}/bin/npm install
+      ${node}/bin/npm run build
+    '')
     (pkgs.writeScriptBin "rebuild-cabal" ''
       #!/usr/bin/env bash
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
@@ -96,12 +102,14 @@ let
     (pkgs.writeScriptBin "test-server" ''
       #!/usr/bin/env bash
       set -e
+      build-extract-requires
       cabal-update
       test-server-inner
     '')
     (pkgs.writeScriptBin "watch-tests" ''
       #!/usr/bin/env bash
       set -e
+      build-extract-requires
       cabal-update
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch test --watch package.yaml --exec test-server-inner
@@ -110,6 +118,7 @@ let
       #!/usr/bin/env bash
       set -e
       cabal-update
+      build-extract-requires
       ${pkgs.parallel}/bin/parallel --delay 10 --halt now,done=1 --line-buffer --tag ::: redis-server test-server-inner
     '')
   ];
@@ -203,12 +212,14 @@ let
     (pkgs.writeScriptBin "run-server" ''
       #!/usr/bin/env bash
       set -e
+      build-extract-requires
       cabal-update
       run-server-inner
     '')
     (pkgs.writeScriptBin "watch-server" ''
       #!/usr/bin/env bash
       set -e
+      build-extract-requires
       cabal-update
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
@@ -322,6 +333,7 @@ let
   packagerRunPackages = [
     pkgs.yarn
     pkgs.mongodb
+    pkgs.python
   ];
 
   releasePackages = [

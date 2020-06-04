@@ -21,6 +21,7 @@ import {
   jsxAttributeValue,
   JSXElement,
   JSXElementName,
+  DetectedLayoutSystem,
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
@@ -90,7 +91,7 @@ import {
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
-  isFlexComponent: boolean
+  layoutSystem: DetectedLayoutSystem | null
   isChildOfFlexComponent: boolean
   position: CSSPosition
   layoutWrapper: null | LayoutWrapper
@@ -229,7 +230,7 @@ AlignmentButtons.displayName = 'AlignmentButtons'
 interface RenderedLayoutSectionProps {
   layout: any
   anyHTMLElements: boolean
-  isFlexComponent: boolean
+  layoutSystem: DetectedLayoutSystem | null
   isChildOfFlexComponent: boolean
   hasNonDefaultPositionAttributes: boolean
   parentFlexAxis: 'horizontal' | 'vertical' | null
@@ -248,7 +249,7 @@ const RenderedLayoutSection = betterReactMemo<RenderedLayoutSectionProps>(
         <LayoutSection
           input={props.layout}
           parentFlexAxis={props.parentFlexAxis}
-          isFlexComponent={props.isFlexComponent}
+          layoutSystem={props.layoutSystem}
           isChildOfFlexComponent={props.isChildOfFlexComponent}
           hasNonDefaultPositionAttributes={props.hasNonDefaultPositionAttributes}
           aspectRatioLocked={props.aspectRatioLocked}
@@ -380,7 +381,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
           <RenderedLayoutSection
             anyHTMLElements={anyHTMLElements}
             layout={props.input.layout}
-            isFlexComponent={props.input.isFlexComponent}
+            layoutSystem={props.input.layoutSystem}
             isChildOfFlexComponent={props.input.isChildOfFlexComponent}
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             parentFlexAxis={props.input.parentFlexAxis}
@@ -460,7 +461,7 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
     })
 
     let inspectorModel: InspectorModel = {
-      isFlexComponent: false,
+      layoutSystem: null,
       isChildOfFlexComponent: false,
       position: 'static',
       layoutWrapper: null,
@@ -552,7 +553,8 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
           const elementName = jsxElement.name.baseVariable
           inspectorModel.type = elementName
 
-          inspectorModel.isFlexComponent = MetadataUtils.isFlexLayoutedContainer(elementMetadata)
+          inspectorModel.layoutSystem =
+            elementMetadata.specialSizeMeasurements.layoutSystemForChildren
 
           inspectorModel.position = elementMetadata.specialSizeMeasurements.position
 
