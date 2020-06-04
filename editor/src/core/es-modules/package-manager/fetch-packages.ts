@@ -64,8 +64,8 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
   }
   if (jsDelivrCache[jsdelivrUrl] != null) {
     result = {
-      ...result,
       ...extractNodeModulesFromJsdelivrResponse(dep.name, dep.version, jsDelivrCache[jsdelivrUrl]),
+      ...result,
     }
   } else {
     const jsdelivrResponse = await fetch(jsdelivrUrl)
