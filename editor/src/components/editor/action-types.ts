@@ -597,6 +597,7 @@ export interface AddUIJSFile {
 
 export interface AddCodeFile {
   action: 'ADD_CODE_FILE'
+  fileName: string
   parentPath: string
 }
 
