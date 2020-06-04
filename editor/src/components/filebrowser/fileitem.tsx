@@ -49,7 +49,7 @@ interface FileBrowserItemState {
   isRenaming: boolean
   isHovered: boolean
   isAddingChild: boolean
-  isAddingChildName: string
+  addingChildName: string
   isAddingChildNameValid: boolean
   // we need the following to keep track of 'internal' exits,
   // eg when moving from the outer folder div to a span with the folder name inside it
@@ -213,7 +213,7 @@ class FileBrowserItemInner extends React.PureComponent<
       isRenaming: false,
       isHovered: false,
       isAddingChild: false,
-      isAddingChildName: '',
+      addingChildName: '',
       isAddingChildNameValid: true,
       currentExternalFilesDragEventCounter: 0,
       externalFilesDraggedIn: false,
@@ -424,7 +424,7 @@ class FileBrowserItemInner extends React.PureComponent<
   addCodeFile = () => {
     this.props.Expand(this.props.path)
     this.props.dispatch(
-      [EditorActions.addCodeFile(this.props.path, this.state.isAddingChildName)],
+      [EditorActions.addCodeFile(this.props.path, this.state.addingChildName)],
       'everyone',
     )
   }
@@ -572,6 +572,46 @@ class FileBrowserItemInner extends React.PureComponent<
     })
   }
 
+  showAddingFileRow = () =>
+    this.setState({
+      isAddingChild: true,
+      isAddingChildNameValid: true,
+      addingChildName: '',
+    })
+
+  confirmAddingFile = () => {
+    this.props.Expand(this.props.path)
+    this.props.dispatch(
+      [EditorActions.addCodeFile(this.props.path, this.state.addingChildName)],
+      'everyone',
+    )
+    this.setState({
+      isAddingChild: false,
+      addingChildName: '',
+      isAddingChildNameValid: true,
+    })
+  }
+
+  inputLabelChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ addingChildName: event.target.value })
+  }
+
+  abandonAddingFile = () =>
+    this.setState({
+      isAddingChild: false,
+      isAddingChildNameValid: true,
+      addingChildName: '',
+    })
+
+  inputLabelKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      this.confirmAddingFile()
+    }
+    if (event.key === 'Escape') {
+      this.abandonAddingFile()
+    }
+  }
+
   render() {
     const isCurrentDropTargetForInternalFiles =
       this.props.isOver && this.props.fileType === 'DIRECTORY'
@@ -609,46 +649,6 @@ class FileBrowserItemInner extends React.PureComponent<
     const displayAddCodeFile =
       this.state.isHovered && this.props.fileType != null && this.props.fileType === 'DIRECTORY'
     const displayDelete = this.state.isHovered
-
-    const showAddingFileRow = () =>
-      this.setState({
-        isAddingChild: true,
-        isAddingChildNameValid: true,
-        isAddingChildName: '',
-      })
-
-    const confirmAddingFile = () => {
-      this.props.Expand(this.props.path)
-      this.props.dispatch(
-        [EditorActions.addCodeFile(this.props.path, this.state.isAddingChildName)],
-        'everyone',
-      )
-      this.setState({
-        isAddingChild: false,
-        isAddingChildName: '',
-        isAddingChildNameValid: true,
-      })
-    }
-
-    const inputLabelChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      this.setState({ isAddingChildName: event.target.value })
-    }
-
-    const abandonAddingFile = () =>
-      this.setState({
-        isAddingChild: false,
-        isAddingChildNameValid: true,
-        isAddingChildName: '',
-      })
-
-    const inputLabelKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === 'Enter') {
-        confirmAddingFile()
-      }
-      if (event.key === 'Escape') {
-        abandonAddingFile()
-      }
-    }
 
     let fileBrowserItem = (
       <div>
@@ -703,7 +703,7 @@ class FileBrowserItemInner extends React.PureComponent<
                 </Button>
               ) : null}
               {displayAddCodeFile ? (
-                <Button style={{ marginRight: '2px' }} onClick={showAddingFileRow}>
+                <Button style={{ marginRight: '2px' }} onClick={this.showAddingFileRow}>
                   <Icons.NewCodeFile style={fileIconStyle} tooltipText='Add Code File' />
                 </Button>
               ) : null}
@@ -734,11 +734,11 @@ class FileBrowserItemInner extends React.PureComponent<
             }}
           >
             <StringInput
-              value={this.state.isAddingChildName}
+              value={this.state.addingChildName}
               autoFocus
-              onKeyDown={inputLabelKeyDown}
-              onChange={inputLabelChange}
-              onBlur={abandonAddingFile}
+              onKeyDown={this.inputLabelKeyDown}
+              onChange={this.inputLabelChange}
+              onBlur={this.abandonAddingFile}
             />
           </SimpleFlexRow>
         ) : null}
