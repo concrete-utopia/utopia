@@ -107,7 +107,7 @@ const interactionOptions = interactionClasses.map((x) => assembleOption(x, x, '#
 const shadowOptions = shadowClasses.map((x) => assembleOption(x, x, '#ff00ff'))
 const layoutOptions = layoutClasses.map((x) => assembleOption(x, x, '#00aaff'))
 
-export const utopionsStyles = [
+export const utopionsStylesOptions = [
   ...layoutOptions,
   ...backgroundOptions,
   ...shadowOptions,

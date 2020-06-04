@@ -1,15 +1,16 @@
-import * as React from 'react'
+import { ObjectInterpolation } from '@emotion/core'
 import * as Chroma from 'chroma-js'
+import * as React from 'react'
 import { ValueType } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
-import { UNSAFE_getIconURL, Section, UtopiaTheme, UtopiaStyles } from 'uuiui'
-import { betterReactMemo, SelectOption, Utils, ControlStyles } from 'uuiui-deps'
-import { GridRow } from '../../../widgets/grid-row'
-import { useInspectorElementInfo } from '../../../common/property-path-hooks'
 import { styleFn } from 'react-select/src/styles'
-import { utopionsStyles } from '../../../../../experimental/pseudo-utopions-css'
+import { Section, UNSAFE_getIconURL, UtopiaTheme } from 'uuiui'
+import { betterReactMemo, ControlStyles, SelectOption, Utils } from 'uuiui-deps'
+import { utopionsStylesOptions } from '../../../../../experimental/pseudo-utopions-css'
+import { useInspectorElementInfo } from '../../../common/property-path-hooks'
+import { GridRow } from '../../../widgets/grid-row'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<SelectOption>> = () =>
   null
@@ -26,14 +27,15 @@ interface ClassNameControlProps<T extends string> {
 }
 
 // a row in the dropdown
-const option: styleFn = (styles, { data, isDisabled, isFocused, isSelected }) => {
+const option = (((
+  styles: ObjectInterpolation<any>,
+  { data, isDisabled, isFocused, isSelected }: any,
+): ObjectInterpolation<any> => {
   let color = Chroma('red')
   try {
     color = Chroma(data.color)
   } catch (err) {
     color = Chroma('green')
-    // eslint-disable-next-line no-console
-    console.log(err)
   }
   return {
     ...styles,
@@ -52,14 +54,12 @@ const option: styleFn = (styles, { data, isDisabled, isFocused, isSelected }) =>
         : 'black'
       : data.color,
     cursor: isDisabled ? 'not-allowed' : 'default',
-
     ':active': {
-      // @ts-ignore
       ...styles[':active'],
       backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
     },
   }
-}
+}) as unknown) as styleFn
 
 // the outer container for the chiclets / text entry
 const valueContainer: styleFn = (base) => ({
@@ -70,28 +70,22 @@ const valueContainer: styleFn = (base) => ({
 })
 
 // chiclet
-const multiValue: styleFn = (base, { data }) => {
-  // eslint-disable-next-line no-console
-  console.log('loading: ', data.color)
-
-  return {
-    ...base,
-    border: '1px solid black',
-    backgroundColor: data.color,
-    label: 'multiValue',
-    display: 'flex',
-    borderRadius: UtopiaTheme.inputBorderRadius,
-    marginRight: 4,
-    marginTop: 2,
-    marginBottom: 2,
-    minWidth: 0,
-    height: UtopiaTheme.layout.inputHeight.small,
-    overflow: 'hidden',
-    fontWeight: 600,
-    color: data.color,
-    fontSize: 10,
-  }
-}
+const multiValue: styleFn = (base, { data }) => ({
+  label: 'multiValue',
+  color: UtopiaTheme.color.emphasizedForeground.value,
+  borderRadius: UtopiaTheme.inputBorderRadius,
+  fontWeight: 600,
+  backgroundColor: data.color,
+  display: 'flex',
+  marginRight: 4,
+  marginTop: 2,
+  marginBottom: 2,
+  minWidth: 0,
+  height: UtopiaTheme.layout.inputHeight.small,
+  overflow: 'hidden',
+  border: '1px solid black',
+  fontSize: 10,
+})
 
 // label inside chiclet
 const multiValueLabel: styleFn = (base) => ({
@@ -147,6 +141,11 @@ const ClassNameControl = betterReactMemo(
     onSubmitValue,
     onUnsetValues,
   }: ClassNameControlProps<T>) => {
+    const optionsMappedValues = values.map((value) => {
+      const match = utopionsStylesOptions.find((element) => element.value === value.value)
+      return match ?? value
+    })
+
     const onChange = React.useCallback(
       (newValues: ValueType<SelectOption>) => {
         if (Array.isArray(newValues) && newValues.length > 0) {
@@ -237,9 +236,9 @@ const ClassNameControl = betterReactMemo(
                   style: { fontFamily: controlStyles.fontStyle },
                 },
               ]
-            : values
+            : optionsMappedValues
         }
-        options={utopionsStyles}
+        options={utopionsStylesOptions}
         isDisabled={!controlStyles.interactive}
         onChange={onChange}
         components={{
