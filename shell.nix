@@ -333,6 +333,7 @@ let
   packagerRunPackages = [
     pkgs.yarn
     pkgs.mongodb
+    pkgs.python
   ];
 
   releasePackages = [
