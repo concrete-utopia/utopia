@@ -1,4 +1,4 @@
-import { OptionChainOption } from './segment-control'
+import { SegmentOption } from './segment-control'
 import { OptionControlOptions } from './option-control'
 import { SelectControlOptions, SelectOption } from './select-control'
 import { SliderControlOptions } from './slider-control'
@@ -18,14 +18,14 @@ export interface ControlProps<T> {
   id: string
   key: string
   value: T
-  onSubmitValue: OnSubmitValue<T>
-  onTransientSubmitValue?: OnSubmitValue<T>
-  onForcedSubmitValue?: OnSubmitValue<T>
+  onSubmitValue: OnSubmitValue<NonNullable<T>>
+  onTransientSubmitValue?: OnSubmitValue<NonNullable<T>>
+  onForcedSubmitValue?: OnSubmitValue<NonNullable<T>>
   controlStatus: ControlStatus
   controlStyles: ControlStyles
   readOnly?: boolean
   selected?: boolean
-  options?: ReadonlyArray<SelectOption> | ReadonlyArray<OptionChainOption<T>>
+  options?: ReadonlyArray<SelectOption> | ReadonlyArray<SegmentOption>
   controlOptions?:
     | GenericControlOptions
     | OptionControlOptions

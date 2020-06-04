@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { betterReactMemo } from 'uuiui-deps'
 import Utils from '../../../../utils/utils'
-import { useWrappedEmptyOnSubmitValue } from '../../../../uuiui'
+import { useWrappedEmptyOnSubmitValue, Icn } from '../../../../uuiui'
 import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
 import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
 import { useInspectorLayoutInfo } from '../../common/property-path-hooks'
-import { OptionChainControl, OptionChainOption } from '../../controls/segment-control'
+import { SegmentControl, SegmentOption } from '../../controls/segment-control'
 import { PropertyRow } from '../../widgets/property-row'
 import {
   FlexAlignContentControl,
@@ -16,6 +16,7 @@ import {
   FlexWrapControl,
   getDirectionAwareLabels,
 } from '../layout-section/flex-container-subsection/flex-container-controls'
+import { LayoutSystem } from 'utopia-api'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -154,11 +155,10 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
             gridColumn: '1 / span 6',
           }}
         >
-          <OptionChainControl
+          <SegmentControl
             id={'layoutSystem'}
-            key={'layoutSystem'}
             onSubmitValue={layoutSystemMetadata.onSubmitValue}
-            value={layoutSystemMetadata.value ?? 'pinSystem'}
+            value={layoutSystemMetadata.value ?? LayoutSystem.PinSystem}
             options={getLayoutSystemOptions()}
             controlStatus={simpleControlStatus}
             controlStyles={simpleControlStyles}
@@ -172,31 +172,26 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
 
 SceneContainerSections.displayName = 'SceneContainerSections'
 
-function getLayoutSystemOptions(): Array<OptionChainOption<string>> {
+function getLayoutSystemOptions(): Array<SegmentOption<LayoutSystem>> {
   return [
     {
-      value: 'pinSystem',
+      value: LayoutSystem.PinSystem,
       tooltip: 'Layout children with pins',
-      icon: {
-        category: 'layout/systems',
-        type: 'pins',
-        color: 'darkgray',
-        width: 16,
-        height: 16,
-      },
-      label: 'View',
+      label: (
+        <>
+          View <Icn category='layout/systems' type='pins' color='darkgray' width={16} height={16} />
+        </>
+      ),
     },
     {
-      value: 'flex',
+      value: LayoutSystem.Flex,
       tooltip: 'Layout children with flexbox',
-      icon: {
-        category: 'layout/systems',
-        type: 'flexbox',
-        color: 'darkgray',
-        width: 16,
-        height: 16,
-      },
-      label: 'Flex',
+      label: (
+        <>
+          View{' '}
+          <Icn category='layout/systems' type='flexbox' color='darkgray' width={16} height={16} />
+        </>
+      ),
     },
   ]
 }

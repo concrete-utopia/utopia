@@ -1,29 +1,22 @@
 import * as React from 'react'
+import { betterReactMemo, InspectorContextMenuItems, InspectorContextMenuWrapper } from 'uuiui-deps'
 import * as PP from '../../../../../core/shared/property-path'
-import { PropertyLabel } from '../../../widgets/property-label'
-import {
-  betterReactMemo,
-  CSSUtils,
-  InspectorContextMenuWrapper,
-  InspectorContextMenuItems,
-  Utils,
-} from 'uuiui-deps'
-import { GridRow } from '../../../widgets/grid-row'
+import { CSSOverflow } from '../../../common/css-utils'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { OptionChainControl, OptionChainOption } from '../../../controls/segment-control'
+import { SegmentControl, SegmentOption } from '../../../controls/segment-control'
+import { GridRow } from '../../../widgets/grid-row'
+import { PropertyLabel } from '../../../widgets/property-label'
 
 const overflowProp = [PP.create(['style', 'overflow'])]
 
-const OverflowControlOptions: Array<OptionChainOption<boolean>> = [
+const OverflowControlOptions: Array<SegmentOption<CSSOverflow>> = [
   {
-    tooltip: 'Hidden',
     label: 'Hidden',
-    value: false,
+    value: 'hidden',
   },
   {
-    tooltip: 'Visible',
     label: 'Visible',
-    value: true,
+    value: 'visible',
   },
 ]
 
@@ -50,9 +43,8 @@ export const OverflowRow = betterReactMemo('OverflowRow', () => {
     >
       <GridRow padded={true} type='<---1fr--->|------172px-------|'>
         <PropertyLabel target={overflowProp}>Overflow</PropertyLabel>
-        <OptionChainControl
+        <SegmentControl
           id={'overflow-control'}
-          key={'overflow-control'}
           onSubmitValue={onSubmitValue}
           value={value}
           options={OverflowControlOptions}

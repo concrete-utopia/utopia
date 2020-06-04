@@ -1,8 +1,8 @@
 import * as React from 'react'
 
 import * as PP from '../../../../../core/shared/property-path'
-import { betterReactMemo } from 'uuiui-deps'
-import { OptionChainControl } from '../../../controls/segment-control'
+import { betterReactMemo, OnSubmitValue } from 'uuiui-deps'
+import { SegmentControl, SegmentOption } from '../../../controls/segment-control'
 import {
   useInspectorLayoutInfo,
   InspectorCallbackContext,
@@ -94,14 +94,16 @@ function useLayoutSystemData() {
   }
 }
 
+type LayoutSystemAndOthers = LayoutSystem | 'flow' | 'grid'
+
 export const LayoutSystemControl = betterReactMemo('LayoutSystemControl', () => {
   const layoutSystemData = useLayoutSystemData()
 
   return (
-    <OptionChainControl
+    <SegmentControl<LayoutSystemAndOthers>
       id={'layoutSystem'}
       key={'layoutSystem'}
-      onSubmitValue={layoutSystemData.onSubmitValue}
+      onSubmitValue={layoutSystemData.onSubmitValue as OnSubmitValue<LayoutSystemAndOthers>}
       value={layoutSystemData.value}
       options={layoutSystemOptions}
       controlStatus={layoutSystemData.controlStatus}
@@ -110,20 +112,21 @@ export const LayoutSystemControl = betterReactMemo('LayoutSystemControl', () => 
   )
 })
 
+// TODO this is not how this control should be used:
 // for now, 'flow', 'grid' and 'group' are not clickable buttons, they only have an indicative role
-const layoutSystemOptions = [
+const layoutSystemOptions: Array<SegmentOption<LayoutSystemAndOthers>> = [
   {
     value: 'flow',
     tooltip: 'Default CSS Normal Flow Layout',
     label: 'Flow',
   },
   {
-    value: 'flex',
+    value: LayoutSystem.Flex,
     tooltip: 'Layout children with flexbox',
     label: 'Flex',
   },
   {
-    value: 'pinSystem',
+    value: LayoutSystem.PinSystem,
     tooltip: 'Layout children with pins',
     label: 'Pins',
   },
@@ -133,7 +136,7 @@ const layoutSystemOptions = [
     label: 'Grid',
   },
   {
-    value: 'group',
+    value: LayoutSystem.Group,
     tooltip: 'Group children',
     label: 'Group',
   },

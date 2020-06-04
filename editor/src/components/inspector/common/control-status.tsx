@@ -47,7 +47,7 @@ export const ControlStyleDefaults = {
   UnsetBorderColor: colorTheme.inspectorUnsetBorderColor,
   UnsetBorderHoverFocusColor: colorTheme.inspectorSetBorderColor.value,
   UnsetBackgroundColor: colorTheme.inspectorUnsetBackgroundColor.value,
-  UnsetSegmentSelectorColor: colorTheme.inspectorUnsetSegmentSelectorColor.value,
+  UnsetSegmentSelectorColor: colorTheme.inspectorSetSegmentSelectorColor.value,
   UnsetSegmentTrackColor: colorTheme.inspectorUnsetSegmentTrackColor.value,
   DisabledMainColor: colorTheme.inspectorDisabledMainColor.value,
   DisabledSecondaryColor: colorTheme.inspectorDisabledSecondaryColor.value,

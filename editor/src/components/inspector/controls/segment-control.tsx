@@ -1,98 +1,102 @@
-/** @jsx jsx */
-import { jsx, InterpolationWithTheme } from '@emotion/core'
-import * as R from 'ramda'
 import * as React from 'react'
-import { IcnProps } from 'uuiui'
-import { ControlProps } from './control'
-import { OptionControl } from './option-control'
-import { defaultIfNull } from '../../../core/shared/optional-utils'
+import { animated, useSpring } from 'react-spring'
+import { UtopiaTheme } from 'uuiui'
+import { ControlStatus, ControlStyles, OnSubmitValue } from '../../../uuiui-deps'
+import { SegmentOptionTextControl } from './segment-option-text-control'
 
-export interface OptionChainOption<T> {
+export interface SegmentOption<T extends string | number = string | number> {
   value: T
-  icon?: IcnProps
-  label?: string
+  label?: React.ReactNode
   tooltip?: string
 }
 
-// TODO come up with a typed OptionChainControl types!
-export const OptionChainControl: React.StatelessComponent<ControlProps<any>> = ({
-  style,
-  ...props
-}) => {
-  const options = props.options as Array<OptionChainOption<string | number>>
-  const controlOptions = defaultIfNull({}, props.controlOptions)
-  if (!Array.isArray(props.options)) {
-    throw new Error('OptionControl needs an array of `options`')
-  }
+interface SegmentControlProps<T extends string | number> {
+  value: T | null
+  onSubmitValue: OnSubmitValue<T>
+  controlStatus: ControlStatus
+  controlStyles: ControlStyles
+  options: ReadonlyArray<SegmentOption<T>>
+  labelBelow?: React.ReactNode
+  style?: React.CSSProperties
+  id?: string
+}
 
-  const optionCSS: InterpolationWithTheme<any> = {
-    position: 'relative',
-    // This is the divider in between controls
-    '&:not(:first-of-type)::after': {
-      content: '""',
-      width: 1,
-      height: 10,
-      backgroundColor: props.controlStyles.borderColor,
-      position: 'absolute',
-      left: 0,
-      top: 6,
-    },
-  }
+export const SegmentControl = <T extends string | number>(props: SegmentControlProps<T>) => {
+  const options = props.options
+  const selectedIndex = options.findIndex((option) => option.value === props.value)
+
+  const selectorStyle = useSpring({
+    width: `${100 / options.length}%`,
+    height: '100%',
+    position: 'absolute',
+    left: `${selectedIndex * (100 / options.length)}%`,
+    backgroundColor: props.controlStyles.segmentSelectorColor,
+    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 0px rgba(0, 0, 0, 0.05)',
+    borderRadius: 2,
+  } as React.CSSProperties)
 
   return (
     <div
       id={props.id}
-      key={props.key}
       style={{
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
         marginBottom: 0,
-        ...style,
+        ...props.style,
       }}
     >
       <div
         style={{
           width: '100%',
-          display: 'flex',
-          flexDirection: 'row',
-          height: 22,
-          boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
-          backgroundColor: props.controlStyles.backgroundColor,
+          height: UtopiaTheme.layout.inputHeight.tall,
+          backgroundColor: props.controlStyles.segmentTrackColor,
+          alignItems: 'center',
         }}
-        className={`option-chain-control-container ${R.pathOr('', ['controlClassName'], props)}`}
-        onContextMenu={props.onContextMenu}
       >
-        {options.map((option: OptionChainOption<number | string>, index) => (
-          <OptionControl
-            {...props}
-            css={optionCSS}
-            key={'option-' + index}
-            controlOptions={{
-              tooltip: option.tooltip,
-              icon: option.icon,
-              labelInner: option.label,
+        <div
+          style={{
+            position: 'relative',
+            margin: 3,
+            width: 'calc(100% - 6px)',
+            height: 'calc(100% - 6px)',
+          }}
+        >
+          <animated.div style={selectorStyle} />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))',
+              position: 'relative',
+              width: '100%',
+              height: '100%',
             }}
-            value={props.value === option.value}
-            // eslint-disable-next-line react/jsx-no-bind
-            onSubmitValue={(value: boolean) => {
-              if (value) {
-                props.onSubmitValue(option.value)
-              }
-            }}
-          />
-        ))}
+          >
+            {options.map((option, index) => (
+              <SegmentOptionTextControl
+                key={option.value}
+                option={option}
+                selected={selectedIndex === index}
+                onSubmitValue={props.onSubmitValue}
+              />
+            ))}
+          </div>
+        </div>
       </div>
-      {!controlOptions.labelBelow ? null : (
+      {props.labelBelow != null ? (
         <label
-          htmlFor={props.id}
-          onContextMenu={props.onContextMenu}
-          className='label-mini-control f10 tc db'
+          style={{
+            display: 'block',
+            textAlign: 'center',
+            fontSize: 9,
+            color: props.controlStyles.mainColor,
+            paddingTop: 2,
+          }}
           color={props.controlStyles.mainColor}
         >
-          <span className='label-container'>{controlOptions.labelBelow}</span>
+          <span className='label-container'>{props.labelBelow}</span>
         </label>
-      )}
+      ) : null}
     </div>
   )
 }

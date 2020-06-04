@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { betterReactMemo } from 'uuiui-deps'
-import { OptionChainControl } from '../../../controls/segment-control'
+import { SegmentControl, SegmentOption } from '../../../controls/segment-control'
 import { useInspectorLayoutInStyleInfo_UNSAFE } from '../../../common/property-path-hooks'
 import { SelfLayoutTab } from './self-layout-subsection'
 import { getControlStyles } from '../../../common/control-status'
@@ -43,7 +43,7 @@ export const LayoutTypePicker = betterReactMemo(
     )
 
     return (
-      <OptionChainControl
+      <SegmentControl
         id='layoutSystem'
         key='layoutSystem'
         onSubmitValue={changeSelectedType}
@@ -58,7 +58,7 @@ export const LayoutTypePicker = betterReactMemo(
   },
 )
 
-const layoutSystemOptions = [
+const layoutSystemOptions: Array<SegmentOption<SelfLayoutTab>> = [
   {
     value: 'absolute',
     tooltip: "Shows controls for absolute positioning and sets position: 'absolute'",
