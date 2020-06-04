@@ -543,7 +543,7 @@ export const UtopiaStyles = {
   backgrounds: {
     ...backgroundURLs,
   },
-  darkNoticeStyles: noticeStyles,
+  noticeStyles,
   textBackgroundStyles,
   shadowStyles,
   input,
