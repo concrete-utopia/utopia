@@ -29,7 +29,9 @@ withInstalledProject semaphore jsPackageName jsPackageVersion withInstalledPath 
     -- Run `npm install "packageName@packageVersion"`.
     let baseProc = proc "npm" ["install", "--loglevel=error", toS jsPackageName <> "@" <> toS jsPackageVersion]
     let procWithCwd = baseProc { cwd = Just tempDir }
+    putText "Starting NPM Install."
     _ <- withSemaphore semaphore $ readCreateProcess procWithCwd ""
+    putText "NPM Install Finished."
     -- Invoke action against path.
     withInstalledPath tempDir
 
