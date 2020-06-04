@@ -642,10 +642,10 @@ class FileBrowserItemInner extends React.PureComponent<
       })
 
     const inputLabelKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (event.key == 'Enter') {
+      if (event.key === 'Enter') {
         confirmAddingFile()
       }
-      if (event.key == 'Escape') {
+      if (event.key === 'Escape') {
         abandonAddingFile()
       }
     }
