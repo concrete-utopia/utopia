@@ -33,16 +33,16 @@ interface NoticeProps extends Notice {
 }
 
 export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
-  let resultingStyle = UtopiaStyles.darkNoticeStyles.info
+  let resultingStyle = UtopiaStyles.noticeStyles.info
 
   if (level === 'WARNING') {
-    resultingStyle = UtopiaStyles.darkNoticeStyles.warning
+    resultingStyle = UtopiaStyles.noticeStyles.warning
   } else if (level === 'ERROR') {
-    resultingStyle = UtopiaStyles.darkNoticeStyles.error
+    resultingStyle = UtopiaStyles.noticeStyles.error
   } else if (level === 'SUCCESS') {
-    resultingStyle = UtopiaStyles.darkNoticeStyles.success
+    resultingStyle = UtopiaStyles.noticeStyles.success
   } else if (level === 'PRIMARY') {
-    resultingStyle = UtopiaStyles.darkNoticeStyles.primary
+    resultingStyle = UtopiaStyles.noticeStyles.primary
   }
   return resultingStyle
 }
@@ -54,15 +54,19 @@ export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
  * **Level**: see NoticeLevel jsdoc
  */
 export const Toast: React.FunctionComponent<NoticeProps> = (props) => (
-  <FlexRow
+  <div
     key={'toast-item'}
     className={'fadeout'}
     style={{
       ...getStylesForLevel(props.level || 'INFO'),
-      opacity: 1,
+      boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
       borderRadius: 3,
-      maxWidth: 200,
-      overflow: 'wrap',
+      overflowWrap: 'break-word',
+      wordWrap: 'break-word',
+      hyphens: 'auto',
+      whiteSpace: 'normal',
+      maxWidth: 400,
+      width: 400,
       padding: 12,
       fontWeight: 500,
       letterSpacing: 0.2,
@@ -70,7 +74,7 @@ export const Toast: React.FunctionComponent<NoticeProps> = (props) => (
     }}
   >
     {props.message}
-  </FlexRow>
+  </div>
 )
 
 /**
