@@ -16,12 +16,7 @@ describe('UtopiColors', () => {
   it('shade 100 is identity function', () => {
     const babyBlue = blue
     expect(babyBlue.value).toEqual(babyBlue.shade(100).value)
-    expect(babyBlue.shade(100).value).toEqual(
-      babyBlue
-        .shade(100)
-        .shade(100)
-        .shade(100).value,
-    )
+    expect(babyBlue.shade(100).value).toEqual(babyBlue.shade(100).shade(100).shade(100).value)
   })
 
   it('shade 0 is white', () => {
@@ -37,12 +32,7 @@ describe('UtopiColors', () => {
   it('opacity 100 is identity', () => {
     const babyBlueAlpha = createUtopiColor('#007AFFFF', 'blue', 'blue')
     expect(babyBlueAlpha.value).toEqual(babyBlueAlpha.o(100).value)
-    expect(babyBlueAlpha.o(100).value).toEqual(
-      babyBlueAlpha
-        .o(100)
-        .o(100)
-        .o(100).value,
-    )
+    expect(babyBlueAlpha.o(100).value).toEqual(babyBlueAlpha.o(100).o(100).o(100).value)
   })
 
   it('opacity 0 is alpha channel 0', () => {

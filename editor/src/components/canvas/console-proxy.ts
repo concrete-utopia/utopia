@@ -33,7 +33,7 @@ export function proxyConsole(
     // Squirrel away the original method for unpacking later.
     const originalMethod = targetConsoleAny[consoleMethodName]
     originalMethods[consoleMethodName] = originalMethod
-    targetConsoleAny[consoleMethodName] = function(...args: Array<any>) {
+    targetConsoleAny[consoleMethodName] = function (...args: Array<any>) {
       // Call the original method first.
       originalMethod(...args)
       // Invoke our dispatcher.

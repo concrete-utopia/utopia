@@ -316,7 +316,7 @@ export function parseValidate<T>(
   predicate: (value: T) => boolean,
   failMessage: string,
 ): Parser<T> {
-  return function(value: unknown) {
+  return function (value: unknown) {
     const parsed = parser(value)
     if (isRight(parsed)) {
       if (predicate(parsed.value)) {

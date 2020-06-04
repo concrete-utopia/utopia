@@ -119,3 +119,4 @@ server/utopia-web
 # utopia-api auto-generated typings
 utopia-api/index.d.ts
 editor/src/components/editor/npm-dependency/utopia-api-typings.ts
+packager-servers/extract-requires/dist/

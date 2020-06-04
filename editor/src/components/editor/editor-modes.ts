@@ -113,20 +113,20 @@ export type LiveCanvasMode = {
 export type Mode = InsertMode | SelectMode | LiveCanvasMode
 
 export const EditorModes = {
-  insertMode: function(insertionStarted: boolean, subject: InsertionSubject): InsertMode {
+  insertMode: function (insertionStarted: boolean, subject: InsertionSubject): InsertMode {
     return {
       type: 'insert',
       subject: subject,
       insertionStarted: insertionStarted,
     }
   },
-  selectMode: function(controlId: string | null = null): SelectMode {
+  selectMode: function (controlId: string | null = null): SelectMode {
     return {
       type: 'select',
       controlId: controlId,
     }
   },
-  liveMode: function(controlId: string | null = null): LiveCanvasMode {
+  liveMode: function (controlId: string | null = null): LiveCanvasMode {
     return {
       type: 'live',
       controlId: controlId,

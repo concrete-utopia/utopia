@@ -159,7 +159,7 @@ export function failSafeReactMemo<T extends React.ComponentType<any>>(
 }
 
 function failSafeMemoEqualityFunction(componentDisplayName: string, severity: 'strict' | 'gentle') {
-  return function<P>(previousProps: P, nextProps: P): boolean {
+  return function <P>(previousProps: P, nextProps: P): boolean {
     if (typeof previousProps === 'object') {
       let differingPropKeys: Array<string> = []
       let propKeysThatAreDifferentYetDeeplyEqual: Array<string> = []

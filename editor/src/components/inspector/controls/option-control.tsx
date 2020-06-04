@@ -27,9 +27,11 @@ export interface OptionControlOptions extends GenericControlOptions {
   height?: number
 }
 
-export const OptionControl: React.FunctionComponent<ControlProps<boolean> & {
-  className?: string
-}> = (props) => {
+export const OptionControl: React.FunctionComponent<
+  ControlProps<boolean> & {
+    className?: string
+  }
+> = (props) => {
   const isChecked = props.value
   const propsOnSubmitValue = props.onSubmitValue
   const onSubmitValue = React.useCallback(() => {

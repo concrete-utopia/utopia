@@ -53,7 +53,11 @@ export function getMissingPropertyControlsWarning(
   if (propsWithoutControls.length < 1) {
     return undefined
   } else {
-    return `Missing property controls for ${joinSpecial(propsWithoutControls, ', ', ' & ')}`
+    return `There are no property controls for these props: ${joinSpecial(
+      propsWithoutControls,
+      ', ',
+      ' & ',
+    )}`
   }
 }
 
@@ -82,9 +86,13 @@ export function getMissingDefaultsWarning(propsWithoutDefaults: Array<string>): 
   if (propsWithoutDefaults.length < 1) {
     return undefined
   } else if (propsWithoutDefaults.length === 1) {
-    return `Missing default value for ${propsWithoutDefaults[0]}`
+    return `The prop ${propsWithoutDefaults[0]} doesn't have a default value.`
   } else {
-    return `Missing default values for ${joinSpecial(propsWithoutDefaults, ', ', ' & ')}`
+    return `These props don't have default values: ${joinSpecial(
+      propsWithoutDefaults,
+      ', ',
+      ' & ',
+    )}`
   }
 }
 

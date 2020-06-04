@@ -171,7 +171,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
     const groupErrors = R.groupBy((error: ErrorMessage) => error.fileName)
     const errorsByFile = groupErrors(errorMessages)
 
-    Object.keys(errorsByFile).forEach(function(fileName) {
+    Object.keys(errorsByFile).forEach(function (fileName) {
       if (fileName != '') {
         outputRows.push(
           <FlexRow style={{ padding: '4px 8px' }}>
@@ -180,7 +180,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
           </FlexRow>,
         )
       }
-      errorsByFile[fileName].forEach(function(errormessage) {
+      errorsByFile[fileName].forEach(function (errormessage) {
         outputRows.push(<ErrorMessageRow errorMessage={errormessage} onOpenFile={onOpenFile} />)
       })
     })

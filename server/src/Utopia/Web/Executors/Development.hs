@@ -72,6 +72,7 @@ data DevServerResources = DevServerResources
                         , _redisConnection      :: Redis.Connection
                         , _registryManager      :: Manager
                         , _assetsCaches         :: AssetsCaches
+                        , _nodeSemaphore        :: QSem
                         }
 
 $(makeFieldsNoPrefix ''DevServerResources)
@@ -252,7 +253,8 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   AssetResultCache{..} <- liftIO $ readIORef _assetResultCache
   return $ action _editorMappings
 innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptPackageVersion action) = do
-  packagerContent <- liftIO $ getPackagerContent javascriptPackageName javascriptPackageVersion
+  semaphore <- fmap _nodeSemaphore ask
+  packagerContent <- liftIO $ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion
   return $ action packagerContent
 
 readIndexHtmlFromDisk :: Text -> IO Text
@@ -332,6 +334,7 @@ initialiseResources = do
   _redisConnection <- createRedisConnectionFromEnvironment
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
+  _nodeSemaphore <- newQSem 1
   let _silentMigration = False
   let _logOnStartup = True
   return $ DevServerResources{..}

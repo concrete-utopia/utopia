@@ -44,7 +44,7 @@ import {
   useInspectorStyleInfo,
   useIsSubSectionVisible,
   useKeepShallowReferenceEquality,
-  useInspectorMetadataInfo,
+  useInspectorElementInfo,
   useInspectorInfo,
   stylePropPathMappingFn,
 } from '../../../common/property-path-hooks'
@@ -179,7 +179,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
 
   const textAlignMetadata = useInspectorStyleInfo('textAlign')
 
-  const textSizingMetadata = useInspectorMetadataInfo('textSizing')
+  const textSizingMetadata = useInspectorElementInfo('textSizing')
 
   const textDecorationLineMetadata = useInspectorStyleInfo('textDecorationLine')
   const [onUnderlinedSubmitValue] = textDecorationLineMetadata.useSubmitValueFactory(
