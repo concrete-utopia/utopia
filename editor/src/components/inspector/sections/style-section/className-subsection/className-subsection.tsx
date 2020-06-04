@@ -1,12 +1,12 @@
 import * as React from 'react'
+import * as Chroma from 'chroma-js'
 import { ValueType } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
-import { UNSAFE_getIconURL, InspectorSubsectionHeader, Section, UtopiaTheme } from 'uuiui'
+import { UNSAFE_getIconURL, Section, UtopiaTheme, UtopiaStyles } from 'uuiui'
 import { betterReactMemo, SelectOption, Utils, ControlStyles } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
-import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorElementInfo } from '../../../common/property-path-hooks'
 import { styleFn } from 'react-select/src/styles'
 import { utopionsStyles } from '../../../../../experimental/pseudo-utopions-css'
@@ -25,6 +25,43 @@ interface ClassNameControlProps<T extends string> {
   onUnsetValues: () => void
 }
 
+// a row in the dropdown
+const option: styleFn = (styles, { data, isDisabled, isFocused, isSelected }) => {
+  let color = Chroma('red')
+  try {
+    color = Chroma(data.color)
+  } catch (err) {
+    color = Chroma('green')
+    // eslint-disable-next-line no-console
+    console.log(err)
+  }
+  return {
+    ...styles,
+    backgroundColor: isDisabled
+      ? null
+      : isSelected
+      ? data.color
+      : isFocused
+      ? data.color + '33'
+      : null,
+    color: isDisabled
+      ? '#ccc'
+      : isSelected
+      ? Chroma.contrast(color, 'white') > 2
+        ? 'white'
+        : 'black'
+      : data.color,
+    cursor: isDisabled ? 'not-allowed' : 'default',
+
+    ':active': {
+      // @ts-ignore
+      ...styles[':active'],
+      backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
+    },
+  }
+}
+
+// the outer container for the chiclets / text entry
 const valueContainer: styleFn = (base) => ({
   ...base,
   padding: 0,
@@ -32,6 +69,30 @@ const valueContainer: styleFn = (base) => ({
   width: '100%',
 })
 
+// chiclet
+const multiValue = (base: any, { data }: any) => {
+  // eslint-disable-next-line no-console
+  console.log('loading: ', data.color)
+  return {
+    ...base,
+    border: '1px solid black',
+    backgroundColor: data.color,
+    label: 'multiValue',
+    display: 'flex',
+    borderRadius: UtopiaTheme.inputBorderRadius,
+    marginRight: 4,
+    marginTop: 2,
+    marginBottom: 2,
+    minWidth: 0,
+    height: UtopiaTheme.layout.inputHeight.small,
+    overflow: 'hidden',
+    fontWeight: 600,
+    color: data.color,
+    fontSize: 10,
+  }
+}
+
+// label inside chiclet
 const multiValueLabel: styleFn = (base) => ({
   ...base,
   label: 'multiValueLabel',
@@ -44,6 +105,7 @@ const multiValueLabel: styleFn = (base) => ({
   fontSize: 9,
 })
 
+// x-button right side of chiclet
 const multiValueRemove: styleFn = (base, state) => ({
   label: 'multiValueRemove',
   width: 16,
@@ -73,6 +135,7 @@ const placeholder: styleFn = (base) => ({
   paddingRight: 6,
 })
 
+// dropdown part of the menu
 const menu: styleFn = () => ({ zIndex: 999999, boxShadow: '0px 2px 4px 1px #00000022' })
 
 const ClassNameControl = betterReactMemo(
@@ -140,6 +203,8 @@ const ClassNameControl = betterReactMemo(
       }),
       [controlStyles, valuesLength],
     )
+
+    // outermost container
     const control: styleFn = React.useCallback(
       () => ({
         label: 'control',
@@ -155,24 +220,6 @@ const ClassNameControl = betterReactMemo(
         minHeight: UtopiaTheme.layout.inputHeight.default,
       }),
       [controlStyles],
-    )
-    // the actual 'tag'
-    const multiValue: styleFn = React.useCallback(
-      (base, state) => ({
-        label: 'multiValue',
-        color: UtopiaTheme.color.emphasizedForeground.value,
-        borderRadius: UtopiaTheme.inputBorderRadius,
-        fontWeight: 600,
-        backgroundColor: '#FFD43E',
-        display: 'flex',
-        marginRight: 4,
-        marginTop: 2,
-        marginBottom: 2,
-        minWidth: 0,
-        height: UtopiaTheme.layout.inputHeight.small,
-        overflow: 'hidden',
-      }),
-      [],
     )
 
     return (
@@ -202,6 +249,7 @@ const ClassNameControl = betterReactMemo(
         styles={{
           container,
           control,
+          option,
           valueContainer,
           multiValue,
           multiValueLabel,

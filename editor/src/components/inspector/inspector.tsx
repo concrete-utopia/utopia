@@ -1,6 +1,6 @@
 import * as ObjectPath from 'object-path'
 import * as React from 'react'
-import { colorTheme, Icn } from 'uuiui'
+import { colorTheme, Icn, SimpleFlexRow, SquareButton } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
@@ -51,7 +51,7 @@ import {
   unwrapLayoutable,
   wrapInLayoutable,
 } from '../editor/actions/actions'
-import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
+
 import {
   getOpenImportsFromState,
   getOpenUtopiaJSXComponentsFromState,
@@ -121,12 +121,7 @@ const AlignDistributeButton = betterReactMemo<AlignDistributeButtonProps>(
   'AlignDistributeButton',
   (props: AlignDistributeButtonProps) => {
     return (
-      <MiniMenuItem
-        className='mr2'
-        animationClassName='darken'
-        disabled={props.disabled}
-        onMouseUp={props.onMouseUp}
-      >
+      <SquareButton onMouseUp={props.onMouseUp}>
         <Icn
           tooltipText={props.toolTip}
           category='layout/commands'
@@ -135,7 +130,7 @@ const AlignDistributeButton = betterReactMemo<AlignDistributeButtonProps>(
           width={16}
           height={16}
         />
-      </MiniMenuItem>
+      </SquareButton>
     )
   },
 )
@@ -176,7 +171,7 @@ const AlignmentButtons = betterReactMemo(
     ])
 
     return (
-      <MiniMenu className='justify-around'>
+      <SimpleFlexRow style={{ justifyContent: 'space-between', paddingLeft: 8, paddingRight: 8 }}>
         <AlignDistributeButton
           onMouseUp={alignLeft}
           toolTip={`Align to left of ${multipleTargets ? 'selection' : 'parent'}`}
@@ -225,7 +220,7 @@ const AlignmentButtons = betterReactMemo(
           iconType='distributeVertical'
           disabled={disableDistribute}
         />
-      </MiniMenu>
+      </SimpleFlexRow>
     )
   },
 )

@@ -50,13 +50,16 @@ export const HeaderSection = betterReactMemo('HeaderSection', (props: HeaderSect
       <span style={{ ...renderedTitleStyle }}>{props.label}&nbsp;</span>
       <span
         style={{
+          marginLeft: 2,
           background: isNativeHtmlOrBuiltInElement
-            ? colorTheme.subduedForeground.value
-            : UtopiaStyles.backgrounds.blue,
-          color: 'white',
+            ? 'rgb(240,240,240)'
+            : UtopiaStyles.backgrounds.paleblue,
+          color: isNativeHtmlOrBuiltInElement ? 'rgb(140,140,140)' : colorTheme.primary.value,
           borderRadius: 2,
           textTransform: 'uppercase',
-          fontSize: 10,
+          fontSize: 9,
+          fontWeight: 600,
+          letterSpacing: '0,05em',
           padding: '1px 2px',
         }}
       >
