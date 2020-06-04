@@ -70,9 +70,10 @@ const valueContainer: styleFn = (base) => ({
 })
 
 // chiclet
-const multiValue = (base: any, { data }: any) => {
+const multiValue: styleFn = (base, { data }) => {
   // eslint-disable-next-line no-console
   console.log('loading: ', data.color)
+
   return {
     ...base,
     border: '1px solid black',
