@@ -92,7 +92,6 @@ import {
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
   layoutSystem: DetectedLayoutSystem | null
-  isFlexComponent: boolean
   isChildOfFlexComponent: boolean
   position: CSSPosition
   layoutWrapper: null | LayoutWrapper
@@ -236,7 +235,6 @@ AlignmentButtons.displayName = 'AlignmentButtons'
 interface RenderedLayoutSectionProps {
   layout: any
   anyHTMLElements: boolean
-  isFlexComponent: boolean
   layoutSystem: DetectedLayoutSystem | null
   isChildOfFlexComponent: boolean
   hasNonDefaultPositionAttributes: boolean
@@ -256,7 +254,6 @@ const RenderedLayoutSection = betterReactMemo<RenderedLayoutSectionProps>(
         <LayoutSection
           input={props.layout}
           parentFlexAxis={props.parentFlexAxis}
-          isFlexComponent={props.isFlexComponent}
           layoutSystem={props.layoutSystem}
           isChildOfFlexComponent={props.isChildOfFlexComponent}
           hasNonDefaultPositionAttributes={props.hasNonDefaultPositionAttributes}
@@ -387,7 +384,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
           <RenderedLayoutSection
             anyHTMLElements={anyHTMLElements}
             layout={props.input.layout}
-            isFlexComponent={props.input.isFlexComponent}
             layoutSystem={props.input.layoutSystem}
             isChildOfFlexComponent={props.input.isChildOfFlexComponent}
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
@@ -468,7 +464,6 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
     })
 
     let inspectorModel: InspectorModel = {
-      isFlexComponent: false,
       layoutSystem: null,
       isChildOfFlexComponent: false,
       position: 'static',
@@ -561,7 +556,6 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
           const elementName = jsxElement.name.baseVariable
           inspectorModel.type = elementName
 
-          inspectorModel.isFlexComponent = MetadataUtils.isFlexLayoutedContainer(elementMetadata)
           inspectorModel.layoutSystem =
             elementMetadata.specialSizeMeasurements.layoutSystemForChildren
 

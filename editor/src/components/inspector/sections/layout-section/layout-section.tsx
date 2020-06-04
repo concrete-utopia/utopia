@@ -13,7 +13,6 @@ export interface ResolvedLayoutProps {
 
 interface LayoutSectionProps {
   input: ResolvedLayoutProps
-  isFlexComponent: boolean
   layoutSystem: DetectedLayoutSystem | null
   isChildOfFlexComponent: boolean
   position: CSSPosition
@@ -34,10 +33,7 @@ export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSect
         aspectRatioLocked={props.aspectRatioLocked}
         toggleAspectRatioLock={props.toggleAspectRatioLock}
       />
-      <LayoutSystemSubsection
-        isFlexComponent={props.isFlexComponent}
-        layoutSystem={props.layoutSystem}
-      />
+      <LayoutSystemSubsection layoutSystem={props.layoutSystem} />
     </>
   )
 })
