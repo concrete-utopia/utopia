@@ -1853,7 +1853,7 @@ export type CSSOverflow = 'hidden' | 'visible'
 
 function parseOverflow(overflow: unknown): Either<string, CSSOverflow> {
   if (typeof overflow === 'string') {
-    return right(overflow !== 'hidden' && overflow !== 'clip' ? 'hidden' : 'visible')
+    return right(overflow === 'hidden' || overflow === 'clip' ? 'hidden' : 'visible')
   } else {
     return left('Invalid overflow')
   }
