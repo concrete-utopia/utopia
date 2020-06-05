@@ -1986,7 +1986,7 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse('/src/app.ui.js', appUiJsFile) as ParseResult
+  const parsedFile = lintAndParse('/src/app.js', appUiJsFile) as ParseResult
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')
@@ -1996,8 +1996,8 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
     ...baseModel,
     projectContents: {
       ...baseModel.projectContents,
-      '/src/app.ui.js': uiJsFile(parsedFile, null, RevisionsState.BothMatch, Date.now()),
+      '/src/app.js': uiJsFile(parsedFile, null, RevisionsState.BothMatch, Date.now()),
     },
-    selectedFile: openFileTab('/src/app.ui.js'),
+    selectedFile: openFileTab('/src/app.js'),
   }
 }

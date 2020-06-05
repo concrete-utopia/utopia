@@ -166,7 +166,7 @@ export const renderedGettingStarted = (
             See a preview image, title, and creator info
           </li>
           <li>
-            <EM>Infinite loop protection</EM> - in the app.ui.js file for now
+            <EM>Infinite loop protection</EM> - in the app.js file for now
           </li>
         </ul>
       </p>

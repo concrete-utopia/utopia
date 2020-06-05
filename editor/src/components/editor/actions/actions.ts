@@ -3376,7 +3376,7 @@ export const UPDATE_FNS = {
     return updatedEditor
   },
   ADD_UI_JS_FILE: (action: AddUIJSFile, editor: EditorModel): EditorModel => {
-    const newFileKey = uniqueProjectContentID('src/new_view.ui.js', editor.projectContents)
+    const newFileKey = uniqueProjectContentID('src/new_view.js', editor.projectContents)
     const newUiJsFile = getDefaultUIJsFile()
 
     // Update the model.

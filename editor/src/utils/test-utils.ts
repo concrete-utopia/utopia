@@ -36,7 +36,7 @@ import {
 } from '../core/model/scene-utils'
 
 export function createEditorStates(
-  selectedFileOrTab: string | EditorTab = '/src/app.ui.js',
+  selectedFileOrTab: string | EditorTab = '/src/app.js',
   selectedViews: TemplatePath[] = [],
 ): {
   editor: EditorState
@@ -48,7 +48,7 @@ export function createEditorStates(
   const editor: EditorState = {
     ...createEditorState(),
     projectContents: {
-      '/src/app.ui.js': uiJsFile(
+      '/src/app.js': uiJsFile(
         right(
           parseSuccess(
             sampleImportsForTests,

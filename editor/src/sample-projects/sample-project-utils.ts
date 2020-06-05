@@ -19,14 +19,14 @@ export const UI_BUILDER_PROJECT_ID = 'UI-BUILDER'
 
 export function defaultProject(): PersistentModel {
   const selectedTab: EditorTab = releaseNotesTab()
-  const openFiles: Array<EditorTab> = [openFileTab('/src/app.ui.js'), selectedTab]
+  const openFiles: Array<EditorTab> = [openFileTab('/src/app.js'), selectedTab]
   return {
     appID: null,
     projectVersion: CURRENT_PROJECT_VERSION,
     projectContents: {
       '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
       '/src': directory(),
-      '/src/app.ui.js': getDefaultUIJsFile(),
+      '/src/app.js': getDefaultUIJsFile(),
       '/assets': directory(),
       '/public': directory(),
       '/src/index.js': getSamplePreviewFile(),
@@ -61,7 +61,7 @@ export function defaultProject(): PersistentModel {
 function uiBuilderProject(): PersistentModel {
   const selectedTab: EditorTab = releaseNotesTab()
   const openFiles: Array<EditorTab> = [
-    openFileTab('/src/app.ui.js'),
+    openFileTab('/src/app.js'),
     openFileTab('/src/components.js'),
     selectedTab,
   ]
@@ -71,7 +71,7 @@ function uiBuilderProject(): PersistentModel {
     projectContents: {
       '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
       '/src': directory(),
-      '/src/app.ui.js': getUiBuilderUIJSFile(),
+      '/src/app.js': getUiBuilderUIJSFile(),
       '/src/components.js': getSampleComponentsFile(),
       '/assets': directory(),
       '/public': directory(),
