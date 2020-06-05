@@ -34,7 +34,7 @@ export interface ControlStyles {
   unsettable: boolean
 }
 
-// note: these colors need to be kept true with the inspector.css vars
+// note: these colors need to be kept true wi th the inspector.css vars
 export const ControlStyleDefaults = {
   SetMainColor: colorTheme.inspectorSetMainColor.value,
   SetSecondaryColor: colorTheme.inspectorSetSecondaryColor.value,
