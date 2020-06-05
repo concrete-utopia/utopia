@@ -154,11 +154,7 @@ import {
 } from './guideline'
 import { addImport } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import {
-  createSceneTemplatePath,
-  PathForSceneStyle,
-  BakedInStoryboardUID,
-} from '../../core/model/scene-utils'
+import { createSceneTemplatePath, PathForSceneStyle } from '../../core/model/scene-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 
