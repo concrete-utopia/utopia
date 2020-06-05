@@ -246,8 +246,6 @@ const light = {
   inspectorOffSegmentTrackColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffBorderColor: createUtopiColor('rgb(240, 240, 240)', '', ''),
   inspectorFocusedColor: createUtopiColor('#0091FF', '', ''),
-
-  flasherHookColor: base.neonpink,
 }
 
 const dark = {
