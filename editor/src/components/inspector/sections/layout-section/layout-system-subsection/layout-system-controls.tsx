@@ -26,6 +26,7 @@ import {
   FunctionIcons,
 } from 'uuiui'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
+import { DetectedLayoutSystem } from '../../../../../core/shared/element-template'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -94,41 +95,47 @@ function useLayoutSystemData() {
   }
 }
 
-type LayoutSystemAndOthers = LayoutSystem | 'flow' | 'grid'
-
-export const LayoutSystemControl = betterReactMemo('LayoutSystemControl', () => {
-  const layoutSystemData = useLayoutSystemData()
-
-  return (
-    <SegmentControl<LayoutSystemAndOthers>
-      id={'layoutSystem'}
-      key={'layoutSystem'}
-      onSubmitValue={layoutSystemData.onSubmitValue as OnSubmitValue<LayoutSystemAndOthers>}
-      value={layoutSystemData.value}
-      options={layoutSystemOptions}
-      controlStatus={layoutSystemData.controlStatus}
-      controlStyles={layoutSystemData.controlStyles}
-    />
-  )
-})
+interface LayoutSystemControlProps {
+  layoutSystem: DetectedLayoutSystem | null
+}
 
 // TODO this is not how this control should be used:
+export const LayoutSystemControl = betterReactMemo(
+  'LayoutSystemControl',
+  (props: LayoutSystemControlProps) => {
+    const layoutSystemData = useLayoutSystemData()
+    return (
+      <SegmentControl<LayoutSystem | DetectedLayoutSystem>
+        id={'layoutSystem'}
+        key={'layoutSystem'}
+        onSubmitValue={
+          layoutSystemData.onSubmitValue as OnSubmitValue<LayoutSystem | DetectedLayoutSystem>
+        }
+        value={props.layoutSystem ?? layoutSystemData.value}
+        options={layoutSystemOptions}
+        controlStatus={layoutSystemData.controlStatus}
+        controlStyles={layoutSystemData.controlStyles}
+      />
+    )
+  },
+)
+
 // for now, 'flow', 'grid' and 'group' are not clickable buttons, they only have an indicative role
-const layoutSystemOptions: Array<SegmentOption<LayoutSystemAndOthers>> = [
+const layoutSystemOptions: Array<SegmentOption<LayoutSystem | DetectedLayoutSystem>> = [
+  {
+    value: LayoutSystem.PinSystem,
+    tooltip: 'Layout children with Pins',
+    label: 'Pins',
+  },
   {
     value: 'flow',
     tooltip: 'Default CSS Normal Flow Layout',
     label: 'Flow',
   },
   {
-    value: LayoutSystem.Flex,
+    value: 'flex',
     tooltip: 'Layout children with flexbox',
     label: 'Flex',
-  },
-  {
-    value: LayoutSystem.PinSystem,
-    tooltip: 'Layout children with pins',
-    label: 'Pins',
   },
   {
     value: 'grid',
@@ -136,9 +143,14 @@ const layoutSystemOptions: Array<SegmentOption<LayoutSystemAndOthers>> = [
     label: 'Grid',
   },
   {
-    value: LayoutSystem.Group,
-    tooltip: 'Group children',
-    label: 'Group',
+    value: 'nonfixed',
+    tooltip: 'Nonfixed',
+    label: 'Non-fixed',
+  },
+  {
+    value: 'none',
+    tooltip: 'None',
+    label: 'None',
   },
 ]
 

@@ -22,7 +22,6 @@ import qualified Text.Blaze.Html5        as H
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
-import           Utopia.Web.Websockets
 
 {-
   'deriveJSON' as used here creates 'Data.Aeson.FromJSON' and 'Data.Aeson.ToJSON' instances
@@ -104,7 +103,7 @@ type LoadProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Text 
 
 type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Text :> ReqBody '[BMP, GIF, JPG, PNG, SVG] BL.ByteString :> Post '[JSON] NoContent
 
-type PackagePackagerAPI = "v1" :> "javascript" :> "packager" :> Capture "package_name" Text :> Capture "package_version" Text :> Get '[ForcedJSON] BL.ByteString
+type PackagePackagerAPI = "v1" :> "javascript" :> "packager" :> Capture "package_name" Text :> Capture "package_version" Text :> Get '[ForcedJSON] (Headers '[Header "Cache-Control" Text] BL.ByteString)
 
 type GetPackageJSONAPI = "v1" :> "javascript" :> "package" :> "metadata" :> Capture "package_name" Text :> Get '[JSON] Value
 
@@ -152,7 +151,6 @@ type Unprotected = AuthenticateAPI
               :<|> LoadProjectAssetAPI
               :<|> PreviewProjectAssetAPI
               :<|> LoadProjectThumbnailAPI
-              :<|> WebsocketsAPI
               :<|> MonitoringAPI
               :<|> PackagePackagerAPI
               :<|> GetPackageJSONAPI

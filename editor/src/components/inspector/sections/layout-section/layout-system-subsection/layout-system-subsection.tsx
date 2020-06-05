@@ -10,9 +10,10 @@ import {
 } from './layout-system-controls'
 import { FlexContainerControls } from '../flex-container-subsection/flex-container-subsection'
 import { PropertyLabel } from '../../../widgets/property-label'
+import { DetectedLayoutSystem } from '../../../../../core/shared/element-template'
 
 interface LayoutSystemSubsectionProps {
-  isFlexComponent: boolean
+  layoutSystem: DetectedLayoutSystem | null
 }
 
 export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProps>(
@@ -25,9 +26,9 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
           <DeleteAllLayoutSystemConfigButton />
         </InspectorSubsectionHeader>
         <GridRow padded={true} type='<-------------1fr------------->'>
-          <LayoutSystemControl />
+          <LayoutSystemControl layoutSystem={props.layoutSystem} />
         </GridRow>
-        {props.isFlexComponent ? <FlexContainerControls seeMoreVisible={true} /> : null}
+        {props.layoutSystem === 'flex' ? <FlexContainerControls seeMoreVisible={true} /> : null}
         <GridRow tall padded={true} type='<---1fr--->|------172px-------|'>
           <PropertyLabel
             target={paddingPropsToUnset}

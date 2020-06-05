@@ -36,7 +36,6 @@ import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Proxy
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
-import           Utopia.Web.Websockets
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
 
@@ -353,10 +352,10 @@ getPackageJSONEndpoint javascriptPackageName = do
 hashedAssetPathsEndpoint :: ServerMonad Value
 hashedAssetPathsEndpoint = getHashedAssetPaths
 
-packagePackagerEndpoint :: Text -> Text -> ServerMonad BL.ByteString
+packagePackagerEndpoint :: Text -> Text -> ServerMonad (Headers '[Header "Cache-Control" Text] BL.ByteString)
 packagePackagerEndpoint javascriptPackageName javascriptPackageVersionAndSuffix = do
   let javascriptPackageVersion = fromMaybe javascriptPackageVersionAndSuffix $ T.stripSuffix ".json" javascriptPackageVersionAndSuffix
-  getPackagePackagerContent javascriptPackageName javascriptPackageVersion
+  fmap (addHeader "public, immutable, max-age=86400") $ getPackagePackagerContent javascriptPackageName javascriptPackageVersion
 
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
@@ -389,7 +388,6 @@ unprotected = authenticate
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectThumbnailEndpoint
-         :<|> websocketsEndpoint
          :<|> monitoringEndpoint
          :<|> packagePackagerEndpoint
          :<|> getPackageJSONEndpoint

@@ -44,7 +44,6 @@ import {
 import { useEditorState } from '../editor/store/store-hook'
 import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { FileBrowserItem } from './fileitem'
-import { ParsedPropertyControlsForFile } from '../../core/property-controls/property-controls-parser'
 import { dropExtension } from '../../core/shared/string-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
@@ -163,11 +162,6 @@ export const FileBrowser = betterReactMemo('FileBrowser', () => {
     </Section>
   )
 })
-
-const fileIconStyle = {
-  marginRight: 4,
-  marginLeft: 'auto',
-}
 
 interface FileBrowserActionSheetProps {
   visible: boolean
@@ -311,12 +305,8 @@ const FileBrowserActionSheet = betterReactMemo(
       () => dispatch([EditorActions.addFolder('')], 'everyone'),
       [dispatch],
     )
-    const addUIJSFileClick = React.useCallback(
-      () => dispatch([EditorActions.addUIJSFile()], 'everyone'),
-      [dispatch],
-    )
     const addCodeFileClick = React.useCallback(
-      () => dispatch([EditorActions.addCodeFile('')], 'everyone'),
+      () => dispatch([EditorActions.addCodeFile('', 'untitled')], 'everyone'),
       [dispatch],
     )
     if (props.visible) {

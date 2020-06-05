@@ -90,9 +90,9 @@ export const Dialog = (props: DialogProps) => (
               justifyContent: 'flex-end',
             }}
           >
-            {props.subduedButton}
-            {props.secondaryButton}
-            {props.defaultButton}
+            <span>{props.subduedButton}</span>
+            <span style={{ marginLeft: 8 }}>{props.secondaryButton}</span>
+            <span style={{ marginLeft: 8 }}>{props.defaultButton}</span>
           </FlexRow>
         </FlexColumn>
       </div>

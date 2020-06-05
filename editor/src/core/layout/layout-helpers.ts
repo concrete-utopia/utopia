@@ -228,36 +228,26 @@ export const FlexLayoutHelpers = {
 
 export const LayoutHelpers = {
   updateLayoutPropsWithFrame(
+    parentIsFlex: boolean,
     parentProps: PropsOrJSXAttributes | null,
     elementProps: JSXAttributes,
     frame: TopLeftWidthHeight,
   ): Either<string, JSXAttributes> {
-    let layoutSystemEither: Either<string, LayoutSystem> = right(LayoutSystem.PinSystem)
-    if (parentProps != null) {
-      layoutSystemEither = this.getLayoutSystemFromAttributes(parentProps)
+    if (parentIsFlex && parentProps != null) {
+      return FlexLayoutHelpers.updateLayoutPropsToFlexWithFrame(
+        parentProps,
+        elementProps,
+        frame.width,
+        frame.height,
+      )
+    } else {
+      return PinLayoutHelpers.updateLayoutPropsWithFrame(elementProps, frame)
     }
-
-    return flatMapEither((layoutSystem) => {
-      if (layoutSystem === LayoutSystem.Flex && parentProps != null) {
-        return FlexLayoutHelpers.updateLayoutPropsToFlexWithFrame(
-          parentProps,
-          elementProps,
-          frame.width,
-          frame.height,
-        )
-      } else {
-        return PinLayoutHelpers.updateLayoutPropsWithFrame(elementProps, frame)
-      }
-    }, layoutSystemEither)
   },
   getLayoutSystemFromAttributes(props: PropsOrJSXAttributes): Either<string, LayoutSystem> {
     return getSimpleAttributeAtPath(props, createLayoutPropertyPath('LayoutSystem')) // TODO LAYOUT investigate if we should use the DOM walker results here
   },
-  getDefaultedLayoutSystemFromAttributes(props: JSXAttributes): LayoutSystem {
-    return defaultEither(LayoutSystem.PinSystem, this.getLayoutSystemFromAttributes(right(props))) // TODO LAYOUT investigate if we should use the DOM walker results here
-  },
   getLayoutSystemFromProps(props: PropsOrJSXAttributes): LayoutSystem {
-    // TODO add a new layout type: "none"
     const parsedLayoutSystem = this.getLayoutSystemFromAttributes(props)
     return isRight(parsedLayoutSystem) ? parsedLayoutSystem.value : LayoutSystem.PinSystem
   },

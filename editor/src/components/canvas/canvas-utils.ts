@@ -485,7 +485,8 @@ export function updateFramesOfScenesAndComponents(
                   return framePointsToUse
                 } else if (
                   frameAndTarget.type === 'PIN_FRAME_CHANGE' &&
-                  frameAndTarget.edgePosition != null
+                  frameAndTarget.edgePosition != null &&
+                  isEdgePositionOnSide(frameAndTarget.edgePosition)
                 ) {
                   // if it has partial positioning points set and dragged on an edge only the dragged edge should be added while keeping the existing frame points.
                   let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
@@ -694,6 +695,10 @@ export function isEdgePositionAVerticalEdge(edgePosition: EdgePosition): boolean
     (edgePosition.x === 0 && edgePosition.y === 0.5) ||
     (edgePosition.x === 1 && edgePosition.y === 0.5)
   )
+}
+
+export function isEdgePositionOnSide(edgePosition: EdgePosition): boolean {
+  return edgePosition.x === 0.5 || edgePosition.y === 0.5
 }
 
 export const SnappingThreshold = 5

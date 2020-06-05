@@ -15,7 +15,6 @@ import           Utopia.Web.Executors.Common
 import qualified Utopia.Web.Executors.Common      as C
 import           Utopia.Web.Executors.Development
 import qualified Utopia.Web.Executors.Development as D
-import           Utopia.Web.Redis
 
 initialiseTestResources :: IO DevServerResources
 initialiseTestResources = do
@@ -23,11 +22,10 @@ initialiseTestResources = do
   proxyHttpManager <- newManager defaultManagerSettings
   sessionStore <- createSessionState pool
   store <- newStore
-  connectionsMap <- newIORef mempty
   dbMetrics <- DB.createDatabaseMetrics store
-  redisConn <- createRedisConnectionFromEnvironment
   npmRegistryManager <- newManager tlsManagerSettings
   testAssetsCaches <- emptyAssetsCaches []
+  semaphoreForNode <- newQSem 1
   return $ DevServerResources
          { _commitHash = "nocommit"
          , _projectPool = pool
@@ -40,11 +38,10 @@ initialiseTestResources = do
          , _sessionState = sessionStore
          , _storeForMetrics = store
          , _packagerProxy = proxyHttpManager
-         , _reportingConnections = connectionsMap
          , _databaseMetrics = dbMetrics
-         , _redisConnection = redisConn
          , _registryManager = npmRegistryManager
          , _assetsCaches = testAssetsCaches
+         , _nodeSemaphore = semaphoreForNode
          }
 
 testEnvironmentRuntime :: EnvironmentRuntime DevServerResources
