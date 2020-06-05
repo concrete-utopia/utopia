@@ -7,7 +7,6 @@ module Test.Utopia.Web.Endpoints where
 
 import           Control.Lens                   hiding ((.=))
 import           Data.Aeson
-import           Data.Maybe                     (fromJust)
 import           Data.Time
 import           GHC.Conc
 import           Network.HTTP.Client            (CookieJar, cookie_value,
@@ -16,7 +15,6 @@ import           Network.HTTP.Client            (CookieJar, cookie_value,
 import           Network.HTTP.Media.MediaType
 import           Network.HTTP.Types             (Status, notFound404)
 import qualified Network.Socket.Wait            as W
-import qualified Network.WebSockets             as WS
 import           Protolude
 import           Servant
 import           Servant.Client
@@ -29,7 +27,6 @@ import           Utopia.Web.Database.Types
 import           Utopia.Web.Server
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
-import           Utopia.Web.Websockets.Types
 import           Web.Cookie                     (SetCookie)
 
 timeLimited :: Text -> IO a -> IO a
@@ -69,12 +66,6 @@ getCookieHeader cookieJarTVar = do
   return $ do
     cookieDetails <- sessionCookie
     return ("JSESSIONID=" <> (toS $ cookie_value cookieDetails))
-
-previewReport :: Integer -> EditorPreviewMessage
-previewReport previewID = PreviewReport { _previewID = previewID, _reportID = "test", _report = toJSON ("Cake" :: Text) }
-
-reportConsumed :: Integer -> EditorPreviewMessage
-reportConsumed editorID = ReportConsumed { _editorID = editorID, _reportID = "test" }
 
 getLoadedTitleAndContents :: LoadProjectResponse -> Maybe (Text, Value)
 getLoadedTitleAndContents ProjectLoaded{..} = Just (_title, _content)
@@ -337,68 +328,3 @@ routingSpec = around_ withServer $ do
       loadedProjectResult `shouldSatisfy` errorWithStatusCode notFound404
   updateAssetPathSpec
   deleteAssetSpec
-  describe "WS v1/report/{project_id}" $ do
-    it "a new preview should replace an old one (editor first)" $ do
-      WS.runClient "127.0.0.1" 8888 "v1/report/test/listen" $ \editorWebsocket -> do
-        WS.runClient "127.0.0.1" 8888 "v1/report/test" $ \previewWebsocket1 -> do
-          WS.runClient "127.0.0.1" 8888 "v1/report/test" $ \previewWebsocket2 -> do
-            _ <- timeLimited "Editor Receive 1" $ WS.receiveData editorWebsocket :: IO Text
-            preview1IDMessage <- timeLimited "Preview 1 Receive 1" $ WS.receiveData previewWebsocket1
-            let preview1Report = encode $ previewReport $ fromJust $ fmap _newConnectionID $ decode preview1IDMessage
-            preview2IDMessage <- timeLimited "Preview 2 Receive 1" $ WS.receiveData previewWebsocket2
-            let preview2Report = encode $ previewReport $ fromJust $ fmap _newConnectionID $ decode preview2IDMessage
-            WS.sendTextData previewWebsocket1 preview1Report
-            editorMessage <- timeLimited "Editor Receive 2" $ WS.receiveData editorWebsocket
-            editorMessage `shouldBe` preview1Report
-            WS.sendTextData previewWebsocket2 preview2Report
-            editorMessage2 <- timeLimited "Editor Receive 3" $ WS.receiveData editorWebsocket
-            editorMessage2 `shouldBe` preview2Report
-            (timeLimited "Preview 1 Receive 2" $ WS.receiveData previewWebsocket1 :: IO ByteString) `shouldThrow` anyException
-    it "a new preview should replace an old one (preview first)" $ do
-      WS.runClient "127.0.0.1" 8888 "v1/report/test" $ \previewWebsocket1 -> do
-        WS.runClient "127.0.0.1" 8888 "v1/report/test/listen" $ \editorWebsocket -> do
-          WS.runClient "127.0.0.1" 8888 "v1/report/test" $ \previewWebsocket2 -> do
-            _ <- timeLimited "Editor Receive 1" $ WS.receiveData editorWebsocket :: IO Text
-            preview1IDMessage <- timeLimited "Preview 1 Receive 1" $ WS.receiveData previewWebsocket1
-            let preview1Report = encode $ previewReport $ fromJust $ fmap _newConnectionID $ decode preview1IDMessage
-            preview2IDMessage <- timeLimited "Preview 2 Receive 1" $ WS.receiveData previewWebsocket2
-            let preview2Report = encode $ previewReport $ fromJust $ fmap _newConnectionID $ decode preview2IDMessage
-            WS.sendTextData previewWebsocket1 preview1Report
-            editorMessage <- timeLimited "Editor Receive 2" $ WS.receiveData editorWebsocket
-            editorMessage `shouldBe` preview1Report
-            WS.sendTextData previewWebsocket2 preview2Report
-            editorMessage2 <- timeLimited "Editor Receive 3" $ WS.receiveData editorWebsocket
-            editorMessage2 `shouldBe` preview2Report
-            (timeLimited "Preview 1 Receive 2" $ WS.receiveData previewWebsocket1 :: IO ByteString) `shouldThrow` anyException
-    it "a new editor should replace an old one (editor first)" $ do
-      WS.runClient "127.0.0.1" 8888 "v1/report/test" $ \previewWebsocket -> do
-        WS.runClient "127.0.0.1" 8888 "v1/report/test/listen" $ \editorWebsocket1 -> do
-          _ <- timeLimited "Preview Receive 1" $ WS.receiveData previewWebsocket :: IO Text
-          editor1IDMessage <- timeLimited "Editor 1 Receive 1" $ WS.receiveData editorWebsocket1
-          let reportConsumed1 = encode $ reportConsumed $ fromJust $ fmap _newConnectionID $ decode editor1IDMessage
-          WS.sendTextData editorWebsocket1 reportConsumed1
-          previewMessage1 <- timeLimited "Preview Receive 2" $ WS.receiveData previewWebsocket
-          previewMessage1 `shouldBe` reportConsumed1
-          WS.runClient "127.0.0.1" 8888 "v1/report/test/listen" $ \editorWebsocket2 -> do
-            editor2IDMessage <- timeLimited "Editor 2 Receive 1" $ WS.receiveData editorWebsocket2
-            let reportConsumed2 = encode $ reportConsumed $ fromJust $ fmap _newConnectionID $ decode editor2IDMessage
-            WS.sendTextData editorWebsocket2 reportConsumed2
-            previewMessage2 <- timeLimited "Preview Receive 2" $ WS.receiveData previewWebsocket
-            previewMessage2 `shouldBe` reportConsumed2
-            (timeLimited "Editor 1 Receive 2" $ WS.receiveData editorWebsocket1 :: IO ByteString) `shouldThrow` anyException
-    it "a new editor should replace an old one (preview first)" $ do
-      WS.runClient "127.0.0.1" 8888 "v1/report/test" $ \previewWebsocket -> do
-        _ <- timeLimited "Preview Receive 1" $ WS.receiveData previewWebsocket :: IO Text
-        WS.runClient "127.0.0.1" 8888 "v1/report/test/listen" $ \editorWebsocket1 -> do
-          editor1IDMessage <- timeLimited "Editor 1 Receive 1" $ WS.receiveData editorWebsocket1
-          WS.runClient "127.0.0.1" 8888 "v1/report/test/listen" $ \editorWebsocket2 -> do
-            editor2IDMessage <- timeLimited "Editor 2 Receive 1" $ WS.receiveData editorWebsocket2
-            let reportConsumed1 = encode $ reportConsumed $ fromJust $ fmap _newConnectionID $ decode editor1IDMessage
-            let reportConsumed2 = encode $ reportConsumed $ fromJust $ fmap _newConnectionID $ decode editor2IDMessage
-            WS.sendTextData editorWebsocket1 reportConsumed1
-            previewMessage1 <- timeLimited "Preview Receive 2" $ WS.receiveData previewWebsocket
-            previewMessage1 `shouldBe` reportConsumed1
-            WS.sendTextData editorWebsocket2 reportConsumed2
-            previewMessage2 <- timeLimited "Preview Receive 3" $ WS.receiveData previewWebsocket
-            previewMessage2 `shouldBe` reportConsumed2
-            (timeLimited "Editor 1 Receive 2" $ WS.receiveData editorWebsocket1 :: IO ByteString) `shouldThrow` anyException

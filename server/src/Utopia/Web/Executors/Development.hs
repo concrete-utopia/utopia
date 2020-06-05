@@ -22,57 +22,49 @@ import           Data.IORef
 import           Data.Pool
 import           Data.Text
 import           Database.Persist.Sqlite
-import           Database.Redis                     as Redis
-import           Network.HTTP.Client                (Manager,
-                                                     defaultManagerSettings,
-                                                     managerResponseTimeout,
-                                                     newManager,
-                                                     responseTimeoutNone)
+import           Network.HTTP.Client         (Manager, defaultManagerSettings,
+                                              managerResponseTimeout,
+                                              newManager, responseTimeoutNone)
 import           Network.HTTP.Client.TLS
-import qualified Network.Wreq                       as WR
+import qualified Network.Wreq                as WR
 import           Protolude
 import           Servant
 import           Servant.Client
 import           System.Environment
-import           System.Metrics                     hiding (Value)
+import           System.Metrics              hiding (Value)
 import           System.Metrics.Json
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
-import qualified Utopia.Web.Database                as DB
+import qualified Utopia.Web.Database         as DB
 import           Utopia.Web.Database.Types
-import           Utopia.Web.EditorPreviewConnection
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
-import           Utopia.Web.Redis
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
-import           Utopia.Web.Websockets.Types
 import           Web.Cookie
 
 {-|
   Any long living resources like database pools live in here.
 -}
 data DevServerResources = DevServerResources
-                        { _commitHash           :: Text
-                        , _projectPool          :: Pool SqlBackend
-                        , _serverPort           :: Int
-                        , _silentMigration      :: Bool
-                        , _logOnStartup         :: Bool
-                        , _proxyManager         :: Maybe Manager
-                        , _auth0Resources       :: Maybe Auth0Resources
-                        , _awsResources         :: Maybe AWSResources
-                        , _sessionState         :: SessionState
-                        , _storeForMetrics      :: Store
-                        , _packagerProxy        :: Manager
-                        , _reportingConnections :: IORef ReportMap
-                        , _databaseMetrics      :: DB.DatabaseMetrics
-                        , _redisConnection      :: Redis.Connection
-                        , _registryManager      :: Manager
-                        , _assetsCaches         :: AssetsCaches
-                        , _nodeSemaphore        :: QSem
+                        { _commitHash      :: Text
+                        , _projectPool     :: Pool SqlBackend
+                        , _serverPort      :: Int
+                        , _silentMigration :: Bool
+                        , _logOnStartup    :: Bool
+                        , _proxyManager    :: Maybe Manager
+                        , _auth0Resources  :: Maybe Auth0Resources
+                        , _awsResources    :: Maybe AWSResources
+                        , _sessionState    :: SessionState
+                        , _storeForMetrics :: Store
+                        , _packagerProxy   :: Manager
+                        , _databaseMetrics :: DB.DatabaseMetrics
+                        , _registryManager :: Manager
+                        , _assetsCaches    :: AssetsCaches
+                        , _nodeSemaphore   :: QSem
                         }
 
 $(makeFieldsNoPrefix ''DevServerResources)
@@ -226,11 +218,6 @@ innerServerExecutor (GetMetrics action) = do
   store <- fmap _storeForMetrics ask
   sample <- liftIO $ sampleAll store
   return $ action $ sampleToJson sample
-innerServerExecutor (RunWebsocketCall wsCall next) = do
-  reportConnections <- fmap _reportingConnections ask
-  redis <- fmap _redisConnection ask
-  liftIO $ wsCall reportConnections redis
-  return next
 innerServerExecutor (GetPackageJSON javascriptPackageName action) = do
   manager <- fmap _registryManager ask
   packageMetadata <- liftIO $ lookupPackageJSON manager javascriptPackageName
@@ -292,11 +279,8 @@ serverAPI resources = hoistServer apiProxy (serverMonadToHandler resources) serv
 startup :: DevServerResources -> IO Stop
 startup DevServerResources{..} = do
   DB.migrateDatabase _silentMigration _projectPool
-  subscriptionThread <- createEditorPreviewSubscription _redisConnection (handleEditorPreviewMessage _reportingConnections)
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
-        closeResources _projectPool _redisConnection
-        killThread subscriptionThread
         killThread hashedFilenamesThread
 
 serverPortFromResources :: DevServerResources -> Int
@@ -328,10 +312,7 @@ initialiseResources = do
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore
   _packagerProxy <- newManager defaultManagerSettings { managerResponseTimeout = responseTimeoutNone }
-  _reportingConnections <- newIORef mempty
-  registerReportsGauge _reportingConnections _storeForMetrics
   _databaseMetrics <- DB.createDatabaseMetrics _storeForMetrics
-  _redisConnection <- createRedisConnectionFromEnvironment
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1

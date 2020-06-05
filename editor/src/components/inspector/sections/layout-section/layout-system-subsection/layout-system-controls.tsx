@@ -26,7 +26,10 @@ import {
   FunctionIcons,
 } from 'uuiui'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
-import { SettableLayoutSystem } from '../../../../../core/shared/element-template'
+import {
+  DetectedLayoutSystem,
+  SettableLayoutSystem,
+} from '../../../../../core/shared/element-template'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -95,21 +98,28 @@ function useLayoutSystemData() {
   }
 }
 
-export const LayoutSystemControl = betterReactMemo('LayoutSystemControl', () => {
-  const layoutSystemData = useLayoutSystemData()
+interface LayoutSystemControlProps {
+  layoutSystem: DetectedLayoutSystem | null
+}
 
-  return (
-    <OptionChainControl
-      id={'layoutSystem'}
-      key={'layoutSystem'}
-      onSubmitValue={layoutSystemData.onSubmitValue}
-      value={layoutSystemData.value}
-      options={layoutSystemOptions}
-      controlStatus={layoutSystemData.controlStatus}
-      controlStyles={layoutSystemData.controlStyles}
-    />
-  )
-})
+export const LayoutSystemControl = betterReactMemo(
+  'LayoutSystemControl',
+  (props: LayoutSystemControlProps) => {
+    const layoutSystemData = useLayoutSystemData()
+    const detectedLayoutSystem = props.layoutSystem
+    return (
+      <OptionChainControl
+        id={'layoutSystem'}
+        key={'layoutSystem'}
+        onSubmitValue={layoutSystemData.onSubmitValue}
+        value={props.layoutSystem != null ? props.layoutSystem : layoutSystemData.value}
+        options={layoutSystemOptions}
+        controlStatus={layoutSystemData.controlStatus}
+        controlStyles={layoutSystemData.controlStyles}
+      />
+    )
+  },
+)
 
 // for now, 'flow', 'grid' and 'group' are not clickable buttons, they only have an indicative role
 const layoutSystemOptions = [

@@ -207,7 +207,7 @@ let
       set -e
       rebuild-cabal
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${cabal}/bin/cabal new-run -j --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N
+      ${cabal}/bin/cabal new-run -j --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N -c
     '')
     (pkgs.writeScriptBin "run-server" ''
       #!/usr/bin/env bash
