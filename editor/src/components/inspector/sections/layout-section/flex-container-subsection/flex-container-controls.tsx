@@ -258,6 +258,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
               } as SliderControlOptions
             }
             onSubmitValue={props.onSubmitValue}
+            onTransientSubmitValue={props.onTransientSubmitValue}
             controlStatus={props.controlStatus}
             controlStyles={props.controlStyles}
           />
