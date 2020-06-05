@@ -374,12 +374,15 @@ function isValidHelperFunction(
   return false
 }
 
-function isSet(modifiableAttributeResult: GetModifiableAttributeResult): boolean {
+function isSet(
+  modifiableAttributeResult: GetModifiableAttributeResult,
+  realValue: unknown,
+): boolean {
   if (isLeft(modifiableAttributeResult)) {
     return true
   } else {
     if (isJSXAttributeNotFound(modifiableAttributeResult.value)) {
-      return false
+      return realValue != null
     } else if (
       isJSXAttributeValue(modifiableAttributeResult.value) ||
       isPartOfJSXAttributeValue(modifiableAttributeResult.value)
@@ -393,14 +396,18 @@ function isSet(modifiableAttributeResult: GetModifiableAttributeResult): boolean
   }
 }
 
-function isControlled(modifiableAttributeResult: GetModifiableAttributeResult): boolean {
+function isControlled(
+  modifiableAttributeResult: GetModifiableAttributeResult,
+  realValue: unknown,
+): boolean {
   if (isLeft(modifiableAttributeResult)) {
     return true
   } else {
-    if (
+    if (isJSXAttributeNotFound(modifiableAttributeResult.value)) {
+      return realValue != null
+    } else if (
       isJSXAttributeValue(modifiableAttributeResult.value) ||
       isPartOfJSXAttributeValue(modifiableAttributeResult.value) ||
-      isJSXAttributeNotFound(modifiableAttributeResult.value) ||
       isValidHelperFunction(modifiableAttributeResult.value)
     ) {
       return false
@@ -416,10 +423,11 @@ function isOverwritable(modifiableAttributeResult: GetModifiableAttributeResult)
 
 function calculatePropertyStatusPerProperty(
   modifiableAttributeResult: GetModifiableAttributeResult,
+  realValue: unknown,
 ): SinglePropertyStatus {
   return {
-    set: isSet(modifiableAttributeResult),
-    controlled: isControlled(modifiableAttributeResult),
+    set: isSet(modifiableAttributeResult, realValue),
+    controlled: isControlled(modifiableAttributeResult, realValue),
     overwritable: isOverwritable(modifiableAttributeResult),
   }
 }
@@ -427,6 +435,7 @@ function calculatePropertyStatusPerProperty(
 // TODO MEMOIZE ME!
 function calculatePropertyStatusForSelection(
   modifiableAttributeResult: ReadonlyArray<GetModifiableAttributeResult>,
+  realValues: ReadonlyArray<unknown>,
 ): PropertyStatus {
   const selectionLength = modifiableAttributeResult.length
   const firstResult = modifiableAttributeResult[0]
@@ -441,7 +450,7 @@ function calculatePropertyStatusForSelection(
   }
   if (selectionLength === 1) {
     return {
-      ...calculatePropertyStatusPerProperty(firstResult),
+      ...calculatePropertyStatusPerProperty(firstResult, realValues[0]),
       selectionLength,
       identical: true,
     }
@@ -451,15 +460,15 @@ function calculatePropertyStatusForSelection(
     let set = false
     let overwritable = true
     const firstValue = firstResult.value
-    modifiableAttributeResult.forEach((attribute) => {
+    modifiableAttributeResult.forEach((attribute, index) => {
       if (identical && isRight(attribute)) {
         // if any property is not identical, set to false
         identical = deepEqual(firstValue, attribute.value) // deepEqual here, for very large multiselection this might be bad
       }
       // if any property is controlled, set to true
-      controlled = controlled || isControlled(attribute)
+      controlled = controlled || isControlled(attribute, realValues[index])
       // if any property is set, set to true
-      set = set || isSet(attribute)
+      set = set || isSet(attribute, realValues[index])
       // if any property is not overwritable, set to false
       overwritable = overwritable && isOverwritable(attribute)
     })
@@ -475,14 +484,22 @@ function calculatePropertyStatusForSelection(
 
 export function calculateMultiPropertyStatusForSelection<
   PropertiesToControl extends ParsedPropertiesKeys
->(multiselectAtProps: MultiselectAtProps<PropertiesToControl>): PropertyStatus {
+>(
+  multiselectAtProps: MultiselectAtProps<PropertiesToControl>,
+  realValues: {
+    [key in PropertiesToControl]: {
+      realValues: ReadonlyArray<unknown>
+    }
+  },
+): PropertyStatus {
   const propertyStatuses: Array<PropertyStatus> = []
   const keys = Object.keys(multiselectAtProps)
   const selectionLength =
     keys.length > 0 ? multiselectAtProps[keys[0] as PropertiesToControl].length : 0
   keys.forEach((key) => {
-    const value = multiselectAtProps[key as PropertiesToControl]
-    propertyStatuses.push(calculatePropertyStatusForSelection(value))
+    const attribute = multiselectAtProps[key as PropertiesToControl]
+    const values = realValues[key as PropertiesToControl].realValues
+    propertyStatuses.push(calculatePropertyStatusForSelection(attribute, values))
   })
 
   let identical = true
@@ -512,13 +529,19 @@ export function calculateMultiPropertyStatusForSelection<
 // FIXME: copy pasted for component prop section
 export function calculateMultiStringPropertyStatusForSelection(
   multiselectAtProps: MultiselectAtStringProps,
+  realValues: {
+    [key in string]: {
+      realValues: ReadonlyArray<unknown>
+    }
+  },
 ): PropertyStatus {
   const propertyStatuses: Array<PropertyStatus> = []
   const keys = Object.keys(multiselectAtProps)
   const selectionLength = keys.length > 0 ? multiselectAtProps[keys[0]].length : 0
   keys.forEach((key) => {
-    const value = multiselectAtProps[key]
-    propertyStatuses.push(calculatePropertyStatusForSelection(value))
+    const attribute = multiselectAtProps[key]
+    const values = realValues[key].realValues
+    propertyStatuses.push(calculatePropertyStatusForSelection(attribute, values))
   })
 
   let identical = true
