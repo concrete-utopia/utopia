@@ -5,6 +5,7 @@ import {
   JSXAttribute,
   JSXElement,
   JSXElementName,
+  SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import { KeysPressed } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
@@ -650,7 +651,7 @@ export type TextFormattingType = 'bold' | 'italic' | 'underline'
 
 export interface SwitchLayoutSystem {
   action: 'SWITCH_LAYOUT_SYSTEM'
-  layoutSystem: LayoutSystem
+  layoutSystem: SettableLayoutSystem
 }
 
 export interface InsertImageIntoUI {

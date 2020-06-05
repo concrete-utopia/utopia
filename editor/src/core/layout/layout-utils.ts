@@ -28,6 +28,7 @@ import {
   JSXElement,
   UtopiaJSXComponent,
   JSXAttributes,
+  SettableLayoutSystem,
 } from '../shared/element-template'
 import { findJSXElementChildAtPath } from '../model/element-template-utils'
 import {
@@ -105,58 +106,24 @@ export function maybeSwitchLayoutProps(
   originalComponents: UtopiaJSXComponent[],
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle | null,
-  parentLayoutSystem: LayoutSystem | null,
+  parentLayoutSystem: SettableLayoutSystem | null,
 ): LayoutPropChangeResult {
-  let originalParentLayoutSystem: LayoutSystem = LayoutSystem.PinSystem
-  let currentParentLayoutSystem: LayoutSystem = LayoutSystem.PinSystem
   const originalParentPath = TP.parentPath(originalPath)
-  if (originalParentPath != null && TP.isInstancePath(originalParentPath)) {
-    const originalStaticParentPath = MetadataUtils.dynamicPathToStaticPath(
-      targetOriginalContextMetadata,
-      originalParentPath,
-    )
-    if (originalStaticParentPath != null) {
-      const originalParentElement = findJSXElementChildAtPath(
-        originalComponents,
-        originalStaticParentPath,
-      )
-      if (originalParentElement != null && isJSXElement(originalParentElement)) {
-        originalParentLayoutSystem = getLayoutPropertyOr<'LayoutSystem', LayoutSystem>(
-          LayoutSystem.PinSystem,
-          'LayoutSystem',
-          right(originalParentElement.props),
-        )
-      }
-    }
-  }
-  if (parentLayoutSystem == null) {
-    const currentStaticParentPath = MetadataUtils.dynamicPathToStaticPath(
-      targetOriginalContextMetadata,
-      newParentPath,
-    )
-    if (currentStaticParentPath != null) {
-      const currentParentElement = findJSXElementChildAtPath(components, currentStaticParentPath)
-      if (currentParentElement != null && isJSXElement(currentParentElement)) {
-        currentParentLayoutSystem = getLayoutPropertyOr<'LayoutSystem', LayoutSystem>(
-          LayoutSystem.PinSystem,
-          'LayoutSystem',
-          right(currentParentElement.props),
-        )
-      }
-    }
-  } else {
-    currentParentLayoutSystem = parentLayoutSystem
-  }
+  const originalParent = TP.isInstancePath(originalParentPath)
+    ? MetadataUtils.getElementByInstancePathMaybe(targetOriginalContextMetadata, originalParentPath)
+    : null
+  const newParent = TP.isInstancePath(newParentPath)
+    ? MetadataUtils.getElementByInstancePathMaybe(currentContextMetadata, newParentPath)
+    : null
 
-  const wasFlexContainer = originalParentLayoutSystem === LayoutSystem.Flex
-  const isFlexContainer = currentParentLayoutSystem === LayoutSystem.Flex
-  const wasGroup = originalParentLayoutSystem === LayoutSystem.Group
-  const isGroup = currentParentLayoutSystem === LayoutSystem.Group
-
-  const parent = MetadataUtils.getElementByInstancePathMaybe(currentContextMetadata, newParentPath)
+  let wasFlexContainer = MetadataUtils.isFlexLayoutedContainer(originalParent)
+  let isFlexContainer =
+    parentLayoutSystem === 'flex' || MetadataUtils.isFlexLayoutedContainer(newParent)
+  let wasGroup = MetadataUtils.isGroup(originalParentPath, targetOriginalContextMetadata)
+  let isGroup = MetadataUtils.isGroup(newParentPath, currentContextMetadata)
 
   // When wrapping elements in view/group the element is not available from the componentMetadata but we know the frame already.
-  if (parent == null && parentFrame != null) {
+  if (newParent == null && parentFrame != null) {
     // FIXME wrapping in a view now always switches to pinned props. maybe the user wants to keep the parent layoutsystem?
     const switchLayoutFunction =
       parentLayoutSystem === LayoutSystem.Group

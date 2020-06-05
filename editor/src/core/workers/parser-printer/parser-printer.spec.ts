@@ -328,10 +328,6 @@ import {
   View
 } from "utopia-api";
 import { cake } from 'cake'
-export var ${CanvasMetadataName} = {
-  scenes: [],
-  elementMetadata: {},
-}
 export var whatever = (props) => <View data-uid={'aaa'}>
   <cake data-uid={'aab'} data-label={'First cake'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
   <cake data-uid={'111'} data-label={'Second cake'} style={{backgroundColor: 'blue'}} left={props.rightOfTheCake[0].hat} right={10} top={-10} />
@@ -387,7 +383,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
             imports,
             [exported, EmptyUtopiaCanvasComponent],
             right(defaultCanvasMetadata()),
-            true,
+            false,
             code,
             expect.objectContaining({}),
             expect.arrayContaining([]),
@@ -1695,7 +1691,7 @@ export var whatever = <View data-uid={'aaa'}>
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  it('parses the code when it is a var and includes canvas metadata', () => {
+  it('parses the code when it is a var', () => {
     const code = `import * as React from "react";
 import {
   Ellipse,
@@ -1707,7 +1703,6 @@ import {
   View
 } from "utopia-api";
 import { cake } from 'cake'
-export var ${CanvasMetadataName} = { scenes: [], elementMetadata: {} }
 export var whatever = <View data-uid={'aaa'}>
 <cake data-uid={'aab'} style={{backgroundColor: 'red'}} />
 </View>
@@ -1730,7 +1725,7 @@ export var whatever = <View data-uid={'aaa'}>
         imports,
         [exported, EmptyUtopiaCanvasComponent],
         right({}),
-        true,
+        false,
         code,
         expect.objectContaining({}),
         expect.arrayContaining([]),
@@ -1944,10 +1939,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var ${CanvasMetadataName} = {
-  scenes: [],
-  elementMetadata: {}
-};
 function cakeFn(n) {
   return n
 }
@@ -2402,7 +2393,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var canvasMetadata = { scenes: [], elementMetadata: {} };
 export var App = props => {
   return (
     <View data-uid={'aaa'}>
@@ -2447,7 +2437,7 @@ export var App = props => {
           sampleImportsForTests,
           [component, EmptyUtopiaCanvasComponent],
           right(defaultCanvasMetadata()),
-          true,
+          false,
           code,
           expect.objectContaining({}),
           expect.arrayContaining([]),
@@ -2469,10 +2459,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var canvasMetadata = {
-  scenes: [],
-  elementMetadata: {}
-};
 export var App = props => {
   return (
     <View data-uid={'aaa'}>cake</View>
@@ -2500,7 +2486,7 @@ export var App = props => {
           sampleImportsForTests,
           [component, EmptyUtopiaCanvasComponent],
           right(defaultCanvasMetadata()),
-          true,
+          false,
           code,
           expect.objectContaining({}),
           expect.arrayContaining([]),
@@ -2521,10 +2507,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var canvasMetadata = {
-  scenes: [],
-  elementMetadata: {}
-};
 export var App = props => {
   return (
     <View data-uid={'aaa'}>
@@ -2574,7 +2556,7 @@ export var App = props => {
           sampleImportsForTests,
           [component, EmptyUtopiaCanvasComponent],
           right(defaultCanvasMetadata()),
-          true,
+          false,
           code,
           expect.objectContaining({}),
           expect.arrayContaining([]),
@@ -2689,10 +2671,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var canvasMetadata = {
-  scenes: [],
-  elementMetadata: {}
-};
 export var App = props => {
   const a = 20;
   const b = 40;
@@ -2836,7 +2814,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
           sampleImportsForTests,
           [component, EmptyUtopiaCanvasComponent],
           right(defaultCanvasMetadata()),
-          true,
+          false,
           code,
           expect.objectContaining({}),
           expect.arrayContaining([]),
@@ -2859,10 +2837,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var canvasMetadata = {
-  scenes: [],
-  elementMetadata: {}
-};
 export var App = props => {
   return (
     <View data-uid={'aaa'} booleanProperty />
@@ -2891,7 +2865,7 @@ export var App = props => {
           sampleImportsForTests,
           [component, EmptyUtopiaCanvasComponent],
           right(defaultCanvasMetadata()),
-          true,
+          false,
           code,
           expect.objectContaining({}),
           expect.arrayContaining([]),

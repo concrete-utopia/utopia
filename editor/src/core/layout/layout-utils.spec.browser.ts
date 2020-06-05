@@ -27,8 +27,7 @@ describe('maybeSwitchLayoutProps', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202 }}
-          layout={{ layoutSystem: 'flex' }}
+          style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
           data-uid={'bbb'}
         />
       </View>
@@ -115,8 +114,7 @@ describe('maybeSwitchLayoutProps', () => {
           data-uid={'aaa'}
         >
           <View
-            style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202 }}
-            layout={{ layoutSystem: 'flex' }}
+            style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
             data-uid={'bbb'}
           >
             <Button style={{}} data-uid={'catdog'} />

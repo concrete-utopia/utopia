@@ -194,15 +194,6 @@ export interface FlexParentProps {
 }
 
 export function flexParentPropsToStyle(props: FlexParentProps): Partial<React.CSSProperties> {
-  return {
-    display: 'flex',
-    ...flexParentPropsToStyleWithoutDisplayFlex(props),
-  }
-}
-
-export function flexParentPropsToStyleWithoutDisplayFlex(
-  props: FlexParentProps,
-): Partial<React.CSSProperties> {
   const styleToReturn: Partial<React.CSSProperties> = {
     flexDirection: props.flexDirection,
     alignContent: props.alignContent,
