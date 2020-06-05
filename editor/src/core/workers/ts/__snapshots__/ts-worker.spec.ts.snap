@@ -142,15 +142,15 @@ export var App = (props) => {
   };
 }); //# sourceMappingURL=app.ui.js.map",
     },
-    "/public/preview.jsx": Object {
+    "/src/index.js": Object {
       "errors": Array [],
       "sourceMap": Object {
-        "file": "preview.js",
+        "file": "index.js",
         "mappings": ";;;;;;;;;;;;;;;;AAIM,MAAA,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAP;;AACN,UAAI,IAAI,IAAI,IAAZ,EAAkB;AAClB,QAAA,QAAQ,CAAC,MAAT,CAAgB,KAAA,CAAA,aAAA,CAAC,QAAA,CAAA,GAAD,EAAI,IAAJ,CAAhB,EAAyB,IAAzB;AACC;AAAC",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
-          "../../public/preview.jsx",
+          "../../src/index.js",
         ],
         "sourcesContent": Array [
           "import * as React from \\"react\\";
@@ -508,7 +508,7 @@ if (root != null) {
 ReactDOM.render(<App />, root);
 }",
       "exportTypes": Object {},
-      "filename": "/public/preview.jsx",
+      "filename": "/src/index.js",
     },
   ],
   "fullBuild": true,

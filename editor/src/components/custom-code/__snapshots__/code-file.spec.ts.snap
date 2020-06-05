@@ -501,7 +501,7 @@ export var App = (props) => {
 });
 //# sourceMappingURL=app.ui.js.map",
     },
-    "/public/preview.jsx": Object {
+    "/src/index.js": Object {
       "error": null,
       "errors": Array [],
       "exports": Object {
@@ -515,12 +515,12 @@ export var App = (props) => {
         },
       },
       "sourceMap": Object {
-        "file": "preview.js",
+        "file": "index.js",
         "mappings": ";;;;;;;;;;;;;;;;;YAIM,IAAI,GAAG,QAAQ,CAAC,cAAc,CAAC,MAAM,CAAC,CAAC;YAC7C,IAAI,IAAI,IAAI,IAAI,EAAE;gBAClB,QAAQ,CAAC,MAAM,CAAC,oBAAC,YAAG,IAAC,KAAK,EAAE,EAAC,IAAI,EAAE,CAAC,EAAE,GAAG,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,MAAM,EAAE,GAAG,EAAC,GAAI,EAAE,IAAI,CAAC,CAAC;aACjF;QAAA,CAAC",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
-          "../../public/preview.jsx",
+          "../../src/index.js",
         ],
         "sourcesContent": Array [
           "import * as React from \\"react\\";
@@ -558,7 +558,7 @@ ReactDOM.render(<App />, root);
         }
     };
 });
-//# sourceMappingURL=preview.js.map",
+//# sourceMappingURL=index.js.map",
     },
     "/src/components.js": Object {
       "error": null,
@@ -894,7 +894,7 @@ if (root != null) {
 ReactDOM.render(<App />, root);
 }",
       "exportTypes": Object {},
-      "filename": "/public/preview.jsx",
+      "filename": "/src/index.js",
     },
   ],
   "propertyControlsInfo": Object {

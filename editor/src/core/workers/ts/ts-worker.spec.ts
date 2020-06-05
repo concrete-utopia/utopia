@@ -252,13 +252,13 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
     '/public': {
       type: 'DIRECTORY',
     },
-    '/public/preview.jsx': {
+    '/src/index.js': {
       type: 'CODE_FILE',
       fileContents:
         'import * as React from "react";\nimport * as ReactDOM from "react-dom";\nimport { App } from "../app.ui";\n\nconst root = document.getElementById("root");\nif (root != null) {\nReactDOM.render(<App />, root);\n}',
       lastSavedContents: null,
     },
-    '/public/preview.html': {
+    '/public/index.html': {
       type: 'CODE_FILE',
       fileContents:
         '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>Utopia React App</title>\n</head>\n<body>\n<div id="root"></div>\n</body>\n</html>',

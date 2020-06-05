@@ -1209,8 +1209,8 @@ export const DefaultPackageJson = {
   version: '0.1.0',
   utopia: {
     'main-ui': 'src/app.ui.js',
-    html: 'preview.html',
-    js: 'preview.jsx',
+    html: 'index.html',
+    js: 'index.js',
   },
   dependencies: {
     ...defaultDependencies,

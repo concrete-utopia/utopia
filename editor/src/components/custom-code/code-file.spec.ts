@@ -86,15 +86,15 @@ const SampleMultiFileBuildResult = {
       ],
     },
   },
-  '/public/preview.jsx': {
+  '/src/index.js': {
     errors: [],
     transpiledCode:
       'System.register(["react", "react-dom", "../app.ui"], function (exports_1, context_1) {\r\n    "use strict";\r\n    var React, ReactDOM, app_ui_1, root;\r\n    var __moduleName = context_1 && context_1.id;\r\n    return {\r\n        setters: [\r\n            function (React_1) {\r\n                React = React_1;\r\n            },\r\n            function (ReactDOM_1) {\r\n                ReactDOM = ReactDOM_1;\r\n            },\r\n            function (app_ui_1_1) {\r\n                app_ui_1 = app_ui_1_1;\r\n            }\r\n        ],\r\n        execute: function () {\r\n            root = document.getElementById("root");\r\n            if (root != null) {\r\n                ReactDOM.render(React.createElement(app_ui_1.App, { style: { left: 0, top: 0, width: 375, height: 812 } }), root);\r\n            }\r\n        }\r\n    };\r\n});\r\n//# sourceMappingURL=preview.js.map',
     sourceMap: {
       version: 3,
-      file: 'preview.js',
+      file: 'index.js',
       sourceRoot: '',
-      sources: ['../../public/preview.jsx'],
+      sources: ['../../src/index.js'],
       names: [],
       mappings:
         ';;;;;;;;;;;;;;;;;YAIM,IAAI,GAAG,QAAQ,CAAC,cAAc,CAAC,MAAM,CAAC,CAAC;YAC7C,IAAI,IAAI,IAAI,IAAI,EAAE;gBAClB,QAAQ,CAAC,MAAM,CAAC,oBAAC,YAAG,IAAC,KAAK,EAAE,EAAC,IAAI,EAAE,CAAC,EAAE,GAAG,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,MAAM,EAAE,GAAG,EAAC,GAAI,EAAE,IAAI,CAAC,CAAC;aACjF;QAAA,CAAC',
@@ -159,7 +159,7 @@ const SampleMultiFileExportsInfo: Array<ExportsInfo> = [
     },
   },
   {
-    filename: '/public/preview.jsx',
+    filename: '/src/index.js',
     code:
       'import * as React from "react";\nimport * as ReactDOM from "react-dom";\nimport { App } from "../app.ui";\n\nconst root = document.getElementById("root");\nif (root != null) {\nReactDOM.render(<App />, root);\n}',
     exportTypes: {},

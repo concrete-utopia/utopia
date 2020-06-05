@@ -27,7 +27,7 @@ export const SampleFileBuildResult = JSON.parse(`{
     "sourceMap": {
       "version": 3,
       "sources": [
-        "../../public/preview.jsx"
+        "../src/index.js"
       ],
       "names": [],
       "mappings": ";;;;;;;;;;;;;;;;AAIM,MAAA,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAP;;AACN,UAAI,IAAI,IAAI,IAAZ,EAAkB;AAChB,QAAA,QAAQ,CAAC,MAAT,CAAgB,KAAA,CAAA,aAAA,CAAC,QAAA,CAAA,GAAD,EAAI,IAAJ,CAAhB,EAAyB,IAAzB;AACD;AAAC",
@@ -35,7 +35,7 @@ export const SampleFileBuildResult = JSON.parse(`{
         "import * as React from \\"react\\";\\nimport * as ReactDOM from \\"react-dom\\";\\nimport { App } from \\"../src/app.ui\\";\\n\\nconst root = document.getElementById(\\"root\\");\\nif (root != null) {\\n  ReactDOM.render(<App />, root);\\n}"
       ],
       "sourceRoot": "",
-      "file": "preview.js"
+      "file": "index.js"
     }
   }
 }`)
@@ -66,8 +66,8 @@ export const SampleFileBundledExportsInfo: Array<ExportsInfo> = JSON.parse(`[
     }
   },
   {
-    "filename": "/public/preview.jsx",
-    "code": "import * as React from \\"react\\";\\nimport * as ReactDOM from \\"react-dom\\";\\nimport { App } from \\"../src/app.ui\\";\\n\\nconst root = document.getElementById(\\"root\\");\\nif (root != null) {\\n  ReactDOM.render(<App />, root);\\n}",
+    "filename": "/src/index.js",
+    "code": "import * as React from \\"react\\";\\nimport * as ReactDOM from \\"react-dom\\";\\nimport { App } from \\"../src/app\\";\\n\\nconst root = document.getElementById(\\"root\\");\\nif (root != null) {\\n  ReactDOM.render(<App />, root);\\n}",
     "exportTypes": {}
   }
 ]`)
