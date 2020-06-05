@@ -3,15 +3,15 @@
 exports[`Typescript worker builds the project initializing a new project 1`] = `
 Object {
   "buildResult": Object {
-    "/app.ui.js": Object {
+    "/app.js": Object {
       "errors": Array [],
       "sourceMap": Object {
-        "file": "app.ui.js",
+        "file": "app.js",
         "mappings": ";;;;;;;;;;;;;;AAkDA,MAAA,SAAA,CAAA,gBAAA,EAAW,cAAc,GAAG;AAC1B,QAAA,MAAM,EAAE,CACN;AACE,UAAA,SAAS,EAAE,KADb;AAEE,UAAA,KAAK,EAAE;AAAE,YAAA,MAAM,EAAE,GAAV;AAAe,YAAA,IAAI,EAAE,CAArB;AAAwB,YAAA,KAAK,EAAE,GAA/B;AAAoC,YAAA,GAAG,EAAE;AAAzC,WAFT;AAGE,UAAA,KAAK,EAAE;AAAE,YAAA,MAAM,EAAE;AAAE,cAAA,GAAG,EAAE,CAAP;AAAU,cAAA,IAAI,EAAE,CAAhB;AAAmB,cAAA,MAAM,EAAE,CAA3B;AAA8B,cAAA,KAAK,EAAE;AAArC;AAAV,WAHT;AAIE,UAAA,SAAS,EAAE;AAAE,YAAA,YAAY,EAAE;AAAhB;AAJb,SADM,CADkB;AAS1B,QAAA,eAAe,EAAE;AATS,OAA5B,CAAA;AAYA,MAAA,SAAA,CAAA,KAAA,EAAW,GAAG,GAAG,aAAC,KAAD,EAAU;AACzB,eACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,UAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAQ,KAAK,CAAC,KAAN,IAAe,EAAvB,CAAA,EAA0B;AAAE,YAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApC,WAA1B,CADF;AAEH,UAAA,MAAM,EAAE;AAAE,YAAA,YAAY,EAAE;AAAhB,WAFL;AAEkC,sBAC3B;AAHP,SAAL,CADF;AAOD,OARD,CAAA;AAUC",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
-          "../app.ui.js",
+          "../app.js",
         ],
         "sourcesContent": Array [
           "/** @jsx jsx */
@@ -140,7 +140,7 @@ export var App = (props) => {
       });
     }
   };
-}); //# sourceMappingURL=app.ui.js.map",
+}); //# sourceMappingURL=app.js.map",
     },
     "/src/index.js": Object {
       "errors": Array [],
@@ -155,7 +155,7 @@ export var App = (props) => {
         "sourcesContent": Array [
           "import * as React from \\"react\\";
 import * as ReactDOM from \\"react-dom\\";
-import { App } from \\"../app.ui\\";
+import { App } from \\"../app\\";
 
 const root = document.getElementById(\\"root\\");
 if (root != null) {
@@ -164,10 +164,10 @@ ReactDOM.render(<App />, root);
         ],
         "version": 3,
       },
-      "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../app.ui\\"], function (exports_1, context_1) {
+      "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../app\\"], function (exports_1, context_1) {
   \\"use strict\\";
 
-  var React, ReactDOM, app_ui_1, root;
+  var React, ReactDOM, app_1, root;
 
   var __moduleName = context_1 && context_1.id;
 
@@ -176,18 +176,18 @@ ReactDOM.render(<App />, root);
       React = React_1;
     }, function (ReactDOM_1) {
       ReactDOM = ReactDOM_1;
-    }, function (app_ui_1_1) {
-      app_ui_1 = app_ui_1_1;
+    }, function (app_1_1) {
+      app_1 = app_1_1;
     }],
     execute: function execute() {
       root = document.getElementById(\\"root\\");
 
       if (root != null) {
-        ReactDOM.render(React.createElement(app_ui_1.App, null), root);
+        ReactDOM.render(React.createElement(app_1.App, null), root);
       }
     }
   };
-}); //# sourceMappingURL=preview.js.map",
+}); //# sourceMappingURL=index.js.map",
     },
     "/src/components.js": Object {
       "errors": Array [],
@@ -418,7 +418,7 @@ export var App = (props) => {
           "type": "{ scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { layoutSystem: string; }; }[]; elementMetadata: {}; }",
         },
       },
-      "filename": "/app.ui.js",
+      "filename": "/app.js",
     },
     Object {
       "code": "// component library
@@ -501,7 +501,7 @@ ComponentWithProps.propertyControls = {
     Object {
       "code": "import * as React from \\"react\\";
 import * as ReactDOM from \\"react-dom\\";
-import { App } from \\"../app.ui\\";
+import { App } from \\"../app\\";
 
 const root = document.getElementById(\\"root\\");
 if (root != null) {
