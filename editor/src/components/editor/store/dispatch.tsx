@@ -122,6 +122,7 @@ function processAction(
       editorAfterUpdateFunction,
       working.derived,
       action as CanvasAction,
+      dispatchEvent,
     )
     let editorAfterNavigator = runLocalNavigatorAction(
       editorAfterCanvas,
