@@ -33,10 +33,10 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
     '/package.json': {
       type: 'CODE_FILE',
       fileContents:
-        '{\n  "name": "Utopia Project",\n  "version": "0.1.0",\n  "utopia": {\n    "main-ui": "main.ui.js",\n    "html": "preview.html",\n    "js": "preview.jsx"\n  },\n  "dependencies": {\n    "react": "16.8.6",\n    "@types/react": "16.8.17",\n    "csstype": "2.6.7",\n    "react-dom": "16.8.6",\n    "@types/react-dom": "16.8.4",\n    "utopia-api": "0.4.1",\n    "react-spring": "8.0.27"\n  }\n}',
+        '{\n  "name": "Utopia Project",\n  "version": "0.1.0",\n  "utopia": {\n    "main-ui": "app.js",\n    "html": "index.html",\n    "js": "index.js"\n  },\n  "dependencies": {\n    "react": "16.8.6",\n    "@types/react": "16.8.17",\n    "csstype": "2.6.7",\n    "react-dom": "16.8.6",\n    "@types/react-dom": "16.8.4",\n    "utopia-api": "0.4.1",\n    "react-spring": "8.0.27"\n  }\n}',
       lastSavedContents: null,
     },
-    '/app.ui.js': {
+    '/app.js': {
       type: 'UI_JS_FILE',
       fileContents: {
         type: 'RIGHT',
@@ -255,7 +255,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
     '/src/index.js': {
       type: 'CODE_FILE',
       fileContents:
-        'import * as React from "react";\nimport * as ReactDOM from "react-dom";\nimport { App } from "../app.ui";\n\nconst root = document.getElementById("root");\nif (root != null) {\nReactDOM.render(<App />, root);\n}',
+        'import * as React from "react";\nimport * as ReactDOM from "react-dom";\nimport { App } from "../app";\n\nconst root = document.getElementById("root");\nif (root != null) {\nReactDOM.render(<App />, root);\n}',
       lastSavedContents: null,
     },
     '/public/index.html': {

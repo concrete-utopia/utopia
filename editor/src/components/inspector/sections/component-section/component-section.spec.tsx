@@ -27,7 +27,7 @@ describe('Scene Section', () => {
       ] // TODO add a Component instance to the test file and select that!
       store.editor.codeResultCache = {
         propertyControlsInfo: {
-          '/src/app.ui': {
+          '/src/app': {
             MyComponent: {
               text: {
                 type: 'string',

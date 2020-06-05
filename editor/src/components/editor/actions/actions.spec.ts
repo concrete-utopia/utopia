@@ -107,10 +107,10 @@ describe('SET_PROP', () => {
   const testEditor: EditorState = deepFreeze({
     ...createEditorState(),
     projectContents: {
-      '/src/app.ui.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
+      '/src/app.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
     },
     selectedFile: {
-      tab: openFileTab('/src/app.ui.js'),
+      tab: openFileTab('/src/app.js'),
       initialCursorPosition: null,
     },
     jsxMetadataKILLME: createFakeMetadataForComponents(originalModel.topLevelElements),
@@ -122,7 +122,7 @@ describe('SET_PROP', () => {
       jsxAttributeValue(100),
     )
     const newEditor = UPDATE_FNS.SET_PROP(action, testEditor)
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -199,10 +199,10 @@ describe('SET_CANVAS_FRAMES', () => {
   const testEditor: EditorState = deepFreeze({
     ...createEditorState(),
     projectContents: {
-      '/src/app.ui.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
+      '/src/app.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
     },
     selectedFile: {
-      tab: openFileTab('/src/app.ui.js'),
+      tab: openFileTab('/src/app.js'),
       initialCursorPosition: null,
     },
     jsxMetadataKILLME: createFakeMetadataForComponents(originalModel.topLevelElements),
@@ -220,7 +220,7 @@ describe('SET_CANVAS_FRAMES', () => {
       false,
     )
     const newEditor = UPDATE_FNS.SET_CANVAS_FRAMES(action, testEditor, derivedState)
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -316,10 +316,10 @@ describe('moveTemplate', () => {
     let editor: EditorState = {
       ...createEditorState(),
       projectContents: {
-        '/src/app.ui.js': uiJsFile(right(uiFile), null, RevisionsState.ParsedAhead, 0),
+        '/src/app.js': uiJsFile(right(uiFile), null, RevisionsState.ParsedAhead, 0),
       },
       selectedFile: {
-        tab: openFileTab('/src/app.ui.js'),
+        tab: openFileTab('/src/app.js'),
         initialCursorPosition: null,
       },
     }
@@ -345,7 +345,7 @@ describe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -385,7 +385,7 @@ describe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js']
+    const newUiJsFile = newEditor.projectContents['/src/app.js']
     if (isUIJSFile(newUiJsFile)) {
       if (isParseSuccess(newUiJsFile.fileContents)) {
         const newTopLevelElements = newUiJsFile.fileContents.value.topLevelElements
@@ -401,7 +401,7 @@ describe('moveTemplate', () => {
         fail('File does not contain parse success.')
       }
     } else {
-      fail('src/app.ui.js is not a UI JS file.')
+      fail('src/app.js is not a UI JS file.')
     }
   })
 
@@ -433,7 +433,7 @@ describe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -463,7 +463,7 @@ describe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -492,7 +492,7 @@ describe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -522,7 +522,7 @@ describe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -551,7 +551,7 @@ describe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -596,7 +596,7 @@ describe('moveTemplate', () => {
       LayoutSystem.Group,
     ).editor
 
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -643,7 +643,7 @@ describe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -689,7 +689,7 @@ describe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = newEditor.projectContents['/src/app.ui.js'] as UIJSFile
+    const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
     expect(isUIJSFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
     const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
@@ -725,10 +725,10 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   const testEditorWithPins: EditorState = deepFreeze({
     ...createEditorState(),
     projectContents: {
-      '/src/app.ui.js': fileForUI,
+      '/src/app.js': fileForUI,
     },
     selectedFile: {
-      tab: openFileTab('/src/app.ui.js'),
+      tab: openFileTab('/src/app.js'),
       initialCursorPosition: null,
     },
     jsxMetadataKILLME: [
