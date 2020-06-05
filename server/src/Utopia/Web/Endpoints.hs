@@ -36,7 +36,6 @@ import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Proxy
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
-import           Utopia.Web.Websockets
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
 
@@ -389,7 +388,6 @@ unprotected = authenticate
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectThumbnailEndpoint
-         :<|> websocketsEndpoint
          :<|> monitoringEndpoint
          :<|> packagePackagerEndpoint
          :<|> getPackageJSONEndpoint

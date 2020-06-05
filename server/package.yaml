@@ -5,7 +5,7 @@ description: Utopia Web
 github: concrete-utopia/utopia
 category: Development
 license: MIT
-ghc-options: -Wall -Werror -threaded
+ghc-options: -Wall -Werror -threaded -rtsopts
 dependencies:
   - aeson
   - aeson-pretty
@@ -27,7 +27,6 @@ dependencies:
   - exceptions
   - filepath
   - free
-  - hedis
   - http-api-data
   - http-client
   - http-client-tls

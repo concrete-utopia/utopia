@@ -22,7 +22,6 @@ import qualified Text.Blaze.Html5        as H
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
-import           Utopia.Web.Websockets
 
 {-
   'deriveJSON' as used here creates 'Data.Aeson.FromJSON' and 'Data.Aeson.ToJSON' instances
@@ -152,7 +151,6 @@ type Unprotected = AuthenticateAPI
               :<|> LoadProjectAssetAPI
               :<|> PreviewProjectAssetAPI
               :<|> LoadProjectThumbnailAPI
-              :<|> WebsocketsAPI
               :<|> MonitoringAPI
               :<|> PackagePackagerAPI
               :<|> GetPackageJSONAPI
