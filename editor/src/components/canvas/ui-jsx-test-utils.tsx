@@ -198,7 +198,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
 }
 
 export function getPrintedUiJsCode(store: EditorStore): string {
-  return ((store.editor.projectContents['/src/app.ui.js'] as UIJSFile).fileContents as Right<
+  return ((store.editor.projectContents['/src/app.js'] as UIJSFile).fileContents as Right<
     ParseSuccess
   >).value.code
 }
