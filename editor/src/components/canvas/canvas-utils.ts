@@ -115,6 +115,7 @@ import {
   getStoryboardTemplatePathFromEditorState,
   addSceneToJSXComponents,
   getNumberOfScenes,
+  getStoryboardUID,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -1884,17 +1885,22 @@ export function duplicate(
               newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
               uid = duplicateNewUID.newUID
             }
-            const newPath =
-              newParentPath == null
-                ? TP.scenePath([BakedInStoryboardUID, uid])
-                : TP.appendToPath(newParentPath, uid)
+            let newPath: TemplatePath | null = null
+            if (newParentPath == null) {
+              const storyboardUID = getStoryboardUID(utopiaComponents)
+              if (storyboardUID != null) {
+                newPath = TP.scenePath([storyboardUID, uid])
+              }
+            } else {
+              newPath = TP.appendToPath(newParentPath, uid)
+            }
             // Update the original frames to be the duplicate ones.
-            if (newOriginalFrames != null) {
+            if (newOriginalFrames != null && newPath != null) {
               newOriginalFrames = newOriginalFrames.map((originalFrame) => {
                 if (TP.pathsEqual(originalFrame.target, path)) {
                   return {
                     frame: originalFrame.frame,
-                    target: newPath,
+                    target: newPath as TemplatePath,
                   }
                 } else {
                   return originalFrame
@@ -1924,7 +1930,7 @@ export function duplicate(
               )
             }
 
-            if (newElement == null) {
+            if (newElement == null || newPath == null) {
               console.warn(`Could not duplicate ${TP.toVarSafeComponentId(path)}`)
               return null
             } else {

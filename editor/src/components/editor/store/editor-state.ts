@@ -1419,6 +1419,16 @@ export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMeta
   }
 }
 
+export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string | null {
+  const possiblyStoryboard = openComponents.find(
+    (component) => component.name === BakedInStoryboardVariableName,
+  )
+  if (possiblyStoryboard != null) {
+    return getUtopiaID(possiblyStoryboard.rootElement)
+  }
+  return null
+}
+
 export function getStoryboardTemplatePath(
   openComponents: UtopiaJSXComponent[],
 ): StaticInstancePath | null {
