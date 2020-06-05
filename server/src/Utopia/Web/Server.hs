@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wno-warnings-deprecations #-}
 
 module Utopia.Web.Server where
@@ -16,12 +17,12 @@ import           Network.HTTP.Types.Status
 import           Network.Wai.Middleware.Gzip
 import           Protolude
 import           Servant
+-- import Servant.Server
 import           Utopia.Web.Ekg
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
-
-
+-- import Utopia.Web.Endpoints
 
 import qualified Data.ByteString.Char8       as S8
 import           Data.IORef
@@ -53,13 +54,13 @@ previewInnerPathRedirection _ _ _ _                            = Nothing
 -}
 redirector :: [Redirection] -> Middleware
 redirector redirections applicationToWrap request sendResponse =
-  let rawPath = toS $ rawPathInfo request
-      rawQuery = toS $ rawQueryString request
+  let rawPath = decodeUtf8 $ rawPathInfo request
+      rawQuery = decodeUtf8 $ rawQueryString request
       pathParts = pathInfo request
       method = requestMethod request
       possibleRedirection = getFirst $ foldMap (\redirection -> First $ redirection pathParts method rawPath rawQuery) redirections
       passthrough = applicationToWrap request sendResponse
-      redirectTo target = sendResponse $ responseLBS temporaryRedirect307 [("Location", toS target)] mempty
+      redirectTo target = sendResponse $ responseLBS temporaryRedirect307 [("Location", encodeUtf8 target)] mempty
   in  maybe passthrough redirectTo possibleRedirection
 
 tooLargeResponse :: Response
@@ -128,6 +129,5 @@ runServerWithResources EnvironmentRuntime{..} = do
     $ requestRewriter assetsCache
     $ gzip def
     $ monitorEndpoints apiProxy meterMap
-    $ serverApplication
-    $ _serverAPI resources
+    $ serverApplication (_serverAPI resources)
   return (killThread threadId >> shutdown)

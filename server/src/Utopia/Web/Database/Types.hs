@@ -10,6 +10,9 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Utopia.Web.Database.Types where
 

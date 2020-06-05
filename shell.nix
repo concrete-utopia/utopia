@@ -1,5 +1,5 @@
 { 
-  compiler ? "ghc865",
+  compiler ? "ghc883",
   includeServerBuildSupport ? true,
   includeEditorBuildSupport ? true,
   includeRunLocallySupport ? true,
@@ -198,9 +198,9 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server/src
-      find . -name '*.hs' | xargs ${pkgs.haskellPackages.stylish-haskell}/bin/stylish-haskell -i
+      ${pkgs.haskellPackages.ormolu.bin}/bin/ormolu --mode inplace $(find . -name '*.hs')
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server/test
-      find . -name '*.hs' | xargs ${pkgs.haskellPackages.stylish-haskell}/bin/stylish-haskell -i
+      ${pkgs.haskellPackages.ormolu.bin}/bin/ormolu --mode inplace Build.hs
     '')
     (pkgs.writeScriptBin "run-server-inner" ''
       #!/usr/bin/env bash
@@ -323,7 +323,7 @@ let
     cabal
     ghc
     pkgs.cabal2nix
-    pkgs.haskellPackages.stylish-haskell
+    pkgs.haskellPackages.ormolu
     pkgs.haskellPackages.hpack
     release.custom-cabal-plan
     pkgs.postgresql

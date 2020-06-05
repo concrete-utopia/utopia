@@ -8,10 +8,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 module Utopia.Web.Ekg where
--- Stolen wholesale from: https://github.com/jkachmar/servant-ekg/blob/test-without-mvar/lib/Servant/Ekg.hs
 
 import qualified Data.HashMap.Strict         as H
-import           Data.Text                   (Text)
 import qualified Data.Text                   as T
 import qualified Data.Text.Encoding          as T
 import           Data.Time.Clock

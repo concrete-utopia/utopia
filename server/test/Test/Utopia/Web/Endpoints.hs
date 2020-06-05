@@ -8,6 +8,7 @@ module Test.Utopia.Web.Endpoints where
 import           Control.Lens                   hiding ((.=))
 import           Data.Aeson
 import           Data.Time
+import qualified Data.ByteString.Lazy as BL
 import           GHC.Conc
 import           Network.HTTP.Client            (CookieJar, cookie_value,
                                                  defaultManagerSettings,
@@ -43,8 +44,8 @@ withServer action = do
     identity
     (const (waitUntilServerUp >> action))
 
-errorWithStatusCode :: Status -> Either ServantError a -> Bool
-errorWithStatusCode expectedStatus (Left (FailureResponse response)) = responseStatusCode response == expectedStatus
+errorWithStatusCode :: Status -> Either ClientError a -> Bool
+errorWithStatusCode expectedStatus (Left (FailureResponse _ response)) = responseStatusCode response == expectedStatus
 errorWithStatusCode _ _                                              = False
 
 withClientAndCookieJar :: ((ClientEnv, TVar CookieJar) -> IO a) -> IO a
@@ -52,7 +53,7 @@ withClientAndCookieJar specCall = do
   let testBaseUrl = BaseUrl Http "localhost" 8888 mempty
   httpManager <- newManager defaultManagerSettings
   httpCookieJar <- newTVarIO mempty
-  let clientEnv = ClientEnv httpManager testBaseUrl (Just httpCookieJar)
+  let clientEnv = ClientEnv httpManager testBaseUrl (Just httpCookieJar) defaultMakeClientRequest
   specCall (clientEnv, httpCookieJar)
 
 withClient :: (ClientEnv -> IO a) -> IO a
@@ -65,7 +66,7 @@ getCookieHeader cookieJarTVar = do
   let sessionCookie = cookies ^? element 0
   return $ do
     cookieDetails <- sessionCookie
-    return ("JSESSIONID=" <> (toS $ cookie_value cookieDetails))
+    return ("JSESSIONID=" <> (decodeUtf8 $ cookie_value cookieDetails))
 
 getLoadedTitleAndContents :: LoadProjectResponse -> Maybe (Text, Value)
 getLoadedTitleAndContents ProjectLoaded{..} = Just (_title, _content)
@@ -75,7 +76,7 @@ getPossibleModifiedAt :: LoadProjectResponse -> Maybe UTCTime
 getPossibleModifiedAt ProjectLoaded{..} = Just _modifiedAt
 getPossibleModifiedAt _                 = Nothing
 
-withClientEnv :: ClientEnv -> ClientM a -> IO (Either ServantError a)
+withClientEnv :: ClientEnv -> ClientM a -> IO (Either ClientError a)
 withClientEnv = flip runClientM
 
 authenticateClient :: Maybe Text -> Maybe Text -> ClientM (Headers '[Header "Set-Cookie" SetCookie] Text)
@@ -147,13 +148,13 @@ updateAssetPathSpec =
         return (fromNewPath, projectId)
       -- Check the contents.
       (assetFromNewPath, savedProjectId) <- either throwIO return assetFromNewPathResult
-      (responseBody assetFromNewPath) `shouldBe` (toS jpgBytes)
+      (responseBody assetFromNewPath) `shouldBe` (BL.fromStrict jpgBytes)
       -- Attempt to load the asset from the old path.
       assetFromOldPathResult <- withClientEnv clientEnv $ do
         fromOldPath <- loadProjectAssetClient savedProjectId "assets" ["picture.jpg"] identity
         return fromOldPath
       case assetFromOldPathResult of
-        (Left (FailureResponse response)) -> responseStatusCode response `shouldBe` notFound404
+        (Left (FailureResponse _ response)) -> responseStatusCode response `shouldBe` notFound404
         (Left _)                          -> expectationFailure "Unexpected response type."
         (Right _)                         -> expectationFailure "Unexpected successful response."
 
@@ -174,7 +175,7 @@ deleteAssetSpec =
         loaded <- loadProjectAssetClient projectId "assets" ["picture.jpg"] identity
         return loaded
       case loadedFromPath of
-        (Left (FailureResponse response)) -> responseStatusCode response `shouldBe` notFound404
+        (Left (FailureResponse _ response)) -> responseStatusCode response `shouldBe` notFound404
         (Left _)                          -> expectationFailure "Unexpected response type."
         (Right _)                         -> expectationFailure "Unexpected successful response."
 

@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.32.0.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1e5b18ecbc7d1b9622726a3153f6ae452afa99495958319fe93d79314e8439fd
+-- hash: 67444b652249b278a8a9b5ef9d9125c821e1bd8a91f94f2bfc892660cf0aa370
 
 name:           utopia-web
 version:        0.1.0.4
@@ -54,9 +54,9 @@ executable utopia-web
   build-depends:
       aeson
     , aeson-pretty
-    , amazonka
-    , amazonka-core
-    , amazonka-s3
+    , amazonka ==1.6.1
+    , amazonka-core ==1.6.1
+    , amazonka-s3 ==1.6.1
     , base >=4.7 && <5
     , base16-bytestring
     , binary
@@ -87,18 +87,18 @@ executable utopia-web
     , network-uri
     , path-pieces
     , pathwalk
-    , persistent <2.10.0
+    , persistent
     , persistent-postgresql
     , persistent-sqlite
     , persistent-template
     , process
     , protolude
     , resource-pool
-    , servant ==0.15
+    , servant ==0.17
     , servant-blaze
-    , servant-client ==0.15
-    , servant-rawm ==0.3.0.0
-    , servant-server ==0.15
+    , servant-client ==0.17
+    , servant-rawm
+    , servant-server ==0.17
     , servant-websockets
     , serversession
     , serversession-backend-persistent
@@ -158,9 +158,9 @@ test-suite utopia-web-test
   build-depends:
       aeson
     , aeson-pretty
-    , amazonka
-    , amazonka-core
-    , amazonka-s3
+    , amazonka ==1.6.1
+    , amazonka-core ==1.6.1
+    , amazonka-s3 ==1.6.1
     , base >=4.7 && <5
     , base16-bytestring
     , binary
@@ -192,7 +192,7 @@ test-suite utopia-web-test
     , network-uri
     , path-pieces
     , pathwalk
-    , persistent <2.10.0
+    , persistent
     , persistent-postgresql
     , persistent-sqlite
     , persistent-template
@@ -200,12 +200,12 @@ test-suite utopia-web-test
     , process
     , protolude
     , resource-pool
-    , servant ==0.15
+    , servant ==0.17
     , servant-blaze
-    , servant-client ==0.15
+    , servant-client ==0.17
     , servant-client-core
-    , servant-rawm ==0.3.0.0
-    , servant-server ==0.15
+    , servant-rawm
+    , servant-server ==0.17
     , servant-websockets
     , serversession
     , serversession-backend-persistent
