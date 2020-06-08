@@ -420,8 +420,6 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     ),
   )
 
-  const propertyStatus = calculateMultiPropertyStatusForSelection(multiselectAtProps)
-
   const selectedProps = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
@@ -445,6 +443,12 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     multiselectAtProps,
     selectedProps,
   )
+
+  const propertyStatus = calculateMultiPropertyStatusForSelection(
+    multiselectAtProps,
+    simpleAndRawValues,
+  )
+
   let isUnknown = false
   const values = Utils.mapArrayToDictionary(
     propKeys,
@@ -586,8 +590,6 @@ export function useInspectorInfoSimpleUntyped(
     ),
   )
 
-  const propertyStatus = calculateMultiStringPropertyStatusForSelection(multiselectAtProps)
-
   const selectedProps = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
@@ -608,6 +610,12 @@ export function useInspectorInfoSimpleUntyped(
     multiselectAtProps,
     selectedProps,
   )
+
+  const propertyStatus = calculateMultiStringPropertyStatusForSelection(
+    multiselectAtProps,
+    simpleAndRawValues,
+  )
+
   const values = Utils.mapArrayToDictionary(
     propertyPaths,
     (propertyPath) => propertyPath.propertyElements[propertyPath.propertyElements.length - 1],

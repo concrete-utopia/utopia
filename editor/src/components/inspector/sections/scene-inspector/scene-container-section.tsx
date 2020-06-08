@@ -1,10 +1,11 @@
 import * as React from 'react'
+import { LayoutSystem } from 'utopia-api'
 import { betterReactMemo } from 'uuiui-deps'
 import Utils from '../../../../utils/utils'
-import { useWrappedEmptyOnSubmitValue, Icn } from '../../../../uuiui'
+import { Icn, useWrappedEmptyOnSubmitValue } from '../../../../uuiui'
 import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
 import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
-import { useInspectorLayoutInfo } from '../../common/property-path-hooks'
+import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../common/property-path-hooks'
 import { SegmentControl, SegmentOption } from '../../controls/segment-control'
 import { PropertyRow } from '../../widgets/property-row'
 import {
@@ -16,7 +17,7 @@ import {
   FlexWrapControl,
   getDirectionAwareLabels,
 } from '../layout-section/flex-container-subsection/flex-container-controls'
-import { LayoutSystem } from 'utopia-api'
+
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -26,7 +27,7 @@ const scenePropertyRowStyle = {
 }
 
 export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSection', () => {
-  const layoutSystem = useInspectorLayoutInfo('LayoutSystem')
+  const styleDisplayMetadata = useInspectorStyleInfo('display')
   const flexWrap = useInspectorLayoutInfo('flexWrap')
   const flexDirection = useInspectorLayoutInfo('flexDirection')
   const alignItems = useInspectorLayoutInfo('alignItems')
@@ -43,7 +44,7 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
     flexGapMain.onUnsetValues,
   )
 
-  if (layoutSystem.value === 'flex') {
+  if (styleDisplayMetadata.value === 'flex') {
     const flexDirectionValue = Utils.defaultIfNull(
       cssEmptyValues.flexDirection,
       flexDirection.value,
@@ -146,6 +147,7 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
 })
 
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
+  // FIXME We need a hook for checking the actual layout system since it's now spread across 2 possible props
   const layoutSystemMetadata = useInspectorLayoutInfo('LayoutSystem')
   return (
     <>

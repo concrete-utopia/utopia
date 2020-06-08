@@ -12,7 +12,7 @@ import { Either, isLeft } from './either'
 import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
-import { Sides, sides, NormalisedFrame } from 'utopia-api'
+import { Sides, sides, NormalisedFrame, LayoutSystem } from 'utopia-api'
 import { fastForEach } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
@@ -849,6 +849,7 @@ export function elementInstanceMetadata(
 }
 
 export type DetectedLayoutSystem = 'flex' | 'grid' | 'nonfixed' | 'flow' | 'none'
+export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
 
 export interface SpecialSizeMeasurements {
   offset: LocalPoint

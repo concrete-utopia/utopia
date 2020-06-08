@@ -26,7 +26,10 @@ import {
   FunctionIcons,
 } from 'uuiui'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
-import { DetectedLayoutSystem } from '../../../../../core/shared/element-template'
+import {
+  DetectedLayoutSystem,
+  SettableLayoutSystem,
+} from '../../../../../core/shared/element-template'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -66,11 +69,11 @@ function useLayoutSystemData() {
   const dispatch = useEditorState((store) => store.dispatch)
 
   const onLayoutSystemChange = React.useCallback(
-    (layoutSystem: LayoutSystem | 'grid') => {
+    (layoutSystem: SettableLayoutSystem) => {
       switch (layoutSystem) {
-        case LayoutSystem.Flow:
-        case LayoutSystem.Flex:
         case LayoutSystem.PinSystem:
+        case 'flow':
+        case 'flex':
           dispatch([switchLayoutSystem(layoutSystem)], 'everyone')
           break
         case LayoutSystem.Group:
