@@ -119,16 +119,10 @@
 .widget-status-controlled-mixed .rc-slider .rc-slider-handle {
   display: none;
 }
-.widget-status-controlled-nodegraph .rc-slider .rc-slider-rail,
-.widget-status-controlled-nodegraph .rc-slider .rc-slider-rail::before,
-.widget-status-controlled-nodegraph .rc-slider .rc-slider-rail::after {
+.widget-status-controlled .rc-slider .rc-slider-rail,
+.widget-status-controlled .rc-slider .rc-slider-rail::before,
+.widget-status-controlled .rc-slider .rc-slider-rail::after {
   background-color: #0e8dde;
-}
-
-.widget-status-controlled-component .rc-slider .rc-slider-rail,
-.widget-status-controlled-component .rc-slider .rc-slider-rail::before,
-.widget-status-controlled-component .rc-slider .rc-slider-rail::after {
-  background-color: #7575fc;
 }
 
 .rc-slider-vertical {
