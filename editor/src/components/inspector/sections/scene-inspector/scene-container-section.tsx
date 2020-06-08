@@ -4,7 +4,7 @@ import Utils from '../../../../utils/utils'
 import { useWrappedEmptyOnSubmitValue } from '../../../../uuiui'
 import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
 import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
-import { useInspectorLayoutInfo } from '../../common/property-path-hooks'
+import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../common/property-path-hooks'
 import { OptionChainControl, OptionChainOption } from '../../controls/option-chain-control'
 import { PropertyRow } from '../../widgets/property-row'
 import {
@@ -25,7 +25,7 @@ const scenePropertyRowStyle = {
 }
 
 export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSection', () => {
-  const layoutSystem = useInspectorLayoutInfo('LayoutSystem')
+  const styleDisplayMetadata = useInspectorStyleInfo('display')
   const flexWrap = useInspectorLayoutInfo('flexWrap')
   const flexDirection = useInspectorLayoutInfo('flexDirection')
   const alignItems = useInspectorLayoutInfo('alignItems')
@@ -42,7 +42,7 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
     flexGapMain.onUnsetValues,
   )
 
-  if (layoutSystem.value === 'flex') {
+  if (styleDisplayMetadata.value === 'flex') {
     const flexDirectionValue = Utils.defaultIfNull(
       cssEmptyValues.flexDirection,
       flexDirection.value,
@@ -145,6 +145,7 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
 })
 
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
+  // FIXME We need a hook for checking the actual layout system since it's now spread across 2 possible props
   const layoutSystemMetadata = useInspectorLayoutInfo('LayoutSystem')
   return (
     <>

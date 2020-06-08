@@ -3,11 +3,7 @@ import * as React from 'react'
 import { NormalisedFrame } from '../layout/frame'
 import { LayoutSystem, LayoutProps, AllLayoutBasePropsKeys } from '../layout/layout'
 import { CSSFrame, convertPinsToStyleProps, convertPinsToAbsoluteStyleProps } from '../layout/pins'
-import {
-  flexElementPropsToStyle,
-  flexParentPropsToStyle,
-  flexParentPropsToStyleWithoutDisplayFlex,
-} from '../layout/flex'
+import { flexElementPropsToStyle, flexParentPropsToStyle } from '../layout/flex'
 import { LayoutableProps } from './layoutable'
 
 export interface UtopiaComponentProps {
@@ -153,12 +149,10 @@ export function calculateChildStylesToPrepend(
   const layout = { ...props.layout, ...props.style } as LayoutProps
 
   switch (layout.layoutSystem) {
-    case LayoutSystem.Flex:
     case LayoutSystem.PinSystem:
     case undefined:
       return computeNonGroupChildren(children, layout)
     case LayoutSystem.Group:
-    case LayoutSystem.Flow:
       return []
     default:
       const _exhaustiveCheck: never = layout.layoutSystem
@@ -187,9 +181,7 @@ export function calculateChildStylesThatOverwriteStyle(
         }
       })
       return childPositionStyles
-    case LayoutSystem.Flex:
     case LayoutSystem.PinSystem:
-    case LayoutSystem.Flow:
     case undefined:
       return []
     default:
@@ -205,8 +197,6 @@ function calculateContainerProps(
 ): CSSFrame {
   const layout = defaultIfNull({} as LayoutProps, props.layout)
   switch (layout.layoutSystem) {
-    case LayoutSystem.Flex:
-      return flexParentPropsToStyle({ ...props.layout, ...props.style } as LayoutProps)
     case LayoutSystem.Group:
       const childFrames = computeGroupChildren(children)
       const selfFrame = calculateGroupBounds(childFrames)
@@ -218,9 +208,8 @@ function calculateContainerProps(
       return {
         position: parentLayoutSystem === LayoutSystem.PinSystem ? 'absolute' : 'relative',
       }
-    case LayoutSystem.Flow:
     case undefined:
-      return {}
+      return flexParentPropsToStyle(layout)
     default:
       const _exhaustiveCheck: never = layout.layoutSystem
       throw new Error(`Unknown layout type ${JSON.stringify(layout.layoutSystem)}`)
@@ -236,12 +225,6 @@ export function calculateOwnStyleProp(
   } else {
     const layout = { ...props.layout, ...props.style } as LayoutProps
     switch (layout.layoutSystem) {
-      case LayoutSystem.Flex:
-        return {
-          ...convertPinsToStyleProps(layout as any),
-          // overwrite layout props with style props if available
-          ...flexParentPropsToStyle({ ...props.layout, ...props.style } as LayoutProps),
-        }
       case LayoutSystem.Group:
         // TODO more group stuff
         const childFrames = computeGroupChildren(children)
@@ -253,13 +236,14 @@ export function calculateOwnStyleProp(
       case LayoutSystem.PinSystem:
         return {
           ...flexElementPropsToStyle(layout, {}, 0, 1), // TODO instead of flexElementPropsToStyle, make a function that moves only the non-magic props to style
+          ...flexParentPropsToStyle(layout),
           ...convertPinsToStyleProps(layout as any),
           position: 'relative',
         }
       default:
         return {
           ...flexElementPropsToStyle(layout, {}, 0, 1), // TODO instead of flexElementPropsToStyle, make a function that moves only the non-magic props to style
-          ...flexParentPropsToStyleWithoutDisplayFlex(layout),
+          ...flexParentPropsToStyle(layout),
           ...convertPinsToStyleProps(layout as any),
         }
     }

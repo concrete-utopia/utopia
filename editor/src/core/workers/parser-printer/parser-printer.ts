@@ -105,13 +105,7 @@ import {
 import { ParserPrinterResultMessage } from './parser-printer-worker'
 import creator from './ts-creator'
 import { applyPrettier } from './prettier-utils'
-import {
-  canvasMetadataToExpression,
-  convertPrintedMetadataToCanvasMetadata,
-  jsonToExpression,
-  parseCanvasMetadata,
-  parsePrintedCanvasMetadata,
-} from './canvas-metadata-parser'
+import { convertPrintedMetadataToCanvasMetadata, jsonToExpression } from './canvas-metadata-parser'
 import { omit } from '../../shared/object-utils'
 
 function buildPropertyCallingFunction(
@@ -799,23 +793,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
       } else {
         const possibleCanvasMetadata = looksLikeCanvasMetadata(sourceFile, topLevelElement)
         if (isRight(possibleCanvasMetadata)) {
-          // Handle the canvas metadata here.
-          const parseResult = parseCanvasMetadata(sourceFile, possibleCanvasMetadata.value)
-          if (isParsedJSONSuccess(parseResult)) {
-            applyAndResetArbitraryNodes()
-            // Parse the canvas metadata.
-            const metadataParseResult = parsePrintedCanvasMetadata(parseResult.value)
-            forEachLeft(metadataParseResult, (failureMessage) => {
-              console.warn('Invalid metadata.', failureMessage)
-            })
-            canvasMetadata = bimapEither(
-              (_) => parseResult.value,
-              (success) => success,
-              metadataParseResult,
-            )
-          } else {
-            return left(parseFailure(null, parseResult, null, [], code))
-          }
+          // KILLME CanvasMetadata is dead
         } else {
           const possibleDeclaration = looksLikeCanvasElements(sourceFile, topLevelElement)
           if (isRight(possibleDeclaration)) {
