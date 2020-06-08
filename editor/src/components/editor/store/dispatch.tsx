@@ -547,6 +547,8 @@ function editorDispatchInner(
         const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
         const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
         if (newLostElements.length > 0 && isBrowserEnvironment) {
+          // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
+          // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
           const toastAction = EditorActions.showToast({
             message: `Some elements are no longer being rendered`,
             level: 'WARNING',
