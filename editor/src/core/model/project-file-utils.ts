@@ -321,7 +321,7 @@ export function fileTypeFromFileName(filename: string | null): ProjectFileType |
   if (filename == null) {
     return null
   }
-  if (filename.endsWith('.js')) {
+  if (filename.endsWith('src/app.js')) {
     return 'UI_JS_FILE'
   } else {
     const mimeType = mimeTypeLookup(filename)
