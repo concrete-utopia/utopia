@@ -149,6 +149,11 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
   // FIXME We need a hook for checking the actual layout system since it's now spread across 2 possible props
   const layoutSystemMetadata = useInspectorLayoutInfo('LayoutSystem')
+  const [
+    onSubmitValue,
+  ] = layoutSystemMetadata.useSubmitValueFactory((newValue: LayoutSystem | 'flex'):
+    | LayoutSystem
+    | undefined => (newValue === 'flex' ? undefined : newValue))
   return (
     <>
       <PropertyRow style={scenePropertyRowStyle}>
@@ -157,11 +162,11 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
             gridColumn: '1 / span 6',
           }}
         >
-          <SegmentControl
+          <SegmentControl<LayoutSystem | 'flex'>
             id={'layoutSystem'}
-            onSubmitValue={layoutSystemMetadata.onSubmitValue}
+            onSubmitValue={onSubmitValue}
             value={layoutSystemMetadata.value ?? LayoutSystem.PinSystem}
-            options={getLayoutSystemOptions()}
+            options={layoutSystemOptions}
             controlStatus={simpleControlStatus}
             controlStyles={simpleControlStyles}
           />
@@ -174,26 +179,24 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
 
 SceneContainerSections.displayName = 'SceneContainerSections'
 
-function getLayoutSystemOptions(): Array<SegmentOption<LayoutSystem>> {
-  return [
-    {
-      value: LayoutSystem.PinSystem,
-      tooltip: 'Layout children with pins',
-      label: (
-        <>
-          View <Icn category='layout/systems' type='pins' color='darkgray' width={16} height={16} />
-        </>
-      ),
-    },
-    {
-      value: LayoutSystem.Flex,
-      tooltip: 'Layout children with flexbox',
-      label: (
-        <>
-          View{' '}
-          <Icn category='layout/systems' type='flexbox' color='darkgray' width={16} height={16} />
-        </>
-      ),
-    },
-  ]
-}
+const layoutSystemOptions: Array<SegmentOption<LayoutSystem | 'flex'>> = [
+  {
+    value: LayoutSystem.PinSystem,
+    tooltip: 'Layout children with pins',
+    label: (
+      <>
+        View <Icn category='layout/systems' type='pins' color='darkgray' width={16} height={16} />
+      </>
+    ),
+  },
+  {
+    value: 'flex',
+    tooltip: 'Layout children with flexbox',
+    label: (
+      <>
+        View{' '}
+        <Icn category='layout/systems' type='flexbox' color='darkgray' width={16} height={16} />
+      </>
+    ),
+  },
+]
