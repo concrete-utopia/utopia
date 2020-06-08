@@ -175,6 +175,10 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             top: this.props.canvasOffset.y + this.props.frame.y,
             width: this.props.frame.width,
             height: this.props.frame.height,
+            border:
+              this.props.frame.width === 0 || this.props.frame.height === 0
+                ? '2px red solid'
+                : undefined,
           }}
           data-testid={this.props.testID}
         />

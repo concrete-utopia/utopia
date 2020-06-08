@@ -13,7 +13,12 @@ import Keyboard, {
   strictCheckModifiers,
 } from '../../utils/keyboard'
 import Utils, { normalisedFrameToCanvasFrame } from '../../utils/utils'
-import { CanvasPoint, CanvasRectangle } from '../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  rectangleIntersection,
+  canvasRectangle,
+} from '../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/actions'
 import {
@@ -269,7 +274,20 @@ const Canvas = {
         !editor.hiddenInstances.some((hidden) =>
           TP.isAncestorOf(frameWithPath.path, hidden, true),
         ) &&
-        Utils.rectContainsPoint(frameWithPath.frame, canvasPosition)
+        rectangleIntersection(
+          canvasRectangle({
+            x: frameWithPath.frame.x,
+            y: frameWithPath.frame.y,
+            width: frameWithPath.frame.width || 1,
+            height: frameWithPath.frame.height || 1,
+          }),
+          canvasRectangle({
+            x: canvasPosition.x - 10,
+            y: canvasPosition.y - 10,
+            width: 20,
+            height: 20,
+          }),
+        ) != null
       )
     })
     filteredFrames.reverse()
