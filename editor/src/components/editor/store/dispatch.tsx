@@ -66,6 +66,8 @@ import {
 import { runLocalEditorAction } from './editor-update'
 import { arrayEquals } from '../../../core/shared/utils'
 
+const isBrowserEnvironment = process.env.JEST_WORKER_ID == undefined // test if we are in a Jest environment
+
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
@@ -122,7 +124,6 @@ function processAction(
       editorAfterUpdateFunction,
       working.derived,
       action as CanvasAction,
-      dispatchEvent,
     )
     let editorAfterNavigator = runLocalNavigatorAction(
       editorAfterCanvas,
@@ -385,7 +386,6 @@ export function editorDispatch(
   }
 
   const isLoaded = frozenEditorState.isLoaded
-  const isBrowserEnvironment = process.env.JEST_WORKER_ID == undefined // test if we are in a Jest environment
   const shouldSave =
     isLoaded &&
     !isLoadAction &&
@@ -532,22 +532,35 @@ function editorDispatchInner(
       storedState.editor.spyMetadataKILLME !== result.editor.spyMetadataKILLME
     const dragStateLost =
       storedState.editor.canvas.dragState != null && result.editor.canvas.dragState == null
+    const metadataChanged = domMetadataChanged || spyMetadataChanged || dragStateLost
     // TODO: Should this condition actually be `&&`?
     // Tested quickly and it broke selection, but I'm mostly certain
     // it should only merge when both have changed.
-    if (domMetadataChanged || spyMetadataChanged || dragStateLost) {
+    if (metadataChanged) {
       result = produce(result, (r) => {
         if (r.editor.canvas.dragState == null) {
           r.editor.jsxMetadataKILLME = reconstructJSXMetadata(result.editor)
         } else {
           r.editor.canvas.dragState.metadata = reconstructJSXMetadata(result.editor)
         }
+
+        const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
+        const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
+        if (newLostElements.length > 0 && isBrowserEnvironment) {
+          const toastAction = EditorActions.showToast({
+            message: `Some elements are no longer being rendered`,
+            level: 'WARNING',
+          })
+          setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
+        }
+
+        r.editor.warnedInstances = allLostElements
       })
     }
 
-    const cleanedEditor = editorStayedTheSame
-      ? result.editor
-      : removeNonExistingViewReferencesFromState(result.editor)
+    const cleanedEditor = metadataChanged
+      ? removeNonExistingViewReferencesFromState(result.editor)
+      : result.editor
 
     let frozenEditorState: EditorState = optionalDeepFreeze(cleanedEditor)
 
@@ -701,6 +714,16 @@ function removeNonExistingViewReferencesFromState(editorState: EditorState): Edi
     highlightedViews: updatedHighlightedViews,
     hiddenInstances: updatedHiddenInstances,
   }
+}
+
+function lostElements(
+  elementsToCheck: TemplatePath[],
+  metadata: ComponentMetadata[],
+): TemplatePath[] {
+  return elementsToCheck.filter((path) => {
+    const renderedFrame = MetadataUtils.getFrame(path, metadata)
+    return renderedFrame == null || renderedFrame.height <= 0 || renderedFrame.width <= 0
+  })
 }
 
 function filterNonExistingViews(

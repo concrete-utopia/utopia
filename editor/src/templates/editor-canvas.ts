@@ -259,25 +259,10 @@ function on(
   return additionalEvents
 }
 
-function elementsLostAsResultOfDrag(
-  elementsToCheck: TemplatePath[],
-  dragState: DragState | null,
-): boolean {
-  if (dragState == null) {
-    return false
-  } else {
-    return elementsToCheck.some((path) => {
-      const renderedFrame = MetadataUtils.getFrame(path, dragState.metadata)
-      return renderedFrame == null || renderedFrame.height <= 0 || renderedFrame.width <= 0
-    })
-  }
-}
-
 export function runLocalCanvasAction(
   model: EditorState,
   derivedState: DerivedState,
   action: CanvasAction,
-  dispatch: EditorDispatch,
 ): EditorState {
   // TODO BB horrorshow performance
   switch (action.action) {
@@ -296,18 +281,7 @@ export function runLocalCanvasAction(
       }
     }
     case 'CLEAR_DRAG_STATE':
-      const result = clearDragState(model, derivedState, action.applyChanges)
-      if (
-        action.applyChanges &&
-        elementsLostAsResultOfDrag(result.selectedViews, model.canvas.dragState)
-      ) {
-        const toastAction = EditorActions.showToast({
-          message: `Some elements aren't rendered as a result of this drag`,
-          level: 'WARNING',
-        })
-        setTimeout(() => dispatch([toastAction], 'everyone'), 0)
-      }
-      return result
+      return clearDragState(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
       return {
         ...model,
