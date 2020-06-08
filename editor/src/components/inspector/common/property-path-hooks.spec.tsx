@@ -579,23 +579,6 @@ describe('Integration Test: backgroundColor property', () => {
     })
   })
 
-  xit('parses a controlled-nodegraph control status', () => {
-    const expectedValue: Array<CSSSolidColor> = [
-      { type: 'solid', enabled: true, color: { type: 'Hex', hex: '#ff00ff' } },
-    ]
-
-    const hookResult = getBackgroundColorHookResult(
-      [`backgroundColor: nodeValue1`],
-      ['myStyleOuter', 'myStyleInner'],
-      [`backgroundColor: nodeValue1`],
-    )
-
-    expect(hookResult.value).toEqual(expectedValue)
-
-    const expectedControlStatus: ControlStatus = 'controlled-nodegraph'
-    expect(hookResult.controlStatus).toEqual(expectedControlStatus)
-  })
-
   it('parses a controlled control status', () => {
     const hookResults = [
       getBackgroundColorHookResult(
@@ -693,17 +676,6 @@ describe('Integration Test: backgroundColor property', () => {
     )
 
     const expectedControlStatus: ControlStatus = 'multiselect-identical-unset'
-    expect(hookResult.controlStatus).toEqual(expectedControlStatus)
-  })
-
-  xit('parses a multiselect-identical-controlled-nodegraph control status', () => {
-    const hookResult = getBackgroundColorHookResult(
-      [`{backgroundColor: nodeValue1}`, `{backgroundColor: nodeValue1}`],
-      ['myStyleOuter', 'myStyleInner'],
-      [{ backgroundColor: 'nodeValue1' }, { backgroundColor: 'nodeValue1' }],
-    )
-
-    const expectedControlStatus: ControlStatus = 'multiselect-identical-controlled-nodegraph'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
@@ -888,21 +860,6 @@ describe('Integration Test: opacity property', () => {
       [{ opacity: 1 }, { opacity: 1 }],
     )
     const expectedControlStatus: ControlStatus = 'multiselect-controlled'
-    expect(hookResult.controlStatus).toEqual(expectedControlStatus)
-  })
-
-  xit('parses a controlled-nodegraph control status', () => {
-    const hookResult = getOpacityHookResult([`{opacity: nodeValue1}`], [{ opacity: 'nodeValue1' }])
-    const expectedControlStatus: ControlStatus = 'controlled-nodegraph'
-    expect(hookResult.controlStatus).toEqual(expectedControlStatus)
-  })
-
-  xit('parses a multiselect-identical-controlled-nodegraph control status', () => {
-    const hookResult = getOpacityHookResult(
-      [`{opacity: nodeValue1}`, `{opacity: nodeValue1}`],
-      [{ opacity: 'nodeValue1' }, { opacity: 'nodeValue1' }],
-    )
-    const expectedControlStatus: ControlStatus = 'multiselect-identical-controlled-nodegraph'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 

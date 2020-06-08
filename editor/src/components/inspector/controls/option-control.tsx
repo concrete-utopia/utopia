@@ -80,7 +80,7 @@ export const OptionControl: React.FunctionComponent<
           css={{
             // If just an option control:
             boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
-            backgroundColor: ControlStyleDefaults.SetBackgroundOnColor,
+            backgroundColor: ControlStyleDefaults.SetSegmentSelectorColor,
             borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
             // If part of a option chain control:
             '.option-chain-control-container &': {

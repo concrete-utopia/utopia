@@ -26,6 +26,10 @@ import {
   FunctionIcons,
 } from 'uuiui'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
+import {
+  DetectedLayoutSystem,
+  SettableLayoutSystem,
+} from '../../../../../core/shared/element-template'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -65,11 +69,11 @@ function useLayoutSystemData() {
   const dispatch = useEditorState((store) => store.dispatch)
 
   const onLayoutSystemChange = React.useCallback(
-    (layoutSystem: LayoutSystem | 'grid') => {
+    (layoutSystem: SettableLayoutSystem) => {
       switch (layoutSystem) {
-        case LayoutSystem.Flow:
-        case LayoutSystem.Flex:
         case LayoutSystem.PinSystem:
+        case 'flow':
+        case 'flex':
           dispatch([switchLayoutSystem(layoutSystem)], 'everyone')
           break
         case LayoutSystem.Group:
@@ -94,21 +98,28 @@ function useLayoutSystemData() {
   }
 }
 
-export const LayoutSystemControl = betterReactMemo('LayoutSystemControl', () => {
-  const layoutSystemData = useLayoutSystemData()
+interface LayoutSystemControlProps {
+  layoutSystem: DetectedLayoutSystem | null
+}
 
-  return (
-    <OptionChainControl
-      id={'layoutSystem'}
-      key={'layoutSystem'}
-      onSubmitValue={layoutSystemData.onSubmitValue}
-      value={layoutSystemData.value}
-      options={layoutSystemOptions}
-      controlStatus={layoutSystemData.controlStatus}
-      controlStyles={layoutSystemData.controlStyles}
-    />
-  )
-})
+export const LayoutSystemControl = betterReactMemo(
+  'LayoutSystemControl',
+  (props: LayoutSystemControlProps) => {
+    const layoutSystemData = useLayoutSystemData()
+    const detectedLayoutSystem = props.layoutSystem
+    return (
+      <OptionChainControl
+        id={'layoutSystem'}
+        key={'layoutSystem'}
+        onSubmitValue={layoutSystemData.onSubmitValue}
+        value={props.layoutSystem != null ? props.layoutSystem : layoutSystemData.value}
+        options={layoutSystemOptions}
+        controlStatus={layoutSystemData.controlStatus}
+        controlStyles={layoutSystemData.controlStyles}
+      />
+    )
+  },
+)
 
 // for now, 'flow', 'grid' and 'group' are not clickable buttons, they only have an indicative role
 const layoutSystemOptions = [

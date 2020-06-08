@@ -99,16 +99,7 @@ interface InspectorInputProps {
 }
 
 export const InspectorInput = styled.input<InspectorInputProps>(
-  ({
-    chained = 'not-chained',
-    controlStyles,
-    focused,
-    labelInner,
-    roundCorners = 'all',
-    mixed = controlStyles.mixed,
-    value,
-  }) => ({
-    value: mixed || controlStyles.unknown ? '' : value,
+  ({ chained = 'not-chained', controlStyles, focused, labelInner, roundCorners = 'all' }) => ({
     outline: 'none',
     paddingTop: 2,
     paddingBottom: 2,
@@ -116,6 +107,7 @@ export const InspectorInput = styled.input<InspectorInputProps>(
     paddingRight: labelInner != null ? 15 : 6,
     backgroundColor: controlStyles.backgroundColor,
     fontStyle: controlStyles.fontStyle,
+    fontWeight: controlStyles.fontWeight,
     color: controlStyles.mainColor,
     border: 0,
     height: UtopiaTheme.layout.inputHeight.default,
@@ -124,8 +116,5 @@ export const InspectorInput = styled.input<InspectorInputProps>(
     ...getChainedBoxShadow(controlStyles, chained, focused),
     ...getBorderRadiusStyles(chained, roundCorners),
     disabled: !controlStyles.interactive,
-    spellCheck: false,
-    autoComplete: 'off',
-    type: 'text',
   }),
 )

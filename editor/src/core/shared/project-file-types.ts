@@ -61,15 +61,12 @@ export interface ElementCanvasMetadata {}
 
 export type CanvasElementMetadataMap = { [utopiaID: string]: ElementCanvasMetadata }
 
+// KILLME CanvasMetadata is dead
 export interface ScenePinnedContainer {
   layoutSystem: LayoutSystem.PinSystem
 }
 
-export interface SceneFlexContainer extends FlexParentProps {
-  layoutSystem: LayoutSystem.Flex
-}
-
-export type SceneContainer = ScenePinnedContainer | SceneFlexContainer
+export type SceneContainer = ScenePinnedContainer
 
 export interface SceneMetadata {
   uid: string

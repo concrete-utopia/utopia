@@ -13,26 +13,23 @@
 
 module Utopia.Web.ServiceTypes where
 
-import           Control.Lens                hiding ((.=))
+import           Control.Lens              hiding ((.=))
 import           Control.Monad.Free
 import           Control.Monad.Free.TH
 import           Data.Aeson
 import           Data.Aeson.TH
-import           Data.IORef
 import           Data.Time
-import qualified Database.Redis              as Redis
 import           Protolude
 
-import qualified Data.ByteString.Lazy        as BL
+import qualified Data.ByteString.Lazy      as BL
 
 import           Servant
-import qualified Text.Blaze.Html5            as H
+import qualified Text.Blaze.Html5          as H
 import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
 import           Utopia.Web.JSON
-import           Utopia.Web.Websockets.Types
 
-import           Network.HTTP.Client         hiding (Cookie)
+import           Network.HTTP.Client       hiding (Cookie)
 import           Web.Cookie
 
 type SessionCookie = Text
@@ -111,7 +108,6 @@ data ServiceCallsF a = NotFound
                      | GetShowcaseProjects ([ProjectListing] -> a)
                      | SetShowcaseProjects [Text] a
                      | GetMetrics (Value -> a)
-                     | RunWebsocketCall (IORef ReportMap -> Redis.Connection -> IO ()) a
                      | GetPackageJSON Text (Maybe Value -> a)
                      | GetCommitHash (Text -> a)
                      | GetEditorIndexHtml (Text -> a)

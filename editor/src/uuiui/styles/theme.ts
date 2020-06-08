@@ -52,9 +52,11 @@ const lightPrimitives = {
 
   neutralInvertedForeground: createUtopiColor('rgb(255,255,255)', 'white', 'white'),
 
-  neutralBorder: createUtopiColor('hsl(0,0%,88%)', '', ''),
+  neutralBorder: createUtopiColor('hsl(0,0%,81%)', '', ''),
   secondaryBorder: createUtopiColor('hsl(0,0%,93%)', '', ''),
   subduedBorder: createUtopiColor('hsl(0,0%,95%)', '', ''),
+
+  controlledBlue: createUtopiColor('#0091FF', '', ''),
 }
 
 const darkPrimitives = {
@@ -108,7 +110,7 @@ const darkTypography = {
 
 const lightControls = {
   inputBackground: lightPrimitives.emphasizedBackground,
-  inputBorder: lightPrimitives.secondaryBorder,
+  inputBorder: lightPrimitives.neutralBorder,
   inputColor: base.black, // i dunno what this should actually be but it needs to be black somehow
 }
 
@@ -214,61 +216,36 @@ const light = {
   inspectorSetSecondaryColor: createUtopiColor('hsl(0,0%,85%)', 'eg unset pins ', ''),
   inspectorSetBorderColor: lightControls.inputBorder,
   inspectorSetBackgroundColor: lightControls.inputBackground,
-  inspectorSetBackgroundOnColor: lightControls.inputBackground,
-  inspectorSetBackgroundOffColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
-  inspectorUnsetMainColor: createUtopiColor('hsl(0,0%,70%)', '', ''),
-  inspectorUnsetSecondaryColor: createUtopiColor('rgb(226, 226, 226)', '', ''),
-  inspectorUnsetBorderColor: lightControls.inputBorder,
+  inspectorSetSegmentSelectorColor: lightControls.inputBackground,
+  inspectorSetSegmentTrackColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
+  inspectorUnsetMainColor: lightControls.inputColor,
+  inspectorUnsetSecondaryColor: createUtopiColor('hsl(0,0%,85%)', 'eg unset pins ', ''),
+  inspectorUnsetBorderColor: undefined,
   inspectorUnsetBackgroundColor: lightPrimitives.neutralBackground.o(0),
-  inspectorUnsetBackgroundOnColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
-  inspectorUnsetBackgroundOffColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
+  inspectorUnsetSegmentSelectorColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
+  inspectorUnsetSegmentTrackColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
   inspectorDisabledMainColor: createUtopiColor('rgba(102, 102, 102, 1)', '', ''),
   inspectorDisabledSecondaryColor: createUtopiColor('rgba(102, 102, 102, 1)', '', ''),
   inspectorDisabledBackgroundColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
-  inspectorDisabledBackgroundOnColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
-  inspectorDisabledBackgroundOffColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
+  inspectorDisabledSegmentSelectorColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
+  inspectorDisabledSegmentTrackColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
   inspectorDisabledBorderColor: lightControls.inputBorder,
   inspectorUneditableMainColor: createUtopiColor('#007AFF', '', ''),
   inspectorUneditableSecondaryColor: createUtopiColor('#007AFF', '', ''),
   inspectorUneditableBackgroundColor: createUtopiColor('#007AFF', '', ''),
   inspectorUneditableBorderColor: createUtopiColor('rgb(204, 204, 204)', '', ''),
-  inspectorControlledComponentMainColor: createUtopiColor('rgba(119, 119, 255, 1)', '', ''),
-  inspectorControlledComponentBorderColor: createUtopiColor('rgba(14, 141, 222, .5)', '', ''),
-  inspectorControlledComponentBackgroundColor: createUtopiColor(
-    'rgba(119, 119, 255, 0.05)',
-    '',
-    '',
-  ),
-  inspectorControlledComponentBackgroundOnColor: createUtopiColor(
-    'rgba(119, 119, 255, 0.25)',
-    '',
-    '',
-  ),
-  inspectorControlledComponentBackgroundOffColor: createUtopiColor(
-    'rgba(119, 119, 255, 0.05)',
-    '',
-    '',
-  ),
-  inspectorControlledNodegraphMainColor: createUtopiColor('rgba(14, 141, 222, 1)', '', ''),
-  inspectorControlledNodegraphBorderColor: createUtopiColor('rgba(14, 141, 222, .5)', '', ''),
-  inspectorControlledNodegraphBackgroundColor: createUtopiColor('rgba(14, 141, 222, 0.05)', '', ''),
-  inspectorControlledNodegraphBackgroundOnColor: createUtopiColor(
-    'rgba(14, 141, 222, 0.25)',
-    '',
-    '',
-  ),
-  inspectorControlledNodegraphBackgroundOffColor: createUtopiColor(
-    'rgba(14, 141, 222, 0.05)',
-    '',
-    '',
-  ),
+  inspectorControlledMainColor: createUtopiColor('white', '', ''),
+  inspectorControlledBorderColor: createUtopiColor('#0091FF', '', ''),
+  inspectorControlledBackgroundColor: createUtopiColor('#0091FF', '', ''),
+  inspectorControlledSegmentSelectorColor: createUtopiColor('#0091FF', '', ''),
+  inspectorControlledSegmentTrackColor: createUtopiColor('#EDEDED', '', ''),
   inspectorOffMainColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffSecondaryColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffBackgroundColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
-  inspectorOffBackgroundOnColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
-  inspectorOffBackgroundOffColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
+  inspectorOffSegmentSelectorColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
+  inspectorOffSegmentTrackColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffBorderColor: createUtopiColor('rgb(240, 240, 240)', '', ''),
-  inspectorFocusedColor: createUtopiColor('#0077FF', '', ''),
+  inspectorFocusedColor: createUtopiColor('#0091FF', '', ''),
 
   flasherHookColor: base.neonpink,
 }
@@ -358,39 +335,34 @@ const dark = {
   inspectorSetSecondaryColor: darkControls.inputColor.shade(90),
   inspectorSetBorderColor: darkControls.inputBorder,
   inspectorSetBackgroundColor: darkControls.inputBackground,
-  inspectorSetBackgroundOnColor: darkControls.inputBackground,
-  inspectorSetBackgroundOffColor: darkControls.inputColor.shade(90),
+  inspectorSetSegmentSelectorColor: darkControls.inputBackground,
+  inspectorSetSegmentTrackColor: darkControls.inputColor.shade(90),
   inspectorUnsetMainColor: darkControls.inputColor.shade(70),
   inspectorUnsetSecondaryColor: darkControls.inputColor.shade(70),
   inspectorUnsetBorderColor: darkControls.inputBorder,
   inspectorUnsetBackgroundColor: lightPrimitives.neutralBackground.o(0),
-  inspectorUnsetBackgroundOnColor: darkControls.inputBackground.shade(110),
-  inspectorUnsetBackgroundOffColor: darkControls.inputBackground.shade(110),
+  inspectorUnsetSegmentSelectorColor: darkControls.inputBackground.shade(110),
+  inspectorUnsetSegmentTrackColor: darkControls.inputBackground.shade(110),
   inspectorDisabledMainColor: createUtopiColor('rgba(102, 102, 102, 1)', '', ''),
   inspectorDisabledSecondaryColor: createUtopiColor('rgba(102, 102, 102, 1)', '', ''),
   inspectorDisabledBackgroundColor: darkControls.inputBackground.shade(110),
-  inspectorDisabledBackgroundOnColor: darkControls.inputBackground.shade(110),
-  inspectorDisabledBackgroundOffColor: darkControls.inputBackground.shade(110),
+  inspectorDisabledSegmentSelectorColor: darkControls.inputBackground.shade(110),
+  inspectorDisabledSegmentTrackColor: darkControls.inputBackground.shade(110),
   inspectorDisabledBorderColor: darkControls.inputBorder,
   inspectorUneditableMainColor: darkBase.primary,
   inspectorUneditableSecondaryColor: createUtopiColor('rgb(204, 204, 204)', '', ''),
   inspectorUneditableBackgroundColor: darkBase.primary,
   inspectorUneditableBorderColor: createUtopiColor('rgb(204, 204, 204)', '', ''),
-  inspectorControlledComponentMainColor: darkBase.component,
-  inspectorControlledComponentBorderColor: darkBase.component.o(50),
-  inspectorControlledComponentBackgroundColor: darkBase.component.o(5),
-  inspectorControlledComponentBackgroundOnColor: darkBase.component.o(25),
-  inspectorControlledComponentBackgroundOffColor: darkBase.component.o(5),
-  inspectorControlledNodegraphMainColor: darkBase.primary,
-  inspectorControlledNodegraphBorderColor: darkBase.primary.o(50),
-  inspectorControlledNodegraphBackgroundColor: darkBase.primary.o(25),
-  inspectorControlledNodegraphBackgroundOnColor: darkBase.primary.o(25),
-  inspectorControlledNodegraphBackgroundOffColor: darkBase.primary.o(5),
+  inspectorControlledMainColor: darkBase.primary,
+  inspectorControlledBorderColor: darkBase.primary.o(50),
+  inspectorControlledBackgroundColor: darkBase.primary.o(25),
+  inspectorControlledSegmentSelectorColor: darkBase.primary.o(25),
+  inspectorControlledSegmentTrackColor: darkBase.primary.o(5),
   inspectorOffMainColor: base.black,
   inspectorOffSecondaryColor: base.black,
   inspectorOffBackgroundColor: base.black,
-  inspectorOffBackgroundOnColor: base.black,
-  inspectorOffBackgroundOffColor: base.black,
+  inspectorOffSegmentSelectorColor: base.black,
+  inspectorOffSegmentTrackColor: base.black,
   inspectorOffBorderColor: base.black,
   inspectorFocusedColor: darkBase.primary,
 }
@@ -511,7 +483,7 @@ const backgroundURLs = {
 
 // see type AlertLevel in editor-state.ts
 
-const darkNoticeStyles = {
+const noticeStyles = {
   success: { background: backgroundURLs.green, color: 'white' },
   info: { background: 'white', color: colorTheme.darkPrimary.value },
   primary: { background: backgroundURLs.blue, color: 'white' },
@@ -519,6 +491,15 @@ const darkNoticeStyles = {
   warning: { background: backgroundURLs.red, color: 'white' },
   error: { background: backgroundURLs.almostBlack, color: 'white' },
   disconnected: { background: backgroundURLs.noise, color: 'white' },
+}
+
+const shadowStyles = {
+  small: {
+    boxShadow: `0px 1p 3px 0px rgba(0,0,0,.2)`,
+  },
+  medium: {
+    boxShadow: '0px 2px 4px 1px rgba(0,0,0,0.2)',
+  },
 }
 
 const textBackgroundStyles = {
@@ -534,8 +515,9 @@ export const UtopiaStyles = {
   backgrounds: {
     ...backgroundURLs,
   },
-  darkNoticeStyles,
+  noticeStyles,
   textBackgroundStyles,
+  shadowStyles,
   input,
   flexRow,
   flexColumn,

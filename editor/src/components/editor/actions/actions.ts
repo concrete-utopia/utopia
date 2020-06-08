@@ -50,6 +50,7 @@ import {
   jsxElementName,
   UtopiaJSXComponent,
   isJSXAttributeOtherJavaScript,
+  SettableLayoutSystem,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -519,7 +520,7 @@ function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
 function switchAndUpdateFrames(
   editor: EditorModel,
   target: InstancePath,
-  layoutSystem: LayoutSystem,
+  layoutSystem: SettableLayoutSystem,
 ): EditorModel {
   const targetMetadata = Utils.forceNotNull(
     `Could not find metadata for ${JSON.stringify(target)}`,
@@ -537,7 +538,7 @@ function switchAndUpdateFrames(
 
   let withUpdatedLayoutSystem: EditorModel = editor
   switch (layoutSystem) {
-    case LayoutSystem.Flex:
+    case 'flex':
       withUpdatedLayoutSystem = setPropertyOnTarget(
         withUpdatedLayoutSystem,
         target,
@@ -553,7 +554,8 @@ function switchAndUpdateFrames(
         },
       )
       break
-    case LayoutSystem.Flow:
+    case 'flow':
+    case 'grid':
       const propsToRemove = [
         layoutSystemPath,
         createLayoutPropertyPath('PinnedLeft'),
@@ -592,7 +594,7 @@ function switchAndUpdateFrames(
   // This "fixes" an issue where inside `setCanvasFramesInnerNew` looks at the layout type in the
   // metadata which causes a problem as it's effectively out of date after the above call.
   switch (layoutSystem) {
-    case LayoutSystem.Flex:
+    case 'flex':
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
         jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
@@ -611,7 +613,7 @@ function switchAndUpdateFrames(
         ),
       }
       break
-    case LayoutSystem.Flow:
+    case 'flow':
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
         jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
@@ -645,7 +647,7 @@ function switchAndUpdateFrames(
 
   function layoutSystemToSet(): DetectedLayoutSystem {
     switch (layoutSystem) {
-      case LayoutSystem.Flex:
+      case 'flex':
         return 'flex'
       case LayoutSystem.PinSystem:
         return 'nonfixed'
@@ -675,7 +677,7 @@ function switchAndUpdateFrames(
   }, withUpdatedLayoutSystem)
 
   let framesAndTargets: Array<PinOrFlexFrameChange> = []
-  if (layoutSystem !== LayoutSystem.Flow) {
+  if (layoutSystem !== 'flow') {
     const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       target,
       withChildrenUpdated.jsxMetadataKILLME,
@@ -3328,7 +3330,7 @@ export const UPDATE_FNS = {
   },
   ADD_CODE_FILE: (action: AddCodeFile, editor: EditorModel): EditorModel => {
     const pathPrefix = action.parentPath == '' ? '' : action.parentPath + '/'
-    const newFileKey = uniqueProjectContentID(pathPrefix + 'code.js', editor.projectContents)
+    const newFileKey = uniqueProjectContentID(pathPrefix + action.fileName, editor.projectContents)
     const newCodeFile = codeFile('', null)
 
     const updatedProjectContents = ensureDirectoriesExist({
@@ -4965,9 +4967,10 @@ export function clearImageFileBlob(uiFilePath: string, elementID: string): Clear
   }
 }
 
-export function addCodeFile(parentPath: string): AddCodeFile {
+export function addCodeFile(parentPath: string, fileName: string): AddCodeFile {
   return {
     action: 'ADD_CODE_FILE',
+    fileName: fileName,
     parentPath: parentPath,
   }
 }
@@ -5065,7 +5068,7 @@ export function toggleProperty(
   }
 }
 
-export function switchLayoutSystem(layoutSystem: LayoutSystem): SwitchLayoutSystem {
+export function switchLayoutSystem(layoutSystem: SettableLayoutSystem): SwitchLayoutSystem {
   return {
     action: 'SWITCH_LAYOUT_SYSTEM',
     layoutSystem: layoutSystem,

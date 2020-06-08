@@ -17,7 +17,14 @@ import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
 import qualified Network.Wreq                   as WR
 import           Protolude
-import qualified Utopia.Web.Websockets          as WS
+import           Utopia.Web.Exceptions
+
+closeConnection :: WS.Connection -> IO ()
+closeConnection connection = void $ forkIO $ do
+  -- Trigger the close.
+  ignoreError $ WS.sendClose connection ("" :: Text)
+  -- Consume any messages until the other side gives up.
+  ignoreError $ forever $ WS.receive connection
 
 handleClientError :: HttpException -> IO Response
 handleClientError (HttpExceptionRequest _ (StatusCodeException partialResponse _)) = do
@@ -70,7 +77,7 @@ websocketProxy port pendingConnection = do
   incomingConnection <- WS.acceptRequest pendingConnection
   let proxiedPath = toS $ toLazyByteString $ encodePathSegments $ modifyRequestPathElements $ decodePathSegments requestPathBytes
   WS.runClientWith "localhost" port proxiedPath WS.defaultConnectionOptions headers $ \outgoingConnection -> do
-    let closeConnections = void (WS.closeConnection incomingConnection >> WS.closeConnection outgoingConnection)
+    let closeConnections = void (closeConnection incomingConnection >> closeConnection outgoingConnection)
     let forwardMessages fromConn toConn = void $ finally (forever (WS.receive fromConn >>= WS.send toConn)) closeConnections
     -- Fork off the handler for incoming messages.
     _ <- forkIO $ forwardMessages incomingConnection outgoingConnection

@@ -118,6 +118,7 @@ let
       #!/usr/bin/env bash
       set -e
       cabal-update
+      build-extract-requires
       ${pkgs.parallel}/bin/parallel --delay 10 --halt now,done=1 --line-buffer --tag ::: redis-server test-server-inner
     '')
   ];
@@ -206,7 +207,7 @@ let
       set -e
       rebuild-cabal
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${cabal}/bin/cabal new-run -j --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N
+      ${cabal}/bin/cabal new-run -j --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N -c
     '')
     (pkgs.writeScriptBin "run-server" ''
       #!/usr/bin/env bash
@@ -332,6 +333,7 @@ let
   packagerRunPackages = [
     pkgs.yarn
     pkgs.mongodb
+    pkgs.python
   ];
 
   releasePackages = [

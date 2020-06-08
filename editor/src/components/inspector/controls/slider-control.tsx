@@ -54,7 +54,7 @@ export class SliderControl extends React.Component<SliderControlProps, {}> {
           disabled={!this.props.controlStyles.interactive}
           value={this.props.value}
           onChange={this.props.onTransientSubmitValue}
-          onAfterChange={this.props.onForcedSubmitValue}
+          onAfterChange={this.props.onForcedSubmitValue ?? this.props.onSubmitValue}
           min={controlOptions.minimum}
           max={controlOptions.maximum}
           step={controlOptions.stepSize}

@@ -5,6 +5,7 @@ import {
   JSXAttribute,
   JSXElement,
   JSXElementName,
+  SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import { KeysPressed } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
@@ -591,6 +592,7 @@ export interface AddUIJSFile {
 
 export interface AddCodeFile {
   action: 'ADD_CODE_FILE'
+  fileName: string
   parentPath: string
 }
 
@@ -644,7 +646,7 @@ export type TextFormattingType = 'bold' | 'italic' | 'underline'
 
 export interface SwitchLayoutSystem {
   action: 'SWITCH_LAYOUT_SYSTEM'
-  layoutSystem: LayoutSystem
+  layoutSystem: SettableLayoutSystem
 }
 
 export interface InsertImageIntoUI {

@@ -975,8 +975,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'flex' }}
+            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid={'bbb'}
           >
             <View data-uid={'ccc'} layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
@@ -1000,8 +999,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'flex' }}
+            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid={'bbb'}
           >
             <View data-uid={'ccc'} layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
@@ -1017,8 +1015,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'flex' }}
+            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid={'bbb'}
           >
             <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
@@ -1090,8 +1087,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'flex' }}
+            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid={'bbb'}
           >
             <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
@@ -1107,8 +1103,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'flex' }}
+            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid={'bbb'}
           >
             <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 20, crossBasis: 20 }} />
@@ -1196,8 +1191,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'flex' }}
+            style={{ backgroundColor: '#DDDDDD', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid={'bbb'}
           >
             <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 20, crossBasis: 20 }} />
