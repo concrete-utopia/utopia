@@ -47,6 +47,7 @@ import {
   isCodeFile,
   isUIJSFile,
   StaticTemplatePath,
+  NodeModules,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -218,9 +219,9 @@ export interface EditorState {
   jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
   projectContents: ProjectContents
   codeResultCache: CodeResultCache | null
-  resolvedDependencies: {
-    npmRequireFn: RequireFn
-    typeDefinitions: TypeDefinitions
+  nodeModules: {
+    skipDeepFreeze: true // when we evaluate the code files we plan to mutate the content with the eval result
+    files: NodeModules
   }
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
@@ -854,7 +855,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(editorState),
+      transientState: produceCanvasTransientState(editorState, false),
     },
   }
 }
@@ -948,9 +949,9 @@ export function createEditorState(): EditorState {
     jsxMetadataKILLME: [],
     projectContents: {},
     codeResultCache: null,
-    resolvedDependencies: {
-      npmRequireFn: Utils.NO_OP,
-      typeDefinitions: {},
+    nodeModules: {
+      skipDeepFreeze: true,
+      files: {},
     },
     selectedViews: [],
     highlightedViews: [],
@@ -1075,7 +1076,7 @@ export function deriveState(
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
-      transientState: produceCanvasTransientState(editor),
+      transientState: produceCanvasTransientState(editor, true),
     },
   }
 

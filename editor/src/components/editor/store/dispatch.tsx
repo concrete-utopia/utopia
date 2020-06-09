@@ -65,6 +65,7 @@ import {
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { arrayEquals } from '../../../core/shared/utils'
+import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 
 const isBrowserEnvironment = process.env.JEST_WORKER_ID == undefined // test if we are in a Jest environment
 
@@ -447,18 +448,17 @@ function editorDispatchInner(
     // IMPORTANT This code assumes only a single ui file can be open at a time. If we ever want to
     // support multiple ui files side by side in a multi-tabbed view we'll need to rethink
     // how and where we store the jsx metadata
-    const isNewUiFileSelected =
-      fileTypeFromFileName(getOpenFilename(result.editor)) === 'UI_JS_FILE'
+    const isUiJsFileSelected = fileTypeFromFileName(getOpenFilename(result.editor)) === 'UI_JS_FILE'
     let spyResult: ComponentMetadata[]
 
-    if (isNewUiFileSelected) {
+    if (isUiJsFileSelected) {
       // Needs to run here as changes may have been made which need to be reflected in the
       // spy result, which only runs if the canvas props are determined to have changed.
       result.derived = {
         ...result.derived,
         canvas: {
           ...result.derived.canvas,
-          transientState: produceCanvasTransientState(result.editor),
+          transientState: produceCanvasTransientState(result.editor, true),
         },
       }
 
@@ -478,6 +478,7 @@ function editorDispatchInner(
         Utils.NO_OP,
         Utils.NO_OP,
         Utils.NO_OP,
+        boundDispatch,
       )
       let priorCanvasProps = pickUiJsxCanvasProps(
         storedState.editor,
@@ -487,6 +488,7 @@ function editorDispatchInner(
         Utils.NO_OP,
         Utils.NO_OP,
         Utils.NO_OP,
+        boundDispatch,
       )
       try {
         if (deepEquals(canvasProps, priorCanvasProps)) {
@@ -691,7 +693,7 @@ function notifyTsWorker(
 
   if (shouldInitTsWorker) {
     workers.sendInitMessage(
-      newEditorState.resolvedDependencies.typeDefinitions,
+      getDependencyTypeDefinitions(newEditorState.nodeModules.files),
       newEditorState.projectContents,
     )
   } else {
