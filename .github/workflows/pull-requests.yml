@@ -23,8 +23,9 @@ jobs:
         id: cache-editor-tests
         uses: actions/cache@v2
         with:
+          # For the tests it doesn't really matter what we cache
           path: editor/lib
-          key: ${{ runner.os }}-editor-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}
+          key: ${{ runner.os }}-editor-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
       - name: Cache utopia-api modules
         uses: actions/cache@v2
         with:

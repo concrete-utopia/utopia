@@ -21,6 +21,13 @@ jobs:
           key: ${{ runner.os }}-node-editor-master-${{ hashFiles('editor/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-editor-master-
+      - name: Cache editor test result
+        id: cache-editor-tests
+        uses: actions/cache@v2
+        with:
+          # For the tests it doesn't really matter what we cache
+          path: editor/lib
+          key: ${{ runner.os }}-editor-tests-master-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
       - name: Cache utopia-api modules
         uses: actions/cache@v2
         with:
@@ -38,6 +45,7 @@ jobs:
       - name: Install nix
         uses: Rheeseyb/install-nix-action@master
       - name: Run the tests
+        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-all-ci
       - name: Send Notification
         uses: bayssmekanique/action-simple-slack-notifier@v1.2.5
@@ -77,9 +85,17 @@ jobs:
           key: ${{ runner.os }}-node-extract-requires-master-${{ hashFiles('editor/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-extract-requires-master-
+      - name: Cache server test result
+        id: cache-server-tests
+        uses: actions/cache@v2
+        with:
+          # For the tests it doesn't really matter what we cache
+          path: server/src
+          key: ${{ runner.os }}-server-tests-master-${{ hashFiles('server/src/**') }}-${{ hashFiles('server/cabal.project.freeze') }}
       - name: Install nix
         uses: Rheeseyb/install-nix-action@master
       - name: Run the tests
+        if: steps.cache-server-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --run test-server-ci
       - name: Send Notification
         uses: bayssmekanique/action-simple-slack-notifier@v1.2.5
