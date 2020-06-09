@@ -1881,12 +1881,13 @@ export function duplicate(
               newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
               uid = duplicateNewUID.newUID
             }
-            let newPath: TemplatePath | null = null
+            let newPath: TemplatePath
             if (newParentPath == null) {
-              const storyboardUID = getStoryboardUID(utopiaComponents)
-              if (storyboardUID != null) {
-                newPath = TP.scenePath([storyboardUID, uid])
-              }
+              const storyboardUID = Utils.forceNotNull(
+                'Could not find storyboard element',
+                getStoryboardUID(utopiaComponents),
+              )
+              newPath = TP.scenePath([storyboardUID, uid])
             } else {
               newPath = TP.appendToPath(newParentPath, uid)
             }
@@ -1926,7 +1927,7 @@ export function duplicate(
               )
             }
 
-            if (newElement == null || newPath == null) {
+            if (newElement == null) {
               console.warn(`Could not duplicate ${TP.toVarSafeComponentId(path)}`)
               return null
             } else {
