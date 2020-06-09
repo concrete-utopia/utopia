@@ -216,13 +216,13 @@ const light = {
   inspectorSetSecondaryColor: createUtopiColor('hsl(0,0%,85%)', 'eg unset pins ', ''),
   inspectorSetBorderColor: lightControls.inputBorder,
   inspectorSetBackgroundColor: lightControls.inputBackground,
-  inspectorSetSegmentSelectorColor: lightControls.inputBackground,
+  inspectorSetSegmentSelectorColor: lightControls.inputBorder,
   inspectorSetSegmentTrackColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
   inspectorUnsetMainColor: lightControls.inputColor,
   inspectorUnsetSecondaryColor: createUtopiColor('hsl(0,0%,85%)', 'eg unset pins ', ''),
-  inspectorUnsetBorderColor: undefined,
+  inspectorUnsetBorderColor: lightControls.inputBorder,
   inspectorUnsetBackgroundColor: lightPrimitives.neutralBackground.o(0),
-  inspectorUnsetSegmentSelectorColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
+  inspectorUnsetSegmentSelectorColor: lightControls.inputBorder,
   inspectorUnsetSegmentTrackColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
   inspectorDisabledMainColor: createUtopiColor('rgba(102, 102, 102, 1)', '', ''),
   inspectorDisabledSecondaryColor: createUtopiColor('rgba(102, 102, 102, 1)', '', ''),
@@ -246,8 +246,6 @@ const light = {
   inspectorOffSegmentTrackColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffBorderColor: createUtopiColor('rgb(240, 240, 240)', '', ''),
   inspectorFocusedColor: createUtopiColor('#0091FF', '', ''),
-
-  flasherHookColor: base.neonpink,
 }
 
 const dark = {

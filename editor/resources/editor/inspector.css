@@ -48,13 +48,6 @@ body {
 
 /* states: check section-widget for those */
 
-.label-mini-control {
-  font-size: 9px;
-  color: var(--main-color);
-  padding-top: 2px;
-  text-transform: capitalize;
-}
-
 .label:active .label-text {
   background-color: rgba(0, 0, 0, 0.1);
 }

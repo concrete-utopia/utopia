@@ -82,12 +82,6 @@ export const OptionControl: React.FunctionComponent<
             boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
             backgroundColor: ControlStyleDefaults.SetSegmentSelectorColor,
             borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
-            // If part of a option chain control:
-            '.option-chain-control-container &': {
-              borderRadius: 0,
-              boxShadow: 'none !important',
-              backgroundColor: 'transparent !important',
-            },
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -97,14 +91,6 @@ export const OptionControl: React.FunctionComponent<
             minWidth: controlOptions.width,
             height: controlOptions.height,
             color: props.controlStyles.mainColor,
-            '.option-chain-control-container .segment:first-of-type  &': {
-              borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
-              borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
-            },
-            '.option-chain-control-container .segment:last-child &': {
-              borderTopRightRadius: UtopiaTheme.inputBorderRadius,
-              borderBottomRightRadius: UtopiaTheme.inputBorderRadius,
-            },
             borderTopRightRadius:
               rc === 'all' || rc === 'right' || rc === 'topRight' || rc === 'top'
                 ? UtopiaTheme.inputBorderRadius

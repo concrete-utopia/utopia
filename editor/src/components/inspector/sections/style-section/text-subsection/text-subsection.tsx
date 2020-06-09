@@ -7,7 +7,7 @@ import {
   jsxAttributeValue,
 } from '../../../../../core/shared/element-template'
 import Utils from '../../../../../utils/utils'
-import { Icons, useWrappedEmptyOnSubmitValue } from 'uuiui'
+import { Icons, useWrappedEmptyOnSubmitValue, Icn } from 'uuiui'
 import { NumberInput } from 'uuiui'
 import { Tooltip } from 'uuiui'
 import { InspectorSubsectionHeader } from 'uuiui'
@@ -18,7 +18,7 @@ import { useRefEditorState } from '../../../../editor/store/store-hook'
 import * as PP from '../../../../../core/shared/property-path'
 import { measureTextFieldNew } from '../../../../text-utils'
 import { ColorControl } from '../../../controls/color-control'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import { SegmentControl, SegmentOption } from '../../../controls/segment-control'
 import { OptionControl } from '../../../controls/option-control'
 import { SelectControl, SelectOption } from '../../../controls/select-control'
 import {
@@ -420,39 +420,29 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           data={null}
           style={{ gridColumn: '1 / span 2' }}
         >
-          <OptionChainControl
+          <SegmentControl
             id='textAutoSizing'
             key='textAutoSizing'
             controlStatus={textSizingMetadata.controlStatus}
             controlStyles={textSizingMetadata.controlStyles}
             onSubmitValue={textSizingMetadata.onSubmitValue}
             value={textSizingMetadata.value}
-            options={
-              [
-                {
-                  value: 'auto',
-                  tooltip: 'Auto',
-                  icon: {
-                    category: 'typography',
-                    type: 'auto',
-                    color: 'darkgray',
-                    width: 16,
-                    height: 16,
-                  },
-                },
-                {
-                  value: 'fixed',
-                  tooltip: 'Fixed',
-                  icon: {
-                    category: 'typography',
-                    type: 'fixed',
-                    color: 'darkgray',
-                    width: 16,
-                    height: 16,
-                  },
-                },
-              ] as Array<OptionChainOption<string | number>>
-            }
+            options={[
+              {
+                value: 'auto',
+                tooltip: 'Auto',
+                label: (
+                  <Icn category='typography' type='auto' color='darkgray' width={16} height={16} />
+                ),
+              },
+              {
+                value: 'fixed',
+                tooltip: 'Fixed',
+                label: (
+                  <Icn category='typography' type='fixed' color='darkgray' width={16} height={16} />
+                ),
+              },
+            ]}
           />
         </InspectorContextMenuWrapper>
         <InspectorContextMenuWrapper
@@ -461,7 +451,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           data={null}
           style={{ gridColumn: '3 / span 4' }}
         >
-          <OptionChainControl
+          <SegmentControl
             id='textAlign'
             key='textAlign'
             value={textAlignMetadata.value}
@@ -471,43 +461,51 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             options={[
               {
                 value: 'left',
-                icon: {
-                  category: 'typography',
-                  type: 'leftAlign',
-                  color: 'darkgray',
-                  width: 16,
-                  height: 16,
-                },
+                label: (
+                  <Icn
+                    category='typography'
+                    type='leftAlign'
+                    color='darkgray'
+                    width={16}
+                    height={16}
+                  />
+                ),
               },
               {
                 value: 'center',
-                icon: {
-                  category: 'typography',
-                  type: 'centerAlign',
-                  color: 'darkgray',
-                  width: 16,
-                  height: 16,
-                },
+                label: (
+                  <Icn
+                    category='typography'
+                    type='centerAlign'
+                    color='darkgray'
+                    width={16}
+                    height={16}
+                  />
+                ),
               },
               {
                 value: 'right',
-                icon: {
-                  category: 'typography',
-                  type: 'rightAlign',
-                  color: 'darkgray',
-                  width: 16,
-                  height: 16,
-                },
+                label: (
+                  <Icn
+                    category='typography'
+                    type='rightAlign'
+                    color='darkgray'
+                    width={16}
+                    height={16}
+                  />
+                ),
               },
               {
                 value: 'justify',
-                icon: {
-                  category: 'typography',
-                  type: 'justify',
-                  color: 'darkgray',
-                  width: 16,
-                  height: 16,
-                },
+                label: (
+                  <Icn
+                    category='typography'
+                    type='justify'
+                    color='darkgray'
+                    width={16}
+                    height={16}
+                  />
+                ),
               },
             ]}
           />

@@ -20,7 +20,7 @@ import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import * as PP from '../../../../core/shared/property-path'
 import { BooleanControl } from '../../controls/boolean-control'
 import { ColorControl } from '../../controls/color-control'
-import { OptionChainControl } from '../../controls/option-chain-control'
+import { SegmentControl } from '../../controls/segment-control'
 import { SelectControl, SelectOption } from '../../controls/select-control'
 import { StringControl } from '../../controls/string-control'
 import { addOnUnsetValues } from '../../common/context-menu-items'
@@ -190,7 +190,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
       }
       case ControlType.Options:
         return (
-          <OptionChainControl
+          <SegmentControl
             key={propName}
             id={controlId}
             value={value}

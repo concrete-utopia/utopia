@@ -1,11 +1,12 @@
 import * as React from 'react'
+import { LayoutSystem } from 'utopia-api'
 import { betterReactMemo } from 'uuiui-deps'
 import Utils from '../../../../utils/utils'
-import { useWrappedEmptyOnSubmitValue } from '../../../../uuiui'
+import { Icn, useWrappedEmptyOnSubmitValue } from '../../../../uuiui'
 import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
 import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../common/property-path-hooks'
-import { OptionChainControl, OptionChainOption } from '../../controls/option-chain-control'
+import { SegmentControl, SegmentOption } from '../../controls/segment-control'
 import { PropertyRow } from '../../widgets/property-row'
 import {
   FlexAlignContentControl,
@@ -16,6 +17,7 @@ import {
   FlexWrapControl,
   getDirectionAwareLabels,
 } from '../layout-section/flex-container-subsection/flex-container-controls'
+
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -147,6 +149,11 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
   // FIXME We need a hook for checking the actual layout system since it's now spread across 2 possible props
   const layoutSystemMetadata = useInspectorLayoutInfo('LayoutSystem')
+  const [
+    onSubmitValue,
+  ] = layoutSystemMetadata.useSubmitValueFactory((newValue: LayoutSystem | 'flex'):
+    | LayoutSystem
+    | undefined => (newValue === 'flex' ? undefined : newValue))
   return (
     <>
       <PropertyRow style={scenePropertyRowStyle}>
@@ -155,12 +162,11 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
             gridColumn: '1 / span 6',
           }}
         >
-          <OptionChainControl
+          <SegmentControl<LayoutSystem | 'flex'>
             id={'layoutSystem'}
-            key={'layoutSystem'}
-            onSubmitValue={layoutSystemMetadata.onSubmitValue}
-            value={layoutSystemMetadata.value ?? 'pinSystem'}
-            options={getLayoutSystemOptions()}
+            onSubmitValue={onSubmitValue}
+            value={layoutSystemMetadata.value ?? LayoutSystem.PinSystem}
+            options={layoutSystemOptions}
             controlStatus={simpleControlStatus}
             controlStyles={simpleControlStyles}
           />
@@ -173,31 +179,24 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
 
 SceneContainerSections.displayName = 'SceneContainerSections'
 
-function getLayoutSystemOptions(): Array<OptionChainOption<string>> {
-  return [
-    {
-      value: 'pinSystem',
-      tooltip: 'Layout children with pins',
-      icon: {
-        category: 'layout/systems',
-        type: 'pins',
-        color: 'darkgray',
-        width: 16,
-        height: 16,
-      },
-      label: 'View',
-    },
-    {
-      value: 'flex',
-      tooltip: 'Layout children with flexbox',
-      icon: {
-        category: 'layout/systems',
-        type: 'flexbox',
-        color: 'darkgray',
-        width: 16,
-        height: 16,
-      },
-      label: 'Flex',
-    },
-  ]
-}
+const layoutSystemOptions: Array<SegmentOption<LayoutSystem | 'flex'>> = [
+  {
+    value: LayoutSystem.PinSystem,
+    tooltip: 'Layout children with pins',
+    label: (
+      <>
+        View <Icn category='layout/systems' type='pins' color='darkgray' width={16} height={16} />
+      </>
+    ),
+  },
+  {
+    value: 'flex',
+    tooltip: 'Layout children with flexbox',
+    label: (
+      <>
+        View{' '}
+        <Icn category='layout/systems' type='flexbox' color='darkgray' width={16} height={16} />
+      </>
+    ),
+  },
+]
