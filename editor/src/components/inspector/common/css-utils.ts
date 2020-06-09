@@ -1849,18 +1849,18 @@ function printTransformOrigin(transformOrigin: CSSTransformOrigin): JSXAttribute
   )
 }
 
-export type CSSOverflow = 'hidden' | 'visible'
+type CSSOverflow = boolean
 
 function parseOverflow(overflow: unknown): Either<string, CSSOverflow> {
   if (typeof overflow === 'string') {
-    return right(overflow === 'hidden' || overflow === 'clip' ? 'hidden' : 'visible')
+    return right(overflow !== 'hidden' && overflow !== 'clip')
   } else {
     return left('Invalid overflow')
   }
 }
 
 function printOverflow(overflow: CSSOverflow): JSXAttributeValue<string> {
-  return jsxAttributeValue(overflow)
+  return jsxAttributeValue(overflow ? 'visible' : 'hidden')
 }
 
 export interface CSSBorderRadiusIndividual {
@@ -3900,7 +3900,7 @@ export const cssEmptyValues: ParsedCSSProperties = {
   },
   mixBlendMode: 'normal',
   opacity: cssNumber(1),
-  overflow: 'visible',
+  overflow: true,
   textAlign: 'left',
   textDecorationColor: undefined,
   textDecorationLine: 'none',

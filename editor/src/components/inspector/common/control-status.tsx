@@ -34,17 +34,17 @@ export interface ControlStyles {
   unsettable: boolean
 }
 
-// note: these colors need to be kept true wi th the inspector.css vars
+// note: these colors need to be kept true with the inspector.css vars
 export const ControlStyleDefaults = {
   SetMainColor: colorTheme.inspectorSetMainColor.value,
   SetSecondaryColor: colorTheme.inspectorSetSecondaryColor.value,
   SetBorderColor: colorTheme.inspectorSetBorderColor.value,
   SetBackgroundColor: colorTheme.inspectorSetBackgroundColor.value,
-  SetSegmentSelectorColor: colorTheme.inspectorSetSegmentSelectorColor.value,
+  SetSegmentSelectorColor: colorTheme.inspectorSetBackgroundColor.value,
   SetSegmentTrackColor: colorTheme.inspectorSetSegmentTrackColor.value,
   UnsetMainColor: colorTheme.inspectorUnsetMainColor.value,
   UnsetSecondaryColor: colorTheme.inspectorUnsetSecondaryColor.value,
-  UnsetBorderColor: colorTheme.inspectorUnsetBorderColor.value,
+  UnsetBorderColor: colorTheme.inspectorUnsetBorderColor,
   UnsetBorderHoverFocusColor: colorTheme.inspectorSetBorderColor.value,
   UnsetBackgroundColor: colorTheme.inspectorUnsetBackgroundColor.value,
   UnsetSegmentSelectorColor: colorTheme.inspectorUnsetSegmentSelectorColor.value,

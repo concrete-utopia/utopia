@@ -3,7 +3,7 @@ import { betterReactMemo } from 'uuiui-deps'
 import { InstancePath } from '../../../../core/shared/project-file-types'
 import { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import { showToast, updateFrameDimensions } from '../../../editor/actions/actions'
-import { SegmentControl } from '../../controls/segment-control'
+import { OptionChainControl } from '../../controls/option-chain-control'
 import { getControlStyles } from '../../common/control-status'
 
 interface ImageDensityControl {
@@ -59,7 +59,7 @@ export const ImageDensityControl = betterReactMemo(
     )
 
     return (
-      <SegmentControl
+      <OptionChainControl
         id='image-density-control'
         key='image-density-control'
         value={dimensionMultiplier}

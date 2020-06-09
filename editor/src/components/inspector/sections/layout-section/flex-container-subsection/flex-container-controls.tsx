@@ -5,12 +5,11 @@ import {
   SimpleNumberInput,
   ChainedNumberInput,
   useWrappedEmptyOnSubmitValue,
-  Icn,
 } from 'uuiui'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { FlexDirection } from 'utopia-api'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { SegmentControl, SegmentOption } from '../../../controls/segment-control'
+import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { SliderControl, SliderControlOptions } from '../../../controls/slider-control'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { betterReactMemo, OnSubmitValueOrEmpty } from 'uuiui-deps'
@@ -82,10 +81,13 @@ export const FlexDirectionControl = betterReactMemo(
           flexDirection: 'column',
         }}
       >
-        <SegmentControl
+        <OptionChainControl
           id='flex.container.flexDirection'
+          key='flex.container.flexDirection'
           value={props.value}
-          labelBelow='Direction'
+          controlOptions={{
+            labelBelow: 'Direction',
+          }}
           controlStatus={props.controlStatus}
           controlStyles={props.controlStyles}
           options={flexDirectionOptions(props.flexWrap)}
@@ -118,7 +120,7 @@ export const FlexAlignItemsControl = betterReactMemo(
           items={[unsetPropertyMenuItem('Align Items', props.onUnset)]}
           data={{}}
         >
-          <SegmentControl
+          <OptionChainControl
             id='flex.container.alignItems'
             key='flex.container.alignItems'
             value={props.value}
@@ -204,10 +206,13 @@ export const FlexJustifyContentControl = betterReactMemo(
           flexDirection: 'column',
         }}
       >
-        <SegmentControl
+        <OptionChainControl
           id='flex.container.justifyContent'
+          key='flex.container.justifyContent'
           value={props.value}
-          labelBelow='Justify'
+          controlOptions={{
+            labelBelow: 'Justify',
+          }}
           options={justifyContentOptions(
             props.flexDirection,
             props.justifyFlexStart,
@@ -297,8 +302,9 @@ export const FlexAlignContentControl = betterReactMemo(
           textAlign: 'center',
         }}
       >
-        <SegmentControl
+        <OptionChainControl
           id='flex.container.alignContent'
+          key='flex.container.alignContent'
           value={props.value}
           options={alignContentOptions(
             props.alignDirection,
@@ -318,224 +324,197 @@ const alignContentOptions = (
   alignDirection: string,
   alignContentFlexStart: uglyLabel,
   alignContentFlexEnd: uglyLabel,
-): Array<SegmentOption<FlexAlignment>> => [
-  {
-    value: FlexAlignment.FlexStart,
-    tooltip: PrettyLabel[alignContentFlexStart],
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`alignContent-${alignDirection}-${alignContentFlexStart}`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-  {
-    value: FlexAlignment.Center,
-    tooltip: 'Center',
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`alignContent-${alignDirection}-center`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-  {
-    value: FlexAlignment.FlexEnd,
-    tooltip: PrettyLabel[alignContentFlexEnd],
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`alignContent-${alignDirection}-${alignContentFlexEnd}`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-  {
-    value: FlexAlignment.Stretch,
-    tooltip: 'Stretch',
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`alignContent-${alignDirection}-stretch`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-]
+) =>
+  [
+    {
+      value: 'flex-start',
+      tooltip: PrettyLabel[alignContentFlexStart],
+      icon: {
+        category: `layout/flex`,
+        type: `alignContent-${alignDirection}-${alignContentFlexStart}`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+    {
+      value: 'center',
+      tooltip: 'Center',
+      icon: {
+        category: `layout/flex`,
+        type: `alignContent-${alignDirection}-center`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+    {
+      value: 'flex-end',
+      tooltip: PrettyLabel[alignContentFlexEnd],
+      icon: {
+        category: `layout/flex`,
+        type: `alignContent-${alignDirection}-${alignContentFlexEnd}`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+    {
+      value: 'stretch',
+      tooltip: 'Stretch',
+      icon: {
+        category: `layout/flex`,
+        type: `alignContent-${alignDirection}-stretch`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+  ] as Array<OptionChainOption<string | number>>
 
 const justifyContentOptions = (
   alignDirection: FlexDirection,
   justifyFlexStart: uglyLabel,
   justifyFlexEnd: uglyLabel,
-): Array<SegmentOption<FlexJustifyContent>> => [
-  {
-    value: FlexJustifyContent.FlexStart,
-    tooltip: PrettyLabel[justifyFlexStart],
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`justifyContent-${alignDirection}-${justifyFlexStart}`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-  {
-    value: FlexJustifyContent.Center,
-    tooltip: 'Center',
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`justifyContent-${alignDirection}-center`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-  {
-    value: FlexJustifyContent.FlexEnd,
-    tooltip: PrettyLabel[justifyFlexEnd],
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`justifyContent-${alignDirection}-${justifyFlexEnd}`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-  {
-    value: FlexJustifyContent.SpaceBetween,
-    tooltip: 'Space Between',
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`justifyContent-${alignDirection}-spaceBetween`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-  {
-    value: FlexJustifyContent.SpaceAround,
-    tooltip: 'Space Around',
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`justifyContent-${alignDirection}-spaceAround`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-]
+) =>
+  [
+    {
+      value: 'flex-start',
+      tooltip: PrettyLabel[justifyFlexStart],
+      icon: {
+        category: `layout/flex`,
+        type: `justifyContent-${alignDirection}-${justifyFlexStart}`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+    {
+      value: 'center',
+      tooltip: 'Center',
+      icon: {
+        category: `layout/flex`,
+        type: `justifyContent-${alignDirection}-center`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+    {
+      value: 'flex-end',
+      tooltip: PrettyLabel[justifyFlexEnd],
+      icon: {
+        category: `layout/flex`,
+        type: `justifyContent-${alignDirection}-${justifyFlexEnd}`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+    {
+      value: 'space-between',
+      tooltip: 'Space Between',
+      icon: {
+        category: `layout/flex`,
+        type: `justifyContent-${alignDirection}-spaceBetween`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+    {
+      value: 'space-around',
+      tooltip: 'Space Around',
+      icon: {
+        category: `layout/flex`,
+        type: `justifyContent-${alignDirection}-spaceAround`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+  ] as Array<OptionChainOption<string | number>>
 
 const alignItemsOptions = (
   alignDirection: string,
   alignItemsFlexStart: uglyLabel,
   alignItemsFlexEnd: uglyLabel,
-): Array<SegmentOption<FlexAlignment>> => [
-  {
-    value: FlexAlignment.FlexStart,
-    tooltip: PrettyLabel[alignItemsFlexStart],
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`alignItems-${alignDirection}-${alignItemsFlexStart}`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-  {
-    value: FlexAlignment.Center,
-    tooltip: 'Center',
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`alignItems-${alignDirection}-center`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-  {
-    value: FlexAlignment.FlexEnd,
-    tooltip: PrettyLabel[alignItemsFlexEnd],
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`alignItems-${alignDirection}-${alignItemsFlexEnd}`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-  {
-    value: FlexAlignment.Stretch,
-    tooltip: 'Stretch',
-    label: (
-      <Icn
-        category='layout/flex'
-        type={`alignItems-${alignDirection}-stretch`}
-        color='darkgray'
-        width={16}
-        height={16}
-      />
-    ),
-  },
-]
+) =>
+  [
+    {
+      value: 'flex-start',
+      tooltip: PrettyLabel[alignItemsFlexStart],
+      icon: {
+        category: `layout/flex`,
+        type: `alignItems-${alignDirection}-${alignItemsFlexStart}`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+    {
+      value: 'center',
+      tooltip: 'Center',
+      icon: {
+        category: `layout/flex`,
+        type: `alignItems-${alignDirection}-center`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+    {
+      value: 'flex-end',
+      tooltip: PrettyLabel[alignItemsFlexEnd],
+      icon: {
+        category: `layout/flex`,
+        type: `alignItems-${alignDirection}-${alignItemsFlexEnd}`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+    {
+      value: 'stretch',
+      tooltip: 'Stretch',
+      icon: {
+        category: `layout/flex`,
+        type: `alignItems-${alignDirection}-stretch`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
+    },
+  ] as Array<OptionChainOption<string | number>>
 
-const flexDirectionOptions = (flexWrap: FlexWrap): Array<SegmentOption<FlexDirection>> => {
+const flexDirectionOptions = (flexWrap: FlexWrap) => {
   const flexDirectionWrap = flexWrap === 'wrap' || flexWrap === 'wrap-reverse' ? 'wrap' : 'nowrap'
   const flexWrapReverse = flexWrap === 'wrap-reverse' ? 'reverse' : 'regular'
 
   return [
     {
-      value: FlexDirection.Row,
+      value: 'row',
       tooltip: 'Row',
-      label: (
-        <Icn
-          category='layout/flex'
-          type={`flexDirection-row-${flexWrapReverse}-${flexDirectionWrap}`}
-          color='darkgray'
-          width={16}
-          height={16}
-        />
-      ),
+      icon: {
+        category: 'layout/flex',
+        type: `flexDirection-row-${flexWrapReverse}-${flexDirectionWrap}`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
     },
     {
-      value: FlexDirection.Column,
+      value: 'column',
       tooltip: 'Column',
-      label: (
-        <Icn
-          category='layout/flex'
-          type={`flexDirection-column-${flexWrapReverse}-${flexDirectionWrap}`}
-          color='darkgray'
-          width={16}
-          height={16}
-        />
-      ),
+      icon: {
+        category: 'layout/flex',
+        type: `flexDirection-column-${flexWrapReverse}-${flexDirectionWrap}`,
+        color: 'darkgray',
+        width: 16,
+        height: 16,
+      },
     },
-  ]
+  ] as Array<OptionChainOption<string | number>>
 }
 
 export function getDirectionAwareLabels(

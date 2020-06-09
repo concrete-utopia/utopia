@@ -1,11 +1,12 @@
 import * as React from 'react'
-import { ChainedNumberInput, Icn, useWrappedEmptyOnSubmitValue } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
+
+import { SelectOption, SelectControl } from '../../../controls/select-control'
+import { OptionChainOption, OptionChainControl } from '../../../controls/option-chain-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
+import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
-import { SegmentControl } from '../../../controls/segment-control'
-import { SelectControl, SelectOption } from '../../../controls/select-control'
+import { betterReactMemo } from 'uuiui-deps'
+import { ChainedNumberInput, useWrappedEmptyOnSubmitValue } from 'uuiui'
 
 export const PositionControl = betterReactMemo('PositionControl', () => {
   const position = useInspectorLayoutInfo('position')
@@ -16,38 +17,39 @@ export const PositionControl = betterReactMemo('PositionControl', () => {
       items={[unsetPropertyMenuItem('Position', position.onUnsetValues)]}
       data={{}}
     >
-      <SegmentControl
+      <OptionChainControl
         id='flex.element.position.position'
+        key='flex.element.position.position'
         value={position.value}
-        options={[
-          {
-            tooltip: 'Absolute',
-            value: 'absolute',
-            label: (
-              <Icn
-                category='inspector-position'
-                type='absolute'
-                width={16}
-                height={16}
-                color='gray'
-              />
-            ),
-          },
-          {
-            tooltip: 'Relative',
-            value: 'relative',
-            label: (
-              <Icn
-                category='inspector-position'
-                type='relative'
-                width={16}
-                height={16}
-                color='gray'
-              />
-            ),
-          },
-        ]}
-        labelBelow='Position'
+        options={
+          [
+            {
+              tooltip: 'Absolute',
+              value: 'absolute',
+              icon: {
+                category: 'inspector-position',
+                type: 'absolute',
+                width: 16,
+                height: 16,
+                color: 'gray',
+              },
+            },
+            {
+              tooltip: 'Relative',
+              value: 'relative',
+              icon: {
+                category: 'inspector-position',
+                type: 'relative',
+                width: 16,
+                height: 16,
+                color: 'gray',
+              },
+            },
+          ] as Array<OptionChainOption<string | number>>
+        }
+        controlOptions={{
+          labelBelow: 'Position',
+        }}
         onSubmitValue={position.onSubmitValue}
         controlStatus={position.controlStatus}
         controlStyles={position.controlStyles}

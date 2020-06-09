@@ -1,8 +1,8 @@
 import * as React from 'react'
 
 import * as PP from '../../../../../core/shared/property-path'
-import { betterReactMemo, OnSubmitValue } from 'uuiui-deps'
-import { SegmentControl, SegmentOption } from '../../../controls/segment-control'
+import { betterReactMemo } from 'uuiui-deps'
+import { OptionChainControl } from '../../../controls/option-chain-control'
 import {
   useInspectorLayoutInfo,
   InspectorCallbackContext,
@@ -102,19 +102,17 @@ interface LayoutSystemControlProps {
   layoutSystem: DetectedLayoutSystem | null
 }
 
-// TODO this is not how this control should be used:
 export const LayoutSystemControl = betterReactMemo(
   'LayoutSystemControl',
   (props: LayoutSystemControlProps) => {
     const layoutSystemData = useLayoutSystemData()
+    const detectedLayoutSystem = props.layoutSystem
     return (
-      <SegmentControl<LayoutSystem | DetectedLayoutSystem>
+      <OptionChainControl
         id={'layoutSystem'}
         key={'layoutSystem'}
-        onSubmitValue={
-          layoutSystemData.onSubmitValue as OnSubmitValue<LayoutSystem | DetectedLayoutSystem>
-        }
-        value={props.layoutSystem ?? layoutSystemData.value}
+        onSubmitValue={layoutSystemData.onSubmitValue}
+        value={props.layoutSystem != null ? props.layoutSystem : layoutSystemData.value}
         options={layoutSystemOptions}
         controlStatus={layoutSystemData.controlStatus}
         controlStyles={layoutSystemData.controlStyles}
@@ -124,12 +122,7 @@ export const LayoutSystemControl = betterReactMemo(
 )
 
 // for now, 'flow', 'grid' and 'group' are not clickable buttons, they only have an indicative role
-const layoutSystemOptions: Array<SegmentOption<LayoutSystem | DetectedLayoutSystem>> = [
-  {
-    value: LayoutSystem.PinSystem,
-    tooltip: 'Layout children with Pins',
-    label: 'Pins',
-  },
+const layoutSystemOptions = [
   {
     value: 'flow',
     tooltip: 'Default CSS Normal Flow Layout',
@@ -141,19 +134,19 @@ const layoutSystemOptions: Array<SegmentOption<LayoutSystem | DetectedLayoutSyst
     label: 'Flex',
   },
   {
+    value: 'pinSystem',
+    tooltip: 'Layout children with pins',
+    label: 'Pins',
+  },
+  {
     value: 'grid',
     tooltip: 'Layout children with grid',
     label: 'Grid',
   },
   {
-    value: 'nonfixed',
-    tooltip: 'Nonfixed',
-    label: 'Non-fixed',
-  },
-  {
-    value: 'none',
-    tooltip: 'None',
-    label: 'None',
+    value: 'group',
+    tooltip: 'Group children',
+    label: 'Group',
   },
 ]
 
