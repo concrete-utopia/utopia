@@ -1298,7 +1298,7 @@ export function filterMultiSelectScenes(targets: Array<TemplatePath>): Array<Tem
   }
 }
 
-export function getTargetAtPosition(
+function getReparentTargetAtPosition(
   editorState: EditorState,
   position: CanvasPoint,
 ): TemplatePath | undefined {
@@ -1324,7 +1324,7 @@ export function getReparentTarget(
   shouldReparent: boolean
   newParent: TemplatePath | null
 } {
-  const result = getTargetAtPosition(editorState, position)
+  const result = getReparentTargetAtPosition(editorState, position)
   const possibleNewParent = result == undefined ? null : result
   const currentParents = Utils.stripNulls(
     toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadataKILLME, view)),
