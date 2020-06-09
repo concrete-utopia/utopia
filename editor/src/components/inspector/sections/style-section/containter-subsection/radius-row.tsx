@@ -274,7 +274,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
             />
           </div>
         ) : (
-          <GridRow padded={false} type='<--------auto-------->|--45px--|'>
+          <GridRow padded={false} type='<--------auto-------->|--53px--|'>
             <SliderControl
               id='radius-all-slider'
               key='radius-all-slider'

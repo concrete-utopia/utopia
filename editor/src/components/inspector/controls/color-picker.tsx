@@ -1,6 +1,6 @@
 import React = require('react')
 import * as Chroma from 'chroma-js'
-import { colorTheme, SimpleNumberInput, SimplePercentInput, StringInput } from 'uuiui'
+import { colorTheme, SimpleNumberInput, SimplePercentInput, StringInput, Icn } from 'uuiui'
 import { didWeHandleMouseMoveForThisFrame, mouseMoveHandled } from '../../mouse-move'
 import {
   CSSColor,
@@ -623,13 +623,15 @@ export class ColorPickerInner extends React.Component<
             minimum={0}
             maximum={360}
             labelBelow='H'
-            labelInner={{
-              category: 'layout/systems',
-              type: 'transform-rotate',
-              color: 'gray',
-              width: 10,
-              height: 10,
-            }}
+            labelInner={
+              <Icn
+                category='layout/systems'
+                type='transform-rotate'
+                color='gray'
+                width={10}
+                height={10}
+              />
+            }
           />
           <SimplePercentInput
             value={this.state.hsvS}

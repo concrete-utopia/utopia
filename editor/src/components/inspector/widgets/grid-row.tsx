@@ -26,9 +26,9 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: 'auto 54px 22px',
   },
-  '<--------auto-------->|--45px--|': {
+  '<--------auto-------->|--53px--|': {
     gridColumnGap: 4,
-    gridTemplateColumns: 'auto 45px',
+    gridTemplateColumns: 'auto 53px',
   },
   '<--------auto-------->||22px|': {
     gridColumnGap: 4,

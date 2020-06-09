@@ -12,7 +12,7 @@ import { UtopiaTheme } from '../styles/theme'
 import { OnSubmitValue } from '../../components/inspector/controls/control'
 import { stopPropagation } from '../../components/inspector/common/inspector-utils'
 import { betterReactMemo } from 'uuiui-deps'
-import { InspectorInput } from './base-input'
+import { BaseInput } from './base-input'
 
 export interface StringInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   labelBelow?: string
@@ -127,11 +127,9 @@ export const StringInput = betterReactMemo(
       }
 
       const inputElement = (
-        <InspectorInput
+        <BaseInput
           {...inputProps}
           controlStyles={controlStyles}
-          focused={focused}
-          value={inputProps.value}
           css={{
             '&::placeholder': {
               fontStyle: 'italic',
@@ -141,12 +139,13 @@ export const StringInput = betterReactMemo(
           onKeyDown={onKeyDown}
           onFocus={onFocus}
           onBlur={onBlur}
-          className={inputProps.className}
+          className={`input-container ${inputProps.className ?? ''}`}
           ref={ref}
           placeholder={placeholder}
           disabled={!controlStyles.interactive}
           autoComplete='off'
           spellCheck={false}
+          leftPadding={false}
         />
       )
 

@@ -19,12 +19,8 @@ const alignSelfProp = [createLayoutPropertyPath('alignSelf')]
 export const FlexElementSubsection = betterReactMemo('FlexElementSubsection', () => {
   return (
     <>
-      <GridRow tall padded={true} type='<---1fr--->|------172px-------|'>
-        <PropertyLabel
-          target={marginProps}
-          style={{ paddingBottom: 12 }}
-          propNamesToUnset={['all margins']}
-        >
+      <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+        <PropertyLabel target={marginProps} propNamesToUnset={['all margins']}>
           Margin
         </PropertyLabel>
         <MarginControl />

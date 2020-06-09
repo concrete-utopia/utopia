@@ -1,9 +1,7 @@
-import { ObjectInterpolation } from '@emotion/core'
 import styled from '@emotion/styled'
-import { getChainSegmentEdge } from '../../utils/utils'
 import { ControlStyles } from '../../uuiui-deps'
-import { IcnProps } from '../icn'
 import { UtopiaTheme } from '../styles/theme'
+import { colorTheme } from 'uuiui'
 
 export type ChainedType = 'not-chained' | 'first' | 'last' | 'middle'
 
@@ -18,53 +16,6 @@ export type BoxCorners =
   | 'bottomLeft'
   | 'none'
   | 'all'
-
-function getChainedBoxShadow(
-  controlStyles: ControlStyles,
-  chained: ChainedType,
-  focused: boolean,
-): ObjectInterpolation<any> {
-  const controlStatusEdges = getChainSegmentEdge(controlStyles)
-  const focusedBoxShadow = `0 0 0 1px ${UtopiaTheme.color.inspectorFocusedColor.value} inset`
-
-  const standardBoxShadow = {
-    boxShadow: focused ? focusedBoxShadow : `0 0 0 1px ${controlStyles.borderColor} inset`,
-  }
-  if (controlStyles.interactive) {
-    switch (chained) {
-      case 'not-chained': {
-        return standardBoxShadow
-      }
-      case 'first': {
-        return {
-          boxShadow: focused
-            ? focusedBoxShadow
-            : `${controlStatusEdges.top}, ${controlStatusEdges.bottom}, ${controlStatusEdges.left}`,
-        }
-      }
-      case 'middle': {
-        return {
-          boxShadow: focused
-            ? focusedBoxShadow
-            : `${controlStatusEdges.top}, ${controlStatusEdges.bottom}`,
-        }
-      }
-      case 'last': {
-        return {
-          boxShadow: focused
-            ? focusedBoxShadow
-            : `${controlStatusEdges.top}, ${controlStatusEdges.bottom}, ${controlStatusEdges.right}`,
-        }
-      }
-      default: {
-        const _exhaustiveCheck: never = chained
-        return standardBoxShadow
-      }
-    }
-  } else {
-    return standardBoxShadow
-  }
-}
 
 export function getBorderRadiusStyles(chained: ChainedType, rc: BoxCorners) {
   return {
@@ -88,24 +39,22 @@ export function getBorderRadiusStyles(chained: ChainedType, rc: BoxCorners) {
   }
 }
 
-interface InspectorInputProps {
+interface BaseInputProps {
   chained?: ChainedType
   controlStyles: ControlStyles
-  focused: boolean
-  labelInner?: string | IcnProps
+  leftPadding: boolean
   roundCorners?: BoxCorners
   mixed?: boolean
   value?: string | string[] | number
 }
 
-export const InspectorInput = styled.input<InspectorInputProps>(
-  ({ chained = 'not-chained', controlStyles, focused, labelInner, roundCorners = 'all' }) => ({
+export const BaseInput = styled.input<BaseInputProps>(
+  ({ chained = 'not-chained', controlStyles, leftPadding, roundCorners = 'all' }) => ({
     outline: 'none',
     paddingTop: 2,
     paddingBottom: 2,
-    paddingLeft: 6,
-    paddingRight: labelInner != null ? 15 : 6,
-    backgroundColor: controlStyles.backgroundColor,
+    paddingLeft: leftPadding ? 18 : 6,
+    paddingRight: 6,
     fontStyle: controlStyles.fontStyle,
     fontWeight: controlStyles.fontWeight,
     color: controlStyles.mainColor,
@@ -113,7 +62,32 @@ export const InspectorInput = styled.input<InspectorInputProps>(
     height: UtopiaTheme.layout.inputHeight.default,
     width: '100%',
     marginBottom: 0,
-    ...getChainedBoxShadow(controlStyles, chained, focused),
+    '::selection': {
+      color: 'white',
+      backgroundColor: UtopiaTheme.color.inspectorFocusedColor.value,
+    },
+    ...(controlStyles.isSet
+      ? {
+          boxShadow: `0 0 0 1px ${controlStyles.borderColor} inset`,
+        }
+      : {
+          '.input-container:hover &': {
+            boxShadow: `0 0 0 1px ${controlStyles.borderColor} inset`,
+          },
+        }),
+    backgroundColor: controlStyles.backgroundColor,
+    ...(controlStyles.isControlled
+      ? {
+          '.input-container:hover &': {
+            backgroundColor: colorTheme.inspectorSetBackgroundColor.value,
+            color: colorTheme.inspectorSetMainColor.value,
+          },
+        }
+      : undefined),
+
+    ':focus': {
+      boxShadow: `0 0 0 1px ${UtopiaTheme.color.inspectorFocusedColor.value} inset`,
+    },
     ...getBorderRadiusStyles(chained, roundCorners),
     disabled: !controlStyles.interactive,
   }),

@@ -52,7 +52,7 @@ export const SegmentControl = <T extends string | number>(props: SegmentControlP
         css={{
           width: '100%',
           height: UtopiaTheme.layout.inputHeight.tall,
-          boxShadow: props.controlStyles.set
+          boxShadow: props.controlStyles.isSet
             ? `0 0 0 1px ${props.controlStyles.borderColor} inset`
             : undefined,
           ':hover': {

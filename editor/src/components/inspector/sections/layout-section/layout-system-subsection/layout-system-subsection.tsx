@@ -29,12 +29,8 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
           <LayoutSystemControl layoutSystem={props.layoutSystem} />
         </GridRow>
         {props.layoutSystem === 'flex' ? <FlexContainerControls seeMoreVisible={true} /> : null}
-        <GridRow tall padded={true} type='<---1fr--->|------172px-------|'>
-          <PropertyLabel
-            target={paddingPropsToUnset}
-            propNamesToUnset={['all paddings']}
-            style={{ paddingBottom: 12 }}
-          >
+        <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+          <PropertyLabel target={paddingPropsToUnset} propNamesToUnset={['all paddings']}>
             Padding
           </PropertyLabel>
           <FlexPaddingControl />

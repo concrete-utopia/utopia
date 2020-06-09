@@ -129,7 +129,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
               setOpenPopup={props.setOpenPopup}
             />
           </GridRow>
-          <GridRow tall alignItems='start' padded={false} type='<--------auto-------->|--45px--|'>
+          <GridRow tall alignItems='start' padded={false} type='<--------auto-------->|--53px--|'>
             <StringBackgroundColorControl
               id={`background-layer-gradient-${props.index}`}
               key={`background-layer-gradient-${props.index}`}

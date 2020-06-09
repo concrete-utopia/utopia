@@ -46,7 +46,7 @@ export const OptionControl: React.FunctionComponent<
   }
 
   let controlOpacity: number
-  if (props.controlStyles.set) {
+  if (props.controlStyles.isSet) {
     if (props.value) {
       controlOpacity = UtopiaTheme.styles.inspectorSetSelectedOpacity
     } else {

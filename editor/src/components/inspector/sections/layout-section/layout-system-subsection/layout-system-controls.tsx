@@ -209,7 +209,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
       propsArray={[
         {
           value: flexPaddingTop.value,
-          labelBelow: 'T',
+          labelInner: 'T',
           minimum: 0,
           onSubmitValue: flexPaddingTopOnSubmitValue,
           onTransientSubmitValue: flexPaddingTopOnTransientSubmitValue,
@@ -219,7 +219,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
         },
         {
           value: flexPaddingRight.value,
-          labelBelow: 'R',
+          labelInner: 'R',
           minimum: 0,
           onSubmitValue: flexPaddingRightOnSubmitValue,
           onTransientSubmitValue: flexPaddingRightOnTransientSubmitValue,
@@ -229,7 +229,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
         },
         {
           value: flexPaddingBottom.value,
-          labelBelow: 'B',
+          labelInner: 'B',
           minimum: 0,
           onSubmitValue: flexPaddingBottomOnSubmitValue,
           onTransientSubmitValue: flexPaddingBottomOnTransientSubmitValue,
@@ -239,7 +239,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
         },
         {
           value: flexPaddingLeft.value,
-          labelBelow: 'L',
+          labelInner: 'L',
           minimum: 0,
           onSubmitValue: flexPaddingLeftOnSubmitValue,
           onTransientSubmitValue: flexPaddingLeftOnTransientSubmitValue,

@@ -1,12 +1,6 @@
 import * as React from 'react'
 import { FlexAlignment, FlexJustifyContent, FlexWrap } from 'utopia-api'
-import {
-  PopupList,
-  SimpleNumberInput,
-  ChainedNumberInput,
-  useWrappedEmptyOnSubmitValue,
-  Icn,
-} from 'uuiui'
+import { PopupList, SimpleNumberInput, useWrappedEmptyOnSubmitValue, Icn } from 'uuiui'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { FlexDirection } from 'utopia-api'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -236,7 +230,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
   )
   return (
     <>
-      <GridRow padded={false} type='<--------auto-------->|--45px--|'>
+      <GridRow padded={false} type='<--------auto-------->|--53px--|'>
         <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
           <SliderControl
             id='flex.container.gap.main'

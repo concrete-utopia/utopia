@@ -20,11 +20,12 @@ export interface ControlStyles {
   fontWeight: number
   mainColor: string
   secondaryColor: string
-  borderColor: string | undefined
+  borderColor: string
   backgroundColor: string
   segmentSelectorColor: string
   segmentTrackColor: string
-  set: boolean
+  isSet: boolean
+  isControlled: boolean
   interactive: boolean
   mixed: boolean
   unknown: boolean
@@ -138,11 +139,12 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
     let fontWeight = 400
     let mainColor: string = ControlStyleDefaults.SetMainColor
     let secondaryColor: string = ControlStyleDefaults.SetSecondaryColor
-    let borderColor: string | undefined = ControlStyleDefaults.SetBorderColor
+    let borderColor: string = ControlStyleDefaults.SetBorderColor
     let backgroundColor: string = ControlStyleDefaults.SetBackgroundColor
     let segmentSelectorColor: string = ControlStyleDefaults.SetSegmentSelectorColor
     let segmentTrackColor: string = ControlStyleDefaults.SetSegmentTrackColor
-    let set = true
+    let isControlled: boolean = false
+    let isSet = true
     let interactive = true
     let mixed = false
     let unknown = false
@@ -156,7 +158,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'multiselect-identical-simple':
         break
       case 'multiselect-mixed-simple-or-unset':
-        set = false
+        isSet = false
         mixed = true
         backgroundColor = ControlStyleDefaults.UnsetBackgroundColor
         segmentSelectorColor = ControlStyleDefaults.UnsetSegmentSelectorColor
@@ -194,7 +196,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         break
       case 'unset':
       case 'multiselect-identical-unset':
-        set = false
+        isSet = false
         backgroundColor = ControlStyleDefaults.UnsetBackgroundColor
         segmentSelectorColor = ControlStyleDefaults.UnsetSegmentSelectorColor
         segmentTrackColor = ControlStyleDefaults.UnsetSegmentTrackColor
@@ -205,7 +207,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         unsettable = false
         break
       case 'off':
-        set = false
+        isSet = false
         borderColor = ControlStyleDefaults.OffBorderColor
         interactive = false
         mainColor = ControlStyleDefaults.OffMainColor
@@ -244,6 +246,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         segmentTrackColor = ControlStyleDefaults.ControlledSegmentTrackColor
         trackColor = ControlStyleDefaults.ControlledMainColor
         railColor = ControlStyleDefaults.ControlledSecondaryColor
+        isControlled = true
         showContent = true
         break
       default:
@@ -259,7 +262,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       backgroundColor,
       segmentSelectorColor,
       segmentTrackColor,
-      set,
+      isSet: isSet,
       interactive,
       mixed,
       trackColor,
@@ -267,6 +270,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       showContent,
       unknown,
       unsettable,
+      isControlled: isControlled,
     }
   },
 )
@@ -342,7 +346,7 @@ function isValidHelperFunction(
   return false
 }
 
-function isSet(
+function isSetProperty(
   modifiableAttributeResult: GetModifiableAttributeResult,
   realValue: unknown,
 ): boolean {
@@ -364,7 +368,7 @@ function isSet(
   }
 }
 
-function isControlled(
+function isControlledProperty(
   modifiableAttributeResult: GetModifiableAttributeResult,
   realValue: unknown,
 ): boolean {
@@ -394,8 +398,8 @@ function calculatePropertyStatusPerProperty(
   realValue: unknown,
 ): SinglePropertyStatus {
   return {
-    set: isSet(modifiableAttributeResult, realValue),
-    controlled: isControlled(modifiableAttributeResult, realValue),
+    set: isSetProperty(modifiableAttributeResult, realValue),
+    controlled: isControlledProperty(modifiableAttributeResult, realValue),
     overwritable: isOverwritable(modifiableAttributeResult),
   }
 }
@@ -434,9 +438,9 @@ function calculatePropertyStatusForSelection(
         identical = deepEqual(firstValue, attribute.value) // deepEqual here, for very large multiselection this might be bad
       }
       // if any property is controlled, set to true
-      controlled = controlled || isControlled(attribute, realValues[index])
+      controlled = controlled || isControlledProperty(attribute, realValues[index])
       // if any property is set, set to true
-      set = set || isSet(attribute, realValues[index])
+      set = set || isSetProperty(attribute, realValues[index])
       // if any property is not overwritable, set to false
       overwritable = overwritable && isOverwritable(attribute)
     })

@@ -220,7 +220,7 @@ const light = {
   inspectorSetSegmentTrackColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
   inspectorUnsetMainColor: lightControls.inputColor,
   inspectorUnsetSecondaryColor: createUtopiColor('hsl(0,0%,85%)', 'eg unset pins ', ''),
-  inspectorUnsetBorderColor: lightControls.inputBorder,
+  inspectorUnsetBorderColor: 'transparent',
   inspectorUnsetBackgroundColor: lightPrimitives.neutralBackground.o(0),
   inspectorUnsetSegmentSelectorColor: lightControls.inputBorder,
   inspectorUnsetSegmentTrackColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
@@ -245,7 +245,7 @@ const light = {
   inspectorOffSegmentSelectorColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffSegmentTrackColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffBorderColor: createUtopiColor('rgb(240, 240, 240)', '', ''),
-  inspectorFocusedColor: createUtopiColor('#0091FF', '', ''),
+  inspectorFocusedColor: createUtopiColor('#000', '', ''),
 }
 
 const dark = {

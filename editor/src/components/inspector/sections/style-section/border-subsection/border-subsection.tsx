@@ -304,7 +304,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
         propsArray={[
           {
             value: borderWidth[0],
-            labelBelow: 'T',
+            labelInner: 'T',
             minimum: 0,
             onSubmitValue: borderTopWidthSubmitValue,
             onTransientSubmitValue: borderTopWidthSubmitTransientValue,
@@ -314,7 +314,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
           },
           {
             value: borderWidth[1],
-            labelBelow: 'R',
+            labelInner: 'R',
             minimum: 0,
             onSubmitValue: borderRightWidthSubmitValue,
             onTransientSubmitValue: borderRightWidthSubmitTransientValue,
@@ -324,7 +324,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
           },
           {
             value: borderWidth[2],
-            labelBelow: 'B',
+            labelInner: 'B',
             minimum: 0,
             onSubmitValue: borderBottomWidthSubmitValue,
             onTransientSubmitValue: borderBottomWidthSubmitTransientValue,
@@ -334,7 +334,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
           },
           {
             value: borderWidth[3],
-            labelBelow: 'L',
+            labelInner: 'L',
             minimum: 0,
             onSubmitValue: borderLeftWidthSubmitValue,
             onTransientSubmitValue: borderLeftWidthSubmitTransientValue,

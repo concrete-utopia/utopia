@@ -99,7 +99,7 @@ export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackg
               propsArray={[
                 {
                   value: props.value.center.x.value,
-                  labelBelow: 'x',
+                  labelInner: 'x',
                   onSubmitValue: gradientCenterXSubmitValue,
                   onTransientSubmitValue: gradientCenterXTransientSubmitValue,
                   controlStatus: props.controlStatus,
@@ -108,7 +108,7 @@ export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackg
                 },
                 {
                   value: props.value.center.y.value,
-                  labelBelow: 'y',
+                  labelInner: 'y',
                   onSubmitValue: gradientCenterYSubmitValue,
                   onTransientSubmitValue: gradientCenterYTransientSubmitValue,
                   controlStatus: props.controlStatus,

@@ -126,13 +126,15 @@ const LinearGradientControls: React.FunctionComponent<LinearGradientControlsProp
         onSubmitValue={gradientAngleSubmitValue}
         onTransientSubmitValue={gradientAngleTransientSubmitValue}
         controlStatus={props.controlStatus}
-        labelInner={{
-          category: 'layout/systems',
-          type: 'transform-rotate',
-          color: 'gray',
-          width: 10,
-          height: 10,
-        }}
+        labelInner={
+          <Icn
+            category='layout/systems'
+            type='transform-rotate'
+            color='gray'
+            width={10}
+            height={10}
+          />
+        }
         labelBelow='angle'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'

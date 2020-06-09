@@ -146,7 +146,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
       propsArray={[
         {
           value: marginTop.value,
-          labelBelow: 'T',
+          labelInner: 'T',
           controlStatus: marginTop.controlStatus,
           disabled: !marginTop.controlStyles.interactive,
           onSubmitValue: wrappedMarginTopOnSubmitValue,
@@ -155,7 +155,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
         },
         {
           value: marginRight.value,
-          labelBelow: 'R',
+          labelInner: 'R',
           controlStatus: marginRight.controlStatus,
           disabled: !marginRight.controlStyles.interactive,
           onSubmitValue: wrappedMarginRightOnSubmitValue,
@@ -164,7 +164,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
         },
         {
           value: marginBottom.value,
-          labelBelow: 'B',
+          labelInner: 'B',
           controlStatus: marginBottom.controlStatus,
           disabled: !marginBottom.controlStyles.interactive,
           onSubmitValue: wrappedMarginBottomOnSubmitValue,
@@ -173,7 +173,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
         },
         {
           value: marginLeft.value,
-          labelBelow: 'L',
+          labelInner: 'L',
           controlStatus: marginLeft.controlStatus,
           disabled: !marginLeft.controlStyles.interactive,
           onSubmitValue: wrappedMarginLeftOnSubmitValue,

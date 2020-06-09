@@ -27,10 +27,10 @@ import {
 } from '../../components/inspector/common/css-utils'
 import { OnUnsetValues } from '../../components/inspector/common/property-path-hooks'
 import { clampValue } from '../../core/shared/math-utils'
-import { Icn, IcnProps } from '../icn'
-import { colorTheme, UtopiaTheme } from '../styles/theme'
+import { Icn } from '../icn'
+import { UtopiaTheme, colorTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
-import { BoxCorners, ChainedType, getBorderRadiusStyles, InspectorInput } from './base-input'
+import { BoxCorners, ChainedType, getBorderRadiusStyles, BaseInput } from './base-input'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
@@ -109,11 +109,11 @@ interface AbstractNumberInputProps<T extends CSSNumber | number> {
   className?: string
   disabled?: boolean
   labelBelow?: string
-  labelInner?: string | IcnProps
+  labelInner?: React.ReactNode
   minimum?: number
   maximum?: number
   stepSize?: number
-  incrementControls?: boolean
+  showIncrementControls?: boolean
   chained?: ChainedType
   height?: number
   roundCorners?: BoxCorners
@@ -148,7 +148,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     minimum: unscaledMinimum = -Infinity,
     maximum: unscaledMaximum = Infinity,
     stepSize: unscaledStepSize,
-    incrementControls = true,
+    showIncrementControls = true,
     chained = 'not-chained',
     height = UtopiaTheme.layout.inputHeight.default,
     roundCorners = 'all',
@@ -165,10 +165,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const controlStyles = getControlStyles(controlStatus)
-    const backgroundImage = React.useMemo(
-      () => `linear-gradient(to right, transparent 0, ${controlStyles.backgroundColor} 6px)`,
-      [controlStyles],
-    )
 
     const [mixed, setMixed] = React.useState<boolean>(controlStyles.mixed)
     const [showValue, setShowValue] = React.useState<boolean>(showContent)
@@ -394,9 +390,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       [scrubOnMouseMove, setScrubValue, parsedStateValueUnit, ref],
     )
 
-    const rc = roundCorners == null ? 'all' : roundCorners
-    const borderRadiusStyles = getBorderRadiusStyles(chained, rc)
-
     const onDoubleClick = React.useCallback(() => {
       if (allowEditOnDoubleClick) {
         setEditDisabled(false)
@@ -588,40 +581,21 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       placeholder = 'mixed'
     }
 
-    const chainedStyles: ObjectInterpolation<any> | undefined =
-      (chained === 'first' || chained === 'middle') && !isFocused
-        ? {
-            '&:not(:hover)::after': {
-              content: '""',
-              width: 1,
-              height: UtopiaTheme.layout.inputHeight.default / 2,
-              backgroundColor: controlStyles.borderColor,
-              zIndex: 2,
-              position: 'absolute',
-              top: UtopiaTheme.layout.inputHeight.default / 2,
-              right: 0,
-              transform: 'translateX(0.5px)',
-            },
-          }
-        : undefined
-
     return (
       // this form madness is a hack due to chrome ignoring autoComplete='off' on individual `input`s
       <form className={formClassName} style={style} autoComplete='off'>
         <div
-          className='number-input-container'
+          className='input-container'
           css={{
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
-            ...chainedStyles,
           }}
         >
-          <InspectorInput
+          <BaseInput
             {...inputProps}
             chained={chained}
             controlStyles={controlStyles}
-            focused={isFocused}
-            labelInner={labelInner}
+            leftPadding={labelInner != null || showIncrementControls}
             roundCorners={roundCorners}
             mixed={mixed}
             value={stateValue}
@@ -637,112 +611,77 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             onBlur={onBlur}
             onChange={onChange}
           />
-          {labelInner != null ? (
-            <div
-              className='number-input-innerLabel'
-              css={{
+          {labelInner != null || showIncrementControls ? (
+            <FlexRow
+              className='number-input-label-and-increment-controls'
+              style={{
                 position: 'absolute',
-                top: 1,
-                right: 1,
-                userSelect: 'none',
-                pointerEvents: 'none',
-                width: 20,
-                height: 20,
-                backgroundImage: backgroundImage,
-                borderRadius: UtopiaTheme.inputBorderRadius,
-                display: 'block',
-                '.number-input-container:hover &': {
-                  display: incrementControls && controlStyles.interactive ? 'none' : 'block',
-                },
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  pointerEvents: 'none',
-                  left: 2,
-                  top: 5,
-                  fontWeight: 'bold',
-                  fontSize: '9px',
-                  width: '100%',
-                  height: '100%',
-                  color: controlStyles.secondaryColor,
-                }}
-              >
-                {typeof labelInner === 'object' && 'type' in labelInner ? (
-                  <Icn {...labelInner} />
-                ) : (
-                  labelInner
-                )}
-              </div>
-            </div>
-          ) : null}
-          {incrementControls && controlStyles.interactive ? (
-            <div
-              className='number-input-increment-controls'
-              css={{
-                position: 'absolute',
+                justifyContent: 'center',
                 top: 0,
-                right: 0,
-                flexDirection: 'column',
-                alignItems: 'stretch',
-                width: 11,
+                left: 0,
+                width: 18,
                 height: UtopiaTheme.layout.inputHeight.default,
-                backgroundColor: UtopiaTheme.color.inspectorEmphasizedBackground.value,
-                boxShadow: `1px 0 ${controlStyles.borderColor} inset`,
-                display: 'none',
-                '.number-input-container:hover &': {
-                  display: 'block',
-                },
               }}
             >
-              <div
-                css={{
-                  height: '50%',
-                  boxShadow: `-1px 1px ${
-                    isFocused
-                      ? UtopiaTheme.color.inspectorFocusedColor.value
-                      : controlStyles.borderColor
-                  } inset, 1px 0 ${controlStyles.borderColor} inset`,
-                  position: 'relative',
-                  borderTopRightRadius: borderRadiusStyles.borderTopRightRadius,
-                  ':active': {
-                    backgroundColor: colorTheme.buttonActiveBackground.value,
-                  },
-                  '::after': {
-                    content: '""',
-                    width: 'calc(100% - 1px)',
-                    height: 1,
-                    position: 'absolute',
-                    right: 1,
-                    bottom: 0,
-                    transform: 'translateY(0.5px)',
-                    backgroundColor: controlStyles.borderColor,
+              {labelInner != null ? (
+                <div
+                  className='number-input-innerLabel'
+                  css={{
+                    width: '100%',
+                    height: '100%',
+                    paddingLeft: 3,
+                    paddingTop: 6,
+                    userSelect: 'none',
                     pointerEvents: 'none',
-                  },
-                }}
-                onMouseDown={onIncrementMouseDown}
-              >
-                <Icn category='controls/input' type='up' color='gray' width={11} height={11} />
-              </div>
-              <div
-                css={{
-                  height: '50%',
-                  boxShadow: `-1px -1px ${
-                    isFocused
-                      ? UtopiaTheme.color.inspectorFocusedColor.value
-                      : controlStyles.borderColor
-                  } inset, 1px 0 ${controlStyles.borderColor} inset`,
-                  borderBottomRightRadius: borderRadiusStyles.borderBottomRightRadius,
-                  ':active': {
-                    backgroundColor: colorTheme.buttonActiveBackground.value,
-                  },
-                }}
-                onMouseDown={onDecrementMouseDown}
-              >
-                <Icn category='controls/input' type='down' color='gray' width={11} height={11} />
-              </div>
-            </div>
+                    '.input-container:hover &': {
+                      display:
+                        showIncrementControls && controlStyles.interactive ? 'none' : undefined,
+                    },
+                    fontWeight: 'bold',
+                    fontSize: '9px',
+                    color: controlStyles.secondaryColor,
+                    // (controlStyles.isControlled ? {
+                    //   ':hover': {
+                    //     color: colorTheme.inspectorSetBackgroundColor.value,
+                    //   }
+                    // } : undefined),
+                    textAlign: 'center',
+                  }}
+                >
+                  {labelInner}
+                </div>
+              ) : null}
+              {showIncrementControls ? (
+                <div
+                  css={{
+                    width: 11,
+                    display: controlStyles.isSet && labelInner == null ? undefined : 'none',
+                    '.input-container:hover &': {
+                      display: 'block',
+                    },
+                  }}
+                >
+                  <Icn
+                    style={{ display: 'block' }}
+                    onMouseDown={onIncrementMouseDown}
+                    category='controls/input'
+                    type='up'
+                    color={controlStyles.isControlled ? 'white' : 'gray'}
+                    width={11}
+                    height={11}
+                  />
+                  <Icn
+                    style={{ display: 'block' }}
+                    onMouseDown={onDecrementMouseDown}
+                    category='controls/input'
+                    type='down'
+                    color={controlStyles.isControlled ? 'white' : 'gray'}
+                    width={11}
+                    height={11}
+                  />
+                </div>
+              ) : null}
+            </FlexRow>
           ) : null}
         </div>
         {labelBelow == null && controlStatus != 'off' ? null : (
@@ -752,7 +691,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
               cursor: CSSCursor.ResizeEW,
               fontSize: 9,
               textAlign: 'center',
-              display: 'block',
               color: controlStyles.secondaryColor,
               paddingTop: 2,
             }}
@@ -845,7 +783,14 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
   'ChainedNumberInput',
   ({ propsArray, idPrefix, style }) => {
     return (
-      <FlexRow style={style}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))',
+          gridColumnGap: 1,
+          ...style,
+        }}
+      >
         {propsArray.map((props, i) => {
           switch (i) {
             case 0: {
@@ -880,7 +825,7 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
             }
           }
         })}
-      </FlexRow>
+      </div>
     )
   },
 )
