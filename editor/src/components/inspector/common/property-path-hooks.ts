@@ -749,6 +749,7 @@ function getValueFromSpecialSizeMeasurements<P extends LayoutProp | StyleLayoutP
       break
   }
   if (value != null) {
+    // TODO: solve typing here properly
     return cssNumber(value, null) as ParsedProperties[P]
   }
   return null
