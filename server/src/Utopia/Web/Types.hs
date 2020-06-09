@@ -163,7 +163,7 @@ type Unprotected = AuthenticateAPI
               :<|> WebsiteAPI
 
 type API = (AuthCookie :> Protected)
-            :<|> Unprotected
+      :<|> Unprotected
 
 apiProxy :: Proxy API
 apiProxy = Proxy

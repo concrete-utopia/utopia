@@ -1325,6 +1325,7 @@ function getReparentTargetAtPosition(
     position,
     [TargetSearchType.All],
     false,
+    'loose',
   )
   // filtering for non-selected views from alltargets
   return R.head(

@@ -79,7 +79,7 @@ auth0UserToUserDetails auth0User = do
                        , userDetailsPicture = _picture auth0User
                        }
 
-getUserDetailsFromCode :: Auth0Resources -> Text -> IO (Either ClientError UserDetails)
+getUserDetailsFromCode :: Auth0Resources -> Text -> IO (Either ServantError UserDetails)
 getUserDetailsFromCode auth0Resources authCode = (flip runClientM) (_clientEnv auth0Resources) $ do
   let tokenRequest = Auth0OAuthTokenRequest
                    { _grantType = "authorization_code"

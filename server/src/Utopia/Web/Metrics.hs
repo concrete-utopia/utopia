@@ -11,6 +11,7 @@ module Utopia.Web.Metrics where
 
 import           Control.Exception.Lifted
 import           Control.Monad.Trans.Control
+import           Data.Text                   (Text)
 import           Data.Time.Clock.POSIX
 import           Protolude                   hiding (finally, onException)
 import           System.Metrics

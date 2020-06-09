@@ -40,7 +40,7 @@ deleteCookie sessionState = def
     , setCookieDomain   = Nothing
     , setCookieHttpOnly = getHttpOnlyCookies sessionState
     , setCookieSecure   = getSecureCookies sessionState
-    , setCookieName     = encodeUtf8 $ getCookieName sessionState
+    , setCookieName     = toS $ getCookieName sessionState
     , setCookieValue    = ""
     }
 
@@ -51,27 +51,27 @@ createCookie sessionState session = def
     , setCookieHttpOnly = getHttpOnlyCookies sessionState
     , setCookieSecure   = getSecureCookies sessionState
     , setCookieExpires  = cookieExpires sessionState session
-    , setCookieName     = encodeUtf8 $ getCookieName sessionState
-    , setCookieValue    = encodeUtf8 $ toPathPiece $ sessionKey session
+    , setCookieName     = toS $ getCookieName sessionState
+    , setCookieValue    = toS $ toPathPiece $ sessionKey session
     }
 
 newSessionForUser :: SessionState -> Text -> IO (Maybe SetCookie)
 newSessionForUser sessionState userId = do
   (sessionData, saveSessionToken) <- loadSession sessionState Nothing
-  savedResult <- saveSession sessionState saveSessionToken $ SessionMap $ M.insert "user_id" (encodeUtf8 userId) $ unSessionMap sessionData
+  savedResult <- saveSession sessionState saveSessionToken $ SessionMap $ M.insert "user_id" (toS userId) $ unSessionMap sessionData
   return $ fmap (createCookie sessionState) savedResult
 
 getSessionIdFromCookie :: SessionState -> Maybe Text -> Maybe Text
 getSessionIdFromCookie sessionState possibleCookieContents = do
   cookieContents <- possibleCookieContents
-  let parsedCookies = parseCookiesText $ encodeUtf8 cookieContents
+  let parsedCookies = parseCookiesText $ toS cookieContents
   lookup (toS $ getCookieName sessionState) parsedCookies
 
 getUserIdFromCookie :: SessionState -> Maybe Text -> IO (Maybe Text)
 getUserIdFromCookie sessionState cookieContents = do
   let possibleSessionId = getSessionIdFromCookie sessionState cookieContents
-  (sessionData, _) <- loadSession sessionState $ fmap encodeUtf8 possibleSessionId
-  let possibleUserId = fmap decodeUtf8 $ M.lookup "user_id" $ unSessionMap sessionData
+  (sessionData, _) <- loadSession sessionState $ fmap toS possibleSessionId
+  let possibleUserId = fmap toS $ M.lookup "user_id" $ unSessionMap sessionData
   return possibleUserId
 
 logoutSession :: SessionState -> Maybe Text -> IO ()
