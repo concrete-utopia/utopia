@@ -115,6 +115,7 @@ import {
   getStoryboardTemplatePathFromEditorState,
   addSceneToJSXComponents,
   getNumberOfScenes,
+  getStoryboardUID,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -153,11 +154,7 @@ import {
 } from './guideline'
 import { addImport } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import {
-  createSceneTemplatePath,
-  PathForSceneStyle,
-  BakedInStoryboardUID,
-} from '../../core/model/scene-utils'
+import { createSceneTemplatePath, PathForSceneStyle } from '../../core/model/scene-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 
@@ -1880,17 +1877,23 @@ export function duplicate(
               newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
               uid = duplicateNewUID.newUID
             }
-            const newPath =
-              newParentPath == null
-                ? TP.scenePath([BakedInStoryboardUID, uid])
-                : TP.appendToPath(newParentPath, uid)
+            let newPath: TemplatePath
+            if (newParentPath == null) {
+              const storyboardUID = Utils.forceNotNull(
+                'Could not find storyboard element',
+                getStoryboardUID(utopiaComponents),
+              )
+              newPath = TP.scenePath([storyboardUID, uid])
+            } else {
+              newPath = TP.appendToPath(newParentPath, uid)
+            }
             // Update the original frames to be the duplicate ones.
-            if (newOriginalFrames != null) {
+            if (newOriginalFrames != null && newPath != null) {
               newOriginalFrames = newOriginalFrames.map((originalFrame) => {
                 if (TP.pathsEqual(originalFrame.target, path)) {
                   return {
                     frame: originalFrame.frame,
-                    target: newPath,
+                    target: newPath as TemplatePath,
                   }
                 } else {
                   return originalFrame
