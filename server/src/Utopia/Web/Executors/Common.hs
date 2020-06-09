@@ -9,7 +9,7 @@
 
 module Utopia.Web.Executors.Common where
 
-import           Control.Lens              hiding ((.=))
+import           Control.Lens              hiding ((.=), (<.>))
 import           Control.Monad.Catch       hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
 import           Data.Aeson
@@ -27,7 +27,7 @@ import           Network.HTTP.Types.Status
 import           Network.Mime
 import           Network.Wai
 import qualified Network.Wreq                as WR
-import           Protolude hiding (Handler)
+import           Protolude hiding (Handler, (<.>))
 import           Servant
 import           Servant.Client
 import           System.Environment
@@ -44,6 +44,8 @@ import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Web.Cookie
 import Utopia.Web.Packager.NPM
+import System.Directory
+import System.FilePath
 
 {-|
   When running the 'ServerMonad' type this is the type that we will
@@ -231,8 +233,21 @@ contentText = "content"
 contentsText :: Text
 contentsText = "contents"
 
+cachePackagerContent :: Text -> Text -> IO BL.ByteString -> IO BL.ByteString
+cachePackagerContent javascriptPackageName javascriptPackageVersion fallback = do
+  let cacheFileParentPath = ".utopia-cache" </> "packager" </> toS javascriptPackageName
+  let cacheFilePath = cacheFileParentPath </> toS javascriptPackageVersion <.> "json"
+  fileExists <- doesFileExist cacheFilePath
+  let whenFileExists = BL.readFile cacheFilePath
+  let whenFileDoesNotExist = do
+            result <- fallback
+            createDirectoryIfMissing True cacheFileParentPath
+            BL.writeFile cacheFilePath result
+            return result
+  if fileExists then whenFileExists else whenFileDoesNotExist
+
 getPackagerContent :: QSem -> Text -> Text -> IO BL.ByteString
-getPackagerContent semaphore javascriptPackageName javascriptPackageVersion = do
+getPackagerContent semaphore javascriptPackageName javascriptPackageVersion = cachePackagerContent javascriptPackageName javascriptPackageVersion $ do
   filesAndContent <- withInstalledProject semaphore javascriptPackageName javascriptPackageVersion $ do
     getModuleAndDependenciesFiles javascriptPackageName
   let contents = fmap (\fileContent -> (M.singleton contentText fileContent)) filesAndContent
