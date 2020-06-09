@@ -1305,11 +1305,7 @@ export function getTargetAtPosition(
   const allTargets = Canvas.getAllTargetsAtPoint(
     editorState,
     position,
-    [
-      TargetSearchType.ParentsOfSelected,
-      TargetSearchType.SiblingsOfSelected,
-      TargetSearchType.TopLevelElements,
-    ],
+    [TargetSearchType.All],
     false,
   )
   // filtering for non-selected views from alltargets
