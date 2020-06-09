@@ -304,6 +304,10 @@ export function containsPath(path: TemplatePath, paths: Array<TemplatePath>): bo
   return paths.some(matchesPath)
 }
 
+export function filterPaths(paths: TemplatePath[], pathsToFilter: TemplatePath[]): TemplatePath[] {
+  return paths.filter((path) => !containsPath(path, pathsToFilter))
+}
+
 export function addPathIfMissing(
   path: TemplatePath,
   paths: Array<TemplatePath>,

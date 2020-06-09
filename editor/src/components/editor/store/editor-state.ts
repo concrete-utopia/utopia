@@ -225,6 +225,7 @@ export interface EditorState {
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
   hiddenInstances: Array<TemplatePath>
+  warnedInstances: Array<TemplatePath>
   mode: Mode
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
@@ -954,6 +955,7 @@ export function createEditorState(): EditorState {
     selectedViews: [],
     highlightedViews: [],
     hiddenInstances: [],
+    warnedInstances: [],
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
     keysPressed: {},

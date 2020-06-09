@@ -839,6 +839,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     selectedViews: poppedEditor.selectedViews,
     highlightedViews: poppedEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
+    warnedInstances: poppedEditor.warnedInstances,
     mode: EditorModes.selectMode(),
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
@@ -991,7 +992,10 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
         }, working)
       }
     }, editor)
-    return updatedEditor
+    return {
+      ...updatedEditor,
+      selectedViews: TP.filterPaths(updatedEditor.selectedViews, extendedTargets),
+    }
   }
 }
 
@@ -3303,6 +3307,7 @@ export const UPDATE_FNS = {
           action.codeOrModel === 'Model' ? editor.canvas.mountCount + 1 : editor.canvas.mountCount,
       },
       parseOrPrintInFlight: false, // only ever clear it here
+      selectedViews: action.codeOrModel === 'Model' ? [] : editor.selectedViews,
     }
   },
   CLEAR_PARSE_OR_PRINT_IN_FLIGHT: (
