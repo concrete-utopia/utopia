@@ -42,7 +42,6 @@ describe('Layout Section', () => {
           aspectRatioLocked={false}
           parentFlexAxis={null}
           toggleAspectRatioLock={toggleAspectRatioLock}
-          layoutSystem={null}
           specialSizeMeasurements={emptySpecialSizeMeasurements}
           position='static'
           input={{

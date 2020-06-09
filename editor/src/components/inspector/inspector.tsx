@@ -93,7 +93,6 @@ import {
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
-  layoutSystem: DetectedLayoutSystem | null
   isChildOfFlexComponent: boolean
   position: CSSPosition
   layoutWrapper: null | LayoutWrapper
@@ -238,7 +237,6 @@ AlignmentButtons.displayName = 'AlignmentButtons'
 interface RenderedLayoutSectionProps {
   layout: any
   anyHTMLElements: boolean
-  layoutSystem: DetectedLayoutSystem | null
   specialSizeMeasurements: SpecialSizeMeasurements
   isChildOfFlexComponent: boolean
   hasNonDefaultPositionAttributes: boolean
@@ -258,7 +256,6 @@ const RenderedLayoutSection = betterReactMemo<RenderedLayoutSectionProps>(
         <LayoutSection
           input={props.layout}
           parentFlexAxis={props.parentFlexAxis}
-          layoutSystem={props.layoutSystem}
           specialSizeMeasurements={props.specialSizeMeasurements}
           isChildOfFlexComponent={props.isChildOfFlexComponent}
           hasNonDefaultPositionAttributes={props.hasNonDefaultPositionAttributes}
@@ -389,7 +386,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
           <RenderedLayoutSection
             anyHTMLElements={anyHTMLElements}
             layout={props.input.layout}
-            layoutSystem={props.input.layoutSystem}
             specialSizeMeasurements={props.input.specialSizeMeasurements}
             isChildOfFlexComponent={props.input.isChildOfFlexComponent}
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
@@ -470,7 +466,6 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
     })
 
     let inspectorModel: InspectorModel = {
-      layoutSystem: null,
       isChildOfFlexComponent: false,
       position: 'static',
       layoutWrapper: null,
@@ -562,9 +557,6 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
         if (jsxElement != null && isJSXElement(jsxElement)) {
           const elementName = jsxElement.name.baseVariable
           inspectorModel.type = elementName
-
-          inspectorModel.layoutSystem =
-            elementMetadata.specialSizeMeasurements.layoutSystemForChildren
 
           inspectorModel.specialSizeMeasurements = elementMetadata.specialSizeMeasurements
           inspectorModel.position = elementMetadata.specialSizeMeasurements.position
