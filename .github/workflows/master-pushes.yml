@@ -91,7 +91,7 @@ jobs:
         with:
           # For the tests it doesn't really matter what we cache
           path: server/src
-          key: ${{ runner.os }}-server-tests-master-${{ hashFiles('server/src/**') }}-${{ hashFiles('server/cabal.project.freeze') }}
+          key: ${{ runner.os }}-server-tests-master-${{ hashFiles('server/src/**') }}-${{ hashFiles('server/test/**') }}-${{ hashFiles('server/cabal.project.freeze') }}
       - name: Install nix
         uses: Rheeseyb/install-nix-action@master
       - name: Run the tests
