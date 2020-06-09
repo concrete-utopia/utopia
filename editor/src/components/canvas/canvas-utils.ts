@@ -1175,7 +1175,7 @@ export function produceCanvasTransientState(editorState: EditorState): Transient
           case 'insert':
             const insertMode = editorState.mode
             const openComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-            if (insertionSubjectIsJSXElement(insertMode.subject)) {
+            if (insertionSubjectIsJSXElement(insertMode.subject) && insertMode.insertionStarted) {
               const insertionParent =
                 insertMode.subject.parent == null ? null : insertMode.subject.parent.staticTarget
               const updatedComponents = insertJSXElementChild(
