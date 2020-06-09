@@ -9,7 +9,7 @@ import           Network.HTTP.Client              (defaultManagerSettings,
 import           Network.HTTP.Client.TLS
 import           Protolude
 import           System.Metrics
-import           Utopia.Web.Auth.Session
+import Utopia.Web.Auth.Session
 import qualified Utopia.Web.Database              as DB
 import           Utopia.Web.Executors.Common
 import qualified Utopia.Web.Executors.Common      as C
@@ -19,6 +19,7 @@ import qualified Utopia.Web.Executors.Development as D
 initialiseTestResources :: IO DevServerResources
 initialiseTestResources = do
   pool <- DB.createInMemDatabasePool
+  DB.migrateDatabase True pool
   proxyHttpManager <- newManager defaultManagerSettings
   sessionStore <- createSessionState pool
   store <- newStore
@@ -30,7 +31,6 @@ initialiseTestResources = do
          { _commitHash = "nocommit"
          , _projectPool = pool
          , D._serverPort = 8888
-         , _silentMigration = True
          , _logOnStartup = False
          , _proxyManager = Just proxyHttpManager
          , _auth0Resources = Nothing

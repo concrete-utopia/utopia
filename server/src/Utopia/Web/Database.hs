@@ -15,6 +15,7 @@ import           Control.Lens
 import           Control.Monad.Catch
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Identity
+import qualified Data.ByteString.Lazy as BL
 import           Data.Aeson
 import           Data.List                            (lookup)
 import           Data.Pool
@@ -88,7 +89,7 @@ createLocalDatabasePool :: IO (Pool SqlBackend)
 createLocalDatabasePool = runIdentityT $ runNoLoggingT $ createSqlitePool "utopia-local.db" 1
 
 createRemoteDatabasePool :: String -> IO (Pool SqlBackend)
-createRemoteDatabasePool connectionString = runIdentityT $ runNoLoggingT $ createPostgresqlPool (toS connectionString) 1
+createRemoteDatabasePool connectionString = runIdentityT $ runNoLoggingT $ createPostgresqlPool (encodeUtf8 $ toS connectionString) 1
 
 createInMemDatabasePool :: IO (Pool SqlBackend)
 createInMemDatabasePool = runIdentityT $ runNoLoggingT $ createSqlitePool ":memory:" 1
@@ -117,7 +118,7 @@ migrateDatabase silentMigration pool = do
   usePool pool $ migration migrateAll
 
 encodeContent :: Value -> ByteString
-encodeContent contentToEncode = toSL $ encode contentToEncode
+encodeContent contentToEncode = BL.toStrict $ encode contentToEncode
 
 projectFromContent :: Text -> Value -> Text -> Text -> UTCTime -> UTCTime -> Project
 projectFromContent pId pContent pOwnerId pTitle pCreatedAt pModifiedAt = Project pId pOwnerId pTitle pCreatedAt pModifiedAt (encodeContent pContent) Nothing
@@ -125,7 +126,7 @@ projectFromContent pId pContent pOwnerId pTitle pCreatedAt pModifiedAt = Project
 getProjectContent :: Maybe Project -> Maybe Value
 getProjectContent maybeProject = do
   project <- maybeProject
-  decode $ toS $ projectContent project
+  decode $ BL.fromStrict $ projectContent project
 
 notDeletedProject :: Filter Project
 notDeletedProject = ProjectDeleted !=. Just True

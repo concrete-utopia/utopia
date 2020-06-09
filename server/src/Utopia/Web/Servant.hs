@@ -85,7 +85,7 @@ instance MimeUnrender SVG BL.ByteString where
 
 
 instance MimeUnrender HTML Text where
-  mimeUnrender _ bytes = Right $ toS bytes
+  mimeUnrender _ bytes = Right $ decodeUtf8 $ BL.toStrict bytes
 
 
 data PrettyJSON

@@ -23,6 +23,7 @@ import           Protolude
 
 import qualified Data.ByteString.Lazy      as BL
 
+import Web.Cookie
 import           Servant
 import qualified Text.Blaze.Html5          as H
 import           Utopia.Web.Assets
@@ -30,7 +31,6 @@ import           Utopia.Web.Database.Types
 import           Utopia.Web.JSON
 
 import           Network.HTTP.Client       hiding (Cookie)
-import           Web.Cookie
 
 type SessionCookie = Text
 

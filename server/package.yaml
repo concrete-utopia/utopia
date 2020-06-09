@@ -9,9 +9,9 @@ ghc-options: -Wall -Werror -threaded -rtsopts
 dependencies:
   - aeson
   - aeson-pretty
-  - amazonka
-  - amazonka-core
-  - amazonka-s3
+  - amazonka ==1.6.1
+  - amazonka-core ==1.6.1
+  - amazonka-s3 ==1.6.1
   - base >= 4.7 && < 5
   - base16-bytestring
   - binary
@@ -42,18 +42,18 @@ dependencies:
   - network-uri
   - path-pieces
   - pathwalk
-  - persistent <2.10.0
+  - persistent
   - persistent-postgresql
   - persistent-sqlite
   - persistent-template
   - process
   - protolude
   - resource-pool
-  - servant ==0.15
+  - servant ==0.17
   - servant-blaze
-  - servant-client ==0.15
-  - servant-rawm ==0.3.0.0
-  - servant-server ==0.15
+  - servant-client ==0.17
+  - servant-rawm
+  - servant-server ==0.17
   - servant-websockets
   - serversession
   - serversession-backend-persistent
