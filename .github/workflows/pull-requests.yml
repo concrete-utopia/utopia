@@ -13,21 +13,26 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache editor modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: editor/node_modules
           key: ${{ runner.os }}-node-editor-PRs-${{ hashFiles('editor/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-editor-PRs-
+      - name: Cache editor test result
+        uses: actions/cache@v2
+        with:
+          path: editor/lib
+          key: ${{ runner.os }}-editor-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}
       - name: Cache utopia-api modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: utopia-api/node_modules
           key: ${{ runner.os }}-node-utopia-api-PRs-${{ hashFiles('utopia-api/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-utopia-api-PRs-
       - name: Cache website modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: website/node_modules
           key: ${{ runner.os }}-node-website-PRs-${{ hashFiles('website/package-lock.json') }}

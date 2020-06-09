@@ -15,21 +15,21 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache editor modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: editor/node_modules
           key: ${{ runner.os }}-node-editor-master-${{ hashFiles('editor/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-editor-master-
       - name: Cache utopia-api modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: utopia-api/node_modules
           key: ${{ runner.os }}-node-utopia-api-master-${{ hashFiles('utopia-api/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-utopia-api-master-
       - name: Cache website modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: website/node_modules
           key: ${{ runner.os }}-node-website-master-${{ hashFiles('website/package-lock.json') }}
@@ -56,22 +56,22 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache ~/.cabal/packages
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.cabal/packages
           key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-packages-2
       - name: Cache ~/.cabal/store
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.cabal/store
           key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-store-2
       - name: Cache dist-newstyle
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: server/dist-newstyle
           key: ${{ runner.os }}-${{ matrix.ghc }}-server-dist-newstyle-2
       - name: Cache extract requires node modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: packager-servers/extract-requires/node_modules
           key: ${{ runner.os }}-node-extract-requires-master-${{ hashFiles('editor/package-lock.json') }}
