@@ -15,6 +15,7 @@ import {
   TestInspectorContextProvider,
 } from '../../common/inspector-test-utils'
 import { LayoutSection } from './layout-section'
+import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 
 describe('Layout Section', () => {
   enableWhyDidYouRenderOnComponent(LayoutSection)
@@ -42,6 +43,7 @@ describe('Layout Section', () => {
           parentFlexAxis={null}
           toggleAspectRatioLock={toggleAspectRatioLock}
           layoutSystem={null}
+          specialSizeMeasurements={emptySpecialSizeMeasurements}
           position='static'
           input={{
             frame: {

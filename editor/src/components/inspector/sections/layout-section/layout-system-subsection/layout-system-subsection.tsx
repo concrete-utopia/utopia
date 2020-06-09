@@ -10,10 +10,14 @@ import {
 } from './layout-system-controls'
 import { FlexContainerControls } from '../flex-container-subsection/flex-container-subsection'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { DetectedLayoutSystem } from '../../../../../core/shared/element-template'
+import {
+  DetectedLayoutSystem,
+  SpecialSizeMeasurements,
+} from '../../../../../core/shared/element-template'
 
 interface LayoutSystemSubsectionProps {
   layoutSystem: DetectedLayoutSystem | null
+  specialSizeMeasurements: SpecialSizeMeasurements
 }
 
 export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProps>(
@@ -37,7 +41,7 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
           >
             Padding
           </PropertyLabel>
-          <FlexPaddingControl />
+          <FlexPaddingControl specialSizeMeasurements={props.specialSizeMeasurements} />
         </GridRow>
       </>
     )
