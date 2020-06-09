@@ -27,7 +27,7 @@ import           Network.HTTP.Types.Status
 import           Network.Mime
 import           Network.Wai
 import qualified Network.Wreq                as WR
-import           Protolude hiding (Handler, (<.>))
+import           Protolude hiding ((<.>))
 import           Servant
 import           Servant.Client
 import           System.Environment
