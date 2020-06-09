@@ -1025,7 +1025,11 @@ export const MetadataUtils = {
       )
     }
   },
-  getElementLabel(path: TemplatePath, metadata: Array<ComponentMetadata>): string {
+  getElementLabel(
+    path: TemplatePath,
+    metadata: Array<ComponentMetadata>,
+    staticName: string | null = null,
+  ): string {
     if (TP.isScenePath(path)) {
       const scene = this.findSceneByTemplatePath(metadata, path)
       if (scene != null) {
@@ -1045,7 +1049,7 @@ export const MetadataUtils = {
         } else {
           const possibleName: string = foldEither(
             (tagName) => {
-              return tagName
+              return staticName ?? tagName
             },
             (jsxElement) => {
               switch (jsxElement.type) {
@@ -1353,20 +1357,32 @@ export const MetadataUtils = {
       }
     })
   },
+  getStaticElementName(
+    path: TemplatePath,
+    rootElements: Array<UtopiaJSXComponent>,
+    metadata: ComponentMetadata[],
+  ): string {
+    if (TP.isScenePath(path)) {
+      return 'Scene'
+    } else {
+      // TODO remove dependency on metadata from here
+      const staticPath = MetadataUtils.dynamicPathToStaticPath(metadata, path)
+      const jsxElement =
+        staticPath == null ? null : findJSXElementChildAtPath(rootElements, staticPath)
+      const name =
+        jsxElement == null || !isJSXElement(jsxElement)
+          ? ''
+          : getJSXElementNameLastPart(jsxElement.name)
+      return name
+    }
+  },
   isComponentInstance(
     path: InstancePath,
     rootElements: Array<UtopiaJSXComponent>,
     metadata: ComponentMetadata[],
     imports: Imports,
   ): boolean {
-    // TODO remove dependency on metadata from here
-    const staticPath = MetadataUtils.dynamicPathToStaticPath(metadata, path)
-    const jsxElement =
-      staticPath == null ? null : findJSXElementChildAtPath(rootElements, staticPath)
-    const name =
-      jsxElement == null || !isJSXElement(jsxElement)
-        ? ''
-        : getJSXElementNameLastPart(jsxElement.name)
+    const name = MetadataUtils.getStaticElementName(path, rootElements, metadata)
     const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
     return (
       instanceMetadata != null &&

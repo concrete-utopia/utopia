@@ -56,14 +56,20 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
         fallbackFileState == null
           ? []
           : fallbackFileState.topLevelElementsIncludingScenes.filter(isUtopiaJSXComponent)
-      const nameInner = MetadataUtils.getElementLabel(
-        props.templatePath,
-        store.editor.jsxMetadataKILLME,
-      )
       const elementOriginTypeInner = MetadataUtils.getElementOriginType(
         componentsIncludingScenes,
         store.editor.jsxMetadataKILLME,
         props.templatePath,
+      )
+      const staticName = MetadataUtils.getStaticElementName(
+        props.templatePath,
+        componentsIncludingScenes,
+        store.editor.jsxMetadataKILLME,
+      )
+      const nameInner = MetadataUtils.getElementLabel(
+        props.templatePath,
+        store.editor.jsxMetadataKILLME,
+        staticName,
       )
       const importsInner =
         fallbackFileState == null
