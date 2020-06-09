@@ -1,10 +1,2 @@
 packages: .
 
-source-repository-package
-  type: git
-  location: https://github.com/concrete-utopia/serversession
-  tag: 6696515e42d124592cdaf86d0b9d77308d19a95d
-  subdir: serversession
-  subdir: serversession-backend-persistent
-
-

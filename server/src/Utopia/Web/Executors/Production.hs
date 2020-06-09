@@ -9,7 +9,6 @@
 {-# LANGUAGE RecordWildCards        #-}
 {-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeOperators          #-}
-{-# LANGUAGE KindSignatures #-}
 
 {-|
   Production specific execution lives in this module.
@@ -26,7 +25,7 @@ import           Network.HTTP.Client         (Manager, defaultManagerSettings,
                                               managerResponseTimeout,
                                               newManager, responseTimeoutNone)
 import           Network.HTTP.Client.TLS
-import           Protolude hiding (Handler)
+import           Protolude
 import           Servant
 import           System.Environment
 import           System.Metrics              hiding (Value)

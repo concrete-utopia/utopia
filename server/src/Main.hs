@@ -15,7 +15,7 @@ module Main where
 
 import           Data.String
 import           Data.Text
-import           Protolude hiding (toUpper)
+import           Protolude
 
 import           System.Environment
 import           System.IO                        hiding (getLine)

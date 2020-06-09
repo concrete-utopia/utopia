@@ -26,8 +26,8 @@ import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
 import           Network.Mime
 import           Network.Wai
-import qualified Network.Wreq                as WR
-import           Protolude hiding (Handler)
+import qualified Network.Wreq              as WR
+import           Protolude
 import           Servant
 import           Servant.Client
 import           System.Environment
@@ -39,11 +39,11 @@ import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types     (Auth0Resources)
 import qualified Utopia.Web.Database       as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Web.Cookie
-import Utopia.Web.Packager.NPM
 
 {-|
   When running the 'ServerMonad' type this is the type that we will
@@ -81,9 +81,9 @@ data AssetsCaches = AssetsCaches
   , _assetPathDetails :: [PathAndBuilders]
   }
 
-failedAuth0CodeCheck :: (MonadIO m, MonadError ServerError m) => ClientError -> m a
-failedAuth0CodeCheck clientError = do
-  putErrLn $ (show clientError :: String)
+failedAuth0CodeCheck :: (MonadIO m, MonadError ServantErr m) => ServantError -> m a
+failedAuth0CodeCheck servantError = do
+  putErrLn $ (show servantError :: String)
   throwError err500
 
 successfulAuthCheck :: (MonadIO m) => DB.DatabaseMetrics -> Pool SqlBackend -> SessionState -> (Maybe SetCookie -> a) -> UserDetails -> m a
@@ -92,7 +92,7 @@ successfulAuthCheck metrics pool sessionState action user = do
   possibleSetCookie <- liftIO $ newSessionForUser sessionState $ userDetailsUserId user
   return $ action possibleSetCookie
 
-auth0CodeCheck :: (MonadIO m, MonadError ServerError m) => DB.DatabaseMetrics -> Pool SqlBackend -> SessionState -> Auth0Resources -> Text -> (Maybe SetCookie -> a) -> m a
+auth0CodeCheck :: (MonadIO m, MonadError ServantErr m) => DB.DatabaseMetrics -> Pool SqlBackend -> SessionState -> Auth0Resources -> Text -> (Maybe SetCookie -> a) -> m a
 auth0CodeCheck metrics pool sessionState auth0Resources authCode action = do
   userOrError <- liftIO $ getUserDetailsFromCode auth0Resources authCode
   either failedAuth0CodeCheck (successfulAuthCheck metrics pool sessionState action) userOrError
@@ -238,4 +238,3 @@ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion = do
   let contents = fmap (\fileContent -> (M.singleton contentText fileContent)) filesAndContent
   let encodingResult = toEncoding $ M.singleton contentsText contents
   return $ toLazyByteString $ fromEncoding encodingResult
-

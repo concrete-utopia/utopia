@@ -6,14 +6,14 @@ let
   };
 
   pkgs = import (builtins.fetchTarball {
-    name = "nixos-20.03";
-    url = https://github.com/NixOS/nixpkgs/archive/20.03.tar.gz;
+    name = "nixos-19.09";
+    url = https://github.com/NixOS/nixpkgs/archive/19.09.tar.gz;
     # Hash obtained using `nix-prefetch-url --unpack <url>`
-    sha256 = "0182ys095dfx02vl2a20j1hz92dx3mfgz2a6fhn31bqlp1wa8hlq";
+    sha256 = "0mhqhq21y5vrr1f30qd2bvydv4bbbslvyzclhw0kdxmkgg3z4c92";
   }) { inherit config; };
   
   haskell-lib = pkgs.haskell.lib;
-  custom-cabal-plan = haskell-lib.addExtraLibraries (haskell-lib.appendConfigureFlag pkgs.haskellPackages.cabal-plan "-flicense-report") [pkgs.haskellPackages.zlib pkgs.haskellPackages.tar];
+  custom-cabal-plan = haskell-lib.addExtraLibraries (haskell-lib.appendConfigureFlag pkgs.haskellPackages.cabal-plan "-flicense-report") [pkgs.haskellPackages.zlib pkgs.haskellPackages.tar]; 
 in
   { 
     pkgs = pkgs;
