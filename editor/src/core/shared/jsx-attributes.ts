@@ -86,11 +86,7 @@ export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Eithe
               returnObject[prop.key] = value.value
               break
             case 'SPREAD_ASSIGNMENT':
-              if (typeof value.value === 'object') {
-                returnObject = { ...returnObject, ...value.value }
-              } else {
-                throw new Error(`Trying to spread non-object type ${JSON.stringify(value.value)}`)
-              }
+              returnObject = { ...returnObject, ...value.value }
               break
             default:
               const _exhaustiveCheck: never = prop
@@ -195,11 +191,7 @@ export const jsxAttributeToValue = (
             returnObject[prop.key] = value
             break
           case 'SPREAD_ASSIGNMENT':
-            if (typeof value === 'object') {
-              returnObject = { ...returnObject, ...value }
-            } else {
-              throw new Error(`Trying to spread non-object type ${JSON.stringify(value)}`)
-            }
+            returnObject = { ...returnObject, ...value }
             break
           default:
             const _exhaustiveCheck: never = prop
