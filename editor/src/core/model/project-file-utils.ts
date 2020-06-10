@@ -96,18 +96,21 @@ export function isUtopiaAPITextElement(element: JSXElementChild, imports: Import
 }
 
 export function isHTMLComponent(elementName: JSXElementName, imports: Imports): boolean {
-  if (PP.depth(elementName.propertyPath) === 0) {
-    const imported = Object.keys(imports).some((importKey) => {
-      const fromImports = imports[importKey]
-      return pluck(fromImports.importedFromWithin, 'name').includes(elementName.baseVariable)
-    })
-    if (imported) {
-      return false
-    } else {
-      return intrinsicHTMLElementNamesAsStrings.includes(elementName.baseVariable)
-    }
-  } else {
+  return (
+    PP.depth(elementName.propertyPath) === 0 &&
+    isHTMLComponentFromBaseName(elementName.baseVariable, imports)
+  )
+}
+
+export function isHTMLComponentFromBaseName(baseName: string, imports: Imports): boolean {
+  const imported = Object.keys(imports).some((importKey) => {
+    const fromImports = imports[importKey]
+    return pluck(fromImports.importedFromWithin, 'name').includes(baseName)
+  })
+  if (imported) {
     return false
+  } else {
+    return intrinsicHTMLElementNamesAsStrings.includes(baseName)
   }
 }
 

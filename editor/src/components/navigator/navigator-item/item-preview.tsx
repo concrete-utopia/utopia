@@ -2,13 +2,17 @@ import * as React from 'react'
 import { Icn, IcnProps } from 'uuiui'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata, isJSXElement } from '../../../core/shared/element-template'
-import { isHTMLComponent } from '../../../core/model/project-file-utils'
+import {
+  isHTMLComponent,
+  isHTMLComponentFromBaseName,
+} from '../../../core/model/project-file-utils'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import { isLeft } from '../../../core/shared/either'
 
 interface ItemPreviewProps {
   isAutosizingView: boolean
   element: ElementInstanceMetadata | null
+  componentInstance: boolean
   path: TemplatePath
   collapsed: boolean
   selected: boolean
@@ -60,10 +64,14 @@ export const ItemPreview: React.StatelessComponent<ItemPreviewProps> = (props) =
       role = 'text'
     } else if (MetadataUtils.isAnimatedElementAgainstImports(props.imports, element)) {
       role = 'animated'
-    } else if (element.componentInstance) {
+    } else if (props.componentInstance) {
       role = 'componentinstance'
     } else if (isLeft(element.element)) {
-      role = 'ghost'
+      if (isHTMLComponentFromBaseName(element.element.value, props.imports)) {
+        role = 'div'
+      } else {
+        role = 'ghost'
+      }
     } else if (isJSXElement(element.element.value)) {
       if (isHTMLComponent(element.element.value.name, props.imports)) {
         role = 'div'

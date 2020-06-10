@@ -1377,18 +1377,22 @@ export const MetadataUtils = {
     }
   },
   isComponentInstance(
-    path: InstancePath,
+    path: TemplatePath,
     rootElements: Array<UtopiaJSXComponent>,
     metadata: ComponentMetadata[],
     imports: Imports,
   ): boolean {
-    const name = MetadataUtils.getStaticElementName(path, rootElements, metadata)
-    const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
-    return (
-      instanceMetadata != null &&
-      !MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instanceMetadata, name) &&
-      !intrinsicHTMLElementNamesAsStrings.includes(name)
-    )
+    if (TP.isScenePath(path)) {
+      return false
+    } else {
+      const name = MetadataUtils.getStaticElementName(path, rootElements, metadata)
+      const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
+      return (
+        instanceMetadata != null &&
+        !MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instanceMetadata, name) &&
+        !intrinsicHTMLElementNamesAsStrings.includes(name)
+      )
+    }
   },
   isPinnedAndNotAbsolutePositioned(
     metadata: Array<ComponentMetadata>,

@@ -42,6 +42,7 @@ export interface NavigatorItemInnerProps {
   isAutosizingView: boolean
   name: string
   element: ElementInstanceMetadata | null
+  componentInstance: boolean
   dispatch: EditorDispatch
   isHighlighted: boolean
   collapsed: boolean

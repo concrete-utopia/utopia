@@ -54,6 +54,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
   element: ElementInstanceMetadata | null
   elementOriginType: ElementOriginType
   name: string
+  componentInstance: boolean
   isAutosizingView: boolean
   isElementVisible: boolean
   renamingTarget: TemplatePath | null
@@ -251,6 +252,7 @@ export class NavigatorItemDndWrapper extends PureComponent<
           isAutosizingView={this.props.isAutosizingView}
           name={this.props.name}
           element={this.props.element}
+          componentInstance={this.props.componentInstance}
           dispatch={this.props.editorDispatch}
           isHighlighted={this.props.highlighted}
           isElementVisible={this.props.isElementVisible}

@@ -39,6 +39,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       elementOriginType,
       name,
       element,
+      componentInstance,
       isAutosizingView,
       isElementVisible,
       renamingTarget,
@@ -75,6 +76,12 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
         fallbackFileState == null
           ? getOpenImportsFromState(store.editor)
           : fallbackFileState.imports
+      const componentInstanceInner = MetadataUtils.isComponentInstance(
+        props.templatePath,
+        componentsIncludingScenes,
+        store.editor.jsxMetadataKILLME,
+        importsInner,
+      )
       const navigatorTargetsInner = store.derived.navigatorTargets
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
@@ -95,6 +102,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       return {
         name: nameInner,
         element: elementInner,
+        componentInstance: componentInstanceInner,
         isAutosizingView: MetadataUtils.isAutoSizingView(elementInner),
         navigatorTargets: store.derived.navigatorTargets,
         dispatch: store.dispatch,
@@ -133,6 +141,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       elementOriginType: elementOriginType,
       name: name,
       element: element,
+      componentInstance: componentInstance,
       isAutosizingView: isAutosizingView,
       isElementVisible: isElementVisible,
       renamingTarget: renamingTarget,
