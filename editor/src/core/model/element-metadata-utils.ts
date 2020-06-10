@@ -43,6 +43,8 @@ import {
   JSXElementChild,
   MetadataWithoutChildren,
   UtopiaJSXComponent,
+  JSXElementName,
+  getJSXElementNameAsString,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -1028,7 +1030,7 @@ export const MetadataUtils = {
   getElementLabel(
     path: TemplatePath,
     metadata: Array<ComponentMetadata>,
-    staticName: string | null = null,
+    staticName: JSXElementName | null = null,
   ): string {
     if (TP.isScenePath(path)) {
       const scene = this.findSceneByTemplatePath(metadata, path)
@@ -1049,7 +1051,8 @@ export const MetadataUtils = {
         } else {
           const possibleName: string = foldEither(
             (tagName) => {
-              return staticName ?? tagName
+              const staticNameString = optionalMap(getJSXElementNameAsString, staticName)
+              return staticNameString ?? tagName
             },
             (jsxElement) => {
               switch (jsxElement.type) {
@@ -1361,19 +1364,14 @@ export const MetadataUtils = {
     path: TemplatePath,
     rootElements: Array<UtopiaJSXComponent>,
     metadata: ComponentMetadata[],
-  ): string {
+  ): JSXElementName | null {
     if (TP.isScenePath(path)) {
-      return 'Scene'
+      return null
     } else {
       // TODO remove dependency on metadata from here
       const staticPath = MetadataUtils.dynamicPathToStaticPath(metadata, path)
-      const jsxElement =
-        staticPath == null ? null : findJSXElementChildAtPath(rootElements, staticPath)
-      const name =
-        jsxElement == null || !isJSXElement(jsxElement)
-          ? ''
-          : getJSXElementNameLastPart(jsxElement.name)
-      return name
+      const jsxElement = optionalMap((p) => findJSXElementChildAtPath(rootElements, p), staticPath)
+      return optionalMap((element) => (isJSXElement(element) ? element.name : null), jsxElement)
     }
   },
   isComponentInstance(
@@ -1385,9 +1383,11 @@ export const MetadataUtils = {
     if (TP.isScenePath(path)) {
       return false
     } else {
-      const name = MetadataUtils.getStaticElementName(path, rootElements, metadata)
+      const jsxElementName = MetadataUtils.getStaticElementName(path, rootElements, metadata)
+      const name = optionalMap(getJSXElementNameLastPart, jsxElementName)
       const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
       return (
+        name != null &&
         instanceMetadata != null &&
         !MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instanceMetadata, name) &&
         !intrinsicHTMLElementNamesAsStrings.includes(name)
