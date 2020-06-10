@@ -23,6 +23,7 @@ import {
   StaticElementPath,
   TemplatePath,
   UIJSFile,
+  NodeModules,
 } from '../../core/shared/project-file-types'
 import { CodeResultCache } from '../custom-code/code-file'
 import { ElementContextMenuInstance } from '../element-context-menu'
@@ -34,9 +35,9 @@ import { RightMenuTab } from '../canvas/right-menu'
 import { Mode } from './editor-modes'
 import {
   NpmBundleResult,
-  NpmDependencies,
   RequireFn,
   TypeDefinitions,
+  NpmDependency,
 } from '../../core/shared/npm-dependency-types'
 import {
   DuplicationState,
@@ -235,7 +236,7 @@ export type Atomic = {
 
 export type NewProject = {
   action: 'NEW'
-  npmBundleResult: NpmBundleResult
+  nodeModules: NodeModules
   persistentModel: PersistentModel
   codeResultCache: CodeResultCache
 }
@@ -243,7 +244,7 @@ export type NewProject = {
 export type Load = {
   action: 'LOAD'
   model: PersistentModel
-  npmBundleResult: NpmBundleResult
+  nodeModules: NodeModules
   codeResultCache: CodeResultCache
   title: string
   projectId: string | null
@@ -472,13 +473,6 @@ export interface SelectAllSiblings {
 export interface UpdateCodeResultCache {
   action: 'UPDATE_CODE_RESULT_CACHE'
   codeResultCache: CodeResultCache
-}
-
-export interface UpdateNpmDependencies {
-  action: 'UPDATE_NPM_DEPENDENCIES'
-  npmDependencies: NpmDependencies
-  npmRequireFn: RequireFn
-  typeDefinitions: TypeDefinitions
 }
 
 export interface SetCodeEditorVisibility {
@@ -717,6 +711,17 @@ export interface ResetPropToDefault {
   path: PropertyPath | null
 }
 
+export interface UpdateNodeModulesContents {
+  action: 'UPDATE_NODE_MODULES_CONTENTS'
+  contentsToAdd: NodeModules
+  startFromScratch: boolean
+}
+
+export interface UpdatePackageJson {
+  action: 'UPDATE_PACKAGE_JSON'
+  dependencies: Array<NpmDependency>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -786,7 +791,6 @@ export type EditorAction =
   | SetCanvasFrames
   | SelectAllSiblings
   | UpdateCodeResultCache
-  | UpdateNpmDependencies
   | SetCodeEditorVisibility
   | SetProjectName
   | RegenerateThumbnail
@@ -836,6 +840,8 @@ export type EditorAction =
   | SetSaveError
   | InsertDroppedImage
   | ResetPropToDefault
+  | UpdateNodeModulesContents
+  | UpdatePackageJson
 
 export type DispatchPriority =
   | 'everyone'

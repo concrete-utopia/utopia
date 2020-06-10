@@ -13,7 +13,12 @@ import Keyboard, {
   strictCheckModifiers,
 } from '../../utils/keyboard'
 import Utils, { normalisedFrameToCanvasFrame } from '../../utils/utils'
-import { CanvasPoint, CanvasRectangle } from '../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  rectangleIntersection,
+  canvasRectangle,
+} from '../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/actions'
 import {
@@ -257,20 +262,39 @@ const Canvas = {
     canvasPosition: CanvasPoint,
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
+    looseTargetingForZeroSizedElements: 'strict' | 'loose',
   ): Array<TemplatePath> {
+    const looseReparentThreshold = 5
     const targetFilters = Canvas.targetFilter(editor.selectedViews, searchTypes)
     const framesWithPaths = Canvas.getFramesInCanvasContext(
       editor.jsxMetadataKILLME,
       useBoundingFrames,
     )
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {
-      return (
-        targetFilters.some((filter) => filter(frameWithPath.path)) &&
+      const shouldUseLooseTargeting =
+        looseTargetingForZeroSizedElements &&
+        (frameWithPath.frame.width <= 0 || frameWithPath.frame.height <= 0)
+
+      return targetFilters.some((filter) => filter(frameWithPath.path)) &&
         !editor.hiddenInstances.some((hidden) =>
           TP.isAncestorOf(frameWithPath.path, hidden, true),
         ) &&
-        Utils.rectContainsPoint(frameWithPath.frame, canvasPosition)
-      )
+        shouldUseLooseTargeting
+        ? rectangleIntersection(
+            canvasRectangle({
+              x: frameWithPath.frame.x,
+              y: frameWithPath.frame.y,
+              width: frameWithPath.frame.width || 1,
+              height: frameWithPath.frame.height || 1,
+            }),
+            canvasRectangle({
+              x: canvasPosition.x - looseReparentThreshold,
+              y: canvasPosition.y - looseReparentThreshold,
+              width: 2 * looseReparentThreshold,
+              height: 2 * looseReparentThreshold,
+            }),
+          ) != null
+        : Utils.rectContainsPoint(frameWithPath.frame, canvasPosition)
     })
     filteredFrames.reverse()
 
@@ -398,6 +422,7 @@ const Canvas = {
             CanvasMousePositionRaw,
             [TargetSearchType.All],
             true,
+            'strict', // _IF_ we want to enable loose targeting for selection, it means we also need to change component-area-control
           )
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {

@@ -9,7 +9,6 @@
 {-# LANGUAGE RecordWildCards        #-}
 {-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeOperators          #-}
-{-# LANGUAGE KindSignatures #-}
 
 {-|
   Development specific execution lives in this module.
@@ -19,7 +18,6 @@ module Utopia.Web.Executors.Development where
 import           Control.Lens
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
-import qualified Data.ByteString.Lazy  as BL
 import           Data.IORef
 import           Data.Pool
 import           Data.Text
@@ -28,9 +26,10 @@ import           Network.HTTP.Client         (Manager, defaultManagerSettings,
                                               managerResponseTimeout,
                                               newManager, responseTimeoutNone)
 import           Network.HTTP.Client.TLS
-import qualified Network.Wreq                       as WR
-import           Protolude hiding (Handler, toUpper)
+import qualified Network.Wreq                as WR
+import           Protolude
 import           Servant
+import           Servant.Client
 import           System.Environment
 import           System.Metrics              hiding (Value)
 import           System.Metrics.Json
@@ -54,6 +53,7 @@ data DevServerResources = DevServerResources
                         { _commitHash      :: Text
                         , _projectPool     :: Pool SqlBackend
                         , _serverPort      :: Int
+                        , _silentMigration :: Bool
                         , _logOnStartup    :: Bool
                         , _proxyManager    :: Maybe Manager
                         , _auth0Resources  :: Maybe Auth0Resources
@@ -71,7 +71,7 @@ $(makeFieldsNoPrefix ''DevServerResources)
 
 type DevProcessMonad a = ServerProcessMonad DevServerResources a
 
-handleAuthCodeError :: (MonadIO m, MonadError ServerError m) => ServerError -> m a
+handleAuthCodeError :: (MonadIO m, MonadError ServantErr m) => ServantError -> m a
 handleAuthCodeError servantError = do
   putText $ show servantError
   throwError err500
@@ -254,7 +254,7 @@ simpleWebpackRequest :: Text -> IO Text
 simpleWebpackRequest endpoint = do
   let webpackUrl = "http://localhost:8088/" <> endpoint
   response <- WR.get $ toS webpackUrl
-  return $ decodeUtf8 $ BL.toStrict (response ^. WR.responseBody)
+  return $ toS (response ^. WR.responseBody)
 
 {-|
   Invokes a service call using the supplied resources.
@@ -278,6 +278,7 @@ serverAPI resources = hoistServer apiProxy (serverMonadToHandler resources) serv
 
 startup :: DevServerResources -> IO Stop
 startup DevServerResources{..} = do
+  DB.migrateDatabase _silentMigration _projectPool
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread
@@ -303,7 +304,6 @@ initialiseResources = do
   maybeCommitHash <- lookupEnv "GITHUB_SHA"
   let _commitHash = fromMaybe "nocommit" $ fmap toS maybeCommitHash
   _projectPool <- DB.createDatabasePoolFromEnvironment
-  DB.migrateDatabase False _projectPool
   shouldProxy <- shouldProxyWebpack
   _proxyManager <- if shouldProxy then (fmap Just $ newManager defaultManagerSettings) else return Nothing
   _auth0Resources <- getAuth0Environment
@@ -316,6 +316,7 @@ initialiseResources = do
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
+  let _silentMigration = False
   let _logOnStartup = True
   return $ DevServerResources{..}
 

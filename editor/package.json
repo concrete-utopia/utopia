@@ -13,7 +13,7 @@
   "scripts": {
     "clean": "rm -rf lib/",
     "test": "tsc && npm run --silent clean && jest --config ./jest.config.js",
-    "test-ci": "tsc && npm run --silent clean && NODE_OPTIONS=--max_old_space_size=6656 xvfb-run -a npx jest --config ./jest.config.js --maxWorkers=1",
+    "test-ci": "tsc && NODE_OPTIONS=--max_old_space_size=6656 xvfb-run -a npx jest --config ./jest.config.js --maxWorkers=1",
     "test-debug": "tsc && npm run --silent clean && node --inspect-brk node_modules/.bin/jest --config ./jest.config.js --runInBand",
     "test-watch": "tsc && npm run --silent clean && jest --config ./jest.config.js --watch",
     "test-update-snapshot": "tsc && npm run --silent clean && jest --config ./jest.config.js --updateSnapshot",

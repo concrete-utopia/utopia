@@ -1,0 +1,28 @@
+{
+  "contents": {
+    "/node_modules/mypackage/moduleA.js": {
+      "content": "\"use strict\"; Object.defineProperty(exports, '__esModule', { value: true }); function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }; const otherpackage = _interopDefault(require('./moduleB')); const hello = otherpackage.hello; exports.hello = hello;",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/moduleB.js": {
+      "content": "\"use strict\"; Object.defineProperty(exports, '__esModule', { value: true }); function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }; const hello = 'hello!'; exports.hello = hello;",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/package.json": {
+      "content": "{\"name\": \"mypackage\", \"version\": \"0.0.1\", \"main\": \"moduleA.js\"}",
+      "isModule": false,
+      "requires": []
+    }
+  },
+  "dependency": {
+    "name": "mypackage",
+    "version": "0.0.1"
+  },
+  "peerDependencies": {
+    "react": ">= 16.8.0",
+    "react-dom": ">= 16.8.0"
+  },
+  "dependencyDependencies": {}
+}

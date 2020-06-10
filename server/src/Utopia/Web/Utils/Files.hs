@@ -57,7 +57,7 @@ data AssetResultCache = AssetResultCache
 updateHashDetails :: IORef FileHashDetailsMap -> PathAndBuilders -> FilePath -> UTCTime -> IO Any
 updateHashDetails hashCache PathAndBuilders{..} targetFile latestModificationTime = do
   fileContents <- BS.readFile targetFile
-  let newHash = toS $ decodeUtf8 $ B16.encode $ SHA256.hash fileContents
+  let newHash = toS $ B16.encode $ SHA256.hash fileContents
   let pathKey = _buildFilePath targetFile
   let fileURL = _buildFileURL targetFile newHash
   let newDetails = FileHashDetails latestModificationTime fileURL targetFile

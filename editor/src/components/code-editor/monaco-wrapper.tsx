@@ -5,7 +5,7 @@ import { StaticServices } from 'monaco-editor/esm/vs/editor/standalone/browser/s
 import * as React from 'react'
 import { isDirectory } from '../../core/model/project-file-utils'
 import { ErrorMessage, ErrorMessageSeverity } from '../../core/shared/error-messages'
-import { NpmDependencies, TypeDefinitions } from '../../core/shared/npm-dependency-types'
+import { TypeDefinitions, NpmDependency } from '../../core/shared/npm-dependency-types'
 import {
   HighlightBounds,
   ProjectContents,
@@ -38,7 +38,7 @@ interface MonacoWrapperProps {
   onHover: (line: number, column: number) => void
   onOpenFile: (path: string, cursorPosition: CursorPosition) => void
   npmTypeDefinitions: {
-    npmDependencies: NpmDependencies
+    npmDependencies: Array<NpmDependency>
     typeDefinitions: TypeDefinitions
   }
   cursorPosition: CursorPosition
@@ -288,7 +288,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
 
     const definitions = this.props.npmTypeDefinitions.typeDefinitions
     Object.keys(definitions).forEach((filename) => {
-      const fileUri = monaco.Uri.file(`node_modules/${filename}`).toString()
+      const fileUri = monaco.Uri.file(filename).toString()
 
       const extraLib = extraLibs[fileUri]
       if (extraLib) {
@@ -384,7 +384,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
                   ({
                     label: name,
                     insertText: name,
-                    detail: dependencies[name],
+                    detail: dependencies.find((dep) => dep.name === name),
                     kind: monaco.languages.CompletionItemKind.Module,
                   } as monaco.languages.CompletionItem),
               ),

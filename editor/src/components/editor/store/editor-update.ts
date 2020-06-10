@@ -158,8 +158,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_STORED_FONT_SETTINGS(action, state)
     case 'SET_PROJECT_ID':
       return UPDATE_FNS.SET_PROJECT_ID(action, state, dispatch)
-    case 'UPDATE_NPM_DEPENDENCIES':
-      return UPDATE_FNS.UPDATE_NPM_DEPENDENCIES(action, state, workers)
     case 'UPDATE_CODE_RESULT_CACHE':
       return UPDATE_FNS.UPDATE_CODE_RESULT_CACHE(action, state)
     case 'SET_CODE_EDITOR_VISIBILITY':
@@ -268,6 +266,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.INSERT_DROPPED_IMAGE(action, state)
     case 'RESET_PROP_TO_DEFAULT':
       return UPDATE_FNS.RESET_PROP_TO_DEFAULT(action, state)
+    case 'UPDATE_NODE_MODULES_CONTENTS':
+      return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state)
+    case 'UPDATE_PACKAGE_JSON':
+      return UPDATE_FNS.UPDATE_PACKAGE_JSON(action, state)
     default:
       return state
   }

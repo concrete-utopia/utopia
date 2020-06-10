@@ -79,7 +79,9 @@ export function findMissingDefaults(
 }
 
 export function filterSpecialProps(props: Array<string>): Array<string> {
-  return props.filter((propKey) => propKey !== 'style')
+  return props.filter(
+    (propKey) => propKey !== 'style' && propKey !== 'css' && propKey !== 'className',
+  )
 }
 
 export function getMissingDefaultsWarning(propsWithoutDefaults: Array<string>): string | undefined {

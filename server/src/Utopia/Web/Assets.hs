@@ -97,7 +97,7 @@ generateUniqueFileID = do
 
 makeAmazonResources :: String -> String -> String -> IO AWSResources
 makeAmazonResources accessKey secretKey bucketName = do
-  amazonEnv <- newEnv $ FromKeys (AccessKey $ toUtf8 accessKey) (SecretKey $ toUtf8 secretKey)
+  amazonEnv <- newEnv $ FromKeys (AccessKey $ toS accessKey) (SecretKey $ toS secretKey)
   let nameOfBucket = BucketName $ toS bucketName
   return $ AWSResources
            { _awsEnv = amazonEnv

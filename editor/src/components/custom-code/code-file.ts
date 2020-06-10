@@ -4,6 +4,7 @@ import { RequireFn } from '../../core/shared/npm-dependency-types'
 import { ExportType, ExportsInfo, MultiFileBuildResult } from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
+import { SafeFunction } from '../../core/shared/code-exec-utils'
 
 export interface CodeResult {
   exports: ModuleExportTypesAndValues
@@ -32,7 +33,6 @@ export type PropertyControlsInfo = {
 export type CodeResultCache = {
   skipDeepFreeze: true
   cache: { [filename: string]: CodeResult }
-  requireFn: UtopiaRequireFn
   exportsInfo: ReadonlyArray<ExportsInfo>
   propertyControlsInfo: PropertyControlsInfo
   error: Error | null
@@ -172,7 +172,6 @@ export function generateCodeResultCache(
   })
   return {
     skipDeepFreeze: true,
-    requireFn: requireFn,
     exportsInfo: exportsInfo,
     cache: cache,
     propertyControlsInfo: propertyControlsInfo,

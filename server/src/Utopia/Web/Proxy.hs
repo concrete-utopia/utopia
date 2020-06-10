@@ -4,7 +4,6 @@ module Utopia.Web.Proxy where
 
 import           Control.Exception.Base
 import           Control.Lens
-import qualified Data.ByteString.Lazy as BL
 import           Data.Binary.Builder            (toLazyByteString)
 import qualified Data.Text                      as T
 import           Network.HTTP.Client            (HttpException (HttpExceptionRequest),
@@ -76,7 +75,7 @@ websocketProxy port pendingConnection = do
   let requestPathBytes = WS.requestPath $ WS.pendingRequest pendingConnection
   let headers = WS.requestHeaders $ WS.pendingRequest pendingConnection
   incomingConnection <- WS.acceptRequest pendingConnection
-  let proxiedPath = toS $ decodeUtf8 $ BL.toStrict $ toLazyByteString $ encodePathSegments $ modifyRequestPathElements $ decodePathSegments requestPathBytes
+  let proxiedPath = toS $ toLazyByteString $ encodePathSegments $ modifyRequestPathElements $ decodePathSegments requestPathBytes
   WS.runClientWith "localhost" port proxiedPath WS.defaultConnectionOptions headers $ \outgoingConnection -> do
     let closeConnections = void (closeConnection incomingConnection >> closeConnection outgoingConnection)
     let forwardMessages fromConn toConn = void $ finally (forever (WS.receive fromConn >>= WS.send toConn)) closeConnections
@@ -95,7 +94,7 @@ proxyHttpApplication webpackManager port urlPrefix request sendResponse = do
   let method = requestMethod request
   let pathSegments = pathInfo request
   let headers = requestHeaders request
-  sendProxiedRequest webpackManager port sendResponse (decodeUtf8 method) headers (urlPrefix <> pathSegments)
+  sendProxiedRequest webpackManager port sendResponse (toS method) headers (urlPrefix <> pathSegments)
 
 proxyApplication :: Manager -> Int -> [Text] -> Application
 proxyApplication webpackManager port urlPrefix =
