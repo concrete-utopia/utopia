@@ -719,7 +719,7 @@ export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
 function getValueFromSpecialSizeMeasurements<P extends LayoutProp | StyleLayoutProp>(
   property: P,
   specialSizeMeasurements: SpecialSizeMeasurements,
-) {
+): ParsedProperties[P] | null {
   // TODO: are there other properties in special size measurementes to extract?
   let value: number | undefined = undefined
   switch (property) {
