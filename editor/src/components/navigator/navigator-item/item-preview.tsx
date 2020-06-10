@@ -1,10 +1,19 @@
 import * as React from 'react'
 import { Icn, IcnProps } from 'uuiui'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadata, isJSXElement } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  isJSXElement,
+  JSXElementName,
+} from '../../../core/shared/element-template'
 import {
   isHTMLComponent,
-  isHTMLComponentFromBaseName,
+  isViewAgainstImports,
+  isEllipseAgainstImports,
+  isRectangleAgainstImports,
+  isImg,
+  isTextAgainstImports,
+  isAnimatedElementAgainstImports,
 } from '../../../core/model/project-file-utils'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import { isLeft } from '../../../core/shared/either'
@@ -12,6 +21,7 @@ import { isLeft } from '../../../core/shared/either'
 interface ItemPreviewProps {
   isAutosizingView: boolean
   element: ElementInstanceMetadata | null
+  staticElementName: JSXElementName | null
   componentInstance: boolean
   path: TemplatePath
   collapsed: boolean
@@ -22,7 +32,7 @@ interface ItemPreviewProps {
 
 export const ItemPreview: React.StatelessComponent<ItemPreviewProps> = (props) => {
   const isGroup = props.isAutosizingView
-  const element = props.element
+  const { element, staticElementName, imports } = props
 
   // preview depends on three things:
   // 1 - role
@@ -45,37 +55,29 @@ export const ItemPreview: React.StatelessComponent<ItemPreviewProps> = (props) =
   const flexWrap = MetadataUtils.getYogaWrap(element)
   const flexWrapped: boolean = flexWrap === 'wrap' || flexWrap === 'wrap-reverse'
 
-  if (element == null) {
+  if (staticElementName == null) {
     role = 'scene'
   } else {
-    if (MetadataUtils.isViewAgainstImports(props.imports, element)) {
+    if (isViewAgainstImports(staticElementName, imports)) {
       if (isGroup) {
         role = 'group'
       } else {
         role = 'view'
       }
-    } else if (MetadataUtils.isEllipseAgainstImports(props.imports, element)) {
+    } else if (isEllipseAgainstImports(staticElementName, imports)) {
       role = 'ellipse'
-    } else if (MetadataUtils.isRectangleAgainstImports(props.imports, element)) {
+    } else if (isRectangleAgainstImports(staticElementName, imports)) {
       role = 'rectangle'
-    } else if (MetadataUtils.isImg(element)) {
+    } else if (isImg(staticElementName)) {
       role = 'image'
-    } else if (MetadataUtils.isTextAgainstImports(props.imports, element)) {
+    } else if (isTextAgainstImports(staticElementName, imports)) {
       role = 'text'
-    } else if (MetadataUtils.isAnimatedElementAgainstImports(props.imports, element)) {
+    } else if (isAnimatedElementAgainstImports(staticElementName, imports)) {
       role = 'animated'
     } else if (props.componentInstance) {
       role = 'componentinstance'
-    } else if (isLeft(element.element)) {
-      if (isHTMLComponentFromBaseName(element.element.value, props.imports)) {
-        role = 'div'
-      } else {
-        role = 'ghost'
-      }
-    } else if (isJSXElement(element.element.value)) {
-      if (isHTMLComponent(element.element.value.name, props.imports)) {
-        role = 'div'
-      }
+    } else if (isHTMLComponent(staticElementName, imports)) {
+      role = 'div'
     }
   }
 

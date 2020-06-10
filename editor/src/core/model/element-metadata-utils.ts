@@ -772,22 +772,11 @@ export const MetadataUtils = {
     instance: ElementInstanceMetadata,
     elementType: string,
   ): boolean {
+    // KILLME Replace with isGivenUtopiaAPIElementFromName from project-file-utils.ts
     return foldEither(
       (_) => false,
       (element) => isGivenUtopiaAPIElement(element, imports, elementType),
       instance.element,
-    )
-  },
-  isEllipseAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
-    return (
-      instance != null &&
-      MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Ellipse')
-    )
-  },
-  isRectangleAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
-    return (
-      instance != null &&
-      MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Rectangle')
     )
   },
   isViewAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
@@ -815,25 +804,6 @@ export const MetadataUtils = {
         MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Positionable') ||
         MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Resizeable'))
     )
-  },
-  isAnimatedElementAgainstImports(
-    imports: Imports,
-    instance: ElementInstanceMetadata | null,
-  ): boolean {
-    const possibleReactSpring = imports['react-spring']
-    if (possibleReactSpring == null || instance == null) {
-      return false
-    } else {
-      if (pluck(possibleReactSpring.importedFromWithin, 'name').includes('animated')) {
-        return foldEither(
-          (name) => name.startsWith('animated.'),
-          (element) => isJSXElement(element) && element.name.baseVariable === 'animated',
-          instance.element,
-        )
-      } else {
-        return false
-      }
-    }
   },
   isButton(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'button')

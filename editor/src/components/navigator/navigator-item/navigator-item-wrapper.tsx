@@ -37,7 +37,8 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       noOfChildren,
       supportsChildren,
       elementOriginType,
-      name,
+      staticElementName,
+      label,
       element,
       componentInstance,
       isAutosizingView,
@@ -67,7 +68,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
         componentsIncludingScenes,
         store.editor.jsxMetadataKILLME,
       )
-      const nameInner = MetadataUtils.getElementLabel(
+      const labelInner = MetadataUtils.getElementLabel(
         props.templatePath,
         store.editor.jsxMetadataKILLME,
         staticName,
@@ -100,7 +101,8 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
         )
       }
       return {
-        name: nameInner,
+        staticElementName: staticName,
+        label: labelInner,
         element: elementInner,
         componentInstance: componentInstanceInner,
         isAutosizingView: MetadataUtils.isAutoSizingView(elementInner),
@@ -139,7 +141,8 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       supportsChildren: supportsChildren,
       noOfChildren: noOfChildren,
       elementOriginType: elementOriginType,
-      name: name,
+      staticElementName: staticElementName,
+      label: label,
       element: element,
       componentInstance: componentInstance,
       isAutosizingView: isAutosizingView,

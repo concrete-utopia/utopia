@@ -27,7 +27,7 @@ import { DropTargetHint } from '../navigator'
 import { ExpansionArrowWidth } from './expandable-indicator'
 import { BasePaddingUnit, getElementPadding, NavigatorItem } from './navigator-item'
 import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-components'
-import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -51,9 +51,10 @@ export interface NavigatorItemDragAndDropWrapperProps {
   getSelectedViewsInRange: (index: number) => Array<TemplatePath> // TODO remove me
   supportsChildren: boolean
   noOfChildren: number
+  staticElementName: JSXElementName | null
+  label: string
   element: ElementInstanceMetadata | null
   elementOriginType: ElementOriginType
-  name: string
   componentInstance: boolean
   isAutosizingView: boolean
   isElementVisible: boolean
@@ -250,7 +251,8 @@ export class NavigatorItemDndWrapper extends PureComponent<
           getSelectedViewsInRange={this.props.getSelectedViewsInRange}
           noOfChildren={this.props.noOfChildren}
           isAutosizingView={this.props.isAutosizingView}
-          name={this.props.name}
+          staticElementName={this.props.staticElementName}
+          label={this.props.label}
           element={this.props.element}
           componentInstance={this.props.componentInstance}
           dispatch={this.props.editorDispatch}
