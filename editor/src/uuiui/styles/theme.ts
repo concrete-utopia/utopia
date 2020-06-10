@@ -406,6 +406,7 @@ export const UtopiaTheme = {
       tall: 26,
     },
   },
+  invisibleIndicatorSize: 6,
   inputBorderRadius: 2,
   color: colorTheme,
   styles: {
