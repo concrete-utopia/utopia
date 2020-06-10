@@ -1047,10 +1047,8 @@ export function createEditorState(): EditorState {
 
 export type OriginalFrame = FrameAndTarget<LocalRectangle>
 
-export interface OriginalCanvasAndLocalFrame {
-  target: TemplatePath
-  frame?: LocalRectangle
-  canvasFrame?: CanvasRectangle
+export interface OriginalCanvasAndLocalFrame extends FrameAndTarget<CanvasRectangle> {
+  localFrame: LocalRectangle | null
 }
 
 type EditorAndDerivedState = {

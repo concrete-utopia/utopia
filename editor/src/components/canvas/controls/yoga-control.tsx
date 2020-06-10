@@ -34,125 +34,13 @@ interface YogaControlProps {
 }
 
 interface YogaControlState {
-  hideMarginControls: boolean
   originalFrames: Array<OriginalFrame>
 }
 class YogaControl extends React.Component<YogaControlProps, YogaControlState> {
   constructor(props: YogaControlProps) {
     super(props)
     this.state = {
-      hideMarginControls: false,
       originalFrames: [],
-    }
-  }
-
-  getElementsForMargin(margin: Partial<Sides> | null, frame: CanvasRectangle) {
-    if (margin == null || this.state.hideMarginControls) {
-      return []
-    } else {
-      const leftElement =
-        margin.left != null && margin.left !== 0 ? (
-          <div
-            key='marginLeft'
-            className='f10 fw5 tc overflow-visible'
-            style={{
-              background: colorTheme.canvasLayoutFillTranslucent.value,
-              color: colorTheme.canvasLayoutForeground.value,
-              position: 'absolute',
-              left: frame.x + this.props.canvasOffset.x - margin.left,
-              top: frame.y + this.props.canvasOffset.y - (margin.top || 0),
-              width: margin.left,
-              height: frame.height + (margin.top || 0) + (margin.bottom || 0),
-              lineHeight: frame.height + (margin.top || 0) + (margin.bottom || 0) + 'px',
-              fontSize: 8 / this.props.scale,
-            }}
-          >
-            {margin.left}
-          </div>
-        ) : null
-      const topElement =
-        margin.top != null && margin.top !== 0 ? (
-          <div
-            key='marginTop'
-            className=' f10  fw5 tc overflow-visible'
-            style={{
-              background: colorTheme.canvasLayoutFillTranslucent.value,
-              color: colorTheme.canvasLayoutForeground.value,
-              position: 'absolute',
-              left: frame.x + this.props.canvasOffset.x,
-              top: frame.y + this.props.canvasOffset.y - margin.top,
-              width: frame.width,
-              height: margin.top,
-              lineHeight: margin.top + 'px',
-              textAlign: 'center',
-              fontSize: 8 / this.props.scale,
-            }}
-          >
-            {margin.top}
-          </div>
-        ) : null
-      const rightElement =
-        margin.right != null && margin.right !== 0 ? (
-          <div
-            key='marginRight'
-            className=' f10  fw5 tc overflow-visible'
-            style={{
-              background: colorTheme.canvasLayoutFillTranslucent.value,
-              color: colorTheme.canvasLayoutForeground.value,
-              position: 'absolute',
-              left: frame.x + this.props.canvasOffset.x + frame.width,
-              top: frame.y + this.props.canvasOffset.y - (margin.top || 0),
-              width: margin.right,
-              height: frame.height + (margin.top || 0) + (margin.bottom || 0),
-              lineHeight: frame.height + (margin.top || 0) + (margin.bottom || 0) + 'px',
-              textAlign: 'center',
-              fontSize: 8 / this.props.scale,
-            }}
-          >
-            {margin.right}
-          </div>
-        ) : null
-      const bottomElement =
-        margin.bottom != null && margin.bottom !== 0 ? (
-          <div
-            key='marginBottom'
-            className='f10 fw5 tc overflow-visible'
-            style={{
-              background: colorTheme.canvasLayoutFillTranslucent.value,
-              color: colorTheme.canvasLayoutForeground.value,
-              position: 'absolute',
-              left: frame.x + this.props.canvasOffset.x,
-              top: frame.y + this.props.canvasOffset.y + frame.height,
-              width: frame.width,
-              height: margin.bottom,
-              lineHeight: margin.bottom + 'px',
-              textAlign: 'center',
-              fontSize: 8 / this.props.scale,
-            }}
-          >
-            {margin.bottom}
-          </div>
-        ) : null
-      const outerDiv =
-        leftElement == null &&
-        topElement == null &&
-        rightElement == null &&
-        bottomElement == null ? null : (
-          <div
-            key='outerDiv'
-            className='bgtransparent'
-            style={{
-              border: colorTheme.canvasLayoutStroke.o(20).value,
-              position: 'absolute',
-              pointerEvents: 'none',
-              left: frame.x + this.props.canvasOffset.x - (margin.left || 0),
-              top: frame.y + this.props.canvasOffset.y - (margin.top || 0),
-              width: frame.width + (margin.left || 0) + (margin.right || 0),
-              height: frame.height + (margin.top || 0) + (margin.bottom || 0),
-            }}
-          />
-        )
-      return [leftElement, topElement, rightElement, bottomElement, outerDiv]
     }
   }
 
@@ -270,17 +158,11 @@ class YogaControl extends React.Component<YogaControlProps, YogaControlState> {
       return null
     }
     const selectedViewFrame = selectedView.globalFrame
-    const margin = MetadataUtils.getYogaMargin(selectedView)
     const padding = MetadataUtils.getYogaPadding(selectedView)
     if (selectedViewFrame == null) {
       return null
     }
-    return (
-      <React.Fragment>
-        {this.getElementsForMargin(margin, selectedViewFrame)}
-        {this.getElementsForPadding(padding, selectedViewFrame)}
-      </React.Fragment>
-    )
+    return <React.Fragment>{this.getElementsForPadding(padding, selectedViewFrame)}</React.Fragment>
   }
 }
 

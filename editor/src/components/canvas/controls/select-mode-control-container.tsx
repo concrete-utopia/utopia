@@ -23,7 +23,11 @@ import { OutlineControls } from './outline-control'
 import { RepositionableControl } from './repositionable-control'
 import { LeftMenuTab } from '../../navigator/left-pane'
 import CanvasActions from '../canvas-actions'
-import { getOriginalCanvasFrames, createDuplicationNewUIDs } from '../canvas-utils'
+import {
+  getOriginalCanvasFrames,
+  createDuplicationNewUIDs,
+  getOriginalFrames,
+} from '../canvas-utils'
 import { areYogaChildren } from './select-mode/yoga-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
@@ -131,7 +135,7 @@ export class SelectModeControlContainer extends React.Component<
     ) {
       const moveTargets = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
       // setting original frames
-      let originalFrames = getOriginalCanvasFrames(moveTargets, this.props.componentMetadata)
+      let originalFrames = getOriginalFrames(moveTargets, this.props.componentMetadata)
       originalFrames = originalFrames.filter((f) => f.frame != null)
       const selectionArea = Utils.boundingRectangleArray(
         selectedViews.map((view) => {

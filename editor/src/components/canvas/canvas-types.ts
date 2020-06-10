@@ -176,6 +176,7 @@ export type ControlOrHigherOrderControl = SvgFragmentControl | HigherOrderContro
 export interface FrameAndTarget<C extends CoordinateMarker> {
   target: TemplatePath
   frame: Rectangle<C> | null
+  frameWithoutMargin?: CanvasRectangle | null
 }
 
 export type CanvasFrameAndTarget = FrameAndTarget<CanvasRectangle>

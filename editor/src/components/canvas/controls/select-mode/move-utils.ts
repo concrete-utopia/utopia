@@ -107,11 +107,11 @@ export function dragComponent(
       return
     }
     if (isFlexContainer) {
-      if (originalFrame.frame != null) {
+      if (originalFrame.frameWithoutMargin != null) {
         const flexDirection = MetadataUtils.getYogaDirection(
           MetadataUtils.getParent(componentsMetadata, view),
         )
-        const draggedFrame = Utils.offsetRect(originalFrame.frame, dragDelta)
+        const draggedFrame = Utils.offsetRect(originalFrame.frameWithoutMargin, dragDelta)
         const newIndex = getNewIndex(
           componentsMetadata,
           view,
@@ -148,7 +148,7 @@ export function dragComponent(
       )
       const updatedFrame = Utils.optionalMap(
         (f) => Utils.offsetRect(f, dragDeltaToApply),
-        originalFrame.frame,
+        originalFrame.frameWithoutMargin,
       )
       if (updatedFrame != null) {
         dragChanges.push(pinMoveChange(view, updatedFrame))

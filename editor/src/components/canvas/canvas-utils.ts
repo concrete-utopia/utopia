@@ -197,11 +197,34 @@ export function getOriginalFrames(
             )
 
             const local = localRectangle(workingFrame)
-            originalFrames.push({
-              target: path,
-              frame: Utils.defaultIfNull<LocalRectangle | undefined>(undefined, local),
-              canvasFrame: globalFrame,
-            })
+            if (TP.isInstancePath(path) && globalFrame != null && localFrame != null) {
+              const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, path)
+              const canvasFrameOffsetWithMargin = {
+                x: globalFrame.x - (element?.specialSizeMeasurements?.margin?.left ?? 0),
+                y: globalFrame.y - (element?.specialSizeMeasurements?.margin?.top ?? 0),
+                width: globalFrame.width,
+                height: globalFrame.height,
+              } as CanvasRectangle
+              const frameOffsetWithMargin = {
+                x: localFrame.x - (element?.specialSizeMeasurements?.margin?.left ?? 0),
+                y: localFrame.y - (element?.specialSizeMeasurements?.margin?.top ?? 0),
+                width: localFrame.width,
+                height: localFrame.height,
+              } as LocalRectangle
+              originalFrames.push({
+                target: path,
+                localFrame: frameOffsetWithMargin,
+                frame: globalFrame,
+                frameWithoutMargin: canvasFrameOffsetWithMargin,
+              })
+            } else {
+              originalFrames.push({
+                target: path,
+                frame: globalFrame,
+                frameWithoutMargin: globalFrame,
+                localFrame: local,
+              })
+            }
           }
         }
       })
@@ -236,10 +259,26 @@ export function getOriginalCanvasFrames(
       })
       if (!alreadyAdded) {
         const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-        originalFrames.push({
-          target: path,
-          frame: frame,
-        })
+        if (TP.isInstancePath(path) && frame != null) {
+          const margin = MetadataUtils.getElementMargin(path, componentMetadata)
+          const frameOffsetWithMargin = {
+            x: frame.x - (margin?.left ?? 0),
+            y: frame.y - (margin?.top ?? 0),
+            width: frame.width,
+            height: frame.height,
+          } as CanvasRectangle
+          originalFrames.push({
+            target: path,
+            frame: frame,
+            frameWithoutMargin: frameOffsetWithMargin,
+          })
+        } else {
+          originalFrames.push({
+            target: path,
+            frame: frame,
+            frameWithoutMargin: frame,
+          })
+        }
       }
     })
   })
@@ -656,8 +695,8 @@ export function getOriginalFrameInCanvasCoords(
 ): CanvasRectangle | null {
   for (const originalFrame of originalFrames || []) {
     if (TP.pathsEqual(target, originalFrame.target)) {
-      if (originalFrame.canvasFrame != null) {
-        return originalFrame.canvasFrame
+      if (originalFrame.frame != null) {
+        return originalFrame.frame
       }
     }
   }
@@ -1101,9 +1140,10 @@ export function produceResizeCanvasTransientState(
             boundingBox,
             originalFrame,
           )
+          const margin = MetadataUtils.getElementMargin(target, editorState.jsxMetadataKILLME)
           const roundedFrame = {
-            x: Math.floor(newTargetFrame.x),
-            y: Math.floor(newTargetFrame.y),
+            x: Math.floor(newTargetFrame.x) - (margin?.left ?? 0),
+            y: Math.floor(newTargetFrame.y) - (margin?.top ?? 0),
             width: Math.ceil(newTargetFrame.width),
             height: Math.ceil(newTargetFrame.height),
           } as CanvasRectangle
