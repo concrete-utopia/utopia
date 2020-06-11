@@ -66,26 +66,24 @@ export class OutlineControls extends React.Component<ControlProps> {
         anySelectedElementIsYogaLayouted,
       )
 
-      if (instance != null) {
-        const margin = MetadataUtils.getElementMargin(selectedView, this.props.componentMetadata)
-        selectionOutlines.push(
-          <MarginControls
-            canvasOffset={this.props.canvasOffset}
-            scale={this.props.scale}
-            margin={margin}
-            frame={rect}
-          />,
-        )
-        const padding = MetadataUtils.getElementPadding(selectedView, this.props.componentMetadata)
-        selectionOutlines.push(
-          <PaddingControls
-            canvasOffset={this.props.canvasOffset}
-            scale={this.props.scale}
-            padding={padding}
-            frame={rect}
-          />,
-        )
-      }
+      const margin = MetadataUtils.getElementMargin(selectedView, this.props.componentMetadata)
+      selectionOutlines.push(
+        <MarginControls
+          canvasOffset={this.props.canvasOffset}
+          scale={this.props.scale}
+          margin={margin}
+          frame={rect}
+        />,
+      )
+      const padding = MetadataUtils.getElementPadding(selectedView, this.props.componentMetadata)
+      selectionOutlines.push(
+        <PaddingControls
+          canvasOffset={this.props.canvasOffset}
+          scale={this.props.scale}
+          padding={padding}
+          frame={rect}
+        />,
+      )
 
       selectionOutlines.push(
         <Outline
