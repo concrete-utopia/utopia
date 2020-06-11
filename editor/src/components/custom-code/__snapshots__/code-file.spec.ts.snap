@@ -1,5 +1,85 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Creating require function Creates require function for multi file build result 1`] = `
+Object {
+  "App": [Function],
+  "canvasMetadata": Object {
+    "elementMetadata": Object {},
+    "nodeMetadata": Object {},
+    "scenes": Array [
+      Object {
+        "component": "App",
+        "container": Object {
+          "layoutSystem": "pinSystem",
+        },
+        "frame": Object {
+          "height": 812,
+          "left": 0,
+          "top": 0,
+          "width": 375,
+        },
+        "props": Object {
+          "layout": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
+        },
+      },
+    ],
+    "specialNodes": Array [],
+  },
+  "default": [Circular],
+}
+`;
+
+exports[`Creating require function Creates require function for multi file build result 2`] = `
+Object {
+  "ComponentWithProps": [Function],
+  "LABEL": "press me! 😉",
+  "default": [Function],
+}
+`;
+
+exports[`Creating require function Creates require function for single file build result 1`] = `
+Object {
+  "App": [Function],
+  "canvasMetadata": Object {
+    "elementMetadata": Object {},
+    "nodeMetadata": Object {},
+    "scenes": Array [
+      Object {
+        "component": "App",
+        "container": Object {
+          "layoutSystem": "pinSystem",
+        },
+        "frame": Object {
+          "height": 812,
+          "left": 0,
+          "top": 0,
+          "width": 375,
+        },
+        "props": Object {
+          "layout": Object {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+          },
+        },
+      },
+    ],
+    "specialNodes": Array [],
+  },
+  "default": [Circular],
+}
+`;
+
+exports[`Creating require function Require throws exception for import from non-existing module 1`] = `"Could not find dependency: 'foo' relative to '/'"`;
+
+exports[`Creating require function Require throws exception for module code 1`] = `"booom"`;
+
 exports[`Filling in SystemJS Fills System with data for multi file build result 1`] = `
 Object {
   "App": [Function],
@@ -204,6 +284,7 @@ ComponentWithProps.propertyControls = {
   "propertyControlsInfo": Object {
     "/src/components": Object {},
   },
+  "requireFn": [Function],
   "skipDeepFreeze": true,
 }
 `;
@@ -839,6 +920,7 @@ ReactDOM.render(<App />, root);
       },
     },
   },
+  "requireFn": [Function],
   "skipDeepFreeze": true,
 }
 `;
@@ -1158,6 +1240,7 @@ export var App = (props) => {
   "propertyControlsInfo": Object {
     "/app.ui": Object {},
   },
+  "requireFn": [Function],
   "skipDeepFreeze": true,
 }
 `;

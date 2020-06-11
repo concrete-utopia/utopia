@@ -36,6 +36,7 @@ export type CodeResultCache = {
   exportsInfo: ReadonlyArray<ExportsInfo>
   propertyControlsInfo: PropertyControlsInfo
   error: Error | null
+  requireFn: UtopiaRequireFn
 }
 
 type ModuleExportValues = { [name: string]: any }
@@ -176,6 +177,7 @@ export function generateCodeResultCache(
     cache: cache,
     propertyControlsInfo: propertyControlsInfo,
     error: error,
+    requireFn: requireFn,
   }
 }
 
