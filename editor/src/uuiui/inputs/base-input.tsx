@@ -107,7 +107,6 @@ export const InspectorInput = styled.input<InspectorInputProps>(
     paddingRight: labelInner != null ? 15 : 6,
     backgroundColor: controlStyles.backgroundColor,
     fontStyle: controlStyles.fontStyle,
-    fontWeight: controlStyles.fontWeight,
     color: controlStyles.mainColor,
     border: 0,
     height: UtopiaTheme.layout.inputHeight.default,

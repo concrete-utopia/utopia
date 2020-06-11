@@ -17,13 +17,12 @@ import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-ho
 
 export interface ControlStyles {
   fontStyle: string
-  fontWeight: number
   mainColor: string
   secondaryColor: string
-  borderColor: string | undefined
+  borderColor: string
   backgroundColor: string
-  segmentSelectorColor: string
-  segmentTrackColor: string
+  backgroundOnColor: string
+  backgroundOffColor: string
   set: boolean
   interactive: boolean
   mixed: boolean
@@ -40,36 +39,41 @@ export const ControlStyleDefaults = {
   SetSecondaryColor: colorTheme.inspectorSetSecondaryColor.value,
   SetBorderColor: colorTheme.inspectorSetBorderColor.value,
   SetBackgroundColor: colorTheme.inspectorSetBackgroundColor.value,
-  SetSegmentSelectorColor: colorTheme.inspectorSetBackgroundColor.value,
-  SetSegmentTrackColor: colorTheme.inspectorSetSegmentTrackColor.value,
+  SetBackgroundOnColor: colorTheme.inspectorSetBackgroundOnColor.value,
+  SetBackgroundOffColor: colorTheme.inspectorSetBackgroundOffColor.value,
   UnsetMainColor: colorTheme.inspectorUnsetMainColor.value,
   UnsetSecondaryColor: colorTheme.inspectorUnsetSecondaryColor.value,
-  UnsetBorderColor: colorTheme.inspectorUnsetBorderColor,
-  UnsetBorderHoverFocusColor: colorTheme.inspectorSetBorderColor.value,
+  UnsetBorderColor: colorTheme.inspectorUnsetBorderColor.value,
   UnsetBackgroundColor: colorTheme.inspectorUnsetBackgroundColor.value,
-  UnsetSegmentSelectorColor: colorTheme.inspectorUnsetSegmentSelectorColor.value,
-  UnsetSegmentTrackColor: colorTheme.inspectorUnsetSegmentTrackColor.value,
+  UnsetBackgroundOnColor: colorTheme.inspectorUnsetBackgroundOnColor.value,
+  UnsetBackgroundOffColor: colorTheme.inspectorUnsetBackgroundOffColor.value,
+  UnsetFontStyle: 'normal',
   DisabledMainColor: colorTheme.inspectorDisabledMainColor.value,
   DisabledSecondaryColor: colorTheme.inspectorDisabledSecondaryColor.value,
   DisabledBackgroundColor: colorTheme.inspectorDisabledBackgroundColor.value,
-  DisabledSegmentSelectorColor: colorTheme.inspectorDisabledSegmentSelectorColor.value,
-  DisabledSegmentTrackColor: colorTheme.inspectorDisabledSegmentTrackColor.value,
+  DisabledBackgroundOnColor: colorTheme.inspectorDisabledBackgroundOnColor.value,
+  DisabledBackgroundOffColor: colorTheme.inspectorDisabledBackgroundOffColor.value,
   DisabledBorderColor: colorTheme.inspectorDisabledBorderColor.value,
+  DisabledFontStyle: 'italic',
   UneditableMainColor: colorTheme.inspectorUneditableMainColor.value,
   UneditableSecondaryColor: colorTheme.inspectorUneditableSecondaryColor.value,
   UneditableBackgroundColor: colorTheme.inspectorUneditableBackgroundColor.value,
   UneditableBorderColor: colorTheme.inspectorUneditableBorderColor.value,
   ControlledMainColor: colorTheme.inspectorControlledMainColor.value,
-  ControlledSecondaryColor: colorTheme.inspectorControlledMainColor.value,
   ControlledBorderColor: colorTheme.inspectorControlledBorderColor.value,
   ControlledBackgroundColor: colorTheme.inspectorControlledBackgroundColor.value,
-  ControlledSegmentSelectorColor: colorTheme.inspectorControlledSegmentSelectorColor.value,
-  ControlledSegmentTrackColor: colorTheme.inspectorControlledSegmentTrackColor.value,
+  ControlledBackgroundOnColor: colorTheme.inspectorControlledBackgroundOnColor.value,
+  ControlledBackgroundOffColor: colorTheme.inspectorControlledBackgroundOffColor.value,
+  ControlledNodegraphMainColor: colorTheme.inspectorControlledMainColor.value,
+  ControlledNodegraphBorderColor: colorTheme.inspectorControlledBorderColor.value,
+  ControlledNodegraphBackgroundColor: colorTheme.inspectorControlledBackgroundColor.value,
+  ControlledNodegraphBackgroundOnColor: colorTheme.inspectorControlledBackgroundOnColor.value,
+  ControlledNodegraphBackgroundOffColor: colorTheme.inspectorControlledBackgroundOffColor.value,
   OffMainColor: colorTheme.inspectorOffMainColor.value,
   OffSecondaryColor: colorTheme.inspectorOffSecondaryColor.value,
   OffBackgroundColor: colorTheme.inspectorOffBackgroundColor.value,
-  OffSegmentSelectorColor: colorTheme.inspectorOffSegmentSelectorColor.value,
-  OffSegmentTrackColor: colorTheme.inspectorOffSegmentTrackColor.value,
+  OffBackgroundOnColor: colorTheme.inspectorOffBackgroundOnColor.value,
+  OffBackgroundOffColor: colorTheme.inspectorOffBackgroundOffColor.value,
   OffBorderColor: colorTheme.inspectorOffBorderColor.value,
 }
 
@@ -87,7 +91,7 @@ export type ControlStatus =
   | 'multiselect-mixed-simple-or-unset' // all elements in the multi-selection are 'simple' or 'unset', with at least one non-identical value
   | 'multiselect-controlled' // at least one element in the multiselection is 'controlled', and the rest are 'simple', 'unset', or 'unknown-css'
   | 'multiselect-unoverwritable' // at least one element in the multi-selection is 'unoverwritable'
-  | 'multiselect-disabled' // at least one element in the multi-selection is 'disabled'
+  | 'multiselect-disabled' // at least one element in the multi-selection is 'disabled' or 'set-disabled'
 
 const AllControlStatuses: Array<ControlStatus> = [
   'off',
@@ -135,13 +139,12 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
   (status: ControlStatus) => status,
   (status: ControlStatus): ControlStyles => {
     let fontStyle = 'normal'
-    let fontWeight = 400
     let mainColor: string = ControlStyleDefaults.SetMainColor
     let secondaryColor: string = ControlStyleDefaults.SetSecondaryColor
-    let borderColor: string | undefined = ControlStyleDefaults.SetBorderColor
+    let borderColor: string = ControlStyleDefaults.SetBorderColor
     let backgroundColor: string = ControlStyleDefaults.SetBackgroundColor
-    let segmentSelectorColor: string = ControlStyleDefaults.SetSegmentSelectorColor
-    let segmentTrackColor: string = ControlStyleDefaults.SetSegmentTrackColor
+    let backgroundOnColor: string = ControlStyleDefaults.SetBackgroundOnColor
+    let backgroundOffColor: string = ControlStyleDefaults.SetBackgroundOffColor
     let set = true
     let interactive = true
     let mixed = false
@@ -159,8 +162,8 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         set = false
         mixed = true
         backgroundColor = ControlStyleDefaults.UnsetBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.UnsetSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.UnsetSegmentTrackColor
+        backgroundOnColor = ControlStyleDefaults.UnsetBackgroundOnColor
+        backgroundOffColor = ControlStyleDefaults.UnsetBackgroundOffColor
         borderColor = ControlStyleDefaults.UnsetBorderColor
         mainColor = ControlStyleDefaults.UnsetMainColor
         trackColor = ControlStyleDefaults.UnsetMainColor
@@ -174,10 +177,11 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         mainColor = ControlStyleDefaults.UneditableMainColor
         secondaryColor = ControlStyleDefaults.UneditableSecondaryColor
         backgroundColor = ControlStyleDefaults.DisabledBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.DisabledSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.DisabledSegmentTrackColor
+        backgroundOnColor = ControlStyleDefaults.DisabledBackgroundOnColor
+        backgroundOffColor = ControlStyleDefaults.DisabledBackgroundOffColor
         trackColor = ControlStyleDefaults.UneditableMainColor
         railColor = ControlStyleDefaults.UneditableSecondaryColor
+        fontStyle = ControlStyleDefaults.DisabledFontStyle
         break
       case 'unoverwritable':
       case 'multiselect-unoverwritable':
@@ -186,18 +190,19 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         mainColor = ControlStyleDefaults.UneditableMainColor
         secondaryColor = ControlStyleDefaults.UneditableSecondaryColor
         backgroundColor = ControlStyleDefaults.DisabledBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.DisabledSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.DisabledSegmentTrackColor
+        backgroundOnColor = ControlStyleDefaults.DisabledBackgroundOnColor
+        backgroundOffColor = ControlStyleDefaults.DisabledBackgroundOffColor
         trackColor = ControlStyleDefaults.UneditableMainColor
         railColor = ControlStyleDefaults.UneditableSecondaryColor
+        fontStyle = ControlStyleDefaults.DisabledFontStyle
         unsettable = false
         break
       case 'unset':
       case 'multiselect-identical-unset':
         set = false
         backgroundColor = ControlStyleDefaults.UnsetBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.UnsetSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.UnsetSegmentTrackColor
+        backgroundOnColor = ControlStyleDefaults.UnsetBackgroundOnColor
+        backgroundOffColor = ControlStyleDefaults.UnsetBackgroundOffColor
         borderColor = ControlStyleDefaults.UnsetBorderColor
         mainColor = ControlStyleDefaults.UnsetMainColor
         trackColor = ControlStyleDefaults.UnsetMainColor
@@ -211,8 +216,8 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         mainColor = ControlStyleDefaults.OffMainColor
         secondaryColor = ControlStyleDefaults.OffSecondaryColor
         backgroundColor = ControlStyleDefaults.OffBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.OffSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.OffSegmentTrackColor
+        backgroundOnColor = ControlStyleDefaults.OffBackgroundOnColor
+        backgroundOffColor = ControlStyleDefaults.OffBackgroundOffColor
         trackColor = ControlStyleDefaults.OffBorderColor
         railColor = ControlStyleDefaults.OffBorderColor
         showContent = false
@@ -225,25 +230,25 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         mainColor = ControlStyleDefaults.DisabledMainColor
         secondaryColor = ControlStyleDefaults.DisabledSecondaryColor
         backgroundColor = ControlStyleDefaults.DisabledBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.DisabledSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.DisabledSegmentTrackColor
+        backgroundOnColor = ControlStyleDefaults.DisabledBackgroundOnColor
+        backgroundOffColor = ControlStyleDefaults.DisabledBackgroundOffColor
         trackColor = ControlStyleDefaults.DisabledBorderColor
+        fontStyle = ControlStyleDefaults.DisabledFontStyle
         railColor = ControlStyleDefaults.DisabledBorderColor
         showContent = true
         unsettable = false
         break
       case 'controlled':
       case 'multiselect-controlled':
-        fontWeight = 600
         borderColor = ControlStyleDefaults.ControlledBorderColor
         interactive = true
-        mainColor = ControlStyleDefaults.ControlledMainColor
-        secondaryColor = ControlStyleDefaults.ControlledSecondaryColor
+        mainColor = ControlStyleDefaults.UneditableMainColor
+        secondaryColor = ControlStyleDefaults.UneditableSecondaryColor
         backgroundColor = ControlStyleDefaults.ControlledBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.ControlledSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.ControlledSegmentTrackColor
-        trackColor = ControlStyleDefaults.ControlledMainColor
-        railColor = ControlStyleDefaults.ControlledSecondaryColor
+        backgroundOnColor = ControlStyleDefaults.ControlledBackgroundOnColor
+        backgroundOffColor = ControlStyleDefaults.ControlledBackgroundOffColor
+        trackColor = ControlStyleDefaults.UneditableMainColor
+        railColor = ControlStyleDefaults.UneditableSecondaryColor
         showContent = true
         break
       default:
@@ -252,13 +257,12 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
 
     return {
       fontStyle,
-      fontWeight,
       mainColor,
       secondaryColor,
       borderColor,
       backgroundColor,
-      segmentSelectorColor,
-      segmentTrackColor,
+      backgroundOnColor,
+      backgroundOffColor,
       set,
       interactive,
       mixed,
