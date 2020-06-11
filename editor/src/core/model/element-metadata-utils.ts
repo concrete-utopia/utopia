@@ -448,16 +448,26 @@ export const MetadataUtils = {
       }
     }
   },
-  getYogaMargin(instance: ElementInstanceMetadata): Partial<Sides> | null {
-    if (isRight(instance.element) && isJSXElement(instance.element.value)) {
-      return instance.specialSizeMeasurements.margin
+  getElementMargin(path: TemplatePath, components: ComponentMetadata[]): Partial<Sides> | null {
+    if (TP.isInstancePath(path)) {
+      const instance = MetadataUtils.getElementByInstancePathMaybe(components, path)
+      if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
+        return instance.specialSizeMeasurements.margin
+      } else {
+        return null
+      }
     } else {
       return null
     }
   },
-  getYogaPadding(instance: ElementInstanceMetadata): Partial<Sides> | null {
-    if (isRight(instance.element) && isJSXElement(instance.element.value)) {
-      return instance.specialSizeMeasurements.padding
+  getElementPadding(path: TemplatePath, components: ComponentMetadata[]): Partial<Sides> | null {
+    if (TP.isInstancePath(path)) {
+      const instance = MetadataUtils.getElementByInstancePathMaybe(components, path)
+      if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
+        return instance.specialSizeMeasurements.padding
+      } else {
+        return null
+      }
     } else {
       return null
     }
