@@ -9,6 +9,7 @@ import { ControlProps } from './new-canvas-controls'
 import { Outline } from './outline'
 import { anyInstanceYogaLayouted } from './select-mode/yoga-utils'
 import { MarginControls } from './margin-controls'
+import { PaddingControls } from './padding-controls'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -72,6 +73,15 @@ export class OutlineControls extends React.Component<ControlProps> {
             canvasOffset={this.props.canvasOffset}
             scale={this.props.scale}
             margin={margin}
+            frame={rect}
+          />,
+        )
+        const padding = MetadataUtils.getElementPadding(selectedView, this.props.componentMetadata)
+        selectionOutlines.push(
+          <PaddingControls
+            canvasOffset={this.props.canvasOffset}
+            scale={this.props.scale}
+            padding={padding}
             frame={rect}
           />,
         )
