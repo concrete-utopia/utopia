@@ -43,6 +43,8 @@ import {
   JSXElementChild,
   MetadataWithoutChildren,
   UtopiaJSXComponent,
+  JSXElementName,
+  getJSXElementNameAsString,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -770,22 +772,11 @@ export const MetadataUtils = {
     instance: ElementInstanceMetadata,
     elementType: string,
   ): boolean {
+    // KILLME Replace with isGivenUtopiaAPIElementFromName from project-file-utils.ts
     return foldEither(
       (_) => false,
       (element) => isGivenUtopiaAPIElement(element, imports, elementType),
       instance.element,
-    )
-  },
-  isEllipseAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
-    return (
-      instance != null &&
-      MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Ellipse')
-    )
-  },
-  isRectangleAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
-    return (
-      instance != null &&
-      MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Rectangle')
     )
   },
   isViewAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
@@ -813,25 +804,6 @@ export const MetadataUtils = {
         MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Positionable') ||
         MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Resizeable'))
     )
-  },
-  isAnimatedElementAgainstImports(
-    imports: Imports,
-    instance: ElementInstanceMetadata | null,
-  ): boolean {
-    const possibleReactSpring = imports['react-spring']
-    if (possibleReactSpring == null || instance == null) {
-      return false
-    } else {
-      if (pluck(possibleReactSpring.importedFromWithin, 'name').includes('animated')) {
-        return foldEither(
-          (name) => name.startsWith('animated.'),
-          (element) => isJSXElement(element) && element.name.baseVariable === 'animated',
-          instance.element,
-        )
-      } else {
-        return false
-      }
-    }
   },
   isButton(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'button')
@@ -1025,7 +997,11 @@ export const MetadataUtils = {
       )
     }
   },
-  getElementLabel(path: TemplatePath, metadata: Array<ComponentMetadata>): string {
+  getElementLabel(
+    path: TemplatePath,
+    metadata: Array<ComponentMetadata>,
+    staticName: JSXElementName | null = null,
+  ): string {
     if (TP.isScenePath(path)) {
       const scene = this.findSceneByTemplatePath(metadata, path)
       if (scene != null) {
@@ -1045,7 +1021,8 @@ export const MetadataUtils = {
         } else {
           const possibleName: string = foldEither(
             (tagName) => {
-              return tagName
+              const staticNameString = optionalMap(getJSXElementNameAsString, staticName)
+              return staticNameString ?? tagName
             },
             (jsxElement) => {
               switch (jsxElement.type) {
@@ -1353,26 +1330,39 @@ export const MetadataUtils = {
       }
     })
   },
+  getStaticElementName(
+    path: TemplatePath,
+    rootElements: Array<UtopiaJSXComponent>,
+    metadata: ComponentMetadata[],
+  ): JSXElementName | null {
+    if (TP.isScenePath(path)) {
+      return null
+    } else {
+      // TODO remove dependency on metadata from here
+      const staticPath = MetadataUtils.dynamicPathToStaticPath(metadata, path)
+      const jsxElement = optionalMap((p) => findJSXElementChildAtPath(rootElements, p), staticPath)
+      return optionalMap((element) => (isJSXElement(element) ? element.name : null), jsxElement)
+    }
+  },
   isComponentInstance(
-    path: InstancePath,
+    path: TemplatePath,
     rootElements: Array<UtopiaJSXComponent>,
     metadata: ComponentMetadata[],
     imports: Imports,
   ): boolean {
-    // TODO remove dependency on metadata from here
-    const staticPath = MetadataUtils.dynamicPathToStaticPath(metadata, path)
-    const jsxElement =
-      staticPath == null ? null : findJSXElementChildAtPath(rootElements, staticPath)
-    const name =
-      jsxElement == null || !isJSXElement(jsxElement)
-        ? ''
-        : getJSXElementNameLastPart(jsxElement.name)
-    const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
-    return (
-      instanceMetadata != null &&
-      !MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instanceMetadata, name) &&
-      !intrinsicHTMLElementNamesAsStrings.includes(name)
-    )
+    if (TP.isScenePath(path)) {
+      return false
+    } else {
+      const jsxElementName = MetadataUtils.getStaticElementName(path, rootElements, metadata)
+      const name = optionalMap(getJSXElementNameLastPart, jsxElementName)
+      const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
+      return (
+        name != null &&
+        instanceMetadata != null &&
+        !MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instanceMetadata, name) &&
+        !intrinsicHTMLElementNamesAsStrings.includes(name)
+      )
+    }
   },
   isPinnedAndNotAbsolutePositioned(
     metadata: Array<ComponentMetadata>,
