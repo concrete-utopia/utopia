@@ -13,7 +13,7 @@ interface PaddingControlsProps {
 
 export const PaddingControls = betterReactMemo('PaddingControls', (props: PaddingControlsProps) => {
   if (props.padding == null) {
-    return <></>
+    return null
   } else {
     const leftElement =
       props.padding.left != null && props.padding.left !== 0 ? (

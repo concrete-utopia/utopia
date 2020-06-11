@@ -13,7 +13,7 @@ interface MarginControlsProps {
 
 export const MarginControls = betterReactMemo('MarginControls', (props: MarginControlsProps) => {
   if (props.margin == null) {
-    return <></>
+    return null
   } else {
     const leftElement =
       props.margin.left != null && props.margin.left !== 0 ? (
