@@ -37,8 +37,10 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       noOfChildren,
       supportsChildren,
       elementOriginType,
-      name,
+      staticElementName,
+      label,
       element,
+      componentInstance,
       isAutosizingView,
       isElementVisible,
       renamingTarget,
@@ -56,19 +58,31 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
         fallbackFileState == null
           ? []
           : fallbackFileState.topLevelElementsIncludingScenes.filter(isUtopiaJSXComponent)
-      const nameInner = MetadataUtils.getElementLabel(
-        props.templatePath,
-        store.editor.jsxMetadataKILLME,
-      )
       const elementOriginTypeInner = MetadataUtils.getElementOriginType(
         componentsIncludingScenes,
         store.editor.jsxMetadataKILLME,
         props.templatePath,
       )
+      const staticName = MetadataUtils.getStaticElementName(
+        props.templatePath,
+        componentsIncludingScenes,
+        store.editor.jsxMetadataKILLME,
+      )
+      const labelInner = MetadataUtils.getElementLabel(
+        props.templatePath,
+        store.editor.jsxMetadataKILLME,
+        staticName,
+      )
       const importsInner =
         fallbackFileState == null
           ? getOpenImportsFromState(store.editor)
           : fallbackFileState.imports
+      const componentInstanceInner = MetadataUtils.isComponentInstance(
+        props.templatePath,
+        componentsIncludingScenes,
+        store.editor.jsxMetadataKILLME,
+        importsInner,
+      )
       const navigatorTargetsInner = store.derived.navigatorTargets
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
@@ -87,8 +101,10 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
         )
       }
       return {
-        name: nameInner,
+        staticElementName: staticName,
+        label: labelInner,
         element: elementInner,
+        componentInstance: componentInstanceInner,
         isAutosizingView: MetadataUtils.isAutoSizingView(elementInner),
         navigatorTargets: store.derived.navigatorTargets,
         dispatch: store.dispatch,
@@ -125,8 +141,10 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       supportsChildren: supportsChildren,
       noOfChildren: noOfChildren,
       elementOriginType: elementOriginType,
-      name: name,
+      staticElementName: staticElementName,
+      label: label,
       element: element,
+      componentInstance: componentInstance,
       isAutosizingView: isAutosizingView,
       isElementVisible: isElementVisible,
       renamingTarget: renamingTarget,

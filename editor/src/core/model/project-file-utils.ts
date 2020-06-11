@@ -36,6 +36,7 @@ import {
   JSXElementName,
   TopLevelElement,
   UtopiaJSXComponent,
+  getJSXElementNameLastPart,
 } from '../shared/element-template'
 import {
   sceneMetadata as _sceneMetadata,
@@ -66,48 +67,98 @@ export function isUtopiaAPIComponent(elementName: JSXElementName, imports: Impor
 export function isGivenUtopiaAPIElement(
   element: JSXElementChild,
   imports: Imports,
-  elementName: string,
+  componentName: string,
+): boolean {
+  return (
+    isJSXElement(element) && isGivenUtopiaAPIElementFromName(element.name, imports, componentName)
+  )
+}
+
+function isGivenUtopiaAPIElementFromName(
+  jsxElementName: JSXElementName,
+  imports: Imports,
+  componentName: string,
 ): boolean {
   const utopiaAPI = imports['utopia-api']
   if (utopiaAPI == null) {
     return false
   } else {
-    if (isJSXElement(element)) {
-      const elemName = element.name
-      if (PP.depth(elemName.propertyPath) === 0) {
-        return (
-          pluck(utopiaAPI.importedFromWithin, 'name').includes(elemName.baseVariable) &&
-          elemName.baseVariable === elementName
-        )
-      } else {
-        return (
-          utopiaAPI.importedAs === elemName.baseVariable &&
-          PP.isSameProperty(elemName.propertyPath, elementName)
-        )
-      }
+    if (PP.depth(jsxElementName.propertyPath) === 0) {
+      return (
+        pluck(utopiaAPI.importedFromWithin, 'name').includes(jsxElementName.baseVariable) &&
+        jsxElementName.baseVariable === componentName
+      )
+    } else {
+      return (
+        utopiaAPI.importedAs === jsxElementName.baseVariable &&
+        PP.isSameProperty(jsxElementName.propertyPath, componentName)
+      )
+    }
+  }
+}
+
+export function isUtopiaAPITextElement(element: JSXElementChild, imports: Imports): boolean {
+  return isJSXElement(element) && isTextAgainstImports(element.name, imports)
+}
+
+export function isEllipseAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
+  return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Ellipse')
+}
+
+export function isRectangleAgainstImports(
+  jsxElementName: JSXElementName,
+  imports: Imports,
+): boolean {
+  return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Rectangle')
+}
+
+export function isViewAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
+  return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'View')
+}
+
+export function isTextAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
+  return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Text')
+}
+
+export function isImg(jsxElementName: JSXElementName): boolean {
+  return (
+    PP.depth(jsxElementName.propertyPath) === 0 &&
+    getJSXElementNameLastPart(jsxElementName) === 'img'
+  )
+}
+
+export function isAnimatedElementAgainstImports(
+  jsxElementName: JSXElementName,
+  imports: Imports,
+): boolean {
+  const possibleReactSpring = imports['react-spring']
+  if (possibleReactSpring == null) {
+    return false
+  } else {
+    if (pluck(possibleReactSpring.importedFromWithin, 'name').includes('animated')) {
+      return jsxElementName.baseVariable === 'animated'
     } else {
       return false
     }
   }
 }
 
-export function isUtopiaAPITextElement(element: JSXElementChild, imports: Imports): boolean {
-  return isGivenUtopiaAPIElement(element, imports, 'Text')
+export function isHTMLComponent(jsxElementName: JSXElementName, imports: Imports): boolean {
+  return (
+    PP.depth(jsxElementName.propertyPath) === 0 &&
+    isHTMLComponentFromBaseName(jsxElementName.baseVariable, imports)
+  )
 }
 
-export function isHTMLComponent(elementName: JSXElementName, imports: Imports): boolean {
-  if (PP.depth(elementName.propertyPath) === 0) {
-    const imported = Object.keys(imports).some((importKey) => {
-      const fromImports = imports[importKey]
-      return pluck(fromImports.importedFromWithin, 'name').includes(elementName.baseVariable)
-    })
-    if (imported) {
-      return false
-    } else {
-      return intrinsicHTMLElementNamesAsStrings.includes(elementName.baseVariable)
-    }
-  } else {
+function isHTMLComponentFromBaseName(baseName: string, imports: Imports): boolean {
+  const imported = Object.keys(imports).some((importKey) => {
+    const fromImports = imports[importKey]
+    return pluck(fromImports.importedFromWithin, 'name').includes(baseName)
+  })
+  if (imported) {
     return false
+  } else {
+    return intrinsicHTMLElementNamesAsStrings.includes(baseName)
   }
 }
 
