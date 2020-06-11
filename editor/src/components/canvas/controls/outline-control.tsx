@@ -8,6 +8,7 @@ import * as TP from '../../../core/shared/template-path'
 import { ControlProps } from './new-canvas-controls'
 import { Outline } from './outline'
 import { anyInstanceYogaLayouted } from './select-mode/yoga-utils'
+import { MarginControls } from './margin-controls'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -63,6 +64,18 @@ export class OutlineControls extends React.Component<ControlProps> {
         createsYogaLayout,
         anySelectedElementIsYogaLayouted,
       )
+
+      if (instance != null) {
+        const margin = MetadataUtils.getElementMargin(selectedView, this.props.componentMetadata)
+        selectionOutlines.push(
+          <MarginControls
+            canvasOffset={this.props.canvasOffset}
+            scale={this.props.scale}
+            margin={margin}
+            frame={rect}
+          />,
+        )
+      }
 
       selectionOutlines.push(
         <Outline
