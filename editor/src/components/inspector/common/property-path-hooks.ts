@@ -707,10 +707,16 @@ export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
     untransformValue,
     createLayoutPropertyPath,
   )
-  if (!inspectorInfo.propertyStatus.set && specialSizeMeasurements != null) {
+  if (
+    !inspectorInfo.propertyStatus.set &&
+    !inspectorInfo.propertyStatus.controlled &&
+    specialSizeMeasurements != null
+  ) {
     const measuredValue = getValueFromSpecialSizeMeasurements(property, specialSizeMeasurements)
     if (measuredValue != null) {
       inspectorInfo.value = measuredValue
+      inspectorInfo.propertyStatus.detected = true
+      inspectorInfo.controlStatus = getControlStatusFromPropertyStatus(inspectorInfo.propertyStatus)
     }
   }
   return inspectorInfo
