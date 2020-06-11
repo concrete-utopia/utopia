@@ -1,16 +1,16 @@
+import * as Prettier from 'prettier'
+import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import * as PP from '../../../core/shared/property-path'
+import * as TP from '../../../core/shared/template-path'
+import { PrettierConfig } from '../../../core/workers/parser-printer/prettier-utils'
 import {
-  renderTestEditorWithCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
   TestScenePath,
 } from '../../canvas/ui-jsx-test-utils'
-import * as TP from '../../../core/shared/template-path'
-import * as PP from '../../../core/shared/property-path'
 import { toggleProperty } from '../../editor/actions/actions'
-import { toggleStyleProp, toggleBorder, toggleShadow } from './css-utils'
-import * as Prettier from 'prettier'
-import { PrettierConfig } from '../../../core/workers/parser-printer/prettier-utils'
-import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import { toggleBorder, toggleShadow, toggleStyleProp } from './css-utils'
 
 function makeTestProjectCodeWithSnippetWithUtopiaUtilsImport(snippet: string) {
   const code = `/** @jsx jsx */
@@ -42,17 +42,10 @@ describe('toggle style prop', () => {
   it('disables border, sets border to none from solid', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+        <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View
-            style={{
-              backgroundColor: '#DDDDDD',
-              boxShadow: UtopiaUtils.shadowAndBorder({
-                borderStyle: 'solid',
-                borderWidth: '1px',
-                borderColor: '#000',
-              }),
-            }}
-            layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', border: '1px solid #000' }}
+          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
           />
         </View>
@@ -63,7 +56,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-          toggleStyleProp(PP.create(['style', 'boxShadow']), toggleBorder),
+          toggleStyleProp(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
       true,
@@ -73,35 +66,22 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippetWithUtopiaUtilsImport(`
         <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View
-            style={{
-              backgroundColor: '#DDDDDD',
-              boxShadow: UtopiaUtils.shadowAndBorder({
-                borderStyle: 'none',
-                borderWidth: '1px',
-                borderColor: '#000',
-              }),
-            }}
-            layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', border: '1px #000' }}
+          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
           />
         </View>
       `),
     )
   })
+
   it('enables border, sets it to solid from none', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+        <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View
-            style={{
-              backgroundColor: '#DDDDDD',
-              boxShadow: UtopiaUtils.shadowAndBorder({
-                borderStyle: 'none',
-                borderWidth: '1px',
-                borderColor: '#000',
-              }),
-            }}
-            layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', border: '1px #000' }}
+          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
           />
         </View>
@@ -112,7 +92,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-          toggleStyleProp(PP.create(['style', 'boxShadow']), toggleBorder),
+          toggleStyleProp(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
       true,
@@ -122,15 +102,8 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippetWithUtopiaUtilsImport(`
         <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View
-            style={{
-              backgroundColor: '#DDDDDD',
-              boxShadow: UtopiaUtils.shadowAndBorder({
-                borderStyle: 'solid',
-                borderWidth: '1px',
-                borderColor: '#000',
-              }),
-            }}
-            layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', border: '1px solid #000' }}
+          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
           />
         </View>
@@ -153,7 +126,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-          toggleStyleProp(PP.create(['style', 'boxShadow']), toggleBorder),
+          toggleStyleProp(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
       true,
@@ -165,64 +138,13 @@ describe('toggle style prop', () => {
           <View
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
-            style={{
-              boxShadow: UtopiaUtils.shadowAndBorder({
-                borderStyle: 'solid',
-                borderWidth: '1px',
-                borderColor: '#000',
-              }),
-            }}
+            style={{ border: '1px solid #000' }}
           />
         </View>
       `),
     )
   })
-  it('adds border when it has only shadow set', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
-        <View
-          style={{
-            backgroundColor: '#DDDDDD',
-            boxShadow: UtopiaUtils.shadowAndBorder({ boxShadow: '0px 0px #000, 0px 0px #000' }),
-          }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
-          data-uid={'bbb'}
-        />
-      </View>
-      `),
-    )
 
-    await renderResult.dispatch(
-      [
-        toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-          toggleStyleProp(PP.create(['style', 'boxShadow']), toggleBorder),
-        ),
-      ],
-      true,
-    )
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
-      makeTestProjectCodeWithSnippetWithUtopiaUtilsImport(`
-        <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
-          <View
-            style={{
-              backgroundColor: '#DDDDDD',
-              boxShadow: UtopiaUtils.shadowAndBorder({
-                borderStyle: 'solid',
-                borderWidth: '1px',
-                borderColor: '#000',
-                boxShadow: '0px 0px #000, 0px 0px #000',
-              }),
-            }}
-            layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
-            data-uid={'bbb'}
-          />
-        </View>
-      `),
-    )
-  })
   it('toggles shadow, comments out boxshadow property values', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -230,12 +152,7 @@ describe('toggle style prop', () => {
           <View
             style={{
               backgroundColor: '#DDDDDD',
-              boxShadow: UtopiaUtils.shadowAndBorder({
-                borderStyle: 'solid',
-                borderWidth: '1px',
-                borderColor: '#000',
-                boxShadow: '0px 0px #000, 0px 0px #000',
-              }),
+              boxShadow: UtopiaUtils.shadowAndBorder({ boxShadow: '0px 0px #000, 0px 0px #000' }),
             }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
@@ -260,12 +177,7 @@ describe('toggle style prop', () => {
           <View
             style={{
               backgroundColor: '#DDDDDD',
-              boxShadow: UtopiaUtils.shadowAndBorder({
-                borderStyle: 'solid',
-                borderWidth: '1px',
-                borderColor: '#000',
-                boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/',
-              }),
+              boxShadow: UtopiaUtils.shadowAndBorder({ boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/' }),
             }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
@@ -281,12 +193,7 @@ describe('toggle style prop', () => {
           <View
             style={{
               backgroundColor: '#DDDDDD',
-              boxShadow: UtopiaUtils.shadowAndBorder({
-                borderStyle: 'solid',
-                borderWidth: '1px',
-                borderColor: '#000',
-                boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/',
-              }),
+              boxShadow: UtopiaUtils.shadowAndBorder({ boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/' }),
             }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
@@ -311,12 +218,7 @@ describe('toggle style prop', () => {
           <View
             style={{
               backgroundColor: '#DDDDDD',
-              boxShadow: UtopiaUtils.shadowAndBorder({
-                borderStyle: 'solid',
-                borderWidth: '1px',
-                borderColor: '#000',
-                boxShadow: '0px 0px #000, 0px 0px #000',
-              }),
+              boxShadow: UtopiaUtils.shadowAndBorder({ boxShadow: '0px 0px #000, 0px 0px #000' }),
             }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}

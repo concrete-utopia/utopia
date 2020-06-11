@@ -195,7 +195,6 @@ function spliceShadowAtIndex(
 interface ShadowItemProps {
   value: CSSBoxShadow
   shadowsLength: number
-  borderIsDefined: boolean
   onUnsetValues: () => void
   index: number
   controlStatus: ControlStatus
@@ -232,20 +231,16 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
     getIndexedUpdateShadowSpreadRadius(props.index),
   )
 
-  const { shadowsLength, spliceShadowAtIndex: spliceFn, onUnsetValues, borderIsDefined } = props
+  const { shadowsLength, spliceShadowAtIndex: spliceFn, onUnsetValues } = props
   const removeShadow = React.useMemo(() => {
     return removeRow(() => {
       if (shadowsLength > 1) {
         spliceFn()
       } else {
-        if (borderIsDefined) {
-          spliceFn()
-        } else {
-          onUnsetValues()
-        }
+        onUnsetValues()
       }
     })
-  }, [shadowsLength, spliceFn, onUnsetValues, borderIsDefined])
+  }, [shadowsLength, spliceFn, onUnsetValues])
 
   return (
     <InspectorContextMenuWrapper
@@ -352,24 +347,8 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
 
   const { springs, bind } = useArraySuperControl(boxShadows, onSubmitBoxShadowValue, rowHeight)
 
-  const unsetBoxShadows = React.useCallback(() => {
-    onUnsetValues()
-  }, [onUnsetValues])
-
-  const onUnsetBoxShadowParameters = () => {
-    let newValue = { ...value }
-    if ('border' in newValue && 'boxShadows' in newValue) {
-      delete newValue['boxShadows']
-      onSubmitValue(newValue)
-    } else {
-      onUnsetValues()
-    }
-  }
-
   const contextMenuItems = utils.stripNulls([
-    boxShadows.length > 0
-      ? addOnUnsetValues(['boxShadow parameter'], onUnsetBoxShadowParameters)
-      : null,
+    boxShadows.length > 0 ? addOnUnsetValues(['boxShadow parameter'], onUnsetValues) : null,
   ])
 
   const insertShadowValue = React.useCallback(() => insertShadow(value, onSubmitValue), [
@@ -432,11 +411,6 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
                 >
                   <ShadowItem
                     value={boxShadow}
-                    borderIsDefined={
-                      value.border?.enabled != null &&
-                      value.border?.borderColor != null &&
-                      value.border?.borderWidth != null
-                    }
                     shadowsLength={boxShadows.length}
                     useSubmitValueFactory={useSubmitValueFactory}
                     onUnsetValues={onUnsetValues}

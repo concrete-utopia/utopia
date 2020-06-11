@@ -1,6 +1,5 @@
 import * as React from 'react'
 import {
-  ChainedNumberInput,
   CheckboxInput,
   FlexRow,
   Icn,
@@ -12,222 +11,86 @@ import { betterReactMemo } from 'uuiui-deps'
 import { isRight } from '../../../../../core/shared/either'
 import utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { ColorControl, StringColorControl } from '../../../controls/color-control'
-import { OptionControl } from '../../../controls/option-control'
-import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import {
-  CSSBorderWidthSplit,
-  CSSBoxShadowAndBorderOrUnknown,
+  CSSBorder,
   CSSColor,
+  cssKeyword,
+  cssLineStyle,
+  cssLineWidth,
   CSSNumber,
-  cssNumber,
-  defaultBorder,
   defaultBorderWidth,
-  defaultBorderWidthSplit,
+  defaultCSSBorder,
   EmptyInputValue,
-  fallbackOnEmptyInputValueToCSSEmptyValue,
+  isCSSNumber,
   isCSSUnknownFunctionParameters,
   isEmptyInputValue,
   parseColor,
 } from '../../../common/css-utils'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
-import { getControlStyles } from '../../../common/control-status'
+import { ColorControl, StringColorControl } from '../../../controls/color-control'
+import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { GridRow } from '../../../widgets/grid-row'
 
-export function updateBorderEnabled(
-  enabled: boolean,
-  oldValue: CSSBoxShadowAndBorderOrUnknown,
-): CSSBoxShadowAndBorderOrUnknown {
-  if (isCSSUnknownFunctionParameters(oldValue)) {
-    return oldValue
+export function toggleBorderEnabled(_: null, oldValue: CSSBorder): CSSBorder {
+  const valueIsEnabled = (oldValue.style?.value.value ?? 'none') !== 'none'
+  if (valueIsEnabled) {
+    let workingNewValue = { ...oldValue }
+    delete workingNewValue.style
+    return workingNewValue
   } else {
-    let newBoxShadowAndBorder = { ...oldValue }
-    if (newBoxShadowAndBorder.border != null) {
-      newBoxShadowAndBorder.border.enabled = enabled
-    } else {
-      newBoxShadowAndBorder = {
-        ...oldValue,
-        border: defaultBorder,
-      }
-    }
-    return newBoxShadowAndBorder
-  }
-}
-
-function updateBorderColor(
-  newColor: CSSColor,
-  oldValue: CSSBoxShadowAndBorderOrUnknown,
-): CSSBoxShadowAndBorderOrUnknown {
-  if (isCSSUnknownFunctionParameters(oldValue)) {
-    return oldValue
-  } else {
-    const enabled = oldValue.border != null ? oldValue.border.enabled : true
     return {
       ...oldValue,
-      border: {
-        ...oldValue.border,
-        enabled,
-        borderColor: newColor,
-      },
+      style: cssLineStyle(cssKeyword('solid')),
     }
   }
 }
 
-function updateBorderWidth(
+export function updateBorderWidth(
   newWidth: CSSNumber | EmptyInputValue,
-  oldValue: CSSBoxShadowAndBorderOrUnknown,
-): CSSBoxShadowAndBorderOrUnknown {
-  if (isCSSUnknownFunctionParameters(oldValue)) {
-    return oldValue
-  }
+  oldValue: CSSBorder,
+): CSSBorder {
   if (isEmptyInputValue(newWidth)) {
     let newValue = {
       ...oldValue,
     }
-    if (newValue.border != null) {
-      delete newValue.border.borderWidth
-    }
+    delete newValue.width
     return newValue
   } else {
-    const enabled = oldValue.border != null ? oldValue.border.enabled : true
     return {
       ...oldValue,
-      border: {
-        ...oldValue.border,
-        enabled,
-        borderWidth: newWidth,
-      },
+      style:
+        (oldValue.style?.value.value ?? 'none') === 'none'
+          ? cssLineStyle(cssKeyword('solid'))
+          : oldValue.style,
+      width: cssLineWidth(newWidth),
     }
   }
 }
 
-function toggleBorderSplit(
-  _: any,
-  oldValue: CSSBoxShadowAndBorderOrUnknown,
-): CSSBoxShadowAndBorderOrUnknown {
-  if (isCSSUnknownFunctionParameters(oldValue)) {
-    return oldValue
+export function updateBorderColor(newColor: CSSColor, oldValue: CSSBorder): CSSBorder {
+  return {
+    ...oldValue,
+    style:
+      (oldValue.style?.value.value ?? 'none') === 'none'
+        ? cssLineStyle(cssKeyword('solid'))
+        : oldValue.style,
+    color: newColor,
+  }
+}
+
+export function updateBorderColorString(newValue: string, oldValue: CSSBorder): CSSBorder {
+  const parsed = parseColor(newValue)
+  if (isRight(parsed)) {
+    return updateBorderColor(parsed.value, oldValue)
   } else {
-    if (oldValue.border != null) {
-      if (Array.isArray(oldValue.border.borderWidth)) {
-        const enabled = oldValue.border.enabled
-        return {
-          ...oldValue,
-          border: {
-            enabled,
-            borderColor: oldValue.border.borderColor,
-            borderWidth: oldValue.border.borderWidth[0],
-          },
-        }
-      } else if (oldValue.border.borderWidth != null) {
-        const borderWidth = new Array<CSSNumber>(4).fill(
-          oldValue.border.borderWidth,
-        ) as CSSBorderWidthSplit
-        const enabled = oldValue.border != null ? oldValue.border.enabled : true
-        return {
-          ...oldValue,
-          border: {
-            enabled,
-            borderColor: oldValue.border.borderColor,
-            borderWidth,
-          },
-        }
-      }
-    }
-  }
-  return oldValue
-}
-
-export function updateBorderColorString(
-  newValue: string,
-  oldValue: CSSBoxShadowAndBorderOrUnknown,
-): CSSBoxShadowAndBorderOrUnknown {
-  if (isCSSUnknownFunctionParameters(oldValue)) {
     return oldValue
-  } else {
-    const parsed = parseColor(newValue)
-    if (isRight(parsed)) {
-      const enabled = oldValue.border != null ? oldValue.border.enabled : true
-      return {
-        ...oldValue,
-        border: {
-          ...oldValue.border,
-          enabled,
-          borderColor: parsed.value,
-        },
-      }
-    } else {
-      return oldValue
-    }
   }
 }
 
-function insertBorder(
-  oldValue: CSSBoxShadowAndBorderOrUnknown,
-  onBoxShadowAndBorderSubmitValue: (newValue: CSSBoxShadowAndBorderOrUnknown) => void,
-): void {
-  if (!isCSSUnknownFunctionParameters(oldValue)) {
-    onBoxShadowAndBorderSubmitValue({
-      ...oldValue,
-      border: { ...defaultBorder },
-    })
-  }
-}
-
-export function unsetOnlyBorder(
-  _: any,
-  oldValue: CSSBoxShadowAndBorderOrUnknown,
-): CSSBoxShadowAndBorderOrUnknown {
-  if (isCSSUnknownFunctionParameters(oldValue)) {
-    return oldValue
-  } else {
-    let newValue = { ...oldValue }
-    delete newValue['border']
-    return newValue
-  }
-}
-
-function generateUpdateBorderEdgeWidth(
-  edge: 0 | 1 | 2 | 3,
-): (
-  newWidth: CSSNumber | EmptyInputValue,
-  oldValue: CSSBoxShadowAndBorderOrUnknown,
-) => CSSBoxShadowAndBorderOrUnknown {
-  return function updateBorderEdgeWidth(
-    newWidth: CSSNumber | EmptyInputValue,
-    oldValue: CSSBoxShadowAndBorderOrUnknown,
-  ): CSSBoxShadowAndBorderOrUnknown {
-    if (isCSSUnknownFunctionParameters(oldValue)) {
-      return oldValue
-    } else {
-      if (oldValue.border != null) {
-        if (Array.isArray(oldValue.border.borderWidth)) {
-          let newWidths = [...oldValue.border.borderWidth] as CSSBorderWidthSplit
-          newWidths[edge] = fallbackOnEmptyInputValueToCSSEmptyValue(cssNumber(0), newWidth)
-          return {
-            ...oldValue,
-            border: {
-              ...oldValue.border,
-              borderWidth: newWidths,
-            },
-          }
-        } else {
-          let newWidths = [...defaultBorderWidthSplit] as CSSBorderWidthSplit
-          newWidths[edge] = fallbackOnEmptyInputValueToCSSEmptyValue(cssNumber(0), newWidth)
-          return {
-            ...oldValue,
-            border: {
-              ...oldValue.border,
-              borderWidth: newWidths,
-            },
-          }
-        }
-      }
-      return oldValue
-    }
-  }
+function insertBorder(_: null, oldValue: CSSBorder): CSSBorder {
+  return { ...defaultCSSBorder }
 }
 
 export const BorderSubsection: React.FunctionComponent = betterReactMemo('BorderSubsection', () => {
@@ -238,27 +101,35 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
     controlStatus,
     controlStyles,
     propertyStatus,
-    onSubmitValue,
     onUnsetValues,
     useSubmitValueFactory,
-  } = useInspectorStyleInfo('boxShadow')
-  const borderWidth =
-    !isCSSUnknownFunctionParameters(value) &&
-    value.border != null &&
-    value.border.borderWidth != null
-      ? value.border.borderWidth
-      : defaultBorderWidth
+  } = useInspectorStyleInfo('border')
 
   const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 
-  const borderColor: CSSColor =
-    !isCSSUnknownFunctionParameters(value) &&
-    value.border != null &&
-    value.border.borderColor != null
-      ? value.border.borderColor
-      : defaultBorder.borderColor
+  const borderEnabled = (value.style?.value.value ?? 'none') !== 'none'
+  const borderColor: CSSColor = value.color ?? defaultCSSBorder.color
+  const borderWidth: CSSNumber = (() => {
+    if (value.width == null) {
+      return { ...defaultBorderWidth }
+    } else if (isCSSNumber(value.width.value)) {
+      return value.width.value
+    } else {
+      // TODO: CSSKeyword support in number controls
+      return { ...defaultBorderWidth }
+    }
+  })()
 
-  const [borderEnabledSubmitValue] = useSubmitValueFactory(updateBorderEnabled)
+  const [borderEnabledSubmitValue] = useSubmitValueFactory(toggleBorderEnabled)
+  const onCheckboxChange = React.useCallback(() => {
+    borderEnabledSubmitValue(null)
+  }, [borderEnabledSubmitValue])
+
+  const [onInsertBorderSubmitValue] = useSubmitValueFactory(insertBorder)
+  const onInsertMouseDown = React.useCallback(() => {
+    onInsertBorderSubmitValue(null)
+  }, [onInsertBorderSubmitValue])
+
   const [borderColorSubmitValue, borderColorTransientSubmitValue] = useSubmitValueFactory(
     updateBorderColor,
   )
@@ -266,108 +137,9 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
   const [borderWidthSubmitValue, borderWidthTransientSubmitValue] = useSubmitValueFactory(
     updateBorderWidth,
   )
-  const [borderTopWidthSubmitValue, borderTopWidthSubmitTransientValue] = useSubmitValueFactory(
-    generateUpdateBorderEdgeWidth(0),
-  )
-  const [borderRightWidthSubmitValue, borderRightWidthSubmitTransientValue] = useSubmitValueFactory(
-    generateUpdateBorderEdgeWidth(1),
-  )
-  const [
-    borderBottomWidthSubmitValue,
-    borderBottomWidthSubmitTransientValue,
-  ] = useSubmitValueFactory(generateUpdateBorderEdgeWidth(2))
-  const [borderLeftWidthSubmitValue, borderLeftWidthSubmitTransientValue] = useSubmitValueFactory(
-    generateUpdateBorderEdgeWidth(3),
-  )
-  const [borderToggleSplitSubmitValue] = useSubmitValueFactory(toggleBorderSplit)
-  const [onUnsetOnlyBorderSubmitValue] = useSubmitValueFactory(unsetOnlyBorder)
 
-  const unsetBorder = React.useCallback(() => {
-    if (isCSSUnknownFunctionParameters(value) || value.boxShadows == null) {
-      onUnsetValues()
-    } else {
-      onUnsetOnlyBorderSubmitValue(null)
-    }
-  }, [value, onUnsetOnlyBorderSubmitValue, onUnsetValues])
-
-  const borderEnabled =
-    !isCSSUnknownFunctionParameters(value) && value.border != null && value.border.enabled
-
-  const onCheckBoxChange = React.useCallback(() => {
-    borderEnabledSubmitValue(!borderEnabled)
-  }, [borderEnabledSubmitValue, borderEnabled])
-
-  const allOrSplitControls = Array.isArray(borderWidth) ? (
-    <GridRow tall alignItems='start' padded={false} type='<--------auto-------->||22px|'>
-      <ChainedNumberInput
-        idPrefix='borderWidth'
-        propsArray={[
-          {
-            value: borderWidth[0],
-            labelBelow: 'T',
-            minimum: 0,
-            onSubmitValue: borderTopWidthSubmitValue,
-            onTransientSubmitValue: borderTopWidthSubmitTransientValue,
-            controlStatus: controlStatus,
-            numberType: 'Length',
-            defaultUnitToHide: 'px',
-          },
-          {
-            value: borderWidth[1],
-            labelBelow: 'R',
-            minimum: 0,
-            onSubmitValue: borderRightWidthSubmitValue,
-            onTransientSubmitValue: borderRightWidthSubmitTransientValue,
-            controlStatus: controlStatus,
-            numberType: 'Length',
-            defaultUnitToHide: 'px',
-          },
-          {
-            value: borderWidth[2],
-            labelBelow: 'B',
-            minimum: 0,
-            onSubmitValue: borderBottomWidthSubmitValue,
-            onTransientSubmitValue: borderBottomWidthSubmitTransientValue,
-            controlStatus: controlStatus,
-            numberType: 'Length',
-            defaultUnitToHide: 'px',
-          },
-          {
-            value: borderWidth[3],
-            labelBelow: 'L',
-            minimum: 0,
-            onSubmitValue: borderLeftWidthSubmitValue,
-            onTransientSubmitValue: borderLeftWidthSubmitTransientValue,
-            controlStatus: controlStatus,
-            numberType: 'Length',
-            defaultUnitToHide: 'px',
-          },
-        ]}
-      />
-      <OptionControl
-        id='independent-border'
-        key='independent-border'
-        value={true}
-        onSubmitValue={borderToggleSplitSubmitValue}
-        controlStatus='simple'
-        controlStyles={getControlStyles('simple')}
-        style={{
-          width: 22,
-        }}
-        controlOptions={{
-          tooltip: 'Independent Border',
-          icon: {
-            category: 'borders',
-            type: 'notTheSame',
-            color: 'darkgray',
-            width: 16,
-            height: 16,
-          },
-        }}
-      />
-    </GridRow>
-  ) : (
-    <GridRow tall alignItems='start' padded={false} type='<--------auto-------->|54px||22px|'>
+  const allOrSplitControls = (
+    <GridRow tall alignItems='start' padded={false} type='<-------1fr------>|----80px----|'>
       <StringColorControl
         id='border-color'
         key='border-color'
@@ -389,51 +161,13 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
         controlStatus={controlStatus}
         numberType='Length'
       />
-      <OptionControl
-        id='independent-border'
-        key='independent-border'
-        value={true}
-        onSubmitValue={borderToggleSplitSubmitValue}
-        controlStatus='simple'
-        controlStyles={getControlStyles('simple')}
-        style={{
-          width: 22,
-        }}
-        controlOptions={{
-          tooltip: 'Independent Border',
-          icon: {
-            category: 'borders',
-            type: 'same',
-            color: 'darkgray',
-            width: 16,
-            height: 16,
-          },
-        }}
-      />
     </GridRow>
   )
 
-  const showBorder: boolean =
-    isCSSUnknownFunctionParameters(value) ||
-    (value.border != null && (value.border.borderWidth != null || value.border.borderColor != null))
-
-  const onUnsetBoxShadowParameters = () => {
-    let newValue = { ...value }
-    if ('border' in newValue && 'boxShadows' in newValue) {
-      delete newValue['border']
-      onSubmitValue(newValue)
-    } else {
-      onUnsetValues()
-    }
-  }
+  const showBorder: boolean = value.width != null || value.color != null || value.style != null
 
   const contextMenuItems = utils.stripNulls([
-    'border' in value ? addOnUnsetValues(['border parameters'], onUnsetBoxShadowParameters) : null,
-  ])
-
-  const addBorder = React.useCallback(() => insertBorder(value, onSubmitValue), [
-    value,
-    onSubmitValue,
+    'border' in value ? addOnUnsetValues(['border parameters'], onUnsetValues) : null,
   ])
 
   if (!isVisible) {
@@ -456,12 +190,8 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
         {propertyStatus.overwritable ? (
           <SquareButton
             highlight
-            onMouseDown={addBorder}
-            disabled={
-              isCSSUnknownFunctionParameters(value) ||
-              value.border?.borderColor != null ||
-              value.border?.borderWidth != null
-            }
+            onMouseDown={onInsertMouseDown}
+            disabled={value.color != null || value.width != null || value.style != null}
           >
             <Icn
               style={{ paddingTop: 1 }}
@@ -485,7 +215,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
                 id={`shadow-enable-disable`}
                 key={`shadow-enable-disable`}
                 checked={borderEnabled}
-                onChange={onCheckBoxChange}
+                onChange={onCheckboxChange}
                 controlStatus={controlStatus}
               />
               <ColorControl

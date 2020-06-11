@@ -45,8 +45,7 @@ import {
   cssUnitlessLength,
   CSSUnknownArrayItem,
   defaultBGSize,
-  defaultBorder,
-  defaultBoxShadows,
+  defaultCSSBorder,
   defaultCSSGradientStops,
   defaultCSSRadialGradientSize,
   defaultCSSRadialOrConicGradientCenter,
@@ -55,7 +54,6 @@ import {
   parseBackgroundImage,
   parseBorderRadius,
   parseBoxShadow,
-  parseBoxShadowAndBorder,
   parseColor,
   parseConicGradient,
   parseCSSURLFunction,
@@ -69,7 +67,11 @@ import {
   RegExpLibrary,
   toggleSimple,
   toggleStyleProp,
+  CSSBorder,
+  cssLineStyle,
+  cssLineWidth,
 } from './css-utils'
+import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
 
 describe('toggleStyleProp', () => {
   const simpleToggleProp = toggleStyleProp(PP.create(['style', 'backgroundColor']), toggleSimple)
@@ -955,63 +957,6 @@ describe('parseBoxShadow', () => {
     const invalidStrings = ['1px 1px burple', '1px #fff', '#fff']
     invalidStrings.forEach((invalid, i) => {
       expect(parseBoxShadow(invalid).type).toEqual('LEFT')
-    })
-  })
-})
-
-describe('parseBoxShadowAndBorder', () => {
-  it('parses a BoxShadowAndBorder', () => {
-    const validParameters: Array<ShadowAndBorderParams> = [
-      {
-        borderStyle: 'solid',
-        borderWidth: '1px',
-        borderColor: '#000',
-        boxShadow: '0px 0px #000',
-      },
-    ]
-
-    const expectedValidValue: Array<CSSBoxShadowAndBorder> = [
-      {
-        type: 'box-shadow-and-border',
-        boxShadows: defaultBoxShadows,
-        border: defaultBorder,
-      },
-    ]
-
-    validParameters.forEach((valid, i) => {
-      const parsed = parseBoxShadowAndBorder(
-        null,
-        jsxAttributeFunctionCall(boxShadowAndBorderHelperFunctionName, [jsxAttributeValue(valid)]),
-      )
-      if (isRight(parsed)) {
-        expect(parsed.value).toEqual(expectedValidValue[i])
-      } else {
-        fail()
-      }
-    })
-
-    const poorlyFormedPropertyParameters: Array<ShadowAndBorderParams> = [
-      {
-        boxShadow: '1px 1px burple',
-      },
-      {
-        borderColor: 'burple',
-      },
-    ]
-
-    poorlyFormedPropertyParameters.forEach((poorlyFormedPropertyParameter, i) => {
-      const parsed = parseBoxShadowAndBorder(
-        null,
-        jsxAttributeFunctionCall(boxShadowAndBorderHelperFunctionName, [
-          jsxAttributeValue(poorlyFormedPropertyParameter),
-        ]),
-      )
-      expect(parsed).toEqual(
-        right({
-          type: 'unknown-helper-function-parameters',
-          value: jsxAttributeValue(poorlyFormedPropertyParameter),
-        }),
-      )
     })
   })
 })

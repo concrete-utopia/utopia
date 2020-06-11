@@ -492,7 +492,7 @@ const Canvas = {
           return TP.filterScenes(editor.selectedViews).map((target) =>
             EditorActions.toggleProperty(
               target,
-              toggleStyleProp(PP.create(['style', 'boxShadow']), toggleBorder),
+              toggleStyleProp(PP.create(['style', 'border']), toggleBorder),
             ),
           )
         } else {

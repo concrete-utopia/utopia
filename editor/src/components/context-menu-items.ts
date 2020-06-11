@@ -102,7 +102,7 @@ export const toggleBorderItem: ContextMenuItem<CanvasData> = {
     const actions = data.selectedViews.map((target) =>
       EditorActions.toggleProperty(
         target,
-        toggleStyleProp(PP.create(['style', 'boxShadow']), toggleBorder),
+        toggleStyleProp(PP.create(['style', 'border']), toggleBorder),
       ),
     )
     requireDispatch(dispatch)(actions, 'everyone')
