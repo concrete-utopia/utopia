@@ -1,4 +1,3 @@
-import { ShadowAndBorderParams } from 'utopia-api'
 import * as PP from '../shared/property-path'
 import { deepFreeze } from '../../utils/deep-freeze'
 import { forceRight, isLeft, isRight, right } from '../shared/either'
@@ -48,16 +47,7 @@ function sampleJsxAttributes(): JSXAttributes {
         ),
       ),
       jsxPropertyAssignment('border', jsxAttributeValue('1px solid green')),
-      jsxPropertyAssignment(
-        'boxShadow',
-        jsxAttributeFunctionCall('shadowAndBorder', [
-          jsxAttributeValue<ShadowAndBorderParams>({
-            boxShadow: '0 0 0 1px blue',
-            borderWidth: 0,
-            borderColor: '#000',
-          }),
-        ]),
-      ),
+      jsxPropertyAssignment('boxShadow', jsxAttributeValue('0 0 0 1px blue')),
     ]),
     top: jsxAttributeValue(0),
     left: jsxAttributeValue(50),
