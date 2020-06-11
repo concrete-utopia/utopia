@@ -2940,6 +2940,7 @@ export const UPDATE_FNS = {
         exportsInfo: action.codeResultCache.exportsInfo,
         propertyControlsInfo: action.codeResultCache.propertyControlsInfo,
         error: action.codeResultCache.error,
+        requireFn: action.codeResultCache.requireFn,
       },
     }
   },
@@ -4216,6 +4217,7 @@ export async function load(
     exportsInfo: [],
     propertyControlsInfo: {},
     error: null,
+    requireFn: require,
   }
   if (model.exportsInfo.length > 0) {
     workers.sendInitMessage(typeDefinitions, model.projectContents)
