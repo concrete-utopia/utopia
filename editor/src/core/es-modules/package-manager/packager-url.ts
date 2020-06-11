@@ -1,7 +1,10 @@
 import { NpmDependency } from '../../shared/npm-dependency-types'
+import { STATIC_BASE_URL } from '../../../common/env-vars'
 
 export function getPackagerUrl(dep: NpmDependency) {
-  return `/v1/javascript/packager/${encodeURIComponent(dep.name)}/${dep.version}.json`
+  return `${STATIC_BASE_URL}v1/javascript/packager/${encodeURIComponent(dep.name)}/${
+    dep.version
+  }.json`
 }
 
 export function getJsDelivrListUrl(dep: NpmDependency) {
