@@ -44,8 +44,6 @@ export const auth0Url = USE_AUTH0
 const COMMIT_HASH = process.env.REACT_APP_COMMIT_HASH || ''
 export const URL_HASH = COMMIT_HASH === '' ? 'nocommit' : COMMIT_HASH
 
-export const PACKAGER_ENTRY_POINT = '/packager/v2/'
-
 export function requireElectron() {
   if (PROBABLY_ELECTRON) {
     // TODO webpack should be able to just not import 'electron', but the 'utopia-runner' module somehow broke the previous hack :(

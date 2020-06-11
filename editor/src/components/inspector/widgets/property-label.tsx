@@ -33,7 +33,7 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
       data={null}
       items={contextMenuItems}
       style={{
-        color: metadata.controlStyles.mainColor,
+        color: 'black',
         overflow: 'hidden',
         ...props.style,
       }}
