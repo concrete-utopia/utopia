@@ -24,7 +24,7 @@ import { OptionChainControl } from '../../controls/option-chain-control'
 import { SelectControl, SelectOption } from '../../controls/select-control'
 import { StringControl } from '../../controls/string-control'
 import { addOnUnsetValues } from '../../common/context-menu-items'
-import { CSSColor, parseColor, printColor } from '../../common/css-utils'
+import { CSSColor, parseCSSColor, printColor } from '../../common/css-utils'
 import {
   InspectorInfo,
   useInspectorInfoSimpleUntyped,
@@ -201,7 +201,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
           />
         )
       case ControlType.Color:
-        const parsedColor = parseColor(value)
+        const parsedColor = parseCSSColor(value)
         return foldEither(
           (failureReason) => {
             return <div>{failureReason}</div>

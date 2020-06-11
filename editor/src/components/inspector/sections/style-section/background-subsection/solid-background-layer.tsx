@@ -13,7 +13,7 @@ import {
   fallbackOnEmptyInputValueToCSSEmptyValue,
   giveCSSColorNewAlpha,
   parseAlphaFromCSSColor,
-  parseColor,
+  parseCSSColor,
   isCSSSolidBackgroundLayer,
 } from '../../../common/css-utils'
 import { getIndexedSpliceArrayItem } from '../../../common/inspector-utils'
@@ -34,7 +34,7 @@ function getIndexedUpdateStringCSSBackgroundLayerSolidColor(index: number) {
     newValue: string,
     oldValue: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    const parsedColor = parseColor(newValue)
+    const parsedColor = parseCSSColor(newValue)
     let newCSSBackgroundLayers = [...oldValue]
     if (isRight(parsedColor)) {
       const oldIndexedValue = newCSSBackgroundLayers[index]

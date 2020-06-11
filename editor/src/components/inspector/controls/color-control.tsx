@@ -2,7 +2,7 @@ import React = require('react')
 import * as R from 'ramda'
 import { isRight } from '../../../core/shared/either'
 import { ColorPicker } from './color-picker'
-import { CSSColor, parseColor, cssColorToChromaColorOrDefault } from '../common/css-utils'
+import { CSSColor, parseCSSColor, cssColorToChromaColorOrDefault } from '../common/css-utils'
 import { StringControl } from './string-control'
 import { ControlStatus, ControlStyles } from '../common/control-status'
 import { UtopiaTheme } from 'uuiui'
@@ -29,7 +29,7 @@ export interface ColorControlProps {
 }
 
 export function updateStringCSSColor(newValue: string, oldValue: CSSColor) {
-  const parsed = parseColor(newValue)
+  const parsed = parseCSSColor(newValue)
   if (isRight(parsed)) {
     return parsed.value
   } else {

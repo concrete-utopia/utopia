@@ -15,7 +15,7 @@ import {
   CSSSolidBackgroundLayer,
   isCSSGradientBackgroundLayer,
   isCSSSolidBackgroundLayer,
-  parseColor,
+  parseCSSColor,
   printConicGradientBackgroundLayer,
   printLinearGradientBackgroundLayer,
   printRadialGradientBackgroundLayer,
@@ -48,7 +48,7 @@ interface BackgroundSolidOrGradientThumbnailControlProps extends BackgroundThumb
 }
 
 export function updateStringCSSColor(newValue: string, oldValue: CSSColor) {
-  const parsed = parseColor(newValue)
+  const parsed = parseCSSColor(newValue)
   if (isRight(parsed)) {
     return parsed.value
   } else {
@@ -60,7 +60,7 @@ export function updateStringCSSBackgroundItem(
   newValue: string,
   oldValue: CSSBackground,
 ): CSSBackground {
-  const parsed = parseColor(newValue)
+  const parsed = parseCSSColor(newValue)
   if (isRight(parsed)) {
     return { type: 'solid', enabled: true, color: parsed.value }
   } else {

@@ -12,7 +12,7 @@ import {
   StringControlDescription,
   IgnoreControlDescription,
 } from 'utopia-api'
-import { parseColor } from '../../components/inspector/common/css-utils'
+import { parseCSSColor } from '../../components/inspector/common/css-utils'
 import {
   descriptionParseError,
   objectFieldNotPresentParseError,
@@ -255,7 +255,7 @@ function parseStringValidateAsColor(value: unknown): ParseResult<string> {
       return invalidColorStringResult
     },
     (text) => {
-      const parsedColor = parseColor(text)
+      const parsedColor = parseCSSColor(text)
       return foldEither(
         (_) => {
           return invalidColorStringResult

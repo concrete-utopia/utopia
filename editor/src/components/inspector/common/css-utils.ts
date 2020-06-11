@@ -18,15 +18,12 @@ import {
   FramePin,
   isPercentPin,
   LayoutSystem,
-  RawBorderWidth,
-  RawSplitBorderWidth,
   ShadowAndBorderParams,
   TextSizing,
   UtopiaUtils,
 } from 'utopia-api'
 import { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import {
-  applicative2Either,
   bimapEither,
   Either,
   eitherToMaybe,
@@ -41,9 +38,9 @@ import {
 import {
   isJSXAttributeFunctionCall,
   isJSXAttributeNotFound,
+  isJSXAttributeValue,
   isPartOfJSXAttributeValue,
   isRegularJSXAttribute,
-  JSXAttributeFunctionCall,
   jsxAttributeFunctionCall,
   JSXAttributes,
   jsxAttributeValue,
@@ -66,8 +63,8 @@ import {
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import { PrimitiveType, ValueOf } from '../../../core/shared/utils'
 import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
-import Utils from '../../../utils/utils'
-import { updateBorderEnabled } from '../sections/style-section/border-subsection/border-subsection'
+import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
+import { Utils } from '../../../uuiui-deps'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
@@ -815,32 +812,92 @@ export interface CSSBoxShadow {
 
 export type CSSBoxShadows = ReadonlyArray<CSSBoxShadow>
 
-export type CSSBorderWidthSplit = [CSSNumber, CSSNumber, CSSNumber, CSSNumber]
-export type CSSBorderWidth = CSSNumber | CSSBorderWidthSplit
-
-export interface CSSBorder {
-  enabled: boolean
-  borderWidth?: CSSBorderWidth
-  borderColor?: CSSColor
+export const cssLineWidthKeywordValues = ['thin', 'medium', 'thick'] as const
+export type CSSLineWidthKeywordValue = NonNullable<typeof cssLineWidthKeywordValues[number]>
+export type CSSLineWidthValue = CSSNumber | CSSKeyword<CSSLineWidthKeywordValue>
+export interface CSSLineWidth {
+  type: 'line-width'
+  width: CSSLineWidthValue
 }
 
-export const defaultBorderWidth = cssNumber(1, 'px')
+export function cssLineWidth(width: CSSLineWidthValue): CSSLineWidth {
+  return {
+    type: 'line-width',
+    width,
+  }
+}
 
-export const defaultBorderWidthSplit: CSSBorderWidthSplit = [
-  defaultBorderWidth,
-  defaultBorderWidth,
-  defaultBorderWidth,
-  defaultBorderWidth,
-]
+export function isCSSLineWidth(
+  value: CSSColor | CSSLineWidth | CSSLineStyle,
+): value is CSSLineWidth {
+  return value.type === 'line-width'
+}
+
+export const cssLineStyleKeywordValues = [
+  'none',
+  'hidden',
+  'dotted',
+  'dashed',
+  'solid',
+  'double',
+  'groove',
+  'ridge',
+  'inset',
+  'outset',
+] as const
+export type CSSLineStyleKeywordValue = NonNullable<typeof cssLineStyleKeywordValues[number]>
+export type CSSLineStyleValue = CSSKeyword<CSSLineStyleKeywordValue>
+
+export interface CSSLineStyle {
+  type: 'line-style'
+  style: CSSLineStyleValue
+}
+
+export function cssLineStyle(style: CSSLineStyleValue): CSSLineStyle {
+  return {
+    type: 'line-style',
+    style,
+  }
+}
+
+export function isCSSLineStyle(
+  value: CSSColor | CSSLineWidth | CSSLineStyle,
+): value is CSSLineWidth {
+  return value.type === 'line-style'
+}
+
+export interface CSSBorder {
+  style?: CSSLineStyle
+  width?: CSSLineWidth
+  color?: CSSColor
+}
+
+export const defaultBorderWidth = cssNumber(0, null)
 
 export declare type Complete<T> = {
   [K in keyof T]-?: T[K]
 }
 
-export const defaultBorder: Complete<CSSBorder> = {
-  enabled: true,
-  borderWidth: { ...defaultBorderWidth },
-  borderColor: { ...blackHexCSSColor },
+export const defaultCSSBorder: Complete<CSSBorder> = {
+  style: cssLineStyle(cssKeyword('none')),
+  width: cssLineWidth({ ...defaultBorderWidth }),
+  color: { ...blackHexCSSColor },
+}
+
+function printBorder(value: CSSBorder): JSXAttributeValue<string> {
+  const color: string | null = value.color != null ? printColor(value.color) : null
+  const width: string | null = (() => {
+    if (value.width == null) {
+      return null
+    } else if (isCSSKeyword(value.width.width)) {
+      return value.width.width.value
+    } else {
+      return printCSSNumber(value.width.width) + ''
+    }
+  })()
+  const style: string | null = value.style?.style.value ?? null
+
+  return jsxAttributeValue(Utils.stripNulls([width, style, color]).join(' '))
 }
 
 export interface CSSBoxShadowAndBorder {
@@ -882,178 +939,34 @@ export const defaultBoxShadows: CSSBoxShadows = [{ ...defaultBoxShadow }]
 export const boxShadowAndBorderHelperFunctionName = UtopiaUtils.shadowAndBorder.name
 export const disabledFunctionName = UtopiaUtils.disabled.name
 
-export function parseBoxShadowAndBorder(
-  _: unknown,
-  attribute: ModifiableAttribute | null,
-): Either<string, CSSBoxShadowAndBorderOrUnknown> {
-  if (attribute == null) {
-    return left('found no boxShadow')
-  }
-  switch (attribute.type) {
-    case 'ATTRIBUTE_FUNCTION_CALL':
-      const functionData = attribute
-      if (functionData.functionName === boxShadowAndBorderHelperFunctionName) {
-        const paramAttribute = functionData.parameters[0]
-        if (paramAttribute == null) {
-          return left('found no parameters for function call')
+export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<string> {
+  let lastEnabledPropertyReached = false
+  return jsxAttributeValue(
+    [...boxShadows]
+      .reverse()
+      .map((boxShadow) => {
+        const comma = lastEnabledPropertyReached
+        if (!lastEnabledPropertyReached && boxShadow.enabled) {
+          lastEnabledPropertyReached = true
         }
-        const functionAttributeValue = jsxSimpleAttributeToValue(paramAttribute)
-        if (isLeft(functionAttributeValue)) {
-          return left(`Can't parse parameters`)
-        } else {
-          const value = functionAttributeValue.value as Parameters<
-            typeof UtopiaUtils.shadowAndBorder
-          >[0]
-          if (typeof value === 'object') {
-            let returnObject: CSSBoxShadowAndBorder = { type: 'box-shadow-and-border' }
-            const parsedBoxShadow: Either<string, CSSBoxShadows> =
-              value.boxShadow != null
-                ? parseBoxShadow(value.boxShadow)
-                : left('No box shadow found')
-            if (isRight(parsedBoxShadow)) {
-              returnObject.boxShadows = parsedBoxShadow.value
-            } else if (value.boxShadow != null) {
-              return right(cssUnknownFunctionParameters(value))
-            }
-            const parsedBorder = parseBorder(
-              value.borderStyle,
-              value.borderWidth,
-              value.borderColor,
-            )
-            if (isRight(parsedBorder)) {
-              if (
-                parsedBorder.value.enabled != null &&
-                parsedBorder.value.borderColor != null &&
-                parsedBorder.value.borderWidth != null
-              ) {
-                returnObject.border = parsedBorder.value
-              }
-            } else if (
-              value.borderStyle != null ||
-              value.borderWidth != null ||
-              value.borderColor != null
-            ) {
-              return right(cssUnknownFunctionParameters(value))
-            }
-            return right(returnObject)
-          } else {
-            return left(`Invalid borderParameter ${JSON.stringify(value, null, 2)}`)
-          }
-        }
-      } else {
-        return left(`Unexpected function name as boxShadow parameter: ${functionData.functionName}`)
-      }
-    default:
-      return left(`Couldn't parse attribute ${attribute.type}`)
-  }
-}
-
-function parseBorderWidth(borderWidth: RawBorderWidth): Either<string, CSSBorderWidth> {
-  const parseFn = (value: number | string) => parseCSSLength(value)
-  if (Array.isArray(borderWidth)) {
-    if (borderWidth.length === 4) {
-      return traverseEither(parseFn, borderWidth) as Either<string, CSSBorderWidthSplit>
-    } else {
-      return left(
-        `Unable to parse border width ${JSON.stringify(
-          borderWidth,
-        )} - must be an array of 4 values`,
-      )
-    }
-  } else {
-    return parseFn(borderWidth)
-  }
-}
-
-export function parseBorder(
-  borderStyle?: 'solid' | 'none',
-  borderWidth?: RawBorderWidth,
-  borderColor?: string,
-): Either<string, CSSBorder> {
-  const parsedColor: Either<string, CSSColor | null> =
-    borderColor == null ? right(null) : parseColor(borderColor)
-  const parsedBorderWidth: Either<string, CSSBorderWidth | null> =
-    borderWidth == null ? right(null) : parseBorderWidth(borderWidth)
-
-  return applicative2Either(
-    (color, width) => {
-      let returnObj: CSSBorder = {
-        enabled: borderStyle === 'solid',
-      }
-      if (color != null) {
-        returnObj.borderColor = color
-      }
-      if (width != null) {
-        returnObj.borderWidth = width
-      }
-      return returnObj
-    },
-    parsedColor,
-    parsedBorderWidth,
+        const { inset, offsetX, offsetY, blurRadius, spreadRadius, color } = boxShadow
+        const parts = Utils.stripNulls([
+          inset ? 'inset' : null,
+          printCSSNumber(offsetX),
+          printCSSNumber(offsetY),
+          blurRadius.default && spreadRadius.default ? null : printCSSNumber(blurRadius.value),
+          spreadRadius.default ? null : printCSSNumber(spreadRadius.value),
+          printColor(color),
+        ])
+        return printEnabled(printComma(`${parts.join(' ')}`, comma), boxShadow.enabled)
+      })
+      .reverse()
+      .join(' '),
   )
 }
 
-export function printBoxShadow(boxShadows: CSSBoxShadows): string {
-  let lastEnabledPropertyReached = false
-  return [...boxShadows]
-    .reverse()
-    .map((boxShadow) => {
-      const comma = lastEnabledPropertyReached
-      if (!lastEnabledPropertyReached && boxShadow.enabled) {
-        lastEnabledPropertyReached = true
-      }
-      const { inset, offsetX, offsetY, blurRadius, spreadRadius, color } = boxShadow
-      const parts = Utils.stripNulls([
-        inset ? 'inset' : null,
-        printCSSNumber(offsetX),
-        printCSSNumber(offsetY),
-        blurRadius.default && spreadRadius.default ? null : printCSSNumber(blurRadius.value),
-        spreadRadius.default ? null : printCSSNumber(spreadRadius.value),
-        printColor(color),
-      ])
-      return printEnabled(printComma(`${parts.join(' ')}`, comma), boxShadow.enabled)
-    })
-    .reverse()
-    .join(' ')
-}
-
-export function printBoxShadowAndBorder(
-  boxShadowAndBorder: CSSBoxShadowAndBorderOrUnknown,
-): JSXAttributeFunctionCall {
-  let newValue: ShadowAndBorderParams = {}
-  if (isCSSUnknownFunctionParameters(boxShadowAndBorder)) {
-    return jsxAttributeFunctionCall(boxShadowAndBorderHelperFunctionName, [
-      jsxAttributeValue<ShadowAndBorderParams>(newValue),
-    ])
-  } else {
-    if (boxShadowAndBorder.border != null) {
-      if (boxShadowAndBorder.border.enabled != null) {
-        newValue.borderStyle = boxShadowAndBorder.border.enabled ? 'solid' : 'none'
-      }
-      const width = boxShadowAndBorder.border.borderWidth
-      if (width != null) {
-        if (Array.isArray(width)) {
-          newValue.borderWidth = width.map(printCSSNumber) as RawSplitBorderWidth
-        } else {
-          newValue.borderWidth = printCSSNumber(width)
-        }
-      }
-      const CSSColor = boxShadowAndBorder.border.borderColor
-      if (CSSColor != null) {
-        newValue.borderColor = printColor(CSSColor)
-      }
-    }
-    if (boxShadowAndBorder.boxShadows != null && boxShadowAndBorder.boxShadows.length > 0) {
-      newValue.boxShadow = printBoxShadow(boxShadowAndBorder.boxShadows)
-    }
-    return jsxAttributeFunctionCall(boxShadowAndBorderHelperFunctionName, [
-      jsxAttributeValue<ShadowAndBorderParams>(newValue),
-    ])
-  }
-}
-
-export function parseBoxShadow(boxShadow: string | undefined): Either<string, CSSBoxShadows> {
-  if (boxShadow != null) {
+export function parseBoxShadow(boxShadow: unknown): Either<string, CSSBoxShadows> {
+  if (typeof boxShadow === 'string') {
     RegExpLibrary.boxShadow.lastIndex = 0
     let matches = RegExpLibrary.boxShadow.exec(boxShadow)
     let boxShadows: Array<CSSBoxShadow> = []
@@ -1072,7 +985,7 @@ export function parseBoxShadow(boxShadow: string | undefined): Either<string, CS
         isRight(parsedSpreadRadius) ? parsedSpreadRadius.value : { ...cssPixelLengthZero },
         !isRight(parsedSpreadRadius),
       )
-      const parsedColor = parseColor(matches[7])
+      const parsedColor = parseCSSColor(matches[7])
       if (isRight(parsedOffsetX) && isRight(parsedOffsetY) && isRight(parsedColor)) {
         const offsetX = parsedOffsetX.value
         const offsetY = parsedOffsetY.value
@@ -1969,6 +1882,23 @@ export interface CSSColorHSL {
   percentageAlpha: boolean
 }
 
+export function cssColorHSL(
+  h: number,
+  s: number,
+  l: number,
+  a: number,
+  percentageAlpha: boolean,
+): CSSColorHSL {
+  return {
+    type: 'HSL',
+    h,
+    s,
+    l,
+    a,
+    percentageAlpha,
+  }
+}
+
 export interface CSSColorRGB {
   type: 'RGB'
   r: number
@@ -1977,6 +1907,25 @@ export interface CSSColorRGB {
   a: number
   percentageAlpha: boolean
   percentagesUsed: boolean
+}
+
+export function cssColorRGB(
+  r: number,
+  g: number,
+  b: number,
+  a: number,
+  percentageAlpha: boolean,
+  percentagesUsed: boolean,
+): CSSColorRGB {
+  return {
+    type: 'RGB',
+    r,
+    g,
+    b,
+    a,
+    percentageAlpha,
+    percentagesUsed,
+  }
 }
 
 export type CSSColor = CSSColorKeyword | CSSColorHex | CSSColorHSL | CSSColorRGB
@@ -1997,6 +1946,17 @@ export function isHSL(color: CSSColor): color is CSSColorHSL {
 
 export function isRGB(color: CSSColor): color is CSSColorRGB {
   return color.type === 'RGB'
+}
+
+export function isCSSColor(value: unknown): value is CSSColor {
+  return (
+    typeof value === 'object' &&
+    value != null &&
+    ((value as any).type === 'Keyword' ||
+      (value as any).type === 'Hex' ||
+      (value as any).type === 'HSL' ||
+      (value as any).type === 'RGB')
+  )
 }
 
 export function cssColorToChromaColorOrDefault(
@@ -2122,7 +2082,7 @@ export function parseBackgroundColor(color?: unknown): Either<string, CSSSolidCo
     let parsed: Either<string, CSSColor>
     const matches = color.match(solidColorRegExp)
     if (matches != null) {
-      parsed = parseColor(matches[2])
+      parsed = parseCSSColor(matches[2])
       const enabled = matches[1] === undefined && matches[3] === undefined
       if (isRight(parsed)) {
         return right(cssSolidColor(parsed.value, enabled))
@@ -2147,7 +2107,7 @@ function printBackgroundColor(
 const matchColorKeyword = combineRegExp(['^', '(', RegExpLibrary.colorKeyword, ')', '$'])
 const matchColorHex = combineRegExp(['^', RegExpLibrary.colorHexOptionalOctothorp, '$'])
 
-export function parseColor(color: unknown): Either<string, CSSColor> {
+export function parseCSSColor(color: unknown): Either<string, CSSColor> {
   if (color == null) {
     return left('No color value provided.')
   }
@@ -2193,7 +2153,7 @@ export function printColorToJsx(color: CSSColor | undefined): JSXAttributeValue<
 }
 
 export function cssColor(value: string, defaultColor: CSSColor = { ...defaultCSSColor }): CSSColor {
-  const parsedColor = parseColor(value)
+  const parsedColor = parseCSSColor(value)
   if (isRight(parsedColor)) {
     return parsedColor.value
   } else {
@@ -2755,6 +2715,22 @@ export function isParsedCurlyBrace(value: unknown): value is ParsedCurlyBrace<an
   return typeof value === 'object' && value != null && (value as any).type === 'parsed-curly-brace'
 }
 
+export interface ParsedDoubleBar<T> {
+  type: 'parsed-double-bar'
+  value: Array<T>
+}
+
+export function parsedDoubleBar<T>(value: Array<T>): ParsedDoubleBar<T> {
+  return {
+    type: 'parsed-double-bar',
+    value,
+  }
+}
+
+export function isParsedDoubleBar(value: unknown): value is ParsedDoubleBar<any> {
+  return typeof value === 'object' && value != null && (value as any).type === 'parsed-double-bar'
+}
+
 export interface HTMLImageElementMetadata {
   type: 'img-element-metadata'
   url: string
@@ -2970,7 +2946,7 @@ function parseGradientStops(gradient: string): Either<string, Array<CSSGradientS
   RegExpLibrary.gradientColorStopValues.lastIndex = 0
   let stopMatches = RegExpLibrary.gradientColorStopValues.exec(gradient)
   while (stopMatches != null) {
-    const parsedColor = parseColor(stopMatches[1])
+    const parsedColor = parseCSSColor(stopMatches[1])
     const parsedPosition = parseCSSLengthPercent(stopMatches[27]) // TODO: make solids not have any position
     if (isRight(parsedColor) && isRight(parsedPosition)) {
       const stopResult: CSSGradientStop = {
@@ -3356,7 +3332,7 @@ export function parseTextShadow(textShadow: unknown): Either<string, CSSTextShad
         isRight(parsedBlurRadius) ? parsedBlurRadius.value : { ...cssPixelLengthZero },
         !isRight(parsedBlurRadius),
       )
-      const parsedColor = parseColor(matches[5])
+      const parsedColor = parseCSSColor(matches[5])
       if (isRight(parsedOffsetX) && isRight(parsedOffsetY) && isRight(parsedColor)) {
         const offsetX = parsedOffsetX.value
         const offsetY = parsedOffsetY.value
@@ -3556,71 +3532,41 @@ export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribut
   }
 }
 
-export function toggleBorder(attribute: ModifiableAttribute): ModifiableAttribute {
-  const result = jsxFunctionAttributeToRawValue(attribute)
-  if (isLeft(result)) {
-    return printBoxShadowAndBorder({
-      type: 'box-shadow-and-border',
-      border: defaultBorder,
-    })
-  } else {
-    if (
-      result.value.functionName === boxShadowAndBorderHelperFunctionName &&
-      result.value.parameters.length === 1
-    ) {
-      const currentValue = parseBoxShadowAndBorder(null, attribute)
-      if (isLeft(currentValue) || isCSSUnknownFunctionParameters(currentValue.value)) {
-        return attribute
-      } else {
-        const value = currentValue.value
-        const borderEnabled = value.border != null && value.border.enabled
-        return printBoxShadowAndBorder(updateBorderEnabled(!borderEnabled, value))
-      }
-    } else {
+export function toggleBorder<T extends ModifiableAttribute>(
+  attribute: T,
+): JSXAttributeValue<string> | T {
+  if (isJSXAttributeValue(attribute) && typeof attribute.value === 'string') {
+    const currentValue = parseBorder(attribute.value)
+    if (isLeft(currentValue) || isCSSUnknownFunctionParameters(currentValue.value)) {
       return attribute
+    } else {
+      const value = currentValue.value
+      return printBorder(value)
     }
+  } else {
+    return attribute
   }
 }
 
 export function toggleShadow(attribute: ModifiableAttribute): ModifiableAttribute {
   const result = jsxFunctionAttributeToRawValue(attribute)
-  if (isLeft(result)) {
-    return printBoxShadowAndBorder({
-      type: 'box-shadow-and-border',
-      boxShadows: defaultBoxShadows,
-    })
-  } else {
-    if (
-      result.value.functionName === boxShadowAndBorderHelperFunctionName &&
-      result.value.parameters.length === 1
-    ) {
-      const currentValue = parseBoxShadowAndBorder(null, attribute)
-      if (isLeft(currentValue) || isCSSUnknownFunctionParameters(currentValue.value)) {
-        return attribute
-      } else {
-        const value = currentValue.value
-        if (value.boxShadows == null) {
-          return printBoxShadowAndBorder({
-            ...value,
-            boxShadows: defaultBoxShadows,
-          })
-        } else {
-          const boxShadowEnabled = value.boxShadows[0]?.enabled ?? true
-          const updatedBoxShadows = value.boxShadows.map((boxShadow) => {
-            return {
-              ...boxShadow,
-              enabled: !boxShadowEnabled,
-            }
-          })
-          return printBoxShadowAndBorder({
-            ...value,
-            boxShadows: updatedBoxShadows,
-          })
-        }
-      }
-    } else {
+  if (isRight(result) && typeof result.value === 'string') {
+    const currentValue = parseBoxShadow(result.value)
+    if (isLeft(currentValue) || isCSSUnknownFunctionParameters(currentValue.value)) {
       return attribute
+    } else {
+      const value = currentValue.value
+      const boxShadowEnabled = value[0]?.enabled ?? true
+      const updatedBoxShadows: CSSBoxShadows = value.map((boxShadow) => {
+        return {
+          ...boxShadow,
+          enabled: !boxShadowEnabled,
+        }
+      })
+      return jsxAttributeValue(printBoxShadow(updatedBoxShadows))
     }
+  } else {
+    return attribute
   }
 }
 
@@ -3801,7 +3747,8 @@ export interface ParsedCSSProperties {
   backgroundImage: CSSBackgrounds
   backgroundSize: CSSBackgroundSize
   borderRadius: CSSBorderRadius
-  boxShadow: CSSBoxShadowAndBorderOrUnknown
+  border: CSSBorder
+  boxShadow: CSSBoxShadows
   color: CSSColor
   fontFamily: CSSFontFamily
   fontSize: CSSFontSize
@@ -3878,7 +3825,8 @@ export const cssEmptyValues: ParsedCSSProperties = {
       unit: 'px',
     },
   },
-  boxShadow: { type: 'box-shadow-and-border' },
+  border: { ...defaultCSSBorder },
+  boxShadow: [],
   color: {
     type: 'Hex',
     hex: '#444444',
@@ -3987,8 +3935,9 @@ const cssParsers: CSSParsers = {
   backgroundImage: parseBackgroundImage,
   backgroundSize: parseBackgroundSize,
   borderRadius: parseBorderRadius,
-  boxShadow: parseBoxShadowAndBorder,
-  color: parseColor,
+  boxShadow: parseBoxShadow,
+  border: parseBorder,
+  color: parseCSSColor,
   fontFamily: parseFontFamily,
   fontSize: parseCSSLength,
   fontStyle: parseFontStyle,
@@ -3999,7 +3948,7 @@ const cssParsers: CSSParsers = {
   opacity: parseCSSUnitlessPercent,
   overflow: parseOverflow,
   textAlign: parseTextAlign,
-  textDecorationColor: parseColor,
+  textDecorationColor: parseCSSColor,
   textDecorationLine: parseTextDecorationLine,
   textDecorationStyle: parseTextDecorationStyle,
   textShadow: parseTextShadow,
@@ -4047,7 +3996,8 @@ const cssPrinters: CSSPrinters = {
   backgroundSize: printBackgroundSize,
   mixBlendMode: printMixBlendMode,
   borderRadius: printBorderRadius,
-  boxShadow: printBoxShadowAndBorder,
+  border: printBorder,
+  boxShadow: printBoxShadow,
   color: printColorToJsx,
   fontFamily: printFontFamily,
   fontSize: printCSSNumberAsAttributeValue,
