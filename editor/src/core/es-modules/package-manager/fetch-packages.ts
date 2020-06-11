@@ -21,7 +21,7 @@ let jsDelivrCache: { [key: string]: JsdelivrResponse } = {}
 
 const PACKAGES_TO_SKIP = ['utopia-api', 'react', 'react-dom', 'uuiui', 'uuiui-deps']
 const NR_RETRIES = 3
-const RETRY_FREQ_MS = 10000
+const RETRY_FREQ_MS = process.env.JEST_WORKER_ID == undefined ? 10000 : 0
 
 function extractNodeModulesFromPackageResponse(response: PackagerServerResponse): NodeModules {
   return objectMap((file) => esCodeFile(file.content, null), response.contents)
