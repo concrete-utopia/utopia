@@ -97,6 +97,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RENAME_COMPONENT':
     case 'PASTE_JSX_ELEMENTS':
     case 'TOGGLE_PROPERTY':
+    case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':
     case 'WRAP_IN_VIEW':
     case 'UNWRAP_GROUP_OR_VIEW':

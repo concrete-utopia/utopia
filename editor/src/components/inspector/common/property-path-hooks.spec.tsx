@@ -904,22 +904,22 @@ describe('Integration Test: boxShadow property', () => {
     return result.current
   }
 
-  it('poorly formed utopia helper shows up as unknown', () => {
+  it('poorly formed shows up as unknown', () => {
     const hookResult = getBoxShadowHookResult(
-      [`{boxShadow: '1px 1px burple' })`],
+      [`{ boxShadow: '1px 1px burple' }`],
       [{ boxShadow: '1px 1px burple' }],
     )
     const expectedControlStatus: ControlStatus = 'simple-unknown-css'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
-  it('multiselected poorly formed utopia helper shows up as unknown', () => {
+  it('multiselected poorly formed shows up as unknown', () => {
     const hookResult = getBoxShadowHookResult(
       [
-        `{boxShadow: '1px 1px burple' })`,
-        `{boxShadow: '1px 1px purple' })`,
-        `{boxShadow: '1px 1px beeple' })`,
-        `{boxShadow: '1px 1px boople' })`,
+        `{ boxShadow: '1px 1px burple' }`,
+        `{ boxShadow: '1px 1px purple' }`,
+        `{ boxShadow: '1px 1px beeple' }`,
+        `{ boxShadow: '1px 1px boople' }`,
       ],
       [
         { boxShadow: '1px 1px burple' },
@@ -932,22 +932,22 @@ describe('Integration Test: boxShadow property', () => {
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
-  it('utopia helper shows up as simple', () => {
+  it('shows up as simple', () => {
     const hookResult = getBoxShadowHookResult(
-      [`{boxShadow: '0 0 0 1px #ff00ff' })`],
+      [`{ boxShadow: '0 0 0 1px #ff00ff' }`],
       [{ boxShadow: '0 0 0 1px #ff00ff' }],
     )
     const expectedControlStatus: ControlStatus = 'simple'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
-  it('utopia helper with a controlled parameter shows up as controlled', () => {
+  it('with a controlled parameter shows up as controlled', () => {
     const hookResult = getBoxShadowHookResult([`{ boxShadow: 5 + 15 }`], [{ boxShadow: '20' }])
     const expectedControlStatus: ControlStatus = 'controlled'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
-  it('multiselect, utopia helper with a controlled parameter shows up as controlled', () => {
+  it('multiselect, with a controlled parameter shows up as controlled', () => {
     const hookResult = getBoxShadowHookResult(
       [`{ boxShadow: 5 + 15 }`, `{ boxShadow: 5 + 15 }`],
       [{ boxShadow: '20' }, { boxShadow: '20' }],
@@ -956,30 +956,12 @@ describe('Integration Test: boxShadow property', () => {
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
-  it('multiselect with a mixed value, utopia helper with a controlled parameter shows up as controlled', () => {
+  it('multiselect with a mixed value, with a controlled parameter shows up as controlled', () => {
     const hookResult = getBoxShadowHookResult(
       [`{ boxShadow: 5 + 15 }`, `{ boxShadow: 5 + 25 }`],
       [{ boxShadow: '20' }, { boxShadow: '30' }],
     )
     const expectedControlStatus: ControlStatus = 'multiselect-controlled'
-    expect(hookResult.controlStatus).toEqual(expectedControlStatus)
-  })
-
-  it('multiselect, utopia helper same values', () => {
-    const hookResult = getBoxShadowHookResult(
-      [`{boxShadow: '0 0 0 1px #ff00ff' })`, `{boxShadow: '0 0 0 1px #ff00ff' })`],
-      [{ boxShadow: '0 0 0 1px #ff00ff' }, { boxShadow: '0 0 0 1px #ff00ff' }],
-    )
-    const expectedControlStatus: ControlStatus = 'multiselect-identical-simple'
-    expect(hookResult.controlStatus).toEqual(expectedControlStatus)
-  })
-
-  it('multiselect, utopia helper different values', () => {
-    const hookResult = getBoxShadowHookResult(
-      [`{boxShadow: '0 0 0 1px #ff00ff' })`, `{boxShadow: '0 0 0 1px #000' })`],
-      [{ boxShadow: '0 0 0 1px #ff00ff' }, { boxShadow: '0 0 0 1px #000' }],
-    )
-    const expectedControlStatus: ControlStatus = 'multiselect-mixed-simple-or-unset'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 })

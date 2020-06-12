@@ -121,10 +121,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View
-            style={{
-              backgroundColor: '#DDDDDD',
-              boxShadow: '0px 0px #000, 0px 0px #000',
-            }}
+            style={{ backgroundColor: '#DDDDDD', boxShadow: '0px 0px #000, 0px 0px #000' }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
           />
@@ -146,10 +143,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View
-            style={{
-              backgroundColor: '#DDDDDD',
-              boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/',
-            }}
+            style={{ backgroundColor: '#DDDDDD', boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/' }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
           />
@@ -162,10 +156,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
           <View
-            style={{
-              backgroundColor: '#DDDDDD',
-              boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/',
-            }}
+            style={{ backgroundColor: '#DDDDDD', boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/' }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
           />

@@ -517,7 +517,7 @@ const Canvas = {
       case 'f':
         if (noModifier && editor.selectedViews.length > 0) {
           return TP.filterScenes(editor.selectedViews).map((target) =>
-            EditorActions.toggleProperty(
+            EditorActions.DEPRECATED_toggleEnabledProperty(
               target,
               toggleStyleProp(PP.create(['style', 'backgroundColor']), toggleSimple),
             ),

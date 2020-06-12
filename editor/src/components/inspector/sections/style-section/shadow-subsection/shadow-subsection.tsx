@@ -24,6 +24,8 @@ import {
   EmptyInputValue,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
   fallbackOnEmptyInputValueToCSSEmptyValue,
+  cssPixelLength,
+  cssDefault,
 } from '../../../common/css-utils'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import {
@@ -67,7 +69,7 @@ function getIndexedUpdateShadowOffsetX(index: number) {
     let newBoxShadows = [...oldValue]
     newBoxShadows[index] = {
       ...newBoxShadows[index],
-      offsetX: fallbackOnEmptyInputValueToCSSEmptyValue(defaultBoxShadow.offsetX, newOffsetX),
+      offsetX: fallbackOnEmptyInputValueToCSSEmptyValue(cssPixelLength(0), newOffsetX),
     }
     return newBoxShadows
   }
@@ -81,7 +83,7 @@ function getIndexedUpdateShadowOffsetY(index: number) {
     let newBoxShadows = [...oldValue]
     newBoxShadows[index] = {
       ...newBoxShadows[index],
-      offsetY: fallbackOnEmptyInputValueToCSSEmptyValue(defaultBoxShadow.offsetY, newOffsetY),
+      offsetY: fallbackOnEmptyInputValueToCSSEmptyValue(cssPixelLength(0), newOffsetY),
     }
     return newBoxShadows
   }
@@ -96,7 +98,7 @@ function getIndexedUpdateShadowBlurRadius(index: number) {
     newBoxShadows[index] = {
       ...newBoxShadows[index],
       blurRadius: fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
-        defaultBoxShadow.blurRadius,
+        cssDefault(cssPixelLength(0)),
         newBlurRadius,
       ),
     }
@@ -113,7 +115,7 @@ function getIndexedUpdateShadowSpreadRadius(index: number) {
     newBoxShadows[index] = {
       ...newBoxShadows[index],
       spreadRadius: fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
-        defaultBoxShadow.spreadRadius,
+        cssDefault(cssPixelLength(0)),
         newSpreadRadius,
       ),
     }
@@ -273,7 +275,7 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
   const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight)
 
   const contextMenuItems = utils.stripNulls([
-    value.length > 0 ? addOnUnsetValues(['boxShadow parameter'], onUnsetValues) : null,
+    value.length > 0 ? addOnUnsetValues(['boxShadow'], onUnsetValues) : null,
   ])
 
   if (!isVisible) {

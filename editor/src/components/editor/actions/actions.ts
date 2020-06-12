@@ -278,6 +278,7 @@ import {
   ToggleInterfaceDesignerAdditionalControls,
   TogglePane,
   ToggleProperty,
+  DEPRECATEDToggleEnabledProperty,
   ToggleCanvasIsLive,
   TransientActions,
   Undo,
@@ -3580,10 +3581,12 @@ export const UPDATE_FNS = {
       },
     }
   },
-  TOGGLE_PROPERTY: (
-    action: ToggleProperty,
+  TOGGLE_PROPERTY: (action: ToggleProperty, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editor)
+  },
+  DEPRECATED_TOGGLE_ENABLED_PROPERTY: (
+    action: DEPRECATEDToggleEnabledProperty,
     editor: EditorModel,
-    derived: DerivedState,
   ): EditorModel => {
     const editorWithImports = modifyOpenParseSuccess((success) => {
       return {
@@ -5070,6 +5073,17 @@ export function toggleProperty(
 ): ToggleProperty {
   return {
     action: 'TOGGLE_PROPERTY',
+    target: target,
+    togglePropValue: togglePropValue,
+  }
+}
+
+export function DEPRECATED_toggleEnabledProperty(
+  target: InstancePath,
+  togglePropValue: (element: JSXElement) => JSXElement,
+): DEPRECATEDToggleEnabledProperty {
+  return {
+    action: 'deprecated_TOGGLE_ENABLED_PROPERTY',
     target: target,
     togglePropValue: togglePropValue,
   }

@@ -916,7 +916,7 @@ function printBorder(value: CSSBorder): JSXAttributeValue<string> {
     } else if (isCSSKeyword(value.width.value)) {
       return value.width.value.value
     } else {
-      return printCSSNumber(value.width.value) + ''
+      return cssNumberToString(value.width.value)
     }
   })()
   const style: CSSLineStyleKeywordValue | null = value.style?.value.value ?? null
@@ -931,18 +931,18 @@ export declare type Complete<T> = {
 export const defaultBoxShadow: CSSBoxShadow = {
   type: 'box-shadow',
   enabled: true,
-  offsetX: { ...cssPixelLengthZero },
-  offsetY: { ...cssPixelLengthZero },
+  offsetX: cssPixelLength(0),
+  offsetY: cssPixelLength(2),
   blurRadius: {
-    default: true,
-    value: { ...cssPixelLengthZero },
+    default: false,
+    value: cssPixelLength(4),
   },
   spreadRadius: {
     default: true,
     value: { ...cssPixelLengthZero },
   },
   inset: false,
-  color: { ...blackHexCSSColor },
+  color: cssColorRGB(0, 0, 0, 0.12, false, false),
 }
 
 export const defaultBoxShadows: CSSBoxShadows = [{ ...defaultBoxShadow }]
@@ -3555,7 +3555,7 @@ export function toggleShadow(attribute: ModifiableAttribute): ModifiableAttribut
       return printBoxShadow(parsed.value.map((v) => toggleShadowEnabled(v)))
     }
   }
-  return printBorder({ ...defaultCSSBorder })
+  return printBoxShadow([{ ...defaultBoxShadow }])
 }
 
 export function toggleStyleProp(
