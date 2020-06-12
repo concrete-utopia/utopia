@@ -20,6 +20,8 @@ let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 let jsDelivrCache: { [key: string]: JsdelivrResponse } = {}
 
 const PACKAGES_TO_SKIP = ['utopia-api', 'react', 'react-dom', 'uuiui', 'uuiui-deps']
+const NR_RETRIES = 3
+const RETRY_FREQ_MS = process.env.JEST_WORKER_ID == undefined ? 10000 : 0
 
 function extractNodeModulesFromPackageResponse(response: PackagerServerResponse): NodeModules {
   return objectMap((file) => esCodeFile(file.content, null), response.contents)
@@ -42,8 +44,30 @@ export function resetDepPackagerCache() {
   depPackagerCache = {}
 }
 
-// TODO this function is ugly and probably should be split to two functions
-// Update: there will be a single request for js and d.ts files, so this will be simplified anyway
+async function fetchPackagerResponseWithRetry(dep: NpmDependency): Promise<NodeModules | null> {
+  const wait = (ms: number) => {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
+  const fetchPackagerResponseWithRetryInner = async (
+    dependency: NpmDependency,
+    nrRetries: number,
+    retryFreqMs: number,
+  ): Promise<NodeModules | null> => {
+    try {
+      return await fetchPackagerResponse(dependency)
+    } catch (e) {
+      if (nrRetries < 1) {
+        throw e
+      }
+      await wait(retryFreqMs)
+      return await fetchPackagerResponseWithRetryInner(dependency, nrRetries - 1, retryFreqMs)
+    }
+  }
+
+  return await fetchPackagerResponseWithRetryInner(dep, NR_RETRIES, RETRY_FREQ_MS)
+}
+
 async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | null> {
   if (PACKAGES_TO_SKIP.indexOf(dep.name) > -1) {
     return null
@@ -60,6 +84,8 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
       depPackagerCache[packagesUrl] = resp
       const convertedResult = extractNodeModulesFromPackageResponse(resp)
       result = convertedResult
+    } else {
+      throw new Error('Packager response error')
     }
   }
   if (jsDelivrCache[jsdelivrUrl] != null) {
@@ -87,11 +113,16 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
   return result
 }
 
-export async function fetchNodeModules(newDeps: Array<NpmDependency>): Promise<NodeModules> {
+export async function fetchNodeModules(
+  newDeps: Array<NpmDependency>,
+  shouldRetry: boolean = true,
+): Promise<NodeModules> {
   const nodeModulesArr = await Promise.all(
     newDeps.map(async (newDep) => {
       try {
-        const packagerResponse = await fetchPackagerResponse(newDep)
+        const packagerResponse = shouldRetry
+          ? await fetchPackagerResponseWithRetry(newDep)
+          : await fetchPackagerResponse(newDep)
         if (packagerResponse != null) {
           /**
            * to avoid clashing transitive dependencies,
