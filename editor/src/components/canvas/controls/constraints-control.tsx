@@ -20,10 +20,12 @@ export class ConstraintsControls extends React.Component<ConstraintsControlProps
       this.props.componentMetadata,
       this.props.selectedViews,
     )
+    const validResizeDragState =
+      this.props.dragState == null || this.props.dragState.type === 'RESIZE_DRAG_STATE'
 
     return (
       <>
-        {anySelectedElementIsYogaLayouted || anyUnknownElements ? null : (
+        {anySelectedElementIsYogaLayouted || anyUnknownElements || !validResizeDragState ? null : (
           <MultiselectResizeControl
             {...this.props}
             dragState={

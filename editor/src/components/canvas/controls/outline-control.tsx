@@ -10,6 +10,8 @@ import { Outline } from './outline'
 import { anyInstanceYogaLayouted } from './select-mode/yoga-utils'
 import { MarginControls } from './margin-controls'
 import { PaddingControls } from './padding-controls'
+import { MoveDragState, ResizeDragState } from '../canvas-types'
+import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -38,7 +40,42 @@ export function getSelectionColor(
   }
 }
 
-export class OutlineControls extends React.Component<ControlProps> {
+export interface OutlineControlsProps extends ControlProps {
+  dragState: MoveDragState | ResizeDragState | null
+}
+
+export class OutlineControls extends React.Component<OutlineControlsProps> {
+  getDragStateFrame = (target: TemplatePath): CanvasRectangle | null => {
+    const dragState = this.props.dragState
+    const targetIsDragged = TP.containsPath(target, dragState?.draggedElements ?? [])
+
+    if (dragState == null || dragState.drag == null || !targetIsDragged) {
+      return null
+    } else {
+      switch (dragState.type) {
+        case 'MOVE_DRAG_STATE':
+          const startingFrameAndTarget = dragState.originalFrames.find((frameAndTarget) =>
+            TP.pathsEqual(frameAndTarget.target, target),
+          )
+          if (startingFrameAndTarget == null || startingFrameAndTarget.frame == null) {
+            return null
+          } else {
+            return offsetRect(startingFrameAndTarget.frame, dragState.drag)
+          }
+        case 'RESIZE_DRAG_STATE':
+          return null
+        default:
+          const _exhaustiveCheck: never = dragState
+          throw new Error(`Unhandled dragState type ${JSON.stringify(dragState)}`)
+      }
+    }
+  }
+
+  getTargetFrame = (target: TemplatePath): CanvasRectangle | null => {
+    const dragRect = this.getDragStateFrame(target)
+    return dragRect ?? MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
+  }
+
   render() {
     const anySelectedElementIsYogaLayouted = anyInstanceYogaLayouted(
       this.props.componentMetadata,
@@ -46,8 +83,10 @@ export class OutlineControls extends React.Component<ControlProps> {
     )
 
     let selectionOutlines: Array<JSX.Element> = []
-    Utils.fastForEach(this.props.selectedViews, (selectedView) => {
-      const rect = MetadataUtils.getFrameInCanvasCoords(selectedView, this.props.componentMetadata)
+    const targetPaths =
+      this.props.dragState != null ? this.props.dragState.draggedElements : this.props.selectedViews
+    Utils.fastForEach(targetPaths, (selectedView) => {
+      const rect = this.getTargetFrame(selectedView)
       if (rect == null) {
         // early return as we can't draw a selection outline
         return
@@ -66,24 +105,25 @@ export class OutlineControls extends React.Component<ControlProps> {
         anySelectedElementIsYogaLayouted,
       )
 
-      const margin = MetadataUtils.getElementMargin(selectedView, this.props.componentMetadata)
-      selectionOutlines.push(
-        <MarginControls
-          canvasOffset={this.props.canvasOffset}
-          scale={this.props.scale}
-          margin={margin}
-          frame={rect}
-        />,
-      )
-      const padding = MetadataUtils.getElementPadding(selectedView, this.props.componentMetadata)
-      selectionOutlines.push(
-        <PaddingControls
-          canvasOffset={this.props.canvasOffset}
-          scale={this.props.scale}
-          padding={padding}
-          frame={rect}
-        />,
-      )
+      // FIXME Remove margin and padding controls from here
+      // const margin = MetadataUtils.getElementMargin(selectedView, this.props.componentMetadata)
+      // selectionOutlines.push(
+      //   <MarginControls
+      //     canvasOffset={this.props.canvasOffset}
+      //     scale={this.props.scale}
+      //     margin={margin}
+      //     frame={rect}
+      //   />,
+      // )
+      // const padding = MetadataUtils.getElementPadding(selectedView, this.props.componentMetadata)
+      // selectionOutlines.push(
+      //   <PaddingControls
+      //     canvasOffset={this.props.canvasOffset}
+      //     scale={this.props.scale}
+      //     padding={padding}
+      //     frame={rect}
+      //   />,
+      // )
 
       selectionOutlines.push(
         <Outline
@@ -99,13 +139,11 @@ export class OutlineControls extends React.Component<ControlProps> {
     })
     let multiSelectOutline: JSX.Element | undefined
     if (
-      this.props.selectedViews.length > 1 &&
-      TP.areAllElementsInSameScene(this.props.selectedViews) &&
+      targetPaths.length > 1 &&
+      TP.areAllElementsInSameScene(targetPaths) &&
       this.props.componentMetadata.length > 0
     ) {
-      const globalFrames = this.props.selectedViews.map((selectedView) =>
-        MetadataUtils.getFrameInCanvasCoords(selectedView, this.props.componentMetadata),
-      )
+      const globalFrames = targetPaths.map((selectedView) => this.getTargetFrame(selectedView))
       const boundingBox = Utils.boundingRectangleArray(globalFrames)
       if (boundingBox != null) {
         const outlineColor = colorTheme.canvasSelectionSecondaryOutline.value
