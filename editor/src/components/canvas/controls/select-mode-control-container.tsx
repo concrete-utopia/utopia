@@ -33,6 +33,9 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
+import { fastForEach } from '../../../core/shared/utils'
+import { getDomElementForPath } from '../dom-walker'
+import { captureScreenshotForPath } from '../../editor/screenshot-utils'
 
 export const SnappingThreshold = 5
 
@@ -152,6 +155,12 @@ export class SelectModeControlContainer extends React.Component<
             this.props.rootComponents,
           )
         : null
+
+      // Capture screenshots of the dragged elements
+      fastForEach(moveTargets, (moveTarget) => {
+        const domElement = getDomElementForPath(moveTarget)
+        captureScreenshotForPath(moveTarget, domElement)
+      })
 
       this.props.dispatch([
         CanvasActions.createDragState(
