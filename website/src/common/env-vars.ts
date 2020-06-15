@@ -24,6 +24,9 @@ export const HOST: string = typeof window === 'undefined' ? '' : window.location
 export const BASE_URL: string = PRODUCTION_CONFIG ? `https://${HOST}/` : `http://${HOST}/`
 
 export const BASE_WS: string = PRODUCTION_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
+
+export const STATIC_BASE_URL: string = PRODUCTION_CONFIG ? `https://cdn.${HOST}/` : `http://${HOST}/`
+
 export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG ? `https://utopia.fm/` : BASE_URL
 export const UTOPIA_BACKEND = BASE_URL + 'v1/'
 export const UTOPIA_BACKEND_WS = BASE_WS + 'v1/'
