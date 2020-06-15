@@ -14,21 +14,17 @@ describe('parseBorder', () => {
         Object {
           "type": "RIGHT",
           "value": Object {
-            "color": Object {
-              "hex": "#000",
-              "type": "Hex",
-            },
             "style": Object {
-              "style": Object {
+              "type": "line-style",
+              "value": Object {
                 "type": "keyword",
                 "value": "solid",
               },
-              "type": "line-style",
             },
             "type": "border",
             "width": Object {
               "type": "line-width",
-              "width": Object {
+              "value": Object {
                 "unit": "px",
                 "value": 1,
               },
@@ -43,16 +39,16 @@ describe('parseBorder', () => {
               "type": "Hex",
             },
             "style": Object {
-              "style": Object {
+              "type": "line-style",
+              "value": Object {
                 "type": "keyword",
                 "value": "solid",
               },
-              "type": "line-style",
             },
             "type": "border",
             "width": Object {
               "type": "line-width",
-              "width": Object {
+              "value": Object {
                 "unit": "px",
                 "value": 1,
               },
@@ -67,16 +63,16 @@ describe('parseBorder', () => {
               "type": "Hex",
             },
             "style": Object {
-              "style": Object {
+              "type": "line-style",
+              "value": Object {
                 "type": "keyword",
                 "value": "solid",
               },
-              "type": "line-style",
             },
             "type": "border",
             "width": Object {
               "type": "line-width",
-              "width": Object {
+              "value": Object {
                 "unit": "px",
                 "value": 1,
               },
@@ -91,16 +87,16 @@ describe('parseBorder', () => {
               "type": "Hex",
             },
             "style": Object {
-              "style": Object {
+              "type": "line-style",
+              "value": Object {
                 "type": "keyword",
                 "value": "solid",
               },
-              "type": "line-style",
             },
             "type": "border",
             "width": Object {
               "type": "line-width",
-              "width": Object {
+              "value": Object {
                 "unit": "px",
                 "value": 1,
               },
