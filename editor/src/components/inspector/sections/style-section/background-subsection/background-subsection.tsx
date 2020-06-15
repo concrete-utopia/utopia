@@ -23,6 +23,8 @@ import {
   defaultSolidBackgroundLayer,
   isCSSBackgroundLayerWithBGSize,
   isCSSSolidBackgroundLayer,
+  cssDefault,
+  CSSDefault,
 } from '../../../common/css-utils'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import {
@@ -59,7 +61,7 @@ function cssBackgroundLayerToCSSBGSizeOrDefault(v: CSSBackgroundLayer): CSSBGSiz
 export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
   cssBackgroundLayers: CSSBackgroundLayers,
 ): {
-  backgroundColor?: CSSSolidColor
+  backgroundColor?: CSSDefault<CSSSolidColor>
   backgroundImage?: CSSBackgrounds
   backgroundSize?: CSSBackgroundSize
 } {
@@ -72,9 +74,9 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
       if (zerothBackgroundLayer != null) {
         if (isCSSSolidBackgroundLayer(zerothBackgroundLayer)) {
           return {
-            backgroundColor: cssSolidColor(
-              zerothBackgroundLayer.color,
-              zerothBackgroundLayer.enabled,
+            backgroundColor: cssDefault(
+              cssSolidColor(zerothBackgroundLayer.color, zerothBackgroundLayer.enabled),
+              false,
             ),
           }
         } else {
@@ -93,9 +95,9 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
         if (isCSSSolidBackgroundLayer(zerothBackgroundLayer)) {
           const newCSSBackgroundLayers = cssBackgroundLayers.slice(1)
           return {
-            backgroundColor: cssSolidColor(
-              zerothBackgroundLayer.color,
-              zerothBackgroundLayer.enabled,
+            backgroundColor: cssDefault(
+              cssSolidColor(zerothBackgroundLayer.color, zerothBackgroundLayer.enabled),
+              false,
             ),
             backgroundImage: newCSSBackgroundLayers.map(cssBackgroundLayerToCSSBackground),
             backgroundSize: newCSSBackgroundLayers.map(cssBackgroundLayerToCSSBGSizeOrDefault),
@@ -114,7 +116,7 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
 }
 
 export function backgroundImagesAndColorToCSSBackgroundLayerArray(values: {
-  backgroundColor: CSSSolidColor | undefined
+  backgroundColor: CSSDefault<CSSSolidColor>
   backgroundImage: CSSBackgrounds
   backgroundSize: CSSBackgroundSize
 }): CSSBackgroundLayers {
@@ -122,8 +124,8 @@ export function backgroundImagesAndColorToCSSBackgroundLayerArray(values: {
     const bgSize = values.backgroundSize[i] ?? { ...defaultBGSize }
     return cssBackgroundToCSSBackgroundLayer(bgImage, bgSize)
   })
-  if (values.backgroundColor != null) {
-    return [cssSolidBackgroundLayer(values.backgroundColor), ...backgroundLayers]
+  if (!values.backgroundColor.default) {
+    return [cssSolidBackgroundLayer(values.backgroundColor.value), ...backgroundLayers]
   } else {
     return backgroundLayers
   }
@@ -277,10 +279,6 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
       }
     }
   })
-
-  const unsetBackgroundImageAndColor = React.useCallback(() => {
-    onUnsetValues()
-  }, [onUnsetValues])
 
   const insertBackgroundLayerMouseDown = React.useCallback(() => {
     insertBackgroundLayer([...value], onSubmitValue)

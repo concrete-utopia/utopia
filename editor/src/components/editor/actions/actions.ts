@@ -5078,17 +5078,6 @@ export function toggleProperty(
   }
 }
 
-export function DEPRECATED_toggleEnabledProperty(
-  target: InstancePath,
-  togglePropValue: (element: JSXElement) => JSXElement,
-): DEPRECATEDToggleEnabledProperty {
-  return {
-    action: 'deprecated_TOGGLE_ENABLED_PROPERTY',
-    target: target,
-    togglePropValue: togglePropValue,
-  }
-}
-
 export function switchLayoutSystem(layoutSystem: SettableLayoutSystem): SwitchLayoutSystem {
   return {
     action: 'SWITCH_LAYOUT_SYSTEM',

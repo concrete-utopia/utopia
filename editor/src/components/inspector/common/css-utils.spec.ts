@@ -61,11 +61,14 @@ import {
   printBackgroundSize,
   RegExpLibrary,
   toggleSimple,
-  toggleStyleProp,
+  toggleStylePropPath,
 } from './css-utils'
 
 describe('toggleStyleProp', () => {
-  const simpleToggleProp = toggleStyleProp(PP.create(['style', 'backgroundColor']), toggleSimple)
+  const simpleToggleProp = toggleStylePropPath(
+    PP.create(['style', 'backgroundColor']),
+    toggleSimple,
+  )
 
   it('disables simple value', () => {
     const element = jsxTestElement(
