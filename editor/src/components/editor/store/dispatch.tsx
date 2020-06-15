@@ -296,6 +296,9 @@ export function editorDispatch(
   const forceSave = dispatchedActions.some((action) => action.action === 'SAVE_CURRENT_FILE')
   const onlyNameUpdated = nameUpdated && dispatchedActions.length === 1
   const allTransient = dispatchedActions.every(isTransientAction)
+  const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
+    return action.action === 'FINISH_CHECKPOINT_TIMER'
+  })
   const updateCodeResultCache = dispatchedActions.some(
     (action) => action.action === 'UPDATE_CODE_RESULT_CACHE',
   )
@@ -355,7 +358,10 @@ export function editorDispatch(
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
   )
 
-  const transientOrNoChange = allTransient || result.nothingChanged
+  // The FINISH_CHECKPOINT_TIMER action effectively overrides the case where nothing changed,
+  // as it's likely that action on it's own didn't change anything, but the actions that paired with
+  // START_CHECKPOINT_TIMER likely did.
+  const transientOrNoChange = (allTransient || result.nothingChanged) && !anyFinishCheckpointTimer
   const workerUpdatedModel = dispatchedActions.some(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )

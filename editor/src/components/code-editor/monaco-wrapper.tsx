@@ -119,12 +119,10 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
   private highlightedViewDecorations: string[] = []
   private viewStateCache: ViewStateCache
   private onChangeCallbacksEnabled: boolean = true
-  private decorations: Array<string>
 
   constructor(props: MonacoWrapperProps) {
     super(props)
     this.viewStateCache = {}
-    this.decorations = []
 
     this.initMonacoTypescript()
     this.state = {

@@ -306,6 +306,8 @@ import {
   ResetPropToDefault,
   UpdateNodeModulesContents,
   UpdatePackageJson,
+  StartCheckpointTimer,
+  FinishCheckpointTimer,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1256,6 +1258,8 @@ function toastOnGeneratedElementsTargeted(
 
   return result
 }
+
+let checkpointTimeoutId: number | undefined = undefined
 
 // JS Editor Actions:
 export const UPDATE_FNS = {
@@ -3912,6 +3916,25 @@ export const UPDATE_FNS = {
     )
     return updateDependenciesInEditorState(editor, dependencies)
   },
+  START_CHECKPOINT_TIMER: (
+    action: StartCheckpointTimer,
+    editor: EditorState,
+    dispatch: EditorDispatch,
+  ): EditorState => {
+    // Side effects.
+    clearTimeout(checkpointTimeoutId)
+    checkpointTimeoutId = window.setTimeout(() => {
+      dispatch([finishCheckpointTimer()], 'everyone')
+    }, 1000)
+    // No need to actually change the editor state.
+    return editor
+  },
+  FINISH_CHECKPOINT_TIMER: (action: FinishCheckpointTimer, editor: EditorState): EditorState => {
+    // Side effects.
+    checkpointTimeoutId = undefined
+    // No need to actually change the editor state.
+    return editor
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -5226,5 +5249,17 @@ export function updatePackageJson(dependencies: Array<NpmDependency>): UpdatePac
   return {
     action: 'UPDATE_PACKAGE_JSON',
     dependencies: dependencies,
+  }
+}
+
+export function startCheckpointTimer(): StartCheckpointTimer {
+  return {
+    action: 'START_CHECKPOINT_TIMER',
+  }
+}
+
+export function finishCheckpointTimer(): FinishCheckpointTimer {
+  return {
+    action: 'FINISH_CHECKPOINT_TIMER',
   }
 }

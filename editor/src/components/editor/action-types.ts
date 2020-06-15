@@ -722,6 +722,14 @@ export interface UpdatePackageJson {
   dependencies: Array<NpmDependency>
 }
 
+export interface StartCheckpointTimer {
+  action: 'START_CHECKPOINT_TIMER'
+}
+
+export interface FinishCheckpointTimer {
+  action: 'FINISH_CHECKPOINT_TIMER'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -842,6 +850,8 @@ export type EditorAction =
   | ResetPropToDefault
   | UpdateNodeModulesContents
   | UpdatePackageJson
+  | StartCheckpointTimer
+  | FinishCheckpointTimer
 
 export type DispatchPriority =
   | 'everyone'
