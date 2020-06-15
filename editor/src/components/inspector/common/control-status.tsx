@@ -20,7 +20,7 @@ export interface ControlStyles {
   fontWeight: number
   mainColor: string
   secondaryColor: string
-  borderColor: string | undefined
+  borderColor: string
   backgroundColor: string
   segmentSelectorColor: string
   segmentTrackColor: string
@@ -44,7 +44,7 @@ export const ControlStyleDefaults = {
   SetSegmentTrackColor: colorTheme.inspectorSetSegmentTrackColor.value,
   UnsetMainColor: colorTheme.inspectorUnsetMainColor.value,
   UnsetSecondaryColor: colorTheme.inspectorUnsetSecondaryColor.value,
-  UnsetBorderColor: colorTheme.inspectorUnsetBorderColor,
+  UnsetBorderColor: colorTheme.inspectorUnsetBorderColor.value,
   UnsetBorderHoverFocusColor: colorTheme.inspectorSetBorderColor.value,
   UnsetBackgroundColor: colorTheme.inspectorUnsetBackgroundColor.value,
   UnsetSegmentSelectorColor: colorTheme.inspectorUnsetSegmentSelectorColor.value,
@@ -138,7 +138,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
     let fontWeight = 400
     let mainColor: string = ControlStyleDefaults.SetMainColor
     let secondaryColor: string = ControlStyleDefaults.SetSecondaryColor
-    let borderColor: string | undefined = ControlStyleDefaults.SetBorderColor
+    let borderColor: string = ControlStyleDefaults.SetBorderColor
     let backgroundColor: string = ControlStyleDefaults.SetBackgroundColor
     let segmentSelectorColor: string = ControlStyleDefaults.SetSegmentSelectorColor
     let segmentTrackColor: string = ControlStyleDefaults.SetSegmentTrackColor
