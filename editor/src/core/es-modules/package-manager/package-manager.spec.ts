@@ -184,3 +184,69 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
     expect(Object.keys(styleCss)).toHaveLength(0)
   })
 })
+
+describe('ES Dependency manager - retry behavior', () => {
+  it('retries a failed request', async (done) => {
+    let requestCounter = 0
+    ;(fetch as any).mockResponse(
+      (request: Request): Promise<{ body?: string; status?: number }> => {
+        switch (request.url) {
+          case getPackagerUrl(npmDependency('react-spring', '8.0.27')):
+            if (requestCounter === 0) {
+              requestCounter++
+              throw new Error('First request fails')
+            }
+            return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
+          case getJsDelivrListUrl(npmDependency('react-spring', '8.0.27')):
+            return Promise.resolve({ status: 404 }) // we don't care about the jsdelivr response now
+          default:
+            throw new Error(`unexpected fetch called: ${request.url}`)
+        }
+      },
+    )
+
+    fetchNodeModules([{ name: 'react-spring', version: '8.0.27' }]).then((nodeModules) => {
+      expect(Object.keys(nodeModules)).toHaveLength(228)
+      expect(nodeModules['/node_modules/react-spring/index.d.ts']).toBeDefined()
+      done()
+    })
+  })
+
+  it('stops retrying after retry limit reached', async (done) => {
+    ;(fetch as any).mockResponse(
+      (request: Request): Promise<{ body?: string; status?: number }> => {
+        throw new Error('All requests fail')
+      },
+    )
+
+    fetchNodeModules([{ name: 'react-spring', version: '8.0.27' }]).then((nodeModules) => {
+      expect(Object.keys(nodeModules)).toHaveLength(0)
+      done()
+    })
+  })
+
+  it('does not retry if set to', async (done) => {
+    let requestCounter = 0
+    ;(fetch as any).mockResponse(
+      (request: Request): Promise<{ body?: string; status?: number }> => {
+        switch (request.url) {
+          case getPackagerUrl(npmDependency('react-spring', '8.0.27')):
+            if (requestCounter === 0) {
+              requestCounter++
+              throw new Error('First request fails')
+            }
+            return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
+          case getJsDelivrListUrl(npmDependency('react-spring', '8.0.27')):
+            return Promise.resolve({ status: 404 }) // we don't care about the jsdelivr response now
+          default:
+            throw new Error(`unexpected fetch called: ${request.url}`)
+        }
+      },
+    )
+
+    fetchNodeModules([{ name: 'react-spring', version: '8.0.27' }], false).then((nodeModules) => {
+      expect(Object.keys(nodeModules)).toHaveLength(0)
+      done()
+    })
+  })
+})
