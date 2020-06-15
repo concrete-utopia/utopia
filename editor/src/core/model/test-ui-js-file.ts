@@ -1,4 +1,4 @@
-import { KrazyGeorgeTestUrl, LayoutSystem, ShadowAndBorderParams } from 'utopia-api'
+import { KrazyGeorgeTestUrl } from 'utopia-api'
 import { createLayoutPropertyPath } from '../layout/layout-helpers-new'
 import { Imports, importAlias } from '../shared/project-file-types'
 import {
@@ -140,13 +140,7 @@ const mainComponentForTests = utopiaJSXComponent(
           style: jsxAttributeNestedObjectSimple({
             position: jsxAttributeValue('absolute'),
             backgroundColor: jsxAttributeValue('red'),
-            boxShadow: jsxAttributeFunctionCall('shadowAndBorder', [
-              jsxAttributeValue<ShadowAndBorderParams>({
-                boxShadow: '10px 10px 8px #888888',
-                borderWidth: 0,
-                borderColor: '#000',
-              }),
-            ]),
+            boxShadow: jsxAttributeValue('10px 10px 8px #888888'),
           }),
           'data-uid': jsxAttributeValue('ddd'),
         },

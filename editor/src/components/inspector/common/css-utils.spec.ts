@@ -1,4 +1,3 @@
-import { ShadowAndBorderParams } from 'utopia-api'
 import { Either, isLeft, isRight, right } from '../../../core/shared/either'
 import {
   jsxAttributeFunctionCall,
@@ -8,14 +7,11 @@ import {
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import {
-  boxShadowAndBorderHelperFunctionName,
   cssAngle,
   CSSBackground,
   CSSBackgroundSize,
   cssBGSize,
   CSSBorderRadius,
-  CSSBoxShadowAndBorder,
-  CSSBoxShadows,
   cssColor,
   CSSColor,
   cssColorToChromaColor,
@@ -45,7 +41,6 @@ import {
   cssUnitlessLength,
   CSSUnknownArrayItem,
   defaultBGSize,
-  defaultCSSBorder,
   defaultCSSGradientStops,
   defaultCSSRadialGradientSize,
   defaultCSSRadialOrConicGradientCenter,
@@ -67,11 +62,7 @@ import {
   RegExpLibrary,
   toggleSimple,
   toggleStyleProp,
-  CSSBorder,
-  cssLineStyle,
-  cssLineWidth,
 } from './css-utils'
-import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
 
 describe('toggleStyleProp', () => {
   const simpleToggleProp = toggleStyleProp(PP.create(['style', 'backgroundColor']), toggleSimple)
@@ -891,73 +882,219 @@ describe('parseBoxShadow', () => {
     const validStrings = [
       '1px 1px #fff, 1px 1px 1px #fff, 1px 1px 1px 1px #fff, 1px 1px 0 1px #fff, 1px 1px 0 0 #fff /*1px 1px #fff*/',
     ]
-    const expectedValidValue: Array<CSSBoxShadows> = [
-      [
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLengthZero),
-          spreadRadius: cssDefault(cssPixelLengthZero),
-          color: cssColor('#fff'),
-          inset: false,
+    expect(validStrings.map((valid, i) => parseBoxShadow(valid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "RIGHT",
+          "value": Array [
+            Object {
+              "blurRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": null,
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": null,
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": null,
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": false,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+          ],
         },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLength(1), false),
-          spreadRadius: cssDefault(cssPixelLengthZero),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLength(1), false),
-          spreadRadius: cssDefault(cssPixelLength(1), false),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssNumber(0), false),
-          spreadRadius: cssDefault(cssPixelLength(1), false),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssNumber(0), false),
-          spreadRadius: cssDefault(cssNumber(0), false),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: false,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLengthZero),
-          spreadRadius: cssDefault(cssPixelLengthZero),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-      ],
-    ]
-
-    validStrings.forEach((valid, i) => {
-      expect(parseBoxShadow(valid)).toEqual(right(expectedValidValue[i]))
-    })
+      ]
+    `)
 
     const invalidStrings = ['1px 1px burple', '1px #fff', '#fff']
-    invalidStrings.forEach((invalid, i) => {
-      expect(parseBoxShadow(invalid).type).toEqual('LEFT')
-    })
+    expect(invalidStrings.map((invalid, i) => parseBoxShadow(invalid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "LEFT",
+          "value": "No box shadows found",
+        },
+        Object {
+          "type": "LEFT",
+          "value": "No box shadows found",
+        },
+        Object {
+          "type": "LEFT",
+          "value": "No box shadows found",
+        },
+      ]
+    `)
   })
 })
 

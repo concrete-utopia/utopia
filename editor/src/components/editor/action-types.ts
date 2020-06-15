@@ -642,6 +642,13 @@ export interface ToggleProperty {
   togglePropValue: (element: JSXElement) => JSXElement
 }
 
+export interface DEPRECATEDToggleEnabledProperty {
+  action: 'deprecated_TOGGLE_ENABLED_PROPERTY'
+  target: InstancePath
+  // FIXME: This will cause problems with multi-user editing.
+  togglePropValue: (element: JSXElement) => JSXElement
+}
+
 export type TextFormattingType = 'bold' | 'italic' | 'underline'
 
 export interface SwitchLayoutSystem {
@@ -823,6 +830,7 @@ export type EditorAction =
   | SetPropWithElementPath
   | SetFilebrowserRenamingTarget
   | ToggleProperty
+  | DEPRECATEDToggleEnabledProperty
   | SwitchLayoutSystem
   | InsertImageIntoUI
   | SetSceneProp

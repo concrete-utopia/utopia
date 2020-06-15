@@ -219,7 +219,9 @@ export function runSimpleLocalEditorAction(
     case 'SET_FILEBROWSER_RENAMING_TARGET':
       return UPDATE_FNS.SET_FILEBROWSER_RENAMING_TARGET(action, state)
     case 'TOGGLE_PROPERTY':
-      return UPDATE_FNS.TOGGLE_PROPERTY(action, state, derivedState)
+      return UPDATE_FNS.TOGGLE_PROPERTY(action, state)
+    case 'deprecated_TOGGLE_ENABLED_PROPERTY':
+      return UPDATE_FNS.DEPRECATED_TOGGLE_ENABLED_PROPERTY(action, state)
     case 'SWITCH_LAYOUT_SYSTEM':
       return UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(action, state)
     case 'CLEAR_IMAGE_FILE_BLOB':

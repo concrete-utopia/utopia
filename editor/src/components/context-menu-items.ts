@@ -85,7 +85,7 @@ export const toggleBackgroundLayer: ContextMenuItem<CanvasData> = {
   shortcut: 'F',
   action: (data, dispatch?: EditorDispatch) => {
     const actions = data.selectedViews.map((target) =>
-      EditorActions.toggleProperty(
+      EditorActions.DEPRECATED_toggleEnabledProperty(
         target,
         toggleStyleProp(PP.create(['style', 'backgroundColor']), toggleSimple),
       ),

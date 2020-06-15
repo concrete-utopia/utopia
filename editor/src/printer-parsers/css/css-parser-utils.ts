@@ -26,6 +26,8 @@ import {
   right,
   Right,
   sequenceEither,
+  traverseEither,
+  mapEither,
 } from '../../core/shared/either'
 import * as csstreemissing from '../../missing-types/css-tree'
 import utils from '../../utils/utils'
@@ -353,11 +355,7 @@ export function parseCurlyBraces<T>(
       const parsed = sequenceEither(
         match.map((m) => parseAlternative(parsers, 'Match is not valid curly brace value.')(m)),
       )
-      if (isRight(parsed)) {
-        return right(parsedCurlyBrace(parsed.value))
-      } else {
-        return parsed
-      }
+      return mapEither(parsedCurlyBrace, parsed)
     }
     return left(descriptionParseError('Lexer element is not a match'))
   }
@@ -369,14 +367,11 @@ export function parseDoubleBar<T>(
 ): Parser<ParsedDoubleBar<T>> {
   return function (match: unknown) {
     if (Array.isArray(match) && match.length > 0 && match.length <= max) {
-      const parsed = sequenceEither(
-        match.map((m) => parseAlternative(parsers, 'Match is not valid double bar value.')(m)),
+      const parsed = traverseEither(
+        (m: Array<unknown>) => parseAlternative(parsers, 'Match is not valid double bar value.')(m),
+        match,
       )
-      if (isRight(parsed)) {
-        return right(parsedDoubleBar(parsed.value))
-      } else {
-        return parsed
-      }
+      return mapEither(parsedDoubleBar, parsed)
     }
     return left(descriptionParseError('Lexer element is not a match'))
   }
