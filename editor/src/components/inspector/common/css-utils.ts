@@ -33,6 +33,7 @@ import {
   mapEither,
   right,
   traverseEither,
+  Right as EitherRight,
 } from '../../../core/shared/either'
 import {
   isJSXAttributeFunctionCall,
@@ -3538,13 +3539,6 @@ export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribut
   }
 }
 
-function toggleParsedLayer<T extends { enabled: boolean }>(value: T): T {
-  return {
-    ...value,
-    enabled: !value.enabled,
-  }
-}
-
 const backgroundColorPathWithoutStyle = PP.create(['backgroundColor'])
 const backgroundImagePathWithoutStyle = PP.create(['backgroundImage'])
 
@@ -3556,7 +3550,7 @@ const updateBackgroundImageLayersWithNewValues = (
   let workingNewValueForAll = newValueForAll
   const simpleBackgroundImage = jsxSimpleAttributeToValue(backgroundImageAttribute)
   if (isRight(simpleBackgroundImage) && typeof simpleBackgroundImage.value === 'string') {
-    const parsedBackgroundImage = parseBackgroundImage(simpleBackgroundImage)
+    const parsedBackgroundImage = parseBackgroundImage(simpleBackgroundImage.value)
     if (isRight(parsedBackgroundImage)) {
       const newBackgroundImage = [...parsedBackgroundImage.value].map((v) => {
         if (workingNewValueForAll == null) {
@@ -3577,7 +3571,9 @@ const updateBackgroundImageLayersWithNewValues = (
 }
 
 export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribute {
-  let workingStyleProp: Either<string, JSXAttribute> = right(styleAttribute)
+  let workingStyleProp: Either<string, JSXAttribute> = right(styleAttribute) as EitherRight<
+    JSXAttribute
+  >
   const backgroundColorResult = getJSXAttributeAtPathInner(
     styleAttribute,
     backgroundColorPathWithoutStyle,
@@ -3586,7 +3582,6 @@ export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribu
     styleAttribute,
     backgroundImagePathWithoutStyle,
   )
-
   // If backgroundColor is set
   if (
     backgroundColorResult.remainingPath == null &&
@@ -3602,7 +3597,7 @@ export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribu
         newBackgroundColor.enabled = newValueForAll
         // …and set the backgroundColor value to it
         workingStyleProp = setJSXValueInAttributeAtPath(
-          styleAttribute,
+          workingStyleProp.value,
           backgroundColorPathWithoutStyle,
           printBackgroundColor(cssDefault(newBackgroundColor, false)),
         )
@@ -3616,7 +3611,7 @@ export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribu
             workingStyleProp = updateBackgroundImageLayersWithNewValues(
               backgroundImageResult.attribute,
               newValueForAll,
-              styleAttribute,
+              workingStyleProp.value,
             )
           }
           // If backgroundImage is not also set, just return the modified backgroundColor
@@ -3634,13 +3629,13 @@ export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribu
       workingStyleProp = updateBackgroundImageLayersWithNewValues(
         backgroundImageResult.attribute,
         undefined,
-        styleAttribute,
+        workingStyleProp.value,
       )
       // If neither backgroundColor nor backgroundImage are set…
     } else {
       // …turn background color on
       workingStyleProp = setJSXValueInAttributeAtPath(
-        styleAttribute,
+        workingStyleProp.value,
         backgroundColorPathWithoutStyle,
         printBackgroundColor(cssDefault(cssSolidColor({ ...defaultCSSColor }), true)),
       )
