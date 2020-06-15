@@ -86,10 +86,8 @@ export const toggleBackgroundLayersItem: ContextMenuItem<CanvasData> = {
   enabled: true,
   shortcut: 'F',
   action: (data, dispatch?: EditorDispatch) => {
-    const actions = R.flatten(
-      data.selectedViews.map((target) => [
-        EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
-      ]),
+    const actions = data.selectedViews.map((target) =>
+      EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
     )
     requireDispatch(dispatch)(actions, 'everyone')
   },

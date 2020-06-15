@@ -278,7 +278,6 @@ import {
   ToggleInterfaceDesignerAdditionalControls,
   TogglePane,
   ToggleProperty,
-  DEPRECATEDToggleEnabledProperty,
   ToggleCanvasIsLive,
   TransientActions,
   Undo,
@@ -3583,21 +3582,6 @@ export const UPDATE_FNS = {
   },
   TOGGLE_PROPERTY: (action: ToggleProperty, editor: EditorModel): EditorModel => {
     return modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editor)
-  },
-  DEPRECATED_TOGGLE_ENABLED_PROPERTY: (
-    action: DEPRECATEDToggleEnabledProperty,
-    editor: EditorModel,
-  ): EditorModel => {
-    const editorWithImports = modifyOpenParseSuccess((success) => {
-      return {
-        ...success,
-        imports: addImport('utopia-api', null, [importAlias('UtopiaUtils')], null, success.imports),
-      }
-    }, editor)
-
-    return addUtopiaUtilsImportIfUsed(
-      modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editorWithImports),
-    )
   },
   SWITCH_LAYOUT_SYSTEM: (action: SwitchLayoutSystem, editor: EditorModel): EditorModel => {
     return editor.selectedViews.reduce((working, target) => {
