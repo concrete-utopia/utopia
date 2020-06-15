@@ -1,4 +1,3 @@
-import { ShadowAndBorderParams } from 'utopia-api'
 import { Either, isLeft, isRight, right } from '../../../core/shared/either'
 import {
   jsxAttributeFunctionCall,
@@ -8,14 +7,11 @@ import {
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import {
-  boxShadowAndBorderHelperFunctionName,
   cssAngle,
   CSSBackground,
   CSSBackgroundSize,
   cssBGSize,
   CSSBorderRadius,
-  CSSBoxShadowAndBorder,
-  CSSBoxShadows,
   cssColor,
   CSSColor,
   cssColorToChromaColor,
@@ -45,8 +41,6 @@ import {
   cssUnitlessLength,
   CSSUnknownArrayItem,
   defaultBGSize,
-  defaultBorder,
-  defaultBoxShadows,
   defaultCSSGradientStops,
   defaultCSSRadialGradientSize,
   defaultCSSRadialOrConicGradientCenter,
@@ -55,7 +49,6 @@ import {
   parseBackgroundImage,
   parseBorderRadius,
   parseBoxShadow,
-  parseBoxShadowAndBorder,
   parseColor,
   parseConicGradient,
   parseCSSURLFunction,
@@ -889,130 +882,219 @@ describe('parseBoxShadow', () => {
     const validStrings = [
       '1px 1px #fff, 1px 1px 1px #fff, 1px 1px 1px 1px #fff, 1px 1px 0 1px #fff, 1px 1px 0 0 #fff /*1px 1px #fff*/',
     ]
-    const expectedValidValue: Array<CSSBoxShadows> = [
-      [
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLengthZero),
-          spreadRadius: cssDefault(cssPixelLengthZero),
-          color: cssColor('#fff'),
-          inset: false,
+    expect(validStrings.map((valid, i) => parseBoxShadow(valid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "RIGHT",
+          "value": Array [
+            Object {
+              "blurRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": null,
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": null,
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": null,
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": false,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+          ],
         },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLength(1), false),
-          spreadRadius: cssDefault(cssPixelLengthZero),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLength(1), false),
-          spreadRadius: cssDefault(cssPixelLength(1), false),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssNumber(0), false),
-          spreadRadius: cssDefault(cssPixelLength(1), false),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssNumber(0), false),
-          spreadRadius: cssDefault(cssNumber(0), false),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: false,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLengthZero),
-          spreadRadius: cssDefault(cssPixelLengthZero),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-      ],
-    ]
-
-    validStrings.forEach((valid, i) => {
-      expect(parseBoxShadow(valid)).toEqual(right(expectedValidValue[i]))
-    })
+      ]
+    `)
 
     const invalidStrings = ['1px 1px burple', '1px #fff', '#fff']
-    invalidStrings.forEach((invalid, i) => {
-      expect(parseBoxShadow(invalid).type).toEqual('LEFT')
-    })
-  })
-})
-
-describe('parseBoxShadowAndBorder', () => {
-  it('parses a BoxShadowAndBorder', () => {
-    const validParameters: Array<ShadowAndBorderParams> = [
-      {
-        borderStyle: 'solid',
-        borderWidth: '1px',
-        borderColor: '#000',
-        boxShadow: '0px 0px #000',
-      },
-    ]
-
-    const expectedValidValue: Array<CSSBoxShadowAndBorder> = [
-      {
-        type: 'box-shadow-and-border',
-        boxShadows: defaultBoxShadows,
-        border: defaultBorder,
-      },
-    ]
-
-    validParameters.forEach((valid, i) => {
-      const parsed = parseBoxShadowAndBorder(
-        null,
-        jsxAttributeFunctionCall(boxShadowAndBorderHelperFunctionName, [jsxAttributeValue(valid)]),
-      )
-      if (isRight(parsed)) {
-        expect(parsed.value).toEqual(expectedValidValue[i])
-      } else {
-        fail()
-      }
-    })
-
-    const poorlyFormedPropertyParameters: Array<ShadowAndBorderParams> = [
-      {
-        boxShadow: '1px 1px burple',
-      },
-      {
-        borderColor: 'burple',
-      },
-    ]
-
-    poorlyFormedPropertyParameters.forEach((poorlyFormedPropertyParameter, i) => {
-      const parsed = parseBoxShadowAndBorder(
-        null,
-        jsxAttributeFunctionCall(boxShadowAndBorderHelperFunctionName, [
-          jsxAttributeValue(poorlyFormedPropertyParameter),
-        ]),
-      )
-      expect(parsed).toEqual(
-        right({
-          type: 'unknown-helper-function-parameters',
-          value: jsxAttributeValue(poorlyFormedPropertyParameter),
-        }),
-      )
-    })
+    expect(invalidStrings.map((invalid, i) => parseBoxShadow(invalid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "LEFT",
+          "value": "No box shadows found",
+        },
+        Object {
+          "type": "LEFT",
+          "value": "No box shadows found",
+        },
+        Object {
+          "type": "LEFT",
+          "value": "No box shadows found",
+        },
+      ]
+    `)
   })
 })
 

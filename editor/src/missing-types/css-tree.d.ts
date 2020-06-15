@@ -50,9 +50,9 @@ export namespace Syntax {
     type: 'Token'
     value: string
   }
-  export interface Type {
+  export interface Type<T extends string = string> {
     type: 'Type'
-    name: string
+    name: T
     opts: Record<string, any> | null
   }
 

@@ -1,219 +1,155 @@
 import * as React from 'react'
 import { animated, SpringValue } from 'react-spring'
-import { Icn, ChainedNumberInput, UtopiaTheme } from 'uuiui'
-import { InspectorSubsectionHeader } from 'uuiui'
-import { FlexRow } from 'uuiui'
-import { BooleanControl } from '../../../controls/boolean-control'
-import { ColorControl } from '../../../controls/color-control'
-import { ControlStatus, ControlStyles } from '../../../common/control-status'
-import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import {
-  CSSBoxShadow,
-  CSSBoxShadowAndBorder,
-  CSSBoxShadows,
-  CSSColor,
-  defaultBoxShadow,
-  isCSSUnknownFunctionParameters,
-  CSSBoxShadowAndBorderOrUnknown,
-  isCSSBoxShadowAndBorder,
-  CSSNumber,
-  EmptyInputValue,
-  fallbackOnEmptyInputValueToCSSEmptyValue,
-  fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
-} from '../../../common/css-utils'
-import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
-import { stopPropagation } from '../../../common/inspector-utils'
-import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
-import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
-import { SquareButton } from 'uuiui'
+  ChainedNumberInput,
+  CheckboxInput,
+  FlexRow,
+  Icn,
+  InspectorSubsectionHeader,
+  SquareButton,
+  UtopiaTheme,
+} from 'uuiui'
+import { betterReactMemo } from 'uuiui-deps'
+import utils from '../../../../../utils/utils'
+import { ContextMenuItem } from '../../../../context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues, removeRow } from '../../../common/context-menu-items'
-import utils from '../../../../../utils/utils'
-import { betterReactMemo } from 'uuiui-deps'
+import { ControlStatus, ControlStyles } from '../../../common/control-status'
+import {
+  CSSBoxShadow,
+  CSSBoxShadows,
+  CSSColor,
+  CSSNumber,
+  defaultBoxShadow,
+  EmptyInputValue,
+  fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
+  fallbackOnEmptyInputValueToCSSEmptyValue,
+  cssPixelLength,
+  cssDefault,
+} from '../../../common/css-utils'
+import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
+import {
+  useInspectorStyleInfo,
+  useIsSubSectionVisible,
+  UseSubmitValueFactory,
+} from '../../../common/property-path-hooks'
+import { useArraySuperControl } from '../../../controls/array-supercontrol'
+import { ColorControl } from '../../../controls/color-control'
 import { GridRow } from '../../../widgets/grid-row'
-import { ContextMenuItem } from '../../../../context-menu-items'
 
-function getIndexedToggleShadowEnabled(index: number) {
-  return function indexedUpdateShadowEnabled(
-    newValue: boolean,
-    cssBoxShadowAndBorder: CSSBoxShadowAndBorderOrUnknown,
-  ): CSSBoxShadowAndBorderOrUnknown {
-    if (isCSSUnknownFunctionParameters(cssBoxShadowAndBorder)) {
-      return cssBoxShadowAndBorder
-    } else if (cssBoxShadowAndBorder.boxShadows == null) {
-      return cssBoxShadowAndBorder
-    } else {
-      let newBoxShadows = [...cssBoxShadowAndBorder.boxShadows]
-      newBoxShadows[index].enabled = newValue
-      return {
-        ...cssBoxShadowAndBorder,
-        boxShadows: newBoxShadows,
-      }
-    }
-  }
+export function toggleShadowEnabled(oldValue: CSSBoxShadow): CSSBoxShadow {
+  const newValue = { ...oldValue }
+  newValue.enabled = !newValue.enabled
+  return newValue
 }
 
+export function getIndexedToggleShadowEnabled(index: number) {
+  return function (_: null, oldValue: CSSBoxShadows): CSSBoxShadows {
+    let newBoxShadows = [...oldValue]
+    newBoxShadows[index] = toggleShadowEnabled(newBoxShadows[index])
+    return newBoxShadows
+  }
+}
 function getIndexedUpdateShadowColor(index: number) {
   return function indexedUpdateShadowColor(
-    newColor: CSSColor,
-    cssBoxShadowAndBorder: CSSBoxShadowAndBorderOrUnknown,
-  ): CSSBoxShadowAndBorderOrUnknown {
-    if (isCSSUnknownFunctionParameters(cssBoxShadowAndBorder)) {
-      return cssBoxShadowAndBorder
-    } else if (cssBoxShadowAndBorder.boxShadows == null) {
-      return cssBoxShadowAndBorder
-    } else {
-      let newBoxShadows = [...cssBoxShadowAndBorder.boxShadows]
-      let newBoxShadow: CSSBoxShadow = { ...newBoxShadows[index] }
-      newBoxShadow.color = newColor
-      newBoxShadows[index] = newBoxShadow
-      return { ...cssBoxShadowAndBorder, boxShadows: newBoxShadows }
-    }
+    newValue: CSSColor,
+    oldValue: CSSBoxShadows,
+  ): CSSBoxShadows {
+    let newBoxShadows = [...oldValue]
+    newBoxShadows[index] = { ...newBoxShadows[index], color: newValue }
+    return newBoxShadows
   }
 }
 
 function getIndexedUpdateShadowOffsetX(index: number) {
   return function indexedUpdateShadowOffsetX(
     newOffsetX: CSSNumber | EmptyInputValue,
-    cssBoxShadowAndBorder: CSSBoxShadowAndBorderOrUnknown,
-  ): CSSBoxShadowAndBorderOrUnknown {
-    if (isCSSUnknownFunctionParameters(cssBoxShadowAndBorder)) {
-      return cssBoxShadowAndBorder
-    } else if (cssBoxShadowAndBorder.boxShadows == null) {
-      return cssBoxShadowAndBorder
-    } else {
-      let newBoxShadows = [...cssBoxShadowAndBorder.boxShadows]
-      let newBoxShadow: CSSBoxShadow = { ...newBoxShadows[index] }
-      newBoxShadow.offsetX = fallbackOnEmptyInputValueToCSSEmptyValue(
-        defaultBoxShadow.offsetX,
-        newOffsetX,
-      )
-      newBoxShadows[index] = newBoxShadow
-      return { ...cssBoxShadowAndBorder, boxShadows: newBoxShadows }
+    oldValue: CSSBoxShadows,
+  ): CSSBoxShadows {
+    let newBoxShadows = [...oldValue]
+    newBoxShadows[index] = {
+      ...newBoxShadows[index],
+      offsetX: fallbackOnEmptyInputValueToCSSEmptyValue(cssPixelLength(0), newOffsetX),
     }
+    return newBoxShadows
   }
 }
 
 function getIndexedUpdateShadowOffsetY(index: number) {
   return function indexedUpdateShadowOffsetY(
     newOffsetY: CSSNumber | EmptyInputValue,
-    cssBoxShadowAndBorder: CSSBoxShadowAndBorderOrUnknown,
-  ): CSSBoxShadowAndBorderOrUnknown {
-    if (isCSSUnknownFunctionParameters(cssBoxShadowAndBorder)) {
-      return cssBoxShadowAndBorder
-    } else if (cssBoxShadowAndBorder.boxShadows == null) {
-      return cssBoxShadowAndBorder
-    } else {
-      let newBoxShadows = [...cssBoxShadowAndBorder.boxShadows]
-      let newBoxShadow: CSSBoxShadow = { ...newBoxShadows[index] }
-      newBoxShadow.offsetY = fallbackOnEmptyInputValueToCSSEmptyValue(
-        defaultBoxShadow.offsetY,
-        newOffsetY,
-      )
-      newBoxShadows[index] = newBoxShadow
-      return { ...cssBoxShadowAndBorder, boxShadows: newBoxShadows }
+    oldValue: CSSBoxShadows,
+  ): CSSBoxShadows {
+    let newBoxShadows = [...oldValue]
+    newBoxShadows[index] = {
+      ...newBoxShadows[index],
+      offsetY: fallbackOnEmptyInputValueToCSSEmptyValue(cssPixelLength(0), newOffsetY),
     }
+    return newBoxShadows
   }
 }
 
 function getIndexedUpdateShadowBlurRadius(index: number) {
   return function indexedUpdateShadowBlurRadius(
     newBlurRadius: CSSNumber | EmptyInputValue,
-    cssBoxShadowAndBorder: CSSBoxShadowAndBorderOrUnknown,
-  ): CSSBoxShadowAndBorderOrUnknown {
-    if (isCSSUnknownFunctionParameters(cssBoxShadowAndBorder)) {
-      return cssBoxShadowAndBorder
-    } else if (cssBoxShadowAndBorder.boxShadows == null) {
-      return cssBoxShadowAndBorder
-    } else {
-      let newBoxShadows = [...cssBoxShadowAndBorder.boxShadows]
-      let newBoxShadow: CSSBoxShadow = { ...newBoxShadows[index] }
-      newBoxShadow.blurRadius = fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
-        defaultBoxShadow.blurRadius,
+    oldValue: CSSBoxShadows,
+  ): CSSBoxShadows {
+    let newBoxShadows = [...oldValue]
+    newBoxShadows[index] = {
+      ...newBoxShadows[index],
+      blurRadius: fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
+        cssDefault(cssPixelLength(0)),
         newBlurRadius,
-      )
-      newBoxShadows[index] = newBoxShadow
-      return { ...cssBoxShadowAndBorder, boxShadows: newBoxShadows }
+      ),
     }
+    return newBoxShadows
   }
 }
 
 function getIndexedUpdateShadowSpreadRadius(index: number) {
   return function indexedUpdateShadowSpreadRadius(
     newSpreadRadius: CSSNumber | EmptyInputValue,
-    cssBoxShadowAndBorder: CSSBoxShadowAndBorderOrUnknown,
-  ): CSSBoxShadowAndBorderOrUnknown {
-    if (isCSSUnknownFunctionParameters(cssBoxShadowAndBorder)) {
-      return cssBoxShadowAndBorder
-    } else if (cssBoxShadowAndBorder.boxShadows == null) {
-      return cssBoxShadowAndBorder
-    } else {
-      let newBoxShadows = [...cssBoxShadowAndBorder.boxShadows]
-      const newBoxShadow: CSSBoxShadow = { ...newBoxShadows[index] }
-      newBoxShadow.spreadRadius.default = false
-      newBoxShadow.spreadRadius = fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
-        defaultBoxShadow.spreadRadius,
+    oldValue: CSSBoxShadows,
+  ): CSSBoxShadows {
+    let newBoxShadows = [...oldValue]
+    newBoxShadows[index] = {
+      ...newBoxShadows[index],
+      spreadRadius: fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
+        cssDefault(cssPixelLength(0)),
         newSpreadRadius,
-      )
-      newBoxShadows[index] = newBoxShadow
-      return { ...cssBoxShadowAndBorder, boxShadows: newBoxShadows }
+      ),
     }
+    return newBoxShadows
   }
 }
 
-function insertShadow(
-  cssBoxShadowAndBorder: CSSBoxShadowAndBorderOrUnknown,
-  onBoxShadowAndBorderSubmitValue: (newValue: CSSBoxShadowAndBorderOrUnknown) => void,
-): void {
-  if (!isCSSUnknownFunctionParameters(cssBoxShadowAndBorder)) {
-    const boxShadows =
-      cssBoxShadowAndBorder.boxShadows != null ? cssBoxShadowAndBorder.boxShadows : []
-    onBoxShadowAndBorderSubmitValue({
-      ...cssBoxShadowAndBorder,
-      boxShadows: [{ ...defaultBoxShadow }, ...boxShadows],
-    })
-  }
+function updateInsertShadow(_: any, oldValue: CSSBoxShadows): CSSBoxShadows {
+  return [...oldValue, { ...defaultBoxShadow }]
 }
 
-function spliceShadowAtIndex(
-  index: number,
-  onBoxShadowAndBorderSubmitValue: (newValue: CSSBoxShadowAndBorder) => void,
-  cssBoxShadowAndBorder: CSSBoxShadowAndBorder,
-) {
-  return function () {
-    if (cssBoxShadowAndBorder != null && cssBoxShadowAndBorder.boxShadows != null) {
-      let newCSSBoxShadow = [...cssBoxShadowAndBorder.boxShadows]
-      newCSSBoxShadow.splice(index, 1)
-      onBoxShadowAndBorderSubmitValue({
-        ...cssBoxShadowAndBorder,
-        boxShadows: newCSSBoxShadow,
-      })
-    }
+function getIndexedSpliceShadow(index: number) {
+  return function (_: any, oldValue: CSSBoxShadows) {
+    let newCSSBoxShadow = [...oldValue]
+    newCSSBoxShadow.splice(index, 1)
+    return newCSSBoxShadow
   }
 }
 
 interface ShadowItemProps {
   value: CSSBoxShadow
   shadowsLength: number
-  borderIsDefined: boolean
   onUnsetValues: () => void
   index: number
   controlStatus: ControlStatus
   controlStyles: ControlStyles
-  spliceShadowAtIndex: () => void
-  useSubmitValueFactory: <NT>(
-    transform: (
-      newValue: NT,
-      oldValue: CSSBoxShadowAndBorderOrUnknown,
-    ) => CSSBoxShadowAndBorderOrUnknown,
-  ) => [(newValue: NT) => void, (newValue: NT) => void]
+  useSubmitValueFactory: UseSubmitValueFactory<CSSBoxShadows>
   contextMenuItems: Array<ContextMenuItem<null>>
 }
 
 const rowHeight = UtopiaTheme.layout.gridRowHeight.tall
 
 const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
-  const [enabledSubmitValue] = props.useSubmitValueFactory(
+  const [enabledSubmitValueToggle] = props.useSubmitValueFactory(
     getIndexedToggleShadowEnabled(props.index),
   )
   const [colorSubmitValue, colorTransientSubmitValue] = props.useSubmitValueFactory(
@@ -231,21 +167,24 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
   const [spreadRadiusSubmitValue, spreadRadiusTransientSubmitValue] = props.useSubmitValueFactory(
     getIndexedUpdateShadowSpreadRadius(props.index),
   )
+  const [onSubmitIndexedSpliceValue] = props.useSubmitValueFactory(
+    getIndexedSpliceShadow(props.index),
+  )
 
-  const { shadowsLength, spliceShadowAtIndex: spliceFn, onUnsetValues, borderIsDefined } = props
+  const { shadowsLength, onUnsetValues } = props
   const removeShadow = React.useMemo(() => {
     return removeRow(() => {
       if (shadowsLength > 1) {
-        spliceFn()
+        onSubmitIndexedSpliceValue(null)
       } else {
-        if (borderIsDefined) {
-          spliceFn()
-        } else {
-          onUnsetValues()
-        }
+        onUnsetValues()
       }
     })
-  }, [shadowsLength, spliceFn, onUnsetValues, borderIsDefined])
+  }, [shadowsLength, onSubmitIndexedSpliceValue, onUnsetValues])
+
+  const enabledSubmitValue = React.useCallback(() => {
+    enabledSubmitValueToggle(null)
+  }, [enabledSubmitValueToggle])
 
   return (
     <InspectorContextMenuWrapper
@@ -255,14 +194,11 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
     >
       <GridRow tall padded={true} alignItems='start' type='<---1fr--->|------172px-------|'>
         <GridRow tall padded={false} alignItems='start' type='<-auto-><----------1fr--------->'>
-          <BooleanControl
+          <CheckboxInput
             id='boxShadow-enable-disable'
-            key='boxShadow-enable-disable'
-            value={props.value.enabled}
-            onMouseDown={stopPropagation}
-            onSubmitValue={enabledSubmitValue}
+            checked={props.value.enabled}
+            onChange={enabledSubmitValue}
             controlStatus={props.controlStatus}
-            controlStyles={props.controlStyles}
           />
           <ColorControl
             id='boxShadow-Color'
@@ -321,17 +257,6 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
   )
 })
 
-function updateCSSBoxShadow(
-  newValue: CSSBoxShadows,
-  oldValue: CSSBoxShadowAndBorderOrUnknown,
-): CSSBoxShadowAndBorderOrUnknown {
-  if (isCSSBoxShadowAndBorder(oldValue)) {
-    return { ...oldValue, boxShadows: newValue }
-  } else {
-    return oldValue
-  }
-}
-
 export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
   const isVisible = useIsSubSectionVisible('shadow')
   const {
@@ -343,38 +268,14 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
     propertyStatus,
     useSubmitValueFactory,
   } = useInspectorStyleInfo('boxShadow')
-  const boxShadows =
-    isCSSBoxShadowAndBorder(value) && value.boxShadows != null ? value.boxShadows : []
-
   const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 
-  const [onSubmitBoxShadowValue] = useSubmitValueFactory(updateCSSBoxShadow)
+  const [insertShadowValue] = useSubmitValueFactory(updateInsertShadow)
 
-  const { springs, bind } = useArraySuperControl(boxShadows, onSubmitBoxShadowValue, rowHeight)
-
-  const unsetBoxShadows = React.useCallback(() => {
-    onUnsetValues()
-  }, [onUnsetValues])
-
-  const onUnsetBoxShadowParameters = () => {
-    let newValue = { ...value }
-    if ('border' in newValue && 'boxShadows' in newValue) {
-      delete newValue['boxShadows']
-      onSubmitValue(newValue)
-    } else {
-      onUnsetValues()
-    }
-  }
+  const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight)
 
   const contextMenuItems = utils.stripNulls([
-    boxShadows.length > 0
-      ? addOnUnsetValues(['boxShadow parameter'], onUnsetBoxShadowParameters)
-      : null,
-  ])
-
-  const insertShadowValue = React.useCallback(() => insertShadow(value, onSubmitValue), [
-    value,
-    onSubmitValue,
+    value.length > 0 ? addOnUnsetValues(['boxShadow'], onUnsetValues) : null,
   ])
 
   if (!isVisible) {
@@ -413,47 +314,37 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
           height: rowHeight * springs.length,
         }}
       >
-        {isCSSUnknownFunctionParameters(value) ? (
-          <FakeUnknownArrayItem controlStatus={controlStatus} />
-        ) : (
-          springs.map((springStyle: { [x: string]: SpringValue<any> }, index: number) => {
-            const boxShadow = boxShadows[index]
-            if (boxShadow != null) {
-              return (
-                <animated.div
-                  {...bind(index)}
+        {springs.map((springStyle: { [x: string]: SpringValue<any> }, index: number) => {
+          const boxShadow = value[index]
+          if (boxShadow != null) {
+            return (
+              <animated.div
+                {...bind(index)}
+                key={index}
+                style={{
+                  ...springStyle,
+                  width: '100%',
+                  position: 'absolute',
+                  height: rowHeight,
+                }}
+              >
+                <ShadowItem
+                  value={boxShadow}
+                  shadowsLength={value.length}
+                  useSubmitValueFactory={useSubmitValueFactory}
+                  onUnsetValues={onUnsetValues}
+                  index={index}
                   key={index}
-                  style={{
-                    ...springStyle,
-                    width: '100%',
-                    position: 'absolute',
-                    height: rowHeight,
-                  }}
-                >
-                  <ShadowItem
-                    value={boxShadow}
-                    borderIsDefined={
-                      value.border?.enabled != null &&
-                      value.border?.borderColor != null &&
-                      value.border?.borderWidth != null
-                    }
-                    shadowsLength={boxShadows.length}
-                    useSubmitValueFactory={useSubmitValueFactory}
-                    onUnsetValues={onUnsetValues}
-                    spliceShadowAtIndex={spliceShadowAtIndex(index, onSubmitValue, value)}
-                    index={index}
-                    key={index}
-                    controlStatus={controlStatus}
-                    controlStyles={controlStyles}
-                    contextMenuItems={contextMenuItems}
-                  />
-                </animated.div>
-              )
-            } else {
-              throw new Error(`No shadow exists at index ${index}`)
-            }
-          })
-        )}
+                  controlStatus={controlStatus}
+                  controlStyles={controlStyles}
+                  contextMenuItems={contextMenuItems}
+                />
+              </animated.div>
+            )
+          } else {
+            throw new Error(`No shadow exists at index ${index}`)
+          }
+        })}
       </div>
     </InspectorContextMenuWrapper>
   )

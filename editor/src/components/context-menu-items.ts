@@ -85,7 +85,7 @@ export const toggleBackgroundLayer: ContextMenuItem<CanvasData> = {
   shortcut: 'F',
   action: (data, dispatch?: EditorDispatch) => {
     const actions = data.selectedViews.map((target) =>
-      EditorActions.toggleProperty(
+      EditorActions.DEPRECATED_toggleEnabledProperty(
         target,
         toggleStyleProp(PP.create(['style', 'backgroundColor']), toggleSimple),
       ),
@@ -102,7 +102,7 @@ export const toggleBorderItem: ContextMenuItem<CanvasData> = {
     const actions = data.selectedViews.map((target) =>
       EditorActions.toggleProperty(
         target,
-        toggleStyleProp(PP.create(['style', 'boxShadow']), toggleBorder),
+        toggleStyleProp(PP.create(['style', 'border']), toggleBorder),
       ),
     )
     requireDispatch(dispatch)(actions, 'everyone')
