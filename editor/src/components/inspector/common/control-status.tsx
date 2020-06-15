@@ -329,19 +329,6 @@ export function getControlStatusFromPropertyStatus(status: PropertyStatus): Cont
   }
 }
 
-function isValidHelperFunction(
-  jsxAttribute: JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound,
-) {
-  if (jsxAttribute.type === 'ATTRIBUTE_FUNCTION_CALL') {
-    if (UtopiaUtils.hasOwnProperty(jsxAttribute.functionName)) {
-      if (jsxAttribute.parameters.every(isJSXAttributeValue)) {
-        return true
-      }
-    }
-  }
-  return false
-}
-
 function isSet(
   modifiableAttributeResult: GetModifiableAttributeResult,
   realValue: unknown,
@@ -356,8 +343,6 @@ function isSet(
       isPartOfJSXAttributeValue(modifiableAttributeResult.value)
     ) {
       return modifiableAttributeResult.value.value !== undefined
-    } else if (isValidHelperFunction(modifiableAttributeResult.value)) {
-      return true
     } else {
       return true
     }
@@ -375,8 +360,7 @@ function isControlled(
       return realValue != null
     } else if (
       isJSXAttributeValue(modifiableAttributeResult.value) ||
-      isPartOfJSXAttributeValue(modifiableAttributeResult.value) ||
-      isValidHelperFunction(modifiableAttributeResult.value)
+      isPartOfJSXAttributeValue(modifiableAttributeResult.value)
     ) {
       return false
     } else {
