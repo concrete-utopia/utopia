@@ -4202,11 +4202,12 @@ export async function load(
   projectId: string | null,
   workers: UtopiaTsWorkers,
   renderEditorRoot: () => void,
+  retryFetchNodeModules: boolean = true,
 ): Promise<void> {
   // this action is now async!
 
   const npmDependencies = dependenciesFromModel(model)
-  const nodeModules = await fetchNodeModules(npmDependencies)
+  const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
   const require = getRequireFn(
     (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, false)]),
