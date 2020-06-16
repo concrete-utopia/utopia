@@ -162,7 +162,7 @@ function bgSizeValueToSelectOption(value: CSSBGSizeValue): SelectOption {
     }
   } else {
     const zeroth = value.value[0]
-    const first = value.value[1]
+    const first = value.value[1] ?? zeroth
 
     if (zeroth.value === 'auto' && first.value === 'auto') {
       return autoSelectOption
