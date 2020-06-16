@@ -12,6 +12,7 @@ import { MarginControls } from './margin-controls'
 import { PaddingControls } from './padding-controls'
 import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
 import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
+import { fastForEach } from '../../../core/shared/utils'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -79,16 +80,50 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
     return dragRect ?? MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
   }
 
+  getOverlayControls = (targets: TemplatePath[]): Array<JSX.Element> => {
+    if (
+      this.props.dragState != null &&
+      this.props.dragState?.type === 'MOVE_DRAG_STATE' &&
+      this.props.dragState.drag != null
+    ) {
+      let result: Array<JSX.Element> = []
+      fastForEach(targets, (target) => {
+        const rect = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
+        if (rect != null) {
+          result.push(
+            <div
+              key={`${TP.toComponentId(target)}-overlay`}
+              style={{
+                position: 'absolute',
+                boxSizing: 'border-box',
+                left: this.props.canvasOffset.x + rect.x,
+                top: this.props.canvasOffset.y + rect.y,
+                width: rect.width,
+                height: rect.height,
+                pointerEvents: 'none',
+                backgroundColor: '#FFADAD80',
+              }}
+            />,
+          )
+        }
+      })
+
+      return result
+    } else {
+      return []
+    }
+  }
+
   render() {
     const anySelectedElementIsYogaLayouted = anyInstanceYogaLayouted(
       this.props.componentMetadata,
       this.props.selectedViews,
     )
 
-    let selectionOutlines: Array<JSX.Element> = []
+    let selectionOutlines: Array<JSX.Element> = this.getOverlayControls(this.props.selectedViews)
     const targetPaths =
       this.props.dragState != null ? this.props.dragState.draggedElements : this.props.selectedViews
-    Utils.fastForEach(targetPaths, (selectedView) => {
+    fastForEach(targetPaths, (selectedView) => {
       const rect = this.getTargetFrame(selectedView)
       if (rect == null) {
         // early return as we can't draw a selection outline
@@ -128,6 +163,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
       //   />,
       // )
 
+      // FIXME the striped overlay needs to be separated from this
       selectionOutlines.push(
         <Outline
           key={TP.toComponentId(selectedView)}
