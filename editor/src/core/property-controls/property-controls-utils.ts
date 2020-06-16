@@ -1,4 +1,8 @@
-import { CodeResultCache } from '../../components/custom-code/code-file'
+import {
+  CodeResultCache,
+  PropertyControlsInfo,
+  UtopiaRequireFn,
+} from '../../components/custom-code/code-file'
 import {
   parsePropertyControlsForFile,
   ParsedPropertyControls,
@@ -11,6 +15,7 @@ import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
 import { joinSpecial } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
+import { AntdControls } from './third-party-property-controls/antd-controls'
 
 export function defaultPropertiesForComponentInFile(
   componentName: string,
@@ -188,4 +193,24 @@ export function removeIgnored(
     }
   })
   return result
+}
+
+export function getControlsForExternalDependencies(
+  requireFn: UtopiaRequireFn,
+): PropertyControlsInfo {
+  let propertyControlsInfo: PropertyControlsInfo = {}
+  try {
+    const antd = requireFn('/src/app.ui.js', 'antd', true)
+    fastForEach(Object.keys(AntdControls), (componentName) => {
+      if (antd[componentName] != null) {
+        propertyControlsInfo['antd'] = {
+          ...propertyControlsInfo['antd'],
+          [componentName]: (AntdControls as any)[componentName],
+        }
+      }
+    })
+    return propertyControlsInfo
+  } catch (e) {
+    return propertyControlsInfo
+  }
 }

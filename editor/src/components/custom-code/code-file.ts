@@ -5,6 +5,7 @@ import { ExportType, ExportsInfo, MultiFileBuildResult } from '../../core/worker
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
+import { getControlsForExternalDependencies } from '../../core/property-controls/property-controls-utils'
 
 export interface CodeResult {
   exports: ModuleExportTypesAndValues
@@ -171,6 +172,12 @@ export function generateCodeResultCache(
       propertyControlsInfo[filenameNoExtension] = propertyControls
     }
   })
+
+  propertyControlsInfo = {
+    ...propertyControlsInfo,
+    ...getControlsForExternalDependencies(requireFn),
+  }
+
   return {
     skipDeepFreeze: true,
     exportsInfo: exportsInfo,
