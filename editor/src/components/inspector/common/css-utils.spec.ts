@@ -61,11 +61,14 @@ import {
   printBackgroundSize,
   RegExpLibrary,
   toggleSimple,
-  toggleStyleProp,
+  toggleStylePropPath,
 } from './css-utils'
 
 describe('toggleStyleProp', () => {
-  const simpleToggleProp = toggleStyleProp(PP.create(['style', 'backgroundColor']), toggleSimple)
+  const simpleToggleProp = toggleStylePropPath(
+    PP.create(['style', 'backgroundColor']),
+    toggleSimple,
+  )
 
   it('disables simple value', () => {
     const element = jsxTestElement(
@@ -676,77 +679,112 @@ describe('parseBackgroundColor', () => {
       '/*hsl(0, 100%, 0%, 1)*/',
       'hsl(0, 100%, 0%, 1)',
     ]
-    const expectedValues: Array<CSSSolidColor> = [
-      {
-        type: 'solid',
-        enabled: false,
-        color: {
-          type: 'Hex',
-          hex: '#fff',
+    expect(validStrings.map((valid, i) => parseBackgroundColor(valid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": false,
+              "type": "solid",
+            },
+          },
         },
-      },
-      {
-        type: 'solid',
-        enabled: true,
-        color: {
-          type: 'Hex',
-          hex: '#fff',
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          },
         },
-      },
-      {
-        type: 'solid',
-        enabled: false,
-        color: {
-          type: 'RGB',
-          r: 0,
-          g: 0,
-          b: 0,
-          a: 1,
-          percentagesUsed: false,
-          percentageAlpha: false,
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "a": 1,
+                "b": 0,
+                "g": 0,
+                "percentageAlpha": false,
+                "percentagesUsed": false,
+                "r": 0,
+                "type": "RGB",
+              },
+              "enabled": false,
+              "type": "solid",
+            },
+          },
         },
-      },
-      {
-        type: 'solid',
-        enabled: true,
-        color: {
-          type: 'RGB',
-          r: 0,
-          g: 0,
-          b: 0,
-          a: 1,
-          percentagesUsed: false,
-          percentageAlpha: false,
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "a": 1,
+                "b": 0,
+                "g": 0,
+                "percentageAlpha": false,
+                "percentagesUsed": false,
+                "r": 0,
+                "type": "RGB",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          },
         },
-      },
-      {
-        type: 'solid',
-        enabled: false,
-        color: {
-          type: 'HSL',
-          h: 0,
-          s: 100,
-          l: 0,
-          a: 1,
-          percentageAlpha: false,
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "a": 1,
+                "h": 0,
+                "l": 0,
+                "percentageAlpha": false,
+                "s": 100,
+                "type": "HSL",
+              },
+              "enabled": false,
+              "type": "solid",
+            },
+          },
         },
-      },
-      {
-        type: 'solid',
-        enabled: true,
-        color: {
-          type: 'HSL',
-          h: 0,
-          s: 100,
-          l: 0,
-          a: 1,
-          percentageAlpha: false,
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "a": 1,
+                "h": 0,
+                "l": 0,
+                "percentageAlpha": false,
+                "s": 100,
+                "type": "HSL",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          },
         },
-      },
-    ]
-    validStrings.forEach((valid, i) => {
-      expect(parseBackgroundColor(valid)).toEqual(right(expectedValues[i]))
-    })
+      ]
+    `)
   })
 })
 
@@ -1324,33 +1362,44 @@ describe('cssColorToChromaColor', () => {
 describe('parseBackgroundColor', () => {
   it('parses a background color', () => {
     const validStrings = ['#fff', 'rgba(255 255 255 / 1)']
-    const expectedValue: Array<CSSSolidColor> = [
-      {
-        enabled: true,
-        type: 'solid',
-        color: {
-          type: 'Hex',
-          hex: '#fff',
-        },
-      },
-      {
-        enabled: true,
-        type: 'solid',
-        color: {
-          type: 'RGB',
-          r: 255,
-          g: 255,
-          b: 255,
-          a: 1,
-          percentagesUsed: false,
-          percentageAlpha: false,
-        },
-      },
-    ]
 
-    validStrings.forEach((valid, i) => {
-      expect(parseBackgroundColor(valid)).toEqual(right(expectedValue[i]))
-    })
+    expect(validStrings.map((valid) => parseBackgroundColor(valid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          },
+        },
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "a": 1,
+                "b": 255,
+                "g": 255,
+                "percentageAlpha": false,
+                "percentagesUsed": false,
+                "r": 255,
+                "type": "RGB",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          },
+        },
+      ]
+    `)
   })
 })
 

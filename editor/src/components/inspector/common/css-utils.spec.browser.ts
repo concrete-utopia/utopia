@@ -7,7 +7,7 @@ import {
   TestScenePath,
 } from '../../canvas/ui-jsx-test-utils'
 import { toggleProperty } from '../../editor/actions/actions'
-import { toggleBorder, toggleShadow, toggleStyleProp } from './css-utils'
+import { toggleBorder, toggleShadow, toggleStylePropPath } from './css-utils'
 
 describe('toggle style prop', () => {
   it('disables border, sets border to none from solid', async () => {
@@ -27,7 +27,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-          toggleStyleProp(PP.create(['style', 'border']), toggleBorder),
+          toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
       true,
@@ -63,7 +63,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-          toggleStyleProp(PP.create(['style', 'border']), toggleBorder),
+          toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
       true,
@@ -97,7 +97,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-          toggleStyleProp(PP.create(['style', 'border']), toggleBorder),
+          toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
       true,
@@ -133,7 +133,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-          toggleStyleProp(PP.create(['style', 'boxShadow']), toggleShadow),
+          toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
         ),
       ],
       true,
@@ -168,7 +168,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-          toggleStyleProp(PP.create(['style', 'boxShadow']), toggleShadow),
+          toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
         ),
       ],
       true,

@@ -33,6 +33,7 @@ import {
   mapEither,
   right,
   traverseEither,
+  Right as EitherRight,
 } from '../../../core/shared/either'
 import {
   isJSXAttributeFunctionCall,
@@ -44,6 +45,7 @@ import {
   jsxAttributeValue,
   JSXAttributeValue,
   JSXElement,
+  JSXAttribute,
 } from '../../../core/shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -51,6 +53,9 @@ import {
   jsxSimpleAttributeToValue,
   ModifiableAttribute,
   setJSXValueAtPath,
+  setJSXValueInAttributeAtPath,
+  getJSXAttributeAtPath,
+  getJSXAttributeAtPathInner,
 } from '../../../core/shared/jsx-attributes'
 import {
   NumberOrPercent,
@@ -66,6 +71,8 @@ import Utils from '../../../utils/utils'
 import { toggleBorderEnabled } from '../sections/style-section/border-subsection/border-subsection'
 import { toggleShadowEnabled } from '../sections/style-section/shadow-subsection/shadow-subsection'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
+import * as PP from '../../../core/shared/property-path'
+import { isJSXAttribute } from '@babel/types'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -2081,7 +2088,7 @@ const solidColorRegExp = combineRegExp([
   RegExpLibrary.closeComment,
 ])
 
-export function parseBackgroundColor(color?: unknown): Either<string, CSSSolidColor> {
+export function parseBackgroundColor(color?: unknown): Either<string, CSSDefault<CSSSolidColor>> {
   if (typeof color === 'string') {
     let parsed: Either<string, CSSColor>
     const matches = color.match(solidColorRegExp)
@@ -2089,7 +2096,7 @@ export function parseBackgroundColor(color?: unknown): Either<string, CSSSolidCo
       parsed = parseColor(matches[2])
       const enabled = matches[1] === undefined && matches[3] === undefined
       if (isRight(parsed)) {
-        return right(cssSolidColor(parsed.value, enabled))
+        return right(cssDefault(cssSolidColor(parsed.value, enabled), false))
       } else {
         return parsed
       }
@@ -2098,14 +2105,8 @@ export function parseBackgroundColor(color?: unknown): Either<string, CSSSolidCo
   return left('No background color found')
 }
 
-function printBackgroundColor(
-  value: CSSSolidColor | undefined,
-): JSXAttributeValue<string | undefined> {
-  if (value != null) {
-    return jsxAttributeValue(printEnabled(printColor(value.color), value.enabled))
-  } else {
-    return jsxAttributeValue(undefined)
-  }
+function printBackgroundColor(value: CSSDefault<CSSSolidColor>): JSXAttributeValue<string> {
+  return jsxAttributeValue(printEnabled(printColor(value.value.color), value.value.enabled))
 }
 
 const matchColorKeyword = combineRegExp(['^', '(', RegExpLibrary.colorKeyword, ')', '$'])
@@ -2605,6 +2606,8 @@ export function cssSolidColor(color: CSSColor, enabled = true): CSSSolidColor {
     enabled,
   }
 }
+
+const emptyBackgroundColor: CSSSolidColor = cssSolidColor(cssColorRGB(0, 0, 0, 0, false, false))
 
 export function isCSSSolidColor(
   value: CSSBackground | CSSUnknownArrayItem,
@@ -3536,6 +3539,111 @@ export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribut
   }
 }
 
+const backgroundColorPathWithoutStyle = PP.create(['backgroundColor'])
+const backgroundImagePathWithoutStyle = PP.create(['backgroundImage'])
+
+const updateBackgroundImageLayersWithNewValues = (
+  backgroundImageAttribute: ModifiableAttribute,
+  newValueForAll: boolean | undefined,
+  attributes: JSXAttribute,
+): Either<string, JSXAttribute> => {
+  let workingNewValueForAll = newValueForAll
+  const simpleBackgroundImage = jsxSimpleAttributeToValue(backgroundImageAttribute)
+  if (isRight(simpleBackgroundImage) && typeof simpleBackgroundImage.value === 'string') {
+    const parsedBackgroundImage = parseBackgroundImage(simpleBackgroundImage.value)
+    if (isRight(parsedBackgroundImage)) {
+      const newBackgroundImage = [...parsedBackgroundImage.value].map((v) => {
+        if (workingNewValueForAll == null) {
+          workingNewValueForAll = !v.enabled
+        }
+        v.enabled = workingNewValueForAll
+        return v
+      })
+      // set all backgroundImage layers to the new value
+      return setJSXValueInAttributeAtPath(
+        attributes,
+        backgroundImagePathWithoutStyle,
+        printBackgroundImage(newBackgroundImage),
+      )
+    }
+  }
+  return left('backgroundImage could not be parsed as valid backgroundImage string')
+}
+
+export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribute {
+  let workingStyleProp: Either<string, JSXAttribute> = right(styleAttribute) as EitherRight<
+    JSXAttribute
+  >
+  const backgroundColorResult = getJSXAttributeAtPathInner(
+    styleAttribute,
+    backgroundColorPathWithoutStyle,
+  )
+  const backgroundImageResult = getJSXAttributeAtPathInner(
+    styleAttribute,
+    backgroundImagePathWithoutStyle,
+  )
+  // If backgroundColor is set
+  if (
+    backgroundColorResult.remainingPath == null &&
+    !isJSXAttributeNotFound(backgroundColorResult.attribute)
+  ) {
+    const simpleBackgroundColor = jsxSimpleAttributeToValue(backgroundColorResult.attribute)
+    if (isRight(simpleBackgroundColor) && typeof simpleBackgroundColor.value === 'string') {
+      const parsedBackgroundColor = parseBackgroundColor(simpleBackgroundColor.value)
+      if (isRight(parsedBackgroundColor)) {
+        // …use the opposite of its previous value for all new values…
+        const newValueForAll = !parsedBackgroundColor.value.value.enabled
+        let newBackgroundColor = { ...parsedBackgroundColor.value.value }
+        newBackgroundColor.enabled = newValueForAll
+        // …and set the backgroundColor value to it
+        workingStyleProp = setJSXValueInAttributeAtPath(
+          workingStyleProp.value,
+          backgroundColorPathWithoutStyle,
+          printBackgroundColor(cssDefault(newBackgroundColor, false)),
+        )
+        if (isRight(workingStyleProp)) {
+          // If backgroundImage is also set…
+          if (
+            backgroundImageResult.remainingPath == null &&
+            !isJSXAttributeNotFound(backgroundImageResult.attribute)
+          ) {
+            // …set all of its values to the new value
+            workingStyleProp = updateBackgroundImageLayersWithNewValues(
+              backgroundImageResult.attribute,
+              newValueForAll,
+              workingStyleProp.value,
+            )
+          }
+          // If backgroundImage is not also set, just return the modified backgroundColor
+        }
+      }
+    }
+    // If backgroundColor is not set…
+  } else {
+    // …but backgroundImage is set…
+    if (
+      backgroundImageResult.remainingPath == null &&
+      !isJSXAttributeNotFound(backgroundImageResult.attribute)
+    ) {
+      // …toggle backgroundImage
+      workingStyleProp = updateBackgroundImageLayersWithNewValues(
+        backgroundImageResult.attribute,
+        undefined,
+        workingStyleProp.value,
+      )
+      // If neither backgroundColor nor backgroundImage are set…
+    } else {
+      // …turn background color on
+      workingStyleProp = setJSXValueInAttributeAtPath(
+        workingStyleProp.value,
+        backgroundColorPathWithoutStyle,
+        printBackgroundColor(cssDefault(cssSolidColor({ ...defaultCSSColor }), true)),
+      )
+    }
+  }
+  return isRight(workingStyleProp) ? workingStyleProp.value : styleAttribute
+}
+
 export function toggleBorder(attribute: ModifiableAttribute): JSXAttributeValue<string> {
   const simpleValue = jsxSimpleAttributeToValue(attribute)
   if (isRight(simpleValue) && typeof simpleValue.value === 'string') {
@@ -3547,7 +3655,7 @@ export function toggleBorder(attribute: ModifiableAttribute): JSXAttributeValue<
   return printBorder({ ...defaultCSSBorder })
 }
 
-export function toggleShadow(attribute: ModifiableAttribute): ModifiableAttribute {
+export function toggleShadow(attribute: ModifiableAttribute): JSXAttributeValue<string> {
   const simpleValue = jsxSimpleAttributeToValue(attribute)
   if (isRight(simpleValue) && typeof simpleValue.value === 'string') {
     const parsed = parseBoxShadow(simpleValue.value)
@@ -3558,7 +3666,7 @@ export function toggleShadow(attribute: ModifiableAttribute): ModifiableAttribut
   return printBoxShadow([{ ...defaultBoxShadow }])
 }
 
-export function toggleStyleProp(
+export function toggleStylePropPath(
   path: PropertyPath,
   toggleFn: (attribute: ModifiableAttribute) => ModifiableAttribute,
 ) {
@@ -3580,6 +3688,21 @@ export function toggleStyleProp(
         }
       }
     }
+    return element
+  }
+}
+
+export function toggleStylePropPaths(toggleFn: (attribute: JSXAttribute) => JSXAttribute) {
+  return (element: JSXElement): JSXElement => {
+    const styleProp = getJSXAttributeAtPath(element.props, PP.create(['style']))
+    const attribute = styleProp.attribute
+    if (styleProp.remainingPath == null && isRegularJSXAttribute(attribute)) {
+      const newProps = setJSXValueAtPath(element.props, PP.create(['style']), toggleFn(attribute))
+      if (isRight(newProps)) {
+        return { ...element, props: newProps.value }
+      }
+    }
+    // TODO: toast if failure?
     return element
   }
 }
@@ -3731,7 +3854,7 @@ export function printDOMEventHandlerMetadata(value: ModifiableAttribute): Modifi
 }
 
 export interface ParsedCSSProperties {
-  backgroundColor: CSSSolidColor | undefined
+  backgroundColor: CSSDefault<CSSSolidColor>
   backgroundImage: CSSBackgrounds
   backgroundSize: CSSBackgroundSize
   border: CSSBorder
@@ -3803,7 +3926,7 @@ export function fallbackOnEmptyInputValueToCSSDefaultEmptyValue<T>(
 }
 
 export const cssEmptyValues: ParsedCSSProperties = {
-  backgroundColor: undefined,
+  backgroundColor: cssDefault({ ...emptyBackgroundColor }),
   backgroundImage: [],
   backgroundSize: [],
   border: { ...emptyCSSBorder },

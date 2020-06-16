@@ -14,7 +14,7 @@ import {
   toggleVisibility,
   ungroup,
   wrapInView,
-  toggleBackgroundLayer,
+  toggleBackgroundLayersItem,
   toggleBorderItem,
   toggleShadowItem,
   ContextMenuItem,
@@ -52,7 +52,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   lineSeparator,
   toggleVisibility,
   lineSeparator,
-  toggleBackgroundLayer,
+  toggleBackgroundLayersItem,
   toggleBorderItem,
   toggleShadowItem,
 ]
