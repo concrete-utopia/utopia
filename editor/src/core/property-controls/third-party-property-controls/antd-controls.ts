@@ -8,6 +8,21 @@ const Button = {
   disabled: {
     type: 'boolean',
   },
+  size: {
+    type: 'enum',
+    options: ['large', 'medium', 'small'],
+  },
+  type: {
+    type: 'enum',
+    options: ['primary', 'ghost', 'dashed', 'danger', 'link', 'text', 'default'],
+  },
+  shape: {
+    type: 'enum',
+    options: ['circle', 'round'],
+  },
+  icon: {
+    type: 'componentinstance',
+  },
   ghost: {
     type: 'boolean',
   },
@@ -17,13 +32,14 @@ const Button = {
   danger: {
     type: 'boolean',
   },
-  size: {
-    type: 'enum',
-    options: ['large', 'medium', 'small'],
+  loading: {
+    type: 'boolean',
   },
-  type: {
-    type: 'enum',
-    options: ['primary', 'ghost', 'dashed', 'danger', 'link', 'text', 'default'],
+  htmlType: {
+    type: 'string',
+  },
+  target: {
+    type: 'string',
   },
 }
 
