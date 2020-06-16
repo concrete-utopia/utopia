@@ -7,11 +7,53 @@ import { FlexColumn } from 'uuiui'
 import styled from '@emotion/styled'
 import { CheckboxInput } from 'uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
+import { betterReactMemo } from '../../../../uuiui-deps'
+import {
+  FeatureName,
+  toggleFeatureEnabled,
+  isFeatureEnabled,
+  AllFeatureNames,
+} from '../../../../utils/feature-switches'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.medium,
   paddingLeft: 12,
   paddingRight: 12,
+})
+
+const FeatureSwitchesSection = betterReactMemo('Feature Switches', () => {
+  return (
+    <>
+      <StyledFlexRow style={{ marginTop: 8, marginBottom: 12, paddingLeft: 8 }}>
+        <H2>Experimental Feature Toggles</H2>
+      </StyledFlexRow>
+      {AllFeatureNames.map((name) => (
+        <FeatureSwitchRow key={`feature-switch-${name}`} name={name} />
+      ))}
+    </>
+  )
+})
+
+const FeatureSwitchRow = betterReactMemo('Feature Switch Row', (props: { name: FeatureName }) => {
+  const name = props.name
+  const id = `toggle-${name}`
+  const [changeCount, setChangeCount] = React.useState(0)
+  const forceRender = React.useCallback(() => setChangeCount(changeCount + 1), [changeCount])
+  const onChange = React.useCallback(() => {
+    toggleFeatureEnabled(name)
+    forceRender()
+  }, [forceRender, name])
+  return (
+    <StyledFlexRow>
+      <CheckboxInput
+        style={{ display: 'flex', alignItems: 'center', marginRight: 4 }}
+        id={id}
+        checked={isFeatureEnabled(name)}
+        onChange={onChange}
+      />
+      <label htmlFor={id}>{name}</label>
+    </StyledFlexRow>
+  )
 })
 
 export const SettingsPanel = (props: any) => {
@@ -67,6 +109,7 @@ export const SettingsPanel = (props: any) => {
         />
         <label htmlFor='toggleInterfaceDesignerAdditionalCanvasControls'>Additional controls</label>
       </StyledFlexRow>
+      <FeatureSwitchesSection />
     </FlexColumn>
   )
 }

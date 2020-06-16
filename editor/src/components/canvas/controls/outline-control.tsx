@@ -13,6 +13,7 @@ import { PaddingControls } from './padding-controls'
 import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
 import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -82,6 +83,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
 
   getOverlayControls = (targets: TemplatePath[]): Array<JSX.Element> => {
     if (
+      isFeatureEnabled('Dragging Shows Overlay') &&
       this.props.dragState != null &&
       this.props.dragState?.type === 'MOVE_DRAG_STATE' &&
       this.props.dragState.drag != null

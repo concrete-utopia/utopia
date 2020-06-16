@@ -70,3 +70,7 @@ export function longestCommonArray<T>(
 export function getProjectLockedKey(projectId: string) {
   return `${projectId}-locked`
 }
+
+export function xor(a: boolean, b: boolean): boolean {
+  return a != b
+}
