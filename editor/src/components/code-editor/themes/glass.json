@@ -1,6 +1,6 @@
 {
   "name": "Glass UI",
-  "type": "dark",
+  "type": "light",
   "colors": {
     "editor.background": "#ffffff",
     "editor.foreground": "#ff0000",
