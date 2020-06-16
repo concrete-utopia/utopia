@@ -64,10 +64,8 @@ import {
   storedEditorStateFromEditorState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
-import { arrayEquals } from '../../../core/shared/utils'
+import { arrayEquals, isBrowserEnvironment } from '../../../core/shared/utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
-
-const isBrowserEnvironment = process.env.JEST_WORKER_ID == undefined // test if we are in a Jest environment
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean

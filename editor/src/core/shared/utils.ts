@@ -74,3 +74,5 @@ export function getProjectLockedKey(projectId: string) {
 export function xor(a: boolean, b: boolean): boolean {
   return a != b
 }
+
+export const isBrowserEnvironment = process.env.JEST_WORKER_ID == undefined // If true this means we're not running in a Jest environment
