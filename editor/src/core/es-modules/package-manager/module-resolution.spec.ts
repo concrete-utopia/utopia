@@ -40,6 +40,9 @@ describe('ES Package Manager Module Resolution', () => {
     expect(resolve('@othernamespace/othermodule')).toEqual(
       '/node_modules/@othernamespace/othermodule/dist/actual.js',
     )
+    expect(resolve('@othernamespace/module-with-main-entry-pointing-to-directory')).toEqual(
+      '/node_modules/@othernamespace/module-with-main-entry-pointing-to-directory/dist/index.js',
+    )
     expect(resolve('doesnt-exist-module')).toEqual(null)
   })
 

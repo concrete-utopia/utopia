@@ -75,9 +75,16 @@ function resolvePackageJson(nodeModules: NodeModules, packageJsonFolder: string[
   if (folderPackageJson != null && isEsCodeFile(folderPackageJson)) {
     const mainEntryPath = processPackageJson(folderPackageJson.fileContents, normalizedFolderPath)
     if (mainEntryPath != null) {
+      // try loading the entry path as a file
       const mainEntryUri = findFileURIForPath(nodeModules, mainEntryPath)
       if (mainEntryUri != null) {
         return mainEntryUri
+      }
+      // fallback to loading it as a folder with an index.js
+      const indexJsPath = [...mainEntryPath, 'index']
+      const indexJsUri = findFileURIForPath(nodeModules, indexJsPath)
+      if (indexJsUri != null) {
+        return indexJsUri
       }
     }
   }
