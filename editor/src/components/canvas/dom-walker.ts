@@ -85,26 +85,11 @@ function isScene(node: Node): node is HTMLElement {
   )
 }
 
-let DomElementByPath: { [path: string]: HTMLElement } = {}
-
-export function getDomElementForPath(path: TemplatePath): HTMLElement | undefined {
-  return DomElementByPath[TP.toString(path)]
-}
-
-function setDomElementForPath(path: TemplatePath, domElement: HTMLElement) {
-  DomElementByPath[TP.toString(path)] = domElement
-}
-
-function clearDomElementMappings() {
-  DomElementByPath = {}
-}
-
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
-      clearDomElementMappings()
       // Get some base values relating to the div this component creates.
       const refOfContainer = containerRef.current
 
@@ -330,8 +315,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           }
 
           if (pathIsValid) {
-            setDomElementForPath(uniquePath, element)
-
             const tagName = element.tagName.toLowerCase()
 
             let elementProps: any = {}

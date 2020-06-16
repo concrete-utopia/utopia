@@ -12,7 +12,6 @@ import { MarginControls } from './margin-controls'
 import { PaddingControls } from './padding-controls'
 import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
 import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
-import { getScreenshotForPath } from '../../editor/screenshot-utils'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -75,21 +74,6 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
     }
   }
 
-  getDragScreenshot = (target: TemplatePath): string | null | undefined => {
-    // We use a screenshot as part of the controls when dragging to move an element since
-    // we can't just hoist up the element and assume it will retain the same layout
-    const { dragState } = this.props
-    if (isDraggingToMove(dragState, target)) {
-      if (dragState.drag == null) {
-        return null
-      } else {
-        return getScreenshotForPath(target)
-      }
-    } else {
-      return null
-    }
-  }
-
   getTargetFrame = (target: TemplatePath): CanvasRectangle | null => {
     const dragRect = this.getDragStateFrame(target)
     return dragRect ?? MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
@@ -143,25 +127,6 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
       //     frame={rect}
       //   />,
       // )
-
-      // const screenshot = this.getDragScreenshot(selectedView)
-      // if (screenshot != null) {
-      //   selectionOutlines.push(
-      //     <div
-      //       key={`${TP.toComponentId(selectedView)}-screenshot`}
-      //       style={{
-      //         position: 'absolute',
-      //         boxSizing: 'border-box',
-      //         left: this.props.canvasOffset.x + rect.x,
-      //         top: this.props.canvasOffset.y + rect.y,
-      //         width: rect.width,
-      //         height: rect.height,
-      //         backgroundImage: `url(${screenshot})`,
-      //         backgroundPosition: 'center',
-      //       }}
-      //     />,
-      //   )
-      // }
 
       selectionOutlines.push(
         <Outline

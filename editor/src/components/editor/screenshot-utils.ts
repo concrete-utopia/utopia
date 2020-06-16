@@ -1,28 +1,8 @@
-import * as TP from '../../core/shared/template-path'
-import { TemplatePath } from '../../core/shared/project-file-types'
-
 const domtoimage = require('domtoimage')
 
 const BASE64_PREFIX = 'data:image/png;base64,'
 
 type Dom2ImageOptions = { width?: number; height?: number }
-
-let ScreenshotByPath: { [path: string]: string } = {}
-
-export function captureScreenshotForPath(path: TemplatePath, element: HTMLElement | undefined) {
-  delete ScreenshotByPath[TP.toString(path)] // Clear the old one
-  if (element != null) {
-    getPNGOfElement(element).then((png) => {
-      if (png != null) {
-        ScreenshotByPath[TP.toString(path)] = png
-      }
-    })
-  }
-}
-
-export function getScreenshotForPath(path: TemplatePath): string | undefined {
-  return ScreenshotByPath[TP.toString(path)]
-}
 
 export async function getPNGOfElement(
   element: HTMLElement,
