@@ -317,10 +317,10 @@ export function moveDragState(
     prevDrag: prevDrag,
     originalFrames: originalFrames,
     dragSelectionBoundingBox: dragSelectionBoundingBox,
-    enableSnapping: enableSnapping,
+    enableSnapping: !enableSnapping, //FIXME Toggling the behaviour here to test it - don't merge with this!
     constrainDragAxis: constrainDragAxis,
     duplicate: duplicate,
-    reparent: reparent,
+    reparent: !reparent, //FIXME Toggling the behaviour here to test it - don't merge with this!
     duplicateNewUIDs: duplicateNewUIDs,
     canvasPosition: canvasPosition,
     metadata: metadata,
@@ -343,11 +343,11 @@ export function updateMoveDragState(
     ...current,
     drag: drag === undefined ? current.drag : drag,
     prevDrag: prevDrag === undefined ? current.prevDrag : prevDrag,
-    enableSnapping: enableSnapping === undefined ? current.enableSnapping : enableSnapping,
+    enableSnapping: enableSnapping === undefined ? current.enableSnapping : !enableSnapping, //FIXME Toggling the behaviour here to test it - don't merge with this!
     constrainDragAxis:
       constrainDragAxis === undefined ? current.constrainDragAxis : constrainDragAxis,
     duplicate: duplicate === undefined ? current.duplicate : duplicate,
-    reparent: reparent === undefined ? current.reparent : reparent,
+    reparent: reparent === undefined ? current.reparent : !reparent, //FIXME Toggling the behaviour here to test it - don't merge with this!
     duplicateNewUIDs: duplicateNewUIDs === undefined ? current.duplicateNewUIDs : duplicateNewUIDs,
     canvasPosition: canvasPosition === undefined ? current.canvasPosition : canvasPosition,
   })
