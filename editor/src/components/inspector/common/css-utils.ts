@@ -2478,6 +2478,19 @@ export function isCSSGradientBackgroundLayer(
   )
 }
 
+export type CSSBackgroundImageLayer = CSSGradientBackgroundLayer | CSSURLFunctionBackgroundLayer
+
+export function isCSSBackgroundImageLayer(
+  cssBackgroundLayer: CSSBackgroundLayer,
+): cssBackgroundLayer is CSSBackgroundImageLayer {
+  return (
+    cssBackgroundLayer.type === 'linear-gradient-background-layer' ||
+    cssBackgroundLayer.type === 'radial-gradient-background-layer' ||
+    cssBackgroundLayer.type === 'conic-gradient-background-layer' ||
+    cssBackgroundLayer.type === 'url-function-background-layer'
+  )
+}
+
 export type CSSBackgroundLayer =
   | CSSSolidBackgroundLayer
   | CSSGradientBackgroundLayer
