@@ -24,6 +24,8 @@ import {
 import { ControlStatus } from '../common/control-status'
 import { UseSubmitTransformedValuesFactory } from '../sections/style-section/background-subsection/background-layer-helpers'
 import { MetadataControlsStyle } from '../sections/style-section/background-subsection/background-picker'
+import { KeywordControl } from './keyword-control'
+import { NO_OP } from '../../../core/shared/utils'
 
 interface BGSizeMetadataControlProps {
   index: number
@@ -31,6 +33,8 @@ interface BGSizeMetadataControlProps {
   useSubmitValueFactory: UseSubmitTransformedValuesFactory
   controlStatus: ControlStatus
 }
+
+const validDimensionComponentKeywords = ['auto']
 
 type BGSizeSelectOptionValue = 'auto' | 'contain' | 'cover' | 'percentage-length'
 interface BGSizeSelectOption extends SelectOption {
@@ -193,16 +197,15 @@ export const BGSizeMetadataControl: React.FunctionComponent<BGSizeMetadataContro
       widthValue = bgSizeValue.value[0]
       heightValue = bgSizeValue.value[1] ?? widthValue
     }
-
-    return (
-      <div style={MetadataControlsStyle}>
-        <PopupList
-          style={{ gridColumn: '1 / span 3' }}
-          options={BGSizeKeywordValueSelectOptions}
-          value={bgSizeValueToSelectOption(bgSizeValue)}
-          onSubmitValue={onSubmitPopupListValue}
-        />
-        {isParsedCurlyBrace(bgSizeValue) ? (
+    if (widthValue != null && heightValue != null) {
+      return (
+        <div style={MetadataControlsStyle}>
+          <PopupList
+            style={{ gridColumn: '1 / span 3' }}
+            options={BGSizeKeywordValueSelectOptions}
+            value={bgSizeValueToSelectOption(bgSizeValue)}
+            onSubmitValue={onSubmitPopupListValue}
+          />
           <>
             {isCSSNumber(widthValue) ? (
               <NumberInput
@@ -216,7 +219,13 @@ export const BGSizeMetadataControl: React.FunctionComponent<BGSizeMetadataContro
                 DEPRECATED_labelBelow='width'
               />
             ) : (
-              <div style={{ gridColumn: '5 / span 1' }}>auto</div>
+              <KeywordControl
+                style={{ gridColumn: '5 / span 1' }}
+                value={widthValue}
+                onSubmitValue={NO_OP}
+                controlStatus={props.controlStatus}
+                validKeywords={validDimensionComponentKeywords}
+              />
             )}
             {isCSSNumber(heightValue) ? (
               <NumberInput
@@ -230,13 +239,18 @@ export const BGSizeMetadataControl: React.FunctionComponent<BGSizeMetadataContro
                 DEPRECATED_labelBelow='height'
               />
             ) : (
-              <div style={{ gridColumn: '7 / span 1' }}>auto</div>
+              <KeywordControl
+                style={{ gridColumn: '7 / span 1' }}
+                value={heightValue}
+                onSubmitValue={NO_OP}
+                controlStatus={props.controlStatus}
+                validKeywords={validDimensionComponentKeywords}
+              />
             )}
           </>
-        ) : null}
-      </div>
-    )
-  } else {
-    return null
+        </div>
+      )
+    }
   }
+  return null
 }
