@@ -81,8 +81,10 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
           }
         } else {
           return {
-            backgroundImage: cssBackgroundLayers.map(cssBackgroundLayerToCSSBackground),
-            backgroundSize: cssBackgroundLayers.map(cssBackgroundLayerToCSSBGSizeOrDefault),
+            backgroundImage: cssBackgroundLayers.map(cssBackgroundLayerToCSSBackground).reverse(),
+            backgroundSize: cssBackgroundLayers
+              .map(cssBackgroundLayerToCSSBGSizeOrDefault)
+              .reverse(),
           }
         }
       } else {
@@ -120,10 +122,12 @@ export function backgroundImagesAndColorToCSSBackgroundLayerArray(values: {
   backgroundImage: CSSBackgrounds
   backgroundSize: CSSBackgroundSize
 }): CSSBackgroundLayers {
-  const backgroundLayers = values.backgroundImage.map((bgImage, i) => {
-    const bgSize = values.backgroundSize[i] ?? { ...defaultBGSize }
-    return cssBackgroundToCSSBackgroundLayer(bgImage, bgSize)
-  })
+  const backgroundLayers = values.backgroundImage
+    .map((bgImage, i) => {
+      const bgSize = values.backgroundSize[i] ?? { ...defaultBGSize }
+      return cssBackgroundToCSSBackgroundLayer(bgImage, bgSize)
+    })
+    .reverse()
   if (!values.backgroundColor.default) {
     return [cssSolidBackgroundLayer(values.backgroundColor.value), ...backgroundLayers]
   } else {

@@ -3176,7 +3176,7 @@ export function parseBackgroundImage(backgroundImage?: unknown): Either<string, 
       backgroundImageMatch = backgroundImageRegExp.exec(backgroundImage)
     }
     if (backgroundItems.length > 0) {
-      return right(backgroundItems.reverse())
+      return right(backgroundItems)
     }
   }
   return left('No valid backgroundImage found')
@@ -3234,7 +3234,7 @@ export function printBackgroundImage(
       }
     }
   })
-  return jsxAttributeValue(backgroundImageStrings.reverse().join(' '))
+  return jsxAttributeValue(backgroundImageStrings.join(' '))
 }
 
 export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue<string> {
