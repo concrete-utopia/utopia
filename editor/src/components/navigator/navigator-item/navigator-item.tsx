@@ -16,6 +16,7 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
 import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { WarningIcon } from '../../../uuiui/warning-icon'
+import { ElementWarnings } from '../../editor/store/editor-state'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -52,6 +53,7 @@ export interface NavigatorItemInnerProps {
   selected: boolean
   imports: Imports
   elementOriginType: ElementOriginType
+  elementWarnings: ElementWarnings
 }
 
 function selectItem(
@@ -155,6 +157,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       templatePath,
       getSelectedViewsInRange,
       index,
+      elementWarnings,
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
@@ -191,26 +194,30 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     }
 
     const resultingStyle = computeResultingStyle()
-    const widthOrHeightZero =
-      element != null && element.globalFrame != null
-        ? element.globalFrame.width === 0 || element.globalFrame.height === 0
-        : false
 
-    const preview = widthOrHeightZero ? (
-      <WarningIcon tooltipText='Missing width or height' />
-    ) : (
-      <ItemPreview
-        key={`preview-${label}`}
-        {...props}
-        isAutosizingView={isAutosizingView}
-        collapsed={collapsed}
-        element={element}
-        path={templatePath}
-        color={resultingStyle.iconColor}
-        selected={selected}
-        imports={imports}
-      />
-    )
+    let warningText: string | null = null
+    if (elementWarnings.widthOrHeightZero) {
+      warningText = 'Missing width or height'
+    } else if (elementWarnings.absoluteWithUnpositionedParent) {
+      warningText = 'Element is trying to be position absolutely with an unconfigured parent'
+    }
+
+    const preview =
+      warningText == null ? (
+        <ItemPreview
+          key={`preview-${label}`}
+          {...props}
+          isAutosizingView={isAutosizingView}
+          collapsed={collapsed}
+          element={element}
+          path={templatePath}
+          color={resultingStyle.iconColor}
+          selected={selected}
+          imports={imports}
+        />
+      ) : (
+        <WarningIcon tooltipText={warningText} />
+      )
 
     const collapse = React.useCallback(
       (event: any) => collapseItem(dispatch, templatePath, event),
