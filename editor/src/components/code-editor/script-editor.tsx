@@ -67,7 +67,7 @@ function getFileContents(file: ProjectFile): string {
           return failure.code
         },
         (success: ParseSuccess) => {
-          return success.code || ''
+          return success.code ?? ''
         },
         file.fileContents,
       )

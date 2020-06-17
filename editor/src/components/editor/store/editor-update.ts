@@ -219,7 +219,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_FILEBROWSER_RENAMING_TARGET':
       return UPDATE_FNS.SET_FILEBROWSER_RENAMING_TARGET(action, state)
     case 'TOGGLE_PROPERTY':
-      return UPDATE_FNS.TOGGLE_PROPERTY(action, state, derivedState)
+      return UPDATE_FNS.TOGGLE_PROPERTY(action, state)
     case 'SWITCH_LAYOUT_SYSTEM':
       return UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(action, state)
     case 'CLEAR_IMAGE_FILE_BLOB':
@@ -270,6 +270,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state)
     case 'UPDATE_PACKAGE_JSON':
       return UPDATE_FNS.UPDATE_PACKAGE_JSON(action, state)
+    case 'START_CHECKPOINT_TIMER':
+      return UPDATE_FNS.START_CHECKPOINT_TIMER(action, state, dispatch)
+    case 'FINISH_CHECKPOINT_TIMER':
+      return UPDATE_FNS.FINISH_CHECKPOINT_TIMER(action, state)
     default:
       return state
   }

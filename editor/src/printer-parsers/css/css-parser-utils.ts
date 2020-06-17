@@ -1,18 +1,36 @@
 import * as csstree from 'css-tree'
 import {
+  CSSColor,
+  CSSColorHSL,
+  cssColorHSL,
+  CSSColorRGB,
+  cssColorRGB,
   cssKeyword,
   CSSKeyword,
   CSSNumber,
   cssNumber,
-  CSSUnknownArrayItem,
-  cssUnknownArrayItem,
+  CSSNumberUnit,
+  LengthUnit,
   LengthUnits,
+  parseColor,
   ParsedCurlyBrace,
   parsedCurlyBrace,
-  LengthUnit,
+  ParsedDoubleBar,
+  parsedDoubleBar,
 } from '../../components/inspector/common/css-utils'
-import { Either, isRight, left, right, Right, sequenceEither } from '../../core/shared/either'
+import {
+  Either,
+  eitherToMaybe,
+  isRight,
+  left,
+  right,
+  Right,
+  sequenceEither,
+  traverseEither,
+  mapEither,
+} from '../../core/shared/either'
 import * as csstreemissing from '../../missing-types/css-tree'
+import utils from '../../utils/utils'
 import {
   arrayIndexNotPresentParseError,
   descriptionParseError,
@@ -23,7 +41,7 @@ import {
 export function getLexerMatches(
   propertyName: string,
   propertyValue: unknown,
-  syntaxNameToFilter?: string,
+  syntaxNamesToFilter?: ReadonlyArray<string>,
 ): Either<string, Array<LexerMatch>> {
   // todo support for number values
   if (typeof propertyValue === 'string') {
@@ -33,9 +51,9 @@ export function getLexerMatches(
     })
     const lexerMatch = (csstree as any).lexer.matchProperty(propertyName, ast)
     if (lexerMatch.error === null && ast.type === 'Value') {
-      if (syntaxNameToFilter != null) {
+      if (syntaxNamesToFilter != null) {
         const filtered = lexerMatch.matched.match.filter(
-          (m: LexerMatch) => 'name' in m.syntax && m.syntax.name === syntaxNameToFilter,
+          (m: LexerMatch) => 'name' in m.syntax && syntaxNamesToFilter.includes(m.syntax.name),
         )
         return right(filtered)
       } else {
@@ -48,17 +66,6 @@ export function getLexerMatches(
   return left(`Property ${propertyName}'s value is not a string`)
 }
 
-function parseUnknownCssValue(value: unknown): Either<string, CSSUnknownArrayItem> {
-  if (isLexerMatch(value) && value.match.length === 1) {
-    const leaf = value.match[0]
-    if (isLexerToken(leaf)) {
-      // TODO do not use an array item
-      return right(cssUnknownArrayItem(leaf.token, true))
-    }
-  }
-  return left('leaf is not leaf, hah')
-}
-
 // Keywords
 
 export const parseCSSKeyword: Parser<CSSKeyword> = (match: unknown) => {
@@ -69,7 +76,9 @@ export const parseCSSKeyword: Parser<CSSKeyword> = (match: unknown) => {
   }
 }
 
-export function parseCSSValidKeyword<T extends string>(valid: Array<T>): Parser<CSSKeyword<T>> {
+export function parseCSSValidKeyword<T extends string>(
+  valid: ReadonlyArray<T>,
+): Parser<CSSKeyword<T>> {
   return function (value: unknown) {
     const parsed = parseCSSKeyword(value)
     if (isRight(parsed)) {
@@ -85,6 +94,34 @@ export function parseCSSValidKeyword<T extends string>(valid: Array<T>): Parser<
 }
 
 // Numbers
+
+export const parseNumber: Parser<CSSNumber> = (value) => {
+  if (
+    isLexerMatch(value) &&
+    isNamedSyntaxType(value.syntax, ['number']) &&
+    value.match[0] != null &&
+    isLexerToken(value.match[0]) &&
+    value.match[0].node.type === 'Number'
+  ) {
+    return right(cssNumber(Number(value.match[0].node.value), null))
+  }
+  return left(descriptionParseError(`${value} is not a number`))
+}
+
+export const parseAngle: Parser<CSSNumber> = (value) => {
+  if (
+    isLexerMatch(value) &&
+    isNamedSyntaxType(value.syntax, ['angle']) &&
+    value.match[0] != null &&
+    isLexerToken(value.match[0]) &&
+    value.match[0].node.type === 'Dimension'
+  ) {
+    return right(
+      cssNumber(Number(value.match[0].node.value), value.match[0].node.unit as CSSNumberUnit),
+    )
+  }
+  return left(descriptionParseError(`${value} is not an angle`))
+}
 
 export const parsePercentage: Parser<CSSNumber> = (value: unknown) => {
   if (isLexerMatch(value) && value.match.length === 1) {
@@ -145,6 +182,168 @@ export function parseWholeValue<T>(parser: Parser<T>): Parser<T> {
   }
 }
 
+export const parseAlphaValue: Parser<CSSNumber> = (value) => {
+  if (isLexerMatch(value) && value.match[0] != null) {
+    return parseAlternative<CSSNumber>(
+      [parseNumber, parsePercentage],
+      `Match ${JSON.stringify(value.match[0])} is not a valid number or percentage <alpha-value>`,
+    )(value.match[0])
+  } else {
+    return left(
+      descriptionParseError(
+        `Match ${JSON.stringify(value)} is not a valid <alpha-value> lexer match`,
+      ),
+    )
+  }
+}
+
+export const parseHue: Parser<CSSNumber> = (value) => {
+  if (isLexerMatch(value) && value.match[0] != null) {
+    return parseAlternative<CSSNumber>(
+      [parseNumber, parseAngle],
+      `Match ${JSON.stringify(value.match[0])} is not a valid number or angle <hue>`,
+    )(value.match[0])
+  } else {
+    return left(
+      descriptionParseError(`Match ${JSON.stringify(value)} is not a valid <hue> lexer match`),
+    )
+  }
+}
+
+export const parseRGBColor: Parser<CSSColorRGB> = (value) => {
+  if (isLexerMatch(value) && isNamedSyntaxType(value.syntax, ['rgb()', 'rgba()'])) {
+    let percentagesUsed: boolean = false
+    let percentageAlpha: boolean = false
+    const parsedComponents = utils.stripNulls(
+      value.match.map((v) => {
+        if (
+          isLexerMatch(v) &&
+          isNamedSyntaxType(v.syntax, ['percentage', 'number', 'alpha-value'])
+        ) {
+          switch (v.syntax.name) {
+            case 'percentage':
+              // lexer guarantees all value types match, so we can safely go off of last used
+              percentagesUsed = true
+              return eitherToMaybe(parsePercentage(v))
+            case 'number':
+              percentagesUsed = false
+              return eitherToMaybe(parseNumber(v))
+            case 'alpha-value':
+              const parsed = parseAlphaValue(v)
+              if (isRight(parsed) && parsed.value.unit === '%') {
+                percentageAlpha = true
+                parsed.value.value = parsed.value.value / 100
+              }
+              return eitherToMaybe(parsed)
+            default:
+              const _exhaustiveCheck: never = v.syntax.name
+              throw `Unexpected syntax name type in rgb()`
+          }
+        }
+        return null
+      }),
+    )
+    if (parsedComponents.length >= 3) {
+      const alpha = parsedComponents[3] != null ? parsedComponents[3].value : 1
+      return right(
+        cssColorRGB(
+          parsedComponents[0].value,
+          parsedComponents[1].value,
+          parsedComponents[2].value,
+          alpha,
+          percentageAlpha,
+          percentagesUsed,
+        ),
+      )
+    }
+  }
+  return left(descriptionParseError(`Match ${JSON.stringify(value)} is not an rgb(a) color`))
+}
+
+export const parseHSLColor: Parser<CSSColorHSL> = (value) => {
+  if (isLexerMatch(value) && isNamedSyntaxType(value.syntax, ['hsl()', 'hsla()'])) {
+    let percentageAlpha: boolean = false
+    const parsedComponents = utils.stripNulls(
+      value.match.map((v) => {
+        if (isLexerMatch(v) && isNamedSyntaxType(v.syntax, ['hue', 'percentage', 'alpha-value'])) {
+          switch (v.syntax.name) {
+            case 'hue':
+              return eitherToMaybe(parseHue(v))
+            case 'percentage':
+              return eitherToMaybe(parsePercentage(v))
+            case 'alpha-value':
+              const parsed = parseAlphaValue(v)
+              if (isRight(parsed) && parsed.value.unit === '%') {
+                percentageAlpha = true
+                parsed.value.value = parsed.value.value / 100
+              }
+              return eitherToMaybe(parsed)
+            default:
+              const _exhaustiveCheck: never = v.syntax.name
+              throw `Unexpected syntax name type in hsl()`
+          }
+        }
+        return null
+      }),
+    )
+    if (
+      parsedComponents.length >= 3 &&
+      (parsedComponents[0].unit === 'deg' || parsedComponents[0].unit === null)
+    ) {
+      const alpha = parsedComponents[3] != null ? parsedComponents[3].value : 1
+      return right(
+        cssColorHSL(
+          parsedComponents[0].value,
+          parsedComponents[1].value,
+          parsedComponents[2].value,
+          alpha,
+          percentageAlpha,
+        ),
+      )
+    }
+  }
+  return left(descriptionParseError(`Match ${JSON.stringify(value)} is not an hsl(a) color`))
+}
+
+export const parseLexedColor: Parser<CSSColor> = (value) => {
+  if (
+    isLexerMatch(value) &&
+    value.syntax.type === 'Type' &&
+    value.syntax.name === 'color' &&
+    value.match.length === 1
+  ) {
+    if (value.match[0] != null) {
+      const leaf = value.match[0]
+      if (isLexerMatch(leaf)) {
+        if (isNamedSyntaxType(leaf.syntax, ['rgb()', 'rgba()', 'hsl()', 'hsla()'])) {
+          const parsed = parseAlternative<CSSColorRGB | CSSColorHSL>(
+            [parseRGBColor, parseHSLColor],
+            `Value ${JSON.stringify(
+              value,
+            )} is not an <rgb()>, <rgba()>, <hsl()>, or <hsla()> color`,
+          )(leaf)
+          return parsed
+        } else if (isNamedSyntaxType(leaf.syntax, ['hex-color', 'named-color'])) {
+          if (leaf.match[0] != null) {
+            const tokenLeaf = leaf.match[0]
+            if (isLexerToken(tokenLeaf)) {
+              const parsed = parseColor(tokenLeaf.token)
+              if (isRight(parsed)) {
+                return parsed
+              } else {
+                return left(descriptionParseError(parsed.value))
+              }
+            }
+          }
+        }
+        return left(descriptionParseError('color is valid, but not supported by utopia'))
+      }
+      return left(arrayIndexNotPresentParseError(0))
+    }
+  }
+  return left(descriptionParseError('leaf is not color'))
+}
+
 // Curly Braces
 export function parseCurlyBraces<T>(
   min: number,
@@ -156,11 +355,23 @@ export function parseCurlyBraces<T>(
       const parsed = sequenceEither(
         match.map((m) => parseAlternative(parsers, 'Match is not valid curly brace value.')(m)),
       )
-      if (isRight(parsed)) {
-        return right(parsedCurlyBrace(parsed.value))
-      } else {
-        return parsed
-      }
+      return mapEither(parsedCurlyBrace, parsed)
+    }
+    return left(descriptionParseError('Lexer element is not a match'))
+  }
+}
+
+export function parseDoubleBar<T>(
+  max: number,
+  parsers: Array<Parser<T>>,
+): Parser<ParsedDoubleBar<T>> {
+  return function (match: unknown) {
+    if (Array.isArray(match) && match.length > 0 && match.length <= max) {
+      const parsed = traverseEither(
+        (m: Array<unknown>) => parseAlternative(parsers, 'Match is not valid double bar value.')(m),
+        match,
+      )
+      return mapEither(parsedDoubleBar, parsed)
     }
     return left(descriptionParseError('Lexer element is not a match'))
   }
@@ -184,8 +395,10 @@ function isLexerToken(leaf: unknown): leaf is LexerToken<string> {
 }
 
 // Type is very much in flex, if you find it doesn't match the data, fix it please
-export type LexerMatch = {
-  syntax: csstreemissing.Syntax.SyntaxItem
+export type LexerMatch<
+  T extends csstreemissing.Syntax.SyntaxItem = csstreemissing.Syntax.SyntaxItem
+> = {
+  syntax: T
   match: Array<LexerElement>
 }
 
@@ -195,3 +408,10 @@ export function isLexerMatch(parent: unknown): parent is LexerMatch {
 }
 
 export type LexerElement = LexerMatch | LexerToken<string>
+
+export function isNamedSyntaxType<T extends string>(
+  syntax: csstreemissing.Syntax.SyntaxItem,
+  names: ReadonlyArray<T>,
+): syntax is csstreemissing.Syntax.Type<T> {
+  return syntax.type === 'Type' && names.includes(syntax.name as T)
+}

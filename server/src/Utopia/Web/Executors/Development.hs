@@ -245,6 +245,8 @@ innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptP
   semaphore <- fmap _nodeSemaphore ask
   packagerContent <- liftIO $ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifModifiedSince
   return $ action packagerContent
+innerServerExecutor (AccessControlAllowOrigin _ action) = do
+  return $ action $ Just "*"
 
 readIndexHtmlFromDisk :: Text -> IO Text
 readIndexHtmlFromDisk fileName = readFile $ toS $ "../editor/lib/" <> fileName

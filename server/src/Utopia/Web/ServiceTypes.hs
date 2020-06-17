@@ -115,6 +115,7 @@ data ServiceCallsF a = NotFound
                      | GetPreviewIndexHtml (Text -> a)
                      | GetHashedAssetPaths (Value -> a)
                      | GetPackagePackagerContent Text Text (Maybe UTCTime) (Maybe (BL.ByteString, UTCTime) -> a)
+                     | AccessControlAllowOrigin (Maybe Text) (Maybe Text -> a)
                      deriving Functor
 
 {-

@@ -64,10 +64,8 @@ import {
   storedEditorStateFromEditorState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
-import { arrayEquals } from '../../../core/shared/utils'
+import { arrayEquals, isBrowserEnvironment } from '../../../core/shared/utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
-
-const isBrowserEnvironment = process.env.JEST_WORKER_ID == undefined // test if we are in a Jest environment
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -296,6 +294,9 @@ export function editorDispatch(
   const forceSave = dispatchedActions.some((action) => action.action === 'SAVE_CURRENT_FILE')
   const onlyNameUpdated = nameUpdated && dispatchedActions.length === 1
   const allTransient = dispatchedActions.every(isTransientAction)
+  const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
+    return action.action === 'FINISH_CHECKPOINT_TIMER'
+  })
   const updateCodeResultCache = dispatchedActions.some(
     (action) => action.action === 'UPDATE_CODE_RESULT_CACHE',
   )
@@ -355,7 +356,10 @@ export function editorDispatch(
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
   )
 
-  const transientOrNoChange = allTransient || result.nothingChanged
+  // The FINISH_CHECKPOINT_TIMER action effectively overrides the case where nothing changed,
+  // as it's likely that action on it's own didn't change anything, but the actions that paired with
+  // START_CHECKPOINT_TIMER likely did.
+  const transientOrNoChange = (allTransient || result.nothingChanged) && !anyFinishCheckpointTimer
   const workerUpdatedModel = dispatchedActions.some(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
@@ -545,20 +549,22 @@ function editorDispatchInner(
         } else {
           r.editor.canvas.dragState.metadata = reconstructJSXMetadata(result.editor)
         }
+        // TODO Re-enable this once we have addressed the root cause of the false positives
+        // (these were firing frequently even on elements that remained > 0x0 dimensions)
+        //
+        // const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
+        // const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
+        // if (newLostElements.length > 0 && isBrowserEnvironment) {
+        //   // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
+        //   // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
+        //   const toastAction = EditorActions.showToast({
+        //     message: `Some elements are no longer being rendered`,
+        //     level: 'WARNING',
+        //   })
+        //   setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
+        // }
 
-        const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
-        const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
-        if (newLostElements.length > 0 && isBrowserEnvironment) {
-          // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
-          // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
-          const toastAction = EditorActions.showToast({
-            message: `Some elements are no longer being rendered`,
-            level: 'WARNING',
-          })
-          setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
-        }
-
-        r.editor.warnedInstances = allLostElements
+        // r.editor.warnedInstances = allLostElements
       })
     }
 

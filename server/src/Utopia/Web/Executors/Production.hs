@@ -191,6 +191,8 @@ innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptP
   semaphore <- fmap _nodeSemaphore ask
   packagerContent <- liftIO $ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifModifiedSince
   return $ action packagerContent
+innerServerExecutor (AccessControlAllowOrigin _ action) = do
+  return $ action $ Just "*"
 
 {-|
   Invokes a service call using the supplied resources.

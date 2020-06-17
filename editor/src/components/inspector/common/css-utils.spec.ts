@@ -1,4 +1,3 @@
-import { ShadowAndBorderParams } from 'utopia-api'
 import { Either, isLeft, isRight, right } from '../../../core/shared/either'
 import {
   jsxAttributeFunctionCall,
@@ -8,14 +7,11 @@ import {
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import {
-  boxShadowAndBorderHelperFunctionName,
   cssAngle,
   CSSBackground,
   CSSBackgroundSize,
   cssBGSize,
   CSSBorderRadius,
-  CSSBoxShadowAndBorder,
-  CSSBoxShadows,
   cssColor,
   CSSColor,
   cssColorToChromaColor,
@@ -45,8 +41,6 @@ import {
   cssUnitlessLength,
   CSSUnknownArrayItem,
   defaultBGSize,
-  defaultBorder,
-  defaultBoxShadows,
   defaultCSSGradientStops,
   defaultCSSRadialGradientSize,
   defaultCSSRadialOrConicGradientCenter,
@@ -55,7 +49,6 @@ import {
   parseBackgroundImage,
   parseBorderRadius,
   parseBoxShadow,
-  parseBoxShadowAndBorder,
   parseColor,
   parseConicGradient,
   parseCSSURLFunction,
@@ -68,11 +61,14 @@ import {
   printBackgroundSize,
   RegExpLibrary,
   toggleSimple,
-  toggleStyleProp,
+  toggleStylePropPath,
 } from './css-utils'
 
 describe('toggleStyleProp', () => {
-  const simpleToggleProp = toggleStyleProp(PP.create(['style', 'backgroundColor']), toggleSimple)
+  const simpleToggleProp = toggleStylePropPath(
+    PP.create(['style', 'backgroundColor']),
+    toggleSimple,
+  )
 
   it('disables simple value', () => {
     const element = jsxTestElement(
@@ -466,101 +462,309 @@ describe('parseBackgroundImage', () => {
       'radial-gradient(#000 0%, #fff 100%), linear-gradient(90deg, #000 0%, #fff 100%), /*radial-gradient(#000 0%, #fff 100%),*/ linear-gradient(#000 0%, #fff 100%), linear-gradient(#000 0%, #000 100%)',
       'url("crazy-george.jpg")',
     ]
-    const expectedValue: Array<Array<CSSBackground>> = [
-      [
-        {
-          type: 'radial-gradient',
-          enabled: true,
-          gradientSize: { ...defaultCSSRadialGradientSize },
-          center: { ...defaultCSSRadialOrConicGradientCenter },
-          stops: [...defaultCSSGradientStops],
-        },
-      ],
-      [
-        {
-          color: {
-            type: 'Hex',
-            hex: '#000',
-          },
-          enabled: true,
-          type: 'solid',
-        },
-        {
-          type: 'linear-gradient',
-          enabled: true,
-          angle: {
-            default: true,
-            value: {
-              unit: 'deg',
-              value: 0,
-            },
-          },
-          stops: [...defaultCSSGradientStops],
-        },
-        {
-          type: 'radial-gradient',
-          enabled: false,
-          gradientSize: { ...defaultCSSRadialGradientSize },
-          center: { ...defaultCSSRadialOrConicGradientCenter },
-          stops: [...defaultCSSGradientStops],
-        },
-        {
-          type: 'linear-gradient',
-          enabled: true,
-          angle: {
-            default: false,
-            value: {
-              unit: 'deg',
-              value: 90,
-            },
-          },
-          stops: [...defaultCSSGradientStops],
-        },
-        {
-          type: 'radial-gradient',
-          enabled: true,
-          gradientSize: { ...defaultCSSRadialGradientSize },
-          center: { ...defaultCSSRadialOrConicGradientCenter },
-          stops: [...defaultCSSGradientStops],
-        },
-      ],
-      [
-        {
-          type: 'url-function',
-          url: 'crazy-george.jpg',
-          enabled: true,
-        },
-      ],
-    ]
     const validCSSBackgroundImageValuesWeDoNotSupportSadly = [
       'repeating-linear-gradient(45deg, #3f87a6, #ebf8e1 15%, #f69d3c 20%)',
       'image-set( "crazy-george.png" 1x, "crazy-george-2x.png" 2x, "crazy-george-print.png" 600dpi)',
     ]
-    const expectedValuesForUnsupportedStrings: Array<Array<CSSUnknownArrayItem>> = [
-      [
-        {
-          type: 'unknown-array-item',
-          value: 'repeating-linear-gradient(45deg, #3f87a6, #ebf8e1 15%, #f69d3c 20%)',
-          enabled: true,
+    expect(validStrings.map((valid) => parseBackgroundImage(valid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "RIGHT",
+          "value": Array [
+            Object {
+              "center": Object {
+                "x": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 50,
+                  },
+                },
+                "y": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 50,
+                  },
+                },
+              },
+              "enabled": true,
+              "gradientSize": Object {
+                "height": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+                "width": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+              },
+              "stops": Array [
+                Object {
+                  "color": Object {
+                    "hex": "#000",
+                    "type": "Hex",
+                  },
+                  "position": Object {
+                    "unit": "%",
+                    "value": 0,
+                  },
+                },
+                Object {
+                  "color": Object {
+                    "hex": "#fff",
+                    "type": "Hex",
+                  },
+                  "position": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+              ],
+              "type": "radial-gradient",
+            },
+          ],
         },
-      ],
-      [
-        {
-          type: 'unknown-array-item',
-          value:
-            'image-set( "crazy-george.png" 1x, "crazy-george-2x.png" 2x, "crazy-george-print.png" 600dpi)',
-          enabled: true,
+        Object {
+          "type": "RIGHT",
+          "value": Array [
+            Object {
+              "center": Object {
+                "x": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 50,
+                  },
+                },
+                "y": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 50,
+                  },
+                },
+              },
+              "enabled": true,
+              "gradientSize": Object {
+                "height": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+                "width": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+              },
+              "stops": Array [
+                Object {
+                  "color": Object {
+                    "hex": "#000",
+                    "type": "Hex",
+                  },
+                  "position": Object {
+                    "unit": "%",
+                    "value": 0,
+                  },
+                },
+                Object {
+                  "color": Object {
+                    "hex": "#fff",
+                    "type": "Hex",
+                  },
+                  "position": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+              ],
+              "type": "radial-gradient",
+            },
+            Object {
+              "angle": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "deg",
+                  "value": 90,
+                },
+              },
+              "enabled": true,
+              "stops": Array [
+                Object {
+                  "color": Object {
+                    "hex": "#000",
+                    "type": "Hex",
+                  },
+                  "position": Object {
+                    "unit": "%",
+                    "value": 0,
+                  },
+                },
+                Object {
+                  "color": Object {
+                    "hex": "#fff",
+                    "type": "Hex",
+                  },
+                  "position": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+              ],
+              "type": "linear-gradient",
+            },
+            Object {
+              "center": Object {
+                "x": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 50,
+                  },
+                },
+                "y": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 50,
+                  },
+                },
+              },
+              "enabled": false,
+              "gradientSize": Object {
+                "height": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+                "width": Object {
+                  "default": true,
+                  "value": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+              },
+              "stops": Array [
+                Object {
+                  "color": Object {
+                    "hex": "#000",
+                    "type": "Hex",
+                  },
+                  "position": Object {
+                    "unit": "%",
+                    "value": 0,
+                  },
+                },
+                Object {
+                  "color": Object {
+                    "hex": "#fff",
+                    "type": "Hex",
+                  },
+                  "position": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+              ],
+              "type": "radial-gradient",
+            },
+            Object {
+              "angle": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "deg",
+                  "value": 0,
+                },
+              },
+              "enabled": true,
+              "stops": Array [
+                Object {
+                  "color": Object {
+                    "hex": "#000",
+                    "type": "Hex",
+                  },
+                  "position": Object {
+                    "unit": "%",
+                    "value": 0,
+                  },
+                },
+                Object {
+                  "color": Object {
+                    "hex": "#fff",
+                    "type": "Hex",
+                  },
+                  "position": Object {
+                    "unit": "%",
+                    "value": 100,
+                  },
+                },
+              ],
+              "type": "linear-gradient",
+            },
+            Object {
+              "color": Object {
+                "hex": "#000",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          ],
         },
-      ],
-    ]
-    validStrings.forEach((valid, i) => {
-      expect(parseBackgroundImage(valid)).toEqual(right(expectedValue[i]))
-    })
-    validCSSBackgroundImageValuesWeDoNotSupportSadly.forEach((validWeDoNotSupport, i) => {
-      expect(parseBackgroundImage(validWeDoNotSupport)).toEqual(
-        right(expectedValuesForUnsupportedStrings[i]),
-      )
-    })
+        Object {
+          "type": "RIGHT",
+          "value": Array [
+            Object {
+              "enabled": true,
+              "type": "url-function",
+              "url": "crazy-george.jpg",
+            },
+          ],
+        },
+      ]
+    `)
+    expect(
+      validCSSBackgroundImageValuesWeDoNotSupportSadly.map((valid) => parseBackgroundImage(valid)),
+    ).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "RIGHT",
+          "value": Array [
+            Object {
+              "enabled": true,
+              "type": "unknown-array-item",
+              "value": "repeating-linear-gradient(45deg, #3f87a6, #ebf8e1 15%, #f69d3c 20%)",
+            },
+          ],
+        },
+        Object {
+          "type": "RIGHT",
+          "value": Array [
+            Object {
+              "enabled": true,
+              "type": "unknown-array-item",
+              "value": "image-set( \\"crazy-george.png\\" 1x, \\"crazy-george-2x.png\\" 2x, \\"crazy-george-print.png\\" 600dpi)",
+            },
+          ],
+        },
+      ]
+    `)
+
     const invalidStrings = ['a garbage', 'gradient(0deg, #000 0%, #fff 100%)']
     invalidStrings.forEach((invalid) => {
       expect(parseBackgroundImage(invalid).type).toEqual('LEFT')
@@ -659,17 +863,22 @@ describe('printBackgroundImage', () => {
         },
       ],
     ]
-    const expectedStrings = [
-      'radial-gradient(#000 0%, #fff 100%)',
-      'linear-gradient(#000 0%, #000 100%), linear-gradient(90deg, #000 0%, #fff 100%)',
-      'radial-gradient(#000 0%, #fff 100%), /*linear-gradient(#000 0%, #000 100%),*/ linear-gradient(90deg, #000 0%, #fff 100%), /*radial-gradient(#000 0%, #fff 100%),*/ linear-gradient(#000 0%, #fff 100%), linear-gradient(#000 0%, #000 100%)',
-    ]
-    validValues.forEach((valid, i) => {
-      expect(printBackgroundImage(valid)).toEqual({
-        type: 'ATTRIBUTE_VALUE',
-        value: expectedStrings[i],
-      })
-    })
+    expect(validValues.map((valid) => printBackgroundImage(valid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": "radial-gradient(#000 0%, #fff 100%)",
+        },
+        Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": "linear-gradient(90deg, #000 0%, #fff 100%) linear-gradient(#000 0%, #000 100%),",
+        },
+        Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": "linear-gradient(#000 0%, #000 100%) linear-gradient(#000 0%, #fff 100%), /*radial-gradient(#000 0%, #fff 100%),*/ linear-gradient(90deg, #000 0%, #fff 100%), /*linear-gradient(#000 0%, #000 100%),*/ radial-gradient(#000 0%, #fff 100%),",
+        },
+      ]
+    `)
   })
 })
 
@@ -683,77 +892,112 @@ describe('parseBackgroundColor', () => {
       '/*hsl(0, 100%, 0%, 1)*/',
       'hsl(0, 100%, 0%, 1)',
     ]
-    const expectedValues: Array<CSSSolidColor> = [
-      {
-        type: 'solid',
-        enabled: false,
-        color: {
-          type: 'Hex',
-          hex: '#fff',
+    expect(validStrings.map((valid) => parseBackgroundColor(valid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": false,
+              "type": "solid",
+            },
+          },
         },
-      },
-      {
-        type: 'solid',
-        enabled: true,
-        color: {
-          type: 'Hex',
-          hex: '#fff',
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          },
         },
-      },
-      {
-        type: 'solid',
-        enabled: false,
-        color: {
-          type: 'RGB',
-          r: 0,
-          g: 0,
-          b: 0,
-          a: 1,
-          percentagesUsed: false,
-          percentageAlpha: false,
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "a": 1,
+                "b": 0,
+                "g": 0,
+                "percentageAlpha": false,
+                "percentagesUsed": false,
+                "r": 0,
+                "type": "RGB",
+              },
+              "enabled": false,
+              "type": "solid",
+            },
+          },
         },
-      },
-      {
-        type: 'solid',
-        enabled: true,
-        color: {
-          type: 'RGB',
-          r: 0,
-          g: 0,
-          b: 0,
-          a: 1,
-          percentagesUsed: false,
-          percentageAlpha: false,
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "a": 1,
+                "b": 0,
+                "g": 0,
+                "percentageAlpha": false,
+                "percentagesUsed": false,
+                "r": 0,
+                "type": "RGB",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          },
         },
-      },
-      {
-        type: 'solid',
-        enabled: false,
-        color: {
-          type: 'HSL',
-          h: 0,
-          s: 100,
-          l: 0,
-          a: 1,
-          percentageAlpha: false,
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "a": 1,
+                "h": 0,
+                "l": 0,
+                "percentageAlpha": false,
+                "s": 100,
+                "type": "HSL",
+              },
+              "enabled": false,
+              "type": "solid",
+            },
+          },
         },
-      },
-      {
-        type: 'solid',
-        enabled: true,
-        color: {
-          type: 'HSL',
-          h: 0,
-          s: 100,
-          l: 0,
-          a: 1,
-          percentageAlpha: false,
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "a": 1,
+                "h": 0,
+                "l": 0,
+                "percentageAlpha": false,
+                "s": 100,
+                "type": "HSL",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          },
         },
-      },
-    ]
-    validStrings.forEach((valid, i) => {
-      expect(parseBackgroundColor(valid)).toEqual(right(expectedValues[i]))
-    })
+      ]
+    `)
   })
 })
 
@@ -889,130 +1133,219 @@ describe('parseBoxShadow', () => {
     const validStrings = [
       '1px 1px #fff, 1px 1px 1px #fff, 1px 1px 1px 1px #fff, 1px 1px 0 1px #fff, 1px 1px 0 0 #fff /*1px 1px #fff*/',
     ]
-    const expectedValidValue: Array<CSSBoxShadows> = [
-      [
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLengthZero),
-          spreadRadius: cssDefault(cssPixelLengthZero),
-          color: cssColor('#fff'),
-          inset: false,
+    expect(validStrings.map((valid) => parseBoxShadow(valid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "RIGHT",
+          "value": Array [
+            Object {
+              "blurRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": null,
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": "px",
+                  "value": 1,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": null,
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": false,
+                "value": Object {
+                  "unit": null,
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+            Object {
+              "blurRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": false,
+              "inset": false,
+              "offsetX": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "offsetY": Object {
+                "unit": "px",
+                "value": 1,
+              },
+              "spreadRadius": Object {
+                "default": true,
+                "value": Object {
+                  "unit": "px",
+                  "value": 0,
+                },
+              },
+              "type": "box-shadow",
+            },
+          ],
         },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLength(1), false),
-          spreadRadius: cssDefault(cssPixelLengthZero),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLength(1), false),
-          spreadRadius: cssDefault(cssPixelLength(1), false),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssNumber(0), false),
-          spreadRadius: cssDefault(cssPixelLength(1), false),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: true,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssNumber(0), false),
-          spreadRadius: cssDefault(cssNumber(0), false),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-        {
-          enabled: false,
-          offsetX: cssPixelLength(1),
-          offsetY: cssPixelLength(1),
-          blurRadius: cssDefault(cssPixelLengthZero),
-          spreadRadius: cssDefault(cssPixelLengthZero),
-          color: cssColor('#fff'),
-          inset: false,
-        },
-      ],
-    ]
-
-    validStrings.forEach((valid, i) => {
-      expect(parseBoxShadow(valid)).toEqual(right(expectedValidValue[i]))
-    })
+      ]
+    `)
 
     const invalidStrings = ['1px 1px burple', '1px #fff', '#fff']
-    invalidStrings.forEach((invalid, i) => {
-      expect(parseBoxShadow(invalid).type).toEqual('LEFT')
-    })
-  })
-})
-
-describe('parseBoxShadowAndBorder', () => {
-  it('parses a BoxShadowAndBorder', () => {
-    const validParameters: Array<ShadowAndBorderParams> = [
-      {
-        borderStyle: 'solid',
-        borderWidth: '1px',
-        borderColor: '#000',
-        boxShadow: '0px 0px #000',
-      },
-    ]
-
-    const expectedValidValue: Array<CSSBoxShadowAndBorder> = [
-      {
-        type: 'box-shadow-and-border',
-        boxShadows: defaultBoxShadows,
-        border: defaultBorder,
-      },
-    ]
-
-    validParameters.forEach((valid, i) => {
-      const parsed = parseBoxShadowAndBorder(
-        null,
-        jsxAttributeFunctionCall(boxShadowAndBorderHelperFunctionName, [jsxAttributeValue(valid)]),
-      )
-      if (isRight(parsed)) {
-        expect(parsed.value).toEqual(expectedValidValue[i])
-      } else {
-        fail()
-      }
-    })
-
-    const poorlyFormedPropertyParameters: Array<ShadowAndBorderParams> = [
-      {
-        boxShadow: '1px 1px burple',
-      },
-      {
-        borderColor: 'burple',
-      },
-    ]
-
-    poorlyFormedPropertyParameters.forEach((poorlyFormedPropertyParameter, i) => {
-      const parsed = parseBoxShadowAndBorder(
-        null,
-        jsxAttributeFunctionCall(boxShadowAndBorderHelperFunctionName, [
-          jsxAttributeValue(poorlyFormedPropertyParameter),
-        ]),
-      )
-      expect(parsed).toEqual(
-        right({
-          type: 'unknown-helper-function-parameters',
-          value: jsxAttributeValue(poorlyFormedPropertyParameter),
-        }),
-      )
-    })
+    expect(invalidStrings.map((invalid) => parseBoxShadow(invalid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "LEFT",
+          "value": "No box shadows found",
+        },
+        Object {
+          "type": "LEFT",
+          "value": "No box shadows found",
+        },
+        Object {
+          "type": "LEFT",
+          "value": "No box shadows found",
+        },
+      ]
+    `)
   })
 })
 
@@ -1230,10 +1563,10 @@ describe('cssColorToChromaColor', () => {
 
     const invalidStrings = ['transparent', 'burple']
 
-    validStrings.forEach((valid, i) => {
+    validStrings.forEach((valid) => {
       expect(isRight(cssColorToChromaColor({ type: 'Keyword', keyword: valid }))).toEqual(true)
     })
-    invalidStrings.forEach((invalid, i) => {
+    invalidStrings.forEach((invalid) => {
       expect(isLeft(cssColorToChromaColor({ type: 'Keyword', keyword: invalid }))).toEqual(true)
     })
   })
@@ -1242,33 +1575,44 @@ describe('cssColorToChromaColor', () => {
 describe('parseBackgroundColor', () => {
   it('parses a background color', () => {
     const validStrings = ['#fff', 'rgba(255 255 255 / 1)']
-    const expectedValue: Array<CSSSolidColor> = [
-      {
-        enabled: true,
-        type: 'solid',
-        color: {
-          type: 'Hex',
-          hex: '#fff',
-        },
-      },
-      {
-        enabled: true,
-        type: 'solid',
-        color: {
-          type: 'RGB',
-          r: 255,
-          g: 255,
-          b: 255,
-          a: 1,
-          percentagesUsed: false,
-          percentageAlpha: false,
-        },
-      },
-    ]
 
-    validStrings.forEach((valid, i) => {
-      expect(parseBackgroundColor(valid)).toEqual(right(expectedValue[i]))
-    })
+    expect(validStrings.map((valid) => parseBackgroundColor(valid))).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "hex": "#fff",
+                "type": "Hex",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          },
+        },
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "default": false,
+            "value": Object {
+              "color": Object {
+                "a": 1,
+                "b": 255,
+                "g": 255,
+                "percentageAlpha": false,
+                "percentagesUsed": false,
+                "r": 255,
+                "type": "RGB",
+              },
+              "enabled": true,
+              "type": "solid",
+            },
+          },
+        },
+      ]
+    `)
   })
 })
 

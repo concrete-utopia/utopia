@@ -356,14 +356,16 @@ hashedAssetPathsEndpoint = getHashedAssetPaths
 packagerCacheControl :: Text
 packagerCacheControl = "public, immutable, max-age=2592000"
 
-packagePackagerEndpoint :: Text -> Text -> Maybe LastModifiedTime -> ServerMonad (Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime] BL.ByteString)
-packagePackagerEndpoint javascriptPackageName javascriptPackageVersionAndSuffix ifModifiedSince = do
+packagePackagerEndpoint :: Text -> Text -> Maybe LastModifiedTime -> Maybe Text -> ServerMonad PackagePackagerResponse
+packagePackagerEndpoint javascriptPackageName javascriptPackageVersionAndSuffix ifModifiedSince possibleOrigin = do
   let javascriptPackageVersion = fromMaybe javascriptPackageVersionAndSuffix $ T.stripSuffix ".json" javascriptPackageVersionAndSuffix
   possiblePackagerContent <- getPackagePackagerContent javascriptPackageName javascriptPackageVersion (fmap getLastModifiedTime ifModifiedSince)
+  allowOriginHeader <- accessControlAllowOrigin possibleOrigin
+  let applyOriginHeader = maybe noHeader addHeader allowOriginHeader
   case possiblePackagerContent of
     Nothing -> notModified -- Not modified.
     Just (packagerContent, lastModified) -> do
-      return $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) packagerContent
+      return $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader packagerContent
 
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
