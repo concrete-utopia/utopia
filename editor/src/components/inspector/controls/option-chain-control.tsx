@@ -1,12 +1,10 @@
 /** @jsx jsx */
-import { jsx, InterpolationWithTheme } from '@emotion/core'
+import { InterpolationWithTheme, jsx } from '@emotion/core'
 import * as R from 'ramda'
 import * as React from 'react'
 import { IcnProps } from 'uuiui'
-import { DEPRECATEDControlProps } from './control'
-import { OptionControl, DEPRECATEDOptionControlOptions } from './option-control'
-import { defaultIfNull } from '../../../core/shared/optional-utils'
-import { StringControlOptions } from './string-control'
+import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
+import { OptionControl } from './option-control'
 
 export interface OptionChainOption<T> {
   value: T
@@ -21,7 +19,8 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
   ...props
 }) => {
   const options = props.options as Array<OptionChainOption<string | number>>
-  const labelBelow = (props.DEPRECATED_controlOptions as DEPRECATEDOptionControlOptions).labelBelow
+  const labelBelow = (props.DEPRECATED_controlOptions as DEPRECATEDGenericControlOptions)
+    ?.labelBelow
   if (!Array.isArray(props.options)) {
     throw new Error('OptionControl needs an array of `options`')
   }
