@@ -331,6 +331,7 @@ describe('Generating codeResultCache', () => {
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
       mockRequire,
+      [],
       false,
     )
 
@@ -341,6 +342,7 @@ describe('Generating codeResultCache', () => {
       SampleMultiFileBuildResult,
       SampleMultiFileExportsInfo,
       mockRequire,
+      [],
       false,
     )
 
@@ -351,6 +353,7 @@ describe('Generating codeResultCache', () => {
       SampleBuildResultWithError,
       SampleExportsInfoWithError,
       mockRequire,
+      [],
       false,
     )
 
@@ -363,6 +366,7 @@ describe('Filling in SystemJS', () => {
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
       mockRequire,
+      [],
       true,
     )
 
@@ -374,6 +378,7 @@ describe('Filling in SystemJS', () => {
       SampleMultiFileBuildResult,
       SampleMultiFileExportsInfo,
       mockRequire,
+      [],
       true,
     )
 
@@ -388,6 +393,7 @@ describe('Creating require function', () => {
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
       mockRequire,
+      [],
       false,
     )
 
@@ -398,6 +404,7 @@ describe('Creating require function', () => {
       SampleMultiFileBuildResult,
       SampleMultiFileExportsInfo,
       mockRequire,
+      [],
       false,
     )
 
@@ -409,6 +416,7 @@ describe('Creating require function', () => {
       SampleBuildResultWithException,
       SampleExportsInfoWithException,
       mockRequire,
+      [],
       false,
     )
 
@@ -419,6 +427,7 @@ describe('Creating require function', () => {
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
       mockRequire,
+      [],
       false,
     )
 

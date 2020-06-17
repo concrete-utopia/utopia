@@ -222,7 +222,7 @@ export function getControlsForExternalDependencies(
           }
         })
       } catch (e) {
-        console.warn(`Dependency ${controlsInfo.name} failed to require`)
+        console.warn(`Dependency ${controlsInfo.name} not found`)
       }
     }
   })
