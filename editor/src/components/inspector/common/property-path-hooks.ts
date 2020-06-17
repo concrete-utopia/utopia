@@ -33,6 +33,7 @@ import {
   ParsedPropertiesKeys,
   ParsedPropertiesValues,
   printCSSValue,
+  cssNumber,
 } from '../../../components/inspector/common/css-utils'
 import {
   createLayoutPropertyPath,
@@ -68,6 +69,7 @@ import {
   isJSXElement,
   JSXAttributes,
   UtopiaJSXComponent,
+  SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
@@ -690,6 +692,7 @@ export function useInspectorInfoSimpleUntyped(
 
 export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
   property: P,
+  specialSizeMeasurements?: SpecialSizeMeasurements,
 ): InspectorInfo<ParsedProperties[P]> {
   function transformValue(parsedValues: ParsedValues<P>): ParsedProperties[P] {
     return parsedValues[property]
@@ -698,7 +701,64 @@ export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
     return { [property]: transformedType } as Partial<ParsedValues<P>>
   }
 
-  return useInspectorInfo([property], transformValue, untransformValue, createLayoutPropertyPath)
+  let inspectorInfo = useInspectorInfo(
+    [property],
+    transformValue,
+    untransformValue,
+    createLayoutPropertyPath,
+  )
+  if (
+    !inspectorInfo.propertyStatus.set &&
+    !inspectorInfo.propertyStatus.controlled &&
+    specialSizeMeasurements != null
+  ) {
+    const measuredValue = getValueFromSpecialSizeMeasurements(property, specialSizeMeasurements)
+    if (measuredValue != null) {
+      inspectorInfo.value = measuredValue
+      inspectorInfo.propertyStatus.detected = true
+      inspectorInfo.controlStatus = getControlStatusFromPropertyStatus(inspectorInfo.propertyStatus)
+    }
+  }
+  return inspectorInfo
+}
+
+function getValueFromSpecialSizeMeasurements<P extends LayoutProp | StyleLayoutProp>(
+  property: P,
+  specialSizeMeasurements: SpecialSizeMeasurements,
+): ParsedProperties[P] | null {
+  // TODO: are there other properties in special size measurementes to extract?
+  let value: number | undefined = undefined
+  switch (property) {
+    case 'paddingLeft':
+      value = specialSizeMeasurements.padding.left
+      break
+    case 'paddingRight':
+      value = specialSizeMeasurements.padding.right
+      break
+    case 'paddingTop':
+      value = specialSizeMeasurements.padding.top
+      break
+    case 'paddingBottom':
+      value = specialSizeMeasurements.padding.bottom
+      break
+    case 'marginLeft':
+      value = specialSizeMeasurements.margin.left
+      break
+    case 'marginRight':
+      value = specialSizeMeasurements.margin.right
+      break
+    case 'marginTop':
+      value = specialSizeMeasurements.margin.top
+      break
+    case 'marginBottom':
+      value = specialSizeMeasurements.margin.bottom
+      break
+  }
+  if (value != null) {
+    // TODO: solve typing here properly
+    return cssNumber(value, null) as ParsedProperties[P]
+  }
+  return null
 }
 
 export function useKeepShallowReferenceEquality<T>(possibleNewValue: T, measure = false): T {

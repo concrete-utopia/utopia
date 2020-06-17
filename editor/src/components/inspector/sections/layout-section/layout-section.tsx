@@ -4,7 +4,10 @@ import { betterReactMemo } from 'uuiui-deps'
 import { LayoutSystemSubsection } from './layout-system-subsection/layout-system-subsection'
 import { SelfLayoutSubsection } from './self-layout-subsection/self-layout-subsection'
 import { CSSPosition } from '../../common/css-utils'
-import { DetectedLayoutSystem } from '../../../../core/shared/element-template'
+import {
+  DetectedLayoutSystem,
+  SpecialSizeMeasurements,
+} from '../../../../core/shared/element-template'
 
 export interface ResolvedLayoutProps {
   frame: LocalRectangle | null
@@ -13,7 +16,7 @@ export interface ResolvedLayoutProps {
 
 interface LayoutSectionProps {
   input: ResolvedLayoutProps
-  layoutSystem: DetectedLayoutSystem | null
+  specialSizeMeasurements: SpecialSizeMeasurements
   isChildOfFlexComponent: boolean
   position: CSSPosition
   hasNonDefaultPositionAttributes: boolean
@@ -33,7 +36,7 @@ export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSect
         aspectRatioLocked={props.aspectRatioLocked}
         toggleAspectRatioLock={props.toggleAspectRatioLock}
       />
-      <LayoutSystemSubsection layoutSystem={props.layoutSystem} />
+      <LayoutSystemSubsection specialSizeMeasurements={props.specialSizeMeasurements} />
     </>
   )
 })
