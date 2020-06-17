@@ -152,7 +152,7 @@ export function generateCodeResultCache(
 ): CodeResultCache {
   const { exports, requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
   let cache: { [code: string]: CodeResult } = {}
-  let propertyControlsInfo: PropertyControlsInfo = {}
+  let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(requireFn)
   Utils.fastForEach(exportsInfo, (result) => {
     const codeResult = processExportsInfo(exports[result.filename], result.exportTypes)
     cache[result.filename] = {
@@ -172,11 +172,6 @@ export function generateCodeResultCache(
       propertyControlsInfo[filenameNoExtension] = propertyControls
     }
   })
-
-  propertyControlsInfo = {
-    ...propertyControlsInfo,
-    ...getControlsForExternalDependencies(requireFn),
-  }
 
   return {
     skipDeepFreeze: true,
