@@ -17,6 +17,8 @@ export const PickerImagePreview = betterReactMemo(
       setImageNotFound(true)
     }, [])
 
+    const noImageProvided = props.value.url === ''
+
     return (
       <div
         style={{
@@ -31,13 +33,30 @@ export const PickerImagePreview = betterReactMemo(
               width: '100%',
               height: '100%',
               borderRadius: UtopiaTheme.inputBorderRadius,
-              boxShadow: `0 0 0 1px ${colorTheme.warningForeground.value} inset`,
+              backgroundColor: '#FFFFFF33',
+              boxShadow: noImageProvided
+                ? undefined
+                : `0 0 0 1px ${colorTheme.warningForeground.value} inset`,
               justifyContent: 'center',
-              color: colorTheme.warningForeground.value,
+              color: noImageProvided ? undefined : colorTheme.warningForeground.value,
             }}
           >
-            <Icn type='warningtriangle' color='orange' width={16} height={16} />
-            <span style={{ paddingLeft: 4 }}>Image failed to load.</span>
+            {noImageProvided ? undefined : (
+              <Icn type='warningtriangle' color='orange' width={16} height={16} />
+            )}
+            <span style={{ paddingLeft: 4 }}>
+              {props.value.url === '' ? (
+                <div>
+                  Add an image URL <br />
+                  Local assets:<code>assets/image.png</code>
+                  <br />
+                  From the internet: <code>https://utopia.fm/smiangle.png</code>
+                </div>
+              ) : (
+                'The image did not load load.'
+              )}
+            </span>
+            <span>{props.value.url}</span>
           </FlexRow>
         ) : (
           <img
