@@ -404,22 +404,6 @@ export class Projects extends React.Component<{}, ProjectsState> {
               </div>
             ) : null}
           </div>
-          {FeatureSwitches.ExampleProjects ? (
-            <FlexWrappingList
-              style={{
-                flexWrap: 'wrap',
-                alignItems: 'flex-start',
-                alignContent: 'flex-start',
-                paddingTop: layout.margins.regular,
-                paddingLeft: layout.margins.regular,
-                paddingRight: layout.margins.regular,
-                paddingBottom: layout.margins.wide,
-              }}
-            >
-              showcase.map(this.showcaseComponent)
-            </FlexWrappingList>
-          ) : null}
-
           <FlexColumn
             style={{
               overflowY: 'scroll',
