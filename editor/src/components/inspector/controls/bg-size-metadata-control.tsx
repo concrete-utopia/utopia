@@ -162,6 +162,7 @@ function bgSizeValueToSelectOption(value: CSSBGSizeValue): SelectOption {
     }
   } else {
     const first = value.value[0]
+    // When one component is defined, it defines both the x and y components
     const second = value.value[1] ?? first
 
     if (first.value === 'auto' && second.value === 'auto') {
