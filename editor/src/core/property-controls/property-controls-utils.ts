@@ -199,18 +199,21 @@ export function getControlsForExternalDependencies(
   requireFn: UtopiaRequireFn,
 ): PropertyControlsInfo {
   let propertyControlsInfo: PropertyControlsInfo = {}
-  try {
-    const antd = requireFn('/src/app.ui.js', 'antd', true)
-    fastForEach(Object.keys(AntdControls), (componentName) => {
-      if (antd[componentName] != null) {
-        propertyControlsInfo['antd'] = {
-          ...propertyControlsInfo['antd'],
-          [componentName]: (AntdControls as any)[componentName],
+  const librariesWithControls = [{ name: 'antd', controls: AntdControls }]
+  fastForEach(librariesWithControls, (controlsInfo) => {
+    try {
+      const loadedDependency = requireFn('/src/app.ui.js', controlsInfo.name, true)
+      fastForEach(Object.keys(controlsInfo.controls), (componentName) => {
+        if (loadedDependency[componentName] != null) {
+          propertyControlsInfo[controlsInfo.name] = {
+            ...propertyControlsInfo[controlsInfo.name],
+            [componentName]: (controlsInfo.controls as any)[componentName],
+          }
         }
-      }
-    })
-    return propertyControlsInfo
-  } catch (e) {
-    return propertyControlsInfo
-  }
+      })
+    } catch (e) {
+      //
+    }
+  })
+  return propertyControlsInfo
 }
