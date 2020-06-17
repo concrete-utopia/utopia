@@ -551,20 +551,22 @@ function editorDispatchInner(
         } else {
           r.editor.canvas.dragState.metadata = reconstructJSXMetadata(result.editor)
         }
+        // TODO Re-enable this once we have addressed the root cause of the false positives
+        // (these were firing frequently even on elements that remained > 0x0 dimensions)
+        //
+        // const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
+        // const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
+        // if (newLostElements.length > 0 && isBrowserEnvironment) {
+        //   // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
+        //   // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
+        //   const toastAction = EditorActions.showToast({
+        //     message: `Some elements are no longer being rendered`,
+        //     level: 'WARNING',
+        //   })
+        //   setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
+        // }
 
-        const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
-        const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
-        if (newLostElements.length > 0 && isBrowserEnvironment) {
-          // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
-          // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
-          const toastAction = EditorActions.showToast({
-            message: `Some elements are no longer being rendered`,
-            level: 'WARNING',
-          })
-          setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
-        }
-
-        r.editor.warnedInstances = allLostElements
+        // r.editor.warnedInstances = allLostElements
       })
     }
 
