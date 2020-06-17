@@ -29,6 +29,7 @@ import { createLayoutPropertyPath } from '../../../../../core/layout/layout-help
 import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
+  SpecialSizeMeasurements,
 } from '../../../../../core/shared/element-template'
 
 function useDefaultedLayoutSystemInfo(): {
@@ -157,93 +158,100 @@ export const paddingPropsToUnset = [
   createLayoutPropertyPath('paddingBottom'),
 ]
 
-export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
-  const flexPaddingTop = useInspectorLayoutInfo('paddingTop')
-  const flexPaddingRight = useInspectorLayoutInfo('paddingRight')
-  const flexPaddingBottom = useInspectorLayoutInfo('paddingBottom')
-  const flexPaddingLeft = useInspectorLayoutInfo('paddingLeft')
+interface FlexPaddingControlProps {
+  specialSizeMeasurements: SpecialSizeMeasurements
+}
 
-  const flexPaddingTopOnSubmitValue = useWrappedEmptyOnSubmitValue(
-    flexPaddingTop.onSubmitValue,
-    flexPaddingTop.onUnsetValues,
-  )
-  const flexPaddingTopOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
-    flexPaddingTop.onTransientSubmitValue,
-    flexPaddingTop.onUnsetValues,
-  )
-  const flexPaddingRightOnSubmitValue = useWrappedEmptyOnSubmitValue(
-    flexPaddingRight.onSubmitValue,
-    flexPaddingRight.onUnsetValues,
-  )
-  const flexPaddingRightOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
-    flexPaddingRight.onTransientSubmitValue,
-    flexPaddingRight.onUnsetValues,
-  )
-  const flexPaddingBottomOnSubmitValue = useWrappedEmptyOnSubmitValue(
-    flexPaddingBottom.onSubmitValue,
-    flexPaddingBottom.onUnsetValues,
-  )
-  const flexPaddingBottomOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
-    flexPaddingBottom.onTransientSubmitValue,
-    flexPaddingBottom.onUnsetValues,
-  )
-  const flexPaddingLeftOnSubmitValue = useWrappedEmptyOnSubmitValue(
-    flexPaddingLeft.onSubmitValue,
-    flexPaddingLeft.onUnsetValues,
-  )
-  const flexPaddingLeftOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
-    flexPaddingLeft.onTransientSubmitValue,
-    flexPaddingLeft.onUnsetValues,
-  )
+export const FlexPaddingControl = betterReactMemo(
+  'FlexPaddingControl',
+  (props: FlexPaddingControlProps) => {
+    const flexPaddingTop = useInspectorLayoutInfo('paddingTop', props.specialSizeMeasurements)
+    const flexPaddingRight = useInspectorLayoutInfo('paddingRight', props.specialSizeMeasurements)
+    const flexPaddingBottom = useInspectorLayoutInfo('paddingBottom', props.specialSizeMeasurements)
+    const flexPaddingLeft = useInspectorLayoutInfo('paddingLeft', props.specialSizeMeasurements)
 
-  return (
-    <ChainedNumberInput
-      idPrefix='flexPadding'
-      propsArray={[
-        {
-          value: flexPaddingTop.value,
-          labelBelow: 'T',
-          minimum: 0,
-          onSubmitValue: flexPaddingTopOnSubmitValue,
-          onTransientSubmitValue: flexPaddingTopOnTransientSubmitValue,
-          controlStatus: flexPaddingTop.controlStatus,
-          disabled: !flexPaddingTop.controlStyles.interactive,
-          numberType: 'UnitlessPercent',
-        },
-        {
-          value: flexPaddingRight.value,
-          labelBelow: 'R',
-          minimum: 0,
-          onSubmitValue: flexPaddingRightOnSubmitValue,
-          onTransientSubmitValue: flexPaddingRightOnTransientSubmitValue,
-          controlStatus: flexPaddingRight.controlStatus,
-          disabled: !flexPaddingRight.controlStyles.interactive,
-          numberType: 'UnitlessPercent',
-        },
-        {
-          value: flexPaddingBottom.value,
-          labelBelow: 'B',
-          minimum: 0,
-          onSubmitValue: flexPaddingBottomOnSubmitValue,
-          onTransientSubmitValue: flexPaddingBottomOnTransientSubmitValue,
-          controlStatus: flexPaddingBottom.controlStatus,
-          disabled: !flexPaddingBottom.controlStyles.interactive,
-          numberType: 'UnitlessPercent',
-        },
-        {
-          value: flexPaddingLeft.value,
-          labelBelow: 'L',
-          minimum: 0,
-          onSubmitValue: flexPaddingLeftOnSubmitValue,
-          onTransientSubmitValue: flexPaddingLeftOnTransientSubmitValue,
-          controlStatus: flexPaddingLeft.controlStatus,
-          disabled: !flexPaddingLeft.controlStyles.interactive,
-          numberType: 'UnitlessPercent',
-        },
-      ]}
-    />
-  )
-})
+    const flexPaddingTopOnSubmitValue = useWrappedEmptyOnSubmitValue(
+      flexPaddingTop.onSubmitValue,
+      flexPaddingTop.onUnsetValues,
+    )
+    const flexPaddingTopOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+      flexPaddingTop.onTransientSubmitValue,
+      flexPaddingTop.onUnsetValues,
+    )
+    const flexPaddingRightOnSubmitValue = useWrappedEmptyOnSubmitValue(
+      flexPaddingRight.onSubmitValue,
+      flexPaddingRight.onUnsetValues,
+    )
+    const flexPaddingRightOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+      flexPaddingRight.onTransientSubmitValue,
+      flexPaddingRight.onUnsetValues,
+    )
+    const flexPaddingBottomOnSubmitValue = useWrappedEmptyOnSubmitValue(
+      flexPaddingBottom.onSubmitValue,
+      flexPaddingBottom.onUnsetValues,
+    )
+    const flexPaddingBottomOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+      flexPaddingBottom.onTransientSubmitValue,
+      flexPaddingBottom.onUnsetValues,
+    )
+    const flexPaddingLeftOnSubmitValue = useWrappedEmptyOnSubmitValue(
+      flexPaddingLeft.onSubmitValue,
+      flexPaddingLeft.onUnsetValues,
+    )
+    const flexPaddingLeftOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+      flexPaddingLeft.onTransientSubmitValue,
+      flexPaddingLeft.onUnsetValues,
+    )
+
+    return (
+      <ChainedNumberInput
+        idPrefix='flexPadding'
+        propsArray={[
+          {
+            value: flexPaddingTop.value,
+            labelBelow: 'T',
+            minimum: 0,
+            onSubmitValue: flexPaddingTopOnSubmitValue,
+            onTransientSubmitValue: flexPaddingTopOnTransientSubmitValue,
+            controlStatus: flexPaddingTop.controlStatus,
+            disabled: !flexPaddingTop.controlStyles.interactive,
+            numberType: 'UnitlessPercent',
+          },
+          {
+            value: flexPaddingRight.value,
+            labelBelow: 'R',
+            minimum: 0,
+            onSubmitValue: flexPaddingRightOnSubmitValue,
+            onTransientSubmitValue: flexPaddingRightOnTransientSubmitValue,
+            controlStatus: flexPaddingRight.controlStatus,
+            disabled: !flexPaddingRight.controlStyles.interactive,
+            numberType: 'UnitlessPercent',
+          },
+          {
+            value: flexPaddingBottom.value,
+            labelBelow: 'B',
+            minimum: 0,
+            onSubmitValue: flexPaddingBottomOnSubmitValue,
+            onTransientSubmitValue: flexPaddingBottomOnTransientSubmitValue,
+            controlStatus: flexPaddingBottom.controlStatus,
+            disabled: !flexPaddingBottom.controlStyles.interactive,
+            numberType: 'UnitlessPercent',
+          },
+          {
+            value: flexPaddingLeft.value,
+            labelBelow: 'L',
+            minimum: 0,
+            onSubmitValue: flexPaddingLeftOnSubmitValue,
+            onTransientSubmitValue: flexPaddingLeftOnTransientSubmitValue,
+            controlStatus: flexPaddingLeft.controlStatus,
+            disabled: !flexPaddingLeft.controlStyles.interactive,
+            numberType: 'UnitlessPercent',
+          },
+        ]}
+      />
+    )
+  },
+)
 
 const layoutSystemConfigPropertyPaths = [
   createLayoutPropertyPath('LayoutSystem'),
