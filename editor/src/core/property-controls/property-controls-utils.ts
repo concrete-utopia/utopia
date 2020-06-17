@@ -212,7 +212,7 @@ export function getControlsForExternalDependencies(
         }
       })
     } catch (e) {
-      //
+      // ignore error, dependency is missing from the package.json
     }
   })
   return propertyControlsInfo
