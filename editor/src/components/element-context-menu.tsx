@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { FeatureSwitches } from '../common/feature-switches'
 import {
   bringForward,
   bringToFront,

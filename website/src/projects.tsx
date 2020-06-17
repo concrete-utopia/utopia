@@ -10,7 +10,6 @@ import { colors } from './home/components/theme'
 import { Global } from '@emotion/core'
 import { fetchProjectList, fetchShowcaseProjects } from './common/server'
 import { Redirect } from 'react-router-dom'
-import { FeatureSwitches } from './common/feature-switches'
 import {
   ProjectListing,
   deleteProject,
