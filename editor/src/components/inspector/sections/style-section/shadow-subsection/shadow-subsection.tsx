@@ -216,7 +216,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
           propsArray={[
             {
               value: props.value.offsetX,
-              labelBelow: 'x',
+              DEPRECATED_labelBelow: 'x',
               onSubmitValue: offsetXSubmitValue,
               onTransientSubmitValue: offsetXTransientSubmitValue,
               controlStatus: props.controlStatus,
@@ -225,7 +225,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
             },
             {
               value: props.value.offsetY,
-              labelBelow: 'y',
+              DEPRECATED_labelBelow: 'y',
               onSubmitValue: offsetYSubmitValue,
               onTransientSubmitValue: offsetYTransientSubmitValue,
               controlStatus: props.controlStatus,
@@ -234,7 +234,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
             },
             {
               value: props.value.blurRadius.value,
-              labelBelow: 'blur',
+              DEPRECATED_labelBelow: 'blur',
               onSubmitValue: blurRadiusSubmitValue,
               onTransientSubmitValue: blurRadiusTransientSubmitValue,
               controlStatus: props.controlStatus,
@@ -243,7 +243,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
             },
             {
               value: props.value.spreadRadius.value,
-              labelBelow: 'spread',
+              DEPRECATED_labelBelow: 'spread',
               onSubmitValue: spreadRadiusSubmitValue,
               onTransientSubmitValue: spreadRadiusTransientSubmitValue,
               controlStatus: props.controlStatus,

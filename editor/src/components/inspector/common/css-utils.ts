@@ -2814,6 +2814,18 @@ export function emptyInputValue(): EmptyInputValue {
   return { type: 'EMPTY_INPUT_VALUE' }
 }
 
+export type UnknownInputValue = { type: 'unknown-input'; value: string }
+
+export function isUnknownInputValue(value: unknown): value is UnknownInputValue {
+  return typeof value === 'object' && value != null && (value as any).type === 'unknown-input'
+}
+
+export function unknownInputValue(value: string): UnknownInputValue {
+  return { type: 'unknown-input', value }
+}
+
+export type UnknownOrEmptyInput<T> = T | EmptyInputValue | UnknownInputValue
+
 export const defaultGradientStops: Array<CSSGradientStop> = [
   {
     color: { ...blackHexCSSColor },

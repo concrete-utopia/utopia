@@ -3,9 +3,10 @@ import { jsx, InterpolationWithTheme } from '@emotion/core'
 import * as R from 'ramda'
 import * as React from 'react'
 import { IcnProps } from 'uuiui'
-import { ControlProps } from './control'
-import { OptionControl } from './option-control'
+import { DEPRECATEDControlProps } from './control'
+import { OptionControl, DEPRECATEDOptionControlOptions } from './option-control'
 import { defaultIfNull } from '../../../core/shared/optional-utils'
+import { StringControlOptions } from './string-control'
 
 export interface OptionChainOption<T> {
   value: T
@@ -15,12 +16,12 @@ export interface OptionChainOption<T> {
 }
 
 // TODO come up with a typed OptionChainControl types!
-export const OptionChainControl: React.StatelessComponent<ControlProps<any>> = ({
+export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps<any>> = ({
   style,
   ...props
 }) => {
   const options = props.options as Array<OptionChainOption<string | number>>
-  const controlOptions = defaultIfNull({}, props.controlOptions)
+  const labelBelow = (props.DEPRECATED_controlOptions as DEPRECATEDOptionControlOptions).labelBelow
   if (!Array.isArray(props.options)) {
     throw new Error('OptionControl needs an array of `options`')
   }
@@ -68,7 +69,7 @@ export const OptionChainControl: React.StatelessComponent<ControlProps<any>> = (
             {...props}
             css={optionCSS}
             key={'option-' + index}
-            controlOptions={{
+            DEPRECATED_controlOptions={{
               tooltip: option.tooltip,
               icon: option.icon,
               labelInner: option.label,
@@ -83,14 +84,14 @@ export const OptionChainControl: React.StatelessComponent<ControlProps<any>> = (
           />
         ))}
       </div>
-      {!controlOptions.labelBelow ? null : (
+      {!labelBelow ? null : (
         <label
           htmlFor={props.id}
           onContextMenu={props.onContextMenu}
           className='label-mini-control f10 tc db'
           color={props.controlStyles.mainColor}
         >
-          <span className='label-container'>{controlOptions.labelBelow}</span>
+          <span className='label-container'>{labelBelow}</span>
         </label>
       )}
     </div>

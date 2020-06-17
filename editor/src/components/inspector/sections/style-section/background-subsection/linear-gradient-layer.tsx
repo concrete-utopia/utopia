@@ -117,7 +117,7 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
               onSubmitValue={gradientAngleSubmitValue}
               onTransientSubmitValue={gradientAngleTransientSubmitValue}
               controlStatus={props.controlStatus}
-              labelBelow='angle'
+              DEPRECATED_labelBelow='angle'
               inputProps={{ onMouseDown: stopPropagation }}
               numberType='AnglePercent'
             />

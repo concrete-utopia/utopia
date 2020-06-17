@@ -50,7 +50,7 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
         onSubmitValue={props.onSubmitSolidStringValue}
         controlStatus={props.controlStatus}
         controlStyles={props.controlStyles}
-        controlOptions={{
+        DEPRECATED_controlOptions={{
           labelBelow: 'hex',
         }}
         style={{
@@ -148,7 +148,7 @@ export const StringColorControl = betterReactMemo(
         onSubmitValue={props.onSubmitSolidStringValue}
         controlStatus={props.controlStatus}
         controlStyles={props.controlStyles}
-        controlOptions={{
+        DEPRECATED_controlOptions={{
           labelBelow: 'hex',
         }}
       />

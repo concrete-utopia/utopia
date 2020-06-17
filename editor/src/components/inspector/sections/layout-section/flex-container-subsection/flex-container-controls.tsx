@@ -10,7 +10,7 @@ import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/
 import { FlexDirection } from 'utopia-api'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
-import { SliderControl, SliderControlOptions } from '../../../controls/slider-control'
+import { SliderControl, DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { betterReactMemo, OnSubmitValueOrEmpty } from 'uuiui-deps'
 import { SelectOption } from '../../../controls/select-control'
@@ -85,7 +85,7 @@ export const FlexDirectionControl = betterReactMemo(
           id='flex.container.flexDirection'
           key='flex.container.flexDirection'
           value={props.value}
-          controlOptions={{
+          DEPRECATED_controlOptions={{
             labelBelow: 'Direction',
           }}
           controlStatus={props.controlStatus}
@@ -210,7 +210,7 @@ export const FlexJustifyContentControl = betterReactMemo(
           id='flex.container.justifyContent'
           key='flex.container.justifyContent'
           value={props.value}
-          controlOptions={{
+          DEPRECATED_controlOptions={{
             labelBelow: 'Justify',
           }}
           options={justifyContentOptions(
@@ -247,7 +247,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             id='flex.container.gap.main'
             key='flex.container.gap.main'
             value={props.value}
-            controlOptions={
+            DEPRECATED_controlOptions={
               {
                 minimum: 0,
                 maximum: 50,
@@ -255,7 +255,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
                 origin: 0,
                 filled: true,
                 tooltip: 'Gap (sets margin on children)',
-              } as SliderControlOptions
+              } as DEPRECATEDSliderControlOptions
             }
             onSubmitValue={props.onSubmitValue}
             onTransientSubmitValue={props.onTransientSubmitValue}
@@ -266,7 +266,6 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
         <InspectorContextMenuWrapper id={`gap-main-context-menu`} items={menuItems} data={{}}>
           <SimpleNumberInput
             id='flex.container.gap.main'
-            key='flex.container.gap.main'
             value={props.value}
             minimum={0}
             maximum={50}
@@ -274,7 +273,6 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             onSubmitValue={wrappedOnSubmit}
             onTransientSubmitValue={wrappedOnTransientSubmit}
             controlStatus={props.controlStatus}
-            disabled={!props.controlStyles.interactive}
           />
         </InspectorContextMenuWrapper>
       </GridRow>

@@ -99,20 +99,18 @@ export const ConicGradientBackgroundLayer = betterReactMemo<ConicGradientBackgro
               propsArray={[
                 {
                   value: props.value.center.x.value,
-                  labelBelow: 'x',
+                  DEPRECATED_labelBelow: 'x',
                   onSubmitValue: gradientCenterXSubmitValue,
                   onTransientSubmitValue: gradientCenterXTransientSubmitValue,
                   controlStatus: props.controlStatus,
-                  disabled: !props.controlStyles.interactive,
                   numberType: 'LengthPercent' as const,
                 },
                 {
                   value: props.value.center.y.value,
-                  labelBelow: 'y',
+                  DEPRECATED_labelBelow: 'y',
                   onSubmitValue: gradientCenterYSubmitValue,
                   onTransientSubmitValue: gradientCenterYTransientSubmitValue,
                   controlStatus: props.controlStatus,
-                  disabled: !props.controlStyles.interactive,
                   numberType: 'LengthPercent' as const,
                 },
               ]}

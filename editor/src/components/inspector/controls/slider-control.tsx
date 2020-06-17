@@ -1,9 +1,9 @@
 import Slider, { Marks } from 'rc-slider'
 import * as React from 'react'
-import { ControlProps, GenericControlOptions } from './control'
+import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { FlexRow, UtopiaTheme } from 'uuiui'
 
-export interface SliderControlOptions extends GenericControlOptions {
+export interface DEPRECATEDSliderControlOptions extends DEPRECATEDGenericControlOptions {
   minimum: number
   maximum: number
   filled?: boolean
@@ -16,15 +16,15 @@ export const defaultSliderControlOptions = {
   stepSize: 1,
 }
 
-export type SliderControlProps = ControlProps<number> & {
-  controlOptions: SliderControlOptions
+export type SliderControlProps = DEPRECATEDControlProps<number> & {
+  DEPRECATED_controlOptions: DEPRECATEDSliderControlOptions
 }
 
 export class SliderControl extends React.Component<SliderControlProps, {}> {
   render() {
     const controlOptions = {
       ...defaultSliderControlOptions,
-      ...this.props.controlOptions,
+      ...this.props.DEPRECATED_controlOptions,
     }
 
     let marks: Marks = {}

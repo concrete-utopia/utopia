@@ -213,7 +213,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<BGSizeMetadataContro
                 onSubmitValue={onSubmitWidthValue}
                 onTransientSubmitValue={onTransientSubmitWidthValue}
                 controlStatus={props.controlStatus}
-                labelBelow='width'
+                DEPRECATED_labelBelow='width'
               />
             ) : (
               <div style={{ gridColumn: '5 / span 1' }}>auto</div>
@@ -227,7 +227,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<BGSizeMetadataContro
                 onSubmitValue={onSubmitHeightValue}
                 onTransientSubmitValue={onTransientSubmitHeightValue}
                 controlStatus={props.controlStatus}
-                labelBelow='height'
+                DEPRECATED_labelBelow='height'
               />
             ) : (
               <div style={{ gridColumn: '7 / span 1' }}>auto</div>

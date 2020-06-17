@@ -463,7 +463,9 @@ const DoubleLengthItem = betterReactMemo<DoubleLengthItemProps>('DoubleLengthIte
         minimum={controlMetadata.minimum}
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
-        labelBelow={controlMetadata.labelBelow != null ? controlMetadata.labelBelow[0] : undefined}
+        DEPRECATED_labelBelow={
+          controlMetadata.labelBelow != null ? controlMetadata.labelBelow[0] : undefined
+        }
         onSubmitValue={doubleLengthZeroethItemSubmitValue}
         onTransientSubmitValue={doubleLengthZeroethItemTransientSubmitValue}
         controlStatus={props.controlStatus}
@@ -481,7 +483,9 @@ const DoubleLengthItem = betterReactMemo<DoubleLengthItemProps>('DoubleLengthIte
         minimum={controlMetadata.minimum}
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
-        labelBelow={controlMetadata.labelBelow != null ? controlMetadata.labelBelow[1] : undefined}
+        DEPRECATED_labelBelow={
+          controlMetadata.labelBelow != null ? controlMetadata.labelBelow[1] : undefined
+        }
         onSubmitValue={doubleLengthFirstItemSubmitValue}
         onTransientSubmitValue={doubleLengthFirstItemTransientSubmitValue}
         controlStatus={props.controlStatus}

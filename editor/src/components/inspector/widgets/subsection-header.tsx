@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { InspectorSubsectionHeader } from 'uuiui'
-import { ControlProps } from '../controls/control'
+import { DEPRECATEDControlProps } from '../controls/control'
 
-export interface SubsectionHeaderControlProps extends ControlProps<string> {}
+export interface SubsectionHeaderControlProps extends DEPRECATEDControlProps<string> {}
 
 export const SubsectionHeaderControl: React.FunctionComponent<SubsectionHeaderControlProps> = (
   props,

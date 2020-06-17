@@ -162,7 +162,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
             onSubmitValue={propMetadata.onSubmitValue}
             controlStatus={propMetadata.controlStatus}
             controlStyles={propMetadata.controlStyles}
-            controlOptions={{
+            DEPRECATED_controlOptions={{
               minimum: controlDescription.min,
               maximum: controlDescription.max,
               stepSize: controlDescription.step,
