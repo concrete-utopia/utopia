@@ -1,6 +1,6 @@
 import Utils from '../../utils/utils'
 import * as Es6MicroLoader from './es6-micro-loader'
-import { RequireFn } from '../../core/shared/npm-dependency-types'
+import { RequireFn, NpmDependency } from '../../core/shared/npm-dependency-types'
 import { ExportType, ExportsInfo, MultiFileBuildResult } from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
@@ -148,11 +148,15 @@ export function generateCodeResultCache(
   modules: MultiFileBuildResult,
   exportsInfo: ReadonlyArray<ExportsInfo>,
   npmRequireFn: RequireFn,
+  npmDependencies: NpmDependency[],
   fullBuild: boolean,
 ): CodeResultCache {
   const { exports, requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
   let cache: { [code: string]: CodeResult } = {}
-  let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(requireFn)
+  let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
+    requireFn,
+    npmDependencies,
+  )
   Utils.fastForEach(exportsInfo, (result) => {
     const codeResult = processExportsInfo(exports[result.filename], result.exportTypes)
     cache[result.filename] = {

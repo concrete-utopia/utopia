@@ -4170,6 +4170,7 @@ export async function newProject(
     SampleFileBuildResult,
     SampleFileBundledExportsInfo,
     require,
+    npmDependencies,
     true,
   )
 
@@ -4232,7 +4233,13 @@ export async function load(
   }
   if (model.exportsInfo.length > 0) {
     workers.sendInitMessage(typeDefinitions, model.projectContents)
-    codeResultCache = generateCodeResultCache(model.buildResult, model.exportsInfo, require, true)
+    codeResultCache = generateCodeResultCache(
+      model.buildResult,
+      model.exportsInfo,
+      require,
+      npmDependencies,
+      true,
+    )
   } else {
     const loadedResult = await loadCodeResult(
       workers,
@@ -4282,6 +4289,7 @@ function loadCodeResult(
             data.buildResult,
             data.exportsInfo,
             bundleResult.require,
+            dependenciesFromModel({ projectContents: projectContents }),
             true,
           )
           resolve(codeResultCache)
