@@ -5,6 +5,7 @@ import { ExportType, ExportsInfo, MultiFileBuildResult } from '../../core/worker
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
+import { getControlsForExternalDependencies } from '../../core/property-controls/property-controls-utils'
 
 export interface CodeResult {
   exports: ModuleExportTypesAndValues
@@ -151,7 +152,7 @@ export function generateCodeResultCache(
 ): CodeResultCache {
   const { exports, requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
   let cache: { [code: string]: CodeResult } = {}
-  let propertyControlsInfo: PropertyControlsInfo = {}
+  let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(requireFn)
   Utils.fastForEach(exportsInfo, (result) => {
     const codeResult = processExportsInfo(exports[result.filename], result.exportTypes)
     cache[result.filename] = {
@@ -171,6 +172,7 @@ export function generateCodeResultCache(
       propertyControlsInfo[filenameNoExtension] = propertyControls
     }
   })
+
   return {
     skipDeepFreeze: true,
     exportsInfo: exportsInfo,
