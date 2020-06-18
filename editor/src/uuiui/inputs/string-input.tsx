@@ -4,9 +4,9 @@ import styled from '@emotion/styled'
 import * as React from 'react'
 import { ControlStyles, getControlStyles } from '../../components/inspector/common/control-status'
 import { UtopiaTheme } from '../styles/theme'
-import { OnSubmitValue, InspectorControlProps } from '../../components/inspector/controls/control'
+import { OnSubmitValue } from '../../components/inspector/controls/control'
 import { stopPropagation } from '../../components/inspector/common/inspector-utils'
-import { betterReactMemo } from 'uuiui-deps'
+import { betterReactMemo, ControlStatus } from 'uuiui-deps'
 import { InspectorInput } from './base-input'
 
 interface StringInputOptions {
@@ -14,11 +14,15 @@ interface StringInputOptions {
 }
 
 export interface StringInputProps
-  extends InspectorControlProps,
-    StringInputOptions,
+  extends StringInputOptions,
     React.InputHTMLAttributes<HTMLInputElement> {
   placeholder?: string
   onSubmitValue?: OnSubmitValue<string>
+  style?: React.CSSProperties
+  id?: string
+  className?: string
+  DEPRECATED_labelBelow?: React.ReactChild
+  controlStatus?: ControlStatus
 }
 
 // TODO FIX FUCKED UP REFS SITUATION
