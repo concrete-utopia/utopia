@@ -2323,7 +2323,8 @@ export type CSSBackgroundLayerType =
   | ImageURLBackgroundLayerType
   | GradientBackgroundLayerType
 
-export type CSSBGSizeKeywordValueValue = 'contain' | 'cover'
+export const cssBGSizeKeywordValueValues = ['contain', 'cover'] as const
+export type CSSBGSizeKeywordValueValue = NonNullable<typeof cssBGSizeKeywordValueValues[number]>
 export type CSSBGSizeKeywordValue = CSSKeyword<CSSBGSizeKeywordValueValue>
 export type CSSBGSizeCurlyBraceValueValue = CSSNumber | CSSKeyword<'auto'>
 export type CSSBGSizeCurlyBraceValue = ParsedCurlyBrace<CSSBGSizeCurlyBraceValueValue>

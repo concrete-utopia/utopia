@@ -1,6 +1,8 @@
 import * as React from 'react'
-import { NumberInput, PopupList } from '../../../uuiui'
+import { PopupList } from '../../../uuiui'
 import { SelectOption } from '../../../uuiui-deps'
+import { NumberOrKeywordControl } from '../../../uuiui/inputs/number-or-keyword-input'
+import { ControlStatus } from '../common/control-status'
 import {
   CSSBackgroundLayers,
   cssBGSize,
@@ -13,19 +15,18 @@ import {
   CSSNumber,
   cssPixelLengthZero,
   CSSURLFunctionBackgroundLayer,
-  EmptyInputValue,
   isCSSBackgroundLayerWithBGSize,
   isCSSKeyword,
   isCSSNumber,
+  isCSSValidKeyword,
   isEmptyInputValue,
   isParsedCurlyBrace,
+  isUnknownInputValue,
   parsedCurlyBrace,
+  UnknownOrEmptyInput,
 } from '../common/css-utils'
-import { ControlStatus } from '../common/control-status'
 import { UseSubmitTransformedValuesFactory } from '../sections/style-section/background-subsection/background-layer-helpers'
 import { MetadataControlsStyle } from '../sections/style-section/background-subsection/background-picker'
-import { KeywordControl } from './keyword-control'
-import { NO_OP } from '../../../core/shared/utils'
 
 interface BGSizeMetadataControlProps {
   index: number
@@ -93,29 +94,45 @@ function getIndexedUpdateBGSizePopupList(index: number) {
 
 function getIndexedUpdateBGSizeWidthNumberValue(index: number) {
   return function updateBGSizeWidthNumberValue(
-    newValue: CSSNumber | EmptyInputValue,
+    newValue: UnknownOrEmptyInput<CSSNumber | CSSKeyword>,
     oldValue: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
     let newCSSBackgroundLayers = [...oldValue]
     const indexedLayer = newCSSBackgroundLayers[index]
     if (isCSSBackgroundLayerWithBGSize(indexedLayer)) {
       const bgSizeValue = indexedLayer.bgSize.size.value
-      if (isEmptyInputValue(newValue)) {
-        if (isParsedCurlyBrace(bgSizeValue) && bgSizeValue.value[1] != null) {
+      if (isParsedCurlyBrace(bgSizeValue)) {
+        if (isEmptyInputValue(newValue)) {
+          if (isParsedCurlyBrace(bgSizeValue) && bgSizeValue.value[1] != null) {
+            const bgSize = cssBGSize(
+              cssDefault(parsedCurlyBrace([cssKeyword('auto'), bgSizeValue.value[1]]), false),
+            )
+            newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
+          } else {
+            const bgSize = cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('auto')])))
+            newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
+          }
+        } else if (isUnknownInputValue(newValue)) {
+          // TODO submitting unknown input value triggers error state
+        } else if (isCSSValidKeyword(newValue, ['auto'])) {
           const bgSize = cssBGSize(
-            cssDefault(parsedCurlyBrace([cssKeyword('auto'), bgSizeValue.value[1]]), false),
+            cssDefault(parsedCurlyBrace([newValue, bgSizeValue.value[1]]), false),
           )
           newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
-        } else {
-          const bgSize = cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('auto')])))
-          newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
+        } else if (isCSSNumber(newValue)) {
+          if (isParsedCurlyBrace(bgSizeValue) && bgSizeValue.value[1] != null) {
+            const heightComponent = bgSizeValue.value[1]
+            const bgSize = cssBGSize(
+              cssDefault(parsedCurlyBrace([newValue, heightComponent]), false),
+            )
+            newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
+          } else {
+            const bgSize = cssBGSize(
+              cssDefault(parsedCurlyBrace([newValue, cssKeyword('auto')]), false),
+            )
+            newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
+          }
         }
-      } else {
-        const heightComponent = isParsedCurlyBrace(bgSizeValue)
-          ? bgSizeValue.value[1]
-          : cssKeyword('auto')
-        const bgSize = cssBGSize(cssDefault(parsedCurlyBrace([newValue, heightComponent]), false))
-        newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
       }
     }
     return newCSSBackgroundLayers
@@ -124,33 +141,37 @@ function getIndexedUpdateBGSizeWidthNumberValue(index: number) {
 
 function getIndexedUpdateBGSizeHeightNumberValue(index: number) {
   return function updateBGSizeHeightNumberValue(
-    newValue: CSSNumber | EmptyInputValue,
+    newValue: UnknownOrEmptyInput<CSSNumber | CSSKeyword>,
     oldValue: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
     let newCSSBackgroundLayers = [...oldValue]
     const indexedLayer = newCSSBackgroundLayers[index]
     if (isCSSBackgroundLayerWithBGSize(indexedLayer)) {
       const bgSizeValue = indexedLayer.bgSize.size.value
-      if (isEmptyInputValue(newValue)) {
-        if (
-          isParsedCurlyBrace(bgSizeValue) &&
-          bgSizeValue.value[0] != null &&
-          !isCSSKeyword(bgSizeValue.value[0])
-        ) {
-          const bgSize = cssBGSize(
-            cssDefault(parsedCurlyBrace([bgSizeValue.value[0], cssKeyword('auto')]), false),
-          )
-          newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
-        } else {
-          const bgSize = cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('auto')])))
+      if (isParsedCurlyBrace(bgSizeValue)) {
+        if (isEmptyInputValue(newValue)) {
+          if (
+            isParsedCurlyBrace(bgSizeValue) &&
+            bgSizeValue.value[0] != null &&
+            !isCSSKeyword(bgSizeValue.value[0])
+          ) {
+            const bgSize = cssBGSize(
+              cssDefault(parsedCurlyBrace([bgSizeValue.value[0], cssKeyword('auto')]), false),
+            )
+            newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
+          } else {
+            const bgSize = cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('auto')])))
+            newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
+          }
+        } else if (isUnknownInputValue(newValue)) {
+          // TODO submitting unknown input value triggers error state
+        } else if (isCSSValidKeyword(newValue, ['auto']) || isCSSNumber(newValue)) {
+          const widthComponent = isParsedCurlyBrace(bgSizeValue)
+            ? bgSizeValue.value[0]
+            : cssKeyword('auto')
+          const bgSize = cssBGSize(cssDefault(parsedCurlyBrace([widthComponent, newValue]), false))
           newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
         }
-      } else {
-        const widthComponent = isParsedCurlyBrace(bgSizeValue)
-          ? bgSizeValue.value[0]
-          : cssKeyword('auto')
-        const bgSize = cssBGSize(cssDefault(parsedCurlyBrace([widthComponent, newValue]), false))
-        newCSSBackgroundLayers[index] = { ...indexedLayer, bgSize }
       }
     }
     return newCSSBackgroundLayers
@@ -189,68 +210,47 @@ export const BGSizeMetadataControl: React.FunctionComponent<BGSizeMetadataContro
     getIndexedUpdateBGSizeHeightNumberValue(props.index),
   )
 
-  if (isCSSBackgroundLayerWithBGSize(props.value)) {
-    const bgSizeValue = props.value.bgSize.size.value
-    let widthValue: CSSNumber | CSSKeyword | null = null
-    let heightValue: CSSNumber | CSSKeyword | null = null
-    if (isParsedCurlyBrace(bgSizeValue)) {
-      widthValue = bgSizeValue.value[0]
-      heightValue = bgSizeValue.value[1] ?? widthValue
-    }
-    if (widthValue != null && heightValue != null) {
-      return (
-        <div style={MetadataControlsStyle}>
-          <PopupList
-            style={{ gridColumn: '1 / span 3' }}
-            options={BGSizeKeywordValueSelectOptions}
-            value={bgSizeValueToSelectOption(bgSizeValue)}
-            onSubmitValue={onSubmitPopupListValue}
-          />
-          <>
-            {isCSSNumber(widthValue) ? (
-              <NumberInput
-                style={{ gridColumn: '5 / span 1' }}
-                numberType='LengthPercent'
-                id='bgSize-width-component'
-                value={widthValue}
-                onSubmitValue={onSubmitWidthValue}
-                onTransientSubmitValue={onTransientSubmitWidthValue}
-                controlStatus={props.controlStatus}
-                DEPRECATED_labelBelow='width'
-              />
-            ) : (
-              <KeywordControl
-                style={{ gridColumn: '5 / span 1' }}
-                value={widthValue}
-                onSubmitValue={NO_OP}
-                controlStatus={props.controlStatus}
-                validKeywords={validDimensionComponentKeywords}
-              />
-            )}
-            {isCSSNumber(heightValue) ? (
-              <NumberInput
-                style={{ gridColumn: '7 / span 1' }}
-                numberType='LengthPercent'
-                id='bgSize-height-component'
-                value={heightValue}
-                onSubmitValue={onSubmitHeightValue}
-                onTransientSubmitValue={onTransientSubmitHeightValue}
-                controlStatus={props.controlStatus}
-                DEPRECATED_labelBelow='height'
-              />
-            ) : (
-              <KeywordControl
-                style={{ gridColumn: '7 / span 1' }}
-                value={heightValue}
-                onSubmitValue={NO_OP}
-                controlStatus={props.controlStatus}
-                validKeywords={validDimensionComponentKeywords}
-              />
-            )}
-          </>
-        </div>
-      )
-    }
+  const bgSizeValue = props.value.bgSize.size.value
+  let widthValue: CSSNumber | CSSKeyword | null = null
+  let heightValue: CSSNumber | CSSKeyword | null = null
+  if (isParsedCurlyBrace(bgSizeValue)) {
+    widthValue = bgSizeValue.value[0]
+    heightValue = bgSizeValue.value[1] ?? widthValue
   }
-  return null
+  return (
+    <div style={MetadataControlsStyle}>
+      <PopupList
+        style={{ gridColumn: '1 / span 3' }}
+        options={BGSizeKeywordValueSelectOptions}
+        value={bgSizeValueToSelectOption(bgSizeValue)}
+        onSubmitValue={onSubmitPopupListValue}
+      />
+      {widthValue != null && heightValue != null ? (
+        <>
+          <NumberOrKeywordControl
+            style={{ gridColumn: '5 / span 1' }}
+            id='bgSize-width-component'
+            value={widthValue}
+            numberInputOptions={{ numberType: 'LengthPercent' }}
+            keywordControlOptions={{ validKeywords: validDimensionComponentKeywords }}
+            onSubmitValue={onSubmitWidthValue}
+            onTransientSubmitValue={onTransientSubmitWidthValue}
+            controlStatus={props.controlStatus}
+            DEPRECATED_labelBelow='width'
+          />
+          <NumberOrKeywordControl
+            style={{ gridColumn: '7 / span 1' }}
+            id='bgSize-height-component'
+            value={heightValue}
+            numberInputOptions={{ numberType: 'LengthPercent' }}
+            keywordControlOptions={{ validKeywords: validDimensionComponentKeywords }}
+            onSubmitValue={onSubmitHeightValue}
+            onTransientSubmitValue={onTransientSubmitHeightValue}
+            controlStatus={props.controlStatus}
+            DEPRECATED_labelBelow='height'
+          />
+        </>
+      ) : null}
+    </div>
+  )
 }

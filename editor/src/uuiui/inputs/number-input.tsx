@@ -25,6 +25,9 @@ import {
   parseCSSNumber,
   setCSSNumberValue,
   UnknownOrEmptyInput,
+  isUnknownInputValue,
+  unknownInputValue,
+  isCSSNumber,
 } from '../../components/inspector/common/css-utils'
 import { OnUnsetValues } from '../../components/inspector/common/property-path-hooks'
 import { clampValue } from '../../core/shared/math-utils'
@@ -118,6 +121,7 @@ export interface NumberInputOptions {
   roundCorners?: BoxCorners
   numberType: CSSNumberType
   defaultUnitToHide?: CSSNumberUnit
+  allowUnknownInputValuesToSubmit?: boolean
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -125,9 +129,9 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
     BaseInputProps,
     InspectorControlProps {
   value: T | null | undefined
-  onSubmitValue?: OnSubmitValueOrEmpty<T>
-  onTransientSubmitValue?: OnSubmitValueOrEmpty<T>
-  onForcedSubmitValue?: OnSubmitValueOrEmpty<T>
+  onSubmitValue?: OnSubmitValueOrUnknownOrEmpty<T>
+  onTransientSubmitValue?: OnSubmitValueOrUnknownOrEmpty<T>
+  onForcedSubmitValue?: OnSubmitValueOrUnknownOrEmpty<T>
   DEPRECATED_labelBelow?: React.ReactChild
 }
 
@@ -159,6 +163,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     focusOnMount = false,
     numberType,
     defaultUnitToHide = null,
+    allowUnknownInputValuesToSubmit = false,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const controlStyles = getControlStyles(controlStatus)
@@ -442,7 +447,11 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             } else if (EitherUtils.isRight(parsedStateValue)) {
               onSubmitValue(parsedStateValue.value)
             } else {
-              forceStateValueToUpdateFromProps()
+              if (allowUnknownInputValuesToSubmit) {
+                onSubmitValue(unknownInputValue(stateValue))
+              } else {
+                forceStateValueToUpdateFromProps()
+              }
             }
           }
         }
@@ -454,6 +463,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         parsedStateValue,
         valueChangedSinceFocus,
         forceStateValueToUpdateFromProps,
+        allowUnknownInputValuesToSubmit,
       ],
     )
 
@@ -740,13 +750,14 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
 interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {}
 
 function wrappedSimpleOnSubmitValue(
-  onSubmitValue: OnSubmitValueOrEmpty<number> | undefined,
-): OnSubmitValueOrEmpty<CSSNumber> | undefined {
+  onSubmitValue: OnSubmitValueOrUnknownOrEmpty<number> | undefined,
+): OnSubmitValueOrUnknownOrEmpty<CSSNumber> | undefined {
   if (onSubmitValue == null) {
     return undefined
   } else {
-    return (value: CSSNumber | EmptyInputValue) =>
-      onSubmitValue(isEmptyInputValue(value) ? value : value.value)
+    return (value: UnknownOrEmptyInput<CSSNumber>) => {
+      onSubmitValue(isCSSNumber(value) ? value.value : value)
+    }
   }
 }
 
@@ -775,13 +786,13 @@ export const SimpleNumberInput = betterReactMemo(
 interface SimplePercentInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {}
 
 function wrappedPercentOnSubmitValue(
-  onSubmitValue: OnSubmitValueOrEmpty<number> | undefined,
-): OnSubmitValueOrEmpty<CSSNumber> | undefined {
+  onSubmitValue: OnSubmitValueOrUnknownOrEmpty<number> | undefined,
+): OnSubmitValueOrUnknownOrEmpty<CSSNumber> | undefined {
   if (onSubmitValue == null) {
     return undefined
   } else {
-    return (value: CSSNumber | EmptyInputValue) =>
-      onSubmitValue(isEmptyInputValue(value) ? value : value.value / 100)
+    return (value: UnknownOrEmptyInput<CSSNumber>) =>
+      onSubmitValue(isCSSNumber(value) ? value.value / 100 : value)
   }
 }
 
@@ -860,12 +871,12 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
 export function useWrappedEmptyOnSubmitValue<T>(
   onSubmitValue: OnSubmitValue<T>,
   onUnsetValue: OnUnsetValues,
-): OnSubmitValueOrEmpty<T> {
+): OnSubmitValueOrUnknownOrEmpty<T> {
   return React.useCallback(
-    (value: T | EmptyInputValue) => {
+    (value: UnknownOrEmptyInput<T>) => {
       if (isEmptyInputValue(value)) {
         onUnsetValue()
-      } else {
+      } else if (!isUnknownInputValue(value)) {
         onSubmitValue(value)
       }
     },
