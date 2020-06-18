@@ -3,12 +3,7 @@ import { jsx } from '@emotion/core'
 import * as classNames from 'classnames'
 import * as React from 'react'
 import { StringInput } from 'uuiui'
-import {
-  betterReactMemo,
-  ControlStatus,
-  getControlStyles,
-  OnSubmitValueOrUnknownOrEmpty,
-} from 'uuiui-deps'
+import { betterReactMemo, getControlStyles, OnSubmitValueOrUnknownOrEmpty } from 'uuiui-deps'
 import { Either, isRight, left, right } from '../../../core/shared/either'
 import { cssKeyword, CSSKeyword, emptyInputValue, unknownInputValue } from '../common/css-utils'
 import { usePropControlledState } from '../common/inspector-utils'
@@ -24,12 +19,9 @@ export interface KeywordControlOptions {
 export interface KeywordControlProps extends KeywordControlOptions, InspectorControlProps {
   value: CSSKeyword
   onSubmitValue: OnSubmitValueOrUnknownOrEmpty<CSSKeyword>
-  controlStatus: ControlStatus
-  style?: React.CSSProperties
-  className?: string
 }
 
-function parseValidKeyword(
+export function parseValidKeyword(
   value: string,
   validKeywords: ValidKeywords,
 ): Either<string, CSSKeyword> {
@@ -42,7 +34,16 @@ function parseValidKeyword(
 
 export const KeywordControl = betterReactMemo<KeywordControlProps>(
   'KeywordControl',
-  ({ value, id, style, className, onSubmitValue, controlStatus, validKeywords }) => {
+  ({
+    value,
+    id,
+    style,
+    className,
+    onSubmitValue,
+    controlStatus = 'simple',
+    validKeywords,
+    DEPRECATED_labelBelow,
+  }) => {
     const controlStyles = getControlStyles(controlStatus)
     const [mixed, setMixed] = usePropControlledState<boolean>(controlStyles.mixed)
     const [stateValue, setStateValue] = usePropControlledState<string>(value.value)
@@ -60,7 +61,7 @@ export const KeywordControl = betterReactMemo<KeywordControlProps>(
       const newValue = getDisplayValue()
       if (newValue === '') {
         onSubmitValue(emptyInputValue())
-      } else if (validKeywords !== 'all' && isRight(parseValidKeyword(newValue, validKeywords))) {
+      } else if (validKeywords === 'all' || isRight(parseValidKeyword(newValue, validKeywords))) {
         onSubmitValue(cssKeyword(newValue))
       } else {
         onSubmitValue(unknownInputValue(newValue))
@@ -88,6 +89,7 @@ export const KeywordControl = betterReactMemo<KeywordControlProps>(
         spellCheck={false}
         style={style}
         controlStatus={controlStatus}
+        DEPRECATED_labelBelow={DEPRECATED_labelBelow}
       />
     )
   },
