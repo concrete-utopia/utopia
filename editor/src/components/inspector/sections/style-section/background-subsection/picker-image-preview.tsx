@@ -17,7 +17,7 @@ export const PickerImagePreview = betterReactMemo(
       setImageNotFound(true)
     }, [])
 
-    const noImageProvided = props.value.url === ''
+    const imageURLempty = props.value.url === ''
 
     return (
       <div
@@ -34,15 +34,15 @@ export const PickerImagePreview = betterReactMemo(
               height: '100%',
               borderRadius: UtopiaTheme.inputBorderRadius,
               backgroundColor: '#FFFFFF88',
-              boxShadow: noImageProvided
+              boxShadow: imageURLempty
                 ? undefined
                 : `0 0 0 1px ${colorTheme.warningForeground.value} inset`,
               justifyContent: 'center',
-              color: noImageProvided ? undefined : colorTheme.warningForeground.value,
+              color: imageURLempty ? undefined : colorTheme.warningForeground.value,
             }}
           >
             <div>
-              {noImageProvided ? (
+              {imageURLempty ? (
                 <div style={{ paddingLeft: 8, whiteSpace: 'normal' }}>
                   <p>
                     Add an image URL, e.g. <span style={{ fontWeight: 600 }}>assets/image.png</span>{' '}
