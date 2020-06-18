@@ -3,6 +3,7 @@ import { FlexParentProps, LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { Either, Left, Right, isRight, isLeft } from './either'
 import { TopLevelElement, UtopiaJSXComponent } from './element-template'
 import { ErrorMessage } from './error-messages'
+import { arrayEquals, objectEquals } from './utils'
 
 export type id = string
 
@@ -89,12 +90,6 @@ export type PrintedCanvasMetadata = {
   elementMetadata: CanvasElementMetadataMap
 }
 
-export interface ImportDetails {
-  importedWithName: string | null
-  importedFromWithin: Array<ImportAlias>
-  importedAs: string | null
-}
-
 export interface ImportAlias {
   name: string
   alias: string
@@ -107,7 +102,41 @@ export function importAlias(name: string, alias?: string) {
   }
 }
 
+export function importAliasEquals(first: ImportAlias, second: ImportAlias): boolean {
+  return first.name === second.name && first.alias === second.alias
+}
+
+export interface ImportDetails {
+  importedWithName: string | null
+  importedFromWithin: Array<ImportAlias>
+  importedAs: string | null
+}
+
+export function importDetails(
+  importedWithName: string | null,
+  importedFromWithin: Array<ImportAlias>,
+  importedAs: string | null,
+): ImportDetails {
+  return {
+    importedWithName: importedWithName,
+    importedFromWithin: importedFromWithin,
+    importedAs: importedAs,
+  }
+}
+
+export function importDetailsEquals(first: ImportDetails, second: ImportDetails): boolean {
+  return (
+    first.importedWithName === second.importedWithName &&
+    arrayEquals(first.importedFromWithin, second.importedFromWithin, importAliasEquals) &&
+    first.importedAs === second.importedAs
+  )
+}
+
 export type Imports = { [importSource: string]: ImportDetails }
+
+export function importsEquals(first: Imports, second: Imports): boolean {
+  return objectEquals(first, second, importDetailsEquals)
+}
 
 export interface HighlightBounds {
   startLine: number

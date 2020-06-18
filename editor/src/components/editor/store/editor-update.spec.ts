@@ -15,6 +15,8 @@ import {
   isUIJSFile,
   CodeFile,
   esCodeFile,
+  importDetails,
+  importAlias,
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
@@ -480,7 +482,9 @@ describe('INSERT_JSX_ELEMENT', () => {
       [],
       null,
     )
-    const insertAction = insertJSXElement(elementToInsert, parentPath, 'utopia-api')
+    const insertAction = insertJSXElement(elementToInsert, parentPath, {
+      'utopia-api': importDetails(null, [importAlias('View')], null),
+    })
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
@@ -534,7 +538,9 @@ describe('INSERT_JSX_ELEMENT', () => {
       [],
       null,
     )
-    const insertAction = insertJSXElement(elementToInsert, null, 'utopia-api')
+    const insertAction = insertJSXElement(elementToInsert, null, {
+      'utopia-api': importDetails(null, [importAlias('View')], null),
+    })
     const updatedEditor = runLocalEditorAction(
       editorWithNoHighlighted,
       derivedState,

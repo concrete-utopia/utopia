@@ -152,7 +152,7 @@ import {
   xAxisGuideline,
   yAxisGuideline,
 } from './guideline'
-import { addImport } from '../../core/workers/common/project-file-utils'
+import { addImport, mergeImports } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { createSceneTemplatePath, PathForSceneStyle } from '../../core/model/scene-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -1194,16 +1194,10 @@ export function produceCanvasTransientState(
                   type: 'front',
                 },
               )
-              let updatedImports: Imports = parseSuccess.imports
-              if (insertMode.subject.importFromPath != null) {
-                updatedImports = addImport(
-                  insertMode.subject.importFromPath,
-                  null,
-                  [importAlias(insertMode.subject.element.name.baseVariable)],
-                  null,
-                  updatedImports,
-                )
-              }
+              const updatedImports: Imports = mergeImports(
+                parseSuccess.imports,
+                insertMode.subject.importsToAdd,
+              )
 
               // Sync these back up.
               const topLevelElements = applyUtopiaJSXComponentsChanges(

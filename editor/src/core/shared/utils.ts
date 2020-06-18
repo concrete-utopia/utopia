@@ -1,3 +1,5 @@
+import { MapLike } from 'typescript'
+
 // This file shouldn't import anything as it is for exporting simple shared utility functions between various projects
 export const EditorID = 'editor'
 export const PortalTargetID = 'portal-target'
@@ -38,6 +40,36 @@ export function arrayEquals<T>(a: Array<T>, b: Array<T>, eq?: (l: T, r: T) => bo
     } else {
       return false
     }
+  }
+}
+
+export function objectEquals<T>(
+  a: MapLike<T>,
+  b: MapLike<T>,
+  eq?: (l: T, r: T) => boolean,
+): boolean {
+  if (a === b) {
+    return true
+  } else {
+    const equals = eq == null ? (l: T, r: T) => l === r : eq
+    for (const aKey of Object.keys(a)) {
+      if (aKey in b) {
+        if (!equals(a[aKey], b[aKey])) {
+          // Values in each object for the same key differ.
+          return false
+        }
+      } else {
+        // Value for key cannot be found in object 'b'.
+        return false
+      }
+    }
+    for (const bKey of Object.keys(b)) {
+      if (!(bKey in a)) {
+        // This key from 'b' isn't in 'a'.
+        return false
+      }
+    }
+    return true
   }
 }
 

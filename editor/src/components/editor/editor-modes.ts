@@ -1,4 +1,4 @@
-import { TemplatePath, id, StaticTemplatePath } from '../../core/shared/project-file-types'
+import { TemplatePath, id, StaticTemplatePath, Imports } from '../../core/shared/project-file-types'
 import { JSXElement, JSXElementName } from '../../core/shared/element-template'
 import { Size } from '../../core/shared/math-utils'
 
@@ -7,7 +7,7 @@ export interface ElementInsertionSubject {
   uid: string
   element: JSXElement
   size: Size | null
-  importFromPath: string | null
+  importsToAdd: Imports
   parent: InsertionParent
 }
 
@@ -24,7 +24,7 @@ export function elementInsertionSubject(
   uid: string,
   element: JSXElement,
   size: Size | null,
-  importFromPath: string | null,
+  importsToAdd: Imports,
   parent: InsertionParent,
 ): ElementInsertionSubject {
   return {
@@ -32,7 +32,7 @@ export function elementInsertionSubject(
     uid: uid,
     element: element,
     size: size,
-    importFromPath: importFromPath,
+    importsToAdd: importsToAdd,
     parent: parent,
   }
 }
