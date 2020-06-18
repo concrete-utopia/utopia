@@ -154,7 +154,6 @@ export function generateCodeResultCache(
   const { exports, requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
   let cache: { [code: string]: CodeResult } = {}
   let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
-    requireFn,
     npmDependencies,
   )
   Utils.fastForEach(exportsInfo, (result) => {

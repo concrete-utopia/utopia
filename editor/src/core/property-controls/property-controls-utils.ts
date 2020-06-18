@@ -197,7 +197,6 @@ export function removeIgnored(
 }
 
 export function getControlsForExternalDependencies(
-  requireFn: UtopiaRequireFn,
   npmDependencies: NpmDependency[],
 ): PropertyControlsInfo {
   let propertyControlsInfo: PropertyControlsInfo = {}
@@ -211,19 +210,12 @@ export function getControlsForExternalDependencies(
           dependency.name === controlsInfo.name && dependency.version === controlsInfo.version,
       ) != null
     ) {
-      try {
-        const loadedDependency = requireFn('/src/app.ui.js', controlsInfo.name, true)
-        fastForEach(Object.keys(controlsInfo.controls), (componentName) => {
-          if (loadedDependency[componentName] != null) {
-            propertyControlsInfo[controlsInfo.name] = {
-              ...propertyControlsInfo[controlsInfo.name],
-              [componentName]: (controlsInfo.controls as any)[componentName],
-            }
-          }
-        })
-      } catch (e) {
-        console.warn(`Dependency ${controlsInfo.name} not found`)
-      }
+      fastForEach(Object.keys(controlsInfo.controls), (componentName) => {
+        propertyControlsInfo[controlsInfo.name] = {
+          ...propertyControlsInfo[controlsInfo.name],
+          [componentName]: (controlsInfo.controls as any)[componentName],
+        }
+      })
     }
   })
   return propertyControlsInfo
