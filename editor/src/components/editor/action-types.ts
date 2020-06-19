@@ -642,6 +642,13 @@ export interface ToggleProperty {
   togglePropValue: (element: JSXElement) => JSXElement
 }
 
+export interface DEPRECATEDToggleEnabledProperty {
+  action: 'deprecated_TOGGLE_ENABLED_PROPERTY'
+  target: InstancePath
+  // FIXME: This will cause problems with multi-user editing.
+  togglePropValue: (element: JSXElement) => JSXElement
+}
+
 export type TextFormattingType = 'bold' | 'italic' | 'underline'
 
 export interface SwitchLayoutSystem {
@@ -720,6 +727,14 @@ export interface UpdateNodeModulesContents {
 export interface UpdatePackageJson {
   action: 'UPDATE_PACKAGE_JSON'
   dependencies: Array<NpmDependency>
+}
+
+export interface StartCheckpointTimer {
+  action: 'START_CHECKPOINT_TIMER'
+}
+
+export interface FinishCheckpointTimer {
+  action: 'FINISH_CHECKPOINT_TIMER'
 }
 
 export type EditorAction =
@@ -823,6 +838,7 @@ export type EditorAction =
   | SetPropWithElementPath
   | SetFilebrowserRenamingTarget
   | ToggleProperty
+  | DEPRECATEDToggleEnabledProperty
   | SwitchLayoutSystem
   | InsertImageIntoUI
   | SetSceneProp
@@ -842,6 +858,8 @@ export type EditorAction =
   | ResetPropToDefault
   | UpdateNodeModulesContents
   | UpdatePackageJson
+  | StartCheckpointTimer
+  | FinishCheckpointTimer
 
 export type DispatchPriority =
   | 'everyone'

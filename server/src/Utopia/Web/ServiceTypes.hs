@@ -86,6 +86,7 @@ listingFromProjectMetadata project = ProjectListing
 data ServiceCallsF a = NotFound
                      | BadRequest
                      | NotAuthenticated
+                     | NotModified
                      | CheckAuthCode Text (Maybe SetCookie -> a)
                      | Logout Text H.Html (SetSessionCookies H.Html -> a)
                      | ValidateAuth Text (Maybe SessionUser -> a)
@@ -113,7 +114,8 @@ data ServiceCallsF a = NotFound
                      | GetEditorIndexHtml (Text -> a)
                      | GetPreviewIndexHtml (Text -> a)
                      | GetHashedAssetPaths (Value -> a)
-                     | GetPackagePackagerContent Text Text (BL.ByteString -> a)
+                     | GetPackagePackagerContent Text Text (Maybe UTCTime) (Maybe (BL.ByteString, UTCTime) -> a)
+                     | AccessControlAllowOrigin (Maybe Text) (Maybe Text -> a)
                      deriving Functor
 
 {-

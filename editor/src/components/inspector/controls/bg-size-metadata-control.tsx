@@ -161,10 +161,10 @@ function bgSizeValueToSelectOption(value: CSSBGSizeValue): SelectOption {
       return coverSelectOption
     }
   } else {
-    const zeroth = value.value[0]
-    const first = value.value[1]
+    const first = value.value[0]
+    const second = value.value[1] ?? first
 
-    if (zeroth.value === 'auto' && first.value === 'auto') {
+    if (first.value === 'auto' && second.value === 'auto') {
       return autoSelectOption
     } else {
       return percentageLengthSelectOption

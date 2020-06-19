@@ -3,7 +3,7 @@ import { jsx } from '@emotion/core'
 import * as React from 'react'
 import { colorTheme, FlexRow, IcnProps, Icons, Tooltip, UtopiaStyles, UtopiaTheme } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
-import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
 import { ElementOriginType, Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
@@ -40,8 +40,10 @@ export interface NavigatorItemInnerProps {
   getSelectedViewsInRange: (index: number) => Array<TemplatePath> // TODO KILLME
   noOfChildren: number
   isAutosizingView: boolean
-  name: string
+  label: string
   element: ElementInstanceMetadata | null
+  staticElementName: JSXElementName | null
+  componentInstance: boolean
   dispatch: EditorDispatch
   isHighlighted: boolean
   collapsed: boolean
@@ -138,7 +140,8 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
   'NavigatorItem',
   (props) => {
     const {
-      name,
+      staticElementName,
+      label,
       element,
       isAutosizingView,
       dispatch,
@@ -197,7 +200,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       <WarningIcon tooltipText='Missing width or height' />
     ) : (
       <ItemPreview
-        key={`preview-${name}`}
+        key={`preview-${label}`}
         {...props}
         isAutosizingView={isAutosizingView}
         collapsed={collapsed}
@@ -249,8 +252,8 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
           />
           {preview}
           <ItemLabel
-            key={`label-${name}`}
-            name={name}
+            key={`label-${label}`}
+            name={label}
             isDynamic={isDynamic}
             target={templatePath}
             canRename={selected}

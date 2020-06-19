@@ -306,6 +306,8 @@ import {
   ResetPropToDefault,
   UpdateNodeModulesContents,
   UpdatePackageJson,
+  StartCheckpointTimer,
+  FinishCheckpointTimer,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1256,6 +1258,8 @@ function toastOnGeneratedElementsTargeted(
 
   return result
 }
+
+let checkpointTimeoutId: number | undefined = undefined
 
 // JS Editor Actions:
 export const UPDATE_FNS = {
@@ -2940,6 +2944,7 @@ export const UPDATE_FNS = {
         exportsInfo: action.codeResultCache.exportsInfo,
         propertyControlsInfo: action.codeResultCache.propertyControlsInfo,
         error: action.codeResultCache.error,
+        requireFn: action.codeResultCache.requireFn,
       },
     }
   },
@@ -3579,21 +3584,8 @@ export const UPDATE_FNS = {
       },
     }
   },
-  TOGGLE_PROPERTY: (
-    action: ToggleProperty,
-    editor: EditorModel,
-    derived: DerivedState,
-  ): EditorModel => {
-    const editorWithImports = modifyOpenParseSuccess((success) => {
-      return {
-        ...success,
-        imports: addImport('utopia-api', null, [importAlias('UtopiaUtils')], null, success.imports),
-      }
-    }, editor)
-
-    return addUtopiaUtilsImportIfUsed(
-      modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editorWithImports),
-    )
+  TOGGLE_PROPERTY: (action: ToggleProperty, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editor)
   },
   SWITCH_LAYOUT_SYSTEM: (action: SwitchLayoutSystem, editor: EditorModel): EditorModel => {
     return editor.selectedViews.reduce((working, target) => {
@@ -3911,6 +3903,25 @@ export const UPDATE_FNS = {
     )
     return updateDependenciesInEditorState(editor, dependencies)
   },
+  START_CHECKPOINT_TIMER: (
+    action: StartCheckpointTimer,
+    editor: EditorState,
+    dispatch: EditorDispatch,
+  ): EditorState => {
+    // Side effects.
+    clearTimeout(checkpointTimeoutId)
+    checkpointTimeoutId = window.setTimeout(() => {
+      dispatch([finishCheckpointTimer()], 'everyone')
+    }, 1000)
+    // No need to actually change the editor state.
+    return editor
+  },
+  FINISH_CHECKPOINT_TIMER: (action: FinishCheckpointTimer, editor: EditorState): EditorState => {
+    // Side effects.
+    checkpointTimeoutId = undefined
+    // No need to actually change the editor state.
+    return editor
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -4198,11 +4209,12 @@ export async function load(
   projectId: string | null,
   workers: UtopiaTsWorkers,
   renderEditorRoot: () => void,
+  retryFetchNodeModules: boolean = true,
 ): Promise<void> {
   // this action is now async!
 
   const npmDependencies = dependenciesFromModel(model)
-  const nodeModules = await fetchNodeModules(npmDependencies)
+  const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
   const require = getRequireFn(
     (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, false)]),
@@ -4216,6 +4228,7 @@ export async function load(
     exportsInfo: [],
     propertyControlsInfo: {},
     error: null,
+    requireFn: require,
   }
   if (model.exportsInfo.length > 0) {
     workers.sendInitMessage(typeDefinitions, model.projectContents)
@@ -5223,5 +5236,17 @@ export function updatePackageJson(dependencies: Array<NpmDependency>): UpdatePac
   return {
     action: 'UPDATE_PACKAGE_JSON',
     dependencies: dependencies,
+  }
+}
+
+export function startCheckpointTimer(): StartCheckpointTimer {
+  return {
+    action: 'START_CHECKPOINT_TIMER',
+  }
+}
+
+export function finishCheckpointTimer(): FinishCheckpointTimer {
+  return {
+    action: 'FINISH_CHECKPOINT_TIMER',
   }
 }

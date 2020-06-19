@@ -95,6 +95,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       '0',
       initialEditorStore.workers,
       Utils.NO_OP,
+      false,
     )
   })
   const sanitizedMetadata = sanitizeJsxMetadata(api.getState().editor.jsxMetadataKILLME)

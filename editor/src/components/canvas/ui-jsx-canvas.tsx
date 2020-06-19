@@ -176,11 +176,15 @@ export function pickUiJsxCanvasProps(
       topLevelElementsIncludingScenes = transientFileState.topLevelElementsIncludingScenes
     }
   }
+  const requireFn =
+    editor.codeResultCache == null
+      ? getMemoizedRequireFn(editor.nodeModules.files, dispatch)
+      : editor.codeResultCache.requireFn
   return {
     offset: editor.canvas.roundedCanvasOffset,
     scale: editor.canvas.scale,
     uiFilePath: getOpenUIJSFileKey(editor),
-    requireFn: getMemoizedRequireFn(editor.nodeModules.files, dispatch),
+    requireFn: requireFn,
     hiddenInstances: editor.hiddenInstances,
     editedTextElement: Utils.optionalMap((textEd) => textEd.templatePath, editor.canvas.textEditor),
     fileBlobs: defaultedFileBlobs,

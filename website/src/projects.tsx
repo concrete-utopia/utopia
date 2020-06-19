@@ -10,7 +10,6 @@ import { colors } from './home/components/theme'
 import { Global } from '@emotion/core'
 import { fetchProjectList, fetchShowcaseProjects } from './common/server'
 import { Redirect } from 'react-router-dom'
-import { FeatureSwitches } from './common/feature-switches'
 import {
   ProjectListing,
   deleteProject,
@@ -405,22 +404,6 @@ export class Projects extends React.Component<{}, ProjectsState> {
               </div>
             ) : null}
           </div>
-          {FeatureSwitches.ExampleProjects ? (
-            <FlexWrappingList
-              style={{
-                flexWrap: 'wrap',
-                alignItems: 'flex-start',
-                alignContent: 'flex-start',
-                paddingTop: layout.margins.regular,
-                paddingLeft: layout.margins.regular,
-                paddingRight: layout.margins.regular,
-                paddingBottom: layout.margins.wide,
-              }}
-            >
-              showcase.map(this.showcaseComponent)
-            </FlexWrappingList>
-          ) : null}
-
           <FlexColumn
             style={{
               overflowY: 'scroll',

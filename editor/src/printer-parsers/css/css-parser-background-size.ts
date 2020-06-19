@@ -42,7 +42,7 @@ export const parseBGSize: Parser<CSSBGSize> = (value: unknown) => {
 }
 
 export function parseBackgroundSize(value: unknown): Either<string, CSSBackgroundSize> {
-  const lexer = getLexerMatches('background-size', value, 'bg-size')
+  const lexer = getLexerMatches('background-size', value, ['bg-size'])
   if (isRight(lexer)) {
     const parsed = traverseEither(parseBGSize, lexer.value)
     if (isRight(parsed)) {

@@ -115,6 +115,8 @@ innerServerExecutor BadRequest = do
   throwError err400
 innerServerExecutor NotAuthenticated = do
   throwError err401
+innerServerExecutor NotModified = do
+  throwError err304
 innerServerExecutor (CheckAuthCode authCode action) = do
   auth0 <- fmap _auth0Resources ask
   sessionStore <- fmap _sessionState ask
@@ -239,10 +241,12 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask
   AssetResultCache{..} <- liftIO $ readIORef _assetResultCache
   return $ action _editorMappings
-innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptPackageVersion action) = do
+innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSince action) = do
   semaphore <- fmap _nodeSemaphore ask
-  packagerContent <- liftIO $ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion
+  packagerContent <- liftIO $ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifModifiedSince
   return $ action packagerContent
+innerServerExecutor (AccessControlAllowOrigin _ action) = do
+  return $ action $ Just "*"
 
 readIndexHtmlFromDisk :: Text -> IO Text
 readIndexHtmlFromDisk fileName = readFile $ toS $ "../editor/lib/" <> fileName

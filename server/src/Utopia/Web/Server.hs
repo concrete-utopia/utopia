@@ -98,6 +98,21 @@ exceptionHandler exceptionSemaphore _ e = (flip finally) (signalQSem exceptionSe
     TIO.hPutStrLn stderr $ show e
     hFlush stderr
 
+addNoCacheHeaderIfNotPresent :: Response -> Response
+addNoCacheHeaderIfNotPresent response =
+  let hasCacheControlHeaders = any (\(headerName, _) -> headerName == hCacheControl) $ responseHeaders response
+      isNotModified = responseStatus response == notModified304
+      responseWithCacheHeaders = mapResponseHeaders (\headers -> (hCacheControl, "no-cache") : headers) response
+  in  if hasCacheControlHeaders || isNotModified then response else responseWithCacheHeaders
+
+{-|
+   Adds `Cache-Control: no-cache` if no `Cache-Control` header is present.
+-}
+noCacheMiddleware :: Middleware
+noCacheMiddleware applicationToWrap request sendResponse = do
+  let withHeaderSendResponse response = sendResponse $ addNoCacheHeaderIfNotPresent response
+  applicationToWrap request withHeaderSendResponse
+
 {-|
   Given a Servant server definition, produce a Wai 'Application' from it.
 -}
@@ -127,6 +142,7 @@ runServerWithResources EnvironmentRuntime{..} = do
     $ redirector [projectPathRedirection, previewInnerPathRedirection]
     $ requestRewriter assetsCache
     $ gzip def
+    $ noCacheMiddleware
     $ monitorEndpoints apiProxy meterMap
     $ serverApplication
     $ _serverAPI resources

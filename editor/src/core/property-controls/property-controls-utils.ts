@@ -1,4 +1,8 @@
-import { CodeResultCache } from '../../components/custom-code/code-file'
+import {
+  CodeResultCache,
+  PropertyControlsInfo,
+  UtopiaRequireFn,
+} from '../../components/custom-code/code-file'
 import {
   parsePropertyControlsForFile,
   ParsedPropertyControls,
@@ -11,6 +15,7 @@ import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
 import { joinSpecial } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
+import { AntdControls } from './third-party-property-controls/antd-controls'
 
 export function defaultPropertiesForComponentInFile(
   componentName: string,
@@ -188,4 +193,27 @@ export function removeIgnored(
     }
   })
   return result
+}
+
+export function getControlsForExternalDependencies(
+  requireFn: UtopiaRequireFn,
+): PropertyControlsInfo {
+  let propertyControlsInfo: PropertyControlsInfo = {}
+  const librariesWithControls = [{ name: 'antd', controls: AntdControls }]
+  fastForEach(librariesWithControls, (controlsInfo) => {
+    try {
+      const loadedDependency = requireFn('/src/app.ui.js', controlsInfo.name, true)
+      fastForEach(Object.keys(controlsInfo.controls), (componentName) => {
+        if (loadedDependency[componentName] != null) {
+          propertyControlsInfo[controlsInfo.name] = {
+            ...propertyControlsInfo[controlsInfo.name],
+            [componentName]: (controlsInfo.controls as any)[componentName],
+          }
+        }
+      })
+    } catch (e) {
+      // ignore error, dependency is missing from the package.json
+    }
+  })
+  return propertyControlsInfo
 }

@@ -19,7 +19,10 @@ module Utopia.Web.Servant where
 import           Data.Aeson
 import           Data.Aeson.Encode.Pretty
 import qualified Data.ByteString.Lazy     as BL
+import           Data.Time.Clock
+import           Data.Time.Format
 import           Network.HTTP.Media       hiding (Accept)
+import           Prelude                  (String)
 import           Protolude
 import           Servant.API
 import           Servant.HTML.Blaze
@@ -104,5 +107,18 @@ instance Accept ForcedJSON where
 
 instance MimeRender ForcedJSON BL.ByteString where
   mimeRender _ bytes =  bytes
+
+
+data LastModifiedTime = LastModifiedTime { getLastModifiedTime :: UTCTime }
+                      deriving (Eq, Ord, Show)
+
+lastModifiedFormat :: String
+lastModifiedFormat = "%a, %_d %b %Y %H:%M:%S %Z"
+
+instance FromHttpApiData LastModifiedTime where
+  parseUrlPiece toParse = fmap LastModifiedTime $ parseTimeM True defaultTimeLocale lastModifiedFormat (toS toParse)
+
+instance ToHttpApiData LastModifiedTime where
+  toUrlPiece (LastModifiedTime lastModifiedTime) = toS $ formatTime defaultTimeLocale lastModifiedFormat lastModifiedTime
 
 

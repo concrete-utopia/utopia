@@ -103,7 +103,14 @@ type LoadProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Text 
 
 type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Text :> ReqBody '[BMP, GIF, JPG, PNG, SVG] BL.ByteString :> Post '[JSON] NoContent
 
-type PackagePackagerAPI = "v1" :> "javascript" :> "packager" :> Capture "package_name" Text :> Capture "package_version" Text :> Get '[ForcedJSON] (Headers '[Header "Cache-Control" Text] BL.ByteString)
+type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] BL.ByteString
+
+type PackagePackagerAPI = "v1" :> "javascript" :> "packager"
+                       :> Capture "package_name" Text
+                       :> Capture "package_version" Text
+                       :> Header "If-Modified-Since" LastModifiedTime
+                       :> Header "Origin" Text
+                       :> Get '[ForcedJSON] PackagePackagerResponse
 
 type GetPackageJSONAPI = "v1" :> "javascript" :> "package" :> "metadata" :> Capture "package_name" Text :> Get '[JSON] Value
 

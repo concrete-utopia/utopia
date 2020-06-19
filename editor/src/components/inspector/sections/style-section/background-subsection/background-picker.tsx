@@ -24,6 +24,7 @@ import {
   isCSSRadialGradientBackgroundLayer,
   isCSSSolidBackgroundLayer,
   isCSSBackgroundLayerWithBGSize,
+  isCSSBackgroundImageLayer,
 } from '../../../common/css-utils'
 import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import { stopPropagation, useHandleCloseOnESCOrEnter } from '../../../common/inspector-utils'
@@ -475,7 +476,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
               containerMode='noBorder'
             />
           </div>
-          {isCSSGradientBackgroundLayer(props.value) ? (
+          {isCSSBackgroundImageLayer(props.value) ? (
             <Icn type='gear' color='darkgray' width={16} height={16} onClick={toggleSettings} />
           ) : null}
           <Icn

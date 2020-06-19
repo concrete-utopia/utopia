@@ -34,6 +34,7 @@ import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Proxy
+import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           WaiAppStatic.Storage.Filesystem
@@ -352,10 +353,19 @@ getPackageJSONEndpoint javascriptPackageName = do
 hashedAssetPathsEndpoint :: ServerMonad Value
 hashedAssetPathsEndpoint = getHashedAssetPaths
 
-packagePackagerEndpoint :: Text -> Text -> ServerMonad (Headers '[Header "Cache-Control" Text] BL.ByteString)
-packagePackagerEndpoint javascriptPackageName javascriptPackageVersionAndSuffix = do
+packagerCacheControl :: Text
+packagerCacheControl = "public, immutable, max-age=2592000"
+
+packagePackagerEndpoint :: Text -> Text -> Maybe LastModifiedTime -> Maybe Text -> ServerMonad PackagePackagerResponse
+packagePackagerEndpoint javascriptPackageName javascriptPackageVersionAndSuffix ifModifiedSince possibleOrigin = do
   let javascriptPackageVersion = fromMaybe javascriptPackageVersionAndSuffix $ T.stripSuffix ".json" javascriptPackageVersionAndSuffix
-  fmap (addHeader "public, immutable, max-age=86400") $ getPackagePackagerContent javascriptPackageName javascriptPackageVersion
+  possiblePackagerContent <- getPackagePackagerContent javascriptPackageName javascriptPackageVersion (fmap getLastModifiedTime ifModifiedSince)
+  allowOriginHeader <- accessControlAllowOrigin possibleOrigin
+  let applyOriginHeader = maybe noHeader addHeader allowOriginHeader
+  case possiblePackagerContent of
+    Nothing -> notModified -- Not modified.
+    Just (packagerContent, lastModified) -> do
+      return $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader packagerContent
 
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
