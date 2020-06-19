@@ -15,7 +15,8 @@ import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
 import { joinSpecial } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
-import { AntdControls } from './third-party-property-controls/antd-controls'
+import { AntdControls, AntdControlsVersion } from './third-party-property-controls/antd-controls'
+import { NpmDependency } from '../shared/npm-dependency-types'
 
 export function defaultPropertiesForComponentInFile(
   componentName: string,
@@ -196,23 +197,25 @@ export function removeIgnored(
 }
 
 export function getControlsForExternalDependencies(
-  requireFn: UtopiaRequireFn,
+  npmDependencies: NpmDependency[],
 ): PropertyControlsInfo {
   let propertyControlsInfo: PropertyControlsInfo = {}
-  const librariesWithControls = [{ name: 'antd', controls: AntdControls }]
+  const librariesWithControls = [
+    { name: 'antd', controls: AntdControls, version: AntdControlsVersion },
+  ]
   fastForEach(librariesWithControls, (controlsInfo) => {
-    try {
-      const loadedDependency = requireFn('/src/app.ui.js', controlsInfo.name, true)
+    if (
+      npmDependencies.find(
+        (dependency) =>
+          dependency.name === controlsInfo.name && dependency.version === controlsInfo.version,
+      ) != null
+    ) {
       fastForEach(Object.keys(controlsInfo.controls), (componentName) => {
-        if (loadedDependency[componentName] != null) {
-          propertyControlsInfo[controlsInfo.name] = {
-            ...propertyControlsInfo[controlsInfo.name],
-            [componentName]: (controlsInfo.controls as any)[componentName],
-          }
+        propertyControlsInfo[controlsInfo.name] = {
+          ...propertyControlsInfo[controlsInfo.name],
+          [componentName]: (controlsInfo.controls as any)[componentName],
         }
       })
-    } catch (e) {
-      // ignore error, dependency is missing from the package.json
     }
   })
   return propertyControlsInfo
