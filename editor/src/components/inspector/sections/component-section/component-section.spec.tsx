@@ -13,7 +13,7 @@ import {
 import { ComponentSection } from './component-section'
 import { ScenePathForTestUiJsFile } from '../../../../core/model/test-ui-js-file'
 
-describe('Scene Section', () => {
+describe('Component Section', () => {
   enableWhyDidYouRenderOnComponent(ComponentSection)
 
   it('make sure whyDidYouRender is enabled', () => {
