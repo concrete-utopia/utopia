@@ -24,6 +24,7 @@ import { objectMap } from '../../../core/shared/object-utils'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { useEditorState } from '../store/store-hook'
 import * as React from 'react'
+import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'
 
 export async function findLatestVersion(packageName: string): Promise<string> {
   const requestInit: RequestInit = {
@@ -135,6 +136,16 @@ export function usePackageDependencies(): Array<NpmDependency> {
       return []
     }
   }, [packageJsonFile])
+}
+
+export function useResolvedPackageDependencies(): Array<NpmDependency> {
+  const basePackageDependencies = usePackageDependencies()
+  const files = useEditorState((store) => {
+    return store.editor.nodeModules.files
+  })
+  return React.useMemo(() => {
+    return resolvedDependencyVersions(basePackageDependencies, files)
+  }, [basePackageDependencies, files])
 }
 
 export function updateDependenciesInPackageJson(
