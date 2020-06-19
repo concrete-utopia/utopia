@@ -148,10 +148,16 @@ import {
   LocalRectangle,
   Size,
   WindowPoint,
+  canvasRectangle,
 } from '../../../core/shared/math-utils'
 import { ensureDirectoriesExist } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
-import { CanvasFrameAndTarget, CSSCursor, PinOrFlexFrameChange } from '../../canvas/canvas-types'
+import {
+  CanvasFrameAndTarget,
+  CSSCursor,
+  PinOrFlexFrameChange,
+  pinSizeChange,
+} from '../../canvas/canvas-types'
 import {
   canvasFrameToNormalisedFrame,
   clearDragState,
@@ -3924,8 +3930,19 @@ export const UPDATE_FNS = {
     return editor
   },
   ADD_MISSING_DIMENSIONS: (action: AddMissingDimensions, editor: EditorState): EditorState => {
-    // TODO implement me :)
-    return editor
+    const ArbitrarySize = 10
+    const frameWithExtendedDimensions = canvasRectangle({
+      x: action.existingSize.x,
+      y: action.existingSize.y,
+      width: action.existingSize.width || ArbitrarySize,
+      height: action.existingSize.height || ArbitrarySize,
+    })
+    const frameAndTarget: PinOrFlexFrameChange = pinSizeChange(
+      action.target,
+      frameWithExtendedDimensions,
+      null,
+    )
+    return setCanvasFramesInnerNew(editor, [frameAndTarget], null)
   },
 }
 
@@ -5256,9 +5273,13 @@ export function finishCheckpointTimer(): FinishCheckpointTimer {
   }
 }
 
-export function addMissingDimensions(target: TemplatePath): AddMissingDimensions {
+export function addMissingDimensions(
+  target: InstancePath,
+  existingSize: CanvasRectangle,
+): AddMissingDimensions {
   return {
     action: 'ADD_MISSING_DIMENSIONS',
+    existingSize: existingSize,
     target: target,
   }
 }

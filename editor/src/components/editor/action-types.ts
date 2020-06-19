@@ -739,7 +739,8 @@ export interface FinishCheckpointTimer {
 
 export interface AddMissingDimensions {
   action: 'ADD_MISSING_DIMENSIONS'
-  target: TemplatePath
+  existingSize: CanvasRectangle
+  target: InstancePath
 }
 
 export type EditorAction =

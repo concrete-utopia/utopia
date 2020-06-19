@@ -104,7 +104,9 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             )
           } else if (showingInvisibleElement) {
             // double clicking on an invisible element should give it an arbitrary size
-            this.props.dispatch([EditorActions.addMissingDimensions(this.props.target)])
+            this.props.dispatch([
+              EditorActions.addMissingDimensions(this.props.target, this.props.frame),
+            ])
           }
         }
       }
