@@ -1,14 +1,14 @@
 /** @jsx jsx */
 import * as React from 'react'
 import { jsx } from '@emotion/core'
-import { ControlProps, GenericControlOptions } from './control'
+import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { Icn, IcnProps } from 'uuiui'
 import { Tooltip } from 'uuiui'
 import { focusTextEditorIfPresent } from '../../editor/text-editor'
 import { ControlStyleDefaults } from '../common/control-status'
 import { UtopiaTheme } from 'uuiui'
 
-export interface OptionControlOptions extends GenericControlOptions {
+export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {
   icon?: IcnProps
   labelInner?: string
   tooltip?: string
@@ -28,7 +28,7 @@ export interface OptionControlOptions extends GenericControlOptions {
 }
 
 export const OptionControl: React.FunctionComponent<
-  ControlProps<boolean> & {
+  DEPRECATEDControlProps<boolean> & {
     className?: string
   }
 > = (props) => {
@@ -39,10 +39,10 @@ export const OptionControl: React.FunctionComponent<
     focusTextEditorIfPresent()
   }, [propsOnSubmitValue, isChecked])
 
-  const controlOptions: OptionControlOptions = {
+  const controlOptions: DEPRECATEDOptionControlOptions = {
     width: UtopiaTheme.layout.inputHeight.default,
     height: UtopiaTheme.layout.inputHeight.default,
-    ...(props.controlOptions as OptionControlOptions),
+    ...(props.DEPRECATED_controlOptions as DEPRECATEDOptionControlOptions),
   }
 
   let controlOpacity: number

@@ -189,7 +189,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
       <NumberInput
         style={{ gridColumn: '3 / span 1' }}
         value={props.value.offsetX}
-        labelBelow='x'
+        DEPRECATED_labelBelow='x'
         id={`textShadow-offsetX-${props.index}`}
         onSubmitValue={offsetXSubmitValue}
         onTransientSubmitValue={offsetXTransientSubmitValue}
@@ -201,7 +201,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
       <NumberInput
         style={{ gridColumn: '4 / span 1' }}
         value={props.value.offsetY}
-        labelBelow='y'
+        DEPRECATED_labelBelow='y'
         id={`textShadow-offsetY-${props.index}`}
         onSubmitValue={offsetYSubmitValue}
         onTransientSubmitValue={offsetYTransientSubmitValue}
@@ -213,7 +213,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
       <NumberInput
         style={{ gridColumn: '5 / span 1' }}
         value={props.value.blurRadius == null ? zeroBlurRadius : props.value.blurRadius.value}
-        labelBelow='blur'
+        DEPRECATED_labelBelow='blur'
         id={`textShadow-blurRadius-${props.index}`}
         onSubmitValue={blurRadiusSubmitValue}
         onTransientSubmitValue={blurRadiusTransientSubmitValue}

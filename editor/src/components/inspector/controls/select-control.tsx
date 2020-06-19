@@ -6,13 +6,13 @@ import { IndicatorProps } from 'react-select/src/components/indicators'
 import Utils from '../../../utils/utils'
 import { Icn, IcnProps } from 'uuiui'
 import { colorTheme, UtopiaTheme } from 'uuiui'
-import { ControlProps, GenericControlOptions } from './control'
+import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { getControlStyles, ControlStatus, isControlledStatus } from '../common/control-status'
 import { ValueType } from 'react-select/src/types'
 import { Icons } from 'uuiui'
 import { PortalTargetID } from '../../../core/shared/utils'
 
-export interface SelectControlOptions extends GenericControlOptions {
+export interface DEPRECATEDSelectControlOptions extends DEPRECATEDGenericControlOptions {
   creatable?: boolean
   dropdownWidth?: number
   horizontalOrigin?: 'left' | 'right'
@@ -56,14 +56,14 @@ const ControlledDropdownIndicator: React.FunctionComponent<IndicatorProps<Select
   )
 }
 
-export const SelectControl: React.StatelessComponent<ControlProps<any>> = (props) => {
+export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>> = (props) => {
   const options = props.options != null ? (props.options as Array<SelectOption>) : []
   const controlOptions = {
     creatable: false,
     horizontalOrigin: 'left',
     focusOnMount: false,
-    ...props.controlOptions,
-  } as SelectControlOptions
+    ...props.DEPRECATED_controlOptions,
+  } as DEPRECATEDSelectControlOptions
 
   const selectedOption = options.find((option) => option.value === props.value)
 
@@ -229,10 +229,10 @@ interface BasicSelectControlParams {
   value: string
   id: string
   options: Array<SelectOption>
-  onSubmitValue: ControlProps<any>['onSubmitValue']
-  onTransientSubmitValue?: ControlProps<any>['onTransientSubmitValue']
-  onForcedSubmitValue?: ControlProps<any>['onForcedSubmitValue']
-  controlOptions?: SelectControlOptions
+  onSubmitValue: DEPRECATEDControlProps<any>['onSubmitValue']
+  onTransientSubmitValue?: DEPRECATEDControlProps<any>['onTransientSubmitValue']
+  onForcedSubmitValue?: DEPRECATEDControlProps<any>['onForcedSubmitValue']
+  controlOptions?: DEPRECATEDSelectControlOptions
   controlClassName?: string
   htmlFor?: string
   style?: React.CSSProperties
@@ -262,7 +262,7 @@ export const BasicSelectControl = ({
       onTransientSubmitValue={onTransientSubmitValue}
       onForcedSubmitValue={onForcedSubmitValue}
       value={value}
-      controlOptions={controlOptions}
+      DEPRECATED_controlOptions={controlOptions}
       controlStatus={'simple'}
       controlStyles={getControlStyles('simple')}
       htmlFor={htmlFor}

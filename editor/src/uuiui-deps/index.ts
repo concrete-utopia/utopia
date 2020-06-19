@@ -25,7 +25,11 @@ import * as _react_performance from '../utils/react-performance'
 import * as CSSUtils from '../components/inspector/common/css-utils'
 import * as EitherUtils from '../core/shared/either'
 import { CSSCursor } from '../components/canvas/canvas-types'
-import { OnSubmitValue, OnSubmitValueOrEmpty } from '../components/inspector/controls/control'
+import {
+  OnSubmitValue,
+  OnSubmitValueOrEmpty,
+  OnSubmitValueOrUnknownOrEmpty,
+} from '../components/inspector/controls/control'
 import { usePropControlledState } from '../components/inspector/common/inspector-utils'
 import * as InspectorHooks from '../components/inspector/common/property-path-hooks'
 import * as InspectorContextMenuItems from '../components/inspector/common/context-menu-items'
@@ -55,6 +59,7 @@ export {
   CSSCursor,
   OnSubmitValue,
   OnSubmitValueOrEmpty,
+  OnSubmitValueOrUnknownOrEmpty,
   usePropControlledState,
   InspectorHooks,
   InspectorContextMenuItems,

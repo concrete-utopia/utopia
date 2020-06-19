@@ -146,7 +146,7 @@ export const BackgroundSolidOrGradientThumbnailControl = betterReactMemo(
           onSubmitValue={props.onSubmitSolidStringValue}
           controlStatus={props.controlStatus}
           controlStyles={props.controlStyles}
-          controlOptions={{
+          DEPRECATED_controlOptions={{
             labelBelow: 'hex',
           }}
           style={{
@@ -221,7 +221,7 @@ export const StringBackgroundColorControl = betterReactMemo(
         onSubmitValue={props.onSubmitSolidStringValue}
         controlStatus={props.controlStatus}
         controlStyles={props.controlStyles}
-        controlOptions={{
+        DEPRECATED_controlOptions={{
           labelBelow: 'hex',
         }}
       />

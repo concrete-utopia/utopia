@@ -47,7 +47,7 @@ export const PositionControl = betterReactMemo('PositionControl', () => {
             },
           ] as Array<OptionChainOption<string | number>>
         }
-        controlOptions={{
+        DEPRECATED_controlOptions={{
           labelBelow: 'Position',
         }}
         onSubmitValue={position.onSubmitValue}
@@ -148,36 +148,32 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
       propsArray={[
         {
           value: marginTop.value,
-          labelBelow: 'T',
+          DEPRECATED_labelBelow: 'T',
           controlStatus: marginTop.controlStatus,
-          disabled: !marginTop.controlStyles.interactive,
           onSubmitValue: wrappedMarginTopOnSubmitValue,
           onTransientSubmitValue: wrappedMarginTopOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
         },
         {
           value: marginRight.value,
-          labelBelow: 'R',
+          DEPRECATED_labelBelow: 'R',
           controlStatus: marginRight.controlStatus,
-          disabled: !marginRight.controlStyles.interactive,
           onSubmitValue: wrappedMarginRightOnSubmitValue,
           onTransientSubmitValue: wrappedMarginRightOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
         },
         {
           value: marginBottom.value,
-          labelBelow: 'B',
+          DEPRECATED_labelBelow: 'B',
           controlStatus: marginBottom.controlStatus,
-          disabled: !marginBottom.controlStyles.interactive,
           onSubmitValue: wrappedMarginBottomOnSubmitValue,
           onTransientSubmitValue: wrappedMarginBottomOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
         },
         {
           value: marginLeft.value,
-          labelBelow: 'L',
+          DEPRECATED_labelBelow: 'L',
           controlStatus: marginLeft.controlStatus,
-          disabled: !marginLeft.controlStyles.interactive,
           onSubmitValue: wrappedMarginLeftOnSubmitValue,
           onTransientSubmitValue: wrappedMarginLeftOnTransientSubmitValue,
           numberType: 'UnitlessPercent',

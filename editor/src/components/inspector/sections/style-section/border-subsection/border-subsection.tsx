@@ -154,7 +154,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
       <NumberInput
         id='border-width'
         value={borderWidth}
-        labelBelow='width'
+        DEPRECATED_labelBelow='width'
         minimum={0}
         onSubmitValue={borderWidthSubmitValue}
         onTransientSubmitValue={borderWidthTransientSubmitValue}

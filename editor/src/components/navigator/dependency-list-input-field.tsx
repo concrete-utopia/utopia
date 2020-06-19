@@ -2,7 +2,7 @@
 import { jsx } from '@emotion/core'
 import * as React from 'react'
 import CreatableSelect from 'react-select/creatable'
-import { FunctionIcons, StringInput } from 'uuiui'
+import { FunctionIcons, StringInput, Tooltip } from 'uuiui'
 import Utils from '../../utils/utils'
 import {
   BasicSelectControl,
@@ -98,7 +98,7 @@ export const DependencyListInputField = React.forwardRef(
             flexGrow: 1,
             marginRight: 8,
           }}
-          controlOptions={{
+          DEPRECATED_controlOptions={{
             focusOnMount: !openVersionInput,
             creatable: true,
             selectCreatableRef: dependencyNameSelectRef,
@@ -115,29 +115,32 @@ export const DependencyListInputField = React.forwardRef(
           }}
         />
         {showVersionField ? (
-          <StringInput
-            value={Utils.defaultIfNull<string>('', stateEditedPackageVersion)}
-            id='add-package-version'
-            key='add-package-version'
-            onChange={onDependencyVersionChange}
-            placeholder='0.0.0'
-            tooltipContent={
+          <Tooltip
+            title={
               <span>
                 Version Number (e.g. <span style={{ fontFamily: 'Monaco, monospace' }}>1.0.0</span>)
               </span>
             }
-            ref={dependencyVersionInputRef}
-            style={{
-              flexGrow: 0,
-              flexShrink: 0,
-              flexBasis: 64,
-              marginRight: 8,
-              fontFamily: 'Monaco, monospace',
-              fontStyle: 'normal',
-              fontSize: 9,
-            }}
-            onKeyDown={onKeyDown}
-          />
+          >
+            <StringInput
+              value={Utils.defaultIfNull<string>('', stateEditedPackageVersion)}
+              id='add-package-version'
+              key='add-package-version'
+              onChange={onDependencyVersionChange}
+              placeholder='0.0.0'
+              ref={dependencyVersionInputRef}
+              style={{
+                flexGrow: 0,
+                flexShrink: 0,
+                flexBasis: 64,
+                marginRight: 8,
+                fontFamily: 'Monaco, monospace',
+                fontStyle: 'normal',
+                fontSize: 9,
+              }}
+              onKeyDown={onKeyDown}
+            />
+          </Tooltip>
         ) : null}
         <FunctionIcons.Confirm
           style={{
