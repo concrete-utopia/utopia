@@ -1,8 +1,8 @@
 import * as localforage from 'localforage'
 import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 
-export type FeatureName = ''
-export const AllFeatureNames: FeatureName[] = []
+export type FeatureName = typeof AllFeatureNames[number] // this will give us the string literal union of all the feature names
+export const AllFeatureNames = ['invisible_element_controls'] as const
 
 let FeatureSwitches: { [feature: string]: boolean } = {}
 

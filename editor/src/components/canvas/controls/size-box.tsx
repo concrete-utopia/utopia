@@ -575,7 +575,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
       return (
         <React.Fragment>
           {resizeLines}
-          {pointControls}
+          {/* {pointControls} */}
         </React.Fragment>
       )
     } else {
