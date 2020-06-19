@@ -2715,6 +2715,18 @@ export function isCSSKeyword(value: any): value is CSSKeyword {
   return typeof value === 'object' && value != null && value.type === 'keyword'
 }
 
+export function isCSSValidKeyword<T extends string>(
+  value: unknown,
+  validKeywords: ReadonlyArray<T>,
+): value is CSSKeyword<T> {
+  return (
+    typeof value === 'object' &&
+    value != null &&
+    (value as any).type === 'keyword' &&
+    validKeywords.includes((value as CSSKeyword).value as T)
+  )
+}
+
 export function printCSSKeyword(keyword: CSSKeyword): string {
   return keyword.value
 }
@@ -2827,14 +2839,14 @@ export function emptyInputValue(): EmptyInputValue {
   return { type: 'EMPTY_INPUT_VALUE' }
 }
 
-export type UnknownInputValue = { type: 'unknown-input'; value: string }
+export type UnknownInputValue = { type: 'UNKNOWN_INPUT'; value: string }
 
 export function isUnknownInputValue(value: unknown): value is UnknownInputValue {
-  return typeof value === 'object' && value != null && (value as any).type === 'unknown-input'
+  return typeof value === 'object' && value != null && (value as any).type === 'UNKNOWN_INPUT'
 }
 
 export function unknownInputValue(value: string): UnknownInputValue {
-  return { type: 'unknown-input', value }
+  return { type: 'UNKNOWN_INPUT', value }
 }
 
 export type UnknownOrEmptyInput<T> = T | EmptyInputValue | UnknownInputValue
