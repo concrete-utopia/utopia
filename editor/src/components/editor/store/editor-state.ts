@@ -1090,7 +1090,7 @@ export function getElementWarnings(
       if (parentMetadata != null) {
         if (
           elementMetadata.specialSizeMeasurements.position === 'absolute' &&
-          parentMetadata.specialSizeMeasurements.position == null
+          !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
         ) {
           absoluteWithUnpositionedParent = true
         }
