@@ -737,6 +737,11 @@ export interface FinishCheckpointTimer {
   action: 'FINISH_CHECKPOINT_TIMER'
 }
 
+export interface AddMissingDimensions {
+  action: 'ADD_MISSING_DIMENSIONS'
+  target: TemplatePath
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -860,6 +865,7 @@ export type EditorAction =
   | UpdatePackageJson
   | StartCheckpointTimer
   | FinishCheckpointTimer
+  | AddMissingDimensions
 
 export type DispatchPriority =
   | 'everyone'

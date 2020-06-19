@@ -274,6 +274,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.START_CHECKPOINT_TIMER(action, state, dispatch)
     case 'FINISH_CHECKPOINT_TIMER':
       return UPDATE_FNS.FINISH_CHECKPOINT_TIMER(action, state)
+    case 'ADD_MISSING_DIMENSIONS':
+      return UPDATE_FNS.ADD_MISSING_DIMENSIONS(action, state)
     default:
       return state
   }

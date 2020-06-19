@@ -23,6 +23,9 @@ import { TemplatePath } from '../../../core/shared/project-file-types'
 import CanvasActions from '../canvas-actions'
 import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
 import { ComponentMetadata } from '../../../core/shared/element-template'
+import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { betterReactMemo } from '../../../uuiui-deps'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -325,6 +328,7 @@ interface ResizePointProps {
   scale: number
   position: EdgePosition
   resizeStatus: ResizeStatus
+  extraStyle?: React.CSSProperties
 }
 
 class ResizePoint extends React.Component<ResizePointProps, {}> {
@@ -378,12 +382,20 @@ class ResizePoint extends React.Component<ResizePointProps, {}> {
             }px, ${colorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px ${
               1 / this.props.scale
             }px ${2 / this.props.scale}px ${1 / this.props.scale}px `,
+            ...this.props.extraStyle,
           }}
         />
         {mouseCatcher}
       </React.Fragment>
     )
   }
+}
+
+interface DoubleClickExtenderProps {
+  dispatch: EditorDispatch
+  canvasOffset: CanvasPoint
+  visualSize: CanvasRectangle
+  scale: number
 }
 
 interface ResizeRectangleProps {
@@ -409,7 +421,90 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
   render() {
     const controlProps = this.props
 
-    if (this.props.resizeStatus === 'enabled' || this.props.resizeStatus === 'noninteractive') {
+    const { showingInvisibleElement, dimension } = calculateExtraSizeForZeroSizedElement(
+      this.props.measureSize,
+    )
+
+    if (showingInvisibleElement && isFeatureEnabled('invisible_element_controls')) {
+      // is it a one dimensional element?
+      const verticalResizeControls =
+        dimension === 'vertical' ? (
+          <React.Fragment>
+            <ResizeControl
+              {...controlProps}
+              cursor={CSSCursor.ResizeNS}
+              position={{ x: 0.5, y: 0 }}
+              enabledDirection={DirectionVertical}
+            >
+              <ResizePoint
+                {...controlProps}
+                cursor={CSSCursor.ResizeNS}
+                position={{ x: 0.5, y: 0 }}
+                extraStyle={{
+                  opacity: 0,
+                }}
+              />
+            </ResizeControl>
+            <ResizeControl
+              {...controlProps}
+              cursor={CSSCursor.ResizeNS}
+              position={{ x: 0.5, y: 1 }}
+              enabledDirection={DirectionVertical}
+            >
+              <ResizePoint
+                {...controlProps}
+                cursor={CSSCursor.ResizeNS}
+                position={{ x: 0.5, y: 1 }}
+                extraStyle={{
+                  opacity: 0,
+                }}
+              />
+            </ResizeControl>
+          </React.Fragment>
+        ) : null
+
+      const horizontalResizeControls =
+        dimension === 'horizontal' ? (
+          <React.Fragment>
+            <ResizeControl
+              {...controlProps}
+              cursor={CSSCursor.ResizeEW}
+              position={{ x: 0, y: 0.5 }}
+              enabledDirection={DirectionHorizontal}
+            >
+              <ResizePoint
+                {...controlProps}
+                cursor={CSSCursor.ResizeEW}
+                position={{ x: 0, y: 0.5 }}
+                extraStyle={{
+                  opacity: 0,
+                }}
+              />
+            </ResizeControl>
+            <ResizeControl
+              {...controlProps}
+              cursor={CSSCursor.ResizeEW}
+              position={{ x: 1, y: 0.5 }}
+              enabledDirection={DirectionHorizontal}
+            >
+              <ResizePoint
+                {...controlProps}
+                cursor={CSSCursor.ResizeEW}
+                position={{ x: 1, y: 0.5 }}
+                extraStyle={{
+                  opacity: 0,
+                }}
+              />
+            </ResizeControl>
+          </React.Fragment>
+        ) : null
+
+      // TODO  double click sets an arbitrary size in the missing dimensions
+      return [verticalResizeControls, horizontalResizeControls]
+    } else if (
+      this.props.resizeStatus === 'enabled' ||
+      this.props.resizeStatus === 'noninteractive'
+    ) {
       const pointControls = this.props.sideResizer ? null : (
         <React.Fragment>
           <ResizeControl

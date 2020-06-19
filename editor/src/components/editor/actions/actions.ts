@@ -308,6 +308,7 @@ import {
   UpdatePackageJson,
   StartCheckpointTimer,
   FinishCheckpointTimer,
+  AddMissingDimensions,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -3922,6 +3923,10 @@ export const UPDATE_FNS = {
     // No need to actually change the editor state.
     return editor
   },
+  ADD_MISSING_DIMENSIONS: (action: AddMissingDimensions, editor: EditorState): EditorState => {
+    // TODO implement me :)
+    return editor
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -5248,5 +5253,12 @@ export function startCheckpointTimer(): StartCheckpointTimer {
 export function finishCheckpointTimer(): FinishCheckpointTimer {
   return {
     action: 'FINISH_CHECKPOINT_TIMER',
+  }
+}
+
+export function addMissingDimensions(target: TemplatePath): AddMissingDimensions {
+  return {
+    action: 'ADD_MISSING_DIMENSIONS',
+    target: target,
   }
 }

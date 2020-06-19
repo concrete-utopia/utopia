@@ -77,22 +77,23 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
   }
 
   onDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const { showingInvisibleElement } = calculateExtraSizeForZeroSizedElement(this.props.frame)
     if (this.mouseEnabled()) {
       if (this.props.doubleClickToSelect && this.props.selectComponent != null) {
         const isMultiselect = event.shiftKey
         this.props.selectComponent(this.props.target, isMultiselect)
       }
       if (TP.isInstancePath(this.props.target)) {
-        // if target is a text and it is the one and only selected component, then activate the text editor
         const instance = MetadataUtils.getElementByInstancePathMaybe(
           this.props.componentMetadata,
           this.props.target,
         )
-        if (MetadataUtils.isTextAgainstImports(this.props.imports, instance)) {
-          if (
-            this.props.selectedComponents.length === 1 &&
-            TP.pathsEqual(this.props.selectedComponents[0], this.props.target)
-          ) {
+        if (
+          this.props.selectedComponents.length === 1 &&
+          TP.pathsEqual(this.props.selectedComponents[0], this.props.target)
+        ) {
+          if (MetadataUtils.isTextAgainstImports(this.props.imports, instance)) {
+            // if target is a text and it is the one and only selected component, then activate the text editor
             const mousePosition = {
               x: event.clientX,
               y: event.clientY,
@@ -101,6 +102,9 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
               [EditorActions.openTextEditor(this.props.target, mousePosition)],
               'canvas',
             )
+          } else if (showingInvisibleElement) {
+            // double clicking on an invisible element should give it an arbitrary size
+            this.props.dispatch([EditorActions.addMissingDimensions(this.props.target)])
           }
         }
       }
@@ -185,9 +189,9 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             top: this.props.canvasOffset.y + this.props.frame.y - extraHeight / 2,
             width: this.props.frame.width + extraWidth,
             height: this.props.frame.height + extraHeight,
-            borderColor: UtopiaTheme.color.primary.value,
+            borderColor: UtopiaTheme.color.primary.o(50).value,
             borderStyle: showInvisibleIndicator ? 'solid' : undefined,
-            borderWidth: 1 / this.props.scale,
+            borderWidth: 0.5 / this.props.scale,
             borderRadius: showInvisibleIndicator ? borderRadius : 0,
           }}
           data-testid={this.props.testID}
