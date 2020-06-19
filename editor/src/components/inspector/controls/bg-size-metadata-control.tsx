@@ -27,6 +27,8 @@ import {
 } from '../common/css-utils'
 import { UseSubmitTransformedValuesFactory } from '../sections/style-section/background-subsection/background-layer-helpers'
 import { MetadataControlsStyle } from '../sections/style-section/background-subsection/background-picker'
+import { KeywordControl } from './keyword-control'
+import { NO_OP } from '../../../core/shared/utils'
 
 interface BGSizeMetadataControlProps {
   index: number

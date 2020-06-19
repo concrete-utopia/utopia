@@ -62,7 +62,7 @@ const Button = {
     defaultValue: 'button',
   },
 }
-
+export const AntdControlsVersion = '4.3.4'
 export const AntdControls = {
   Button: Button,
 }
