@@ -208,24 +208,23 @@ export function applyUIDMonkeyPatch(): void {
 
 export function makeCanvasElementPropsSafe(props: any): any {
   function removeUnsafeValues(innerProps: any, visited: any[]): any {
-    let visitedObjects = [...visited]
     switch (typeof innerProps) {
       case 'object': {
         if (Array.isArray(innerProps)) {
           return innerProps.map((prop) => {
-            return removeUnsafeValues(prop, visitedObjects)
+            return removeUnsafeValues(prop, visited)
           })
         } else if (innerProps != null) {
-          visitedObjects.push(innerProps)
+          visited.push(innerProps)
           return Utils.objectMap((value, key) => {
             if (typeof value === 'object') {
-              if (visitedObjects.includes(value)) {
+              if (visited.includes(value)) {
                 return null
               } else {
-                return removeUnsafeValues(value, visitedObjects)
+                return removeUnsafeValues(value, visited)
               }
             } else {
-              return removeUnsafeValues(value, visitedObjects)
+              return removeUnsafeValues(value, visited)
             }
           }, innerProps)
         }
