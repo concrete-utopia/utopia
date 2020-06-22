@@ -216,6 +216,155 @@ export const Text = {
   },
 }
 
+const Menu = {
+  defaultOpenKeys: {
+    type: ControlType.Array,
+    title: 'defaultOpenKeys',
+  },
+  defaultSelectedKeys: {
+    type: ControlType.Array,
+    title: 'defaultSelectedKeys',
+  },
+  forceSubMenuRender: {
+    type: ControlType.Boolean,
+    title: 'forceSubMenuRender',
+    defaultValue: false,
+  },
+  inlineCollapsed: {
+    type: ControlType.Boolean,
+    title: 'inlineCollapsed',
+  },
+  inlineIndent: {
+    type: ControlType.Number,
+    title: 'inlineIndent',
+    defaultValue: 24,
+  },
+  mode: {
+    type: ControlType.Enum,
+    title: 'mode',
+    options: ['vertical', 'horizontal', 'inline'],
+  },
+  multiple: {
+    type: ControlType.Boolean,
+    title: 'multiple',
+    defaultValue: false,
+  },
+  openKeys: {
+    type: ControlType.Array,
+    title: 'openKeys',
+  },
+  selectable: {
+    type: ControlType.Boolean,
+    title: 'selectable',
+    defaultValue: true,
+  },
+  selectedKeys: {
+    type: ControlType.Array,
+    title: 'selectedKeys',
+  },
+  subMenuCloseDelay: {
+    type: ControlType.Number,
+    title: 'subMenuCloseDelay',
+    defaultValue: 0.1,
+  },
+  subMenuOpenDelay: {
+    type: ControlType.Number,
+    title: 'subMenuOpenDelay',
+    defaultValue: 0,
+  },
+  theme: {
+    type: ControlType.Enum,
+    title: 'theme',
+    options: ['light', 'dark'],
+    defaultValue: 'light',
+  },
+  onClick: {
+    // function({ item, key, keyPath, domEvent })
+    type: ControlType.EventHandler,
+    title: 'onClick',
+  },
+  onDeselect: {
+    // function({ item, key, keyPath, selectedKeys, domEvent })
+    type: ControlType.EventHandler,
+    title: 'onClick',
+  },
+  onOpenChange: {
+    // function(openKeys: string[])
+    type: ControlType.EventHandler,
+    title: 'onClick',
+  },
+  onSelect: {
+    // function({ item, key, keyPath, selectedKeys, domEvent })
+    type: ControlType.EventHandler,
+    title: 'onClick',
+  },
+  overflowedIndicator: {
+    type: ControlType.ComponentInstance,
+    title: 'overflowedIndicator',
+  },
+}
+
+const MenuItem = {
+  disabled: {
+    type: ControlType.Boolean,
+    title: 'disabled',
+    defaultValue: false,
+  },
+  key: {
+    type: ControlType.String,
+    title: 'key',
+  },
+  title: {
+    type: ControlType.String,
+    title: 'title',
+  },
+  icon: {
+    type: ControlType.ComponentInstance,
+    title: 'icon',
+  },
+  danger: {
+    type: ControlType.Boolean,
+    title: 'danger',
+    defaultValue: false,
+  },
+}
+
+const MenuSubMenu = {
+  popupClassName: {
+    type: ControlType.String,
+    title: 'popupClassName',
+  },
+  disabled: {
+    type: ControlType.Boolean,
+    title: 'disabled',
+    defaultValue: false,
+  },
+  key: {
+    type: ControlType.String,
+    title: 'key',
+  },
+  title: {
+    type: ControlType.String,
+    title: 'title',
+  },
+  icon: {
+    type: ControlType.ComponentInstance,
+    title: 'icon',
+  },
+  onTitleClick: {
+    // function({ key, domEvent })
+    type: ControlType.EventHandler,
+    title: 'onTitleClick',
+  },
+}
+
+const MenuItemGroup = {
+  title: {
+    type: ControlType.String,
+    title: 'title',
+  },
+}
+
 export const AntdControlsVersion = '4.3.4'
 export const AntdControls = {
   Button: Button,
@@ -223,4 +372,8 @@ export const AntdControls = {
   Row: Row,
   Col: Col,
   'Typography.Text': Text,
+  Menu: Menu,
+  'Menu.Item': MenuItem,
+  'Menu.SubMenu': MenuSubMenu,
+  'Menu.ItemGroup': MenuItemGroup,
 }
