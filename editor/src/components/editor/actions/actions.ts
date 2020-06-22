@@ -950,6 +950,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
       controls: [],
       transientState: produceCanvasTransientState(history.current.editor, true),
     },
+    elementWarnings: poppedDerived.elementWarnings,
   }
 }
 

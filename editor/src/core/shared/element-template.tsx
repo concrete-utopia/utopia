@@ -859,7 +859,7 @@ export interface SpecialSizeMeasurements {
   usesParentBounds: boolean
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
   layoutSystemForChildren: DetectedLayoutSystem
-  position: CSSPosition
+  position: CSSPosition | null
   margin: Sides
   padding: Sides
   naturalWidth: number | null
@@ -876,7 +876,7 @@ export function specialSizeMeasurements(
   usesParentBounds: boolean,
   parentLayoutSystem: DetectedLayoutSystem,
   layoutSystemForChildren: DetectedLayoutSystem,
-  position: CSSPosition,
+  position: CSSPosition | null,
   margin: Sides,
   padding: Sides,
   naturalWidth: number | null,

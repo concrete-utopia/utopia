@@ -28,6 +28,7 @@ import { ExpansionArrowWidth } from './expandable-indicator'
 import { BasePaddingUnit, getElementPadding, NavigatorItem } from './navigator-item'
 import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-components'
 import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
+import { ElementWarnings } from '../../editor/store/editor-state'
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -60,6 +61,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
   isElementVisible: boolean
   renamingTarget: TemplatePath | null
   imports: Imports
+  elementWarnings: ElementWarnings
 }
 
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: TemplatePath): boolean {
@@ -263,6 +265,7 @@ export class NavigatorItemDndWrapper extends PureComponent<
           selected={this.props.selected}
           imports={this.props.imports}
           elementOriginType={this.props.elementOriginType}
+          elementWarnings={this.props.elementWarnings}
         />
         <NavigatorHintTop
           isOver={this.props.isOver}

@@ -1391,6 +1391,29 @@ export const MetadataUtils = {
     }
     return false
   },
+  walkMetadata(
+    rootMetadata: Array<ComponentMetadata>,
+    withEachElement: (
+      metadata: ElementInstanceMetadata,
+      parentMetadata: ElementInstanceMetadata | null,
+    ) => void,
+  ): void {
+    function innerWalk(
+      metadata: ElementInstanceMetadata,
+      parentMetadata: ElementInstanceMetadata | null,
+    ): void {
+      withEachElement(metadata, parentMetadata)
+      for (const child of metadata.children) {
+        innerWalk(child, metadata)
+      }
+    }
+
+    for (const componentMetadata of rootMetadata) {
+      if (componentMetadata.rootElement != null) {
+        innerWalk(componentMetadata.rootElement, null)
+      }
+    }
+  },
 }
 
 export function convertMetadataMap(

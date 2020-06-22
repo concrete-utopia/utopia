@@ -18,7 +18,7 @@ interface LayoutSectionProps {
   input: ResolvedLayoutProps
   specialSizeMeasurements: SpecialSizeMeasurements
   isChildOfFlexComponent: boolean
-  position: CSSPosition
+  position: CSSPosition | null
   hasNonDefaultPositionAttributes: boolean
   parentFlexAxis: 'horizontal' | 'vertical' | null
   aspectRatioLocked: boolean
