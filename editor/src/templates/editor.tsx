@@ -62,6 +62,7 @@ import Utils from '../utils/utils'
 import { HeartbeatRequestMessage } from '../core/workers/watchdog-worker'
 import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
 import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
+import { dependenciesFromModel } from '../components/editor/npm-dependency/npm-dependency'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -130,6 +131,7 @@ export class Editor {
                   this.boundDispatch([EditorActions.updateNodeModulesContents(newModules, false)]),
                 this.storedState.editor.nodeModules.files,
               ),
+              dependenciesFromModel(this.storedState.editor),
               msg.fullBuild,
             )
 

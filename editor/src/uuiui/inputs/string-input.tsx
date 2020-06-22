@@ -1,29 +1,28 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import styled from '@emotion/styled'
-import Tippy from '@tippyjs/react'
 import * as React from 'react'
-import {
-  ControlStatus,
-  ControlStyles,
-  getControlStyles,
-} from '../../components/inspector/common/control-status'
+import { ControlStyles, getControlStyles } from '../../components/inspector/common/control-status'
 import { UtopiaTheme } from '../styles/theme'
 import { OnSubmitValue } from '../../components/inspector/controls/control'
 import { stopPropagation } from '../../components/inspector/common/inspector-utils'
-import { betterReactMemo } from 'uuiui-deps'
+import { betterReactMemo, ControlStatus } from 'uuiui-deps'
 import { InspectorInput } from './base-input'
 
-export interface StringInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  labelBelow?: string
-  tooltipContent?: React.ReactElement<any> | string
-  tooltipTrigger?: string
-  tooltipHideOnClick?: boolean
-  controlStatus?: ControlStatus
-  stopEnterAndEscPropagation?: boolean
-  focusOnMount?: boolean
+interface StringInputOptions {
+  focusOnMount?: true
+}
+
+export interface StringInputProps
+  extends StringInputOptions,
+    React.InputHTMLAttributes<HTMLInputElement> {
   placeholder?: string
   onSubmitValue?: OnSubmitValue<string>
+  style?: React.CSSProperties
+  id?: string
+  className?: string
+  DEPRECATED_labelBelow?: React.ReactChild
+  controlStatus?: ControlStatus
 }
 
 // TODO FIX FUCKED UP REFS SITUATION
@@ -32,16 +31,12 @@ export const StringInput = betterReactMemo(
   React.forwardRef<HTMLInputElement, StringInputProps>(
     (
       {
-        labelBelow,
-        tooltipContent,
-        tooltipTrigger = 'mouseenter focus',
-        tooltipHideOnClick,
         controlStatus = 'simple',
-        stopEnterAndEscPropagation = true,
         style,
         focusOnMount = false,
         placeholder: initialPlaceHolder,
         onSubmitValue,
+        DEPRECATED_labelBelow: labelBelow,
         ...inputProps
       },
       initialRef: any, // React.RefObject<HTMLInputElement>
@@ -77,15 +72,13 @@ export const StringInput = betterReactMemo(
           }
           if (e.key === 'Escape' || e.key === 'Enter') {
             e.preventDefault()
-            if (stopEnterAndEscPropagation) {
-              e.nativeEvent.stopImmediatePropagation()
-            }
+            e.nativeEvent.stopImmediatePropagation()
             if (ref.current != null) {
               ref.current.blur()
             }
           }
         },
-        [inputPropsKeyDown, ref, stopEnterAndEscPropagation],
+        [inputPropsKeyDown, ref],
       )
 
       const onFocus = React.useCallback(
@@ -126,47 +119,29 @@ export const StringInput = betterReactMemo(
         placeholder = 'mixed'
       }
 
-      const inputElement = (
-        <InspectorInput
-          {...inputProps}
-          controlStyles={controlStyles}
-          focused={focused}
-          value={inputProps.value}
-          css={{
-            '&::placeholder': {
-              fontStyle: 'italic',
-              color: UtopiaTheme.color.subduedForeground.value,
-            },
-          }}
-          onKeyDown={onKeyDown}
-          onFocus={onFocus}
-          onBlur={onBlur}
-          className={inputProps.className}
-          ref={ref}
-          placeholder={placeholder}
-          disabled={!controlStyles.interactive}
-          autoComplete='off'
-          spellCheck={false}
-        />
-      )
-
       return (
         <form autoComplete='off' style={style} onMouseDown={stopPropagation}>
-          {tooltipContent == null ? (
-            inputElement
-          ) : (
-            <Tippy
-              content={tooltipContent}
-              trigger={tooltipTrigger}
-              hideOnClick={tooltipHideOnClick}
-              placement='bottom'
-              delay={[0, 0]}
-              arrow={true}
-              animation='fade'
-            >
-              {inputElement}
-            </Tippy>
-          )}
+          <InspectorInput
+            {...inputProps}
+            controlStyles={controlStyles}
+            focused={focused}
+            value={inputProps.value}
+            css={{
+              '&::placeholder': {
+                fontStyle: 'italic',
+                color: UtopiaTheme.color.subduedForeground.value,
+              },
+            }}
+            onKeyDown={onKeyDown}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            className={inputProps.className}
+            ref={ref}
+            placeholder={placeholder}
+            disabled={!controlStyles.interactive}
+            autoComplete='off'
+            spellCheck={false}
+          />
           {labelBelow == null ? null : (
             <LabelBelow htmlFor={inputProps.id} style={{ color: controlStyles.secondaryColor }}>
               {labelBelow}

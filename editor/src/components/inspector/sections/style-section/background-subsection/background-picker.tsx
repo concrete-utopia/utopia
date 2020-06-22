@@ -134,7 +134,7 @@ const LinearGradientControls: React.FunctionComponent<LinearGradientControlsProp
           width: 10,
           height: 10,
         }}
-        labelBelow='angle'
+        DEPRECATED_labelBelow='angle'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
       />
@@ -213,7 +213,7 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
         controlStatus={props.controlStatus}
-        labelBelow='center x'
+        DEPRECATED_labelBelow='center x'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
       />
@@ -226,7 +226,7 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
         controlStatus={props.controlStatus}
-        labelBelow='center y'
+        DEPRECATED_labelBelow='center y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
       />
@@ -239,7 +239,7 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         onSubmitValue={gradientWidthSubmitValue}
         onTransientSubmitValue={gradientWidthTransientSubmitValue}
         controlStatus={props.controlStatus}
-        labelBelow='width'
+        DEPRECATED_labelBelow='width'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
       />
@@ -252,7 +252,7 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         onSubmitValue={gradientHeightSubmitValue}
         onTransientSubmitValue={gradientHeightTransientSubmitValue}
         controlStatus={props.controlStatus}
-        labelBelow='height'
+        DEPRECATED_labelBelow='height'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
       />
@@ -306,7 +306,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
         controlStatus={props.controlStatus}
-        labelBelow='x'
+        DEPRECATED_labelBelow='x'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
       />
@@ -317,7 +317,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
         controlStatus={props.controlStatus}
-        labelBelow='y'
+        DEPRECATED_labelBelow='y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
       />
@@ -328,7 +328,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
         onSubmitValue={gradientFromAngleSubmitValue}
         onTransientSubmitValue={gradientFromAngleTransientSubmitValue}
         controlStatus={props.controlStatus}
-        labelBelow='angle'
+        DEPRECATED_labelBelow='angle'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
       />

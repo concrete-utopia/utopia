@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
-import { ControlProps } from './control'
+import { DEPRECATEDControlProps } from './control'
 import { CheckboxInput } from 'uuiui'
 
-export interface BooleanControlProps extends ControlProps<boolean> {
+export interface BooleanControlProps extends DEPRECATEDControlProps<boolean> {
   onMouseDown?: (e: React.MouseEvent<HTMLInputElement>) => void
 }
 

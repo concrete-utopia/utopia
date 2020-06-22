@@ -50,9 +50,9 @@ function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): Detecte
   return 'flow' // or fixed?
 }
 
-function getPosition(computedStyle: CSSStyleDeclaration | null): CSSPosition {
+function getPosition(computedStyle: CSSStyleDeclaration | null): CSSPosition | null {
   const valueAsAny = computedStyle?.position as any
-  return positionValues.includes(valueAsAny) ? valueAsAny : 'static'
+  return positionValues.includes(valueAsAny) ? valueAsAny : null
 }
 
 function isElementNonFixed(computedStyle: CSSStyleDeclaration | null) {

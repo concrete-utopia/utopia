@@ -109,9 +109,11 @@ import {
   instancePath,
   isInstancePath,
   toUid,
+  toString,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notices'
+import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -839,7 +841,16 @@ export function getMetadata(editor: EditorState): Array<ComponentMetadata> {
   }
 }
 
-// KILLME!
+export interface ElementWarnings {
+  widthOrHeightZero: boolean
+  absoluteWithUnpositionedParent: boolean
+}
+
+export const defaultElementWarnings: ElementWarnings = {
+  widthOrHeightZero: false,
+  absoluteWithUnpositionedParent: false,
+}
+
 export interface DerivedState {
   navigatorTargets: Array<TemplatePath>
   canvas: {
@@ -847,6 +858,7 @@ export interface DerivedState {
     controls: Array<HigherOrderControl>
     transientState: TransientCanvasState
   }
+  elementWarnings: ComplexMap<TemplatePath, ElementWarnings>
 }
 
 function emptyDerivedState(editorState: EditorState): DerivedState {
@@ -857,6 +869,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
       controls: [],
       transientState: produceCanvasTransientState(editorState, false),
     },
+    elementWarnings: emptyComplexMap(),
   }
 }
 
@@ -1059,6 +1072,41 @@ type EditorAndDerivedState = {
   derived: DerivedState
 }
 
+export function getElementWarnings(
+  rootMetadata: Array<ComponentMetadata>,
+): ComplexMap<TemplatePath, ElementWarnings> {
+  let result: ComplexMap<TemplatePath, ElementWarnings> = emptyComplexMap()
+  MetadataUtils.walkMetadata(
+    rootMetadata,
+    (elementMetadata: ElementInstanceMetadata, parentMetadata: ElementInstanceMetadata | null) => {
+      // Check to see if this element is collapsed in one dimension.
+      const globalFrame = elementMetadata.globalFrame
+      const widthOrHeightZero =
+        globalFrame != null ? globalFrame.width === 0 || globalFrame.height === 0 : false
+
+      // Identify if this element looks to be trying to position itself with "pins", but
+      // the parent element isn't appropriately configured.
+      let absoluteWithUnpositionedParent: boolean = false
+      if (parentMetadata != null) {
+        if (
+          elementMetadata.specialSizeMeasurements.position === 'absolute' &&
+          !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
+        ) {
+          absoluteWithUnpositionedParent = true
+        }
+      }
+
+      // Build the warnings object and add it to the map.
+      const elementWarnings: ElementWarnings = {
+        widthOrHeightZero: widthOrHeightZero,
+        absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
+      }
+      result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
+    },
+  )
+  return result
+}
+
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
@@ -1078,6 +1126,10 @@ export function deriveState(
       controls: derivedState.canvas.controls,
       transientState: produceCanvasTransientState(editor, true),
     },
+    elementWarnings: keepDeepReferenceEqualityIfPossible(
+      oldDerivedState?.elementWarnings,
+      getElementWarnings(getMetadata(editor)),
+    ),
   }
 
   const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)

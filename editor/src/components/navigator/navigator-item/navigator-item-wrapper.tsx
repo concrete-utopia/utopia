@@ -11,9 +11,10 @@ import {
   NavigatorItemDragAndDropWrapperProps,
 } from './navigator-item-dnd-container'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { getOpenImportsFromState } from '../../editor/store/editor-state'
+import { getOpenImportsFromState, defaultElementWarnings } from '../../editor/store/editor-state'
 import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/element-template'
 import { betterReactMemo } from 'uuiui-deps'
+import { getValueFromComplexMap } from '../../../utils/map'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -45,6 +46,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       isElementVisible,
       renamingTarget,
       imports,
+      elementWarnings,
     } = useEditorState((store) => {
       const fallbackTransientState = store.derived.canvas.transientState
       const fallbackFileState = fallbackTransientState.fileState
@@ -100,6 +102,13 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
           props.templatePath,
         )
       }
+
+      const elementWarningsInner = getValueFromComplexMap(
+        TP.toString,
+        store.derived.elementWarnings,
+        props.templatePath,
+      )
+
       return {
         staticElementName: staticName,
         label: labelInner,
@@ -119,6 +128,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
         elementOriginType: elementOriginTypeInner,
         renamingTarget: store.editor.navigator.renamingTarget,
         isElementVisible: !TP.containsPath(props.templatePath, store.editor.hiddenInstances),
+        elementWarnings: elementWarningsInner ?? defaultElementWarnings,
       }
     })
 
@@ -149,6 +159,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       isElementVisible: isElementVisible,
       renamingTarget: renamingTarget,
       imports: imports,
+      elementWarnings: elementWarnings,
     }
 
     return <NavigatorItemContainer {...navigatorItemProps} />
