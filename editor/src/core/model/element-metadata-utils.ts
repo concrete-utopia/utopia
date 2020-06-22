@@ -1120,6 +1120,54 @@ export const MetadataUtils = {
       return null
     }
   },
+  getJSXElementBaseName(
+    path: TemplatePath,
+    components: Array<UtopiaJSXComponent>,
+    metadata: ComponentMetadata[],
+  ): string | null {
+    if (TP.isScenePath(path)) {
+      const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
+      if (scene != null) {
+        return scene.component
+      } else {
+        return null
+      }
+    } else {
+      const jsxElement = findElementAtPath(path, components, metadata)
+      if (jsxElement != null) {
+        if (isJSXElement(jsxElement)) {
+          return jsxElement.name.baseVariable
+        } else {
+          return null
+        }
+      }
+      return null
+    }
+  },
+  getJSXElementTagName(
+    path: TemplatePath,
+    components: Array<UtopiaJSXComponent>,
+    metadata: ComponentMetadata[],
+  ): string | null {
+    if (TP.isScenePath(path)) {
+      const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
+      if (scene != null) {
+        return scene.component
+      } else {
+        return null
+      }
+    } else {
+      const jsxElement = findElementAtPath(path, components, metadata)
+      if (jsxElement != null) {
+        if (isJSXElement(jsxElement)) {
+          return getJSXElementNameAsString(jsxElement.name)
+        } else {
+          return null
+        }
+      }
+      return null
+    }
+  },
   getTargetParentForPaste: function (
     imports: Imports,
     selectedViews: Array<TemplatePath>,
