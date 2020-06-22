@@ -207,13 +207,27 @@ export function applyUIDMonkeyPatch(): void {
 }
 
 export function makeCanvasElementPropsSafe(props: any): any {
-  function removeUnsafeValues(innerProps: any): any {
+  function removeUnsafeValues(innerProps: any, visited: any[]): any {
+    let visitedObjects = [...visited]
     switch (typeof innerProps) {
       case 'object': {
         if (Array.isArray(innerProps)) {
-          return innerProps.map(removeUnsafeValues)
+          return innerProps.map((prop) => {
+            return removeUnsafeValues(prop, visitedObjects)
+          })
         } else if (innerProps != null) {
-          return Utils.objectMap((value) => removeUnsafeValues(value), innerProps)
+          visitedObjects.push(innerProps)
+          return Utils.objectMap((value, key) => {
+            if (typeof value === 'object') {
+              if (visitedObjects.includes(value)) {
+                return null
+              } else {
+                return removeUnsafeValues(value, visitedObjects)
+              }
+            } else {
+              return removeUnsafeValues(value, visitedObjects)
+            }
+          }, innerProps)
         }
         break
       }
@@ -235,6 +249,6 @@ export function makeCanvasElementPropsSafe(props: any): any {
 
   return keepDeepReferenceEqualityIfPossible(props, {
     skipDeepFreeze: true,
-    ...removeUnsafeValues(working),
+    ...removeUnsafeValues(working, []),
   })
 }
