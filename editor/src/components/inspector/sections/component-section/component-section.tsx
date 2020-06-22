@@ -4,7 +4,7 @@ import {
   InspectorSectionHeader,
   PopupList,
   SimpleNumberInput,
-  useWrappedEmptyOnSubmitValue,
+  useWrappedEmptyOrUnknownOnSubmitValue,
   colorTheme,
   Tooltip,
   FunctionIcons,
@@ -75,8 +75,12 @@ interface ControlForPropProps {
 
 const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropProps) => {
   const { propName, propMetadata, controlDescription } = props
-  const wrappedOnSubmit = useWrappedEmptyOnSubmitValue(
+  const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
     propMetadata.onSubmitValue,
+    propMetadata.onUnsetValues,
+  )
+  const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
+    propMetadata.onTransientSubmitValue,
     propMetadata.onUnsetValues,
   )
   if (controlDescription == null) {
@@ -105,6 +109,8 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
             id={controlId}
             value={value}
             onSubmitValue={wrappedOnSubmit}
+            onTransientSubmitValue={wrappedOnTransientSubmit}
+            onForcedSubmitValue={wrappedOnSubmit}
             controlStatus={propMetadata.controlStatus}
             incrementControls={controlDescription.displayStepper}
             stepSize={controlDescription.step}

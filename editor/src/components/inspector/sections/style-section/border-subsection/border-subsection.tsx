@@ -6,6 +6,7 @@ import {
   InspectorSubsectionHeader,
   NumberInput,
   SquareButton,
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
 } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { isRight } from '../../../../../core/shared/either'
@@ -134,9 +135,10 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
     updateBorderColor,
   )
   const [borderColorStringSubmitValue] = useSubmitValueFactory(updateBorderColorString)
-  const [borderWidthSubmitValue, borderWidthTransientSubmitValue] = useSubmitValueFactory(
-    updateBorderWidth,
-  )
+  const [
+    borderWidthSubmitValue,
+    borderWidthTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderWidth))
 
   const allOrSplitControls = (
     <GridRow tall alignItems='start' padded={false} type='<-------1fr------>|----80px----|'>

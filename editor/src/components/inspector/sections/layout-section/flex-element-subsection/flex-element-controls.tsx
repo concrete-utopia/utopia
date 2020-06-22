@@ -6,7 +6,7 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
-import { ChainedNumberInput, useWrappedEmptyOnSubmitValue } from 'uuiui'
+import { ChainedNumberInput, useWrappedEmptyOrUnknownOnSubmitValue } from 'uuiui'
 
 export const PositionControl = betterReactMemo('PositionControl', () => {
   const position = useInspectorLayoutInfo('position')
@@ -109,35 +109,35 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
   const marginBottom = useInspectorLayoutInfo('marginBottom')
   const marginLeft = useInspectorLayoutInfo('marginLeft')
 
-  const wrappedMarginTopOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginTop.onSubmitValue,
     marginTop.onUnsetValues,
   )
-  const wrappedMarginTopOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginTopOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginTop.onSubmitValue,
     marginTop.onUnsetValues,
   )
-  const wrappedMarginRightOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginRightOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginRight.onSubmitValue,
     marginRight.onUnsetValues,
   )
-  const wrappedMarginRightOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginRightOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginRight.onSubmitValue,
     marginRight.onUnsetValues,
   )
-  const wrappedMarginBottomOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginBottomOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginBottom.onSubmitValue,
     marginBottom.onUnsetValues,
   )
-  const wrappedMarginBottomOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginBottomOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginBottom.onSubmitValue,
     marginBottom.onUnsetValues,
   )
-  const wrappedMarginLeftOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginLeftOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginLeft.onSubmitValue,
     marginLeft.onUnsetValues,
   )
-  const wrappedMarginLeftOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginLeftOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginLeft.onSubmitValue,
     marginLeft.onUnsetValues,
   )

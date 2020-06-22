@@ -83,7 +83,6 @@ export const NumberOrKeywordControl = betterReactMemo<NumberOrKeywordControlProp
           onTransientSubmitValue={onTransientSubmitValue}
           controlStatus={controlStatus}
           DEPRECATED_labelBelow={DEPRECATED_labelBelow}
-          allowUnknownInputValuesToSubmit
           {...numberInputOptions}
         />
       )

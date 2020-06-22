@@ -620,6 +620,7 @@ export class ColorPickerInner extends React.Component<
             id='colorPicker-controls-hue'
             onSubmitValue={this.onSubmitValueHue}
             onTransientSubmitValue={this.onTransientSubmitValueHue}
+            onForcedSubmitValue={this.onSubmitValueHue}
             minimum={0}
             maximum={360}
             DEPRECATED_labelBelow='H'
@@ -636,6 +637,7 @@ export class ColorPickerInner extends React.Component<
             id='colorPicker-controls-saturation'
             onSubmitValue={this.onSubmitValueSaturation}
             onTransientSubmitValue={this.onTransientSubmitValueSaturation}
+            onForcedSubmitValue={this.onSubmitValueSaturation}
             style={{ gridColumn: 'span 1' }}
             minimum={0}
             maximum={1}
@@ -647,6 +649,7 @@ export class ColorPickerInner extends React.Component<
             id='colorPicker-controls-value'
             onSubmitValue={this.onSubmitValueValue}
             onTransientSubmitValue={this.onTransientSubmitValueValue}
+            onForcedSubmitValue={this.onSubmitValueValue}
             style={{ gridColumn: 'span 1' }}
             minimum={0}
             maximum={1}
@@ -658,6 +661,7 @@ export class ColorPickerInner extends React.Component<
             id='colorPicker-controls-alpha'
             onSubmitValue={this.onSubmitValueAlpha}
             onTransientSubmitValue={this.onTransientSubmitValueAlpha}
+            onForcedSubmitValue={this.onSubmitValueAlpha}
             style={{ gridColumn: 'span 1' }}
             minimum={0}
             maximum={1}

@@ -8,6 +8,7 @@ import {
   InspectorSubsectionHeader,
   SquareButton,
   UtopiaTheme,
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
 } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import utils from '../../../../../utils/utils'
@@ -155,17 +156,29 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
   const [colorSubmitValue, colorTransientSubmitValue] = props.useSubmitValueFactory(
     getIndexedUpdateShadowColor(props.index),
   )
-  const [offsetXSubmitValue, offsetXTransientSubmitValue] = props.useSubmitValueFactory(
-    getIndexedUpdateShadowOffsetX(props.index),
+  const [
+    offsetXSubmitValue,
+    offsetXTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(getIndexedUpdateShadowOffsetX(props.index)),
   )
-  const [offsetYSubmitValue, offsetYTransientSubmitValue] = props.useSubmitValueFactory(
-    getIndexedUpdateShadowOffsetY(props.index),
+  const [
+    offsetYSubmitValue,
+    offsetYTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(getIndexedUpdateShadowOffsetY(props.index)),
   )
-  const [blurRadiusSubmitValue, blurRadiusTransientSubmitValue] = props.useSubmitValueFactory(
-    getIndexedUpdateShadowBlurRadius(props.index),
+  const [
+    blurRadiusSubmitValue,
+    blurRadiusTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(getIndexedUpdateShadowBlurRadius(props.index)),
   )
-  const [spreadRadiusSubmitValue, spreadRadiusTransientSubmitValue] = props.useSubmitValueFactory(
-    getIndexedUpdateShadowSpreadRadius(props.index),
+  const [
+    spreadRadiusSubmitValue,
+    spreadRadiusTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(getIndexedUpdateShadowSpreadRadius(props.index)),
   )
   const [onSubmitIndexedSpliceValue] = props.useSubmitValueFactory(
     getIndexedSpliceShadow(props.index),
