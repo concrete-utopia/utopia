@@ -483,7 +483,6 @@ export function updateFramesOfScenesAndComponents(
                 } else if (frameAndTarget.type === 'PIN_SIZE_CHANGE') {
                   // only update left, top, right or bottom if the frame is expressed as left, top, right, bottom.
                   // otherwise try to change width and height only
-                  // let framePointsToUse: Array<FramePoint> = []
                   let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
                   let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
                   if (verticalPoints.length < 2) {
