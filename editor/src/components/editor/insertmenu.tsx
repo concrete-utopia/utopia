@@ -60,7 +60,7 @@ import {
   findMissingDefaultsAndGetWarning,
 } from '../../core/property-controls/property-controls-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
-import { usePackageDependencies } from './npm-dependency/npm-dependency'
+import { useResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import { NpmDependency } from '../../core/shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 
@@ -124,7 +124,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
     }
   })
 
-  const dependencies = usePackageDependencies()
+  const dependencies = useResolvedPackageDependencies()
 
   const propsWithDependencies: InsertMenuProps = {
     ...props,
