@@ -2,6 +2,19 @@ import { Size } from '../../../core/shared/math-utils'
 import { UtopiaTheme } from '../../../uuiui'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
+function getDimension(size: Size): 'point' | 'horizontal' | 'vertical' | 'n/a' {
+  if (size.width === 0 && size.height === 0) {
+    return 'point'
+  }
+  if (size.width === 0) {
+    return 'vertical'
+  }
+  if (size.height === 0) {
+    return 'horizontal'
+  }
+  return 'n/a'
+}
+
 export function calculateExtraSizeForZeroSizedElement(
   size: Size,
 ): {
@@ -16,13 +29,7 @@ export function calculateExtraSizeForZeroSizedElement(
     const extraHeight = size.height === 0 ? UtopiaTheme.invisibleIndicatorSize : 0
     const showingInvisibleElement = extraWidth !== 0 || extraHeight !== 0
     const borderRadius = showingInvisibleElement ? UtopiaTheme.invisibleIndicatorSize / 2 : 0
-    const dimension = showingInvisibleElement
-      ? size.width === 0
-        ? size.height === 0
-          ? 'point'
-          : 'vertical'
-        : 'horizontal'
-      : 'n/a'
+    const dimension = getDimension(size)
 
     return {
       extraWidth,
