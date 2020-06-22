@@ -223,6 +223,7 @@ export class InsertModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         testID={`insert-target-${TP.toComponentId(target)}`}
+        showAdditionalControls={this.props.showAdditionalControls}
       />
     )
   }
@@ -254,6 +255,7 @@ export class InsertModeControlContainer extends React.Component<
         windowToCanvasPosition={this.props.windowToCanvasPosition}
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
+        showAdditionalControls={this.props.showAdditionalControls}
       />
     )
   }

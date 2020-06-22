@@ -297,6 +297,7 @@ export function updateFramesOfScenesAndComponents(
       switch (frameAndTarget.type) {
         case 'PIN_FRAME_CHANGE':
         case 'PIN_MOVE_CHANGE':
+        case 'PIN_SIZE_CHANGE':
           // Update scene with pin based frame.
           const sceneStaticpath = createSceneTemplatePath(target)
           workingComponentsResult = transformJSXComponentAtPath(
@@ -357,7 +358,9 @@ export function updateFramesOfScenesAndComponents(
       )
 
       const isFlexContainer =
-        frameAndTarget.type !== 'PIN_FRAME_CHANGE' && frameAndTarget.type !== 'PIN_MOVE_CHANGE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
+        frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
+        frameAndTarget.type !== 'PIN_MOVE_CHANGE' &&
+        frameAndTarget.type !== 'PIN_SIZE_CHANGE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
 
       let propsToSet: Array<ValueAtPath> = []
       let propsToSkip: Array<PropertyPath> = []
@@ -365,11 +368,7 @@ export function updateFramesOfScenesAndComponents(
         if (TP.isInstancePath(staticParentPath)) {
           switch (frameAndTarget.type) {
             case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-              throw new Error(
-                `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
-                  staticParentPath,
-                )}.`,
-              )
+            case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
             case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
               throw new Error(
                 `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
@@ -432,6 +431,7 @@ export function updateFramesOfScenesAndComponents(
         switch (frameAndTarget.type) {
           case 'PIN_FRAME_CHANGE':
           case 'PIN_MOVE_CHANGE':
+          case 'PIN_SIZE_CHANGE':
             if (frameAndTarget.frame != null) {
               let parentFrame: CanvasRectangle | null = null
               if (optionalParentFrame == null) {
@@ -480,6 +480,19 @@ export function updateFramesOfScenesAndComponents(
                   }
 
                   return framePointsToUse
+                } else if (frameAndTarget.type === 'PIN_SIZE_CHANGE') {
+                  // only update left, top, right or bottom if the frame is expressed as left, top, right, bottom.
+                  // otherwise try to change width and height only
+                  let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
+                  let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
+                  if (verticalPoints.length < 2) {
+                    verticalPoints.push(FramePoint.Height)
+                  }
+                  if (horizontalPoints.length < 2) {
+                    horizontalPoints.push(FramePoint.Width)
+                  }
+
+                  return [...horizontalPoints, ...verticalPoints]
                 } else if (
                   frameAndTarget.type === 'PIN_FRAME_CHANGE' &&
                   frameAndTarget.edgePosition != null &&

@@ -151,10 +151,16 @@ import {
   LocalRectangle,
   Size,
   WindowPoint,
+  canvasRectangle,
 } from '../../../core/shared/math-utils'
 import { ensureDirectoriesExist } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
-import { CanvasFrameAndTarget, CSSCursor, PinOrFlexFrameChange } from '../../canvas/canvas-types'
+import {
+  CanvasFrameAndTarget,
+  CSSCursor,
+  PinOrFlexFrameChange,
+  pinSizeChange,
+} from '../../canvas/canvas-types'
 import {
   canvasFrameToNormalisedFrame,
   clearDragState,
@@ -311,6 +317,7 @@ import {
   UpdatePackageJson,
   StartCheckpointTimer,
   FinishCheckpointTimer,
+  AddMissingDimensions,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -3915,6 +3922,21 @@ export const UPDATE_FNS = {
     // No need to actually change the editor state.
     return editor
   },
+  ADD_MISSING_DIMENSIONS: (action: AddMissingDimensions, editor: EditorState): EditorState => {
+    const ArbitrarySize = 10
+    const frameWithExtendedDimensions = canvasRectangle({
+      x: action.existingSize.x,
+      y: action.existingSize.y,
+      width: action.existingSize.width === 0 ? ArbitrarySize : action.existingSize.width,
+      height: action.existingSize.height === 0 ? ArbitrarySize : action.existingSize.height,
+    })
+    const frameAndTarget: PinOrFlexFrameChange = pinSizeChange(
+      action.target,
+      frameWithExtendedDimensions,
+      null,
+    )
+    return setCanvasFramesInnerNew(editor, [frameAndTarget], null)
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -5246,5 +5268,16 @@ export function startCheckpointTimer(): StartCheckpointTimer {
 export function finishCheckpointTimer(): FinishCheckpointTimer {
   return {
     action: 'FINISH_CHECKPOINT_TIMER',
+  }
+}
+
+export function addMissingDimensions(
+  target: InstancePath,
+  existingSize: CanvasRectangle,
+): AddMissingDimensions {
+  return {
+    action: 'ADD_MISSING_DIMENSIONS',
+    existingSize: existingSize,
+    target: target,
   }
 }

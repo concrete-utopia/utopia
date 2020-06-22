@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { colorTheme } from 'uuiui'
+import { colorTheme, UtopiaTheme } from 'uuiui'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
@@ -11,6 +11,7 @@ import * as EditorActions from '../../editor/actions/actions'
 import * as TP from '../../../core/shared/template-path'
 import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
+import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 
 interface ComponentAreaControlProps {
   target: TemplatePath
@@ -36,6 +37,7 @@ interface ComponentAreaControlProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   selectedViews: TemplatePath[]
   imports: Imports
+  showAdditionalControls: boolean
   testID?: string
 }
 
@@ -75,22 +77,23 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
   }
 
   onDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const { showingInvisibleElement } = calculateExtraSizeForZeroSizedElement(this.props.frame)
     if (this.mouseEnabled()) {
       if (this.props.doubleClickToSelect && this.props.selectComponent != null) {
         const isMultiselect = event.shiftKey
         this.props.selectComponent(this.props.target, isMultiselect)
       }
       if (TP.isInstancePath(this.props.target)) {
-        // if target is a text and it is the one and only selected component, then activate the text editor
         const instance = MetadataUtils.getElementByInstancePathMaybe(
           this.props.componentMetadata,
           this.props.target,
         )
-        if (MetadataUtils.isTextAgainstImports(this.props.imports, instance)) {
-          if (
-            this.props.selectedComponents.length === 1 &&
-            TP.pathsEqual(this.props.selectedComponents[0], this.props.target)
-          ) {
+        if (
+          this.props.selectedComponents.length === 1 &&
+          TP.pathsEqual(this.props.selectedComponents[0], this.props.target)
+        ) {
+          if (MetadataUtils.isTextAgainstImports(this.props.imports, instance)) {
+            // if target is a text and it is the one and only selected component, then activate the text editor
             const mousePosition = {
               x: event.clientX,
               y: event.clientY,
@@ -99,6 +102,11 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
               [EditorActions.openTextEditor(this.props.target, mousePosition)],
               'canvas',
             )
+          } else if (showingInvisibleElement) {
+            // double clicking on an invisible element should give it an arbitrary size
+            this.props.dispatch([
+              EditorActions.addMissingDimensions(this.props.target, this.props.frame),
+            ])
           }
         }
       }
@@ -158,7 +166,15 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     )
   }
 
-  getComponentAreaControl = () => {
+  getComponentAreaControl = (canShowInvisibleIndicator: boolean) => {
+    const {
+      extraWidth,
+      extraHeight,
+      showingInvisibleElement,
+      borderRadius,
+    } = calculateExtraSizeForZeroSizedElement(this.props.frame)
+    const showInvisibleIndicator = canShowInvisibleIndicator && showingInvisibleElement
+
     return (
       <React.Fragment>
         <div
@@ -171,10 +187,14 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
           onDragLeave={this.onDragLeave}
           style={{
             position: 'absolute',
-            left: this.props.canvasOffset.x + this.props.frame.x,
-            top: this.props.canvasOffset.y + this.props.frame.y,
-            width: this.props.frame.width,
-            height: this.props.frame.height,
+            left: this.props.canvasOffset.x + this.props.frame.x - extraWidth / 2,
+            top: this.props.canvasOffset.y + this.props.frame.y - extraHeight / 2,
+            width: this.props.frame.width + extraWidth,
+            height: this.props.frame.height + extraHeight,
+            borderColor: UtopiaTheme.color.primary.o(50).value,
+            borderStyle: showInvisibleIndicator ? 'solid' : undefined,
+            borderWidth: 0.5 / this.props.scale,
+            borderRadius: showInvisibleIndicator ? borderRadius : 0,
           }}
           data-testid={this.props.testID}
         />
@@ -252,7 +272,10 @@ export class ComponentAreaControl extends ComponentAreaControlInner {
   }
 
   render() {
-    return this.getComponentAreaControl()
+    const isParentSelected = this.props.selectedComponents.some((tp: TemplatePath) =>
+      TP.pathsEqual(TP.parentPath(this.props.target), tp),
+    )
+    return this.getComponentAreaControl(isParentSelected || this.props.showAdditionalControls)
   }
 }
 
