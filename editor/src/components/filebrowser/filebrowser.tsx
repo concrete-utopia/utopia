@@ -30,6 +30,8 @@ import {
   isParseSuccess,
   ProjectContents,
   ProjectFileType,
+  importDetails,
+  importAlias,
 } from '../../core/shared/project-file-types'
 import { contentsToTree, walkContentsTree } from '../assets'
 import { setFocus } from '../common/actions'
@@ -247,7 +249,15 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
               EditorActions.enableInsertModeForJSXElement(
                 element,
                 newUID,
-                insertingToItself ? null : filePathWithoutExtension,
+                insertingToItself
+                  ? {}
+                  : {
+                      [filePathWithoutExtension]: importDetails(
+                        null,
+                        [importAlias(exportVarName)],
+                        null,
+                      ),
+                    },
                 null,
               ),
             ],

@@ -22,6 +22,8 @@ import { reactDomTypings, reactGlobalTypings, reactTypings } from './react-typin
 import { utopiaApiTypings } from './utopia-api-typings'
 import { objectMap } from '../../../core/shared/object-utils'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
+import { useEditorState } from '../store/store-hook'
+import * as React from 'react'
 
 export async function findLatestVersion(packageName: string): Promise<string> {
   const requestInit: RequestInit = {
@@ -119,6 +121,20 @@ export function dependenciesFromModel(model: {
 }): Array<NpmDependency> {
   const packageJsonFile = packageJsonFileFromModel(model)
   return dependenciesFromPackageJson(packageJsonFile)
+}
+
+export function usePackageDependencies(): Array<NpmDependency> {
+  const packageJsonFile = useEditorState((store) => {
+    return packageJsonFileFromModel(store.editor)
+  })
+
+  return React.useMemo(() => {
+    if (isCodeFile(packageJsonFile)) {
+      return dependenciesFromPackageJsonContents(packageJsonFile.fileContents)
+    } else {
+      return []
+    }
+  }, [packageJsonFile])
 }
 
 export function updateDependenciesInPackageJson(

@@ -129,11 +129,14 @@ import {
   ESCodeFile,
   esCodeFile,
   NodeModules,
+  Imports,
+  importDetails,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
   codeNeedsParsing,
   codeNeedsPrinting,
+  mergeImports,
 } from '../../../core/workers/common/project-file-utils'
 import { OutgoingWorkerMessage, isJsFile } from '../../../core/workers/ts/ts-worker'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
@@ -1816,22 +1819,11 @@ export const UPDATE_FNS = {
     )
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
-    let importFilePath: string | null = null
-    const editedFilename = getOpenFilename(editor)
-    if (editedFilename != null && action.importFromPath != null) {
-      importFilePath = getFilePathToImport(action.importFromPath, editedFilename)
-    }
-
-    let importFromWithinToAdd = [importAlias(action.jsxElement.name.baseVariable)]
-
     const editorWithAddedImport = modifyOpenParseSuccess((success) => {
-      const updatedImport =
-        importFilePath == null
-          ? success.imports
-          : addImport(importFilePath, null, importFromWithinToAdd, null, success.imports)
+      const updatedImports = mergeImports(success.imports, action.importsToAdd)
       return {
         ...success,
-        imports: updatedImport,
+        imports: updatedImports,
       }
     }, editor)
 
@@ -2812,7 +2804,7 @@ export const UPDATE_FNS = {
             null,
           )
           const size = width != null && height != null ? { width: width, height: height } : null
-          const switchMode = enableInsertModeForJSXElement(imageElement, newUID, 'utopia-api', size)
+          const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
           const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
           return {
             ...editorInsertEnabled,
@@ -2849,7 +2841,7 @@ export const UPDATE_FNS = {
             null,
           )
 
-          const insertJSXElementAction = insertJSXElement(imageElement, parent, 'utopia-api')
+          const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
 
           const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
             ...editor,
@@ -2916,7 +2908,7 @@ export const UPDATE_FNS = {
         {},
       )
       const size = width != null && height != null ? { width: width, height: height } : null
-      const switchMode = enableInsertModeForJSXElement(imageElement, newUID, 'utopia-api', size)
+      const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
       return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
     } else {
       return editor
@@ -3799,7 +3791,7 @@ export const UPDATE_FNS = {
         {},
       )
 
-      const insertJSXElementAction = insertJSXElement(imageElement, parent, 'utopia-api')
+      const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
       return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
     } else {
       throw new Error(`Could not be found or is not a file: ${action.imagePath}`)
@@ -4123,13 +4115,13 @@ export function insertScene(frame: CanvasRectangle): InsertScene {
 export function insertJSXElement(
   element: JSXElement,
   parent: TemplatePath | null,
-  path: string | null,
+  importsToAdd: Imports,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
     jsxElement: element,
     parent: parent,
-    importFromPath: path,
+    importsToAdd: importsToAdd,
   }
 }
 
@@ -4463,14 +4455,11 @@ export function toggleCollapse(target: TemplatePath): ToggleCollapse {
 export function enableInsertModeForJSXElement(
   element: JSXElement,
   uid: string,
-  importFromPath: string | null,
+  importsToAdd: Imports,
   size: Size | null,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode(
-      false,
-      elementInsertionSubject(uid, element, size, importFromPath, null),
-    ),
+    EditorModes.insertMode(false, elementInsertionSubject(uid, element, size, importsToAdd, null)),
   )
 }
 
