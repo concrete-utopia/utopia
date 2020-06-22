@@ -3934,8 +3934,8 @@ export const UPDATE_FNS = {
     const frameWithExtendedDimensions = canvasRectangle({
       x: action.existingSize.x,
       y: action.existingSize.y,
-      width: action.existingSize.width || ArbitrarySize,
-      height: action.existingSize.height || ArbitrarySize,
+      width: action.existingSize.width === 0 ? ArbitrarySize : action.existingSize.width,
+      height: action.existingSize.height === 0 ? ArbitrarySize : action.existingSize.height,
     })
     const frameAndTarget: PinOrFlexFrameChange = pinSizeChange(
       action.target,
