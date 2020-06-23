@@ -889,8 +889,6 @@ export function useWrappedEmptyOrUnknownOnSubmitValue<T>(
 /**
  * An easy wrapper for the submitValueFactory that applies useWrappedEmptyOrUnknownOnSubmitValue
  * to each submitValue type.
- * @param submitValueReturn
- * @param onUnsetValue
  */
 export function useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue<T>(
   submitValueReturn: SubmitValueFactoryReturn<T>,
