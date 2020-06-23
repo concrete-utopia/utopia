@@ -1,14 +1,15 @@
 import { syntaxParsers } from './css-parser-map'
 
-describe('CSS PARSER', () => {
-  it('backgroundSize', () => {
-    const value = 'auto, contain, 100% 100%, 100px auto, cover, 0 0'
+describe('backgroundSize', () => {
+  it("parses the <'background-size'> property with comments", () => {
+    const value = 'auto, /*auto*/ contain, 100% 100%, 100px auto, /* auto */ cover, 0 0'
     const parseResults = syntaxParsers["<'background-size'>"](value)
     expect(parseResults).toMatchInlineSnapshot(`
       Object {
         "type": "RIGHT",
         "value": Array [
           Object {
+            "enabled": true,
             "size": Object {
               "default": true,
               "value": Object {
@@ -24,6 +25,23 @@ describe('CSS PARSER', () => {
             "type": "bg-size",
           },
           Object {
+            "enabled": false,
+            "size": Object {
+              "default": true,
+              "value": Object {
+                "type": "parsed-curly-brace",
+                "value": Array [
+                  Object {
+                    "type": "keyword",
+                    "value": "auto",
+                  },
+                ],
+              },
+            },
+            "type": "bg-size",
+          },
+          Object {
+            "enabled": true,
             "size": Object {
               "default": true,
               "value": Object {
@@ -34,6 +52,7 @@ describe('CSS PARSER', () => {
             "type": "bg-size",
           },
           Object {
+            "enabled": true,
             "size": Object {
               "default": true,
               "value": Object {
@@ -53,6 +72,7 @@ describe('CSS PARSER', () => {
             "type": "bg-size",
           },
           Object {
+            "enabled": true,
             "size": Object {
               "default": true,
               "value": Object {
@@ -72,6 +92,23 @@ describe('CSS PARSER', () => {
             "type": "bg-size",
           },
           Object {
+            "enabled": false,
+            "size": Object {
+              "default": true,
+              "value": Object {
+                "type": "parsed-curly-brace",
+                "value": Array [
+                  Object {
+                    "type": "keyword",
+                    "value": "auto",
+                  },
+                ],
+              },
+            },
+            "type": "bg-size",
+          },
+          Object {
+            "enabled": true,
             "size": Object {
               "default": true,
               "value": Object {
@@ -82,6 +119,7 @@ describe('CSS PARSER', () => {
             "type": "bg-size",
           },
           Object {
+            "enabled": true,
             "size": Object {
               "default": true,
               "value": Object {

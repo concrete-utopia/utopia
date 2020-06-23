@@ -1,3 +1,5 @@
+import * as csstree from 'css-tree'
+import * as R from 'ramda'
 import {
   CSSBackgroundSize,
   CSSBGSize,
@@ -5,15 +7,29 @@ import {
   CSSBGSizeCurlyBraceValueValue,
   cssDefault,
 } from '../../components/inspector/common/css-utils'
-import { Either, isRight, left, mapEither, traverseEither } from '../../core/shared/either'
-import { descriptionParseError, parseAlternative, Parser } from '../../utils/value-parser-utils'
 import {
+  Either,
+  isRight,
+  left,
+  mapEither,
+  traverseEither,
+  Right,
+  sequenceEither,
+} from '../../core/shared/either'
+import {
+  descriptionParseError,
+  parseAlternative,
+  Parser,
+  ParseError,
+} from '../../utils/value-parser-utils'
+import {
+  getLexerPropertyMatches,
   isLexerMatch,
   parseCSSValidKeyword,
   parseCurlyBraces,
   parseLengthPercentage,
   parseWholeValue,
-  getLexerMatches,
+  getLexerTypeMatches,
 } from './css-parser-utils'
 
 const parseBGSizeCurlyBrace: Parser<CSSBGSize> = (value: unknown) => {
@@ -22,12 +38,18 @@ const parseBGSizeCurlyBrace: Parser<CSSBGSize> = (value: unknown) => {
     parseCSSValidKeyword(['auto']),
   ]
   const parsed = parseCurlyBraces(1, 2, curlyBraceParsers)(value)
-  return mapEither((v) => cssBGSize(cssDefault(v)), parsed)
+  /* n.b. this always returns enabled: true, and is overridden by
+   *  parseBackgroundSize if need be.
+   */
+  return mapEither((v) => cssBGSize(cssDefault(v), true), parsed)
 }
 
 const parseBGSizeKeyword: Parser<CSSBGSize> = (value: unknown) => {
   const parsed = parseWholeValue(parseCSSValidKeyword(['contain', 'cover']))(value)
-  return mapEither((v) => cssBGSize(cssDefault(v)), parsed)
+  /* n.b. this always returns enabled: true, and is overridden by
+   *  parseBackgroundSize if need be.
+   */
+  return mapEither((v) => cssBGSize(cssDefault(v), true), parsed)
 }
 
 export const parseBGSize: Parser<CSSBGSize> = (value: unknown) => {
@@ -41,15 +63,64 @@ export const parseBGSize: Parser<CSSBGSize> = (value: unknown) => {
   }
 }
 
-export function parseBackgroundSize(value: unknown): Either<string, CSSBackgroundSize> {
-  const lexer = getLexerMatches('background-size', value, ['bg-size'])
-  if (isRight(lexer)) {
-    const parsed = traverseEither(parseBGSize, lexer.value)
-    if (isRight(parsed)) {
-      return parsed
-    } else {
-      return left('Lexer values could not be parsed by parseBGSize')
-    }
+interface PreparsedLayer {
+  type: 'PREPARSED_LAYER'
+  value: string
+  enabled: boolean
+}
+
+function preparsedLayer(value: string, enabled: boolean): PreparsedLayer {
+  return {
+    type: 'PREPARSED_LAYER',
+    value,
+    enabled,
   }
-  return left('Value was not lexer match array')
+}
+
+const commentedValueAndSurrounding = /(.*)\/\*\s*(.+?)\s*\*\/(.*)/
+
+function preparseLayers(value: string): Array<PreparsedLayer> {
+  return R.flatten(
+    value.split(',').map((v) => {
+      const result = v.trim().match(commentedValueAndSurrounding)
+      if (result != null) {
+        const [, before, comment, after] = [...result]
+        if (before !== '' && after === '') {
+          return [preparsedLayer(before, true), preparsedLayer(comment, false)]
+        } else if (after !== '' && before === '') {
+          return [preparsedLayer(comment, false), preparsedLayer(after, true)]
+        }
+      }
+      return [preparsedLayer(v, true)]
+    }),
+  )
+}
+
+export function parseBackgroundSize(value: unknown): Either<string, CSSBackgroundSize> {
+  if (typeof value === 'string') {
+    const preparsedLayers: Array<PreparsedLayer> = preparseLayers(value)
+    return sequenceEither(
+      preparsedLayers.map((layer) => {
+        const lexerMatch = getLexerTypeMatches('bg-size', layer.value)
+        if (isRight(lexerMatch)) {
+          const parsed = parseBGSize(lexerMatch.value)
+          if (isRight(parsed)) {
+            const thing: Right<CSSBGSize> = {
+              ...parsed,
+              value: {
+                ...parsed.value,
+                enabled: layer.enabled,
+              },
+            }
+            return thing
+          } else {
+            return left(parsed.value.type)
+          }
+        } else {
+          return lexerMatch
+        }
+      }),
+    )
+  }
+  return left('Value is not string')
 }
