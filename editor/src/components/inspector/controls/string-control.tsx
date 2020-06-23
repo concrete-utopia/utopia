@@ -59,7 +59,7 @@ export const StringControl = betterReactMemo<DEPRECATEDControlProps<string>>(
         autoComplete='off'
         spellCheck={false}
         DEPRECATED_labelBelow={
-          (props.DEPRECATED_controlOptions as StringControlOptions).DEPRECATED_labelBelow
+          (props.DEPRECATED_controlOptions as StringControlOptions)?.DEPRECATED_labelBelow
         }
         style={props.style}
         controlStatus={props.controlStatus}
