@@ -34,12 +34,7 @@ import { LocalNavigatorAction } from '../navigator/actions/index'
 import { LeftMenuTab } from '../navigator/left-pane'
 import { RightMenuTab } from '../canvas/right-menu'
 import { Mode } from './editor-modes'
-import {
-  NpmBundleResult,
-  RequireFn,
-  TypeDefinitions,
-  NpmDependency,
-} from '../../core/shared/npm-dependency-types'
+import { NpmDependency } from '../../core/shared/npm-dependency-types'
 import {
   DuplicationState,
   EditorState,

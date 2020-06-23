@@ -47,6 +47,7 @@ import { createEditorState, deriveState, EditorStore } from '../editor/store/edi
 import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { scenePath } from '../../core/shared/template-path'
+import { NO_OP } from '../../core/shared/utils'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   return {
@@ -77,7 +78,7 @@ process.on('unhandledRejection', (reason, promise) => {
 export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const renderCountBaseline = renderCount
 
-  let emptyEditorState = createEditorState()
+  let emptyEditorState = createEditorState(NO_OP)
   const fromScratchResult = deriveState(emptyEditorState, null, false)
   emptyEditorState = fromScratchResult.editor
   const derivedState = fromScratchResult.derived

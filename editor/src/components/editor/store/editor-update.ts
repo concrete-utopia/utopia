@@ -51,9 +51,9 @@ export function runSimpleLocalEditorAction(
 ): EditorState {
   switch (action.action) {
     case 'NEW':
-      return UPDATE_FNS.NEW(action, state, workers)
+      return UPDATE_FNS.NEW(action, state, workers, dispatch)
     case 'LOAD':
-      return UPDATE_FNS.LOAD(action, state)
+      return UPDATE_FNS.LOAD(action, state, dispatch)
     case 'DUPLICATE_SELECTED':
       return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch)
     case 'UPDATE_DUPLICATION_STATE':
@@ -267,7 +267,7 @@ export function runSimpleLocalEditorAction(
     case 'RESET_PROP_TO_DEFAULT':
       return UPDATE_FNS.RESET_PROP_TO_DEFAULT(action, state)
     case 'UPDATE_NODE_MODULES_CONTENTS':
-      return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state)
+      return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state, dispatch)
     case 'UPDATE_PACKAGE_JSON':
       return UPDATE_FNS.UPDATE_PACKAGE_JSON(action, state)
     case 'START_CHECKPOINT_TIMER':

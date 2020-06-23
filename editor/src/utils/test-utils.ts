@@ -34,6 +34,7 @@ import {
   createSceneUidFromIndex,
   BakedInStoryboardUID,
 } from '../core/model/scene-utils'
+import { NO_OP } from '../core/shared/utils'
 
 export function createEditorStates(
   selectedFileOrTab: string | EditorTab = '/src/app.ui.js',
@@ -46,7 +47,7 @@ export function createEditorStates(
   const selectedTab: EditorTab =
     typeof selectedFileOrTab === 'string' ? openFileTab(selectedFileOrTab) : selectedFileOrTab
   const editor: EditorState = {
-    ...createEditorState(),
+    ...createEditorState(NO_OP),
     projectContents: {
       '/src/app.ui.js': uiJsFile(
         right(
