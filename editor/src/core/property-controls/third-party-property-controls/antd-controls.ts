@@ -1,6 +1,6 @@
-import { ControlType } from 'utopia-api'
+import { ControlType, PropertyControls } from 'utopia-api'
 
-const Button = {
+const Button: PropertyControls = {
   href: {
     type: ControlType.String,
     title: 'href',
@@ -65,7 +65,7 @@ const Button = {
   },
 }
 
-export const Space = {
+const Space: PropertyControls = {
   align: {
     type: ControlType.Enum,
     title: 'align',
@@ -83,7 +83,7 @@ export const Space = {
   },
 }
 
-export const Row = {
+const Row: PropertyControls = {
   align: {
     type: ControlType.Enum,
     title: 'align',
@@ -103,7 +103,7 @@ export const Row = {
   },
 }
 
-export const Col = {
+const Col: PropertyControls = {
   flex: {
     type: ControlType.Number, // or string
     title: 'flex',
@@ -158,7 +158,7 @@ export const Col = {
   },
 }
 
-export const Text = {
+const Text: PropertyControls = {
   code: {
     type: ControlType.Boolean,
     title: 'code',
@@ -216,14 +216,20 @@ export const Text = {
   },
 }
 
-const Menu = {
+const Menu: PropertyControls = {
   defaultOpenKeys: {
     type: ControlType.Array,
     title: 'defaultOpenKeys',
+    propertyControl: {
+      type: ControlType.String,
+    },
   },
   defaultSelectedKeys: {
     type: ControlType.Array,
     title: 'defaultSelectedKeys',
+    propertyControl: {
+      type: ControlType.String,
+    },
   },
   forceSubMenuRender: {
     type: ControlType.Boolean,
@@ -252,6 +258,9 @@ const Menu = {
   openKeys: {
     type: ControlType.Array,
     title: 'openKeys',
+    propertyControl: {
+      type: ControlType.String,
+    },
   },
   selectable: {
     type: ControlType.Boolean,
@@ -261,6 +270,9 @@ const Menu = {
   selectedKeys: {
     type: ControlType.Array,
     title: 'selectedKeys',
+    propertyControl: {
+      type: ControlType.String,
+    },
   },
   subMenuCloseDelay: {
     type: ControlType.Number,
@@ -304,7 +316,7 @@ const Menu = {
   },
 }
 
-const MenuItem = {
+const MenuItem: PropertyControls = {
   disabled: {
     type: ControlType.Boolean,
     title: 'disabled',
@@ -329,7 +341,7 @@ const MenuItem = {
   },
 }
 
-const MenuSubMenu = {
+const MenuSubMenu: PropertyControls = {
   popupClassName: {
     type: ControlType.String,
     title: 'popupClassName',
@@ -358,14 +370,13 @@ const MenuSubMenu = {
   },
 }
 
-const MenuItemGroup = {
+const MenuItemGroup: PropertyControls = {
   title: {
     type: ControlType.String,
     title: 'title',
   },
 }
 
-export const AntdControlsVersion = '4.3.4'
 export const AntdControls = {
   Button: Button,
   Space: Space,
