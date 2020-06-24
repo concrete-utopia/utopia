@@ -2,12 +2,7 @@ import * as R from 'ramda'
 import * as React from 'react'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
-import {
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  offsetRect,
-} from '../../../core/shared/math-utils'
+import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
