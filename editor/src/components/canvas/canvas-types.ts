@@ -17,6 +17,8 @@ import { EditorPanel } from '../common/actions/index'
 import { EditorAction } from '../editor/action-types'
 import { Mode } from '../editor/editor-modes'
 import { EditorState, OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { xor } from '../../core/shared/utils'
 
 export const enum CSSCursor {
   Select = "-webkit-image-set( url( '/editor/cursors/cursor-default.png ') 1x, url( '/editor/cursors/cursor-default@2x.png ') 2x ) 4 4, default",
@@ -329,6 +331,10 @@ export function moveDragState(
   if (duplicate === true && duplicateNewUIDs == null) {
     throw new Error('duplicateNewUIDs cannot be null when duplicate is true')
   }
+
+  const invertReparenting = isFeatureEnabled('Dragging Reparents By Default')
+  const actuallyEnableSnapping = xor(invertReparenting, enableSnapping)
+  const actuallyReparent = xor(invertReparenting, reparent)
   return {
     type: 'MOVE_DRAG_STATE',
     start: start,
@@ -336,10 +342,10 @@ export function moveDragState(
     prevDrag: prevDrag,
     originalFrames: originalFrames,
     dragSelectionBoundingBox: dragSelectionBoundingBox,
-    enableSnapping: enableSnapping,
+    enableSnapping: actuallyEnableSnapping,
     constrainDragAxis: constrainDragAxis,
     duplicate: duplicate,
-    reparent: reparent,
+    reparent: actuallyReparent,
     duplicateNewUIDs: duplicateNewUIDs,
     canvasPosition: canvasPosition,
     metadata: metadata,
@@ -358,15 +364,22 @@ export function updateMoveDragState(
   duplicateNewUIDs: Array<DuplicateNewUID> | null | undefined,
   canvasPosition: CanvasPoint | undefined,
 ): MoveDragState {
+  const newEnableSnapping = enableSnapping === undefined ? current.enableSnapping : enableSnapping
+  const newReparent = reparent === undefined ? current.reparent : reparent
+
+  const invertReparenting = isFeatureEnabled('Dragging Reparents By Default')
+  const actuallyEnableSnapping = xor(invertReparenting, newEnableSnapping)
+  const actuallyReparent = xor(invertReparenting, newReparent)
+
   const updatedState = keepDeepReferenceEqualityIfPossible(current, {
     ...current,
     drag: drag === undefined ? current.drag : drag,
     prevDrag: prevDrag === undefined ? current.prevDrag : prevDrag,
-    enableSnapping: enableSnapping === undefined ? current.enableSnapping : enableSnapping,
+    enableSnapping: actuallyEnableSnapping,
     constrainDragAxis:
       constrainDragAxis === undefined ? current.constrainDragAxis : constrainDragAxis,
     duplicate: duplicate === undefined ? current.duplicate : duplicate,
-    reparent: reparent === undefined ? current.reparent : reparent,
+    reparent: actuallyReparent,
     duplicateNewUIDs: duplicateNewUIDs === undefined ? current.duplicateNewUIDs : duplicateNewUIDs,
     canvasPosition: canvasPosition === undefined ? current.canvasPosition : canvasPosition,
   })

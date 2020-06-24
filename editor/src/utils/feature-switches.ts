@@ -1,10 +1,21 @@
 import * as localforage from 'localforage'
 import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 
-export type FeatureName = 'invisible_element_controls'
-export const AllFeatureNames = ['invisible_element_controls'] as const
+export type FeatureName =
+  | 'Dragging Reparents By Default'
+  | 'Dragging Shows Overlay'
+  | 'Invisible Element Controls'
+export const AllFeatureNames: FeatureName[] = [
+  // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
+  // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
+  'Invisible Element Controls',
+]
 
-let FeatureSwitches: { [feature: string]: boolean } = {}
+let FeatureSwitches: { [feature: string]: boolean } = {
+  'Dragging Reparents By Default': false,
+  'Dragging Shows Overlay': false,
+  'Invisible Element Controls': false,
+}
 
 function settingKeyForName(featureName: FeatureName): string {
   return `Feature-Switch-${featureName}`

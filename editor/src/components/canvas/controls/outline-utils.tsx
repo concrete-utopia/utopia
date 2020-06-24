@@ -24,7 +24,7 @@ export function calculateExtraSizeForZeroSizedElement(
   borderRadius: number
   dimension: 'point' | 'horizontal' | 'vertical' | 'n/a'
 } {
-  if (isFeatureEnabled('invisible_element_controls')) {
+  if (isFeatureEnabled('Invisible Element Controls')) {
     const extraWidth = size.width === 0 ? UtopiaTheme.invisibleIndicatorSize : 0
     const extraHeight = size.height === 0 ? UtopiaTheme.invisibleIndicatorSize : 0
     const showingInvisibleElement = extraWidth !== 0 || extraHeight !== 0

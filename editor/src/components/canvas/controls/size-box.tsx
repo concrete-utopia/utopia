@@ -425,7 +425,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
       this.props.measureSize,
     )
 
-    if (showingInvisibleElement && isFeatureEnabled('invisible_element_controls')) {
+    if (showingInvisibleElement && isFeatureEnabled('Invisible Element Controls')) {
       // is it a one dimensional element?
       const verticalResizeControls =
         dimension === 'vertical' ? (
