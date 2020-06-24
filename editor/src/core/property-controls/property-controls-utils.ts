@@ -15,8 +15,10 @@ import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
 import { joinSpecial } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
-import { AntdControls, AntdControlsVersion } from './third-party-property-controls/antd-controls'
+import { AntdControls } from './third-party-property-controls/antd-controls'
 import { NpmDependency } from '../shared/npm-dependency-types'
+import { getThirdPartyComponents } from '../third-party/third-party-components'
+import { getJSXElementNameAsString } from '../shared/element-template'
 
 export function defaultPropertiesForComponentInFile(
   componentName: string,
@@ -200,20 +202,16 @@ export function getControlsForExternalDependencies(
   npmDependencies: NpmDependency[],
 ): PropertyControlsInfo {
   let propertyControlsInfo: PropertyControlsInfo = {}
-  const librariesWithControls = [
-    { name: 'antd', controls: AntdControls, version: AntdControlsVersion },
-  ]
-  fastForEach(librariesWithControls, (controlsInfo) => {
-    if (
-      npmDependencies.find(
-        (dependency) =>
-          dependency.name === controlsInfo.name && dependency.version === controlsInfo.version,
-      ) != null
-    ) {
-      fastForEach(Object.keys(controlsInfo.controls), (componentName) => {
-        propertyControlsInfo[controlsInfo.name] = {
-          ...propertyControlsInfo[controlsInfo.name],
-          [componentName]: (controlsInfo.controls as any)[componentName],
+  fastForEach(npmDependencies, (dependency) => {
+    const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
+    if (componentDescriptor != null) {
+      fastForEach(componentDescriptor.components, (descriptor) => {
+        if (descriptor.propertyControls != null) {
+          const jsxElementName = getJSXElementNameAsString(descriptor.element.name)
+          propertyControlsInfo[dependency.name] = {
+            ...propertyControlsInfo[dependency.name],
+            [jsxElementName]: descriptor.propertyControls,
+          }
         }
       })
     }
