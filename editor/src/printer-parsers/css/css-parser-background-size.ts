@@ -81,8 +81,9 @@ function preparsedLayer(value: string, enabled: boolean): PreparsedLayer {
 const commentedValueAndSurrounding = /(.*)\/\*\s*(.+?)\s*\*\/(.*)/
 
 function preparseLayers(value: string): Array<PreparsedLayer> {
-  return R.flatten(
-    value.split(',').map((v) => {
+  return value
+    .split(',')
+    .map((v) => {
       const result = v.trim().match(commentedValueAndSurrounding)
       if (result != null) {
         const [, before, comment, after] = [...result]
@@ -93,8 +94,8 @@ function preparseLayers(value: string): Array<PreparsedLayer> {
         }
       }
       return [preparsedLayer(v, true)]
-    }),
-  )
+    })
+    .flat()
 }
 
 export function parseBackgroundSize(value: unknown): Either<string, CSSBackgroundSize> {
