@@ -130,6 +130,9 @@ function getClassMonkeyFunction(monkeyProps: ClassMonkeyFunctionProps): (props: 
   }
 
   monkeyFunction.prototype = React.Component.prototype
+  // we copy over the properties on the original class
+  // this copies over Class.contextType, Class.propTypes, Class.defaultProps among others
+  Object.assign(monkeyFunction, monkeyProps.type)
   return monkeyFunction
 }
 
@@ -158,12 +161,11 @@ function monkeyPatchReactType(
   originalUIDFromProps: string | null,
 ): any {
   if (type.prototype != null && typeof type.prototype.isReactComponent === 'object') {
-    return type
-    // return memoizedGetClassMonkeyFunction({
-    //   type: type,
-    //   dataUIDFromProps: dataUIDFromProps,
-    //   originalUIDFromProps: originalUIDFromProps,
-    // })
+    return memoizedGetClassMonkeyFunction({
+      type: type,
+      dataUIDFromProps: dataUIDFromProps,
+      originalUIDFromProps: originalUIDFromProps,
+    })
   } else if (typeof type === 'function') {
     return memoizedGetFunctionMonkeyFunction({
       type: type,
