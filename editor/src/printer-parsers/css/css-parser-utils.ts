@@ -38,7 +38,7 @@ import {
   Parser,
 } from '../../utils/value-parser-utils'
 
-export function getLexerMatches(
+export function getLexerPropertyMatches(
   propertyName: string,
   propertyValue: unknown,
   syntaxNamesToFilter?: ReadonlyArray<string>,
@@ -64,6 +64,22 @@ export function getLexerMatches(
     }
   }
   return left(`Property ${propertyName}'s value is not a string`)
+}
+
+export function getLexerTypeMatches(typeName: string, value: unknown): Either<string, LexerMatch> {
+  if (typeof value === 'string') {
+    const ast = csstree.parse(value, {
+      context: 'value',
+      positions: true,
+    })
+    const lexerMatch = (csstree as any).lexer.matchType(typeName, ast)
+    if (lexerMatch.error === null && ast.type === 'Value') {
+      return right(lexerMatch.matched)
+    } else {
+      return left(lexerMatch.error.message)
+    }
+  }
+  return left(`Property ${typeName}'s value is not a string`)
 }
 
 // Keywords
