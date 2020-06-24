@@ -445,7 +445,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
                       label={component.name}
                       selected={componentBeingInsertedEquals(
                         currentlyBeingInserted,
-                        componentBeingInserted({}, component.element.name),
+                        componentBeingInserted(component.importsToAdd, component.element.name),
                       )}
                       onMouseDown={insertItemOnMouseDown}
                     />
