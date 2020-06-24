@@ -6,8 +6,8 @@ export type FeatureName =
   | 'Dragging Shows Overlay'
   | 'Invisible Element Controls'
 export const AllFeatureNames: FeatureName[] = [
-  'Dragging Reparents By Default',
-  'Dragging Shows Overlay',
+  // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
+  // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Invisible Element Controls',
 ]
 

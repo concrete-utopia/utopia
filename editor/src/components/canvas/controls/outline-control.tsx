@@ -145,25 +145,26 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         anySelectedElementIsYogaLayouted,
       )
 
-      // FIXME Remove margin and padding controls from here
-      // const margin = MetadataUtils.getElementMargin(selectedView, this.props.componentMetadata)
-      // selectionOutlines.push(
-      //   <MarginControls
-      //     canvasOffset={this.props.canvasOffset}
-      //     scale={this.props.scale}
-      //     margin={margin}
-      //     frame={rect}
-      //   />,
-      // )
-      // const padding = MetadataUtils.getElementPadding(selectedView, this.props.componentMetadata)
-      // selectionOutlines.push(
-      //   <PaddingControls
-      //     canvasOffset={this.props.canvasOffset}
-      //     scale={this.props.scale}
-      //     padding={padding}
-      //     frame={rect}
-      //   />,
-      // )
+      if (this.props.dragState == null) {
+        const margin = MetadataUtils.getElementMargin(selectedView, this.props.componentMetadata)
+        selectionOutlines.push(
+          <MarginControls
+            canvasOffset={this.props.canvasOffset}
+            scale={this.props.scale}
+            margin={margin}
+            frame={rect}
+          />,
+        )
+        const padding = MetadataUtils.getElementPadding(selectedView, this.props.componentMetadata)
+        selectionOutlines.push(
+          <PaddingControls
+            canvasOffset={this.props.canvasOffset}
+            scale={this.props.scale}
+            padding={padding}
+            frame={rect}
+          />,
+        )
+      }
 
       // FIXME the striped overlay needs to be separated from this
       selectionOutlines.push(
