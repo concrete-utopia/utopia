@@ -290,7 +290,7 @@ const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
           style={{
             width: 5,
             height: 5,
-            background: colorTheme.errorBgSolid.value,
+            background: colorTheme.warningBgSolid.value,
             borderRadius: '50%',
             marginRight: 4,
           }}
