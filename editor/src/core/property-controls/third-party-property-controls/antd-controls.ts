@@ -6,7 +6,7 @@ const Button: PropertyControls = {
     title: 'href',
   },
   onClick: {
-    type: ControlType.EventHandler,
+    type: ControlType.Ignore,
     title: 'onClick',
   },
   disabled: {
@@ -28,7 +28,8 @@ const Button: PropertyControls = {
   shape: {
     type: ControlType.Enum,
     title: 'shape',
-    options: ['circle', 'round'],
+    options: ['circle', 'round', 'default'],
+    defaultValue: 'default',
   },
   icon: {
     type: ControlType.ComponentInstance,
@@ -70,16 +71,19 @@ const Space: PropertyControls = {
     type: ControlType.Enum,
     title: 'align',
     options: ['start', 'end', 'center', 'baseline'],
+    defaultValue: 'center',
   },
   direction: {
     type: ControlType.Enum,
     title: 'direction',
     options: ['vertical', 'horizontal'],
+    defaultValue: 'vertical',
   },
   size: {
     type: ControlType.Enum, // or a number
     title: 'size',
     options: ['small', 'middle', 'large'],
+    defaultValue: 'middle',
   },
 }
 
@@ -100,6 +104,7 @@ const Row: PropertyControls = {
     type: ControlType.Enum,
     title: 'justify',
     options: ['start', 'end', 'center', 'space-around', 'space-between'],
+    defaultValue: 'center',
   },
 }
 
@@ -107,6 +112,7 @@ const Col: PropertyControls = {
   flex: {
     type: ControlType.Number, // or string
     title: 'flex',
+    defaultValue: 1,
   },
   offset: {
     type: ControlType.Number,
@@ -135,26 +141,32 @@ const Col: PropertyControls = {
   xs: {
     type: ControlType.Number, // or an object containing above props
     title: 'xs',
+    defaultValue: 0,
   },
   sm: {
     type: ControlType.Number, // or an object containing above props
     title: 'sm',
+    defaultValue: 0,
   },
   md: {
     type: ControlType.Number, // or an object containing above props
     title: 'md',
+    defaultValue: 0,
   },
   lg: {
     type: ControlType.Number, // or an object containing above props
     title: 'lg',
+    defaultValue: 0,
   },
   xl: {
     type: ControlType.Number, // or an object containing above props
     title: 'xl',
+    defaultValue: 0,
   },
   xxl: {
     type: ControlType.Number, // or an object containing above props
     title: 'xxl',
+    defaultValue: 0,
   },
 }
 
@@ -218,18 +230,12 @@ const Text: PropertyControls = {
 
 const Menu: PropertyControls = {
   defaultOpenKeys: {
-    type: ControlType.Array,
+    type: ControlType.Ignore,
     title: 'defaultOpenKeys',
-    propertyControl: {
-      type: ControlType.String,
-    },
   },
   defaultSelectedKeys: {
-    type: ControlType.Array,
+    type: ControlType.Ignore,
     title: 'defaultSelectedKeys',
-    propertyControl: {
-      type: ControlType.String,
-    },
   },
   forceSubMenuRender: {
     type: ControlType.Boolean,
@@ -239,6 +245,7 @@ const Menu: PropertyControls = {
   inlineCollapsed: {
     type: ControlType.Boolean,
     title: 'inlineCollapsed',
+    defaultValue: false,
   },
   inlineIndent: {
     type: ControlType.Number,
@@ -249,6 +256,7 @@ const Menu: PropertyControls = {
     type: ControlType.Enum,
     title: 'mode',
     options: ['vertical', 'horizontal', 'inline'],
+    defaultValue: 'inline',
   },
   multiple: {
     type: ControlType.Boolean,
@@ -256,11 +264,8 @@ const Menu: PropertyControls = {
     defaultValue: false,
   },
   openKeys: {
-    type: ControlType.Array,
+    type: ControlType.Ignore,
     title: 'openKeys',
-    propertyControl: {
-      type: ControlType.String,
-    },
   },
   selectable: {
     type: ControlType.Boolean,
@@ -268,11 +273,8 @@ const Menu: PropertyControls = {
     defaultValue: true,
   },
   selectedKeys: {
-    type: ControlType.Array,
+    type: ControlType.Ignore,
     title: 'selectedKeys',
-    propertyControl: {
-      type: ControlType.String,
-    },
   },
   subMenuCloseDelay: {
     type: ControlType.Number,
@@ -292,22 +294,22 @@ const Menu: PropertyControls = {
   },
   onClick: {
     // function({ item, key, keyPath, domEvent })
-    type: ControlType.EventHandler,
+    type: ControlType.Ignore,
     title: 'onClick',
   },
   onDeselect: {
     // function({ item, key, keyPath, selectedKeys, domEvent })
-    type: ControlType.EventHandler,
+    type: ControlType.Ignore,
     title: 'onClick',
   },
   onOpenChange: {
     // function(openKeys: string[])
-    type: ControlType.EventHandler,
+    type: ControlType.Ignore,
     title: 'onClick',
   },
   onSelect: {
     // function({ item, key, keyPath, selectedKeys, domEvent })
-    type: ControlType.EventHandler,
+    type: ControlType.Ignore,
     title: 'onClick',
   },
   overflowedIndicator: {
@@ -365,7 +367,7 @@ const MenuSubMenu: PropertyControls = {
   },
   onTitleClick: {
     // function({ key, domEvent })
-    type: ControlType.EventHandler,
+    type: ControlType.Ignore,
     title: 'onTitleClick',
   },
 }
