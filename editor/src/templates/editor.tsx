@@ -81,7 +81,7 @@ export class Editor {
     updateCssVars()
     startPreviewConnectedMonitoring(this.boundDispatch)
 
-    let emptyEditorState = createEditorState()
+    let emptyEditorState = createEditorState(this.boundDispatch)
     const fromScratchResult = deriveState(emptyEditorState, null, false)
     emptyEditorState = fromScratchResult.editor
     const derivedState = fromScratchResult.derived
@@ -126,11 +126,8 @@ export class Editor {
             const codeResultCache = generateCodeResultCache(
               msg.buildResult,
               msg.exportsInfo,
-              getRequireFn(
-                (newModules) =>
-                  this.boundDispatch([EditorActions.updateNodeModulesContents(newModules, false)]),
-                this.storedState.editor.nodeModules.files,
-              ),
+              this.storedState.editor.nodeModules.files,
+              this.boundDispatch,
               dependenciesFromModel(this.storedState.editor),
               msg.fullBuild,
             )

@@ -642,7 +642,6 @@ function watch(
   if (buildOrParsePrint === 'build') {
     let projectBuild: MultiFileBuildResult = {}
     let exportsInfo: Array<ExportsInfo> = []
-    let errors: Array<ErrorMessage> = []
     ;[...codeFilesToWatch, ...otherFilesToWatch].forEach((rootFile) => {
       const buildResult = emitFile(rootFile)
       if (buildResult.transpiledCode != null) {

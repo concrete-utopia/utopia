@@ -38,7 +38,6 @@ import { createTestProjectWithCode, getFrameChange } from '../../canvas/canvas-u
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import {
-  createDefaultEditorState,
   createEditorState,
   deriveState,
   EditorState,
@@ -63,6 +62,7 @@ import {
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
 import { TestScenePath } from '../../canvas/ui-jsx-test-utils'
+import { NO_OP } from '../../../core/shared/utils'
 const chaiExpect = Chai.expect
 
 describe('SET_PROP', () => {
@@ -105,7 +105,7 @@ describe('SET_PROP', () => {
     ),
   )
   const testEditor: EditorState = deepFreeze({
-    ...createEditorState(),
+    ...createEditorState(NO_OP),
     projectContents: {
       '/src/app.ui.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
     },
@@ -197,7 +197,7 @@ describe('SET_CANVAS_FRAMES', () => {
     ),
   )
   const testEditor: EditorState = deepFreeze({
-    ...createEditorState(),
+    ...createEditorState(NO_OP),
     projectContents: {
       '/src/app.ui.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
     },
@@ -314,7 +314,7 @@ describe('moveTemplate', () => {
 
   function testEditor(uiFile: Readonly<ParseSuccess>): EditorState {
     let editor: EditorState = {
-      ...createEditorState(),
+      ...createEditorState(NO_OP),
       projectContents: {
         '/src/app.ui.js': uiJsFile(right(uiFile), null, RevisionsState.ParsedAhead, 0),
       },
@@ -726,7 +726,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     0,
   )
   const testEditorWithPins: EditorState = deepFreeze({
-    ...createEditorState(),
+    ...createEditorState(NO_OP),
     projectContents: {
       '/src/app.ui.js': fileForUI,
     },

@@ -6,7 +6,11 @@ import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
 import { getControlsForExternalDependencies } from '../../core/property-controls/property-controls-utils'
+import { NodeModules } from '../../core/shared/project-file-types'
 
+import { EditorDispatch } from '../editor/action-types'
+import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import { updateNodeModulesContents } from '../editor/actions/actions'
 export interface CodeResult {
   exports: ModuleExportTypesAndValues
   transpiledCode: string | null
@@ -147,10 +151,13 @@ function processExportsInfo(exportValues: ModuleExportValues, exportTypes: Modul
 export function generateCodeResultCache(
   modules: MultiFileBuildResult,
   exportsInfo: ReadonlyArray<ExportsInfo>,
-  npmRequireFn: RequireFn,
+  nodeModules: NodeModules,
+  dispatch: EditorDispatch,
   npmDependencies: NpmDependency[],
   fullBuild: boolean,
 ): CodeResultCache {
+  const npmRequireFn = getMemoizedRequireFn(nodeModules, dispatch)
+
   const { exports, requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
   let cache: { [code: string]: CodeResult } = {}
   let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(

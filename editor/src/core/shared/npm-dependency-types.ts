@@ -15,11 +15,6 @@ export function npmDependency(name: string, version: string) {
   }
 }
 
-export interface NpmBundleResult {
-  require: RequireFn
-  typeDefinitions: TypeDefinitions
-}
-
 export interface PackagerServerFileDescriptor {
   content: string
 }

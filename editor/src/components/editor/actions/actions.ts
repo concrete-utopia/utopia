@@ -101,7 +101,6 @@ import {
   mapEither,
 } from '../../../core/shared/either'
 import {
-  NpmBundleResult,
   RequireFn,
   TypeDefinitions,
   npmDependency,
@@ -175,7 +174,11 @@ import {
 import { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-wrapper'
-import { CodeResultCache, generateCodeResultCache } from '../../custom-code/code-file'
+import {
+  CodeResultCache,
+  generateCodeResultCache,
+  codeCacheToBuildResult,
+} from '../../custom-code/code-file'
 import { ElementContextMenuInstance } from '../../element-context-menu'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
 import { FontSettings } from '../../inspector/common/css-utils'
@@ -409,7 +412,7 @@ import { Notice } from '../../common/notices'
 import { dropExtension } from '../../../core/shared/string-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import {
-  getRequireFn,
+  getMemoizedRequireFn,
   getDependencyTypeDefinitions,
 } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
@@ -1274,9 +1277,14 @@ let checkpointTimeoutId: number | undefined = undefined
 
 // JS Editor Actions:
 export const UPDATE_FNS = {
-  NEW: (action: NewProject, oldEditor: EditorModel, workers: UtopiaTsWorkers): EditorModel => {
+  NEW: (
+    action: NewProject,
+    oldEditor: EditorModel,
+    workers: UtopiaTsWorkers,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
     const newPersistentModel = applyMigrations(action.persistentModel)
-    const newModel = editorModelFromPersistentModel(newPersistentModel)
+    const newModel = editorModelFromPersistentModel(newPersistentModel, dispatch)
     workers.sendInitMessage(
       getDependencyTypeDefinitions(action.nodeModules),
       newModel.projectContents,
@@ -1290,10 +1298,10 @@ export const UPDATE_FNS = {
       codeResultCache: action.codeResultCache,
     }
   },
-  LOAD: (action: Load, oldEditor: EditorModel): EditorModel => {
+  LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
     const newModel: EditorModel = {
-      ...editorModelFromPersistentModel(migratedModel),
+      ...editorModelFromPersistentModel(migratedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
       nodeModules: {
@@ -3877,19 +3885,35 @@ export const UPDATE_FNS = {
   UPDATE_NODE_MODULES_CONTENTS: (
     action: UpdateNodeModulesContents,
     editor: EditorState,
+    dispatch: EditorDispatch,
   ): EditorState => {
+    let result: EditorState
     if (action.startFromScratch) {
-      return produce(editor, (draft) => {
+      result = produce(editor, (draft) => {
         draft.nodeModules.files = action.contentsToAdd
       })
     } else {
-      return produce(editor, (draft) => {
+      result = produce(editor, (draft) => {
         draft.nodeModules.files = {
           ...draft.nodeModules.files,
           ...action.contentsToAdd,
         }
       })
     }
+
+    result = {
+      ...result,
+      codeResultCache: generateCodeResultCache(
+        codeCacheToBuildResult(result.codeResultCache.cache),
+        result.codeResultCache.exportsInfo,
+        result.nodeModules.files,
+        dispatch,
+        dependenciesFromModel(result),
+        action.startFromScratch,
+      ),
+    }
+
+    return result
   },
   UPDATE_PACKAGE_JSON: (action: UpdatePackageJson, editor: EditorState): EditorState => {
     const dependencies = action.dependencies.reduce(
@@ -4176,15 +4200,11 @@ export async function newProject(
   const npmDependencies = dependenciesFromModel(defaultPersistentModel)
   const nodeModules = await fetchNodeModules(npmDependencies)
 
-  const require = getRequireFn(
-    (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, false)]),
-    nodeModules,
-  )
-
   const codeResultCache = generateCodeResultCache(
     SampleFileBuildResult,
     SampleFileBundledExportsInfo,
-    require,
+    nodeModules,
+    dispatch,
     npmDependencies,
     true,
   )
@@ -4232,38 +4252,27 @@ export async function load(
   const npmDependencies = dependenciesFromModel(model)
   const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
-  const require = getRequireFn(
-    (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, false)]),
-    nodeModules,
-  )
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
 
-  let codeResultCache: CodeResultCache = {
-    skipDeepFreeze: true,
-    cache: {},
-    exportsInfo: [],
-    propertyControlsInfo: {},
-    error: null,
-    requireFn: require,
-  }
+  let codeResultCache: CodeResultCache
   if (model.exportsInfo.length > 0) {
     workers.sendInitMessage(typeDefinitions, model.projectContents)
     codeResultCache = generateCodeResultCache(
       model.buildResult,
       model.exportsInfo,
-      require,
+      nodeModules,
+      dispatch,
       npmDependencies,
       true,
     )
   } else {
-    const loadedResult = await loadCodeResult(
+    codeResultCache = await loadCodeResult(
       workers,
-      { require: require, typeDefinitions: typeDefinitions },
+      nodeModules,
+      dispatch,
+      typeDefinitions,
       model.projectContents,
     )
-    if (loadedResult != null) {
-      codeResultCache = loadedResult
-    }
   }
 
   const storedState = await loadStoredState(projectId)
@@ -4292,9 +4301,11 @@ export async function load(
 
 function loadCodeResult(
   workers: UtopiaTsWorkers,
-  bundleResult: NpmBundleResult,
+  nodeModules: NodeModules,
+  dispatch: EditorDispatch,
+  typeDefinitions: TypeDefinitions,
   projectContents: ProjectContents,
-): Promise<CodeResultCache | null> {
+): Promise<CodeResultCache> {
   return new Promise((resolve, reject) => {
     const handleMessage = (e: MessageEvent) => {
       const data = e.data as OutgoingWorkerMessage
@@ -4303,7 +4314,8 @@ function loadCodeResult(
           const codeResultCache = generateCodeResultCache(
             data.buildResult,
             data.exportsInfo,
-            bundleResult.require,
+            nodeModules,
+            dispatch,
             dependenciesFromModel({ projectContents: projectContents }),
             true,
           )
@@ -4315,7 +4327,7 @@ function loadCodeResult(
     }
 
     workers.addBundleResultEventListener(handleMessage)
-    workers.sendInitMessage(bundleResult.typeDefinitions, projectContents)
+    workers.sendInitMessage(typeDefinitions, projectContents)
   })
 }
 

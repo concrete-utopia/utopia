@@ -10,7 +10,7 @@ import { projectIsStoredLocally } from '../components/editor/persistence'
 import { loadProject } from '../components/editor/server'
 import { isPersistentModel, PersistentModel } from '../components/editor/store/editor-state'
 import Utils from '../utils/utils'
-import { isCodeFile, ESCodeFile, esCodeFile } from '../core/shared/project-file-types'
+import { isCodeFile, ESCodeFile, esCodeFile, NodeModules } from '../core/shared/project-file-types'
 import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
 import { npmDependency } from '../core/shared/npm-dependency-types'
 import { objectMap } from '../core/shared/object-utils'
@@ -165,7 +165,7 @@ const initPreview = () => {
     if (model != null) {
       const npmDependencies = dependenciesFromModel(model)
       let nodeModules = await fetchNodeModules(npmDependencies)
-      const require = getRequireFn((modulesToAdd) => {
+      const require = getRequireFn((modulesToAdd: NodeModules) => {
         // MUTATION
         Object.assign(nodeModules, modulesToAdd)
       }, nodeModules)

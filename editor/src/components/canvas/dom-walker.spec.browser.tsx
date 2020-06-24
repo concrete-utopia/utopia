@@ -31,6 +31,7 @@ import { createEditorState, deriveState, EditorStore } from '../editor/store/edi
 import { createTestProjectWithCode } from './canvas-utils'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
+import { NO_OP } from '../../core/shared/utils'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   return {
@@ -55,7 +56,7 @@ function sanitizeJsxMetadata(jsxMetadata: ComponentMetadata[]) {
 }
 
 async function renderTestEditorWithCode(appUiJsFileCode: string) {
-  let emptyEditorState = createEditorState()
+  let emptyEditorState = createEditorState(NO_OP)
   const fromScratchResult = deriveState(emptyEditorState, null, false)
   emptyEditorState = fromScratchResult.editor
   const derivedState = fromScratchResult.derived

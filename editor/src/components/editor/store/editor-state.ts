@@ -84,7 +84,11 @@ import { produceCanvasTransientState } from '../../canvas/canvas-utils'
 import { CodeEditorTheme, DefaultTheme } from '../../code-editor/code-editor-themes'
 import { CursorPosition } from '../../code-editor/code-editor-utils'
 import { EditorPanel } from '../../common/actions/index'
-import { codeCacheToBuildResult, CodeResultCache } from '../../custom-code/code-file'
+import {
+  codeCacheToBuildResult,
+  CodeResultCache,
+  generateCodeResultCache,
+} from '../../custom-code/code-file'
 import { EditorModes, Mode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
 import { DefaultPackagesList } from '../../navigator/dependency-list'
@@ -220,7 +224,7 @@ export interface EditorState {
   domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
   jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
   projectContents: ProjectContents
-  codeResultCache: CodeResultCache | null
+  codeResultCache: CodeResultCache
   nodeModules: {
     skipDeepFreeze: true // when we evaluate the code files we plan to mutate the content with the eval result
     files: NodeModules
@@ -943,11 +947,8 @@ export function mergePersistentModel(
     },
   }
 }
-export function createDefaultEditorState(persistentModel: PersistentModel): EditorState {
-  return editorModelFromPersistentModel(persistentModel)
-}
 
-export function createEditorState(): EditorState {
+export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
     appID: null,
@@ -961,7 +962,7 @@ export function createEditorState(): EditorState {
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
     projectContents: {},
-    codeResultCache: null,
+    codeResultCache: generateCodeResultCache({}, [], {}, dispatch, [], true),
     nodeModules: {
       skipDeepFreeze: true,
       files: {},
@@ -1197,8 +1198,11 @@ export function createCanvasModelKILLME(
   }
 }
 
-export function editorModelFromPersistentModel(persistentModel: PersistentModel): EditorState {
-  const createdEditorState = createEditorState()
+export function editorModelFromPersistentModel(
+  persistentModel: PersistentModel,
+  dispatch: EditorDispatch,
+): EditorState {
+  const createdEditorState = createEditorState(dispatch)
   const editor: EditorState = {
     ...createdEditorState,
     ...{
@@ -1229,9 +1233,8 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     appID: editor.appID,
     projectVersion: editor.projectVersion,
     projectContents: editor.projectContents,
-    buildResult:
-      editor.codeResultCache == null ? {} : codeCacheToBuildResult(editor.codeResultCache.cache),
-    exportsInfo: editor.codeResultCache == null ? [] : editor.codeResultCache.exportsInfo,
+    buildResult: codeCacheToBuildResult(editor.codeResultCache.cache),
+    exportsInfo: editor.codeResultCache.exportsInfo,
     lastUsedFont: editor.lastUsedFont,
     hiddenInstances: editor.hiddenInstances,
     openFiles: editor.openFiles,

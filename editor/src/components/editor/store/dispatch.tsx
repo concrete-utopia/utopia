@@ -635,13 +635,10 @@ function filterEditorForFiles(editor: EditorState) {
   const allFiles = Object.keys(editor.projectContents)
   return {
     ...editor,
-    codeResultCache:
-      editor.codeResultCache == null
-        ? null
-        : {
-            ...editor.codeResultCache,
-            cache: R.pick(allFiles, editor.codeResultCache.cache),
-          },
+    codeResultCache: {
+      ...editor.codeResultCache,
+      cache: R.pick(allFiles, editor.codeResultCache.cache),
+    },
     codeEditorErrors: {
       buildErrors: R.pick(allFiles, editor.codeEditorErrors.buildErrors),
       lintErrors: R.pick(allFiles, editor.codeEditorErrors.lintErrors),

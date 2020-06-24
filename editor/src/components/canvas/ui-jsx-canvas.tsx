@@ -176,10 +176,7 @@ export function pickUiJsxCanvasProps(
       topLevelElementsIncludingScenes = transientFileState.topLevelElementsIncludingScenes
     }
   }
-  const requireFn =
-    editor.codeResultCache == null
-      ? getMemoizedRequireFn(editor.nodeModules.files, dispatch)
-      : editor.codeResultCache.requireFn
+  const requireFn = editor.codeResultCache.requireFn
   return {
     offset: editor.canvas.roundedCanvasOffset,
     scale: editor.canvas.scale,
