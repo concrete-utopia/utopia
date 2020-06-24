@@ -158,11 +158,12 @@ function monkeyPatchReactType(
   originalUIDFromProps: string | null,
 ): any {
   if (type.prototype != null && typeof type.prototype.isReactComponent === 'object') {
-    return memoizedGetClassMonkeyFunction({
-      type: type,
-      dataUIDFromProps: dataUIDFromProps,
-      originalUIDFromProps: originalUIDFromProps,
-    })
+    return type
+    // return memoizedGetClassMonkeyFunction({
+    //   type: type,
+    //   dataUIDFromProps: dataUIDFromProps,
+    //   originalUIDFromProps: originalUIDFromProps,
+    // })
   } else if (typeof type === 'function') {
     return memoizedGetFunctionMonkeyFunction({
       type: type,
