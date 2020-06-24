@@ -167,8 +167,10 @@ export function getDescriptionUnsetOptionalFields(
     case 'slider':
       addIfFieldEmpty(controlDescription, 'defaultValue')
       break
+    case 'union':
+      break
     default:
-      // Usual exhaustiveness check is invalid here for some reason.
+      const _exhaustiveCheck: never = controlDescription
       throw new Error(`Unhandled type ${JSON.stringify(controlDescription)}`)
   }
   return result
