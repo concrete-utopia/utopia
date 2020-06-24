@@ -1120,6 +1120,54 @@ export const MetadataUtils = {
       return null
     }
   },
+  getJSXElementBaseName(
+    path: TemplatePath,
+    components: Array<UtopiaJSXComponent>,
+    metadata: ComponentMetadata[],
+  ): string | null {
+    if (TP.isScenePath(path)) {
+      const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
+      if (scene != null) {
+        return scene.component
+      } else {
+        return null
+      }
+    } else {
+      const jsxElement = findElementAtPath(path, components, metadata)
+      if (jsxElement != null) {
+        if (isJSXElement(jsxElement)) {
+          return jsxElement.name.baseVariable
+        } else {
+          return null
+        }
+      }
+      return null
+    }
+  },
+  getJSXElementTagName(
+    path: TemplatePath,
+    components: Array<UtopiaJSXComponent>,
+    metadata: ComponentMetadata[],
+  ): string | null {
+    if (TP.isScenePath(path)) {
+      const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
+      if (scene != null) {
+        return scene.component
+      } else {
+        return null
+      }
+    } else {
+      const jsxElement = findElementAtPath(path, components, metadata)
+      if (jsxElement != null) {
+        if (isJSXElement(jsxElement)) {
+          return getJSXElementNameAsString(jsxElement.name)
+        } else {
+          return null
+        }
+      }
+      return null
+    }
+  },
   getTargetParentForPaste: function (
     imports: Imports,
     selectedViews: Array<TemplatePath>,
@@ -1390,6 +1438,29 @@ export const MetadataUtils = {
       }
     }
     return false
+  },
+  walkMetadata(
+    rootMetadata: Array<ComponentMetadata>,
+    withEachElement: (
+      metadata: ElementInstanceMetadata,
+      parentMetadata: ElementInstanceMetadata | null,
+    ) => void,
+  ): void {
+    function innerWalk(
+      metadata: ElementInstanceMetadata,
+      parentMetadata: ElementInstanceMetadata | null,
+    ): void {
+      withEachElement(metadata, parentMetadata)
+      for (const child of metadata.children) {
+        innerWalk(child, metadata)
+      }
+    }
+
+    for (const componentMetadata of rootMetadata) {
+      if (componentMetadata.rootElement != null) {
+        innerWalk(componentMetadata.rootElement, null)
+      }
+    }
   },
 }
 

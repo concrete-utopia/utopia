@@ -1,20 +1,24 @@
 import { OptionChainOption } from './option-chain-control'
-import { OptionControlOptions } from './option-control'
-import { SelectControlOptions, SelectOption } from './select-control'
-import { SliderControlOptions } from './slider-control'
-import { StringControlOptions } from './string-control'
+import { DEPRECATEDOptionControlOptions } from './option-control'
+import { DEPRECATEDSelectControlOptions, SelectOption } from './select-control'
+import { DEPRECATEDSliderControlOptions } from './slider-control'
 import { ControlStatus, ControlStyles } from '../common/control-status'
-import { EmptyInputValue } from '../common/css-utils'
+import { UnknownOrEmptyInput, EmptyInputValue } from '../common/css-utils'
+import { StringControlOptions } from './string-control'
 
-export interface GenericControlOptions {
+export interface DEPRECATEDGenericControlOptions {
   tooltip?: React.ReactElement<any> | string
   labelBelow?: string
 }
 
-export type OnSubmitValue<T> = (value: T) => void
-export type OnSubmitValueOrEmpty<T> = (value: T | EmptyInputValue) => void
+export type OnSubmitValue<T> = (value: T, transient?: boolean) => void
+export type OnSubmitValueOrEmpty<T> = (value: T | EmptyInputValue, transient?: boolean) => void
+export type OnSubmitValueOrUnknownOrEmpty<T> = (
+  value: UnknownOrEmptyInput<T>,
+  transient?: boolean,
+) => void
 
-export interface ControlProps<T> {
+export interface DEPRECATEDControlProps<T> {
   id: string
   key: string
   value: T
@@ -26,14 +30,13 @@ export interface ControlProps<T> {
   readOnly?: boolean
   selected?: boolean
   options?: ReadonlyArray<SelectOption> | ReadonlyArray<OptionChainOption<T>>
-  controlOptions?:
-    | GenericControlOptions
-    | OptionControlOptions
+  DEPRECATED_controlOptions?:
+    | DEPRECATEDGenericControlOptions
+    | DEPRECATEDOptionControlOptions
     | StringControlOptions
-    | SliderControlOptions
-    | SelectControlOptions
+    | DEPRECATEDSliderControlOptions
+    | DEPRECATEDSelectControlOptions
   onDrag?: (value: T) => void
-  allowEditOnDoubleClick?: boolean
   onContextMenu?: (e: { nativeEvent: MouseEvent }) => void
   controlClassName?: string
   htmlFor?: string
@@ -43,4 +46,12 @@ export interface ControlProps<T> {
   style?: React.CSSProperties
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
+}
+
+export interface InspectorControlProps {
+  style?: React.CSSProperties
+  id?: string
+  className?: string
+  controlStatus?: ControlStatus
+  DEPRECATED_labelBelow?: React.ReactChild
 }

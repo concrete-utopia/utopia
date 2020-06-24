@@ -24,6 +24,7 @@ import {
   TemplatePath,
   UIJSFile,
   NodeModules,
+  Imports,
 } from '../../core/shared/project-file-types'
 import { CodeResultCache } from '../custom-code/code-file'
 import { ElementContextMenuInstance } from '../element-context-menu'
@@ -127,7 +128,7 @@ export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
   parent: TemplatePath | null
-  importFromPath: string | null
+  importsToAdd: Imports
 }
 
 export type DeleteSelected = {
@@ -737,6 +738,12 @@ export interface FinishCheckpointTimer {
   action: 'FINISH_CHECKPOINT_TIMER'
 }
 
+export interface AddMissingDimensions {
+  action: 'ADD_MISSING_DIMENSIONS'
+  existingSize: CanvasRectangle
+  target: InstancePath
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -860,6 +867,7 @@ export type EditorAction =
   | UpdatePackageJson
   | StartCheckpointTimer
   | FinishCheckpointTimer
+  | AddMissingDimensions
 
 export type DispatchPriority =
   | 'everyone'

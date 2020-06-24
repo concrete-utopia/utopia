@@ -88,6 +88,11 @@ export function getBorderRadiusStyles(chained: ChainedType, rc: BoxCorners) {
   }
 }
 
+export interface BaseInputProps {
+  focusOnMount?: boolean
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>
+}
+
 interface InspectorInputProps {
   chained?: ChainedType
   controlStyles: ControlStyles

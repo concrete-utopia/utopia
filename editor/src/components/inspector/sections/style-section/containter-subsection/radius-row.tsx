@@ -279,7 +279,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
               id='radius-all-slider'
               key='radius-all-slider'
               value={borderRadiusValue.value.value}
-              controlOptions={{
+              DEPRECATED_controlOptions={{
                 minimum: 0,
                 maximum: sliderMax / 2,
                 stepSize: 0.5,

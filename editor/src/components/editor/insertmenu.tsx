@@ -20,7 +20,15 @@ import {
   JSXAttributes,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
-import { TemplatePath, isCodeFile, isUIJSFile } from '../../core/shared/project-file-types'
+import {
+  TemplatePath,
+  isCodeFile,
+  isUIJSFile,
+  importDetails,
+  importAlias,
+  Imports,
+  importsEquals,
+} from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
 import {
   defaultAnimatedDivElement,
@@ -52,6 +60,9 @@ import {
   findMissingDefaultsAndGetWarning,
 } from '../../core/property-controls/property-controls-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
+import { useResolvedPackageDependencies } from './npm-dependency/npm-dependency'
+import { NpmDependency } from '../../core/shared/npm-dependency-types'
+import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 
 interface CurrentFileComponent {
   componentName: string
@@ -67,10 +78,11 @@ interface InsertMenuProps {
   existingUIDs: Array<string>
   currentlyOpenFilename: string | null
   currentFileComponents: Array<CurrentFileComponent>
+  dependencies: Array<NpmDependency>
 }
 
 export const InsertMenu = betterReactMemo('InsertMenu', () => {
-  const props: InsertMenuProps = useEditorState((store) => {
+  const props = useEditorState((store) => {
     const openFileFullPath = getOpenFilename(store.editor)
     let currentlyOpenFilename: string | null = null
     if (openFileFullPath != null) {
@@ -111,20 +123,28 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
       currentFileComponents: currentFileComponents,
     }
   })
-  return <InsertMenuInner {...props} />
+
+  const dependencies = useResolvedPackageDependencies()
+
+  const propsWithDependencies: InsertMenuProps = {
+    ...props,
+    dependencies: dependencies,
+  }
+
+  return <InsertMenuInner {...propsWithDependencies} />
 })
 
 export interface ComponentBeingInserted {
-  importedFrom: string | null
+  importsToAdd: Imports
   elementName: JSXElementName
 }
 
 export function componentBeingInserted(
-  importedFrom: string | null,
+  importsToAdd: Imports,
   elementName: JSXElementName,
 ): ComponentBeingInserted {
   return {
-    importedFrom: importedFrom,
+    importsToAdd: importsToAdd,
     elementName: elementName,
   }
 }
@@ -140,31 +160,37 @@ export function componentBeingInsertedEquals(
       return false
     } else {
       return (
-        first.importedFrom === second.importedFrom &&
+        importsEquals(first.importsToAdd, second.importsToAdd) &&
         jsxElementNameEquals(first.elementName, second.elementName)
       )
     }
   }
 }
 
-const viewComponentBeingInserted = componentBeingInserted('utopia-api', jsxElementName('View', []))
+const viewComponentBeingInserted = componentBeingInserted(
+  { 'utopia-api': importDetails(null, [importAlias('View')], null) },
+  jsxElementName('View', []),
+)
 
-const imageComponentBeingInserted = componentBeingInserted(null, jsxElementName('img', []))
+const imageComponentBeingInserted = componentBeingInserted({}, jsxElementName('img', []))
 
-const textComponentBeingInserted = componentBeingInserted('utopia-api', jsxElementName('Text', []))
+const textComponentBeingInserted = componentBeingInserted(
+  { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
+  jsxElementName('Text', []),
+)
 
 const ellipseComponentBeingInserted = componentBeingInserted(
-  'utopia-api',
+  { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
   jsxElementName('Ellipse', []),
 )
 
 const rectangleComponentBeingInserted = componentBeingInserted(
-  'utopia-api',
+  { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
   jsxElementName('Rectangle', []),
 )
 
 const animatedDivComponentBeingInserted = componentBeingInserted(
-  'react-spring',
+  { 'react-spring': importDetails(null, [importAlias('animated')], null) },
   jsxElementName('animated', ['div']),
 )
 
@@ -174,7 +200,8 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
       this.props.lastFontSettings !== nextProps.lastFontSettings ||
       this.props.editorDispatch !== nextProps.editorDispatch ||
       this.props.selectedViews !== nextProps.selectedViews ||
-      this.props.mode !== nextProps.mode
+      this.props.mode !== nextProps.mode ||
+      this.props.dependencies !== nextProps.dependencies
 
     return shouldUpdate
   }
@@ -190,7 +217,14 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
   viewInsertMode = () => {
     const newUID = generateUID(this.props.existingUIDs)
     this.props.editorDispatch(
-      [enableInsertModeForJSXElement(defaultViewElement(newUID), newUID, 'utopia-api', null)],
+      [
+        enableInsertModeForJSXElement(
+          defaultViewElement(newUID),
+          newUID,
+          { 'utopia-api': importDetails(null, [importAlias('View')], null) },
+          null,
+        ),
+      ],
       'everyone',
     )
   }
@@ -202,7 +236,14 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
   textInsertMode = () => {
     const newUID = generateUID(this.props.existingUIDs)
     this.props.editorDispatch(
-      [enableInsertModeForJSXElement(defaultTextElement(newUID), newUID, 'utopia-api', null)],
+      [
+        enableInsertModeForJSXElement(
+          defaultTextElement(newUID),
+          newUID,
+          { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
+          null,
+        ),
+      ],
       'everyone',
     )
   }
@@ -214,7 +255,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
         enableInsertModeForJSXElement(
           defaultAnimatedDivElement(newUID),
           newUID,
-          'react-spring',
+          { 'react-spring': importDetails(null, [importAlias('animated')], null) },
           null,
         ),
       ],
@@ -225,7 +266,14 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
   ellipseInsertMode = () => {
     const newUID = generateUID(this.props.existingUIDs)
     this.props.editorDispatch(
-      [enableInsertModeForJSXElement(defaultEllipseElement(newUID), newUID, 'utopia-api', null)],
+      [
+        enableInsertModeForJSXElement(
+          defaultEllipseElement(newUID),
+          newUID,
+          { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
+          null,
+        ),
+      ],
       'everyone',
     )
   }
@@ -233,7 +281,14 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
   rectangleInsertMode = () => {
     const newUID = generateUID(this.props.existingUIDs)
     this.props.editorDispatch(
-      [enableInsertModeForJSXElement(defaultRectangleElement(newUID), newUID, 'utopia-api', null)],
+      [
+        enableInsertModeForJSXElement(
+          defaultRectangleElement(newUID),
+          newUID,
+          { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
+          null,
+        ),
+      ],
       'everyone',
     )
   }
@@ -247,7 +302,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
       } else if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
         const insertionSubject: ElementInsertionSubject = this.props.mode.subject
         currentlyBeingInserted = componentBeingInserted(
-          insertionSubject.importFromPath,
+          insertionSubject.importsToAdd,
           insertionSubject.element.name,
         )
       }
@@ -330,7 +385,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
                 props['data-uid'] = jsxAttributeValue(newUID)
                 const newElement = jsxElement(jsxElementName(componentName, []), props, [], null)
                 this.props.editorDispatch(
-                  [enableInsertModeForJSXElement(newElement, newUID, null, null)],
+                  [enableInsertModeForJSXElement(newElement, newUID, {}, null)],
                   'everyone',
                 )
               }
@@ -343,7 +398,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
                   selected={componentBeingInsertedEquals(
                     currentlyBeingInserted,
                     componentBeingInserted(
-                      null,
+                      {},
                       jsxElementName(currentFileComponent.componentName, []),
                     ),
                   )}
@@ -354,6 +409,52 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
             })}
           </InsertGroup>
         )}
+        {this.props.dependencies.map((dependency, dependencyIndex) => {
+          const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
+          if (componentDescriptor == null) {
+            return null
+          } else {
+            return (
+              <InsertGroup label={componentDescriptor.name}>
+                {componentDescriptor.components.map((component, componentIndex) => {
+                  const insertItemOnMouseDown = () => {
+                    const newUID = generateUID(this.props.existingUIDs)
+                    const newElement = {
+                      ...component.element,
+                      props: {
+                        ...component.element.props,
+                        ['data-uid']: jsxAttributeValue(newUID),
+                      },
+                    }
+                    this.props.editorDispatch(
+                      [
+                        enableInsertModeForJSXElement(
+                          newElement,
+                          newUID,
+                          component.importsToAdd,
+                          null,
+                        ),
+                      ],
+                      'everyone',
+                    )
+                  }
+                  return (
+                    <InsertItem
+                      key={`insert-item-third-party-${dependencyIndex}-${componentIndex}`}
+                      type={'component'}
+                      label={component.name}
+                      selected={componentBeingInsertedEquals(
+                        currentlyBeingInserted,
+                        componentBeingInserted({}, component.element.name),
+                      )}
+                      onMouseDown={insertItemOnMouseDown}
+                    />
+                  )
+                })}
+              </InsertGroup>
+            )
+          }
+        })}
       </React.Fragment>
     )
   }

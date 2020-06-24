@@ -10,7 +10,7 @@ import { LayoutTypePicker } from './self-layout-controls'
 
 export type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
-function useActiveLayoutTab(position: CSSPosition, isChildOfFlexComponent: boolean) {
+function useActiveLayoutTab(position: CSSPosition | null, isChildOfFlexComponent: boolean) {
   let value: SelfLayoutTab
   if (position === 'absolute' || position === 'sticky') {
     value = position
@@ -22,7 +22,7 @@ function useActiveLayoutTab(position: CSSPosition, isChildOfFlexComponent: boole
 
 interface SelfLayoutSubsectionProps {
   input: ResolvedLayoutProps
-  position: CSSPosition
+  position: CSSPosition | null
   isChildOfFlexComponent: boolean
   parentFlexAxis: 'horizontal' | 'vertical' | null
   aspectRatioLocked: boolean

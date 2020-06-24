@@ -94,7 +94,7 @@ import {
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
   isChildOfFlexComponent: boolean
-  position: CSSPosition
+  position: CSSPosition | null
   layoutWrapper: null | LayoutWrapper
   label: string
   type: null | string
@@ -243,7 +243,7 @@ interface RenderedLayoutSectionProps {
   parentFlexAxis: 'horizontal' | 'vertical' | null
   aspectRatioLocked: boolean
   toggleAspectRatioLock: () => void
-  position: CSSPosition
+  position: CSSPosition | null
 }
 
 const RenderedLayoutSection = betterReactMemo<RenderedLayoutSectionProps>(

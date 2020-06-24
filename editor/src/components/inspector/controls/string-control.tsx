@@ -3,19 +3,17 @@ import { jsx } from '@emotion/core'
 import * as classNames from 'classnames'
 import * as React from 'react'
 import { StringInput } from 'uuiui'
-import { ControlProps, GenericControlOptions } from './control'
-import { usePropControlledState } from '../common/inspector-utils'
 import { betterReactMemo } from 'uuiui-deps'
+import { usePropControlledState } from '../common/inspector-utils'
+import { DEPRECATEDControlProps } from './control'
 
-export interface StringControlOptions extends GenericControlOptions {
-  tooltipContent?: React.ReactElement<any> | string
-  tooltipTrigger?: string
-  tooltipHideOnClick?: boolean
+export interface StringControlOptions {
+  DEPRECATED_labelBelow?: React.ReactChild
 }
 
-export const StringControl = betterReactMemo<ControlProps<string>>(
+export const StringControl = betterReactMemo<DEPRECATEDControlProps<string>>(
   'StringControl',
-  ({ value: propsValue, allowEditOnDoubleClick = false, ...props }) => {
+  ({ value: propsValue, ...props }) => {
     const [mixed, setMixed] = usePropControlledState<boolean>(props.controlStyles.mixed)
     const [editDisabled, setEditDisabled] = usePropControlledState<boolean>(
       !props.controlStyles.interactive,
@@ -44,16 +42,7 @@ export const StringControl = betterReactMemo<ControlProps<string>>(
       setEditDisabled(false)
     }
 
-    const inputOnDoubleClick = () => {
-      if (allowEditOnDoubleClick) {
-        setEditDisabled(false)
-      }
-    }
-
     const inputClassName = classNames('string-control', props.controlClassName)
-
-    const controlOptions: StringControlOptions =
-      props.controlOptions != null ? props.controlOptions : {}
 
     return (
       // this form madness is a hack due to chrome ignoring autoComplete='off' on individual `input`s
@@ -66,14 +55,12 @@ export const StringControl = betterReactMemo<ControlProps<string>>(
         onFocus={props.onFocus}
         onBlur={inputOnBlur}
         onChange={inputOnChange}
-        onDoubleClick={inputOnDoubleClick}
         value={getDisplayValue()}
         autoComplete='off'
         spellCheck={false}
-        tooltipContent={controlOptions.tooltipContent}
-        tooltipTrigger={controlOptions.tooltipTrigger}
-        tooltipHideOnClick={controlOptions.tooltipHideOnClick}
-        labelBelow={controlOptions.labelBelow}
+        DEPRECATED_labelBelow={
+          (props.DEPRECATED_controlOptions as StringControlOptions).DEPRECATED_labelBelow
+        }
         style={props.style}
         controlStatus={props.controlStatus}
       />

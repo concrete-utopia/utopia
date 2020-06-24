@@ -613,7 +613,7 @@ export class ColorPickerInner extends React.Component<
             style={{
               gridColumn: 'span 1',
             }}
-            labelBelow='Hex'
+            DEPRECATED_labelBelow='Hex'
           />
           <SimpleNumberInput
             value={this.state.hsvH}
@@ -622,7 +622,7 @@ export class ColorPickerInner extends React.Component<
             onTransientSubmitValue={this.onTransientSubmitValueHue}
             minimum={0}
             maximum={360}
-            labelBelow='H'
+            DEPRECATED_labelBelow='H'
             labelInner={{
               category: 'layout/systems',
               type: 'transform-rotate',
@@ -640,7 +640,7 @@ export class ColorPickerInner extends React.Component<
             minimum={0}
             maximum={1}
             stepSize={0.01}
-            labelBelow='S'
+            DEPRECATED_labelBelow='S'
           />
           <SimplePercentInput
             value={this.state.hsvV}
@@ -651,7 +651,7 @@ export class ColorPickerInner extends React.Component<
             minimum={0}
             maximum={1}
             stepSize={0.01}
-            labelBelow='V'
+            DEPRECATED_labelBelow='V'
           />
           <SimplePercentInput
             value={this.state.alpha}
@@ -662,7 +662,7 @@ export class ColorPickerInner extends React.Component<
             minimum={0}
             maximum={1}
             stepSize={0.01}
-            labelBelow='A'
+            DEPRECATED_labelBelow='A'
           />
         </div>
       </div>

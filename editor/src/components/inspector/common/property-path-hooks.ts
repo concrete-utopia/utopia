@@ -844,11 +844,16 @@ export function useSelectedPropertyControls(
     if (codeResultCache != null) {
       Utils.fastForEach(selectedViews, (path) => {
         // TODO multiselect
-        const name = MetadataUtils.getJSXElementName(path, rootComponents, jsxMetadataKILLME)
-        if (name != null) {
+        const tagName = MetadataUtils.getJSXElementTagName(path, rootComponents, jsxMetadataKILLME)
+        const importedName = MetadataUtils.getJSXElementBaseName(
+          path,
+          rootComponents,
+          jsxMetadataKILLME,
+        )
+        if (importedName != null && tagName != null) {
           // TODO default and star imports
           let filename = Object.keys(imports).find((key) => {
-            return pluck(imports[key].importedFromWithin, 'name').includes(name)
+            return pluck(imports[key].importedFromWithin, 'name').includes(importedName)
           })
           if (filename == null && selectedUIJSFilename != null) {
             filename = selectedUIJSFilename.replace(/\.(js|jsx|ts|tsx)$/, '')
@@ -860,10 +865,10 @@ export function useSelectedPropertyControls(
               : `${filename}`
             if (
               codeResultCache.propertyControlsInfo[absoluteFilePath] != null &&
-              codeResultCache.propertyControlsInfo[absoluteFilePath][name] != null
+              codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] != null
             ) {
               selectedPropertyControls =
-                codeResultCache.propertyControlsInfo[absoluteFilePath][name]
+                codeResultCache.propertyControlsInfo[absoluteFilePath][tagName]
             }
           }
         }

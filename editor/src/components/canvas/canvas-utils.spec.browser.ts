@@ -11,7 +11,7 @@ import { canvasRectangle } from '../../core/shared/math-utils'
 import { selectComponents, setCanvasFrames, wrapInView } from '../editor/actions/actions'
 import { reparentComponents } from '../navigator/actions'
 import * as TP from '../../core/shared/template-path'
-import { pinFrameChange, pinMoveChange } from './canvas-types'
+import { pinFrameChange, pinMoveChange, pinSizeChange } from './canvas-types'
 
 const NewUID = 'catdog'
 
@@ -655,6 +655,112 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
           data-uid={'bbb'}
         />
       </View>`,
+      ),
+    )
+  })
+})
+
+describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
+  it('only TL pins work', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', left: 52, top: 61 }}
+            layout={{ layoutSystem: 'pinSystem' }}
+            data-uid={'bbb'}
+          />
+        </View>`,
+      ),
+    )
+
+    const pinChange = pinSizeChange(
+      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
+      null,
+    )
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', left: 20, width: 100, top: 20, height: 100 }}
+            layout={{ layoutSystem: 'pinSystem' }}
+            data-uid={'bbb'}
+          />
+        </View>`,
+      ),
+    )
+  })
+
+  it('only TW pins work', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', left: 52, width: 100 }}
+            layout={{ layoutSystem: 'pinSystem' }}
+            data-uid={'bbb'}
+          />
+        </View>`,
+      ),
+    )
+
+    const pinChange = pinSizeChange(
+      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
+      null,
+    )
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    // THIS IS THE IMPORTANT TEST, IT POINTS OUT THAT WE DO NOT ADD AN UNNECESSARY TOP PROPERTY, ONLY HEIGHT
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', width: 100, left: 20, height: 100 }}
+            layout={{ layoutSystem: 'pinSystem' }}
+            data-uid={'bbb'}
+          />
+        </View>`,
+      ),
+    )
+  })
+
+  it('TLRB pins work', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, right: 150, bottom: 150 }}
+            layout={{ layoutSystem: 'pinSystem' }}
+            data-uid={'bbb'}
+          />
+        </View>`,
+      ),
+    )
+
+    const pinChange = pinSizeChange(
+      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
+      null,
+    )
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', left: 20, right: 280, top: 20, bottom: 280 }}
+            layout={{ layoutSystem: 'pinSystem' }}
+            data-uid={'bbb'}
+          />
+        </View>`,
       ),
     )
   })

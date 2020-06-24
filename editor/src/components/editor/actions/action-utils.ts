@@ -133,6 +133,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RESET_PROP_TO_DEFAULT':
     case 'UPDATE_PACKAGE_JSON':
     case 'FINISH_CHECKPOINT_TIMER':
+    case 'ADD_MISSING_DIMENSIONS':
       return false
     case 'SAVE_ASSET':
       return (

@@ -3,7 +3,12 @@ import { findElementAtPath, MetadataUtils } from '../../core/model/element-metad
 import { ComponentMetadata, ElementInstanceMetadata } from '../../core/shared/element-template'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
-import { InstancePath, TemplatePath } from '../../core/shared/project-file-types'
+import {
+  InstancePath,
+  TemplatePath,
+  importDetails,
+  importAlias,
+} from '../../core/shared/project-file-types'
 import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
   KeyCharacter,
@@ -575,7 +580,7 @@ const Canvas = {
             EditorActions.enableInsertModeForJSXElement(
               defaultRectangleElement(newUID),
               newUID,
-              'utopia-api',
+              { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
               null,
             ),
           ]
@@ -589,7 +594,7 @@ const Canvas = {
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
               newUID,
-              'utopia-api',
+              { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
               null,
             ),
           ]
@@ -617,7 +622,7 @@ const Canvas = {
             EditorActions.enableInsertModeForJSXElement(
               defaultTextElement(newUID),
               newUID,
-              'utopia-api',
+              { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
               null,
             ),
           ]
@@ -641,7 +646,7 @@ const Canvas = {
             EditorActions.enableInsertModeForJSXElement(
               defaultViewElement(newUID),
               newUID,
-              'utopia-api',
+              { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
             ),
           ]

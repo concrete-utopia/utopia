@@ -17,6 +17,12 @@ describe('Scene Section', () => {
   it('make sure whyDidYouRender is enabled', () => {
     expect((SceneSection as any).whyDidYouRender).toBeTruthy()
   })
+  /** This test has been x-ed because it:
+   *  1. was a false negative, it didn't catch the scene section rendering on
+   *     every scroll in production.
+   *  2. failed irregularly: on the same branch it would fail if run with
+   *     all tests, but pass if run by itself.
+   */
   it('doesnt rerender on irrelevant changes', () => {
     const storeHookForTest = getStoreHook(utils.NO_OP)
     storeHookForTest.updateStoreWithImmer((store) => {

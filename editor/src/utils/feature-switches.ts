@@ -1,15 +1,20 @@
 import * as localforage from 'localforage'
 import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 
-export type FeatureName = 'Dragging Reparents By Default' | 'Dragging Shows Overlay'
+export type FeatureName =
+  | 'Dragging Reparents By Default'
+  | 'Dragging Shows Overlay'
+  | 'Invisible Element Controls'
 export const AllFeatureNames: FeatureName[] = [
   'Dragging Reparents By Default',
   'Dragging Shows Overlay',
+  'Invisible Element Controls',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Reparents By Default': false,
   'Dragging Shows Overlay': false,
+  'Invisible Element Controls': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

@@ -325,6 +325,7 @@ export class SelectModeControlContainer extends React.Component<
           windowToCanvasPosition={this.props.windowToCanvasPosition}
           selectedViews={this.props.selectedViews}
           imports={this.props.imports}
+          showAdditionalControls={this.props.showAdditionalControls}
         />
       )
     } else {
@@ -358,6 +359,7 @@ export class SelectModeControlContainer extends React.Component<
         windowToCanvasPosition={this.props.windowToCanvasPosition}
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
+        showAdditionalControls={this.props.showAdditionalControls}
       />
     )
   }
@@ -393,6 +395,7 @@ export class SelectModeControlContainer extends React.Component<
         windowToCanvasPosition={this.props.windowToCanvasPosition}
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
+        showAdditionalControls={this.props.showAdditionalControls}
       />
     )
   }

@@ -129,11 +129,14 @@ import {
   ESCodeFile,
   esCodeFile,
   NodeModules,
+  Imports,
+  importDetails,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
   codeNeedsParsing,
   codeNeedsPrinting,
+  mergeImports,
 } from '../../../core/workers/common/project-file-utils'
 import { OutgoingWorkerMessage, isJsFile } from '../../../core/workers/ts/ts-worker'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
@@ -148,10 +151,16 @@ import {
   LocalRectangle,
   Size,
   WindowPoint,
+  canvasRectangle,
 } from '../../../core/shared/math-utils'
 import { ensureDirectoriesExist } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
-import { CanvasFrameAndTarget, CSSCursor, PinOrFlexFrameChange } from '../../canvas/canvas-types'
+import {
+  CanvasFrameAndTarget,
+  CSSCursor,
+  PinOrFlexFrameChange,
+  pinSizeChange,
+} from '../../canvas/canvas-types'
 import {
   canvasFrameToNormalisedFrame,
   clearDragState,
@@ -308,6 +317,7 @@ import {
   UpdatePackageJson,
   StartCheckpointTimer,
   FinishCheckpointTimer,
+  AddMissingDimensions,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -947,6 +957,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
       controls: [],
       transientState: produceCanvasTransientState(history.current.editor, true),
     },
+    elementWarnings: poppedDerived.elementWarnings,
   }
 }
 
@@ -1816,22 +1827,11 @@ export const UPDATE_FNS = {
     )
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
-    let importFilePath: string | null = null
-    const editedFilename = getOpenFilename(editor)
-    if (editedFilename != null && action.importFromPath != null) {
-      importFilePath = getFilePathToImport(action.importFromPath, editedFilename)
-    }
-
-    let importFromWithinToAdd = [importAlias(action.jsxElement.name.baseVariable)]
-
     const editorWithAddedImport = modifyOpenParseSuccess((success) => {
-      const updatedImport =
-        importFilePath == null
-          ? success.imports
-          : addImport(importFilePath, null, importFromWithinToAdd, null, success.imports)
+      const updatedImports = mergeImports(success.imports, action.importsToAdd)
       return {
         ...success,
-        imports: updatedImport,
+        imports: updatedImports,
       }
     }, editor)
 
@@ -2812,7 +2812,7 @@ export const UPDATE_FNS = {
             null,
           )
           const size = width != null && height != null ? { width: width, height: height } : null
-          const switchMode = enableInsertModeForJSXElement(imageElement, newUID, 'utopia-api', size)
+          const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
           const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
           return {
             ...editorInsertEnabled,
@@ -2849,7 +2849,7 @@ export const UPDATE_FNS = {
             null,
           )
 
-          const insertJSXElementAction = insertJSXElement(imageElement, parent, 'utopia-api')
+          const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
 
           const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
             ...editor,
@@ -2916,7 +2916,7 @@ export const UPDATE_FNS = {
         {},
       )
       const size = width != null && height != null ? { width: width, height: height } : null
-      const switchMode = enableInsertModeForJSXElement(imageElement, newUID, 'utopia-api', size)
+      const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
       return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
     } else {
       return editor
@@ -3799,7 +3799,7 @@ export const UPDATE_FNS = {
         {},
       )
 
-      const insertJSXElementAction = insertJSXElement(imageElement, parent, 'utopia-api')
+      const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
       return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
     } else {
       throw new Error(`Could not be found or is not a file: ${action.imagePath}`)
@@ -3921,6 +3921,21 @@ export const UPDATE_FNS = {
     checkpointTimeoutId = undefined
     // No need to actually change the editor state.
     return editor
+  },
+  ADD_MISSING_DIMENSIONS: (action: AddMissingDimensions, editor: EditorState): EditorState => {
+    const ArbitrarySize = 10
+    const frameWithExtendedDimensions = canvasRectangle({
+      x: action.existingSize.x,
+      y: action.existingSize.y,
+      width: action.existingSize.width === 0 ? ArbitrarySize : action.existingSize.width,
+      height: action.existingSize.height === 0 ? ArbitrarySize : action.existingSize.height,
+    })
+    const frameAndTarget: PinOrFlexFrameChange = pinSizeChange(
+      action.target,
+      frameWithExtendedDimensions,
+      null,
+    )
+    return setCanvasFramesInnerNew(editor, [frameAndTarget], null)
   },
 }
 
@@ -4123,13 +4138,13 @@ export function insertScene(frame: CanvasRectangle): InsertScene {
 export function insertJSXElement(
   element: JSXElement,
   parent: TemplatePath | null,
-  path: string | null,
+  importsToAdd: Imports,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
     jsxElement: element,
     parent: parent,
-    importFromPath: path,
+    importsToAdd: importsToAdd,
   }
 }
 
@@ -4170,6 +4185,7 @@ export async function newProject(
     SampleFileBuildResult,
     SampleFileBundledExportsInfo,
     require,
+    npmDependencies,
     true,
   )
 
@@ -4232,7 +4248,13 @@ export async function load(
   }
   if (model.exportsInfo.length > 0) {
     workers.sendInitMessage(typeDefinitions, model.projectContents)
-    codeResultCache = generateCodeResultCache(model.buildResult, model.exportsInfo, require, true)
+    codeResultCache = generateCodeResultCache(
+      model.buildResult,
+      model.exportsInfo,
+      require,
+      npmDependencies,
+      true,
+    )
   } else {
     const loadedResult = await loadCodeResult(
       workers,
@@ -4282,6 +4304,7 @@ function loadCodeResult(
             data.buildResult,
             data.exportsInfo,
             bundleResult.require,
+            dependenciesFromModel({ projectContents: projectContents }),
             true,
           )
           resolve(codeResultCache)
@@ -4455,14 +4478,11 @@ export function toggleCollapse(target: TemplatePath): ToggleCollapse {
 export function enableInsertModeForJSXElement(
   element: JSXElement,
   uid: string,
-  importFromPath: string | null,
+  importsToAdd: Imports,
   size: Size | null,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode(
-      false,
-      elementInsertionSubject(uid, element, size, importFromPath, null),
-    ),
+    EditorModes.insertMode(false, elementInsertionSubject(uid, element, size, importsToAdd, null)),
   )
 }
 
@@ -5248,5 +5268,16 @@ export function startCheckpointTimer(): StartCheckpointTimer {
 export function finishCheckpointTimer(): FinishCheckpointTimer {
   return {
     action: 'FINISH_CHECKPOINT_TIMER',
+  }
+}
+
+export function addMissingDimensions(
+  target: InstancePath,
+  existingSize: CanvasRectangle,
+): AddMissingDimensions {
+  return {
+    action: 'ADD_MISSING_DIMENSIONS',
+    existingSize: existingSize,
+    target: target,
   }
 }
