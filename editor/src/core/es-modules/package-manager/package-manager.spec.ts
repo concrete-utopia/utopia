@@ -13,6 +13,7 @@ import { NO_OP } from '../../shared/utils'
 import { NodeModules } from '../../shared/project-file-types'
 import { npmDependency } from '../../shared/npm-dependency-types'
 import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
+import { InjectedCSSFilePrefix } from '../../shared/css-style-loader'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -174,7 +175,9 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
       updatedReq('/src/index.js', 'mypackage/dist/style.css')
 
       // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
-      const styleTag = document.getElementById('/node_modules/mypackage/dist/style.css')
+      const styleTag = document.getElementById(
+        `${InjectedCSSFilePrefix}/node_modules/mypackage/dist/style.css`,
+      )
       expect(styleTag?.innerHTML).toEqual(simpleCssContent)
 
       done()
