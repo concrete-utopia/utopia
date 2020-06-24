@@ -13,7 +13,7 @@ import {
 } from 'uuiui'
 import { betterReactMemo, SliderControl } from 'uuiui-deps'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
-import { ControlDescription, ControlType } from 'utopia-api'
+import { ControlDescription } from 'utopia-api'
 import { foldEither, right, Either } from '../../../../core/shared/either'
 import Utils from '../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
@@ -87,7 +87,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
       ? propMetadata.value
       : (controlDescription as any).defaultValue
     switch (controlDescription.type) {
-      case ControlType.String:
+      case 'string':
         const stringControlValue = Utils.defaultIfNull('', value)
         return (
           <StringControl
@@ -99,7 +99,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
             controlStyles={propMetadata.controlStyles}
           />
         )
-      case ControlType.Number:
+      case 'number':
         return (
           <SimpleNumberInput
             id={controlId}
@@ -113,7 +113,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
             labelInner={controlDescription.unit}
           />
         )
-      case ControlType.Boolean:
+      case 'boolean':
         return (
           <BooleanControl
             key={propName}
@@ -124,7 +124,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
             controlStyles={propMetadata.controlStyles}
           />
         )
-      case ControlType.Enum:
+      case 'enum':
         // TODO memoize this
         const options: Array<SelectOption> = controlDescription.options.map((option, index) => {
           return {
@@ -151,7 +151,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
             options={options}
           />
         )
-      case ControlType.Slider: {
+      case 'slider': {
         return (
           <SliderControl
             key={propName}
@@ -170,7 +170,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
           />
         )
       }
-      case ControlType.PopUpList: {
+      case 'popuplist': {
         function submitValue(option: SelectOption): void {
           propMetadata.onSubmitValue(option.value)
         }
@@ -188,7 +188,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
           />
         )
       }
-      case ControlType.Options:
+      case 'options':
         return (
           <OptionChainControl
             key={propName}
@@ -200,7 +200,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
             options={controlDescription.options}
           />
         )
-      case ControlType.Color:
+      case 'color':
         const parsedColor = parseColor(value)
         return foldEither(
           (failureReason) => {
@@ -227,7 +227,7 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
           },
           parsedColor,
         )
-      case ControlType.ComponentInstance:
+      case 'componentinstance':
         return (
           <StringControl
             key={propName}

@@ -1,65 +1,65 @@
-import { ControlType, PropertyControls } from 'utopia-api'
+import { PropertyControls } from 'utopia-api'
 
 const Button: PropertyControls = {
   href: {
-    type: ControlType.String,
+    type: 'string',
     title: 'href',
   },
   onClick: {
-    type: ControlType.EventHandler,
+    type: 'eventhandler',
     title: 'onClick',
   },
   disabled: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'disabled',
     defaultValue: false,
   },
   size: {
-    type: ControlType.Enum,
+    type: 'enum',
     title: 'size',
     options: ['large', 'medium', 'small'],
   },
   type: {
-    type: ControlType.Enum,
+    type: 'enum',
     title: 'type',
     options: ['primary', 'ghost', 'dashed', 'danger', 'link', 'text', 'default'],
     defaultValue: 'default',
   },
   shape: {
-    type: ControlType.Enum,
+    type: 'enum',
     title: 'shape',
     options: ['circle', 'round'],
   },
   icon: {
-    type: ControlType.ComponentInstance,
+    type: 'componentinstance',
     title: 'icon',
   },
   ghost: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'ghost',
     defaultValue: false,
   },
   block: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'block',
     defaultValue: false,
   },
   danger: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'danger',
     defaultValue: false,
   },
   loading: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'loading',
     defaultValue: false,
   },
   htmlType: {
-    type: ControlType.String,
+    type: 'string',
     title: 'htmlType',
   },
   target: {
-    type: ControlType.String,
+    type: 'string',
     title: 'target',
     defaultValue: 'button',
   },
@@ -67,17 +67,17 @@ const Button: PropertyControls = {
 
 const Space: PropertyControls = {
   align: {
-    type: ControlType.Enum,
+    type: 'enum',
     title: 'align',
     options: ['start', 'end', 'center', 'baseline'],
   },
   direction: {
-    type: ControlType.Enum,
+    type: 'enum',
     title: 'direction',
     options: ['vertical', 'horizontal'],
   },
   size: {
-    type: ControlType.Enum, // or a number
+    type: 'enum', // or a number
     title: 'size',
     options: ['small', 'middle', 'large'],
   },
@@ -85,19 +85,19 @@ const Space: PropertyControls = {
 
 const Row: PropertyControls = {
   align: {
-    type: ControlType.Enum,
+    type: 'enum',
     title: 'align',
     options: ['top', 'middle', 'bottom'],
     defaultValue: 'top',
   },
   gutter: {
     //spacing between grids, could be a number or a object like { xs: 8, sm: 16, md: 24}. or you can use array to make horizontal and vertical spacing work at the same time [horizontal, vertical]
-    type: ControlType.Number,
+    type: 'number',
     title: 'gutter',
     defaultValue: 0,
   },
   justify: {
-    type: ControlType.Enum,
+    type: 'enum',
     title: 'justify',
     options: ['start', 'end', 'center', 'space-around', 'space-between'],
   },
@@ -105,112 +105,112 @@ const Row: PropertyControls = {
 
 const Col: PropertyControls = {
   flex: {
-    type: ControlType.Number, // or string
+    type: 'number', // or string
     title: 'flex',
   },
   offset: {
-    type: ControlType.Number,
+    type: 'number',
     title: 'offset',
     defaultValue: 0,
   },
   order: {
-    type: ControlType.Number,
+    type: 'number',
     title: 'order',
     defaultValue: 0,
   },
   pull: {
-    type: ControlType.Number,
+    type: 'number',
     title: 'pull',
     defaultValue: 0,
   },
   push: {
-    type: ControlType.Number,
+    type: 'number',
     title: 'push',
     defaultValue: 0,
   },
   span: {
-    type: ControlType.Number,
+    type: 'number',
     title: 'span',
   },
   xs: {
-    type: ControlType.Number, // or an object containing above props
+    type: 'number', // or an object containing above props
     title: 'xs',
   },
   sm: {
-    type: ControlType.Number, // or an object containing above props
+    type: 'number', // or an object containing above props
     title: 'sm',
   },
   md: {
-    type: ControlType.Number, // or an object containing above props
+    type: 'number', // or an object containing above props
     title: 'md',
   },
   lg: {
-    type: ControlType.Number, // or an object containing above props
+    type: 'number', // or an object containing above props
     title: 'lg',
   },
   xl: {
-    type: ControlType.Number, // or an object containing above props
+    type: 'number', // or an object containing above props
     title: 'xl',
   },
   xxl: {
-    type: ControlType.Number, // or an object containing above props
+    type: 'number', // or an object containing above props
     title: 'xxl',
   },
 }
 
 const Text: PropertyControls = {
   code: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'code',
     defaultValue: false,
   },
   copyable: {
-    type: ControlType.Boolean, // or { text: string, onCopy: Function }
+    type: 'boolean', // or { text: string, onCopy: Function }
     title: 'copyable',
     defaultValue: false,
   },
   delete: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'delete',
     defaultValue: false,
   },
   disabled: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'disabled',
     defaultValue: false,
   },
   editable: {
-    type: ControlType.Boolean, // or { editing: boolean, onStart: Function, onChange: Function(string) }
+    type: 'boolean', // or { editing: boolean, onStart: Function, onChange: Function(string) }
     title: 'editable',
     defaultValue: false,
   },
   ellipsis: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'ellipsis',
     defaultValue: false,
   },
   mark: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'mark',
     defaultValue: false,
   },
   keyboard: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'keyboard',
     defaultValue: false,
   },
   underline: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'underline',
     defaultValue: false,
   },
   strong: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'strong',
     defaultValue: false,
   },
   type: {
-    type: ControlType.Enum,
+    type: 'enum',
     title: 'type',
     options: ['secondary', 'warning', 'danger'],
   },
@@ -218,124 +218,124 @@ const Text: PropertyControls = {
 
 const Menu: PropertyControls = {
   defaultOpenKeys: {
-    type: ControlType.Array,
+    type: 'array',
     title: 'defaultOpenKeys',
     propertyControl: {
-      type: ControlType.String,
+      type: 'string',
     },
   },
   defaultSelectedKeys: {
-    type: ControlType.Array,
+    type: 'array',
     title: 'defaultSelectedKeys',
     propertyControl: {
-      type: ControlType.String,
+      type: 'string',
     },
   },
   forceSubMenuRender: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'forceSubMenuRender',
     defaultValue: false,
   },
   inlineCollapsed: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'inlineCollapsed',
   },
   inlineIndent: {
-    type: ControlType.Number,
+    type: 'number',
     title: 'inlineIndent',
     defaultValue: 24,
   },
   mode: {
-    type: ControlType.Enum,
+    type: 'enum',
     title: 'mode',
     options: ['vertical', 'horizontal', 'inline'],
   },
   multiple: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'multiple',
     defaultValue: false,
   },
   openKeys: {
-    type: ControlType.Array,
+    type: 'array',
     title: 'openKeys',
     propertyControl: {
-      type: ControlType.String,
+      type: 'string',
     },
   },
   selectable: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'selectable',
     defaultValue: true,
   },
   selectedKeys: {
-    type: ControlType.Array,
+    type: 'array',
     title: 'selectedKeys',
     propertyControl: {
-      type: ControlType.String,
+      type: 'string',
     },
   },
   subMenuCloseDelay: {
-    type: ControlType.Number,
+    type: 'number',
     title: 'subMenuCloseDelay',
     defaultValue: 0.1,
   },
   subMenuOpenDelay: {
-    type: ControlType.Number,
+    type: 'number',
     title: 'subMenuOpenDelay',
     defaultValue: 0,
   },
   theme: {
-    type: ControlType.Enum,
+    type: 'enum',
     title: 'theme',
     options: ['light', 'dark'],
     defaultValue: 'light',
   },
   onClick: {
     // function({ item, key, keyPath, domEvent })
-    type: ControlType.EventHandler,
+    type: 'eventhandler',
     title: 'onClick',
   },
   onDeselect: {
     // function({ item, key, keyPath, selectedKeys, domEvent })
-    type: ControlType.EventHandler,
+    type: 'eventhandler',
     title: 'onClick',
   },
   onOpenChange: {
     // function(openKeys: string[])
-    type: ControlType.EventHandler,
+    type: 'eventhandler',
     title: 'onClick',
   },
   onSelect: {
     // function({ item, key, keyPath, selectedKeys, domEvent })
-    type: ControlType.EventHandler,
+    type: 'eventhandler',
     title: 'onClick',
   },
   overflowedIndicator: {
-    type: ControlType.ComponentInstance,
+    type: 'componentinstance',
     title: 'overflowedIndicator',
   },
 }
 
 const MenuItem: PropertyControls = {
   disabled: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'disabled',
     defaultValue: false,
   },
   key: {
-    type: ControlType.String,
+    type: 'string',
     title: 'key',
   },
   title: {
-    type: ControlType.String,
+    type: 'string',
     title: 'title',
   },
   icon: {
-    type: ControlType.ComponentInstance,
+    type: 'componentinstance',
     title: 'icon',
   },
   danger: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'danger',
     defaultValue: false,
   },
@@ -343,36 +343,36 @@ const MenuItem: PropertyControls = {
 
 const MenuSubMenu: PropertyControls = {
   popupClassName: {
-    type: ControlType.String,
+    type: 'string',
     title: 'popupClassName',
   },
   disabled: {
-    type: ControlType.Boolean,
+    type: 'boolean',
     title: 'disabled',
     defaultValue: false,
   },
   key: {
-    type: ControlType.String,
+    type: 'string',
     title: 'key',
   },
   title: {
-    type: ControlType.String,
+    type: 'string',
     title: 'title',
   },
   icon: {
-    type: ControlType.ComponentInstance,
+    type: 'componentinstance',
     title: 'icon',
   },
   onTitleClick: {
     // function({ key, domEvent })
-    type: ControlType.EventHandler,
+    type: 'eventhandler',
     title: 'onTitleClick',
   },
 }
 
 const MenuItemGroup: PropertyControls = {
   title: {
-    type: ControlType.String,
+    type: 'string',
     title: 'title',
   },
 }

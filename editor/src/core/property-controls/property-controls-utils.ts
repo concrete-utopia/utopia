@@ -107,10 +107,10 @@ export function getMissingDefaultsWarning(propsWithoutDefaults: Array<string>): 
 }
 
 export function getDescriptionUnsetOptionalFields(
-  controlDescription: ControlDescription<any>,
+  controlDescription: ControlDescription,
 ): Array<string> {
   let result: Array<string> = []
-  function addIfFieldEmpty<T extends ControlDescription<any>, K extends keyof T & string>(
+  function addIfFieldEmpty<T extends ControlDescription, K extends keyof T & string>(
     description: T,
     fieldName: K,
   ): void {
@@ -120,6 +120,29 @@ export function getDescriptionUnsetOptionalFields(
   }
   addIfFieldEmpty(controlDescription, 'title')
   switch (controlDescription.type) {
+    case 'array':
+      addIfFieldEmpty(controlDescription, 'defaultValue')
+      addIfFieldEmpty(controlDescription, 'maxCount')
+      break
+    case 'boolean':
+      addIfFieldEmpty(controlDescription, 'defaultValue')
+      addIfFieldEmpty(controlDescription, 'disabledTitle')
+      addIfFieldEmpty(controlDescription, 'enabledTitle')
+      break
+    case 'color':
+      addIfFieldEmpty(controlDescription, 'defaultValue')
+      break
+    case 'componentinstance':
+      break
+    case 'enum':
+      addIfFieldEmpty(controlDescription, 'defaultValue')
+      addIfFieldEmpty(controlDescription, 'optionTitles')
+      addIfFieldEmpty(controlDescription, 'displaySegmentedControl')
+      break
+    case 'eventhandler':
+    case 'ignore':
+    case 'image':
+      break
     case 'number':
       addIfFieldEmpty(controlDescription, 'defaultValue')
       addIfFieldEmpty(controlDescription, 'max')
@@ -128,47 +151,20 @@ export function getDescriptionUnsetOptionalFields(
       addIfFieldEmpty(controlDescription, 'step')
       addIfFieldEmpty(controlDescription, 'displayStepper')
       break
-    case 'enum':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'optionTitles')
-      addIfFieldEmpty(controlDescription, 'displaySegmentedControl')
+    case 'object':
       break
-    case 'boolean':
+    case 'options':
       addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'disabledTitle')
-      addIfFieldEmpty(controlDescription, 'enabledTitle')
       break
     case 'string':
       addIfFieldEmpty(controlDescription, 'defaultValue')
       addIfFieldEmpty(controlDescription, 'placeholder')
       addIfFieldEmpty(controlDescription, 'obscured')
       break
-    case 'color':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      break
-    case 'fusednumber':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'min')
-      break
-    case 'image':
-      break
-    case 'file':
-      break
-    case 'componentinstance':
-      break
-    case 'array':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'maxCount')
-      break
-    case 'eventhandler':
-      break
-    case 'slider':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      break
     case 'popuplist':
       addIfFieldEmpty(controlDescription, 'defaultValue')
       break
-    case 'options':
+    case 'slider':
       addIfFieldEmpty(controlDescription, 'defaultValue')
       break
     default:
