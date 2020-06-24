@@ -6,7 +6,7 @@ const Button: PropertyControls = {
     title: 'href',
   },
   onClick: {
-    type: 'eventhandler',
+    type: 'ignore',
     title: 'onClick',
   },
   disabled: {
@@ -28,7 +28,8 @@ const Button: PropertyControls = {
   shape: {
     type: 'enum',
     title: 'shape',
-    options: ['circle', 'round'],
+    options: ['circle', 'round', 'default'],
+    defaultValue: 'default',
   },
   icon: {
     type: 'componentinstance',
@@ -70,16 +71,19 @@ const Space: PropertyControls = {
     type: 'enum',
     title: 'align',
     options: ['start', 'end', 'center', 'baseline'],
+    defaultValue: 'center',
   },
   direction: {
     type: 'enum',
     title: 'direction',
     options: ['vertical', 'horizontal'],
+    defaultValue: 'vertical',
   },
   size: {
     type: 'enum', // or a number
     title: 'size',
     options: ['small', 'middle', 'large'],
+    defaultValue: 'middle',
   },
 }
 
@@ -100,6 +104,7 @@ const Row: PropertyControls = {
     type: 'enum',
     title: 'justify',
     options: ['start', 'end', 'center', 'space-around', 'space-between'],
+    defaultValue: 'center',
   },
 }
 
@@ -107,6 +112,7 @@ const Col: PropertyControls = {
   flex: {
     type: 'number', // or string
     title: 'flex',
+    defaultValue: 1,
   },
   offset: {
     type: 'number',
@@ -135,26 +141,32 @@ const Col: PropertyControls = {
   xs: {
     type: 'number', // or an object containing above props
     title: 'xs',
+    defaultValue: 0,
   },
   sm: {
     type: 'number', // or an object containing above props
     title: 'sm',
+    defaultValue: 0,
   },
   md: {
     type: 'number', // or an object containing above props
     title: 'md',
+    defaultValue: 0,
   },
   lg: {
     type: 'number', // or an object containing above props
     title: 'lg',
+    defaultValue: 0,
   },
   xl: {
     type: 'number', // or an object containing above props
     title: 'xl',
+    defaultValue: 0,
   },
   xxl: {
     type: 'number', // or an object containing above props
     title: 'xxl',
+    defaultValue: 0,
   },
 }
 
@@ -218,18 +230,12 @@ const Text: PropertyControls = {
 
 const Menu: PropertyControls = {
   defaultOpenKeys: {
-    type: 'array',
+    type: 'ignore',
     title: 'defaultOpenKeys',
-    propertyControl: {
-      type: 'string',
-    },
   },
   defaultSelectedKeys: {
-    type: 'array',
+    type: 'ignore',
     title: 'defaultSelectedKeys',
-    propertyControl: {
-      type: 'string',
-    },
   },
   forceSubMenuRender: {
     type: 'boolean',
@@ -239,6 +245,7 @@ const Menu: PropertyControls = {
   inlineCollapsed: {
     type: 'boolean',
     title: 'inlineCollapsed',
+    defaultValue: false,
   },
   inlineIndent: {
     type: 'number',
@@ -249,6 +256,7 @@ const Menu: PropertyControls = {
     type: 'enum',
     title: 'mode',
     options: ['vertical', 'horizontal', 'inline'],
+    defaultValue: 'inline',
   },
   multiple: {
     type: 'boolean',
@@ -256,11 +264,8 @@ const Menu: PropertyControls = {
     defaultValue: false,
   },
   openKeys: {
-    type: 'array',
+    type: 'ignore',
     title: 'openKeys',
-    propertyControl: {
-      type: 'string',
-    },
   },
   selectable: {
     type: 'boolean',
@@ -268,11 +273,8 @@ const Menu: PropertyControls = {
     defaultValue: true,
   },
   selectedKeys: {
-    type: 'array',
+    type: 'ignore',
     title: 'selectedKeys',
-    propertyControl: {
-      type: 'string',
-    },
   },
   subMenuCloseDelay: {
     type: 'number',
@@ -292,22 +294,22 @@ const Menu: PropertyControls = {
   },
   onClick: {
     // function({ item, key, keyPath, domEvent })
-    type: 'eventhandler',
+    type: 'ignore',
     title: 'onClick',
   },
   onDeselect: {
     // function({ item, key, keyPath, selectedKeys, domEvent })
-    type: 'eventhandler',
+    type: 'ignore',
     title: 'onClick',
   },
   onOpenChange: {
     // function(openKeys: string[])
-    type: 'eventhandler',
+    type: 'ignore',
     title: 'onClick',
   },
   onSelect: {
     // function({ item, key, keyPath, selectedKeys, domEvent })
-    type: 'eventhandler',
+    type: 'ignore',
     title: 'onClick',
   },
   overflowedIndicator: {
@@ -365,7 +367,7 @@ const MenuSubMenu: PropertyControls = {
   },
   onTitleClick: {
     // function({ key, domEvent })
-    type: 'eventhandler',
+    type: 'ignore',
     title: 'onTitleClick',
   },
 }

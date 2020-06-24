@@ -226,6 +226,27 @@ function testCanvasRender(possibleProps: PartialCanvasProps | null, code: string
   expect(metadataWithoutUIDs).toMatchSnapshot()
 }
 
+function testCanvasRenderInline(possibleProps: PartialCanvasProps | null, code: string): string {
+  const {
+    formattedSpyEnabled,
+    formattedSpyDisabled,
+    errorsReportedSpyEnabled,
+    errorsReportedSpyDisabled,
+    spyValues,
+  } = renderCanvasReturnResultAndError(possibleProps, code)
+  if (errorsReportedSpyEnabled.length > 0) {
+    console.error(errorsReportedSpyEnabled)
+  }
+  expect(errorsReportedSpyEnabled.length).toBe(0)
+  expect(errorsReportedSpyDisabled.length).toBe(0)
+
+  // Spy enabled or disabled should have no effect on the rendered HTML
+  expect(formattedSpyEnabled).toEqual(formattedSpyDisabled)
+  expect(formattedSpyEnabled).toBeDefined()
+
+  return formattedSpyEnabled!
+}
+
 function testCanvasError(possibleProps: PartialCanvasProps | null, code: string): void {
   const { errorsReportedSpyEnabled, errorsReportedSpyDisabled } = renderCanvasReturnResultAndError(
     possibleProps,
@@ -701,8 +722,7 @@ describe('UiJsxCanvas render', () => {
     )
   })
 
-  // TODO FIXME
-  xit('class component is available from arbitrary block in JSX element', () => {
+  it('class component is available from arbitrary block in JSX element', () => {
     testCanvasRender(
       null,
       `/** @jsx jsx */
@@ -1324,8 +1344,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
   })
 
-  // TODO FIXME
-  xit('refs are handled and triggered correctly in a class component', async () => {
+  it('refs are handled and triggered correctly in a class component', async () => {
     testCanvasRender(
       null,
       `
@@ -1356,6 +1375,72 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       `,
     )
   })
+
+  it('class components have working contexts', async () => {
+    const printedDom = testCanvasRenderInline(
+      null,
+      `
+      /** @jsx jsx */
+      import * as React from 'react'
+      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+
+      const MyContext = React.createContext({ textToShow: 'hello' });
+
+      class Thing extends React.Component {
+        render() {
+          const { textToShow } = this.context;
+          return <div data-uid="ccc">{textToShow}</div>
+        }
+      }
+      Thing.contextType = MyContext;
+      export var App = (props) => {
+        return <Thing ref={() => console.log('class component')} data-uid={'aaa'} />
+      }
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              layout={{ layoutSystem: 'pinSystem' }}
+              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              data-uid={'scene-aaa'}
+            />
+          </Storyboard>
+        )
+      }
+      `,
+    )
+    expect(printedDom).toMatchInlineSnapshot(`
+      "<div
+        id=\\"canvas-container\\"
+        style=\\"
+          all: initial;
+          position: absolute;
+          zoom: 100%;
+          transform: translate3d(0px, 0px, 0);
+        \\"
+      >
+        <div
+          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+          style=\\"
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            left: 0;
+            top: 0;
+            background-color: rgba(255, 255, 255, 1);
+            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+          \\"
+        >
+          <div data-uid=\\"aaa\\">hello</div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
   it('handles fragments in an arbitrary block', () => {
     testCanvasRender(
       null,
