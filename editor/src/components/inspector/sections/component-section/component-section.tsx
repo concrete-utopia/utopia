@@ -10,6 +10,9 @@ import {
   FunctionIcons,
   SquareButton,
   Icons,
+  SimpleFlexRow,
+  UtopiaStyles,
+  UtopiaTheme,
 } from 'uuiui'
 import { betterReactMemo, SliderControl } from 'uuiui-deps'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
@@ -258,9 +261,7 @@ export const ParseErrorControl = betterReactMemo('ParseErrorControl', (props: Pa
   return (
     <div>
       <Tooltip title={`${details.path}`}>
-        <span style={{ paddingTop: 4, color: colorTheme.errorForeground.value }}>
-          {details.description}
-        </span>
+        <span>{details.description}</span>
       </Tooltip>
     </div>
   )
@@ -285,9 +286,15 @@ const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
   const warning =
     props.warningTooltip == null ? null : (
       <Tooltip title={props.warningTooltip}>
-        <span>
-          <WarningIcon style={{ position: 'relative', left: 2, top: 4 }} />
-        </span>
+        <div
+          style={{
+            width: 5,
+            height: 5,
+            background: colorTheme.errorBgSolid.value,
+            borderRadius: '50%',
+            marginRight: 4,
+          }}
+        />
       </Tooltip>
     )
   return (
@@ -298,8 +305,8 @@ const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
     >
       <GridRow padded={true} type='<---1fr--->|------172px-------|'>
         <PropertyLabel target={propPath}>
-          {props.title}
           {warning}
+          {props.title}
         </PropertyLabel>
         {props.propertyError == null ? (
           <ControlForProp
@@ -356,7 +363,7 @@ export const ComponentSectionInner = betterReactMemo(
           return (
             <>
               <InspectorSectionHeader>
-                Component props
+                <SimpleFlexRow style={{ flexGrow: 1 }}>Component props</SimpleFlexRow>
                 <SquareButton highlight onClick={onResetClicked}>
                   <InstanceContextMenu
                     propNames={propNames}
@@ -394,7 +401,7 @@ export const ComponentSectionInner = betterReactMemo(
                         controlDescription,
                       )
                       if (unsetOptionalFields.length > 0) {
-                        warningTooltip = `This control has the following unset optional fields: ${joinSpecial(
+                        warningTooltip = `These optional fields are not set: ${joinSpecial(
                           unsetOptionalFields,
                           ', ',
                           ' and ',
