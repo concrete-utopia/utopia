@@ -1,9 +1,24 @@
+export const InjectedCSSFilePrefix = 'injected-css-file-'
+
+export function clearInjectedCSSFiles(): void {
+  const head = document.querySelector('head')
+  if (head != null) {
+    for (let index = 0; index < head.children.length; index++) {
+      const child = head.children[index]
+      if (child.id.startsWith(InjectedCSSFilePrefix)) {
+        child.remove()
+      }
+    }
+  }
+}
+
 export function transformCssNodeModule(filename: string, content: string): string {
   return `
   'use strict';
   const filename = ${JSON.stringify(filename)}
   const content = ${JSON.stringify(content)}
-  const maybeExistingTag = document.getElementById(filename);
+  const elementId = ${JSON.stringify(InjectedCSSFilePrefix)} + filename;
+  const maybeExistingTag = document.getElementById(elementId);
   if (maybeExistingTag != null) {
     if (maybeExistingTag.textContent === content) {
       return;
@@ -13,7 +28,7 @@ export function transformCssNodeModule(filename: string, content: string): strin
   }
   const styleTag = document.createElement("style");
   styleTag.type = "text/css";
-  styleTag.id = filename;
+  styleTag.id = elementId;
   styleTag.appendChild(document.createTextNode(content));
   document.querySelector("head").appendChild(styleTag);
 `

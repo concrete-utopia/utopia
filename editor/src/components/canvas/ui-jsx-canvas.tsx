@@ -83,6 +83,11 @@ import {
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import { EditorDispatch } from '../editor/action-types'
+import { resolveModule } from '../../core/es-modules/package-manager/module-resolution'
+import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
+import { usePrevious } from '../editor/hook-utils'
+import { arrayEquals } from '../../core/shared/utils'
+import { clearInjectedCSSFiles } from '../../core/shared/css-style-loader'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -335,6 +340,17 @@ export function reorderTopLevelElements(
   return result
 }
 
+function cssImportsFromImports(imports: Imports): Array<string> {
+  let result: Array<string> = []
+  Utils.fastForEach(Object.keys(imports), (importSource) => {
+    if (importSource.endsWith('.css')) {
+      result.push(importSource)
+    }
+  })
+  result.sort()
+  return result
+}
+
 export const UiJsxCanvas = betterReactMemo(
   'UiJsxCanvas',
   (props: UiJsxCanvasPropsWithErrorCallback) => {
@@ -362,6 +378,20 @@ export const UiJsxCanvas = betterReactMemo(
     if (!spyEnabled) {
       clearConsoleLogs()
       proxyConsole(console, addToConsoleLogs)
+    }
+
+    // Handle the imports changing, this needs to run _before_ any require function
+    // calls as it's modifying the underlying DOM elements. This is somewhat working
+    // like useEffect, except that runs after everything has rendered.
+    const cssImports = useKeepReferenceEqualityIfPossible(cssImportsFromImports(imports))
+    const previousCSSImports = usePrevious(cssImports)
+    const previousFilePath = usePrevious(uiFilePath)
+    if (
+      uiFilePath !== previousFilePath ||
+      previousCSSImports == undefined ||
+      !arrayEquals(cssImports, previousCSSImports)
+    ) {
+      clearInjectedCSSFiles()
     }
 
     const reportErrorWithPath = React.useCallback(

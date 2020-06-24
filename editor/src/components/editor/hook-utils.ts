@@ -11,3 +11,13 @@ export function useValueResetState<T>(
   }, [defaultValue, ...resetArgs])
   return [localState, setLocalState]
 }
+
+export function usePrevious<T>(currentValue: T): T | undefined {
+  const previousRef = React.useRef<T>()
+
+  React.useEffect(() => {
+    previousRef.current = currentValue
+  }, [currentValue])
+
+  return previousRef.current
+}
