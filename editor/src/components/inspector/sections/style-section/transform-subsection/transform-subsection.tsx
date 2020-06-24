@@ -1,30 +1,32 @@
 import * as OPI from 'object-path-immutable'
 import * as React from 'react'
 import { animated, SpringValue } from 'react-spring'
-import utils from '../../../../../utils/utils'
-import { SquareButton, UtopiaTheme } from 'uuiui'
-import { Icn } from 'uuiui'
-import { NumberInput } from 'uuiui'
-import { InspectorSubsectionHeader } from 'uuiui'
-import { FlexRow } from 'uuiui'
-import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { BooleanControl } from '../../../controls/boolean-control'
-import { OnSubmitValue } from '../../../controls/control'
-import { LightSelectControl } from '../../../controls/lightselect-control'
-import { SelectOption } from '../../../controls/select-control'
-import { FakeUnknownArrayItem, UnknownArrayItem } from '../../../controls/unknown-array-item'
-import { stopPropagation } from '../../../common/inspector-utils'
-import { ControlStatus, ControlStyles } from '../../../common/control-status'
-import { PropertyRow } from '../../../widgets/property-row'
-import { useArraySuperControl } from '../../../controls/array-supercontrol'
-import { addOnUnsetValues } from '../../../common/context-menu-items'
 import {
+  FlexRow,
+  Icn,
+  InspectorSubsectionHeader,
+  NumberInput,
+  SquareButton,
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+  UtopiaTheme,
+} from 'uuiui'
+import { betterReactMemo } from 'uuiui-deps'
+import utils from '../../../../../utils/utils'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { addOnUnsetValues } from '../../../common/context-menu-items'
+import { ControlStatus, ControlStyles } from '../../../common/control-status'
+import {
+  CSSDefault,
+  CSSNumber,
+  CSSNumberType,
+  CSSNumberUnit,
   CSSTransformDoubleLengthItem,
   CSSTransformItem,
   CSSTransforms,
   CSSTransformSingleLengthItem,
   CSSTransformSupportedType,
   cssTransformSupportedValidFunctionNames,
+  cssUnknownArrayItem,
   defaultTransformRotate,
   defaultTransformRotateX,
   defaultTransformRotateY,
@@ -40,29 +42,30 @@ import {
   defaultTransformTranslateX,
   defaultTransformTranslateY,
   defaultTransformTranslateZ,
-  isCSSTransformDoubleItem,
-  isCSSTransformSingleItem,
-  cssUnknownArrayItem,
-  isCSSDefault,
-  CSSNumberType,
-  CSSNumberUnit,
-  CSSNumber,
   EmptyInputValue,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
-  cssDefault,
   fallbackOnEmptyInputValueToCSSEmptyValue,
-  CSSDefault,
+  isCSSDefault,
+  isCSSTransformDoubleItem,
+  isCSSTransformSingleItem,
 } from '../../../common/css-utils'
 import {
-  useGetSubsectionHeaderStyle,
   getIndexedSpliceArrayItem,
+  stopPropagation,
+  useGetSubsectionHeaderStyle,
 } from '../../../common/inspector-utils'
 import {
   useInspectorStyleInfo,
   useIsSubSectionVisible,
   UseSubmitValueFactory,
 } from '../../../common/property-path-hooks'
-import { betterReactMemo } from 'uuiui-deps'
+import { useArraySuperControl } from '../../../controls/array-supercontrol'
+import { BooleanControl } from '../../../controls/boolean-control'
+import { OnSubmitValue } from '../../../controls/control'
+import { LightSelectControl } from '../../../controls/lightselect-control'
+import { SelectOption } from '../../../controls/select-control'
+import { FakeUnknownArrayItem, UnknownArrayItem } from '../../../controls/unknown-array-item'
+import { PropertyRow } from '../../../widgets/property-row'
 
 const ObjectPathImmutable: any = OPI
 
@@ -284,7 +287,9 @@ const SingleLengthItem = betterReactMemo<SingleLengthItemProps>('SingleLengthIte
   const [
     singleLengthItemSubmitValue,
     singleLengthItemTransientSubmitValue,
-  ] = props.useSubmitValueFactory(getIndexedUpdateSingleLengthValue(props.index, props.emptyValue))
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(getIndexedUpdateSingleLengthValue(props.index, props.emptyValue)),
+  )
 
   const [deleteTransformItemSubmitValue] = props.useSubmitValueFactory(
     getIndexedSpliceArrayItem(props.index),
@@ -398,14 +403,18 @@ const DoubleLengthItem = betterReactMemo<DoubleLengthItemProps>('DoubleLengthIte
   const [
     doubleLengthZeroethItemSubmitValue,
     doubleLengthZeroethItemTransientSubmitValue,
-  ] = props.useSubmitValueFactory(
-    getIndexedUpdateDoubleLengthValue(props.index, 0, props.emptyValue.values[0]),
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(
+      getIndexedUpdateDoubleLengthValue(props.index, 0, props.emptyValue.values[0]),
+    ),
   )
   const [
     doubleLengthFirstItemSubmitValue,
     doubleLengthFirstItemTransientSubmitValue,
-  ] = props.useSubmitValueFactory(
-    getIndexedUpdateDoubleLengthValue(props.index, 1, props.emptyValue.values[1]),
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(
+      getIndexedUpdateDoubleLengthValue(props.index, 1, props.emptyValue.values[1]),
+    ),
   )
 
   const [deleteTransformItemSubmitValue] = props.useSubmitValueFactory(

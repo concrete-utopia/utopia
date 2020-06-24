@@ -2,7 +2,13 @@
 import { jsx } from '@emotion/core'
 import { OptionsType } from 'react-select'
 import { FramePin } from 'utopia-api'
-import { ChainedNumberInput, NumberInput, PopupList, useWrappedEmptyOnSubmitValue } from 'uuiui'
+import {
+  ChainedNumberInput,
+  NumberInput,
+  PopupList,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+} from 'uuiui'
 import { betterReactMemo, InspectorContextMenuItems } from 'uuiui-deps'
 import { isLeft, isRight, left, right } from '../../../../../core/shared/either'
 import utils from '../../../../../utils/utils'
@@ -185,17 +191,29 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
     onBorderRadiusAllSubmitValue,
     onBorderRadiusAllTransientSubmitValue,
   ] = useSubmitValueFactory(updateBorderRadiusAll)
-  const [onBorderRadiusTLSubmitValue, onBorderRadiusTLTransientSubmitValue] = useSubmitValueFactory(
-    updateBorderRadiusTL,
+  const [
+    onBorderRadiusTLSubmitValue,
+    onBorderRadiusTLTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    useSubmitValueFactory(updateBorderRadiusTL),
   )
-  const [onBorderRadiusTRSubmitValue, onBorderRadiusTRTransientSubmitValue] = useSubmitValueFactory(
-    updateBorderRadiusTR,
+  const [
+    onBorderRadiusTRSubmitValue,
+    onBorderRadiusTRTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    useSubmitValueFactory(updateBorderRadiusTR),
   )
-  const [onBorderRadiusBLSubmitValue, onBorderRadiusBLTransientSubmitValue] = useSubmitValueFactory(
-    updateBorderRadiusBL,
+  const [
+    onBorderRadiusBLSubmitValue,
+    onBorderRadiusBLTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    useSubmitValueFactory(updateBorderRadiusBL),
   )
-  const [onBorderRadiusBRSubmitValue, onBorderRadiusBRTransientSubmitValue] = useSubmitValueFactory(
-    updateBorderRadiusBR,
+  const [
+    onBorderRadiusBRSubmitValue,
+    onBorderRadiusBRTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    useSubmitValueFactory(updateBorderRadiusBR),
   )
 
   const borderRadiusContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
@@ -206,11 +224,11 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
 
   const radiusTypeValue = isLeft(borderRadiusValue) ? radiusTypeOptions[0] : radiusTypeOptions[1]
 
-  const wrappedOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     onBorderRadiusAllSubmitCSSNumberValue,
     onUnsetValues,
   )
-  const wrappedOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     onBorderRadiusAllTransientSubmitCSSNumberValue,
     onUnsetValues,
   )

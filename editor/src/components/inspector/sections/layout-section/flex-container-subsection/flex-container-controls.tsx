@@ -4,7 +4,7 @@ import {
   PopupList,
   SimpleNumberInput,
   ChainedNumberInput,
-  useWrappedEmptyOnSubmitValue,
+  useWrappedEmptyOrUnknownOnSubmitValue,
 } from 'uuiui'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { FlexDirection } from 'utopia-api'
@@ -234,8 +234,8 @@ interface FlexGapControlProps extends FlexFieldControlProps<number> {
 
 export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapControlProps) => {
   const menuItems = [unsetPropertyMenuItem('Flex Gap', props.onUnset)]
-  const wrappedOnSubmit = useWrappedEmptyOnSubmitValue(props.onSubmitValue, props.onUnset)
-  const wrappedOnTransientSubmit = useWrappedEmptyOnSubmitValue(
+  const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(props.onSubmitValue, props.onUnset)
+  const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
     props.onTransientSubmitValue,
     props.onUnset,
   )
@@ -272,6 +272,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             stepSize={1}
             onSubmitValue={wrappedOnSubmit}
             onTransientSubmitValue={wrappedOnTransientSubmit}
+            onForcedSubmitValue={wrappedOnSubmit}
             controlStatus={props.controlStatus}
           />
         </InspectorContextMenuWrapper>

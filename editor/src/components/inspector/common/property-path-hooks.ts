@@ -375,12 +375,14 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
 
 export type ParsedValues<P extends ParsedPropertiesKeys> = { [key in P]: ParsedProperties[key] }
 
+export type SubmitValueFactoryReturn<T> = [(newValue: T) => void, (newValue: T) => void]
+
 /**
  * @returns [onSubmitValue, onTransientSubmitValue]
  */
 export type UseSubmitValueFactory<T> = <NewType>(
   transform: (newValue: NewType, oldValue: T) => T,
-) => [(newValue: NewType) => void, (newValue: NewType) => void]
+) => SubmitValueFactoryReturn<NewType>
 
 export type OnUnsetValues = () => void
 

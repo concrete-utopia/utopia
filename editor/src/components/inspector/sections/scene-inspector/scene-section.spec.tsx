@@ -23,7 +23,7 @@ describe('Scene Section', () => {
    *  2. failed irregularly: on the same branch it would fail if run with
    *     all tests, but pass if run by itself.
    */
-  it('doesnt rerender on irrelevant changes', () => {
+  xit('doesnt rerender on irrelevant changes', () => {
     const storeHookForTest = getStoreHook(utils.NO_OP)
     storeHookForTest.updateStoreWithImmer((store) => {
       store.editor.selectedViews = [ScenePathForTestUiJsFile] // setting the first Scene as selected

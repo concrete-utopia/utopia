@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { betterReactMemo } from 'uuiui-deps'
 import Utils from '../../../../utils/utils'
-import { useWrappedEmptyOnSubmitValue } from '../../../../uuiui'
+import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../uuiui'
 import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
 import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../common/property-path-hooks'
@@ -33,11 +33,11 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
   const justifyContent = useInspectorLayoutInfo('justifyContent')
   const flexGapMain = useInspectorLayoutInfo('FlexGapMain')
 
-  const wrappedFlexGapOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedFlexGapOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     flexGapMain.onSubmitValue,
     flexGapMain.onUnsetValues,
   )
-  const wrappedFlexGapOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedFlexGapOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     flexGapMain.onSubmitValue,
     flexGapMain.onUnsetValues,
   )

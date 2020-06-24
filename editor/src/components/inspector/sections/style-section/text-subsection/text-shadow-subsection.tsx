@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import * as React from 'react'
 import { animated, SpringValue } from 'react-spring'
-import { Icn } from 'uuiui'
+import { Icn, useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue } from 'uuiui'
 import { NumberInput } from 'uuiui'
 import { InspectorSubsectionHeader } from 'uuiui'
 import { FlexRow } from 'uuiui'
@@ -136,17 +136,26 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
   const [colorSubmitValue, colorTransientSubmitValue] = props.useSubmitValueFactory(
     getIndexedUpdateTextShadowColor(props.index),
   )
-  const [offsetXSubmitValue, offsetXTransientSubmitValue] = props.useSubmitValueFactory(
-    getIndexedUpdateTextShadowOffsetX(props.index),
+  const [
+    offsetXSubmitValue,
+    offsetXTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(getIndexedUpdateTextShadowOffsetX(props.index)),
   )
-  const [offsetYSubmitValue, offsetYTransientSubmitValue] = props.useSubmitValueFactory(
-    getIndexedUpdateTextShadowOffsetY(props.index),
+  const [
+    offsetYSubmitValue,
+    offsetYTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(getIndexedUpdateTextShadowOffsetY(props.index)),
   )
-  const [blurRadiusSubmitValue, blurRadiusTransientSubmitValue] = props.useSubmitValueFactory(
-    getIndexedUpdateTextShadowBlurRadius(props.index),
+  const [
+    blurRadiusSubmitValue,
+    blurRadiusTransientSubmitValue,
+  ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(getIndexedUpdateTextShadowBlurRadius(props.index)),
   )
-  const [deleteTextShadowItemSubmitValue] = props.useSubmitValueFactory(
-    getIndexedSpliceTextShadow(props.index),
+  const [deleteTextShadowItemSubmitValue] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+    props.useSubmitValueFactory(getIndexedSpliceTextShadow(props.index)),
   )
 
   const removeShadow = React.useCallback(
