@@ -1441,6 +1441,72 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     `)
   })
 
+  it('weird antd-like class components have working uid', async () => {
+    const printedDom = testCanvasRenderInline(
+      null,
+      `
+      /** @jsx jsx */
+      import * as React from 'react'
+      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      
+      export class RenderPropsFunctionChild extends React.Component {
+        render() {
+          return this.props.children('huha')
+        }
+      }
+      
+      export function getPicker() {
+        class Picker extends React.Component {
+          pickerRef = React.createRef()
+      
+          renderPicker = (locale) => {
+            return (
+              <RenderPropsFunctionChild>
+                {(size) => {
+                  return (
+                    <div id='nasty-div'>
+                      {locale} {size}
+                    </div>
+                  )
+                }}
+              </RenderPropsFunctionChild>
+            )
+          }
+      
+          render() {
+            return <RenderPropsFunctionChild>{this.renderPicker}</RenderPropsFunctionChild>
+          }
+        }
+      
+        return Picker
+      }
+      
+      const Thing = getPicker()
+      
+      export var App = (props) => {
+        return <Thing data-uid={'aaa'} />
+      }
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              layout={{ layoutSystem: 'pinSystem' }}
+              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              data-uid={'scene-aaa'}
+            />
+          </Storyboard>
+        )
+      }
+      `,
+    )
+    expect(printedDom).toMatchInlineSnapshot(`
+      "
+      "
+    `)
+  })
+
   it('handles fragments in an arbitrary block', () => {
     testCanvasRender(
       null,
