@@ -25,7 +25,41 @@ describe('Monkey Function', () => {
     `)
   })
 
-  it('works with a silly render prop', () => {
+  xit('works for function components returning function components', () => {
+    const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
+      return <div>Hello!</div>
+    }
+
+    const TestComponent: React.FunctionComponent<{}> = (props) => {
+      return <OtherTestComponent />
+    }
+
+    expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"test1\\">Hello!</div>
+      "
+    `)
+  })
+
+  xit('works for class components returning class components', () => {
+    class OtherTestClass extends React.Component {
+      render() {
+        return <div>Hello!</div>
+      }
+    }
+
+    class TestClass extends React.Component {
+      render() {
+        return <OtherTestClass />
+      }
+    }
+
+    expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"test1\\">Hello!</div>
+      "
+    `)
+  })
+
+  xit('works with a silly render prop', () => {
     const CallRenderPropChild: React.FunctionComponent<{}> = (props) => {
       return (props.children as any)('Hello!')
     }
@@ -46,7 +80,7 @@ describe('Monkey Function', () => {
     `)
   })
 
-  it('works with a silly render prop with a class component', () => {
+  xit('works with a render prop with a class component', () => {
     const CallRenderPropChild: React.FunctionComponent<{}> = (props) => {
       return (props.children as any)('Hello!')
     }
