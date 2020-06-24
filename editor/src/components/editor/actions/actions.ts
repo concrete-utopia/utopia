@@ -4,7 +4,13 @@ import * as R from 'ramda'
 import * as React from 'react'
 import * as localforage from 'localforage'
 import { CursorPosition } from 'src/components/code-editor/code-editor-utils'
-import { FlexAlignment, FramePoint, LayoutSystem, NormalisedFrame } from 'utopia-api'
+import {
+  FlexAlignment,
+  FramePoint,
+  LayoutSystem,
+  NormalisedFrame,
+  PropertyControls,
+} from 'utopia-api'
 import { colorTheme } from 'uuiui'
 import {
   SampleFileBuildResult,
@@ -416,6 +422,7 @@ import {
   getDependencyTypeDefinitions,
 } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
+import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
 
 export function clearSelection(): EditorAction {
   return {
@@ -3816,8 +3823,7 @@ export const UPDATE_FNS = {
   RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
     const openFilePath = getOpenUIJSFileKey(editor)
     if (openFilePath != null) {
-      const controlInfo =
-        editor.codeResultCache?.propertyControlsInfo[dropExtension(openFilePath)] ?? {}
+      const propertyControls = getPropertyControlsForTarget(action.target, editor)
       let elementName
       if (TP.isScenePath(action.target)) {
         const element = findJSXElementChildAtPath(
@@ -3844,14 +3850,15 @@ export const UPDATE_FNS = {
       if (elementName == null) {
         return editor
       }
-      const propControls = controlInfo[elementName]
       let defaultProps: { [key: string]: any } = {}
-      Utils.fastForEach(Object.keys(propControls), (key) => {
-        const defaultValue = (propControls[key] as any).defaultValue
-        if (defaultValue != null) {
-          defaultProps[key] = defaultValue
-        }
-      })
+      if (propertyControls != null) {
+        Utils.fastForEach(Object.keys(propertyControls), (key) => {
+          const defaultValue = (propertyControls[key] as any).defaultValue
+          if (defaultValue != null) {
+            defaultProps[key] = defaultValue
+          }
+        })
+      }
 
       let pathToUpdate: PropertyPath | null
       if (TP.isScenePath(action.target)) {
