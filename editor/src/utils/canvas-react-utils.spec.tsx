@@ -27,7 +27,7 @@ describe('Monkey Function', () => {
 
   it('works with a silly render prop', () => {
     const CallRenderPropChild: React.FunctionComponent<{}> = (props) => {
-      return (props.children as any)('hello')
+      return (props.children as any)('Hello!')
     }
 
     const Cica = (props: any) => {
@@ -41,14 +41,14 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<Cica data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">hello</div>
+      "<div data-uid=\\"test1\\">Hello!</div>
       "
     `)
   })
 
   it('works with a silly render prop with a class component', () => {
     const CallRenderPropChild: React.FunctionComponent<{}> = (props) => {
-      return (props.children as any)('hello')
+      return (props.children as any)('Hello!')
     }
 
     class TestClass extends React.Component {
@@ -62,7 +62,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">hello</div>
+      "<div data-uid=\\"test1\\">Hello!</div>
       "
     `)
   })
