@@ -16,67 +16,56 @@ type ControlType =
   | 'slider'
   | 'string'
   | 'union'
-type DefaultValueType<T extends ControlType> = T extends 'array'
-  ? unknown[]
-  : T extends 'boolean'
-  ? boolean
-  : T extends 'color'
-  ? string
-  : T extends 'enum'
-  ? string | boolean | number | undefined | null
-  : T extends 'ignore'
-  ? never
-  : T extends 'image'
-  ? string
-  : T extends 'number'
-  ? number
-  : T extends 'object'
-  ? unknown
-  : T extends 'options'
-  ? unknown
-  : T extends 'popuplist'
-  ? unknown
-  : T extends 'slider'
-  ? number
-  : T extends 'string'
-  ? string
-  : T extends 'union'
-  ? unknown
-  : never
 
 interface BaseControlDescription<T extends ControlType> {
   title?: string
   type: T
-  defaultValue?: DefaultValueType<T>
+  defaultValue?: unknown
 }
 
 export interface ArrayControlDescription extends BaseControlDescription<'array'> {
+  defaultValue?: unknown[]
   propertyControl: ControlDescription
   maxCount?: number
 }
 
 export interface BooleanControlDescription extends BaseControlDescription<'boolean'> {
+  defaultValue?: boolean
   disabledTitle?: string
   enabledTitle?: string
 }
 
-export interface ColorControlDescription extends BaseControlDescription<'color'> {}
+export interface ColorControlDescription extends BaseControlDescription<'color'> {
+  defaultValue?: string
+}
 
-export interface ComponentInstanceDescription extends BaseControlDescription<'componentinstance'> {}
+export interface ComponentInstanceDescription extends BaseControlDescription<'componentinstance'> {
+  defaultValue?: never
+}
+
+type AllowedEnumType = string | boolean | number | undefined | null
 
 export interface EnumControlDescription extends BaseControlDescription<'enum'> {
-  options: (string | boolean | number | undefined | null)[]
+  defaultValue?: AllowedEnumType
+  options: AllowedEnumType[]
   optionTitles?: string[] | ((props: unknown | null) => string[])
   displaySegmentedControl?: boolean
 }
 
-export interface EventHandlerControlDescription extends BaseControlDescription<'eventhandler'> {}
+export interface EventHandlerControlDescription extends BaseControlDescription<'eventhandler'> {
+  defaultValue?: never
+}
 
-export interface IgnoreControlDescription extends BaseControlDescription<'ignore'> {}
+export interface IgnoreControlDescription extends BaseControlDescription<'ignore'> {
+  defaultValue?: never
+}
 
-export interface ImageControlDescription extends BaseControlDescription<'image'> {}
+export interface ImageControlDescription extends BaseControlDescription<'image'> {
+  defaultValue?: string
+}
 
 export interface NumberControlDescription extends BaseControlDescription<'number'> {
+  defaultValue?: number
   max?: number
   min?: number
   unit?: string
@@ -85,10 +74,12 @@ export interface NumberControlDescription extends BaseControlDescription<'number
 }
 
 export interface ObjectControlDescription extends BaseControlDescription<'object'> {
+  defaultValue?: unknown
   object?: { [prop: string]: ControlDescription }
 }
 
 export interface OptionsControlDescription extends BaseControlDescription<'options'> {
+  defaultValue?: unknown
   options: Array<{
     value: unknown
     label: string
@@ -96,6 +87,7 @@ export interface OptionsControlDescription extends BaseControlDescription<'optio
 }
 
 export interface PopUpListControlDescription extends BaseControlDescription<'popuplist'> {
+  defaultValue?: unknown
   options: Array<{
     value: unknown
     label: string
@@ -103,17 +95,20 @@ export interface PopUpListControlDescription extends BaseControlDescription<'pop
 }
 
 export interface SliderControlDescription extends BaseControlDescription<'slider'> {
+  defaultValue?: number
   max: number
   min: number
   step: number
 }
 
 export interface StringControlDescription extends BaseControlDescription<'string'> {
+  defaultValue?: string
   placeholder?: string
   obscured?: boolean
 }
 
 export interface UnionControlDescription extends BaseControlDescription<'union'> {
+  defaultValue?: unknown
   controls: Array<ControlDescription>
 }
 
