@@ -13,12 +13,21 @@ import { isRight, foldEither } from '../shared/either'
 import { forEachValue } from '../shared/object-utils'
 import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
-import { joinSpecial } from '../shared/array-utils'
+import { joinSpecial, pluck } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
 import { AntdControls } from './third-party-property-controls/antd-controls'
 import { NpmDependency } from '../shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../third-party/third-party-components'
 import { getJSXElementNameAsString } from '../shared/element-template'
+import { TemplatePath } from '../shared/project-file-types'
+import {
+  getOpenImportsFromState,
+  getOpenUtopiaJSXComponentsFromState,
+  getOpenUIJSFile,
+  getOpenUIJSFileKey,
+  EditorState,
+} from '../../components/editor/store/editor-state'
+import { MetadataUtils } from '../model/element-metadata-utils'
 
 export function defaultPropertiesForComponentInFile(
   componentName: string,
@@ -217,4 +226,49 @@ export function getControlsForExternalDependencies(
     }
   })
   return propertyControlsInfo
+}
+
+export function getPropertyControlsForTarget(
+  target: TemplatePath,
+  editor: EditorState,
+): PropertyControls | null {
+  const codeResultCache = editor.codeResultCache
+  const imports = getOpenImportsFromState(editor)
+  const openFilePath = getOpenUIJSFileKey(editor)
+  const rootComponents = getOpenUtopiaJSXComponentsFromState(editor)
+  const tagName = MetadataUtils.getJSXElementTagName(
+    target,
+    rootComponents,
+    editor.jsxMetadataKILLME,
+  )
+  const importedName = MetadataUtils.getJSXElementBaseName(
+    target,
+    rootComponents,
+    editor.jsxMetadataKILLME,
+  )
+  if (importedName != null && tagName != null) {
+    // TODO default and star imports
+    let filename = Object.keys(imports).find((key) => {
+      return pluck(imports[key].importedFromWithin, 'name').includes(importedName)
+    })
+    if (filename == null && openFilePath != null) {
+      filename = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+    }
+    if (filename != null) {
+      // TODO figure out absolute filepath
+      const absoluteFilePath = filename.startsWith('.') ? `${filename.slice(1)}` : `${filename}`
+      if (
+        codeResultCache.propertyControlsInfo[absoluteFilePath] != null &&
+        codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] != null
+      ) {
+        return codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] as PropertyControls
+      } else {
+        return null
+      }
+    } else {
+      return null
+    }
+  } else {
+    return null
+  }
 }

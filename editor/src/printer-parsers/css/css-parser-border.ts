@@ -10,10 +10,10 @@ import {
 import { Either, isRight, left, right } from '../../core/shared/either'
 import { parseLineWidth } from './css-parser-border-size'
 import { parseLineStyle } from './css-parser-border-style'
-import { getLexerMatches, parseDoubleBar, parseLexedColor } from './css-parser-utils'
+import { getLexerPropertyMatches, parseDoubleBar, parseLexedColor } from './css-parser-utils'
 
 export function parseBorder(value: unknown): Either<string, CSSBorder> {
-  const lexer = getLexerMatches('border', value, ['line-style', 'line-width', 'color'])
+  const lexer = getLexerPropertyMatches('border', value, ['line-style', 'line-width', 'color'])
   if (isRight(lexer)) {
     const parsed = parseDoubleBar<CSSColor | CSSLineWidth | CSSLineStyle>(3, [
       parseLexedColor,

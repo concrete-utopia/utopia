@@ -2323,7 +2323,8 @@ export type CSSBackgroundLayerType =
   | ImageURLBackgroundLayerType
   | GradientBackgroundLayerType
 
-export type CSSBGSizeKeywordValueValue = 'contain' | 'cover'
+export const cssBGSizeKeywordValueValues = ['contain', 'cover'] as const
+export type CSSBGSizeKeywordValueValue = NonNullable<typeof cssBGSizeKeywordValueValues[number]>
 export type CSSBGSizeKeywordValue = CSSKeyword<CSSBGSizeKeywordValueValue>
 export type CSSBGSizeCurlyBraceValueValue = CSSNumber | CSSKeyword<'auto'>
 export type CSSBGSizeCurlyBraceValue = ParsedCurlyBrace<CSSBGSizeCurlyBraceValueValue>
@@ -2332,12 +2333,14 @@ export type CSSBGSizeValue = CSSBGSizeKeywordValue | CSSBGSizeCurlyBraceValue
 
 export interface CSSBGSize {
   type: 'bg-size'
+  enabled: boolean
   size: CSSDefault<CSSBGSizeValue>
 }
 
-export function cssBGSize(size: CSSDefault<CSSBGSizeValue>): CSSBGSize {
+export function cssBGSize(size: CSSDefault<CSSBGSizeValue>, enabled = true): CSSBGSize {
   return {
     type: 'bg-size',
+    enabled,
     size,
   }
 }
@@ -2348,7 +2351,7 @@ export function isCSSBackgroundLayerWithBGSize(
   return 'bgSize' in value
 }
 
-export const defaultBGSize = cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('auto')])))
+export const defaultBGSize = cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('auto')])), true)
 
 export type CSSBackgroundSize = Array<CSSBGSize>
 

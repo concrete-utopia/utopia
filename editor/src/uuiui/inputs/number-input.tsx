@@ -19,26 +19,31 @@ import {
   CSSNumberType,
   CSSNumberUnit,
   emptyInputValue,
-  EmptyInputValue,
   getCSSNumberUnit,
+  isCSSNumber,
   isEmptyInputValue,
+  isUnknownInputValue,
   parseCSSNumber,
   setCSSNumberValue,
+  unknownInputValue,
   UnknownOrEmptyInput,
 } from '../../components/inspector/common/css-utils'
-import { OnUnsetValues } from '../../components/inspector/common/property-path-hooks'
+import {
+  OnUnsetValues,
+  SubmitValueFactoryReturn,
+} from '../../components/inspector/common/property-path-hooks'
+import { InspectorControlProps } from '../../components/inspector/controls/control'
 import { clampValue } from '../../core/shared/math-utils'
 import { Icn, IcnProps } from '../icn'
 import { colorTheme, UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
 import {
+  BaseInputProps,
   BoxCorners,
   ChainedType,
   getBorderRadiusStyles,
   InspectorInput,
-  BaseInputProps,
 } from './base-input'
-import { InspectorControlProps } from '../../components/inspector/controls/control'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
@@ -125,13 +130,14 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
     BaseInputProps,
     InspectorControlProps {
   value: T | null | undefined
-  onSubmitValue?: OnSubmitValueOrEmpty<T>
-  onTransientSubmitValue?: OnSubmitValueOrEmpty<T>
-  onForcedSubmitValue?: OnSubmitValueOrEmpty<T>
   DEPRECATED_labelBelow?: React.ReactChild
 }
 
-export interface NumberInputProps extends AbstractNumberInputProps<CSSNumber> {}
+export interface NumberInputProps extends AbstractNumberInputProps<CSSNumber> {
+  onSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+  onTransientSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+  onForcedSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+}
 
 const ScrubThreshold = 3
 
@@ -442,6 +448,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             } else if (EitherUtils.isRight(parsedStateValue)) {
               onSubmitValue(parsedStateValue.value)
             } else {
+              onSubmitValue(unknownInputValue(stateValue))
               forceStateValueToUpdateFromProps()
             }
           }
@@ -737,29 +744,31 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     )
   },
 )
-interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {}
+interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {
+  onSubmitValue: OnSubmitValueOrEmpty<number>
+  onTransientSubmitValue: OnSubmitValueOrEmpty<number>
+  onForcedSubmitValue: OnSubmitValueOrEmpty<number>
+}
 
 function wrappedSimpleOnSubmitValue(
-  onSubmitValue: OnSubmitValueOrEmpty<number> | undefined,
-): OnSubmitValueOrEmpty<CSSNumber> | undefined {
-  if (onSubmitValue == null) {
-    return undefined
-  } else {
-    return (value: CSSNumber | EmptyInputValue) =>
-      onSubmitValue(isEmptyInputValue(value) ? value : value.value)
+  onSubmitValue: OnSubmitValueOrEmpty<number>,
+): OnSubmitValueOrUnknownOrEmpty<CSSNumber> {
+  return (value) => {
+    if (isCSSNumber(value)) {
+      onSubmitValue(value.value)
+    }
   }
 }
 
 export const SimpleNumberInput = betterReactMemo(
   'SimpleNumberInput',
-  (props: SimpleNumberInputProps) => {
-    const {
-      value,
-      onSubmitValue,
-      onTransientSubmitValue,
-      onForcedSubmitValue,
-      ...sharedProps
-    } = props
+  ({
+    value,
+    onSubmitValue,
+    onTransientSubmitValue,
+    onForcedSubmitValue,
+    ...sharedProps
+  }: SimpleNumberInputProps) => {
     const wrappedProps: NumberInputProps = {
       ...sharedProps,
       value: value == null ? null : cssNumber(value),
@@ -772,29 +781,31 @@ export const SimpleNumberInput = betterReactMemo(
   },
 )
 
-interface SimplePercentInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {}
+interface SimplePercentInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {
+  onSubmitValue: OnSubmitValueOrEmpty<number>
+  onTransientSubmitValue: OnSubmitValueOrEmpty<number>
+  onForcedSubmitValue: OnSubmitValueOrEmpty<number>
+}
 
 function wrappedPercentOnSubmitValue(
-  onSubmitValue: OnSubmitValueOrEmpty<number> | undefined,
-): OnSubmitValueOrEmpty<CSSNumber> | undefined {
-  if (onSubmitValue == null) {
-    return undefined
-  } else {
-    return (value: CSSNumber | EmptyInputValue) =>
-      onSubmitValue(isEmptyInputValue(value) ? value : value.value / 100)
+  onSubmitValue: OnSubmitValueOrEmpty<number>,
+): OnSubmitValueOrUnknownOrEmpty<CSSNumber> {
+  return (value) => {
+    if (isCSSNumber(value)) {
+      onSubmitValue(value.value / 100)
+    }
   }
 }
 
 export const SimplePercentInput = betterReactMemo(
   'SimplePercentInput',
-  (props: SimplePercentInputProps) => {
-    const {
-      value,
-      onSubmitValue,
-      onTransientSubmitValue,
-      onForcedSubmitValue,
-      ...sharedProps
-    } = props
+  ({
+    value,
+    onSubmitValue,
+    onTransientSubmitValue,
+    onForcedSubmitValue,
+    ...sharedProps
+  }: SimplePercentInputProps) => {
     const wrappedProps: NumberInputProps = {
       ...sharedProps,
       value: value == null ? null : cssNumber(value * 100, '%'),
@@ -857,18 +868,33 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
   },
 )
 
-export function useWrappedEmptyOnSubmitValue<T>(
+export function useWrappedEmptyOrUnknownOnSubmitValue<T>(
   onSubmitValue: OnSubmitValue<T>,
-  onUnsetValue: OnUnsetValues,
-): OnSubmitValueOrEmpty<T> {
+  onUnsetValue?: OnUnsetValues,
+): OnSubmitValueOrUnknownOrEmpty<T> {
   return React.useCallback(
-    (value: T | EmptyInputValue) => {
+    (value: UnknownOrEmptyInput<T>) => {
       if (isEmptyInputValue(value)) {
-        onUnsetValue()
-      } else {
+        if (onUnsetValue != null) {
+          onUnsetValue()
+        }
+      } else if (!isUnknownInputValue(value)) {
         onSubmitValue(value)
       }
     },
     [onSubmitValue, onUnsetValue],
   )
+}
+
+/**
+ * An easy wrapper for the submitValueFactory that applies useWrappedEmptyOrUnknownOnSubmitValue
+ * to each submitValue type.
+ */
+export function useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue<T>(
+  submitValueReturn: SubmitValueFactoryReturn<T>,
+  onUnsetValue?: OnUnsetValues,
+): SubmitValueFactoryReturn<UnknownOrEmptyInput<T>> {
+  const index0 = useWrappedEmptyOrUnknownOnSubmitValue(submitValueReturn[0], onUnsetValue)
+  const index1 = useWrappedEmptyOrUnknownOnSubmitValue(submitValueReturn[1], onUnsetValue)
+  return [index0, index1]
 }

@@ -149,6 +149,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
               value={alpha}
               onSubmitValue={onAlphaSubmitValue}
               onTransientSubmitValue={onAlphaTransientSubmitValue}
+              onForcedSubmitValue={onAlphaSubmitValue}
               controlStatus={props.controlStatus}
               DEPRECATED_labelBelow='alpha'
               minimum={0}

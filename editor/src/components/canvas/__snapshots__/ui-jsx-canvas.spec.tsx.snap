@@ -8446,7 +8446,7 @@ Object {
                     "javascript": "'n' + n",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAS+CA,MAAKA,CAANC",
+                      "mappings": "OAQ+CA,MAAKA,CAANC",
                       "names": Array [
                         "n",
                         "'",
@@ -8456,7 +8456,6 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -8507,7 +8506,6 @@ Object {
               ],
               "sourcesContent": Array [
                 "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -8683,7 +8681,7 @@ Object {
                     "javascript": "'n' + div",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAS+CA,MAAKC,GAANC",
+                      "mappings": "OAQ+CA,MAAKC,GAANC",
                       "names": Array [
                         "n",
                         "div",
@@ -8694,7 +8692,6 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -8745,7 +8742,6 @@ Object {
               ],
               "sourcesContent": Array [
                 "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -8922,7 +8918,7 @@ Object {
                     "javascript": "'n' + n",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAU+CA,MAAKA,CAANC",
+                      "mappings": "OAS+CA,MAAKA,CAANC",
                       "names": Array [
                         "n",
                         "'",
@@ -8932,7 +8928,6 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -8986,7 +8981,6 @@ Object {
               ],
               "sourcesContent": Array [
                 "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -9529,7 +9523,6 @@ Object {
                           ],
                           "sourcesContent": Array [
                             "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -9615,7 +9608,6 @@ Object {
               ],
               "sourcesContent": Array [
                 "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 

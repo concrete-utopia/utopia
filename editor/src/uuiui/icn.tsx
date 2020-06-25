@@ -1,4 +1,4 @@
-import { Placement } from '@tippyjs/react/node_modules/tippy.js'
+import { Placement } from 'tippy.js'
 import * as React from 'react'
 import { betterReactMemo } from 'uuiui-deps'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'

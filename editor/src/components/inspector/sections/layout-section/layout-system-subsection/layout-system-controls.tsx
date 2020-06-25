@@ -21,7 +21,7 @@ import {
 import { LayoutSystem } from 'utopia-api'
 import {
   ChainedNumberInput,
-  useWrappedEmptyOnSubmitValue,
+  useWrappedEmptyOrUnknownOnSubmitValue,
   SquareButton,
   FunctionIcons,
 } from 'uuiui'
@@ -170,35 +170,35 @@ export const FlexPaddingControl = betterReactMemo(
     const flexPaddingBottom = useInspectorLayoutInfo('paddingBottom', props.specialSizeMeasurements)
     const flexPaddingLeft = useInspectorLayoutInfo('paddingLeft', props.specialSizeMeasurements)
 
-    const flexPaddingTopOnSubmitValue = useWrappedEmptyOnSubmitValue(
+    const flexPaddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       flexPaddingTop.onSubmitValue,
       flexPaddingTop.onUnsetValues,
     )
-    const flexPaddingTopOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+    const flexPaddingTopOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       flexPaddingTop.onTransientSubmitValue,
       flexPaddingTop.onUnsetValues,
     )
-    const flexPaddingRightOnSubmitValue = useWrappedEmptyOnSubmitValue(
+    const flexPaddingRightOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       flexPaddingRight.onSubmitValue,
       flexPaddingRight.onUnsetValues,
     )
-    const flexPaddingRightOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+    const flexPaddingRightOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       flexPaddingRight.onTransientSubmitValue,
       flexPaddingRight.onUnsetValues,
     )
-    const flexPaddingBottomOnSubmitValue = useWrappedEmptyOnSubmitValue(
+    const flexPaddingBottomOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       flexPaddingBottom.onSubmitValue,
       flexPaddingBottom.onUnsetValues,
     )
-    const flexPaddingBottomOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+    const flexPaddingBottomOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       flexPaddingBottom.onTransientSubmitValue,
       flexPaddingBottom.onUnsetValues,
     )
-    const flexPaddingLeftOnSubmitValue = useWrappedEmptyOnSubmitValue(
+    const flexPaddingLeftOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       flexPaddingLeft.onSubmitValue,
       flexPaddingLeft.onUnsetValues,
     )
-    const flexPaddingLeftOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+    const flexPaddingLeftOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       flexPaddingLeft.onTransientSubmitValue,
       flexPaddingLeft.onUnsetValues,
     )
