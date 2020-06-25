@@ -110,7 +110,7 @@ const Canvas = {
         Utils.pluck(childFrames, 'boundingRect'),
       )
       if (childFrames.length > 0 && allChildrenBounds != null) {
-        const allChildrenFrames = R.flatten(Utils.pluck(childFrames, 'frames'))
+        const allChildrenFrames = Utils.pluck(childFrames, 'frames').flat()
         const boundingRect = Utils.boundingRectangle(offsetFrame, allChildrenBounds)
         const toAppend: FrameWithPath = { path: component.templatePath, frame: boundingRect }
         return {
