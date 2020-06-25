@@ -205,7 +205,7 @@ let uidMonkeyPatchApplied: boolean = false
 export function applyUIDMonkeyPatch(): void {
   if (!uidMonkeyPatchApplied) {
     uidMonkeyPatchApplied = true
-    ;(React as any).createElement = monkeyCreateElement
+    ;(React as any).createElement = barebonesCreatePatch
   }
 }
 
@@ -253,4 +253,92 @@ export function makeCanvasElementPropsSafe(props: any): any {
     skipDeepFreeze: true,
     ...removeUnsafeValues(working, []),
   })
+}
+
+const mangleFunctionType = Utils.memoize(
+  (type: unknown): React.FunctionComponent => {
+    return (p) => {
+      let originalTypeResponse = (type as React.FunctionComponent)(p)
+      if ((p as any)['data-uid'] == null) {
+        // if there is no data-uid coming in to the parent's props, let's just return
+        // and avoid overriding any data-uids there might be from the real code
+        return originalTypeResponse
+      }
+      if (originalTypeResponse == null) {
+        return null
+      } else {
+        return {
+          ...originalTypeResponse,
+          props: {
+            ...originalTypeResponse.props,
+            'data-uid': (p as any)['data-uid'],
+          },
+        } as React.ReactElement
+      }
+    }
+  },
+  {
+    maxSize: 10000,
+  },
+)
+
+const mangleClassType = Utils.memoize(
+  (type: any) => {
+    const originalRender = type.prototype.render
+    type.prototype.render = function monkeyRender() {
+      let originalTypeResponse = originalRender.bind(this)()
+      if ((this.props as any)['data-uid'] == null) {
+        // if there is no data-uid coming in to the parent's props, let's just return
+        // and avoid overriding any data-uids there might be from the real code
+        return originalTypeResponse
+      }
+      if (originalTypeResponse == null) {
+        return null
+      } else {
+        return {
+          ...originalTypeResponse,
+          props: {
+            ...originalTypeResponse.props,
+            'data-uid': (this.props as any)['data-uid'],
+          },
+        } as React.ReactElement
+      }
+    }
+    return type
+    // const newRenderFunction = (p: unknown) => {
+    //   let originalTypeResponse = type?.render?.() || new type(p).render()
+    //   if ((p as any)['data-uid'] == null) {
+    //     // if there is no data-uid coming in to the parent's props, let's just return
+    //     // and avoid overriding any data-uids there might be from the real code
+    //     return originalTypeResponse
+    //   }
+    //   if (originalTypeResponse == null) {
+    //     return null
+    //   } else {
+    //     return {
+    //       ...originalTypeResponse,
+    //       props: {
+    //         ...originalTypeResponse.props,
+    //         'data-uid': (p as any)['data-uid'],
+    //       },
+    //     } as React.ReactElement
+    //   }
+    // }
+  },
+  {
+    maxSize: 10000,
+  },
+)
+
+function barebonesCreatePatch(type: any, props: any, ...children: any): any {
+  if (typeof type?.prototype?.isReactComponent === 'object') {
+    const mangledClass = mangleClassType(type)
+    ;(mangledClass as any).theOriginalType = type
+    return realCreateElement(mangledClass, props, ...children)
+  } else if (typeof type === 'function') {
+    const mangledType: React.FunctionComponent = mangleFunctionType(type)
+    ;(mangledType as any).theOriginalType = type
+    return realCreateElement(mangledType, props, ...children)
+  }
+  return realCreateElement(type, props, ...children)
 }

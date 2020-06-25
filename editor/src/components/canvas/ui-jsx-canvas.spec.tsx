@@ -1440,18 +1440,16 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       /** @jsx jsx */
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
-      
+
       export class RenderPropsFunctionChild extends React.Component {
         render() {
           return this.props.children('huha')
         }
       }
-      
+
       export function getPicker() {
         class Picker extends React.Component {
-          pickerRef = React.createRef()
-      
-          renderPicker = (locale) => {
+          renderPicker(locale) {
             return (
               <RenderPropsFunctionChild>
                 {(size) => {
@@ -1464,21 +1462,21 @@ export var ${BakedInStoryboardVariableName} = (props) => {
               </RenderPropsFunctionChild>
             )
           }
-      
+
           render() {
             return <RenderPropsFunctionChild>{this.renderPicker}</RenderPropsFunctionChild>
           }
         }
-      
+
         return Picker
       }
-      
+
       const Thing = getPicker()
-      
+
       export var App = (props) => {
         return <Thing data-uid={'aaa'} />
       }
-      export var ${BakedInStoryboardVariableName} = (props) => {
+      export var ${BakedInStoryboardVariableName}  = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
@@ -1494,7 +1492,31 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       `,
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "
+      "<div
+        id=\\"canvas-container\\"
+        style=\\"
+          all: initial;
+          position: absolute;
+          zoom: 100%;
+          transform: translate3d(0px, 0px, 0);
+        \\"
+      >
+        <div
+          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+          style=\\"
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            left: 0;
+            top: 0;
+            background-color: rgba(255, 255, 255, 1);
+            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+          \\"
+        >
+          <div id=\\"nasty-div\\" data-uid=\\"aaa\\">huha huha</div>
+        </div>
+      </div>
       "
     `)
   })

@@ -222,4 +222,58 @@ describe('Monkey Function', () => {
       "
     `)
   })
+
+  it('antd-like weird component renders', () => {
+    class NotAnotherClass extends React.Component<{ locale: string; size: string }> {
+      render() {
+        return (
+          <div>
+            <div>{this.props.locale}</div> {this.props.size}
+          </div>
+        )
+      }
+    }
+
+    class RenderPropsFunctionChild extends React.Component {
+      render() {
+        return (this.props.children as any)('huha')
+      }
+    }
+
+    function getPicker() {
+      class Picker extends React.Component {
+        pickerRef = React.createRef()
+
+        renderPicker = (locale: any) => {
+          return (
+            <RenderPropsFunctionChild>
+              {(size: any) => {
+                return <NotAnotherClass locale={locale} size={size} />
+              }}
+            </RenderPropsFunctionChild>
+          )
+        }
+
+        render() {
+          return <RenderPropsFunctionChild>{this.renderPicker}</RenderPropsFunctionChild>
+        }
+      }
+
+      return Picker
+    }
+
+    const Thing = getPicker()
+
+    var App = (props: any) => {
+      return <Thing data-uid={'aaa'} />
+    }
+
+    expect(renderToFormattedString(<App />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"aaa\\">
+        <div>huha</div>
+        huha
+      </div>
+      "
+    `)
+  })
 })
