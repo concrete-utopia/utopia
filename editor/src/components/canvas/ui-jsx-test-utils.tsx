@@ -72,7 +72,7 @@ function sanitizeJsxMetadata(jsxMetadata: ComponentMetadata[]) {
 }
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.warn('Unhandled promise rejection:', promise, 'reason:', reason.stack || reason)
+  console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack || reason)
 })
 
 export async function renderTestEditorWithCode(appUiJsFileCode: string) {

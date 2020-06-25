@@ -1,8 +1,8 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import Tippy from '@tippyjs/react'
-import { Placement } from '@tippyjs/react/node_modules/tippy.js'
-import '@tippyjs/react/node_modules/tippy.js/dist/tippy.css'
+import { Placement } from 'tippy.js'
+import 'tippy.js/dist/tippy.css'
 import * as React from 'react'
 import { colorTheme } from './styles/theme'
 

@@ -453,7 +453,6 @@ describe('UiJsxCanvas render', () => {
     testCanvasError(
       null,
       `/** @jsx jsx */
-    import { jsx } from 'utopia-api'
     import * as React from "react"
     import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -478,7 +477,6 @@ describe('UiJsxCanvas render', () => {
     testCanvasRender(
       null,
       `/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from "react"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -504,7 +502,6 @@ describe('UiJsxCanvas render', () => {
     testCanvasRender(
       null,
       `/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from "react"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -536,7 +533,6 @@ describe('UiJsxCanvas render', () => {
     testCanvasRender(
       null,
       `/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from "react"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -568,7 +564,6 @@ describe('UiJsxCanvas render', () => {
     testCanvasRender(
       null,
       `/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from "react"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -601,7 +596,6 @@ describe('UiJsxCanvas render', () => {
     testCanvasRender(
       null,
       `/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from "react"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -634,7 +628,6 @@ describe('UiJsxCanvas render', () => {
     testCanvasRender(
       null,
       `/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from "react"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -667,7 +660,6 @@ describe('UiJsxCanvas render', () => {
     testCanvasRender(
       null,
       `/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
