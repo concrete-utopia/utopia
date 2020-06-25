@@ -25,7 +25,37 @@ describe('Monkey Function', () => {
     `)
   })
 
-  xit('works for function components returning function components', () => {
+  it('works for simple function components', () => {
+    const TestComponent: React.FunctionComponent<{}> = (props) => {
+      return (
+        <div>
+          <div>hi!</div>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"test1\\"><div>hi!</div></div>
+      "
+    `)
+  })
+
+  it('works for function components returning function components', () => {
+    const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
+      return <div>Hello!</div>
+    }
+
+    const TestComponent: React.FunctionComponent<{}> = (props) => {
+      return <OtherTestComponent data-uid={'test2'} />
+    }
+
+    expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"test1\\">Hello!</div>
+      "
+    `)
+  })
+
+  xit('works for function components that have no uid returning function components', () => {
     const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
       return <div>Hello!</div>
     }
