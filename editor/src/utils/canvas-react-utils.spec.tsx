@@ -40,22 +40,62 @@ describe('Monkey Function', () => {
     `)
   })
 
-  it('works for function components returning function components', () => {
+  it('works for function components', () => {
     const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
       return <div>Hello!</div>
     }
 
     const TestComponent: React.FunctionComponent<{}> = (props) => {
-      return <OtherTestComponent data-uid={'test2'} />
+      return <OtherTestComponent data-uid={'cica'} />
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-uid=\\"cica\\">Hello!</div>
       "
     `)
   })
 
-  xit('works for function components that have no uid returning function components', () => {
+  it('works for function components that have uid returning function components', () => {
+    const MyComponent: React.FunctionComponent<{}> = (props) => {
+      return <div>Hello!</div>
+    }
+    const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
+      return <MyComponent />
+    }
+
+    const TestComponent: React.FunctionComponent<{}> = (props) => {
+      return <OtherTestComponent data-uid={'cica'} />
+    }
+
+    expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\">Hello!</div>
+      "
+    `)
+  })
+
+  it('works for function components that have uid returning function components wrapped in divs', () => {
+    const MyComponent: React.FunctionComponent<{}> = (props) => {
+      return <div>Hello!</div>
+    }
+    const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
+      return (
+        <div>
+          <MyComponent />
+        </div>
+      )
+    }
+
+    const TestComponent: React.FunctionComponent<{}> = (props) => {
+      return <OtherTestComponent data-uid={'cica'} />
+    }
+
+    expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\"><div>Hello!</div></div>
+      "
+    `)
+  })
+
+  it('works for function components that have no uid returning function components', () => {
     const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
       return <div>Hello!</div>
     }
@@ -70,7 +110,7 @@ describe('Monkey Function', () => {
     `)
   })
 
-  xit('works for class components returning class components', () => {
+  it('works for class components returning class components', () => {
     class OtherTestClass extends React.Component {
       render() {
         return <div>Hello!</div>
@@ -89,7 +129,7 @@ describe('Monkey Function', () => {
     `)
   })
 
-  xit('works with a silly render prop', () => {
+  it('works with a silly render prop', () => {
     const CallRenderPropChild: React.FunctionComponent<{}> = (props) => {
       return (props.children as any)('Hello!')
     }
@@ -110,7 +150,28 @@ describe('Monkey Function', () => {
     `)
   })
 
-  xit('works with a render prop with a class component', () => {
+  it('works with a render prop with a class component if there is a uid', () => {
+    const CallRenderPropChild: React.FunctionComponent<{}> = (props) => {
+      return (props.children as any)('Hello!')
+    }
+
+    class TestClass extends React.Component {
+      renderComponent(data: string) {
+        return <div>{data}</div>
+      }
+
+      render() {
+        return <CallRenderPropChild data-uid='test1'>{this.renderComponent}</CallRenderPropChild>
+      }
+    }
+
+    expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"test1\\">Hello!</div>
+      "
+    `)
+  })
+
+  it('works with a render prop with a class component if there is NO uid', () => {
     const CallRenderPropChild: React.FunctionComponent<{}> = (props) => {
       return (props.children as any)('Hello!')
     }
