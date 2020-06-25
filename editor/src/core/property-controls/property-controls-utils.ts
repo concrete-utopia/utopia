@@ -233,9 +233,6 @@ export function getPropertyControlsForTarget(
   editor: EditorState,
 ): PropertyControls | null {
   const codeResultCache = editor.codeResultCache
-  if (codeResultCache == null) {
-    return null
-  }
   const imports = getOpenImportsFromState(editor)
   const openFilePath = getOpenUIJSFileKey(editor)
   const rootComponents = getOpenUtopiaJSXComponentsFromState(editor)
