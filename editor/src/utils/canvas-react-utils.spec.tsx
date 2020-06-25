@@ -1,9 +1,9 @@
 import * as React from 'react'
+import { applyUIDMonkeyPatch } from './canvas-react-utils'
+applyUIDMonkeyPatch()
 import * as ReactDOMServer from 'react-dom/server'
 import * as Prettier from 'prettier'
-import { applyUIDMonkeyPatch } from './canvas-react-utils'
-
-applyUIDMonkeyPatch()
+import { DatePicker } from 'antd'
 
 function renderToFormattedString(element: React.ReactElement) {
   const renderResult = ReactDOMServer.renderToStaticMarkup(element)
@@ -26,7 +26,7 @@ describe('Monkey Function', () => {
   })
 
   it('class components have a working context', () => {
-    const MyContext = React.createContext({ value: 'hello!' })
+    const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
       render() {
         return <div>{this.context.value}</div>
@@ -34,7 +34,57 @@ describe('Monkey Function', () => {
     }
     TestClass.contextType = MyContext
 
-    expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
+    expect(
+      renderToFormattedString(
+        <MyContext.Provider value={{ value: 'hello!' }}>
+          <TestClass data-uid={'test1'} />
+        </MyContext.Provider>,
+      ),
+    ).toMatchInlineSnapshot(`
+      "<div data-uid=\\"test1\\">hello!</div>
+      "
+    `)
+  })
+
+  it('class components have a working context, second variant', () => {
+    const MyContext = React.createContext({ value: 'wrong!' })
+    class TestClass extends React.Component {
+      render() {
+        return <div>{this.context.value}</div>
+      }
+    }
+    TestClass.contextType = MyContext
+
+    expect(
+      renderToFormattedString(
+        <MyContext.Provider value={{ value: 'hello!' }} data-uid={'test1'}>
+          <TestClass />
+        </MyContext.Provider>,
+      ),
+    ).toMatchInlineSnapshot(`
+      "<div data-uid=\\"test1\\">hello!</div>
+      "
+    `)
+  })
+
+  it('class components have a working context, third variant', () => {
+    const MyContext = React.createContext({ value: 'wrong!' })
+    class TestClass extends React.Component {
+      render() {
+        return <div>{this.context.value}</div>
+      }
+    }
+    TestClass.contextType = MyContext
+
+    const Renderer = () => {
+      return (
+        <MyContext.Provider value={{ value: 'hello!' }}>
+          <TestClass />
+        </MyContext.Provider>
+      )
+    }
+
+    expect(renderToFormattedString(<Renderer data-uid={'test1'} />)).toMatchInlineSnapshot(`
       "<div data-uid=\\"test1\\">hello!</div>
       "
     `)
@@ -223,7 +273,59 @@ describe('Monkey Function', () => {
     `)
   })
 
+  it('Fragments work if theres a uid', () => {
+    const Component = () => {
+      return (
+        <>
+          <div>Hello!</div>
+        </>
+      )
+    }
+
+    expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"test1\\">Hello!</div>
+      "
+    `)
+  })
+
+  it('Fragments work if in absence of uid too', () => {
+    const Component = () => {
+      return (
+        <>
+          <div>Hello!</div>
+        </>
+      )
+    }
+
+    expect(renderToFormattedString(<Component />)).toMatchInlineSnapshot(`
+      "<div>Hello!</div>
+      "
+    `)
+  })
+
+  it('Context providers work', () => {
+    const MyContext = React.createContext('wrong!')
+    const Component = () => {
+      const context = React.useContext(MyContext)
+      return <div>{context}</div>
+    }
+
+    const WrappedComponent = () => {
+      return (
+        <MyContext.Provider value='Hello!'>
+          <Component />
+        </MyContext.Provider>
+      )
+    }
+
+    expect(renderToFormattedString(<WrappedComponent data-uid='cica' />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\">Hello!</div>
+      "
+    `)
+  })
+
   it('antd-like weird component renders', () => {
+    const MyContext = React.createContext('wrong!')
     class NotAnotherClass extends React.Component<{ locale: string; size: string }> {
       render() {
         return (
@@ -246,11 +348,11 @@ describe('Monkey Function', () => {
 
         renderPicker = (locale: any) => {
           return (
-            <RenderPropsFunctionChild>
+            <MyContext.Consumer>
               {(size: any) => {
                 return <NotAnotherClass locale={locale} size={size} />
               }}
-            </RenderPropsFunctionChild>
+            </MyContext.Consumer>
           )
         }
 
@@ -265,13 +367,56 @@ describe('Monkey Function', () => {
     const Thing = getPicker()
 
     var App = (props: any) => {
-      return <Thing data-uid={'aaa'} />
+      return (
+        <MyContext.Provider value='huha!'>
+          <Thing data-uid={'aaa'} />
+        </MyContext.Provider>
+      )
     }
 
     expect(renderToFormattedString(<App />)).toMatchInlineSnapshot(`
       "<div data-uid=\\"aaa\\">
         <div>huha</div>
-        huha
+        huha!
+      </div>
+      "
+    `)
+  })
+
+  it('the real antd datepicker works!', () => {
+    var App = (props: any) => {
+      return <div>{<DatePicker data-uid={'aaa'} />}</div>
+    }
+
+    expect(renderToFormattedString(<App />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"aaa\\">
+        <div class=\\"ant-picker\\">
+          <div class=\\"ant-picker-input\\">
+            <input
+              readonly=\\"\\"
+              value=\\"\\"
+              placeholder=\\"Select date\\"
+              title=\\"\\"
+              size=\\"12\\"
+              autocomplete=\\"off\\"
+            /><span class=\\"ant-picker-suffix\\"
+              ><span role=\\"img\\" aria-label=\\"calendar\\" class=\\"anticon anticon-calendar\\"
+                ><svg
+                  viewBox=\\"64 64 896 896\\"
+                  focusable=\\"false\\"
+                  class=\\"\\"
+                  data-icon=\\"calendar\\"
+                  width=\\"1em\\"
+                  height=\\"1em\\"
+                  fill=\\"currentColor\\"
+                  aria-hidden=\\"true\\"
+                >
+                  <path
+                    d=\\"M880 184H712v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H384v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zm-40 656H184V460h656v380zM184 392V256h128v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h256v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h128v136H184z\\"
+                  ></path></svg></span
+            ></span>
+          </div>
+        </div>
       </div>
       "
     `)
