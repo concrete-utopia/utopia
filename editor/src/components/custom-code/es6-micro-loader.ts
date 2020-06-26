@@ -79,11 +79,17 @@ function get(importOrigin: string, name: string, skipRegistering: boolean) {
 
 function has(importOrigin: string, name: string) {
   const normalizedName = normalizeName(importOrigin, name)
-  return (
-    !!externalRegistry[normalizedName] ||
-    !!internalRegistry[normalizedName] ||
-    !!requireFn(importOrigin, name)
-  )
+  try {
+    return (
+      !!externalRegistry[normalizedName] ||
+      !!internalRegistry[normalizedName] ||
+      !!requireFn(importOrigin, name)
+    )
+  } catch {
+    // Capturing the case where `requireFn` throws an exception as it should do
+    // when something does not exist.
+    return false
+  }
 }
 
 export var System = {
@@ -125,15 +131,22 @@ export var System = {
       },
       execute: function () {
         mod.deps.forEach(function (dep: string) {
-          var imports = externalRegistry[dep] || requireFn('/', dep)
-          if (imports) {
-            mod.update(dep, imports)
-          } else {
+          let imports: any
+          try {
+            imports = externalRegistry[dep] || requireFn('/', dep)
+          } catch {
+            // tslint:disable-next-line:no-empty
+            // Capturing the case where `requireFn` throws an exception as it should do
+            // when something does not exist.
+          }
+          if (imports == null) {
             imports = get('./', dep, false) && internalRegistry[dep].values // optimization to pass plain values instead of bindings
-            if (imports) {
+            if (imports != null) {
               internalRegistry[dep].dependants.push(name)
               mod.update(dep, imports)
             }
+          } else {
+            mod.update(dep, imports)
           }
         })
         try {
