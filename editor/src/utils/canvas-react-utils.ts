@@ -255,26 +255,43 @@ export function makeCanvasElementPropsSafe(props: any): any {
   })
 }
 
+function attachDataUidToRoot(
+  originalResponse: React.ReactElement | null | undefined,
+  dataUid: string | null,
+): React.ReactElement | null
+function attachDataUidToRoot(
+  originalResponse: Array<React.ReactElement | null>,
+  dataUid: string | null,
+): Array<React.ReactElement | null>
+function attachDataUidToRoot(
+  originalResponse: React.ReactElement | Array<React.ReactElement | null> | null | undefined,
+  dataUid: string | null,
+): React.ReactElement | Array<React.ReactElement | null> | null {
+  if (originalResponse == null || dataUid == null) {
+    return originalResponse as null
+  } else if ((originalResponse as any).monkeyEscapeHatch != null) {
+    return originalResponse
+  } else if (Array.isArray(originalResponse)) {
+    // the response was an array of elements
+    return originalResponse.map((element) => attachDataUidToRoot(element, dataUid))
+  } else {
+    const finalElement = {
+      ...originalResponse,
+      props: {
+        ...originalResponse.props,
+        'data-uid': dataUid,
+      },
+    } as React.ReactElement
+    return finalElement
+  }
+}
+
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
     return (p) => {
       let originalTypeResponse = (type as React.FunctionComponent)(p)
-      if ((p as any)['data-uid'] == null) {
-        // if there is no data-uid coming in to the parent's props, let's just return
-        // and avoid overriding any data-uids there might be from the real code
-        return originalTypeResponse
-      }
-      if (originalTypeResponse == null) {
-        return null
-      } else {
-        return {
-          ...originalTypeResponse,
-          props: {
-            ...originalTypeResponse.props,
-            'data-uid': (p as any)['data-uid'],
-          },
-        } as React.ReactElement
-      }
+      const res = attachDataUidToRoot(originalTypeResponse, (p as any)['data-uid'])
+      return res
     }
   },
   {
@@ -285,45 +302,62 @@ const mangleFunctionType = Utils.memoize(
 const mangleClassType = Utils.memoize(
   (type: any) => {
     const originalRender = type.prototype.render
+    // TODO mutation
     type.prototype.render = function monkeyRender() {
       let originalTypeResponse = originalRender.bind(this)()
-      if ((this.props as any)['data-uid'] == null) {
-        // if there is no data-uid coming in to the parent's props, let's just return
-        // and avoid overriding any data-uids there might be from the real code
-        return originalTypeResponse
-      }
-      if (originalTypeResponse == null) {
-        return null
-      } else {
-        return {
-          ...originalTypeResponse,
-          props: {
-            ...originalTypeResponse.props,
-            'data-uid': (this.props as any)['data-uid'],
-          },
-        } as React.ReactElement
-      }
+      return attachDataUidToRoot(originalTypeResponse, (this.props as any)['data-uid'])
     }
     return type
-    // const newRenderFunction = (p: unknown) => {
-    //   let originalTypeResponse = type?.render?.() || new type(p).render()
-    //   if ((p as any)['data-uid'] == null) {
-    //     // if there is no data-uid coming in to the parent's props, let's just return
-    //     // and avoid overriding any data-uids there might be from the real code
-    //     return originalTypeResponse
-    //   }
-    //   if (originalTypeResponse == null) {
-    //     return null
-    //   } else {
-    //     return {
-    //       ...originalTypeResponse,
-    //       props: {
-    //         ...originalTypeResponse.props,
-    //         'data-uid': (p as any)['data-uid'],
-    //       },
-    //     } as React.ReactElement
-    //   }
-    // }
+  },
+  {
+    maxSize: 10000,
+  },
+)
+
+const mangleExoticType = Utils.memoize(
+  (type: React.ComponentType): React.FunctionComponent => {
+    const wrapperComponent = (p: any) => {
+      if (p['data-uid'] == null) {
+        // early return for the cases where there's no data-uid
+        return realCreateElement(type, p)
+      }
+      if (p.children == null || typeof p.children === 'string') {
+        return realCreateElement(type, p)
+      } else if (typeof p.children === 'function') {
+        // mangle the function so that what we returns has the data uid
+        const originalFunction = p.children
+        const newProps = {
+          ...p,
+          children: function (...params: any[]) {
+            const originalResponse = originalFunction(...params)
+            return attachDataUidToRoot(originalResponse, p['data-uid'])
+          },
+        }
+
+        return realCreateElement(type, newProps)
+      } else {
+        // const originalRenderResult = realCreateElement(type, p)
+        // console.log('exocity', originalRenderResult)
+        // return attachDataUidToRoot(originalRenderResult, p['data-uid'])
+        const mangledChildren = React.Children.map(p.children, (child) => {
+          if (child == null || child.props?.['data-uid'] != null) {
+            return child
+          } else {
+            return React.cloneElement(
+              child,
+              p['data-uid'] != null ? { 'data-uid': p['data-uid'] } : {},
+            )
+          }
+        })
+        const mangledProps = {
+          ...p,
+          children: mangledChildren,
+        }
+        return realCreateElement(type as any, mangledProps)
+      }
+    }
+    ;(wrapperComponent as any).theOriginalType = type
+    return wrapperComponent
   },
   {
     maxSize: 10000,
@@ -331,14 +365,18 @@ const mangleClassType = Utils.memoize(
 )
 
 function barebonesCreatePatch(type: any, props: any, ...children: any): any {
-  if (typeof type?.prototype?.isReactComponent === 'object') {
-    const mangledClass = mangleClassType(type)
-    ;(mangledClass as any).theOriginalType = type
-    return realCreateElement(mangledClass, props, ...children)
-  } else if (typeof type === 'function') {
-    const mangledType: React.FunctionComponent = mangleFunctionType(type)
-    ;(mangledType as any).theOriginalType = type
-    return realCreateElement(mangledType, props, ...children)
+  if (props?.['key'] !== 'monkey-oh-monkey-please-leave-me-be') {
+    if (typeof type?.prototype?.isReactComponent === 'object') {
+      const mangledClass = mangleClassType(type)
+      ;(mangledClass as any).theOriginalType = type
+      return realCreateElement(mangledClass, props, ...children)
+    } else if (typeof type === 'function') {
+      const mangledType: React.FunctionComponent = mangleFunctionType(type)
+      ;(mangledType as any).theOriginalType = type
+      return realCreateElement(mangledType, props, ...children)
+    } else if (typeof type !== 'string') {
+      return realCreateElement(mangleExoticType(type), props, ...children)
+    }
   }
   return realCreateElement(type, props, ...children)
 }

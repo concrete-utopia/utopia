@@ -758,6 +758,8 @@ interface SceneRootProps extends CanvasReactReportErrorCallback {
 
   sceneUID: string
   sceneLabel: string | undefined
+
+  'data-uid': string // the data uid
 }
 
 const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
@@ -776,6 +778,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     jsxFactoryFunctionName,
     component,
     sceneUID,
+    'data-uid': dataUidIgnore,
     ...inputProps
   } = props
 
@@ -825,6 +828,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       ...inputProps,
       ...componentProps,
       layout: passthroughLayout,
+      key: 'monkey-oh-monkey-please-leave-me-be',
     }
 
     rootElement = renderComponentUsingJsxFactoryFunction(
@@ -852,8 +856,11 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       : UtopiaStyles.scene.editing.boxShadow,
   }
 
-  return (
-    <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths, scenePath: scenePath }}>
+  const result = (
+    <SceneLevelUtopiaContext.Provider
+      value={{ validPaths: validPaths, scenePath: scenePath }}
+      key='monkey-oh-monkey-please-leave-me-be'
+    >
       <View
         data-utopia-scene-id={TP.toString(scenePath)}
         data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
@@ -862,11 +869,16 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
           ...frame,
           ...container,
         }}
+        key='monkey-oh-monkey-please-leave-me-be'
       >
         {rootElement}
       </View>
     </SceneLevelUtopiaContext.Provider>
   )
+  return {
+    ...result,
+    monkeyEscapeHatch: true,
+  }
 }
 SceneRoot.displayName = 'SceneRoot'
 
@@ -972,6 +984,7 @@ function renderCoreElement(
         component={rootComponentName}
         sceneUID={sceneId}
         sceneLabel={sceneProps['data-label']}
+        data-uid='ignore'
       />
     )
   }

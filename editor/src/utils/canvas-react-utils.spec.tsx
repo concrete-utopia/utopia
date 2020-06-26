@@ -15,12 +15,20 @@ describe('Monkey Function', () => {
   it('works for simple class components', () => {
     class TestClass extends React.Component {
       render() {
-        return <div>Hello!</div>
+        return (
+          <div data-uid='cica'>
+            <div data-uid='kutya'>Hello!</div>
+            <div data-uid='majom'>Hello!</div>
+          </div>
+        )
       }
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-uid=\\"test1\\">
+        <div data-uid=\\"kutya\\">Hello!</div>
+        <div data-uid=\\"majom\\">Hello!</div>
+      </div>
       "
     `)
   })
@@ -93,14 +101,18 @@ describe('Monkey Function', () => {
   it('works for simple function components', () => {
     const TestComponent: React.FunctionComponent<{}> = (props) => {
       return (
-        <div>
-          <div>hi!</div>
+        <div data-uid='test1'>
+          <div data-uid='kutya'>Hello!</div>
+          <div data-uid='majom'>Hello!</div>
         </div>
       )
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\"><div>hi!</div></div>
+      "<div data-uid=\\"test1\\">
+        <div data-uid=\\"kutya\\">Hello!</div>
+        <div data-uid=\\"majom\\">Hello!</div>
+      </div>
       "
     `)
   })
@@ -303,6 +315,35 @@ describe('Monkey Function', () => {
     `)
   })
 
+  it('The Storyboard is a special fragment that we leave alone', () => {
+    const Component = () => {
+      return <div data-uid='cica'>Hello!</div>
+    }
+
+    const SceneRoot = (props: { toRender: any; 'data-uid': string }) => {
+      const { toRender, 'data-uid': uid, ...restProps } = props
+      const result = React.createElement(toRender, restProps)
+      return { ...result, monkeyEscapeHatch: true }
+    }
+
+    const Storyboard = (props: React.PropsWithChildren<any>) => {
+      return (
+        <React.Fragment key='monkey-oh-monkey-please-leave-me-be'>{props.children}</React.Fragment>
+      )
+    }
+
+    expect(
+      renderToFormattedString(
+        <Storyboard data-uid='ignore'>
+          <SceneRoot data-uid='scene' toRender={Component} />
+        </Storyboard>,
+      ),
+    ).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\">Hello!</div>
+      "
+    `)
+  })
+
   it('Context providers work', () => {
     const MyContext = React.createContext('wrong!')
     const Component = () => {
@@ -398,6 +439,7 @@ describe('Monkey Function', () => {
               placeholder=\\"Select date\\"
               title=\\"\\"
               size=\\"12\\"
+              data-uid=\\"aaa\\"
               autocomplete=\\"off\\"
             /><span class=\\"ant-picker-suffix\\"
               ><span role=\\"img\\" aria-label=\\"calendar\\" class=\\"anticon anticon-calendar\\"
@@ -418,6 +460,58 @@ describe('Monkey Function', () => {
           </div>
         </div>
       </div>
+      "
+    `)
+  })
+
+  it('mapped children works', () => {
+    const App = () => {
+      return (
+        <div data-uid='zzz'>
+          {[1, 2, 3].map((n) => {
+            return (
+              <div data-uid='aaa' key={n}>
+                {[4, 5, 6].map((m) => {
+                  return (
+                    <div key={m} data-uid='bbb'>
+                      {n * m}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
+      )
+    }
+    expect(renderToFormattedString(<App data-uid='cica' />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\">
+        <div data-uid=\\"aaa\\">
+          <div data-uid=\\"bbb\\">4</div>
+          <div data-uid=\\"bbb\\">5</div>
+          <div data-uid=\\"bbb\\">6</div>
+        </div>
+        <div data-uid=\\"aaa\\">
+          <div data-uid=\\"bbb\\">8</div>
+          <div data-uid=\\"bbb\\">10</div>
+          <div data-uid=\\"bbb\\">12</div>
+        </div>
+        <div data-uid=\\"aaa\\">
+          <div data-uid=\\"bbb\\">12</div>
+          <div data-uid=\\"bbb\\">15</div>
+          <div data-uid=\\"bbb\\">18</div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('this weird guy works', () => {
+    const App = () => {
+      return <div data-uid='zzz'>{[' ']}hello!</div>
+    }
+    expect(renderToFormattedString(<App data-uid='cica' />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\">hello!</div>
       "
     `)
   })

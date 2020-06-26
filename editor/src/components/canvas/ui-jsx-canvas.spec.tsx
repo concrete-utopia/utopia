@@ -214,8 +214,12 @@ function testCanvasRender(possibleProps: PartialCanvasProps | null, code: string
     errorsReportedSpyDisabled,
     spyValues,
   } = renderCanvasReturnResultAndError(possibleProps, code)
-  expect(errorsReportedSpyEnabled.length).toBe(0)
-  expect(errorsReportedSpyDisabled.length).toBe(0)
+  if (errorsReportedSpyEnabled.length > 0) {
+    throw new Error(`Canvas Tests, Spy Enabled: Errors reported: ${errorsReportedSpyEnabled}`)
+  }
+  if (errorsReportedSpyDisabled.length > 0) {
+    throw new Error(`Canvas Tests, Spy Disabled: Errors reported: ${errorsReportedSpyDisabled}`)
+  }
 
   // Spy enabled or disabled should have no effect on the rendered HTML
   expect(formattedSpyEnabled).toEqual(formattedSpyDisabled)
