@@ -119,7 +119,6 @@ function deriveStateFromNewColor(
     normalisedSaturationPosition: s,
     normalisedValuePosition: v,
     normalisedAlphaPosition: color.alpha(),
-    hexa: color.hex('auto').toUpperCase(),
     __updateComingFromSetState: false,
   }
 }
@@ -143,7 +142,6 @@ interface ColorPickerPositions {
 }
 
 export interface ColorPickerInnerState extends ColorPickerPositions {
-  hexa: string
   __updateComingFromSetState: string | boolean
 }
 
@@ -215,7 +213,7 @@ export class ColorPickerInner extends React.Component<
         return null
       } else {
         const newCalculatedState = deriveStateFromNewColor(chroma, state.normalisedHuePosition)
-        return { ...newCalculatedState, _propsHexa: newCalculatedState.hexa }
+        return { ...newCalculatedState, _propsHexa: chroma.hex('auto').toUpperCase() }
       }
     }
   }
@@ -240,7 +238,6 @@ export class ColorPickerInner extends React.Component<
       normalisedSaturationPosition: s,
       normalisedValuePosition: v,
       normalisedAlphaPosition: a,
-      hexa: newHex,
       __updateComingFromSetState: 'newhsva',
     })
     this.submitNewColor(newChromaValue, transient)
@@ -562,7 +559,7 @@ export class ColorPickerInner extends React.Component<
           <StringControl
             ref={this.RefFirstControl}
             key={this.props.id}
-            value={this.state.hexa}
+            value={chroma.hex('auto').toUpperCase()}
             onSubmitValue={this.onSubmitValueHex}
             controlStatus='simple'
             controlStyles={getControlStyles('simple')}
