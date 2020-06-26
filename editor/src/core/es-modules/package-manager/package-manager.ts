@@ -115,30 +115,23 @@ export function getRequireFn(
            *
            */
 
-          // MUTATION
-          resolvedFile.evalResultCache = {
+          // TODO this is the node.js `module` object we pass in to the evaluation scope.
+          // we should extend the module objects so it not only contains the exports,
+          // to have feature parity with the popular bundlers (Parcel / webpack)
+          let partialModule = {
             exports: {},
           }
+          // MUTATION
+          resolvedFile.evalResultCache = partialModule
           function partialRequire(name: string): unknown {
             return require(resolvedPath!, name)
           }
-          const exports = injectedEvaluator(
+          injectedEvaluator(
             resolvedPath,
             resolvedFile.fileContents,
-            resolvedFile.evalResultCache.exports,
+            resolvedFile.evalResultCache,
             partialRequire,
           )
-
-          /**
-           * in case the evaluator was not mutating the exports object.
-           * this can happen if the evaluated module uses the `module.exports = ..` syntax to
-           * reassign the value of the exports object, which is what react-spring's module format does.
-           *
-           * https://nodejs.org/api/modules.html#modules_module_exports
-           *
-           */
-          // MUTATION
-          resolvedFile.evalResultCache.exports = exports
         }
         return resolvedFile.evalResultCache.exports
       } else if (isEsRemoteDependencyPlaceholder(resolvedFile)) {
