@@ -26,7 +26,5 @@ Mouse pointer should change when it's no longer over edge of an element that cou
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Labels and Project**
-- [ ] Please please add it to the Utopia project, where it will go into triage automatically. If you don't do that, you risk it being lost or ignored (or worse, duplicated)
-- [ ] Please add up to three labels if you know them, it really helps w/ triage.
-- [ ] Remove the 'bug' or 'perceived bug' if you don't think they describe the issue. (They've both been added by default in this template)
+**Sample Code**
+If applicable, add sample code to help explain your problem
