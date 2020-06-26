@@ -805,6 +805,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
             element.name.baseVariable === 'p' ||
             element.name.baseVariable === 'b' ||
             element.name.baseVariable === 'em' ||
+            element.name.baseVariable === 'ul' ||
             element.name.baseVariable === 'li'
           ) {
             return element.name.baseVariable
@@ -834,8 +835,8 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
 }
 
 const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
-  text: ['view', 'div', 'span', 'text', 'h1', 'h2', 'h3', 'h4', 'p', 'ul', 'li'],
-  textShadow: ['view', 'div', 'span', 'text', 'h1', 'h2', 'h3', 'h4', 'p', 'ul', 'li'],
+  text: ['view', 'div', 'span', 'text', 'h1', 'h2', 'h3', 'h4', 'p', 'ul', 'li', 'em', 'b'],
+  textShadow: ['view', 'div', 'span', 'text', 'h1', 'h2', 'h3', 'h4', 'p', 'ul', 'li', 'em', 'b'],
   shadow: true,
   border: true,
   opacity: true,
