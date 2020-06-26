@@ -795,7 +795,18 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
         if (isUtopiaAPIComponent(element.name, imports)) {
           return getJSXElementNameLastPart(element.name).toString().toLowerCase()
         } else if (isHTMLComponent(element.name, imports)) {
-          if (element.name.baseVariable === 'div' || element.name.baseVariable === 'span') {
+          if (
+            element.name.baseVariable === 'div' ||
+            element.name.baseVariable === 'span' ||
+            element.name.baseVariable === 'h1' ||
+            element.name.baseVariable === 'h2' ||
+            element.name.baseVariable === 'h3' ||
+            element.name.baseVariable === 'h4' ||
+            element.name.baseVariable === 'p' ||
+            element.name.baseVariable === 'b' ||
+            element.name.baseVariable === 'em' ||
+            element.name.baseVariable === 'li'
+          ) {
             return element.name.baseVariable
           } else {
             return 'HTML'
@@ -823,8 +834,8 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
 }
 
 const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
-  text: ['div', 'span', 'text'],
-  textShadow: ['div', 'span', 'text'],
+  text: ['view', 'div', 'span', 'text', 'h1', 'h2', 'h3', 'h4', 'p', 'ul', 'li'],
+  textShadow: ['view', 'div', 'span', 'text', 'h1', 'h2', 'h3', 'h4', 'p', 'ul', 'li'],
   shadow: true,
   border: true,
   opacity: true,
