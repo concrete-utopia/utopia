@@ -389,8 +389,8 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<App />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"aaa\\">
-        <div class=\\"ant-picker\\">
+      "<div>
+        <div class=\\"ant-picker\\" data-uid=\\"aaa\\">
           <div class=\\"ant-picker-input\\">
             <input
               readonly=\\"\\"
