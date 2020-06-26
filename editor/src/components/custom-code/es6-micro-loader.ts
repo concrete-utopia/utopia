@@ -21,6 +21,10 @@ import { RequireFn } from '../../core/shared/npm-dependency-types'
 import Utils from '../../utils/utils'
 import { normalizeName } from './custom-code-utils'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
+import {
+  createDependencyNotFoundError,
+  DependencyNotFoundErrorName,
+} from '../../core/es-modules/package-manager/package-manager'
 
 var seen: { [key: string]: boolean } = {}
 var internalRegistry: { [key: string]: any } = {}
@@ -66,9 +70,7 @@ function get(importOrigin: string, name: string, skipRegistering: boolean) {
     ensuredExecute(normalizedName, skipRegistering) ||
     requireFn(importOrigin, name)
   if (importResult === undefined) {
-    const error = new Error(`Could not find dependency: '${name}' relative to '${importOrigin}'`)
-    error.name = 'DependencyNotFoundError'
-    throw error
+    throw createDependencyNotFoundError(name, importOrigin)
   }
   if (importResult != null && typeof importResult === 'object' && importResult['default'] == null) {
     // allowSyntheticDefaultImports: true
@@ -134,10 +136,12 @@ export var System = {
           let imports: any
           try {
             imports = externalRegistry[dep] || requireFn('/', dep)
-          } catch {
-            // tslint:disable-next-line:no-empty
-            // Capturing the case where `requireFn` throws an exception as it should do
-            // when something does not exist.
+          } catch (error) {
+            // If this is something other than the dependency not found error
+            // propagate it upwards.
+            if (error.name !== DependencyNotFoundErrorName) {
+              throw error
+            }
           }
           if (imports == null) {
             imports = get('./', dep, false) && internalRegistry[dep].values // optimization to pass plain values instead of bindings

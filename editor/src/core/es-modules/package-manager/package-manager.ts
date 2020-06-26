@@ -19,9 +19,11 @@ import { memoize } from '../../shared/memoize'
 import { mapArrayToDictionary } from '../../shared/array-utils'
 import { updateNodeModulesContents } from '../../../components/editor/actions/actions'
 
+export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
+
 export function createDependencyNotFoundError(importOrigin: string, toImport: string) {
   let error = new Error(`Could not find dependency: '${toImport}' relative to '${importOrigin}'`)
-  error.name = 'DependencyNotFoundError'
+  error.name = DependencyNotFoundErrorName
   return error
 }
 
