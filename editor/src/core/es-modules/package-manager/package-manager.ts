@@ -122,18 +122,18 @@ export function getRequireFn(
             exports: {},
           }
           // MUTATION
-          resolvedFile.evalResultCache = partialModule
+          resolvedFile.evalResultCache = { module: partialModule }
           function partialRequire(name: string): unknown {
             return require(resolvedPath!, name)
           }
           injectedEvaluator(
             resolvedPath,
             resolvedFile.fileContents,
-            resolvedFile.evalResultCache,
+            resolvedFile.evalResultCache.module,
             partialRequire,
           )
         }
-        return resolvedFile.evalResultCache.exports
+        return resolvedFile.evalResultCache.module.exports
       } else if (isEsRemoteDependencyPlaceholder(resolvedFile)) {
         if (!resolvedFile.downloadStarted) {
           // return empty exports object, fire off an async job to fetch the dependency from jsdelivr
