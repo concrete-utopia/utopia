@@ -340,7 +340,11 @@ const mangleExoticType = Utils.memoize(
         // console.log('exocity', originalRenderResult)
         // return attachDataUidToRoot(originalRenderResult, p['data-uid'])
         const mangledChildren = React.Children.map(p.children, (child) => {
-          if (child == null || child.type == null || child.props?.['data-uid'] != null) {
+          if (
+            (!React.isValidElement(child) as any) ||
+            child == null ||
+            child.props?.['data-uid'] != null
+          ) {
             return child
           } else {
             return React.cloneElement(
