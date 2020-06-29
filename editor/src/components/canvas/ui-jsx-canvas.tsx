@@ -855,7 +855,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       : UtopiaStyles.scene.editing.boxShadow,
   }
 
-  const result = (
+  return (
     <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths, scenePath: scenePath }}>
       <View
         data-utopia-scene-id={TP.toString(scenePath)}
@@ -870,10 +870,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       </View>
     </SceneLevelUtopiaContext.Provider>
   )
-  return {
-    ...result,
-    // monkeyEscapeHatch: true,
-  }
 }
 SceneRoot.displayName = 'SceneRoot'
 
