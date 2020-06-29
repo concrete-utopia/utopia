@@ -275,13 +275,7 @@ function attachDataUidToRoot(
     // the response was an array of elements
     return originalResponse.map((element) => attachDataUidToRoot(element, dataUid))
   } else {
-    const finalElement = {
-      ...originalResponse,
-      props: {
-        ...originalResponse.props,
-        'data-uid': dataUid,
-      },
-    } as React.ReactElement
+    const finalElement = React.cloneElement(originalResponse, { 'data-uid': dataUid })
     return finalElement
   }
 }
