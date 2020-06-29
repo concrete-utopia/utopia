@@ -3424,13 +3424,13 @@ function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string>
   )
 }
 
-const parenthesesRegexp = /['"]+/g
+const quoteMarksRegexp = /['"]+/g
 
 function parseFontFamily(fontFamily: unknown): Either<string, CSSFontFamily> {
   if (typeof fontFamily === 'string' && fontFamily.length > 0) {
     const trimmed = fontFamily.trim()
     const split = trimmed.split(',')
-    const splitAndTrimmed = split.map((font) => font.trim().replace(parenthesesRegexp, ''))
+    const splitAndTrimmed = split.map((font) => font.trim().replace(quoteMarksRegexp, ''))
     return right(splitAndTrimmed)
   } else {
     return left('No valid fontFamily found')
