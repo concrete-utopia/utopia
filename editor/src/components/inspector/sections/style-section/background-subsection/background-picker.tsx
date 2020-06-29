@@ -363,7 +363,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
 
 function getSelectedColor(
   value: CSSSolidBackgroundLayer | CSSGradientBackgroundLayer,
-  selectedStopIndex?: number,
+  selectedStopIndex: number,
 ) {
   switch (value.type) {
     case 'solid-background-layer': {
@@ -372,7 +372,7 @@ function getSelectedColor(
     case 'linear-gradient-background-layer':
     case 'radial-gradient-background-layer':
     case 'conic-gradient-background-layer': {
-      return value.stops[selectedStopIndex ?? 0].color
+      return value.stops[selectedStopIndex].color
     }
     default: {
       const _exhaustiveCheck: never = value
@@ -528,7 +528,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
             ) : null}
             {isCSSSolidBackgroundLayer(props.value) || isCSSGradientBackgroundLayer(props.value) ? (
               <ColorPickerInner
-                value={getSelectedColor(props.value)}
+                value={getSelectedColor(props.value, selectedStopIndex)}
                 onSubmitValue={onSubmitColorValue}
                 onTransientSubmitValue={onTransientSubmitColorValue}
                 offsetX={props.offsetX}
