@@ -352,6 +352,9 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
 
     const deleteStop = (index: number) => {
       if (props.stops.length > 2) {
+        if (props.selectedIndex !== 0 && props.selectedIndex === props.stops.length - 1) {
+          props.setSelectedIndex(props.selectedIndex - 1)
+        }
         const newValue = [...props.stops]
         newValue.splice(index, 1)
         props.onSubmitValue(newValue)
