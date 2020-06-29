@@ -101,7 +101,7 @@ const mangleFunctionType = Utils.memoize(
 const mangleClassType = Utils.memoize(
   (type: any) => {
     const originalRender = type.prototype.render
-    // TODO mutation
+    // mutation
     type.prototype.render = function monkeyRender() {
       let originalTypeResponse = originalRender.bind(this)()
       return attachDataUidToRoot(originalTypeResponse, (this.props as any)['data-uid'])
