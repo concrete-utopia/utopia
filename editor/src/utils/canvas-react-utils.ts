@@ -318,7 +318,7 @@ const mangleExoticType = Utils.memoize(
       if (p.children == null || typeof p.children === 'string') {
         return realCreateElement(type, p)
       } else if (typeof p.children === 'function') {
-        // mangle the function so that what we returns has the data uid
+        // mangle the function so that what it returns has the data uid
         const originalFunction = p.children
         const newProps = {
           ...p,
@@ -330,9 +330,6 @@ const mangleExoticType = Utils.memoize(
 
         return realCreateElement(type, newProps)
       } else {
-        // const originalRenderResult = realCreateElement(type, p)
-        // console.log('exocity', originalRenderResult)
-        // return attachDataUidToRoot(originalRenderResult, p['data-uid'])
         const mangledChildren = React.Children.map(p.children, (child) => {
           if (
             (!React.isValidElement(child) as any) ||
