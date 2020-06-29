@@ -372,7 +372,12 @@ function barebonesCreatePatch(type: any, props: any, ...children: any): any {
       const mangledType: React.FunctionComponent = mangleFunctionType(type)
       ;(mangledType as any).theOriginalType = type
       return realCreateElement(mangledType, props, ...children)
-    } else if (typeof type !== 'string') {
+    } else if (
+      type == React.Fragment ||
+      type?.$$typeof == Symbol.for('react.fragment') ||
+      type?.$$typeof == Symbol.for('react.provider') ||
+      type?.$$typeof == Symbol.for('react.context')
+    ) {
       return realCreateElement(mangleExoticType(type), props, ...children)
     }
   }
