@@ -146,12 +146,12 @@ export function dragComponent(
         constrainedDragAxis,
         Utils.offsetPoint(roundedDragDelta, snapDelta),
       )
-      const updatedFrame = Utils.optionalMap(
-        (f) => Utils.offsetRect(f, dragDeltaToApply),
-        originalFrame.frame,
-      )
-      if (updatedFrame != null) {
-        dragChanges.push(pinMoveChange(view, updatedFrame))
+      // const updatedFrame = Utils.optionalMap(
+      //   (f) => Utils.offsetRect(f, dragDeltaToApply),
+      //   originalFrame.frame,
+      // )
+      if (originalFrame.frame != null) {
+        dragChanges.push(pinMoveChange(view, dragDeltaToApply))
       }
     }
   })

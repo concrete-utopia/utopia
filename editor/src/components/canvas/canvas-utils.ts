@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 import {
-  FramePin,
   FramePoint,
   HorizontalFramePointsExceptSize,
   isFramePoint,
@@ -11,6 +10,8 @@ import {
   VerticalFramePointsExceptSize,
   VerticalFramePoints,
   HorizontalFramePoints,
+  isHorizontalPoint,
+  numberPartOfPin,
 } from 'utopia-api'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import {
@@ -296,7 +297,6 @@ export function updateFramesOfScenesAndComponents(
     if (TP.isScenePath(target)) {
       switch (frameAndTarget.type) {
         case 'PIN_FRAME_CHANGE':
-        case 'PIN_MOVE_CHANGE':
         case 'PIN_SIZE_CHANGE':
           // Update scene with pin based frame.
           const sceneStaticpath = createSceneTemplatePath(target)
@@ -328,6 +328,9 @@ export function updateFramesOfScenesAndComponents(
             },
           )
           break
+        case 'PIN_MOVE_CHANGE': {
+          break
+        }
         case 'FLEX_MOVE':
         case 'FLEX_RESIZE':
           throw new Error(
@@ -428,25 +431,25 @@ export function updateFramesOfScenesAndComponents(
           )
         }
       } else {
+        let parentFrame: CanvasRectangle | null = null
+        if (optionalParentFrame == null) {
+          const nonGroupParent = MetadataUtils.findNonGroupParent(metadata, originalTarget)
+          parentFrame =
+            nonGroupParent == null
+              ? null
+              : MetadataUtils.getFrameInCanvasCoords(nonGroupParent, metadata)
+        } else {
+          parentFrame = optionalParentFrame
+        }
+        const parentOffset =
+          parentFrame == null
+            ? ({ x: 0, y: 0 } as CanvasPoint)
+            : ({ x: parentFrame.x, y: parentFrame.y } as CanvasPoint)
+
         switch (frameAndTarget.type) {
           case 'PIN_FRAME_CHANGE':
-          case 'PIN_MOVE_CHANGE':
           case 'PIN_SIZE_CHANGE':
             if (frameAndTarget.frame != null) {
-              let parentFrame: CanvasRectangle | null = null
-              if (optionalParentFrame == null) {
-                const nonGroupParent = MetadataUtils.findNonGroupParent(metadata, originalTarget)
-                parentFrame =
-                  nonGroupParent == null
-                    ? null
-                    : MetadataUtils.getFrameInCanvasCoords(nonGroupParent, metadata)
-              } else {
-                parentFrame = optionalParentFrame
-              }
-              const parentOffset =
-                parentFrame == null
-                  ? ({ x: 0, y: 0 } as CanvasPoint)
-                  : ({ x: parentFrame.x, y: parentFrame.y } as CanvasPoint)
               const newLocalFrame = Utils.getLocalRectangleInNewParentContext(
                 parentOffset,
                 frameAndTarget.frame,
@@ -549,14 +552,6 @@ export function updateFramesOfScenesAndComponents(
               const propsToUpdate: Array<FramePoint> = whichPropsToUpdate()
 
               Utils.fastForEach(propsToUpdate, (propToUpdate) => {
-                if (
-                  frameAndTarget.type === 'PIN_MOVE_CHANGE' &&
-                  (propToUpdate === FramePoint.Width || propToUpdate === FramePoint.Height)
-                ) {
-                  // for PIN_MOVE_CHANGE, we don't bother adding new size props, we only care about the L, T, R, B, Cx, Cy props
-                  return
-                }
-
                 const absoluteValue = fullFrame[propToUpdate]
                 const previousValue =
                   currentFullFrame == null ? null : currentFullFrame[propToUpdate]
@@ -590,6 +585,41 @@ export function updateFramesOfScenesAndComponents(
             }
             break
 
+          case 'PIN_MOVE_CHANGE': {
+            let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
+            Utils.fastForEach(LayoutPinnedProps, (p) => {
+              if (p !== 'Width' && p !== 'Height') {
+                const value = getLayoutProperty(p, right(element.props))
+                if (isLeft(value) || value.value != null) {
+                  frameProps[framePointForPinnedProp(p)] = value.value
+                  propsToSkip.push(createLayoutPropertyPath(p))
+                }
+              }
+            })
+
+            let framePointsToUse: Array<FramePoint> = [...(Object.keys(frameProps) as FramePoint[])]
+            const horizontalExistingFramePoints = framePointsToUse.filter(
+              (p) => HorizontalFramePointsExceptSize.indexOf(p) > -1,
+            )
+            if (horizontalExistingFramePoints.length === 0) {
+              framePointsToUse.push(FramePoint.Left)
+            }
+            const verticalExistingFramePoints = framePointsToUse.filter(
+              (p) => VerticalFramePointsExceptSize.indexOf(p) > -1,
+            )
+            if (verticalExistingFramePoints.length === 0) {
+              framePointsToUse.push(FramePoint.Top)
+            }
+            propsToSet.push(
+              ...getPropsToSetToMoveElement(
+                frameAndTarget.delta,
+                framePointsToUse,
+                frameProps,
+                parentFrame,
+              ),
+            )
+            break
+          }
           case 'FLEX_MOVE':
           case 'FLEX_RESIZE':
             throw new Error(
@@ -661,6 +691,117 @@ export function updateFramesOfScenesAndComponents(
     }
   })
   return workingComponentsResult
+}
+
+function getPropsToSetToMoveElement(
+  dragDelta: CanvasVector,
+  framePoints: FramePoint[],
+  frameProps: { [k: string]: string | number | undefined },
+  parentFrame: CanvasRectangle | null,
+): ValueAtPath[] {
+  function updatedValueForProp(framePoint: FramePoint, delta: number): ValueAtPath | null {
+    if (delta !== 0) {
+      const existingProp = frameProps[framePoint]
+      const pinIsPercentage = existingProp == null ? false : isPercentPin(existingProp)
+      let valueToUse: string | number
+      if (existingProp != null && pinIsPercentage) {
+        const percentValue = numberPartOfPin(existingProp)
+        if (parentFrame != null) {
+          const referenceSize = isHorizontalPoint(framePoint)
+            ? parentFrame.width
+            : parentFrame.height
+          const deltaAsPercentValue = (delta / referenceSize) * 100
+          valueToUse = `${percentValue + deltaAsPercentValue}%`
+        } else {
+          valueToUse = `${percentValue + delta}%`
+        }
+      } else {
+        valueToUse = existingProp == null ? delta : Number(existingProp) + delta
+      }
+      return {
+        path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+        value: jsxAttributeValue(valueToUse),
+      }
+    }
+    return null
+  }
+
+  let propsToSet: ValueAtPath[] = []
+  Utils.fastForEach(framePoints, (framePoint) => {
+    const delta = isHorizontalPoint(framePoint) ? dragDelta.x : dragDelta.y
+    const shouldInvertValue = framePoint === FramePoint.Right || framePoint === FramePoint.Bottom
+    const updatedProp = updatedValueForProp(framePoint, shouldInvertValue ? -delta : delta)
+    if (updatedProp != null) {
+      propsToSet.push(updatedProp)
+    }
+  })
+  return propsToSet
+
+  // if (dragDelta.x !== 0) {
+  //   if (framePoints.includes(FramePoint.Left)) {
+  //     const updatedValue =
+  //       frameProps[FramePoint.Left] == null
+  //         ? dragDelta.x
+  //         : frameProps[FramePoint.Left] + dragDelta.x
+  //     propsToSet.push({
+  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.Left)),
+  //       value: jsxAttributeValue(updatedValue),
+  //     })
+  //   }
+  //   if (framePoints.includes(FramePoint.Right)) {
+  //     const updatedValue =
+  //       frameProps[FramePoint.Right] == null
+  //         ? frameAndTarget.delta.x
+  //         : frameProps[FramePoint.Right] - frameAndTarget.delta.x
+  //     propsToSet.push({
+  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.Right)),
+  //       value: jsxAttributeValue(updatedValue),
+  //     })
+  //   }
+  //   if (framePoints.includes(FramePoint.CenterX)) {
+  //     const updatedValue =
+  //       frameProps[FramePoint.CenterX] == null
+  //         ? frameAndTarget.delta.x
+  //         : frameProps[FramePoint.CenterX] + frameAndTarget.delta.x
+  //     propsToSet.push({
+  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.CenterX)),
+  //       value: jsxAttributeValue(updatedValue),
+  //     })
+  //   }
+  // }
+  // if (dragDelta.y !== 0) {
+  //   if (framePoints.includes(FramePoint.Top)) {
+  //     const updatedValue =
+  //       frameProps[FramePoint.Top] == null
+  //         ? frameAndTarget.delta.y
+  //         : frameProps[FramePoint.Top] + frameAndTarget.delta.y
+  //     propsToSet.push({
+  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.Top)),
+  //       value: jsxAttributeValue(updatedValue),
+  //     })
+  //   }
+  //   if (framePoints.includes(FramePoint.Bottom)) {
+  //     const updatedValue =
+  //       frameProps[FramePoint.Bottom] == null
+  //         ? frameAndTarget.delta.y
+  //         : frameProps[FramePoint.Bottom] - frameAndTarget.delta.y
+  //     propsToSet.push({
+  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.Bottom)),
+  //       value: jsxAttributeValue(updatedValue),
+  //     })
+  //   }
+  //   if (framePoints.includes(FramePoint.CenterY)) {
+  //     const updatedValue =
+  //       frameProps[FramePoint.CenterY] == null
+  //         ? dragDelta.y
+  //         : frameProps[FramePoint.CenterY] + dragDelta.y
+  //     propsToSet.push({
+  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.CenterY)),
+  //       value: jsxAttributeValue(updatedValue),
+  //     })
+  //   }
+  // }
+  // return propsToSet
 }
 
 export function getOriginalFrameInCanvasCoords(
@@ -1110,6 +1251,7 @@ export function produceResizeCanvasTransientState(
     Utils.fastForEach(elementsToTarget, (target) => {
       const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, target)
       if (originalFrame != null) {
+        // ES A MARGINNAL MI LESZ?
         const newTargetFrame = Utils.transformFrameUsingBoundingBox(
           newSize,
           boundingBox,
