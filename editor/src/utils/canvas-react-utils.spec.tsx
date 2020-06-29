@@ -11,6 +11,23 @@ function renderToFormattedString(element: React.ReactElement) {
   return formattedResult
 }
 
+const Storyboard = (props: React.PropsWithChildren<any>) => {
+  return <React.Fragment key='monkey-oh-monkey-please-leave-me-be'>{props.children}</React.Fragment>
+}
+
+const Scene = (props: {
+  component: any
+  'data-uid': string
+  style?: any
+  props?: any
+  layout?: any
+}) => {
+  const { component, 'data-uid': uid, style, ...restProps } = props
+  const child = React.createElement(component, { ...restProps, ...props.props })
+  const result = <div style={props.style}>{child}</div>
+  return { ...result, monkeyEscapeHatch: true }
+}
+
 describe('Monkey Function', () => {
   it('works for simple class components', () => {
     class TestClass extends React.Component {
@@ -320,26 +337,14 @@ describe('Monkey Function', () => {
       return <div data-uid='cica'>Hello!</div>
     }
 
-    const SceneRoot = (props: { toRender: any; 'data-uid': string }) => {
-      const { toRender, 'data-uid': uid, ...restProps } = props
-      const result = React.createElement(toRender, restProps)
-      return { ...result, monkeyEscapeHatch: true }
-    }
-
-    const Storyboard = (props: React.PropsWithChildren<any>) => {
-      return (
-        <React.Fragment key='monkey-oh-monkey-please-leave-me-be'>{props.children}</React.Fragment>
-      )
-    }
-
     expect(
       renderToFormattedString(
         <Storyboard data-uid='ignore'>
-          <SceneRoot data-uid='scene' toRender={Component} />
+          <Scene data-uid='scene' component={Component} />
         </Storyboard>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\">Hello!</div>
+      "<div><div data-uid=\\"cica\\">Hello!</div></div>
       "
     `)
   })
@@ -512,6 +517,40 @@ describe('Monkey Function', () => {
     }
     expect(renderToFormattedString(<App data-uid='cica' />)).toMatchInlineSnapshot(`
       "<div data-uid=\\"cica\\">hello!</div>
+      "
+    `)
+  })
+
+  it('this doesnt throw', () => {
+    const Thing = (props: any) => <div data-uid='ccc'>Hello {props.name}!</div>
+    const Thang = (props: any) => <div data-uid='ddd'>Hello {props.name}!</div>
+
+    var App = (props: any) => {
+      return (
+        <div data-uid='zzz'>
+          <Thing data-uid='aaa' name='World!' />
+          <Thang data-uid='bbb' name='Dolly!' />
+        </div>
+      )
+    }
+    var storyboard = (
+      <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          component={App}
+          layout={{ layoutSystem: 'pinSystem' }}
+          props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+          data-uid={'scene-aaa'}
+        />
+      </Storyboard>
+    )
+    expect(renderToFormattedString(storyboard)).toMatchInlineSnapshot(`
+      "<div style=\\"left: 0; top: 0; width: 400px; height: 400px;\\">
+        <div data-uid=\\"zzz\\">
+          <div data-uid=\\"aaa\\">Hello World!!</div>
+          <div data-uid=\\"bbb\\">Hello Dolly!!</div>
+        </div>
+      </div>
       "
     `)
   })

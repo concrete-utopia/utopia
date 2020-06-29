@@ -267,7 +267,8 @@ function attachDataUidToRoot(
   originalResponse: React.ReactElement | Array<React.ReactElement | null> | null | undefined,
   dataUid: string | null,
 ): React.ReactElement | Array<React.ReactElement | null> | null {
-  if (originalResponse == null || dataUid == null) {
+  if (originalResponse == null || dataUid == null || (originalResponse as any).type == null) {
+    // ez a .type == null csekk megjavitja a canvas teszteket, de eltori az antd-t ^
     return originalResponse as null
   } else if ((originalResponse as any).monkeyEscapeHatch != null) {
     return originalResponse
