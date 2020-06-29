@@ -875,7 +875,7 @@ describe('printBackgroundImage', () => {
         },
         Object {
           "type": "ATTRIBUTE_VALUE",
-          "value": "linear-gradient(#000 0%, #000 100%), linear-gradient(#000 0%, #fff 100%), /*radial-gradient(#000 0%, #fff 100%),*/ linear-gradient(90deg, #000 0%, #fff 100%), /*linear-gradient(#000 0%, #000 100%),*/ radial-gradient(#000 0%, #fff 100%)",
+          "value": "linear-gradient(#000 0%, #000 100%), linear-gradient(#000 0%, #fff 100%), /*radial-gradient(#000 0%, #fff 100%)*/ linear-gradient(90deg, #000 0%, #fff 100%), /*linear-gradient(#000 0%, #000 100%)*/ radial-gradient(#000 0%, #fff 100%)",
         },
       ]
     `)
