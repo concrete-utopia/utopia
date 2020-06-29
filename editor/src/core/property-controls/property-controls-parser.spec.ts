@@ -1,5 +1,4 @@
 import {
-  ControlType,
   NumberControlDescription,
   EnumControlDescription,
   BooleanControlDescription,
@@ -35,9 +34,9 @@ import {
   ParseError,
 } from '../../utils/value-parser-utils'
 
-const validNumberControlDescriptionValue: NumberControlDescription<any> = {
+const validNumberControlDescriptionValue: NumberControlDescription = {
   title: 'Number Title',
-  type: ControlType.Number,
+  type: 'number',
   defaultValue: 5,
   max: 10,
   min: 2,
@@ -54,7 +53,7 @@ describe('parseNumberControlDescription', () => {
   })
   it('parses a minimal value correctly', () => {
     const value = {
-      type: ControlType.Number,
+      type: 'number',
     }
     expect(parseNumberControlDescription(value)).toEqual(right(value))
   })
@@ -89,9 +88,9 @@ describe('parseNumberControlDescription', () => {
   })
 })
 
-const validEnumControlDescriptionValue: EnumControlDescription<any> = {
+const validEnumControlDescriptionValue: EnumControlDescription = {
   title: 'Enum Control',
-  type: ControlType.Enum,
+  type: 'enum',
   defaultValue: 5,
   options: ['hat', 5, true, undefined, null],
   optionTitles: ['first title', 'second title'],
@@ -106,7 +105,7 @@ describe('parseEnumControlDescription', () => {
   })
   it('parses a minimal value correctly', () => {
     const value = {
-      type: ControlType.Enum,
+      type: 'enum',
       options: ['hat', 5, true, undefined, null],
     }
     expect(parseEnumControlDescription(value)).toEqual(right(value))
@@ -147,9 +146,9 @@ describe('parseEnumControlDescription', () => {
   })
 })
 
-const validBooleanControlDescriptionValue: BooleanControlDescription<any> = {
+const validBooleanControlDescriptionValue: BooleanControlDescription = {
   title: 'Boolean Control',
-  type: ControlType.Boolean,
+  type: 'boolean',
   defaultValue: true,
   disabledTitle: 'Value is not set.',
   enabledTitle: 'Value is set',
@@ -163,7 +162,7 @@ describe('parseBooleanControlDescription', () => {
   })
   it('parses a minimal value correctly', () => {
     const value = {
-      type: ControlType.Boolean,
+      type: 'boolean',
     }
     expect(parseBooleanControlDescription(value)).toEqual(right(value))
   })
@@ -198,9 +197,9 @@ describe('parseBooleanControlDescription', () => {
   })
 })
 
-const validStringControlDescriptionValue: StringControlDescription<any> = {
+const validStringControlDescriptionValue: StringControlDescription = {
   title: 'String Control',
-  type: ControlType.String,
+  type: 'string',
   defaultValue: 'Some text',
   placeholder: 'Enter text',
   obscured: true,
@@ -214,7 +213,7 @@ describe('parseStringControlDescription', () => {
   })
   it('parses a minimal value correctly', () => {
     const value = {
-      type: ControlType.String,
+      type: 'string',
     }
     expect(parseStringControlDescription(value)).toEqual(right(value))
   })
@@ -249,9 +248,9 @@ describe('parseStringControlDescription', () => {
   })
 })
 
-const validSliderControlDescriptionValue: SliderControlDescription<any> = {
+const validSliderControlDescriptionValue: SliderControlDescription = {
   title: 'Slider Control',
-  type: ControlType.Slider,
+  type: 'slider',
   defaultValue: 5,
   min: 2,
   max: 10,
@@ -266,7 +265,7 @@ describe('parseSliderControlDescription', () => {
   })
   it('parses a minimal value correctly', () => {
     const value = {
-      type: ControlType.Slider,
+      type: 'slider',
       min: 2,
       max: 10,
       step: 1,
@@ -304,9 +303,9 @@ describe('parseSliderControlDescription', () => {
   })
 })
 
-const validPopUpListControlDescriptionValue: PopUpListControlDescription<any> = {
+const validPopUpListControlDescriptionValue: PopUpListControlDescription = {
   title: 'Pop Up List Control',
-  type: ControlType.PopUpList,
+  type: 'popuplist',
   defaultValue: 5,
   options: [
     { value: 5, label: 'Five' },
@@ -322,7 +321,7 @@ describe('parsePopUpListControlDescription', () => {
   })
   it('parses a minimal value correctly', () => {
     const value = {
-      type: ControlType.PopUpList,
+      type: 'popuplist',
       options: [],
     }
     expect(parsePopUpListControlDescription(value)).toEqual(right(value))
@@ -363,9 +362,9 @@ describe('parsePopUpListControlDescription', () => {
   })
 })
 
-const validOptionsControlDescriptionValue: OptionsControlDescription<any> = {
+const validOptionsControlDescriptionValue: OptionsControlDescription = {
   title: 'Pop Up List Control',
-  type: ControlType.Options,
+  type: 'options',
   defaultValue: 5,
   options: [
     { value: 5, label: 'Five' },
@@ -381,7 +380,7 @@ describe('parseOptionsControlDescription', () => {
   })
   it('parses a minimal value correctly', () => {
     const value = {
-      type: ControlType.Options,
+      type: 'options',
       options: [],
     }
     expect(parseOptionsControlDescription(value)).toEqual(right(value))
@@ -422,9 +421,9 @@ describe('parseOptionsControlDescription', () => {
   })
 })
 
-const validColorControlDescriptionValue: ColorControlDescription<any> = {
+const validColorControlDescriptionValue: ColorControlDescription = {
   title: 'Slider Control',
-  type: ControlType.Color,
+  type: 'color',
   defaultValue: '#FFFFFF',
 }
 
@@ -436,7 +435,7 @@ describe('parseColorControlDescription', () => {
   })
   it('parses a minimal value correctly', () => {
     const value = {
-      type: ControlType.Color,
+      type: 'color',
     }
     expect(parseColorControlDescription(value)).toEqual(right(value))
   })
@@ -490,9 +489,9 @@ describe('parseColorControlDescription', () => {
   })
 })
 
-const validComponentInstanceControlDescriptionValue: ComponentInstanceDescription<any> = {
+const validComponentInstanceControlDescriptionValue: ComponentInstanceDescription = {
   title: 'Component Instance Control',
-  type: ControlType.ComponentInstance,
+  type: 'componentinstance',
 }
 
 describe('parseComponentInstanceControlDescription', () => {
@@ -503,7 +502,7 @@ describe('parseComponentInstanceControlDescription', () => {
   })
   it('parses a minimal value correctly', () => {
     const value = {
-      type: ControlType.ComponentInstance,
+      type: 'componentinstance',
     }
     expect(parseComponentInstanceControlDescription(value)).toEqual(right(value))
   })
@@ -529,9 +528,9 @@ describe('parseComponentInstanceControlDescription', () => {
   })
 })
 
-const validIgnoreControlDescriptionValue: IgnoreControlDescription<any> = {
+const validIgnoreControlDescriptionValue: IgnoreControlDescription = {
   title: 'Ignore Description',
-  type: ControlType.Ignore,
+  type: 'ignore',
 }
 
 describe('parseIgnoreControlDescription', () => {
@@ -542,7 +541,7 @@ describe('parseIgnoreControlDescription', () => {
   })
   it('parses a minimal value correctly', () => {
     const value = {
-      type: ControlType.Ignore,
+      type: 'ignore',
     }
     expect(parseIgnoreControlDescription(value)).toEqual(right(value))
   })

@@ -139,7 +139,7 @@ export function handleGlobalKeyDown(
     }
     case '2': {
       if (altCmd) {
-        return [EditorActions.togglePanel('inspector')]
+        return [EditorActions.togglePanel('rightmenu')]
       } else {
         return []
       }

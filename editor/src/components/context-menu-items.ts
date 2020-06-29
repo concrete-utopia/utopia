@@ -82,7 +82,7 @@ export const pasteElements: ContextMenuItem<CanvasData> = {
 }
 
 export const toggleBackgroundLayersItem: ContextMenuItem<CanvasData> = {
-  name: 'Toggle All Background Fill Layers',
+  name: 'Toggle Fill',
   enabled: true,
   shortcut: 'F',
   action: (data, dispatch?: EditorDispatch) => {
