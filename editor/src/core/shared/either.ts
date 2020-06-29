@@ -89,7 +89,7 @@ export function mapEither<L, R1, R2>(
 }
 
 export function leftMapEither<L1, L2, R>(
-  transform: (r: L1) => L2,
+  transform: (l: L1) => L2,
   either: Either<L1, R>,
 ): Either<L2, R> {
   if (isLeft(either)) {
@@ -185,6 +185,14 @@ export function alternativeEither<L, R>(first: Either<L, R>, second: Either<L, R
   } else {
     return second
   }
+}
+
+export function anyEither<L, R>(eithers: Array<Either<L, R>>): Either<L, R> {
+  return eithers.reduce(alternativeEither)
+}
+
+export function anyOrLeft<L, R>(eithers: Array<Either<L, R>>, orLeft: L): Either<L, R> {
+  return leftMapEither(() => orLeft, anyEither(eithers))
 }
 
 // http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Foldable.html#v:foldlM
