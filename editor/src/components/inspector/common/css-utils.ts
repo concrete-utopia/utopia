@@ -961,7 +961,7 @@ export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<str
   return jsxAttributeValue(
     [...boxShadows]
       .map((boxShadow, i) => {
-        const comma = indexOfLastEnabledLayer > i
+        const comma = indexOfLastEnabledLayer > i && boxShadow.enabled
         const { inset, offsetX, offsetY, blurRadius, spreadRadius, color } = boxShadow
         const parts = Utils.stripNulls([
           inset ? 'inset' : null,
@@ -3226,7 +3226,7 @@ export function printBackgroundImage(
   const indexOfLastEnabledLayer = getIndexOfLastEnabledLayer(cssBackgroundImages)
   const backgroundImageStrings = cssBackgroundImages.map((backgroundImage, i) => {
     const enabled = backgroundImage.enabled
-    const comma = indexOfLastEnabledLayer > i
+    const comma = indexOfLastEnabledLayer > i && enabled
     switch (backgroundImage.type) {
       case 'solid': {
         const color = printColor(backgroundImage.color)
@@ -3410,7 +3410,7 @@ function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string>
   return jsxAttributeValue(
     [...textShadows]
       .map((textShadow, i) => {
-        const comma = indexOfLastEnabledLayer > i
+        const comma = indexOfLastEnabledLayer > i && textShadow.enabled
         const { offsetX, offsetY, blurRadius, color } = textShadow
         const parts = Utils.stripNulls([
           printCSSNumber(offsetX),
