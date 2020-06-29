@@ -957,15 +957,11 @@ export const defaultBoxShadows: CSSBoxShadows = [{ ...defaultBoxShadow }]
 export const disabledFunctionName = UtopiaUtils.disabled.name
 
 export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<string> {
-  let lastEnabledPropertyReached = false
+  const indexOfLastEnabledLayer = getIndexOfLastEnabledLayer(boxShadows)
   return jsxAttributeValue(
     [...boxShadows]
-      .reverse()
-      .map((boxShadow) => {
-        const comma = lastEnabledPropertyReached
-        if (!lastEnabledPropertyReached && boxShadow.enabled) {
-          lastEnabledPropertyReached = true
-        }
+      .map((boxShadow, i) => {
+        const comma = indexOfLastEnabledLayer > i
         const { inset, offsetX, offsetY, blurRadius, spreadRadius, color } = boxShadow
         const parts = Utils.stripNulls([
           inset ? 'inset' : null,
@@ -977,7 +973,6 @@ export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<str
         ])
         return printEnabled(printComma(`${parts.join(' ')}`, comma), boxShadow.enabled)
       })
-      .reverse()
       .join(' '),
   )
 }
@@ -3213,16 +3208,25 @@ function printComma(layer: string, shouldCommaBePrinted: boolean): string {
   return `${layer}${shouldCommaBePrinted ? ',' : ''}`
 }
 
+function getIndexOfLastEnabledLayer<T extends ReadonlyArray<{ enabled: boolean }>>(
+  layers: T,
+): number {
+  for (let i = layers.length - 1; i >= 0; i = i - 1) {
+    const layer = layers[i]
+    if (layer?.enabled === true) {
+      return i
+    }
+  }
+  return -1
+}
+
 export function printBackgroundImage(
   cssBackgroundImages: CSSBackgrounds,
 ): JSXAttributeValue<string> {
-  let lastEnabledPropertyReached = false
-  const backgroundImageStrings = cssBackgroundImages.map((backgroundImage) => {
+  const indexOfLastEnabledLayer = getIndexOfLastEnabledLayer(cssBackgroundImages)
+  const backgroundImageStrings = cssBackgroundImages.map((backgroundImage, i) => {
     const enabled = backgroundImage.enabled
-    const comma = lastEnabledPropertyReached
-    if (!lastEnabledPropertyReached && enabled) {
-      lastEnabledPropertyReached = true
-    }
+    const comma = indexOfLastEnabledLayer > i
     switch (backgroundImage.type) {
       case 'solid': {
         const color = printColor(backgroundImage.color)
@@ -3402,14 +3406,11 @@ export function parseTextShadow(textShadow: unknown): Either<string, CSSTextShad
 }
 
 function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string> {
-  let lastEnabledPropertyReached = false
+  const indexOfLastEnabledLayer = getIndexOfLastEnabledLayer(textShadows)
   return jsxAttributeValue(
     [...textShadows]
-      .reverse()
-      .map((textShadow) => {
-        if (!lastEnabledPropertyReached && textShadow.enabled) {
-          lastEnabledPropertyReached = true
-        }
+      .map((textShadow, i) => {
+        const comma = indexOfLastEnabledLayer > i
         const { offsetX, offsetY, blurRadius, color } = textShadow
         const parts = Utils.stripNulls([
           printCSSNumber(offsetX),
@@ -3417,12 +3418,8 @@ function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string>
           blurRadius == null ? null : printCSSNumber(blurRadius.value),
           printColor(color),
         ])
-        return printEnabled(
-          printComma(`${parts.join(' ')}`, lastEnabledPropertyReached),
-          textShadow.enabled,
-        )
+        return printEnabled(printComma(`${parts.join(' ')}`, comma), textShadow.enabled)
       })
-      .reverse()
       .join(' '),
   )
 }
@@ -3433,7 +3430,7 @@ function parseFontFamily(fontFamily: unknown): Either<string, CSSFontFamily> {
   if (typeof fontFamily === 'string' && fontFamily.length > 0) {
     const trimmed = fontFamily.trim()
     const split = trimmed.split(',')
-    const splitAndTrimmed = split.map((font) => font.trim().replace(/['"]+/g, ''))
+    const splitAndTrimmed = split.map((font) => font.trim().replace(parenthesesRegexp, ''))
     return right(splitAndTrimmed)
   } else {
     return left('No valid fontFamily found')
