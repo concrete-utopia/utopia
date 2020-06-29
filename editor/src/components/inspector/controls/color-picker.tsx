@@ -119,7 +119,7 @@ function deriveStateFromNewColor(
     normalisedSaturationPosition: s,
     normalisedValuePosition: v,
     normalisedAlphaPosition: color.alpha(),
-    __updateComingFromSetState: false,
+    dirty: false,
   }
 }
 
@@ -142,7 +142,7 @@ interface ColorPickerPositions {
 }
 
 export interface ColorPickerInnerState extends ColorPickerPositions {
-  __updateComingFromSetState: string | boolean
+  dirty: boolean
 }
 
 export class ColorPickerInner extends React.Component<
@@ -170,7 +170,7 @@ export class ColorPickerInner extends React.Component<
     )
     this.state = {
       ...calculatedState,
-      __updateComingFromSetState: false,
+      dirty: false,
     }
   }
 
@@ -202,9 +202,9 @@ export class ColorPickerInner extends React.Component<
 
   static getDerivedStateFromProps(props: ColorPickerInnerProps, state: ColorPickerInnerState) {
     const chroma = cssColorToChromaColorOrDefault(props.value)
-    if (state.__updateComingFromSetState) {
+    if (state.dirty) {
       return {
-        __updateComingFromSetState: false,
+        dirty: false,
       }
     } else {
       const controlStateHexa = ColorPickerInner.getHexaColorFromControlPositionState(state)
@@ -238,7 +238,7 @@ export class ColorPickerInner extends React.Component<
       normalisedSaturationPosition: s,
       normalisedValuePosition: v,
       normalisedAlphaPosition: a,
-      __updateComingFromSetState: 'newhsva',
+      dirty: true,
     })
     this.submitNewColor(newChromaValue, transient)
   }
@@ -253,7 +253,7 @@ export class ColorPickerInner extends React.Component<
         normalisedValuePosition: newHSV[2],
         hexa: newChromaValue.hex('auto').toUpperCase(),
         normalisedAlphaPosition: newChromaValue.alpha(),
-        __updateComingFromSetState: 'newhex',
+        dirty: true,
       }))
       this.submitNewColor(newChromaValue, false)
     } catch (e) {
@@ -587,7 +587,7 @@ export class ColorPickerInner extends React.Component<
             }}
           />
           <SimplePercentInput
-            value={this.state.normalisedSaturationPosition}
+            value={Number(this.state.normalisedSaturationPosition.toFixed(2))}
             id='colorPicker-controls-saturation'
             onSubmitValue={this.onSubmitValueSaturation}
             onTransientSubmitValue={this.onTransientSubmitValueSaturation}
@@ -599,7 +599,7 @@ export class ColorPickerInner extends React.Component<
             DEPRECATED_labelBelow='S'
           />
           <SimplePercentInput
-            value={this.state.normalisedValuePosition}
+            value={Number(this.state.normalisedValuePosition.toFixed(2))}
             id='colorPicker-controls-value'
             onSubmitValue={this.onSubmitHSVValueValue}
             onTransientSubmitValue={this.onTransientSubmitHSVValueValue}
