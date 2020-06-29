@@ -267,8 +267,7 @@ function attachDataUidToRoot(
   originalResponse: React.ReactElement | Array<React.ReactElement | null> | null | undefined,
   dataUid: string | null,
 ): React.ReactElement | Array<React.ReactElement | null> | null {
-  if (originalResponse == null || dataUid == null || (originalResponse as any).type == null) {
-    // ez a .type == null csekk megjavitja a canvas teszteket, de eltori az antd-t ^
+  if (originalResponse == null || dataUid == null) {
     return originalResponse as null
   } else if ((originalResponse as any).monkeyEscapeHatch != null) {
     return originalResponse
@@ -341,7 +340,7 @@ const mangleExoticType = Utils.memoize(
         // console.log('exocity', originalRenderResult)
         // return attachDataUidToRoot(originalRenderResult, p['data-uid'])
         const mangledChildren = React.Children.map(p.children, (child) => {
-          if (child == null || child.props?.['data-uid'] != null) {
+          if (child == null || child.type == null || child.props?.['data-uid'] != null) {
             return child
           } else {
             return React.cloneElement(
