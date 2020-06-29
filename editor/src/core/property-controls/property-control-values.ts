@@ -32,7 +32,12 @@ import {
   reduceWithEither,
 } from '../shared/either'
 import { compose } from '../shared/function-utils'
-import { isJSXAttributeOtherJavaScript } from '../shared/element-template'
+import {
+  isJSXAttributeOtherJavaScript,
+  JSXAttribute,
+  jsxAttributeValue,
+  jsxAttributeOtherJavaScript,
+} from '../shared/element-template'
 import {
   ModifiableAttribute,
   jsxSimpleAttributeToValue,
@@ -42,7 +47,7 @@ import { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { fastForEach } from '../shared/utils'
 
-type Printer<T> = (value: T) => unknown
+type Printer<T> = (value: T) => JSXAttribute
 
 export function parseColorValue(value: unknown): ParseResult<CSSColor> {
   return foldEither(
@@ -151,7 +156,7 @@ function unwrapAndParseUnionValue(
   )
 }
 
-function unwrapperAndParserForBaseControl(
+export function unwrapperAndParserForBaseControl(
   control: BaseControlDescription,
 ): UnwrapperAndParser<unknown> {
   switch (control.type) {
@@ -229,26 +234,30 @@ export function controlToUseForUnion(
   return foundControl == null ? control.controls[0] : foundControl
 }
 
-function printSimple<T>(value: T): T {
-  return value
+function printSimple<T>(value: T): JSXAttribute {
+  return jsxAttributeValue(value)
 }
 
-function printAsString<T>(value: T): string {
-  return `${value}`
+function printAsString<T>(value: T): JSXAttribute {
+  return jsxAttributeValue(`${value}`)
 }
 
-export function printerForPropertyControl(control: BaseControlDescription): Printer<unknown> {
+function printJS<T>(value: T): JSXAttribute {
+  return jsxAttributeOtherJavaScript(`${value}`, `return ${value}`, [], null)
+}
+
+export function printerForBasePropertyControl(control: BaseControlDescription): Printer<unknown> {
   switch (control.type) {
     case 'boolean':
       return printSimple
     case 'color':
       return printAsString
     case 'componentinstance':
-      return printSimple
+      return printJS
     case 'enum':
       return printSimple
     case 'eventhandler':
-      return printSimple
+      return printJS
     case 'ignore':
       return printSimple
     case 'image':
