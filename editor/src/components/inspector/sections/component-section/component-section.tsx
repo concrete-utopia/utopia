@@ -16,7 +16,7 @@ import {
 } from 'uuiui'
 import { betterReactMemo, SliderControl } from 'uuiui-deps'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
-import { ControlDescription } from 'utopia-api'
+import { ControlDescription, BaseControlDescription, isBaseControlDescription } from 'utopia-api'
 import { foldEither, right, Either } from '../../../../core/shared/either'
 import Utils from '../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
@@ -52,22 +52,16 @@ import {
 import { getDescriptionUnsetOptionalFields } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
+import { useInspectorInfoForPropertyControl } from '../../common/property-controls-hooks'
+import { PropertyPath } from '../../../../core/shared/project-file-types'
 
-function useComponentPropsInspectorInfo(propertyName: string, addPropsToPath: boolean) {
-  // TODO useInspectorInfo can only work for props which have a parser pre-defined in css-utils.
-  // we need to make a more generic hook that doesn't do parsing
-  // For now this is just a copy pasted hack to make this work
-  function transformValue(parsedValues: any) {
-    return parsedValues[propertyName]
-  }
-  function untransformValue(transformedType: any) {
-    return { [propertyName]: jsxAttributeValue(transformedType) }
-  }
-
-  const paths = addPropsToPath
-    ? [PP.append(PathForSceneProps, PP.create([propertyName]))]
-    : [PP.create([propertyName])]
-  return useInspectorInfoSimpleUntyped(paths, transformValue, untransformValue)
+function useComponentPropsInspectorInfo(
+  partialPath: PropertyPath,
+  addPropsToPath: boolean,
+  control: BaseControlDescription,
+) {
+  const propertyPath = addPropsToPath ? PP.append(PathForSceneProps, partialPath) : partialPath
+  return useInspectorInfoForPropertyControl(propertyPath, control)
 }
 
 interface ControlForPropProps {
@@ -273,59 +267,87 @@ export const ParseErrorControl = betterReactMemo('ParseErrorControl', (props: Pa
   )
 })
 
-interface RowForPropProps {
+const WarningTooltip = betterReactMemo('WarningTooltip', ({ warning }: { warning: string }) => {
+  return (
+    <Tooltip title={warning}>
+      <div
+        style={{
+          width: 5,
+          height: 5,
+          background: colorTheme.warningBgSolid.value,
+          borderRadius: '50%',
+          marginRight: 4,
+        }}
+      />
+    </Tooltip>
+  )
+})
+
+interface RowForInvalidControlProps {
   propName: string
   title: string
-  controlDescription?: ControlDescription
-  propertyError?: ParseError
-  isScene: boolean
+  propertyError: ParseError
   warningTooltip?: string
 }
 
-const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
-  const { propName } = props
-  const propPath = [PP.create([props.propName])]
-  const propMetadata = useComponentPropsInspectorInfo(propName, props.isScene)
-  const contextMenuItems = Utils.stripNulls([
-    addOnUnsetValues([propName], propMetadata.onUnsetValues),
-  ])
-  const warning =
-    props.warningTooltip == null ? null : (
-      <Tooltip title={props.warningTooltip}>
-        <div
-          style={{
-            width: 5,
-            height: 5,
-            background: colorTheme.warningBgSolid.value,
-            borderRadius: '50%',
-            marginRight: 4,
-          }}
-        />
-      </Tooltip>
-    )
-  return (
-    <InspectorContextMenuWrapper
-      id={`context-menu-for-${props.propName}`}
-      items={contextMenuItems}
-      data={null}
-    >
+const RowForInvalidControl = betterReactMemo(
+  'RowForInvalidControl',
+  (props: RowForInvalidControlProps) => {
+    const propPath = [PP.create([props.propName])]
+    const warning =
+      props.warningTooltip == null ? null : <WarningTooltip warning={props.warningTooltip} />
+    return (
       <GridRow padded={true} type='<---1fr--->|------172px-------|'>
         <PropertyLabel target={propPath}>
           {warning}
           {props.title}
         </PropertyLabel>
-        {props.propertyError == null ? (
+        <ParseErrorControl parseError={props.propertyError} />
+      </GridRow>
+    )
+  },
+)
+
+interface RowForPropProps {
+  propName: string
+  title: string
+  controlDescription: ControlDescription
+  isScene: boolean
+  warningTooltip?: string
+}
+
+const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
+  const { propName, title, controlDescription, isScene, warningTooltip } = props
+  if (isBaseControlDescription(controlDescription)) {
+    // TODO Use higher level controls to determine the layout of the Inspector
+    const propPath = PP.create([props.propName])
+    const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+    const contextMenuItems = Utils.stripNulls([
+      addOnUnsetValues([propName], propMetadata.onUnsetValues),
+    ])
+    const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
+    return (
+      <InspectorContextMenuWrapper
+        id={`context-menu-for-${propName}`}
+        items={contextMenuItems}
+        data={null}
+      >
+        <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+          <PropertyLabel target={[propPath]}>
+            {warning}
+            {title}
+          </PropertyLabel>
           <ControlForProp
-            propName={props.propName}
-            controlDescription={props.controlDescription}
+            propName={propName}
+            controlDescription={controlDescription}
             propMetadata={propMetadata}
           />
-        ) : (
-          <ParseErrorControl parseError={props.propertyError} />
-        )}
-      </GridRow>
-    </InspectorContextMenuWrapper>
-  )
+        </GridRow>
+      </InspectorContextMenuWrapper>
+    )
+  } else {
+    return null
+  }
 })
 
 export interface ComponentSectionProps {
@@ -392,12 +414,11 @@ export const ComponentSectionInner = betterReactMemo(
                   return foldEither(
                     (propertyError) => {
                       return (
-                        <RowForProp
+                        <RowForInvalidControl
                           key={propName}
                           title={propName}
                           propName={propName}
                           propertyError={propertyError}
-                          isScene={props.isScene}
                         />
                       )
                     },

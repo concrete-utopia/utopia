@@ -29,6 +29,6 @@ export function compose<FResult, GResult>(
   g: (input: FResult) => GResult,
 ): (...args: any[]) => GResult {
   return (...args: any[]) => {
-    return g(f(args))
+    return g(f(...args))
   }
 }

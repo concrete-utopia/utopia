@@ -20,7 +20,7 @@ import {
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
 import * as PP from '../../../core/shared/property-path'
-import { Either } from '../../../core/shared/either'
+import { Either, eitherToMaybe } from '../../../core/shared/either'
 import {
   calculatePropertyStatusForSelection,
   getControlStatusFromPropertyStatus,
@@ -70,7 +70,7 @@ export function useInspectorInfoForPropertyControl(
 
   const parserFn = unwrapperAndParserForBaseControl(control)
   const printerFn = printerForBasePropertyControl(control)
-  const parsedValue = parserFn(rawValues[0], realValues[0])
+  const parsedValue = eitherToMaybe(parserFn(rawValues[0], realValues[0])) // TODO We need a way to surface these errors to the users
 
   const onSubmitValue = React.useCallback(
     (newValue: any, transient = false) => {
