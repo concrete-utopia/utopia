@@ -155,7 +155,7 @@
     "@testing-library/react": "9.1.4",
     "@testing-library/react-hooks": "2.0.1",
     "@types/chai": "3.5.1",
-    "@types/chroma-js": "1.4.3",
+    "@types/chroma-js": "2.0.0",
     "@types/classnames": "2.2.4",
     "@types/codemirror": "0.0.40",
     "@types/create-react-class": "15.6.2",

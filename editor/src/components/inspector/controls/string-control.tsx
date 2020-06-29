@@ -11,59 +11,62 @@ export interface StringControlOptions {
   DEPRECATED_labelBelow?: React.ReactChild
 }
 
-export const StringControl = betterReactMemo<DEPRECATEDControlProps<string>>(
+export const StringControl = betterReactMemo(
   'StringControl',
-  ({ value: propsValue, ...props }) => {
-    const [mixed, setMixed] = usePropControlledState<boolean>(props.controlStyles.mixed)
-    const [editDisabled, setEditDisabled] = usePropControlledState<boolean>(
-      !props.controlStyles.interactive,
-    )
-    const [stateValue, setStateValue] = usePropControlledState<string>(propsValue)
+  React.forwardRef<HTMLInputElement, DEPRECATEDControlProps<string>>(
+    ({ value: propsValue, ...props }, ref) => {
+      const [mixed, setMixed] = usePropControlledState<boolean>(props.controlStyles.mixed)
+      const [editDisabled, setEditDisabled] = usePropControlledState<boolean>(
+        !props.controlStyles.interactive,
+      )
+      const [stateValue, setStateValue] = usePropControlledState<string>(propsValue)
 
-    const getDisplayValue = () => {
-      return props.controlStyles.showContent && !props.controlStyles.mixed ? stateValue : ''
-    }
-
-    const getValueString = (e: React.SyntheticEvent<HTMLInputElement>): string => {
-      return e.currentTarget.value || ''
-    }
-
-    const inputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      if (props.onBlur != null) {
-        props.onBlur(e)
+      const getDisplayValue = () => {
+        return props.controlStyles.showContent && !props.controlStyles.mixed ? stateValue : ''
       }
-      props.onSubmitValue(getDisplayValue())
-    }
 
-    const inputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = getValueString(e)
-      setStateValue(value)
-      setMixed(false)
-      setEditDisabled(false)
-    }
+      const getValueString = (e: React.SyntheticEvent<HTMLInputElement>): string => {
+        return e.currentTarget.value || ''
+      }
 
-    const inputClassName = classNames('string-control', props.controlClassName)
-
-    return (
-      // this form madness is a hack due to chrome ignoring autoComplete='off' on individual `input`s
-      <StringInput
-        id={props.id}
-        onContextMenu={props.onContextMenu}
-        disabled={editDisabled}
-        className={inputClassName}
-        placeholder={mixed ? 'mixed' : undefined}
-        onFocus={props.onFocus}
-        onBlur={inputOnBlur}
-        onChange={inputOnChange}
-        value={getDisplayValue()}
-        autoComplete='off'
-        spellCheck={false}
-        DEPRECATED_labelBelow={
-          (props.DEPRECATED_controlOptions as StringControlOptions)?.DEPRECATED_labelBelow
+      const inputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        if (props.onBlur != null) {
+          props.onBlur(e)
         }
-        style={props.style}
-        controlStatus={props.controlStatus}
-      />
-    )
-  },
+        props.onSubmitValue(getDisplayValue())
+      }
+
+      const inputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = getValueString(e)
+        setStateValue(value)
+        setMixed(false)
+        setEditDisabled(false)
+      }
+
+      const inputClassName = classNames('string-control', props.controlClassName)
+
+      return (
+        // this form madness is a hack due to chrome ignoring autoComplete='off' on individual `input`s
+        <StringInput
+          ref={ref}
+          id={props.id}
+          onContextMenu={props.onContextMenu}
+          disabled={editDisabled}
+          className={inputClassName}
+          placeholder={mixed ? 'mixed' : undefined}
+          onFocus={props.onFocus}
+          onBlur={inputOnBlur}
+          onChange={inputOnChange}
+          value={getDisplayValue()}
+          autoComplete='off'
+          spellCheck={false}
+          DEPRECATED_labelBelow={
+            (props.DEPRECATED_controlOptions as StringControlOptions)?.DEPRECATED_labelBelow
+          }
+          style={props.style}
+          controlStatus={props.controlStatus}
+        />
+      )
+    },
+  ),
 )
