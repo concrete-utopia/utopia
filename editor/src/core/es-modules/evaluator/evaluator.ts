@@ -8,14 +8,12 @@ function getFileExtension(filepath: string) {
 
 function evaluateJs(
   moduleCode: string,
-  partialExports: {},
+  partialModule: { exports: {} },
   requireFn: (toImport: string) => unknown,
 ) {
-  let exports = partialExports
   // https://nodejs.org/api/modules.html#modules_module_exports
-  let module = {
-    exports: exports,
-  }
+  let module = partialModule
+  let exports = module.exports
 
   // https://nodejs.org/api/process.html#process_process_env
   // This is a hacky solution, ideally we'd want a transpiler / loader that replaces process.env.NODE_ENV with a user-defined value
@@ -32,31 +30,31 @@ function evaluateJs(
     moduleCode,
   )()
 
-  return module.exports
+  return module
 }
 
 function evaluateCss(
   filepath: string,
   moduleCode: string,
-  partialExports: {},
+  partialModule: { exports: {} },
   requireFn: (toImport: string) => unknown,
 ) {
   const transpiledCode = transformCssNodeModule(filepath, moduleCode)
-  return evaluateJs(transpiledCode, partialExports, requireFn)
+  return evaluateJs(transpiledCode, partialModule, requireFn)
 }
 
 export function evaluator(
   filepath: string,
   moduleCode: string,
-  partialExports: {},
+  partialModule: { exports: {} },
   requireFn: (toImport: string) => unknown,
 ) {
   const fileExtension = getFileExtension(filepath)
   switch (fileExtension) {
     case 'js':
-      return evaluateJs(moduleCode, partialExports, requireFn)
+      return evaluateJs(moduleCode, partialModule, requireFn)
     case 'css':
-      return evaluateCss(filepath, moduleCode, partialExports, requireFn)
+      return evaluateCss(filepath, moduleCode, partialModule, requireFn)
     default:
       throw new Error(`error evaluating file ${filepath} – unsupported file type ${fileExtension}`)
   }
