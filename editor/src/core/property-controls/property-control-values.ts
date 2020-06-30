@@ -115,7 +115,10 @@ function defaultUnwrapper(
 }
 
 // For returning the JS code as a string
-function jsUnwrapper(rawValue: Either<string, ModifiableAttribute>, realValue: unknown): unknown {
+function jsUnwrapper(
+  rawValue: Either<string, ModifiableAttribute>,
+  realValue: unknown,
+): string | null {
   if (isRight(rawValue) && isJSXAttributeOtherJavaScript(rawValue.value)) {
     return rawValue.value.javascript
   } else {

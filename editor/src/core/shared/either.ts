@@ -191,10 +191,6 @@ export function anyEither<L, R>(eithers: Array<Either<L, R>>): Either<L, R> {
   return eithers.reduce(alternativeEither)
 }
 
-export function anyOrLeft<L, R>(eithers: Array<Either<L, R>>, orLeft: L): Either<L, R> {
-  return leftMapEither(() => orLeft, anyEither(eithers))
-}
-
 // http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Foldable.html#v:foldlM
 export function reduceWithEither<U, L, R>(
   reducer: (accumulator: R, currentValue: U, currentIndex: number) => Either<L, R>,
