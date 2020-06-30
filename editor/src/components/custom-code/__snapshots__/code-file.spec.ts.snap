@@ -284,6 +284,9 @@ ComponentWithProps.propertyControls = {
   "propertyControlsInfo": Object {
     "/src/components": Object {},
   },
+  "propertyControlsMetadata": Object {
+    "/src/components": Object {},
+  },
   "requireFn": [Function],
   "skipDeepFreeze": true,
 }
@@ -920,6 +923,13 @@ ReactDOM.render(<App />, root);
       },
     },
   },
+  "propertyControlsMetadata": Object {
+    "/app.ui": Object {},
+    "/public/preview": Object {},
+    "/src/components": Object {
+      "ComponentWithProps": undefined,
+    },
+  },
   "requireFn": [Function],
   "skipDeepFreeze": true,
 }
@@ -1238,6 +1248,9 @@ export var App = (props) => {
     },
   ],
   "propertyControlsInfo": Object {
+    "/app.ui": Object {},
+  },
+  "propertyControlsMetadata": Object {
     "/app.ui": Object {},
   },
   "requireFn": [Function],

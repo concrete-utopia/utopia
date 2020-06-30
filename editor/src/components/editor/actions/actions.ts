@@ -2952,12 +2952,10 @@ export const UPDATE_FNS = {
       ...editor,
       codeResultCache: {
         skipDeepFreeze: true,
-        cache: {
-          ...(editor.codeResultCache == null ? {} : editor.codeResultCache.cache),
-          ...action.codeResultCache.cache,
-        },
+        cache: action.codeResultCache.cache,
         exportsInfo: action.codeResultCache.exportsInfo,
         propertyControlsInfo: action.codeResultCache.propertyControlsInfo,
+        propertyControlsMetadata: action.codeResultCache.propertyControlsMetadata,
         error: action.codeResultCache.error,
         requireFn: action.codeResultCache.requireFn,
       },
@@ -3823,7 +3821,7 @@ export const UPDATE_FNS = {
   RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
     const openFilePath = getOpenUIJSFileKey(editor)
     if (openFilePath != null) {
-      const propertyControls = getPropertyControlsForTarget(action.target, editor)
+      const controlsAndMetadata = getPropertyControlsForTarget(action.target, editor)
       let elementName
       if (TP.isScenePath(action.target)) {
         const element = findJSXElementChildAtPath(
@@ -3851,9 +3849,9 @@ export const UPDATE_FNS = {
         return editor
       }
       let defaultProps: { [key: string]: any } = {}
-      if (propertyControls != null) {
-        Utils.fastForEach(Object.keys(propertyControls), (key) => {
-          const defaultValue = (propertyControls[key] as any).defaultValue
+      if (controlsAndMetadata != null) {
+        Utils.fastForEach(Object.keys(controlsAndMetadata.propertyControls), (key) => {
+          const defaultValue = (controlsAndMetadata.propertyControls[key] as any).defaultValue
           if (defaultValue != null) {
             defaultProps[key] = defaultValue
           }

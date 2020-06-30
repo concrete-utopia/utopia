@@ -364,7 +364,7 @@ export const ComponentSectionInner = betterReactMemo(
         )
       },
       (rootParseSuccess) => {
-        const propNames = Object.keys(rootParseSuccess)
+        const propNames = Object.keys(rootParseSuccess.controls)
         if (propNames.length > 0 || propsUsedWithoutControls.length > 0) {
           return (
             <>
@@ -385,7 +385,7 @@ export const ComponentSectionInner = betterReactMemo(
                 <InfoBox message={'Missing Default Properties'}>{missingDefaultsWarning}</InfoBox>
               )}
               {propNames.map((propName) => {
-                const propertyControl = rootParseSuccess[propName]
+                const propertyControl = rootParseSuccess.controls[propName]
                 if (propertyControl == null) {
                   return null
                 } else {
@@ -403,15 +403,17 @@ export const ComponentSectionInner = betterReactMemo(
                     },
                     (controlDescription) => {
                       let warningTooltip: string | undefined = undefined
-                      const unsetOptionalFields = getDescriptionUnsetOptionalFields(
-                        controlDescription,
-                      )
-                      if (unsetOptionalFields.length > 0) {
-                        warningTooltip = `These optional fields are not set: ${joinSpecial(
-                          unsetOptionalFields,
-                          ', ',
-                          ' and ',
-                        )}`
+                      if (!rootParseSuccess.metadata.systemProvided) {
+                        const unsetOptionalFields = getDescriptionUnsetOptionalFields(
+                          controlDescription,
+                        )
+                        if (unsetOptionalFields.length > 0) {
+                          warningTooltip = `These optional fields are not set: ${joinSpecial(
+                            unsetOptionalFields,
+                            ', ',
+                            ' and ',
+                          )}`
+                        }
                       }
                       return (
                         <RowForProp

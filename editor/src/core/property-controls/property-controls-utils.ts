@@ -1,7 +1,8 @@
 import {
   CodeResultCache,
   PropertyControlsInfo,
-  UtopiaRequireFn,
+  PropertyControlsMetadata,
+  ComponentPropertyControlsMetadata,
 } from '../../components/custom-code/code-file'
 import {
   parsePropertyControlsForFile,
@@ -9,13 +10,12 @@ import {
   parsePropertyControls,
 } from './property-controls-parser'
 import { PropertyControls, getDefaultProps, ControlDescription } from 'utopia-api'
-import { isRight, foldEither } from '../shared/either'
+import { isRight, foldEither, forEachRight } from '../shared/either'
 import { forEachValue } from '../shared/object-utils'
 import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
 import { joinSpecial, pluck } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
-import { AntdControls } from './third-party-property-controls/antd-controls'
 import { NpmDependency } from '../shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../third-party/third-party-components'
 import { getJSXElementNameAsString } from '../shared/element-template'
@@ -23,11 +23,11 @@ import { TemplatePath } from '../shared/project-file-types'
 import {
   getOpenImportsFromState,
   getOpenUtopiaJSXComponentsFromState,
-  getOpenUIJSFile,
   getOpenUIJSFileKey,
   EditorState,
 } from '../../components/editor/store/editor-state'
 import { MetadataUtils } from '../model/element-metadata-utils'
+import { ParsedControlsAndMetadata } from '../../components/inspector/common/property-path-hooks'
 
 export function defaultPropertiesForComponentInFile(
   componentName: string,
@@ -61,6 +61,20 @@ export function getDefaultPropsFromParsedControls(
       }
     }, parsedControls.value)
   }
+  return getDefaultProps(safePropertyControls)
+}
+
+export function getDefaultPropsFromParsedControlsAndMetadata(
+  parsedControls: ParseResult<ParsedControlsAndMetadata>,
+): { [prop: string]: unknown } {
+  let safePropertyControls: PropertyControls = {}
+  forEachRight(parsedControls, (controls) => {
+    forEachValue((parsedControl, propKey) => {
+      forEachRight(parsedControl, (control) => {
+        safePropertyControls[propKey] = control
+      })
+    }, controls.controls)
+  })
   return getDefaultProps(safePropertyControls)
 }
 
@@ -207,8 +221,12 @@ export function removeIgnored(
 
 export function getControlsForExternalDependencies(
   npmDependencies: NpmDependency[],
-): PropertyControlsInfo {
+): {
+  propertyControlsInfo: PropertyControlsInfo
+  propertyControlsMetadata: PropertyControlsMetadata
+} {
   let propertyControlsInfo: PropertyControlsInfo = {}
+  let propertyControlsMetadata: PropertyControlsMetadata = {}
   fastForEach(npmDependencies, (dependency) => {
     const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
     if (componentDescriptor != null) {
@@ -219,17 +237,29 @@ export function getControlsForExternalDependencies(
             ...propertyControlsInfo[dependency.name],
             [jsxElementName]: descriptor.propertyControls,
           }
+          propertyControlsMetadata[dependency.name] = {
+            ...propertyControlsMetadata[dependency.name],
+            [jsxElementName]: {
+              systemProvided: true,
+            },
+          }
         }
       })
     }
   })
-  return propertyControlsInfo
+  return {
+    propertyControlsInfo: propertyControlsInfo,
+    propertyControlsMetadata: propertyControlsMetadata,
+  }
 }
 
 export function getPropertyControlsForTarget(
   target: TemplatePath,
   editor: EditorState,
-): PropertyControls | null {
+): {
+  propertyControls: PropertyControls
+  controlsMetadata: ComponentPropertyControlsMetadata
+} | null {
   const codeResultCache = editor.codeResultCache
   const imports = getOpenImportsFromState(editor)
   const openFilePath = getOpenUIJSFileKey(editor)
@@ -259,7 +289,20 @@ export function getPropertyControlsForTarget(
         codeResultCache.propertyControlsInfo[absoluteFilePath] != null &&
         codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] != null
       ) {
-        return codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] as PropertyControls
+        const propertyControls = codeResultCache.propertyControlsInfo[absoluteFilePath][tagName]
+        let controlsMetadata: ComponentPropertyControlsMetadata = {
+          systemProvided: false,
+        }
+        if (
+          codeResultCache.propertyControlsMetadata[absoluteFilePath] != null &&
+          codeResultCache.propertyControlsMetadata[absoluteFilePath][tagName] != null
+        ) {
+          controlsMetadata = codeResultCache.propertyControlsMetadata[absoluteFilePath][tagName]
+        }
+        return {
+          propertyControls: propertyControls,
+          controlsMetadata: controlsMetadata,
+        }
       } else {
         return null
       }

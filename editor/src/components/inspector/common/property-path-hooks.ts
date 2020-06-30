@@ -51,6 +51,7 @@ import {
   getDefaultPropsFromParsedControls,
   removeIgnored,
   getPropertyControlsForTarget,
+  getDefaultPropsFromParsedControlsAndMetadata,
 } from '../../../core/property-controls/property-controls-utils'
 import { addUniquely } from '../../../core/shared/array-utils'
 import {
@@ -85,6 +86,10 @@ import { fastForEach } from '../../../core/shared/utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'
+import {
+  ComponentPropertyControlsMetadata,
+  DefaultComponentPropertyControlsMetadata,
+} from '../../custom-code/code-file'
 
 export interface InspectorPropsContextData {
   editedMultiSelectedProps: readonly JSXAttributes[]
@@ -833,34 +838,48 @@ const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
   transform: true,
 }
 
+export interface ParsedControlsAndMetadata {
+  controls: ParsedPropertyControls
+  metadata: ComponentPropertyControlsMetadata
+}
+
 export function useSelectedPropertyControls(
   includeIgnored: boolean,
-): ParseResult<ParsedPropertyControls> {
-  const propertyControls = useEditorState((store) => {
+): ParseResult<ParsedControlsAndMetadata> {
+  const propertyControlsAndMetadata = useEditorState((store) => {
     const { selectedViews, codeResultCache } = store.editor
 
-    let selectedPropertyControls: PropertyControls | null = {}
+    let selectedPropertyControls: PropertyControls = {}
+    let metadata: ComponentPropertyControlsMetadata = DefaultComponentPropertyControlsMetadata
     if (codeResultCache != null) {
       Utils.fastForEach(selectedViews, (path) => {
         // TODO multiselect
-        selectedPropertyControls = getPropertyControlsForTarget(path, store.editor) ?? {}
+        const possibleControlsAndMetadata = getPropertyControlsForTarget(path, store.editor)
+        if (possibleControlsAndMetadata != null) {
+          selectedPropertyControls = possibleControlsAndMetadata.propertyControls
+          metadata = possibleControlsAndMetadata.controlsMetadata
+        }
       })
     }
 
-    return selectedPropertyControls
+    return { controls: selectedPropertyControls, metadata: metadata }
   })
 
   // Strip ignored property controls here.
-  const parsed = parsePropertyControls(propertyControls)
-  if (includeIgnored) {
-    return parsed
-  } else {
-    return mapEither(removeIgnored, parsed)
+  let parsed = parsePropertyControls(propertyControlsAndMetadata.controls)
+  if (!includeIgnored) {
+    parsed = mapEither(removeIgnored, parsed)
   }
+  return mapEither((controls) => {
+    return {
+      controls: controls,
+      metadata: propertyControlsAndMetadata.metadata,
+    }
+  }, parsed)
 }
 
 export function useUsedPropsWithoutControls(): Array<string> {
-  const parsedPropertyControls = useSelectedPropertyControls(true)
+  const parsedControlsAndMetadata = useSelectedPropertyControls(true)
 
   const selectedComponents = useEditorState((store) => {
     const { selectedViews, jsxMetadataKILLME } = store.editor
@@ -893,8 +912,8 @@ export function useUsedPropsWithoutControls(): Array<string> {
 
   return foldEither(
     (_) => [],
-    (propertyControls: ParsedPropertyControls) => {
-      const propertiesWithControls = Object.keys(propertyControls)
+    (controlsAndMetadata: ParsedControlsAndMetadata) => {
+      const propertiesWithControls = Object.keys(controlsAndMetadata.controls)
       let propertiesWithoutControls: Array<string> = []
       fastForEach(selectedComponents, (component) => {
         if (isJSXElement(component.rootElement)) {
@@ -909,7 +928,7 @@ export function useUsedPropsWithoutControls(): Array<string> {
 
       return propertiesWithoutControls
     },
-    parsedPropertyControls,
+    parsedControlsAndMetadata,
   )
 }
 
@@ -945,7 +964,7 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
     return propsUsed
   })
 
-  const defaultProps = getDefaultPropsFromParsedControls(parsedPropertyControls)
+  const defaultProps = getDefaultPropsFromParsedControlsAndMetadata(parsedPropertyControls)
   return findMissingDefaults(selectedComponentProps, defaultProps)
 }
 

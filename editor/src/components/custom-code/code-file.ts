@@ -35,11 +35,24 @@ export type PropertyControlsInfo = {
   [filenameNoExtension: string]: { [componentName: string]: PropertyControls }
 }
 
+export interface ComponentPropertyControlsMetadata {
+  systemProvided: boolean
+}
+
+export const DefaultComponentPropertyControlsMetadata: ComponentPropertyControlsMetadata = {
+  systemProvided: false,
+}
+
+export type PropertyControlsMetadata = {
+  [filenameNoExtension: string]: { [componentName: string]: ComponentPropertyControlsMetadata }
+}
+
 export type CodeResultCache = {
   skipDeepFreeze: true
   cache: { [filename: string]: CodeResult }
   exportsInfo: ReadonlyArray<ExportsInfo>
   propertyControlsInfo: PropertyControlsInfo
+  propertyControlsMetadata: PropertyControlsMetadata
   error: Error | null
   requireFn: UtopiaRequireFn
 }
@@ -160,9 +173,11 @@ export function generateCodeResultCache(
 
   const { exports, requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
   let cache: { [code: string]: CodeResult } = {}
-  let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
-    npmDependencies,
-  )
+  const controlsFromExternalDependencies = getControlsForExternalDependencies(npmDependencies)
+  let propertyControlsInfo: PropertyControlsInfo =
+    controlsFromExternalDependencies.propertyControlsInfo
+  let propertyControlsMetadata: PropertyControlsMetadata =
+    controlsFromExternalDependencies.propertyControlsMetadata
   Utils.fastForEach(exportsInfo, (result) => {
     const codeResult = processExportsInfo(exports[result.filename], result.exportTypes)
     cache[result.filename] = {
@@ -170,16 +185,19 @@ export function generateCodeResultCache(
       ...modules[result.filename],
     }
     let propertyControls: { [name: string]: PropertyControls } = {}
+    let propertyMetadata: { [name: string]: ComponentPropertyControlsMetadata } = {}
     if (codeResult.exports != null) {
       Utils.fastForEach(Object.keys(codeResult.exports), (name) => {
         const exportedObject = codeResult.exports[name].value
         if (exportedObject != null && exportedObject.propertyControls != null) {
           // FIXME validate shape
           propertyControls[name] = exportedObject.propertyControls
+          propertyMetadata[name] = DefaultComponentPropertyControlsMetadata
         }
       })
       const filenameNoExtension = result.filename.replace(/\.(js|jsx|ts|tsx)$/, '')
       propertyControlsInfo[filenameNoExtension] = propertyControls
+      propertyControlsMetadata[filenameNoExtension] = propertyMetadata
     }
   })
 
@@ -188,6 +206,7 @@ export function generateCodeResultCache(
     exportsInfo: exportsInfo,
     cache: cache,
     propertyControlsInfo: propertyControlsInfo,
+    propertyControlsMetadata: propertyControlsMetadata,
     error: error,
     requireFn: requireFn,
   }
