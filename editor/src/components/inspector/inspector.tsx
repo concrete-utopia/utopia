@@ -511,7 +511,7 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
               styleObject: any,
               localPath: Array<string>,
             ): void {
-              if (typeof styleObject === 'object') {
+              if (typeof styleObject === 'object' && styleObject != null) {
                 let selectorLength: TargetSelectorLength = 0
                 const keys = Object.keys(styleObject)
                 keys.forEach((key) => {
