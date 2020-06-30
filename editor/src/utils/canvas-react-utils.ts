@@ -116,6 +116,15 @@ const mangleClassType = Utils.memoize(
 
 const mangleExoticType = Utils.memoize(
   (type: React.ComponentType): React.FunctionComponent => {
+    /**
+     * Fragment-like components need to be special cased because we know they return with a root component
+     * that will not end up in the DOM, but is also not subject to further reconciliation.
+     *
+     * For this reason, the usual approach of `mangleFunctionType` where we alter the root element's props
+     * is not effective, those props will just go into the abyss.
+     *
+     * Instead of that we render these fragment-like components, and mangle with their children
+     */
     const wrapperComponent = (p: any) => {
       if (p['data-uid'] == null) {
         // early return for the cases where there's no data-uid
