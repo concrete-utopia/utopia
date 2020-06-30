@@ -85,11 +85,13 @@ function attachDataUidToRoot(
 
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
-    return (p) => {
+    const mangledFunction = (p) => {
       let originalTypeResponse = (type as React.FunctionComponent)(p)
       const res = attachDataUidToRoot(originalTypeResponse, (p as any)['data-uid'])
       return res
     }
+    ;(mangledFunction as any).theOriginalType = type
+    return mangledFunction
   },
   {
     maxSize: 10000,
@@ -104,6 +106,7 @@ const mangleClassType = Utils.memoize(
       let originalTypeResponse = originalRender.bind(this)()
       return attachDataUidToRoot(originalTypeResponse, (this.props as any)['data-uid'])
     }
+    ;(type as any).theOriginalType = type
     return type
   },
   {
@@ -165,11 +168,9 @@ const mangleExoticType = Utils.memoize(
 function patchedCreateReactElement(type: any, props: any, ...children: any): any {
   if (typeof type?.prototype?.isReactComponent === 'object') {
     const mangledClass = mangleClassType(type)
-    ;(mangledClass as any).theOriginalType = type
     return realCreateElement(mangledClass, props, ...children)
   } else if (typeof type === 'function') {
     const mangledType: React.FunctionComponent = mangleFunctionType(type)
-    ;(mangledType as any).theOriginalType = type
     return realCreateElement(mangledType, props, ...children)
   } else if (
     type == React.Fragment ||
