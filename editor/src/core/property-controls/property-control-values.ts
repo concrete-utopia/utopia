@@ -186,7 +186,7 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseString)
     default:
       const _exhaustiveCheck: never = control
-      throw new Error(`Unhandled controls ${JSON.stringify(control)}`)
+      throw new Error(`Unhandled control ${JSON.stringify(control)}`)
   }
 }
 
@@ -216,7 +216,7 @@ function unwrapperAndParserForPropertyControl(
       return unwrapAndParseUnionValue(control.controls)
     default:
       const _exhaustiveCheck: never = control
-      throw new Error(`Unhandled controls ${JSON.stringify(control)}`)
+      throw new Error(`Unhandled control ${JSON.stringify(control)}`)
   }
 }
 

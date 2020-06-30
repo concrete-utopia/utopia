@@ -66,7 +66,7 @@ function useComponentPropsInspectorInfo(
 
 interface ControlForPropProps {
   propName: string
-  controlDescription: ControlDescription | undefined
+  controlDescription: BaseControlDescription | undefined
   propMetadata: InspectorInfo<any>
 }
 
@@ -308,45 +308,77 @@ const RowForInvalidControl = betterReactMemo(
   },
 )
 
-interface RowForPropProps {
-  propName: string
+interface RowForBaseControlProps {
+  propPath: PropertyPath
+  title: string
+  controlDescription: BaseControlDescription
+  isScene: boolean
+}
+
+const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBaseControlProps) => {
+  const { propPath, title, controlDescription, isScene } = props
+  const propName = `${PP.lastPart(propPath)}`
+
+  let warningTooltip: string | undefined = undefined
+  const unsetOptionalFields = getDescriptionUnsetOptionalFields(controlDescription)
+  if (unsetOptionalFields.length > 0) {
+    warningTooltip = `These optional fields are not set: ${joinSpecial(
+      unsetOptionalFields,
+      ', ',
+      ' and ',
+    )}`
+  }
+
+  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+  const contextMenuItems = Utils.stripNulls([
+    addOnUnsetValues([propName], propMetadata.onUnsetValues),
+  ])
+  const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
+  return (
+    <InspectorContextMenuWrapper
+      id={`context-menu-for-${propName}`}
+      items={contextMenuItems}
+      data={null}
+    >
+      <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+        <PropertyLabel target={[propPath]}>
+          {warning}
+          {title}
+        </PropertyLabel>
+        <ControlForProp
+          propName={propName}
+          controlDescription={controlDescription}
+          propMetadata={propMetadata}
+        />
+      </GridRow>
+    </InspectorContextMenuWrapper>
+  )
+})
+
+interface RowForControlProps {
+  propPath: PropertyPath
   title: string
   controlDescription: ControlDescription
   isScene: boolean
-  warningTooltip?: string
 }
 
-const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
-  const { propName, title, controlDescription, isScene, warningTooltip } = props
+const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
+  const { controlDescription } = props
+
   if (isBaseControlDescription(controlDescription)) {
-    // TODO Use higher level controls to determine the layout of the Inspector
-    const propPath = PP.create([props.propName])
-    const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
-    const contextMenuItems = Utils.stripNulls([
-      addOnUnsetValues([propName], propMetadata.onUnsetValues),
-    ])
-    const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
-    return (
-      <InspectorContextMenuWrapper
-        id={`context-menu-for-${propName}`}
-        items={contextMenuItems}
-        data={null}
-      >
-        <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-          <PropertyLabel target={[propPath]}>
-            {warning}
-            {title}
-          </PropertyLabel>
-          <ControlForProp
-            propName={propName}
-            controlDescription={controlDescription}
-            propMetadata={propMetadata}
-          />
-        </GridRow>
-      </InspectorContextMenuWrapper>
-    )
+    return <RowForBaseControl {...props} controlDescription={controlDescription} />
   } else {
-    return null
+    switch (controlDescription.type) {
+      case 'array':
+        return <div>Not yet implemented control type.</div>
+      case 'object':
+        return <div>Not yet implemented control type.</div>
+      case 'union':
+        return null
+      default:
+        const _exhaustiveCheck: never = controlDescription
+        throw new Error(`Unhandled control ${JSON.stringify(controlDescription)}`)
+    }
   }
 })
 
@@ -423,25 +455,13 @@ export const ComponentSectionInner = betterReactMemo(
                       )
                     },
                     (controlDescription) => {
-                      let warningTooltip: string | undefined = undefined
-                      const unsetOptionalFields = getDescriptionUnsetOptionalFields(
-                        controlDescription,
-                      )
-                      if (unsetOptionalFields.length > 0) {
-                        warningTooltip = `These optional fields are not set: ${joinSpecial(
-                          unsetOptionalFields,
-                          ', ',
-                          ' and ',
-                        )}`
-                      }
                       return (
-                        <RowForProp
+                        <RowForControl
                           key={propName}
                           title={Utils.defaultIfNull(propName, controlDescription.title)}
-                          propName={propName}
+                          propPath={PP.create([propName])}
                           controlDescription={controlDescription}
                           isScene={props.isScene}
-                          warningTooltip={warningTooltip}
                         />
                       )
                     },
