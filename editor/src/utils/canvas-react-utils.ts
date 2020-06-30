@@ -87,7 +87,7 @@ const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
     const mangledFunction = (p: any) => {
       let originalTypeResponse = (type as React.FunctionComponent)(p)
-      const res = attachDataUidToRoot(originalTypeResponse, (p as any)['data-uid'])
+      const res = attachDataUidToRoot(originalTypeResponse, (p as any)?.['data-uid'])
       return res
     }
     ;(mangledFunction as any).theOriginalType = type
@@ -104,7 +104,7 @@ const mangleClassType = Utils.memoize(
     // mutation
     type.prototype.render = function monkeyRender() {
       let originalTypeResponse = originalRender.bind(this)()
-      return attachDataUidToRoot(originalTypeResponse, (this.props as any)['data-uid'])
+      return attachDataUidToRoot(originalTypeResponse, (this.props as any)?.['data-uid'])
     }
     ;(type as any).theOriginalType = type
     return type
@@ -126,26 +126,26 @@ const mangleExoticType = Utils.memoize(
      * Instead of that we render these fragment-like components, and mangle with their children
      */
     const wrapperComponent = (p: any) => {
-      if (p['data-uid'] == null) {
+      if (p?.['data-uid'] == null) {
         // early return for the cases where there's no data-uid
         return realCreateElement(type, p)
       }
-      if (p.children == null || typeof p.children === 'string') {
+      if (p?.children == null || typeof p.children === 'string') {
         return realCreateElement(type, p)
-      } else if (typeof p.children === 'function') {
+      } else if (typeof p?.children === 'function') {
         // mangle the function so that what it returns has the data uid
         const originalFunction = p.children
         const newProps = {
           ...p,
           children: function (...params: any[]) {
             const originalResponse = originalFunction(...params)
-            return attachDataUidToRoot(originalResponse, p['data-uid'])
+            return attachDataUidToRoot(originalResponse, p?.['data-uid'])
           },
         }
 
         return realCreateElement(type, newProps)
       } else {
-        const mangledChildren = React.Children.map(p.children, (child) => {
+        const mangledChildren = React.Children.map(p?.children, (child) => {
           if (
             (!React.isValidElement(child) as any) ||
             child == null ||
@@ -155,7 +155,7 @@ const mangleExoticType = Utils.memoize(
           } else {
             return React.cloneElement(
               child,
-              p['data-uid'] != null ? { 'data-uid': p['data-uid'] } : {},
+              p?.['data-uid'] != null ? { 'data-uid': p['data-uid'] } : {},
             )
           }
         })
