@@ -332,6 +332,42 @@ describe('Monkey Function', () => {
     `)
   })
 
+  it('We discard the uid of a fragment if appropriate', () => {
+    const Component = () => {
+      return (
+        <div data-uid='cica'>
+          <React.Fragment data-uid='kutya'>Hello!</React.Fragment>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<Component />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\">Hello!</div>
+      "
+    `)
+  })
+
+  it('If a fragment has an array of children, we put the uid on all of the children, for lack of a better idea', () => {
+    const Component = () => {
+      return (
+        <div data-uid='cica'>
+          <React.Fragment data-uid='kutya'>
+            <div>Hello</div>
+            <div>world!</div>
+          </React.Fragment>
+        </div>
+      )
+    }
+
+    expect(renderToFormattedString(<Component />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\">
+        <div data-uid=\\"kutya\\">Hello</div>
+        <div data-uid=\\"kutya\\">world!</div>
+      </div>
+      "
+    `)
+  })
+
   it('The Storyboard is a special fragment that we leave alone', () => {
     const Component = () => {
       return <div data-uid='cica'>Hello!</div>

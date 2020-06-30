@@ -116,6 +116,17 @@ const mangleClassType = Utils.memoize(
 
 const mangleExoticType = Utils.memoize(
   (type: React.ComponentType): React.FunctionComponent => {
+    function updateChild(child: React.ReactElement, dataUid: string | null) {
+      if (
+        (!React.isValidElement(child) as any) ||
+        child == null ||
+        child.props?.['data-uid'] != null
+      ) {
+        return child
+      } else {
+        return React.cloneElement(child, dataUid != null ? { 'data-uid': dataUid } : {})
+      }
+    }
     /**
      * Fragment-like components need to be special cased because we know they return with a root component
      * that will not end up in the DOM, but is also not subject to further reconciliation.
@@ -132,36 +143,23 @@ const mangleExoticType = Utils.memoize(
       }
       if (p?.children == null || typeof p.children === 'string') {
         return realCreateElement(type, p)
-      } else if (typeof p?.children === 'function') {
-        // mangle the function so that what it returns has the data uid
-        const originalFunction = p.children
-        const newProps = {
-          ...p,
-          children: function (...params: any[]) {
+      } else {
+        let children: any
+        if (typeof p?.children === 'function') {
+          // mangle the function so that what it returns has the data uid
+          const originalFunction = p.children
+          children = function (...params: any[]) {
             const originalResponse = originalFunction(...params)
             return attachDataUidToRoot(originalResponse, p?.['data-uid'])
-          },
-        }
-
-        return realCreateElement(type, newProps)
-      } else {
-        const mangledChildren = React.Children.map(p?.children, (child) => {
-          if (
-            (!React.isValidElement(child) as any) ||
-            child == null ||
-            child.props?.['data-uid'] != null
-          ) {
-            return child
-          } else {
-            return React.cloneElement(
-              child,
-              p?.['data-uid'] != null ? { 'data-uid': p['data-uid'] } : {},
-            )
           }
-        })
+        } else if (!Array.isArray(p?.children)) {
+          children = updateChild(p.children, p?.['data-uid'])
+        } else {
+          children = React.Children.map(p?.children, (child) => updateChild(child, p?.['data-uid']))
+        }
         const mangledProps = {
           ...p,
-          children: mangledChildren,
+          children: children,
         }
         return realCreateElement(type as any, mangledProps)
       }
