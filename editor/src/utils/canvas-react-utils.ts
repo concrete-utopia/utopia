@@ -85,7 +85,7 @@ function attachDataUidToRoot(
 
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
-    const mangledFunction = (p) => {
+    const mangledFunction = (p: any) => {
       let originalTypeResponse = (type as React.FunctionComponent)(p)
       const res = attachDataUidToRoot(originalTypeResponse, (p as any)['data-uid'])
       return res
@@ -165,11 +165,17 @@ const mangleExoticType = Utils.memoize(
   },
 )
 
+function isClassComponent(component: any) {
+  // this is copied from stack overflow https://stackoverflow.com/a/41658173
+  return typeof component === 'function' && component?.prototype?.isReactComponent != null
+}
+
 function patchedCreateReactElement(type: any, props: any, ...children: any): any {
-  if (typeof type?.prototype?.isReactComponent === 'object') {
+  if (isClassComponent(type)) {
     const mangledClass = mangleClassType(type)
     return realCreateElement(mangledClass, props, ...children)
   } else if (typeof type === 'function') {
+    // if the type is function and it is NOT a class component, we deduce it is a function component
     const mangledType: React.FunctionComponent = mangleFunctionType(type)
     return realCreateElement(mangledType, props, ...children)
   } else if (
@@ -178,6 +184,7 @@ function patchedCreateReactElement(type: any, props: any, ...children: any): any
     type?.$$typeof == Symbol.for('react.provider') ||
     type?.$$typeof == Symbol.for('react.context')
   ) {
+    // fragment-like components, the list is not exhaustive, we might need to extend it later
     return realCreateElement(mangleExoticType(type), props, ...children)
   }
   return realCreateElement(type, props, ...children)
