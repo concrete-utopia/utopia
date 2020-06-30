@@ -25,7 +25,7 @@ const Scene = (props: {
   const { component, 'data-uid': uid, style, ...restProps } = props
   const child = React.createElement(component, { ...restProps, ...props.props })
   const result = <div style={props.style}>{child}</div>
-  return { ...result, monkeyEscapeHatch: true }
+  return { ...result }
 }
 
 describe('Monkey Function', () => {
@@ -344,7 +344,7 @@ describe('Monkey Function', () => {
         </Storyboard>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div><div data-uid=\\"cica\\">Hello!</div></div>
+      "<div data-uid=\\"scene\\"><div data-uid=\\"cica\\">Hello!</div></div>
       "
     `)
   })
@@ -545,7 +545,7 @@ describe('Monkey Function', () => {
       </Storyboard>
     )
     expect(renderToFormattedString(storyboard)).toMatchInlineSnapshot(`
-      "<div style=\\"left: 0; top: 0; width: 400px; height: 400px;\\">
+      "<div style=\\"left: 0; top: 0; width: 400px; height: 400px;\\" data-uid=\\"scene-aaa\\">
         <div data-uid=\\"zzz\\">
           <div data-uid=\\"aaa\\">Hello World!!</div>
           <div data-uid=\\"bbb\\">Hello Dolly!!</div>

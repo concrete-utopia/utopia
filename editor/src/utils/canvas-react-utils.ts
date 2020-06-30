@@ -74,8 +74,6 @@ function attachDataUidToRoot(
 ): React.ReactElement | Array<React.ReactElement | null> | null {
   if (originalResponse == null || dataUid == null) {
     return originalResponse as null
-  } else if ((originalResponse as any).monkeyEscapeHatch != null) {
-    return originalResponse
   } else if (Array.isArray(originalResponse)) {
     // the response was an array of elements
     return originalResponse.map((element) => attachDataUidToRoot(element, dataUid))
