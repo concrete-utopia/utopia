@@ -63,7 +63,6 @@ import {
 } from '../../common/property-controls-hooks'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
 import { OptionsType } from 'react-select'
-import { capitalize } from '../../../../core/shared/string-utils'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -324,7 +323,7 @@ interface AbstractRowForControlProps {
 }
 
 function titleForControl(propPath: PropertyPath, control: ControlDescription): string {
-  return capitalize(control.title ?? PP.lastPartToString(propPath))
+  return control.title ?? PP.lastPartToString(propPath)
 }
 
 interface RowForBaseControlProps extends AbstractRowForControlProps {
@@ -355,7 +354,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
 
   const propertyLabel =
     props.label == null ? (
-      <PropertyLabel target={[propPath]}>
+      <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
         {warning}
         {title}
       </PropertyLabel>
@@ -395,7 +394,7 @@ const RowForUnionControl = betterReactMemo(
     const [controlToUse, setControlToUse] = React.useState(suitableControl)
 
     const labelOptions: OptionsType<SelectOption> = controlDescription.controls.map((control) => {
-      const label = capitalize(control.title ?? control.type)
+      const label = control.title ?? control.type
       return {
         value: control,
         label: label,
@@ -428,6 +427,7 @@ const RowForUnionControl = betterReactMemo(
         style={{
           maxWidth: '100%',
           overflow: 'hidden',
+          textTransform: 'capitalize',
         }}
       />
     )

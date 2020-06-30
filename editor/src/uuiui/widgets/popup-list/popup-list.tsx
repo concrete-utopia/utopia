@@ -572,6 +572,7 @@ export const PopupList = betterReactMemo<PopupListProps>(
               ? colorTheme.contextMenuHighlightForeground.value
               : colorTheme.contextMenuForeground.value,
             height: OptionHeight,
+            textTransform: 'capitalize',
           }),
           input: () => ({
             margin: 2,
