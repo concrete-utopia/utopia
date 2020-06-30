@@ -61,7 +61,6 @@ let fs: any = null
 let fileChanged: (
   filename: string,
   content: string,
-  emitBuild: boolean,
   jobID: string,
 ) => // eslint-disable-next-line @typescript-eslint/no-empty-function
 void = () => {}
@@ -71,13 +70,11 @@ export type OutgoingWorkerMessage =
   | BuildResultMessage
   | UpdateProcessedMessage
   | InitCompleteMessage
-  | NoEmitMessage
 
 interface UpdateFileMessage {
   type: 'updatefile'
   filename: string
   content: string | UIJSFile | CodeFile
-  emitBuild: boolean
   jobID: string
 }
 
@@ -107,11 +104,6 @@ export interface BuildResultMessage {
   fullBuild: boolean
 }
 
-export interface NoEmitMessage {
-  type: 'noemit'
-  jobID: string
-}
-
 export interface UpdateProcessedMessage {
   type: 'updateprocessed'
 }
@@ -123,7 +115,6 @@ export interface InitCompleteMessage {
 
 interface FileVersion {
   versionNr: number
-  emitted: boolean
   asStringCached: string | null
 }
 
@@ -153,14 +144,12 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 export function createUpdateFileMessage(
   filename: string,
   content: string | UIJSFile | CodeFile,
-  emitBuild: boolean,
   jobID: string,
 ): UpdateFileMessage {
   return {
     type: 'updatefile',
     filename: filename,
     content: content,
-    emitBuild: emitBuild,
     jobID: jobID,
   }
 }
@@ -192,13 +181,6 @@ function createBuildResultMessage(
     buildResult: buildResult,
     jobID: jobID,
     fullBuild: fullBuild,
-  }
-}
-
-function createNoEmitMessage(jobID: string): NoEmitMessage {
-  return {
-    type: 'noemit',
-    jobID: jobID,
   }
 }
 
@@ -261,7 +243,7 @@ export function handleMessage(
         } else {
           content = getCodeFileContents(workerMessage.content, false, true)
         }
-        fileChanged(workerMessage.filename, content, workerMessage.emitBuild, workerMessage.jobID)
+        fileChanged(workerMessage.filename, content, workerMessage.jobID)
       } finally {
         sendMessage(createUpdateProcessedMessage())
       }
@@ -579,20 +561,19 @@ function watch(
 
   // Initialize the code file version with 0
   ;[...codeFilesToWatch, ...otherFilesToWatch].forEach((filename) => {
-    fileVersions[filename] = { versionNr: 0, emitted: false, asStringCached: null }
+    fileVersions[filename] = { versionNr: 0, asStringCached: null }
   })
 
   Object.keys(TS_LIB_FILES).forEach((lib) => {
     // With and without the forward slash, because reasons.
-    fileVersions[lib] = { versionNr: 0, emitted: false, asStringCached: TS_LIB_FILES[lib] }
-    fileVersions[`/${lib}`] = { versionNr: 0, emitted: false, asStringCached: TS_LIB_FILES[lib] }
+    fileVersions[lib] = { versionNr: 0, asStringCached: TS_LIB_FILES[lib] }
+    fileVersions[`/${lib}`] = { versionNr: 0, asStringCached: TS_LIB_FILES[lib] }
   })
 
   Object.keys(typeDefinitions).forEach((fileName) => {
     const nodeModulesPath = '/node_modules/' + fileName
     fileVersions[nodeModulesPath] = {
       versionNr: 0,
-      emitted: false,
       asStringCached: typeDefinitions[fileName],
     }
   })
@@ -600,7 +581,7 @@ function watch(
   const services = configureLanguageService(codeFilesToWatch, fileVersions, options)
 
   // Now let's watch the files
-  fileChanged = (filename: string, content: string, emitBuild: boolean, jobIDInner: string) => {
+  fileChanged = (filename: string, content: string, jobIDInner: string) => {
     const prevContent = fs.readFileSync(filename, 'utf8')
     const version = fileVersions[filename]
     const contentChanged = prevContent != content
@@ -610,7 +591,6 @@ function watch(
       // Update the version to signal a change in the file
       fileVersions[filename] = {
         versionNr: version.versionNr + 1,
-        emitted: emitBuild,
         asStringCached: content,
       }
 
@@ -619,7 +599,7 @@ function watch(
 
     // we only need to emit if the content has been changed or it was not emitted the last time
     if (buildOrParsePrint === 'build') {
-      if (emitBuild && (contentChanged || !version.emitted)) {
+      if (contentChanged) {
         // write the output the browserfs
         const buildResult = emitFile(filename)
         const exportsInfo = [parseExportsInfo(filename)]
@@ -633,8 +613,6 @@ function watch(
             false,
           ),
         )
-      } else {
-        sendMessage(createNoEmitMessage(jobIDInner))
       }
     }
   }
