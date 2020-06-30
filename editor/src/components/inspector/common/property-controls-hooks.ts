@@ -6,8 +6,9 @@ import { PropertyPath } from '../../../core/shared/project-file-types'
 import {
   printerForBasePropertyControl,
   unwrapperAndParserForBaseControl,
+  controlToUseForUnion,
 } from '../../../core/property-controls/property-control-values'
-import { BaseControlDescription } from 'utopia-api'
+import { BaseControlDescription, UnionControlDescription, ControlDescription } from 'utopia-api'
 import {
   InspectorInfo,
   useKeepReferenceEqualityIfPossible,
@@ -104,4 +105,33 @@ export function useInspectorInfoForPropertyControl(
     onUnsetValues,
     useSubmitValueFactory,
   }
+}
+
+export function useControlForUnionControl(
+  propertyPath: PropertyPath,
+  control: UnionControlDescription,
+): ControlDescription {
+  const firstRawValue: Either<string, ModifiableAttribute> = useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        const firstElemProps = contextData.editedMultiSelectedProps[0] ?? {}
+        return getModifiableJSXAttributeAtPath(firstElemProps, propertyPath)
+      },
+      deepEqual,
+    ),
+  )
+
+  const firstRealValue: unknown = useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        const firstElemProps = contextData.realValues[0] ?? {}
+        return ObjectPath.get(firstElemProps, PP.getElements(propertyPath))
+      },
+      deepEqual,
+    ),
+  )
+
+  return controlToUseForUnion(control, firstRawValue, firstRealValue)
 }

@@ -16,7 +16,12 @@ import {
 } from 'uuiui'
 import { betterReactMemo, SliderControl } from 'uuiui-deps'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
-import { ControlDescription, BaseControlDescription, isBaseControlDescription } from 'utopia-api'
+import {
+  ControlDescription,
+  BaseControlDescription,
+  isBaseControlDescription,
+  UnionControlDescription,
+} from 'utopia-api'
 import { foldEither, right, Either } from '../../../../core/shared/either'
 import Utils from '../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
@@ -52,7 +57,10 @@ import {
 import { getDescriptionUnsetOptionalFields } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
-import { useInspectorInfoForPropertyControl } from '../../common/property-controls-hooks'
+import {
+  useInspectorInfoForPropertyControl,
+  useControlForUnionControl,
+} from '../../common/property-controls-hooks'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
 
 function useComponentPropsInspectorInfo(
@@ -308,11 +316,14 @@ const RowForInvalidControl = betterReactMemo(
   },
 )
 
-interface RowForBaseControlProps {
+interface AbstractRowForControlProps {
   propPath: PropertyPath
   title: string
-  controlDescription: BaseControlDescription
   isScene: boolean
+}
+
+interface RowForBaseControlProps extends AbstractRowForControlProps {
+  controlDescription: BaseControlDescription
 }
 
 const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBaseControlProps) => {
@@ -355,11 +366,22 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
   )
 })
 
-interface RowForControlProps {
-  propPath: PropertyPath
-  title: string
+interface RowForUnionControlProps extends AbstractRowForControlProps {
+  controlDescription: UnionControlDescription
+}
+
+const RowForUnionControl = betterReactMemo(
+  'RowForUnionControl',
+  (props: RowForUnionControlProps) => {
+    const { propPath, controlDescription } = props
+
+    const controlToUse = useControlForUnionControl(propPath, controlDescription)
+    return <RowForControl {...props} controlDescription={controlToUse} />
+  },
+)
+
+interface RowForControlProps extends AbstractRowForControlProps {
   controlDescription: ControlDescription
-  isScene: boolean
 }
 
 const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
@@ -374,7 +396,7 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
       case 'object':
         return <div>Not yet implemented control type.</div>
       case 'union':
-        return null
+        return <RowForUnionControl {...props} controlDescription={controlDescription} />
       default:
         const _exhaustiveCheck: never = controlDescription
         throw new Error(`Unhandled control ${JSON.stringify(controlDescription)}`)

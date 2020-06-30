@@ -10,6 +10,7 @@ import {
   SliderControlDescription,
   StringControlDescription,
   IgnoreControlDescription,
+  UnionControlDescription,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -309,6 +310,24 @@ export function parseIgnoreControlDescription(
   )
 }
 
+export function parseUnionControlDescription(value: unknown): ParseResult<UnionControlDescription> {
+  return applicative4Either(
+    (title, type, defaultValue, controls) => {
+      let unionControlDescription: UnionControlDescription = {
+        type: type,
+        controls: controls,
+      }
+      setOptionalProp(unionControlDescription, 'title', title)
+      setOptionalProp(unionControlDescription, 'defaultValue', defaultValue)
+      return unionControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'title')(value),
+    objectKeyParser(parseEnum(['union']), 'type')(value),
+    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    objectKeyParser(parseArray(parseControlDescription), 'controls')(value),
+  )
+}
+
 export function parseControlDescription(value: unknown): ParseResult<ControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
     switch ((value as any)['type']) {
@@ -332,6 +351,8 @@ export function parseControlDescription(value: unknown): ParseResult<ControlDesc
         return parseComponentInstanceControlDescription(value)
       case 'ignore':
         return parseIgnoreControlDescription(value)
+      case 'union':
+        return parseUnionControlDescription(value)
       case undefined:
         return left(objectFieldNotPresentParseError('type'))
       default:
