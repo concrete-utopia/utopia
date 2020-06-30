@@ -163,23 +163,21 @@ const mangleExoticType = Utils.memoize(
 )
 
 function patchedCreateReactElement(type: any, props: any, ...children: any): any {
-  if (props?.['key'] !== 'monkey-oh-monkey-please-leave-me-be') {
-    if (typeof type?.prototype?.isReactComponent === 'object') {
-      const mangledClass = mangleClassType(type)
-      ;(mangledClass as any).theOriginalType = type
-      return realCreateElement(mangledClass, props, ...children)
-    } else if (typeof type === 'function') {
-      const mangledType: React.FunctionComponent = mangleFunctionType(type)
-      ;(mangledType as any).theOriginalType = type
-      return realCreateElement(mangledType, props, ...children)
-    } else if (
-      type == React.Fragment ||
-      type?.$$typeof == Symbol.for('react.fragment') ||
-      type?.$$typeof == Symbol.for('react.provider') ||
-      type?.$$typeof == Symbol.for('react.context')
-    ) {
-      return realCreateElement(mangleExoticType(type), props, ...children)
-    }
+  if (typeof type?.prototype?.isReactComponent === 'object') {
+    const mangledClass = mangleClassType(type)
+    ;(mangledClass as any).theOriginalType = type
+    return realCreateElement(mangledClass, props, ...children)
+  } else if (typeof type === 'function') {
+    const mangledType: React.FunctionComponent = mangleFunctionType(type)
+    ;(mangledType as any).theOriginalType = type
+    return realCreateElement(mangledType, props, ...children)
+  } else if (
+    type == React.Fragment ||
+    type?.$$typeof == Symbol.for('react.fragment') ||
+    type?.$$typeof == Symbol.for('react.provider') ||
+    type?.$$typeof == Symbol.for('react.context')
+  ) {
+    return realCreateElement(mangleExoticType(type), props, ...children)
   }
   return realCreateElement(type, props, ...children)
 }

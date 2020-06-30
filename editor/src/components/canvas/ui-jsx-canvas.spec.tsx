@@ -1434,6 +1434,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             background-color: rgba(255, 255, 255, 1);
             box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
           \\"
+          data-uid=\\"utopia-storyboard-uid\\"
         >
           <div data-uid=\\"aaa\\">hello</div>
         </div>
@@ -1522,6 +1523,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             background-color: rgba(255, 255, 255, 1);
             box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
           \\"
+          data-uid=\\"utopia-storyboard-uid\\"
         >
           <div id=\\"nasty-div\\" data-uid=\\"aaa\\">huha huha</div>
         </div>
@@ -1585,6 +1587,7 @@ export var storyboard = (
             background-color: rgba(255, 255, 255, 1);
             box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
           \\"
+          data-uid=\\"storyboard\\"
         >
           <div
             style=\\"
