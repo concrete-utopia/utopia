@@ -193,7 +193,7 @@
     "@typescript-eslint/eslint-plugin": "2.16.0",
     "@typescript-eslint/parser": "2.16.0",
     "@welldone-software/why-did-you-render": "3.3.3",
-    "antd": "^4.3.5",
+    "antd": "4.3.5",
     "babel-loader": "8.1.0",
     "babel-plugin-syntax-jsx": "6.18.0",
     "babel-plugin-transform-react-jsx": "6.24.1",
