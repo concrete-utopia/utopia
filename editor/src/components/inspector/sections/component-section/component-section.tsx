@@ -427,7 +427,6 @@ const RowForUnionControl = betterReactMemo(
         style={{
           maxWidth: '100%',
           overflow: 'hidden',
-          textTransform: 'capitalize',
         }}
       />
     )
