@@ -397,6 +397,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     const onFocus = React.useCallback(
       (e: React.FocusEvent<HTMLInputElement>) => {
         setIsActuallyFocused(true)
+        e.target.select()
         if (inputProps.onFocus != null) {
           inputProps.onFocus(e)
         }
