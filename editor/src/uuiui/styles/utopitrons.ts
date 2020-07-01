@@ -285,9 +285,7 @@ interface DisabledOpacityProps {
   disabled?: boolean
 }
 
-export const disabledOpacityStyle: FunctionInterpolation<DisabledOpacityProps> = (
-  props: DisabledOpacityProps,
-) =>
+export const disabledOpacityStyle = (props: DisabledOpacityProps) =>
   css({
     opacity: props.disabled ? 0.5 : 1,
     pointerEvents: props.disabled ? 'none' : 'initial',
