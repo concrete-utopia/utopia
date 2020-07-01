@@ -13,6 +13,11 @@ module.exports = {
         '^platform-detect$': '<rootDir>/src/utils/stubs/platform-detect-stub.ts',
         '\\.(css)$': '<rootDir>/test/jest/__mocks__/styleMock.js',
       },
+      globals: {
+        'ts-jest': {
+          isolatedModules: true,
+        },
+      },
     },
     {
       testEnvironment: '@jest-runner/electron/environment',
@@ -26,6 +31,11 @@ module.exports = {
         '^domtoimage$': '<rootDir>/src/utils/stubs/dom-to-image-stub.ts',
         '^platform-detect$': '<rootDir>/src/utils/stubs/platform-detect-stub.ts',
         '\\.(css)$': '<rootDir>/test/jest/__mocks__/styleMock.js',
+      },
+      globals: {
+        'ts-jest': {
+          isolatedModules: true,
+        },
       },
     },
   ],
