@@ -73,6 +73,7 @@ import { toggleShadowEnabled } from '../sections/style-section/shadow-subsection
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
 import * as PP from '../../../core/shared/property-path'
 import { isJSXAttribute } from '@babel/types'
+import { findLastIndex } from '../../../core/shared/array-utils'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -957,15 +958,11 @@ export const defaultBoxShadows: CSSBoxShadows = [{ ...defaultBoxShadow }]
 export const disabledFunctionName = UtopiaUtils.disabled.name
 
 export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<string> {
-  let lastEnabledPropertyReached = false
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, boxShadows)
   return jsxAttributeValue(
     [...boxShadows]
-      .reverse()
-      .map((boxShadow) => {
-        const comma = lastEnabledPropertyReached
-        if (!lastEnabledPropertyReached && boxShadow.enabled) {
-          lastEnabledPropertyReached = true
-        }
+      .map((boxShadow, i) => {
+        const comma = indexOfLastEnabledLayer > i && boxShadow.enabled
         const { inset, offsetX, offsetY, blurRadius, spreadRadius, color } = boxShadow
         const parts = Utils.stripNulls([
           inset ? 'inset' : null,
@@ -977,7 +974,6 @@ export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<str
         ])
         return printEnabled(printComma(`${parts.join(' ')}`, comma), boxShadow.enabled)
       })
-      .reverse()
       .join(' '),
   )
 }
@@ -3213,16 +3209,17 @@ function printComma(layer: string, shouldCommaBePrinted: boolean): string {
   return `${layer}${shouldCommaBePrinted ? ',' : ''}`
 }
 
+function isLayerEnabled<T extends { enabled: boolean }>(layer: T): boolean {
+  return layer.enabled
+}
+
 export function printBackgroundImage(
   cssBackgroundImages: CSSBackgrounds,
 ): JSXAttributeValue<string> {
-  let lastEnabledPropertyReached = false
-  const backgroundImageStrings = cssBackgroundImages.map((backgroundImage) => {
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, cssBackgroundImages)
+  const backgroundImageStrings = cssBackgroundImages.map((backgroundImage, i) => {
     const enabled = backgroundImage.enabled
-    const comma = lastEnabledPropertyReached
-    if (!lastEnabledPropertyReached && enabled) {
-      lastEnabledPropertyReached = true
-    }
+    const comma = indexOfLastEnabledLayer > i && enabled
     switch (backgroundImage.type) {
       case 'solid': {
         const color = printColor(backgroundImage.color)
@@ -3402,14 +3399,11 @@ export function parseTextShadow(textShadow: unknown): Either<string, CSSTextShad
 }
 
 function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string> {
-  let lastEnabledPropertyReached = false
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, textShadows)
   return jsxAttributeValue(
     [...textShadows]
-      .reverse()
-      .map((textShadow) => {
-        if (!lastEnabledPropertyReached && textShadow.enabled) {
-          lastEnabledPropertyReached = true
-        }
+      .map((textShadow, i) => {
+        const comma = indexOfLastEnabledLayer > i && textShadow.enabled
         const { offsetX, offsetY, blurRadius, color } = textShadow
         const parts = Utils.stripNulls([
           printCSSNumber(offsetX),
@@ -3417,23 +3411,19 @@ function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string>
           blurRadius == null ? null : printCSSNumber(blurRadius.value),
           printColor(color),
         ])
-        return printEnabled(
-          printComma(`${parts.join(' ')}`, lastEnabledPropertyReached),
-          textShadow.enabled,
-        )
+        return printEnabled(printComma(`${parts.join(' ')}`, comma), textShadow.enabled)
       })
-      .reverse()
       .join(' '),
   )
 }
 
-const parenthesesRegexp = /['"]+/g
+const quoteMarksRegexp = /['"]+/g
 
 function parseFontFamily(fontFamily: unknown): Either<string, CSSFontFamily> {
   if (typeof fontFamily === 'string' && fontFamily.length > 0) {
     const trimmed = fontFamily.trim()
     const split = trimmed.split(',')
-    const splitAndTrimmed = split.map((font) => font.trim().replace(/['"]+/g, ''))
+    const splitAndTrimmed = split.map((font) => font.trim().replace(quoteMarksRegexp, ''))
     return right(splitAndTrimmed)
   } else {
     return left('No valid fontFamily found')
