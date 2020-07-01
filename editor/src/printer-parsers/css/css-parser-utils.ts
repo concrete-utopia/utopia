@@ -431,3 +431,62 @@ export function isNamedSyntaxType<T extends string>(
 ): syntax is csstreemissing.Syntax.Type<T> {
   return syntax.type === 'Type' && names.includes(syntax.name as T)
 }
+
+export interface PreparsedLayer {
+  type: 'PREPARSED_LAYER'
+  value: string
+  enabled: boolean
+}
+
+export function preparsedLayer(value: string, enabled: boolean): PreparsedLayer {
+  return {
+    type: 'PREPARSED_LAYER',
+    value,
+    enabled,
+  }
+}
+
+export function traverseForPreparsedLayers(
+  remaining: string,
+  inComment = false,
+  layers: Array<PreparsedLayer> = [],
+  workingValue = '',
+): Array<PreparsedLayer> {
+  if (remaining.length === 0) {
+    layers.push(preparsedLayer(workingValue.trim(), !inComment))
+    return layers
+  }
+  switch (remaining[0]) {
+    case '/': {
+      if (remaining[1] === '*') {
+        return traverseForPreparsedLayers(remaining.slice(2), true, layers, '')
+      } else {
+        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue + '/')
+      }
+    }
+    case '*': {
+      if (inComment && remaining[1] === '/') {
+        layers.push(preparsedLayer(workingValue.trim(), !inComment))
+        return traverseForPreparsedLayers(remaining.slice(2), false, layers)
+      } else {
+        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue + '/')
+      }
+    }
+    case ',': {
+      if (inComment) {
+        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue)
+      } else {
+        layers.push(preparsedLayer(workingValue.trim(), !inComment))
+        return traverseForPreparsedLayers(remaining.slice(1), false, layers)
+      }
+    }
+    default: {
+      return traverseForPreparsedLayers(
+        remaining.slice(1),
+        inComment,
+        layers,
+        workingValue + remaining[0],
+      )
+    }
+  }
+}

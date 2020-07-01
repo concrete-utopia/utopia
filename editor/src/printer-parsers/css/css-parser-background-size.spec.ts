@@ -2,7 +2,8 @@ import { syntaxParsers } from './css-parser-map'
 
 describe('backgroundSize', () => {
   it("parses the <'background-size'> property with comments", () => {
-    const value = 'auto, /*auto*/ contain, 100% 100%, 100px auto, /* auto */ cover, 0 0'
+    const value =
+      'auto, /*auto*/ /*auto auto*/ /*100px 100px*/ contain, 100% 100%, 100px auto, /* auto */ cover, 0 0'
     const parseResults = syntaxParsers["<'background-size'>"](value)
     expect(parseResults).toMatchInlineSnapshot(`
       Object {
@@ -34,6 +35,46 @@ describe('backgroundSize', () => {
                   Object {
                     "type": "keyword",
                     "value": "auto",
+                  },
+                ],
+              },
+            },
+            "type": "bg-size",
+          },
+          Object {
+            "enabled": false,
+            "size": Object {
+              "default": true,
+              "value": Object {
+                "type": "parsed-curly-brace",
+                "value": Array [
+                  Object {
+                    "type": "keyword",
+                    "value": "auto",
+                  },
+                  Object {
+                    "type": "keyword",
+                    "value": "auto",
+                  },
+                ],
+              },
+            },
+            "type": "bg-size",
+          },
+          Object {
+            "enabled": false,
+            "size": Object {
+              "default": true,
+              "value": Object {
+                "type": "parsed-curly-brace",
+                "value": Array [
+                  Object {
+                    "unit": "px",
+                    "value": 100,
+                  },
+                  Object {
+                    "unit": "px",
+                    "value": 100,
                   },
                 ],
               },
