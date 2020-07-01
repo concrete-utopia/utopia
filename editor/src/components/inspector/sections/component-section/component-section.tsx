@@ -14,7 +14,7 @@ import {
   UtopiaStyles,
   UtopiaTheme,
 } from 'uuiui'
-import { betterReactMemo, SliderControl } from 'uuiui-deps'
+import { betterReactMemo, SliderControl, getControlStyles } from 'uuiui-deps'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
 import {
   ControlDescription,
@@ -62,6 +62,7 @@ import {
   useControlForUnionControl,
 } from '../../common/property-controls-hooks'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
+import { OptionsType } from 'react-select'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -318,16 +319,21 @@ const RowForInvalidControl = betterReactMemo(
 
 interface AbstractRowForControlProps {
   propPath: PropertyPath
-  title: string
   isScene: boolean
 }
 
+function titleForControl(propPath: PropertyPath, control: ControlDescription): string {
+  return control.title ?? PP.lastPartToString(propPath)
+}
+
 interface RowForBaseControlProps extends AbstractRowForControlProps {
+  label?: React.ComponentType<any>
   controlDescription: BaseControlDescription
 }
 
 const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBaseControlProps) => {
-  const { propPath, title, controlDescription, isScene } = props
+  const { propPath, controlDescription, isScene } = props
+  const title = titleForControl(propPath, controlDescription)
   const propName = `${PP.lastPart(propPath)}`
 
   let warningTooltip: string | undefined = undefined
@@ -345,6 +351,17 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
   ])
   const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
+
+  const propertyLabel =
+    props.label == null ? (
+      <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+        {warning}
+        {title}
+      </PropertyLabel>
+    ) : (
+      <props.label />
+    )
+
   return (
     <InspectorContextMenuWrapper
       id={`context-menu-for-${propName}`}
@@ -352,10 +369,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       data={null}
     >
       <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-        <PropertyLabel target={[propPath]}>
-          {warning}
-          {title}
-        </PropertyLabel>
+        {propertyLabel}
         <ControlForProp
           propName={propName}
           controlDescription={controlDescription}
@@ -374,9 +388,63 @@ const RowForUnionControl = betterReactMemo(
   'RowForUnionControl',
   (props: RowForUnionControlProps) => {
     const { propPath, controlDescription } = props
+    const title = titleForControl(propPath, controlDescription)
 
-    const controlToUse = useControlForUnionControl(propPath, controlDescription)
-    return <RowForControl {...props} controlDescription={controlToUse} />
+    const suitableControl = useControlForUnionControl(propPath, controlDescription)
+    const [controlToUse, setControlToUse] = React.useState(suitableControl)
+
+    const labelOptions: OptionsType<SelectOption> = controlDescription.controls.map((control) => {
+      const label = control.title ?? control.type
+      return {
+        value: control,
+        label: label,
+      }
+    })
+
+    const labelValue: SelectOption = {
+      value: controlToUse,
+      label: title,
+    }
+
+    const onLabelChangeValue = React.useCallback(
+      (option: SelectOption) => {
+        if (option.value !== controlToUse) {
+          setControlToUse(option.value)
+        }
+      },
+      [controlToUse, setControlToUse],
+    )
+
+    const simpleControlStyles = getControlStyles('simple')
+
+    const label = (
+      <PopupList
+        value={labelValue}
+        options={labelOptions}
+        onSubmitValue={onLabelChangeValue}
+        containerMode='showBorderOnHover'
+        controlStyles={simpleControlStyles}
+        style={{
+          maxWidth: '100%',
+          overflow: 'hidden',
+        }}
+      />
+    )
+
+    const labelAsRenderProp = React.useCallback(() => label, [label])
+
+    if (isBaseControlDescription(controlToUse)) {
+      return (
+        <RowForBaseControl {...props} label={labelAsRenderProp} controlDescription={controlToUse} />
+      )
+    } else {
+      return (
+        <>
+          {label}
+          <RowForControl {...props} controlDescription={controlToUse} />
+        </>
+      )
+    }
   },
 )
 
@@ -480,7 +548,6 @@ export const ComponentSectionInner = betterReactMemo(
                       return (
                         <RowForControl
                           key={propName}
-                          title={Utils.defaultIfNull(propName, controlDescription.title)}
                           propPath={PP.create([propName])}
                           controlDescription={controlDescription}
                           isScene={props.isScene}
