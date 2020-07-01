@@ -447,6 +447,39 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
+  it('just B pin gets turned into L,B, with deltaY=0 B doesn`t change', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', bottom: 50 }}
+            layout={{ layoutSystem: 'pinSystem' }}
+            data-uid={'bbb'}
+          />
+        </View>`,
+      ),
+    )
+
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: 20,
+      y: 0,
+    } as CanvasVector)
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', bottom: 50, left: 20 }}
+            layout={{ layoutSystem: 'pinSystem' }}
+            data-uid={'bbb'}
+          />
+        </View>`,
+      ),
+    )
+  })
+
   it('TLWH, but W and H are left alone', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -480,6 +513,39 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
+  it('TLWH, but W and H are left alone, T, L are % values', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          style={{ backgroundColor: '#0091FFAA', width: '50%', height: 25, left: '10%', top: '5%' }}
+          layout={{ layoutSystem: 'pinSystem' }}
+          data-uid={'bbb'}
+        />
+      </View>
+      `),
+    )
+
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: -32,
+      y: 45,
+    } as CanvasVector)
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          style={{ backgroundColor: '#0091FFAA', width: '50%', height: 25, left: '2%', top: '16.3%' }}
+          layout={{ layoutSystem: 'pinSystem' }}
+          data-uid={'bbb'}
+        />
+      </View>`,
+      ),
+    )
+  })
+
   it('TLRB pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
@@ -505,6 +571,45 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, right: 82, bottom: 61 }}
+          layout={{ layoutSystem: 'pinSystem' }}
+          data-uid={'bbb'}
+        />
+      </View>`,
+      ),
+    )
+  })
+
+  it('TLRB pin change works, with % values', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          style={{ backgroundColor: '#0091FFAA', left: '10%', top: '15%', right: '10%', bottom: '25%' }}
+          layout={{ layoutSystem: 'pinSystem' }}
+          data-uid={'bbb'}
+        />
+      </View>`,
+      ),
+    )
+
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: 20,
+      y: 65,
+    } as CanvasVector)
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          style={{
+            backgroundColor: '#0091FFAA',
+            left: '15%',
+            right: '5%',
+            top: '31.3%',
+            bottom: '8.8%',
+          }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid={'bbb'}
         />
