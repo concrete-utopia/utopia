@@ -7,7 +7,7 @@ import {
 import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { canvasRectangle } from '../../core/shared/math-utils'
+import { canvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import { selectComponents, setCanvasFrames, wrapInView } from '../editor/actions/actions'
 import { reparentComponents } from '../navigator/actions'
 import * as TP from '../../core/shared/template-path'
@@ -295,10 +295,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: -32,
+      y: -41,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -328,10 +328,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: -32,
+      y: -41,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -361,10 +361,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: 20,
+      y: 20,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -372,7 +372,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#0091FFAA', right: 280, bottom: 280 }}
+            style={{ backgroundColor: '#0091FFAA', right: 30, bottom: 30 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'bbb'}
           />
@@ -394,10 +394,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: 20,
+      y: 20,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -405,7 +405,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#0091FFAA', right: 280, top: 20 }}
+            style={{ backgroundColor: '#0091FFAA', right: 30, top: 20 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'bbb'}
           />
@@ -427,10 +427,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: 20,
+      y: 20,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -438,7 +438,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#0091FFAA', bottom: 280, left: 20 }}
+            style={{ backgroundColor: '#0091FFAA', bottom: 30, left: 20 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'bbb'}
           />
@@ -460,10 +460,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       `),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: -32,
+      y: -41,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -493,10 +493,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: -32,
+      y: -41,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -504,7 +504,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, right: 280, bottom: 280 }}
+          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, right: 82, bottom: 61 }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid={'bbb'}
         />
@@ -526,10 +526,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: -32,
+      y: -41,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -538,7 +538,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#0091FFAA', left: 20, top: 20 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: -130, centerY: -130 }}
+          layout={{ layoutSystem: 'pinSystem', centerX: 68, centerY: 59 }}
           data-uid={'bbb'}
         />
       </View>`,
@@ -559,10 +559,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: -32,
+      y: -41,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -570,8 +570,8 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', right: 280, bottom: 280 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: -130, centerY: -130 }}
+          style={{ backgroundColor: '#0091FFAA', right: 84, bottom: 102 }}
+          layout={{ layoutSystem: 'pinSystem', centerX: 68, centerY: 59 }}
           data-uid={'bbb'}
         />
       </View>`,
@@ -592,10 +592,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       `),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: -32,
+      y: -41,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -615,8 +615,8 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
               height: 202,
               left: 20,
               top: 20,
-              right: 280,
-              bottom: 280,
+              right: 125,
+              bottom: 178,
             }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'bbb'}
@@ -639,10 +639,10 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
+    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+      x: -32,
+      y: -41,
+    } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
@@ -650,7 +650,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, right: 280 }}
+          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, right: 82 }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid={'bbb'}
         />

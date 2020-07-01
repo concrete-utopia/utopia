@@ -1206,7 +1206,6 @@ export function produceResizeCanvasTransientState(
     Utils.fastForEach(elementsToTarget, (target) => {
       const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, target)
       if (originalFrame != null) {
-        // ES A MARGINNAL MI LESZ?
         const newTargetFrame = Utils.transformFrameUsingBoundingBox(
           newSize,
           boundingBox,
