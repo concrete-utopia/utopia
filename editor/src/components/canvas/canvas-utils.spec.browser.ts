@@ -447,7 +447,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  it('just B pin gets turned into L,B, with deltaY=0 B doesn`t change', async () => {
+  it('just B pin doesn`t turn into L,B with deltaX=0', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
@@ -461,8 +461,8 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
 
     const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
-      x: 20,
-      y: 0,
+      x: 0,
+      y: 20,
     } as CanvasVector)
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
@@ -471,7 +471,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#0091FFAA', bottom: 50, left: 20 }}
+            style={{ backgroundColor: '#0091FFAA', bottom: 30 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'bbb'}
           />
