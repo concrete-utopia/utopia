@@ -4720,7 +4720,7 @@ exports[`UiJsxCanvas render handles an undefined component gracefully 1`] = `
         color: rgba(77, 77, 77, 1);
         flex-shrink: 0;
       \\"
-      class=\\"css-4pbagp\\"
+      class=\\"css-1pyjm1n\\"
     >
       <img
         style=\\"user-select: none;\\"

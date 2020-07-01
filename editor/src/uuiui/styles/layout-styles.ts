@@ -8,17 +8,17 @@ export const flexRowStyle: Pick<
   flexDirection: 'row',
   alignItems: 'center',
   whiteSpace: 'nowrap',
-}
+} as const
 
 export const flexColumnStyle: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   whiteSpace: 'nowrap',
-}
+} as const
 
 export const tileStyle: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
-}
+} as const

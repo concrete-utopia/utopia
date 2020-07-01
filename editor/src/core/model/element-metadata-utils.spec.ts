@@ -23,6 +23,7 @@ import {
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file'
 import { BakedInStoryboardUID } from './scene-utils'
+import { TemplatePath } from '../shared/project-file-types'
 
 const TestScenePath = 'scene-aaa'
 
@@ -341,7 +342,7 @@ describe('getElementLabel', () => {
 describe('getAllPaths', () => {
   it('returns the paths in a depth first manner', () => {
     const actualResult = MetadataUtils.getAllPaths(testComponentMetadata)
-    const expectedResult = [
+    const expectedResult: Array<TemplatePath> = [
       testComponentScene.scenePath,
       testComponentRoot1.templatePath,
       testComponentMetadataChild1.templatePath,
