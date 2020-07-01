@@ -20,6 +20,8 @@ import {
   jsxPropertyAssignment,
   partOfJsxAttributeValue,
   PartOfJSXAttributeValue,
+  isPartOfJSXAttributeValue,
+  isJSXAttributeNotFound,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { objectMap } from './object-utils'
@@ -275,6 +277,32 @@ export function getModifiableJSXAttributeAtPath(
     return right(result.attribute)
   } else {
     return left(`Found non-value attribute ${result.attribute.type}`)
+  }
+}
+
+// FIXME The naming here is abysmal
+export function getModifiableJSXAttributeAtPathFromAttribute(
+  attribute: ModifiableAttribute,
+  path: PropertyPath,
+): GetModifiableAttributeResult {
+  if (isJSXAttributeNotFound(attribute)) {
+    return right(jsxAttributeNotFound())
+  } else if (isPartOfJSXAttributeValue(attribute)) {
+    const pathString = PP.toString(path)
+    if (ObjectPath.has(attribute.value, pathString)) {
+      const extractedValue = ObjectPath.get(attribute.value, pathString)
+      return right(partOfJsxAttributeValue(extractedValue))
+    } else {
+      return right(jsxAttributeNotFound())
+    }
+  } else {
+    const result = getJSXAttributeAtPathInner(attribute, path)
+
+    if (result.remainingPath == null) {
+      return right(result.attribute)
+    } else {
+      return left(`Found non-value attribute ${result.attribute.type}`)
+    }
   }
 }
 

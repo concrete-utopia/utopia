@@ -327,7 +327,7 @@ export function useInspectorLayoutInStyleInfo_UNSAFE<
   return useInspectorInfo([prop], transformValue, untransformValue, stylePropPathMappingFn)
 }
 
-function useInspectorContext() {
+export function useInspectorContext() {
   const { onSubmitValue, onUnsetValue } = React.useContext(InspectorCallbackContext)
   return React.useMemo(() => {
     return {
