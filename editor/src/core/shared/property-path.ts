@@ -81,6 +81,10 @@ export function lastPart(propertyPath: PropertyPath): PropertyPathPart {
   return propertyPath.propertyElements[propertyPath.propertyElements.length - 1]
 }
 
+export function lastPartToString(propertyPath: PropertyPath): string {
+  return `${lastPart(propertyPath)}`
+}
+
 export function firstPart(propertyPath: PropertyPath): PropertyPathPart {
   return propertyPath.propertyElements[0]
 }
