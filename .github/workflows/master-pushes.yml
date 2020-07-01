@@ -18,9 +18,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: editor/node_modules
-          key: ${{ runner.os }}-node-editor-master-${{ hashFiles('editor/package-lock.json') }}
+          key: ${{ runner.os }}-node-editor-master-2-${{ hashFiles('editor/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-editor-master-
+            ${{ runner.os }}-node-editor-master-2-
       - name: Cache editor test result
         id: cache-editor-tests
         uses: actions/cache@v2
@@ -32,9 +32,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: utopia-api/node_modules
-          key: ${{ runner.os }}-node-utopia-api-master-${{ hashFiles('utopia-api/package-lock.json') }}
+          key: ${{ runner.os }}-node-utopia-api-master-2-${{ hashFiles('utopia-api/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-utopia-api-master-
+            ${{ runner.os }}-node-utopia-api-master-2-
       - name: Cache website modules
         uses: actions/cache@v2
         with:
