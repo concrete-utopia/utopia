@@ -76,7 +76,6 @@ import * as TP from '../shared/template-path'
 import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
 import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
 import { EmptyScenePathForStoryboard } from './scene-utils'
-import { fastForEach } from '../shared/utils'
 const ObjectPathImmutable: any = OPI
 
 export const UTOPIA_ORIGINAL_ID_KEY = 'data-utopia-original-uid'
@@ -753,24 +752,16 @@ export const MetadataUtils = {
     )
   },
   getAllPaths(scenes: ComponentMetadata[]): TemplatePath[] {
-    let result: Array<TemplatePath> = []
-    function recurseElement(element: ElementInstanceMetadata): void {
-      result.push(element.templatePath)
-      fastForEach(element.children, recurseElement)
+    function allPaths(siblings: ElementInstanceMetadata[]): TemplatePath[] {
+      return [
+        ...Utils.pluck(siblings, 'templatePath'),
+        ...Utils.flatMapArray((instance) => allPaths(instance.children), siblings),
+      ]
     }
 
     const scenePaths = this.getAllScenePaths(scenes)
-    fastForEach(scenePaths, (scenePath) => {
-      const scene = scenes.find((s) => TP.pathsEqual(scenePath, s.scenePath))
-      if (scene != null) {
-        result.push(scenePath)
-        if (scene.rootElement != null) {
-          recurseElement(scene.rootElement)
-        }
-      }
-    })
-
-    return result
+    const rootElements = mapDropNulls((s) => s.rootElement, scenes)
+    return [...scenePaths, ...allPaths(rootElements)]
   },
   isElementOfType(instance: ElementInstanceMetadata, elementType: string): boolean {
     return foldEither(

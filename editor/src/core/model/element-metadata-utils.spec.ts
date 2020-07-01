@@ -337,18 +337,3 @@ describe('getElementLabel', () => {
     expect(actualResult).toEqual('test text')
   })
 })
-
-// describe('getAllPaths', () => {
-//   it('returns the paths in a depth first manner', () => {
-//     const actualResult = MetadataUtils.getAllPaths(testComponentMetadata)
-//     const expectedResult = [
-//       testComponentScene.scenePath,
-//       testComponentRoot1.templatePath,
-//       testComponentMetadataChild1.templatePath,
-//       testComponentMetadataChild2.templatePath,
-//       testComponentMetadataChild3.templatePath,
-//       TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View2', 'View0']),
-//     ]
-//     expect(actualResult).toEqual(expectedResult)
-//   })
-// })
