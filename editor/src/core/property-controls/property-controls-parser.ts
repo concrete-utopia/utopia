@@ -10,6 +10,7 @@ import {
   SliderControlDescription,
   StringControlDescription,
   IgnoreControlDescription,
+  UnionControlDescription,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -44,6 +45,7 @@ import {
   isRight,
 } from '../shared/either'
 import { objectMap, setOptionalProp, forEachValue } from '../shared/object-utils'
+import { parseEnumValue } from './property-control-values'
 
 export function parseNumberControlDescription(
   value: unknown,
@@ -74,15 +76,6 @@ export function parseNumberControlDescription(
   )
 }
 
-type StringBooleanNumberUndefinedNull = string | boolean | number | undefined | null
-
-const parseStringBooleanNumberUndefinedNull: Parser<StringBooleanNumberUndefinedNull> = parseAlternative<
-  StringBooleanNumberUndefinedNull
->(
-  [parseString, parseBoolean, parseNumber, parseUndefined, parseNull],
-  'Value is not a string/boolean/number/undefined/null.',
-)
-
 type OptionTitles<P> = Array<string> | ((props: P | null) => Array<string>)
 
 const parseOptionTitles: Parser<OptionTitles<any>> = parseAlternative<OptionTitles<any>>(
@@ -106,8 +99,8 @@ export function parseEnumControlDescription(value: unknown): ParseResult<EnumCon
     },
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['enum']), 'type')(value),
-    optionalObjectKeyParser(parseStringBooleanNumberUndefinedNull, 'defaultValue')(value),
-    objectKeyParser(parseArray(parseStringBooleanNumberUndefinedNull), 'options')(value),
+    optionalObjectKeyParser(parseEnumValue, 'defaultValue')(value),
+    objectKeyParser(parseArray(parseEnumValue), 'options')(value),
     optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
     optionalObjectKeyParser(parseBoolean, 'displaySegmentedControl')(value),
   )
@@ -317,6 +310,24 @@ export function parseIgnoreControlDescription(
   )
 }
 
+export function parseUnionControlDescription(value: unknown): ParseResult<UnionControlDescription> {
+  return applicative4Either(
+    (title, type, defaultValue, controls) => {
+      let unionControlDescription: UnionControlDescription = {
+        type: type,
+        controls: controls,
+      }
+      setOptionalProp(unionControlDescription, 'title', title)
+      setOptionalProp(unionControlDescription, 'defaultValue', defaultValue)
+      return unionControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'title')(value),
+    objectKeyParser(parseEnum(['union']), 'type')(value),
+    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    objectKeyParser(parseArray(parseControlDescription), 'controls')(value),
+  )
+}
+
 export function parseControlDescription(value: unknown): ParseResult<ControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
     switch ((value as any)['type']) {
@@ -340,6 +351,8 @@ export function parseControlDescription(value: unknown): ParseResult<ControlDesc
         return parseComponentInstanceControlDescription(value)
       case 'ignore':
         return parseIgnoreControlDescription(value)
+      case 'union':
+        return parseUnionControlDescription(value)
       case undefined:
         return left(objectFieldNotPresentParseError('type'))
       default:

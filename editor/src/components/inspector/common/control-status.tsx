@@ -9,11 +9,15 @@ import {
   JSXAttributeNotFound,
   PartOfJSXAttributeValue,
 } from '../../../core/shared/element-template'
-import { GetModifiableAttributeResult } from '../../../core/shared/jsx-attributes'
-import { isLeft, isRight } from '../../../core/shared/either'
+import {
+  GetModifiableAttributeResult,
+  ModifiableAttribute,
+} from '../../../core/shared/jsx-attributes'
+import { isLeft, isRight, Either } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { ParsedPropertiesKeys } from './css-utils'
 import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
+import { fastForEach } from '../../../core/shared/utils'
 
 export interface ControlStyles {
   fontStyle: string
@@ -421,7 +425,7 @@ function calculatePropertyStatusPerProperty(
 }
 
 // TODO MEMOIZE ME!
-function calculatePropertyStatusForSelection(
+export function calculatePropertyStatusForSelection(
   modifiableAttributeResult: ReadonlyArray<GetModifiableAttributeResult>,
   realValues: ReadonlyArray<unknown>,
 ): PropertyStatus {

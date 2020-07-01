@@ -32,8 +32,8 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
     this.bundlerWorker.sendInitMessage(typeDefinitions, projectContents)
   }
 
-  sendUpdateFileMessage(filename: string, content: FileContent, emitBuild: boolean) {
-    this.bundlerWorker.sendUpdateFileMessage(filename, content, emitBuild)
+  sendUpdateFileMessage(filename: string, content: FileContent) {
+    this.bundlerWorker.sendUpdateFileMessage(filename, content)
   }
 
   sendParseFileMessage(filename: string, content: string) {

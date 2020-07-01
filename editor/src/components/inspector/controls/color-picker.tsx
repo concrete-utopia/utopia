@@ -151,8 +151,9 @@ export class ColorPickerInner extends React.Component<
 > {
   private RefFirstControl = React.createRef<HTMLInputElement>()
 
-  private width = colorPickerWidth
-  private height = MetadataEditorModalPreviewHeight
+  private fullWidth = colorPickerWidth
+  private fullHeight = MetadataEditorModalPreviewHeight
+  private paddedWidth = this.fullWidth - inspectorEdgePadding * 2
 
   private SVControlRef = React.createRef<HTMLDivElement>()
   private SVOrigin: WindowPoint = { x: 0, y: 0 } as WindowPoint
@@ -272,11 +273,11 @@ export class ColorPickerInner extends React.Component<
 
   // Saturation and Value (SV) slider functions
   setSVFromClientPosition = (clientX: number, clientY: number, transient: boolean) => {
-    const x = R.clamp(0, this.width, clientX - this.SVOrigin.x)
-    const y = R.clamp(0, this.height, clientY - this.SVOrigin.y)
+    const x = R.clamp(0, this.fullWidth, clientX - this.SVOrigin.x)
+    const y = R.clamp(0, this.fullHeight, clientY - this.SVOrigin.y)
 
-    const newS = x / this.width
-    const newV = 1 - y / this.height
+    const newS = x / this.fullWidth
+    const newV = 1 - y / this.fullHeight
 
     this.setNewHSVa(undefined, newS, newV, undefined, transient)
   }
@@ -308,8 +309,8 @@ export class ColorPickerInner extends React.Component<
 
   // Hue slider functions
   setHueFromClientX = (clientX: number, transient: boolean) => {
-    const x = R.clamp(0, this.width, clientX - this.HueOriginLeft)
-    const newHue = Math.round(360 * (x / this.width))
+    const x = R.clamp(0, this.paddedWidth, clientX - this.HueOriginLeft)
+    const newHue = Math.round(360 * (x / this.paddedWidth))
     this.setNewHSVa(newHue, undefined, undefined, undefined, transient)
   }
 
@@ -338,8 +339,8 @@ export class ColorPickerInner extends React.Component<
 
   // Alpha slider functions
   setAlphaFromClientX = (clientX: number, transient: boolean) => {
-    const x = R.clamp(0, this.width, clientX - this.AlphaOriginLeft)
-    const newAlpha = Number((x / this.width).toFixed(2))
+    const x = R.clamp(0, this.paddedWidth, clientX - this.AlphaOriginLeft)
+    const newAlpha = Number((x / this.paddedWidth).toFixed(2))
     this.setNewHSVa(undefined, undefined, undefined, newAlpha, transient)
   }
 
