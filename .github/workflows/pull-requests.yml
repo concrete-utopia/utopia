@@ -13,6 +13,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache editor modules
+        id: cache-editor-modules
         uses: actions/cache@v2
         with:
           path: editor/node_modules
@@ -34,6 +35,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-utopia-api-PRs-
       - name: Cache website modules
+        id: cache-website-modules
         uses: actions/cache@v2
         with:
           path: website/node_modules
@@ -42,6 +44,12 @@ jobs:
             ${{ runner.os }}-node-website-PRs-
       - name: Install nix
         uses: Rheeseyb/install-nix-action@master
+      - name: Install website modules
+        if: steps.cache-website-modules.output.cache-hit != 'true'
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run install-website-ci
+      - name: Install editor modules
+        if: steps.cache-editor-modules.output.cache-hit != 'true'
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run install-editor-ci
       - name: Run the tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-all-ci
