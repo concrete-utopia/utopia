@@ -73,6 +73,7 @@ import { toggleShadowEnabled } from '../sections/style-section/shadow-subsection
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
 import * as PP from '../../../core/shared/property-path'
 import { isJSXAttribute } from '@babel/types'
+import { findLastIndex } from '../../../core/shared/array-utils'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -957,7 +958,7 @@ export const defaultBoxShadows: CSSBoxShadows = [{ ...defaultBoxShadow }]
 export const disabledFunctionName = UtopiaUtils.disabled.name
 
 export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<string> {
-  const indexOfLastEnabledLayer = getIndexOfLastEnabledLayer(boxShadows)
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, boxShadows)
   return jsxAttributeValue(
     [...boxShadows]
       .map((boxShadow, i) => {
@@ -3208,22 +3209,14 @@ function printComma(layer: string, shouldCommaBePrinted: boolean): string {
   return `${layer}${shouldCommaBePrinted ? ',' : ''}`
 }
 
-function getIndexOfLastEnabledLayer<T extends ReadonlyArray<{ enabled: boolean }>>(
-  layers: T,
-): number {
-  for (let i = layers.length - 1; i >= 0; i = i - 1) {
-    const layer = layers[i]
-    if (layer?.enabled === true) {
-      return i
-    }
-  }
-  return -1
+function isLayerEnabled<T extends { enabled: boolean }>(layer: T): boolean {
+  return layer.enabled
 }
 
 export function printBackgroundImage(
   cssBackgroundImages: CSSBackgrounds,
 ): JSXAttributeValue<string> {
-  const indexOfLastEnabledLayer = getIndexOfLastEnabledLayer(cssBackgroundImages)
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, cssBackgroundImages)
   const backgroundImageStrings = cssBackgroundImages.map((backgroundImage, i) => {
     const enabled = backgroundImage.enabled
     const comma = indexOfLastEnabledLayer > i && enabled
@@ -3406,7 +3399,7 @@ export function parseTextShadow(textShadow: unknown): Either<string, CSSTextShad
 }
 
 function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string> {
-  const indexOfLastEnabledLayer = getIndexOfLastEnabledLayer(textShadows)
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, textShadows)
   return jsxAttributeValue(
     [...textShadows]
       .map((textShadow, i) => {
