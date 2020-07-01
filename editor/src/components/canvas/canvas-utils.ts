@@ -56,6 +56,8 @@ import {
   unsetJSXValuesAtPaths,
   ValueAtPath,
   setJSXValueAtPath,
+  jsxAttributesToProps,
+  jsxSimpleAttributeToValue,
 } from '../../core/shared/jsx-attributes'
 import {
   CanvasMetadata,
@@ -297,7 +299,7 @@ export function updateFramesOfScenesAndComponents(
     if (TP.isScenePath(target)) {
       switch (frameAndTarget.type) {
         case 'PIN_FRAME_CHANGE':
-        case 'PIN_SIZE_CHANGE':
+        case 'PIN_SIZE_CHANGE': {
           // Update scene with pin based frame.
           const sceneStaticpath = createSceneTemplatePath(target)
           workingComponentsResult = transformJSXComponentAtPath(
@@ -328,7 +330,43 @@ export function updateFramesOfScenesAndComponents(
             },
           )
           break
+        }
         case 'PIN_MOVE_CHANGE': {
+          const sceneStaticpath = createSceneTemplatePath(target)
+          workingComponentsResult = transformJSXComponentAtPath(
+            workingComponentsResult,
+            sceneStaticpath,
+            (sceneElement) => {
+              const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
+              if (isRight(styleProps)) {
+                const left = styleProps.value.left + frameAndTarget.delta.x
+                const top = styleProps.value.top + frameAndTarget.delta.y
+                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
+                  {
+                    path: PP.create(['style']),
+                    value: jsxAttributeValue({
+                      left: left,
+                      top: top,
+                      width: styleProps.value.width,
+                      height: styleProps.value.height,
+                    }),
+                  },
+                ])
+                return foldEither(
+                  () => sceneElement,
+                  (updatedProps) => {
+                    return {
+                      ...sceneElement,
+                      props: roundAttributeLayoutValues(updatedProps),
+                    }
+                  },
+                  sceneStyleUpdated,
+                )
+              } else {
+                return sceneElement
+              }
+            },
+          )
           break
         }
         case 'FLEX_MOVE':
@@ -466,24 +504,7 @@ export function updateFramesOfScenesAndComponents(
               }).map(framePointForPinnedProp)
 
               function whichPropsToUpdate() {
-                if (frameAndTarget.type === 'PIN_MOVE_CHANGE') {
-                  // this is not final logic, for now let's just keep existing pins
-                  let framePointsToUse: Array<FramePoint> = [...frameProps]
-                  const horizontalExistingFramePoints = frameProps.filter(
-                    (p) => HorizontalFramePointsExceptSize.indexOf(p) > -1,
-                  )
-                  if (horizontalExistingFramePoints.length === 0) {
-                    framePointsToUse.push(FramePoint.Left)
-                  }
-                  const verticalExistingFramePoints = frameProps.filter(
-                    (p) => VerticalFramePointsExceptSize.indexOf(p) > -1,
-                  )
-                  if (verticalExistingFramePoints.length === 0) {
-                    framePointsToUse.push(FramePoint.Top)
-                  }
-
-                  return framePointsToUse
-                } else if (frameAndTarget.type === 'PIN_SIZE_CHANGE') {
+                if (frameAndTarget.type === 'PIN_SIZE_CHANGE') {
                   // only update left, top, right or bottom if the frame is expressed as left, top, right, bottom.
                   // otherwise try to change width and height only
                   let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
@@ -736,72 +757,6 @@ function getPropsToSetToMoveElement(
     }
   })
   return propsToSet
-
-  // if (dragDelta.x !== 0) {
-  //   if (framePoints.includes(FramePoint.Left)) {
-  //     const updatedValue =
-  //       frameProps[FramePoint.Left] == null
-  //         ? dragDelta.x
-  //         : frameProps[FramePoint.Left] + dragDelta.x
-  //     propsToSet.push({
-  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.Left)),
-  //       value: jsxAttributeValue(updatedValue),
-  //     })
-  //   }
-  //   if (framePoints.includes(FramePoint.Right)) {
-  //     const updatedValue =
-  //       frameProps[FramePoint.Right] == null
-  //         ? frameAndTarget.delta.x
-  //         : frameProps[FramePoint.Right] - frameAndTarget.delta.x
-  //     propsToSet.push({
-  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.Right)),
-  //       value: jsxAttributeValue(updatedValue),
-  //     })
-  //   }
-  //   if (framePoints.includes(FramePoint.CenterX)) {
-  //     const updatedValue =
-  //       frameProps[FramePoint.CenterX] == null
-  //         ? frameAndTarget.delta.x
-  //         : frameProps[FramePoint.CenterX] + frameAndTarget.delta.x
-  //     propsToSet.push({
-  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.CenterX)),
-  //       value: jsxAttributeValue(updatedValue),
-  //     })
-  //   }
-  // }
-  // if (dragDelta.y !== 0) {
-  //   if (framePoints.includes(FramePoint.Top)) {
-  //     const updatedValue =
-  //       frameProps[FramePoint.Top] == null
-  //         ? frameAndTarget.delta.y
-  //         : frameProps[FramePoint.Top] + frameAndTarget.delta.y
-  //     propsToSet.push({
-  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.Top)),
-  //       value: jsxAttributeValue(updatedValue),
-  //     })
-  //   }
-  //   if (framePoints.includes(FramePoint.Bottom)) {
-  //     const updatedValue =
-  //       frameProps[FramePoint.Bottom] == null
-  //         ? frameAndTarget.delta.y
-  //         : frameProps[FramePoint.Bottom] - frameAndTarget.delta.y
-  //     propsToSet.push({
-  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.Bottom)),
-  //       value: jsxAttributeValue(updatedValue),
-  //     })
-  //   }
-  //   if (framePoints.includes(FramePoint.CenterY)) {
-  //     const updatedValue =
-  //       frameProps[FramePoint.CenterY] == null
-  //         ? dragDelta.y
-  //         : frameProps[FramePoint.CenterY] + dragDelta.y
-  //     propsToSet.push({
-  //       path: createLayoutPropertyPath(pinnedPropForFramePoint(FramePoint.CenterY)),
-  //       value: jsxAttributeValue(updatedValue),
-  //     })
-  //   }
-  // }
-  // return propsToSet
 }
 
 export function getOriginalFrameInCanvasCoords(
