@@ -22,6 +22,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
@@ -308,6 +309,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
@@ -503,6 +505,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <input data-uid=\\"567\\" style=\\"top: 10px;\\" />
   </div>
@@ -609,6 +612,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">1</div>
@@ -842,6 +846,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">
@@ -1189,6 +1194,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa\\">Thing</div>
@@ -1506,6 +1512,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
@@ -1697,6 +1704,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -1932,6 +1940,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -2167,6 +2176,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa\\">Thing</div>
@@ -2484,6 +2494,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
@@ -2667,6 +2678,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -3157,6 +3169,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -3630,6 +3643,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -4162,6 +4176,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -4694,6 +4709,7 @@ exports[`UiJsxCanvas render handles an undefined component gracefully 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -4743,6 +4759,7 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"bbb\\"></div>
   </div>
@@ -4849,6 +4866,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -6754,6 +6772,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa\\">Hello World!!</div>
@@ -7089,6 +7108,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">Thing</div>
   </div>
@@ -7249,6 +7269,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
@@ -7487,6 +7508,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -8034,6 +8056,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -8398,6 +8421,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -8633,6 +8657,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -8869,6 +8894,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -9111,6 +9137,7 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <img
@@ -9362,6 +9389,7 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\" data-factory-function-works=\\"true\\">Utopia</div>
   </div>
@@ -9469,6 +9497,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">
@@ -9736,6 +9765,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"cloner\\">
@@ -10098,6 +10128,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       data-uid=\\"aaa\\"
@@ -10209,6 +10240,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       data-uid=\\"aaa\\"

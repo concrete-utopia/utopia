@@ -1,7 +1,8 @@
-import React = require('react')
 import * as Chroma from 'chroma-js'
-import { colorTheme, SimpleNumberInput, SimplePercentInput, StringInput } from 'uuiui'
-import { didWeHandleMouseMoveForThisFrame, mouseMoveHandled } from '../../mouse-move'
+import * as R from 'ramda'
+import { colorTheme, SimpleNumberInput, SimplePercentInput } from 'uuiui'
+import { WindowPoint } from '../../../core/shared/math-utils'
+import { ControlStyleDefaults, getControlStyles } from '../common/control-status'
 import {
   CSSColor,
   cssColorToChromaColorOrDefault,
@@ -10,12 +11,12 @@ import {
   isHex,
   isHSL,
   isKeyword,
-  parseAlphaFromCSSColor,
 } from '../common/css-utils'
-import { inspectorEdgePadding } from '../sections/style-section/background-subsection/background-picker'
-import { ControlStyleDefaults } from '../common/control-status'
-import { InspectorModal } from '../widgets/inspector-modal'
 import { checkerboardBackground } from '../common/inspector-utils'
+import { inspectorEdgePadding } from '../sections/style-section/background-subsection/background-picker'
+import { InspectorModal } from '../widgets/inspector-modal'
+import { StringControl } from './string-control'
+import React = require('react')
 
 export interface ColorPickerProps extends ColorPickerInnerProps {
   closePopup: () => void
@@ -82,7 +83,7 @@ function toPassedInColorType(color: Chroma.Color, passedInColor: CSSColor): CSSC
   } else if (isHex(passedInColor)) {
     return {
       type: 'Hex',
-      hex: color.hex().toUpperCase(),
+      hex: color.hex('auto').toUpperCase(),
     }
   } else if (isHSL(passedInColor)) {
     const [h, s, l, a] = (color.hsl() as any) as [number, number, number, number] // again, the types are out of date
@@ -108,34 +109,69 @@ function toPassedInColorType(color: Chroma.Color, passedInColor: CSSColor): CSSC
   }
 }
 
-export type ColorPickerInnerState = {
-  hsvH: number
-  hsvS: number
-  hsvV: number
-  hex: string
-  alpha: number
-  controlPosition2DX: number
-  controlPosition2DY: number
-  controlPosition1D: number
-  controlPositionAlpha: number
+function deriveStateFromNewColor(
+  color: Chroma.Color,
+  stateNormalisedHuePosition: number,
+): ColorPickerInnerState {
+  const [h, s, v] = color.hsv()
+  return {
+    normalisedHuePosition: getSafeHue(h, stateNormalisedHuePosition) / 360,
+    normalisedSaturationPosition: s,
+    normalisedValuePosition: v,
+    normalisedAlphaPosition: color.alpha(),
+    dirty: false,
+  }
+}
+
+/**
+ * All shades of grey don't have an HSV hue component, so Chroma returns NaN,
+ * this safeguards against that.
+ */
+function getSafeHue(hue: number, stateNormalisedValue: number) {
+  return Math.round(isNaN(hue) ? stateNormalisedValue * 360 : hue)
+}
+
+/**
+ * State values for the HSVa sliders, normalised to 0.0—1.0.
+ */
+interface ColorPickerPositions {
+  normalisedHuePosition: number
+  normalisedSaturationPosition: number
+  normalisedValuePosition: number
+  normalisedAlphaPosition: number
+}
+
+export interface ColorPickerInnerState extends ColorPickerPositions {
+  dirty: boolean
 }
 
 export class ColorPickerInner extends React.Component<
   ColorPickerInnerProps,
   ColorPickerInnerState
 > {
-  private Ref2D = React.createRef<HTMLDivElement>()
-  private RefAlpha = React.createRef<HTMLDivElement>()
   private RefFirstControl = React.createRef<HTMLInputElement>()
+
+  private fullWidth = colorPickerWidth
+  private fullHeight = MetadataEditorModalPreviewHeight
+  private paddedWidth = this.fullWidth - inspectorEdgePadding * 2
+
+  private SVControlRef = React.createRef<HTMLDivElement>()
+  private SVOrigin: WindowPoint = { x: 0, y: 0 } as WindowPoint
+  private HueControlRef = React.createRef<HTMLDivElement>()
+  private HueOriginLeft: number = 0
+  private AlphaControlRef = React.createRef<HTMLDivElement>()
+  private AlphaOriginLeft: number = 0
+
   constructor(props: ColorPickerInnerProps) {
     super(props)
     // Color values in different spaces need to be stored in state due to them not mapping 1:1 across color spaces. E.g. HSV(0, 0%, 100%) == HSV(180, 0%, 100%). A fully controlled component would be nice, but alas.
+    const calculatedState = deriveStateFromNewColor(
+      cssColorToChromaColorOrDefault(this.props.value),
+      0,
+    )
     this.state = {
-      ...ColorPickerInner.calculateCurrentColor(this.props.value),
-      controlPosition2DX: 0,
-      controlPosition2DY: 0,
-      controlPosition1D: 0,
-      controlPositionAlpha: 0,
+      ...calculatedState,
+      dirty: false,
     }
   }
 
@@ -146,16 +182,41 @@ export class ColorPickerInner extends React.Component<
   }
 
   componentWillUnmount() {
-    document.removeEventListener('mousemove', this.handleMouseMove2D)
-    document.removeEventListener('mouseup', this.handleMouseUp2D)
-    document.removeEventListener('mousemove', this.handleMouseMove1D)
-    document.removeEventListener('mouseup', this.handleMouseUp1D)
-    document.removeEventListener('mousemove', this.handleMouseMoveAlpha)
-    document.removeEventListener('mouseup', this.handleMouseUpAlpha)
+    document.removeEventListener('mousemove', this.onSVMouseMove)
+    document.removeEventListener('mouseup', this.onSVMouseUp)
+    document.removeEventListener('mousemove', this.onHueSliderMouseMove)
+    document.removeEventListener('mouseup', this.onHueSliderMouseUp)
+    document.removeEventListener('mousemove', this.onAlphaSliderMouseMove)
+    document.removeEventListener('mouseup', this.onAlphaSliderMouseUp)
   }
 
-  static getDerivedStateFromProps(newProps: ColorPickerInnerProps) {
-    return ColorPickerInner.calculateCurrentColor(newProps.value)
+  static getHexaColorFromControlPositionState(state: ColorPickerInnerState): string {
+    const h = state.normalisedHuePosition
+    const s = state.normalisedSaturationPosition
+    const v = state.normalisedValuePosition
+    const a = state.normalisedAlphaPosition
+    return Chroma(h * 360, s, v, 'hsv')
+      .alpha(a)
+      .hex('auto')
+      .toUpperCase()
+  }
+
+  static getDerivedStateFromProps(props: ColorPickerInnerProps, state: ColorPickerInnerState) {
+    const chroma = cssColorToChromaColorOrDefault(props.value)
+    if (state.dirty) {
+      return {
+        dirty: false,
+      }
+    } else {
+      const controlStateHexa = ColorPickerInner.getHexaColorFromControlPositionState(state)
+      const newPropsHexa = chroma.hex('auto').toUpperCase()
+      if (controlStateHexa === newPropsHexa) {
+        return null
+      } else {
+        const newCalculatedState = deriveStateFromNewColor(chroma, state.normalisedHuePosition)
+        return { ...newCalculatedState, _propsHexa: chroma.hex('auto').toUpperCase() }
+      }
+    }
   }
 
   componentDidUpdate(prevProps: ColorPickerInnerProps) {
@@ -164,53 +225,44 @@ export class ColorPickerInner extends React.Component<
     }
   }
 
-  handleHue = (hue: number) => {
-    const moduloed = hue === 360 ? 360 : hue % 360
-    return isNaN(hue) ? this.state.hsvH : Math.round(moduloed)
+  setNewHSVa = (
+    h: number = this.state.normalisedHuePosition * 360,
+    s: number = this.state.normalisedSaturationPosition,
+    v: number = this.state.normalisedValuePosition,
+    a: number = this.state.normalisedAlphaPosition,
+    transient: boolean,
+  ) => {
+    const newChromaValue = Chroma(h, s, v, 'hsv').alpha(a)
+    const newHex = newChromaValue.hex('auto').toUpperCase()
+    this.setState({
+      normalisedHuePosition: h / 360,
+      normalisedSaturationPosition: s,
+      normalisedValuePosition: v,
+      normalisedAlphaPosition: a,
+      dirty: true,
+    })
+    this.submitNewColor(newChromaValue, transient)
   }
 
-  setNewHSV = (h: number, s: number, v: number, transient: boolean) => {
-    const newChromaValue = Chroma({ h, s, v } as any).alpha(this.state.alpha)
-    const newHex = newChromaValue.hex().toUpperCase()
-    const newState = {
-      hsvH: h,
-      hsvS: s,
-      hsvV: v,
-      hex: newHex,
-    }
-    this.setState(newState)
-    this.setCurrentColor(newChromaValue, transient)
-  }
-
-  setNewHex = (newHex: ColorPickerInnerState['hex']) => {
+  setNewHex = (newHex: string) => {
     try {
       const newChromaValue = Chroma.hex(newHex)
       const newHSV = newChromaValue.hsv()
-      const newState = {
-        hsvH: this.handleHue(newHSV[0]),
-        hsvS: Number(newHSV[1].toFixed(2)),
-        hsvV: Number(newHSV[2].toFixed(2)),
-        hex: newChromaValue.hex().toUpperCase(),
-        alpha: newChromaValue.alpha(),
-      }
-      this.setState(newState)
-      this.setCurrentColor(newChromaValue, false)
+      this.setState((state) => ({
+        normalisedHuePosition: getSafeHue(newHSV[0], state.normalisedHuePosition) / 360,
+        normalisedSaturationPosition: newHSV[1],
+        normalisedValuePosition: newHSV[2],
+        hexa: newChromaValue.hex('auto').toUpperCase(),
+        normalisedAlphaPosition: newChromaValue.alpha(),
+        dirty: true,
+      }))
+      this.submitNewColor(newChromaValue, false)
     } catch (e) {
       console.warn(e)
     }
   }
 
-  setNewAlpha = (newAlpha: ColorPickerInnerState['alpha'], transient: boolean) => {
-    const newChromaValue = Chroma(this.state.hex).alpha(newAlpha)
-    const newState = {
-      alpha: newAlpha,
-      hex: newChromaValue.hex().toUpperCase(),
-    }
-    this.setState(newState)
-    this.setCurrentColor(newChromaValue, transient)
-  }
-
-  setCurrentColor = (chromaColor: Chroma.Color, transient: boolean) => {
+  submitNewColor = (chromaColor: Chroma.Color, transient: boolean) => {
     const newValue = toPassedInColorType(chromaColor, this.props.value)
     if (transient) {
       this.props.onTransientSubmitValue(newValue)
@@ -219,256 +271,157 @@ export class ColorPickerInner extends React.Component<
     }
   }
 
-  calculate2DPosition = (
-    clientX: number,
-    clientY: number,
-  ): {
-    clampedCoordinateValue: { x: number; y: number }
-    dimension: { width: number; height: number }
-  } => {
-    if (this.Ref2D.current != null) {
-      const dimension = {
-        width: this.Ref2D.current.offsetWidth,
-        height: this.Ref2D.current.offsetHeight,
-      }
-      const clampedCoordinateValue = {
-        x: Math.max(0, Math.min(dimension.width, clientX - this.state.controlPosition2DX)),
-        y: Math.max(0, Math.min(dimension.height, clientY - this.state.controlPosition2DY)),
-      }
-      return { clampedCoordinateValue, dimension }
-    } else {
-      return {
-        clampedCoordinateValue: {
-          x: 0,
-          y: 0,
-        },
-        dimension: {
-          width: 0,
-          height: 0,
-        },
-      }
+  // Saturation and Value (SV) slider functions
+  setSVFromClientPosition = (clientX: number, clientY: number, transient: boolean) => {
+    const x = R.clamp(0, this.fullWidth, clientX - this.SVOrigin.x)
+    const y = R.clamp(0, this.fullHeight, clientY - this.SVOrigin.y)
+
+    const newS = x / this.fullWidth
+    const newV = 1 - y / this.fullHeight
+
+    this.setNewHSVa(undefined, newS, newV, undefined, transient)
+  }
+
+  onMouseDownSV = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation()
+    if (this.SVControlRef.current != null) {
+      const origin = this.SVControlRef.current.getBoundingClientRect()
+      this.SVOrigin = { x: origin.left, y: origin.top } as WindowPoint
+
+      this.setSVFromClientPosition(e.clientX, e.clientY, false)
+
+      document.addEventListener('mousemove', this.onSVMouseMove)
+      document.addEventListener('mouseup', this.onSVMouseUp)
     }
   }
 
-  calculateSV = (clientX: number, clientY: number): { s: number; v: number } => {
-    const { clampedCoordinateValue, dimension } = this.calculate2DPosition(clientX, clientY)
-    return {
-      s: Number((clampedCoordinateValue.x / dimension.width).toFixed(2)),
-      v: Number((1 - clampedCoordinateValue.y / dimension.height).toFixed(2)),
-    }
+  onSVMouseMove = (e: MouseEvent) => {
+    e.stopPropagation()
+    this.setSVFromClientPosition(e.clientX, e.clientY, true)
   }
 
-  setNewColor2D = (clientX: number, clientY: number, transient: boolean) => {
-    if (this.Ref2D.current != null) {
-      const { s, v } = this.calculateSV(clientX, clientY)
-      this.setNewHSV(this.state.hsvH, s, v, transient)
-    }
-  }
-
-  handleMouseDown2D = (e: React.MouseEvent<HTMLDivElement>) => {
-    const { clientX, clientY } = e
-    const { offsetX, offsetY } = e.nativeEvent
-    this.setState(
-      {
-        controlPosition2DX: clientX - offsetX,
-        controlPosition2DY: clientY - offsetY,
-      },
-      () => this.setNewColor2D(clientX, clientY, true),
-    )
-    document.addEventListener('mousemove', this.handleMouseMove2D)
-    document.addEventListener('mouseup', this.handleMouseUp2D)
+  onSVMouseUp = (e: MouseEvent) => {
+    this.setSVFromClientPosition(e.clientX, e.clientY, false)
+    document.removeEventListener('mousemove', this.onSVMouseMove)
+    document.removeEventListener('mouseup', this.onSVMouseUp)
     e.stopPropagation()
   }
 
-  handleMouseMove2D = (e: MouseEvent) => {
+  // Hue slider functions
+  setHueFromClientX = (clientX: number, transient: boolean) => {
+    const x = R.clamp(0, this.paddedWidth, clientX - this.HueOriginLeft)
+    const newHue = Math.round(360 * (x / this.paddedWidth))
+    this.setNewHSVa(newHue, undefined, undefined, undefined, transient)
+  }
+
+  onHueSliderMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
-    if (!didWeHandleMouseMoveForThisFrame) {
-      mouseMoveHandled()
-      this.setNewColor2D(e.clientX, e.clientY, true)
+    if (this.HueControlRef.current != null) {
+      this.HueOriginLeft = this.HueControlRef.current.getBoundingClientRect().left
+      const clientX = e.clientX
+      this.setHueFromClientX(clientX, true)
+      document.addEventListener('mousemove', this.onHueSliderMouseMove)
+      document.addEventListener('mouseup', this.onHueSliderMouseUp)
     }
   }
 
-  handleMouseUp2D = (e: MouseEvent) => {
-    this.setNewColor2D(e.clientX, e.clientY, false)
-    document.removeEventListener('mousemove', this.handleMouseMove2D)
-    document.removeEventListener('mouseup', this.handleMouseUp2D)
+  onHueSliderMouseMove = (e: MouseEvent) => {
+    e.stopPropagation()
+    this.setHueFromClientX(e.clientX, true)
+  }
+
+  onHueSliderMouseUp = (e: MouseEvent) => {
+    this.setHueFromClientX(e.clientX, false)
+    document.removeEventListener('mousemove', this.onHueSliderMouseMove)
+    document.removeEventListener('mouseup', this.onHueSliderMouseUp)
     e.stopPropagation()
   }
 
-  calculate1DPosition = (clientX: number): { x: number; width: number } => {
-    if (this.RefAlpha.current != null) {
-      const width = this.RefAlpha.current.offsetWidth
-      const x = Math.max(0, Math.min(width, clientX - this.state.controlPosition1D))
-      return { width, x }
-    } else {
-      return {
-        x: 0,
-        width: 0,
-      }
-    }
+  // Alpha slider functions
+  setAlphaFromClientX = (clientX: number, transient: boolean) => {
+    const x = R.clamp(0, this.paddedWidth, clientX - this.AlphaOriginLeft)
+    const newAlpha = Number((x / this.paddedWidth).toFixed(2))
+    this.setNewHSVa(undefined, undefined, undefined, newAlpha, transient)
   }
 
-  calculateHsvHue = (clientX: number): number => {
-    const { x, width } = this.calculate1DPosition(clientX)
-    return Math.round(360 * (x / width))
-  }
-
-  setNewColor1D = (clientX: number, transient: boolean) => {
-    if (this.Ref2D.current != null) {
-      const newHue = this.calculateHsvHue(clientX)
-      this.setNewHSV(newHue, this.state.hsvS, this.state.hsvV, transient)
-    }
-  }
-
-  handleMouseDown1D = (e: React.MouseEvent<HTMLDivElement>) => {
-    const clientX = e.clientX
-    const offsetX = e.nativeEvent.offsetX
-    this.setState(
-      {
-        controlPosition1D: clientX - offsetX,
-      },
-      () => this.setNewColor1D(clientX, true),
-    )
-    document.addEventListener('mousemove', this.handleMouseMove1D)
-    document.addEventListener('mouseup', this.handleMouseUp1D)
+  onAlphaSliderMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
-  }
-
-  handleMouseMove1D = (e: MouseEvent) => {
-    e.stopPropagation()
-    if (!didWeHandleMouseMoveForThisFrame) {
-      mouseMoveHandled()
-      this.setNewColor1D(e.clientX, true)
+    if (this.AlphaControlRef.current != null) {
+      this.AlphaOriginLeft = this.AlphaControlRef.current.getBoundingClientRect().left
+      const clientX = e.clientX
+      this.setAlphaFromClientX(clientX, true)
+      document.addEventListener('mousemove', this.onAlphaSliderMouseMove)
+      document.addEventListener('mouseup', this.onAlphaSliderMouseUp)
     }
   }
 
-  handleMouseUp1D = (e: MouseEvent) => {
-    this.setNewColor1D(e.clientX, false)
-    document.removeEventListener('mousemove', this.handleMouseMove1D)
-    document.removeEventListener('mouseup', this.handleMouseUp1D)
+  onAlphaSliderMouseMove = (e: MouseEvent) => {
     e.stopPropagation()
+    this.setAlphaFromClientX(e.clientX, true)
   }
 
-  calculateAlphaPosition = (clientX: number): { x: number; width: number } => {
-    if (this.RefAlpha.current != null) {
-      const width = this.RefAlpha.current.offsetWidth
-      const x = Math.max(0, Math.min(width, clientX - this.state.controlPositionAlpha))
-      return { width, x }
-    } else {
-      return {
-        x: 0,
-        width: 0,
-      }
-    }
+  onAlphaSliderMouseUp = (e: MouseEvent) => {
+    this.setAlphaFromClientX(e.clientX, false)
+    document.removeEventListener('mousemove', this.onAlphaSliderMouseMove)
+    document.removeEventListener('mouseup', this.onAlphaSliderMouseUp)
   }
 
-  calculateAlpha = (clientX: number): number => {
-    const { x, width } = this.calculateAlphaPosition(clientX)
-    return Number((x / width).toFixed(2))
-  }
-
-  setNewColorAlpha = (clientX: number, transient: boolean) => {
-    if (this.RefAlpha.current != null) {
-      const newAlpha = this.calculateAlpha(clientX)
-      this.setNewAlpha(newAlpha, transient)
-    }
-  }
-
-  handleMouseDownAlpha = (e: React.MouseEvent<HTMLDivElement>) => {
-    const clientX = e.clientX
-    const offsetX = e.nativeEvent.offsetX
-    this.setState(
-      {
-        controlPositionAlpha: clientX - offsetX,
-      },
-      () => this.setNewColorAlpha(clientX, true),
-    )
-    document.addEventListener('mousemove', this.handleMouseMoveAlpha)
-    document.addEventListener('mouseup', this.handleMouseUpAlpha)
-    e.stopPropagation()
-  }
-
-  handleMouseMoveAlpha = (e: MouseEvent) => {
-    e.stopPropagation()
-    if (!didWeHandleMouseMoveForThisFrame) {
-      mouseMoveHandled()
-      this.setNewColorAlpha(e.clientX, true)
-    }
-  }
-
-  handleMouseUpAlpha = (e: MouseEvent) => {
-    this.setNewColorAlpha(e.clientX, false)
-    document.removeEventListener('mousemove', this.handleMouseMoveAlpha)
-    document.removeEventListener('mouseup', this.handleMouseUpAlpha)
-  }
-
+  // SubmitValue functions
   onSubmitValueHue = (value: number | EmptyInputValue) => {
-    const newHue = this.handleHue(fallbackOnEmptyInputValueToCSSEmptyValue(0, value))
-    this.setNewHSV(newHue, this.state.hsvS, this.state.hsvV, false)
+    const newHue = getSafeHue(
+      fallbackOnEmptyInputValueToCSSEmptyValue(0, value),
+      this.state.normalisedHuePosition,
+    )
+    this.setNewHSVa(newHue, undefined, undefined, undefined, false)
   }
   onTransientSubmitValueHue = (value: number | EmptyInputValue) => {
-    const newHue = this.handleHue(fallbackOnEmptyInputValueToCSSEmptyValue(0, value))
-    this.setNewHSV(newHue, this.state.hsvS, this.state.hsvV, true)
+    const newHue = getSafeHue(
+      fallbackOnEmptyInputValueToCSSEmptyValue(0, value),
+      this.state.normalisedHuePosition,
+    )
+    this.setNewHSVa(newHue, undefined, undefined, undefined, true)
   }
 
   onSubmitValueSaturation = (value: number | EmptyInputValue) => {
     const newSaturation = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
-    this.setNewHSV(this.state.hsvH, newSaturation, this.state.hsvV, false)
+    this.setNewHSVa(undefined, newSaturation, undefined, undefined, false)
   }
   onTransientSubmitValueSaturation = (value: number | EmptyInputValue) => {
     const newSaturation = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
-    this.setNewHSV(this.state.hsvH, newSaturation, this.state.hsvV, true)
+    this.setNewHSVa(undefined, newSaturation, undefined, undefined, true)
   }
 
-  onSubmitValueValue = (value: number | EmptyInputValue) => {
+  onSubmitHSVValueValue = (value: number | EmptyInputValue) => {
     const newValue = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
-    this.setNewHSV(this.state.hsvH, this.state.hsvS, newValue, false)
+    this.setNewHSVa(undefined, undefined, newValue, undefined, false)
   }
-  onTransientSubmitValueValue = (value: number | EmptyInputValue) => {
+  onTransientSubmitHSVValueValue = (value: number | EmptyInputValue) => {
     const newValue = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
-    this.setNewHSV(this.state.hsvH, this.state.hsvS, newValue, true)
+    this.setNewHSVa(undefined, undefined, newValue, undefined, true)
   }
 
   onSubmitValueAlpha = (value: number | EmptyInputValue) => {
-    this.setNewAlpha(Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2)), false)
+    const newValue = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
+    this.setNewHSVa(undefined, undefined, undefined, newValue, false)
   }
   onTransientSubmitValueAlpha = (value: number | EmptyInputValue) => {
-    this.setNewAlpha(Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2)), true)
+    const newValue = Number(fallbackOnEmptyInputValueToCSSEmptyValue(100, value).toFixed(2))
+    this.setNewHSVa(undefined, undefined, undefined, newValue, true)
   }
 
-  onChangeValueHex = (e: React.ChangeEvent<HTMLInputElement>) =>
-    this.setState({ hex: e.target.value })
-
-  onBlurValueHex = (_: React.FocusEvent<HTMLInputElement>) => {
-    this.setNewHex(this.state.hex)
-  }
-
-  static calculateCurrentColor = (color: CSSColor) => {
-    const chroma = cssColorToChromaColorOrDefault(color)
-    const hsv = chroma.hsv()
-    const h = isNaN(hsv[0]) ? 0 : Math.round(hsv[0])
-    const s = Number(hsv[1].toFixed(2))
-    const v = Number(hsv[2].toFixed(2))
-    const hex = chroma.hex().toUpperCase()
-    return {
-      hsvH: h,
-      hsvS: s,
-      hsvV: v,
-      hex,
-      alpha: parseAlphaFromCSSColor(color),
-    }
+  onSubmitValueHex = (newValue: string) => {
+    this.setNewHex(newValue)
   }
 
   render() {
-    const h = this.state.hsvH
-    const s = this.state.hsvS
-    const v = this.state.hsvV
-    const hue = Chroma(h, 1, 1, 'hsv').css()
-    const color = Chroma({ h, s, v } as any)
-    const cssWithAlpha = color.alpha(this.state.alpha).css()
-    const cssWith1Alpha = color.alpha(1).css()
-    const cssWith0Alpha = color.alpha(0).css()
-
+    const h = this.state.normalisedHuePosition
+    const s = this.state.normalisedSaturationPosition
+    const v = this.state.normalisedValuePosition
+    const hueColor = Chroma(h * 360, 1, 1, 'hsv').css()
+    const chroma = Chroma(h * 360, s, v, 'hsv').alpha(this.state.normalisedAlphaPosition)
+    const cssWithAlpha = chroma.css()
+    const cssWith1Alpha = chroma.alpha(1).css()
+    const cssWith0Alpha = chroma.alpha(0).css()
     const hsvHue = `
       linear-gradient(to right,
         red 0%,
@@ -483,13 +436,13 @@ export class ColorPickerInner extends React.Component<
     return (
       <div>
         <div
-          className='colorPicker-2d'
-          onMouseDown={this.handleMouseDown2D}
-          ref={this.Ref2D}
+          className='colorPicker-saturation-and-value'
+          onMouseDown={this.onMouseDownSV}
+          ref={this.SVControlRef}
           style={{
             height: MetadataEditorModalPreviewHeight,
             width: '100%',
-            backgroundColor: hue,
+            backgroundColor: hueColor,
             backgroundImage: `
                   linear-gradient(to top, #000, rgba(0, 0, 0, 0)),
                   linear-gradient(to right, #fff, rgba(255, 255, 255, 0))`,
@@ -500,7 +453,7 @@ export class ColorPickerInner extends React.Component<
           }}
         >
           <div
-            className='colorPicker-2d-indicator'
+            className='colorPicker-saturation-and-value-indicator'
             style={{
               width: 8,
               height: 8,
@@ -510,8 +463,8 @@ export class ColorPickerInner extends React.Component<
                 'inset 0 0 1px rgba(0, 0, 0, 0.24), 0 0 0 2px white, 0 0 2px 2px rgba(0, 0, 0, 0.24)',
               position: 'absolute',
               margin: -4,
-              left: `${s * 100}%`,
-              top: `${(1 - v) * 100}%`,
+              left: `${this.state.normalisedSaturationPosition * 100}%`,
+              top: `${(1 - this.state.normalisedValuePosition) * 100}%`,
               pointerEvents: 'none',
             }}
           />
@@ -522,8 +475,9 @@ export class ColorPickerInner extends React.Component<
           }}
         >
           <div
-            className='colorPicker-1d'
-            onMouseDown={this.handleMouseDown1D}
+            className='colorPicker-hue'
+            ref={this.HueControlRef}
+            onMouseDown={this.onHueSliderMouseDown}
             style={{
               height: 20,
               width: '100%',
@@ -535,16 +489,16 @@ export class ColorPickerInner extends React.Component<
           >
             <div style={{ position: 'relative' }}>
               <div
-                className='colorPicker-1d-indicator'
+                className='colorPicker-hue-indicator'
                 style={{
                   width: 8,
                   height: 20,
-                  backgroundColor: hue,
+                  backgroundColor: hueColor,
                   borderRadius: 1,
                   boxShadow: `inset 0 0 1px rgba(0, 0, 0, 0.24), 0px 0px 0px 2px white, 0px 0px 2px 2px rgba(0, 0, 0, 0.239216)`,
                   position: 'absolute',
                   margin: '0 -4px',
-                  left: `${(this.handleHue(h) / 360) * 100}%`,
+                  left: `${this.state.normalisedHuePosition * 100}%`,
                   top: 0,
                   pointerEvents: 'none',
                 }}
@@ -553,8 +507,8 @@ export class ColorPickerInner extends React.Component<
           </div>
           <div
             className='colorPicker-alpha'
-            ref={this.RefAlpha}
-            onMouseDown={this.handleMouseDownAlpha}
+            ref={this.AlphaControlRef}
+            onMouseDown={this.onAlphaSliderMouseDown}
             style={{
               height: 20,
               width: '100%',
@@ -586,7 +540,7 @@ export class ColorPickerInner extends React.Component<
                   boxShadow: `inset 0 0 1px rgba(0, 0, 0, 0.24), 0px 0px 0px 2px white, 0px 0px 2px 2px rgba(0, 0, 0, 0.239216)`,
                   position: 'absolute',
                   margin: '0 -4px',
-                  left: `${this.state.alpha * 100}%`,
+                  left: `${this.state.normalisedAlphaPosition * 100}%`,
                   top: 0,
                   pointerEvents: 'none',
                 }}
@@ -603,20 +557,21 @@ export class ColorPickerInner extends React.Component<
             padding: '0 8px 8px',
           }}
         >
-          <StringInput
+          <StringControl
             ref={this.RefFirstControl}
             key={this.props.id}
-            value={this.state.hex}
-            onChange={this.onChangeValueHex}
-            onBlur={this.onBlurValueHex}
+            value={chroma.hex('auto').toUpperCase()}
+            onSubmitValue={this.onSubmitValueHex}
+            controlStatus='simple'
+            controlStyles={getControlStyles('simple')}
             id='colorPicker-controls-hex'
             style={{
               gridColumn: 'span 1',
             }}
-            DEPRECATED_labelBelow='Hex'
+            DEPRECATED_controlOptions={{ DEPRECATED_labelBelow: 'Hex' }}
           />
           <SimpleNumberInput
-            value={this.state.hsvH}
+            value={this.state.normalisedHuePosition * 360}
             id='colorPicker-controls-hue'
             onSubmitValue={this.onSubmitValueHue}
             onTransientSubmitValue={this.onTransientSubmitValueHue}
@@ -633,7 +588,7 @@ export class ColorPickerInner extends React.Component<
             }}
           />
           <SimplePercentInput
-            value={this.state.hsvS}
+            value={Number(this.state.normalisedSaturationPosition.toFixed(2))}
             id='colorPicker-controls-saturation'
             onSubmitValue={this.onSubmitValueSaturation}
             onTransientSubmitValue={this.onTransientSubmitValueSaturation}
@@ -645,11 +600,11 @@ export class ColorPickerInner extends React.Component<
             DEPRECATED_labelBelow='S'
           />
           <SimplePercentInput
-            value={this.state.hsvV}
+            value={Number(this.state.normalisedValuePosition.toFixed(2))}
             id='colorPicker-controls-value'
-            onSubmitValue={this.onSubmitValueValue}
-            onTransientSubmitValue={this.onTransientSubmitValueValue}
-            onForcedSubmitValue={this.onSubmitValueValue}
+            onSubmitValue={this.onSubmitHSVValueValue}
+            onTransientSubmitValue={this.onTransientSubmitHSVValueValue}
+            onForcedSubmitValue={this.onSubmitHSVValueValue}
             style={{ gridColumn: 'span 1' }}
             minimum={0}
             maximum={1}
@@ -657,7 +612,7 @@ export class ColorPickerInner extends React.Component<
             DEPRECATED_labelBelow='V'
           />
           <SimplePercentInput
-            value={this.state.alpha}
+            value={this.state.normalisedAlphaPosition}
             id='colorPicker-controls-alpha'
             onSubmitValue={this.onSubmitValueAlpha}
             onTransientSubmitValue={this.onTransientSubmitValueAlpha}

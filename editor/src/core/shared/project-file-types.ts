@@ -238,7 +238,9 @@ export function isCodeOrUiJsFile(file: ProjectFile): file is CodeFile | UIJSFile
 }
 
 interface EvalResult {
-  exports: {}
+  module: {
+    exports: {}
+  }
 }
 
 export interface ESCodeFile {

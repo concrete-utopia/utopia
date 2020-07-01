@@ -1,9 +1,12 @@
 import * as Prettier from 'prettier'
 import * as React from 'react'
+import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
+applyUIDMonkeyPatch()
 import * as ReactDOM from 'react-dom'
 import * as ReactDOMServer from 'react-dom/server'
 import * as UtopiaAPI from 'utopia-api'
 import * as UUIUI from 'uuiui'
+import * as ANTD from 'antd'
 import {
   clearJSXElementUniqueIDs,
   MetadataWithoutChildren,
@@ -48,6 +51,8 @@ const dumbRequireFn: RequireFn = (importOrigin: string, toImport: string) => {
       return ReactDOM
     case 'uuiui':
       return UUIUI
+    case 'antd':
+      return ANTD
     default:
       throw new Error(`Unhandled values of ${importOrigin} and ${toImport}.`)
   }
@@ -214,8 +219,12 @@ function testCanvasRender(possibleProps: PartialCanvasProps | null, code: string
     errorsReportedSpyDisabled,
     spyValues,
   } = renderCanvasReturnResultAndError(possibleProps, code)
-  expect(errorsReportedSpyEnabled.length).toBe(0)
-  expect(errorsReportedSpyDisabled.length).toBe(0)
+  if (errorsReportedSpyEnabled.length > 0) {
+    throw new Error(`Canvas Tests, Spy Enabled: Errors reported: ${errorsReportedSpyEnabled}`)
+  }
+  if (errorsReportedSpyDisabled.length > 0) {
+    throw new Error(`Canvas Tests, Spy Disabled: Errors reported: ${errorsReportedSpyDisabled}`)
+  }
 
   // Spy enabled or disabled should have no effect on the rendered HTML
   expect(formattedSpyEnabled).toEqual(formattedSpyDisabled)
@@ -237,8 +246,12 @@ function testCanvasRenderInline(possibleProps: PartialCanvasProps | null, code: 
   if (errorsReportedSpyEnabled.length > 0) {
     console.error(errorsReportedSpyEnabled)
   }
-  expect(errorsReportedSpyEnabled.length).toBe(0)
-  expect(errorsReportedSpyDisabled.length).toBe(0)
+  if (errorsReportedSpyEnabled.length > 0) {
+    throw new Error(`Canvas Tests, Spy Enabled: Errors reported: ${errorsReportedSpyEnabled}`)
+  }
+  if (errorsReportedSpyDisabled.length > 0) {
+    throw new Error(`Canvas Tests, Spy Disabled: Errors reported: ${errorsReportedSpyDisabled}`)
+  }
 
   // Spy enabled or disabled should have no effect on the rendered HTML
   expect(formattedSpyEnabled).toEqual(formattedSpyDisabled)
@@ -1425,8 +1438,216 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             background-color: rgba(255, 255, 255, 1);
             box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
           \\"
+          data-uid=\\"utopia-storyboard-uid\\"
         >
           <div data-uid=\\"aaa\\">hello</div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('weird antd-like class components have working uid', async () => {
+    const printedDom = testCanvasRenderInline(
+      null,
+      `
+      /** @jsx jsx */
+      import * as React from 'react'
+      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+
+      export class RenderPropsFunctionChild extends React.Component {
+        render() {
+          return this.props.children('huha')
+        }
+      }
+
+      export function getPicker() {
+        class Picker extends React.Component {
+          renderPicker(locale) {
+            return (
+              <RenderPropsFunctionChild>
+                {(size) => {
+                  return (
+                    <div id='nasty-div'>
+                      {locale} {size}
+                    </div>
+                  )
+                }}
+              </RenderPropsFunctionChild>
+            )
+          }
+
+          render() {
+            return <RenderPropsFunctionChild>{this.renderPicker}</RenderPropsFunctionChild>
+          }
+        }
+
+        return Picker
+      }
+
+      const Thing = getPicker()
+
+      export var App = (props) => {
+        return <Thing data-uid={'aaa'} />
+      }
+      export var ${BakedInStoryboardVariableName}  = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              layout={{ layoutSystem: 'pinSystem' }}
+              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              data-uid={'scene-aaa'}
+            />
+          </Storyboard>
+        )
+      }
+      `,
+    )
+    expect(printedDom).toMatchInlineSnapshot(`
+      "<div
+        id=\\"canvas-container\\"
+        style=\\"
+          all: initial;
+          position: absolute;
+          zoom: 100%;
+          transform: translate3d(0px, 0px, 0);
+        \\"
+      >
+        <div
+          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+          style=\\"
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            left: 0;
+            top: 0;
+            background-color: rgba(255, 255, 255, 1);
+            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+          \\"
+          data-uid=\\"utopia-storyboard-uid\\"
+        >
+          <div id=\\"nasty-div\\" data-uid=\\"aaa\\">huha huha</div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('antd DatePicker works', () => {
+    const printedDom = testCanvasRenderInline(
+      null,
+      `
+    /** @jsx jsx */
+import { DatePicker } from 'antd'
+import * as React from 'react'
+import { Ellipse, Scene, Storyboard, View, jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <View
+      data-uid="aaa"
+      style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >
+      <DatePicker data-uid="antd-date-picker" style={{ width: 123, height: 51, left: 113, top: 395 }} />
+    </View>
+  )
+}
+export var storyboard = (
+  <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid="storyboard">
+    <Scene
+      data-uid="scene"
+      style={{ height: 812, left: 0, width: 375, top: 0 }}
+      component={App}
+      layout={{ layoutSystem: 'pinSystem' }}
+      props={{ style: { bottom: 0, left: 0, right: 0, top: 0 } }}
+    />
+  </Storyboard>
+)
+`,
+    )
+
+    expect(printedDom).toMatchInlineSnapshot(`
+      "<div
+        id=\\"canvas-container\\"
+        style=\\"
+          all: initial;
+          position: absolute;
+          zoom: 100%;
+          transform: translate3d(0px, 0px, 0);
+        \\"
+      >
+        <div
+          data-utopia-scene-id=\\"storyboard/scene\\"
+          data-utopia-valid-paths=\\"storyboard/scene:aaa storyboard/scene:aaa/antd-date-picker\\"
+          style=\\"
+            position: absolute;
+            width: 375px;
+            height: 812px;
+            left: 0;
+            top: 0;
+            background-color: rgba(255, 255, 255, 1);
+            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+          \\"
+          data-uid=\\"storyboard\\"
+        >
+          <div
+            style=\\"
+              position: absolute;
+              width: 375px;
+              height: 812px;
+              left: 0;
+              top: 0;
+              right: 0;
+              bottom: 0;
+              background-color: #ffffff;
+            \\"
+            data-uid=\\"aaa\\"
+          >
+            <div
+              class=\\"ant-picker\\"
+              style=\\"
+                position: absolute;
+                width: 123px;
+                height: 51px;
+                left: 113px;
+                top: 395px;
+              \\"
+              data-uid=\\"antd-date-picker\\"
+            >
+              <div class=\\"ant-picker-input\\">
+                <input
+                  readonly=\\"\\"
+                  value=\\"\\"
+                  placeholder=\\"Select date\\"
+                  title=\\"\\"
+                  size=\\"12\\"
+                  data-uid=\\"antd-date-picker\\"
+                  autocomplete=\\"off\\"
+                /><span class=\\"ant-picker-suffix\\"
+                  ><span
+                    role=\\"img\\"
+                    aria-label=\\"calendar\\"
+                    class=\\"anticon anticon-calendar\\"
+                    ><svg
+                      viewBox=\\"64 64 896 896\\"
+                      focusable=\\"false\\"
+                      class=\\"\\"
+                      data-icon=\\"calendar\\"
+                      width=\\"1em\\"
+                      height=\\"1em\\"
+                      fill=\\"currentColor\\"
+                      aria-hidden=\\"true\\"
+                    >
+                      <path
+                        d=\\"M880 184H712v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H384v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zm-40 656H184V460h656v380zM184 392V256h128v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h256v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h128v136H184z\\"
+                      ></path></svg></span
+                ></span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       "

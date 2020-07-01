@@ -339,7 +339,7 @@ describe('Generating codeResultCache', () => {
 
     expect(codeResultCache).toMatchSnapshot()
   })
-  xit('Generates codeResultCache for multi file build result', () => {
+  it('Generates codeResultCache for multi file build result', () => {
     const codeResultCache = generateCodeResultCache(
       SampleMultiFileBuildResult,
       SampleMultiFileExportsInfo,
