@@ -192,8 +192,10 @@ export interface PinSizeChange extends CanvasFrameAndTarget {
   edgePosition: EdgePosition | null
 }
 
-export interface PinMoveChange extends CanvasFrameAndTarget {
+export interface PinMoveChange {
   type: 'PIN_MOVE_CHANGE'
+  target: TemplatePath
+  delta: CanvasVector
 }
 
 export interface FlexMoveChange {
@@ -242,11 +244,11 @@ export function pinSizeChange(
   }
 }
 
-export function pinMoveChange(target: TemplatePath, frame: CanvasRectangle): PinMoveChange {
+export function pinMoveChange(target: TemplatePath, delta: CanvasVector): PinMoveChange {
   return {
     type: 'PIN_MOVE_CHANGE',
     target: target,
-    frame: frame,
+    delta: delta,
   }
 }
 
