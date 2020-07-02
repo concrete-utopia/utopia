@@ -105,8 +105,14 @@ export const StringInput = betterReactMemo(
           if (inputProps.onBlur != null) {
             inputProps.onBlur(e)
           }
-          if (onSubmitValue != null && inputProps.value != null) {
-            onSubmitValue(inputProps.value + '')
+          if (onSubmitValue != null && e.target.value != null) {
+            // Coerce the content of the input to a string.
+            const inputValue = `${e.target.value}`
+            // If the input element currently has some content but the props do not _or_
+            // if the value from the props differs from the value currently in the input element.
+            if (inputProps.value == null || `${inputProps.value}` !== inputValue) {
+              onSubmitValue(inputValue)
+            }
           }
         },
         [inputProps, onSubmitValue],
