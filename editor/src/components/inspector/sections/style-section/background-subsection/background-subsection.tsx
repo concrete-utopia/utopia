@@ -58,6 +58,17 @@ function cssBackgroundLayerToCSSBGSizeOrDefault(v: CSSBackgroundLayer): CSSBGSiz
   }
 }
 
+function getBackgroundSizeOrUndefinedIfDefault(
+  layers: CSSBackgroundLayers,
+): { backgroundSize: CSSBackgroundSize } | undefined {
+  const shouldItBePrinted = !layers.every(
+    (layer) => isCSSBackgroundLayerWithBGSize(layer) && layer.bgSize.size.default,
+  )
+  return shouldItBePrinted
+    ? { backgroundSize: layers.map(cssBackgroundLayerToCSSBGSizeOrDefault).reverse() }
+    : undefined
+}
+
 export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
   cssBackgroundLayers: CSSBackgroundLayers,
 ): {
@@ -82,9 +93,7 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
         } else {
           return {
             backgroundImage: cssBackgroundLayers.map(cssBackgroundLayerToCSSBackground).reverse(),
-            backgroundSize: cssBackgroundLayers
-              .map(cssBackgroundLayerToCSSBGSizeOrDefault)
-              .reverse(),
+            ...getBackgroundSizeOrUndefinedIfDefault(cssBackgroundLayers),
           }
         }
       } else {
@@ -104,16 +113,12 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
             backgroundImage: newCSSBackgroundLayers
               .map(cssBackgroundLayerToCSSBackground)
               .reverse(),
-            backgroundSize: newCSSBackgroundLayers
-              .map(cssBackgroundLayerToCSSBGSizeOrDefault)
-              .reverse(),
+            ...getBackgroundSizeOrUndefinedIfDefault(newCSSBackgroundLayers),
           }
         } else {
           return {
             backgroundImage: cssBackgroundLayers.map(cssBackgroundLayerToCSSBackground).reverse(),
-            backgroundSize: cssBackgroundLayers
-              .map(cssBackgroundLayerToCSSBGSizeOrDefault)
-              .reverse(),
+            ...getBackgroundSizeOrUndefinedIfDefault(cssBackgroundLayers),
           }
         }
       } else {
