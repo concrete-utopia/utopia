@@ -40,7 +40,7 @@ export default class Home extends React.Component {
             textAlign: 'center',
             lineHeight: 1.2,
             fontSize: 24,
-            fontFamily: "'Margem Test'",
+            fontFamily: "'GT Eesti Pro DS Trial'",
             backgroundColor: '#C1EDFF',
             color: '#094173',
             fontWeight: 100,
@@ -57,10 +57,10 @@ export default class Home extends React.Component {
             <div style={{ maxWidth: 650, textAlign: 'left' }}>
               <h1
                 style={{
-                  // fontFamily: "'Overpass Mono', monospace",
+                  fontFamily: "'Margem Test'",
                   fontSize: 62,
                   fontWeight: 900,
-                  lineHeight: 0.8,
+                  lineHeight: 0.9,
                   letterSpacing: -3,
                   textTransform: 'capitalize',
                   paddingBottom: '0.5em',
