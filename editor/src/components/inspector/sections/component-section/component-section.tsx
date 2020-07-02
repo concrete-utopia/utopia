@@ -14,9 +14,14 @@ import {
   UtopiaStyles,
   UtopiaTheme,
 } from 'uuiui'
-import { betterReactMemo, SliderControl } from 'uuiui-deps'
+import { betterReactMemo, SliderControl, getControlStyles } from 'uuiui-deps'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
-import { ControlDescription } from 'utopia-api'
+import {
+  ControlDescription,
+  BaseControlDescription,
+  isBaseControlDescription,
+  UnionControlDescription,
+} from 'utopia-api'
 import { foldEither, right, Either } from '../../../../core/shared/either'
 import Utils from '../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
@@ -52,27 +57,25 @@ import {
 import { getDescriptionUnsetOptionalFields } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
+import {
+  useInspectorInfoForPropertyControl,
+  useControlForUnionControl,
+} from '../../common/property-controls-hooks'
+import { PropertyPath } from '../../../../core/shared/project-file-types'
+import { OptionsType } from 'react-select'
 
-function useComponentPropsInspectorInfo(propertyName: string, addPropsToPath: boolean) {
-  // TODO useInspectorInfo can only work for props which have a parser pre-defined in css-utils.
-  // we need to make a more generic hook that doesn't do parsing
-  // For now this is just a copy pasted hack to make this work
-  function transformValue(parsedValues: any) {
-    return parsedValues[propertyName]
-  }
-  function untransformValue(transformedType: any) {
-    return { [propertyName]: jsxAttributeValue(transformedType) }
-  }
-
-  const paths = addPropsToPath
-    ? [PP.append(PathForSceneProps, PP.create([propertyName]))]
-    : [PP.create([propertyName])]
-  return useInspectorInfoSimpleUntyped(paths, transformValue, untransformValue)
+function useComponentPropsInspectorInfo(
+  partialPath: PropertyPath,
+  addPropsToPath: boolean,
+  control: BaseControlDescription,
+) {
+  const propertyPath = addPropsToPath ? PP.append(PathForSceneProps, partialPath) : partialPath
+  return useInspectorInfoForPropertyControl(propertyPath, control)
 }
 
 interface ControlForPropProps {
   propName: string
-  controlDescription: ControlDescription | undefined
+  controlDescription: BaseControlDescription | undefined
   propMetadata: InspectorInfo<any>
 }
 
@@ -273,59 +276,200 @@ export const ParseErrorControl = betterReactMemo('ParseErrorControl', (props: Pa
   )
 })
 
-interface RowForPropProps {
+const WarningTooltip = betterReactMemo('WarningTooltip', ({ warning }: { warning: string }) => {
+  return (
+    <Tooltip title={warning}>
+      <div
+        style={{
+          width: 5,
+          height: 5,
+          background: colorTheme.warningBgSolid.value,
+          borderRadius: '50%',
+          marginRight: 4,
+        }}
+      />
+    </Tooltip>
+  )
+})
+
+interface RowForInvalidControlProps {
   propName: string
   title: string
-  controlDescription?: ControlDescription
-  propertyError?: ParseError
-  isScene: boolean
+  propertyError: ParseError
   warningTooltip?: string
 }
 
-const RowForProp = betterReactMemo('RowForProp', (props: RowForPropProps) => {
-  const { propName } = props
-  const propPath = [PP.create([props.propName])]
-  const propMetadata = useComponentPropsInspectorInfo(propName, props.isScene)
-  const contextMenuItems = Utils.stripNulls([
-    addOnUnsetValues([propName], propMetadata.onUnsetValues),
-  ])
-  const warning =
-    props.warningTooltip == null ? null : (
-      <Tooltip title={props.warningTooltip}>
-        <div
-          style={{
-            width: 5,
-            height: 5,
-            background: colorTheme.warningBgSolid.value,
-            borderRadius: '50%',
-            marginRight: 4,
-          }}
-        />
-      </Tooltip>
-    )
-  return (
-    <InspectorContextMenuWrapper
-      id={`context-menu-for-${props.propName}`}
-      items={contextMenuItems}
-      data={null}
-    >
+const RowForInvalidControl = betterReactMemo(
+  'RowForInvalidControl',
+  (props: RowForInvalidControlProps) => {
+    const propPath = [PP.create([props.propName])]
+    const warning =
+      props.warningTooltip == null ? null : <WarningTooltip warning={props.warningTooltip} />
+    return (
       <GridRow padded={true} type='<---1fr--->|------172px-------|'>
         <PropertyLabel target={propPath}>
           {warning}
           {props.title}
         </PropertyLabel>
-        {props.propertyError == null ? (
-          <ControlForProp
-            propName={props.propName}
-            controlDescription={props.controlDescription}
-            propMetadata={propMetadata}
-          />
-        ) : (
-          <ParseErrorControl parseError={props.propertyError} />
-        )}
+        <ParseErrorControl parseError={props.propertyError} />
+      </GridRow>
+    )
+  },
+)
+
+interface AbstractRowForControlProps {
+  propPath: PropertyPath
+  isScene: boolean
+}
+
+function titleForControl(propPath: PropertyPath, control: ControlDescription): string {
+  return control.title ?? PP.lastPartToString(propPath)
+}
+
+interface RowForBaseControlProps extends AbstractRowForControlProps {
+  label?: React.ComponentType<any>
+  controlDescription: BaseControlDescription
+}
+
+const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBaseControlProps) => {
+  const { propPath, controlDescription, isScene } = props
+  const title = titleForControl(propPath, controlDescription)
+  const propName = `${PP.lastPart(propPath)}`
+
+  let warningTooltip: string | undefined = undefined
+  const unsetOptionalFields = getDescriptionUnsetOptionalFields(controlDescription)
+  if (unsetOptionalFields.length > 0) {
+    warningTooltip = `These optional fields are not set: ${joinSpecial(
+      unsetOptionalFields,
+      ', ',
+      ' and ',
+    )}`
+  }
+
+  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+  const contextMenuItems = Utils.stripNulls([
+    addOnUnsetValues([propName], propMetadata.onUnsetValues),
+  ])
+  const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
+
+  const propertyLabel =
+    props.label == null ? (
+      <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+        {warning}
+        {title}
+      </PropertyLabel>
+    ) : (
+      <props.label />
+    )
+
+  return (
+    <InspectorContextMenuWrapper
+      id={`context-menu-for-${propName}`}
+      items={contextMenuItems}
+      data={null}
+    >
+      <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+        {propertyLabel}
+        <ControlForProp
+          propName={propName}
+          controlDescription={controlDescription}
+          propMetadata={propMetadata}
+        />
       </GridRow>
     </InspectorContextMenuWrapper>
   )
+})
+
+interface RowForUnionControlProps extends AbstractRowForControlProps {
+  controlDescription: UnionControlDescription
+}
+
+const RowForUnionControl = betterReactMemo(
+  'RowForUnionControl',
+  (props: RowForUnionControlProps) => {
+    const { propPath, controlDescription } = props
+    const title = titleForControl(propPath, controlDescription)
+
+    const suitableControl = useControlForUnionControl(propPath, controlDescription)
+    const [controlToUse, setControlToUse] = React.useState(suitableControl)
+
+    const labelOptions: OptionsType<SelectOption> = controlDescription.controls.map((control) => {
+      const label = control.title ?? control.type
+      return {
+        value: control,
+        label: label,
+      }
+    })
+
+    const labelValue: SelectOption = {
+      value: controlToUse,
+      label: title,
+    }
+
+    const onLabelChangeValue = React.useCallback(
+      (option: SelectOption) => {
+        if (option.value !== controlToUse) {
+          setControlToUse(option.value)
+        }
+      },
+      [controlToUse, setControlToUse],
+    )
+
+    const simpleControlStyles = getControlStyles('simple')
+
+    const label = (
+      <PopupList
+        value={labelValue}
+        options={labelOptions}
+        onSubmitValue={onLabelChangeValue}
+        containerMode='showBorderOnHover'
+        controlStyles={simpleControlStyles}
+        style={{
+          maxWidth: '100%',
+          overflow: 'hidden',
+        }}
+      />
+    )
+
+    const labelAsRenderProp = React.useCallback(() => label, [label])
+
+    if (isBaseControlDescription(controlToUse)) {
+      return (
+        <RowForBaseControl {...props} label={labelAsRenderProp} controlDescription={controlToUse} />
+      )
+    } else {
+      return (
+        <>
+          {label}
+          <RowForControl {...props} controlDescription={controlToUse} />
+        </>
+      )
+    }
+  },
+)
+
+interface RowForControlProps extends AbstractRowForControlProps {
+  controlDescription: ControlDescription
+}
+
+const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
+  const { controlDescription } = props
+
+  if (isBaseControlDescription(controlDescription)) {
+    return <RowForBaseControl {...props} controlDescription={controlDescription} />
+  } else {
+    switch (controlDescription.type) {
+      case 'array':
+        return <div>Not yet implemented control type.</div>
+      case 'object':
+        return <div>Not yet implemented control type.</div>
+      case 'union':
+        return <RowForUnionControl {...props} controlDescription={controlDescription} />
+      default:
+        const _exhaustiveCheck: never = controlDescription
+        throw new Error(`Unhandled control ${JSON.stringify(controlDescription)}`)
+    }
+  }
 })
 
 export interface ComponentSectionProps {
@@ -352,8 +496,6 @@ export const ComponentSectionInner = betterReactMemo(
     const propsUsedWithoutDefaults = useKeepReferenceEqualityIfPossible(
       useUsedPropsWithoutDefaults(),
     )
-    const missingControlsWarning = getMissingPropertyControlsWarning(propsUsedWithoutControls)
-    const missingDefaultsWarning = getMissingDefaultsWarning(propsUsedWithoutDefaults)
     return foldEither(
       (rootParseError) => {
         return (
@@ -364,6 +506,11 @@ export const ComponentSectionInner = betterReactMemo(
         )
       },
       (rootParseSuccess) => {
+        const missingControlsWarning = getMissingPropertyControlsWarning(
+          rootParseSuccess.metadata,
+          propsUsedWithoutControls,
+        )
+        const missingDefaultsWarning = getMissingDefaultsWarning(propsUsedWithoutDefaults)
         const propNames = Object.keys(rootParseSuccess.controls)
         if (propNames.length > 0 || propsUsedWithoutControls.length > 0) {
           return (
@@ -392,37 +539,21 @@ export const ComponentSectionInner = betterReactMemo(
                   return foldEither(
                     (propertyError) => {
                       return (
-                        <RowForProp
+                        <RowForInvalidControl
                           key={propName}
                           title={propName}
                           propName={propName}
                           propertyError={propertyError}
-                          isScene={props.isScene}
                         />
                       )
                     },
                     (controlDescription) => {
-                      let warningTooltip: string | undefined = undefined
-                      if (!rootParseSuccess.metadata.systemProvided) {
-                        const unsetOptionalFields = getDescriptionUnsetOptionalFields(
-                          controlDescription,
-                        )
-                        if (unsetOptionalFields.length > 0) {
-                          warningTooltip = `These optional fields are not set: ${joinSpecial(
-                            unsetOptionalFields,
-                            ', ',
-                            ' and ',
-                          )}`
-                        }
-                      }
                       return (
-                        <RowForProp
+                        <RowForControl
                           key={propName}
-                          title={Utils.defaultIfNull(propName, controlDescription.title)}
-                          propName={propName}
+                          propPath={PP.create([propName])}
                           controlDescription={controlDescription}
                           isScene={props.isScene}
-                          warningTooltip={warningTooltip}
                         />
                       )
                     },

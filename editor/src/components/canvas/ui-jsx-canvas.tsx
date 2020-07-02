@@ -758,6 +758,8 @@ interface SceneRootProps extends CanvasReactReportErrorCallback {
 
   sceneUID: string
   sceneLabel: string | undefined
+
+  'data-uid'?: string // the data uid
 }
 
 const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
@@ -776,6 +778,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     jsxFactoryFunctionName,
     component,
     sceneUID,
+    'data-uid': dataUidIgnore,
     ...inputProps
   } = props
 

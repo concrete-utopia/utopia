@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 import {
-  FramePin,
   FramePoint,
   HorizontalFramePointsExceptSize,
   isFramePoint,
@@ -11,6 +10,8 @@ import {
   VerticalFramePointsExceptSize,
   VerticalFramePoints,
   HorizontalFramePoints,
+  isHorizontalPoint,
+  numberPartOfPin,
 } from 'utopia-api'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import {
@@ -55,6 +56,8 @@ import {
   unsetJSXValuesAtPaths,
   ValueAtPath,
   setJSXValueAtPath,
+  jsxAttributesToProps,
+  jsxSimpleAttributeToValue,
 } from '../../core/shared/jsx-attributes'
 import {
   CanvasMetadata,
@@ -296,8 +299,7 @@ export function updateFramesOfScenesAndComponents(
     if (TP.isScenePath(target)) {
       switch (frameAndTarget.type) {
         case 'PIN_FRAME_CHANGE':
-        case 'PIN_MOVE_CHANGE':
-        case 'PIN_SIZE_CHANGE':
+        case 'PIN_SIZE_CHANGE': {
           // Update scene with pin based frame.
           const sceneStaticpath = createSceneTemplatePath(target)
           workingComponentsResult = transformJSXComponentAtPath(
@@ -328,6 +330,45 @@ export function updateFramesOfScenesAndComponents(
             },
           )
           break
+        }
+        case 'PIN_MOVE_CHANGE': {
+          const sceneStaticpath = createSceneTemplatePath(target)
+          workingComponentsResult = transformJSXComponentAtPath(
+            workingComponentsResult,
+            sceneStaticpath,
+            (sceneElement) => {
+              const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
+              if (isRight(styleProps)) {
+                const left = styleProps.value.left + frameAndTarget.delta.x
+                const top = styleProps.value.top + frameAndTarget.delta.y
+                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
+                  {
+                    path: PP.create(['style']),
+                    value: jsxAttributeValue({
+                      left: left,
+                      top: top,
+                      width: styleProps.value.width,
+                      height: styleProps.value.height,
+                    }),
+                  },
+                ])
+                return foldEither(
+                  () => sceneElement,
+                  (updatedProps) => {
+                    return {
+                      ...sceneElement,
+                      props: roundAttributeLayoutValues(updatedProps),
+                    }
+                  },
+                  sceneStyleUpdated,
+                )
+              } else {
+                return sceneElement
+              }
+            },
+          )
+          break
+        }
         case 'FLEX_MOVE':
         case 'FLEX_RESIZE':
           throw new Error(
@@ -428,25 +469,25 @@ export function updateFramesOfScenesAndComponents(
           )
         }
       } else {
+        let parentFrame: CanvasRectangle | null = null
+        if (optionalParentFrame == null) {
+          const nonGroupParent = MetadataUtils.findNonGroupParent(metadata, originalTarget)
+          parentFrame =
+            nonGroupParent == null
+              ? null
+              : MetadataUtils.getFrameInCanvasCoords(nonGroupParent, metadata)
+        } else {
+          parentFrame = optionalParentFrame
+        }
+        const parentOffset =
+          parentFrame == null
+            ? ({ x: 0, y: 0 } as CanvasPoint)
+            : ({ x: parentFrame.x, y: parentFrame.y } as CanvasPoint)
+
         switch (frameAndTarget.type) {
           case 'PIN_FRAME_CHANGE':
-          case 'PIN_MOVE_CHANGE':
           case 'PIN_SIZE_CHANGE':
             if (frameAndTarget.frame != null) {
-              let parentFrame: CanvasRectangle | null = null
-              if (optionalParentFrame == null) {
-                const nonGroupParent = MetadataUtils.findNonGroupParent(metadata, originalTarget)
-                parentFrame =
-                  nonGroupParent == null
-                    ? null
-                    : MetadataUtils.getFrameInCanvasCoords(nonGroupParent, metadata)
-              } else {
-                parentFrame = optionalParentFrame
-              }
-              const parentOffset =
-                parentFrame == null
-                  ? ({ x: 0, y: 0 } as CanvasPoint)
-                  : ({ x: parentFrame.x, y: parentFrame.y } as CanvasPoint)
               const newLocalFrame = Utils.getLocalRectangleInNewParentContext(
                 parentOffset,
                 frameAndTarget.frame,
@@ -463,24 +504,7 @@ export function updateFramesOfScenesAndComponents(
               }).map(framePointForPinnedProp)
 
               function whichPropsToUpdate() {
-                if (frameAndTarget.type === 'PIN_MOVE_CHANGE') {
-                  // this is not final logic, for now let's just keep existing pins
-                  let framePointsToUse: Array<FramePoint> = [...frameProps]
-                  const horizontalExistingFramePoints = frameProps.filter(
-                    (p) => HorizontalFramePointsExceptSize.indexOf(p) > -1,
-                  )
-                  if (horizontalExistingFramePoints.length === 0) {
-                    framePointsToUse.push(FramePoint.Left)
-                  }
-                  const verticalExistingFramePoints = frameProps.filter(
-                    (p) => VerticalFramePointsExceptSize.indexOf(p) > -1,
-                  )
-                  if (verticalExistingFramePoints.length === 0) {
-                    framePointsToUse.push(FramePoint.Top)
-                  }
-
-                  return framePointsToUse
-                } else if (frameAndTarget.type === 'PIN_SIZE_CHANGE') {
+                if (frameAndTarget.type === 'PIN_SIZE_CHANGE') {
                   // only update left, top, right or bottom if the frame is expressed as left, top, right, bottom.
                   // otherwise try to change width and height only
                   let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
@@ -549,14 +573,6 @@ export function updateFramesOfScenesAndComponents(
               const propsToUpdate: Array<FramePoint> = whichPropsToUpdate()
 
               Utils.fastForEach(propsToUpdate, (propToUpdate) => {
-                if (
-                  frameAndTarget.type === 'PIN_MOVE_CHANGE' &&
-                  (propToUpdate === FramePoint.Width || propToUpdate === FramePoint.Height)
-                ) {
-                  // for PIN_MOVE_CHANGE, we don't bother adding new size props, we only care about the L, T, R, B, Cx, Cy props
-                  return
-                }
-
                 const absoluteValue = fullFrame[propToUpdate]
                 const previousValue =
                   currentFullFrame == null ? null : currentFullFrame[propToUpdate]
@@ -590,6 +606,42 @@ export function updateFramesOfScenesAndComponents(
             }
             break
 
+          case 'PIN_MOVE_CHANGE': {
+            let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
+            Utils.fastForEach(LayoutPinnedProps, (p) => {
+              const framePoint = framePointForPinnedProp(p)
+              if (framePoint !== FramePoint.Width && framePoint !== FramePoint.Height) {
+                const value = getLayoutProperty(p, right(element.props))
+                if (isLeft(value) || value.value != null) {
+                  frameProps[framePoint] = value.value
+                  propsToSkip.push(createLayoutPropertyPath(p))
+                }
+              }
+            })
+
+            let framePointsToUse: Array<FramePoint> = [...(Object.keys(frameProps) as FramePoint[])]
+            const horizontalExistingFramePoints = framePointsToUse.filter(
+              (p) => HorizontalFramePointsExceptSize.indexOf(p) > -1,
+            )
+            if (horizontalExistingFramePoints.length === 0) {
+              framePointsToUse.push(FramePoint.Left)
+            }
+            const verticalExistingFramePoints = framePointsToUse.filter(
+              (p) => VerticalFramePointsExceptSize.indexOf(p) > -1,
+            )
+            if (verticalExistingFramePoints.length === 0) {
+              framePointsToUse.push(FramePoint.Top)
+            }
+            propsToSet.push(
+              ...getPropsToSetToMoveElement(
+                frameAndTarget.delta,
+                framePointsToUse,
+                frameProps,
+                parentFrame,
+              ),
+            )
+            break
+          }
           case 'FLEX_MOVE':
           case 'FLEX_RESIZE':
             throw new Error(
@@ -661,6 +713,51 @@ export function updateFramesOfScenesAndComponents(
     }
   })
   return workingComponentsResult
+}
+
+function getPropsToSetToMoveElement(
+  dragDelta: CanvasVector,
+  framePoints: FramePoint[],
+  frameProps: { [k: string]: string | number | undefined },
+  parentFrame: CanvasRectangle | null,
+): ValueAtPath[] {
+  function updatedValueForProp(framePoint: FramePoint, delta: number): ValueAtPath | null {
+    if (delta !== 0) {
+      const existingProp = frameProps[framePoint]
+      const pinIsPercentage = existingProp == null ? false : isPercentPin(existingProp)
+      let valueToUse: string | number
+      if (existingProp != null && pinIsPercentage) {
+        const percentValue = numberPartOfPin(existingProp)
+        if (parentFrame != null) {
+          const referenceSize = isHorizontalPoint(framePoint)
+            ? parentFrame.width
+            : parentFrame.height
+          const deltaAsPercentValue = (delta / referenceSize) * 100
+          valueToUse = `${percentValue + deltaAsPercentValue}%`
+        } else {
+          valueToUse = `${percentValue + delta}%`
+        }
+      } else {
+        valueToUse = existingProp == null ? delta : Number(existingProp) + delta
+      }
+      return {
+        path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+        value: jsxAttributeValue(valueToUse),
+      }
+    }
+    return null
+  }
+
+  let propsToSet: ValueAtPath[] = []
+  Utils.fastForEach(framePoints, (framePoint) => {
+    const delta = isHorizontalPoint(framePoint) ? dragDelta.x : dragDelta.y
+    const shouldInvertValue = framePoint === FramePoint.Right || framePoint === FramePoint.Bottom
+    const updatedProp = updatedValueForProp(framePoint, shouldInvertValue ? -delta : delta)
+    if (updatedProp != null) {
+      propsToSet.push(updatedProp)
+    }
+  })
+  return propsToSet
 }
 
 export function getOriginalFrameInCanvasCoords(

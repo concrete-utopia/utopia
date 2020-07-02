@@ -16,7 +16,6 @@ const updateFileEvent = {
   payload: {
     fileName: 'test_filename.js',
     fileContent: '',
-    weWantToEmit: true,
   },
 } as const
 
@@ -133,7 +132,6 @@ describe('Bundler State Machine', () => {
       payload: {
         fileName: 'test_filename1.js',
         fileContent: '',
-        weWantToEmit: true,
       },
     })
 
@@ -144,7 +142,6 @@ describe('Bundler State Machine', () => {
       payload: {
         fileName: 'test_filename2.js',
         fileContent: '',
-        weWantToEmit: true,
       },
     })
     const promise3 = utils.defer()
@@ -154,7 +151,6 @@ describe('Bundler State Machine', () => {
       payload: {
         fileName: 'test_filename3.js',
         fileContent: '',
-        weWantToEmit: false,
       },
     })
     const promise4 = utils.defer()
@@ -164,7 +160,6 @@ describe('Bundler State Machine', () => {
       payload: {
         fileName: 'test_filename4.js',
         fileContent: '',
-        weWantToEmit: false,
       },
     })
 
@@ -177,11 +172,9 @@ describe('Bundler State Machine', () => {
     await promise1
 
     // now the queue should be 2 remaining files, one file loaded in "up next", and weWantToEmit should be true
-    expect(stateMachine.state.context.weWantToEmit).toBeTruthy()
     expect(stateMachine.state.context.fileQueuedForProcessing).toEqual({
       fileContent: '',
       fileName: 'test_filename2.js',
-      shouldEmit: false,
     })
     expect(stateMachine.state.context.queuedUpdateFiles).toEqual({
       'test_filename3.js': '',
@@ -197,19 +190,15 @@ describe('Bundler State Machine', () => {
     await promise4
 
     expect(mockUpdateFileService.mock.calls.length).toBe(4)
-    expect(mockUpdateFileService.mock.calls[0][0].fileQueuedForProcessing.shouldEmit).toBeTruthy()
     expect(mockUpdateFileService.mock.calls[0][0].fileQueuedForProcessing.fileName).toEqual(
       'test_filename1.js',
     )
-    expect(mockUpdateFileService.mock.calls[1][0].fileQueuedForProcessing.shouldEmit).toBeFalsy()
     expect(mockUpdateFileService.mock.calls[1][0].fileQueuedForProcessing.fileName).toEqual(
       'test_filename2.js',
     )
-    expect(mockUpdateFileService.mock.calls[2][0].fileQueuedForProcessing.shouldEmit).toBeFalsy()
     expect(mockUpdateFileService.mock.calls[2][0].fileQueuedForProcessing.fileName).toEqual(
       'test_filename3.js',
     )
-    expect(mockUpdateFileService.mock.calls[3][0].fileQueuedForProcessing.shouldEmit).toBeTruthy()
     expect(mockUpdateFileService.mock.calls[3][0].fileQueuedForProcessing.fileName).toEqual(
       'test_filename4.js',
     )

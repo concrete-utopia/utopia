@@ -101,13 +101,19 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
               cssSolidColor(zerothBackgroundLayer.color, zerothBackgroundLayer.enabled),
               false,
             ),
-            backgroundImage: newCSSBackgroundLayers.map(cssBackgroundLayerToCSSBackground),
-            backgroundSize: newCSSBackgroundLayers.map(cssBackgroundLayerToCSSBGSizeOrDefault),
+            backgroundImage: newCSSBackgroundLayers
+              .map(cssBackgroundLayerToCSSBackground)
+              .reverse(),
+            backgroundSize: newCSSBackgroundLayers
+              .map(cssBackgroundLayerToCSSBGSizeOrDefault)
+              .reverse(),
           }
         } else {
           return {
-            backgroundImage: cssBackgroundLayers.map(cssBackgroundLayerToCSSBackground),
-            backgroundSize: cssBackgroundLayers.map(cssBackgroundLayerToCSSBGSizeOrDefault),
+            backgroundImage: cssBackgroundLayers.map(cssBackgroundLayerToCSSBackground).reverse(),
+            backgroundSize: cssBackgroundLayers
+              .map(cssBackgroundLayerToCSSBGSizeOrDefault)
+              .reverse(),
           }
         }
       } else {

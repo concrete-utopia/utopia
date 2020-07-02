@@ -79,9 +79,10 @@ export function getDefaultPropsFromParsedControlsAndMetadata(
 }
 
 export function getMissingPropertyControlsWarning(
+  controlsMetadata: ComponentPropertyControlsMetadata,
   propsWithoutControls: Array<string>,
 ): string | undefined {
-  if (propsWithoutControls.length < 1) {
+  if (propsWithoutControls.length < 1 || controlsMetadata.systemProvided) {
     return undefined
   } else {
     return `There are no property controls for these props: ${joinSpecial(
