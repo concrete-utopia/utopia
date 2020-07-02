@@ -31,20 +31,20 @@ export default class Home extends React.Component {
       <>
         <style>body &#123; margin: 0; background-color: #C1EDFF; &#125;</style>
         <div
-          style={{
+          css={breakpoints({
             width: '100%',
             paddingTop: '10em',
             paddingBottom: '10em',
             paddingLeft: 8,
             paddingRight: 8,
             textAlign: 'center',
-            lineHeight: 1.2,
-            fontSize: 24,
-            fontFamily: "'Inter'",
+            lineHeight: 1.4,
+            fontSize: [18, 24, 24],
+            fontFamily: "'Inter', sans-serif",
             backgroundColor: '#C1EDFF',
             color: '#094173',
             fontWeight: 100,
-          }}
+          })}
         >
           <div
             style={{
@@ -57,15 +57,15 @@ export default class Home extends React.Component {
             <div style={{ maxWidth: 650, textAlign: 'left' }}>
               <img src='/static/logotype@2x.png' width={180} height={36} />
               <h1
-                style={{
-                  fontFamily: "'Inter'",
+                css={breakpoints({
+                  // fontFamily: "'Inter'",
                   fontSize: 62,
                   fontWeight: 900,
                   lineHeight: 1,
                   letterSpacing: -3,
                   textTransform: 'capitalize',
                   paddingBottom: '0.5em',
-                }}
+                })}
               >
                 Join us building the future of design and code, together.
               </h1>
