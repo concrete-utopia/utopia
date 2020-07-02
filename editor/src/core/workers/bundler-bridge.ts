@@ -8,6 +8,7 @@ import {
   createInitTSWorkerMessage,
   BuildResultMessage,
   createUpdateFileMessage,
+  UpdateProcessedMessage,
 } from './ts/ts-worker'
 import utils from '../../utils/utils'
 import { workerForFile } from './utils'
@@ -416,13 +417,19 @@ function sendIdGuardedUpdateFilePromise(
   worker: BundlerWorker,
   filename: string,
   content: string | UIJSFile | CodeFile,
-): Promise<BuildResultMessage> {
+): Promise<BuildResultMessage | UpdateProcessedMessage> {
   const generatedJobID = utils.generateUUID()
   return new Promise((resolve, reject) => {
     function handleMessage(event: MessageEvent) {
       const data: OutgoingWorkerMessage = event.data
       switch (data.type) {
         case 'build':
+          if (data.jobID === generatedJobID) {
+            worker.removeMessageListener(handleMessage)
+            resolve(data)
+          }
+          break
+        case 'updateprocessed':
           if (data.jobID === generatedJobID) {
             worker.removeMessageListener(handleMessage)
             resolve(data)
