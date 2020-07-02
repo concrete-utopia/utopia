@@ -77,6 +77,8 @@ function attachDataUidToRoot(
   } else if (Array.isArray(originalResponse)) {
     // the response was an array of elements
     return originalResponse.map((element) => attachDataUidToRoot(element, dataUid))
+  } else if (!React.isValidElement(originalResponse as any)) {
+    return originalResponse
   } else {
     const finalElement = React.cloneElement(originalResponse, { 'data-uid': dataUid })
     return finalElement
