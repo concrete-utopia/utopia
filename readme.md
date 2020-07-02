@@ -150,7 +150,7 @@ sudo sh -c "echo 'nix	System/Volumes/Data/opt/nix' >> /System/Volumes/Data/priva
 Reboot, and then:
 
 ```
-curl https://nixos.org/nix/install | sh
+curl -L https://nixos.org/nix/install | sh
 ```
 
 Add the `. /Users/{{USERNAME}}/.nix-profile/etc/profile.d/nix.sh` line to your shell's config file (e.g. ~/.zshrc, ~/.bashrc) as directed by the end of the nix install.
