@@ -469,7 +469,7 @@ export function traverseForPreparsedLayers(
         layers.push(preparsedLayer(workingValue.trim(), !inComment))
         return traverseForPreparsedLayers(remaining.slice(2), false, layers)
       } else {
-        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue + '/')
+        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue + '*')
       }
     }
     case ',': {
