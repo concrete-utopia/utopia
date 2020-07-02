@@ -40,7 +40,7 @@ export default class Home extends React.Component {
             textAlign: 'center',
             lineHeight: 1.2,
             fontSize: 24,
-            fontFamily: "'GT Eesti Pro DS Trial'",
+            fontFamily: "'Inter'",
             backgroundColor: '#C1EDFF',
             color: '#094173',
             fontWeight: 100,
@@ -55,12 +55,13 @@ export default class Home extends React.Component {
             }}
           >
             <div style={{ maxWidth: 650, textAlign: 'left' }}>
+              <img src='/static/logotype@2x.png' width={180} height={36} />
               <h1
                 style={{
-                  fontFamily: "'Margem Test'",
+                  fontFamily: "'Inter'",
                   fontSize: 62,
                   fontWeight: 900,
-                  lineHeight: 0.9,
+                  lineHeight: 1,
                   letterSpacing: -3,
                   textTransform: 'capitalize',
                   paddingBottom: '0.5em',
