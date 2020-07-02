@@ -157,10 +157,12 @@ const mangleExoticType = Utils.memoize(
         } else {
           children = React.Children.map(p?.children, (child) => updateChild(child, p?.['data-uid']))
         }
-        const mangledProps = {
+        let mangledProps = {
           ...p,
           children: children,
         }
+
+        delete mangledProps['data-uid']
         return realCreateElement(type as any, mangledProps)
       }
     }
