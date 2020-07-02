@@ -749,6 +749,7 @@ ComponentWithProps.propertyControls = {
 
 exports[`Typescript worker builds the project updating a single file 2`] = `
 Object {
+  "jobID": "689b7b1b_d5ed_4876_ba62_bc66e2096bf6",
   "type": "updateprocessed",
 }
 `;
@@ -867,6 +868,7 @@ ComponentWithProps.propertyControls = {
 
 exports[`Typescript worker builds the project updating a single file with error 2`] = `
 Object {
+  "jobID": "ffcc378d_6bc8_4635_9fd9_e54565241f27",
   "type": "updateprocessed",
 }
 `;
