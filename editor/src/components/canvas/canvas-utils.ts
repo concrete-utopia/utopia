@@ -609,10 +609,11 @@ export function updateFramesOfScenesAndComponents(
           case 'PIN_MOVE_CHANGE': {
             let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
             Utils.fastForEach(LayoutPinnedProps, (p) => {
-              if (p !== 'Width' && p !== 'Height') {
+              const framePoint = framePointForPinnedProp(p)
+              if (framePoint !== FramePoint.Width && framePoint !== FramePoint.Height) {
                 const value = getLayoutProperty(p, right(element.props))
                 if (isLeft(value) || value.value != null) {
-                  frameProps[framePointForPinnedProp(p)] = value.value
+                  frameProps[framePoint] = value.value
                   propsToSkip.push(createLayoutPropertyPath(p))
                 }
               }
