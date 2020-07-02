@@ -22,6 +22,7 @@ import {
   UtopiaUtils,
 } from 'utopia-api'
 import { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
+import { findLastIndex } from '../../../core/shared/array-utils'
 import {
   bimapEither,
   Either,
@@ -31,31 +32,31 @@ import {
   isRight,
   left,
   mapEither,
+  Right as EitherRight,
   right,
   traverseEither,
-  Right as EitherRight,
 } from '../../../core/shared/either'
 import {
   isJSXAttributeFunctionCall,
   isJSXAttributeNotFound,
   isPartOfJSXAttributeValue,
   isRegularJSXAttribute,
+  JSXAttribute,
   jsxAttributeFunctionCall,
   JSXAttributes,
   jsxAttributeValue,
   JSXAttributeValue,
   JSXElement,
-  JSXAttribute,
 } from '../../../core/shared/element-template'
 import {
+  getJSXAttributeAtPath,
+  getJSXAttributeAtPathInner,
   getModifiableJSXAttributeAtPath,
   jsxFunctionAttributeToRawValue,
   jsxSimpleAttributeToValue,
   ModifiableAttribute,
   setJSXValueAtPath,
   setJSXValueInAttributeAtPath,
-  getJSXAttributeAtPath,
-  getJSXAttributeAtPathInner,
 } from '../../../core/shared/jsx-attributes'
 import {
   NumberOrPercent,
@@ -64,6 +65,7 @@ import {
   parseNumberOrPercent,
 } from '../../../core/shared/math-utils'
 import { PropertyPath } from '../../../core/shared/project-file-types'
+import * as PP from '../../../core/shared/property-path'
 import { PrimitiveType, ValueOf } from '../../../core/shared/utils'
 import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
 import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
@@ -71,9 +73,6 @@ import Utils from '../../../utils/utils'
 import { toggleBorderEnabled } from '../sections/style-section/border-subsection/border-subsection'
 import { toggleShadowEnabled } from '../sections/style-section/shadow-subsection/shadow-subsection'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
-import * as PP from '../../../core/shared/property-path'
-import { isJSXAttribute } from '@babel/types'
-import { findLastIndex } from '../../../core/shared/array-utils'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -3262,23 +3261,35 @@ export function printBackgroundImage(
 }
 
 export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue<string> {
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, value)
+
   return jsxAttributeValue(
     value
-      .map((bgSize) => {
+      .map((bgSize, i) => {
+        const comma = indexOfLastEnabledLayer > i && bgSize.enabled
         switch (bgSize.size.value.type) {
           case 'keyword': {
-            return printCSSKeyword(bgSize.size.value)
+            return printEnabled(
+              printComma(printCSSKeyword(bgSize.size.value), comma),
+              bgSize.enabled,
+            )
           }
           case 'parsed-curly-brace': {
-            return bgSize.size.value.value
-              .map((item) => {
-                if (isCSSNumber(item)) {
-                  return printCSSNumber(item)
-                } else {
-                  return printCSSKeyword(item)
-                }
-              })
-              .join(' ')
+            return printEnabled(
+              printComma(
+                bgSize.size.value.value
+                  .map((item) => {
+                    if (isCSSNumber(item)) {
+                      return printCSSNumber(item)
+                    } else {
+                      return printCSSKeyword(item)
+                    }
+                  })
+                  .join(' '),
+                comma,
+              ),
+              bgSize.enabled,
+            )
           }
           default: {
             const _exhaustiveCheck: never = bgSize.size.value
@@ -3286,7 +3297,7 @@ export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue
           }
         }
       })
-      .join(', '),
+      .join(' '),
   )
 }
 

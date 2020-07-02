@@ -52,7 +52,7 @@ function insertBackgroundLayer(
 
 function cssBackgroundLayerToCSSBGSizeOrDefault(v: CSSBackgroundLayer): CSSBGSize {
   if (isCSSBackgroundLayerWithBGSize(v)) {
-    return v.bgSize
+    return { ...v.bgSize, enabled: v.enabled }
   } else {
     return { ...defaultBGSize }
   }
