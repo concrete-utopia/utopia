@@ -33,7 +33,12 @@ import { deepFreeze } from '../../../utils/deep-freeze'
 import { right, forceRight, left } from '../../../core/shared/either'
 import { createFakeMetadataForComponents } from '../../../utils/test-utils'
 import Utils from '../../../utils/utils'
-import { canvasRectangle, CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  CanvasRectangle,
+  LocalRectangle,
+  localRectangle,
+} from '../../../core/shared/math-utils'
 import { createTestProjectWithCode, getFrameChange } from '../../canvas/canvas-utils'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
@@ -706,6 +711,20 @@ describe('moveTemplate', () => {
 })
 
 describe('SWITCH_LAYOUT_SYSTEM', () => {
+  const childElement = jsxElement(
+    'View',
+    {
+      'data-uid': jsxAttributeValue('bbb'),
+      style: jsxAttributeValue({
+        left: 5,
+        top: 10,
+        width: 200,
+        height: 300,
+      }),
+    },
+    [],
+    null,
+  )
   const rootElement = jsxElement(
     'View',
     {
@@ -713,7 +732,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
       style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }),
       layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }),
     },
-    [],
+    [childElement],
     null,
   )
   const firstTopLevelElement = utopiaJSXComponent('App', true, null, [], rootElement, null)
@@ -747,9 +766,32 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
           props: {
             'data-uid': 'aaa',
           },
-          globalFrame: Utils.zeroRectangle as CanvasRectangle,
-          localFrame: Utils.zeroRectangle as LocalRectangle,
-          children: [],
+          globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+          localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+          children: [
+            {
+              navigatorName: 'nope',
+              templatePath: TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), [
+                'aaa',
+                'bbb',
+              ]),
+              element: right(childElement),
+              props: {
+                'data-uid': 'bbb',
+                style: {
+                  left: 5,
+                  top: 10,
+                  width: 200,
+                  height: 300,
+                },
+              },
+              globalFrame: canvasRectangle({ x: 0, y: 0, width: 200, height: 300 }),
+              localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
+              children: [],
+              componentInstance: false,
+              specialSizeMeasurements: emptySpecialSizeMeasurements,
+            },
+          ],
           componentInstance: false,
           specialSizeMeasurements: emptySpecialSizeMeasurements,
         },

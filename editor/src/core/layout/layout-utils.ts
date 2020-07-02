@@ -48,7 +48,7 @@ import {
   StyleLayoutProp,
 } from './layout-helpers-new'
 import { getLayoutPropertyOr } from './getLayoutProperty'
-import { CSSPosition } from '../../components/inspector/common/css-utils'
+import { CSSPosition, layoutEmptyValues } from '../../components/inspector/common/css-utils'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
@@ -263,11 +263,12 @@ function keepLayoutProps(
   }
 }
 
-function switchLayoutMetadata(
+export function switchLayoutMetadata(
   components: ComponentMetadata[],
   target: InstancePath,
-  parentLayoutSystem: DetectedLayoutSystem,
-  position: CSSPosition,
+  parentLayoutSystem: DetectedLayoutSystem | undefined,
+  layoutSystemForChildren: DetectedLayoutSystem | undefined,
+  position: CSSPosition | undefined,
 ): ComponentMetadata[] {
   return MetadataUtils.transformAtPathOptionally(components, target, (elementMetadata) => {
     return {
@@ -282,8 +283,12 @@ function switchLayoutMetadata(
          * the measured value will be in the next update, updateFramesOfScenesAndComponents will just undo our
          * frame changes. :(
          */
-        parentLayoutSystem: parentLayoutSystem,
-        position,
+        parentLayoutSystem:
+          parentLayoutSystem ?? elementMetadata.specialSizeMeasurements.parentLayoutSystem,
+        layoutSystemForChildren:
+          layoutSystemForChildren ??
+          elementMetadata.specialSizeMeasurements.layoutSystemForChildren,
+        position: position ?? elementMetadata.specialSizeMeasurements.position,
       },
     }
   }).elements
@@ -355,7 +360,13 @@ export function switchPinnedChildToFlex(
     currentContextMetadata,
   )
 
-  const updatedMetadata = switchLayoutMetadata(currentContextMetadata, target, 'flex', 'static')
+  const updatedMetadata = switchLayoutMetadata(
+    currentContextMetadata,
+    target,
+    'flex',
+    undefined,
+    'static',
+  )
 
   return {
     updatedComponents: updatedComponents,
@@ -414,6 +425,7 @@ export function switchFlexChildToPinned(
     currentContextMetadata,
     target,
     'nonfixed',
+    undefined,
     'absolute',
   )
 
@@ -468,6 +480,7 @@ export function switchFlexChildToGroup(
     currentContextMetadata,
     target,
     'nonfixed',
+    undefined,
     'absolute',
   )
 
@@ -516,7 +529,13 @@ export function switchChildToGroupWithParentFrame(
       height,
     )
 
-    const updatedMetadata = switchLayoutMetadata(componentMetadata, target, 'nonfixed', 'absolute')
+    const updatedMetadata = switchLayoutMetadata(
+      componentMetadata,
+      target,
+      'nonfixed',
+      undefined,
+      'absolute',
+    )
 
     return {
       updatedComponents: updatedComponents,
@@ -536,7 +555,13 @@ export function switchChildToGroupWithParentFrame(
       height,
     )
 
-    const updatedMetadata = switchLayoutMetadata(componentMetadata, target, 'nonfixed', 'absolute')
+    const updatedMetadata = switchLayoutMetadata(
+      componentMetadata,
+      target,
+      'nonfixed',
+      undefined,
+      'absolute',
+    )
 
     return {
       updatedComponents: updatedComponents,
@@ -579,6 +604,7 @@ export function switchPinnedChildToGroup(
     currentContextMetadata,
     target,
     'nonfixed',
+    undefined,
     'absolute',
   )
 
@@ -621,7 +647,13 @@ export function switchChildToPinnedWithParentFrame(
     height,
   )
 
-  const updatedMetadata = switchLayoutMetadata(componentMetadata, target, 'nonfixed', 'absolute')
+  const updatedMetadata = switchLayoutMetadata(
+    componentMetadata,
+    target,
+    'nonfixed',
+    undefined,
+    'absolute',
+  )
 
   return {
     updatedComponents: updatedComponents,
