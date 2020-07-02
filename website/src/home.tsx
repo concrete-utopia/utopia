@@ -29,7 +29,9 @@ export default class Home extends React.Component {
   render() {
     return (
       <>
-        <style>body &#123; margin: 0; background-color: #C1EDFF; &#125;</style>
+        <style>
+          body {'{'} margin: 0; background-color: #C1EDFF; {'}'}
+        </style>
         <div
           css={breakpoints({
             width: '100%',
