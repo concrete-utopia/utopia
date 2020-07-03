@@ -392,7 +392,7 @@ export const MetadataUtils = {
     }
   },
   isFlexLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
-    return instance?.specialSizeMeasurements.layoutSystemForChildren === 'flex' ?? false
+    return instance?.specialSizeMeasurements.layoutSystemForChildren === 'flex'
   },
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'

@@ -28,6 +28,7 @@ import {
   maybeSwitchChildrenLayoutProps,
   maybeSwitchLayoutProps,
   roundAttributeLayoutValues,
+  switchLayoutMetadata,
 } from '../../../core/layout/layout-utils'
 import {
   findElementAtPath,
@@ -523,19 +524,7 @@ function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
 ): Array<ComponentMetadata> {
   const allChildren = MetadataUtils.getImmediateChildren(scenes, parentPath)
   return allChildren.reduce((transformedScenes, child) => {
-    return MetadataUtils.transformAtPathOptionally(
-      transformedScenes,
-      child.templatePath,
-      (element) => {
-        return {
-          ...element,
-          specialSizeMeasurements: {
-            ...element.specialSizeMeasurements,
-            parentLayoutSystem: value,
-          },
-        }
-      },
-    ).elements
+    return switchLayoutMetadata(transformedScenes, child.templatePath, value, undefined, undefined)
   }, scenes)
 }
 
@@ -685,6 +674,16 @@ function switchAndUpdateFrames(
       withUpdatedLayoutSystem.jsxMetadataKILLME,
       target,
       layoutSystemToSet(),
+    ),
+  }
+  withUpdatedLayoutSystem = {
+    ...withUpdatedLayoutSystem,
+    jsxMetadataKILLME: switchLayoutMetadata(
+      withUpdatedLayoutSystem.jsxMetadataKILLME,
+      target,
+      undefined,
+      layoutSystemToSet(),
+      undefined,
     ),
   }
 

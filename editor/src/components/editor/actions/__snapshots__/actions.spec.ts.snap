@@ -9,7 +9,66 @@ Array [
     "param": null,
     "propsUsed": Array [],
     "rootElement": Object {
-      "children": Array [],
+      "children": Array [
+        Object {
+          "children": Array [],
+          "metadata": null,
+          "name": Object {
+            "baseVariable": "View",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Object {
+            "data-uid": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": "bbb",
+            },
+            "layout": Object {
+              "content": Array [],
+              "type": "ATTRIBUTE_NESTED_OBJECT",
+            },
+            "style": Object {
+              "content": Array [
+                Object {
+                  "key": "left",
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": 0,
+                  },
+                },
+                Object {
+                  "key": "top",
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": 0,
+                  },
+                },
+                Object {
+                  "key": "width",
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": 200,
+                  },
+                },
+                Object {
+                  "key": "height",
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": 300,
+                  },
+                },
+              ],
+              "type": "ATTRIBUTE_NESTED_OBJECT",
+            },
+          },
+          "type": "JSX_ELEMENT",
+        },
+      ],
       "metadata": null,
       "name": Object {
         "baseVariable": "View",
@@ -65,7 +124,50 @@ Array [
     "param": null,
     "propsUsed": Array [],
     "rootElement": Object {
-      "children": Array [],
+      "children": Array [
+        Object {
+          "children": Array [],
+          "metadata": null,
+          "name": Object {
+            "baseVariable": "View",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Object {
+            "data-uid": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": "bbb",
+            },
+            "layout": Object {
+              "content": Array [
+                Object {
+                  "key": "flexBasis",
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": 200,
+                  },
+                },
+                Object {
+                  "key": "crossBasis",
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": 300,
+                  },
+                },
+              ],
+              "type": "ATTRIBUTE_NESTED_OBJECT",
+            },
+            "style": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {},
+            },
+          },
+          "type": "JSX_ELEMENT",
+        },
+      ],
       "metadata": null,
       "name": Object {
         "baseVariable": "View",
