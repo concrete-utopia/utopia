@@ -247,7 +247,7 @@ function calculateIntermediateStopColor(
   stops: Array<CSSGradientStop>,
 ): { color: CSSColor; newIndex: number } {
   const orderedStops = orderStops([...stops])
-  // Is new stop before 0th stop?
+  // Is new stop before lowest stop?
   if (newStopPoint <= orderedStops[0].position.value) {
     return { color: orderedStops[0].color, newIndex: 0 }
   }
@@ -275,7 +275,7 @@ function calculateIntermediateStopColor(
     }
   }
 
-  // New stop is after last stop
+  // New stop is after highest stop
   return { color: orderedStops[orderedStops.length - 1].color, newIndex: orderedStops.length }
 }
 
@@ -328,10 +328,10 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
           }
           const newStops = [...stops, stop]
           onSubmitValue(newStops)
-          // setSelectedIndex(newIndex)
+          setSelectedIndex(newIndex)
         }
       },
-      [stops, onSubmitValue],
+      [stops, onSubmitValue, setSelectedIndex],
     )
 
     const deleteStop = (index: number) => {
