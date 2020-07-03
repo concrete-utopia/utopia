@@ -201,7 +201,15 @@ const initPreview = () => {
         if (previewJsFileName != null) {
           const previewJSPath = `/public/${previewJsFileName}`
           const file = model.projectContents[previewJSPath]
-          if (file != null && isCodeFile(file)) {
+          if (file == null || !isCodeFile(file)) {
+            throw new Error(
+              `Error processing the project files: the preview path (${previewJSPath}) did not point to a valid file`,
+            )
+          } else if (model.buildResult[previewJSPath] == null) {
+            throw new Error(
+              `Error processing the project files: the build result does not contain the preview file: ${previewJSPath}`,
+            )
+          } else {
             processModuleCodes(model.buildResult, require, true)
           }
         }
