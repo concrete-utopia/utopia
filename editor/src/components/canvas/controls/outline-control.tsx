@@ -10,7 +10,12 @@ import { Outline } from './outline'
 import { anyInstanceYogaLayouted } from './select-mode/yoga-utils'
 import { MarginControls } from './margin-controls'
 import { PaddingControls } from './padding-controls'
-import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
+import {
+  MoveDragState,
+  ResizeDragState,
+  DragState,
+  ResizeSingleSelectDragState,
+} from '../canvas-types'
 import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -43,11 +48,11 @@ export function getSelectionColor(
 }
 
 export interface OutlineControlsProps extends ControlProps {
-  dragState: MoveDragState | ResizeDragState | null
+  dragState: MoveDragState | ResizeDragState | ResizeSingleSelectDragState | null
 }
 
 function isDraggingToMove(
-  dragState: MoveDragState | ResizeDragState | null,
+  dragState: MoveDragState | ResizeDragState | ResizeSingleSelectDragState | null,
   target: TemplatePath,
 ): dragState is MoveDragState {
   // This is a bit of a cheeky cast because we only cast if the thing is target is one of the dragged elements

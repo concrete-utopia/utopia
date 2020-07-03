@@ -17,6 +17,7 @@ import {
   DirectionVertical,
   DirectionHorizontal,
   DirectionAll,
+  resizeSingleSelectDragState,
 } from '../canvas-types'
 import { ResizeStatus } from './new-canvas-controls'
 import { TemplatePath } from '../../../core/shared/project-file-types'
@@ -53,19 +54,37 @@ class ResizeControl extends React.Component<ResizeControlProps, {}> {
       const canvasPositions = this.props.windowToCanvasPosition(event.nativeEvent)
       const start: CanvasPoint = canvasPositions.canvasPositionRaw
       const originalFrames = this.props.getOriginalFrames()
-      const newDragState = resizeDragState(
-        start,
-        null,
-        enableSnapping,
-        centerBasedResize,
-        keepAspectRatio,
-        this.props.measureSize,
-        originalFrames,
-        this.props.position,
-        this.props.enabledDirection,
-        this.props.metadata,
-        this.props.selectedViews,
-      )
+      let newDragState
+      if (this.props.selectedViews.length === 1) {
+        newDragState = resizeSingleSelectDragState(
+          start,
+          null,
+          enableSnapping,
+          centerBasedResize,
+          keepAspectRatio,
+          this.props.measureSize,
+          originalFrames,
+          this.props.position,
+          this.props.enabledDirection,
+          this.props.metadata,
+          this.props.selectedViews,
+        )
+      } else {
+        newDragState = resizeDragState(
+          start,
+          null,
+          enableSnapping,
+          centerBasedResize,
+          keepAspectRatio,
+          this.props.measureSize,
+          originalFrames,
+          this.props.position,
+          this.props.enabledDirection,
+          this.props.metadata,
+          this.props.selectedViews,
+        )
+      }
+
       this.props.dispatch(
         [CanvasActions.createDragState(newDragState), setCanvasAnimationsEnabled(false)],
         'canvas',

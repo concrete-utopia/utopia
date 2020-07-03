@@ -211,12 +211,22 @@ export interface FlexResizeChange {
   edgePosition: EdgePosition | null
 }
 
+export interface SingleResizeChange {
+  type: 'SINGLE_RESIZE'
+  target: TemplatePath
+  cornerChanges: {
+    topLeft: CanvasVector
+    bottomRight: CanvasVector
+  }
+}
+
 export type PinOrFlexFrameChange =
   | PinFrameChange
   | PinSizeChange
   | PinMoveChange
   | FlexMoveChange
   | FlexResizeChange
+  | SingleResizeChange
 
 export function pinFrameChange(
   target: TemplatePath,
@@ -270,6 +280,21 @@ export function flexResizeChange(
     target: target,
     newSize: newSize,
     edgePosition: edgePosition,
+  }
+}
+
+export function singleResizeChange(
+  target: TemplatePath,
+  topLeft: CanvasVector,
+  bottomRight: CanvasVector,
+): SingleResizeChange {
+  return {
+    type: 'SINGLE_RESIZE',
+    target: target,
+    cornerChanges: {
+      topLeft: topLeft,
+      bottomRight: bottomRight,
+    },
   }
 }
 
@@ -436,12 +461,12 @@ export function resizeDragState(
 }
 
 export function updateResizeDragState(
-  current: ResizeDragState,
+  current: ResizeDragState | ResizeSingleSelectDragState,
   drag: CanvasVector | null | undefined,
   enableSnapping: boolean | undefined,
   centerBasedResize: boolean | undefined,
   keepAspectRatio: boolean | undefined,
-): ResizeDragState {
+): ResizeDragState | ResizeSingleSelectDragState {
   return keepDeepReferenceEqualityIfPossible(current, {
     ...current,
     drag: drag === undefined ? current.drag : drag,
@@ -452,7 +477,55 @@ export function updateResizeDragState(
   })
 }
 
-export type DragState = InsertDragState | MoveDragState | ResizeDragState
+export interface ResizeSingleSelectDragState {
+  type: 'RESIZE_SINGLE_SELECT_DRAG_STATE'
+  start: CanvasPoint
+  drag: CanvasVector | null
+  enableSnapping: boolean
+  centerBasedResize: boolean
+  keepAspectRatio: boolean
+  originalSize: CanvasRectangle
+  originalFrames: Array<OriginalCanvasAndLocalFrame>
+  edgePosition: EdgePosition
+  enabledDirection: EnabledDirection
+  metadata: Array<ComponentMetadata>
+  draggedElements: TemplatePath[]
+}
+
+export function resizeSingleSelectDragState(
+  start: CanvasPoint,
+  drag: CanvasVector | null,
+  enableSnapping: boolean,
+  centerBasedResize: boolean,
+  keepAspectRatio: boolean,
+  originalSize: CanvasRectangle,
+  originalFrames: Array<OriginalCanvasAndLocalFrame>,
+  edgePosition: EdgePosition,
+  enabledDirection: EnabledDirection,
+  metadata: Array<ComponentMetadata>,
+  draggedElements: TemplatePath[],
+): ResizeSingleSelectDragState {
+  return {
+    type: 'RESIZE_SINGLE_SELECT_DRAG_STATE',
+    start: start,
+    drag: drag,
+    enableSnapping: enableSnapping,
+    centerBasedResize: centerBasedResize,
+    keepAspectRatio: keepAspectRatio,
+    originalSize: originalSize,
+    originalFrames: originalFrames,
+    edgePosition: edgePosition,
+    enabledDirection: enabledDirection,
+    metadata: metadata,
+    draggedElements: draggedElements,
+  }
+}
+
+export type DragState =
+  | InsertDragState
+  | MoveDragState
+  | ResizeDragState
+  | ResizeSingleSelectDragState
 
 export interface CanvasPositions {
   windowPosition: WindowPoint

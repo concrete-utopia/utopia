@@ -266,7 +266,9 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
             maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
             duplicationState={props.editor.canvas.duplicationState}
             dragState={
-              dragState?.type === 'MOVE_DRAG_STATE' || dragState?.type === 'RESIZE_DRAG_STATE'
+              dragState?.type === 'MOVE_DRAG_STATE' ||
+              dragState?.type === 'RESIZE_DRAG_STATE' ||
+              dragState?.type === 'RESIZE_SINGLE_SELECT_DRAG_STATE'
                 ? dragState
                 : null
             }

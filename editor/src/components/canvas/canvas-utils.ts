@@ -136,6 +136,8 @@ import {
   pinFrameChange,
   PinOrFlexFrameChange,
   ResizeDragState,
+  ResizeSingleSelectDragState,
+  singleResizeChange,
 } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
@@ -369,6 +371,8 @@ export function updateFramesOfScenesAndComponents(
           )
           break
         }
+        case 'SINGLE_RESIZE':
+          break
         case 'FLEX_MOVE':
         case 'FLEX_RESIZE':
           throw new Error(
@@ -401,7 +405,8 @@ export function updateFramesOfScenesAndComponents(
       const isFlexContainer =
         frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
         frameAndTarget.type !== 'PIN_MOVE_CHANGE' &&
-        frameAndTarget.type !== 'PIN_SIZE_CHANGE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
+        frameAndTarget.type !== 'PIN_SIZE_CHANGE' &&
+        frameAndTarget.type !== 'SINGLE_RESIZE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
 
       let propsToSet: Array<ValueAtPath> = []
       let propsToSkip: Array<PropertyPath> = []
@@ -411,6 +416,7 @@ export function updateFramesOfScenesAndComponents(
             case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
             case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
             case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+            case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
               throw new Error(
                 `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
                   staticParentPath,
@@ -642,6 +648,8 @@ export function updateFramesOfScenesAndComponents(
             )
             break
           }
+          case 'SINGLE_RESIZE':
+            break
           case 'FLEX_MOVE':
           case 'FLEX_RESIZE':
             throw new Error(
@@ -1036,7 +1044,7 @@ export function snapPoint(
 
 function calculateDraggedRectangle(
   editor: EditorState,
-  dragState: ResizeDragState,
+  dragState: ResizeDragState | ResizeSingleSelectDragState,
 ): CanvasRectangle {
   const originalSize = dragState.originalSize
   const deltaScale = dragState.centerBasedResize ? 2 : 1 // for center based resize, we need to calculate with double deltas
@@ -1079,7 +1087,7 @@ function calculateDraggedRectangle(
 
 export function calculateNewBounds(
   editor: EditorState,
-  dragState: ResizeDragState,
+  dragState: ResizeDragState | ResizeSingleSelectDragState,
 ): CanvasRectangle {
   const originalSize = dragState.originalSize
   const aspectRatio = originalSize.width / originalSize.height
@@ -1128,6 +1136,7 @@ export function getCursorFromDragState(editorState: EditorState): CSSCursor | nu
           return CSSCursor.Move
         }
       case 'RESIZE_DRAG_STATE':
+      case 'RESIZE_SINGLE_SELECT_DRAG_STATE':
         if (isEdgePositionAHorizontalEdge(dragState.edgePosition)) {
           return CSSCursor.ResizeNS
         } else if (isEdgePositionAVerticalEdge(dragState.edgePosition)) {
@@ -1263,6 +1272,78 @@ export function produceResizeCanvasTransientState(
   }
 }
 
+export function produceResizeSingleSelectCanvasTransientState(
+  editorState: EditorState,
+  parseSuccess: ParseSuccess,
+  dragState: ResizeSingleSelectDragState,
+  preventAnimations: boolean,
+): TransientCanvasState {
+  const elementsToTarget = determineElementsToOperateOnForDragging(
+    dragState.draggedElements,
+    editorState.jsxMetadataKILLME,
+    false,
+    true,
+  )
+  if (elementsToTarget.length !== 1) {
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+  }
+  const elementToTarget = elementsToTarget[0]
+
+  const newSize = calculateNewBounds(editorState, dragState)
+  let framesAndTargets: Array<PinOrFlexFrameChange> = []
+  let globalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, elementToTarget)
+  const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, elementToTarget)
+  if (originalFrame != null && globalFrame != null) {
+    const newTargetFrame = Utils.transformFrameUsingBoundingBox(newSize, globalFrame, originalFrame)
+    const roundedFrame = {
+      x: Math.floor(newTargetFrame.x),
+      y: Math.floor(newTargetFrame.y),
+      width: Math.ceil(newTargetFrame.width),
+      height: Math.ceil(newTargetFrame.height),
+    } as CanvasRectangle
+    const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      elementToTarget,
+      editorState.jsxMetadataKILLME,
+    )
+    if (isFlexContainer) {
+      framesAndTargets.push(flexResizeChange(elementToTarget, roundedFrame, dragState.edgePosition))
+    } else {
+      // framesAndTargets.push(singleResizeChange(target, ))
+    }
+  }
+
+  // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
+  const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+  const openComponents = preventAnimations
+    ? preventAnimationsOnTargets(
+        untouchedOpenComponents,
+        editorState.jsxMetadataKILLME,
+        elementsToTarget,
+      )
+    : untouchedOpenComponents
+
+  const componentsIncludingFakeUtopiaScene = openComponents
+
+  const updatedScenesAndComponents = updateFramesOfScenesAndComponents(
+    componentsIncludingFakeUtopiaScene,
+    editorState.jsxMetadataKILLME,
+    framesAndTargets,
+    null,
+  )
+
+  // Sync these back up.
+  const topLevelElementsIncludingScenes = applyUtopiaJSXComponentsChanges(
+    parseSuccess.topLevelElements,
+    updatedScenesAndComponents,
+  )
+
+  return transientCanvasState(
+    editorState.selectedViews,
+    editorState.highlightedViews,
+    transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+  )
+}
+
 export function produceCanvasTransientState(
   editorState: EditorState,
   preventAnimations: boolean,
@@ -1340,6 +1421,13 @@ export function produceCanvasTransientState(
                     editorState,
                     dragState,
                     parseSuccess,
+                    preventAnimations,
+                  )
+                case 'RESIZE_SINGLE_SELECT_DRAG_STATE':
+                  return produceResizeSingleSelectCanvasTransientState(
+                    editorState,
+                    parseSuccess,
+                    dragState,
                     preventAnimations,
                   )
                 case 'RESIZE_DRAG_STATE':
