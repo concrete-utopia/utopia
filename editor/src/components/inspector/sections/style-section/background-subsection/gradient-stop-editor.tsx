@@ -55,20 +55,16 @@ const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) 
   const onMouseMove = React.useCallback(
     (e: MouseEvent) => {
       if (valueAtDragOrigin.current != null && dragScreenOrigin.current != null) {
-        if (!selected) {
-          const cachedIndex = index
-          setSelectedIndex(cachedIndex)
-          calculateDraggedValue(
-            index,
-            e.screenX,
-            dragScreenOrigin.current.x,
-            valueAtDragOrigin.current,
-            true,
-          )
-        }
+        calculateDraggedValue(
+          index,
+          e.screenX,
+          dragScreenOrigin.current.x,
+          valueAtDragOrigin.current,
+          true,
+        )
       }
     },
-    [dragScreenOrigin, setSelectedIndex, calculateDraggedValue, index, valueAtDragOrigin, selected],
+    [dragScreenOrigin, calculateDraggedValue, index, valueAtDragOrigin],
   )
 
   const onMouseUp = React.useCallback(
@@ -76,9 +72,6 @@ const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) 
       if (valueAtDragOrigin.current != null && dragScreenOrigin.current != null) {
         const deltaX = e.screenX - dragScreenOrigin.current.x
         const deltaY = e.screenY - dragScreenOrigin.current.y
-        if (!selected) {
-          setSelectedIndex(index)
-        }
         if (Math.abs(deltaY) > 30) {
           deleteStop(index)
         } else {
@@ -96,16 +89,7 @@ const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) 
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
     },
-    [
-      dragScreenOrigin,
-      onMouseMove,
-      valueAtDragOrigin,
-      calculateDraggedValue,
-      deleteStop,
-      setSelectedIndex,
-      selected,
-      index,
-    ],
+    [dragScreenOrigin, onMouseMove, valueAtDragOrigin, calculateDraggedValue, deleteStop, index],
   )
 
   const stopPositionValue = props.stop.position.value
@@ -113,9 +97,7 @@ const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) 
     (e: React.MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      if (!selected) {
-        setSelectedIndex(index)
-      }
+      setSelectedIndex(index)
       valueAtDragOrigin.current = stopPositionValue
       dragScreenOrigin.current = {
         x: e.nativeEvent.screenX,
@@ -124,7 +106,7 @@ const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) 
       document.addEventListener('mousemove', onMouseMove)
       document.addEventListener('mouseup', onMouseUp)
     },
-    [onMouseMove, onMouseUp, selected, setSelectedIndex, stopPositionValue, index],
+    [onMouseMove, onMouseUp, setSelectedIndex, stopPositionValue, index],
   )
 
   const position = Math.max(0, Math.min(100, props.stop.position.value))
