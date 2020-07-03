@@ -530,8 +530,10 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
                 stops={props.value.stops}
                 onSubmitValue={onSubmitValueStops}
                 onTransientSubmitValue={onTransientSubmitValueStops}
-                selectedIndex={selectedStopIndex}
-                setSelectedIndex={setSelectedStopIndex}
+                selectedStopIndex={selectedStopIndex}
+                setSelectedStopIndex={setSelectedStopIndex}
+                useSubmitValueFactory={props.useSubmitValueFactory}
+                selectedLayerIndex={props.backgroundLayerIndex}
               />
             ) : null}
             {isCSSSolidBackgroundLayer(props.value) || isCSSGradientBackgroundLayer(props.value) ? (

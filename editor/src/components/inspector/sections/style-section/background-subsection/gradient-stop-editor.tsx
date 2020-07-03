@@ -2,17 +2,20 @@ import * as Chroma from 'chroma-js'
 import * as React from 'react'
 import { colorTheme, FlexColumn } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
+import { ControlStyleDefaults } from '../../../common/control-status'
 import {
+  CSSBackgroundLayers,
   CSSColor,
   cssColorToChromaColorOrDefault,
   CSSGradientStop,
   CSSNumber,
+  isCSSGradientBackgroundLayer,
   orderStops,
   printColor,
   printLinearGradientBackgroundLayer,
 } from '../../../common/css-utils'
 import { checkerboardBackground } from '../../../common/inspector-utils'
-import { ControlStyleDefaults } from '../../../common/control-status'
+import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import { inspectorEdgePadding } from './background-picker'
 
 interface GradientStopProps {
@@ -51,7 +54,7 @@ const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) 
     ? `, 0 0 0 1px ${colorTheme.inspectorFocusedColor.value}`
     : ''
 
-  const { setSelectedIndex, calculateDraggedValue, index, selected, deleteStop } = props
+  const { setSelectedIndex, calculateDraggedValue, index, deleteStop } = props
   const onMouseMove = React.useCallback(
     (e: MouseEvent) => {
       if (valueAtDragOrigin.current != null && dragScreenOrigin.current != null) {
@@ -219,9 +222,11 @@ export interface GradientControlProps {
   stops: Array<CSSGradientStop>
   onSubmitValue: (newValue: Array<CSSGradientStop>) => void
   onTransientSubmitValue: (newValue: Array<CSSGradientStop>) => void
-  selectedIndex: number
-  setSelectedIndex: (index: number) => void
+  useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers>
+  selectedStopIndex: number
+  setSelectedStopIndex: (index: number) => void
   style?: React.CSSProperties
+  selectedLayerIndex: number
 }
 
 function calculateIntermediateStopColor(
@@ -263,7 +268,15 @@ function calculateIntermediateStopColor(
 
 export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
   'GradientStopsEditor',
-  ({ setSelectedIndex, ...props }) => {
+  ({
+    selectedStopIndex,
+    setSelectedStopIndex,
+    selectedLayerIndex,
+    stops,
+    onSubmitValue,
+    onTransientSubmitValue,
+    ...props
+  }) => {
     const ref: React.RefObject<HTMLDivElement> = React.useRef(null)
 
     function calculateDraggedValue(
@@ -279,21 +292,20 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
         const clampedValue = Number(
           (Math.max(0, Math.min(1, deltaX / width + valueAtDragOrigin / 100)) * 100).toFixed(2),
         )
-        const newStops: Array<CSSGradientStop> = [...props.stops]
+        const newStops: Array<CSSGradientStop> = [...stops]
         const newStop: CSSGradientStop = {
           ...newStops[index],
           position: { unit: '%', value: clampedValue },
         }
         newStops[index] = newStop
         if (transient) {
-          props.onTransientSubmitValue(newStops)
+          onTransientSubmitValue(newStops)
         } else {
-          props.onSubmitValue(newStops)
+          onSubmitValue(newStops)
         }
-        setSelectedIndex(calculateNewIndex(index, newStops, clampedValue))
+        setSelectedStopIndex(calculateNewIndex(index, newStops, clampedValue))
       }
     }
-    const { stops, onSubmitValue } = props
 
     const onMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
@@ -310,36 +322,81 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
           }
           const newStops = [...stops, stop]
           onSubmitValue(newStops)
-          setSelectedIndex(newIndex)
+          setSelectedStopIndex(newIndex)
         }
       },
-      [stops, onSubmitValue, setSelectedIndex],
+      [stops, onSubmitValue, setSelectedStopIndex],
     )
 
-    const deleteStop = (index: number) => {
-      if (props.stops.length > 2) {
-        if (props.selectedIndex !== 0 && props.selectedIndex === props.stops.length - 1) {
-          setSelectedIndex(props.selectedIndex - 1)
+    const deleteStop = React.useCallback(
+      (index: number) => {
+        if (stops.length > 2) {
+          if (selectedStopIndex !== 0 && selectedStopIndex === stops.length - 1) {
+            setSelectedStopIndex(selectedStopIndex - 1)
+          }
+          const newValue = [...stops]
+          newValue.splice(index, 1)
+          onSubmitValue(newValue)
         }
-        const newValue = [...props.stops]
-        newValue.splice(index, 1)
-        props.onSubmitValue(newValue)
-      }
-    }
+      },
+      [stops, onSubmitValue, selectedStopIndex, setSelectedStopIndex],
+    )
 
     const gradientStopElements = stops.map((stop, index: number) => {
-      const selected = props.selectedIndex === index
+      const selected = selectedStopIndex === index
       return (
         <GradientStop
           key={`${printColor(stop.color)}${stop.position.value}${stop.position.unit}`}
           index={index}
           stop={stop}
           selected={selected}
-          setSelectedIndex={setSelectedIndex}
+          setSelectedIndex={setSelectedStopIndex}
           calculateDraggedValue={calculateDraggedValue}
           deleteStop={deleteStop}
         />
       )
+    })
+
+    const updateStopPositionByIncrement = React.useCallback(
+      (incrementValue: number, oldValue: CSSBackgroundLayers): CSSBackgroundLayers => {
+        const workingValue = [...oldValue]
+        const workingLayer = workingValue[selectedLayerIndex]
+        if (workingLayer != null && isCSSGradientBackgroundLayer(workingLayer)) {
+          const workingStop = workingLayer.stops[selectedStopIndex]
+          if (workingStop != null) {
+            workingStop.position.value = workingStop.position.value + incrementValue
+            workingLayer.stops[selectedStopIndex] = workingStop
+            workingValue[selectedLayerIndex] = workingLayer
+          }
+        }
+        return workingValue
+      },
+      [selectedLayerIndex, selectedStopIndex],
+    )
+
+    const [incrementStopPosition] = props.useSubmitValueFactory(updateStopPositionByIncrement)
+
+    const onDeleteKeypress = React.useCallback(
+      (e: KeyboardEvent) => {
+        if (e.key === 'Backspace' || e.key === 'Delete') {
+          deleteStop(selectedStopIndex)
+          e.stopPropagation()
+        } else if (e.key === 'ArrowLeft') {
+          incrementStopPosition(e.shiftKey ? -10 : -1)
+          e.stopPropagation()
+        } else if (e.key === 'ArrowRight') {
+          incrementStopPosition(e.shiftKey ? 10 : 1)
+          e.stopPropagation()
+        }
+      },
+      [deleteStop, selectedStopIndex, incrementStopPosition],
+    )
+
+    React.useEffect(() => {
+      document.addEventListener('keyup', onDeleteKeypress)
+      return () => {
+        document.removeEventListener('keyup', onDeleteKeypress)
+      }
     })
 
     return (
