@@ -24,6 +24,7 @@ import           System.Timeout
 import           Test.Hspec
 import           Test.Utopia.Web.Executors.Test
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Servant
 import           Utopia.Web.Server
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
@@ -84,19 +85,19 @@ authenticateClient = client (Proxy :: Proxy ClientAuthenticateAPI)
 createProjectClient :: ClientM CreateProjectResponse
 createProjectClient = client (Proxy :: Proxy CreateProjectAPI)
 
-forkProjectClient :: Maybe Text -> Text -> Maybe Text -> ClientM ForkProjectResponse
+forkProjectClient :: Maybe Text -> ProjectIdWithSuffix -> Maybe Text -> ClientM ForkProjectResponse
 forkProjectClient = client (Proxy :: Proxy (AuthCookie :> ForkProjectAPI))
 
-loadProjectClient :: Maybe Text -> Text -> Maybe UTCTime -> ClientM LoadProjectResponse
+loadProjectClient :: Maybe Text -> ProjectIdWithSuffix -> Maybe UTCTime -> ClientM LoadProjectResponse
 loadProjectClient = client (Proxy :: Proxy (AuthCookie :> LoadProjectAPI))
 
-saveProjectClient :: Maybe Text -> Text -> SaveProjectRequest -> ClientM SaveProjectResponse
+saveProjectClient :: Maybe Text -> ProjectIdWithSuffix -> SaveProjectRequest -> ClientM SaveProjectResponse
 saveProjectClient = client (Proxy :: Proxy (AuthCookie :> SaveProjectAPI))
 
-deleteProjectClient :: Maybe Text -> Text -> ClientM NoContent
+deleteProjectClient :: Maybe Text -> ProjectIdWithSuffix -> ClientM NoContent
 deleteProjectClient = client (Proxy :: Proxy (AuthCookie :> DeleteProjectAPI))
 
-projectOwnerClient :: Maybe Text -> Text -> ClientM ProjectOwnerResponse
+projectOwnerClient :: Maybe Text -> ProjectIdWithSuffix -> ClientM ProjectOwnerResponse
 projectOwnerClient = client (Proxy :: Proxy (AuthCookie :> ProjectOwnerAPI))
 
 projectsClient :: Maybe Text -> ClientM ProjectListResponse
@@ -108,16 +109,16 @@ getShowcaseClient = client (Proxy :: Proxy ShowcaseAPI)
 setShowcaseClient :: Text -> ClientM NoContent
 setShowcaseClient = client (Proxy :: Proxy SetShowcaseAPI)
 
-saveProjectAssetClient :: Maybe Text -> Text -> [Text] -> (Request -> Request) -> ClientM Response
+saveProjectAssetClient :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> (Request -> Request) -> ClientM Response
 saveProjectAssetClient = client (Proxy :: Proxy (AuthCookie :> SaveProjectAssetAPI))
 
-deleteProjectAssetClient :: Maybe Text -> Text -> [Text] -> ClientM NoContent
+deleteProjectAssetClient :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ClientM NoContent
 deleteProjectAssetClient = client (Proxy :: Proxy (AuthCookie :> DeleteProjectAssetAPI))
 
-loadProjectAssetClient :: Text -> Text -> [Text] -> (Request -> Request) -> ClientM Response
+loadProjectAssetClient :: ProjectIdWithSuffix -> Text -> [Text] -> (Request -> Request) -> ClientM Response
 loadProjectAssetClient = client (Proxy :: Proxy LoadProjectAssetAPI)
 
-renameProjectAssetClient :: Maybe Text -> Text -> [Text] -> Text -> ClientM NoContent
+renameProjectAssetClient :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> Text -> ClientM NoContent
 renameProjectAssetClient = client (Proxy :: Proxy (AuthCookie :> RenameProjectAssetAPI))
 
 jpgMediaType :: MediaType
@@ -139,7 +140,7 @@ updateAssetPathSpec =
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectId = view id createProjectResult
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
         _ <- saveProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"] setBodyAsJPG
         _ <- renameProjectAssetClient cookieHeader projectId ["other", "image.jpg"] "assets/picture.jpg"
@@ -167,7 +168,7 @@ deleteAssetSpec =
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectId = view id createProjectResult
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
         _ <- saveProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"] setBodyAsJPG
         _ <- deleteProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"]
@@ -195,9 +196,9 @@ routingSpec = around_ withServer $ do
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectID = view id createProjectResult
-        _ <- saveProjectClient cookieHeader projectID $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        projectOwnerClient cookieHeader projectID
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        projectOwnerClient cookieHeader projectId
       (projectOwnerResponse ^? _Right . isOwner) `shouldBe` Just True
   describe "GET /projects" $ do
     it "return an empty list of projects when nothing has been added" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
@@ -212,11 +213,11 @@ routingSpec = around_ withServer $ do
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectID = view id createProjectResult
-        _ <- saveProjectClient cookieHeader projectID $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
         listing <- projectsClient cookieHeader
-        return $ (projectID, listing)
-      (projectId, listing) <- either throwIO return projectIdAndListingResult
+        return $ (projectId, listing)
+      ((ProjectIdWithSuffix projectId _), listing) <- either throwIO return projectIdAndListingResult
       (listing ^.. projects . traverse . id) `shouldBe` [projectId]
   describe "GET /showcase" $ do
     it "return an empty list of projects when nothing has been added" $ withClientAndCookieJar $ \(clientEnv, _) -> do
@@ -229,13 +230,13 @@ routingSpec = around_ withServer $ do
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectID = view id createProjectResult
-        _ <- saveProjectClient cookieHeader projectID $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        _ <- setShowcaseClient projectID
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        _ <- setShowcaseClient $ toUrlPiece projectId
         listing <- getShowcaseClient
-        return $ (projectID, listing)
+        return $ (projectId, listing)
       (projectId, listing) <- either throwIO return projectIdAndListingResult
-      (listing ^.. projects . traverse . id) `shouldBe` [projectId]
+      (listing ^.. projects . traverse . id) `shouldBe` [toUrlPiece projectId]
   describe "GET /project/{project_id}" $ do
     it "returns the not changed result if the last updated data is the same" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
@@ -244,7 +245,7 @@ routingSpec = around_ withServer $ do
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectId = view id createProjectResult
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
         firstLoad <- loadProjectClient cookieHeader projectId (Just earlyTime)
         let possibleModifiedAt = getPossibleModifiedAt firstLoad
@@ -253,7 +254,7 @@ routingSpec = around_ withServer $ do
         return (projectId, firstLoad, secondLoad)
       (projectId, firstLoad, secondLoad) <- either throwIO return loadedProjectResult
       (getLoadedTitleAndContents firstLoad) `shouldBe` (Just ("My Project", projectContents))
-      secondLoad `shouldBe` (ProjectUnchanged projectId)
+      secondLoad `shouldBe` (ProjectUnchanged $ toUrlPiece projectId)
   describe "POST /project" $ do
     it "should create a project if a request body is supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
@@ -262,9 +263,9 @@ routingSpec = around_ withServer $ do
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectID = view id createProjectResult
-        _ <- saveProjectClient cookieHeader projectID $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        loadProjectClient cookieHeader projectID (Just earlyTime)
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        loadProjectClient cookieHeader projectId (Just earlyTime)
       loadedProject <- either throwIO return loadedProjectResult
       (getLoadedTitleAndContents loadedProject) `shouldBe` (Just ("My Project", projectContents))
     it "should fork a project if an original project ID was passed in with no request body" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
@@ -274,10 +275,11 @@ routingSpec = around_ withServer $ do
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectID = view id createProjectResult
-        _ <- saveProjectClient cookieHeader projectID $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        forkProjectResult <- forkProjectClient cookieHeader projectID (Just "My Project")
-        loadProjectClient cookieHeader (view id forkProjectResult) (Just earlyTime)
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        forkProjectResult <- forkProjectClient cookieHeader projectId (Just "My Project")
+        let forkedProjectId = ProjectIdWithSuffix (view id forkProjectResult) ""
+        loadProjectClient cookieHeader forkedProjectId (Just earlyTime)
       loadedProject <- either throwIO return loadedProjectResult
       (getLoadedTitleAndContents loadedProject) `shouldBe` (Just ("My Project", projectContents))
   describe "PUT /project" $ do
@@ -289,7 +291,7 @@ routingSpec = around_ withServer $ do
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectId = view id createProjectResult
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just firstProjectContents)
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest Nothing (Just secondProjectContents)
         loadProjectClient cookieHeader projectId (Just earlyTime)
@@ -302,7 +304,7 @@ routingSpec = around_ withServer $ do
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectId = view id createProjectResult
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "Best Project Ever") Nothing
         loadProjectClient cookieHeader projectId (Just earlyTime)
@@ -316,7 +318,7 @@ routingSpec = around_ withServer $ do
         _ <- authenticateClient (Just "logmein") (Just "")
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
-        let projectId = view id createProjectResult
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
         _ <- deleteProjectClient cookieHeader projectId
         loadProjectClient cookieHeader projectId (Just earlyTime)
