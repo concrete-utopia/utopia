@@ -106,6 +106,7 @@ export interface BuildResultMessage {
 
 export interface UpdateProcessedMessage {
   type: 'updateprocessed'
+  jobID: string
 }
 
 export interface InitCompleteMessage {
@@ -184,9 +185,10 @@ function createBuildResultMessage(
   }
 }
 
-function createUpdateProcessedMessage(): UpdateProcessedMessage {
+function createUpdateProcessedMessage(jobID: string): UpdateProcessedMessage {
   return {
     type: 'updateprocessed',
+    jobID: jobID,
   }
 }
 
@@ -245,7 +247,7 @@ export function handleMessage(
         }
         fileChanged(workerMessage.filename, content, workerMessage.jobID)
       } finally {
-        sendMessage(createUpdateProcessedMessage())
+        sendMessage(createUpdateProcessedMessage(workerMessage.jobID))
       }
       break
     }
