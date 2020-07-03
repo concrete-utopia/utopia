@@ -649,6 +649,36 @@ export function updateFramesOfScenesAndComponents(
             break
           }
           case 'SINGLE_RESIZE':
+            let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
+            Utils.fastForEach(LayoutPinnedProps, (p) => {
+              const framePoint = framePointForPinnedProp(p)
+              const value = getLayoutProperty(p, right(element.props))
+              if (isLeft(value) || value.value != null) {
+                frameProps[framePoint] = value.value
+                propsToSkip.push(createLayoutPropertyPath(p))
+              }
+            })
+
+            let framePointsToUse: Array<FramePoint> = [...(Object.keys(frameProps) as FramePoint[])]
+            // let verticalPoints = framePointsToUse.filter((p) => VerticalFramePoints.includes(p))
+            // let horizontalPoints = framePointsToUse.filter((p) => HorizontalFramePoints.includes(p))
+            // if (verticalPoints.length < 2) {
+            //   verticalPoints.push(FramePoint.Height)
+            // }
+            // if (horizontalPoints.length < 2) {
+            //   horizontalPoints.push(FramePoint.Width)
+            // }
+
+            // framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
+            // TODO ADD WIDTH/HEIGHT or T/L/W/H based on corner changes IF MISSING
+            propsToSet.push(
+              ...getPropsToSetToResizeElement(
+                frameAndTarget.cornerChanges,
+                framePointsToUse,
+                frameProps,
+                parentFrame,
+              ),
+            )
             break
           case 'FLEX_MOVE':
           case 'FLEX_RESIZE':
@@ -723,44 +753,138 @@ export function updateFramesOfScenesAndComponents(
   return workingComponentsResult
 }
 
+function updateFrameValueForProp(
+  framePoint: FramePoint,
+  delta: number,
+  frameProps: { [k: string]: string | number | undefined },
+  parentFrame: CanvasRectangle | null,
+): ValueAtPath | null {
+  if (delta !== 0) {
+    const existingProp = frameProps[framePoint]
+    const pinIsPercentage = existingProp == null ? false : isPercentPin(existingProp)
+    let valueToUse: string | number
+    if (existingProp != null && pinIsPercentage) {
+      const percentValue = numberPartOfPin(existingProp)
+      if (parentFrame != null) {
+        const referenceSize = isHorizontalPoint(framePoint) ? parentFrame.width : parentFrame.height
+        const deltaAsPercentValue = (delta / referenceSize) * 100
+        valueToUse = `${percentValue + deltaAsPercentValue}%`
+      } else {
+        valueToUse = `${percentValue + delta}%`
+      }
+    } else {
+      valueToUse = existingProp == null ? delta : Number(existingProp) + delta
+    }
+    return {
+      path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+      value: jsxAttributeValue(valueToUse),
+    }
+  }
+  return null
+}
+
 function getPropsToSetToMoveElement(
   dragDelta: CanvasVector,
   framePoints: FramePoint[],
   frameProps: { [k: string]: string | number | undefined },
   parentFrame: CanvasRectangle | null,
 ): ValueAtPath[] {
-  function updatedValueForProp(framePoint: FramePoint, delta: number): ValueAtPath | null {
-    if (delta !== 0) {
-      const existingProp = frameProps[framePoint]
-      const pinIsPercentage = existingProp == null ? false : isPercentPin(existingProp)
-      let valueToUse: string | number
-      if (existingProp != null && pinIsPercentage) {
-        const percentValue = numberPartOfPin(existingProp)
-        if (parentFrame != null) {
-          const referenceSize = isHorizontalPoint(framePoint)
-            ? parentFrame.width
-            : parentFrame.height
-          const deltaAsPercentValue = (delta / referenceSize) * 100
-          valueToUse = `${percentValue + deltaAsPercentValue}%`
-        } else {
-          valueToUse = `${percentValue + delta}%`
-        }
-      } else {
-        valueToUse = existingProp == null ? delta : Number(existingProp) + delta
-      }
-      return {
-        path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
-        value: jsxAttributeValue(valueToUse),
-      }
-    }
-    return null
-  }
-
   let propsToSet: ValueAtPath[] = []
   Utils.fastForEach(framePoints, (framePoint) => {
     const delta = isHorizontalPoint(framePoint) ? dragDelta.x : dragDelta.y
     const shouldInvertValue = framePoint === FramePoint.Right || framePoint === FramePoint.Bottom
-    const updatedProp = updatedValueForProp(framePoint, shouldInvertValue ? -delta : delta)
+    const updatedProp = updateFrameValueForProp(
+      framePoint,
+      shouldInvertValue ? -delta : delta,
+      frameProps,
+      parentFrame,
+    )
+    if (updatedProp != null) {
+      propsToSet.push(updatedProp)
+    }
+  })
+  return propsToSet
+}
+
+function getPropsToSetToResizeElement(
+  cornerChanges: {
+    topLeft: CanvasVector
+    bottomRight: CanvasVector
+  },
+  framePoints: FramePoint[],
+  frameProps: { [k: string]: string | number | undefined },
+  parentFrame: CanvasRectangle | null,
+): ValueAtPath[] {
+  let propsToSet: ValueAtPath[] = []
+  Utils.fastForEach(framePoints, (framePoint) => {
+    let updatedProp
+    switch (framePoint) {
+      case FramePoint.Left: {
+        if (cornerChanges.topLeft.x !== 0) {
+          updatedProp = updateFrameValueForProp(
+            framePoint,
+            cornerChanges.topLeft.x,
+            frameProps,
+            parentFrame,
+          )
+        }
+        break
+      }
+      case FramePoint.Top: {
+        if (cornerChanges.topLeft.y !== 0) {
+          updatedProp = updateFrameValueForProp(
+            framePoint,
+            cornerChanges.topLeft.y,
+            frameProps,
+            parentFrame,
+          )
+        }
+        break
+      }
+      case FramePoint.Right: {
+        if (cornerChanges.bottomRight.x !== 0) {
+          updatedProp = updateFrameValueForProp(
+            framePoint,
+            -cornerChanges.bottomRight.x,
+            frameProps,
+            parentFrame,
+          )
+        }
+        break
+      }
+      case FramePoint.Bottom: {
+        if (cornerChanges.bottomRight.y !== 0) {
+          updatedProp = updateFrameValueForProp(
+            framePoint,
+            -cornerChanges.bottomRight.y,
+            frameProps,
+            parentFrame,
+          )
+        }
+        break
+      }
+      case FramePoint.Width: {
+        if (cornerChanges.bottomRight.x !== 0 || cornerChanges.topLeft.x !== 0) {
+          const delta = cornerChanges.bottomRight.x - cornerChanges.topLeft.x
+          if (delta !== 0) {
+            updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
+          }
+        }
+        break
+      }
+      case FramePoint.Height: {
+        if (cornerChanges.bottomRight.y !== 0 || cornerChanges.topLeft.y !== 0) {
+          const delta = cornerChanges.bottomRight.y - cornerChanges.topLeft.y
+          if (delta !== 0) {
+            updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
+          }
+        }
+        break
+      }
+      default: {
+        break
+      }
+    }
     if (updatedProp != null) {
       propsToSet.push(updatedProp)
     }
@@ -1308,7 +1432,15 @@ export function produceResizeSingleSelectCanvasTransientState(
     if (isFlexContainer) {
       framesAndTargets.push(flexResizeChange(elementToTarget, roundedFrame, dragState.edgePosition))
     } else {
-      // framesAndTargets.push(singleResizeChange(target, ))
+      const topLeft = {
+        x: roundedFrame.x - globalFrame.x,
+        y: roundedFrame.y - globalFrame.y,
+      } as CanvasVector
+      const bottomRight = {
+        x: roundedFrame.x + roundedFrame.width - (globalFrame.x + globalFrame.width),
+        y: roundedFrame.y + roundedFrame.height - (globalFrame.y + globalFrame.height),
+      } as CanvasVector
+      framesAndTargets.push(singleResizeChange(elementToTarget, topLeft, bottomRight))
     }
   }
 
