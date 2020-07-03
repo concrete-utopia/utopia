@@ -32,6 +32,7 @@ import {
   isCSSSolidBackgroundLayer,
   isCSSBackgroundLayerWithBGSize,
   isCSSBackgroundImageLayer,
+  defaultCSSColor,
 } from '../../../common/css-utils'
 import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import { stopPropagation, useHandleCloseOnESCOrEnter } from '../../../common/inspector-utils'
@@ -372,7 +373,14 @@ function getSelectedColor(
     case 'linear-gradient-background-layer':
     case 'radial-gradient-background-layer':
     case 'conic-gradient-background-layer': {
-      return value.stops[selectedStopIndex].color
+      const selectedStop = value.stops[selectedStopIndex]
+      if (selectedStop != null) {
+        return selectedStop.color
+      } else if (value.stops[selectedStopIndex - 1] != null) {
+        return value.stops[selectedStopIndex - 1].color
+      } else {
+        return { ...defaultCSSColor }
+      }
     }
     default: {
       const _exhaustiveCheck: never = value
