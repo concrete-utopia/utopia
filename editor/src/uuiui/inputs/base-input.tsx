@@ -1,9 +1,10 @@
 import { ObjectInterpolation } from '@emotion/core'
 import styled from '@emotion/styled'
 import { getChainSegmentEdge } from '../../utils/utils'
-import { ControlStyles } from '../../uuiui-deps'
+import { ControlStyles, betterReactMemo } from '../../uuiui-deps'
 import { IcnProps } from '../icn'
 import { UtopiaTheme } from '../styles/theme'
+import * as React from 'react'
 
 export type ChainedType = 'not-chained' | 'first' | 'last' | 'middle'
 
@@ -93,7 +94,7 @@ export interface BaseInputProps {
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>
 }
 
-interface InspectorInputProps {
+interface InspectorInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   chained?: ChainedType
   controlStyles: ControlStyles
   focused: boolean
@@ -103,7 +104,7 @@ interface InspectorInputProps {
   value?: string | string[] | number
 }
 
-export const InspectorInput = styled.input<InspectorInputProps>(
+const StyledInput = styled.input<InspectorInputProps>(
   ({ chained = 'not-chained', controlStyles, focused, labelInner, roundCorners = 'all' }) => ({
     outline: 'none',
     paddingTop: 2,
@@ -121,5 +122,27 @@ export const InspectorInput = styled.input<InspectorInputProps>(
     ...getChainedBoxShadow(controlStyles, chained, focused),
     ...getBorderRadiusStyles(chained, roundCorners),
     disabled: !controlStyles.interactive,
+  }),
+)
+
+// The below nightmare is to work around a bug in React where onBlur isn't called when unmounting a component
+// https://github.com/facebook/react/issues/12363 - note that related to this onChange isn't called under the
+// same conditions
+export const InspectorInput = betterReactMemo(
+  'InspectorInput',
+  React.forwardRef<HTMLInputElement, InspectorInputProps>((props, ref) => {
+    const { onBlur, ...otherProps } = props
+    const lastOnBlurRef = React.useRef<React.FocusEventHandler<HTMLInputElement> | null>(null)
+    React.useEffect(() => {
+      if (ref != null && (ref as any).current != null && onBlur != null) {
+        if (lastOnBlurRef.current != null) {
+          ;(ref as any).current.removeEventListener('blur', lastOnBlurRef.current)
+        }
+
+        ;(ref as any).current.addEventListener('blur', onBlur)
+        lastOnBlurRef.current = onBlur
+      }
+    }, [ref, onBlur])
+    return <StyledInput {...otherProps} ref={ref} />
   }),
 )

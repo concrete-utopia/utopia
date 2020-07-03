@@ -11,7 +11,11 @@ import { Icons, useWrappedEmptyOrUnknownOnSubmitValue } from 'uuiui'
 import { NumberInput } from 'uuiui'
 import { Tooltip } from 'uuiui'
 import { InspectorSubsectionHeader } from 'uuiui'
-import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import {
+  PropertyPath,
+  InstancePath,
+  ScenePath,
+} from '../../../../../core/shared/project-file-types'
 import { EditorAction } from '../../../../editor/action-types'
 import * as EditorActions from '../../../../editor/actions/actions'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
@@ -629,7 +633,13 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
   const inspectorContext = React.useContext(InspectorCallbackContext)
 
   const onSubmitValue = React.useCallback(
-    async (newValue: JSXAttribute, propertyPath: PropertyPath, transient: boolean) => {
+    async (
+      targetElements: readonly InstancePath[],
+      targetScenes: readonly ScenePath[],
+      newValue: JSXAttribute,
+      propertyPath: PropertyPath,
+      transient: boolean,
+    ) => {
       const selectedPaths = stateRef.current.selectedViews
 
       let actions: Array<EditorAction> = []
@@ -675,7 +685,13 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
         }
       }
       stateRef.current.dispatch(actions, 'inspector')
-      inspectorContext.onSubmitValue(newValue, propertyPath, transient)
+      inspectorContext.onSubmitValue(
+        targetElements,
+        targetScenes,
+        newValue,
+        propertyPath,
+        transient,
+      )
     },
     [stateRef, inspectorContext],
   )

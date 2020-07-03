@@ -59,6 +59,22 @@ export function useInspectorInfoForPropertyControl(
     ),
   )
 
+  const targetElements = useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => contextData.elementsToTarget,
+      deepEqual,
+    ),
+  )
+
+  const targetScenes = useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => contextData.scenesToTarget,
+      deepEqual,
+    ),
+  )
+
   const propertyStatus = calculatePropertyStatusForSelection(rawValues, realValues)
   const controlStatus = getControlStatusFromPropertyStatus(propertyStatus)
   const controlStyles = getControlStyles(controlStatus)
@@ -76,13 +92,20 @@ export function useInspectorInfoForPropertyControl(
   const onSubmitValue = React.useCallback(
     (newValue: any, transient = false) => {
       if (newValue == null) {
-        onSingleUnsetValue(propertyPath)
+        onSingleUnsetValue(targetElements, targetScenes, propertyPath)
       } else {
         const printedValue = printerFn(newValue)
-        onSingleSubmitValue(printedValue, propertyPath, transient)
+        onSingleSubmitValue(targetElements, targetScenes, printedValue, propertyPath, transient)
       }
     },
-    [onSingleSubmitValue, printerFn, propertyPath, onSingleUnsetValue],
+    [
+      onSingleSubmitValue,
+      printerFn,
+      propertyPath,
+      onSingleUnsetValue,
+      targetElements,
+      targetScenes,
+    ],
   )
 
   const onTransientSubmitValue = React.useCallback((newValue) => onSubmitValue(newValue, true), [
@@ -92,8 +115,8 @@ export function useInspectorInfoForPropertyControl(
   const useSubmitValueFactory = useCallbackFactory(parsedValue, onSubmitValue)
 
   const onUnsetValues = React.useCallback(() => {
-    onSingleUnsetValue(propertyPath)
-  }, [onSingleUnsetValue, propertyPath])
+    onSingleUnsetValue(targetElements, targetScenes, propertyPath)
+  }, [onSingleUnsetValue, propertyPath, targetElements, targetScenes])
 
   return {
     value: parsedValue,

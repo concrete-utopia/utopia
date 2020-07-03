@@ -132,6 +132,10 @@ export function filterScenes(paths: TemplatePath[]): StaticInstancePath | Instan
   return paths.filter(isInstancePath)
 }
 
+export function filterInstances(paths: TemplatePath[]): ScenePath[] {
+  return paths.filter(isScenePath)
+}
+
 // FIXME: This should be retired, it's just plain dangerous.
 // Right now this is only used for SpecialNodes (in CanvasMetaData)
 export function fromString(path: string): TemplatePath {

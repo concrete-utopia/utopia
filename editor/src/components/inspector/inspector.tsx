@@ -776,34 +776,44 @@ export const InspectorContextProvider = betterReactMemo<{
   const editedMultiSelectedProps = useKeepReferenceEqualityIfPossible(newEditedMultiSelectedProps)
   const realValues = useKeepReferenceEqualityIfPossible(newRealValues)
 
-  const refElementsToTargetForUpdates = useRefEditorState((store) => {
-    return getElementsToTarget(store.editor.selectedViews)
-  })
+  const newElementsToTarget: Array<InstancePath> = getElementsToTarget(selectedViews)
+  const newScenesToTarget: Array<ScenePath> = TP.filterInstances(selectedViews)
+  const elementsToTarget = useKeepReferenceEqualityIfPossible(newElementsToTarget)
+  const scenesToTarget = useKeepReferenceEqualityIfPossible(newScenesToTarget)
 
-  const refScenesToTargetForUpdates = useRefEditorState((store) => {
-    return store.editor.selectedViews.filter((view) => TP.isScenePath(view)) as ScenePath[]
-  })
+  const refElementsToTargetForUpdates = React.useRef(elementsToTarget)
+  const refScenesToTargetForUpdates = React.useRef(scenesToTarget)
 
   const onSubmitValueForHooks = React.useCallback(
-    (newValue: JSXAttribute, path: PropertyPath, transient: boolean) => {
+    (
+      targetElements: readonly InstancePath[],
+      targetScenes: readonly ScenePath[],
+      newValue: JSXAttribute,
+      path: PropertyPath,
+      transient: boolean,
+    ) => {
       const actionsArray = [
-        ...refElementsToTargetForUpdates.current.map((elem) => {
+        ...targetElements.map((elem) => {
           return setProp_UNSAFE(elem, path, newValue)
         }),
-        ...refScenesToTargetForUpdates.current.map((scene) => {
+        ...targetScenes.map((scene) => {
           return setSceneProp(scene, path, newValue)
         }),
       ]
       const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates, refScenesToTargetForUpdates],
+    [dispatch],
   )
 
   const onUnsetValue = React.useCallback(
-    (property: PropertyPath | Array<PropertyPath>) => {
+    (
+      targetElements: readonly InstancePath[],
+      targetScenes: readonly ScenePath[],
+      property: PropertyPath | Array<PropertyPath>,
+    ) => {
       let actions: Array<EditorAction> = []
-      Utils.fastForEach(refElementsToTargetForUpdates.current, (elem) => {
+      Utils.fastForEach(targetElements, (elem) => {
         if (Array.isArray(property)) {
           Utils.fastForEach(property, (p) => {
             actions.push(unsetProperty(elem, p))
@@ -812,7 +822,7 @@ export const InspectorContextProvider = betterReactMemo<{
           actions.push(unsetProperty(elem, property))
         }
       })
-      Utils.fastForEach(refScenesToTargetForUpdates.current, (scene) => {
+      Utils.fastForEach(targetScenes, (scene) => {
         if (Array.isArray(property)) {
           Utils.fastForEach(property, (p) => {
             actions.push(unsetSceneProp(scene, p))
@@ -823,7 +833,7 @@ export const InspectorContextProvider = betterReactMemo<{
       })
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates, refScenesToTargetForUpdates],
+    [dispatch],
   )
 
   const callbackContextValueMemoized = useKeepShallowReferenceEquality({
@@ -835,6 +845,8 @@ export const InspectorContextProvider = betterReactMemo<{
     <InspectorCallbackContext.Provider value={callbackContextValueMemoized}>
       <InspectorPropsContext.Provider
         value={{
+          elementsToTarget: elementsToTarget,
+          scenesToTarget: scenesToTarget,
           editedMultiSelectedProps: editedMultiSelectedProps,
           targetPath: props.targetPath,
           realValues: realValues,

@@ -9,6 +9,7 @@ import {
   useInspectorInfo,
   useInspectorStyleInfo,
   InspectorInfo,
+  InspectorPropsContext,
 } from '../../../common/property-path-hooks'
 import { useEditorState } from '../../../../editor/store/store-hook'
 import { switchLayoutSystem } from '../../../../editor/actions/actions'
@@ -266,9 +267,10 @@ const layoutSystemConfigPropertyPaths = [
 
 function useDeleteAllLayoutConfig() {
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
+  const { elementsToTarget, scenesToTarget } = React.useContext(InspectorPropsContext)
   return React.useCallback(() => {
-    onUnsetValue(layoutSystemConfigPropertyPaths)
-  }, [onUnsetValue])
+    onUnsetValue(elementsToTarget, scenesToTarget, layoutSystemConfigPropertyPaths)
+  }, [onUnsetValue, elementsToTarget, scenesToTarget])
 }
 
 export const DeleteAllLayoutSystemConfigButton = betterReactMemo(
