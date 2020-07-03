@@ -26,14 +26,16 @@ export const StringControl = betterReactMemo(
       }
 
       const getValueString = (e: React.SyntheticEvent<HTMLInputElement>): string => {
-        return e.currentTarget.value || ''
+        return e.currentTarget.value
       }
 
       const inputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
         if (props.onBlur != null) {
           props.onBlur(e)
         }
-        props.onSubmitValue(getDisplayValue())
+        if (propsValue !== stateValue) {
+          props.onSubmitValue(stateValue)
+        }
       }
 
       const inputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
