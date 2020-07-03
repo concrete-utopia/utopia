@@ -168,7 +168,7 @@ export const DependencyList = betterReactMemo('DependencyList', () => {
       editorDispatch: store.dispatch,
       minimised: store.editor.dependencyList.minimised,
       focusedPanel: store.editor.focusedPanel,
-      packageJsonFile: packageJsonFileFromModel(store.editor),
+      packageJsonFile: packageJsonFileFromModel(store.editor.projectContents),
     }
   })
 

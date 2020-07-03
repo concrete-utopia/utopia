@@ -11,10 +11,16 @@ import { loadProject } from '../components/editor/server'
 import { isPersistentModel, PersistentModel } from '../components/editor/store/editor-state'
 import Utils from '../utils/utils'
 import { isCodeFile, ESCodeFile, esCodeFile, NodeModules } from '../core/shared/project-file-types'
-import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
+import type { ProjectContents } from '../core/shared/project-file-types'
+import {
+  getRequireFn,
+  getDependencyTypeDefinitions,
+} from '../core/es-modules/package-manager/package-manager'
 import { npmDependency } from '../core/shared/npm-dependency-types'
 import { objectMap } from '../core/shared/object-utils'
 import { fetchNodeModules } from '../core/es-modules/package-manager/fetch-packages'
+import { createBundle } from '../core/workers/bundler-promise'
+import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 
 interface PolledLoadParams {
   projectId: string
@@ -127,6 +133,7 @@ function addOpenInUtopiaButton(): void {
 
 const initPreview = () => {
   let shownModel: PersistentModel | null = null
+  const bundlerWorker = new NewBundlerWorker(new RealBundlerWorker())
 
   const startPollingFromServer = (appID: string | null) => {
     if (appID != null) {
@@ -150,7 +157,7 @@ const initPreview = () => {
       return
     }
     shownModel = model
-    previewRender(model)
+    previewRender(model?.projectContents)
   }
 
   const handleModelUpdateEvent = (event: MessageEvent) => {
@@ -161,17 +168,29 @@ const initPreview = () => {
     }
   }
 
-  const previewRender = async (model: PersistentModel | null) => {
-    if (model != null) {
-      const npmDependencies = dependenciesFromModel(model)
+  const previewRender = async (projectContents?: ProjectContents) => {
+    if (projectContents != null) {
+      const npmDependencies = dependenciesFromModel(projectContents)
       let nodeModules = await fetchNodeModules(npmDependencies)
       const require = getRequireFn((modulesToAdd: NodeModules) => {
         // MUTATION
         Object.assign(nodeModules, modulesToAdd)
       }, nodeModules)
+      /**
+       * please note that we are passing in an empty object instead of the .d.ts files
+       * the reason for this is that we only use the bundler as a transpiler here
+       * and we don't care about static type errors
+       *
+       * some libraries, ie Antd have so massive definitions that it took more than 20 seconds
+       * for the bundler to process it, basically with no upside
+       */
+      const emptyTypeDefinitions = {}
+      const bundledProjectFiles = (
+        await createBundle(bundlerWorker, emptyTypeDefinitions, projectContents)
+      ).buildResult
 
       // replacing the document body first
-      const packageJson = model.projectContents['/package.json']
+      const packageJson = projectContents['/package.json']
       if (packageJson != null && isCodeFile(packageJson)) {
         const parsedJSON = json5.parse(packageJson.fileContents)
 
@@ -179,7 +198,7 @@ const initPreview = () => {
         const previewFileName = utopiaSettings['html']
         if (previewFileName != null) {
           const previewPath = `/public/${previewFileName}`
-          const file = model.projectContents[previewPath]
+          const file = projectContents[previewPath]
           if (file != null && isCodeFile(file)) {
             try {
               try {
@@ -200,17 +219,17 @@ const initPreview = () => {
         const previewJsFileName = utopiaSettings['js']
         if (previewJsFileName != null) {
           const previewJSPath = `/public/${previewJsFileName}`
-          const file = model.projectContents[previewJSPath]
+          const file = projectContents[previewJSPath]
           if (file == null || !isCodeFile(file)) {
             throw new Error(
               `Error processing the project files: the preview path (${previewJSPath}) did not point to a valid file`,
             )
-          } else if (model.buildResult[previewJSPath] == null) {
+          } else if (bundledProjectFiles[previewJSPath] == null) {
             throw new Error(
               `Error processing the project files: the build result does not contain the preview file: ${previewJSPath}`,
             )
           } else {
-            processModuleCodes(model.buildResult, require, true)
+            processModuleCodes(bundledProjectFiles, require, true)
           }
         }
       }

@@ -117,16 +117,14 @@ export function dependenciesFromPackageJson(
   }
 }
 
-export function dependenciesFromModel(model: {
-  projectContents: ProjectContents
-}): Array<NpmDependency> {
-  const packageJsonFile = packageJsonFileFromModel(model)
+export function dependenciesFromModel(projectContents: ProjectContents): Array<NpmDependency> {
+  const packageJsonFile = packageJsonFileFromModel(projectContents)
   return dependenciesFromPackageJson(packageJsonFile)
 }
 
 export function usePackageDependencies(): Array<NpmDependency> {
   const packageJsonFile = useEditorState((store) => {
-    return packageJsonFileFromModel(store.editor)
+    return packageJsonFileFromModel(store.editor.projectContents)
   })
 
   return React.useMemo(() => {

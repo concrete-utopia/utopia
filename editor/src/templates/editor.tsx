@@ -128,7 +128,7 @@ export class Editor {
               msg.exportsInfo,
               this.storedState.editor.nodeModules.files,
               this.boundDispatch,
-              dependenciesFromModel(this.storedState.editor),
+              dependenciesFromModel(this.storedState.editor.projectContents),
               msg.fullBuild,
             )
 

@@ -3914,7 +3914,7 @@ export const UPDATE_FNS = {
         result.codeResultCache.exportsInfo,
         result.nodeModules.files,
         dispatch,
-        dependenciesFromModel(result),
+        dependenciesFromModel(result.projectContents),
         action.startFromScratch,
       ),
     }
@@ -4203,7 +4203,7 @@ export async function newProject(
   renderEditorRoot: () => void,
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
-  const npmDependencies = dependenciesFromModel(defaultPersistentModel)
+  const npmDependencies = dependenciesFromModel(defaultPersistentModel.projectContents)
   const nodeModules = await fetchNodeModules(npmDependencies)
 
   const codeResultCache = generateCodeResultCache(
@@ -4255,7 +4255,7 @@ export async function load(
 ): Promise<void> {
   // this action is now async!
 
-  const npmDependencies = dependenciesFromModel(model)
+  const npmDependencies = dependenciesFromModel(model.projectContents)
   const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
@@ -4322,7 +4322,7 @@ function loadCodeResult(
             data.exportsInfo,
             nodeModules,
             dispatch,
-            dependenciesFromModel({ projectContents: projectContents }),
+            dependenciesFromModel(projectContents),
             true,
           )
           resolve(codeResultCache)
