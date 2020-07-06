@@ -267,10 +267,9 @@ const layoutSystemConfigPropertyPaths = [
 
 function useDeleteAllLayoutConfig() {
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
-  const { elementsToTarget, scenesToTarget } = React.useContext(InspectorPropsContext)
   return React.useCallback(() => {
-    onUnsetValue(elementsToTarget, scenesToTarget, layoutSystemConfigPropertyPaths)
-  }, [onUnsetValue, elementsToTarget, scenesToTarget])
+    onUnsetValue(layoutSystemConfigPropertyPaths)
+  }, [onUnsetValue])
 }
 
 export const DeleteAllLayoutSystemConfigButton = betterReactMemo(

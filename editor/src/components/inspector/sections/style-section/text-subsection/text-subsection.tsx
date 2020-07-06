@@ -633,13 +633,7 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
   const inspectorContext = React.useContext(InspectorCallbackContext)
 
   const onSubmitValue = React.useCallback(
-    async (
-      targetElements: readonly InstancePath[],
-      targetScenes: readonly ScenePath[],
-      newValue: JSXAttribute,
-      propertyPath: PropertyPath,
-      transient: boolean,
-    ) => {
+    async (newValue: JSXAttribute, propertyPath: PropertyPath, transient: boolean) => {
       const selectedPaths = stateRef.current.selectedViews
 
       let actions: Array<EditorAction> = []
@@ -685,13 +679,7 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
         }
       }
       stateRef.current.dispatch(actions, 'inspector')
-      inspectorContext.onSubmitValue(
-        targetElements,
-        targetScenes,
-        newValue,
-        propertyPath,
-        transient,
-      )
+      inspectorContext.onSubmitValue(newValue, propertyPath, transient)
     },
     [stateRef, inspectorContext],
   )

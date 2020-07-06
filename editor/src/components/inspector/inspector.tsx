@@ -781,39 +781,26 @@ export const InspectorContextProvider = betterReactMemo<{
   const elementsToTarget = useKeepReferenceEqualityIfPossible(newElementsToTarget)
   const scenesToTarget = useKeepReferenceEqualityIfPossible(newScenesToTarget)
 
-  const refElementsToTargetForUpdates = React.useRef(elementsToTarget)
-  const refScenesToTargetForUpdates = React.useRef(scenesToTarget)
-
   const onSubmitValueForHooks = React.useCallback(
-    (
-      targetElements: readonly InstancePath[],
-      targetScenes: readonly ScenePath[],
-      newValue: JSXAttribute,
-      path: PropertyPath,
-      transient: boolean,
-    ) => {
+    (newValue: JSXAttribute, path: PropertyPath, transient: boolean) => {
       const actionsArray = [
-        ...targetElements.map((elem) => {
+        ...elementsToTarget.map((elem) => {
           return setProp_UNSAFE(elem, path, newValue)
         }),
-        ...targetScenes.map((scene) => {
+        ...scenesToTarget.map((scene) => {
           return setSceneProp(scene, path, newValue)
         }),
       ]
       const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch],
+    [dispatch, elementsToTarget, scenesToTarget],
   )
 
   const onUnsetValue = React.useCallback(
-    (
-      targetElements: readonly InstancePath[],
-      targetScenes: readonly ScenePath[],
-      property: PropertyPath | Array<PropertyPath>,
-    ) => {
+    (property: PropertyPath | Array<PropertyPath>) => {
       let actions: Array<EditorAction> = []
-      Utils.fastForEach(targetElements, (elem) => {
+      Utils.fastForEach(elementsToTarget, (elem) => {
         if (Array.isArray(property)) {
           Utils.fastForEach(property, (p) => {
             actions.push(unsetProperty(elem, p))
@@ -822,7 +809,7 @@ export const InspectorContextProvider = betterReactMemo<{
           actions.push(unsetProperty(elem, property))
         }
       })
-      Utils.fastForEach(targetScenes, (scene) => {
+      Utils.fastForEach(scenesToTarget, (scene) => {
         if (Array.isArray(property)) {
           Utils.fastForEach(property, (p) => {
             actions.push(unsetSceneProp(scene, p))
@@ -833,7 +820,7 @@ export const InspectorContextProvider = betterReactMemo<{
       })
       dispatch(actions, 'everyone')
     },
-    [dispatch],
+    [dispatch, elementsToTarget, scenesToTarget],
   )
 
   const callbackContextValueMemoized = useKeepShallowReferenceEquality({
@@ -845,8 +832,6 @@ export const InspectorContextProvider = betterReactMemo<{
     <InspectorCallbackContext.Provider value={callbackContextValueMemoized}>
       <InspectorPropsContext.Provider
         value={{
-          elementsToTarget: elementsToTarget,
-          scenesToTarget: scenesToTarget,
           editedMultiSelectedProps: editedMultiSelectedProps,
           targetPath: props.targetPath,
           realValues: realValues,

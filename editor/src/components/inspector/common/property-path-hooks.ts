@@ -87,31 +87,17 @@ import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'
 
 export interface InspectorPropsContextData {
-  elementsToTarget: readonly InstancePath[]
-  scenesToTarget: readonly ScenePath[]
   editedMultiSelectedProps: readonly JSXAttributes[]
   targetPath: readonly string[]
   realValues: ReadonlyArray<{ [key: string]: any }>
 }
 
 export interface InspectorCallbackContextData {
-  onSubmitValue: (
-    targetElements: readonly InstancePath[],
-    targetScenes: readonly ScenePath[],
-    newValue: any,
-    propertyPath: PropertyPath,
-    transient: boolean,
-  ) => void
-  onUnsetValue: (
-    targetElements: readonly InstancePath[],
-    targetScenes: readonly ScenePath[],
-    propertyPath: PropertyPath | Array<PropertyPath>,
-  ) => void
+  onSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
+  onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void
 }
 
 export const InspectorPropsContext = createContext<InspectorPropsContextData>({
-  elementsToTarget: [],
-  scenesToTarget: [],
   editedMultiSelectedProps: [],
   targetPath: [],
   realValues: [],
@@ -457,22 +443,6 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     ),
   )
 
-  const targetElements = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => contextData.elementsToTarget,
-      deepEqual,
-    ),
-  )
-
-  const targetScenes = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => contextData.scenesToTarget,
-      deepEqual,
-    ),
-  )
-
   const simpleAndRawValues = useInspectorInfoFromMultiselectMultiStyleAttribute(
     multiselectAtProps,
     selectedProps,
@@ -553,12 +523,8 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
   )
   const onUnsetValues = React.useCallback(() => {
-    onUnsetValue(
-      targetElements,
-      targetScenes,
-      propKeys.map((propKey) => pathMappingFn(propKey, target)),
-    )
-  }, [onUnsetValue, propKeys, pathMappingFn, target, targetElements, targetScenes])
+    onUnsetValue(propKeys.map((propKey) => pathMappingFn(propKey, target)))
+  }, [onUnsetValue, propKeys, pathMappingFn, target])
 
   const transformedValue = transformValue(values)
   const onSubmitValue = React.useCallback(
@@ -571,29 +537,14 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
             propKey,
             untransformedValue[propKey] as ParsedProperties[P],
           )
-          onSingleSubmitValue(
-            targetElements,
-            targetScenes,
-            printedProperty,
-            propertyPath,
-            transient,
-          )
+          onSingleSubmitValue(printedProperty, propertyPath, transient)
         } else {
-          onUnsetValue(targetElements, targetScenes, propertyPath)
+          onUnsetValue(propertyPath)
         }
       }
       propKeys.forEach(submitValue)
     },
-    [
-      onSingleSubmitValue,
-      untransformValue,
-      propKeys,
-      onUnsetValue,
-      pathMappingFn,
-      target,
-      targetElements,
-      targetScenes,
-    ],
+    [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
   )
 
   const onTransientSubmitValue = React.useCallback((newValue: T) => onSubmitValue(newValue, true), [
@@ -659,22 +610,6 @@ export function useInspectorInfoSimpleUntyped(
     ),
   )
 
-  const targetElements = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => contextData.elementsToTarget,
-      deepEqual,
-    ),
-  )
-
-  const targetScenes = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => contextData.scenesToTarget,
-      deepEqual,
-    ),
-  )
-
   const simpleAndRawValues = useInspectorInfoFromMultiselectMultiPropAttribute(
     multiselectAtProps,
     selectedProps,
@@ -711,9 +646,9 @@ export function useInspectorInfoSimpleUntyped(
 
   const onUnsetValues = React.useCallback(() => {
     for (const propertyPath of propertyPaths) {
-      onSingleUnsetValue(targetElements, targetScenes, propertyPath)
+      onSingleUnsetValue(propertyPath)
     }
-  }, [onSingleUnsetValue, propertyPaths, targetElements, targetScenes])
+  }, [onSingleUnsetValue, propertyPaths])
 
   const transformedValue = transformValue(values)
   const onSubmitValue = React.useCallback(
@@ -726,21 +661,14 @@ export function useInspectorInfoSimpleUntyped(
         if (property in untransformedValue) {
           const propertyToPrint = untransformedValue[property]
           const printedProperty = maybePrintCSSValue(property, propertyToPrint)
-          onSingleSubmitValue(targetElements, targetScenes, printedProperty, path, transient)
+          onSingleSubmitValue(printedProperty, path, transient)
         } else {
-          onSingleUnsetValue(targetElements, targetScenes, path)
+          onSingleUnsetValue(path)
         }
       }) as (path: PropertyPath) => void
       propertyPaths.forEach(submitValue)
     },
-    [
-      onSingleSubmitValue,
-      untransformValue,
-      propertyPaths,
-      onSingleUnsetValue,
-      targetElements,
-      targetScenes,
-    ],
+    [onSingleSubmitValue, untransformValue, propertyPaths, onSingleUnsetValue],
   )
 
   const onTransientSubmitValue = React.useCallback((newValue) => onSubmitValue(newValue, true), [
