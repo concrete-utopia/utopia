@@ -6,7 +6,7 @@ Object {
   "value": Object {
     "code": "var App = function App(props) {
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(View, {
-    style: { ...(props.style || {}),
+    style: { ...props.style,
       backgroundColor: '#FFFFFF'
     },
     layout: {
@@ -50,7 +50,7 @@ export var App = (props) => {
   return (
     <>
       <View
-        style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+        style={{ ...props.style, backgroundColor: '#FFFFFF' }}
         layout={{ layoutSystem: 'pinSystem' }}
         data-uid={'aaa'}
       ></View>

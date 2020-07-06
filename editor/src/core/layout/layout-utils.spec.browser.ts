@@ -25,7 +25,7 @@ describe('maybeSwitchLayoutProps', () => {
   it('removes pin related layout props when pasting to flex element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
           data-uid={'bbb'}
@@ -109,7 +109,7 @@ describe('maybeSwitchLayoutProps', () => {
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(
         `<View
-          style={{ ...(props.style || {}) }}
+          style={{ ...props.style }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid={'aaa'}
         >
