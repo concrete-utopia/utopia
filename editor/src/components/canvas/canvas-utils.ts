@@ -372,6 +372,49 @@ export function updateFramesOfScenesAndComponents(
           break
         }
         case 'SINGLE_RESIZE':
+          const sceneStaticpath = createSceneTemplatePath(target)
+          workingComponentsResult = transformJSXComponentAtPath(
+            workingComponentsResult,
+            sceneStaticpath,
+            (sceneElement) => {
+              const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
+              if (isRight(styleProps)) {
+                const left = styleProps.value.left + frameAndTarget.cornerChanges.topLeft.x
+                const top = styleProps.value.top + frameAndTarget.cornerChanges.topLeft.y
+                const width =
+                  styleProps.value.width +
+                  frameAndTarget.cornerChanges.bottomRight.x -
+                  frameAndTarget.cornerChanges.topLeft.x
+                const height =
+                  styleProps.value.height +
+                  frameAndTarget.cornerChanges.bottomRight.y -
+                  frameAndTarget.cornerChanges.topLeft.y
+                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
+                  {
+                    path: PP.create(['style']),
+                    value: jsxAttributeValue({
+                      left: left,
+                      top: top,
+                      width: width,
+                      height: height,
+                    }),
+                  },
+                ])
+                return foldEither(
+                  () => sceneElement,
+                  (updatedProps) => {
+                    return {
+                      ...sceneElement,
+                      props: roundAttributeLayoutValues(updatedProps),
+                    }
+                  },
+                  sceneStyleUpdated,
+                )
+              } else {
+                return sceneElement
+              }
+            },
+          )
           break
         case 'FLEX_MOVE':
         case 'FLEX_RESIZE':
@@ -529,45 +572,7 @@ export function updateFramesOfScenesAndComponents(
                   isEdgePositionOnSide(frameAndTarget.edgePosition)
                 ) {
                   // if it has partial positioning points set and dragged on an edge only the dragged edge should be added while keeping the existing frame points.
-                  let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
-                  let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
-                  let framePointsToUse: Array<FramePoint> = [...frameProps]
-
-                  if (frameAndTarget.edgePosition.x === 0.5 && verticalPoints.length < 2) {
-                    if (verticalPoints.length === 0) {
-                      if (frameAndTarget.edgePosition.y === 0) {
-                        verticalPoints.push(FramePoint.Top)
-                        verticalPoints.push(FramePoint.Height)
-                      } else {
-                        verticalPoints.push(FramePoint.Height)
-                      }
-                    } else {
-                      if (frameAndTarget.edgePosition.y === 0) {
-                        verticalPoints.push(FramePoint.Top)
-                      } else if (!verticalPoints.includes(FramePoint.Bottom)) {
-                        verticalPoints.push(FramePoint.Height)
-                      }
-                    }
-                    framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
-                  }
-                  if (frameAndTarget.edgePosition.y === 0.5 && horizontalPoints.length < 2) {
-                    if (horizontalPoints.length === 0) {
-                      if (frameAndTarget.edgePosition.x === 0) {
-                        horizontalPoints.push(FramePoint.Left)
-                        horizontalPoints.push(FramePoint.Width)
-                      } else {
-                        horizontalPoints.push(FramePoint.Width)
-                      }
-                    } else {
-                      if (frameAndTarget.edgePosition.x === 0) {
-                        horizontalPoints.push(FramePoint.Left)
-                      } else if (!horizontalPoints.includes(FramePoint.Right)) {
-                        horizontalPoints.push(FramePoint.Width)
-                      }
-                    }
-                    framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
-                  }
-                  return framePointsToUse
+                  return extendPartialFramePointsForResize(frameProps, frameAndTarget.edgePosition)
                 } else {
                   // The "Old" behavior, for PIN_FRAME_CHANGE
                   return frameProps.length == 4
@@ -659,18 +664,34 @@ export function updateFramesOfScenesAndComponents(
               }
             })
 
-            let framePointsToUse: Array<FramePoint> = [...(Object.keys(frameProps) as FramePoint[])]
-            // let verticalPoints = framePointsToUse.filter((p) => VerticalFramePoints.includes(p))
-            // let horizontalPoints = framePointsToUse.filter((p) => HorizontalFramePoints.includes(p))
-            // if (verticalPoints.length < 2) {
-            //   verticalPoints.push(FramePoint.Height)
-            // }
-            // if (horizontalPoints.length < 2) {
-            //   horizontalPoints.push(FramePoint.Width)
-            // }
+            let framePointsToUse: Array<FramePoint> = Object.keys(frameProps) as FramePoint[]
 
-            // framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
-            // TODO ADD WIDTH/HEIGHT or T/L/W/H based on corner changes IF MISSING
+            if (isEdgePositionOnSide(frameAndTarget.edgePosition)) {
+              framePointsToUse = extendPartialFramePointsForResize(
+                framePointsToUse,
+                frameAndTarget.edgePosition,
+              )
+            } else {
+              let verticalPoints = framePointsToUse.filter((p) => VerticalFramePoints.includes(p))
+              let horizontalPoints = framePointsToUse.filter((p) =>
+                HorizontalFramePoints.includes(p),
+              )
+
+              if (verticalPoints.length < 2) {
+                if (verticalPoints.length === 0) {
+                  verticalPoints.push(FramePoint.Top)
+                }
+                verticalPoints.push(FramePoint.Height)
+              }
+              if (horizontalPoints.length < 2) {
+                if (horizontalPoints.length === 0) {
+                  horizontalPoints.push(FramePoint.Left)
+                }
+                horizontalPoints.push(FramePoint.Width)
+              }
+              framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
+            }
+
             propsToSet.push(
               ...getPropsToSetToResizeElement(
                 frameAndTarget.cornerChanges,
@@ -881,6 +902,20 @@ function getPropsToSetToResizeElement(
         }
         break
       }
+      case FramePoint.CenterX: {
+        const delta = (cornerChanges.topLeft.x + cornerChanges.bottomRight.x) / 2
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
+        }
+        break
+      }
+      case FramePoint.CenterY: {
+        const delta = (cornerChanges.topLeft.y + cornerChanges.bottomRight.y) / 2
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
+        }
+        break
+      }
       default: {
         break
       }
@@ -890,6 +925,48 @@ function getPropsToSetToResizeElement(
     }
   })
   return propsToSet
+}
+
+function extendPartialFramePointsForResize(frameProps: FramePoint[], edgePosition: EdgePosition) {
+  // if it has partial positioning points set and dragged on an edge only the dragged edge should be added while keeping the existing frame points.
+  let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
+  let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
+  let framePointsToUse = [...frameProps]
+  if (edgePosition.x === 0.5 && verticalPoints.length < 2) {
+    if (verticalPoints.length === 0) {
+      if (edgePosition.y === 0) {
+        verticalPoints.push(FramePoint.Top)
+        verticalPoints.push(FramePoint.Height)
+      } else {
+        verticalPoints.push(FramePoint.Height)
+      }
+    } else {
+      if (edgePosition.y === 0) {
+        verticalPoints.push(FramePoint.Top)
+      } else if (!verticalPoints.includes(FramePoint.Bottom)) {
+        verticalPoints.push(FramePoint.Height)
+      }
+    }
+    framePointsToUse = [...verticalPoints, ...horizontalPoints]
+  }
+  if (edgePosition.y === 0.5 && horizontalPoints.length < 2) {
+    if (horizontalPoints.length === 0) {
+      if (edgePosition.x === 0) {
+        horizontalPoints.push(FramePoint.Left)
+        horizontalPoints.push(FramePoint.Width)
+      } else {
+        horizontalPoints.push(FramePoint.Width)
+      }
+    } else {
+      if (edgePosition.x === 0) {
+        horizontalPoints.push(FramePoint.Left)
+      } else if (!horizontalPoints.includes(FramePoint.Right)) {
+        horizontalPoints.push(FramePoint.Width)
+      }
+    }
+    framePointsToUse = [...verticalPoints, ...horizontalPoints]
+  }
+  return Utils.uniq(framePointsToUse)
 }
 
 export function getOriginalFrameInCanvasCoords(
@@ -1440,7 +1517,9 @@ export function produceResizeSingleSelectCanvasTransientState(
         x: roundedFrame.x + roundedFrame.width - (globalFrame.x + globalFrame.width),
         y: roundedFrame.y + roundedFrame.height - (globalFrame.y + globalFrame.height),
       } as CanvasVector
-      framesAndTargets.push(singleResizeChange(elementToTarget, topLeft, bottomRight))
+      framesAndTargets.push(
+        singleResizeChange(elementToTarget, topLeft, bottomRight, dragState.edgePosition),
+      )
     }
   }
 

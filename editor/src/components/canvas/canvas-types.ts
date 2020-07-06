@@ -218,6 +218,7 @@ export interface SingleResizeChange {
     topLeft: CanvasVector
     bottomRight: CanvasVector
   }
+  edgePosition: EdgePosition
 }
 
 export type PinOrFlexFrameChange =
@@ -287,6 +288,7 @@ export function singleResizeChange(
   target: TemplatePath,
   topLeft: CanvasVector,
   bottomRight: CanvasVector,
+  edgePosition: EdgePosition,
 ): SingleResizeChange {
   return {
     type: 'SINGLE_RESIZE',
@@ -295,6 +297,7 @@ export function singleResizeChange(
       topLeft: topLeft,
       bottomRight: bottomRight,
     },
+    edgePosition: edgePosition,
   }
 }
 
