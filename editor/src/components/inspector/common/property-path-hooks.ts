@@ -78,7 +78,7 @@ import {
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
 import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
-import { PropertyPath, InstancePath, ScenePath } from '../../../core/shared/project-file-types'
+import { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { fastForEach } from '../../../core/shared/utils'

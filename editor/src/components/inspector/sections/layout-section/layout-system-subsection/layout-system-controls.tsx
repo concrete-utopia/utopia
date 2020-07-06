@@ -9,7 +9,6 @@ import {
   useInspectorInfo,
   useInspectorStyleInfo,
   InspectorInfo,
-  InspectorPropsContext,
 } from '../../../common/property-path-hooks'
 import { useEditorState } from '../../../../editor/store/store-hook'
 import { switchLayoutSystem } from '../../../../editor/actions/actions'

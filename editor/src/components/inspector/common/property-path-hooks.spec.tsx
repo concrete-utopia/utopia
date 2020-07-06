@@ -446,11 +446,7 @@ const makeInspectorHookContextProvider = (
   realValues: Array<{ [key: string]: any }>,
 ) => ({ children }: any) => (
   <InspectorPropsContext.Provider
-    value={{
-      editedMultiSelectedProps: multiselectAttributes,
-      targetPath,
-      realValues: realValues,
-    }}
+    value={{ editedMultiSelectedProps: multiselectAttributes, targetPath, realValues: realValues }}
   >
     {children}
   </InspectorPropsContext.Provider>

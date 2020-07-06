@@ -11,11 +11,7 @@ import { Icons, useWrappedEmptyOrUnknownOnSubmitValue } from 'uuiui'
 import { NumberInput } from 'uuiui'
 import { Tooltip } from 'uuiui'
 import { InspectorSubsectionHeader } from 'uuiui'
-import {
-  PropertyPath,
-  InstancePath,
-  ScenePath,
-} from '../../../../../core/shared/project-file-types'
+import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { EditorAction } from '../../../../editor/action-types'
 import * as EditorActions from '../../../../editor/actions/actions'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
