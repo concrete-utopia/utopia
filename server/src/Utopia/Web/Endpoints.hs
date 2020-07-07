@@ -139,41 +139,41 @@ projectHTMLMetadata (Just projectMetadata) = do
   twitterCardMetadata projectMetadata
   facebookCardMetadata projectMetadata
 
-projectIDScript :: Text -> H.Html
-projectIDScript projectID = do
+projectIDScript :: ProjectIdWithSuffix -> H.Html
+projectIDScript (ProjectIdWithSuffix projectID _) = do
   H.script ! HA.type_ "text/javascript" $ H.toMarkup
     ("window.utopiaProjectID = \"" <> projectID <> "\";")
 
-innerProjectPage :: Maybe Text -> Maybe ProjectMetadata -> ServerMonad H.Html
+innerProjectPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> ServerMonad H.Html
 innerProjectPage possibleProjectID possibleMetadata = do
   indexHtml <- getEditorIndexHtml
   let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata
   let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
   let projectIDScriptHtml = maybe "" (\projectID -> toS $ renderHtml $ projectIDScript projectID) possibleProjectID
-  let withProjectIdScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
-  return $ H.preEscapedToHtml withProjectIdScript
+  let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
+  return $ H.preEscapedToHtml withProjectIdWithSuffixScript
 
-projectPage :: Text -> ServerMonad H.Html
-projectPage projectID = do
+projectPage :: ProjectIdWithSuffix -> ServerMonad H.Html
+projectPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) = do
   possibleMetadata <- getProjectMetadata projectID
-  innerProjectPage (Just projectID) possibleMetadata
+  innerProjectPage (Just projectIDWithSuffix) possibleMetadata
 
 emptyProjectPage :: ServerMonad H.Html
 emptyProjectPage = innerProjectPage Nothing Nothing
 
-innerPreviewPage :: Maybe Text -> Maybe ProjectMetadata -> ServerMonad H.Html
+innerPreviewPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> ServerMonad H.Html
 innerPreviewPage possibleProjectID possibleMetadata = do
   indexHtml <- getPreviewIndexHtml
   let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata
   let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
   let projectIDScriptHtml = maybe "" (\projectID -> toS $ renderHtml $ projectIDScript projectID) possibleProjectID
-  let withProjectIdScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
-  return $ H.preEscapedToHtml withProjectIdScript
+  let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
+  return $ H.preEscapedToHtml withProjectIdWithSuffixScript
 
-previewPage :: Text -> ServerMonad H.Html
-previewPage projectID = do
+previewPage :: ProjectIdWithSuffix -> ServerMonad H.Html
+previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) = do
   possibleMetadata <- getProjectMetadata projectID
-  innerPreviewPage (Just projectID) possibleMetadata
+  innerPreviewPage (Just projectIDWithSuffix) possibleMetadata
 
 emptyPreviewPage :: ServerMonad H.Html
 emptyPreviewPage = innerPreviewPage Nothing Nothing
@@ -197,8 +197,8 @@ setShowcaseEndpoint projectIdsString = do
   setShowcaseProjects projectIds
   return NoContent
 
-projectOwnerEndpoint :: Maybe Text -> Text -> ServerMonad ProjectOwnerResponse
-projectOwnerEndpoint cookie projectID = requireUser cookie $ \sessionUser -> do
+projectOwnerEndpoint :: Maybe Text -> ProjectIdWithSuffix -> ServerMonad ProjectOwnerResponse
+projectOwnerEndpoint cookie (ProjectIdWithSuffix projectID _) = requireUser cookie $ \sessionUser -> do
   possibleProject <- loadProject projectID
   maybe notFound (\project -> return $ ProjectOwnerResponse $ (view id sessionUser) == (view ownerId project)) possibleProject
 
@@ -208,8 +208,8 @@ projectChangedSince projectID lastChangedDate = do
   let possibleChanged = fmap (\m -> view modifiedAt m > lastChangedDate) possibleMetadata
   return possibleChanged
 
-downloadProjectEndpoint :: Text -> [Text] -> ServerMonad Value
-downloadProjectEndpoint projectID pathIntoContent = do
+downloadProjectEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad Value
+downloadProjectEndpoint (ProjectIdWithSuffix projectID _) pathIntoContent = do
   possibleProject <- loadProject projectID
   let contentLookup = foldl' (\lensSoFar -> \pathPart -> lensSoFar . key pathPart) content pathIntoContent
   fromMaybe notFound $ do
@@ -217,17 +217,17 @@ downloadProjectEndpoint projectID pathIntoContent = do
     contentFromLookup <- firstOf contentLookup project
     return $ return contentFromLookup
 
-loadProjectEndpoint :: Text -> Maybe UTCTime -> ServerMonad LoadProjectResponse
+loadProjectEndpoint :: ProjectIdWithSuffix -> Maybe UTCTime -> ServerMonad LoadProjectResponse
 loadProjectEndpoint projectID Nothing = actuallyLoadProject projectID
-loadProjectEndpoint projectID (Just lastSaved) = do
+loadProjectEndpoint withSuffix@(ProjectIdWithSuffix projectID _) (Just lastSaved) = do
   changeSince <- projectChangedSince projectID lastSaved
   case changeSince of
     Nothing      -> notFound
-    (Just True)  -> actuallyLoadProject projectID
+    (Just True)  -> actuallyLoadProject withSuffix
     (Just False) -> return $ ProjectUnchanged { _id = projectID }
 
-actuallyLoadProject :: Text -> ServerMonad LoadProjectResponse
-actuallyLoadProject projectID = do
+actuallyLoadProject :: ProjectIdWithSuffix -> ServerMonad LoadProjectResponse
+actuallyLoadProject (ProjectIdWithSuffix projectID _) = do
   possibleProject <- loadProject projectID
   maybe notFound (\project -> return $ createLoadProjectResponse project) possibleProject
 
@@ -246,12 +246,12 @@ createProjectEndpoint = do
   projectID <- createProject
   return $ CreateProjectResponse projectID
 
-forkProjectEndpoint :: Maybe Text -> Text -> Maybe Text -> ServerMonad ForkProjectResponse
+forkProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> Maybe Text -> ServerMonad ForkProjectResponse
 forkProjectEndpoint cookie projectID maybeTitle = requireUser cookie $ \sessionUser -> do
   forkProjectEndpointInner sessionUser projectID (getTitle maybeTitle)
 
-forkProjectEndpointInner :: SessionUser -> Text -> Text -> ServerMonad ForkProjectResponse
-forkProjectEndpointInner sessionUser projectID projectTitle = do
+forkProjectEndpointInner :: SessionUser -> ProjectIdWithSuffix -> Text -> ServerMonad ForkProjectResponse
+forkProjectEndpointInner sessionUser (ProjectIdWithSuffix projectID _) projectTitle = do
   sourceProject <- loadProject projectID
   maybe notFound (\project -> forkProject sessionUser project projectTitle) sourceProject
 
@@ -261,41 +261,41 @@ forkProject sessionUser sourceProject projectTitle = do
   saveProject sessionUser newProjectID (Just projectTitle) (Just (DB._content sourceProject))
   return $ ForkProjectResponse newProjectID
 
-saveProjectEndpoint :: Maybe Text -> Text -> SaveProjectRequest -> ServerMonad SaveProjectResponse
-saveProjectEndpoint cookie projectID saveRequest = requireUser cookie $ \sessionUser -> do
+saveProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> SaveProjectRequest -> ServerMonad SaveProjectResponse
+saveProjectEndpoint cookie (ProjectIdWithSuffix projectID _) saveRequest = requireUser cookie $ \sessionUser -> do
   saveProject sessionUser projectID (view name saveRequest) (view content saveRequest)
   return $ SaveProjectResponse projectID (view id sessionUser)
 
-deleteProjectEndpoint :: Maybe Text -> Text -> ServerMonad NoContent
-deleteProjectEndpoint cookie projectID = requireUser cookie $ \sessionUser -> do
+deleteProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> ServerMonad NoContent
+deleteProjectEndpoint cookie (ProjectIdWithSuffix projectID _) = requireUser cookie $ \sessionUser -> do
   deleteProject sessionUser projectID
   return NoContent
 
-loadProjectAssetEndpoint :: Text -> Text -> [Text] -> ServerMonad Application
-loadProjectAssetEndpoint projectID firstPart remainingPath = do
+loadProjectAssetEndpoint :: ProjectIdWithSuffix -> Text -> [Text] -> ServerMonad Application
+loadProjectAssetEndpoint (ProjectIdWithSuffix projectID _) firstPart remainingPath = do
   loadProjectAsset ([projectID, firstPart] ++ remainingPath)
 
-saveProjectAssetEndpoint :: Maybe Text -> Text -> [Text] -> ServerMonad Application
-saveProjectAssetEndpoint cookie projectID path = requireUser cookie $ \sessionUser -> do
+saveProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ServerMonad Application
+saveProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser -> do
   saveProjectAsset (view id sessionUser) projectID path
 
-renameProjectAssetEndpoint :: Maybe Text -> Text -> [Text] -> Text -> ServerMonad NoContent
-renameProjectAssetEndpoint cookie projectID newPath oldPath = requireUser cookie $ \sessionUser -> do
+renameProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> Text -> ServerMonad NoContent
+renameProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) newPath oldPath = requireUser cookie $ \sessionUser -> do
   renameProjectAsset (view id sessionUser) projectID (OldPath $ T.splitOn "/" oldPath) (NewPath newPath)
   return NoContent
 
-deleteProjectAssetEndpoint :: Maybe Text -> Text -> [Text] -> ServerMonad NoContent
-deleteProjectAssetEndpoint cookie projectID path = requireUser cookie $ \sessionUser -> do
+deleteProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ServerMonad NoContent
+deleteProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser -> do
   deleteProjectAsset (view id sessionUser) projectID path
   return NoContent
 
-loadProjectThumbnailEndpoint :: Text -> ServerMonad BL.ByteString
-loadProjectThumbnailEndpoint projectID = do
+loadProjectThumbnailEndpoint :: ProjectIdWithSuffix -> ServerMonad BL.ByteString
+loadProjectThumbnailEndpoint (ProjectIdWithSuffix projectID _) = do
   possibleProjectThumbnail <- loadProjectThumbnail projectID
   maybe notFound return possibleProjectThumbnail
 
-saveProjectThumbnailEndpoint :: Maybe Text -> Text -> BL.ByteString -> ServerMonad NoContent
-saveProjectThumbnailEndpoint cookie projectID thumbnail = requireUser cookie $ \sessionUser -> do
+saveProjectThumbnailEndpoint :: Maybe Text -> ProjectIdWithSuffix -> BL.ByteString -> ServerMonad NoContent
+saveProjectThumbnailEndpoint cookie (ProjectIdWithSuffix projectID _) thumbnail = requireUser cookie $ \sessionUser -> do
   saveProjectThumbnail (view id sessionUser) projectID thumbnail
   return NoContent
 
@@ -388,6 +388,7 @@ unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate
          :<|> emptyProjectPage
          :<|> projectPage
+         :<|> projectPage
          :<|> emptyPreviewPage
          :<|> previewPage
          :<|> downloadProjectEndpoint
@@ -395,6 +396,7 @@ unprotected = authenticate
          :<|> createProjectEndpoint
          :<|> getShowcaseEndpoint
          :<|> setShowcaseEndpoint
+         :<|> loadProjectAssetEndpoint
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectThumbnailEndpoint

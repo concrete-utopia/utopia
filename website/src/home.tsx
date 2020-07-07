@@ -23,6 +23,7 @@ export const breakpoints = facepaint(breakpointLocations.map((bp) => `@media (mi
 
 const Paragraph = styled.p({
   paddingTop: '1em',
+  paddingBottom: '1em',
 })
 
 export default class Home extends React.Component {
@@ -35,13 +36,13 @@ export default class Home extends React.Component {
         <div
           css={breakpoints({
             width: '100%',
-            paddingTop: '10em',
+            paddingTop: ['3em', '10em'],
             paddingBottom: '10em',
-            paddingLeft: 8,
-            paddingRight: 8,
+            paddingLeft: 16,
+            paddingRight: 16,
             textAlign: 'center',
             lineHeight: 1.4,
-            fontSize: [18, 24, 24],
+            fontSize: [18, 24],
             fontFamily: "'Inter', sans-serif",
             backgroundColor: '#C1EDFF',
             color: '#094173',
@@ -66,7 +67,7 @@ export default class Home extends React.Component {
                   lineHeight: 1,
                   letterSpacing: -3,
                   textTransform: 'capitalize',
-                  paddingBottom: '0.5em',
+                  paddingBottom: ['0.3em', '0.5em'],
                 })}
               >
                 Join us building the future of design and code, together.

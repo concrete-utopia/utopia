@@ -821,7 +821,9 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
                 if (paramsValue.length === 1) {
                   // Note: We're explicitly ignoring the `propsUsed` value as
                   // that should be handled by the call to `propNamesForParam` below.
-                  return right(withParserMetadata(paramsValue[0], parsedParams.highlightBounds, []))
+                  return right(
+                    withParserMetadata(paramsValue[0], parsedParams.highlightBounds, [], []),
+                  )
                 } else {
                   return left('Invalid number of params')
                 }
@@ -982,7 +984,7 @@ function parseParams(
       return parseResult
     }
   }
-  return right(withParserMetadata(parsedParams, highlightBounds, propsUsed))
+  return right(withParserMetadata(parsedParams, highlightBounds, propsUsed, []))
 }
 
 function parseParam(
@@ -1000,7 +1002,7 @@ function parseParam(
     WithParserMetadata<JSXAttributeOtherJavaScript | undefined>
   > =
     param.initializer == null
-      ? right(withParserMetadata(undefined, existingHighlightBounds, []))
+      ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
       : parseAttributeOtherJavaScript(
           file,
           filename,
@@ -1028,6 +1030,7 @@ function parseParam(
           functionParam(dotDotDotToken, bindingName.value),
           bindingName.highlightBounds,
           bindingName.propsUsed,
+          [],
         ),
       parsedBindingName,
     )
@@ -1058,6 +1061,7 @@ function parseBindingName(
           regularParam(paramName, expression.value ?? null),
           highlightBounds,
           propsUsed,
+          [],
         ),
       parsedParamName,
     )
@@ -1100,7 +1104,7 @@ function parseBindingName(
         return parsedPropertyName
       }
     }
-    return right(withParserMetadata(destructuredObject(parts), highlightBounds, propsUsed))
+    return right(withParserMetadata(destructuredObject(parts), highlightBounds, propsUsed, []))
   } else if (TS.isArrayBindingPattern(elem)) {
     let parts: Array<DestructuredArrayPart> = []
     for (const element of elem.elements) {
@@ -1129,7 +1133,7 @@ function parseBindingName(
         }
       }
     }
-    return right(withParserMetadata(destructuredArray(parts), highlightBounds, propsUsed))
+    return right(withParserMetadata(destructuredArray(parts), highlightBounds, propsUsed, []))
   } else {
     return left('Unable to parse binding element')
   }

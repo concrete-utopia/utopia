@@ -889,8 +889,8 @@ Object {
                 "children": Array [
                   Object {
                     "definedElsewhere": Array [
-                      "React",
                       "n",
+                      "React",
                       "utopiaCanvasJSXLookup",
                     ],
                     "elementsWithin": Object {
@@ -1095,8 +1095,8 @@ Object {
             },
             "transpiledJavascript": "return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
-    React: React,
     n: n,
+    React: React,
     utopiaCanvasJSXLookup: utopiaCanvasJSXLookup
   });
 });",
