@@ -704,14 +704,18 @@ export function getSceneElements(model: EditorState): JSXElement[] {
   if (openUIJSFile == null || isLeft(openUIJSFile.fileContents)) {
     return []
   } else {
-    const rootElement = getOrDefaultScenes(openUIJSFile.fileContents.value).rootElement
-    if (!isJSXElement(rootElement) || rootElement.name.baseVariable !== 'Storyboard') {
-      throw new Error('the root element must be a Storyboard component')
-    }
-    return rootElement.children.filter(
-      (child): child is JSXElement => isJSXElement(child) && isSceneElement(child),
-    )
+    return getSceneElementsFromParseSuccess(openUIJSFile.fileContents.value)
   }
+}
+
+export function getSceneElementsFromParseSuccess(success: ParseSuccess): JSXElement[] {
+  const rootElement = getOrDefaultScenes(success).rootElement
+  if (!isJSXElement(rootElement) || rootElement.name.baseVariable !== 'Storyboard') {
+    throw new Error('the root element must be a Storyboard component')
+  }
+  return rootElement.children.filter(
+    (child): child is JSXElement => isJSXElement(child) && isSceneElement(child),
+  )
 }
 
 export function addNewScene(model: EditorState, newSceneElement: JSXElement): EditorState {
