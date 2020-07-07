@@ -157,7 +157,9 @@ const initPreview = () => {
       return
     }
     shownModel = model
-    previewRender(model?.projectContents)
+    if (model?.projectContents != null) {
+      previewRender(model.projectContents)
+    }
   }
 
   const handleModelUpdateEvent = (event: MessageEvent) => {
@@ -168,69 +170,67 @@ const initPreview = () => {
     }
   }
 
-  const previewRender = async (projectContents?: ProjectContents) => {
-    if (projectContents != null) {
-      const npmDependencies = dependenciesFromProjectContents(projectContents)
-      let nodeModules = await fetchNodeModules(npmDependencies)
-      const require = getRequireFn((modulesToAdd: NodeModules) => {
-        // MUTATION
-        Object.assign(nodeModules, modulesToAdd)
-      }, nodeModules)
-      /**
-       * please note that we are passing in an empty object instead of the .d.ts files
-       * the reason for this is that we only use the bundler as a transpiler here
-       * and we don't care about static type errors
-       *
-       * some libraries, ie Antd have so massive definitions that it took more than 20 seconds
-       * for the bundler to process it, basically with no upside
-       */
-      const emptyTypeDefinitions = {}
-      const bundledProjectFiles = (
-        await createBundle(bundlerWorker, emptyTypeDefinitions, projectContents)
-      ).buildResult
+  const previewRender = async (projectContents: ProjectContents) => {
+    const npmDependencies = dependenciesFromProjectContents(projectContents)
+    let nodeModules = await fetchNodeModules(npmDependencies)
+    const require = getRequireFn((modulesToAdd: NodeModules) => {
+      // MUTATION
+      Object.assign(nodeModules, modulesToAdd)
+    }, nodeModules)
+    /**
+     * please note that we are passing in an empty object instead of the .d.ts files
+     * the reason for this is that we only use the bundler as a transpiler here
+     * and we don't care about static type errors
+     *
+     * some libraries, ie Antd have so massive definitions that it took more than 20 seconds
+     * for the bundler to process it, basically with no upside
+     */
+    const emptyTypeDefinitions = {}
+    const bundledProjectFiles = (
+      await createBundle(bundlerWorker, emptyTypeDefinitions, projectContents)
+    ).buildResult
 
-      // replacing the document body first
-      const packageJson = projectContents['/package.json']
-      if (packageJson != null && isCodeFile(packageJson)) {
-        const parsedJSON = json5.parse(packageJson.fileContents)
+    // replacing the document body first
+    const packageJson = projectContents['/package.json']
+    if (packageJson != null && isCodeFile(packageJson)) {
+      const parsedJSON = json5.parse(packageJson.fileContents)
 
-        const utopiaSettings = R.path<any>(['utopia'], parsedJSON)
-        const previewFileName = utopiaSettings['html']
-        if (previewFileName != null) {
-          const previewPath = `/public/${previewFileName}`
-          const file = projectContents[previewPath]
-          if (file != null && isCodeFile(file)) {
+      const utopiaSettings = R.path<any>(['utopia'], parsedJSON)
+      const previewFileName = utopiaSettings['html']
+      if (previewFileName != null) {
+        const previewPath = `/public/${previewFileName}`
+        const file = projectContents[previewPath]
+        if (file != null && isCodeFile(file)) {
+          try {
             try {
-              try {
-                ReactErrorOverlay.stopReportingRuntimeErrors()
-              } catch (e) {
-                // we don't care
-              }
-              const bodyContent = file.fileContents.split('<body>')[1].split('</body>')[0]
-              document.body.innerHTML = bodyContent
-              addOpenInUtopiaButton()
-              ReactErrorOverlay.startReportingRuntimeErrors({})
+              ReactErrorOverlay.stopReportingRuntimeErrors()
             } catch (e) {
-              console.warn(`no body found in html`, e)
+              // we don't care
             }
+            const bodyContent = file.fileContents.split('<body>')[1].split('</body>')[0]
+            document.body.innerHTML = bodyContent
+            addOpenInUtopiaButton()
+            ReactErrorOverlay.startReportingRuntimeErrors({})
+          } catch (e) {
+            console.warn(`no body found in html`, e)
           }
         }
+      }
 
-        const previewJsFileName = utopiaSettings['js']
-        if (previewJsFileName != null) {
-          const previewJSPath = `/public/${previewJsFileName}`
-          const file = projectContents[previewJSPath]
-          if (file == null || !isCodeFile(file)) {
-            throw new Error(
-              `Error processing the project files: the preview path (${previewJSPath}) did not point to a valid file`,
-            )
-          } else if (bundledProjectFiles[previewJSPath] == null) {
-            throw new Error(
-              `Error processing the project files: the build result does not contain the preview file: ${previewJSPath}`,
-            )
-          } else {
-            processModuleCodes(bundledProjectFiles, require, true)
-          }
+      const previewJsFileName = utopiaSettings['js']
+      if (previewJsFileName != null) {
+        const previewJSPath = `/public/${previewJsFileName}`
+        const file = projectContents[previewJSPath]
+        if (file == null || !isCodeFile(file)) {
+          throw new Error(
+            `Error processing the project files: the preview path (${previewJSPath}) did not point to a valid file`,
+          )
+        } else if (bundledProjectFiles[previewJSPath] == null) {
+          throw new Error(
+            `Error processing the project files: the build result does not contain the preview file: ${previewJSPath}`,
+          )
+        } else {
+          processModuleCodes(bundledProjectFiles, require, true)
         }
       }
     }
