@@ -5,7 +5,7 @@ import { getProjectID, PREVIEW_IS_EMBEDDED, BASE_URL, getQueryParam } from '../c
 import { fetchLocalProject } from '../common/persistence'
 import { processModuleCodes } from '../components/custom-code/code-file'
 import { sendPreviewModel } from '../components/editor/actions/actions'
-import { dependenciesFromModel } from '../components/editor/npm-dependency/npm-dependency'
+import { dependenciesFromProjectContents } from '../components/editor/npm-dependency/npm-dependency'
 import { projectIsStoredLocally } from '../components/editor/persistence'
 import { loadProject } from '../components/editor/server'
 import { isPersistentModel, PersistentModel } from '../components/editor/store/editor-state'
@@ -170,7 +170,7 @@ const initPreview = () => {
 
   const previewRender = async (projectContents?: ProjectContents) => {
     if (projectContents != null) {
-      const npmDependencies = dependenciesFromModel(projectContents)
+      const npmDependencies = dependenciesFromProjectContents(projectContents)
       let nodeModules = await fetchNodeModules(npmDependencies)
       const require = getRequireFn((modulesToAdd: NodeModules) => {
         // MUTATION

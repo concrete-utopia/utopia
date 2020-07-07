@@ -341,7 +341,7 @@ import {
 import * as History from '../history'
 import { StateHistory } from '../history'
 import {
-  dependenciesFromModel,
+  dependenciesFromProjectContents,
   dependenciesFromPackageJsonContents,
   updateDependenciesInEditorState,
   updateDependenciesInPackageJson,
@@ -3919,7 +3919,7 @@ export const UPDATE_FNS = {
         result.codeResultCache.exportsInfo,
         result.nodeModules.files,
         dispatch,
-        dependenciesFromModel(result.projectContents),
+        dependenciesFromProjectContents(result.projectContents),
         action.startFromScratch,
       ),
     }
@@ -4208,7 +4208,7 @@ export async function newProject(
   renderEditorRoot: () => void,
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
-  const npmDependencies = dependenciesFromModel(defaultPersistentModel.projectContents)
+  const npmDependencies = dependenciesFromProjectContents(defaultPersistentModel.projectContents)
   const nodeModules = await fetchNodeModules(npmDependencies)
 
   const codeResultCache = generateCodeResultCache(
@@ -4260,7 +4260,7 @@ export async function load(
 ): Promise<void> {
   // this action is now async!
 
-  const npmDependencies = dependenciesFromModel(model.projectContents)
+  const npmDependencies = dependenciesFromProjectContents(model.projectContents)
   const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
@@ -4327,7 +4327,7 @@ function loadCodeResult(
             data.exportsInfo,
             nodeModules,
             dispatch,
-            dependenciesFromModel(projectContents),
+            dependenciesFromProjectContents(projectContents),
             true,
           )
           resolve(codeResultCache)

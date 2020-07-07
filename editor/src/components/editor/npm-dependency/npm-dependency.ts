@@ -117,7 +117,9 @@ export function dependenciesFromPackageJson(
   }
 }
 
-export function dependenciesFromModel(projectContents: ProjectContents): Array<NpmDependency> {
+export function dependenciesFromProjectContents(
+  projectContents: ProjectContents,
+): Array<NpmDependency> {
   const packageJsonFile = packageJsonFileFromModel(projectContents)
   return dependenciesFromPackageJson(packageJsonFile)
 }
