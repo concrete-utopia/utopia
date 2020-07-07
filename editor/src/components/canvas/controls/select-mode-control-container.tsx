@@ -8,13 +8,7 @@ import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
 import { DuplicationState } from '../../editor/store/editor-state'
 import * as TP from '../../../core/shared/template-path'
-import {
-  CanvasPositions,
-  MoveDragState,
-  ResizeDragState,
-  moveDragState,
-  ResizeSingleSelectDragState,
-} from '../canvas-types'
+import { CanvasPositions, MoveDragState, ResizeDragState, moveDragState } from '../canvas-types'
 import { Guidelines, Guideline } from '../guideline'
 import { ConstraintsControls } from './constraints-control'
 import { DistanceGuideline } from './distance-guideline'
@@ -58,7 +52,7 @@ interface SelectModeControlContainerProps extends ControlProps {
   maybeHighlightOnHover: (target: TemplatePath) => void
   maybeClearHighlightsOnHoverEnd: () => void
   duplicationState: DuplicationState | null
-  dragState: MoveDragState | ResizeDragState | ResizeSingleSelectDragState | null
+  dragState: MoveDragState | ResizeDragState | null
 }
 
 interface SelectModeControlContainerState {

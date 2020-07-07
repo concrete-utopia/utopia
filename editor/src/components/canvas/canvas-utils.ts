@@ -136,7 +136,6 @@ import {
   pinFrameChange,
   PinOrFlexFrameChange,
   ResizeDragState,
-  ResizeSingleSelectDragState,
   singleResizeChange,
 } from './canvas-types'
 import {
@@ -1228,7 +1227,7 @@ export function snapPoint(
 
 function calculateDraggedRectangle(
   editor: EditorState,
-  dragState: ResizeDragState | ResizeSingleSelectDragState,
+  dragState: ResizeDragState,
 ): CanvasRectangle {
   const originalSize = dragState.originalSize
   const deltaScale = dragState.centerBasedResize ? 2 : 1 // for center based resize, we need to calculate with double deltas
@@ -1271,7 +1270,7 @@ function calculateDraggedRectangle(
 
 export function calculateNewBounds(
   editor: EditorState,
-  dragState: ResizeDragState | ResizeSingleSelectDragState,
+  dragState: ResizeDragState,
 ): CanvasRectangle {
   const originalSize = dragState.originalSize
   const aspectRatio = originalSize.width / originalSize.height
@@ -1320,7 +1319,6 @@ export function getCursorFromDragState(editorState: EditorState): CSSCursor | nu
           return CSSCursor.Move
         }
       case 'RESIZE_DRAG_STATE':
-      case 'RESIZE_SINGLE_SELECT_DRAG_STATE':
         if (isEdgePositionAHorizontalEdge(dragState.edgePosition)) {
           return CSSCursor.ResizeNS
         } else if (isEdgePositionAVerticalEdge(dragState.edgePosition)) {
@@ -1459,7 +1457,7 @@ export function produceResizeCanvasTransientState(
 export function produceResizeSingleSelectCanvasTransientState(
   editorState: EditorState,
   parseSuccess: ParseSuccess,
-  dragState: ResizeSingleSelectDragState,
+  dragState: ResizeDragState,
   preventAnimations: boolean,
 ): TransientCanvasState {
   const elementsToTarget = determineElementsToOperateOnForDragging(
@@ -1614,20 +1612,22 @@ export function produceCanvasTransientState(
                     parseSuccess,
                     preventAnimations,
                   )
-                case 'RESIZE_SINGLE_SELECT_DRAG_STATE':
-                  return produceResizeSingleSelectCanvasTransientState(
-                    editorState,
-                    parseSuccess,
-                    dragState,
-                    preventAnimations,
-                  )
                 case 'RESIZE_DRAG_STATE':
-                  return produceResizeCanvasTransientState(
-                    editorState,
-                    parseSuccess,
-                    dragState,
-                    preventAnimations,
-                  )
+                  if (dragState.isMultiSelect) {
+                    return produceResizeCanvasTransientState(
+                      editorState,
+                      parseSuccess,
+                      dragState,
+                      preventAnimations,
+                    )
+                  } else {
+                    return produceResizeSingleSelectCanvasTransientState(
+                      editorState,
+                      parseSuccess,
+                      dragState,
+                      preventAnimations,
+                    )
+                  }
 
                 case 'INSERT_DRAG_STATE':
                   throw new Error(`Unable to use insert drag state in select mode.`)

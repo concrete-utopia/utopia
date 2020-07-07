@@ -425,6 +425,7 @@ export interface ResizeDragState {
   enabledDirection: EnabledDirection
   metadata: Array<ComponentMetadata>
   draggedElements: TemplatePath[]
+  isMultiSelect: boolean
 }
 
 export function resizeDragState(
@@ -439,6 +440,7 @@ export function resizeDragState(
   enabledDirection: EnabledDirection,
   metadata: Array<ComponentMetadata>,
   draggedElements: TemplatePath[],
+  isMultiSelect: boolean,
 ): ResizeDragState {
   return {
     type: 'RESIZE_DRAG_STATE',
@@ -453,16 +455,17 @@ export function resizeDragState(
     enabledDirection: enabledDirection,
     metadata: metadata,
     draggedElements: draggedElements,
+    isMultiSelect: isMultiSelect,
   }
 }
 
 export function updateResizeDragState(
-  current: ResizeDragState | ResizeSingleSelectDragState,
+  current: ResizeDragState,
   drag: CanvasVector | null | undefined,
   enableSnapping: boolean | undefined,
   centerBasedResize: boolean | undefined,
   keepAspectRatio: boolean | undefined,
-): ResizeDragState | ResizeSingleSelectDragState {
+): ResizeDragState {
   return keepDeepReferenceEqualityIfPossible(current, {
     ...current,
     drag: drag === undefined ? current.drag : drag,
@@ -473,55 +476,7 @@ export function updateResizeDragState(
   })
 }
 
-export interface ResizeSingleSelectDragState {
-  type: 'RESIZE_SINGLE_SELECT_DRAG_STATE'
-  start: CanvasPoint
-  drag: CanvasVector | null
-  enableSnapping: boolean
-  centerBasedResize: boolean
-  keepAspectRatio: boolean
-  originalSize: CanvasRectangle
-  originalFrames: Array<OriginalCanvasAndLocalFrame>
-  edgePosition: EdgePosition
-  enabledDirection: EnabledDirection
-  metadata: Array<ComponentMetadata>
-  draggedElements: TemplatePath[]
-}
-
-export function resizeSingleSelectDragState(
-  start: CanvasPoint,
-  drag: CanvasVector | null,
-  enableSnapping: boolean,
-  centerBasedResize: boolean,
-  keepAspectRatio: boolean,
-  originalSize: CanvasRectangle,
-  originalFrames: Array<OriginalCanvasAndLocalFrame>,
-  edgePosition: EdgePosition,
-  enabledDirection: EnabledDirection,
-  metadata: Array<ComponentMetadata>,
-  draggedElements: TemplatePath[],
-): ResizeSingleSelectDragState {
-  return {
-    type: 'RESIZE_SINGLE_SELECT_DRAG_STATE',
-    start: start,
-    drag: drag,
-    enableSnapping: enableSnapping,
-    centerBasedResize: centerBasedResize,
-    keepAspectRatio: keepAspectRatio,
-    originalSize: originalSize,
-    originalFrames: originalFrames,
-    edgePosition: edgePosition,
-    enabledDirection: enabledDirection,
-    metadata: metadata,
-    draggedElements: draggedElements,
-  }
-}
-
-export type DragState =
-  | InsertDragState
-  | MoveDragState
-  | ResizeDragState
-  | ResizeSingleSelectDragState
+export type DragState = InsertDragState | MoveDragState | ResizeDragState
 
 export interface CanvasPositions {
   windowPosition: WindowPoint

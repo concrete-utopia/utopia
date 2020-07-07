@@ -1013,8 +1013,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               )
               break
             }
-            case 'RESIZE_DRAG_STATE':
-            case 'RESIZE_SINGLE_SELECT_DRAG_STATE': {
+            case 'RESIZE_DRAG_STATE': {
               const elementAspectRatioLocked = this.getElementAspectRatioLocked()
               const keepAspectRatio = event.shiftKey || elementAspectRatioLocked
               const centerBasedResize = event.altKey
