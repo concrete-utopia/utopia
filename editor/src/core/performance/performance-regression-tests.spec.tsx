@@ -13,7 +13,7 @@ describe('React Render Count Tests - ', () => {
   it('Clicking on opacity slider', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -48,7 +48,7 @@ describe('React Render Count Tests - ', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#DDDDDD', opacity: 0.3 }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -66,7 +66,7 @@ describe('React Render Count Tests - ', () => {
   it('Changing the selected view', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -100,7 +100,7 @@ describe('React Render Count Tests - ', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}

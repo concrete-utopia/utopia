@@ -13,7 +13,7 @@ describe('toggle style prop', () => {
   it('disables border, sets border to none from solid', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+        <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
           style={{ backgroundColor: '#DDDDDD', border: '1px solid #000' }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -35,7 +35,7 @@ describe('toggle style prop', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+        <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
           style={{ backgroundColor: '#DDDDDD', border: '1px #000' }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -49,7 +49,7 @@ describe('toggle style prop', () => {
   it('enables border, sets it to solid from none', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+        <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
           style={{ backgroundColor: '#DDDDDD', border: '1px #000' }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -71,7 +71,7 @@ describe('toggle style prop', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+        <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
           style={{ backgroundColor: '#DDDDDD', border: '1px solid #000' }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -84,7 +84,7 @@ describe('toggle style prop', () => {
   it('adds border when style prop is missing', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+      <View style={{ ...props.style }} data-uid={'aaa'}>
         <View
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
           data-uid={'bbb'}
@@ -105,7 +105,7 @@ describe('toggle style prop', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+        <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
             data-uid={'bbb'}
@@ -119,7 +119,7 @@ describe('toggle style prop', () => {
   it('toggles shadow, comments out boxshadow property values', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+      <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
             style={{ backgroundColor: '#DDDDDD', boxShadow: '0px 0px #000, 0px 0px #000' }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -141,7 +141,7 @@ describe('toggle style prop', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+        <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
             style={{ backgroundColor: '#DDDDDD', boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/' }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -154,7 +154,7 @@ describe('toggle style prop', () => {
   it('toggles shadow, after toggle shadow is visible', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+      <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
             style={{ backgroundColor: '#DDDDDD', boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/' }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -176,7 +176,7 @@ describe('toggle style prop', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...(props.style || {}) }} data-uid={'aaa'}>
+        <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
             style={{ backgroundColor: '#DDDDDD', boxShadow: '0px 0px #000, 0px 0px #000' }}
             layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}

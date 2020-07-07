@@ -117,7 +117,7 @@ describe('DOM Walker tests', () => {
       } from 'utopia-api'
       export var App = (props) => {
         return (
-          <View style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
+          <View style={{ ...props.style, backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
             <View
               style={{ backgroundColor: '#DDDDDD' }}
               data-uid={'ef0'}
@@ -162,7 +162,7 @@ describe('DOM Walker tests', () => {
       } from 'utopia-api'
       export var App = (props) => {
         return (
-          <div style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
+          <div style={{ ...props.style, backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
             <div
               style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, }}
               data-uid={'ef0'}
@@ -207,7 +207,7 @@ describe('DOM Walker tests', () => {
       } from 'utopia-api'
       export var App = (props) => {
         return (
-          <div style={{ ...(props.style || {}), backgroundColor: '#FFFFFF', display: 'flex' }} data-uid={'05c'}>
+          <div style={{ ...props.style, backgroundColor: '#FFFFFF', display: 'flex' }} data-uid={'05c'}>
             <div
               style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, }}
               data-uid={'ef0'}
@@ -251,7 +251,7 @@ describe('DOM Walker tests', () => {
         jsx,
       } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'} data-label={'Hat'} />
+        return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
       }
       export var storyboard = (props) => {
         return (
@@ -282,7 +282,7 @@ describe('DOM Walker tests', () => {
         jsx,
       } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'}>
+        return <div style={{ ...props.style}} data-uid={'aaa'}>
           {[1, 2, 3].map(n => {
             return <div data-uid={'bbb'} data-label={'Plane'} />
           })}

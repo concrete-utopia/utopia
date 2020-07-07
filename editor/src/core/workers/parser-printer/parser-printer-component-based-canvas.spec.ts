@@ -9,7 +9,7 @@ import { Canvas, Scene, View, jsx } from 'utopia-api'
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+      style={{ ...props.style, backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     >

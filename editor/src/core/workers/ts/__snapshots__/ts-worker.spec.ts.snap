@@ -7,7 +7,7 @@ Object {
       "errors": Array [],
       "sourceMap": Object {
         "file": "app.ui.js",
-        "mappings": ";;;;;;;;;;;;;;AAkDA,MAAA,SAAA,CAAA,gBAAA,EAAW,cAAc,GAAG;AAC1B,QAAA,MAAM,EAAE,CACN;AACE,UAAA,SAAS,EAAE,KADb;AAEE,UAAA,KAAK,EAAE;AAAE,YAAA,MAAM,EAAE,GAAV;AAAe,YAAA,IAAI,EAAE,CAArB;AAAwB,YAAA,KAAK,EAAE,GAA/B;AAAoC,YAAA,GAAG,EAAE;AAAzC,WAFT;AAGE,UAAA,KAAK,EAAE;AAAE,YAAA,MAAM,EAAE;AAAE,cAAA,GAAG,EAAE,CAAP;AAAU,cAAA,IAAI,EAAE,CAAhB;AAAmB,cAAA,MAAM,EAAE,CAA3B;AAA8B,cAAA,KAAK,EAAE;AAArC;AAAV,WAHT;AAIE,UAAA,SAAS,EAAE;AAAE,YAAA,YAAY,EAAE;AAAhB;AAJb,SADM,CADkB;AAS1B,QAAA,eAAe,EAAE;AATS,OAA5B,CAAA;AAYA,MAAA,SAAA,CAAA,KAAA,EAAW,GAAG,GAAG,aAAC,KAAD,EAAU;AACzB,eACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,UAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAQ,KAAK,CAAC,KAAN,IAAe,EAAvB,CAAA,EAA0B;AAAE,YAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApC,WAA1B,CADF;AAEH,UAAA,MAAM,EAAE;AAAE,YAAA,YAAY,EAAE;AAAhB,WAFL;AAEkC,sBAC3B;AAHP,SAAL,CADF;AAOD,OARD,CAAA;AAUC",
+        "mappings": ";;;;;;;;;;;;;;AAkDA,MAAA,SAAA,CAAA,gBAAA,EAAW,cAAc,GAAG;AAC1B,QAAA,MAAM,EAAE,CACN;AACE,UAAA,SAAS,EAAE,KADb;AAEE,UAAA,KAAK,EAAE;AAAE,YAAA,MAAM,EAAE,GAAV;AAAe,YAAA,IAAI,EAAE,CAArB;AAAwB,YAAA,KAAK,EAAE,GAA/B;AAAoC,YAAA,GAAG,EAAE;AAAzC,WAFT;AAGE,UAAA,KAAK,EAAE;AAAE,YAAA,MAAM,EAAE;AAAE,cAAA,GAAG,EAAE,CAAP;AAAU,cAAA,IAAI,EAAE,CAAhB;AAAmB,cAAA,MAAM,EAAE,CAA3B;AAA8B,cAAA,KAAK,EAAE;AAArC;AAAV,WAHT;AAIE,UAAA,SAAS,EAAE;AAAE,YAAA,YAAY,EAAE;AAAhB;AAJb,SADM,CADkB;AAS1B,QAAA,eAAe,EAAE;AATS,OAA5B,CAAA;AAYA,MAAA,SAAA,CAAA,KAAA,EAAW,GAAG,GAAG,aAAC,KAAD,EAAU;AACzB,eACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,UAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAO,KAAK,CAAC,KAAb,CAAA,EAAkB;AAAE,YAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApC,WAAlB,CADF;AAEH,UAAA,MAAM,EAAE;AAAE,YAAA,YAAY,EAAE;AAAhB,WAFL;AAEkC,sBAC3B;AAHP,SAAL,CADF;AAOD,OARD,CAAA;AAUC",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -79,7 +79,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>
@@ -129,7 +129,7 @@ export var App = (props) => {
       });
       exports_1(\\"App\\", App = function App(props) {
         return utopia_api_1.jsx(utopia_api_1.View, {
-          style: Object.assign(Object.assign({}, props.style || {}), {
+          style: Object.assign(Object.assign({}, props.style), {
             backgroundColor: uuiui_1.colorTheme.white.value
           }),
           layout: {
@@ -390,7 +390,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>

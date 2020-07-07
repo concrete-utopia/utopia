@@ -293,7 +293,7 @@ describe('UiJsxCanvas render', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -329,7 +329,7 @@ describe('UiJsxCanvas render', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -365,7 +365,7 @@ describe('UiJsxCanvas render', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -401,7 +401,7 @@ describe('UiJsxCanvas render', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -437,7 +437,7 @@ describe('UiJsxCanvas render', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -1243,7 +1243,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'} data-label={'Hat'} />
+        return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
       }
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
@@ -1270,7 +1270,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'}>
+        return <div style={{ ...props.style}} data-uid={'aaa'}>
           {[1, 2, 3].map(n => {
             return <div data-uid={'bbb'} data-label={'Plane'} />
           })}
@@ -1303,7 +1303,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       console.log('root log')
       export var App = (props) => {
         console.log('inside component log')
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'} />
+        return <div style={{ ...props.style}} data-uid={'aaa'} />
       }
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
@@ -1330,7 +1330,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div ref={() => console.log('functional component')} style={{ ...(props.style || {})}} data-uid={'aaa'} />
+        return <div ref={() => console.log('functional component')} style={{ ...props.style}} data-uid={'aaa'} />
       }
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
@@ -1548,7 +1548,7 @@ export var App = (props) => {
   return (
     <View
       data-uid="aaa"
-      style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+      style={{ ...props.style, backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >
       <DatePicker data-uid="antd-date-picker" style={{ width: 123, height: 51, left: 113, top: 395 }} />
@@ -1708,7 +1708,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
