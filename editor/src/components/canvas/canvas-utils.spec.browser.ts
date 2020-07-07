@@ -893,9 +893,8 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const pinChange = singleResizeChange(
       TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      { x: -20, y: -10 } as CanvasVector,
-      { x: 40, y: 30 } as CanvasVector,
       { x: 1, y: 1 } as EdgePosition,
+      { x: 40, y: 60 } as CanvasVector,
     )
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
@@ -904,7 +903,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', height: 340, top: 40, width: 310, left: 30 }}
+          style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, height: 360, width: 290 }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid={'bbb'}
         />
@@ -927,9 +926,8 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const pinChange = singleResizeChange(
       TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      { x: -20, y: -10 } as CanvasVector,
-      { x: 40, y: 30 } as CanvasVector,
       { x: 1, y: 1 } as EdgePosition,
+      { x: -20, y: -10 } as CanvasVector,
     )
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
@@ -938,7 +936,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', height: '30%', top: 30, width: '65%', left: 20 }}
+          style={{ backgroundColor: '#0091FFAA', left: 40, top: 40, height: '17.5%', width: '45%' }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid={'bbb'}
         />
@@ -961,9 +959,8 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const pinChange = singleResizeChange(
       TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      { x: 0, y: 0 } as CanvasVector,
-      { x: 40, y: 30 } as CanvasVector,
       { x: 1, y: 1 } as EdgePosition,
+      { x: 40, y: 30 } as CanvasVector,
     )
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
@@ -995,9 +992,8 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const pinChange = singleResizeChange(
       TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      { x: -10, y: -20 } as CanvasVector,
-      { x: 40, y: 30 } as CanvasVector,
       { x: 1, y: 1 } as EdgePosition,
+      { x: 50, y: 50 } as CanvasVector,
     )
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
@@ -1008,12 +1004,12 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
         <View
           style={{
             backgroundColor: '#0091FFAA',
+            left: 52,
+            top: 61,
             height: 252,
-            top: 41,
-            bottom: 107,
+            bottom: 87,
             width: 306,
-            left: 42,
-            right: 53,
+            right: 43,
           }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid={'bbb'}
@@ -1038,9 +1034,8 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const pinChange = singleResizeChange(
       TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      { x: -10, y: -20 } as CanvasVector,
-      { x: 40, y: 30 } as CanvasVector,
       { x: 0, y: 0 } as EdgePosition,
+      { x: 50, y: 20 } as CanvasVector,
     )
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
@@ -1049,7 +1044,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', top: 41, bottom: -10, left: 42, right: 10 }}
+          style={{ backgroundColor: '#0091FFAA', right: 50, bottom: 20, top: 41, left: 2 }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid={'bbb'}
         />
@@ -1073,9 +1068,8 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const pinChange = singleResizeChange(
       TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      { x: -32, y: -41 } as CanvasVector,
-      { x: 40, y: 30 } as CanvasVector,
       { x: 0, y: 0 } as EdgePosition,
+      { x: 40, y: 30 } as CanvasVector,
     )
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
@@ -1084,8 +1078,8 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', top: 20, left: 20 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: 104, centerY: 95 }}
+          style={{ backgroundColor: '#0091FFAA', top: 31, left: 12 }}
+          layout={{ layoutSystem: 'pinSystem', centerY: 85, centerX: 80 }}
           data-uid={'bbb'}
         />
       </View>`,
@@ -1107,9 +1101,8 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const pinChange = singleResizeChange(
       TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      { x: -10, y: -20 } as CanvasVector,
-      { x: 40, y: 30 } as CanvasVector,
       { x: 0, y: 0 } as EdgePosition,
+      { x: 50, y: 60 } as CanvasVector,
     )
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
@@ -1119,7 +1112,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           ${/** pins are magically created */ ''}
-          style={{ backgroundColor: '#0091FFAA', top: -20, height: 50, left: -10, width: 50 }}
+          style={{ backgroundColor: '#0091FFAA', top: -60, height: 60, left: -50, width: 50 }}
           data-uid={'bbb'}
         />
       </View>`,

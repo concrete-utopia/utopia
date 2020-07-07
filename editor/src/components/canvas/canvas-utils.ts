@@ -379,16 +379,14 @@ export function updateFramesOfScenesAndComponents(
             (sceneElement) => {
               const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
               if (isRight(styleProps)) {
-                const left = styleProps.value.left + frameAndTarget.cornerChanges.topLeft.x
-                const top = styleProps.value.top + frameAndTarget.cornerChanges.topLeft.y
-                const width =
-                  styleProps.value.width +
-                  frameAndTarget.cornerChanges.bottomRight.x -
-                  frameAndTarget.cornerChanges.topLeft.x
-                const height =
-                  styleProps.value.height +
-                  frameAndTarget.cornerChanges.bottomRight.y -
-                  frameAndTarget.cornerChanges.topLeft.y
+                const left =
+                  styleProps.value.left +
+                  frameAndTarget.sizeDelta.x * (frameAndTarget.edgePosition.x - 1)
+                const top =
+                  styleProps.value.top +
+                  frameAndTarget.sizeDelta.y * (frameAndTarget.edgePosition.y - 1)
+                const width = styleProps.value.width + frameAndTarget.sizeDelta.x
+                const height = styleProps.value.height + frameAndTarget.sizeDelta.y
                 const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
                   {
                     path: PP.create(['style']),
@@ -694,7 +692,9 @@ export function updateFramesOfScenesAndComponents(
 
             propsToSet.push(
               ...getPropsToSetToResizeElement(
-                frameAndTarget.cornerChanges,
+                frameAndTarget.edgePosition,
+                frameAndTarget.sizeDelta.x,
+                frameAndTarget.sizeDelta.y,
                 framePointsToUse,
                 frameProps,
                 parentFrame,
@@ -828,10 +828,9 @@ function getPropsToSetToMoveElement(
 }
 
 function getPropsToSetToResizeElement(
-  cornerChanges: {
-    topLeft: CanvasVector
-    bottomRight: CanvasVector
-  },
+  edgePosition: EdgePosition,
+  widthDelta: number,
+  heightDelta: number,
   framePoints: FramePoint[],
   frameProps: { [k: string]: string | number | undefined },
   parentFrame: CanvasRectangle | null,
@@ -841,76 +840,60 @@ function getPropsToSetToResizeElement(
     let updatedProp
     switch (framePoint) {
       case FramePoint.Left: {
-        if (cornerChanges.topLeft.x !== 0) {
-          updatedProp = updateFrameValueForProp(
-            framePoint,
-            cornerChanges.topLeft.x,
-            frameProps,
-            parentFrame,
-          )
+        const targetEdgePoint = { x: 0, y: 0.5 }
+        const delta = widthDelta * (edgePosition.x + targetEdgePoint.x - 1)
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
         }
         break
       }
       case FramePoint.Top: {
-        if (cornerChanges.topLeft.y !== 0) {
-          updatedProp = updateFrameValueForProp(
-            framePoint,
-            cornerChanges.topLeft.y,
-            frameProps,
-            parentFrame,
-          )
+        const targetEdgePoint = { x: 0.5, y: 0 }
+        const delta = heightDelta * (edgePosition.y + targetEdgePoint.y - 1)
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
         }
         break
       }
       case FramePoint.Right: {
-        if (cornerChanges.bottomRight.x !== 0) {
-          updatedProp = updateFrameValueForProp(
-            framePoint,
-            -cornerChanges.bottomRight.x,
-            frameProps,
-            parentFrame,
-          )
+        const targetEdgePoint = { x: 1, y: 0.5 }
+        const delta = widthDelta * -(edgePosition.x + targetEdgePoint.x - 1)
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
         }
         break
       }
       case FramePoint.Bottom: {
-        if (cornerChanges.bottomRight.y !== 0) {
-          updatedProp = updateFrameValueForProp(
-            framePoint,
-            -cornerChanges.bottomRight.y,
-            frameProps,
-            parentFrame,
-          )
+        const targetEdgePoint = { x: 0.5, y: 1 }
+        const delta = heightDelta * -(edgePosition.y + targetEdgePoint.y - 1)
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
         }
         break
       }
       case FramePoint.Width: {
-        if (cornerChanges.bottomRight.x !== 0 || cornerChanges.topLeft.x !== 0) {
-          const delta = cornerChanges.bottomRight.x - cornerChanges.topLeft.x
-          if (delta !== 0) {
-            updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
-          }
+        if (widthDelta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, widthDelta, frameProps, parentFrame)
         }
         break
       }
       case FramePoint.Height: {
-        if (cornerChanges.bottomRight.y !== 0 || cornerChanges.topLeft.y !== 0) {
-          const delta = cornerChanges.bottomRight.y - cornerChanges.topLeft.y
-          if (delta !== 0) {
-            updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
-          }
+        if (heightDelta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, heightDelta, frameProps, parentFrame)
         }
         break
       }
       case FramePoint.CenterX: {
-        const delta = (cornerChanges.topLeft.x + cornerChanges.bottomRight.x) / 2
+        const targetEdgePoint = { x: 0.5, y: 0.5 }
+        const delta = widthDelta * (edgePosition.x + targetEdgePoint.x - 1)
         if (delta !== 0) {
           updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
         }
         break
       }
       case FramePoint.CenterY: {
-        const delta = (cornerChanges.topLeft.y + cornerChanges.bottomRight.y) / 2
+        const targetEdgePoint = { x: 0.5, y: 0.5 }
+        const delta = heightDelta * (edgePosition.y + targetEdgePoint.y - 1)
         if (delta !== 0) {
           updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
         }
@@ -1509,17 +1492,14 @@ export function produceResizeSingleSelectCanvasTransientState(
     if (isFlexContainer) {
       framesAndTargets.push(flexResizeChange(elementToTarget, roundedFrame, dragState.edgePosition))
     } else {
-      const topLeft = {
-        x: roundedFrame.x - globalFrame.x,
-        y: roundedFrame.y - globalFrame.y,
+      const edgePosition = dragState.centerBasedResize
+        ? ({ x: 0.5, y: 0.5 } as EdgePosition)
+        : dragState.edgePosition
+      const sizeChange = {
+        x: roundedFrame.width - originalFrame.width,
+        y: roundedFrame.height - originalFrame.height,
       } as CanvasVector
-      const bottomRight = {
-        x: roundedFrame.x + roundedFrame.width - (globalFrame.x + globalFrame.width),
-        y: roundedFrame.y + roundedFrame.height - (globalFrame.y + globalFrame.height),
-      } as CanvasVector
-      framesAndTargets.push(
-        singleResizeChange(elementToTarget, topLeft, bottomRight, dragState.edgePosition),
-      )
+      framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
     }
   }
 

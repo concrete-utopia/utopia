@@ -214,10 +214,7 @@ export interface FlexResizeChange {
 export interface SingleResizeChange {
   type: 'SINGLE_RESIZE'
   target: TemplatePath
-  cornerChanges: {
-    topLeft: CanvasVector
-    bottomRight: CanvasVector
-  }
+  sizeDelta: CanvasVector
   edgePosition: EdgePosition
 }
 
@@ -286,18 +283,14 @@ export function flexResizeChange(
 
 export function singleResizeChange(
   target: TemplatePath,
-  topLeft: CanvasVector,
-  bottomRight: CanvasVector,
   edgePosition: EdgePosition,
+  sizeDelta: CanvasVector,
 ): SingleResizeChange {
   return {
     type: 'SINGLE_RESIZE',
     target: target,
-    cornerChanges: {
-      topLeft: topLeft,
-      bottomRight: bottomRight,
-    },
     edgePosition: edgePosition,
+    sizeDelta: sizeDelta,
   }
 }
 
