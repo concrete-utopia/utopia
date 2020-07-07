@@ -1275,16 +1275,16 @@ export const DefaultPackageJson = {
   },
 }
 
-export function packageJsonFileFromModel(model: {
-  projectContents: ProjectContents
-}): ProjectFile | null {
-  return Utils.defaultIfNull<ProjectFile | null>(null, model.projectContents['/package.json'])
+export function packageJsonFileFromProjectContents(
+  projectContents: ProjectContents,
+): ProjectFile | null {
+  return Utils.defaultIfNull<ProjectFile | null>(null, projectContents['/package.json'])
 }
 
 export function getMainUIFromModel(model: { projectContents: ProjectContents }): string | null {
   const packageJsonFile = Utils.forceNotNull(
     'No package.json file.',
-    packageJsonFileFromModel(model),
+    packageJsonFileFromProjectContents(model.projectContents),
   )
   const packageJsonContents = isCodeFile(packageJsonFile)
     ? Utils.jsonParseOrNull(packageJsonFile.fileContents)
@@ -1315,7 +1315,7 @@ export function updatePackageJsonInEditorState(
   editor: EditorState,
   transformPackageJson: (packageJson: string) => string,
 ): EditorState {
-  const packageJsonFile = packageJsonFileFromModel(editor)
+  const packageJsonFile = packageJsonFileFromProjectContents(editor.projectContents)
   let updatedPackageJsonFile: CodeFile
   if (packageJsonFile == null) {
     // Uh oh, there is no package.json file, so create a brand new one.
