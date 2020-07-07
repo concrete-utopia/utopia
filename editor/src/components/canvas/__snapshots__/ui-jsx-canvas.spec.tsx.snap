@@ -155,15 +155,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAKkCA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAKiCA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -197,7 +195,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -354,15 +352,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAKkCA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAKiCA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -392,7 +388,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -1552,15 +1548,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAOkCA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAOiCA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -1592,7 +1586,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -2829,15 +2823,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -2876,7 +2868,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -3315,15 +3307,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -3362,7 +3352,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -3818,15 +3808,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -3865,7 +3853,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -4351,15 +4339,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -4398,7 +4384,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -5701,15 +5687,13 @@ export var storyboard = (props) => {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAmDaA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAmDYA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -5811,7 +5795,7 @@ export var storyboard = (props) => {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -7358,15 +7342,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAKkFA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAKiFA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -7396,7 +7378,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -8149,15 +8131,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAO0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAOyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -8195,7 +8175,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },

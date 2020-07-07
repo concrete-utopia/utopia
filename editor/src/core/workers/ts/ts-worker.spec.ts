@@ -134,8 +134,8 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                         type: 'SPREAD_ASSIGNMENT',
                         value: {
                           type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
-                          javascript: '(props.style || {})',
-                          transpiledJavascript: 'return props.style || {};',
+                          javascript: 'props.style',
+                          transpiledJavascript: 'return props.style;',
                           definedElsewhere: ['props'],
                           sourceMap: {
                             version: 3,
