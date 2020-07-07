@@ -27,12 +27,17 @@ servantTestTree = do
           footnoteShow ("projectSuffix" :: Text, projectSuffix)
           let combinedProjectId = projectId <> "-" <> projectSuffix
           parseUrlPiece combinedProjectId === Right (ProjectIdWithSuffix projectId projectSuffix)
-    , testProperty "parseUrlPiece mirrors toUrlPiece" $
+    , testProperty "parseUrlPiece mirrors toUrlPiece with a suffix" $
         property $ do
-          projectId <- forAll $ Gen.text (Range.constant 0 10) Gen.alphaNum
+          projectId <- forAll $ Gen.text (Range.constant 1 10) Gen.alphaNum
           footnoteShow ("projectId" :: Text, projectId)
-          projectSuffix <- forAll $ Gen.text (Range.constant 0 30) Gen.unicode
+          projectSuffix <- forAll $ Gen.text (Range.constant 1 30) Gen.unicode
           footnoteShow ("projectSuffix" :: Text, projectSuffix)
           let combinedProjectId = projectId <> "-" <> projectSuffix
           fmap toUrlPiece (parseUrlPiece combinedProjectId :: Either Text ProjectIdWithSuffix) === Right combinedProjectId
+    , testProperty "parseUrlPiece mirrors toUrlPiece with no suffix" $
+        property $ do
+          projectId <- forAll $ Gen.text (Range.constant 1 10) Gen.alphaNum
+          footnoteShow ("projectId" :: Text, projectId)
+          fmap toUrlPiece (parseUrlPiece projectId :: Either Text ProjectIdWithSuffix) === Right projectId
     ]
