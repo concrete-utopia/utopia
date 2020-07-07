@@ -3177,6 +3177,108 @@ export var whatever = props => {
     )
     expect(actualResult).toEqual(expectedResult)
   })
+  it('defined elsewhere values coming from outside the block are recognised in props', () => {
+    const code = `import * as React from "react"
+export var whatever = props => {
+  const a = 30
+  return <div data-uid={'aaa'}>
+    {[1, 2, 3].map(n => {
+      return <div style={{left: n * a, top: n * a}} data-uid={'bbb'} />
+    })}
+  </div>
+}`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
+      return <div style={{left: n * a, top: n * a}} data-uid={'bbb'} />
+    })`
+    const arbitraryBlockCode = `[1, 2, 3].map(n => {
+  return <div style={{ left: n * a, top: n * a }} data-uid={'bbb'} />;
+});`
+    const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
+  return utopiaCanvasJSXLookup("bbb", {
+    n: n,
+    a: a
+  });
+});`
+    const innerElement = jsxElement(
+      'div',
+      {
+        style: jsxAttributeNestedObject([
+          jsxPropertyAssignment(
+            'left',
+            jsxAttributeOtherJavaScript(
+              `n * a`,
+              `return n * a;`,
+              ['n', 'a'],
+              expect.objectContaining({}),
+            ),
+          ),
+          jsxPropertyAssignment(
+            'top',
+            jsxAttributeOtherJavaScript(
+              `n * a`,
+              `return n * a;`,
+              ['n', 'a'],
+              expect.objectContaining({}),
+            ),
+          ),
+        ]),
+        ['data-uid']: jsxAttributeValue('bbb'),
+      },
+      [],
+      null,
+    )
+    const arbitraryBlock = jsxArbitraryBlock(
+      arbitraryBlockOriginalCode,
+      arbitraryBlockCode,
+      arbitraryBlockTranspiledCode,
+      ['a', 'React', 'utopiaCanvasJSXLookup'],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      { bbb: innerElement },
+    )
+
+    const topLevelArbitraryBlock = arbitraryJSBlock(
+      `const a = 30;`,
+      `var a = 30;
+return { a: a };`,
+      ['a'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+    )
+
+    const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa') }, [arbitraryBlock], null)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      topLevelArbitraryBlock,
+    )
+    const expectedResult = clearParseResultUniqueIDs(
+      right(
+        parseSuccess(
+          { react: sampleImportsForTests['react'] },
+          [exported, EmptyUtopiaCanvasComponent],
+          right(defaultCanvasMetadata()),
+          false,
+          code,
+          expect.objectContaining({}),
+          expect.arrayContaining([]),
+          null,
+        ),
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
   it('svg elements are accepted', () => {
     const code = `import * as React from "react"
 export var whatever = props => {
