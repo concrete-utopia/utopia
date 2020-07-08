@@ -28,6 +28,11 @@ function evaluateJs(
     false,
     { require: requireFn, exports: exports, module: module, process: process },
     moduleCode,
+    [],
+    (error) => {
+      // we throw the error here, the require fn will catch it
+      throw error
+    },
   )()
 
   return module
