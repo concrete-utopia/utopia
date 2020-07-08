@@ -52,12 +52,12 @@ export function processErrorWithSourceMap(
         ? unmapUtopiaSafeFunction(stackFrames)
         : stackFrames
 
-      if (rawSourceMap != null) {
+      if (rawSourceMap == null) {
+        ;(error as FancyError).stackFrames = stackFramesWithoutSafeFn
+      } else {
         const sourceMap = getSourceMapConsumer(rawSourceMap as any)
         const enhancedStackFrames = unmapBabelTranspiledCode(stackFramesWithoutSafeFn, sourceMap)
         ;(error as FancyError).stackFrames = enhancedStackFrames
-      } else {
-        ;(error as FancyError).stackFrames = stackFramesWithoutSafeFn
       }
     } catch (sourceMapError) {
       console.error('Source map handling threw an error.', sourceMapError)
