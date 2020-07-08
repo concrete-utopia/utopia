@@ -63,6 +63,11 @@ import { HeartbeatRequestMessage } from '../core/workers/watchdog-worker'
 import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
 import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
 import { dependenciesFromProjectContents } from '../components/editor/npm-dependency/npm-dependency'
+import {
+  UiJsxCanvasContextData,
+  emptyUiJsxCanvasContextData,
+  UiJsxCanvasContext,
+} from '../components/canvas/ui-jsx-canvas'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -76,6 +81,7 @@ export class Editor {
   utopiaStoreApi: UtopiaStoreAPI
   updateStore: (partialState: EditorStore) => void
   boundDispatch: EditorDispatch = this.dispatch.bind(this)
+  spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
   constructor() {
     updateCssVars()
@@ -182,14 +188,14 @@ export class Editor {
       const projectId = getProjectID()
       if (projectId == null) {
         createNewProject(this.boundDispatch, () =>
-          renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi),
+          renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
         )
       } else if (isSampleProject(projectId)) {
         createNewProjectFromSampleProject(
           projectId,
           this.boundDispatch,
           this.storedState.workers,
-          () => renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi),
+          () => renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
         )
       } else {
         projectIsStoredLocally(projectId).then((isLocal) => {
@@ -199,11 +205,12 @@ export class Editor {
               this.boundDispatch,
               isLoggedIn(loginState),
               this.storedState.workers,
-              () => renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi),
+              () =>
+                renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
             )
           } else {
             loadFromServer(projectId, this.boundDispatch, this.storedState.workers, () =>
-              renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi),
+              renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
             )
           }
         })
@@ -233,7 +240,12 @@ export class Editor {
 
   dispatch(dispatchedActions: readonly EditorAction[]) {
     const runDispatch = () => {
-      const result = editorDispatch(this.boundDispatch, dispatchedActions, this.storedState)
+      const result = editorDispatch(
+        this.boundDispatch,
+        dispatchedActions,
+        this.storedState,
+        this.spyCollector,
+      )
       this.storedState = result
 
       if (!result.nothingChanged) {
@@ -254,22 +266,32 @@ export class Editor {
 export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
-}> = hot(({ api, useStore }) => {
+  spyCollector: UiJsxCanvasContextData
+}> = hot(({ api, useStore, spyCollector }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
-      <EditorComponent />
+      <UiJsxCanvasContext.Provider value={spyCollector}>
+        <EditorComponent />
+      </UiJsxCanvasContext.Provider>
     </EditorStateContext.Provider>
   )
 })
 HotRoot.displayName = 'Utopia Editor Root'
 
-function renderRootComponent(useStore: UtopiaStoreHook, api: UtopiaStoreAPI): Promise<void> {
+async function renderRootComponent(
+  useStore: UtopiaStoreHook,
+  api: UtopiaStoreAPI,
+  spyCollector: UiJsxCanvasContextData,
+): Promise<void> {
   return triggerHashedAssetsUpdate().then(() => {
     // NOTE: we only need to call this function once,
     // as subsequent updates will be fed through Zustand
     const rootElement = document.getElementById(EditorID)
     if (rootElement != null) {
-      ReactDOM.render(<HotRoot api={api} useStore={useStore} />, rootElement)
+      ReactDOM.render(
+        <HotRoot api={api} useStore={useStore} spyCollector={spyCollector} />,
+        rootElement,
+      )
     }
   })
 }

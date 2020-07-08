@@ -288,6 +288,7 @@ export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStore,
+  spyCollector: UiJsxCanvasContextData,
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
   const nameUpdated = dispatchedActions.some((action) => action.action === 'SET_PROJECT_NAME')
@@ -351,7 +352,7 @@ export function editorDispatch(
 
   const result: DispatchResult = actionGroupsToProcess.reduce(
     (working: DispatchResult, actions) => {
-      return editorDispatchInner(boundDispatch, actions, working, allTransient)
+      return editorDispatchInner(boundDispatch, actions, working, allTransient, spyCollector)
     },
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
   )
@@ -431,6 +432,7 @@ function editorDispatchInner(
   dispatchedActions: EditorAction[],
   storedState: DispatchResult,
   transient: boolean,
+  spyCollector: UiJsxCanvasContextData,
 ): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
@@ -466,60 +468,10 @@ function editorDispatchInner(
         },
       }
 
-      const spyCollector: UiJsxCanvasContextData = {
-        current: {
-          spyValues: {
-            metadata: {},
-            scenes: {},
-          },
-        },
-      }
-      let canvasProps = pickUiJsxCanvasProps(
-        result.editor,
-        result.derived,
-        false,
-        true,
-        Utils.NO_OP,
-        Utils.NO_OP,
-        Utils.NO_OP,
-        boundDispatch,
+      spyResult = convertMetadataMap(
+        spyCollector.current.spyValues.metadata,
+        spyCollector.current.spyValues.scenes,
       )
-      let priorCanvasProps = pickUiJsxCanvasProps(
-        storedState.editor,
-        storedState.derived,
-        false,
-        true,
-        Utils.NO_OP,
-        Utils.NO_OP,
-        Utils.NO_OP,
-        boundDispatch,
-      )
-      try {
-        if (deepEquals(canvasProps, priorCanvasProps)) {
-          spyResult = result.editor.spyMetadataKILLME
-        } else {
-          // this function call needs to be in a try-catch because react error boundaries are not working in ReactDOMServer
-          removeConsoleProxy(window.console)
-          ReactDOMServer.renderToString(
-            <UiJsxCanvasContext.Provider value={spyCollector}>
-              <UiJsxCanvas {...canvasProps} clearErrors={Utils.NO_OP} reportError={Utils.NO_OP} />
-            </UiJsxCanvasContext.Provider>,
-          )
-          const transientState = result.derived.canvas.transientState
-          if (transientState.fileState == null) {
-            // See below word of warning
-            spyResult = result.editor.spyMetadataKILLME
-          } else {
-            spyResult = convertMetadataMap(
-              spyCollector.current.spyValues.metadata,
-              spyCollector.current.spyValues.scenes,
-            )
-          }
-        }
-      } catch (e) {
-        // TODO We should protect ourselves when trying to actually read from the metadata in this case
-        spyResult = result.editor.spyMetadataKILLME
-      }
     } else {
       spyResult = result.editor.spyMetadataKILLME
     }
