@@ -9,42 +9,42 @@
 
 module Utopia.Web.Executors.Common where
 
-import           Control.Lens                hiding ((.=))
-import           Control.Monad.Catch         hiding (Handler, catch)
+import           Control.Lens              hiding ((.=), (<.>))
+import           Control.Monad.Catch       hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
 import           Data.Aeson
 import           Data.Binary.Builder
-import qualified Data.ByteString.Lazy        as BL
-import qualified Data.HashMap.Strict         as M
+import qualified Data.ByteString.Lazy      as BL
+import qualified Data.HashMap.Strict       as M
 import           Data.IORef
 import           Data.Pool
-import           Data.String                 (String)
+import           Data.String               (String)
 import           Data.Time
 import           Database.Persist.Sql
-import qualified Database.Redis              as R
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
 import           Network.Mime
 import           Network.Wai
-import qualified Network.Wreq                as WR
-import           Protolude
+import qualified Network.Wreq              as WR
+import           Protolude                 hiding ((<.>))
 import           Servant
 import           Servant.Client
+import           System.Directory
 import           System.Environment
-import           System.Metrics              hiding (Value)
-import qualified Text.Blaze.Html5            as H
+import           System.FilePath
+import           System.Metrics            hiding (Value)
+import qualified Text.Blaze.Html5          as H
 import           Utopia.Web.Assets
-import           Utopia.Web.Auth             (getUserDetailsFromCode)
+import           Utopia.Web.Auth           (getUserDetailsFromCode)
 import           Utopia.Web.Auth.Session
-import           Utopia.Web.Auth.Types       (Auth0Resources)
-import qualified Utopia.Web.Database         as DB
+import           Utopia.Web.Auth.Types     (Auth0Resources)
+import qualified Utopia.Web.Database       as DB
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
-import           Utopia.Web.Websockets.Types
 import           Web.Cookie
 
 {-|
@@ -204,14 +204,9 @@ saveProjectThumbnailWithCall :: (MonadIO m, MonadThrow m) => DB.DatabaseMetrics 
 saveProjectThumbnailWithCall metrics pool user projectID thumbnail saveCall = do
   whenProjectOwner metrics pool user projectID $ liftIO $ saveCall projectID thumbnail
 
-registerReportsGauge :: IORef ReportMap -> Store -> IO ()
-registerReportsGauge connectionsMap store = do
-  registerGauge "project.reports" (fmap fromIntegral $ fmap M.size $ readIORef connectionsMap) store
-
-closeResources :: Pool SqlBackend -> R.Connection -> IO ()
-closeResources dbPool redisConnection = do
+closeResources :: Pool SqlBackend -> IO ()
+closeResources dbPool = do
   destroyAllResources dbPool
-  R.disconnect redisConnection
 
 handleRegistryError :: HttpException -> IO (Maybe Value)
 handleRegistryError _ = return Nothing
@@ -238,10 +233,39 @@ contentText = "content"
 contentsText :: Text
 contentsText = "contents"
 
-getPackagerContent :: QSem -> Text -> Text -> IO BL.ByteString
-getPackagerContent semaphore javascriptPackageName javascriptPackageVersion = do
-  filesAndContent <- withInstalledProject semaphore javascriptPackageName javascriptPackageVersion $ do
-    getModuleAndDependenciesFiles javascriptPackageName
-  let contents = fmap (\fileContent -> (M.singleton contentText fileContent)) filesAndContent
-  let encodingResult = toEncoding $ M.singleton contentsText contents
-  return $ toLazyByteString $ fromEncoding encodingResult
+getRoundedAccessTime :: String -> IO UTCTime
+getRoundedAccessTime filePath = do
+  time <- getAccessTime filePath
+  let roundedDiffTime = fromInteger $ round $ utctDayTime time
+  return $ time { utctDayTime = roundedDiffTime }
+
+cachePackagerContent :: Text -> Text -> Maybe UTCTime -> IO BL.ByteString -> IO (Maybe (BL.ByteString, UTCTime))
+cachePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSince fallback = do
+  let cacheFileParentPath = ".utopia-cache" </> "packager" </> toS javascriptPackageName
+  let cacheFilePath = cacheFileParentPath </> toS javascriptPackageVersion <.> "json"
+  fileExists <- doesFileExist cacheFilePath
+  let getLastModified = getRoundedAccessTime cacheFilePath
+  let whenFileExists = do
+            lastModified <- getLastModified
+            -- Handle checking the if-modified-since value should there be one, defaulting to always loading.
+            let shouldLoad = maybe True (\ifms -> ifms < lastModified) ifModifiedSince
+            -- Incorporate the last modified value into the return value.
+            let fromDisk = fmap (\result -> Just (result, lastModified)) $ BL.readFile cacheFilePath
+            if shouldLoad then fromDisk else return Nothing
+  let whenFileDoesNotExist = do
+            result <- fallback
+            createDirectoryIfMissing True cacheFileParentPath
+            BL.writeFile cacheFilePath result
+            -- Use the same function that is used when the file exists.
+            lastModified <- getLastModified
+            return $ Just (result, lastModified)
+  if fileExists then whenFileExists else whenFileDoesNotExist
+
+getPackagerContent :: QSem -> Text -> Text -> Maybe UTCTime -> IO (Maybe (BL.ByteString, UTCTime))
+getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifModifiedSince = do
+  cachePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSince $ do
+    filesAndContent <- withInstalledProject semaphore javascriptPackageName javascriptPackageVersion $ do
+      getModuleAndDependenciesFiles javascriptPackageName
+    let contents = fmap (\fileContent -> (M.singleton contentText fileContent)) filesAndContent
+    let encodingResult = toEncoding $ M.singleton contentsText contents
+    return $ toLazyByteString $ fromEncoding encodingResult

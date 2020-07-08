@@ -51,9 +51,9 @@ export function runSimpleLocalEditorAction(
 ): EditorState {
   switch (action.action) {
     case 'NEW':
-      return UPDATE_FNS.NEW(action, state, workers)
+      return UPDATE_FNS.NEW(action, state, workers, dispatch)
     case 'LOAD':
-      return UPDATE_FNS.LOAD(action, state)
+      return UPDATE_FNS.LOAD(action, state, dispatch)
     case 'DUPLICATE_SELECTED':
       return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch)
     case 'UPDATE_DUPLICATION_STATE':
@@ -158,8 +158,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_STORED_FONT_SETTINGS(action, state)
     case 'SET_PROJECT_ID':
       return UPDATE_FNS.SET_PROJECT_ID(action, state, dispatch)
-    case 'UPDATE_NPM_DEPENDENCIES':
-      return UPDATE_FNS.UPDATE_NPM_DEPENDENCIES(action, state, workers)
     case 'UPDATE_CODE_RESULT_CACHE':
       return UPDATE_FNS.UPDATE_CODE_RESULT_CACHE(action, state)
     case 'SET_CODE_EDITOR_VISIBILITY':
@@ -221,7 +219,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_FILEBROWSER_RENAMING_TARGET':
       return UPDATE_FNS.SET_FILEBROWSER_RENAMING_TARGET(action, state)
     case 'TOGGLE_PROPERTY':
-      return UPDATE_FNS.TOGGLE_PROPERTY(action, state, derivedState)
+      return UPDATE_FNS.TOGGLE_PROPERTY(action, state)
     case 'SWITCH_LAYOUT_SYSTEM':
       return UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(action, state)
     case 'CLEAR_IMAGE_FILE_BLOB':
@@ -268,6 +266,16 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.INSERT_DROPPED_IMAGE(action, state)
     case 'RESET_PROP_TO_DEFAULT':
       return UPDATE_FNS.RESET_PROP_TO_DEFAULT(action, state)
+    case 'UPDATE_NODE_MODULES_CONTENTS':
+      return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state, dispatch)
+    case 'UPDATE_PACKAGE_JSON':
+      return UPDATE_FNS.UPDATE_PACKAGE_JSON(action, state)
+    case 'START_CHECKPOINT_TIMER':
+      return UPDATE_FNS.START_CHECKPOINT_TIMER(action, state, dispatch)
+    case 'FINISH_CHECKPOINT_TIMER':
+      return UPDATE_FNS.FINISH_CHECKPOINT_TIMER(action, state)
+    case 'ADD_MISSING_DIMENSIONS':
+      return UPDATE_FNS.ADD_MISSING_DIMENSIONS(action, state)
     default:
       return state
   }

@@ -31,6 +31,7 @@ import { createEditorState, deriveState, EditorStore } from '../editor/store/edi
 import { createTestProjectWithCode } from './canvas-utils'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
+import { NO_OP } from '../../core/shared/utils'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   return {
@@ -55,7 +56,7 @@ function sanitizeJsxMetadata(jsxMetadata: ComponentMetadata[]) {
 }
 
 async function renderTestEditorWithCode(appUiJsFileCode: string) {
-  let emptyEditorState = createEditorState()
+  let emptyEditorState = createEditorState(NO_OP)
   const fromScratchResult = deriveState(emptyEditorState, null, false)
   emptyEditorState = fromScratchResult.editor
   const derivedState = fromScratchResult.derived
@@ -95,6 +96,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       '0',
       initialEditorStore.workers,
       Utils.NO_OP,
+      false,
     )
   })
   const sanitizedMetadata = sanitizeJsxMetadata(api.getState().editor.jsxMetadataKILLME)
@@ -115,7 +117,7 @@ describe('DOM Walker tests', () => {
       } from 'utopia-api'
       export var App = (props) => {
         return (
-          <View style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
+          <View style={{ ...props.style, backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
             <View
               style={{ backgroundColor: '#DDDDDD' }}
               data-uid={'ef0'}
@@ -160,7 +162,7 @@ describe('DOM Walker tests', () => {
       } from 'utopia-api'
       export var App = (props) => {
         return (
-          <div style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
+          <div style={{ ...props.style, backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
             <div
               style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, }}
               data-uid={'ef0'}
@@ -205,7 +207,7 @@ describe('DOM Walker tests', () => {
       } from 'utopia-api'
       export var App = (props) => {
         return (
-          <div style={{ ...(props.style || {}), backgroundColor: '#FFFFFF', display: 'flex' }} data-uid={'05c'}>
+          <div style={{ ...props.style, backgroundColor: '#FFFFFF', display: 'flex' }} data-uid={'05c'}>
             <div
               style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, }}
               data-uid={'ef0'}
@@ -249,7 +251,7 @@ describe('DOM Walker tests', () => {
         jsx,
       } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'} data-label={'Hat'} />
+        return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
       }
       export var storyboard = (props) => {
         return (
@@ -280,7 +282,7 @@ describe('DOM Walker tests', () => {
         jsx,
       } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'}>
+        return <div style={{ ...props.style}} data-uid={'aaa'}>
           {[1, 2, 3].map(n => {
             return <div data-uid={'bbb'} data-label={'Plane'} />
           })}

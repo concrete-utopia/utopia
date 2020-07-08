@@ -105,13 +105,7 @@ import {
 import { ParserPrinterResultMessage } from './parser-printer-worker'
 import creator from './ts-creator'
 import { applyPrettier } from './prettier-utils'
-import {
-  canvasMetadataToExpression,
-  convertPrintedMetadataToCanvasMetadata,
-  jsonToExpression,
-  parseCanvasMetadata,
-  parsePrintedCanvasMetadata,
-} from './canvas-metadata-parser'
+import { convertPrintedMetadataToCanvasMetadata, jsonToExpression } from './canvas-metadata-parser'
 import { omit } from '../../shared/object-utils'
 
 function buildPropertyCallingFunction(
@@ -799,23 +793,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
       } else {
         const possibleCanvasMetadata = looksLikeCanvasMetadata(sourceFile, topLevelElement)
         if (isRight(possibleCanvasMetadata)) {
-          // Handle the canvas metadata here.
-          const parseResult = parseCanvasMetadata(sourceFile, possibleCanvasMetadata.value)
-          if (isParsedJSONSuccess(parseResult)) {
-            applyAndResetArbitraryNodes()
-            // Parse the canvas metadata.
-            const metadataParseResult = parsePrintedCanvasMetadata(parseResult.value)
-            forEachLeft(metadataParseResult, (failureMessage) => {
-              console.warn('Invalid metadata.', failureMessage)
-            })
-            canvasMetadata = bimapEither(
-              (_) => parseResult.value,
-              (success) => success,
-              metadataParseResult,
-            )
-          } else {
-            return left(parseFailure(null, parseResult, null, [], code))
-          }
+          // KILLME CanvasMetadata is dead
         } else {
           const possibleDeclaration = looksLikeCanvasElements(sourceFile, topLevelElement)
           if (isRight(possibleDeclaration)) {
@@ -843,7 +821,9 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
                 if (paramsValue.length === 1) {
                   // Note: We're explicitly ignoring the `propsUsed` value as
                   // that should be handled by the call to `propNamesForParam` below.
-                  return right(withParserMetadata(paramsValue[0], parsedParams.highlightBounds, []))
+                  return right(
+                    withParserMetadata(paramsValue[0], parsedParams.highlightBounds, [], []),
+                  )
                 } else {
                   return left('Invalid number of params')
                 }
@@ -1004,7 +984,7 @@ function parseParams(
       return parseResult
     }
   }
-  return right(withParserMetadata(parsedParams, highlightBounds, propsUsed))
+  return right(withParserMetadata(parsedParams, highlightBounds, propsUsed, []))
 }
 
 function parseParam(
@@ -1022,7 +1002,7 @@ function parseParam(
     WithParserMetadata<JSXAttributeOtherJavaScript | undefined>
   > =
     param.initializer == null
-      ? right(withParserMetadata(undefined, existingHighlightBounds, []))
+      ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
       : parseAttributeOtherJavaScript(
           file,
           filename,
@@ -1050,6 +1030,7 @@ function parseParam(
           functionParam(dotDotDotToken, bindingName.value),
           bindingName.highlightBounds,
           bindingName.propsUsed,
+          [],
         ),
       parsedBindingName,
     )
@@ -1080,6 +1061,7 @@ function parseBindingName(
           regularParam(paramName, expression.value ?? null),
           highlightBounds,
           propsUsed,
+          [],
         ),
       parsedParamName,
     )
@@ -1122,7 +1104,7 @@ function parseBindingName(
         return parsedPropertyName
       }
     }
-    return right(withParserMetadata(destructuredObject(parts), highlightBounds, propsUsed))
+    return right(withParserMetadata(destructuredObject(parts), highlightBounds, propsUsed, []))
   } else if (TS.isArrayBindingPattern(elem)) {
     let parts: Array<DestructuredArrayPart> = []
     for (const element of elem.elements) {
@@ -1151,7 +1133,7 @@ function parseBindingName(
         }
       }
     }
-    return right(withParserMetadata(destructuredArray(parts), highlightBounds, propsUsed))
+    return right(withParserMetadata(destructuredArray(parts), highlightBounds, propsUsed, []))
   } else {
     return left('Unable to parse binding element')
   }

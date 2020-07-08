@@ -52,8 +52,9 @@ export async function parsePasteEvent(clipboardData: DataTransfer | null): Promi
 }
 
 function extractFiles(items: DataTransferItemList): Promise<Array<FileResult>> {
+  const fileItems = Array.from(items).filter((item) => item.kind === 'file')
   return Promise.all<FileResult>(
-    Array.from(items).map((item) => {
+    fileItems.map((item) => {
       const file = item.getAsFile()
       if (file == null) {
         return Promise.reject('Could not extract file.')

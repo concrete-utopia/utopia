@@ -20,6 +20,8 @@ import {
   jsxPropertyAssignment,
   partOfJsxAttributeValue,
   PartOfJSXAttributeValue,
+  isPartOfJSXAttributeValue,
+  isJSXAttributeNotFound,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { objectMap } from './object-utils'
@@ -86,11 +88,7 @@ export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Eithe
               returnObject[prop.key] = value.value
               break
             case 'SPREAD_ASSIGNMENT':
-              if (typeof value.value === 'object') {
-                returnObject = { ...returnObject, ...value.value }
-              } else {
-                throw new Error(`Trying to spread non-object type ${JSON.stringify(value.value)}`)
-              }
+              returnObject = { ...returnObject, ...value.value }
               break
             default:
               const _exhaustiveCheck: never = prop
@@ -195,11 +193,7 @@ export const jsxAttributeToValue = (
             returnObject[prop.key] = value
             break
           case 'SPREAD_ASSIGNMENT':
-            if (typeof value === 'object') {
-              returnObject = { ...returnObject, ...value }
-            } else {
-              throw new Error(`Trying to spread non-object type ${JSON.stringify(value)}`)
-            }
+            returnObject = { ...returnObject, ...value }
             break
           default:
             const _exhaustiveCheck: never = prop
@@ -283,6 +277,32 @@ export function getModifiableJSXAttributeAtPath(
     return right(result.attribute)
   } else {
     return left(`Found non-value attribute ${result.attribute.type}`)
+  }
+}
+
+// FIXME The naming here is abysmal
+export function getModifiableJSXAttributeAtPathFromAttribute(
+  attribute: ModifiableAttribute,
+  path: PropertyPath,
+): GetModifiableAttributeResult {
+  if (isJSXAttributeNotFound(attribute)) {
+    return right(jsxAttributeNotFound())
+  } else if (isPartOfJSXAttributeValue(attribute)) {
+    const pathString = PP.toString(path)
+    if (ObjectPath.has(attribute.value, pathString)) {
+      const extractedValue = ObjectPath.get(attribute.value, pathString)
+      return right(partOfJsxAttributeValue(extractedValue))
+    } else {
+      return right(jsxAttributeNotFound())
+    }
+  } else {
+    const result = getJSXAttributeAtPathInner(attribute, path)
+
+    if (result.remainingPath == null) {
+      return right(result.attribute)
+    } else {
+      return left(`Found non-value attribute ${result.attribute.type}`)
+    }
   }
 }
 

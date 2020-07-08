@@ -1,5 +1,11 @@
 import * as React from 'react'
-import { ChainedNumberInput, CheckboxInput, FlexRow, PopupList } from 'uuiui'
+import {
+  ChainedNumberInput,
+  CheckboxInput,
+  FlexRow,
+  PopupList,
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+} from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'
@@ -39,14 +45,18 @@ export const ConicGradientBackgroundLayer = betterReactMemo<ConicGradientBackgro
     const [
       gradientCenterXSubmitValue,
       gradientCenterXTransientSubmitValue,
-    ] = props.useSubmitTransformedValuesFactory(
-      getIndexedUpdateRadialOrConicGradientCenterX(props.index),
+    ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitTransformedValuesFactory(
+        getIndexedUpdateRadialOrConicGradientCenterX(props.index),
+      ),
     )
     const [
       gradientCenterYSubmitValue,
       gradientCenterYTransientSubmitValue,
-    ] = props.useSubmitTransformedValuesFactory(
-      getIndexedUpdateRadialOrConicGradientCenterY(props.index),
+    ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitTransformedValuesFactory(
+        getIndexedUpdateRadialOrConicGradientCenterY(props.index),
+      ),
     )
     const [backgroundLayerType] = props.useSubmitTransformedValuesFactory(
       getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(props.index),
@@ -99,20 +109,18 @@ export const ConicGradientBackgroundLayer = betterReactMemo<ConicGradientBackgro
               propsArray={[
                 {
                   value: props.value.center.x.value,
-                  labelBelow: 'x',
+                  DEPRECATED_labelBelow: 'x',
                   onSubmitValue: gradientCenterXSubmitValue,
                   onTransientSubmitValue: gradientCenterXTransientSubmitValue,
                   controlStatus: props.controlStatus,
-                  disabled: !props.controlStyles.interactive,
                   numberType: 'LengthPercent' as const,
                 },
                 {
                   value: props.value.center.y.value,
-                  labelBelow: 'y',
+                  DEPRECATED_labelBelow: 'y',
                   onSubmitValue: gradientCenterYSubmitValue,
                   onTransientSubmitValue: gradientCenterYTransientSubmitValue,
                   controlStatus: props.controlStatus,
-                  disabled: !props.controlStyles.interactive,
                   numberType: 'LengthPercent' as const,
                 },
               ]}

@@ -1,4 +1,8 @@
-import { CodeResultCache } from '../../components/custom-code/code-file'
+import {
+  CodeResultCache,
+  PropertyControlsInfo,
+  UtopiaRequireFn,
+} from '../../components/custom-code/code-file'
 import {
   parsePropertyControlsForFile,
   ParsedPropertyControls,
@@ -9,8 +13,21 @@ import { isRight, foldEither } from '../shared/either'
 import { forEachValue } from '../shared/object-utils'
 import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
-import { joinSpecial } from '../shared/array-utils'
+import { joinSpecial, pluck } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
+import { AntdControls } from './third-party-property-controls/antd-controls'
+import { NpmDependency } from '../shared/npm-dependency-types'
+import { getThirdPartyComponents } from '../third-party/third-party-components'
+import { getJSXElementNameAsString } from '../shared/element-template'
+import { TemplatePath } from '../shared/project-file-types'
+import {
+  getOpenImportsFromState,
+  getOpenUtopiaJSXComponentsFromState,
+  getOpenUIJSFile,
+  getOpenUIJSFileKey,
+  EditorState,
+} from '../../components/editor/store/editor-state'
+import { MetadataUtils } from '../model/element-metadata-utils'
 
 export function defaultPropertiesForComponentInFile(
   componentName: string,
@@ -79,7 +96,9 @@ export function findMissingDefaults(
 }
 
 export function filterSpecialProps(props: Array<string>): Array<string> {
-  return props.filter((propKey) => propKey !== 'style')
+  return props.filter(
+    (propKey) => propKey !== 'style' && propKey !== 'css' && propKey !== 'className',
+  )
 }
 
 export function getMissingDefaultsWarning(propsWithoutDefaults: Array<string>): string | undefined {
@@ -97,10 +116,10 @@ export function getMissingDefaultsWarning(propsWithoutDefaults: Array<string>): 
 }
 
 export function getDescriptionUnsetOptionalFields(
-  controlDescription: ControlDescription<any>,
+  controlDescription: ControlDescription,
 ): Array<string> {
   let result: Array<string> = []
-  function addIfFieldEmpty<T extends ControlDescription<any>, K extends keyof T & string>(
+  function addIfFieldEmpty<T extends ControlDescription, K extends keyof T & string>(
     description: T,
     fieldName: K,
   ): void {
@@ -110,6 +129,29 @@ export function getDescriptionUnsetOptionalFields(
   }
   addIfFieldEmpty(controlDescription, 'title')
   switch (controlDescription.type) {
+    case 'array':
+      addIfFieldEmpty(controlDescription, 'defaultValue')
+      addIfFieldEmpty(controlDescription, 'maxCount')
+      break
+    case 'boolean':
+      addIfFieldEmpty(controlDescription, 'defaultValue')
+      addIfFieldEmpty(controlDescription, 'disabledTitle')
+      addIfFieldEmpty(controlDescription, 'enabledTitle')
+      break
+    case 'color':
+      addIfFieldEmpty(controlDescription, 'defaultValue')
+      break
+    case 'componentinstance':
+      break
+    case 'enum':
+      addIfFieldEmpty(controlDescription, 'defaultValue')
+      addIfFieldEmpty(controlDescription, 'optionTitles')
+      addIfFieldEmpty(controlDescription, 'displaySegmentedControl')
+      break
+    case 'eventhandler':
+    case 'ignore':
+    case 'image':
+      break
     case 'number':
       addIfFieldEmpty(controlDescription, 'defaultValue')
       addIfFieldEmpty(controlDescription, 'max')
@@ -118,51 +160,26 @@ export function getDescriptionUnsetOptionalFields(
       addIfFieldEmpty(controlDescription, 'step')
       addIfFieldEmpty(controlDescription, 'displayStepper')
       break
-    case 'enum':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'optionTitles')
-      addIfFieldEmpty(controlDescription, 'displaySegmentedControl')
+    case 'object':
       break
-    case 'boolean':
+    case 'options':
       addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'disabledTitle')
-      addIfFieldEmpty(controlDescription, 'enabledTitle')
       break
     case 'string':
       addIfFieldEmpty(controlDescription, 'defaultValue')
       addIfFieldEmpty(controlDescription, 'placeholder')
       addIfFieldEmpty(controlDescription, 'obscured')
       break
-    case 'color':
+    case 'popuplist':
       addIfFieldEmpty(controlDescription, 'defaultValue')
-      break
-    case 'fusednumber':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'min')
-      break
-    case 'image':
-      break
-    case 'file':
-      break
-    case 'componentinstance':
-      break
-    case 'array':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'maxCount')
-      break
-    case 'eventhandler':
       break
     case 'slider':
       addIfFieldEmpty(controlDescription, 'defaultValue')
       break
-    case 'popuplist':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      break
-    case 'options':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
+    case 'union':
       break
     default:
-      // Usual exhaustiveness check is invalid here for some reason.
+      const _exhaustiveCheck: never = controlDescription
       throw new Error(`Unhandled type ${JSON.stringify(controlDescription)}`)
   }
   return result
@@ -186,4 +203,70 @@ export function removeIgnored(
     }
   })
   return result
+}
+
+export function getControlsForExternalDependencies(
+  npmDependencies: NpmDependency[],
+): PropertyControlsInfo {
+  let propertyControlsInfo: PropertyControlsInfo = {}
+  fastForEach(npmDependencies, (dependency) => {
+    const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
+    if (componentDescriptor != null) {
+      fastForEach(componentDescriptor.components, (descriptor) => {
+        if (descriptor.propertyControls != null) {
+          const jsxElementName = getJSXElementNameAsString(descriptor.element.name)
+          propertyControlsInfo[dependency.name] = {
+            ...propertyControlsInfo[dependency.name],
+            [jsxElementName]: descriptor.propertyControls,
+          }
+        }
+      })
+    }
+  })
+  return propertyControlsInfo
+}
+
+export function getPropertyControlsForTarget(
+  target: TemplatePath,
+  editor: EditorState,
+): PropertyControls | null {
+  const codeResultCache = editor.codeResultCache
+  const imports = getOpenImportsFromState(editor)
+  const openFilePath = getOpenUIJSFileKey(editor)
+  const rootComponents = getOpenUtopiaJSXComponentsFromState(editor)
+  const tagName = MetadataUtils.getJSXElementTagName(
+    target,
+    rootComponents,
+    editor.jsxMetadataKILLME,
+  )
+  const importedName = MetadataUtils.getJSXElementBaseName(
+    target,
+    rootComponents,
+    editor.jsxMetadataKILLME,
+  )
+  if (importedName != null && tagName != null) {
+    // TODO default and star imports
+    let filename = Object.keys(imports).find((key) => {
+      return pluck(imports[key].importedFromWithin, 'name').includes(importedName)
+    })
+    if (filename == null && openFilePath != null) {
+      filename = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+    }
+    if (filename != null) {
+      // TODO figure out absolute filepath
+      const absoluteFilePath = filename.startsWith('.') ? `${filename.slice(1)}` : `${filename}`
+      if (
+        codeResultCache.propertyControlsInfo[absoluteFilePath] != null &&
+        codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] != null
+      ) {
+        return codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] as PropertyControls
+      } else {
+        return null
+      }
+    } else {
+      return null
+    }
+  } else {
+    return null
+  }
 }

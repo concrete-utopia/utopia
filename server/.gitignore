@@ -25,3 +25,4 @@ cabal.project.local~
 *.db
 utopia-local*
 **/*.dump-splices
+.utopia-cache

@@ -1,5 +1,11 @@
 import * as React from 'react'
-import { FlexColumn, Icons, NumberInput, SquareButton, useWrappedEmptyOnSubmitValue } from 'uuiui'
+import {
+  FlexColumn,
+  Icons,
+  NumberInput,
+  SquareButton,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+} from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import {
   createLayoutPropertyPath,
@@ -55,8 +61,11 @@ export const PinsLayoutNumberControl = betterReactMemo(
       },
     )
 
-    const wrappedOnSubmit = useWrappedEmptyOnSubmitValue(onSubmitValue, pointInfo.onUnsetValues)
-    const wrappedOnTransientSubmit = useWrappedEmptyOnSubmitValue(
+    const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
+      onSubmitValue,
+      pointInfo.onUnsetValues,
+    )
+    const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
       onTransientSubmitValue,
       pointInfo.onUnsetValues,
     )
@@ -111,11 +120,11 @@ export const FlexStyleNumberControl = betterReactMemo(
   (props: FlexStyleNumberControlProps) => {
     const layoutPropInfo = useInspectorLayoutInfo(props.styleProp)
 
-    const wrappedOnSubmitValue = useWrappedEmptyOnSubmitValue(
+    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       layoutPropInfo.onSubmitValue,
       layoutPropInfo.onUnsetValues,
     )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       layoutPropInfo.onTransientSubmitValue,
       layoutPropInfo.onUnsetValues,
     )
@@ -155,11 +164,11 @@ export const FlexLayoutNumberControl = betterReactMemo(
       },
     )
 
-    const wrappedOnSubmitValue = useWrappedEmptyOnSubmitValue(
+    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       onSubmitValue,
       layoutPropInfo.onUnsetValues,
     )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       onTransientSubmitValue,
       layoutPropInfo.onUnsetValues,
     )

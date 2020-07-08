@@ -47,6 +47,7 @@ import {
   isCodeFile,
   isUIJSFile,
   StaticTemplatePath,
+  NodeModules,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -83,7 +84,11 @@ import { produceCanvasTransientState } from '../../canvas/canvas-utils'
 import { CodeEditorTheme, DefaultTheme } from '../../code-editor/code-editor-themes'
 import { CursorPosition } from '../../code-editor/code-editor-utils'
 import { EditorPanel } from '../../common/actions/index'
-import { codeCacheToBuildResult, CodeResultCache } from '../../custom-code/code-file'
+import {
+  codeCacheToBuildResult,
+  CodeResultCache,
+  generateCodeResultCache,
+} from '../../custom-code/code-file'
 import { EditorModes, Mode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
 import { DefaultPackagesList } from '../../navigator/dependency-list'
@@ -108,9 +113,11 @@ import {
   instancePath,
   isInstancePath,
   toUid,
+  toString,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notices'
+import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -217,14 +224,15 @@ export interface EditorState {
   domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
   jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
   projectContents: ProjectContents
-  codeResultCache: CodeResultCache | null
-  resolvedDependencies: {
-    npmRequireFn: RequireFn
-    typeDefinitions: TypeDefinitions
+  codeResultCache: CodeResultCache
+  nodeModules: {
+    skipDeepFreeze: true // when we evaluate the code files we plan to mutate the content with the eval result
+    files: NodeModules
   }
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
   hiddenInstances: Array<TemplatePath>
+  warnedInstances: Array<TemplatePath>
   mode: Mode
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
@@ -696,14 +704,18 @@ export function getSceneElements(model: EditorState): JSXElement[] {
   if (openUIJSFile == null || isLeft(openUIJSFile.fileContents)) {
     return []
   } else {
-    const rootElement = getOrDefaultScenes(openUIJSFile.fileContents.value).rootElement
-    if (!isJSXElement(rootElement) || rootElement.name.baseVariable !== 'Storyboard') {
-      throw new Error('the root element must be a Storyboard component')
-    }
-    return rootElement.children.filter(
-      (child): child is JSXElement => isJSXElement(child) && isSceneElement(child),
-    )
+    return getSceneElementsFromParseSuccess(openUIJSFile.fileContents.value)
   }
+}
+
+export function getSceneElementsFromParseSuccess(success: ParseSuccess): JSXElement[] {
+  const rootElement = getOrDefaultScenes(success).rootElement
+  if (!isJSXElement(rootElement) || rootElement.name.baseVariable !== 'Storyboard') {
+    throw new Error('the root element must be a Storyboard component')
+  }
+  return rootElement.children.filter(
+    (child): child is JSXElement => isJSXElement(child) && isSceneElement(child),
+  )
 }
 
 export function addNewScene(model: EditorState, newSceneElement: JSXElement): EditorState {
@@ -837,7 +849,16 @@ export function getMetadata(editor: EditorState): Array<ComponentMetadata> {
   }
 }
 
-// KILLME!
+export interface ElementWarnings {
+  widthOrHeightZero: boolean
+  absoluteWithUnpositionedParent: boolean
+}
+
+export const defaultElementWarnings: ElementWarnings = {
+  widthOrHeightZero: false,
+  absoluteWithUnpositionedParent: false,
+}
+
 export interface DerivedState {
   navigatorTargets: Array<TemplatePath>
   canvas: {
@@ -845,6 +866,7 @@ export interface DerivedState {
     controls: Array<HigherOrderControl>
     transientState: TransientCanvasState
   }
+  elementWarnings: ComplexMap<TemplatePath, ElementWarnings>
 }
 
 function emptyDerivedState(editorState: EditorState): DerivedState {
@@ -853,8 +875,9 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(editorState),
+      transientState: produceCanvasTransientState(editorState, false),
     },
+    elementWarnings: emptyComplexMap(),
   }
 }
 
@@ -928,11 +951,8 @@ export function mergePersistentModel(
     },
   }
 }
-export function createDefaultEditorState(persistentModel: PersistentModel): EditorState {
-  return editorModelFromPersistentModel(persistentModel)
-}
 
-export function createEditorState(): EditorState {
+export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
     appID: null,
@@ -946,14 +966,15 @@ export function createEditorState(): EditorState {
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
     projectContents: {},
-    codeResultCache: null,
-    resolvedDependencies: {
-      npmRequireFn: Utils.NO_OP,
-      typeDefinitions: {},
+    codeResultCache: generateCodeResultCache({}, [], {}, dispatch, [], true),
+    nodeModules: {
+      skipDeepFreeze: true,
+      files: {},
     },
     selectedViews: [],
     highlightedViews: [],
     hiddenInstances: [],
+    warnedInstances: [],
     mode: EditorModes.selectMode(),
     focusedPanel: 'canvas',
     keysPressed: {},
@@ -1056,6 +1077,41 @@ type EditorAndDerivedState = {
   derived: DerivedState
 }
 
+export function getElementWarnings(
+  rootMetadata: Array<ComponentMetadata>,
+): ComplexMap<TemplatePath, ElementWarnings> {
+  let result: ComplexMap<TemplatePath, ElementWarnings> = emptyComplexMap()
+  MetadataUtils.walkMetadata(
+    rootMetadata,
+    (elementMetadata: ElementInstanceMetadata, parentMetadata: ElementInstanceMetadata | null) => {
+      // Check to see if this element is collapsed in one dimension.
+      const globalFrame = elementMetadata.globalFrame
+      const widthOrHeightZero =
+        globalFrame != null ? globalFrame.width === 0 || globalFrame.height === 0 : false
+
+      // Identify if this element looks to be trying to position itself with "pins", but
+      // the parent element isn't appropriately configured.
+      let absoluteWithUnpositionedParent: boolean = false
+      if (parentMetadata != null) {
+        if (
+          elementMetadata.specialSizeMeasurements.position === 'absolute' &&
+          !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
+        ) {
+          absoluteWithUnpositionedParent = true
+        }
+      }
+
+      // Build the warnings object and add it to the map.
+      const elementWarnings: ElementWarnings = {
+        widthOrHeightZero: widthOrHeightZero,
+        absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
+      }
+      result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
+    },
+  )
+  return result
+}
+
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
@@ -1073,8 +1129,12 @@ export function deriveState(
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
-      transientState: produceCanvasTransientState(editor),
+      transientState: produceCanvasTransientState(editor, true),
     },
+    elementWarnings: keepDeepReferenceEqualityIfPossible(
+      oldDerivedState?.elementWarnings,
+      getElementWarnings(getMetadata(editor)),
+    ),
   }
 
   const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)
@@ -1142,8 +1202,11 @@ export function createCanvasModelKILLME(
   }
 }
 
-export function editorModelFromPersistentModel(persistentModel: PersistentModel): EditorState {
-  const createdEditorState = createEditorState()
+export function editorModelFromPersistentModel(
+  persistentModel: PersistentModel,
+  dispatch: EditorDispatch,
+): EditorState {
+  const createdEditorState = createEditorState(dispatch)
   const editor: EditorState = {
     ...createdEditorState,
     ...{
@@ -1174,9 +1237,8 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     appID: editor.appID,
     projectVersion: editor.projectVersion,
     projectContents: editor.projectContents,
-    buildResult:
-      editor.codeResultCache == null ? {} : codeCacheToBuildResult(editor.codeResultCache.cache),
-    exportsInfo: editor.codeResultCache == null ? [] : editor.codeResultCache.exportsInfo,
+    buildResult: codeCacheToBuildResult(editor.codeResultCache.cache),
+    exportsInfo: editor.codeResultCache.exportsInfo,
     lastUsedFont: editor.lastUsedFont,
     hiddenInstances: editor.hiddenInstances,
     openFiles: editor.openFiles,
@@ -1217,16 +1279,16 @@ export const DefaultPackageJson = {
   },
 }
 
-export function packageJsonFileFromModel(model: {
-  projectContents: ProjectContents
-}): ProjectFile | null {
-  return Utils.defaultIfNull<ProjectFile | null>(null, model.projectContents['/package.json'])
+export function packageJsonFileFromProjectContents(
+  projectContents: ProjectContents,
+): ProjectFile | null {
+  return Utils.defaultIfNull<ProjectFile | null>(null, projectContents['/package.json'])
 }
 
 export function getMainUIFromModel(model: { projectContents: ProjectContents }): string | null {
   const packageJsonFile = Utils.forceNotNull(
     'No package.json file.',
-    packageJsonFileFromModel(model),
+    packageJsonFileFromProjectContents(model.projectContents),
   )
   const packageJsonContents = isCodeFile(packageJsonFile)
     ? Utils.jsonParseOrNull(packageJsonFile.fileContents)
@@ -1257,7 +1319,7 @@ export function updatePackageJsonInEditorState(
   editor: EditorState,
   transformPackageJson: (packageJson: string) => string,
 ): EditorState {
-  const packageJsonFile = packageJsonFileFromModel(editor)
+  const packageJsonFile = packageJsonFileFromProjectContents(editor.projectContents)
   let updatedPackageJsonFile: CodeFile
   if (packageJsonFile == null) {
     // Uh oh, there is no package.json file, so create a brand new one.
@@ -1417,6 +1479,16 @@ export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMeta
       uiFile.fileContents,
     )
   }
+}
+
+export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string | null {
+  const possiblyStoryboard = openComponents.find(
+    (component) => component.name === BakedInStoryboardVariableName,
+  )
+  if (possiblyStoryboard != null) {
+    return getUtopiaID(possiblyStoryboard.rootElement)
+  }
+  return null
 }
 
 export function getStoryboardTemplatePath(

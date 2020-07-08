@@ -328,10 +328,6 @@ import {
   View
 } from "utopia-api";
 import { cake } from 'cake'
-export var ${CanvasMetadataName} = {
-  scenes: [],
-  elementMetadata: {},
-}
 export var whatever = (props) => <View data-uid={'aaa'}>
   <cake data-uid={'aab'} data-label={'First cake'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
   <cake data-uid={'111'} data-label={'Second cake'} style={{backgroundColor: 'blue'}} left={props.rightOfTheCake[0].hat} right={10} top={-10} />
@@ -387,7 +383,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
             imports,
             [exported, EmptyUtopiaCanvasComponent],
             right(defaultCanvasMetadata()),
-            true,
+            false,
             code,
             expect.objectContaining({}),
             expect.arrayContaining([]),
@@ -1695,7 +1691,7 @@ export var whatever = <View data-uid={'aaa'}>
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  it('parses the code when it is a var and includes canvas metadata', () => {
+  it('parses the code when it is a var', () => {
     const code = `import * as React from "react";
 import {
   Ellipse,
@@ -1707,7 +1703,6 @@ import {
   View
 } from "utopia-api";
 import { cake } from 'cake'
-export var ${CanvasMetadataName} = { scenes: [], elementMetadata: {} }
 export var whatever = <View data-uid={'aaa'}>
 <cake data-uid={'aab'} style={{backgroundColor: 'red'}} />
 </View>
@@ -1730,7 +1725,7 @@ export var whatever = <View data-uid={'aaa'}>
         imports,
         [exported, EmptyUtopiaCanvasComponent],
         right({}),
-        true,
+        false,
         code,
         expect.objectContaining({}),
         expect.arrayContaining([]),
@@ -1944,10 +1939,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var ${CanvasMetadataName} = {
-  scenes: [],
-  elementMetadata: {}
-};
 function cakeFn(n) {
   return n
 }
@@ -2402,7 +2393,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var canvasMetadata = { scenes: [], elementMetadata: {} };
 export var App = props => {
   return (
     <View data-uid={'aaa'}>
@@ -2447,7 +2437,7 @@ export var App = props => {
           sampleImportsForTests,
           [component, EmptyUtopiaCanvasComponent],
           right(defaultCanvasMetadata()),
-          true,
+          false,
           code,
           expect.objectContaining({}),
           expect.arrayContaining([]),
@@ -2469,10 +2459,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var canvasMetadata = {
-  scenes: [],
-  elementMetadata: {}
-};
 export var App = props => {
   return (
     <View data-uid={'aaa'}>cake</View>
@@ -2500,7 +2486,7 @@ export var App = props => {
           sampleImportsForTests,
           [component, EmptyUtopiaCanvasComponent],
           right(defaultCanvasMetadata()),
-          true,
+          false,
           code,
           expect.objectContaining({}),
           expect.arrayContaining([]),
@@ -2521,10 +2507,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var canvasMetadata = {
-  scenes: [],
-  elementMetadata: {}
-};
 export var App = props => {
   return (
     <View data-uid={'aaa'}>
@@ -2574,7 +2556,7 @@ export var App = props => {
           sampleImportsForTests,
           [component, EmptyUtopiaCanvasComponent],
           right(defaultCanvasMetadata()),
-          true,
+          false,
           code,
           expect.objectContaining({}),
           expect.arrayContaining([]),
@@ -2689,10 +2671,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var canvasMetadata = {
-  scenes: [],
-  elementMetadata: {}
-};
 export var App = props => {
   const a = 20;
   const b = 40;
@@ -2836,7 +2814,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
           sampleImportsForTests,
           [component, EmptyUtopiaCanvasComponent],
           right(defaultCanvasMetadata()),
-          true,
+          false,
           code,
           expect.objectContaining({}),
           expect.arrayContaining([]),
@@ -2859,10 +2837,6 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var canvasMetadata = {
-  scenes: [],
-  elementMetadata: {}
-};
 export var App = props => {
   return (
     <View data-uid={'aaa'} booleanProperty />
@@ -2891,7 +2865,7 @@ export var App = props => {
           sampleImportsForTests,
           [component, EmptyUtopiaCanvasComponent],
           right(defaultCanvasMetadata()),
-          true,
+          false,
           code,
           expect.objectContaining({}),
           expect.arrayContaining([]),
@@ -3187,6 +3161,108 @@ export var whatever = props => {
     )
     const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa') }, [arbitraryBlock], null)
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
+    const expectedResult = clearParseResultUniqueIDs(
+      right(
+        parseSuccess(
+          { react: sampleImportsForTests['react'] },
+          [exported, EmptyUtopiaCanvasComponent],
+          right(defaultCanvasMetadata()),
+          false,
+          code,
+          expect.objectContaining({}),
+          expect.arrayContaining([]),
+          null,
+        ),
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('defined elsewhere values coming from outside the block are recognised in props', () => {
+    const code = `import * as React from "react"
+export var whatever = props => {
+  const a = 30
+  return <div data-uid={'aaa'}>
+    {[1, 2, 3].map(n => {
+      return <div style={{left: n * a, top: n * a}} data-uid={'bbb'} />
+    })}
+  </div>
+}`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
+      return <div style={{left: n * a, top: n * a}} data-uid={'bbb'} />
+    })`
+    const arbitraryBlockCode = `[1, 2, 3].map(n => {
+  return <div style={{ left: n * a, top: n * a }} data-uid={'bbb'} />;
+});`
+    const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
+  return utopiaCanvasJSXLookup("bbb", {
+    n: n,
+    a: a
+  });
+});`
+    const innerElement = jsxElement(
+      'div',
+      {
+        style: jsxAttributeNestedObject([
+          jsxPropertyAssignment(
+            'left',
+            jsxAttributeOtherJavaScript(
+              `n * a`,
+              `return n * a;`,
+              ['n', 'a'],
+              expect.objectContaining({}),
+            ),
+          ),
+          jsxPropertyAssignment(
+            'top',
+            jsxAttributeOtherJavaScript(
+              `n * a`,
+              `return n * a;`,
+              ['n', 'a'],
+              expect.objectContaining({}),
+            ),
+          ),
+        ]),
+        ['data-uid']: jsxAttributeValue('bbb'),
+      },
+      [],
+      null,
+    )
+    const arbitraryBlock = jsxArbitraryBlock(
+      arbitraryBlockOriginalCode,
+      arbitraryBlockCode,
+      arbitraryBlockTranspiledCode,
+      ['a', 'React', 'utopiaCanvasJSXLookup'],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      { bbb: innerElement },
+    )
+
+    const topLevelArbitraryBlock = arbitraryJSBlock(
+      `const a = 30;`,
+      `var a = 30;
+return { a: a };`,
+      ['a'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+    )
+
+    const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa') }, [arbitraryBlock], null)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      topLevelArbitraryBlock,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       right(
         parseSuccess(
@@ -3725,7 +3801,7 @@ export var App = (props) => {
   return (
     <>
       <View
-        style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+        style={{ ...props.style, backgroundColor: '#FFFFFF' }}
         layout={{ layoutSystem: 'pinSystem' }}
         data-uid={'aaa'}
       ></View>
@@ -3736,7 +3812,7 @@ export var App = (props) => {
       return (
         <>
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           ></View>
@@ -3784,7 +3860,7 @@ export var App = (props) => {
         'AAcEA;AACDA;AACMC,CAACC,GAAGD,CAACE,GAAGF,CAACG,CAACH,CAACI,CAACC,KAAKC,CAACN,CAACG,CAACI,CAACP,CAACQ,CAACT;AAC7BC,CAACA,CAACS,MAAMT,CAACI,CAACL;AACVC,CAACA,CAACA,CAACA,CAACU,CAACH,CAACR;AACNC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACU,CAACC,IAAIZ;AACXC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACY,KAAKT,CAACK,CAACA,CAACR,CAACa,CAACA,CAACA,CAACT,CAACC,KAAKQ,CAACD,KAAKZ,CAACc,CAACA,CAACd,CAACQ,CAACO,CAACT,CAACU,CAAChB,CAACiB,eAAeC,CAAClB,CAACmB,CAACC,CAACC,MAAMF,CAACnB,CAACe,CAACA,CAAChB;AACtEC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACsB,MAAMnB,CAACK,CAACA,CAACR,CAACuB,YAAYL,CAAClB,CAACmB,CAACK,SAASL,CAACnB,CAACe,CAACA,CAAChB;AAC9CC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACyB,IAAIC,CAACC,GAAGxB,CAACK,CAACW,CAACS,GAAGT,CAACJ,CAAChB;AACxBC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACO,CAACG,CAACmB,CAAClB,IAAIJ,CAACR;AACdC,CAACA,CAACA,CAACA,CAACU,CAACmB,CAACtB,CAACR;AACPC,CAACA,CAACM,CAACP;AACHgB',
       file: '/src/app.js',
       sourcesContent: [
-        "/** @jsx jsx */\nimport * as React from 'react'\nimport { View, jsx } from 'utopia-api'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <>\n      <View\n        style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}\n        layout={{ layoutSystem: 'pinSystem' }}\n        data-uid={'aaa'}\n      ></View>\n    </>\n  )\n}\n",
+        "/** @jsx jsx */\nimport * as React from 'react'\nimport { View, jsx } from 'utopia-api'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <>\n      <View\n        style={{ ...props.style, backgroundColor: '#FFFFFF' }}\n        layout={{ layoutSystem: 'pinSystem' }}\n        data-uid={'aaa'}\n      ></View>\n    </>\n  )\n}\n",
       ],
     }
     expect(

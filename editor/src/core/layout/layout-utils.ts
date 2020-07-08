@@ -28,6 +28,7 @@ import {
   JSXElement,
   UtopiaJSXComponent,
   JSXAttributes,
+  SettableLayoutSystem,
 } from '../shared/element-template'
 import { findJSXElementChildAtPath } from '../model/element-template-utils'
 import {
@@ -47,7 +48,7 @@ import {
   StyleLayoutProp,
 } from './layout-helpers-new'
 import { getLayoutPropertyOr } from './getLayoutProperty'
-import { CSSPosition } from '../../components/inspector/common/css-utils'
+import { CSSPosition, layoutEmptyValues } from '../../components/inspector/common/css-utils'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
@@ -105,58 +106,24 @@ export function maybeSwitchLayoutProps(
   originalComponents: UtopiaJSXComponent[],
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle | null,
-  parentLayoutSystem: LayoutSystem | null,
+  parentLayoutSystem: SettableLayoutSystem | null,
 ): LayoutPropChangeResult {
-  let originalParentLayoutSystem: LayoutSystem = LayoutSystem.PinSystem
-  let currentParentLayoutSystem: LayoutSystem = LayoutSystem.PinSystem
   const originalParentPath = TP.parentPath(originalPath)
-  if (originalParentPath != null && TP.isInstancePath(originalParentPath)) {
-    const originalStaticParentPath = MetadataUtils.dynamicPathToStaticPath(
-      targetOriginalContextMetadata,
-      originalParentPath,
-    )
-    if (originalStaticParentPath != null) {
-      const originalParentElement = findJSXElementChildAtPath(
-        originalComponents,
-        originalStaticParentPath,
-      )
-      if (originalParentElement != null && isJSXElement(originalParentElement)) {
-        originalParentLayoutSystem = getLayoutPropertyOr<'LayoutSystem', LayoutSystem>(
-          LayoutSystem.PinSystem,
-          'LayoutSystem',
-          right(originalParentElement.props),
-        )
-      }
-    }
-  }
-  if (parentLayoutSystem == null) {
-    const currentStaticParentPath = MetadataUtils.dynamicPathToStaticPath(
-      targetOriginalContextMetadata,
-      newParentPath,
-    )
-    if (currentStaticParentPath != null) {
-      const currentParentElement = findJSXElementChildAtPath(components, currentStaticParentPath)
-      if (currentParentElement != null && isJSXElement(currentParentElement)) {
-        currentParentLayoutSystem = getLayoutPropertyOr<'LayoutSystem', LayoutSystem>(
-          LayoutSystem.PinSystem,
-          'LayoutSystem',
-          right(currentParentElement.props),
-        )
-      }
-    }
-  } else {
-    currentParentLayoutSystem = parentLayoutSystem
-  }
+  const originalParent = TP.isInstancePath(originalParentPath)
+    ? MetadataUtils.getElementByInstancePathMaybe(targetOriginalContextMetadata, originalParentPath)
+    : null
+  const newParent = TP.isInstancePath(newParentPath)
+    ? MetadataUtils.getElementByInstancePathMaybe(currentContextMetadata, newParentPath)
+    : null
 
-  const wasFlexContainer = originalParentLayoutSystem === LayoutSystem.Flex
-  const isFlexContainer = currentParentLayoutSystem === LayoutSystem.Flex
-  const wasGroup = originalParentLayoutSystem === LayoutSystem.Group
-  const isGroup = currentParentLayoutSystem === LayoutSystem.Group
-
-  const parent = MetadataUtils.getElementByInstancePathMaybe(currentContextMetadata, newParentPath)
+  let wasFlexContainer = MetadataUtils.isFlexLayoutedContainer(originalParent)
+  let isFlexContainer =
+    parentLayoutSystem === 'flex' || MetadataUtils.isFlexLayoutedContainer(newParent)
+  let wasGroup = MetadataUtils.isGroup(originalParentPath, targetOriginalContextMetadata)
+  let isGroup = MetadataUtils.isGroup(newParentPath, currentContextMetadata)
 
   // When wrapping elements in view/group the element is not available from the componentMetadata but we know the frame already.
-  if (parent == null && parentFrame != null) {
+  if (newParent == null && parentFrame != null) {
     // FIXME wrapping in a view now always switches to pinned props. maybe the user wants to keep the parent layoutsystem?
     const switchLayoutFunction =
       parentLayoutSystem === LayoutSystem.Group
@@ -296,11 +263,12 @@ function keepLayoutProps(
   }
 }
 
-function switchLayoutMetadata(
+export function switchLayoutMetadata(
   components: ComponentMetadata[],
   target: InstancePath,
-  parentLayoutSystem: DetectedLayoutSystem,
-  position: CSSPosition,
+  parentLayoutSystem: DetectedLayoutSystem | undefined,
+  layoutSystemForChildren: DetectedLayoutSystem | undefined,
+  position: CSSPosition | undefined,
 ): ComponentMetadata[] {
   return MetadataUtils.transformAtPathOptionally(components, target, (elementMetadata) => {
     return {
@@ -315,8 +283,12 @@ function switchLayoutMetadata(
          * the measured value will be in the next update, updateFramesOfScenesAndComponents will just undo our
          * frame changes. :(
          */
-        parentLayoutSystem: parentLayoutSystem,
-        position,
+        parentLayoutSystem:
+          parentLayoutSystem ?? elementMetadata.specialSizeMeasurements.parentLayoutSystem,
+        layoutSystemForChildren:
+          layoutSystemForChildren ??
+          elementMetadata.specialSizeMeasurements.layoutSystemForChildren,
+        position: position ?? elementMetadata.specialSizeMeasurements.position,
       },
     }
   }).elements
@@ -388,7 +360,13 @@ export function switchPinnedChildToFlex(
     currentContextMetadata,
   )
 
-  const updatedMetadata = switchLayoutMetadata(currentContextMetadata, target, 'flex', 'static')
+  const updatedMetadata = switchLayoutMetadata(
+    currentContextMetadata,
+    target,
+    'flex',
+    undefined,
+    'static',
+  )
 
   return {
     updatedComponents: updatedComponents,
@@ -447,6 +425,7 @@ export function switchFlexChildToPinned(
     currentContextMetadata,
     target,
     'nonfixed',
+    undefined,
     'absolute',
   )
 
@@ -501,6 +480,7 @@ export function switchFlexChildToGroup(
     currentContextMetadata,
     target,
     'nonfixed',
+    undefined,
     'absolute',
   )
 
@@ -549,7 +529,13 @@ export function switchChildToGroupWithParentFrame(
       height,
     )
 
-    const updatedMetadata = switchLayoutMetadata(componentMetadata, target, 'nonfixed', 'absolute')
+    const updatedMetadata = switchLayoutMetadata(
+      componentMetadata,
+      target,
+      'nonfixed',
+      undefined,
+      'absolute',
+    )
 
     return {
       updatedComponents: updatedComponents,
@@ -569,7 +555,13 @@ export function switchChildToGroupWithParentFrame(
       height,
     )
 
-    const updatedMetadata = switchLayoutMetadata(componentMetadata, target, 'nonfixed', 'absolute')
+    const updatedMetadata = switchLayoutMetadata(
+      componentMetadata,
+      target,
+      'nonfixed',
+      undefined,
+      'absolute',
+    )
 
     return {
       updatedComponents: updatedComponents,
@@ -612,6 +604,7 @@ export function switchPinnedChildToGroup(
     currentContextMetadata,
     target,
     'nonfixed',
+    undefined,
     'absolute',
   )
 
@@ -654,7 +647,13 @@ export function switchChildToPinnedWithParentFrame(
     height,
   )
 
-  const updatedMetadata = switchLayoutMetadata(componentMetadata, target, 'nonfixed', 'absolute')
+  const updatedMetadata = switchLayoutMetadata(
+    componentMetadata,
+    target,
+    'nonfixed',
+    undefined,
+    'absolute',
+  )
 
   return {
     updatedComponents: updatedComponents,

@@ -4,13 +4,13 @@ import {
   PopupList,
   SimpleNumberInput,
   ChainedNumberInput,
-  useWrappedEmptyOnSubmitValue,
+  useWrappedEmptyOrUnknownOnSubmitValue,
 } from 'uuiui'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { FlexDirection } from 'utopia-api'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
-import { SliderControl, SliderControlOptions } from '../../../controls/slider-control'
+import { SliderControl, DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { betterReactMemo, OnSubmitValueOrEmpty } from 'uuiui-deps'
 import { SelectOption } from '../../../controls/select-control'
@@ -85,7 +85,7 @@ export const FlexDirectionControl = betterReactMemo(
           id='flex.container.flexDirection'
           key='flex.container.flexDirection'
           value={props.value}
-          controlOptions={{
+          DEPRECATED_controlOptions={{
             labelBelow: 'Direction',
           }}
           controlStatus={props.controlStatus}
@@ -210,7 +210,7 @@ export const FlexJustifyContentControl = betterReactMemo(
           id='flex.container.justifyContent'
           key='flex.container.justifyContent'
           value={props.value}
-          controlOptions={{
+          DEPRECATED_controlOptions={{
             labelBelow: 'Justify',
           }}
           options={justifyContentOptions(
@@ -234,8 +234,8 @@ interface FlexGapControlProps extends FlexFieldControlProps<number> {
 
 export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapControlProps) => {
   const menuItems = [unsetPropertyMenuItem('Flex Gap', props.onUnset)]
-  const wrappedOnSubmit = useWrappedEmptyOnSubmitValue(props.onSubmitValue, props.onUnset)
-  const wrappedOnTransientSubmit = useWrappedEmptyOnSubmitValue(
+  const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(props.onSubmitValue, props.onUnset)
+  const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
     props.onTransientSubmitValue,
     props.onUnset,
   )
@@ -247,7 +247,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             id='flex.container.gap.main'
             key='flex.container.gap.main'
             value={props.value}
-            controlOptions={
+            DEPRECATED_controlOptions={
               {
                 minimum: 0,
                 maximum: 50,
@@ -255,9 +255,10 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
                 origin: 0,
                 filled: true,
                 tooltip: 'Gap (sets margin on children)',
-              } as SliderControlOptions
+              } as DEPRECATEDSliderControlOptions
             }
             onSubmitValue={props.onSubmitValue}
+            onTransientSubmitValue={props.onTransientSubmitValue}
             controlStatus={props.controlStatus}
             controlStyles={props.controlStyles}
           />
@@ -265,15 +266,14 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
         <InspectorContextMenuWrapper id={`gap-main-context-menu`} items={menuItems} data={{}}>
           <SimpleNumberInput
             id='flex.container.gap.main'
-            key='flex.container.gap.main'
             value={props.value}
             minimum={0}
             maximum={50}
             stepSize={1}
             onSubmitValue={wrappedOnSubmit}
             onTransientSubmitValue={wrappedOnTransientSubmit}
+            onForcedSubmitValue={wrappedOnSubmit}
             controlStatus={props.controlStatus}
-            disabled={!props.controlStyles.interactive}
           />
         </InspectorContextMenuWrapper>
       </GridRow>

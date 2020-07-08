@@ -146,12 +146,8 @@ export function dragComponent(
         constrainedDragAxis,
         Utils.offsetPoint(roundedDragDelta, snapDelta),
       )
-      const updatedFrame = Utils.optionalMap(
-        (f) => Utils.offsetRect(f, dragDeltaToApply),
-        originalFrame.frame,
-      )
-      if (updatedFrame != null) {
-        dragChanges.push(pinMoveChange(view, updatedFrame))
+      if (originalFrame.frame != null) {
+        dragChanges.push(pinMoveChange(view, dragDeltaToApply))
       }
     }
   })
@@ -218,6 +214,7 @@ export function adjustAllSelectedFrames(
     return []
   }
 
+  let actions: Array<EditorAction> = []
   if (isResizing) {
     let roundedAdjustment: number = 0
     let newBoundingBox: CanvasRectangle
@@ -265,7 +262,7 @@ export function adjustAllSelectedFrames(
         }
       }),
     )
-    return [EditorActions.setCanvasFrames(newFrameAndTargets, keepChildrenAtPlace)]
+    actions = [EditorActions.setCanvasFrames(newFrameAndTargets, keepChildrenAtPlace)]
   } else {
     const originalFrames: CanvasFrameAndTarget[] = Utils.stripNulls(
       editor.selectedViews.map((view) => {
@@ -287,7 +284,7 @@ export function adjustAllSelectedFrames(
       adjustment,
     )
     EditorActions.hideAndShowSelectionControls(dispatch)
-    return dragComponentForActions(
+    actions = dragComponentForActions(
       editor.jsxMetadataKILLME,
       editor.selectedViews,
       originalFrames,
@@ -300,6 +297,9 @@ export function adjustAllSelectedFrames(
       editor.canvas.scale,
     )
   }
+
+  actions.push(EditorActions.startCheckpointTimer())
+  return actions
 }
 
 function getRoundedDeltaForKeyboardShortcut(

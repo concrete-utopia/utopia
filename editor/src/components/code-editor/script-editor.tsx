@@ -41,7 +41,7 @@ import {
   getOpenUIJSFileKey,
   isOpenFileTab,
   openFileTab,
-  packageJsonFileFromModel,
+  packageJsonFileFromProjectContents,
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -51,6 +51,7 @@ import { CodeEditor } from './code-editor'
 import { CursorPosition } from './code-editor-utils'
 import { forceServerSave } from '../editor/persistence'
 import { Notice } from '../common/notices'
+import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
 
 function getFileContents(file: ProjectFile): string {
   switch (file.type) {
@@ -66,7 +67,7 @@ function getFileContents(file: ProjectFile): string {
           return failure.code
         },
         (success: ParseSuccess) => {
-          return success.code || ''
+          return success.code ?? ''
         },
         file.fileContents,
       )
@@ -212,8 +213,8 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
       cursorPositionFromOpenFile:
         store.editor.selectedFile == null ? null : store.editor.selectedFile.initialCursorPosition,
       savedCursorPosition: openFilePath == null ? null : store.editor.cursorPositions[openFilePath],
-      packageJsonFile: packageJsonFileFromModel(store.editor),
-      typeDefinitions: store.editor.resolvedDependencies.typeDefinitions,
+      packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
+      typeDefinitions: getDependencyTypeDefinitions(store.editor.nodeModules.files),
       lintErrors: getAllLintErrors(store.editor),
       parserPrinterErrors: parseFailureAsErrorMessages(openUIJSFileKey, openUIJSFile),
       projectContents: store.editor.projectContents,
@@ -347,7 +348,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
   const newErrorsForFile = errors.filter((error) => error.fileName === filePath)
   const errorsForFile = useKeepReferenceEqualityIfPossible(newErrorsForFile)
 
-  const newNpmDependencies = Utils.defaultIfNull({}, dependenciesFromPackageJson(packageJsonFile))
+  const newNpmDependencies = dependenciesFromPackageJson(packageJsonFile)
   const npmDependencies = useKeepReferenceEqualityIfPossible(newNpmDependencies)
 
   if (filePath == null || openFile == null) {

@@ -1,3 +1,5 @@
+import * as UtopiaHighVis from './themes/utopia-high-vis-light.json'
+
 import * as NoctisAzureus from './themes/noctis-azureus.json'
 import * as Dracula from './themes/dracula.json'
 import * as AyuLight from './themes/ayu-light.json'
@@ -65,7 +67,7 @@ import * as NewEngland from './themes/new-england.json'
 import * as UtopiaLight from './themes/utopia-light.json'
 import * as UtopiaDark from './themes/utopia-dark.json'
 
-export const DefaultTheme = 'noctis-azureus'
+export const DefaultTheme = 'utopia-highvis'
 
 const LightThemesAlphabetical = {
   'ayu-light': AyuLight,
@@ -79,6 +81,7 @@ const LightThemesAlphabetical = {
   'new-england': NewEngland,
   'solarized-light': SolarizedLight,
   'winter-is-coming-light': WinterIsComingLight,
+  'utopia-highvis': UtopiaHighVis,
   'vs-light': UtopiaLight,
 }
 

@@ -455,7 +455,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>
@@ -494,7 +494,7 @@ export var App = (props) => {
                 elementMetadata: {},
             });
             exports_1(\\"App\\", App = (props) => {
-                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, (props.style || {})), { backgroundColor: uuiui_1.colorTheme.white.value }), layout: { layoutSystem: 'pinSystem' }, \\"data-uid\\": 'aaa' }));
+                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, props.style), { backgroundColor: uuiui_1.colorTheme.white.value }), layout: { layoutSystem: 'pinSystem' }, \\"data-uid\\": 'aaa' }));
             });
         }
     };
@@ -776,7 +776,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>
@@ -1090,7 +1090,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>
@@ -1129,7 +1129,7 @@ export var App = (props) => {
                 elementMetadata: {},
             });
             exports_1(\\"App\\", App = (props) => {
-                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, (props.style || {})), { backgroundColor: uuiui_1.colorTheme.white.value }), layout: { layoutSystem: 'pinSystem' }, \\"data-uid\\": 'aaa' }));
+                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, props.style), { backgroundColor: uuiui_1.colorTheme.white.value }), layout: { layoutSystem: 'pinSystem' }, \\"data-uid\\": 'aaa' }));
             });
         }
     };
@@ -1206,7 +1206,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>

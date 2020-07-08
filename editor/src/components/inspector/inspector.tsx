@@ -22,6 +22,8 @@ import {
   JSXElement,
   JSXElementName,
   DetectedLayoutSystem,
+  SpecialSizeMeasurements,
+  emptySpecialSizeMeasurements,
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
@@ -91,13 +93,13 @@ import {
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
-  layoutSystem: DetectedLayoutSystem | null
   isChildOfFlexComponent: boolean
-  position: CSSPosition
+  position: CSSPosition | null
   layoutWrapper: null | LayoutWrapper
   label: string
   type: null | string
   parentFlexAxis: 'horizontal' | 'vertical' | null
+  specialSizeMeasurements: SpecialSizeMeasurements
 }
 
 export interface InspectorPartProps<T> {
@@ -235,13 +237,13 @@ AlignmentButtons.displayName = 'AlignmentButtons'
 interface RenderedLayoutSectionProps {
   layout: any
   anyHTMLElements: boolean
-  layoutSystem: DetectedLayoutSystem | null
+  specialSizeMeasurements: SpecialSizeMeasurements
   isChildOfFlexComponent: boolean
   hasNonDefaultPositionAttributes: boolean
   parentFlexAxis: 'horizontal' | 'vertical' | null
   aspectRatioLocked: boolean
   toggleAspectRatioLock: () => void
-  position: CSSPosition
+  position: CSSPosition | null
 }
 
 const RenderedLayoutSection = betterReactMemo<RenderedLayoutSectionProps>(
@@ -254,7 +256,7 @@ const RenderedLayoutSection = betterReactMemo<RenderedLayoutSectionProps>(
         <LayoutSection
           input={props.layout}
           parentFlexAxis={props.parentFlexAxis}
-          layoutSystem={props.layoutSystem}
+          specialSizeMeasurements={props.specialSizeMeasurements}
           isChildOfFlexComponent={props.isChildOfFlexComponent}
           hasNonDefaultPositionAttributes={props.hasNonDefaultPositionAttributes}
           aspectRatioLocked={props.aspectRatioLocked}
@@ -384,7 +386,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
           <RenderedLayoutSection
             anyHTMLElements={anyHTMLElements}
             layout={props.input.layout}
-            layoutSystem={props.input.layoutSystem}
+            specialSizeMeasurements={props.input.specialSizeMeasurements}
             isChildOfFlexComponent={props.input.isChildOfFlexComponent}
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             parentFlexAxis={props.input.parentFlexAxis}
@@ -464,13 +466,13 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
     })
 
     let inspectorModel: InspectorModel = {
-      layoutSystem: null,
       isChildOfFlexComponent: false,
       position: 'static',
       layoutWrapper: null,
       label: '',
       type: null,
       parentFlexAxis: null,
+      specialSizeMeasurements: emptySpecialSizeMeasurements,
     }
 
     let targets: Array<CSSTarget> = [...DefaultStyleTargets]
@@ -509,7 +511,7 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
               styleObject: any,
               localPath: Array<string>,
             ): void {
-              if (typeof styleObject === 'object') {
+              if (typeof styleObject === 'object' && styleObject != null) {
                 let selectorLength: TargetSelectorLength = 0
                 const keys = Object.keys(styleObject)
                 keys.forEach((key) => {
@@ -556,9 +558,7 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
           const elementName = jsxElement.name.baseVariable
           inspectorModel.type = elementName
 
-          inspectorModel.layoutSystem =
-            elementMetadata.specialSizeMeasurements.layoutSystemForChildren
-
+          inspectorModel.specialSizeMeasurements = elementMetadata.specialSizeMeasurements
           inspectorModel.position = elementMetadata.specialSizeMeasurements.position
 
           if (jsxElement.props != null) {

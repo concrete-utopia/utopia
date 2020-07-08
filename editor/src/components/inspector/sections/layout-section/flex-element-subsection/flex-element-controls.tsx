@@ -6,7 +6,7 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
-import { ChainedNumberInput, useWrappedEmptyOnSubmitValue } from 'uuiui'
+import { ChainedNumberInput, useWrappedEmptyOrUnknownOnSubmitValue } from 'uuiui'
 
 export const PositionControl = betterReactMemo('PositionControl', () => {
   const position = useInspectorLayoutInfo('position')
@@ -47,7 +47,7 @@ export const PositionControl = betterReactMemo('PositionControl', () => {
             },
           ] as Array<OptionChainOption<string | number>>
         }
-        controlOptions={{
+        DEPRECATED_controlOptions={{
           labelBelow: 'Position',
         }}
         onSubmitValue={position.onSubmitValue}
@@ -109,35 +109,35 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
   const marginBottom = useInspectorLayoutInfo('marginBottom')
   const marginLeft = useInspectorLayoutInfo('marginLeft')
 
-  const wrappedMarginTopOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginTop.onSubmitValue,
     marginTop.onUnsetValues,
   )
-  const wrappedMarginTopOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginTopOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginTop.onSubmitValue,
     marginTop.onUnsetValues,
   )
-  const wrappedMarginRightOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginRightOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginRight.onSubmitValue,
     marginRight.onUnsetValues,
   )
-  const wrappedMarginRightOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginRightOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginRight.onSubmitValue,
     marginRight.onUnsetValues,
   )
-  const wrappedMarginBottomOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginBottomOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginBottom.onSubmitValue,
     marginBottom.onUnsetValues,
   )
-  const wrappedMarginBottomOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginBottomOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginBottom.onSubmitValue,
     marginBottom.onUnsetValues,
   )
-  const wrappedMarginLeftOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginLeftOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginLeft.onSubmitValue,
     marginLeft.onUnsetValues,
   )
-  const wrappedMarginLeftOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedMarginLeftOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginLeft.onSubmitValue,
     marginLeft.onUnsetValues,
   )
@@ -148,36 +148,32 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
       propsArray={[
         {
           value: marginTop.value,
-          labelBelow: 'T',
+          DEPRECATED_labelBelow: 'T',
           controlStatus: marginTop.controlStatus,
-          disabled: !marginTop.controlStyles.interactive,
           onSubmitValue: wrappedMarginTopOnSubmitValue,
           onTransientSubmitValue: wrappedMarginTopOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
         },
         {
           value: marginRight.value,
-          labelBelow: 'R',
+          DEPRECATED_labelBelow: 'R',
           controlStatus: marginRight.controlStatus,
-          disabled: !marginRight.controlStyles.interactive,
           onSubmitValue: wrappedMarginRightOnSubmitValue,
           onTransientSubmitValue: wrappedMarginRightOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
         },
         {
           value: marginBottom.value,
-          labelBelow: 'B',
+          DEPRECATED_labelBelow: 'B',
           controlStatus: marginBottom.controlStatus,
-          disabled: !marginBottom.controlStyles.interactive,
           onSubmitValue: wrappedMarginBottomOnSubmitValue,
           onTransientSubmitValue: wrappedMarginBottomOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
         },
         {
           value: marginLeft.value,
-          labelBelow: 'L',
+          DEPRECATED_labelBelow: 'L',
           controlStatus: marginLeft.controlStatus,
-          disabled: !marginLeft.controlStyles.interactive,
           onSubmitValue: wrappedMarginLeftOnSubmitValue,
           onTransientSubmitValue: wrappedMarginLeftOnTransientSubmitValue,
           numberType: 'UnitlessPercent',

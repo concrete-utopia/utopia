@@ -18,6 +18,7 @@ import {
   ProjectContents,
   PropertyPath,
   TemplatePath,
+  Imports,
 } from '../../../core/shared/project-file-types'
 import { Either, isLeft, right } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
@@ -164,10 +165,10 @@ export class InsertModeControlContainer extends React.Component<
 
   isUtopiaAPIInsertion(
     element: JSXElementChild,
-    importFromPath: string | null,
+    importsToAdd: Imports,
     elementType: string,
   ): boolean {
-    if (importFromPath === 'utopia-api') {
+    if (importsToAdd['utopia-api'] != null) {
       if (isJSXElement(element)) {
         if (PP.depth(element.name.propertyPath) === 0) {
           return element.name.baseVariable === elementType
@@ -182,16 +183,16 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  isTextInsertion(element: JSXElementChild, importFromPath: string | null): boolean {
-    return this.isUtopiaAPIInsertion(element, importFromPath, 'Text')
+  isTextInsertion(element: JSXElementChild, importsToAdd: Imports): boolean {
+    return this.isUtopiaAPIInsertion(element, importsToAdd, 'Text')
   }
 
-  isImageInsertion(element: JSXElementChild, importFromPath: string | null): boolean {
-    return this.isUtopiaAPIInsertion(element, importFromPath, 'Image')
+  isImageInsertion(element: JSXElementChild, importsToAdd: Imports): boolean {
+    return this.isUtopiaAPIInsertion(element, importsToAdd, 'Image')
   }
 
-  isViewInsertion(element: JSXElementChild, importFromPath: string | null): boolean {
-    return this.isUtopiaAPIInsertion(element, importFromPath, 'View')
+  isViewInsertion(element: JSXElementChild, importsToAdd: Imports): boolean {
+    return this.isUtopiaAPIInsertion(element, importsToAdd, 'View')
   }
 
   renderControl = (target: TemplatePath): JSX.Element | null => {
@@ -222,6 +223,7 @@ export class InsertModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         testID={`insert-target-${TP.toComponentId(target)}`}
+        showAdditionalControls={this.props.showAdditionalControls}
       />
     )
   }
@@ -253,6 +255,7 @@ export class InsertModeControlContainer extends React.Component<
         windowToCanvasPosition={this.props.windowToCanvasPosition}
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
+        showAdditionalControls={this.props.showAdditionalControls}
       />
     )
   }
@@ -436,7 +439,7 @@ export class InsertModeControlContainer extends React.Component<
       )
 
       let { element } = this.props.mode.subject
-      if (this.isTextInsertion(element, insertionSubject.importFromPath)) {
+      if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
         element = this.getTextElementAutoSizeWithPosition(element, snappedMousePoint)
       }
       this.props.dispatch(
@@ -448,7 +451,7 @@ export class InsertModeControlContainer extends React.Component<
                 insertionSubject.uid,
                 element,
                 insertionSubject.size,
-                insertionSubject.importFromPath,
+                insertionSubject.importsToAdd,
                 insertionParent(parent, staticParent),
               ),
             ),
@@ -500,11 +503,11 @@ export class InsertModeControlContainer extends React.Component<
       ) {
         // image and text insertion with single click
         if (
-          this.isImageInsertion(insertionElement, insertionSubject.importFromPath) &&
+          this.isImageInsertion(insertionElement, insertionSubject.importsToAdd) &&
           this.state.dragFrame != null
         ) {
           element = this.getImageElementWithSize()
-        } else if (this.isTextInsertion(insertionElement, insertionSubject.importFromPath)) {
+        } else if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
           element = insertionElement
         }
       } else {
@@ -512,7 +515,7 @@ export class InsertModeControlContainer extends React.Component<
         element = this.elementWithDragFrame(insertionElement)
       }
 
-      if (this.isTextInsertion(insertionElement, insertionSubject.importFromPath)) {
+      if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
         const path = TP.appendToPath(parentPath, insertionSubject.uid)
         extraActions.push(EditorActions.openTextEditor(path, null))
       }
@@ -522,7 +525,7 @@ export class InsertModeControlContainer extends React.Component<
       } else {
         this.props.dispatch(
           [
-            EditorActions.insertJSXElement(element, parentPath, insertionSubject.importFromPath),
+            EditorActions.insertJSXElement(element, parentPath, insertionSubject.importsToAdd),
             ...baseActions,
             ...extraActions,
           ],
@@ -570,7 +573,7 @@ export class InsertModeControlContainer extends React.Component<
           parent,
         )
         let element = this.elementWithDragFrame(insertionSubject.element)
-        if (this.isTextInsertion(element, insertionSubject.importFromPath)) {
+        if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
           element = this.setTextElementFixedSize(element)
         }
 
@@ -592,7 +595,7 @@ export class InsertModeControlContainer extends React.Component<
                   insertionSubject.uid,
                   element,
                   insertionSubject.size,
-                  insertionSubject.importFromPath,
+                  insertionSubject.importsToAdd,
                   insertionParent(parent, staticParent),
                 ),
               ),

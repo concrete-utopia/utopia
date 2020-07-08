@@ -1,0 +1,60 @@
+{
+  "contents": {
+    "/node_modules/mypackage/index.js": {
+      "content": "\"use strict\"; Object.defineProperty(exports, '__esModule', { value: true }); function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }; const otherpackage = _interopDefault(require('otherpackage')); const hello = otherpackage.hello; exports.hello = hello;",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/moduleA.js": {
+      "content": "\"use strict\"; exports.firstExport = 'hello world!'; const otherpackage = require('./moduleB'); exports.hello = otherpackage.hello;",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/moduleB.js": {
+      "content": "\"use strict\"; const otherpackage = require('./moduleA'); exports.hello = otherpackage.firstExport; console.log('hmm', otherPackage)",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/code-using-module-exports.js": {
+      "content": "\"use strict\"; function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }; const otherpackage = _interopDefault(require('otherpackage')); const hello = otherpackage.hello; module.exports = {hello: hello};",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/package.json": {
+      "content": "{\"name\": \"mypackage\", \"version\": \"0.0.1\", \"main\": \"web.cjs.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/otherpackage/dist/index.js": {
+      "content": "\"use strict\"; Object.defineProperty(exports, '__esModule', { value: true }); function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }; const hello = 'hello!'; exports.hello = hello;",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/otherpackage/package.json": {
+      "content": "{\"name\": \"otherpackage\", \"version\": \"0.0.1\", \"main\": \"dist/index.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/wtf/a_weird_file_outside_node_modules?.json": {
+      "content": "{\"name\": \"otherpackage\", \"version\": \"0.0.1\", \"main\": \"dist/index.js\"}",
+      "isModule": false,
+      "requires": []
+    }
+  },
+  "dependency": {
+    "name": "mypackage",
+    "version": "0.0.1"
+  },
+  "peerDependencies": {
+    "react": ">= 16.8.0",
+    "react-dom": ">= 16.8.0"
+  },
+  "dependencyDependencies": {
+    "otherpackage": {
+      "semver": "^0.0.1",
+      "resolved": "0.0.1",
+      "parents": ["mypackage"],
+      "entries": []
+    }
+  }
+}

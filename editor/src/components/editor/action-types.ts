@@ -5,6 +5,7 @@ import {
   JSXAttribute,
   JSXElement,
   JSXElementName,
+  SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import { KeysPressed } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
@@ -22,6 +23,8 @@ import {
   StaticElementPath,
   TemplatePath,
   UIJSFile,
+  NodeModules,
+  Imports,
 } from '../../core/shared/project-file-types'
 import { CodeResultCache } from '../custom-code/code-file'
 import { ElementContextMenuInstance } from '../element-context-menu'
@@ -31,12 +34,7 @@ import { LocalNavigatorAction } from '../navigator/actions/index'
 import { LeftMenuTab } from '../navigator/left-pane'
 import { RightMenuTab } from '../canvas/right-menu'
 import { Mode } from './editor-modes'
-import {
-  NpmBundleResult,
-  NpmDependencies,
-  RequireFn,
-  TypeDefinitions,
-} from '../../core/shared/npm-dependency-types'
+import { NpmDependency } from '../../core/shared/npm-dependency-types'
 import {
   DuplicationState,
   EditorState,
@@ -125,7 +123,7 @@ export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
   parent: TemplatePath | null
-  importFromPath: string | null
+  importsToAdd: Imports
 }
 
 export type DeleteSelected = {
@@ -234,7 +232,7 @@ export type Atomic = {
 
 export type NewProject = {
   action: 'NEW'
-  npmBundleResult: NpmBundleResult
+  nodeModules: NodeModules
   persistentModel: PersistentModel
   codeResultCache: CodeResultCache
 }
@@ -242,7 +240,7 @@ export type NewProject = {
 export type Load = {
   action: 'LOAD'
   model: PersistentModel
-  npmBundleResult: NpmBundleResult
+  nodeModules: NodeModules
   codeResultCache: CodeResultCache
   title: string
   projectId: string | null
@@ -473,13 +471,6 @@ export interface UpdateCodeResultCache {
   codeResultCache: CodeResultCache
 }
 
-export interface UpdateNpmDependencies {
-  action: 'UPDATE_NPM_DEPENDENCIES'
-  npmDependencies: NpmDependencies
-  npmRequireFn: RequireFn
-  typeDefinitions: TypeDefinitions
-}
-
 export interface SetCodeEditorVisibility {
   action: 'SET_CODE_EDITOR_VISIBILITY'
   value: boolean
@@ -647,11 +638,18 @@ export interface ToggleProperty {
   togglePropValue: (element: JSXElement) => JSXElement
 }
 
+export interface DEPRECATEDToggleEnabledProperty {
+  action: 'deprecated_TOGGLE_ENABLED_PROPERTY'
+  target: InstancePath
+  // FIXME: This will cause problems with multi-user editing.
+  togglePropValue: (element: JSXElement) => JSXElement
+}
+
 export type TextFormattingType = 'bold' | 'italic' | 'underline'
 
 export interface SwitchLayoutSystem {
   action: 'SWITCH_LAYOUT_SYSTEM'
-  layoutSystem: LayoutSystem
+  layoutSystem: SettableLayoutSystem
 }
 
 export interface InsertImageIntoUI {
@@ -714,6 +712,31 @@ export interface ResetPropToDefault {
   action: 'RESET_PROP_TO_DEFAULT'
   target: TemplatePath
   path: PropertyPath | null
+}
+
+export interface UpdateNodeModulesContents {
+  action: 'UPDATE_NODE_MODULES_CONTENTS'
+  contentsToAdd: NodeModules
+  startFromScratch: boolean
+}
+
+export interface UpdatePackageJson {
+  action: 'UPDATE_PACKAGE_JSON'
+  dependencies: Array<NpmDependency>
+}
+
+export interface StartCheckpointTimer {
+  action: 'START_CHECKPOINT_TIMER'
+}
+
+export interface FinishCheckpointTimer {
+  action: 'FINISH_CHECKPOINT_TIMER'
+}
+
+export interface AddMissingDimensions {
+  action: 'ADD_MISSING_DIMENSIONS'
+  existingSize: CanvasRectangle
+  target: InstancePath
 }
 
 export type EditorAction =
@@ -785,7 +808,6 @@ export type EditorAction =
   | SetCanvasFrames
   | SelectAllSiblings
   | UpdateCodeResultCache
-  | UpdateNpmDependencies
   | SetCodeEditorVisibility
   | SetProjectName
   | RegenerateThumbnail
@@ -818,6 +840,7 @@ export type EditorAction =
   | SetPropWithElementPath
   | SetFilebrowserRenamingTarget
   | ToggleProperty
+  | DEPRECATEDToggleEnabledProperty
   | SwitchLayoutSystem
   | InsertImageIntoUI
   | SetSceneProp
@@ -835,6 +858,11 @@ export type EditorAction =
   | SetSaveError
   | InsertDroppedImage
   | ResetPropToDefault
+  | UpdateNodeModulesContents
+  | UpdatePackageJson
+  | StartCheckpointTimer
+  | FinishCheckpointTimer
+  | AddMissingDimensions
 
 export type DispatchPriority =
   | 'everyone'

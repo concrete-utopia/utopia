@@ -3,7 +3,7 @@ import { jsx } from '@emotion/core'
 import * as React from 'react'
 import { colorTheme, FlexRow, IcnProps, Icons, Tooltip, UtopiaStyles, UtopiaTheme } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
-import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
 import { ElementOriginType, Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
@@ -16,6 +16,7 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
 import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { WarningIcon } from '../../../uuiui/warning-icon'
+import { ElementWarnings } from '../../editor/store/editor-state'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -40,8 +41,10 @@ export interface NavigatorItemInnerProps {
   getSelectedViewsInRange: (index: number) => Array<TemplatePath> // TODO KILLME
   noOfChildren: number
   isAutosizingView: boolean
-  name: string
+  label: string
   element: ElementInstanceMetadata | null
+  staticElementName: JSXElementName | null
+  componentInstance: boolean
   dispatch: EditorDispatch
   isHighlighted: boolean
   collapsed: boolean
@@ -50,6 +53,7 @@ export interface NavigatorItemInnerProps {
   selected: boolean
   imports: Imports
   elementOriginType: ElementOriginType
+  elementWarnings: ElementWarnings
 }
 
 function selectItem(
@@ -138,7 +142,8 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
   'NavigatorItem',
   (props) => {
     const {
-      name,
+      staticElementName,
+      label,
       element,
       isAutosizingView,
       dispatch,
@@ -152,6 +157,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       templatePath,
       getSelectedViewsInRange,
       index,
+      elementWarnings,
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
@@ -188,26 +194,30 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     }
 
     const resultingStyle = computeResultingStyle()
-    const widthOrHeightZero =
-      element != null && element.globalFrame != null
-        ? element.globalFrame.width === 0 || element.globalFrame.height === 0
-        : false
 
-    const preview = widthOrHeightZero ? (
-      <WarningIcon tooltipText='Missing width or height' />
-    ) : (
-      <ItemPreview
-        key={`preview-${name}`}
-        {...props}
-        isAutosizingView={isAutosizingView}
-        collapsed={collapsed}
-        element={element}
-        path={templatePath}
-        color={resultingStyle.iconColor}
-        selected={selected}
-        imports={imports}
-      />
-    )
+    let warningText: string | null = null
+    if (elementWarnings.widthOrHeightZero) {
+      warningText = 'Missing width or height'
+    } else if (elementWarnings.absoluteWithUnpositionedParent) {
+      warningText = 'Element is trying to be position absolutely with an unconfigured parent'
+    }
+
+    const preview =
+      warningText == null ? (
+        <ItemPreview
+          key={`preview-${label}`}
+          {...props}
+          isAutosizingView={isAutosizingView}
+          collapsed={collapsed}
+          element={element}
+          path={templatePath}
+          color={resultingStyle.iconColor}
+          selected={selected}
+          imports={imports}
+        />
+      ) : (
+        <WarningIcon tooltipText={warningText} />
+      )
 
     const collapse = React.useCallback(
       (event: any) => collapseItem(dispatch, templatePath, event),
@@ -249,8 +259,8 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
           />
           {preview}
           <ItemLabel
-            key={`label-${name}`}
-            name={name}
+            key={`label-${label}`}
+            name={label}
             isDynamic={isDynamic}
             target={templatePath}
             canRename={selected}

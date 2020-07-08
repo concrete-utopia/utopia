@@ -4,12 +4,12 @@ import * as classNames from 'classnames'
 import * as React from 'react'
 import {
   betterReactMemo,
-  ControlStatus,
   CSSCursor,
   EitherUtils,
   getControlStyles,
   OnSubmitValue,
   OnSubmitValueOrEmpty,
+  OnSubmitValueOrUnknownOrEmpty,
   usePropControlledState,
 } from 'uuiui-deps'
 import {
@@ -19,28 +19,40 @@ import {
   CSSNumberType,
   CSSNumberUnit,
   emptyInputValue,
-  EmptyInputValue,
   getCSSNumberUnit,
+  isCSSNumber,
   isEmptyInputValue,
+  isUnknownInputValue,
   parseCSSNumber,
   setCSSNumberValue,
+  unknownInputValue,
+  UnknownOrEmptyInput,
 } from '../../components/inspector/common/css-utils'
-import { OnUnsetValues } from '../../components/inspector/common/property-path-hooks'
+import {
+  OnUnsetValues,
+  SubmitValueFactoryReturn,
+} from '../../components/inspector/common/property-path-hooks'
+import { InspectorControlProps } from '../../components/inspector/controls/control'
 import { clampValue } from '../../core/shared/math-utils'
 import { Icn, IcnProps } from '../icn'
 import { colorTheme, UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
-import { BoxCorners, ChainedType, getBorderRadiusStyles, InspectorInput } from './base-input'
+import {
+  BaseInputProps,
+  BoxCorners,
+  ChainedType,
+  getBorderRadiusStyles,
+  InspectorInput,
+} from './base-input'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
 const getDisplayValue = (
   value: CSSNumber | null,
-  showValue: boolean,
   defaultUnitToHide: CSSNumberUnit | null,
   mixed: boolean,
 ): string => {
-  if (showValue && !mixed && value != null) {
+  if (!mixed && value != null) {
     const unit = getCSSNumberUnit(value)
     const showUnit = unit !== defaultUnitToHide
     return cssNumberToString(value, showUnit)
@@ -100,15 +112,7 @@ let incrementTimeout: number | undefined = undefined
 let incrementAnimationFrame: number | undefined = undefined
 const repeatThreshold: number = 500
 
-interface AbstractNumberInputProps<T extends CSSNumber | number> {
-  value: T | null | undefined
-  inputProps?: React.InputHTMLAttributes<HTMLInputElement>
-  labelProps?: React.InputHTMLAttributes<HTMLDivElement>
-  style?: React.CSSProperties
-  id: string
-  className?: string
-  disabled?: boolean
-  labelBelow?: string
+export interface NumberInputOptions {
   labelInner?: string | IcnProps
   minimum?: number
   maximum?: number
@@ -117,19 +121,22 @@ interface AbstractNumberInputProps<T extends CSSNumber | number> {
   chained?: ChainedType
   height?: number
   roundCorners?: BoxCorners
-  submitOnEnter?: boolean
-  allowEditOnDoubleClick?: boolean
-  showContent?: boolean
-  onSubmitValue?: OnSubmitValueOrEmpty<T>
-  onTransientSubmitValue?: OnSubmitValueOrEmpty<T>
-  onForcedSubmitValue?: OnSubmitValueOrEmpty<T>
-  controlStatus?: ControlStatus
-  focusOnMount?: boolean
-}
-
-interface NumberInputProps extends AbstractNumberInputProps<CSSNumber> {
   numberType: CSSNumberType
   defaultUnitToHide?: CSSNumberUnit
+}
+
+export interface AbstractNumberInputProps<T extends CSSNumber | number>
+  extends NumberInputOptions,
+    BaseInputProps,
+    InspectorControlProps {
+  value: T | null | undefined
+  DEPRECATED_labelBelow?: React.ReactChild
+}
+
+export interface NumberInputProps extends AbstractNumberInputProps<CSSNumber> {
+  onSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+  onTransientSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+  onForcedSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
 }
 
 const ScrubThreshold = 3
@@ -140,10 +147,9 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     value: propsValue,
     style,
     inputProps = {},
-    labelProps = {},
     id,
     className,
-    labelBelow,
+    DEPRECATED_labelBelow,
     labelInner,
     minimum: unscaledMinimum = -Infinity,
     maximum: unscaledMaximum = Infinity,
@@ -152,9 +158,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     chained = 'not-chained',
     height = UtopiaTheme.layout.inputHeight.default,
     roundCorners = 'all',
-    submitOnEnter = true,
-    allowEditOnDoubleClick = false,
-    showContent = true,
     onSubmitValue,
     onTransientSubmitValue,
     onForcedSubmitValue,
@@ -171,17 +174,14 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     )
 
     const [mixed, setMixed] = React.useState<boolean>(controlStyles.mixed)
-    const [showValue, setShowValue] = React.useState<boolean>(showContent)
     const [
       stateValue,
       setStateValueDirectly,
       forceStateValueToUpdateFromProps,
-    ] = usePropControlledState(
-      getDisplayValue(propsValue ?? null, showValue, defaultUnitToHide, mixed),
-    )
+    ] = usePropControlledState(getDisplayValue(propsValue ?? null, defaultUnitToHide, mixed))
     const updateStateValue = React.useCallback(
       (newValue: CSSNumber) =>
-        setStateValueDirectly(getDisplayValue(newValue, true, defaultUnitToHide, false)),
+        setStateValueDirectly(getDisplayValue(newValue, defaultUnitToHide, false)),
       [defaultUnitToHide, setStateValueDirectly],
     )
     const parsedStateValue = parseDisplayValue(stateValue, numberType, defaultUnitToHide)
@@ -194,7 +194,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     const [isFauxcused, setIsFauxcused] = React.useState<boolean>(false)
     const isFocused = isActuallyFocused || isFauxcused
 
-    const [editDisabled, setEditDisabled] = React.useState<boolean>(allowEditOnDoubleClick)
     const [labelDragDirection, setLabelDragDirection] = React.useState<LabelDragDirection>(
       'horizontal',
     )
@@ -258,7 +257,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
           }
         }
         updateStateValue(newValue)
-        setShowValue(true)
         return newValue
       },
       [
@@ -323,7 +321,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
           }
         }
         updateStateValue(newValue)
-        setShowValue(true)
         return newValue
       },
       [
@@ -397,26 +394,15 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     const rc = roundCorners == null ? 'all' : roundCorners
     const borderRadiusStyles = getBorderRadiusStyles(chained, rc)
 
-    const onDoubleClick = React.useCallback(() => {
-      if (allowEditOnDoubleClick) {
-        setEditDisabled(false)
-      }
-    }, [allowEditOnDoubleClick])
-
     const onFocus = React.useCallback(
       (e: React.FocusEvent<HTMLInputElement>) => {
         setIsActuallyFocused(true)
-        if (editDisabled) {
-          e.preventDefault()
-          ref.current?.blur()
-        } else {
-          if (inputProps.onFocus != null) {
-            inputProps.onFocus(e)
-          }
-          e.target.select()
+        e.target.select()
+        if (inputProps.onFocus != null) {
+          inputProps.onFocus(e)
         }
       },
-      [editDisabled, inputProps, ref],
+      [inputProps],
     )
 
     const onKeyDown = React.useCallback(
@@ -425,13 +411,13 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
           incrementBy(propsValue, stepSize, e.shiftKey, false)
         } else if (e.key === 'ArrowDown' && propsValue != null) {
           incrementBy(propsValue, -stepSize, e.shiftKey, false)
-        } else if ((submitOnEnter && e.key === 'Enter') || e.key === 'Escape') {
+        } else if (e.key === 'Enter' || e.key === 'Escape') {
           e.nativeEvent.stopImmediatePropagation()
           e.preventDefault()
           ref.current?.blur()
         }
       },
-      [incrementBy, propsValue, stepSize, submitOnEnter, ref],
+      [incrementBy, propsValue, stepSize, ref],
     )
 
     const onKeyUp = React.useCallback(
@@ -463,10 +449,8 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             } else if (EitherUtils.isRight(parsedStateValue)) {
               onSubmitValue(parsedStateValue.value)
             } else {
+              onSubmitValue(unknownInputValue(stateValue))
               forceStateValueToUpdateFromProps()
-            }
-            if (allowEditOnDoubleClick) {
-              setEditDisabled(false)
             }
           }
         }
@@ -476,7 +460,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         onSubmitValue,
         stateValue,
         parsedStateValue,
-        allowEditOnDoubleClick,
         valueChangedSinceFocus,
         forceStateValueToUpdateFromProps,
       ],
@@ -489,7 +472,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
           inputProps.onChange(e)
         }
         setValueChangedSinceFocus(true)
-        setShowValue(true)
         setMixed(false)
         setStateValueDirectly(value)
       },
@@ -630,7 +612,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             height={height}
             id={id}
             placeholder={placeholder}
-            onDoubleClick={onDoubleClick}
             onFocus={onFocus}
             onKeyDown={onKeyDown}
             onKeyUp={onKeyUp}
@@ -745,7 +726,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             </div>
           ) : null}
         </div>
-        {labelBelow == null && controlStatus != 'off' ? null : (
+        {DEPRECATED_labelBelow == null && controlStatus != 'off' ? null : (
           <div
             onMouseDown={onLabelMouseDown}
             style={{
@@ -756,38 +737,39 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
               color: controlStyles.secondaryColor,
               paddingTop: 2,
             }}
-            {...labelProps}
           >
-            {labelBelow != null ? labelBelow : null}
+            {DEPRECATED_labelBelow != null ? DEPRECATED_labelBelow : null}
           </div>
         )}
       </form>
     )
   },
 )
-interface SimpleNumberInputProps extends AbstractNumberInputProps<number> {}
+interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {
+  onSubmitValue: OnSubmitValueOrEmpty<number>
+  onTransientSubmitValue: OnSubmitValueOrEmpty<number>
+  onForcedSubmitValue: OnSubmitValueOrEmpty<number>
+}
 
 function wrappedSimpleOnSubmitValue(
-  onSubmitValue: OnSubmitValueOrEmpty<number> | undefined,
-): OnSubmitValueOrEmpty<CSSNumber> | undefined {
-  if (onSubmitValue == null) {
-    return undefined
-  } else {
-    return (value: CSSNumber | EmptyInputValue) =>
-      onSubmitValue(isEmptyInputValue(value) ? value : value.value)
+  onSubmitValue: OnSubmitValueOrEmpty<number>,
+): OnSubmitValueOrUnknownOrEmpty<CSSNumber> {
+  return (value) => {
+    if (isCSSNumber(value)) {
+      onSubmitValue(value.value)
+    }
   }
 }
 
 export const SimpleNumberInput = betterReactMemo(
   'SimpleNumberInput',
-  (props: SimpleNumberInputProps) => {
-    const {
-      value,
-      onSubmitValue,
-      onTransientSubmitValue,
-      onForcedSubmitValue,
-      ...sharedProps
-    } = props
+  ({
+    value,
+    onSubmitValue,
+    onTransientSubmitValue,
+    onForcedSubmitValue,
+    ...sharedProps
+  }: SimpleNumberInputProps) => {
     const wrappedProps: NumberInputProps = {
       ...sharedProps,
       value: value == null ? null : cssNumber(value),
@@ -800,29 +782,31 @@ export const SimpleNumberInput = betterReactMemo(
   },
 )
 
-interface SimplePercentInputProps extends AbstractNumberInputProps<number> {}
+interface SimplePercentInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {
+  onSubmitValue: OnSubmitValueOrEmpty<number>
+  onTransientSubmitValue: OnSubmitValueOrEmpty<number>
+  onForcedSubmitValue: OnSubmitValueOrEmpty<number>
+}
 
 function wrappedPercentOnSubmitValue(
-  onSubmitValue: OnSubmitValueOrEmpty<number> | undefined,
-): OnSubmitValueOrEmpty<CSSNumber> | undefined {
-  if (onSubmitValue == null) {
-    return undefined
-  } else {
-    return (value: CSSNumber | EmptyInputValue) =>
-      onSubmitValue(isEmptyInputValue(value) ? value : value.value / 100)
+  onSubmitValue: OnSubmitValueOrEmpty<number>,
+): OnSubmitValueOrUnknownOrEmpty<CSSNumber> {
+  return (value) => {
+    if (isCSSNumber(value)) {
+      onSubmitValue(value.value / 100)
+    }
   }
 }
 
 export const SimplePercentInput = betterReactMemo(
   'SimplePercentInput',
-  (props: SimplePercentInputProps) => {
-    const {
-      value,
-      onSubmitValue,
-      onTransientSubmitValue,
-      onForcedSubmitValue,
-      ...sharedProps
-    } = props
+  ({
+    value,
+    onSubmitValue,
+    onTransientSubmitValue,
+    onForcedSubmitValue,
+    ...sharedProps
+  }: SimplePercentInputProps) => {
     const wrappedProps: NumberInputProps = {
       ...sharedProps,
       value: value == null ? null : cssNumber(value * 100, '%'),
@@ -885,18 +869,33 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
   },
 )
 
-export function useWrappedEmptyOnSubmitValue<T>(
+export function useWrappedEmptyOrUnknownOnSubmitValue<T>(
   onSubmitValue: OnSubmitValue<T>,
-  onUnsetValue: OnUnsetValues,
-): OnSubmitValueOrEmpty<T> {
+  onUnsetValue?: OnUnsetValues,
+): OnSubmitValueOrUnknownOrEmpty<T> {
   return React.useCallback(
-    (value: T | EmptyInputValue) => {
+    (value: UnknownOrEmptyInput<T>) => {
       if (isEmptyInputValue(value)) {
-        onUnsetValue()
-      } else {
+        if (onUnsetValue != null) {
+          onUnsetValue()
+        }
+      } else if (!isUnknownInputValue(value)) {
         onSubmitValue(value)
       }
     },
     [onSubmitValue, onUnsetValue],
   )
+}
+
+/**
+ * An easy wrapper for the submitValueFactory that applies useWrappedEmptyOrUnknownOnSubmitValue
+ * to each submitValue type.
+ */
+export function useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue<T>(
+  submitValueReturn: SubmitValueFactoryReturn<T>,
+  onUnsetValue?: OnUnsetValues,
+): SubmitValueFactoryReturn<UnknownOrEmptyInput<T>> {
+  const index0 = useWrappedEmptyOrUnknownOnSubmitValue(submitValueReturn[0], onUnsetValue)
+  const index1 = useWrappedEmptyOrUnknownOnSubmitValue(submitValueReturn[1], onUnsetValue)
+  return [index0, index1]
 }

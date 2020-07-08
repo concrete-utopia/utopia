@@ -1,5 +1,6 @@
 {
   "name": "Better Solarized Dark",
+  "type": "dark",
   "tokenColors": [
     {
       "settings": {

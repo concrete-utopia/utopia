@@ -34,6 +34,7 @@ import { ErrorMessage } from '../../shared/error-messages'
 import { fastForEach } from '../../shared/utils'
 import { getCodeFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
+import { transformCssSystemModule } from '../../shared/css-style-loader'
 
 const TS_LIB_FILES: { [key: string]: string } = {
   'lib.d.ts': libfile,
@@ -60,7 +61,6 @@ let fs: any = null
 let fileChanged: (
   filename: string,
   content: string,
-  emitBuild: boolean,
   jobID: string,
 ) => // eslint-disable-next-line @typescript-eslint/no-empty-function
 void = () => {}
@@ -70,13 +70,11 @@ export type OutgoingWorkerMessage =
   | BuildResultMessage
   | UpdateProcessedMessage
   | InitCompleteMessage
-  | NoEmitMessage
 
 interface UpdateFileMessage {
   type: 'updatefile'
   filename: string
   content: string | UIJSFile | CodeFile
-  emitBuild: boolean
   jobID: string
 }
 
@@ -106,13 +104,9 @@ export interface BuildResultMessage {
   fullBuild: boolean
 }
 
-export interface NoEmitMessage {
-  type: 'noemit'
-  jobID: string
-}
-
 export interface UpdateProcessedMessage {
   type: 'updateprocessed'
+  jobID: string
 }
 
 export interface InitCompleteMessage {
@@ -122,7 +116,6 @@ export interface InitCompleteMessage {
 
 interface FileVersion {
   versionNr: number
-  emitted: boolean
   asStringCached: string | null
 }
 
@@ -152,14 +145,12 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 export function createUpdateFileMessage(
   filename: string,
   content: string | UIJSFile | CodeFile,
-  emitBuild: boolean,
   jobID: string,
 ): UpdateFileMessage {
   return {
     type: 'updatefile',
     filename: filename,
     content: content,
-    emitBuild: emitBuild,
     jobID: jobID,
   }
 }
@@ -194,16 +185,10 @@ function createBuildResultMessage(
   }
 }
 
-function createNoEmitMessage(jobID: string): NoEmitMessage {
-  return {
-    type: 'noemit',
-    jobID: jobID,
-  }
-}
-
-function createUpdateProcessedMessage(): UpdateProcessedMessage {
+function createUpdateProcessedMessage(jobID: string): UpdateProcessedMessage {
   return {
     type: 'updateprocessed',
+    jobID: jobID,
   }
 }
 
@@ -260,9 +245,9 @@ export function handleMessage(
         } else {
           content = getCodeFileContents(workerMessage.content, false, true)
         }
-        fileChanged(workerMessage.filename, content, workerMessage.emitBuild, workerMessage.jobID)
+        fileChanged(workerMessage.filename, content, workerMessage.jobID)
       } finally {
-        sendMessage(createUpdateProcessedMessage())
+        sendMessage(createUpdateProcessedMessage(workerMessage.jobID))
       }
       break
     }
@@ -578,20 +563,19 @@ function watch(
 
   // Initialize the code file version with 0
   ;[...codeFilesToWatch, ...otherFilesToWatch].forEach((filename) => {
-    fileVersions[filename] = { versionNr: 0, emitted: false, asStringCached: null }
+    fileVersions[filename] = { versionNr: 0, asStringCached: null }
   })
 
   Object.keys(TS_LIB_FILES).forEach((lib) => {
     // With and without the forward slash, because reasons.
-    fileVersions[lib] = { versionNr: 0, emitted: false, asStringCached: TS_LIB_FILES[lib] }
-    fileVersions[`/${lib}`] = { versionNr: 0, emitted: false, asStringCached: TS_LIB_FILES[lib] }
+    fileVersions[lib] = { versionNr: 0, asStringCached: TS_LIB_FILES[lib] }
+    fileVersions[`/${lib}`] = { versionNr: 0, asStringCached: TS_LIB_FILES[lib] }
   })
 
   Object.keys(typeDefinitions).forEach((fileName) => {
     const nodeModulesPath = '/node_modules/' + fileName
     fileVersions[nodeModulesPath] = {
       versionNr: 0,
-      emitted: false,
       asStringCached: typeDefinitions[fileName],
     }
   })
@@ -599,7 +583,7 @@ function watch(
   const services = configureLanguageService(codeFilesToWatch, fileVersions, options)
 
   // Now let's watch the files
-  fileChanged = (filename: string, content: string, emitBuild: boolean, jobIDInner: string) => {
+  fileChanged = (filename: string, content: string, jobIDInner: string) => {
     const prevContent = fs.readFileSync(filename, 'utf8')
     const version = fileVersions[filename]
     const contentChanged = prevContent != content
@@ -609,7 +593,6 @@ function watch(
       // Update the version to signal a change in the file
       fileVersions[filename] = {
         versionNr: version.versionNr + 1,
-        emitted: emitBuild,
         asStringCached: content,
       }
 
@@ -618,7 +601,7 @@ function watch(
 
     // we only need to emit if the content has been changed or it was not emitted the last time
     if (buildOrParsePrint === 'build') {
-      if (emitBuild && (contentChanged || !version.emitted)) {
+      if (contentChanged) {
         // write the output the browserfs
         const buildResult = emitFile(filename)
         const exportsInfo = [parseExportsInfo(filename)]
@@ -632,8 +615,6 @@ function watch(
             false,
           ),
         )
-      } else {
-        sendMessage(createNoEmitMessage(jobIDInner))
       }
     }
   }
@@ -641,7 +622,6 @@ function watch(
   if (buildOrParsePrint === 'build') {
     let projectBuild: MultiFileBuildResult = {}
     let exportsInfo: Array<ExportsInfo> = []
-    let errors: Array<ErrorMessage> = []
     ;[...codeFilesToWatch, ...otherFilesToWatch].forEach((rootFile) => {
       const buildResult = emitFile(rootFile)
       if (buildResult.transpiledCode != null) {
@@ -694,7 +674,7 @@ function watch(
       const content = fs.readFileSync(filename, 'utf8')
       return {
         errors: [],
-        transpiledCode: transformCss(filename, content),
+        transpiledCode: transformCssSystemModule(filename, content),
         sourceMap: null,
       }
     } else {
@@ -768,33 +748,4 @@ export function isJsOrTsFile(filename: string) {
 
 export function isTsLib(filename: string) {
   return TS_LIB_FILES[filename] != null
-}
-
-function transformCss(filename: string, content: string): string {
-  return `
-System.register([], function(exports_1, context_1) {
-  'use strict'
-  
-  return {
-    setters: [],
-    execute: function execute() {
-      const filename = ${JSON.stringify(filename)}
-      const content = ${JSON.stringify(content)}
-      const maybeExistingTag = document.getElementById(filename);
-      if (maybeExistingTag != null) {
-        if (maybeExistingTag.textContent === content) {
-          return;
-        } else {
-          maybeExistingTag.parentElement.removeChild(maybeExistingTag);
-        }
-      }
-      const styleTag = document.createElement("style");
-      styleTag.type = "text/css";
-      styleTag.id = filename;
-      styleTag.appendChild(document.createTextNode(content));
-      document.querySelector("head").appendChild(styleTag);
-    },
-  }
-})
-`
 }

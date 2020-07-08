@@ -52,33 +52,26 @@ const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) 
     : ''
 
   const { setSelectedIndex, calculateDraggedValue, index, selected, deleteStop } = props
-  const onGradientStopMouseMove = React.useCallback(
+  const onMouseMove = React.useCallback(
     (e: MouseEvent) => {
       if (valueAtDragOrigin.current != null && dragScreenOrigin.current != null) {
-        if (!selected) {
-          const cachedIndex = index
-          setSelectedIndex(cachedIndex)
-          calculateDraggedValue(
-            index,
-            e.screenX,
-            dragScreenOrigin.current.x,
-            valueAtDragOrigin.current,
-            true,
-          )
-        }
+        calculateDraggedValue(
+          index,
+          e.screenX,
+          dragScreenOrigin.current.x,
+          valueAtDragOrigin.current,
+          true,
+        )
       }
     },
-    [dragScreenOrigin, setSelectedIndex, calculateDraggedValue, index, valueAtDragOrigin, selected],
+    [dragScreenOrigin, calculateDraggedValue, index, valueAtDragOrigin],
   )
 
-  const onGradientStopMouseUp = React.useCallback(
+  const onMouseUp = React.useCallback(
     (e: MouseEvent) => {
       if (valueAtDragOrigin.current != null && dragScreenOrigin.current != null) {
         const deltaX = e.screenX - dragScreenOrigin.current.x
         const deltaY = e.screenY - dragScreenOrigin.current.y
-        if (!selected) {
-          setSelectedIndex(index)
-        }
         if (Math.abs(deltaY) > 30) {
           deleteStop(index)
         } else {
@@ -93,45 +86,27 @@ const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) 
           }
         }
       }
-      document.removeEventListener('mousemove', onGradientStopMouseMove)
-      document.removeEventListener('mouseup', onGradientStopMouseUp)
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
     },
-    [
-      dragScreenOrigin,
-      onGradientStopMouseMove,
-      valueAtDragOrigin,
-      calculateDraggedValue,
-      deleteStop,
-      setSelectedIndex,
-      selected,
-      index,
-    ],
+    [dragScreenOrigin, onMouseMove, valueAtDragOrigin, calculateDraggedValue, deleteStop, index],
   )
 
   const stopPositionValue = props.stop.position.value
-  const onGradientStopMouseDown = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+  const onMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      if (!selected) {
-        setSelectedIndex(index)
-      }
+      setSelectedIndex(index)
       valueAtDragOrigin.current = stopPositionValue
       dragScreenOrigin.current = {
         x: e.nativeEvent.screenX,
         y: e.nativeEvent.screenY,
       }
-      document.addEventListener('mousemove', onGradientStopMouseMove)
-      document.addEventListener('mouseup', onGradientStopMouseUp)
+      document.addEventListener('mousemove', onMouseMove)
+      document.addEventListener('mouseup', onMouseUp)
     },
-    [
-      onGradientStopMouseMove,
-      onGradientStopMouseUp,
-      selected,
-      setSelectedIndex,
-      stopPositionValue,
-      index,
-    ],
+    [onMouseMove, onMouseUp, setSelectedIndex, stopPositionValue, index],
   )
 
   const position = Math.max(0, Math.min(100, props.stop.position.value))
@@ -148,7 +123,7 @@ const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) 
     >
       <div
         id={`gradient-stop-${props.index}`}
-        onMouseDown={onGradientStopMouseDown}
+        onMouseDown={onMouseDown}
         className={'ignore-react-onclickoutside'}
         style={{
           width: GradientStopSize,
@@ -252,14 +227,15 @@ export interface GradientControlProps {
 function calculateIntermediateStopColor(
   newStopPoint: number,
   stops: Array<CSSGradientStop>,
-): CSSColor {
+): { color: CSSColor; newIndex: number } {
   const orderedStops = orderStops([...stops])
+  // Is new stop before lowest stop?
   if (newStopPoint <= orderedStops[0].position.value) {
-    return orderedStops[0].color
-  } else if (newStopPoint >= orderedStops[orderedStops.length - 1].position.value) {
-    return orderedStops[orderedStops.length - 1].color
+    return { color: orderedStops[0].color, newIndex: 0 }
   }
-  for (let i = 0; i < orderedStops.length; i++) {
+
+  // Is new stop between existing stops?
+  for (let i = 0; i < orderedStops.length - 1; i++) {
     if (
       newStopPoint >= orderedStops[i].position.value &&
       newStopPoint <= orderedStops[i + 1].position.value
@@ -272,19 +248,23 @@ function calculateIntermediateStopColor(
       const color2 = cssColorToChromaColorOrDefault(orderedStops[i + 1].color)
       const hex = Chroma.mix(color1, color2, localStopPosition, 'rgb').hex().toUpperCase()
       return {
-        hex,
-        type: 'Hex',
+        color: {
+          hex,
+          type: 'Hex',
+        },
+        newIndex: i + 1,
       }
     }
   }
-  return orderedStops[orderedStops.length - 1].color
+
+  // New stop is after highest stop
+  return { color: orderedStops[orderedStops.length - 1].color, newIndex: orderedStops.length }
 }
 
 export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
   'GradientStopsEditor',
-  (props) => {
+  ({ setSelectedIndex, ...props }) => {
     const ref: React.RefObject<HTMLDivElement> = React.useRef(null)
-    const gradientMousedownPosition = React.useRef<number | undefined>(undefined)
 
     function calculateDraggedValue(
       index: number,
@@ -310,48 +290,37 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
         } else {
           props.onSubmitValue(newStops)
         }
-        props.setSelectedIndex(calculateNewIndex(index, newStops, clampedValue))
+        setSelectedIndex(calculateNewIndex(index, newStops, clampedValue))
       }
     }
     const { stops, onSubmitValue } = props
-    const handleGradientMouseUp = React.useCallback(
-      (e: MouseEvent) => {
-        if (
-          ref.current != null &&
-          gradientMousedownPosition.current != null &&
-          gradientMousedownPosition.current === e.screenX
-        ) {
+
+    const onMouseDown = React.useCallback(
+      (e: React.MouseEvent) => {
+        if (ref.current != null) {
           const width = ref.current.offsetWidth - GradientStopSize - 2
           const position: CSSNumber = {
-            value: width > 0 ? Number(((e.offsetX / width) * 100).toFixed(2)) : 0,
+            value: width > 0 ? Number(((e.nativeEvent.offsetX / width) * 100).toFixed(2)) : 0,
             unit: '%',
           }
-          const color = calculateIntermediateStopColor(position.value, stops)
+          const { color, newIndex } = calculateIntermediateStopColor(position.value, stops)
           const stop: CSSGradientStop = {
             color,
             position,
           }
           const newStops = [...stops, stop]
           onSubmitValue(newStops)
-          ref.current.removeEventListener('mouseup', handleGradientMouseUp)
+          setSelectedIndex(newIndex)
         }
       },
-      [stops, onSubmitValue],
-    )
-
-    const handleGradientMouseDown = React.useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        e.preventDefault()
-        if (ref.current != null) {
-          gradientMousedownPosition.current = e.nativeEvent.screenX
-          ref.current.addEventListener('mouseup', handleGradientMouseUp)
-        }
-      },
-      [handleGradientMouseUp],
+      [stops, onSubmitValue, setSelectedIndex],
     )
 
     const deleteStop = (index: number) => {
       if (props.stops.length > 2) {
+        if (props.selectedIndex !== 0 && props.selectedIndex === props.stops.length - 1) {
+          setSelectedIndex(props.selectedIndex - 1)
+        }
         const newValue = [...props.stops]
         newValue.splice(index, 1)
         props.onSubmitValue(newValue)
@@ -359,13 +328,14 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
     }
 
     const gradientStopElements = stops.map((stop, index: number) => {
+      const selected = props.selectedIndex === index
       return (
         <GradientStop
           key={`${printColor(stop.color)}${stop.position.value}${stop.position.unit}`}
           index={index}
           stop={stop}
-          selected={props.selectedIndex === index}
-          setSelectedIndex={props.setSelectedIndex}
+          selected={selected}
+          setSelectedIndex={setSelectedIndex}
           calculateDraggedValue={calculateDraggedValue}
           deleteStop={deleteStop}
         />
@@ -399,7 +369,7 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
               height: GradientStopSize + GradientStopCaratSize + 1,
               position: 'relative',
             }}
-            onMouseDown={handleGradientMouseDown}
+            onMouseDown={onMouseDown}
           >
             {gradientStopElements}
           </div>
@@ -407,7 +377,7 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
           <div
             className='gradientcontrol-colorfield'
             key='gradientcontrol-colorfield'
-            onMouseDown={handleGradientMouseDown}
+            onMouseDown={onMouseDown}
             style={{
               height: '100%',
               width: '100%',

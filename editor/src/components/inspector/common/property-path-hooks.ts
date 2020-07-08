@@ -5,7 +5,6 @@ import { createContext, useContextSelector } from 'use-context-selector'
 import { PropertyControls } from 'utopia-api'
 import {
   getOpenImportsFromState,
-  getOpenUIJSFileKey,
   getOpenUtopiaJSXComponentsFromState,
 } from '../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../components/editor/store/store-hook'
@@ -33,6 +32,7 @@ import {
   ParsedPropertiesKeys,
   ParsedPropertiesValues,
   printCSSValue,
+  cssNumber,
 } from '../../../components/inspector/common/css-utils'
 import {
   createLayoutPropertyPath,
@@ -50,8 +50,9 @@ import {
   findMissingDefaults,
   getDefaultPropsFromParsedControls,
   removeIgnored,
+  getPropertyControlsForTarget,
 } from '../../../core/property-controls/property-controls-utils'
-import { addUniquely, pluck } from '../../../core/shared/array-utils'
+import { addUniquely } from '../../../core/shared/array-utils'
 import {
   defaultEither,
   Either,
@@ -68,6 +69,7 @@ import {
   isJSXElement,
   JSXAttributes,
   UtopiaJSXComponent,
+  SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
@@ -325,7 +327,7 @@ export function useInspectorLayoutInStyleInfo_UNSAFE<
   return useInspectorInfo([prop], transformValue, untransformValue, stylePropPathMappingFn)
 }
 
-function useInspectorContext() {
+export function useInspectorContext() {
   const { onSubmitValue, onUnsetValue } = React.useContext(InspectorCallbackContext)
   return React.useMemo(() => {
     return {
@@ -373,12 +375,14 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
 
 export type ParsedValues<P extends ParsedPropertiesKeys> = { [key in P]: ParsedProperties[key] }
 
+export type SubmitValueFactoryReturn<T> = [(newValue: T) => void, (newValue: T) => void]
+
 /**
  * @returns [onSubmitValue, onTransientSubmitValue]
  */
 export type UseSubmitValueFactory<T> = <NewType>(
   transform: (newValue: NewType, oldValue: T) => T,
-) => [(newValue: NewType) => void, (newValue: NewType) => void]
+) => SubmitValueFactoryReturn<NewType>
 
 export type OnUnsetValues = () => void
 
@@ -420,8 +424,6 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     ),
   )
 
-  const propertyStatus = calculateMultiPropertyStatusForSelection(multiselectAtProps)
-
   const selectedProps = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
@@ -445,6 +447,12 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     multiselectAtProps,
     selectedProps,
   )
+
+  const propertyStatus = calculateMultiPropertyStatusForSelection(
+    multiselectAtProps,
+    simpleAndRawValues,
+  )
+
   let isUnknown = false
   const values = Utils.mapArrayToDictionary(
     propKeys,
@@ -586,8 +594,6 @@ export function useInspectorInfoSimpleUntyped(
     ),
   )
 
-  const propertyStatus = calculateMultiStringPropertyStatusForSelection(multiselectAtProps)
-
   const selectedProps = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
@@ -608,6 +614,12 @@ export function useInspectorInfoSimpleUntyped(
     multiselectAtProps,
     selectedProps,
   )
+
+  const propertyStatus = calculateMultiStringPropertyStatusForSelection(
+    multiselectAtProps,
+    simpleAndRawValues,
+  )
+
   const values = Utils.mapArrayToDictionary(
     propertyPaths,
     (propertyPath) => propertyPath.propertyElements[propertyPath.propertyElements.length - 1],
@@ -682,6 +694,7 @@ export function useInspectorInfoSimpleUntyped(
 
 export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
   property: P,
+  specialSizeMeasurements?: SpecialSizeMeasurements,
 ): InspectorInfo<ParsedProperties[P]> {
   function transformValue(parsedValues: ParsedValues<P>): ParsedProperties[P] {
     return parsedValues[property]
@@ -690,7 +703,64 @@ export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
     return { [property]: transformedType } as Partial<ParsedValues<P>>
   }
 
-  return useInspectorInfo([property], transformValue, untransformValue, createLayoutPropertyPath)
+  let inspectorInfo = useInspectorInfo(
+    [property],
+    transformValue,
+    untransformValue,
+    createLayoutPropertyPath,
+  )
+  if (
+    !inspectorInfo.propertyStatus.set &&
+    !inspectorInfo.propertyStatus.controlled &&
+    specialSizeMeasurements != null
+  ) {
+    const measuredValue = getValueFromSpecialSizeMeasurements(property, specialSizeMeasurements)
+    if (measuredValue != null) {
+      inspectorInfo.value = measuredValue
+      inspectorInfo.propertyStatus.detected = true
+      inspectorInfo.controlStatus = getControlStatusFromPropertyStatus(inspectorInfo.propertyStatus)
+    }
+  }
+  return inspectorInfo
+}
+
+function getValueFromSpecialSizeMeasurements<P extends LayoutProp | StyleLayoutProp>(
+  property: P,
+  specialSizeMeasurements: SpecialSizeMeasurements,
+): ParsedProperties[P] | null {
+  // TODO: are there other properties in special size measurementes to extract?
+  let value: number | undefined = undefined
+  switch (property) {
+    case 'paddingLeft':
+      value = specialSizeMeasurements.padding.left
+      break
+    case 'paddingRight':
+      value = specialSizeMeasurements.padding.right
+      break
+    case 'paddingTop':
+      value = specialSizeMeasurements.padding.top
+      break
+    case 'paddingBottom':
+      value = specialSizeMeasurements.padding.bottom
+      break
+    case 'marginLeft':
+      value = specialSizeMeasurements.margin.left
+      break
+    case 'marginRight':
+      value = specialSizeMeasurements.margin.right
+      break
+    case 'marginTop':
+      value = specialSizeMeasurements.margin.top
+      break
+    case 'marginBottom':
+      value = specialSizeMeasurements.margin.bottom
+      break
+  }
+  if (value != null) {
+    // TODO: solve typing here properly
+    return cssNumber(value, null) as ParsedProperties[P]
+  }
+  return null
 }
 
 export function useKeepShallowReferenceEquality<T>(possibleNewValue: T, measure = false): T {
@@ -767,38 +837,13 @@ export function useSelectedPropertyControls(
   includeIgnored: boolean,
 ): ParseResult<ParsedPropertyControls> {
   const propertyControls = useEditorState((store) => {
-    const { selectedViews, codeResultCache, jsxMetadataKILLME } = store.editor
-    const imports = getOpenImportsFromState(store.editor)
-    const selectedUIJSFilename = getOpenUIJSFileKey(store.editor)
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
+    const { selectedViews, codeResultCache } = store.editor
 
-    let selectedPropertyControls: PropertyControls = {}
+    let selectedPropertyControls: PropertyControls | null = {}
     if (codeResultCache != null) {
       Utils.fastForEach(selectedViews, (path) => {
         // TODO multiselect
-        const name = MetadataUtils.getJSXElementName(path, rootComponents, jsxMetadataKILLME)
-        if (name != null) {
-          // TODO default and star imports
-          let filename = Object.keys(imports).find((key) => {
-            return pluck(imports[key].importedFromWithin, 'name').includes(name)
-          })
-          if (filename == null && selectedUIJSFilename != null) {
-            filename = selectedUIJSFilename.replace(/\.(js|jsx|ts|tsx)$/, '')
-          }
-          if (filename != null) {
-            // TODO figure out absolute filepath
-            const absoluteFilePath = filename.startsWith('.')
-              ? `${filename.slice(1)}`
-              : `${filename}`
-            if (
-              codeResultCache.propertyControlsInfo[absoluteFilePath] != null &&
-              codeResultCache.propertyControlsInfo[absoluteFilePath][name] != null
-            ) {
-              selectedPropertyControls =
-                codeResultCache.propertyControlsInfo[absoluteFilePath][name]
-            }
-          }
-        }
+        selectedPropertyControls = getPropertyControlsForTarget(path, store.editor) ?? {}
       })
     }
 

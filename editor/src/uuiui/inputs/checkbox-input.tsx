@@ -60,13 +60,9 @@ export const CheckboxInput = betterReactMemo(
               '&:focus': {
                 boxShadow: `0 0 0 1px ${UtopiaTheme.color.inspectorFocusedColor.value}`,
               },
-              '&.widget-status-controlled-nodegraph': {
+              '&.widget-status-controlled': {
                 backgroundImage:
                   'url("/editor/icons/light/controls/checkbox/checked-nodegraph-12x12@2x.png")',
-              },
-              '&.widget-status-controlled-component': {
-                backgroundImage:
-                  'url("/editor/icons/light/controls/checkbox/checked-component-12x12@2x.png")',
               },
               '&:not(:checked)': {
                 backgroundImage: 'none',

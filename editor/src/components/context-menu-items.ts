@@ -1,6 +1,9 @@
-import RU from '../utils/react-utils'
+import * as R from 'ramda'
 import { CanvasPoint } from '../core/shared/math-utils'
 import { InstancePath } from '../core/shared/project-file-types'
+import * as PP from '../core/shared/property-path'
+import RU from '../utils/react-utils'
+import Utils from '../utils/utils'
 import { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/actions'
 import {
@@ -10,13 +13,12 @@ import {
   toggleHidden,
 } from './editor/actions/actions'
 import {
-  toggleStyleProp,
-  toggleShadow,
-  toggleSimple,
+  toggleBackgroundLayers,
   toggleBorder,
+  toggleShadow,
+  toggleStylePropPath,
+  toggleStylePropPaths,
 } from './inspector/common/css-utils'
-import * as PP from '../core/shared/property-path'
-import Utils from '../utils/utils'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -79,16 +81,13 @@ export const pasteElements: ContextMenuItem<CanvasData> = {
   },
 }
 
-export const toggleBackgroundLayer: ContextMenuItem<CanvasData> = {
-  name: 'Toggle Background Layer',
+export const toggleBackgroundLayersItem: ContextMenuItem<CanvasData> = {
+  name: 'Toggle Fill',
   enabled: true,
   shortcut: 'F',
   action: (data, dispatch?: EditorDispatch) => {
     const actions = data.selectedViews.map((target) =>
-      EditorActions.toggleProperty(
-        target,
-        toggleStyleProp(PP.create(['style', 'backgroundColor']), toggleSimple),
-      ),
+      EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
     )
     requireDispatch(dispatch)(actions, 'everyone')
   },
@@ -102,7 +101,7 @@ export const toggleBorderItem: ContextMenuItem<CanvasData> = {
     const actions = data.selectedViews.map((target) =>
       EditorActions.toggleProperty(
         target,
-        toggleStyleProp(PP.create(['style', 'boxShadow']), toggleBorder),
+        toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
       ),
     )
     requireDispatch(dispatch)(actions, 'everyone')
@@ -117,7 +116,7 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
     const actions = data.selectedViews.map((target) =>
       EditorActions.toggleProperty(
         target,
-        toggleStyleProp(PP.create(['style', 'boxShadow']), toggleShadow),
+        toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
       ),
     )
     requireDispatch(dispatch)(actions, 'everyone')

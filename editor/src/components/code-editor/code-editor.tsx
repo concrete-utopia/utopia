@@ -10,7 +10,7 @@ import {
   ProjectContents,
   TemplatePath,
 } from '../../core/shared/project-file-types'
-import { NpmDependencies, TypeDefinitions } from '../../core/shared/npm-dependency-types'
+import { TypeDefinitions, NpmDependency } from '../../core/shared/npm-dependency-types'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { CodeEditorTheme } from './code-editor-themes'
 import {
@@ -38,7 +38,7 @@ export interface CodeEditorProps {
   enabled: boolean
   autoSave: boolean
   npmTypeDefinitions: {
-    npmDependencies: NpmDependencies
+    npmDependencies: Array<NpmDependency>
     typeDefinitions: TypeDefinitions
   }
   allErrors: Array<ErrorMessage> | null
@@ -60,6 +60,10 @@ interface CodeEditorState {
   propsCode: string
   propsCursorPosition: CursorPosition | null
   dirty: boolean
+}
+
+function cursorPositionsEqual(l: CursorPosition, r: CursorPosition): boolean {
+  return l.column === r.column && l.line === r.line
 }
 
 export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState> {
@@ -176,13 +180,15 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
   }
 
   onChangeCursorPosition = (cursorPosition: CursorPosition, shouldChangeSelection: boolean) => {
-    this.setState({
-      cursorPosition: cursorPosition,
-    })
-    if (shouldChangeSelection) {
-      this.props.onSelect(cursorPosition.line, cursorPosition.column)
+    if (!cursorPositionsEqual(this.state.cursorPosition, cursorPosition)) {
+      this.setState({
+        cursorPosition: cursorPosition,
+      })
+      if (shouldChangeSelection) {
+        this.props.onSelect(cursorPosition.line, cursorPosition.column)
+      }
+      this.props.saveCursorPosition(cursorPosition)
     }
-    this.props.saveCursorPosition(cursorPosition)
   }
 
   render() {

@@ -4,7 +4,13 @@ import * as R from 'ramda'
 import * as React from 'react'
 import * as localforage from 'localforage'
 import { CursorPosition } from 'src/components/code-editor/code-editor-utils'
-import { FlexAlignment, FramePoint, LayoutSystem, NormalisedFrame } from 'utopia-api'
+import {
+  FlexAlignment,
+  FramePoint,
+  LayoutSystem,
+  NormalisedFrame,
+  PropertyControls,
+} from 'utopia-api'
 import { colorTheme } from 'uuiui'
 import {
   SampleFileBuildResult,
@@ -22,6 +28,7 @@ import {
   maybeSwitchChildrenLayoutProps,
   maybeSwitchLayoutProps,
   roundAttributeLayoutValues,
+  switchLayoutMetadata,
 } from '../../../core/layout/layout-utils'
 import {
   findElementAtPath,
@@ -50,6 +57,7 @@ import {
   jsxElementName,
   UtopiaJSXComponent,
   isJSXAttributeOtherJavaScript,
+  SettableLayoutSystem,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -100,10 +108,10 @@ import {
   mapEither,
 } from '../../../core/shared/either'
 import {
-  NpmBundleResult,
-  NpmDependencies,
   RequireFn,
   TypeDefinitions,
+  npmDependency,
+  NpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import {
   InstancePath,
@@ -124,11 +132,17 @@ import {
   UIJSFile,
   importAlias,
   isAssetFile,
+  ESCodeFile,
+  esCodeFile,
+  NodeModules,
+  Imports,
+  importDetails,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
   codeNeedsParsing,
   codeNeedsPrinting,
+  mergeImports,
 } from '../../../core/workers/common/project-file-utils'
 import { OutgoingWorkerMessage, isJsFile } from '../../../core/workers/ts/ts-worker'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
@@ -143,10 +157,16 @@ import {
   LocalRectangle,
   Size,
   WindowPoint,
+  canvasRectangle,
 } from '../../../core/shared/math-utils'
 import { ensureDirectoriesExist } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
-import { CanvasFrameAndTarget, CSSCursor, PinOrFlexFrameChange } from '../../canvas/canvas-types'
+import {
+  CanvasFrameAndTarget,
+  CSSCursor,
+  PinOrFlexFrameChange,
+  pinSizeChange,
+} from '../../canvas/canvas-types'
 import {
   canvasFrameToNormalisedFrame,
   clearDragState,
@@ -161,7 +181,11 @@ import {
 import { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-wrapper'
-import { CodeResultCache, generateCodeResultCache } from '../../custom-code/code-file'
+import {
+  CodeResultCache,
+  generateCodeResultCache,
+  codeCacheToBuildResult,
+} from '../../custom-code/code-file'
 import { ElementContextMenuInstance } from '../../element-context-menu'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
 import { FontSettings } from '../../inspector/common/css-utils'
@@ -289,7 +313,6 @@ import {
   UpdateFromWorker,
   UpdateJSXElementName,
   UpdateKeysPressed,
-  UpdateNpmDependencies,
   UpdatePreviewConnected,
   UpdateThumbnailGenerated,
   WrapInLayoutable,
@@ -300,6 +323,11 @@ import {
   PopToast,
   InsertDroppedImage,
   ResetPropToDefault,
+  UpdateNodeModulesContents,
+  UpdatePackageJson,
+  StartCheckpointTimer,
+  FinishCheckpointTimer,
+  AddMissingDimensions,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -313,13 +341,12 @@ import {
 import * as History from '../history'
 import { StateHistory } from '../history'
 import {
-  bundleAndDispatchNpmPackages,
-  bundleNpmPackages,
-  dependenciesFromModel,
+  dependenciesFromProjectContents,
   dependenciesFromPackageJsonContents,
   updateDependenciesInEditorState,
+  updateDependenciesInPackageJson,
 } from '../npm-dependency/npm-dependency'
-import { updateRemoteThumbnail } from '../persistence'
+import { updateRemoteThumbnail, pushProjectURLToBrowserHistory } from '../persistence'
 import { deleteAssetFile, saveAsset as saveAssetToServer, updateAssetFileName } from '../server'
 import {
   applyParseAndEditorChanges,
@@ -391,6 +418,13 @@ import {
 import { Notice } from '../../common/notices'
 import { dropExtension } from '../../../core/shared/string-utils'
 import { objectMap } from '../../../core/shared/object-utils'
+import {
+  getMemoizedRequireFn,
+  getDependencyTypeDefinitions,
+} from '../../../core/es-modules/package-manager/package-manager'
+import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
+import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
+import { urlSafeText } from '../../../core/shared/dom-utils'
 
 export function clearSelection(): EditorAction {
   return {
@@ -491,26 +525,14 @@ function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
 ): Array<ComponentMetadata> {
   const allChildren = MetadataUtils.getImmediateChildren(scenes, parentPath)
   return allChildren.reduce((transformedScenes, child) => {
-    return MetadataUtils.transformAtPathOptionally(
-      transformedScenes,
-      child.templatePath,
-      (element) => {
-        return {
-          ...element,
-          specialSizeMeasurements: {
-            ...element.specialSizeMeasurements,
-            parentLayoutSystem: value,
-          },
-        }
-      },
-    ).elements
+    return switchLayoutMetadata(transformedScenes, child.templatePath, value, undefined, undefined)
   }, scenes)
 }
 
 function switchAndUpdateFrames(
   editor: EditorModel,
   target: InstancePath,
-  layoutSystem: LayoutSystem,
+  layoutSystem: SettableLayoutSystem,
 ): EditorModel {
   const targetMetadata = Utils.forceNotNull(
     `Could not find metadata for ${JSON.stringify(target)}`,
@@ -528,7 +550,7 @@ function switchAndUpdateFrames(
 
   let withUpdatedLayoutSystem: EditorModel = editor
   switch (layoutSystem) {
-    case LayoutSystem.Flex:
+    case 'flex':
       withUpdatedLayoutSystem = setPropertyOnTarget(
         withUpdatedLayoutSystem,
         target,
@@ -544,7 +566,8 @@ function switchAndUpdateFrames(
         },
       )
       break
-    case LayoutSystem.Flow:
+    case 'flow':
+    case 'grid':
       const propsToRemove = [
         layoutSystemPath,
         createLayoutPropertyPath('PinnedLeft'),
@@ -583,7 +606,7 @@ function switchAndUpdateFrames(
   // This "fixes" an issue where inside `setCanvasFramesInnerNew` looks at the layout type in the
   // metadata which causes a problem as it's effectively out of date after the above call.
   switch (layoutSystem) {
-    case LayoutSystem.Flex:
+    case 'flex':
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
         jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
@@ -602,7 +625,7 @@ function switchAndUpdateFrames(
         ),
       }
       break
-    case LayoutSystem.Flow:
+    case 'flow':
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
         jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
@@ -636,7 +659,7 @@ function switchAndUpdateFrames(
 
   function layoutSystemToSet(): DetectedLayoutSystem {
     switch (layoutSystem) {
-      case LayoutSystem.Flex:
+      case 'flex':
         return 'flex'
       case LayoutSystem.PinSystem:
         return 'nonfixed'
@@ -654,6 +677,16 @@ function switchAndUpdateFrames(
       layoutSystemToSet(),
     ),
   }
+  withUpdatedLayoutSystem = {
+    ...withUpdatedLayoutSystem,
+    jsxMetadataKILLME: switchLayoutMetadata(
+      withUpdatedLayoutSystem.jsxMetadataKILLME,
+      target,
+      undefined,
+      layoutSystemToSet(),
+      undefined,
+    ),
+  }
 
   let withChildrenUpdated = modifyOpenJSXElementsAndMetadata((components, metadata) => {
     return maybeSwitchChildrenLayoutProps(
@@ -666,7 +699,7 @@ function switchAndUpdateFrames(
   }, withUpdatedLayoutSystem)
 
   let framesAndTargets: Array<PinOrFlexFrameChange> = []
-  if (layoutSystem !== LayoutSystem.Flow) {
+  if (layoutSystem !== 'flow') {
     const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       target,
       withChildrenUpdated.jsxMetadataKILLME,
@@ -829,14 +862,15 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     domMetadataKILLME: poppedEditor.domMetadataKILLME,
     jsxMetadataKILLME: poppedEditor.jsxMetadataKILLME,
     projectContents: poppedEditor.projectContents,
+    nodeModules: currentEditor.nodeModules,
     openFiles: poppedEditor.openFiles,
     cursorPositions: poppedEditor.cursorPositions,
     selectedFile: poppedEditor.selectedFile,
-    resolvedDependencies: currentEditor.resolvedDependencies,
     codeResultCache: currentEditor.codeResultCache,
     selectedViews: poppedEditor.selectedViews,
     highlightedViews: poppedEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
+    warnedInstances: poppedEditor.warnedInstances,
     mode: EditorModes.selectMode(),
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
@@ -931,8 +965,9 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
-      transientState: produceCanvasTransientState(history.current.editor),
+      transientState: produceCanvasTransientState(history.current.editor, true),
     },
+    elementWarnings: poppedDerived.elementWarnings,
   }
 }
 
@@ -989,7 +1024,10 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
         }, working)
       }
     }, editor)
-    return updatedEditor
+    return {
+      ...updatedEditor,
+      selectedViews: TP.filterPaths(updatedEditor.selectedViews, extendedTargets),
+    }
   }
 }
 
@@ -1242,30 +1280,40 @@ function toastOnGeneratedElementsTargeted(
   return result
 }
 
+let checkpointTimeoutId: number | undefined = undefined
+
 // JS Editor Actions:
 export const UPDATE_FNS = {
-  NEW: (action: NewProject, oldEditor: EditorModel, workers: UtopiaTsWorkers): EditorModel => {
+  NEW: (
+    action: NewProject,
+    oldEditor: EditorModel,
+    workers: UtopiaTsWorkers,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
     const newPersistentModel = applyMigrations(action.persistentModel)
-    const newModel = editorModelFromPersistentModel(newPersistentModel)
-    workers.sendInitMessage(action.npmBundleResult.typeDefinitions, newModel.projectContents)
+    const newModel = editorModelFromPersistentModel(newPersistentModel, dispatch)
+    workers.sendInitMessage(
+      getDependencyTypeDefinitions(action.nodeModules),
+      newModel.projectContents,
+    )
     return {
       ...loadModel(newModel, oldEditor),
-      resolvedDependencies: {
-        npmRequireFn: action.npmBundleResult.require,
-        typeDefinitions: action.npmBundleResult.typeDefinitions,
+      nodeModules: {
+        skipDeepFreeze: true,
+        files: action.nodeModules,
       },
       codeResultCache: action.codeResultCache,
     }
   },
-  LOAD: (action: Load, oldEditor: EditorModel): EditorModel => {
+  LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
     const newModel: EditorModel = {
-      ...editorModelFromPersistentModel(migratedModel),
+      ...editorModelFromPersistentModel(migratedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
-      resolvedDependencies: {
-        npmRequireFn: action.npmBundleResult.require,
-        typeDefinitions: action.npmBundleResult.typeDefinitions,
+      nodeModules: {
+        skipDeepFreeze: true,
+        files: action.nodeModules,
       },
       codeResultCache: action.codeResultCache,
       safeMode: action.safeMode,
@@ -1794,22 +1842,11 @@ export const UPDATE_FNS = {
     )
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
-    let importFilePath: string | null = null
-    const editedFilename = getOpenFilename(editor)
-    if (editedFilename != null && action.importFromPath != null) {
-      importFilePath = getFilePathToImport(action.importFromPath, editedFilename)
-    }
-
-    let importFromWithinToAdd = [importAlias(action.jsxElement.name.baseVariable)]
-
     const editorWithAddedImport = modifyOpenParseSuccess((success) => {
-      const updatedImport =
-        importFilePath == null
-          ? success.imports
-          : addImport(importFilePath, null, importFromWithinToAdd, null, success.imports)
+      const updatedImports = mergeImports(success.imports, action.importsToAdd)
       return {
         ...success,
-        imports: updatedImport,
+        imports: updatedImports,
       }
     }, editor)
 
@@ -2790,7 +2827,7 @@ export const UPDATE_FNS = {
             null,
           )
           const size = width != null && height != null ? { width: width, height: height } : null
-          const switchMode = enableInsertModeForJSXElement(imageElement, newUID, 'utopia-api', size)
+          const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
           const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
           return {
             ...editorInsertEnabled,
@@ -2827,7 +2864,7 @@ export const UPDATE_FNS = {
             null,
           )
 
-          const insertJSXElementAction = insertJSXElement(imageElement, parent, 'utopia-api')
+          const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
 
           const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
             ...editor,
@@ -2894,7 +2931,7 @@ export const UPDATE_FNS = {
         {},
       )
       const size = width != null && height != null ? { width: width, height: height } : null
-      const switchMode = enableInsertModeForJSXElement(imageElement, newUID, 'utopia-api', size)
+      const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
       return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
     } else {
       return editor
@@ -2910,41 +2947,6 @@ export const UPDATE_FNS = {
       id: action.id,
     }
   },
-  UPDATE_NPM_DEPENDENCIES: (
-    action: UpdateNpmDependencies,
-    editor: EditorModel,
-    workers: UtopiaTsWorkers,
-  ): EditorModel => {
-    const withResolvedDependencies: EditorModel = {
-      ...editor,
-      resolvedDependencies: {
-        npmRequireFn: action.npmRequireFn,
-        typeDefinitions: action.typeDefinitions,
-      },
-    }
-
-    workers.sendInitMessage(action.typeDefinitions, editor.projectContents)
-    const depsFromModel = dependenciesFromModel(editor)
-    // Try to avoid recreating the value.
-    let updatedEditorState = withResolvedDependencies
-    if (!Utils.shallowEqual(depsFromModel, action.npmDependencies)) {
-      updatedEditorState = updateDependenciesInEditorState(
-        withResolvedDependencies,
-        action.npmDependencies,
-      )
-    }
-    return {
-      ...updatedEditorState,
-      codeResultCache: {
-        skipDeepFreeze: true,
-        cache: {},
-        requireFn: action.npmRequireFn,
-        exportsInfo: [], // TODO double check
-        propertyControlsInfo: {},
-        error: null,
-      },
-    }
-  },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {
     return {
       ...editor,
@@ -2954,10 +2956,10 @@ export const UPDATE_FNS = {
           ...(editor.codeResultCache == null ? {} : editor.codeResultCache.cache),
           ...action.codeResultCache.cache,
         },
-        requireFn: action.codeResultCache.requireFn,
         exportsInfo: action.codeResultCache.exportsInfo,
         propertyControlsInfo: action.codeResultCache.propertyControlsInfo,
         error: action.codeResultCache.error,
+        requireFn: action.codeResultCache.requireFn,
       },
     }
   },
@@ -2971,6 +2973,10 @@ export const UPDATE_FNS = {
     }
   },
   SET_PROJECT_NAME: (action: SetProjectName, editor: EditorModel): EditorModel => {
+    // Side effect.
+    if (editor.id != null) {
+      pushProjectURLToBrowserHistory(`Utopia ${action.name}`, editor.id, urlSafeText(action.name))
+    }
     return {
       ...editor,
       projectName: action.name,
@@ -3213,7 +3219,9 @@ export const UPDATE_FNS = {
     if (action.filePath === '/package.json' && isCodeFile(file)) {
       const deps = dependenciesFromPackageJsonContents(file.fileContents)
       if (deps != null) {
-        bundleAndDispatchNpmPackages(dispatch, deps)
+        fetchNodeModules(deps).then((nodeModules) =>
+          dispatch([updateNodeModulesContents(nodeModules, true)]),
+        )
       }
     }
 
@@ -3301,6 +3309,7 @@ export const UPDATE_FNS = {
           action.codeOrModel === 'Model' ? editor.canvas.mountCount + 1 : editor.canvas.mountCount,
       },
       parseOrPrintInFlight: false, // only ever clear it here
+      selectedViews: action.codeOrModel === 'Model' ? [] : editor.selectedViews,
     }
   },
   CLEAR_PARSE_OR_PRINT_IN_FLIGHT: (
@@ -3594,21 +3603,8 @@ export const UPDATE_FNS = {
       },
     }
   },
-  TOGGLE_PROPERTY: (
-    action: ToggleProperty,
-    editor: EditorModel,
-    derived: DerivedState,
-  ): EditorModel => {
-    const editorWithImports = modifyOpenParseSuccess((success) => {
-      return {
-        ...success,
-        imports: addImport('utopia-api', null, [importAlias('UtopiaUtils')], null, success.imports),
-      }
-    }, editor)
-
-    return addUtopiaUtilsImportIfUsed(
-      modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editorWithImports),
-    )
+  TOGGLE_PROPERTY: (action: ToggleProperty, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editor)
   },
   SWITCH_LAYOUT_SYSTEM: (action: SwitchLayoutSystem, editor: EditorModel): EditorModel => {
     return editor.selectedViews.reduce((working, target) => {
@@ -3822,7 +3818,7 @@ export const UPDATE_FNS = {
         {},
       )
 
-      const insertJSXElementAction = insertJSXElement(imageElement, parent, 'utopia-api')
+      const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
       return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
     } else {
       throw new Error(`Could not be found or is not a file: ${action.imagePath}`)
@@ -3831,8 +3827,7 @@ export const UPDATE_FNS = {
   RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
     const openFilePath = getOpenUIJSFileKey(editor)
     if (openFilePath != null) {
-      const controlInfo =
-        editor.codeResultCache?.propertyControlsInfo[dropExtension(openFilePath)] ?? {}
+      const propertyControls = getPropertyControlsForTarget(action.target, editor)
       let elementName
       if (TP.isScenePath(action.target)) {
         const element = findJSXElementChildAtPath(
@@ -3859,14 +3854,15 @@ export const UPDATE_FNS = {
       if (elementName == null) {
         return editor
       }
-      const propControls = controlInfo[elementName]
       let defaultProps: { [key: string]: any } = {}
-      Utils.fastForEach(Object.keys(propControls), (key) => {
-        const defaultValue = (propControls[key] as any).defaultValue
-        if (defaultValue != null) {
-          defaultProps[key] = defaultValue
-        }
-      })
+      if (propertyControls != null) {
+        Utils.fastForEach(Object.keys(propertyControls), (key) => {
+          const defaultValue = (propertyControls[key] as any).defaultValue
+          if (defaultValue != null) {
+            defaultProps[key] = defaultValue
+          }
+        })
+      }
 
       let pathToUpdate: PropertyPath | null
       if (TP.isScenePath(action.target)) {
@@ -3896,6 +3892,85 @@ export const UPDATE_FNS = {
     } else {
       return editor
     }
+  },
+  UPDATE_NODE_MODULES_CONTENTS: (
+    action: UpdateNodeModulesContents,
+    editor: EditorState,
+    dispatch: EditorDispatch,
+  ): EditorState => {
+    let result: EditorState
+    if (action.startFromScratch) {
+      result = produce(editor, (draft) => {
+        draft.nodeModules.files = action.contentsToAdd
+      })
+    } else {
+      result = produce(editor, (draft) => {
+        draft.nodeModules.files = {
+          ...draft.nodeModules.files,
+          ...action.contentsToAdd,
+        }
+      })
+    }
+
+    result = {
+      ...result,
+      codeResultCache: generateCodeResultCache(
+        codeCacheToBuildResult(result.codeResultCache.cache),
+        result.codeResultCache.exportsInfo,
+        result.nodeModules.files,
+        dispatch,
+        dependenciesFromProjectContents(result.projectContents),
+        action.startFromScratch,
+      ),
+    }
+
+    return result
+  },
+  UPDATE_PACKAGE_JSON: (action: UpdatePackageJson, editor: EditorState): EditorState => {
+    const dependencies = action.dependencies.reduce(
+      (acc: Array<NpmDependency>, curr: NpmDependency) => {
+        return {
+          ...acc,
+          [curr.name]: curr.version,
+        }
+      },
+      {} as Array<NpmDependency>,
+    )
+    return updateDependenciesInEditorState(editor, dependencies)
+  },
+  START_CHECKPOINT_TIMER: (
+    action: StartCheckpointTimer,
+    editor: EditorState,
+    dispatch: EditorDispatch,
+  ): EditorState => {
+    // Side effects.
+    clearTimeout(checkpointTimeoutId)
+    checkpointTimeoutId = window.setTimeout(() => {
+      dispatch([finishCheckpointTimer()], 'everyone')
+    }, 1000)
+    // No need to actually change the editor state.
+    return editor
+  },
+  FINISH_CHECKPOINT_TIMER: (action: FinishCheckpointTimer, editor: EditorState): EditorState => {
+    // Side effects.
+    checkpointTimeoutId = undefined
+    // No need to actually change the editor state.
+    return editor
+  },
+  ADD_MISSING_DIMENSIONS: (action: AddMissingDimensions, editor: EditorState): EditorState => {
+    const ArbitrarySize = 10
+    const frameWithExtendedDimensions = canvasRectangle({
+      x: action.existingSize.x,
+      y: action.existingSize.y,
+      width: action.existingSize.width === 0 ? ArbitrarySize : action.existingSize.width,
+      height: action.existingSize.height === 0 ? ArbitrarySize : action.existingSize.height,
+    })
+    const frameAndTarget: PinOrFlexFrameChange = pinSizeChange(
+      action.target,
+      frameWithExtendedDimensions,
+      null,
+    )
+    return setCanvasFramesInnerNew(editor, [frameAndTarget], null)
   },
 }
 
@@ -4098,13 +4173,13 @@ export function insertScene(frame: CanvasRectangle): InsertScene {
 export function insertJSXElement(
   element: JSXElement,
   parent: TemplatePath | null,
-  path: string | null,
+  importsToAdd: Imports,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
     jsxElement: element,
     parent: parent,
-    importFromPath: path,
+    importsToAdd: importsToAdd,
   }
 }
 
@@ -4133,19 +4208,15 @@ export async function newProject(
   renderEditorRoot: () => void,
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
-  const npmDependencies = dependenciesFromModel(defaultPersistentModel) || {}
-  let bundlerResult: NpmBundleResult
-  try {
-    bundlerResult = await bundleNpmPackages(npmDependencies, true)
-  } catch (e) {
-    // note: we rely on the fact that bundleNpmPackages called with {} dependencies won't attempt to fetch
-    bundlerResult = await bundleNpmPackages({}, true)
-  }
+  const npmDependencies = dependenciesFromProjectContents(defaultPersistentModel.projectContents)
+  const nodeModules = await fetchNodeModules(npmDependencies)
 
   const codeResultCache = generateCodeResultCache(
     SampleFileBuildResult,
     SampleFileBundledExportsInfo,
-    bundlerResult.require,
+    nodeModules,
+    dispatch,
+    npmDependencies,
     true,
   )
 
@@ -4154,7 +4225,7 @@ export async function newProject(
     [
       {
         action: 'NEW',
-        npmBundleResult: bundlerResult,
+        nodeModules: nodeModules,
         persistentModel: defaultPersistentModel,
         codeResultCache: codeResultCache,
       },
@@ -4185,43 +4256,34 @@ export async function load(
   projectId: string | null,
   workers: UtopiaTsWorkers,
   renderEditorRoot: () => void,
+  retryFetchNodeModules: boolean = true,
 ): Promise<void> {
   // this action is now async!
 
-  const npmDependencies = dependenciesFromModel(model)
-  let bundlerResult: NpmBundleResult
-  try {
-    if (npmDependencies == null) {
-      bundlerResult = await bundleNpmPackages({}, true)
-    } else {
-      bundlerResult = await bundleNpmPackages(npmDependencies, true)
-    }
-  } catch (e) {
-    // note: we rely on the fact that bundleNpmPackages called with {} dependencies won't attempt to fetch
-    bundlerResult = await bundleNpmPackages({}, true)
-  }
+  const npmDependencies = dependenciesFromProjectContents(model.projectContents)
+  const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
-  let codeResultCache: CodeResultCache = {
-    skipDeepFreeze: true,
-    cache: {},
-    requireFn: Utils.NO_OP,
-    exportsInfo: [],
-    propertyControlsInfo: {},
-    error: null,
-  }
+  const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
+
+  let codeResultCache: CodeResultCache
   if (model.exportsInfo.length > 0) {
-    workers.sendInitMessage(bundlerResult.typeDefinitions, model.projectContents)
+    workers.sendInitMessage(typeDefinitions, model.projectContents)
     codeResultCache = generateCodeResultCache(
       model.buildResult,
       model.exportsInfo,
-      bundlerResult.require,
+      nodeModules,
+      dispatch,
+      npmDependencies,
       true,
     )
   } else {
-    const loadedResult = await loadCodeResult(workers, bundlerResult, model.projectContents)
-    if (loadedResult != null) {
-      codeResultCache = loadedResult
-    }
+    codeResultCache = await loadCodeResult(
+      workers,
+      nodeModules,
+      dispatch,
+      typeDefinitions,
+      model.projectContents,
+    )
   }
 
   const storedState = await loadStoredState(projectId)
@@ -4236,7 +4298,7 @@ export async function load(
       {
         action: 'LOAD',
         model: model,
-        npmBundleResult: bundlerResult,
+        nodeModules: nodeModules,
         codeResultCache: codeResultCache,
         title: title,
         projectId: projectId,
@@ -4250,9 +4312,11 @@ export async function load(
 
 function loadCodeResult(
   workers: UtopiaTsWorkers,
-  bundleResult: NpmBundleResult,
+  nodeModules: NodeModules,
+  dispatch: EditorDispatch,
+  typeDefinitions: TypeDefinitions,
   projectContents: ProjectContents,
-): Promise<CodeResultCache | null> {
+): Promise<CodeResultCache> {
   return new Promise((resolve, reject) => {
     const handleMessage = (e: MessageEvent) => {
       const data = e.data as OutgoingWorkerMessage
@@ -4261,7 +4325,9 @@ function loadCodeResult(
           const codeResultCache = generateCodeResultCache(
             data.buildResult,
             data.exportsInfo,
-            bundleResult.require,
+            nodeModules,
+            dispatch,
+            dependenciesFromProjectContents(projectContents),
             true,
           )
           resolve(codeResultCache)
@@ -4272,7 +4338,7 @@ function loadCodeResult(
     }
 
     workers.addBundleResultEventListener(handleMessage)
-    workers.sendInitMessage(bundleResult.typeDefinitions, projectContents)
+    workers.sendInitMessage(typeDefinitions, projectContents)
   })
 }
 
@@ -4435,14 +4501,11 @@ export function toggleCollapse(target: TemplatePath): ToggleCollapse {
 export function enableInsertModeForJSXElement(
   element: JSXElement,
   uid: string,
-  importFromPath: string | null,
+  importsToAdd: Imports,
   size: Size | null,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode(
-      false,
-      elementInsertionSubject(uid, element, size, importFromPath, null),
-    ),
+    EditorModes.insertMode(false, elementInsertionSubject(uid, element, size, importsToAdd, null)),
   )
 }
 
@@ -4799,19 +4862,6 @@ export function updateCodeResultCache(codeResultCache: CodeResultCache): UpdateC
   }
 }
 
-export function updateNpmDependencies(
-  packages: NpmDependencies,
-  require: RequireFn,
-  typeDefinitions: TypeDefinitions,
-): UpdateNpmDependencies {
-  return {
-    action: 'UPDATE_NPM_DEPENDENCIES',
-    npmDependencies: packages,
-    npmRequireFn: require,
-    typeDefinitions: typeDefinitions,
-  }
-}
-
 export function setCodeEditorVisibility(value: boolean): SetCodeEditorVisibility {
   return {
     action: 'SET_CODE_EDITOR_VISIBILITY',
@@ -5079,7 +5129,7 @@ export function toggleProperty(
   }
 }
 
-export function switchLayoutSystem(layoutSystem: LayoutSystem): SwitchLayoutSystem {
+export function switchLayoutSystem(layoutSystem: SettableLayoutSystem): SwitchLayoutSystem {
   return {
     action: 'SWITCH_LAYOUT_SYSTEM',
     layoutSystem: layoutSystem,
@@ -5211,5 +5261,46 @@ export function resetPropToDefault(
     action: 'RESET_PROP_TO_DEFAULT',
     target: target,
     path: path,
+  }
+}
+
+export function updateNodeModulesContents(
+  contentsToAdd: NodeModules,
+  startFromScratch: boolean,
+): UpdateNodeModulesContents {
+  return {
+    action: 'UPDATE_NODE_MODULES_CONTENTS',
+    contentsToAdd: contentsToAdd,
+    startFromScratch: startFromScratch,
+  }
+}
+
+export function updatePackageJson(dependencies: Array<NpmDependency>): UpdatePackageJson {
+  return {
+    action: 'UPDATE_PACKAGE_JSON',
+    dependencies: dependencies,
+  }
+}
+
+export function startCheckpointTimer(): StartCheckpointTimer {
+  return {
+    action: 'START_CHECKPOINT_TIMER',
+  }
+}
+
+export function finishCheckpointTimer(): FinishCheckpointTimer {
+  return {
+    action: 'FINISH_CHECKPOINT_TIMER',
+  }
+}
+
+export function addMissingDimensions(
+  target: InstancePath,
+  existingSize: CanvasRectangle,
+): AddMissingDimensions {
+  return {
+    action: 'ADD_MISSING_DIMENSIONS',
+    existingSize: existingSize,
+    target: target,
   }
 }

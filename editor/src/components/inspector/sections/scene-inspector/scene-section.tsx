@@ -6,7 +6,7 @@ import {
   NumberInput,
   PopupList,
   SimpleNumberInput,
-  useWrappedEmptyOnSubmitValue,
+  useWrappedEmptyOrUnknownOnSubmitValue,
 } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import {
@@ -160,11 +160,11 @@ const PositionWidget = betterReactMemo(
     const { inspectorInfo, point } = props
     const pinnedProp = pinnedPropForFramePoint(point as FramePoint)
     const label = pinLabels[pinnedProp]
-    const wrappedOnSubmitValue = useWrappedEmptyOnSubmitValue(
+    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       inspectorInfo.onSubmitValue,
       inspectorInfo.onUnsetValues,
     )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       inspectorInfo.onTransientSubmitValue,
       inspectorInfo.onUnsetValues,
     )
@@ -182,6 +182,7 @@ const PositionWidget = betterReactMemo(
             id={label}
             onSubmitValue={wrappedOnSubmitValue}
             onTransientSubmitValue={wrappedOnTransientSubmitValue}
+            onForcedSubmitValue={wrappedOnSubmitValue}
           />
         </div>
       </div>
@@ -195,11 +196,11 @@ const PositionWidgetForCSSNumber = betterReactMemo(
     const { inspectorInfo, point } = props
     const pinnedProp = pinnedPropForFramePoint(point as FramePoint)
     const label = pinLabels[pinnedProp]
-    const wrappedOnSubmitValue = useWrappedEmptyOnSubmitValue(
+    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       inspectorInfo.onSubmitValue,
       inspectorInfo.onUnsetValues,
     )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       inspectorInfo.onTransientSubmitValue,
       inspectorInfo.onUnsetValues,
     )

@@ -25,7 +25,9 @@ import {
 import { PersistentModel } from './store/editor-state'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { arrayContains } from '../../core/shared/utils'
-import { editorDispatch } from './store/dispatch'
+import { getPNGBufferOfElementWithID } from './screenshot-utils'
+import * as friendlyWords from 'friendly-words'
+
 const domtoimage = require('domtoimage')
 
 const SAVE_THROTTLE_DELAY = 30000
@@ -171,9 +173,22 @@ export async function createNewProjectFromSampleProject(
   await loadSampleProject(projectId, dispatch, workers, renderEditorRoot)
 }
 
+export function pushProjectURLToBrowserHistory(
+  title: string,
+  projectId: string,
+  suffix: string,
+): void {
+  window.top.history.pushState({}, title, `/p/${projectId}-${suffix}/`)
+}
+
 function onFirstSaveCompleted(projectId: string, dispatch: EditorDispatch) {
   dispatch([setProjectID(projectId)], 'everyone')
-  window.top.history.pushState({}, `Utopia ${projectId}`, `/project/${projectId}/`)
+  const friendlyWordsPredicate =
+    friendlyWords.predicates[Math.floor(Math.random() * friendlyWords.predicates.length)]
+  const friendlyWordsObject =
+    friendlyWords.objects[Math.floor(Math.random() * friendlyWords.objects.length)]
+  const friendlyWordsSuffix = `${friendlyWordsPredicate}-${friendlyWordsObject}`
+  pushProjectURLToBrowserHistory(`Utopia ${projectId}`, projectId, friendlyWordsSuffix)
 }
 
 export async function saveToServer(
@@ -495,18 +510,12 @@ export async function forceServerSave() {
 
 let _lastThumbnailGenerated: number = 0
 const THUMBNAIL_THROTTLE = 300000
-const THUMBNAIL_BASE64_PREFIX = 'data:image/png;base64,'
 
 async function generateThumbnail(force: boolean): Promise<Buffer | null> {
   const now = Date.now()
-  const canvasNode = document.getElementById('canvas-root')
-  if ((now - _lastThumbnailGenerated > THUMBNAIL_THROTTLE || force) && canvasNode != null) {
+  if (now - _lastThumbnailGenerated > THUMBNAIL_THROTTLE || force) {
     _lastThumbnailGenerated = now
-    const png = await domtoimage.toPng(canvasNode, { width: 1152, height: 720 })
-    // Kill me now
-    const stripped = png.replace(THUMBNAIL_BASE64_PREFIX, '')
-    const pngBuffer = Buffer.from(stripped, 'base64')
-    return pngBuffer
+    return getPNGBufferOfElementWithID('canvas-root', { width: 1152, height: 720 })
   } else {
     return Promise.resolve(null)
   }

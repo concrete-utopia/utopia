@@ -215,11 +215,11 @@ export function addAllUniquely<T extends string | number | boolean | null | unde
   return values.reduce(addUniquely, array)
 }
 
-export function findLastIndex<T>(predicate: (t: T) => boolean, array: Array<T>): number {
+export function findLastIndex<T>(predicate: (t: T) => boolean, array: ReadonlyArray<T>): number {
   // Assumes non-sparse arrays starting at zero.
   for (let index: number = array.length - 1; index >= 0; index--) {
     const elem = array[index]
-    if (predicate(elem)) {
+    if (elem != null && predicate(elem)) {
       return index
     }
   }

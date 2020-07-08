@@ -43,6 +43,8 @@ import {
   JSXElementChild,
   MetadataWithoutChildren,
   UtopiaJSXComponent,
+  JSXElementName,
+  getJSXElementNameAsString,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -74,6 +76,7 @@ import * as TP from '../shared/template-path'
 import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
 import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
 import { EmptyScenePathForStoryboard } from './scene-utils'
+import { fastForEach } from '../shared/utils'
 const ObjectPathImmutable: any = OPI
 
 export const UTOPIA_ORIGINAL_ID_KEY = 'data-utopia-original-uid'
@@ -389,7 +392,7 @@ export const MetadataUtils = {
     }
   },
   isFlexLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
-    return instance?.specialSizeMeasurements.layoutSystemForChildren === 'flex' ?? false
+    return instance?.specialSizeMeasurements.layoutSystemForChildren === 'flex'
   },
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
@@ -446,16 +449,26 @@ export const MetadataUtils = {
       }
     }
   },
-  getYogaMargin(instance: ElementInstanceMetadata): Partial<Sides> | null {
-    if (isRight(instance.element) && isJSXElement(instance.element.value)) {
-      return instance.specialSizeMeasurements.margin
+  getElementMargin(path: TemplatePath, components: ComponentMetadata[]): Partial<Sides> | null {
+    if (TP.isInstancePath(path)) {
+      const instance = MetadataUtils.getElementByInstancePathMaybe(components, path)
+      if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
+        return instance.specialSizeMeasurements.margin
+      } else {
+        return null
+      }
     } else {
       return null
     }
   },
-  getYogaPadding(instance: ElementInstanceMetadata): Partial<Sides> | null {
-    if (isRight(instance.element) && isJSXElement(instance.element.value)) {
-      return instance.specialSizeMeasurements.padding
+  getElementPadding(path: TemplatePath, components: ComponentMetadata[]): Partial<Sides> | null {
+    if (TP.isInstancePath(path)) {
+      const instance = MetadataUtils.getElementByInstancePathMaybe(components, path)
+      if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
+        return instance.specialSizeMeasurements.padding
+      } else {
+        return null
+      }
     } else {
       return null
     }
@@ -740,16 +753,24 @@ export const MetadataUtils = {
     )
   },
   getAllPaths(scenes: ComponentMetadata[]): TemplatePath[] {
-    function allPaths(siblings: ElementInstanceMetadata[]): TemplatePath[] {
-      return [
-        ...Utils.pluck(siblings, 'templatePath'),
-        ...Utils.flatMapArray((instance) => allPaths(instance.children), siblings),
-      ]
+    let result: Array<TemplatePath> = []
+    function recurseElement(element: ElementInstanceMetadata): void {
+      result.push(element.templatePath)
+      fastForEach(element.children, recurseElement)
     }
 
     const scenePaths = this.getAllScenePaths(scenes)
-    const rootElements = mapDropNulls((s) => s.rootElement, scenes)
-    return [...scenePaths, ...allPaths(rootElements)]
+    fastForEach(scenePaths, (scenePath) => {
+      const scene = scenes.find((s) => TP.pathsEqual(scenePath, s.scenePath))
+      if (scene != null) {
+        result.push(scenePath)
+        if (scene.rootElement != null) {
+          recurseElement(scene.rootElement)
+        }
+      }
+    })
+
+    return result
   },
   isElementOfType(instance: ElementInstanceMetadata, elementType: string): boolean {
     return foldEither(
@@ -770,22 +791,11 @@ export const MetadataUtils = {
     instance: ElementInstanceMetadata,
     elementType: string,
   ): boolean {
+    // KILLME Replace with isGivenUtopiaAPIElementFromName from project-file-utils.ts
     return foldEither(
       (_) => false,
       (element) => isGivenUtopiaAPIElement(element, imports, elementType),
       instance.element,
-    )
-  },
-  isEllipseAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
-    return (
-      instance != null &&
-      MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Ellipse')
-    )
-  },
-  isRectangleAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
-    return (
-      instance != null &&
-      MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Rectangle')
     )
   },
   isViewAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
@@ -813,25 +823,6 @@ export const MetadataUtils = {
         MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Positionable') ||
         MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Resizeable'))
     )
-  },
-  isAnimatedElementAgainstImports(
-    imports: Imports,
-    instance: ElementInstanceMetadata | null,
-  ): boolean {
-    const possibleReactSpring = imports['react-spring']
-    if (possibleReactSpring == null || instance == null) {
-      return false
-    } else {
-      if (pluck(possibleReactSpring.importedFromWithin, 'name').includes('animated')) {
-        return foldEither(
-          (name) => name.startsWith('animated.'),
-          (element) => isJSXElement(element) && element.name.baseVariable === 'animated',
-          instance.element,
-        )
-      } else {
-        return false
-      }
-    }
   },
   isButton(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'button')
@@ -1025,7 +1016,11 @@ export const MetadataUtils = {
       )
     }
   },
-  getElementLabel(path: TemplatePath, metadata: Array<ComponentMetadata>): string {
+  getElementLabel(
+    path: TemplatePath,
+    metadata: Array<ComponentMetadata>,
+    staticName: JSXElementName | null = null,
+  ): string {
     if (TP.isScenePath(path)) {
       const scene = this.findSceneByTemplatePath(metadata, path)
       if (scene != null) {
@@ -1045,7 +1040,8 @@ export const MetadataUtils = {
         } else {
           const possibleName: string = foldEither(
             (tagName) => {
-              return tagName
+              const staticNameString = optionalMap(getJSXElementNameAsString, staticName)
+              return staticNameString ?? tagName
             },
             (jsxElement) => {
               switch (jsxElement.type) {
@@ -1126,6 +1122,54 @@ export const MetadataUtils = {
       if (jsxElement != null) {
         if (isJSXElement(jsxElement)) {
           return getJSXElementNameLastPart(jsxElement.name)
+        } else {
+          return null
+        }
+      }
+      return null
+    }
+  },
+  getJSXElementBaseName(
+    path: TemplatePath,
+    components: Array<UtopiaJSXComponent>,
+    metadata: ComponentMetadata[],
+  ): string | null {
+    if (TP.isScenePath(path)) {
+      const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
+      if (scene != null) {
+        return scene.component
+      } else {
+        return null
+      }
+    } else {
+      const jsxElement = findElementAtPath(path, components, metadata)
+      if (jsxElement != null) {
+        if (isJSXElement(jsxElement)) {
+          return jsxElement.name.baseVariable
+        } else {
+          return null
+        }
+      }
+      return null
+    }
+  },
+  getJSXElementTagName(
+    path: TemplatePath,
+    components: Array<UtopiaJSXComponent>,
+    metadata: ComponentMetadata[],
+  ): string | null {
+    if (TP.isScenePath(path)) {
+      const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
+      if (scene != null) {
+        return scene.component
+      } else {
+        return null
+      }
+    } else {
+      const jsxElement = findElementAtPath(path, components, metadata)
+      if (jsxElement != null) {
+        if (isJSXElement(jsxElement)) {
+          return getJSXElementNameAsString(jsxElement.name)
         } else {
           return null
         }
@@ -1353,26 +1397,39 @@ export const MetadataUtils = {
       }
     })
   },
+  getStaticElementName(
+    path: TemplatePath,
+    rootElements: Array<UtopiaJSXComponent>,
+    metadata: ComponentMetadata[],
+  ): JSXElementName | null {
+    if (TP.isScenePath(path)) {
+      return null
+    } else {
+      // TODO remove dependency on metadata from here
+      const staticPath = MetadataUtils.dynamicPathToStaticPath(metadata, path)
+      const jsxElement = optionalMap((p) => findJSXElementChildAtPath(rootElements, p), staticPath)
+      return optionalMap((element) => (isJSXElement(element) ? element.name : null), jsxElement)
+    }
+  },
   isComponentInstance(
-    path: InstancePath,
+    path: TemplatePath,
     rootElements: Array<UtopiaJSXComponent>,
     metadata: ComponentMetadata[],
     imports: Imports,
   ): boolean {
-    // TODO remove dependency on metadata from here
-    const staticPath = MetadataUtils.dynamicPathToStaticPath(metadata, path)
-    const jsxElement =
-      staticPath == null ? null : findJSXElementChildAtPath(rootElements, staticPath)
-    const name =
-      jsxElement == null || !isJSXElement(jsxElement)
-        ? ''
-        : getJSXElementNameLastPart(jsxElement.name)
-    const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
-    return (
-      instanceMetadata != null &&
-      !MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instanceMetadata, name) &&
-      !intrinsicHTMLElementNamesAsStrings.includes(name)
-    )
+    if (TP.isScenePath(path)) {
+      return false
+    } else {
+      const jsxElementName = MetadataUtils.getStaticElementName(path, rootElements, metadata)
+      const name = optionalMap(getJSXElementNameLastPart, jsxElementName)
+      const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
+      return (
+        name != null &&
+        instanceMetadata != null &&
+        !MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instanceMetadata, name) &&
+        !intrinsicHTMLElementNamesAsStrings.includes(name)
+      )
+    }
   },
   isPinnedAndNotAbsolutePositioned(
     metadata: Array<ComponentMetadata>,
@@ -1390,6 +1447,29 @@ export const MetadataUtils = {
       }
     }
     return false
+  },
+  walkMetadata(
+    rootMetadata: Array<ComponentMetadata>,
+    withEachElement: (
+      metadata: ElementInstanceMetadata,
+      parentMetadata: ElementInstanceMetadata | null,
+    ) => void,
+  ): void {
+    function innerWalk(
+      metadata: ElementInstanceMetadata,
+      parentMetadata: ElementInstanceMetadata | null,
+    ): void {
+      withEachElement(metadata, parentMetadata)
+      for (const child of metadata.children) {
+        innerWalk(child, metadata)
+      }
+    }
+
+    for (const componentMetadata of rootMetadata) {
+      if (componentMetadata.rootElement != null) {
+        innerWalk(componentMetadata.rootElement, null)
+      }
+    }
   },
 }
 

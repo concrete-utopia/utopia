@@ -1,12 +1,14 @@
 import { generateCodeResultCache } from './code-file'
 import { ExportsInfo, MultiFileBuildResult } from '../../core/workers/ts/ts-worker'
 import * as Es6MicroLoader from './es6-micro-loader'
+import { NO_OP } from '../../core/shared/utils'
+import { NodeModules, esCodeFile } from '../../core/shared/project-file-types'
 
 const SampleSingleFileBuildResult = {
   '/app.js': {
     errors: [],
     transpiledCode:
-      'System.register(["utopia-api", "uuiui"], function (exports_1, context_1) {\r\n    "use strict";\r\n    var utopia_api_1, uuiui_1, canvasMetadata, App;\r\n    var __moduleName = context_1 && context_1.id;\r\n    return {\r\n        setters: [\r\n            function (utopia_api_1_1) {\r\n                utopia_api_1 = utopia_api_1_1;\r\n            },\r\n            function (uuiui_1_1) {\r\n                uuiui_1 = uuiui_1_1;\r\n            }\r\n        ],\r\n        execute: function () {\r\n            exports_1("canvasMetadata", canvasMetadata = {\r\n                specialNodes: [],\r\n                nodeMetadata: {},\r\n                scenes: [\r\n                    {\r\n                        component: \'App\',\r\n                        frame: { height: 812, left: 0, width: 375, top: 0 },\r\n                        props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\r\n                        container: { layoutSystem: \'pinSystem\' },\r\n                    },\r\n                ],\r\n                elementMetadata: {},\r\n            });\r\n            exports_1("App", App = (props) => {\r\n                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, (props.style || {})), { backgroundColor: uuiui_1.colorTheme.white.value }), layout: { layoutSystem: \'pinSystem\' }, "data-uid": \'aaa\' }));\r\n            });\r\n        }\r\n    };\r\n});\r\n//# sourceMappingURL=app.js.map',
+      'System.register(["utopia-api", "uuiui"], function (exports_1, context_1) {\r\n    "use strict";\r\n    var utopia_api_1, uuiui_1, canvasMetadata, App;\r\n    var __moduleName = context_1 && context_1.id;\r\n    return {\r\n        setters: [\r\n            function (utopia_api_1_1) {\r\n                utopia_api_1 = utopia_api_1_1;\r\n            },\r\n            function (uuiui_1_1) {\r\n                uuiui_1 = uuiui_1_1;\r\n            }\r\n        ],\r\n        execute: function () {\r\n            exports_1("canvasMetadata", canvasMetadata = {\r\n                specialNodes: [],\r\n                nodeMetadata: {},\r\n                scenes: [\r\n                    {\r\n                        component: \'App\',\r\n                        frame: { height: 812, left: 0, width: 375, top: 0 },\r\n                        props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\r\n                        container: { layoutSystem: \'pinSystem\' },\r\n                    },\r\n                ],\r\n                elementMetadata: {},\r\n            });\r\n            exports_1("App", App = (props) => {\r\n                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, props.style), { backgroundColor: uuiui_1.colorTheme.white.value }), layout: { layoutSystem: \'pinSystem\' }, "data-uid": \'aaa\' }));\r\n            });\r\n        }\r\n    };\r\n});\r\n//# sourceMappingURL=app.js.map',
     sourceMap: {
       version: 3,
       file: 'app.js',
@@ -16,7 +18,7 @@ const SampleSingleFileBuildResult = {
       mappings:
         ';;;;;;;;;;;;;;YAiDA,4BAAW,cAAc,GAAG;gBAC1B,YAAY,EAAE,EAAE;gBAChB,YAAY,EAAE,EAAE;gBAChB,MAAM,EAAE;oBACN;wBACE,SAAS,EAAE,KAAK;wBAChB,KAAK,EAAE,EAAE,MAAM,EAAE,GAAG,EAAE,IAAI,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,GAAG,EAAE,CAAC,EAAE;wBACnD,KAAK,EAAE,EAAE,MAAM,EAAE,EAAE,GAAG,EAAE,CAAC,EAAE,IAAI,EAAE,CAAC,EAAE,MAAM,EAAE,CAAC,EAAE,KAAK,EAAE,CAAC,EAAE,EAAE;wBAC3D,SAAS,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE;qBACzC;iBACF;gBACD,eAAe,EAAE,EAAE;aACpB,EAAA;YAED,iBAAW,GAAG,GAAG,CAAC,KAAK,EAAE,EAAE;gBACzB,OAAO,CACL,iBAAC,iBAAI,IACH,KAAK,kCAAO,CAAC,KAAK,CAAC,KAAK,IAAI,EAAE,CAAC,KAAE,eAAe,EAAE,kBAAU,CAAC,KAAK,CAAC,KAAK,KACxE,MAAM,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE,cAC3B,KAAK,GACT,CACT,CAAA;YACH,CAAC,EAAA;QAED,CAAC',
       sourcesContent: [
-        "/** @jsx jsx */\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n  jsx,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
+        "/** @jsx jsx */\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n  jsx,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
       ],
     },
   },
@@ -26,7 +28,7 @@ const SampleSingleFileExportsInfo = [
   {
     filename: '/app.js',
     code:
-      "/** @jsx jsx */\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n  jsx,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
+      "/** @jsx jsx */\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n  jsx,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
     exportTypes: {
       canvasMetadata: {
         type:
@@ -55,7 +57,7 @@ const SampleMultiFileBuildResult = {
   '/app.js': {
     errors: [],
     transpiledCode:
-      'System.register(["utopia-api", "uuiui"], function (exports_1, context_1) {\r\n    "use strict";\r\n    var utopia_api_1, uuiui_1, canvasMetadata, App;\r\n    var __moduleName = context_1 && context_1.id;\r\n    return {\r\n        setters: [\r\n            function (utopia_api_1_1) {\r\n                utopia_api_1 = utopia_api_1_1;\r\n            },\r\n            function (uuiui_1_1) {\r\n                uuiui_1 = uuiui_1_1;\r\n            }\r\n        ],\r\n        execute: function () {\r\n            exports_1("canvasMetadata", canvasMetadata = {\r\n                specialNodes: [],\r\n                nodeMetadata: {},\r\n                scenes: [\r\n                    {\r\n                        component: \'App\',\r\n                        frame: { height: 812, left: 0, width: 375, top: 0 },\r\n                        props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\r\n                        container: { layoutSystem: \'pinSystem\' },\r\n                    },\r\n                ],\r\n                elementMetadata: {},\r\n            });\r\n            exports_1("App", App = (props) => {\r\n                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, (props.style || {})), { backgroundColor: uuiui_1.colorTheme.white.value }), layout: { layoutSystem: \'pinSystem\' }, "data-uid": \'aaa\' }));\r\n            });\r\n        }\r\n    };\r\n});\r\n//# sourceMappingURL=app.js.map',
+      'System.register(["utopia-api", "uuiui"], function (exports_1, context_1) {\r\n    "use strict";\r\n    var utopia_api_1, uuiui_1, canvasMetadata, App;\r\n    var __moduleName = context_1 && context_1.id;\r\n    return {\r\n        setters: [\r\n            function (utopia_api_1_1) {\r\n                utopia_api_1 = utopia_api_1_1;\r\n            },\r\n            function (uuiui_1_1) {\r\n                uuiui_1 = uuiui_1_1;\r\n            }\r\n        ],\r\n        execute: function () {\r\n            exports_1("canvasMetadata", canvasMetadata = {\r\n                specialNodes: [],\r\n                nodeMetadata: {},\r\n                scenes: [\r\n                    {\r\n                        component: \'App\',\r\n                        frame: { height: 812, left: 0, width: 375, top: 0 },\r\n                        props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\r\n                        container: { layoutSystem: \'pinSystem\' },\r\n                    },\r\n                ],\r\n                elementMetadata: {},\r\n            });\r\n            exports_1("App", App = (props) => {\r\n                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, props.style), { backgroundColor: uuiui_1.colorTheme.white.value }), layout: { layoutSystem: \'pinSystem\' }, "data-uid": \'aaa\' }));\r\n            });\r\n        }\r\n    };\r\n});\r\n//# sourceMappingURL=app.js.map',
     sourceMap: {
       version: 3,
       file: 'app.js',
@@ -65,7 +67,7 @@ const SampleMultiFileBuildResult = {
       mappings:
         ';;;;;;;;;;;;;;YAkDA,4BAAW,cAAc,GAAG;gBAC1B,YAAY,EAAE,EAAE;gBAChB,YAAY,EAAE,EAAE;gBAChB,MAAM,EAAE;oBACN;wBACE,SAAS,EAAE,KAAK;wBAChB,KAAK,EAAE,EAAE,MAAM,EAAE,GAAG,EAAE,IAAI,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,GAAG,EAAE,CAAC,EAAE;wBACnD,KAAK,EAAE,EAAE,MAAM,EAAE,EAAE,GAAG,EAAE,CAAC,EAAE,IAAI,EAAE,CAAC,EAAE,MAAM,EAAE,CAAC,EAAE,KAAK,EAAE,CAAC,EAAE,EAAE;wBAC3D,SAAS,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE;qBACzC;iBACF;gBACD,eAAe,EAAE,EAAE;aACpB,EAAA;YAGD,iBAAW,GAAG,GAAG,CAAC,KAAK,EAAE,EAAE;gBACzB,OAAO,CACL,iBAAC,iBAAI,IACH,KAAK,kCAAO,CAAC,KAAK,CAAC,KAAK,IAAI,EAAE,CAAC,KAAE,eAAe,EAAE,kBAAU,CAAC,KAAK,CAAC,KAAK,KACxE,MAAM,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE,cAC3B,KAAK,GACT,CACT,CAAA;YACH,CAAC,EAAA;QAED,CAAC',
       sourcesContent: [
-        "/** @jsx jsx */\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n  jsx,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
+        "/** @jsx jsx */\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n  jsx,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
       ],
     },
   },
@@ -109,7 +111,7 @@ const SampleMultiFileExportsInfo: Array<ExportsInfo> = [
   {
     filename: '/app.js',
     code:
-      "/** @jsx jsx */\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n  jsx,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
+      "/** @jsx jsx */\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n  jsx,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
     exportTypes: {
       canvasMetadata: {
         type:
@@ -268,7 +270,7 @@ const SampleBuildResultWithInvalidImport = {
   '/src/app.js': {
     errors: [],
     transpiledCode:
-      'System.register(["utopia-api"], function (exports_1, context_1) {\r\n    "use strict";\r\n    var utopia_api_1, canvasMetadata, App;\r\n    var __moduleName = context_1 && context_1.id;\r\n    return {\r\n        setters: [\r\n            function (utopia_api_1_1) {\r\n                utopia_api_1 = utopia_api_1_1;\r\n            }\r\n        ],\r\n        execute: function () {\r\n            exports_1("canvasMetadata", canvasMetadata = {\r\n                scenes: [\r\n                    {\r\n                        component: \'App\',\r\n                        frame: { height: 812, left: 0, width: 375, top: 0 },\r\n                        props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\r\n                        container: { layoutSystem: \'pinSystem\' },\r\n                    },\r\n                ],\r\n                elementMetadata: {},\r\n            });\r\n            exports_1("App", App = (props) => {\r\n                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, (props.style || {})), { backgroundColor: \'#FFFFFF\' }), layout: { layoutSystem: \'pinSystem\' }, "data-uid": \'aaa\' }));\r\n            });\r\n        }\r\n    };\r\n});\r\n//# sourceMappingURL=app.js.map',
+      'System.register(["utopia-api"], function (exports_1, context_1) {\r\n    "use strict";\r\n    var utopia_api_1, canvasMetadata, App;\r\n    var __moduleName = context_1 && context_1.id;\r\n    return {\r\n        setters: [\r\n            function (utopia_api_1_1) {\r\n                utopia_api_1 = utopia_api_1_1;\r\n            }\r\n        ],\r\n        execute: function () {\r\n            exports_1("canvasMetadata", canvasMetadata = {\r\n                scenes: [\r\n                    {\r\n                        component: \'App\',\r\n                        frame: { height: 812, left: 0, width: 375, top: 0 },\r\n                        props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\r\n                        container: { layoutSystem: \'pinSystem\' },\r\n                    },\r\n                ],\r\n                elementMetadata: {},\r\n            });\r\n            exports_1("App", App = (props) => {\r\n                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, props.style), { backgroundColor: \'#FFFFFF\' }), layout: { layoutSystem: \'pinSystem\' }, "data-uid": \'aaa\' }));\r\n            });\r\n        }\r\n    };\r\n});\r\n//# sourceMappingURL=app.js.map',
     sourceMap: {
       version: 3,
       file: 'app.js',
@@ -278,7 +280,7 @@ const SampleBuildResultWithInvalidImport = {
       mappings:
         ';;;;;;;;;;;YAKA,4BAAW,cAAc,GAAG;gBAC1B,MAAM,EAAE;oBACN;wBACE,SAAS,EAAE,KAAK;wBAChB,KAAK,EAAE,EAAE,MAAM,EAAE,GAAG,EAAE,IAAI,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,GAAG,EAAE,CAAC,EAAE;wBACnD,KAAK,EAAE,EAAE,MAAM,EAAE,EAAE,GAAG,EAAE,CAAC,EAAE,IAAI,EAAE,CAAC,EAAE,MAAM,EAAE,CAAC,EAAE,KAAK,EAAE,CAAC,EAAE,EAAE;wBAC3D,SAAS,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE;qBACzC;iBACF;gBACD,eAAe,EAAE,EAAE;aACpB,EAAA;YAED,iBAAW,GAAG,GAAG,CAAC,KAAK,EAAE,EAAE;gBACzB,OAAO,CACL,iBAAC,iBAAI,IACH,KAAK,kCAAO,CAAC,KAAK,CAAC,KAAK,IAAI,EAAE,CAAC,KAAE,eAAe,EAAE,SAAS,KAC3D,MAAM,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE,cAC3B,KAAK,GACT,CACT,CAAA;YACH,CAAC,EAAA;QACD,CAAC',
       sourcesContent: [
-        "/** @jsx jsx */\nimport * as React from 'react'\nimport { View, jsx } from 'utopia-api'\nimport { Foo } from 'bar'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n",
+        "/** @jsx jsx */\nimport * as React from 'react'\nimport { View, jsx } from 'utopia-api'\nimport { Foo } from 'bar'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: '#FFFFFF' }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n",
       ],
     },
   },
@@ -288,7 +290,7 @@ const SampleExportsInfoWithInvalidImport = [
   {
     filename: '/src/app.js',
     code:
-      "/** @jsx jsx */\nimport * as React from 'react'\nimport { View, jsx } from 'utopia-api'\nimport { Foo } from 'bar'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n",
+      "/** @jsx jsx */\nimport * as React from 'react'\nimport { View, jsx } from 'utopia-api'\nimport { Foo } from 'bar'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: '#FFFFFF' }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n",
     exportTypes: {
       canvasMetadata: {
         type:
@@ -313,16 +315,15 @@ const SampleExportsInfoWithInvalidImport = [
   },
 ]
 
-const mockRequire = (importOrigin: string, toImport: string) => {
-  if (
-    toImport === 'utopia-api' ||
-    toImport === 'uuiui' ||
-    toImport === 'react' ||
-    toImport === 'react-dom'
-  ) {
-    return {}
-  }
-  return undefined
+const SampleNodeModules: NodeModules = {
+  '/node_modules/utopia-api/index.js': esCodeFile(`export {}`, null),
+  '/node_modules/utopia-api/package.json': esCodeFile(JSON.stringify({ main: './index.js' }), null),
+  '/node_modules/uuiui/index.js': esCodeFile(`export {}`, null),
+  '/node_modules/uuiui/package.json': esCodeFile(JSON.stringify({ main: './index.js' }), null),
+  '/node_modules/react/index.js': esCodeFile(`export {}`, null),
+  '/node_modules/react/package.json': esCodeFile(JSON.stringify({ main: './index.js' }), null),
+  '/node_modules/react-dom/index.js': esCodeFile(`export {}`, null),
+  '/node_modules/react-dom/package.json': esCodeFile(JSON.stringify({ main: './index.js' }), null),
 }
 
 describe('Generating codeResultCache', () => {
@@ -330,7 +331,9 @@ describe('Generating codeResultCache', () => {
     const codeResultCache = generateCodeResultCache(
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
-      mockRequire,
+      {},
+      NO_OP,
+      [],
       false,
     )
 
@@ -340,7 +343,9 @@ describe('Generating codeResultCache', () => {
     const codeResultCache = generateCodeResultCache(
       SampleMultiFileBuildResult,
       SampleMultiFileExportsInfo,
-      mockRequire,
+      SampleNodeModules,
+      NO_OP,
+      [],
       false,
     )
 
@@ -350,7 +355,9 @@ describe('Generating codeResultCache', () => {
     const codeResultCache = generateCodeResultCache(
       SampleBuildResultWithError,
       SampleExportsInfoWithError,
-      mockRequire,
+      {},
+      NO_OP,
+      [],
       false,
     )
 
@@ -362,7 +369,9 @@ describe('Filling in SystemJS', () => {
     generateCodeResultCache(
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
-      mockRequire,
+      {},
+      NO_OP,
+      [],
       true,
     )
 
@@ -373,7 +382,9 @@ describe('Filling in SystemJS', () => {
     generateCodeResultCache(
       SampleMultiFileBuildResult,
       SampleMultiFileExportsInfo,
-      mockRequire,
+      {},
+      NO_OP,
+      [],
       true,
     )
 
@@ -387,7 +398,9 @@ describe('Creating require function', () => {
     const codeResultCache = generateCodeResultCache(
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
-      mockRequire,
+      {},
+      NO_OP,
+      [],
       false,
     )
 
@@ -397,7 +410,9 @@ describe('Creating require function', () => {
     const codeResultCache = generateCodeResultCache(
       SampleMultiFileBuildResult,
       SampleMultiFileExportsInfo,
-      mockRequire,
+      {},
+      NO_OP,
+      [],
       false,
     )
 
@@ -408,7 +423,9 @@ describe('Creating require function', () => {
     const codeResultCache = generateCodeResultCache(
       SampleBuildResultWithException,
       SampleExportsInfoWithException,
-      mockRequire,
+      {},
+      NO_OP,
+      [],
       false,
     )
 
@@ -418,7 +435,9 @@ describe('Creating require function', () => {
     const codeResultCache = generateCodeResultCache(
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
-      mockRequire,
+      {},
+      NO_OP,
+      [],
       false,
     )
 

@@ -13,6 +13,10 @@ import {
   StaticInstancePath,
   TemplatePath,
   isUIJSFile,
+  CodeFile,
+  esCodeFile,
+  importDetails,
+  importAlias,
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
@@ -20,6 +24,9 @@ import { createEditorStates, createFakeMetadataForEditor } from '../../../utils/
 import Utils from '../../../utils/utils'
 import { renameComponent, reparentComponents } from '../../navigator/actions'
 import * as TP from '../../../core/shared/template-path'
+import * as fileWithImports from '../../../core/es-modules/test-cases/file-with-imports.json'
+import * as fileNoImports from '../../../core/es-modules/test-cases/file-no-imports.json'
+import { createNodeModules } from '../../../core/es-modules/package-manager/test-utils'
 import { notLoggedIn } from '../action-types'
 import {
   clearSelection,
@@ -37,6 +44,8 @@ import {
   setSaveError,
   pushToast,
   popToast,
+  updateNodeModulesContents,
+  updatePackageJson,
 } from '../actions/actions'
 import * as History from '../history'
 import { EditorState, getOpenUtopiaJSXComponentsFromState, openFileTab } from './editor-state'
@@ -46,6 +55,7 @@ import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
 } from '../../../core/model/test-ui-js-file'
+import { npmDependency } from '../../../core/shared/npm-dependency-types'
 const chaiExpect = Chai.expect
 
 /* eslint-disable @typescript-eslint/no-empty-function */
@@ -472,7 +482,9 @@ describe('INSERT_JSX_ELEMENT', () => {
       [],
       null,
     )
-    const insertAction = insertJSXElement(elementToInsert, parentPath, 'utopia-api')
+    const insertAction = insertJSXElement(elementToInsert, parentPath, {
+      'utopia-api': importDetails(null, [importAlias('View')], null),
+    })
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
@@ -526,7 +538,9 @@ describe('INSERT_JSX_ELEMENT', () => {
       [],
       null,
     )
-    const insertAction = insertJSXElement(elementToInsert, null, 'utopia-api')
+    const insertAction = insertJSXElement(elementToInsert, null, {
+      'utopia-api': importDetails(null, [importAlias('View')], null),
+    })
     const updatedEditor = runLocalEditorAction(
       editorWithNoHighlighted,
       derivedState,
@@ -738,5 +752,91 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
 
     expect(mockDispatch).toBeCalledTimes(1)
     expect(mockDispatch).toBeCalledWith([{ action: 'POP_TOAST' }], 'everyone')
+  })
+
+  it('action UPDATE_NODE_MODULES incrementally', () => {
+    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const mockDispatch = jest.fn()
+    editor.nodeModules = {
+      skipDeepFreeze: true,
+      files: {
+        '/node_modules/example.js': esCodeFile('nothing to see here', null),
+      },
+    }
+
+    const nodeModules = createNodeModules(fileWithImports.contents)
+    const action = updateNodeModulesContents(nodeModules, false)
+    const updatedEditor = runLocalEditorAction(
+      editor,
+      derivedState,
+      notLoggedIn,
+      workers,
+      action,
+      History.init(editor, derivedState),
+      mockDispatch,
+    )
+
+    expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeDefined()
+    expect(
+      updatedEditor.nodeModules.files['/node_modules/mypackage/code-using-module-exports.js'],
+    ).toEqual(nodeModules['/node_modules/mypackage/code-using-module-exports.js'])
+  })
+
+  it('action UPDATE_NODE_MODULES from scratch', () => {
+    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const mockDispatch = jest.fn()
+
+    const nodeModules = createNodeModules(fileWithImports.contents)
+    const action = updateNodeModulesContents(nodeModules, true)
+    const updatedEditor = runLocalEditorAction(
+      editor,
+      derivedState,
+      notLoggedIn,
+      workers,
+      action,
+      History.init(editor, derivedState),
+      mockDispatch,
+    )
+
+    expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeUndefined()
+    expect(updatedEditor.nodeModules.files).toEqual(nodeModules)
+  })
+
+  it('action UPDATE_PACKAGE_JSON', () => {
+    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const mockDispatch = jest.fn()
+
+    const deps = [npmDependency('mypackage', '1.0.0'), npmDependency('smart', '2.3.1')]
+    const action = updatePackageJson(deps)
+    const updatedEditor = runLocalEditorAction(
+      editor,
+      derivedState,
+      notLoggedIn,
+      workers,
+      action,
+      History.init(editor, derivedState),
+      mockDispatch,
+    )
+
+    const packageJsonFile = updatedEditor.projectContents['/package.json']
+    if (packageJsonFile == null || packageJsonFile.type != 'CODE_FILE') {
+      fail('Package.json file should exist and should be a CodeFile')
+    } else {
+      expect(packageJsonFile.fileContents).toMatchInlineSnapshot(`
+        "{
+          \\"name\\": \\"Utopia Project\\",
+          \\"version\\": \\"0.1.0\\",
+          \\"utopia\\": {
+            \\"main-ui\\": \\"src/app.ui.js\\",
+            \\"html\\": \\"preview.html\\",
+            \\"js\\": \\"preview.jsx\\"
+          },
+          \\"dependencies\\": {
+            \\"mypackage\\": \\"1.0.0\\",
+            \\"smart\\": \\"2.3.1\\"
+          }
+        }"
+      `)
+    }
   })
 })

@@ -17,6 +17,8 @@ import { EditorPanel } from '../common/actions/index'
 import { EditorAction } from '../editor/action-types'
 import { Mode } from '../editor/editor-modes'
 import { EditorState, OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { xor } from '../../core/shared/utils'
 
 export const enum CSSCursor {
   Select = "-webkit-image-set( url( '/editor/cursors/cursor-default.png ') 1x, url( '/editor/cursors/cursor-default@2x.png ') 2x ) 4 4, default",
@@ -185,8 +187,15 @@ export interface PinFrameChange extends CanvasFrameAndTarget {
   edgePosition: EdgePosition | null
 }
 
-export interface PinMoveChange extends CanvasFrameAndTarget {
+export interface PinSizeChange extends CanvasFrameAndTarget {
+  type: 'PIN_SIZE_CHANGE'
+  edgePosition: EdgePosition | null
+}
+
+export interface PinMoveChange {
   type: 'PIN_MOVE_CHANGE'
+  target: TemplatePath
+  delta: CanvasVector
 }
 
 export interface FlexMoveChange {
@@ -202,11 +211,20 @@ export interface FlexResizeChange {
   edgePosition: EdgePosition | null
 }
 
+export interface SingleResizeChange {
+  type: 'SINGLE_RESIZE'
+  target: TemplatePath
+  sizeDelta: CanvasVector
+  edgePosition: EdgePosition
+}
+
 export type PinOrFlexFrameChange =
   | PinFrameChange
+  | PinSizeChange
   | PinMoveChange
   | FlexMoveChange
   | FlexResizeChange
+  | SingleResizeChange
 
 export function pinFrameChange(
   target: TemplatePath,
@@ -221,11 +239,24 @@ export function pinFrameChange(
   }
 }
 
-export function pinMoveChange(target: TemplatePath, frame: CanvasRectangle): PinMoveChange {
+export function pinSizeChange(
+  target: TemplatePath,
+  frame: CanvasRectangle,
+  edgePosition: EdgePosition | null = null,
+): PinSizeChange {
+  return {
+    type: 'PIN_SIZE_CHANGE',
+    target: target,
+    frame: frame,
+    edgePosition: edgePosition,
+  }
+}
+
+export function pinMoveChange(target: TemplatePath, delta: CanvasVector): PinMoveChange {
   return {
     type: 'PIN_MOVE_CHANGE',
     target: target,
-    frame: frame,
+    delta: delta,
   }
 }
 
@@ -247,6 +278,19 @@ export function flexResizeChange(
     target: target,
     newSize: newSize,
     edgePosition: edgePosition,
+  }
+}
+
+export function singleResizeChange(
+  target: TemplatePath,
+  edgePosition: EdgePosition,
+  sizeDelta: CanvasVector,
+): SingleResizeChange {
+  return {
+    type: 'SINGLE_RESIZE',
+    target: target,
+    edgePosition: edgePosition,
+    sizeDelta: sizeDelta,
   }
 }
 
@@ -310,6 +354,10 @@ export function moveDragState(
   if (duplicate === true && duplicateNewUIDs == null) {
     throw new Error('duplicateNewUIDs cannot be null when duplicate is true')
   }
+
+  const invertReparenting = isFeatureEnabled('Dragging Reparents By Default')
+  const actuallyEnableSnapping = xor(invertReparenting, enableSnapping)
+  const actuallyReparent = xor(invertReparenting, reparent)
   return {
     type: 'MOVE_DRAG_STATE',
     start: start,
@@ -317,10 +365,10 @@ export function moveDragState(
     prevDrag: prevDrag,
     originalFrames: originalFrames,
     dragSelectionBoundingBox: dragSelectionBoundingBox,
-    enableSnapping: enableSnapping,
+    enableSnapping: actuallyEnableSnapping,
     constrainDragAxis: constrainDragAxis,
     duplicate: duplicate,
-    reparent: reparent,
+    reparent: actuallyReparent,
     duplicateNewUIDs: duplicateNewUIDs,
     canvasPosition: canvasPosition,
     metadata: metadata,
@@ -339,15 +387,22 @@ export function updateMoveDragState(
   duplicateNewUIDs: Array<DuplicateNewUID> | null | undefined,
   canvasPosition: CanvasPoint | undefined,
 ): MoveDragState {
+  const newEnableSnapping = enableSnapping === undefined ? current.enableSnapping : enableSnapping
+  const newReparent = reparent === undefined ? current.reparent : reparent
+
+  const invertReparenting = isFeatureEnabled('Dragging Reparents By Default')
+  const actuallyEnableSnapping = xor(invertReparenting, newEnableSnapping)
+  const actuallyReparent = xor(invertReparenting, newReparent)
+
   const updatedState = keepDeepReferenceEqualityIfPossible(current, {
     ...current,
     drag: drag === undefined ? current.drag : drag,
     prevDrag: prevDrag === undefined ? current.prevDrag : prevDrag,
-    enableSnapping: enableSnapping === undefined ? current.enableSnapping : enableSnapping,
+    enableSnapping: actuallyEnableSnapping,
     constrainDragAxis:
       constrainDragAxis === undefined ? current.constrainDragAxis : constrainDragAxis,
     duplicate: duplicate === undefined ? current.duplicate : duplicate,
-    reparent: reparent === undefined ? current.reparent : reparent,
+    reparent: actuallyReparent,
     duplicateNewUIDs: duplicateNewUIDs === undefined ? current.duplicateNewUIDs : duplicateNewUIDs,
     canvasPosition: canvasPosition === undefined ? current.canvasPosition : canvasPosition,
   })
@@ -370,6 +425,7 @@ export interface ResizeDragState {
   enabledDirection: EnabledDirection
   metadata: Array<ComponentMetadata>
   draggedElements: TemplatePath[]
+  isMultiSelect: boolean
 }
 
 export function resizeDragState(
@@ -384,6 +440,7 @@ export function resizeDragState(
   enabledDirection: EnabledDirection,
   metadata: Array<ComponentMetadata>,
   draggedElements: TemplatePath[],
+  isMultiSelect: boolean,
 ): ResizeDragState {
   return {
     type: 'RESIZE_DRAG_STATE',
@@ -398,6 +455,7 @@ export function resizeDragState(
     enabledDirection: enabledDirection,
     metadata: metadata,
     draggedElements: draggedElements,
+    isMultiSelect: isMultiSelect,
   }
 }
 

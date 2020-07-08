@@ -373,7 +373,10 @@ export const InsertMenuPane = betterReactMemo('InsertMenuPane', () => {
           <Title>Insert</Title>
         </FlexRow>
       </SectionTitleRow>
-      <SectionBodyArea minimised={false} style={{ paddingLeft: 8, paddingRight: 8 }}>
+      <SectionBodyArea
+        minimised={false}
+        style={{ paddingLeft: 8, paddingRight: 8, overflow: 'auto' }}
+      >
         <InsertMenu />
       </SectionBodyArea>
     </Section>

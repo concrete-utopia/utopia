@@ -1,10 +1,16 @@
 import Utils from '../../utils/utils'
 import * as Es6MicroLoader from './es6-micro-loader'
-import { RequireFn } from '../../core/shared/npm-dependency-types'
+import { RequireFn, NpmDependency } from '../../core/shared/npm-dependency-types'
 import { ExportType, ExportsInfo, MultiFileBuildResult } from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
+import { SafeFunction } from '../../core/shared/code-exec-utils'
+import { getControlsForExternalDependencies } from '../../core/property-controls/property-controls-utils'
+import { NodeModules } from '../../core/shared/project-file-types'
 
+import { EditorDispatch } from '../editor/action-types'
+import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import { updateNodeModulesContents } from '../editor/actions/actions'
 export interface CodeResult {
   exports: ModuleExportTypesAndValues
   transpiledCode: string | null
@@ -32,10 +38,10 @@ export type PropertyControlsInfo = {
 export type CodeResultCache = {
   skipDeepFreeze: true
   cache: { [filename: string]: CodeResult }
-  requireFn: UtopiaRequireFn
   exportsInfo: ReadonlyArray<ExportsInfo>
   propertyControlsInfo: PropertyControlsInfo
   error: Error | null
+  requireFn: UtopiaRequireFn
 }
 
 type ModuleExportValues = { [name: string]: any }
@@ -145,12 +151,18 @@ function processExportsInfo(exportValues: ModuleExportValues, exportTypes: Modul
 export function generateCodeResultCache(
   modules: MultiFileBuildResult,
   exportsInfo: ReadonlyArray<ExportsInfo>,
-  npmRequireFn: RequireFn,
+  nodeModules: NodeModules,
+  dispatch: EditorDispatch,
+  npmDependencies: NpmDependency[],
   fullBuild: boolean,
 ): CodeResultCache {
+  const npmRequireFn = getMemoizedRequireFn(nodeModules, dispatch)
+
   const { exports, requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
   let cache: { [code: string]: CodeResult } = {}
-  let propertyControlsInfo: PropertyControlsInfo = {}
+  let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
+    npmDependencies,
+  )
   Utils.fastForEach(exportsInfo, (result) => {
     const codeResult = processExportsInfo(exports[result.filename], result.exportTypes)
     cache[result.filename] = {
@@ -170,13 +182,14 @@ export function generateCodeResultCache(
       propertyControlsInfo[filenameNoExtension] = propertyControls
     }
   })
+
   return {
     skipDeepFreeze: true,
-    requireFn: requireFn,
     exportsInfo: exportsInfo,
     cache: cache,
     propertyControlsInfo: propertyControlsInfo,
     error: error,
+    requireFn: requireFn,
   }
 }
 

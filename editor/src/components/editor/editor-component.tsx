@@ -92,6 +92,17 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
           editorStoreRef.current.dispatch([EditorActions.closePopup()], 'everyone')
         }
       }
+      const activeElement = document.activeElement
+      if (
+        event.target !== activeElement &&
+        activeElement != null &&
+        activeElement.getAttribute('data-inspector-input') &&
+        (activeElement as any).blur != null
+      ) {
+        // OMG what a nightmare! This is the only way of keeping the Inspector fast and ensuring the blur handler for inputs
+        // is called before triggering a change that might change the selection
+        ;(activeElement as any).blur()
+      }
     },
     [editorStoreRef],
   )
@@ -125,7 +136,7 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
   }, [])
 
   React.useEffect(() => {
-    window.addEventListener('mousedown', onWindowMouseDown)
+    window.addEventListener('mousedown', onWindowMouseDown, true)
     window.addEventListener('keydown', onWindowKeyDown)
     window.addEventListener('keyup', onWindowKeyUp)
     window.addEventListener('contextmenu', preventDefault)
@@ -236,10 +247,7 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
       const isDraggedFile =
         draggedTypes != null && draggedTypes.length === 1 && draggedTypes[0] === 'Files'
       const currentMode = editorStoreRef.current.editor.mode
-      if (
-        isSelectMode(currentMode) ||
-        (isDraggedFile && isLiveMode(editorStoreRef.current.editor.mode))
-      ) {
+      if (isDraggedFile && (isSelectMode(currentMode) || isLiveMode(currentMode))) {
         const actions = [
           EditorActions.switchEditorMode(
             EditorModes.insertMode(false, dragAndDropInsertionSubject(null)),

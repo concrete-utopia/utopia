@@ -22,6 +22,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
@@ -104,7 +105,7 @@ Object {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'}>
+        return <div style={{ ...props.style}} data-uid={'aaa'}>
           {[1, 2, 3].map(n => {
             return <div data-uid={'bbb'} data-label={'Plane'} />
           })}
@@ -154,15 +155,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAKkCA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAKiCA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -173,7 +172,7 @@ Object {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'}>
+        return <div style={{ ...props.style}} data-uid={'aaa'}>
           {[1, 2, 3].map(n => {
             return <div data-uid={'bbb'} data-label={'Plane'} />
           })}
@@ -196,7 +195,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -308,6 +307,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
@@ -352,15 +352,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAKkCA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAKiCA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -371,7 +369,7 @@ Object {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'} data-label={'Hat'} />
+        return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
       }
       export var storyboard = (props) => {
         return (
@@ -390,7 +388,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -503,6 +501,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <input data-uid=\\"567\\" style=\\"top: 10px;\\" />
   </div>
@@ -609,6 +608,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">1</div>
@@ -842,6 +842,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">
@@ -884,8 +885,8 @@ Object {
                 "children": Array [
                   Object {
                     "definedElsewhere": Array [
-                      "React",
                       "n",
+                      "React",
                       "utopiaCanvasJSXLookup",
                     ],
                     "elementsWithin": Object {
@@ -1090,8 +1091,8 @@ Object {
             },
             "transpiledJavascript": "return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
-    React: React,
     n: n,
+    React: React,
     utopiaCanvasJSXLookup: utopiaCanvasJSXLookup
   });
 });",
@@ -1189,6 +1190,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa\\">Thing</div>
@@ -1506,6 +1508,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
@@ -1545,15 +1548,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAOkCA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAOiCA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -1566,7 +1567,7 @@ Object {
       console.log('root log')
       export var App = (props) => {
         console.log('inside component log')
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'} />
+        return <div style={{ ...props.style}} data-uid={'aaa'} />
       }
       export var storyboard = (props) => {
         return (
@@ -1585,7 +1586,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -1697,6 +1698,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -1932,6 +1934,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -2167,6 +2170,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa\\">Thing</div>
@@ -2484,6 +2488,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
@@ -2667,6 +2672,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -2758,7 +2764,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -2817,15 +2823,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -2839,7 +2843,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -2864,7 +2868,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -3009,7 +3013,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3049,13 +3053,18 @@ Object {
       "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
         "alignSelf": undefined,
         "backgroundColor": "#000000",
         "bottom": undefined,
         "flexBasis": undefined,
+        "flexDirection": undefined,
         "flexGrow": undefined,
         "flexShrink": undefined,
+        "flexWrap": undefined,
         "height": undefined,
+        "justifyContent": undefined,
         "left": undefined,
         "marginBottom": undefined,
         "marginLeft": undefined,
@@ -3152,6 +3161,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -3238,7 +3248,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3297,15 +3307,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -3319,7 +3327,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3344,7 +3352,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -3489,7 +3497,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3529,13 +3537,18 @@ Object {
       "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
         "alignSelf": undefined,
         "backgroundColor": "#000000",
         "bottom": undefined,
         "flexBasis": undefined,
+        "flexDirection": undefined,
         "flexGrow": undefined,
         "flexShrink": undefined,
+        "flexWrap": undefined,
         "height": undefined,
+        "justifyContent": undefined,
         "left": undefined,
         "marginBottom": undefined,
         "marginLeft": undefined,
@@ -3620,6 +3633,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -3715,7 +3729,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3794,15 +3808,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -3816,7 +3828,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3841,7 +3853,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -3990,7 +4002,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -4050,13 +4062,18 @@ Object {
       "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
         "alignSelf": undefined,
         "backgroundColor": "#000000",
         "bottom": undefined,
         "flexBasis": undefined,
+        "flexDirection": undefined,
         "flexGrow": undefined,
         "flexShrink": undefined,
+        "flexWrap": undefined,
         "height": undefined,
+        "justifyContent": undefined,
         "left": undefined,
         "marginBottom": undefined,
         "marginLeft": undefined,
@@ -4147,6 +4164,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -4242,7 +4260,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -4321,15 +4339,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -4343,7 +4359,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -4368,7 +4384,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -4517,7 +4533,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -4577,13 +4593,18 @@ Object {
       "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
         "alignSelf": undefined,
         "backgroundColor": "#000000",
         "bottom": undefined,
         "flexBasis": undefined,
+        "flexDirection": undefined,
         "flexGrow": undefined,
         "flexShrink": undefined,
+        "flexWrap": undefined,
         "height": undefined,
+        "justifyContent": undefined,
         "left": undefined,
         "marginBottom": undefined,
         "marginLeft": undefined,
@@ -4674,6 +4695,7 @@ exports[`UiJsxCanvas render handles an undefined component gracefully 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -4684,7 +4706,7 @@ exports[`UiJsxCanvas render handles an undefined component gracefully 1`] = `
         color: rgba(77, 77, 77, 1);
         flex-shrink: 0;
       \\"
-      class=\\"css-4pbagp\\"
+      class=\\"css-1pyjm1n\\"
     >
       <img
         style=\\"user-select: none;\\"
@@ -4723,6 +4745,7 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"bbb\\"></div>
   </div>
@@ -4829,6 +4852,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -5034,7 +5058,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5159,7 +5183,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5298,7 +5322,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5426,7 +5450,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5565,7 +5589,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5663,15 +5687,13 @@ export var storyboard = (props) => {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAmDaA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAmDYA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -5728,7 +5750,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5773,7 +5795,7 @@ export var storyboard = (props) => {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -6014,7 +6036,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -6139,7 +6161,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -6278,7 +6300,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -6406,7 +6428,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -6545,7 +6567,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -6624,12 +6646,17 @@ export var storyboard = (props) => {
       "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
         "alignSelf": undefined,
         "bottom": undefined,
         "flexBasis": undefined,
+        "flexDirection": undefined,
         "flexGrow": undefined,
         "flexShrink": undefined,
+        "flexWrap": undefined,
         "height": undefined,
+        "justifyContent": undefined,
         "left": undefined,
         "marginBottom": undefined,
         "marginLeft": undefined,
@@ -6729,6 +6756,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"aaa\\">Hello World!!</div>
@@ -7064,6 +7092,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">Thing</div>
   </div>
@@ -7224,6 +7253,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
@@ -7279,7 +7309,7 @@ Object {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div ref={() => console.log('functional component')} style={{ ...(props.style || {})}} data-uid={'aaa'} />
+        return <div ref={() => console.log('functional component')} style={{ ...props.style}} data-uid={'aaa'} />
       }
       export var storyboard = (props) => {
         return (
@@ -7312,15 +7342,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAKkFA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAKiFA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -7331,7 +7359,7 @@ Object {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div ref={() => console.log('functional component')} style={{ ...(props.style || {})}} data-uid={'aaa'} />
+        return <div ref={() => console.log('functional component')} style={{ ...props.style}} data-uid={'aaa'} />
       }
       export var storyboard = (props) => {
         return (
@@ -7350,7 +7378,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -7462,6 +7490,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -8009,6 +8038,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"
@@ -8101,15 +8131,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAO0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAOyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -8122,7 +8150,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -8147,7 +8175,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -8279,12 +8307,17 @@ Object {
       "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
         "alignSelf": undefined,
         "bottom": undefined,
         "flexBasis": undefined,
+        "flexDirection": undefined,
         "flexGrow": undefined,
         "flexShrink": undefined,
+        "flexWrap": undefined,
         "height": undefined,
+        "justifyContent": undefined,
         "left": undefined,
         "marginBottom": undefined,
         "marginLeft": undefined,
@@ -8368,6 +8401,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -8416,7 +8450,7 @@ Object {
                     "javascript": "'n' + n",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAS+CA,MAAKA,CAANC",
+                      "mappings": "OAQ+CA,MAAKA,CAANC",
                       "names": Array [
                         "n",
                         "'",
@@ -8426,7 +8460,6 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -8477,7 +8510,6 @@ Object {
               ],
               "sourcesContent": Array [
                 "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -8605,6 +8637,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -8653,7 +8686,7 @@ Object {
                     "javascript": "'n' + div",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAS+CA,MAAKC,GAANC",
+                      "mappings": "OAQ+CA,MAAKC,GAANC",
                       "names": Array [
                         "n",
                         "div",
@@ -8664,7 +8697,6 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -8715,7 +8747,6 @@ Object {
               ],
               "sourcesContent": Array [
                 "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -8843,6 +8874,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
@@ -8892,7 +8924,7 @@ Object {
                     "javascript": "'n' + n",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAU+CA,MAAKA,CAANC",
+                      "mappings": "OAS+CA,MAAKA,CAANC",
                       "names": Array [
                         "n",
                         "'",
@@ -8902,7 +8934,6 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -8956,7 +8987,6 @@ Object {
               ],
               "sourcesContent": Array [
                 "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -9087,6 +9117,7 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <img
@@ -9244,12 +9275,17 @@ Object {
       "skipDeepFreeze": true,
       "src": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
       "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
         "alignSelf": undefined,
         "bottom": undefined,
         "flexBasis": undefined,
+        "flexDirection": undefined,
         "flexGrow": undefined,
         "flexShrink": undefined,
+        "flexWrap": undefined,
         "height": undefined,
+        "justifyContent": undefined,
         "left": undefined,
         "marginBottom": undefined,
         "marginLeft": undefined,
@@ -9333,6 +9369,7 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\" data-factory-function-works=\\"true\\">Utopia</div>
   </div>
@@ -9440,6 +9477,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
       <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">
@@ -9494,7 +9532,6 @@ Object {
                           ],
                           "sourcesContent": Array [
                             "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -9580,7 +9617,6 @@ Object {
               ],
               "sourcesContent": Array [
                 "/** @jsx jsx */
-      import { jsx } from 'utopia-api'
       import * as React from \\"react\\"
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
 
@@ -9709,6 +9745,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
       <div data-uid=\\"cloner\\">
@@ -10071,6 +10108,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       data-uid=\\"aaa\\"
@@ -10182,6 +10220,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
+    data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       data-uid=\\"aaa\\"

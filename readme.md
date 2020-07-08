@@ -150,7 +150,7 @@ sudo sh -c "echo 'nix	System/Volumes/Data/opt/nix' >> /System/Volumes/Data/priva
 Reboot, and then:
 
 ```
-curl https://nixos.org/nix/install | sh
+curl -L https://nixos.org/nix/install | sh
 ```
 
 Add the `. /Users/{{USERNAME}}/.nix-profile/etc/profile.d/nix.sh` line to your shell's config file (e.g. ~/.zshrc, ~/.bashrc) as directed by the end of the nix install.
@@ -172,7 +172,7 @@ server/cabal new-run --disable-optimization --disable-profiling --disable-docume
 
 ## Using direnv to make your life easier
 
-Since a lot of this requires using `nix-shell` everywhere, you can just use [direnv](https://direnv.net/) to make that a lot simpler. Not only will this automatically use a nix shell whenever you `cd` into the project folder, but it also adds caching to vastly speed up the opening of that shell. You can install direnv by using brew:
+Since a lot of this requires using `nix-shell` everywhere, you can just use [direnv](https://direnv.net/) to make that a lot simpler. Not only will this automatically use a nix shell whenever you `cd` into the project folder, but it also adds caching to vastly speed up the opening of that shell. You can install direnv by using [brew](https://brew.sh/):
 
 ```
 brew install direnv

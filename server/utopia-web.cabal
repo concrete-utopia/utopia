@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b7d40ee807cd086cecb3609198ba1e33f4ba8de7a747983ebad76521ca184273
+-- hash: 31ecf0bea451f5b557dc92d8156463974dcf373091bd51c9808e8ce926beb3a1
 
 name:           utopia-web
 version:        0.1.0.4
@@ -29,7 +29,6 @@ executable utopia-web
       Utopia.Web.Auth.Types
       Utopia.Web.Database
       Utopia.Web.Database.Types
-      Utopia.Web.EditorPreviewConnection
       Utopia.Web.Ekg
       Utopia.Web.Endpoints
       Utopia.Web.Exceptions
@@ -40,19 +39,16 @@ executable utopia-web
       Utopia.Web.Metrics
       Utopia.Web.Packager.NPM
       Utopia.Web.Proxy
-      Utopia.Web.Redis
       Utopia.Web.Servant
       Utopia.Web.Server
       Utopia.Web.ServiceTypes
       Utopia.Web.Types
       Utopia.Web.Utils.Files
-      Utopia.Web.Websockets
-      Utopia.Web.Websockets.Types
       Paths_utopia_web
   hs-source-dirs:
       src
   default-extensions: NoImplicitPrelude
-  ghc-options: -Wall -Werror -threaded
+  ghc-options: -Wall -Werror -threaded -rtsopts
   extra-libraries:
       z
   build-depends:
@@ -76,7 +72,6 @@ executable utopia-web
     , exceptions
     , filepath
     , free
-    , hedis
     , http-api-data
     , http-client
     , http-client-tls
@@ -130,6 +125,7 @@ test-suite utopia-web-test
       Test.Utopia.Web.Endpoints
       Test.Utopia.Web.Executors.Test
       Test.Utopia.Web.Packager.NPM
+      Test.Utopia.Web.Servant
       Main
       Utopia.Web.Assets
       Utopia.Web.Auth
@@ -137,7 +133,6 @@ test-suite utopia-web-test
       Utopia.Web.Auth.Types
       Utopia.Web.Database
       Utopia.Web.Database.Types
-      Utopia.Web.EditorPreviewConnection
       Utopia.Web.Ekg
       Utopia.Web.Endpoints
       Utopia.Web.Exceptions
@@ -148,20 +143,17 @@ test-suite utopia-web-test
       Utopia.Web.Metrics
       Utopia.Web.Packager.NPM
       Utopia.Web.Proxy
-      Utopia.Web.Redis
       Utopia.Web.Servant
       Utopia.Web.Server
       Utopia.Web.ServiceTypes
       Utopia.Web.Types
       Utopia.Web.Utils.Files
-      Utopia.Web.Websockets
-      Utopia.Web.Websockets.Types
       Paths_utopia_web
   hs-source-dirs:
       test
       src
   default-extensions: NoImplicitPrelude
-  ghc-options: -Wall -Werror -threaded
+  ghc-options: -Wall -Werror -threaded -rtsopts
   extra-libraries:
       z
   build-depends:
@@ -185,7 +177,7 @@ test-suite utopia-web-test
     , exceptions
     , filepath
     , free
-    , hedis
+    , hedgehog
     , hspec
     , http-api-data
     , http-client

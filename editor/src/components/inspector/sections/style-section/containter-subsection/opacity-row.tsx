@@ -11,7 +11,7 @@ import {
 } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
-import { NumberInput, useWrappedEmptyOnSubmitValue } from 'uuiui'
+import { NumberInput, useWrappedEmptyOrUnknownOnSubmitValue } from 'uuiui'
 
 const sliderControlOptions = {
   minimum: 0,
@@ -44,11 +44,11 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
     opacityMetadata.onUnsetValues,
   )
 
-  const wrappedOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     opacityMetadata.onSubmitValue,
     opacityMetadata.onUnsetValues,
   )
-  const wrappedOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     opacityMetadata.onTransientSubmitValue,
     opacityMetadata.onUnsetValues,
   )
@@ -67,7 +67,7 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
         <PropertyLabel target={opacityProp}>Opacity</PropertyLabel>
         <GridRow padded={false} type='<--------auto-------->|--45px--|'>
           <SliderControl
-            controlOptions={sliderControlOptions}
+            DEPRECATED_controlOptions={sliderControlOptions}
             id={`opacity-slider`}
             key={`opacity-slider`}
             value={scaledOpacity}

@@ -1,4 +1,3 @@
-import { ShadowAndBorderParams } from 'utopia-api'
 import * as PP from '../shared/property-path'
 import { deepFreeze } from '../../utils/deep-freeze'
 import { forceRight, isLeft, isRight, right } from '../shared/either'
@@ -48,16 +47,7 @@ function sampleJsxAttributes(): JSXAttributes {
         ),
       ),
       jsxPropertyAssignment('border', jsxAttributeValue('1px solid green')),
-      jsxPropertyAssignment(
-        'boxShadow',
-        jsxAttributeFunctionCall('shadowAndBorder', [
-          jsxAttributeValue<ShadowAndBorderParams>({
-            boxShadow: '0 0 0 1px blue',
-            borderWidth: 0,
-            borderColor: '#000',
-          }),
-        ]),
-      ),
+      jsxPropertyAssignment('boxShadow', jsxAttributeValue('0 0 0 1px blue')),
     ]),
     top: jsxAttributeValue(0),
     left: jsxAttributeValue(50),
@@ -92,7 +82,7 @@ const expectedCompiledProps = {
     backgroundColor: 'red',
     shadow: 'shade',
     border: '1px solid green',
-    boxShadow: 'inset 0 0 0 0px #000, 0 0 0 1px blue',
+    boxShadow: '0 0 0 1px blue',
   },
   top: 0,
   left: 50,
@@ -333,15 +323,6 @@ describe('getModifiableJSXAttributeAtPath', () => {
     expect(completelyMissingAttribute).toEqual(right(jsxAttributeNotFound()))
   })
 
-  it('returns a function call attribute correctly', () => {
-    const boxShadow = getModifiableJSXAttributeAtPath(
-      sampleJsxAttributes(),
-      PP.create(['style', 'boxShadow']),
-    )
-    expect(isRight(boxShadow)).toBeTruthy()
-    expect(isJSXAttributeFunctionCall(boxShadow.value as any)).toBeTruthy()
-  })
-
   it('returns Right on a path that CAN be updated by an action', () => {
     const impossibleAttribute = getModifiableJSXAttributeAtPath(
       sampleJsxAttributes(),
@@ -360,22 +341,6 @@ describe('getModifiableJSXAttributeAtPath', () => {
     )
     expect(isRight(impossibleAttributeInsideAValue)).toBeTruthy()
     expect((impossibleAttributeInsideAValue.value as any).value).toEqual(undefined)
-  })
-
-  it('returns Left for a path that is inside a complex attribute', () => {
-    // getModifiableJSXAttributeAtPath will return a Left for paths that not only don't contain a value
-    // but you are not even allowed to dispatch an update for them, because they are "controlled"
-    // meaning one of their parent paths is referring to a node graph value, a props usage, or a function call
-    const attributeInsideANonExpandablAttribute = getModifiableJSXAttributeAtPath(
-      sampleJsxAttributes(),
-      PP.create(['style', 'shadow', 'nothingGood']),
-    )
-    expect(isLeft(attributeInsideANonExpandablAttribute)).toBeTruthy()
-    const attributeInsideANonExpandablAttribute2 = getModifiableJSXAttributeAtPath(
-      sampleJsxAttributes(),
-      PP.create(['style', 'boxShadow', 'nothingGood']),
-    )
-    expect(isLeft(attributeInsideANonExpandablAttribute2)).toBeTruthy()
   })
 })
 

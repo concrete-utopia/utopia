@@ -76,3 +76,10 @@ declare module 'console-feed/lib/Hook/parse'
 declare module 'react-merge-refs'
 
 declare module 'platform-detect'
+
+declare module 'friendly-words' {
+  export const predicates: Array<string>
+  export const objects: Array<string>
+  export const teams: Array<string>
+  export const collections: Array<string>
+}

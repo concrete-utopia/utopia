@@ -54,6 +54,7 @@ export interface ControlProps {
   imageMultiplier: number | null
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cmdKeyPressed: boolean
+  showAdditionalControls: boolean
 }
 
 interface NewCanvasControlsProps {
@@ -247,6 +248,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       imageMultiplier: imageMultiplier,
       windowToCanvasPosition: props.windowToCanvasPosition,
       cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
+      showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {
@@ -268,6 +270,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
                 ? dragState
                 : null
             }
+            showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
           />
         )
       }

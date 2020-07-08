@@ -3,6 +3,7 @@ import { FlexParentProps, LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { Either, Left, Right, isRight, isLeft } from './either'
 import { TopLevelElement, UtopiaJSXComponent } from './element-template'
 import { ErrorMessage } from './error-messages'
+import { arrayEquals, objectEquals } from './utils'
 
 export type id = string
 
@@ -61,15 +62,12 @@ export interface ElementCanvasMetadata {}
 
 export type CanvasElementMetadataMap = { [utopiaID: string]: ElementCanvasMetadata }
 
+// KILLME CanvasMetadata is dead
 export interface ScenePinnedContainer {
   layoutSystem: LayoutSystem.PinSystem
 }
 
-export interface SceneFlexContainer extends FlexParentProps {
-  layoutSystem: LayoutSystem.Flex
-}
-
-export type SceneContainer = ScenePinnedContainer | SceneFlexContainer
+export type SceneContainer = ScenePinnedContainer
 
 export interface SceneMetadata {
   uid: string
@@ -92,12 +90,6 @@ export type PrintedCanvasMetadata = {
   elementMetadata: CanvasElementMetadataMap
 }
 
-export interface ImportDetails {
-  importedWithName: string | null
-  importedFromWithin: Array<ImportAlias>
-  importedAs: string | null
-}
-
 export interface ImportAlias {
   name: string
   alias: string
@@ -110,7 +102,41 @@ export function importAlias(name: string, alias?: string) {
   }
 }
 
+export function importAliasEquals(first: ImportAlias, second: ImportAlias): boolean {
+  return first.name === second.name && first.alias === second.alias
+}
+
+export interface ImportDetails {
+  importedWithName: string | null
+  importedFromWithin: Array<ImportAlias>
+  importedAs: string | null
+}
+
+export function importDetails(
+  importedWithName: string | null,
+  importedFromWithin: Array<ImportAlias>,
+  importedAs: string | null,
+): ImportDetails {
+  return {
+    importedWithName: importedWithName,
+    importedFromWithin: importedFromWithin,
+    importedAs: importedAs,
+  }
+}
+
+export function importDetailsEquals(first: ImportDetails, second: ImportDetails): boolean {
+  return (
+    first.importedWithName === second.importedWithName &&
+    arrayEquals(first.importedFromWithin, second.importedFromWithin, importAliasEquals) &&
+    first.importedAs === second.importedAs
+  )
+}
+
 export type Imports = { [importSource: string]: ImportDetails }
+
+export function importsEquals(first: Imports, second: Imports): boolean {
+  return objectEquals(first, second, importDetailsEquals)
+}
 
 export interface HighlightBounds {
   startLine: number
@@ -211,6 +237,56 @@ export function isCodeOrUiJsFile(file: ProjectFile): file is CodeFile | UIJSFile
   return file.type === 'CODE_FILE' || file.type === 'UI_JS_FILE'
 }
 
+interface EvalResult {
+  module: {
+    exports: {}
+  }
+}
+
+export interface ESCodeFile {
+  type: 'ES_CODE_FILE'
+  fileContents: string
+  evalResultCache: EvalResult | null
+}
+
+export function esCodeFile(fileContents: string, evalResultCache: EvalResult | null): ESCodeFile {
+  return {
+    type: 'ES_CODE_FILE',
+    fileContents: fileContents,
+    evalResultCache: evalResultCache,
+  }
+}
+
+export function isEsCodeFile(projectFile: any): projectFile is ESCodeFile {
+  return projectFile != null && projectFile.type === 'ES_CODE_FILE'
+}
+
+export interface ESRemoteDependencyPlaceholder {
+  type: 'ES_REMOTE_DEPENDENCY_PLACEHOLDER'
+  packagename: string
+  version: string
+  downloadStarted: boolean
+}
+
+export function esRemoteDependencyPlaceholder(
+  packageName: string,
+  version: string,
+  downloadStarted: boolean,
+): ESRemoteDependencyPlaceholder {
+  return {
+    type: 'ES_REMOTE_DEPENDENCY_PLACEHOLDER',
+    packagename: packageName,
+    version: version,
+    downloadStarted: downloadStarted,
+  }
+}
+
+export function isEsRemoteDependencyPlaceholder(
+  projectFile: any,
+): projectFile is ESRemoteDependencyPlaceholder {
+  return projectFile != null && projectFile.type === 'ES_REMOTE_DEPENDENCY_PLACEHOLDER'
+}
+
 export interface ImageFile {
   type: 'IMAGE_FILE'
   imageType?: string
@@ -236,8 +312,12 @@ export type ProjectFile = UIJSFile | CodeFile | ImageFile | Directory | AssetFil
 
 export type ProjectFileType = ProjectFile['type']
 
+export type NodeModules = {
+  [filepath: string]: ESCodeFile | ESRemoteDependencyPlaceholder // TODO maybe ESCodeFile is too strict, eventually we want to have ProjectFile here
+}
+
 // Key here is the full filename.
-export type ProjectContents = { [key: string]: ProjectFile }
+export type ProjectContents = { [filepath: string]: ProjectFile }
 
 export type ElementOriginType =
   // Mostly self explanatory, this is a scene.

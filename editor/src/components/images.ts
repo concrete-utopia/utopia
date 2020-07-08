@@ -118,7 +118,7 @@ export function createInsertImageAction(
         aspectRatioLocked: true,
       },
     )
-    return insertJSXElement(imageElement, parentPath, null)
+    return insertJSXElement(imageElement, parentPath, {})
   } else {
     throw new Error(`Attempting to insert ${imagePath} as an image when it is not stored as such.`)
   }

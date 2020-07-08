@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 import {
-  FramePin,
   FramePoint,
   HorizontalFramePointsExceptSize,
   isFramePoint,
@@ -11,6 +10,8 @@ import {
   VerticalFramePointsExceptSize,
   VerticalFramePoints,
   HorizontalFramePoints,
+  isHorizontalPoint,
+  numberPartOfPin,
 } from 'utopia-api'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import {
@@ -55,6 +56,8 @@ import {
   unsetJSXValuesAtPaths,
   ValueAtPath,
   setJSXValueAtPath,
+  jsxAttributesToProps,
+  jsxSimpleAttributeToValue,
 } from '../../core/shared/jsx-attributes'
 import {
   CanvasMetadata,
@@ -115,6 +118,7 @@ import {
   getStoryboardTemplatePathFromEditorState,
   addSceneToJSXComponents,
   getNumberOfScenes,
+  getStoryboardUID,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -132,6 +136,7 @@ import {
   pinFrameChange,
   PinOrFlexFrameChange,
   ResizeDragState,
+  singleResizeChange,
 } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
@@ -151,13 +156,9 @@ import {
   xAxisGuideline,
   yAxisGuideline,
 } from './guideline'
-import { addImport } from '../../core/workers/common/project-file-utils'
+import { addImport, mergeImports } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import {
-  createSceneTemplatePath,
-  PathForSceneStyle,
-  BakedInStoryboardUID,
-} from '../../core/model/scene-utils'
+import { createSceneTemplatePath, PathForSceneStyle } from '../../core/model/scene-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 
@@ -256,7 +257,7 @@ export function clearDragState(
 ): EditorState {
   let result: EditorState = model
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
-    const producedTransientCanvasState = produceCanvasTransientState(result)
+    const producedTransientCanvasState = produceCanvasTransientState(result, false)
     const producedTransientFileState = producedTransientCanvasState.fileState
     if (producedTransientFileState != null) {
       result = modifyOpenParseSuccess((success) => {
@@ -299,7 +300,7 @@ export function updateFramesOfScenesAndComponents(
     if (TP.isScenePath(target)) {
       switch (frameAndTarget.type) {
         case 'PIN_FRAME_CHANGE':
-        case 'PIN_MOVE_CHANGE':
+        case 'PIN_SIZE_CHANGE': {
           // Update scene with pin based frame.
           const sceneStaticpath = createSceneTemplatePath(target)
           workingComponentsResult = transformJSXComponentAtPath(
@@ -327,6 +328,88 @@ export function updateFramesOfScenesAndComponents(
                 },
                 sceneStyleUpdated,
               )
+            },
+          )
+          break
+        }
+        case 'PIN_MOVE_CHANGE': {
+          const sceneStaticpath = createSceneTemplatePath(target)
+          workingComponentsResult = transformJSXComponentAtPath(
+            workingComponentsResult,
+            sceneStaticpath,
+            (sceneElement) => {
+              const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
+              if (isRight(styleProps)) {
+                const left = styleProps.value.left + frameAndTarget.delta.x
+                const top = styleProps.value.top + frameAndTarget.delta.y
+                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
+                  {
+                    path: PP.create(['style']),
+                    value: jsxAttributeValue({
+                      left: left,
+                      top: top,
+                      width: styleProps.value.width,
+                      height: styleProps.value.height,
+                    }),
+                  },
+                ])
+                return foldEither(
+                  () => sceneElement,
+                  (updatedProps) => {
+                    return {
+                      ...sceneElement,
+                      props: roundAttributeLayoutValues(updatedProps),
+                    }
+                  },
+                  sceneStyleUpdated,
+                )
+              } else {
+                return sceneElement
+              }
+            },
+          )
+          break
+        }
+        case 'SINGLE_RESIZE':
+          const sceneStaticpath = createSceneTemplatePath(target)
+          workingComponentsResult = transformJSXComponentAtPath(
+            workingComponentsResult,
+            sceneStaticpath,
+            (sceneElement) => {
+              const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
+              if (isRight(styleProps)) {
+                const left =
+                  styleProps.value.left +
+                  frameAndTarget.sizeDelta.x * (frameAndTarget.edgePosition.x - 1)
+                const top =
+                  styleProps.value.top +
+                  frameAndTarget.sizeDelta.y * (frameAndTarget.edgePosition.y - 1)
+                const width = styleProps.value.width + frameAndTarget.sizeDelta.x
+                const height = styleProps.value.height + frameAndTarget.sizeDelta.y
+                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
+                  {
+                    path: PP.create(['style']),
+                    value: jsxAttributeValue({
+                      left: left,
+                      top: top,
+                      width: width,
+                      height: height,
+                    }),
+                  },
+                ])
+                return foldEither(
+                  () => sceneElement,
+                  (updatedProps) => {
+                    return {
+                      ...sceneElement,
+                      props: roundAttributeLayoutValues(updatedProps),
+                    }
+                  },
+                  sceneStyleUpdated,
+                )
+              } else {
+                return sceneElement
+              }
             },
           )
           break
@@ -360,7 +443,10 @@ export function updateFramesOfScenesAndComponents(
       )
 
       const isFlexContainer =
-        frameAndTarget.type !== 'PIN_FRAME_CHANGE' && frameAndTarget.type !== 'PIN_MOVE_CHANGE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
+        frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
+        frameAndTarget.type !== 'PIN_MOVE_CHANGE' &&
+        frameAndTarget.type !== 'PIN_SIZE_CHANGE' &&
+        frameAndTarget.type !== 'SINGLE_RESIZE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
 
       let propsToSet: Array<ValueAtPath> = []
       let propsToSkip: Array<PropertyPath> = []
@@ -368,12 +454,9 @@ export function updateFramesOfScenesAndComponents(
         if (TP.isInstancePath(staticParentPath)) {
           switch (frameAndTarget.type) {
             case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-              throw new Error(
-                `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
-                  staticParentPath,
-                )}.`,
-              )
+            case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
             case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+            case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
               throw new Error(
                 `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
                   staticParentPath,
@@ -432,24 +515,25 @@ export function updateFramesOfScenesAndComponents(
           )
         }
       } else {
+        let parentFrame: CanvasRectangle | null = null
+        if (optionalParentFrame == null) {
+          const nonGroupParent = MetadataUtils.findNonGroupParent(metadata, originalTarget)
+          parentFrame =
+            nonGroupParent == null
+              ? null
+              : MetadataUtils.getFrameInCanvasCoords(nonGroupParent, metadata)
+        } else {
+          parentFrame = optionalParentFrame
+        }
+        const parentOffset =
+          parentFrame == null
+            ? ({ x: 0, y: 0 } as CanvasPoint)
+            : ({ x: parentFrame.x, y: parentFrame.y } as CanvasPoint)
+
         switch (frameAndTarget.type) {
           case 'PIN_FRAME_CHANGE':
-          case 'PIN_MOVE_CHANGE':
+          case 'PIN_SIZE_CHANGE':
             if (frameAndTarget.frame != null) {
-              let parentFrame: CanvasRectangle | null = null
-              if (optionalParentFrame == null) {
-                const nonGroupParent = MetadataUtils.findNonGroupParent(metadata, originalTarget)
-                parentFrame =
-                  nonGroupParent == null
-                    ? null
-                    : MetadataUtils.getFrameInCanvasCoords(nonGroupParent, metadata)
-              } else {
-                parentFrame = optionalParentFrame
-              }
-              const parentOffset =
-                parentFrame == null
-                  ? ({ x: 0, y: 0 } as CanvasPoint)
-                  : ({ x: parentFrame.x, y: parentFrame.y } as CanvasPoint)
               const newLocalFrame = Utils.getLocalRectangleInNewParentContext(
                 parentOffset,
                 frameAndTarget.frame,
@@ -466,68 +550,26 @@ export function updateFramesOfScenesAndComponents(
               }).map(framePointForPinnedProp)
 
               function whichPropsToUpdate() {
-                if (frameAndTarget.type === 'PIN_MOVE_CHANGE') {
-                  // this is not final logic, for now let's just keep existing pins
-                  let framePointsToUse: Array<FramePoint> = [...frameProps]
-                  const horizontalExistingFramePoints = frameProps.filter(
-                    (p) => HorizontalFramePointsExceptSize.indexOf(p) > -1,
-                  )
-                  if (horizontalExistingFramePoints.length === 0) {
-                    framePointsToUse.push(FramePoint.Left)
+                if (frameAndTarget.type === 'PIN_SIZE_CHANGE') {
+                  // only update left, top, right or bottom if the frame is expressed as left, top, right, bottom.
+                  // otherwise try to change width and height only
+                  let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
+                  let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
+                  if (verticalPoints.length < 2) {
+                    verticalPoints.push(FramePoint.Height)
                   }
-                  const verticalExistingFramePoints = frameProps.filter(
-                    (p) => VerticalFramePointsExceptSize.indexOf(p) > -1,
-                  )
-                  if (verticalExistingFramePoints.length === 0) {
-                    framePointsToUse.push(FramePoint.Top)
+                  if (horizontalPoints.length < 2) {
+                    horizontalPoints.push(FramePoint.Width)
                   }
 
-                  return framePointsToUse
+                  return [...horizontalPoints, ...verticalPoints]
                 } else if (
                   frameAndTarget.type === 'PIN_FRAME_CHANGE' &&
                   frameAndTarget.edgePosition != null &&
                   isEdgePositionOnSide(frameAndTarget.edgePosition)
                 ) {
                   // if it has partial positioning points set and dragged on an edge only the dragged edge should be added while keeping the existing frame points.
-                  let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
-                  let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
-                  let framePointsToUse: Array<FramePoint> = [...frameProps]
-
-                  if (frameAndTarget.edgePosition.x === 0.5 && verticalPoints.length < 2) {
-                    if (verticalPoints.length === 0) {
-                      if (frameAndTarget.edgePosition.y === 0) {
-                        verticalPoints.push(FramePoint.Top)
-                        verticalPoints.push(FramePoint.Height)
-                      } else {
-                        verticalPoints.push(FramePoint.Height)
-                      }
-                    } else {
-                      if (frameAndTarget.edgePosition.y === 0) {
-                        verticalPoints.push(FramePoint.Top)
-                      } else if (!verticalPoints.includes(FramePoint.Bottom)) {
-                        verticalPoints.push(FramePoint.Height)
-                      }
-                    }
-                    framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
-                  }
-                  if (frameAndTarget.edgePosition.y === 0.5 && horizontalPoints.length < 2) {
-                    if (horizontalPoints.length === 0) {
-                      if (frameAndTarget.edgePosition.x === 0) {
-                        horizontalPoints.push(FramePoint.Left)
-                        horizontalPoints.push(FramePoint.Width)
-                      } else {
-                        horizontalPoints.push(FramePoint.Width)
-                      }
-                    } else {
-                      if (frameAndTarget.edgePosition.x === 0) {
-                        horizontalPoints.push(FramePoint.Left)
-                      } else if (!horizontalPoints.includes(FramePoint.Right)) {
-                        horizontalPoints.push(FramePoint.Width)
-                      }
-                    }
-                    framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
-                  }
-                  return framePointsToUse
+                  return extendPartialFramePointsForResize(frameProps, frameAndTarget.edgePosition)
                 } else {
                   // The "Old" behavior, for PIN_FRAME_CHANGE
                   return frameProps.length == 4
@@ -539,14 +581,6 @@ export function updateFramesOfScenesAndComponents(
               const propsToUpdate: Array<FramePoint> = whichPropsToUpdate()
 
               Utils.fastForEach(propsToUpdate, (propToUpdate) => {
-                if (
-                  frameAndTarget.type === 'PIN_MOVE_CHANGE' &&
-                  (propToUpdate === FramePoint.Width || propToUpdate === FramePoint.Height)
-                ) {
-                  // for PIN_MOVE_CHANGE, we don't bother adding new size props, we only care about the L, T, R, B, Cx, Cy props
-                  return
-                }
-
                 const absoluteValue = fullFrame[propToUpdate]
                 const previousValue =
                   currentFullFrame == null ? null : currentFullFrame[propToUpdate]
@@ -580,6 +614,92 @@ export function updateFramesOfScenesAndComponents(
             }
             break
 
+          case 'PIN_MOVE_CHANGE': {
+            let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
+            Utils.fastForEach(LayoutPinnedProps, (p) => {
+              const framePoint = framePointForPinnedProp(p)
+              if (framePoint !== FramePoint.Width && framePoint !== FramePoint.Height) {
+                const value = getLayoutProperty(p, right(element.props))
+                if (isLeft(value) || value.value != null) {
+                  frameProps[framePoint] = value.value
+                  propsToSkip.push(createLayoutPropertyPath(p))
+                }
+              }
+            })
+
+            let framePointsToUse: Array<FramePoint> = [...(Object.keys(frameProps) as FramePoint[])]
+            const horizontalExistingFramePoints = framePointsToUse.filter(
+              (p) => HorizontalFramePointsExceptSize.indexOf(p) > -1,
+            )
+            if (horizontalExistingFramePoints.length === 0) {
+              framePointsToUse.push(FramePoint.Left)
+            }
+            const verticalExistingFramePoints = framePointsToUse.filter(
+              (p) => VerticalFramePointsExceptSize.indexOf(p) > -1,
+            )
+            if (verticalExistingFramePoints.length === 0) {
+              framePointsToUse.push(FramePoint.Top)
+            }
+            propsToSet.push(
+              ...getPropsToSetToMoveElement(
+                frameAndTarget.delta,
+                framePointsToUse,
+                frameProps,
+                parentFrame,
+              ),
+            )
+            break
+          }
+          case 'SINGLE_RESIZE':
+            let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
+            Utils.fastForEach(LayoutPinnedProps, (p) => {
+              const framePoint = framePointForPinnedProp(p)
+              const value = getLayoutProperty(p, right(element.props))
+              if (isLeft(value) || value.value != null) {
+                frameProps[framePoint] = value.value
+                propsToSkip.push(createLayoutPropertyPath(p))
+              }
+            })
+
+            let framePointsToUse: Array<FramePoint> = Object.keys(frameProps) as FramePoint[]
+
+            if (isEdgePositionOnSide(frameAndTarget.edgePosition)) {
+              framePointsToUse = extendPartialFramePointsForResize(
+                framePointsToUse,
+                frameAndTarget.edgePosition,
+              )
+            } else {
+              let verticalPoints = framePointsToUse.filter((p) => VerticalFramePoints.includes(p))
+              let horizontalPoints = framePointsToUse.filter((p) =>
+                HorizontalFramePoints.includes(p),
+              )
+
+              if (verticalPoints.length < 2) {
+                if (verticalPoints.length === 0) {
+                  verticalPoints.push(FramePoint.Top)
+                }
+                verticalPoints.push(FramePoint.Height)
+              }
+              if (horizontalPoints.length < 2) {
+                if (horizontalPoints.length === 0) {
+                  horizontalPoints.push(FramePoint.Left)
+                }
+                horizontalPoints.push(FramePoint.Width)
+              }
+              framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
+            }
+
+            propsToSet.push(
+              ...getPropsToSetToResizeElement(
+                frameAndTarget.edgePosition,
+                frameAndTarget.sizeDelta.x,
+                frameAndTarget.sizeDelta.y,
+                framePointsToUse,
+                frameProps,
+                parentFrame,
+              ),
+            )
+            break
           case 'FLEX_MOVE':
           case 'FLEX_RESIZE':
             throw new Error(
@@ -651,6 +771,184 @@ export function updateFramesOfScenesAndComponents(
     }
   })
   return workingComponentsResult
+}
+
+function updateFrameValueForProp(
+  framePoint: FramePoint,
+  delta: number,
+  frameProps: { [k: string]: string | number | undefined },
+  parentFrame: CanvasRectangle | null,
+): ValueAtPath | null {
+  if (delta !== 0) {
+    const existingProp = frameProps[framePoint]
+    const pinIsPercentage = existingProp == null ? false : isPercentPin(existingProp)
+    let valueToUse: string | number
+    if (existingProp != null && pinIsPercentage) {
+      const percentValue = numberPartOfPin(existingProp)
+      if (parentFrame != null) {
+        const referenceSize = isHorizontalPoint(framePoint) ? parentFrame.width : parentFrame.height
+        const deltaAsPercentValue = (delta / referenceSize) * 100
+        valueToUse = `${percentValue + deltaAsPercentValue}%`
+      } else {
+        valueToUse = `${percentValue + delta}%`
+      }
+    } else {
+      valueToUse = existingProp == null ? delta : Number(existingProp) + delta
+    }
+    return {
+      path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+      value: jsxAttributeValue(valueToUse),
+    }
+  }
+  return null
+}
+
+function getPropsToSetToMoveElement(
+  dragDelta: CanvasVector,
+  framePoints: FramePoint[],
+  frameProps: { [k: string]: string | number | undefined },
+  parentFrame: CanvasRectangle | null,
+): ValueAtPath[] {
+  let propsToSet: ValueAtPath[] = []
+  Utils.fastForEach(framePoints, (framePoint) => {
+    const delta = isHorizontalPoint(framePoint) ? dragDelta.x : dragDelta.y
+    const shouldInvertValue = framePoint === FramePoint.Right || framePoint === FramePoint.Bottom
+    const updatedProp = updateFrameValueForProp(
+      framePoint,
+      shouldInvertValue ? -delta : delta,
+      frameProps,
+      parentFrame,
+    )
+    if (updatedProp != null) {
+      propsToSet.push(updatedProp)
+    }
+  })
+  return propsToSet
+}
+
+function getPropsToSetToResizeElement(
+  edgePosition: EdgePosition,
+  widthDelta: number,
+  heightDelta: number,
+  framePoints: FramePoint[],
+  frameProps: { [k: string]: string | number | undefined },
+  parentFrame: CanvasRectangle | null,
+): ValueAtPath[] {
+  let propsToSet: ValueAtPath[] = []
+  Utils.fastForEach(framePoints, (framePoint) => {
+    let updatedProp
+    switch (framePoint) {
+      case FramePoint.Left: {
+        const targetEdgePoint = { x: 0, y: 0.5 }
+        const delta = widthDelta * (edgePosition.x + targetEdgePoint.x - 1)
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
+        }
+        break
+      }
+      case FramePoint.Top: {
+        const targetEdgePoint = { x: 0.5, y: 0 }
+        const delta = heightDelta * (edgePosition.y + targetEdgePoint.y - 1)
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
+        }
+        break
+      }
+      case FramePoint.Right: {
+        const targetEdgePoint = { x: 1, y: 0.5 }
+        const delta = widthDelta * -(edgePosition.x + targetEdgePoint.x - 1)
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
+        }
+        break
+      }
+      case FramePoint.Bottom: {
+        const targetEdgePoint = { x: 0.5, y: 1 }
+        const delta = heightDelta * -(edgePosition.y + targetEdgePoint.y - 1)
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
+        }
+        break
+      }
+      case FramePoint.Width: {
+        if (widthDelta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, widthDelta, frameProps, parentFrame)
+        }
+        break
+      }
+      case FramePoint.Height: {
+        if (heightDelta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, heightDelta, frameProps, parentFrame)
+        }
+        break
+      }
+      case FramePoint.CenterX: {
+        const targetEdgePoint = { x: 0.5, y: 0.5 }
+        const delta = widthDelta * (edgePosition.x + targetEdgePoint.x - 1)
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
+        }
+        break
+      }
+      case FramePoint.CenterY: {
+        const targetEdgePoint = { x: 0.5, y: 0.5 }
+        const delta = heightDelta * (edgePosition.y + targetEdgePoint.y - 1)
+        if (delta !== 0) {
+          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
+        }
+        break
+      }
+      default: {
+        break
+      }
+    }
+    if (updatedProp != null) {
+      propsToSet.push(updatedProp)
+    }
+  })
+  return propsToSet
+}
+
+function extendPartialFramePointsForResize(frameProps: FramePoint[], edgePosition: EdgePosition) {
+  // if it has partial positioning points set and dragged on an edge only the dragged edge should be added while keeping the existing frame points.
+  let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
+  let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
+  let framePointsToUse = [...frameProps]
+  if (edgePosition.x === 0.5 && verticalPoints.length < 2) {
+    if (verticalPoints.length === 0) {
+      if (edgePosition.y === 0) {
+        verticalPoints.push(FramePoint.Top)
+        verticalPoints.push(FramePoint.Height)
+      } else {
+        verticalPoints.push(FramePoint.Height)
+      }
+    } else {
+      if (edgePosition.y === 0) {
+        verticalPoints.push(FramePoint.Top)
+      } else if (!verticalPoints.includes(FramePoint.Bottom)) {
+        verticalPoints.push(FramePoint.Height)
+      }
+    }
+    framePointsToUse = [...verticalPoints, ...horizontalPoints]
+  }
+  if (edgePosition.y === 0.5 && horizontalPoints.length < 2) {
+    if (horizontalPoints.length === 0) {
+      if (edgePosition.x === 0) {
+        horizontalPoints.push(FramePoint.Left)
+        horizontalPoints.push(FramePoint.Width)
+      } else {
+        horizontalPoints.push(FramePoint.Width)
+      }
+    } else {
+      if (edgePosition.x === 0) {
+        horizontalPoints.push(FramePoint.Left)
+      } else if (!horizontalPoints.includes(FramePoint.Right)) {
+        horizontalPoints.push(FramePoint.Width)
+      }
+    }
+    framePointsToUse = [...verticalPoints, ...horizontalPoints]
+  }
+  return Utils.uniq(framePointsToUse)
 }
 
 export function getOriginalFrameInCanvasCoords(
@@ -1075,7 +1373,15 @@ export function produceResizeCanvasTransientState(
   editorState: EditorState,
   parseSuccess: ParseSuccess,
   dragState: ResizeDragState,
+  preventAnimations: boolean,
 ): TransientCanvasState {
+  const elementsToTarget = determineElementsToOperateOnForDragging(
+    dragState.draggedElements,
+    editorState.jsxMetadataKILLME,
+    false,
+    true,
+  )
+
   const newSize = calculateNewBounds(editorState, dragState)
   let framesAndTargets: Array<PinOrFlexFrameChange> = []
   let globalFrames: Array<CanvasRectangle> = []
@@ -1089,41 +1395,41 @@ export function produceResizeCanvasTransientState(
   if (boundingBox == null) {
     return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null)
   } else {
-    Utils.fastForEach(
-      determineElementsToOperateOnForDragging(
-        dragState.draggedElements,
-        editorState.jsxMetadataKILLME,
-        false,
-        true,
-      ),
-      (target) => {
-        const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, target)
-        if (originalFrame != null) {
-          const newTargetFrame = Utils.transformFrameUsingBoundingBox(
-            newSize,
-            boundingBox,
-            originalFrame,
-          )
-          const roundedFrame = {
-            x: Math.floor(newTargetFrame.x),
-            y: Math.floor(newTargetFrame.y),
-            width: Math.ceil(newTargetFrame.width),
-            height: Math.ceil(newTargetFrame.height),
-          } as CanvasRectangle
-          const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-            target,
-            editorState.jsxMetadataKILLME,
-          )
-          if (isFlexContainer) {
-            framesAndTargets.push(flexResizeChange(target, roundedFrame, dragState.edgePosition))
-          } else {
-            framesAndTargets.push(pinFrameChange(target, roundedFrame, dragState.edgePosition))
-          }
+    Utils.fastForEach(elementsToTarget, (target) => {
+      const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, target)
+      if (originalFrame != null) {
+        const newTargetFrame = Utils.transformFrameUsingBoundingBox(
+          newSize,
+          boundingBox,
+          originalFrame,
+        )
+        const roundedFrame = {
+          x: Math.floor(newTargetFrame.x),
+          y: Math.floor(newTargetFrame.y),
+          width: Math.ceil(newTargetFrame.width),
+          height: Math.ceil(newTargetFrame.height),
+        } as CanvasRectangle
+        const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+          target,
+          editorState.jsxMetadataKILLME,
+        )
+        if (isFlexContainer) {
+          framesAndTargets.push(flexResizeChange(target, roundedFrame, dragState.edgePosition))
+        } else {
+          framesAndTargets.push(pinFrameChange(target, roundedFrame, dragState.edgePosition))
         }
-      },
-    )
+      }
+    })
 
-    const openComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+    // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
+    const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+    const openComponents = preventAnimations
+      ? preventAnimationsOnTargets(
+          untouchedOpenComponents,
+          editorState.jsxMetadataKILLME,
+          elementsToTarget,
+        )
+      : untouchedOpenComponents
 
     const componentsIncludingFakeUtopiaScene = openComponents
 
@@ -1148,7 +1454,89 @@ export function produceResizeCanvasTransientState(
   }
 }
 
-export function produceCanvasTransientState(editorState: EditorState): TransientCanvasState {
+export function produceResizeSingleSelectCanvasTransientState(
+  editorState: EditorState,
+  parseSuccess: ParseSuccess,
+  dragState: ResizeDragState,
+  preventAnimations: boolean,
+): TransientCanvasState {
+  const elementsToTarget = determineElementsToOperateOnForDragging(
+    dragState.draggedElements,
+    editorState.jsxMetadataKILLME,
+    false,
+    true,
+  )
+  if (elementsToTarget.length !== 1) {
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+  }
+  const elementToTarget = elementsToTarget[0]
+
+  const newSize = calculateNewBounds(editorState, dragState)
+  let framesAndTargets: Array<PinOrFlexFrameChange> = []
+  let globalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, elementToTarget)
+  const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, elementToTarget)
+  if (originalFrame != null && globalFrame != null) {
+    const newTargetFrame = Utils.transformFrameUsingBoundingBox(newSize, globalFrame, originalFrame)
+    const roundedFrame = {
+      x: Math.floor(newTargetFrame.x),
+      y: Math.floor(newTargetFrame.y),
+      width: Math.ceil(newTargetFrame.width),
+      height: Math.ceil(newTargetFrame.height),
+    } as CanvasRectangle
+    const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      elementToTarget,
+      editorState.jsxMetadataKILLME,
+    )
+    if (isFlexContainer) {
+      framesAndTargets.push(flexResizeChange(elementToTarget, roundedFrame, dragState.edgePosition))
+    } else {
+      const edgePosition = dragState.centerBasedResize
+        ? ({ x: 0.5, y: 0.5 } as EdgePosition)
+        : dragState.edgePosition
+      const sizeChange = {
+        x: roundedFrame.width - originalFrame.width,
+        y: roundedFrame.height - originalFrame.height,
+      } as CanvasVector
+      framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
+    }
+  }
+
+  // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
+  const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+  const openComponents = preventAnimations
+    ? preventAnimationsOnTargets(
+        untouchedOpenComponents,
+        editorState.jsxMetadataKILLME,
+        elementsToTarget,
+      )
+    : untouchedOpenComponents
+
+  const componentsIncludingFakeUtopiaScene = openComponents
+
+  const updatedScenesAndComponents = updateFramesOfScenesAndComponents(
+    componentsIncludingFakeUtopiaScene,
+    editorState.jsxMetadataKILLME,
+    framesAndTargets,
+    null,
+  )
+
+  // Sync these back up.
+  const topLevelElementsIncludingScenes = applyUtopiaJSXComponentsChanges(
+    parseSuccess.topLevelElements,
+    updatedScenesAndComponents,
+  )
+
+  return transientCanvasState(
+    editorState.selectedViews,
+    editorState.highlightedViews,
+    transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+  )
+}
+
+export function produceCanvasTransientState(
+  editorState: EditorState,
+  preventAnimations: boolean,
+): TransientCanvasState {
   function noFileTransientCanvasState(): TransientCanvasState {
     return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
   }
@@ -1175,7 +1563,7 @@ export function produceCanvasTransientState(editorState: EditorState): Transient
           case 'insert':
             const insertMode = editorState.mode
             const openComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-            if (insertionSubjectIsJSXElement(insertMode.subject)) {
+            if (insertionSubjectIsJSXElement(insertMode.subject) && insertMode.insertionStarted) {
               const insertionParent =
                 insertMode.subject.parent == null ? null : insertMode.subject.parent.staticTarget
               const updatedComponents = insertJSXElementChild(
@@ -1186,16 +1574,10 @@ export function produceCanvasTransientState(editorState: EditorState): Transient
                   type: 'front',
                 },
               )
-              let updatedImports: Imports = parseSuccess.imports
-              if (insertMode.subject.importFromPath != null) {
-                updatedImports = addImport(
-                  insertMode.subject.importFromPath,
-                  null,
-                  [importAlias(insertMode.subject.element.name.baseVariable)],
-                  null,
-                  updatedImports,
-                )
-              }
+              const updatedImports: Imports = mergeImports(
+                parseSuccess.imports,
+                insertMode.subject.importsToAdd,
+              )
 
               // Sync these back up.
               const topLevelElements = applyUtopiaJSXComponentsChanges(
@@ -1224,9 +1606,28 @@ export function produceCanvasTransientState(editorState: EditorState): Transient
               const dragState = editorState.canvas.dragState
               switch (dragState.type) {
                 case 'MOVE_DRAG_STATE':
-                  return produceMoveTransientCanvasState(editorState, dragState, parseSuccess)
+                  return produceMoveTransientCanvasState(
+                    editorState,
+                    dragState,
+                    parseSuccess,
+                    preventAnimations,
+                  )
                 case 'RESIZE_DRAG_STATE':
-                  return produceResizeCanvasTransientState(editorState, parseSuccess, dragState)
+                  if (dragState.isMultiSelect) {
+                    return produceResizeCanvasTransientState(
+                      editorState,
+                      parseSuccess,
+                      dragState,
+                      preventAnimations,
+                    )
+                  } else {
+                    return produceResizeSingleSelectCanvasTransientState(
+                      editorState,
+                      parseSuccess,
+                      dragState,
+                      preventAnimations,
+                    )
+                  }
 
                 case 'INSERT_DRAG_STATE':
                   throw new Error(`Unable to use insert drag state in select mode.`)
@@ -1298,19 +1699,16 @@ export function filterMultiSelectScenes(targets: Array<TemplatePath>): Array<Tem
   }
 }
 
-export function getTargetAtPosition(
+function getReparentTargetAtPosition(
   editorState: EditorState,
   position: CanvasPoint,
 ): TemplatePath | undefined {
   const allTargets = Canvas.getAllTargetsAtPoint(
     editorState,
     position,
-    [
-      TargetSearchType.ParentsOfSelected,
-      TargetSearchType.SiblingsOfSelected,
-      TargetSearchType.TopLevelElements,
-    ],
+    [TargetSearchType.All],
     false,
+    'loose',
   )
   // filtering for non-selected views from alltargets
   return R.head(
@@ -1328,7 +1726,7 @@ export function getReparentTarget(
   shouldReparent: boolean
   newParent: TemplatePath | null
 } {
-  const result = getTargetAtPosition(editorState, position)
+  const result = getReparentTargetAtPosition(editorState, position)
   const possibleNewParent = result == undefined ? null : result
   const currentParents = Utils.stripNulls(
     toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadataKILLME, view)),
@@ -1601,26 +1999,73 @@ export function moveTemplate(
   }
 }
 
+function preventAnimationsOnTargets(
+  components: UtopiaJSXComponent[],
+  metadata: ComponentMetadata[],
+  targets: TemplatePath[],
+): UtopiaJSXComponent[] {
+  let workingComponentsResult = [...components]
+  Utils.fastForEach(targets, (target) => {
+    const staticPath = TP.isScenePath(target)
+      ? createSceneTemplatePath(target)
+      : MetadataUtils.dynamicPathToStaticPath(metadata, target)
+    if (staticPath != null) {
+      workingComponentsResult = transformJSXComponentAtPath(
+        workingComponentsResult,
+        staticPath,
+        (element) => {
+          const styleUpdated = setJSXValuesAtPaths(element.props, [
+            {
+              path: PP.create(['style', 'transition']),
+              value: jsxAttributeValue('none'),
+            },
+          ])
+          return foldEither(
+            () => element,
+            (updatedProps) => {
+              return {
+                ...element,
+                props: updatedProps,
+              }
+            },
+            styleUpdated,
+          )
+        },
+      )
+    }
+  })
+  return workingComponentsResult
+}
+
 function produceMoveTransientCanvasState(
   editorState: EditorState,
   dragState: MoveDragState,
   parseSuccess: ParseSuccess,
+  preventAnimations: boolean,
 ): TransientCanvasState {
-  let utopiaComponentsIncludingScenes: Array<UtopiaJSXComponent> = getUtopiaJSXComponentsFromSuccess(
-    parseSuccess,
-  )
   let selectedViews: Array<TemplatePath> = dragState.draggedElements
   let metadata: Array<ComponentMetadata> = editorState.jsxMetadataKILLME
   let originalFrames: Array<CanvasFrameAndTarget> = dragState.originalFrames
   let highlightedViews: Array<TemplatePath> = editorState.highlightedViews
 
+  const elementsToTarget = determineElementsToOperateOnForDragging(
+    selectedViews,
+    metadata,
+    true,
+    false,
+  )
+
+  // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
+  const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+  let utopiaComponentsIncludingScenes = preventAnimations
+    ? preventAnimationsOnTargets(
+        untouchedOpenComponents,
+        editorState.jsxMetadataKILLME,
+        elementsToTarget,
+      )
+    : untouchedOpenComponents
+
   if (dragState.reparent) {
-    const elementsToTarget = determineElementsToOperateOnForDragging(
-      selectedViews,
-      metadata,
-      true,
-      false,
-    )
     const reparentTarget = getReparentTarget(
       editorState,
       elementsToTarget,
@@ -1661,11 +2106,7 @@ function produceMoveTransientCanvasState(
     }
   } else if (dragState.duplicate) {
     const parentTarget = MetadataUtils.getDuplicationParentTargets(selectedViews)
-    const duplicateResult = duplicate(
-      determineElementsToOperateOnForDragging(selectedViews, metadata, true, false),
-      parentTarget,
-      editorState,
-    )
+    const duplicateResult = duplicate(elementsToTarget, parentTarget, editorState)
     if (duplicateResult != null) {
       utopiaComponentsIncludingScenes = duplicateResult.utopiaComponents
       selectedViews = duplicateResult.selectedViews
@@ -1884,17 +2325,23 @@ export function duplicate(
               newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
               uid = duplicateNewUID.newUID
             }
-            const newPath =
-              newParentPath == null
-                ? TP.scenePath([BakedInStoryboardUID, uid])
-                : TP.appendToPath(newParentPath, uid)
+            let newPath: TemplatePath
+            if (newParentPath == null) {
+              const storyboardUID = Utils.forceNotNull(
+                'Could not find storyboard element',
+                getStoryboardUID(utopiaComponents),
+              )
+              newPath = TP.scenePath([storyboardUID, uid])
+            } else {
+              newPath = TP.appendToPath(newParentPath, uid)
+            }
             // Update the original frames to be the duplicate ones.
-            if (newOriginalFrames != null) {
+            if (newOriginalFrames != null && newPath != null) {
               newOriginalFrames = newOriginalFrames.map((originalFrame) => {
                 if (TP.pathsEqual(originalFrame.target, path)) {
                   return {
                     frame: originalFrame.frame,
-                    target: newPath,
+                    target: newPath as TemplatePath,
                   }
                 } else {
                   return originalFrame

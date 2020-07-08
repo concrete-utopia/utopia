@@ -1,0 +1,180 @@
+{
+  "contents": {
+    "/node_modules/mypackage/package.json": {
+      "content": "{\"name\": \"mypackage\", \"main\": \"./index.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/index.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/moduleA.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/moduleB.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/folder/moduleC.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/folder/moduleD.jsx": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/folder/moduleE.json": {
+      "content": "{\"hello\": \"hello world\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/folderWithPackageJson/package.json": {
+      "content": "{\"main\": \"./actualModuleE.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/folderWithPackageJson/actualModuleE.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/folderWithBrokenPackageJson/package.json": {
+      "content": "garbage package json",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/folderWithBrokenPackageJson/index.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/folderWithPackageJsonWithMissingFile/package.json": {
+      "content": "{\"main\": \"./actualModuleE.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/folderWithpackageJsonMissingField/package.json": {
+      "content": "{}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFile.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderPackageJson/actualModuleB.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderPackageJson/package.json": {
+      "content": "{\"main\": \"./actualModuleB.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderIndexJs/index.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/node_modules/packageRootNodeModuleFile.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/node_modules/packageRootNodeModuleFolderPackageJson/dist/actualModuleB.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/node_modules/packageRootNodeModuleFolderPackageJson/package.json": {
+      "content": "{\"main\": \"./dist/actualModuleB.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/node_modules/packageRootNodeModuleFolderIndexJs/index.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/globalNodeModuleFile.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/globalNodeModuleFolderPackageJson/lib/actualModuleB.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/globalNodeModuleFolderPackageJson/package.json": {
+      "content": "{\"main\": \"../globalNodeModuleFolderPackageJson/lib/actualModuleB.js\", \"thisIsAnEvilPath\": true}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/globalNodeModuleFolderIndexJs/index.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/@namespaced/module/index.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/@othernamespace/othermodule/dist/actual.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/@othernamespace/othermodule/package.json": {
+      "content": "{\"main\": \"./dist/actual.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/@othernamespace/module-with-main-entry-pointing-to-directory/dist/index.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/@othernamespace/module-with-main-entry-pointing-to-directory/package.json": {
+      "content": "{\"main\": \"dist\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "my-package-with-package-root/src/deep-folder/moduleA.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "my-package-with-package-root/src/other-folder/moduleB.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "my-package-with-package-root/index.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "my-package-with-package-root/package.json": {
+      "content": "{\"name\": \"my-package-with-package-root\", \"main\": \".index.js\"}",
+      "isModule": false,
+      "requires": []
+    }
+  },
+  "dependency": {
+    "name": "mypackage",
+    "version": "0.0.1"
+  },
+  "peerDependencies": {},
+  "dependencyDependencies": {}
+}

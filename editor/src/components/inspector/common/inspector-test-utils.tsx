@@ -98,6 +98,7 @@ const dummyPropertyStatus: PropertyStatus = {
   overwritable: true,
   selectionLength: 1,
   identical: true,
+  detected: false,
 }
 
 const simpleControlStyles = getControlStyles('simple')

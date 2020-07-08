@@ -1,5 +1,11 @@
 import * as React from 'react'
-import { CheckboxInput, FlexRow, NumberInput, PopupList } from 'uuiui'
+import {
+  CheckboxInput,
+  FlexRow,
+  NumberInput,
+  PopupList,
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+} from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'
@@ -63,8 +69,10 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
     const [
       gradientAngleSubmitValue,
       gradientAngleTransientSubmitValue,
-    ] = props.useSubmitTransformedValuesFactory(
-      getIndexedUpdateCSSBackgroundLayerLinearGradientAngle(props.index),
+    ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitTransformedValuesFactory(
+        getIndexedUpdateCSSBackgroundLayerLinearGradientAngle(props.index),
+      ),
     )
     const [backgroundLayerType] = props.useSubmitTransformedValuesFactory(
       getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(props.index),
@@ -117,7 +125,7 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
               onSubmitValue={gradientAngleSubmitValue}
               onTransientSubmitValue={gradientAngleTransientSubmitValue}
               controlStatus={props.controlStatus}
-              labelBelow='angle'
+              DEPRECATED_labelBelow='angle'
               inputProps={{ onMouseDown: stopPropagation }}
               numberType='AnglePercent'
             />

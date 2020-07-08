@@ -32,7 +32,7 @@ export function defaultViewElement(uid: string): JSXElement {
     jsxElementName('View', []),
     {
       style: jsxAttributeValue({
-        backgroundColor: '#DDDDDD',
+        backgroundColor: '#0091FFAA',
       }),
       'data-uid': jsxAttributeValue(uid),
       layout: jsxAttributeValue({
@@ -49,7 +49,7 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
     jsxElementName('animated', ['div']),
     {
       style: jsxAttributeValue({
-        backgroundColor: '#DDDDDD',
+        backgroundColor: '#0091FFAA',
       }),
       'data-uid': jsxAttributeValue(uid),
     },
@@ -93,7 +93,7 @@ export function defaultRectangleElement(uid: string): JSXElement {
     jsxElementName('Rectangle', []),
     {
       style: jsxAttributeValue({
-        backgroundColor: '#DDDDDD',
+        backgroundColor: '#0091FFAA',
       }),
       'data-uid': jsxAttributeValue(uid),
     },
@@ -107,7 +107,7 @@ export function defaultEllipseElement(uid: string): JSXElement {
     jsxElementName('Ellipse', []),
     {
       style: jsxAttributeValue({
-        backgroundColor: '#DDDDDD',
+        backgroundColor: '#0091FFAA',
       }),
       'data-uid': jsxAttributeValue(uid),
     },

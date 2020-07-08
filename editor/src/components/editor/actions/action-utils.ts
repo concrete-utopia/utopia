@@ -74,6 +74,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RENAME_PROP_KEY':
     case 'SET_SAFE_MODE':
     case 'SET_SAVE_ERROR':
+    case 'UPDATE_NODE_MODULES_CONTENTS':
+    case 'START_CHECKPOINT_TIMER':
       return true
 
     case 'NEW':
@@ -96,11 +98,11 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RENAME_COMPONENT':
     case 'PASTE_JSX_ELEMENTS':
     case 'TOGGLE_PROPERTY':
+    case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':
     case 'WRAP_IN_VIEW':
     case 'UNWRAP_GROUP_OR_VIEW':
     case 'SET_CANVAS_FRAMES':
-    case 'UPDATE_NPM_DEPENDENCIES':
     case 'SET_PROJECT_NAME':
     case 'REGENERATE_THUMBNAIL':
     case 'UPDATE_THUMBNAIL_GENERATED':
@@ -129,6 +131,9 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_CODE_EDITOR_THEME':
     case 'INSERT_DROPPED_IMAGE':
     case 'RESET_PROP_TO_DEFAULT':
+    case 'UPDATE_PACKAGE_JSON':
+    case 'FINISH_CHECKPOINT_TIMER':
+    case 'ADD_MISSING_DIMENSIONS':
       return false
     case 'SAVE_ASSET':
       return (

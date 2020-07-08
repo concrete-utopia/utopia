@@ -7,7 +7,7 @@ import {
   jsxAttributeValue,
 } from '../../../../../core/shared/element-template'
 import Utils from '../../../../../utils/utils'
-import { Icons, useWrappedEmptyOnSubmitValue } from 'uuiui'
+import { Icons, useWrappedEmptyOrUnknownOnSubmitValue } from 'uuiui'
 import { NumberInput } from 'uuiui'
 import { Tooltip } from 'uuiui'
 import { InspectorSubsectionHeader } from 'uuiui'
@@ -287,29 +287,29 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
     setExpanded,
   ])
 
-  const wrappedFontSizeOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedFontSizeOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     fontSizeMetadata.onSubmitValue,
     fontSizeMetadata.onUnsetValues,
   )
-  const wrappedFontSizeOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedFontSizeOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     fontSizeMetadata.onTransientSubmitValue,
     fontSizeMetadata.onUnsetValues,
   )
 
-  const wrappedLetterSpacingOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedLetterSpacingOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     letterSpacingMetadata.onSubmitValue,
     letterSpacingMetadata.onUnsetValues,
   )
-  const wrappedLetterSpacingOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedLetterSpacingOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     letterSpacingMetadata.onTransientSubmitValue,
     letterSpacingMetadata.onUnsetValues,
   )
 
-  const wrappedLineHeightOnSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedLineHeightOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     lineHeightMetadata.onSubmitValue,
     lineHeightMetadata.onUnsetValues,
   )
-  const wrappedLineHeightOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+  const wrappedLineHeightOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     lineHeightMetadata.onTransientSubmitValue,
     lineHeightMetadata.onUnsetValues,
   )
@@ -351,7 +351,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             controlStatus={fontFamilyMetadata.controlStatus}
             controlStyles={fontFamilyMetadata.controlStyles}
             onSubmitValue={onFontFamilySubmitValue}
-            controlOptions={{
+            DEPRECATED_controlOptions={{
               tooltip: 'Typeface',
               creatable: true,
             }}
@@ -528,7 +528,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               onSubmitValue={onItalicSubmitValue}
               controlStatus={fontStyleMetadata.controlStatus}
               controlStyles={fontStyleMetadata.controlStyles}
-              controlOptions={{
+              DEPRECATED_controlOptions={{
                 tooltip: 'Italic',
                 icon: {
                   category: 'typography',
@@ -553,7 +553,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               controlStatus={textDecorationLineMetadata.controlStatus}
               controlStyles={textDecorationLineMetadata.controlStyles}
               style={{ gridColumn: '2 / span 1' }}
-              controlOptions={{
+              DEPRECATED_controlOptions={{
                 tooltip: 'Underline',
                 icon: {
                   category: 'typography',
@@ -582,7 +582,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               onSubmitValue={wrappedLetterSpacingOnSubmitValue}
               onTransientSubmitValue={wrappedLetterSpacingOnTransientSubmitValue}
               controlStatus={letterSpacingMetadata.controlStatus}
-              labelBelow='letter'
+              DEPRECATED_labelBelow='letter'
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide='px'
@@ -605,7 +605,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               controlStatus={lineHeightMetadata.controlStatus}
               onSubmitValue={wrappedLineHeightOnSubmitValue}
               onTransientSubmitValue={wrappedLineHeightOnTransientSubmitValue}
-              labelBelow='line'
+              DEPRECATED_labelBelow='line'
               stepSize={0.01}
               numberType='Length'
             />

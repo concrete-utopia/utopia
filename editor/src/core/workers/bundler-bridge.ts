@@ -8,18 +8,16 @@ import {
   createInitTSWorkerMessage,
   BuildResultMessage,
   createUpdateFileMessage,
-  NoEmitMessage,
+  UpdateProcessedMessage,
 } from './ts/ts-worker'
 import utils from '../../utils/utils'
 import { workerForFile } from './utils'
 
 export interface BundlerContext {
   queuedUpdateFiles: { [key: string]: FileContent }
-  weWantToEmit: boolean
   fileQueuedForProcessing: null | {
     fileName: string
     fileContent: FileContent
-    shouldEmit: boolean
   }
 }
 
@@ -70,16 +68,14 @@ interface PushEvent {
   payload: {
     fileName: string
     fileContent: FileContent
-    weWantToEmit: boolean
   }
 }
-function pushEvent(fileName: string, fileContent: FileContent, weWantToEmit: boolean): PushEvent {
+function pushEvent(fileName: string, fileContent: FileContent): PushEvent {
   return {
     type: 'PUSH',
     payload: {
       fileName,
       fileContent,
-      weWantToEmit,
     },
   }
 }
@@ -96,26 +92,19 @@ type BundlerEvent = InitializeEvent | PushEvent | PopEvent | ProcessFileFromQueu
 
 function popFromQueue(context: BundlerContext): BundlerContext {
   const filenames = Object.keys(context.queuedUpdateFiles)
-  const queueLength = filenames.length
-  const lastOne = queueLength === 1
-  // Only emit if this is the last queued file and we actually wanted it to emit
-  const emitWithThisFile = context.weWantToEmit && lastOne
-  const emitNextBuild = lastOne ? false : context.weWantToEmit
-  const filename = filenames[0]
-  const content = context.queuedUpdateFiles[filename]
+  const firstItemFilename = filenames[0]
+  const content = context.queuedUpdateFiles[firstItemFilename]
   const updatedQueue = {
     ...context.queuedUpdateFiles,
   }
-  delete updatedQueue[filename]
+  delete updatedQueue[firstItemFilename]
   return {
     ...context,
     queuedUpdateFiles: updatedQueue,
     fileQueuedForProcessing: {
-      fileName: filename,
+      fileName: firstItemFilename,
       fileContent: content,
-      shouldEmit: emitWithThisFile,
     },
-    weWantToEmit: emitNextBuild,
   }
 }
 
@@ -127,14 +116,12 @@ function pushToQueue(context: BundlerContext, event: any): BundlerContext {
   return {
     ...context,
     queuedUpdateFiles: updatedQueue,
-    weWantToEmit: context.weWantToEmit || event.payload.weWantToEmit,
   }
 }
 
 function emptyContext(context: BundlerContext, event: any): BundlerContext {
   return {
     queuedUpdateFiles: {},
-    weWantToEmit: false,
     fileQueuedForProcessing: null,
   }
 }
@@ -147,7 +134,6 @@ export const bundlerMachine = Machine<BundlerContext, BundlerSchema, BundlerEven
   // the Action to change the context's value is called `assign`. dont ask me why.
   context: {
     queuedUpdateFiles: {},
-    weWantToEmit: false,
     fileQueuedForProcessing: null,
   },
   // the top level state machine has two sub-machines: worker, and queue.
@@ -296,8 +282,7 @@ export const bundlerMachine = Machine<BundlerContext, BundlerSchema, BundlerEven
           // it has a dual, called `exit`
           entry: [
             // assign is like React.setState for the `context` object. here we describe that we want to set
-            // the value of queuedUpdateFiles to include event.payload.fileContent, and
-            // weWantToEmit to be event.payload.weWantToEmit
+            // the value of queuedUpdateFiles to include event.payload.fileContent.
             assign((context, event) => pushToQueue(context, event)),
           ],
           on: {
@@ -370,7 +355,6 @@ export class NewBundlerWorker {
               this.worker,
               context.fileQueuedForProcessing.fileName,
               context.fileQueuedForProcessing.fileContent,
-              context.fileQueuedForProcessing.shouldEmit,
             )
           },
           initializeWorkerPromise: (context, event) =>
@@ -389,8 +373,8 @@ export class NewBundlerWorker {
     this.stateMachine.send(initializeEvent(typeDefinitions, projectContents))
   }
 
-  sendUpdateFileMessage(filename: string, content: FileContent, emitBuild: boolean) {
-    this.stateMachine.send(pushEvent(filename, content, emitBuild))
+  sendUpdateFileMessage(filename: string, content: FileContent) {
+    this.stateMachine.send(pushEvent(filename, content))
   }
 
   // TODO KILLME
@@ -433,15 +417,19 @@ function sendIdGuardedUpdateFilePromise(
   worker: BundlerWorker,
   filename: string,
   content: string | UIJSFile | CodeFile,
-  emitBuild: boolean,
-): Promise<BuildResultMessage | NoEmitMessage> {
+): Promise<BuildResultMessage | UpdateProcessedMessage> {
   const generatedJobID = utils.generateUUID()
   return new Promise((resolve, reject) => {
     function handleMessage(event: MessageEvent) {
       const data: OutgoingWorkerMessage = event.data
       switch (data.type) {
         case 'build':
-        case 'noemit':
+          if (data.jobID === generatedJobID) {
+            worker.removeMessageListener(handleMessage)
+            resolve(data)
+          }
+          break
+        case 'updateprocessed':
           if (data.jobID === generatedJobID) {
             worker.removeMessageListener(handleMessage)
             resolve(data)
@@ -450,6 +438,6 @@ function sendIdGuardedUpdateFilePromise(
       }
     }
     worker.addMessageListener(handleMessage)
-    worker.postMessage(createUpdateFileMessage(filename, content, emitBuild, generatedJobID))
+    worker.postMessage(createUpdateFileMessage(filename, content, generatedJobID))
   })
 }

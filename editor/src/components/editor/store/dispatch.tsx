@@ -64,7 +64,8 @@ import {
   storedEditorStateFromEditorState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
-import { arrayEquals } from '../../../core/shared/utils'
+import { arrayEquals, isBrowserEnvironment } from '../../../core/shared/utils'
+import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -293,6 +294,9 @@ export function editorDispatch(
   const forceSave = dispatchedActions.some((action) => action.action === 'SAVE_CURRENT_FILE')
   const onlyNameUpdated = nameUpdated && dispatchedActions.length === 1
   const allTransient = dispatchedActions.every(isTransientAction)
+  const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
+    return action.action === 'FINISH_CHECKPOINT_TIMER'
+  })
   const updateCodeResultCache = dispatchedActions.some(
     (action) => action.action === 'UPDATE_CODE_RESULT_CACHE',
   )
@@ -352,7 +356,10 @@ export function editorDispatch(
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
   )
 
-  const transientOrNoChange = allTransient || result.nothingChanged
+  // The FINISH_CHECKPOINT_TIMER action effectively overrides the case where nothing changed,
+  // as it's likely that action on it's own didn't change anything, but the actions that paired with
+  // START_CHECKPOINT_TIMER likely did.
+  const transientOrNoChange = (allTransient || result.nothingChanged) && !anyFinishCheckpointTimer
   const workerUpdatedModel = dispatchedActions.some(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
@@ -384,7 +391,6 @@ export function editorDispatch(
   }
 
   const isLoaded = frozenEditorState.isLoaded
-  const isBrowserEnvironment = process.env.JEST_WORKER_ID == undefined // test if we are in a Jest environment
   const shouldSave =
     isLoaded &&
     !isLoadAction &&
@@ -446,18 +452,17 @@ function editorDispatchInner(
     // IMPORTANT This code assumes only a single ui file can be open at a time. If we ever want to
     // support multiple ui files side by side in a multi-tabbed view we'll need to rethink
     // how and where we store the jsx metadata
-    const isNewUiFileSelected =
-      fileTypeFromFileName(getOpenFilename(result.editor)) === 'UI_JS_FILE'
+    const isUiJsFileSelected = fileTypeFromFileName(getOpenFilename(result.editor)) === 'UI_JS_FILE'
     let spyResult: ComponentMetadata[]
 
-    if (isNewUiFileSelected) {
+    if (isUiJsFileSelected) {
       // Needs to run here as changes may have been made which need to be reflected in the
       // spy result, which only runs if the canvas props are determined to have changed.
       result.derived = {
         ...result.derived,
         canvas: {
           ...result.derived.canvas,
-          transientState: produceCanvasTransientState(result.editor),
+          transientState: produceCanvasTransientState(result.editor, true),
         },
       }
 
@@ -477,6 +482,7 @@ function editorDispatchInner(
         Utils.NO_OP,
         Utils.NO_OP,
         Utils.NO_OP,
+        boundDispatch,
       )
       let priorCanvasProps = pickUiJsxCanvasProps(
         storedState.editor,
@@ -486,6 +492,7 @@ function editorDispatchInner(
         Utils.NO_OP,
         Utils.NO_OP,
         Utils.NO_OP,
+        boundDispatch,
       )
       try {
         if (deepEquals(canvasProps, priorCanvasProps)) {
@@ -531,22 +538,39 @@ function editorDispatchInner(
       storedState.editor.spyMetadataKILLME !== result.editor.spyMetadataKILLME
     const dragStateLost =
       storedState.editor.canvas.dragState != null && result.editor.canvas.dragState == null
+    const metadataChanged = domMetadataChanged || spyMetadataChanged || dragStateLost
     // TODO: Should this condition actually be `&&`?
     // Tested quickly and it broke selection, but I'm mostly certain
     // it should only merge when both have changed.
-    if (domMetadataChanged || spyMetadataChanged || dragStateLost) {
+    if (metadataChanged) {
       result = produce(result, (r) => {
         if (r.editor.canvas.dragState == null) {
           r.editor.jsxMetadataKILLME = reconstructJSXMetadata(result.editor)
         } else {
           r.editor.canvas.dragState.metadata = reconstructJSXMetadata(result.editor)
         }
+        // TODO Re-enable this once we have addressed the root cause of the false positives
+        // (these were firing frequently even on elements that remained > 0x0 dimensions)
+        //
+        // const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
+        // const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
+        // if (newLostElements.length > 0 && isBrowserEnvironment) {
+        //   // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
+        //   // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
+        //   const toastAction = EditorActions.showToast({
+        //     message: `Some elements are no longer being rendered`,
+        //     level: 'WARNING',
+        //   })
+        //   setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
+        // }
+
+        // r.editor.warnedInstances = allLostElements
       })
     }
 
-    const cleanedEditor = editorStayedTheSame
-      ? result.editor
-      : removeNonExistingViewReferencesFromState(result.editor)
+    const cleanedEditor = metadataChanged
+      ? removeNonExistingViewReferencesFromState(result.editor)
+      : result.editor
 
     let frozenEditorState: EditorState = optionalDeepFreeze(cleanedEditor)
 
@@ -611,13 +635,10 @@ function filterEditorForFiles(editor: EditorState) {
   const allFiles = Object.keys(editor.projectContents)
   return {
     ...editor,
-    codeResultCache:
-      editor.codeResultCache == null
-        ? null
-        : {
-            ...editor.codeResultCache,
-            cache: R.pick(allFiles, editor.codeResultCache.cache),
-          },
+    codeResultCache: {
+      ...editor.codeResultCache,
+      cache: R.pick(allFiles, editor.codeResultCache.cache),
+    },
     codeEditorErrors: {
       buildErrors: R.pick(allFiles, editor.codeEditorErrors.buildErrors),
       lintErrors: R.pick(allFiles, editor.codeEditorErrors.lintErrors),
@@ -675,7 +696,7 @@ function notifyTsWorker(
 
   if (shouldInitTsWorker) {
     workers.sendInitMessage(
-      newEditorState.resolvedDependencies.typeDefinitions,
+      getDependencyTypeDefinitions(newEditorState.nodeModules.files),
       newEditorState.projectContents,
     )
   } else {
@@ -700,6 +721,16 @@ function removeNonExistingViewReferencesFromState(editorState: EditorState): Edi
     highlightedViews: updatedHighlightedViews,
     hiddenInstances: updatedHiddenInstances,
   }
+}
+
+function lostElements(
+  elementsToCheck: TemplatePath[],
+  metadata: ComponentMetadata[],
+): TemplatePath[] {
+  return elementsToCheck.filter((path) => {
+    const renderedFrame = MetadataUtils.getFrame(path, metadata)
+    return renderedFrame == null || renderedFrame.height <= 0 || renderedFrame.width <= 0
+  })
 }
 
 function filterNonExistingViews(

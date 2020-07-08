@@ -10,15 +10,19 @@ import {
 } from './layout-system-controls'
 import { FlexContainerControls } from '../flex-container-subsection/flex-container-subsection'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { DetectedLayoutSystem } from '../../../../../core/shared/element-template'
+import {
+  DetectedLayoutSystem,
+  SpecialSizeMeasurements,
+} from '../../../../../core/shared/element-template'
 
 interface LayoutSystemSubsectionProps {
-  layoutSystem: DetectedLayoutSystem | null
+  specialSizeMeasurements: SpecialSizeMeasurements
 }
 
 export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProps>(
   'LayoutSystemSubsection',
   (props) => {
+    const layoutSystem = props.specialSizeMeasurements.layoutSystemForChildren
     return (
       <>
         <InspectorSubsectionHeader>
@@ -26,9 +30,9 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
           <DeleteAllLayoutSystemConfigButton />
         </InspectorSubsectionHeader>
         <GridRow padded={true} type='<-------------1fr------------->'>
-          <LayoutSystemControl layoutSystem={props.layoutSystem} />
+          <LayoutSystemControl layoutSystem={layoutSystem} />
         </GridRow>
-        {props.layoutSystem === 'flex' ? <FlexContainerControls seeMoreVisible={true} /> : null}
+        {layoutSystem === 'flex' ? <FlexContainerControls seeMoreVisible={true} /> : null}
         <GridRow tall padded={true} type='<---1fr--->|------172px-------|'>
           <PropertyLabel
             target={paddingPropsToUnset}
@@ -37,7 +41,7 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
           >
             Padding
           </PropertyLabel>
-          <FlexPaddingControl />
+          <FlexPaddingControl specialSizeMeasurements={props.specialSizeMeasurements} />
         </GridRow>
       </>
     )

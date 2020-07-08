@@ -36,7 +36,7 @@ import {
   startPreviewConnectedMonitoring,
 } from '../components/editor/preview-report-handler'
 import { getLoginState } from '../components/editor/server'
-import { editorDispatch } from '../components/editor/store/dispatch'
+import { editorDispatch, simpleStringifyActions } from '../components/editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
@@ -61,6 +61,8 @@ import '../utils/react-shim'
 import Utils from '../utils/utils'
 import { HeartbeatRequestMessage } from '../core/workers/watchdog-worker'
 import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
+import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
+import { dependenciesFromProjectContents } from '../components/editor/npm-dependency/npm-dependency'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -79,7 +81,7 @@ export class Editor {
     updateCssVars()
     startPreviewConnectedMonitoring(this.boundDispatch)
 
-    let emptyEditorState = createEditorState()
+    let emptyEditorState = createEditorState(this.boundDispatch)
     const fromScratchResult = deriveState(emptyEditorState, null, false)
     emptyEditorState = fromScratchResult.editor
     const derivedState = fromScratchResult.derived
@@ -124,7 +126,9 @@ export class Editor {
             const codeResultCache = generateCodeResultCache(
               msg.buildResult,
               msg.exportsInfo,
-              this.storedState.editor.resolvedDependencies.npmRequireFn,
+              this.storedState.editor.nodeModules.files,
+              this.boundDispatch,
+              dependenciesFromProjectContents(this.storedState.editor.projectContents),
               msg.fullBuild,
             )
 
@@ -230,7 +234,6 @@ export class Editor {
   dispatch(dispatchedActions: readonly EditorAction[]) {
     const runDispatch = () => {
       const result = editorDispatch(this.boundDispatch, dispatchedActions, this.storedState)
-
       this.storedState = result
 
       if (!result.nothingChanged) {

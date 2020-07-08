@@ -33,12 +33,20 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
       data={null}
       items={contextMenuItems}
       style={{
-        color: metadata.controlStyles.mainColor,
+        color: 'black',
         overflow: 'hidden',
         ...props.style,
       }}
     >
-      <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          overflowX: 'scroll',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
+        }}
+      >
         {props.children}
       </div>
     </InspectorContextMenuWrapper>

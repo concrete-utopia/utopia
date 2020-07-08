@@ -3,7 +3,12 @@ import { findElementAtPath, MetadataUtils } from '../../core/model/element-metad
 import { ComponentMetadata, ElementInstanceMetadata } from '../../core/shared/element-template'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
-import { InstancePath, TemplatePath } from '../../core/shared/project-file-types'
+import {
+  InstancePath,
+  TemplatePath,
+  importDetails,
+  importAlias,
+} from '../../core/shared/project-file-types'
 import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
   KeyCharacter,
@@ -13,7 +18,12 @@ import Keyboard, {
   strictCheckModifiers,
 } from '../../utils/keyboard'
 import Utils, { normalisedFrameToCanvasFrame } from '../../utils/utils'
-import { CanvasPoint, CanvasRectangle } from '../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  rectangleIntersection,
+  canvasRectangle,
+} from '../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/actions'
 import {
@@ -32,8 +42,9 @@ import {
 import {
   toggleBorder,
   toggleShadow,
-  toggleSimple,
-  toggleStyleProp,
+  toggleStylePropPath,
+  toggleBackgroundLayers,
+  toggleStylePropPaths,
 } from '../inspector/common/css-utils'
 import { LeftMenuTab } from '../navigator/left-pane'
 import * as PP from '../../core/shared/property-path'
@@ -99,7 +110,7 @@ const Canvas = {
         Utils.pluck(childFrames, 'boundingRect'),
       )
       if (childFrames.length > 0 && allChildrenBounds != null) {
-        const allChildrenFrames = R.flatten(Utils.pluck(childFrames, 'frames'))
+        const allChildrenFrames = Utils.pluck(childFrames, 'frames').flat()
         const boundingRect = Utils.boundingRectangle(offsetFrame, allChildrenBounds)
         const toAppend: FrameWithPath = { path: component.templatePath, frame: boundingRect }
         return {
@@ -257,20 +268,39 @@ const Canvas = {
     canvasPosition: CanvasPoint,
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
+    looseTargetingForZeroSizedElements: 'strict' | 'loose',
   ): Array<TemplatePath> {
+    const looseReparentThreshold = 5
     const targetFilters = Canvas.targetFilter(editor.selectedViews, searchTypes)
     const framesWithPaths = Canvas.getFramesInCanvasContext(
       editor.jsxMetadataKILLME,
       useBoundingFrames,
     )
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {
-      return (
-        targetFilters.some((filter) => filter(frameWithPath.path)) &&
+      const shouldUseLooseTargeting =
+        looseTargetingForZeroSizedElements &&
+        (frameWithPath.frame.width <= 0 || frameWithPath.frame.height <= 0)
+
+      return targetFilters.some((filter) => filter(frameWithPath.path)) &&
         !editor.hiddenInstances.some((hidden) =>
           TP.isAncestorOf(frameWithPath.path, hidden, true),
         ) &&
-        Utils.rectContainsPoint(frameWithPath.frame, canvasPosition)
-      )
+        shouldUseLooseTargeting
+        ? rectangleIntersection(
+            canvasRectangle({
+              x: frameWithPath.frame.x,
+              y: frameWithPath.frame.y,
+              width: frameWithPath.frame.width || 1,
+              height: frameWithPath.frame.height || 1,
+            }),
+            canvasRectangle({
+              x: canvasPosition.x - looseReparentThreshold,
+              y: canvasPosition.y - looseReparentThreshold,
+              width: 2 * looseReparentThreshold,
+              height: 2 * looseReparentThreshold,
+            }),
+          ) != null
+        : Utils.rectContainsPoint(frameWithPath.frame, canvasPosition)
     })
     filteredFrames.reverse()
 
@@ -398,6 +428,7 @@ const Canvas = {
             CanvasMousePositionRaw,
             [TargetSearchType.All],
             true,
+            'strict', // _IF_ we want to enable loose targeting for selection, it means we also need to change component-area-control
           )
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {
@@ -467,7 +498,7 @@ const Canvas = {
           return TP.filterScenes(editor.selectedViews).map((target) =>
             EditorActions.toggleProperty(
               target,
-              toggleStyleProp(PP.create(['style', 'boxShadow']), toggleBorder),
+              toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
             ),
           )
         } else {
@@ -492,10 +523,7 @@ const Canvas = {
       case 'f':
         if (noModifier && editor.selectedViews.length > 0) {
           return TP.filterScenes(editor.selectedViews).map((target) =>
-            EditorActions.toggleProperty(
-              target,
-              toggleStyleProp(PP.create(['style', 'backgroundColor']), toggleSimple),
-            ),
+            EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
           )
         } else {
           return []
@@ -552,7 +580,7 @@ const Canvas = {
             EditorActions.enableInsertModeForJSXElement(
               defaultRectangleElement(newUID),
               newUID,
-              'utopia-api',
+              { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
               null,
             ),
           ]
@@ -566,7 +594,7 @@ const Canvas = {
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
               newUID,
-              'utopia-api',
+              { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
               null,
             ),
           ]
@@ -578,7 +606,7 @@ const Canvas = {
           return TP.filterScenes(editor.selectedViews).map((target) =>
             EditorActions.toggleProperty(
               target,
-              toggleStyleProp(PP.create(['style', 'boxShadow']), toggleShadow),
+              toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
             ),
           )
         } else if (shiftCmd && editor.selectedViews.length > 0) {
@@ -594,7 +622,7 @@ const Canvas = {
             EditorActions.enableInsertModeForJSXElement(
               defaultTextElement(newUID),
               newUID,
-              'utopia-api',
+              { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
               null,
             ),
           ]
@@ -618,7 +646,7 @@ const Canvas = {
             EditorActions.enableInsertModeForJSXElement(
               defaultViewElement(newUID),
               newUID,
-              'utopia-api',
+              { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
             ),
           ]

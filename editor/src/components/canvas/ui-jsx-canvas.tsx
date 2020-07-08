@@ -51,6 +51,7 @@ import {
   TemplatePath,
   isParseSuccess,
   StaticInstancePath,
+  NodeModules,
 } from '../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
 import { applyUIDMonkeyPatch, makeCanvasElementPropsSafe } from '../../utils/canvas-react-utils'
@@ -80,6 +81,8 @@ import {
   EmptyScenePathForStoryboard,
 } from '../../core/model/scene-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
+import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import { EditorDispatch } from '../editor/action-types'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -147,6 +150,7 @@ export function pickUiJsxCanvasProps(
   onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
+  dispatch: EditorDispatch,
 ): UiJsxCanvasProps {
   const defaultedFileBlobs = Utils.defaultIfNull(
     emptyFileBlobs,
@@ -172,11 +176,12 @@ export function pickUiJsxCanvasProps(
       topLevelElementsIncludingScenes = transientFileState.topLevelElementsIncludingScenes
     }
   }
+  const requireFn = editor.codeResultCache.requireFn
   return {
     offset: editor.canvas.roundedCanvasOffset,
     scale: editor.canvas.scale,
     uiFilePath: getOpenUIJSFileKey(editor),
-    requireFn: editor.codeResultCache == null ? null : editor.codeResultCache.requireFn,
+    requireFn: requireFn,
     hiddenInstances: editor.hiddenInstances,
     editedTextElement: Utils.optionalMap((textEd) => textEd.templatePath, editor.canvas.textEditor),
     fileBlobs: defaultedFileBlobs,
@@ -239,7 +244,14 @@ function renderComponentUsingJsxFactoryFunction(
       throw new Error(`Unable to find factory function ${factoryFunctionName} in scope.`)
     }
   }
-  return factoryFunction.call(null, type, props, ...children)
+  // This is disgusting, but we want to make sure that if there is only one child it isn't wrapped in an array,
+  // since that code that uses `React.Children.only`
+  const childrenToRender = children.map((innerChildren) =>
+    innerChildren != null && Array.isArray(innerChildren) && innerChildren.length === 1
+      ? innerChildren[0]
+      : innerChildren,
+  )
+  return factoryFunction.call(null, type, props, ...childrenToRender)
 }
 
 interface MutableUtopiaContextProps {
@@ -405,41 +417,45 @@ export const UiJsxCanvas = betterReactMemo(
 
         let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
 
-        // Make sure there is something in scope for all of the top level components
-        Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-          if (isUtopiaJSXComponent(topLevelElement)) {
-            topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-            if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
-              topLevelComponentRendererComponents.current[
-                topLevelElement.name
-              ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
+        // Should something have blown up previously, don't execute a bunch of code
+        // after now and potentially rewrite this error.
+        if (codeError == null) {
+          // Make sure there is something in scope for all of the top level components
+          Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+            if (isUtopiaJSXComponent(topLevelElement)) {
+              topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
+              if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
+                topLevelComponentRendererComponents.current[
+                  topLevelElement.name
+                ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
+              }
             }
-          }
-        })
+          })
 
-        executionScope = {
-          ...executionScope,
-          ...topLevelComponentRendererComponents.current,
+          executionScope = {
+            ...executionScope,
+            ...topLevelComponentRendererComponents.current,
+          }
+
+          // First make sure everything is in scope
+          Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+            if (isArbitraryJSBlock(topLevelElement)) {
+              runBlockUpdatingScope(requireResult, topLevelElement, executionScope, (error) => {
+                codeError = error
+                reportErrorWithPath(error)
+              })
+            }
+          })
+
+          updateMutableUtopiaContextWithNewProps(mutableContextRef, {
+            requireResult: requireResult,
+            rootScope: executionScope,
+            fileBlobs: fileBlobs,
+            reportError: reportErrorWithPath,
+            spyEnabled: props.spyEnabled,
+            jsxFactoryFunctionName: jsxFactoryFunction,
+          })
         }
-
-        // First make sure everything is in scope
-        Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-          if (isArbitraryJSBlock(topLevelElement)) {
-            runBlockUpdatingScope(requireResult, topLevelElement, executionScope, (error) => {
-              codeError = error
-              reportErrorWithPath(error)
-            })
-          }
-        })
-
-        updateMutableUtopiaContextWithNewProps(mutableContextRef, {
-          requireResult: requireResult,
-          rootScope: executionScope,
-          fileBlobs: fileBlobs,
-          reportError: reportErrorWithPath,
-          spyEnabled: props.spyEnabled,
-          jsxFactoryFunctionName: jsxFactoryFunction,
-        })
 
         const topLevelElementsMap = new Map(topLevelJsxComponents)
 
@@ -746,6 +762,8 @@ interface SceneRootProps extends CanvasReactReportErrorCallback {
 
   sceneUID: string
   sceneLabel: string | undefined
+
+  'data-uid'?: string // the data uid
 }
 
 const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
@@ -764,6 +782,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     jsxFactoryFunctionName,
     component,
     sceneUID,
+    'data-uid': dataUidIgnore,
     ...inputProps
   } = props
 
