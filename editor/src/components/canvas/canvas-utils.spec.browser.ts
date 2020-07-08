@@ -11,7 +11,13 @@ import { canvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import { selectComponents, setCanvasFrames, wrapInView } from '../editor/actions/actions'
 import { reparentComponents } from '../navigator/actions'
 import * as TP from '../../core/shared/template-path'
-import { pinFrameChange, pinMoveChange, pinSizeChange } from './canvas-types'
+import {
+  pinFrameChange,
+  pinMoveChange,
+  pinSizeChange,
+  singleResizeChange,
+  EdgePosition,
+} from './canvas-types'
 
 const NewUID = 'catdog'
 
@@ -866,6 +872,74 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
             data-uid={'bbb'}
           />
         </View>`,
+      ),
+    )
+  })
+})
+
+describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
+  it('TLWH, but W and H are percentage works', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          style={{ backgroundColor: '#0091FFAA', left: 40, top: 40, width: '50%', height: '20%'  }}
+          layout={{ layoutSystem: 'pinSystem'}}
+          data-uid={'bbb'}
+        />
+      </View>
+      `),
+    )
+
+    const pinChange = singleResizeChange(
+      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      { x: 1, y: 1 } as EdgePosition,
+      { x: -20, y: -10 } as CanvasVector,
+    )
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          style={{ backgroundColor: '#0091FFAA', left: 40, top: 40, height: '17.5%', width: '45%' }}
+          layout={{ layoutSystem: 'pinSystem' }}
+          data-uid={'bbb'}
+        />
+      </View>`,
+      ),
+    )
+  })
+  it('no layout prop on child', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          style={{ backgroundColor: '#0091FFAA' }}
+          data-uid={'bbb'}
+        />
+      </View>
+      `),
+    )
+
+    const pinChange = singleResizeChange(
+      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      { x: 0, y: 0 } as EdgePosition,
+      { x: 50, y: 60 } as CanvasVector,
+    )
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          ${/** pins are magically created */ ''}
+          style={{ backgroundColor: '#0091FFAA', top: -60, height: 60, left: -50, width: 50 }}
+          data-uid={'bbb'}
+        />
+      </View>`,
       ),
     )
   })
