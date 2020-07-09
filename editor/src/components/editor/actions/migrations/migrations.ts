@@ -7,11 +7,13 @@ import {
   SceneMetadata,
   UIJSFile,
   CanvasMetadataParseResult,
+  isCodeFile,
 } from '../../../../core/shared/project-file-types'
 import { isRight, right } from '../../../../core/shared/either'
 import { convertScenesToUtopiaCanvasComponent } from '../../../../core/model/scene-utils'
+import { codeFile } from '../../../../core/model/project-file-utils'
 
-export const CURRENT_PROJECT_VERSION = 3
+export const CURRENT_PROJECT_VERSION = 4
 
 export function applyMigrations(
   persistentModel: PersistentModel,
@@ -19,7 +21,8 @@ export function applyMigrations(
   const version1 = migrateFromVersion0(persistentModel)
   const version2 = migrateFromVersion1(version1)
   const version3 = migrateFromVersion2(version2)
-  return version3
+  const version4 = migrateFromVersion3(version3)
+  return version4
 }
 
 function migrateFromVersion0(
@@ -152,6 +155,43 @@ function migrateFromVersion2(
       ...persistentModel,
       projectContents: updatedFiles,
       projectVersion: 3,
+    }
+  }
+}
+
+const PackageJsonUrl = '/package.json'
+
+function migrateFromVersion3(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 4 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 3) {
+    return persistentModel as any
+  } else {
+    const packageJsonFile = persistentModel.projectContents[PackageJsonUrl]
+    if (packageJsonFile != null && isCodeFile(packageJsonFile)) {
+      const parsedPackageJson = JSON.parse(packageJsonFile.fileContents)
+      const updatedPackageJson = {
+        ...parsedPackageJson,
+        utopia: {
+          ...parsedPackageJson.utopia,
+          html: `public/${parsedPackageJson.utopia.html}`,
+          js: `public/${parsedPackageJson.utopia.js}`,
+        },
+      }
+      const printedPackageJson = JSON.stringify(updatedPackageJson, null, 2)
+      const updatedPackageJsonFile = codeFile(printedPackageJson, null)
+
+      return {
+        ...persistentModel,
+        projectVersion: 4,
+        projectContents: {
+          ...persistentModel.projectContents,
+          [PackageJsonUrl]: updatedPackageJsonFile,
+        },
+      }
+    } else {
+      console.error('Error migrating project: package.json not found, skipping')
+      return { ...persistentModel, projectVersion: 4 }
     }
   }
 }
