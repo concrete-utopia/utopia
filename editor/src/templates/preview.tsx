@@ -198,7 +198,7 @@ const initPreview = () => {
       const utopiaSettings = R.path<any>(['utopia'], parsedJSON)
       const previewFileName = utopiaSettings['html']
       if (previewFileName != null) {
-        const previewPath = `/public/${previewFileName}`
+        const previewPath = `/${previewFileName}`
         const file = projectContents[previewPath]
         if (file != null && isCodeFile(file)) {
           try {
@@ -219,7 +219,7 @@ const initPreview = () => {
 
       const previewJsFileName = utopiaSettings['js']
       if (previewJsFileName != null) {
-        const previewJSPath = `/public/${previewJsFileName}`
+        const previewJSPath = `/${previewJsFileName}`
         const file = projectContents[previewJSPath]
         if (file == null || !isCodeFile(file)) {
           throw new Error(
