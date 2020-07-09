@@ -1,9 +1,10 @@
 import { ObjectInterpolation } from '@emotion/core'
 import styled from '@emotion/styled'
 import { getChainSegmentEdge } from '../../utils/utils'
-import { ControlStyles } from '../../uuiui-deps'
+import { ControlStyles, betterReactMemo } from '../../uuiui-deps'
 import { IcnProps } from '../icn'
 import { UtopiaTheme } from '../styles/theme'
+import * as React from 'react'
 
 export type ChainedType = 'not-chained' | 'first' | 'last' | 'middle'
 
@@ -93,7 +94,7 @@ export interface BaseInputProps {
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>
 }
 
-interface InspectorInputProps {
+interface InspectorInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   chained?: ChainedType
   controlStyles: ControlStyles
   focused: boolean
@@ -103,7 +104,7 @@ interface InspectorInputProps {
   value?: string | string[] | number
 }
 
-export const InspectorInput = styled.input<InspectorInputProps>(
+const StyledInput = styled.input<InspectorInputProps>(
   ({ chained = 'not-chained', controlStyles, focused, labelInner, roundCorners = 'all' }) => ({
     outline: 'none',
     paddingTop: 2,
@@ -121,5 +122,12 @@ export const InspectorInput = styled.input<InspectorInputProps>(
     ...getChainedBoxShadow(controlStyles, chained, focused),
     ...getBorderRadiusStyles(chained, roundCorners),
     disabled: !controlStyles.interactive,
+  }),
+)
+
+export const InspectorInput = betterReactMemo(
+  'InspectorInput',
+  React.forwardRef<HTMLInputElement, InspectorInputProps>((props, ref) => {
+    return <StyledInput {...props} ref={ref} data-inspector-input={true} />
   }),
 )
