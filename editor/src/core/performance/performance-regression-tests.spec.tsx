@@ -13,7 +13,7 @@ describe('React Render Count Tests - ', () => {
   it('Clicking on opacity slider', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -48,7 +48,7 @@ describe('React Render Count Tests - ', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#DDDDDD', opacity: 0.3 }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -59,14 +59,14 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(720) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(740)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(860) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(870)
   })
 
   it('Changing the selected view', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -100,7 +100,7 @@ describe('React Render Count Tests - ', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
           style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
           layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
@@ -116,7 +116,7 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(580) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(590)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(705) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(715)
   })
 })

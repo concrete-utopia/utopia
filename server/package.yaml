@@ -87,6 +87,7 @@ tests:
     dependencies:
       - servant-client-core
       - hspec
+      - hedgehog
       - port-utils
       - tasty
       - tasty-hedgehog

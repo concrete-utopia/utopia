@@ -22,6 +22,7 @@ import {
   UtopiaUtils,
 } from 'utopia-api'
 import { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
+import { findLastIndex } from '../../../core/shared/array-utils'
 import {
   bimapEither,
   Either,
@@ -31,31 +32,31 @@ import {
   isRight,
   left,
   mapEither,
+  Right as EitherRight,
   right,
   traverseEither,
-  Right as EitherRight,
 } from '../../../core/shared/either'
 import {
   isJSXAttributeFunctionCall,
   isJSXAttributeNotFound,
   isPartOfJSXAttributeValue,
   isRegularJSXAttribute,
+  JSXAttribute,
   jsxAttributeFunctionCall,
   JSXAttributes,
   jsxAttributeValue,
   JSXAttributeValue,
   JSXElement,
-  JSXAttribute,
 } from '../../../core/shared/element-template'
 import {
+  getJSXAttributeAtPath,
+  getJSXAttributeAtPathInner,
   getModifiableJSXAttributeAtPath,
   jsxFunctionAttributeToRawValue,
   jsxSimpleAttributeToValue,
   ModifiableAttribute,
   setJSXValueAtPath,
   setJSXValueInAttributeAtPath,
-  getJSXAttributeAtPath,
-  getJSXAttributeAtPathInner,
 } from '../../../core/shared/jsx-attributes'
 import {
   NumberOrPercent,
@@ -64,6 +65,7 @@ import {
   parseNumberOrPercent,
 } from '../../../core/shared/math-utils'
 import { PropertyPath } from '../../../core/shared/project-file-types'
+import * as PP from '../../../core/shared/property-path'
 import { PrimitiveType, ValueOf } from '../../../core/shared/utils'
 import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
 import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
@@ -71,8 +73,6 @@ import Utils from '../../../utils/utils'
 import { toggleBorderEnabled } from '../sections/style-section/border-subsection/border-subsection'
 import { toggleShadowEnabled } from '../sections/style-section/shadow-subsection/shadow-subsection'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
-import * as PP from '../../../core/shared/property-path'
-import { isJSXAttribute } from '@babel/types'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -957,15 +957,11 @@ export const defaultBoxShadows: CSSBoxShadows = [{ ...defaultBoxShadow }]
 export const disabledFunctionName = UtopiaUtils.disabled.name
 
 export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<string> {
-  let lastEnabledPropertyReached = false
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, boxShadows)
   return jsxAttributeValue(
     [...boxShadows]
-      .reverse()
-      .map((boxShadow) => {
-        const comma = lastEnabledPropertyReached
-        if (!lastEnabledPropertyReached && boxShadow.enabled) {
-          lastEnabledPropertyReached = true
-        }
+      .map((boxShadow, i) => {
+        const comma = indexOfLastEnabledLayer > i && boxShadow.enabled
         const { inset, offsetX, offsetY, blurRadius, spreadRadius, color } = boxShadow
         const parts = Utils.stripNulls([
           inset ? 'inset' : null,
@@ -977,7 +973,6 @@ export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<str
         ])
         return printEnabled(printComma(`${parts.join(' ')}`, comma), boxShadow.enabled)
       })
-      .reverse()
       .join(' '),
   )
 }
@@ -2323,7 +2318,8 @@ export type CSSBackgroundLayerType =
   | ImageURLBackgroundLayerType
   | GradientBackgroundLayerType
 
-export type CSSBGSizeKeywordValueValue = 'contain' | 'cover'
+export const cssBGSizeKeywordValueValues = ['contain', 'cover'] as const
+export type CSSBGSizeKeywordValueValue = NonNullable<typeof cssBGSizeKeywordValueValues[number]>
 export type CSSBGSizeKeywordValue = CSSKeyword<CSSBGSizeKeywordValueValue>
 export type CSSBGSizeCurlyBraceValueValue = CSSNumber | CSSKeyword<'auto'>
 export type CSSBGSizeCurlyBraceValue = ParsedCurlyBrace<CSSBGSizeCurlyBraceValueValue>
@@ -2332,12 +2328,14 @@ export type CSSBGSizeValue = CSSBGSizeKeywordValue | CSSBGSizeCurlyBraceValue
 
 export interface CSSBGSize {
   type: 'bg-size'
+  enabled: boolean
   size: CSSDefault<CSSBGSizeValue>
 }
 
-export function cssBGSize(size: CSSDefault<CSSBGSizeValue>): CSSBGSize {
+export function cssBGSize(size: CSSDefault<CSSBGSizeValue>, enabled = true): CSSBGSize {
   return {
     type: 'bg-size',
+    enabled,
     size,
   }
 }
@@ -2348,7 +2346,7 @@ export function isCSSBackgroundLayerWithBGSize(
   return 'bgSize' in value
 }
 
-export const defaultBGSize = cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('auto')])))
+export const defaultBGSize = cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('auto')])), true)
 
 export type CSSBackgroundSize = Array<CSSBGSize>
 
@@ -3210,16 +3208,17 @@ function printComma(layer: string, shouldCommaBePrinted: boolean): string {
   return `${layer}${shouldCommaBePrinted ? ',' : ''}`
 }
 
+function isLayerEnabled<T extends { enabled: boolean }>(layer: T): boolean {
+  return layer.enabled
+}
+
 export function printBackgroundImage(
   cssBackgroundImages: CSSBackgrounds,
 ): JSXAttributeValue<string> {
-  let lastEnabledPropertyReached = false
-  const backgroundImageStrings = cssBackgroundImages.map((backgroundImage) => {
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, cssBackgroundImages)
+  const backgroundImageStrings = cssBackgroundImages.map((backgroundImage, i) => {
     const enabled = backgroundImage.enabled
-    const comma = lastEnabledPropertyReached
-    if (!lastEnabledPropertyReached && enabled) {
-      lastEnabledPropertyReached = true
-    }
+    const comma = indexOfLastEnabledLayer > i && enabled
     switch (backgroundImage.type) {
       case 'solid': {
         const color = printColor(backgroundImage.color)
@@ -3262,23 +3261,35 @@ export function printBackgroundImage(
 }
 
 export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue<string> {
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, value)
+
   return jsxAttributeValue(
     value
-      .map((bgSize) => {
+      .map((bgSize, i) => {
+        const comma = indexOfLastEnabledLayer > i && bgSize.enabled
         switch (bgSize.size.value.type) {
           case 'keyword': {
-            return printCSSKeyword(bgSize.size.value)
+            return printEnabled(
+              printComma(printCSSKeyword(bgSize.size.value), comma),
+              bgSize.enabled,
+            )
           }
           case 'parsed-curly-brace': {
-            return bgSize.size.value.value
-              .map((item) => {
-                if (isCSSNumber(item)) {
-                  return printCSSNumber(item)
-                } else {
-                  return printCSSKeyword(item)
-                }
-              })
-              .join(' ')
+            return printEnabled(
+              printComma(
+                bgSize.size.value.value
+                  .map((item) => {
+                    if (isCSSNumber(item)) {
+                      return printCSSNumber(item)
+                    } else {
+                      return printCSSKeyword(item)
+                    }
+                  })
+                  .join(' '),
+                comma,
+              ),
+              bgSize.enabled,
+            )
           }
           default: {
             const _exhaustiveCheck: never = bgSize.size.value
@@ -3286,7 +3297,7 @@ export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue
           }
         }
       })
-      .join(', '),
+      .join(' '),
   )
 }
 
@@ -3399,14 +3410,11 @@ export function parseTextShadow(textShadow: unknown): Either<string, CSSTextShad
 }
 
 function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string> {
-  let lastEnabledPropertyReached = false
+  const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, textShadows)
   return jsxAttributeValue(
     [...textShadows]
-      .reverse()
-      .map((textShadow) => {
-        if (!lastEnabledPropertyReached && textShadow.enabled) {
-          lastEnabledPropertyReached = true
-        }
+      .map((textShadow, i) => {
+        const comma = indexOfLastEnabledLayer > i && textShadow.enabled
         const { offsetX, offsetY, blurRadius, color } = textShadow
         const parts = Utils.stripNulls([
           printCSSNumber(offsetX),
@@ -3414,23 +3422,19 @@ function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string>
           blurRadius == null ? null : printCSSNumber(blurRadius.value),
           printColor(color),
         ])
-        return printEnabled(
-          printComma(`${parts.join(' ')}`, lastEnabledPropertyReached),
-          textShadow.enabled,
-        )
+        return printEnabled(printComma(`${parts.join(' ')}`, comma), textShadow.enabled)
       })
-      .reverse()
       .join(' '),
   )
 }
 
-const parenthesesRegexp = /['"]+/g
+const quoteMarksRegexp = /['"]+/g
 
 function parseFontFamily(fontFamily: unknown): Either<string, CSSFontFamily> {
   if (typeof fontFamily === 'string' && fontFamily.length > 0) {
     const trimmed = fontFamily.trim()
     const split = trimmed.split(',')
-    const splitAndTrimmed = split.map((font) => font.trim().replace(/['"]+/g, ''))
+    const splitAndTrimmed = split.map((font) => font.trim().replace(quoteMarksRegexp, ''))
     return right(splitAndTrimmed)
   } else {
     return left('No valid fontFamily found')

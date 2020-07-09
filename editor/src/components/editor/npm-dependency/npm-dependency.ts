@@ -15,7 +15,7 @@ import {
 import Utils from '../../../utils/utils'
 import {
   EditorState,
-  packageJsonFileFromModel,
+  packageJsonFileFromProjectContents,
   updatePackageJsonInEditorState,
 } from '../store/editor-state'
 import { reactDomTypings, reactGlobalTypings, reactTypings } from './react-typings'
@@ -117,16 +117,16 @@ export function dependenciesFromPackageJson(
   }
 }
 
-export function dependenciesFromModel(model: {
-  projectContents: ProjectContents
-}): Array<NpmDependency> {
-  const packageJsonFile = packageJsonFileFromModel(model)
+export function dependenciesFromProjectContents(
+  projectContents: ProjectContents,
+): Array<NpmDependency> {
+  const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   return dependenciesFromPackageJson(packageJsonFile)
 }
 
 export function usePackageDependencies(): Array<NpmDependency> {
   const packageJsonFile = useEditorState((store) => {
-    return packageJsonFileFromModel(store.editor)
+    return packageJsonFileFromProjectContents(store.editor.projectContents)
   })
 
   return React.useMemo(() => {

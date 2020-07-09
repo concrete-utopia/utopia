@@ -62,6 +62,10 @@ interface CodeEditorState {
   dirty: boolean
 }
 
+function cursorPositionsEqual(l: CursorPosition, r: CursorPosition): boolean {
+  return l.column === r.column && l.line === r.line
+}
+
 export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState> {
   autoSaveTimer: NodeJS.Timer | null = null
   dirty: boolean = false
@@ -176,13 +180,15 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
   }
 
   onChangeCursorPosition = (cursorPosition: CursorPosition, shouldChangeSelection: boolean) => {
-    this.setState({
-      cursorPosition: cursorPosition,
-    })
-    if (shouldChangeSelection) {
-      this.props.onSelect(cursorPosition.line, cursorPosition.column)
+    if (!cursorPositionsEqual(this.state.cursorPosition, cursorPosition)) {
+      this.setState({
+        cursorPosition: cursorPosition,
+      })
+      if (shouldChangeSelection) {
+        this.props.onSelect(cursorPosition.line, cursorPosition.column)
+      }
+      this.props.saveCursorPosition(cursorPosition)
     }
-    this.props.saveCursorPosition(cursorPosition)
   }
 
   render() {

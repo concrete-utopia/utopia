@@ -1,34 +1,68 @@
 import { fastForEach } from '../utils'
 
-export type PropertyControls<ComponentProps = any> = {
-  [K in keyof ComponentProps]?: ControlDescription<Partial<ComponentProps>>
-}
+// Base Level Controls
 
-// Please ensure that `property-controls-utils.ts` is kept up to date
-// with any changes to this or the component types.
-export type ControlDescription<P = any> =
-  | NumberControlDescription<P>
-  | EnumControlDescription<P>
-  | BooleanControlDescription<P>
-  | StringControlDescription<P>
-  | ColorControlDescription<P>
-  | FusedNumberControlDescription<P>
-  | ImageControlDescription<P>
-  | FileControlDescription<P>
-  | ComponentInstanceDescription<P>
-  | ArrayControlDescription<P>
-  | EventHandlerControlDescription<P>
-  | SliderControlDescription<P>
-  | PopUpListControlDescription<P>
-  | OptionsControlDescription<P>
-  | IgnoreControlDescription<P>
+export type BaseControlType =
+  | 'boolean'
+  | 'color'
+  | 'componentinstance'
+  | 'enum'
+  | 'eventhandler'
+  | 'ignore'
+  | 'image'
+  | 'number'
+  | 'options'
+  | 'popuplist'
+  | 'slider'
+  | 'string'
 
-interface BaseControlDescription<P = any> {
+interface AbstractControlDescription<T extends ControlType> {
   title?: string
+  type: T
+  defaultValue?: unknown
 }
 
-export interface NumberControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.Number | 'number'
+interface AbstractBaseControlDescription<T extends BaseControlType>
+  extends AbstractControlDescription<T> {}
+
+export interface BooleanControlDescription extends AbstractBaseControlDescription<'boolean'> {
+  defaultValue?: boolean
+  disabledTitle?: string
+  enabledTitle?: string
+}
+
+export interface ColorControlDescription extends AbstractBaseControlDescription<'color'> {
+  defaultValue?: string
+}
+
+export interface ComponentInstanceDescription
+  extends AbstractBaseControlDescription<'componentinstance'> {
+  defaultValue?: never
+}
+
+export type AllowedEnumType = string | boolean | number | undefined | null
+
+export interface EnumControlDescription extends AbstractBaseControlDescription<'enum'> {
+  defaultValue?: AllowedEnumType
+  options: AllowedEnumType[]
+  optionTitles?: string[] | ((props: unknown | null) => string[])
+  displaySegmentedControl?: boolean
+}
+
+export interface EventHandlerControlDescription
+  extends AbstractBaseControlDescription<'eventhandler'> {
+  defaultValue?: never
+}
+
+export interface IgnoreControlDescription extends AbstractBaseControlDescription<'ignore'> {
+  defaultValue?: never
+}
+
+export interface ImageControlDescription extends AbstractBaseControlDescription<'image'> {
+  defaultValue?: string
+}
+
+export interface NumberControlDescription extends AbstractBaseControlDescription<'number'> {
   defaultValue?: number
   max?: number
   min?: number
@@ -37,117 +71,145 @@ export interface NumberControlDescription<P = any> extends BaseControlDescriptio
   displayStepper?: boolean
 }
 
-export interface EnumControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.Enum | 'enum'
-  defaultValue?: string | boolean | number | undefined | null
-  options: (string | boolean | number | undefined | null)[]
-  optionTitles?: string[] | ((props: P | null) => string[])
-  displaySegmentedControl?: boolean
+export interface OptionsControlDescription extends AbstractBaseControlDescription<'options'> {
+  defaultValue?: unknown
+  options: Array<{
+    value: unknown
+    label: string
+  }>
 }
 
-export interface BooleanControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.Boolean | 'boolean'
-  defaultValue?: boolean
-  disabledTitle?: string
-  enabledTitle?: string
+export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
+  defaultValue?: unknown
+  options: Array<{
+    value: unknown
+    label: string
+  }>
 }
 
-export interface StringControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.String | 'string'
+export interface SliderControlDescription extends AbstractBaseControlDescription<'slider'> {
+  defaultValue?: number
+  max: number
+  min: number
+  step: number
+}
+
+export interface StringControlDescription extends AbstractBaseControlDescription<'string'> {
   defaultValue?: string
   placeholder?: string
   obscured?: boolean
 }
 
-export interface ColorControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.Color | 'color'
-  defaultValue?: string
-}
+export type BaseControlDescription =
+  | BooleanControlDescription
+  | ColorControlDescription
+  | ComponentInstanceDescription
+  | EnumControlDescription
+  | EventHandlerControlDescription
+  | IgnoreControlDescription
+  | ImageControlDescription
+  | NumberControlDescription
+  | OptionsControlDescription
+  | PopUpListControlDescription
+  | SliderControlDescription
+  | StringControlDescription
 
-export interface FusedNumberControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.FusedNumber | 'fusednumber'
-  defaultValue?: number
-  toggleKey: keyof P
-  toggleTitles: [string, string]
-  valueKeys: [keyof P, keyof P, keyof P, keyof P]
-  valueLabels: [string, string, string, string]
-  min?: number
-}
+// Higher Level Controls
 
-export interface ImageControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.Image | 'image'
-}
+export type HigherLevelControlType = 'array' | 'object' | 'union'
 
-export interface FileControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.File | 'file'
-  allowedFileTypes: string[]
-}
+export type ControlType = BaseControlType | HigherLevelControlType
 
-export interface ComponentInstanceDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.ComponentInstance | 'componentinstance'
-}
+interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType>
+  extends AbstractControlDescription<T> {}
 
-export interface ArrayControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.Array | 'array'
-  propertyControl: ControlDescription<P>
+export interface ArrayControlDescription extends AbstractHigherLevelControlDescription<'array'> {
+  defaultValue?: unknown[]
+  propertyControl: ControlDescription
   maxCount?: number
-  defaultValue?: any[]
 }
 
-export interface EventHandlerControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.EventHandler | 'eventhandler'
+export interface ObjectControlDescription extends AbstractHigherLevelControlDescription<'object'> {
+  defaultValue?: unknown
+  object: { [prop: string]: ControlDescription }
 }
 
-export interface SliderControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.Slider | 'slider'
-  defaultValue?: number
-  min: number
-  max: number
-  step: number
+export interface UnionControlDescription extends AbstractHigherLevelControlDescription<'union'> {
+  defaultValue?: unknown
+  controls: Array<ControlDescription>
 }
 
-export interface PopUpListControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.PopUpList | 'popuplist'
-  defaultValue?: any
-  options: Array<{
-    value: any
-    label: string
-  }>
+export type HigherLevelControlDescription =
+  | ArrayControlDescription
+  | ObjectControlDescription
+  | UnionControlDescription
+
+// Please ensure that `property-controls-utils.ts` is kept up to date
+// with any changes to this or the component types.
+export type ControlDescription = BaseControlDescription | HigherLevelControlDescription
+
+export function isBaseControlDescription(
+  control: ControlDescription,
+): control is BaseControlDescription {
+  switch (control.type) {
+    case 'boolean':
+    case 'color':
+    case 'componentinstance':
+    case 'enum':
+    case 'eventhandler':
+    case 'ignore':
+    case 'image':
+    case 'number':
+    case 'options':
+    case 'popuplist':
+    case 'slider':
+    case 'string':
+      return true
+    case 'array':
+    case 'object':
+    case 'union':
+      return false
+    default:
+      const _exhaustiveCheck: never = control
+      throw new Error(`Unhandled controls ${JSON.stringify(control)}`)
+  }
 }
 
-export interface OptionsControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.Options | 'options'
-  defaultValue?: any
-  options: Array<{
-    value: any
-    label: string
-  }>
+export function isHigherLevelControlDescription(
+  control: ControlDescription,
+): control is HigherLevelControlDescription {
+  switch (control.type) {
+    case 'boolean':
+    case 'color':
+    case 'componentinstance':
+    case 'enum':
+    case 'eventhandler':
+    case 'ignore':
+    case 'image':
+    case 'number':
+    case 'options':
+    case 'popuplist':
+    case 'slider':
+    case 'string':
+      return false
+    case 'array':
+    case 'object':
+    case 'union':
+      return true
+    default:
+      const _exhaustiveCheck: never = control
+      throw new Error(`Unhandled controls ${JSON.stringify(control)}`)
+  }
 }
 
-export interface IgnoreControlDescription<P = any> extends BaseControlDescription<P> {
-  type: ControlType.Ignore | 'ignore'
+export type PropertyControls<ComponentProps = any> = {
+  [K in keyof ComponentProps]?: ControlDescription
 }
 
-export enum ControlType {
-  Boolean = 'boolean',
-  Number = 'number',
-  String = 'string',
-  FusedNumber = 'fusednumber',
-  Enum = 'enum',
-  Color = 'color',
-  Image = 'image',
-  File = 'file',
-  ComponentInstance = 'componentinstance',
-  Array = 'array',
-  EventHandler = 'eventhandler',
-  Slider = 'slider',
-  PopUpList = 'popuplist',
-  Options = 'options',
-  Ignore = 'ignore',
-}
-
-export function addPropertyControls(component: any, propertyControls: PropertyControls): void {
-  component['propertyControls'] = propertyControls
+export function addPropertyControls(component: unknown, propertyControls: PropertyControls): void {
+  if (component != null) {
+    ;(component as any)['propertyControls'] = propertyControls
+  }
 }
 
 export function getDefaultProps(propertyControls: PropertyControls): { [prop: string]: unknown } {
@@ -155,8 +217,8 @@ export function getDefaultProps(propertyControls: PropertyControls): { [prop: st
   const propKeys = Object.keys(propertyControls)
   fastForEach(propKeys, (prop) => {
     const control = propertyControls[prop]
-    if (control != null && (control as any).defaultValue != null) {
-      defaults[prop] = (control as any).defaultValue
+    if (control != null && control.defaultValue != null) {
+      defaults[prop] = control.defaultValue
     }
   })
   return defaults

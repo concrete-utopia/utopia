@@ -19,9 +19,11 @@ import { memoize } from '../../shared/memoize'
 import { mapArrayToDictionary } from '../../shared/array-utils'
 import { updateNodeModulesContents } from '../../../components/editor/actions/actions'
 
+export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
+
 export function createDependencyNotFoundError(importOrigin: string, toImport: string) {
   let error = new Error(`Could not find dependency: '${toImport}' relative to '${importOrigin}'`)
-  error.name = 'DependencyNotFoundError'
+  error.name = DependencyNotFoundErrorName
   return error
 }
 
@@ -115,32 +117,25 @@ export function getRequireFn(
            *
            */
 
-          // MUTATION
-          resolvedFile.evalResultCache = {
+          // TODO this is the node.js `module` object we pass in to the evaluation scope.
+          // we should extend the module objects so it not only contains the exports,
+          // to have feature parity with the popular bundlers (Parcel / webpack)
+          let partialModule = {
             exports: {},
           }
+          // MUTATION
+          resolvedFile.evalResultCache = { module: partialModule }
           function partialRequire(name: string): unknown {
             return require(resolvedPath!, name)
           }
-          const exports = injectedEvaluator(
+          injectedEvaluator(
             resolvedPath,
             resolvedFile.fileContents,
-            resolvedFile.evalResultCache.exports,
+            resolvedFile.evalResultCache.module,
             partialRequire,
           )
-
-          /**
-           * in case the evaluator was not mutating the exports object.
-           * this can happen if the evaluated module uses the `module.exports = ..` syntax to
-           * reassign the value of the exports object, which is what react-spring's module format does.
-           *
-           * https://nodejs.org/api/modules.html#modules_module_exports
-           *
-           */
-          // MUTATION
-          resolvedFile.evalResultCache.exports = exports
         }
-        return resolvedFile.evalResultCache.exports
+        return resolvedFile.evalResultCache.module.exports
       } else if (isEsRemoteDependencyPlaceholder(resolvedFile)) {
         if (!resolvedFile.downloadStarted) {
           // return empty exports object, fire off an async job to fetch the dependency from jsdelivr

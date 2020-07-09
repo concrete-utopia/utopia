@@ -192,8 +192,10 @@ export interface PinSizeChange extends CanvasFrameAndTarget {
   edgePosition: EdgePosition | null
 }
 
-export interface PinMoveChange extends CanvasFrameAndTarget {
+export interface PinMoveChange {
   type: 'PIN_MOVE_CHANGE'
+  target: TemplatePath
+  delta: CanvasVector
 }
 
 export interface FlexMoveChange {
@@ -209,12 +211,20 @@ export interface FlexResizeChange {
   edgePosition: EdgePosition | null
 }
 
+export interface SingleResizeChange {
+  type: 'SINGLE_RESIZE'
+  target: TemplatePath
+  sizeDelta: CanvasVector
+  edgePosition: EdgePosition
+}
+
 export type PinOrFlexFrameChange =
   | PinFrameChange
   | PinSizeChange
   | PinMoveChange
   | FlexMoveChange
   | FlexResizeChange
+  | SingleResizeChange
 
 export function pinFrameChange(
   target: TemplatePath,
@@ -242,11 +252,11 @@ export function pinSizeChange(
   }
 }
 
-export function pinMoveChange(target: TemplatePath, frame: CanvasRectangle): PinMoveChange {
+export function pinMoveChange(target: TemplatePath, delta: CanvasVector): PinMoveChange {
   return {
     type: 'PIN_MOVE_CHANGE',
     target: target,
-    frame: frame,
+    delta: delta,
   }
 }
 
@@ -268,6 +278,19 @@ export function flexResizeChange(
     target: target,
     newSize: newSize,
     edgePosition: edgePosition,
+  }
+}
+
+export function singleResizeChange(
+  target: TemplatePath,
+  edgePosition: EdgePosition,
+  sizeDelta: CanvasVector,
+): SingleResizeChange {
+  return {
+    type: 'SINGLE_RESIZE',
+    target: target,
+    edgePosition: edgePosition,
+    sizeDelta: sizeDelta,
   }
 }
 
@@ -402,6 +425,7 @@ export interface ResizeDragState {
   enabledDirection: EnabledDirection
   metadata: Array<ComponentMetadata>
   draggedElements: TemplatePath[]
+  isMultiSelect: boolean
 }
 
 export function resizeDragState(
@@ -416,6 +440,7 @@ export function resizeDragState(
   enabledDirection: EnabledDirection,
   metadata: Array<ComponentMetadata>,
   draggedElements: TemplatePath[],
+  isMultiSelect: boolean,
 ): ResizeDragState {
   return {
     type: 'RESIZE_DRAG_STATE',
@@ -430,6 +455,7 @@ export function resizeDragState(
     enabledDirection: enabledDirection,
     metadata: metadata,
     draggedElements: draggedElements,
+    isMultiSelect: isMultiSelect,
   }
 }
 

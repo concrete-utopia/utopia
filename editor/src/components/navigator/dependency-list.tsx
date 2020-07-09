@@ -23,7 +23,7 @@ import {
   dependenciesFromPackageJson,
   findLatestVersion,
 } from '../editor/npm-dependency/npm-dependency'
-import { packageJsonFileFromModel } from '../editor/store/editor-state'
+import { packageJsonFileFromProjectContents } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
@@ -168,7 +168,7 @@ export const DependencyList = betterReactMemo('DependencyList', () => {
       editorDispatch: store.dispatch,
       minimised: store.editor.dependencyList.minimised,
       focusedPanel: store.editor.focusedPanel,
-      packageJsonFile: packageJsonFileFromModel(store.editor),
+      packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
     }
   })
 

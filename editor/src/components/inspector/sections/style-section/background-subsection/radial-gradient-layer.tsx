@@ -1,5 +1,11 @@
 import * as React from 'react'
-import { ChainedNumberInput, CheckboxInput, FlexRow, PopupList } from 'uuiui'
+import {
+  ChainedNumberInput,
+  CheckboxInput,
+  FlexRow,
+  PopupList,
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+} from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'
@@ -39,14 +45,18 @@ export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackg
     const [
       gradientCenterXSubmitValue,
       gradientCenterXTransientSubmitValue,
-    ] = props.useSubmitTransformedValuesFactory(
-      getIndexedUpdateRadialOrConicGradientCenterX(props.index),
+    ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitTransformedValuesFactory(
+        getIndexedUpdateRadialOrConicGradientCenterX(props.index),
+      ),
     )
     const [
       gradientCenterYSubmitValue,
       gradientCenterYTransientSubmitValue,
-    ] = props.useSubmitTransformedValuesFactory(
-      getIndexedUpdateRadialOrConicGradientCenterY(props.index),
+    ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(
+      props.useSubmitTransformedValuesFactory(
+        getIndexedUpdateRadialOrConicGradientCenterY(props.index),
+      ),
     )
     const [backgroundLayerType] = props.useSubmitTransformedValuesFactory(
       getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(props.index),

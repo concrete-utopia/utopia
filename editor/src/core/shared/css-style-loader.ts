@@ -12,7 +12,7 @@ export function clearInjectedCSSFiles(): void {
   }
 }
 
-export function transformCssNodeModule(filename: string, content: string): string {
+function createCodeAppendingCss(filename: string, content: string): string {
   return `
   'use strict';
   const filename = ${JSON.stringify(filename)}
@@ -42,9 +42,21 @@ System.register([], function(exports_1, context_1) {
   return {
     setters: [],
     execute: function execute() {
-      ${transformCssNodeModule(filename, content)}
+      ${createCodeAppendingCss(filename, content)}
     },
   }
 })
+`
+}
+
+export function transformCssNodeModule(filename: string, content: string): string {
+  return `
+    Object.defineProperty(module, 'exports', {
+      get() {
+        // this side effect will run every time the module is required
+        (function() {${createCodeAppendingCss(filename, content)}})();
+        return {};
+      },
+    })
 `
 }

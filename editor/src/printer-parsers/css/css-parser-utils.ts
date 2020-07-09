@@ -38,7 +38,7 @@ import {
   Parser,
 } from '../../utils/value-parser-utils'
 
-export function getLexerMatches(
+export function getLexerPropertyMatches(
   propertyName: string,
   propertyValue: unknown,
   syntaxNamesToFilter?: ReadonlyArray<string>,
@@ -64,6 +64,22 @@ export function getLexerMatches(
     }
   }
   return left(`Property ${propertyName}'s value is not a string`)
+}
+
+export function getLexerTypeMatches(typeName: string, value: unknown): Either<string, LexerMatch> {
+  if (typeof value === 'string') {
+    const ast = csstree.parse(value, {
+      context: 'value',
+      positions: true,
+    })
+    const lexerMatch = (csstree as any).lexer.matchType(typeName, ast)
+    if (lexerMatch.error === null && ast.type === 'Value') {
+      return right(lexerMatch.matched)
+    } else {
+      return left(lexerMatch.error.message)
+    }
+  }
+  return left(`Property ${typeName}'s value is not a string`)
 }
 
 // Keywords
@@ -414,4 +430,63 @@ export function isNamedSyntaxType<T extends string>(
   names: ReadonlyArray<T>,
 ): syntax is csstreemissing.Syntax.Type<T> {
   return syntax.type === 'Type' && names.includes(syntax.name as T)
+}
+
+export interface PreparsedLayer {
+  type: 'PREPARSED_LAYER'
+  value: string
+  enabled: boolean
+}
+
+export function preparsedLayer(value: string, enabled: boolean): PreparsedLayer {
+  return {
+    type: 'PREPARSED_LAYER',
+    value,
+    enabled,
+  }
+}
+
+export function traverseForPreparsedLayers(
+  remaining: string,
+  inComment = false,
+  layers: Array<PreparsedLayer> = [],
+  workingValue = '',
+): Array<PreparsedLayer> {
+  if (remaining.length === 0) {
+    layers.push(preparsedLayer(workingValue.trim(), !inComment))
+    return layers
+  }
+  switch (remaining[0]) {
+    case '/': {
+      if (remaining[1] === '*') {
+        return traverseForPreparsedLayers(remaining.slice(2), true, layers, '')
+      } else {
+        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue + '/')
+      }
+    }
+    case '*': {
+      if (inComment && remaining[1] === '/') {
+        layers.push(preparsedLayer(workingValue.trim(), !inComment))
+        return traverseForPreparsedLayers(remaining.slice(2), false, layers)
+      } else {
+        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue + '*')
+      }
+    }
+    case ',': {
+      if (inComment) {
+        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue)
+      } else {
+        layers.push(preparsedLayer(workingValue.trim(), !inComment))
+        return traverseForPreparsedLayers(remaining.slice(1), false, layers)
+      }
+    }
+    default: {
+      return traverseForPreparsedLayers(
+        remaining.slice(1),
+        inComment,
+        layers,
+        workingValue + remaining[0],
+      )
+    }
+  }
 }

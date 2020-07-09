@@ -293,16 +293,14 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
         ),
       ]
     } else {
-      return R.flatten(
-        closestGuidelines.map((guideline, i) => {
-          const { distance, from, to } = Guidelines.distanceFromFrameToGuideline(
-            frame,
-            guideline,
-            isDragging,
-          )
-          return this.getNewControlForDistance(distance, from, to, `distance-${i}`)
-        }),
-      )
+      return closestGuidelines.flatMap((guideline, i) => {
+        const { distance, from, to } = Guidelines.distanceFromFrameToGuideline(
+          frame,
+          guideline,
+          isDragging,
+        )
+        return this.getNewControlForDistance(distance, from, to, `distance-${i}`)
+      })
     }
   }
 

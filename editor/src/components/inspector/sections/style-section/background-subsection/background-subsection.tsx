@@ -52,10 +52,21 @@ function insertBackgroundLayer(
 
 function cssBackgroundLayerToCSSBGSizeOrDefault(v: CSSBackgroundLayer): CSSBGSize {
   if (isCSSBackgroundLayerWithBGSize(v)) {
-    return v.bgSize
+    return { ...v.bgSize, enabled: v.enabled }
   } else {
     return { ...defaultBGSize }
   }
+}
+
+function getBackgroundSizeOrUndefinedIfDefault(
+  layers: CSSBackgroundLayers,
+): { backgroundSize: CSSBackgroundSize } | undefined {
+  const shouldItBePrinted = !layers.every(
+    (layer) => isCSSBackgroundLayerWithBGSize(layer) && layer.bgSize.size.default,
+  )
+  return shouldItBePrinted
+    ? { backgroundSize: layers.map(cssBackgroundLayerToCSSBGSizeOrDefault).reverse() }
+    : undefined
 }
 
 export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
@@ -82,9 +93,7 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
         } else {
           return {
             backgroundImage: cssBackgroundLayers.map(cssBackgroundLayerToCSSBackground).reverse(),
-            backgroundSize: cssBackgroundLayers
-              .map(cssBackgroundLayerToCSSBGSizeOrDefault)
-              .reverse(),
+            ...getBackgroundSizeOrUndefinedIfDefault(cssBackgroundLayers),
           }
         }
       } else {
@@ -101,13 +110,15 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
               cssSolidColor(zerothBackgroundLayer.color, zerothBackgroundLayer.enabled),
               false,
             ),
-            backgroundImage: newCSSBackgroundLayers.map(cssBackgroundLayerToCSSBackground),
-            backgroundSize: newCSSBackgroundLayers.map(cssBackgroundLayerToCSSBGSizeOrDefault),
+            backgroundImage: newCSSBackgroundLayers
+              .map(cssBackgroundLayerToCSSBackground)
+              .reverse(),
+            ...getBackgroundSizeOrUndefinedIfDefault(newCSSBackgroundLayers),
           }
         } else {
           return {
-            backgroundImage: cssBackgroundLayers.map(cssBackgroundLayerToCSSBackground),
-            backgroundSize: cssBackgroundLayers.map(cssBackgroundLayerToCSSBGSizeOrDefault),
+            backgroundImage: cssBackgroundLayers.map(cssBackgroundLayerToCSSBackground).reverse(),
+            ...getBackgroundSizeOrUndefinedIfDefault(cssBackgroundLayers),
           }
         }
       } else {

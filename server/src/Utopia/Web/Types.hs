@@ -63,25 +63,27 @@ type GetUserAPI = "v1" :> "user" :> Get '[JSON] UserResponse
 
 type EmptyProjectPageAPI = "project" :> Get '[HTML] H.Html
 
-type ProjectPageAPI = "project" :> Capture "project_id" Text :> Get '[HTML] H.Html
+type ProjectPageAPI = "project" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
+
+type ShortProjectPageAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
 
 type EmptyPreviewPageAPI = "share" :> Get '[HTML] H.Html
 
-type PreviewPageAPI = "share" :> Capture "project_id" Text :> Get '[HTML] H.Html
+type PreviewPageAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
 
-type DownloadProjectAPI = "project" :> Capture "project_id" Text :> "contents.json" :> CaptureAll "remaining_path" Text :> Get '[PrettyJSON] Value
+type DownloadProjectAPI = "project" :> Capture "project_id" ProjectIdWithSuffix :> "contents.json" :> CaptureAll "remaining_path" Text :> Get '[PrettyJSON] Value
 
-type ProjectOwnerAPI = "v1" :> "project" :> Capture "project_id" Text :> "owner" :> Get '[JSON] ProjectOwnerResponse
+type ProjectOwnerAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "owner" :> Get '[JSON] ProjectOwnerResponse
 
-type LoadProjectAPI = "v1" :> "project" :> Capture "project_id" Text :> QueryParam "last_saved" UTCTime :> Get '[JSON] LoadProjectResponse
+type LoadProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> QueryParam "last_saved" UTCTime :> Get '[JSON] LoadProjectResponse
 
 type CreateProjectAPI = "v1" :> "projectid" :> Post '[JSON] CreateProjectResponse
 
-type ForkProjectAPI = "v1" :> "project" :> QueryParam' '[Required, Strict] "original" Text :> QueryParam "title" Text :> Post '[JSON] ForkProjectResponse
+type ForkProjectAPI = "v1" :> "project" :> QueryParam' '[Required, Strict] "original" ProjectIdWithSuffix :> QueryParam "title" Text :> Post '[JSON] ForkProjectResponse
 
-type SaveProjectAPI = "v1" :> "project" :> Capture "project_id" Text :> ReqBody '[JSON] SaveProjectRequest :> Put '[JSON] SaveProjectResponse
+type SaveProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> ReqBody '[JSON] SaveProjectRequest :> Put '[JSON] SaveProjectResponse
 
-type DeleteProjectAPI = "v1" :> "project" :> Capture "project_id" Text :> Delete '[JSON] NoContent
+type DeleteProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> Delete '[JSON] NoContent
 
 type MyProjectsAPI = "v1" :> "projects" :> Get '[JSON] ProjectListResponse
 
@@ -89,19 +91,21 @@ type ShowcaseAPI = "v1" :> "showcase" :> Get '[JSON] ProjectListResponse
 
 type SetShowcaseAPI = "v1" :> "showcase" :> "overwrite" :> QueryParam' '[Required] "projects" Text :> Post '[JSON] NoContent
 
-type LoadProjectAssetAPI = "project" :> Capture "project_id" Text :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
+type LoadProjectAssetAPI = "project" :> Capture "project_id" ProjectIdWithSuffix :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
 
-type PreviewProjectAssetAPI = "share" :> Capture "project_id" Text :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
+type ShortLoadProjectAssetAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
 
-type RenameProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" Text :> CaptureAll "path" Text :> QueryParam' '[Required] "old_file_name" Text :> Put '[JSON] NoContent
+type PreviewProjectAssetAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
 
-type DeleteProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" Text :> CaptureAll "path" Text :> Delete '[JSON] NoContent
+type RenameProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" ProjectIdWithSuffix :> CaptureAll "path" Text :> QueryParam' '[Required] "old_file_name" Text :> Put '[JSON] NoContent
 
-type SaveProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" Text :> CaptureAll "path" Text :> RawM
+type DeleteProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" ProjectIdWithSuffix :> CaptureAll "path" Text :> Delete '[JSON] NoContent
 
-type LoadProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Text :> Get '[BMP, GIF, JPG, PNG, SVG] BL.ByteString
+type SaveProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" ProjectIdWithSuffix :> CaptureAll "path" Text :> RawM
 
-type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Text :> ReqBody '[BMP, GIF, JPG, PNG, SVG] BL.ByteString :> Post '[JSON] NoContent
+type LoadProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" ProjectIdWithSuffix :> Get '[BMP, GIF, JPG, PNG, SVG] BL.ByteString
+
+type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" ProjectIdWithSuffix :> ReqBody '[BMP, GIF, JPG, PNG, SVG] BL.ByteString :> Post '[JSON] NoContent
 
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] BL.ByteString
 
@@ -148,6 +152,7 @@ type Protected = LogoutAPI
 type Unprotected = AuthenticateAPI
               :<|> EmptyProjectPageAPI
               :<|> ProjectPageAPI
+              :<|> ShortProjectPageAPI
               :<|> EmptyPreviewPageAPI
               :<|> PreviewPageAPI
               :<|> DownloadProjectAPI
@@ -156,6 +161,7 @@ type Unprotected = AuthenticateAPI
               :<|> ShowcaseAPI
               :<|> SetShowcaseAPI
               :<|> LoadProjectAssetAPI
+              :<|> ShortLoadProjectAssetAPI
               :<|> PreviewProjectAssetAPI
               :<|> LoadProjectThumbnailAPI
               :<|> MonitoringAPI

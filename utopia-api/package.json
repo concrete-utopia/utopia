@@ -42,27 +42,29 @@
   },
   "dependencies": {
     "@emotion/core": "10.0.28",
+    "@emotion/serialize": "0.11.16",
     "@emotion/styled": "10.0.27",
+    "@emotion/styled-base": "10.0.31",
     "draft-js": "git://github.com/concrete-utopia/draft-js.git#6b21131",
     "draft-js-custom-styles": "2.0.1",
     "uuid": "3.3.2"
   },
   "devDependencies": {
     "@types/draft-js": "0.10.19",
-    "@types/jest": "23.3.3",
+    "@types/jest": "26.0.3",
     "@types/prettier": "^1.18.4",
     "@types/react": "16.9.35",
     "@types/react-dom": "16.9.8",
     "@types/uuid": "3.4.5",
     "jest": "24.4.0",
-    "jest-environment-jsdom-global": "^1.2.0",
+    "jest-environment-jsdom-global": "2.0.4",
     "lint-staged": "^9.4.3",
     "npm-dts": "1.2.0",
     "patch-package": "6.1.2",
     "prettier": "^1.19.1",
     "react": "16.13.1",
     "react-dom": "16.13.1",
-    "ts-jest": "24.1.0",
+    "ts-jest": "26.1.1",
     "typescript": "3.9.2"
   }
 }

@@ -5,7 +5,6 @@ import { createContext, useContextSelector } from 'use-context-selector'
 import { PropertyControls } from 'utopia-api'
 import {
   getOpenImportsFromState,
-  getOpenUIJSFileKey,
   getOpenUtopiaJSXComponentsFromState,
 } from '../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../components/editor/store/store-hook'
@@ -51,8 +50,9 @@ import {
   findMissingDefaults,
   getDefaultPropsFromParsedControls,
   removeIgnored,
+  getPropertyControlsForTarget,
 } from '../../../core/property-controls/property-controls-utils'
-import { addUniquely, pluck } from '../../../core/shared/array-utils'
+import { addUniquely } from '../../../core/shared/array-utils'
 import {
   defaultEither,
   Either,
@@ -327,7 +327,7 @@ export function useInspectorLayoutInStyleInfo_UNSAFE<
   return useInspectorInfo([prop], transformValue, untransformValue, stylePropPathMappingFn)
 }
 
-function useInspectorContext() {
+export function useInspectorContext() {
   const { onSubmitValue, onUnsetValue } = React.useContext(InspectorCallbackContext)
   return React.useMemo(() => {
     return {
@@ -375,12 +375,14 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
 
 export type ParsedValues<P extends ParsedPropertiesKeys> = { [key in P]: ParsedProperties[key] }
 
+export type SubmitValueFactoryReturn<T> = [(newValue: T) => void, (newValue: T) => void]
+
 /**
  * @returns [onSubmitValue, onTransientSubmitValue]
  */
 export type UseSubmitValueFactory<T> = <NewType>(
   transform: (newValue: NewType, oldValue: T) => T,
-) => [(newValue: NewType) => void, (newValue: NewType) => void]
+) => SubmitValueFactoryReturn<NewType>
 
 export type OnUnsetValues = () => void
 
@@ -835,43 +837,13 @@ export function useSelectedPropertyControls(
   includeIgnored: boolean,
 ): ParseResult<ParsedPropertyControls> {
   const propertyControls = useEditorState((store) => {
-    const { selectedViews, codeResultCache, jsxMetadataKILLME } = store.editor
-    const imports = getOpenImportsFromState(store.editor)
-    const selectedUIJSFilename = getOpenUIJSFileKey(store.editor)
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
+    const { selectedViews, codeResultCache } = store.editor
 
-    let selectedPropertyControls: PropertyControls = {}
+    let selectedPropertyControls: PropertyControls | null = {}
     if (codeResultCache != null) {
       Utils.fastForEach(selectedViews, (path) => {
         // TODO multiselect
-        const tagName = MetadataUtils.getJSXElementTagName(path, rootComponents, jsxMetadataKILLME)
-        const importedName = MetadataUtils.getJSXElementBaseName(
-          path,
-          rootComponents,
-          jsxMetadataKILLME,
-        )
-        if (importedName != null && tagName != null) {
-          // TODO default and star imports
-          let filename = Object.keys(imports).find((key) => {
-            return pluck(imports[key].importedFromWithin, 'name').includes(importedName)
-          })
-          if (filename == null && selectedUIJSFilename != null) {
-            filename = selectedUIJSFilename.replace(/\.(js|jsx|ts|tsx)$/, '')
-          }
-          if (filename != null) {
-            // TODO figure out absolute filepath
-            const absoluteFilePath = filename.startsWith('.')
-              ? `${filename.slice(1)}`
-              : `${filename}`
-            if (
-              codeResultCache.propertyControlsInfo[absoluteFilePath] != null &&
-              codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] != null
-            ) {
-              selectedPropertyControls =
-                codeResultCache.propertyControlsInfo[absoluteFilePath][tagName]
-            }
-          }
-        }
+        selectedPropertyControls = getPropertyControlsForTarget(path, store.editor) ?? {}
       })
     }
 

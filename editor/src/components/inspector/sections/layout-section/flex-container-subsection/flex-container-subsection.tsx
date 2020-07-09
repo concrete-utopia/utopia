@@ -15,7 +15,7 @@ import {
 } from './flex-container-controls'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
-import { useWrappedEmptyOnSubmitValue } from '../../../../../uuiui'
+import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
 
 const flexGapProp = [createLayoutPropertyPath('FlexGapMain')]
 const alignItemsProp = [createLayoutPropertyPath('alignItems')]
@@ -46,11 +46,11 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
     const alignItemsControlStyles: ControlStyles =
       flexWrap.value === FlexWrap.NoWrap ? getControlStyles('disabled') : alignItems.controlStyles
 
-    const wrappedOnSubmitValue = useWrappedEmptyOnSubmitValue(
+    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       flexGapMain.onSubmitValue,
       flexGapMain.onUnsetValues,
     )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOnSubmitValue(
+    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       flexGapMain.onSubmitValue,
       flexGapMain.onUnsetValues,
     )

@@ -5,205 +5,12 @@ import { UTOPIA_ORIGINAL_ID_KEY } from '../core/model/element-metadata-utils'
 
 const realCreateElement = React.createElement
 
-function enhanceProps(
-  element: any,
-  dataUIDToPass: any,
-  originalUIDFromProps: string | null,
-  isClassInstance: boolean,
-): any {
-  if (element == null || dataUIDToPass == null) {
-    return element
-  } else {
-    if (isClassInstance) {
-      const currentRender = element.render
-      function newRender() {
-        const originalRenderResult = currentRender.bind(element)()
-        const updated = updateWithUID(
-          originalRenderResult,
-          dataUIDToPass,
-          originalUIDFromProps,
-          false,
-        )
-        return updated
-      }
-      Object.defineProperty(element, 'render', {
-        value: newRender,
-      })
-      return element
-    } else {
-      let propsToReturn = {
-        ...element,
-        props: {
-          ...element.props,
-          ['data-uid']: dataUIDToPass,
-        },
-      }
-      if (originalUIDFromProps != null) {
-        propsToReturn.props[UTOPIA_ORIGINAL_ID_KEY] = originalUIDFromProps
-      }
-      return propsToReturn
-    }
-  }
-}
-
-function updateWithUID(
-  result: any,
-  dataUIDFromProps: string,
-  originalUIDFromProps: string | null,
-  isClassInstance: boolean,
-): any {
-  const dataUIDFromResult = Utils.path(['props', 'data-uid'], result)
-  const relevantUID = Utils.defaultIfNull(dataUIDFromResult, dataUIDFromProps)
-  if (result.type === React.Fragment) {
-    if (result.key === 'monkey-oh-monkey-please-leave-me-be') {
-      // Special case when we render a Canvas component, and we don't want the below code to mangle with us!
-      // The Canvas component is a HOC that wraps its children in a Fragment. The issue is that the code below
-      // modifies all of the children (the Scenes) to have the uid of the canvas. The Scenes will in turn put that data-uid prop
-      // on the Component root elements, overwriting the real data-uid, preventing the DOM-walker from successfully working
-      // The ideal solution would be better Fragments support, but for right now this hack seems to be cheap and non-invasive
-      // May the lord have mercy on our souls
-      return result
-    }
-    // the returned root element is a fragment, so instead of changing its props,
-    // lets map through its first children and mingle those props
-    const modifiedResult = {
-      ...result,
-      props: {
-        ...result.props,
-        children: React.Children.map(result.props.children, (child) =>
-          enhanceProps(child, relevantUID, originalUIDFromProps, isClassInstance),
-        ),
-      },
-    }
-    return modifiedResult
-  } else if (Array.isArray(result)) {
-    // I'm honestly not sure why we're seeing arrays here rather than fragments, but here we are...
-    return result.map((child) =>
-      enhanceProps(child, relevantUID, originalUIDFromProps, isClassInstance),
-    )
-  } else {
-    const modifiedResult = enhanceProps(result, relevantUID, originalUIDFromProps, isClassInstance)
-
-    return modifiedResult
-  }
-}
-
-interface ClassMonkeyFunctionProps {
-  type: any
-  dataUIDFromProps: string
-  originalUIDFromProps: string | null
-}
-
-interface FunctionMonkeyFunctionProps {
-  type: React.FunctionComponent<any>
-  dataUIDFromProps: string
-  originalUIDFromProps: string | null
-}
-
-function getFunctionMonkeyFunction(monkeyProps: FunctionMonkeyFunctionProps): (props: any) => any {
-  function monkeyFunction(props: any): any {
-    // if this props has data-uid, let's put it on the root returned element too
-    const result = monkeyProps.type(props)
-    return updateWithUID(
-      result,
-      monkeyProps.dataUIDFromProps,
-      monkeyProps.originalUIDFromProps,
-      false,
-    )
-  }
-  ;(monkeyFunction as any).displayName = `monkeyPatched(${monkeyProps.type.displayName})`
-
-  return monkeyFunction
-}
-
-function getClassMonkeyFunction(monkeyProps: ClassMonkeyFunctionProps): (props: any) => any {
-  function monkeyFunction(props: any): any {
-    // if this props has data-uid, let's put it on the root returned element too
-    const result = new monkeyProps.type(props)
-    const returnResult = updateWithUID(
-      result,
-      monkeyProps.dataUIDFromProps,
-      monkeyProps.originalUIDFromProps,
-      true,
-    )
-    return returnResult
-  }
-
-  monkeyFunction.prototype = React.Component.prototype
-  return monkeyFunction
-}
-
-const memoEqualityCheck = (first: any, second: any): boolean => {
-  return (
-    first.type === second.type &&
-    first.dataUIDFromProps === second.dataUIDFromProps &&
-    first.originalUIDFromProps === second.originalUIDFromProps
-  )
-}
-
-const memoizedGetClassMonkeyFunction = Utils.memoize(getClassMonkeyFunction, {
-  maxSize: 10000,
-  equals: memoEqualityCheck,
-})
-
-const memoizedGetFunctionMonkeyFunction = Utils.memoize(getFunctionMonkeyFunction, {
-  maxSize: 10000,
-  equals: memoEqualityCheck,
-})
-
-// Behold the lens of infinite nightmares through which our destruction shall be wrought.
-function monkeyPatchReactType(
-  type: any,
-  dataUIDFromProps: string,
-  originalUIDFromProps: string | null,
-): any {
-  if (type.prototype != null && typeof type.prototype.isReactComponent === 'object') {
-    return type
-    // return memoizedGetClassMonkeyFunction({
-    //   type: type,
-    //   dataUIDFromProps: dataUIDFromProps,
-    //   originalUIDFromProps: originalUIDFromProps,
-    // })
-  } else if (typeof type === 'function') {
-    return memoizedGetFunctionMonkeyFunction({
-      type: type,
-      dataUIDFromProps: dataUIDFromProps,
-      originalUIDFromProps: originalUIDFromProps,
-    })
-  } else {
-    return type
-  }
-}
-
-function monkeyCreateElement(type: any, props: any, ...children: any): any {
-  const dataUIDFromProps = Utils.propOrNull('data-uid', props)
-  const originalUIDFromProps = Utils.propOrNull(UTOPIA_ORIGINAL_ID_KEY, props)
-  if (dataUIDFromProps == null || typeof dataUIDFromProps !== 'string') {
-    // Avoid doing anything with this if there's no data-uid prop.
-    return realCreateElement(type, props, ...children)
-  } else {
-    const creResult: any = realCreateElement(type, props, ...children)
-
-    const modifiedType = monkeyPatchReactType(
-      creResult.type,
-      dataUIDFromProps,
-      originalUIDFromProps,
-    )
-
-    const final = {
-      ...creResult,
-      type: modifiedType,
-    }
-    return final
-  }
-}
-
 let uidMonkeyPatchApplied: boolean = false
 
 export function applyUIDMonkeyPatch(): void {
   if (!uidMonkeyPatchApplied) {
     uidMonkeyPatchApplied = true
-    ;(React as any).createElement = monkeyCreateElement
+    ;(React as any).createElement = patchedCreateReactElement
   }
 }
 
@@ -251,4 +58,145 @@ export function makeCanvasElementPropsSafe(props: any): any {
     skipDeepFreeze: true,
     ...removeUnsafeValues(working, []),
   })
+}
+
+function attachDataUidToRoot(
+  originalResponse: React.ReactElement | null | undefined,
+  dataUid: string | null,
+): React.ReactElement | null
+function attachDataUidToRoot(
+  originalResponse: Array<React.ReactElement | null>,
+  dataUid: string | null,
+): Array<React.ReactElement | null>
+function attachDataUidToRoot(
+  originalResponse: React.ReactElement | Array<React.ReactElement | null> | null | undefined,
+  dataUid: string | null,
+): React.ReactElement | Array<React.ReactElement | null> | null {
+  if (originalResponse == null || dataUid == null) {
+    return originalResponse as any
+  } else if (Array.isArray(originalResponse)) {
+    // the response was an array of elements
+    return originalResponse.map((element) => attachDataUidToRoot(element, dataUid))
+  } else if (!React.isValidElement(originalResponse as any)) {
+    return originalResponse
+  } else {
+    const finalElement = React.cloneElement(originalResponse, { 'data-uid': dataUid })
+    return finalElement
+  }
+}
+
+const mangleFunctionType = Utils.memoize(
+  (type: unknown): React.FunctionComponent => {
+    const mangledFunction = (p: any) => {
+      let originalTypeResponse = (type as React.FunctionComponent)(p)
+      const res = attachDataUidToRoot(originalTypeResponse, (p as any)?.['data-uid'])
+      return res
+    }
+    ;(mangledFunction as any).theOriginalType = type
+    return mangledFunction
+  },
+  {
+    maxSize: 10000,
+  },
+)
+
+const mangleClassType = Utils.memoize(
+  (type: any) => {
+    const originalRender = type.prototype.render
+    // mutation
+    type.prototype.render = function monkeyRender() {
+      let originalTypeResponse = originalRender.bind(this)()
+      return attachDataUidToRoot(originalTypeResponse, (this.props as any)?.['data-uid'])
+    }
+    ;(type as any).theOriginalType = type
+    return type
+  },
+  {
+    maxSize: 10000,
+  },
+)
+
+const mangleExoticType = Utils.memoize(
+  (type: React.ComponentType): React.FunctionComponent => {
+    function updateChild(child: React.ReactElement, dataUid: string | null) {
+      if (
+        (!React.isValidElement(child) as any) ||
+        child == null ||
+        child.props?.['data-uid'] != null
+      ) {
+        return child
+      } else {
+        return React.cloneElement(child, dataUid != null ? { 'data-uid': dataUid } : {})
+      }
+    }
+    /**
+     * Fragment-like components need to be special cased because we know they return with a root component
+     * that will not end up in the DOM, but is also not subject to further reconciliation.
+     *
+     * For this reason, the usual approach of `mangleFunctionType` where we alter the root element's props
+     * is not effective, those props will just go into the abyss.
+     *
+     * Instead of that we render these fragment-like components, and mangle with their children
+     */
+    const wrapperComponent = (p: any) => {
+      if (p?.['data-uid'] == null) {
+        // early return for the cases where there's no data-uid
+        return realCreateElement(type, p)
+      }
+      if (p?.children == null || typeof p.children === 'string') {
+        return realCreateElement(type, p)
+      } else {
+        let children: any
+        if (typeof p?.children === 'function') {
+          // mangle the function so that what it returns has the data uid
+          const originalFunction = p.children
+          children = function (...params: any[]) {
+            const originalResponse = originalFunction(...params)
+            return attachDataUidToRoot(originalResponse, p?.['data-uid'])
+          }
+        } else if (!Array.isArray(p?.children)) {
+          children = updateChild(p.children, p?.['data-uid'])
+        } else {
+          children = React.Children.map(p?.children, (child) => updateChild(child, p?.['data-uid']))
+        }
+        let mangledProps = {
+          ...p,
+          children: children,
+        }
+
+        delete mangledProps['data-uid']
+        return realCreateElement(type as any, mangledProps)
+      }
+    }
+    ;(wrapperComponent as any).theOriginalType = type
+    return wrapperComponent
+  },
+  {
+    maxSize: 10000,
+  },
+)
+
+function isClassComponent(component: any) {
+  // this is copied from stack overflow https://stackoverflow.com/a/41658173
+  return typeof component === 'function' && component?.prototype?.isReactComponent != null
+}
+
+function patchedCreateReactElement(type: any, props: any, ...children: any): any {
+  if (isClassComponent(type)) {
+    const mangledClass = mangleClassType(type)
+    return realCreateElement(mangledClass, props, ...children)
+  } else if (typeof type === 'function') {
+    // if the type is function and it is NOT a class component, we deduce it is a function component
+    const mangledType: React.FunctionComponent = mangleFunctionType(type)
+    return realCreateElement(mangledType, props, ...children)
+  } else if (
+    type == React.Fragment ||
+    type?.$$typeof == Symbol.for('react.fragment') ||
+    type?.$$typeof == Symbol.for('react.provider') ||
+    type?.$$typeof == Symbol.for('react.context')
+  ) {
+    // fragment-like components, the list is not exhaustive, we might need to extend it later
+    return realCreateElement(mangleExoticType(type), props, ...children)
+  }
+  return realCreateElement(type, props, ...children)
 }

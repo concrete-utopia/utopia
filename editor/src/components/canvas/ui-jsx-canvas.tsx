@@ -447,41 +447,45 @@ export const UiJsxCanvas = betterReactMemo(
 
         let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
 
-        // Make sure there is something in scope for all of the top level components
-        Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-          if (isUtopiaJSXComponent(topLevelElement)) {
-            topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-            if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
-              topLevelComponentRendererComponents.current[
-                topLevelElement.name
-              ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
+        // Should something have blown up previously, don't execute a bunch of code
+        // after now and potentially rewrite this error.
+        if (codeError == null) {
+          // Make sure there is something in scope for all of the top level components
+          Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+            if (isUtopiaJSXComponent(topLevelElement)) {
+              topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
+              if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
+                topLevelComponentRendererComponents.current[
+                  topLevelElement.name
+                ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
+              }
             }
-          }
-        })
+          })
 
-        executionScope = {
-          ...executionScope,
-          ...topLevelComponentRendererComponents.current,
+          executionScope = {
+            ...executionScope,
+            ...topLevelComponentRendererComponents.current,
+          }
+
+          // First make sure everything is in scope
+          Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+            if (isArbitraryJSBlock(topLevelElement)) {
+              runBlockUpdatingScope(requireResult, topLevelElement, executionScope, (error) => {
+                codeError = error
+                reportErrorWithPath(error)
+              })
+            }
+          })
+
+          updateMutableUtopiaContextWithNewProps(mutableContextRef, {
+            requireResult: requireResult,
+            rootScope: executionScope,
+            fileBlobs: fileBlobs,
+            reportError: reportErrorWithPath,
+            spyEnabled: props.spyEnabled,
+            jsxFactoryFunctionName: jsxFactoryFunction,
+          })
         }
-
-        // First make sure everything is in scope
-        Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-          if (isArbitraryJSBlock(topLevelElement)) {
-            runBlockUpdatingScope(requireResult, topLevelElement, executionScope, (error) => {
-              codeError = error
-              reportErrorWithPath(error)
-            })
-          }
-        })
-
-        updateMutableUtopiaContextWithNewProps(mutableContextRef, {
-          requireResult: requireResult,
-          rootScope: executionScope,
-          fileBlobs: fileBlobs,
-          reportError: reportErrorWithPath,
-          spyEnabled: props.spyEnabled,
-          jsxFactoryFunctionName: jsxFactoryFunction,
-        })
 
         const topLevelElementsMap = new Map(topLevelJsxComponents)
 
@@ -788,6 +792,8 @@ interface SceneRootProps extends CanvasReactReportErrorCallback {
 
   sceneUID: string
   sceneLabel: string | undefined
+
+  'data-uid'?: string // the data uid
 }
 
 const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
@@ -806,6 +812,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     jsxFactoryFunctionName,
     component,
     sceneUID,
+    'data-uid': dataUidIgnore,
     ...inputProps
   } = props
 

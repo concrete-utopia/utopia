@@ -4,7 +4,13 @@ import * as R from 'ramda'
 import * as React from 'react'
 import * as localforage from 'localforage'
 import { CursorPosition } from 'src/components/code-editor/code-editor-utils'
-import { FlexAlignment, FramePoint, LayoutSystem, NormalisedFrame } from 'utopia-api'
+import {
+  FlexAlignment,
+  FramePoint,
+  LayoutSystem,
+  NormalisedFrame,
+  PropertyControls,
+} from 'utopia-api'
 import { colorTheme } from 'uuiui'
 import {
   SampleFileBuildResult,
@@ -22,6 +28,7 @@ import {
   maybeSwitchChildrenLayoutProps,
   maybeSwitchLayoutProps,
   roundAttributeLayoutValues,
+  switchLayoutMetadata,
 } from '../../../core/layout/layout-utils'
 import {
   findElementAtPath,
@@ -334,12 +341,12 @@ import {
 import * as History from '../history'
 import { StateHistory } from '../history'
 import {
-  dependenciesFromModel,
+  dependenciesFromProjectContents,
   dependenciesFromPackageJsonContents,
   updateDependenciesInEditorState,
   updateDependenciesInPackageJson,
 } from '../npm-dependency/npm-dependency'
-import { updateRemoteThumbnail } from '../persistence'
+import { updateRemoteThumbnail, pushProjectURLToBrowserHistory } from '../persistence'
 import { deleteAssetFile, saveAsset as saveAssetToServer, updateAssetFileName } from '../server'
 import {
   applyParseAndEditorChanges,
@@ -416,6 +423,8 @@ import {
   getDependencyTypeDefinitions,
 } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
+import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
+import { urlSafeText } from '../../../core/shared/dom-utils'
 
 export function clearSelection(): EditorAction {
   return {
@@ -516,19 +525,7 @@ function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
 ): Array<ComponentMetadata> {
   const allChildren = MetadataUtils.getImmediateChildren(scenes, parentPath)
   return allChildren.reduce((transformedScenes, child) => {
-    return MetadataUtils.transformAtPathOptionally(
-      transformedScenes,
-      child.templatePath,
-      (element) => {
-        return {
-          ...element,
-          specialSizeMeasurements: {
-            ...element.specialSizeMeasurements,
-            parentLayoutSystem: value,
-          },
-        }
-      },
-    ).elements
+    return switchLayoutMetadata(transformedScenes, child.templatePath, value, undefined, undefined)
   }, scenes)
 }
 
@@ -678,6 +675,16 @@ function switchAndUpdateFrames(
       withUpdatedLayoutSystem.jsxMetadataKILLME,
       target,
       layoutSystemToSet(),
+    ),
+  }
+  withUpdatedLayoutSystem = {
+    ...withUpdatedLayoutSystem,
+    jsxMetadataKILLME: switchLayoutMetadata(
+      withUpdatedLayoutSystem.jsxMetadataKILLME,
+      target,
+      undefined,
+      layoutSystemToSet(),
+      undefined,
     ),
   }
 
@@ -2966,6 +2973,10 @@ export const UPDATE_FNS = {
     }
   },
   SET_PROJECT_NAME: (action: SetProjectName, editor: EditorModel): EditorModel => {
+    // Side effect.
+    if (editor.id != null) {
+      pushProjectURLToBrowserHistory(`Utopia ${action.name}`, editor.id, urlSafeText(action.name))
+    }
     return {
       ...editor,
       projectName: action.name,
@@ -3816,8 +3827,7 @@ export const UPDATE_FNS = {
   RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
     const openFilePath = getOpenUIJSFileKey(editor)
     if (openFilePath != null) {
-      const controlInfo =
-        editor.codeResultCache?.propertyControlsInfo[dropExtension(openFilePath)] ?? {}
+      const propertyControls = getPropertyControlsForTarget(action.target, editor)
       let elementName
       if (TP.isScenePath(action.target)) {
         const element = findJSXElementChildAtPath(
@@ -3844,14 +3854,15 @@ export const UPDATE_FNS = {
       if (elementName == null) {
         return editor
       }
-      const propControls = controlInfo[elementName]
       let defaultProps: { [key: string]: any } = {}
-      Utils.fastForEach(Object.keys(propControls), (key) => {
-        const defaultValue = (propControls[key] as any).defaultValue
-        if (defaultValue != null) {
-          defaultProps[key] = defaultValue
-        }
-      })
+      if (propertyControls != null) {
+        Utils.fastForEach(Object.keys(propertyControls), (key) => {
+          const defaultValue = (propertyControls[key] as any).defaultValue
+          if (defaultValue != null) {
+            defaultProps[key] = defaultValue
+          }
+        })
+      }
 
       let pathToUpdate: PropertyPath | null
       if (TP.isScenePath(action.target)) {
@@ -3908,7 +3919,7 @@ export const UPDATE_FNS = {
         result.codeResultCache.exportsInfo,
         result.nodeModules.files,
         dispatch,
-        dependenciesFromModel(result),
+        dependenciesFromProjectContents(result.projectContents),
         action.startFromScratch,
       ),
     }
@@ -4197,7 +4208,7 @@ export async function newProject(
   renderEditorRoot: () => void,
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
-  const npmDependencies = dependenciesFromModel(defaultPersistentModel)
+  const npmDependencies = dependenciesFromProjectContents(defaultPersistentModel.projectContents)
   const nodeModules = await fetchNodeModules(npmDependencies)
 
   const codeResultCache = generateCodeResultCache(
@@ -4249,7 +4260,7 @@ export async function load(
 ): Promise<void> {
   // this action is now async!
 
-  const npmDependencies = dependenciesFromModel(model)
+  const npmDependencies = dependenciesFromProjectContents(model.projectContents)
   const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
@@ -4316,7 +4327,7 @@ function loadCodeResult(
             data.exportsInfo,
             nodeModules,
             dispatch,
-            dependenciesFromModel({ projectContents: projectContents }),
+            dependenciesFromProjectContents(projectContents),
             true,
           )
           resolve(codeResultCache)

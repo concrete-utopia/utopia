@@ -4,9 +4,7 @@ import {
   BooleanControlDescription,
   StringControlDescription,
   ColorControlDescription,
-  FusedNumberControlDescription,
   ImageControlDescription,
-  FileControlDescription,
   ComponentInstanceDescription,
   ArrayControlDescription,
   EventHandlerControlDescription,
@@ -79,32 +77,11 @@ describe('getDescriptionUnsetOptionalFields', () => {
       'defaultValue',
     ])
   })
-  it('handles fusednumber descriptions', () => {
-    const fusedNumberDescription: FusedNumberControlDescription = {
-      type: 'fusednumber',
-      toggleKey: 'toggle',
-      toggleTitles: ['on', 'off'],
-      valueKeys: ['1', '2', '3', '4'],
-      valueLabels: ['1', '2', '3', '4'],
-      defaultValue: 1,
-    }
-    checkSameArrayElementsAndLength(getDescriptionUnsetOptionalFields(fusedNumberDescription), [
-      'min',
-      'title',
-    ])
-  })
   it('handles image descriptions', () => {
     const imageDescription: ImageControlDescription = {
       type: 'image',
     }
     checkSameArrayElementsAndLength(getDescriptionUnsetOptionalFields(imageDescription), ['title'])
-  })
-  it('handles file descriptions', () => {
-    const fileDescription: FileControlDescription = {
-      type: 'file',
-      allowedFileTypes: ['.hs'],
-    }
-    checkSameArrayElementsAndLength(getDescriptionUnsetOptionalFields(fileDescription), ['title'])
   })
   it('handles componentinstance descriptions', () => {
     const componentInstanceDescription: ComponentInstanceDescription = {
