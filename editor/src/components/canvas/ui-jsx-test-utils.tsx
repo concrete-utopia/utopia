@@ -26,7 +26,11 @@ jest.setTimeout(10000) // in milliseconds
 import { act, render } from '@testing-library/react'
 import * as Prettier from 'prettier'
 import create from 'zustand'
-import { ComponentMetadata, ElementInstanceMetadata } from '../../core/shared/element-template'
+import {
+  ComponentMetadata,
+  ElementInstanceMetadata,
+  TopLevelElement,
+} from '../../core/shared/element-template'
 import { ParseSuccess, UIJSFile } from '../../core/shared/project-file-types'
 import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
 import {
@@ -37,7 +41,7 @@ import {
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { HotRoot } from '../../templates/editor'
-import { left, Right } from '../../core/shared/either'
+import { left, Right, isLeft } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
@@ -49,6 +53,8 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/
 import { scenePath } from '../../core/shared/template-path'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
+import { testParseCode } from '../../core/workers/parser-printer/parser-printer-test-utils'
+import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   return {
@@ -222,4 +228,21 @@ ${snippet}
   }
 `
   return Prettier.format(code, PrettierConfig)
+}
+
+export function getTestParseSuccess(fileContents: string): ParseSuccess {
+  const parseResult = testParseCode(fileContents)
+  if (isLeft(parseResult)) {
+    throw new Error(`Error parsing test input code: ${parseResult.value.errorMessage}`)
+  }
+  return parseResult.value
+}
+
+export function testPrintCode(parseSuccess: ParseSuccess): string {
+  return printCode(
+    printCodeOptions(false, true, true),
+    parseSuccess.imports,
+    parseSuccess.topLevelElements,
+    parseSuccess.jsxFactoryFunction,
+  )
 }

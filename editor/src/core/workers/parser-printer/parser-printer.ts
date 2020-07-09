@@ -71,7 +71,7 @@ import {
   HighlightBounds,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
-import { fastForEach } from '../../shared/utils'
+import { fastForEach, NO_OP } from '../../shared/utils'
 import {
   addImport,
   emptyImports,
@@ -166,6 +166,10 @@ function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
         false,
         { ts: TS, React: React },
         `return ${createExpressionAsString}.statements[0].expression`,
+        [],
+        (e) => {
+          throw e
+        },
       )()
       return newExpression
     case 'ATTRIBUTE_FUNCTION_CALL':
@@ -334,6 +338,10 @@ function jsxElementToExpression(
         false,
         { ts: TS, React: React },
         `var node = ${createExpressionAsString}.statements[0]; return node.expression || node`,
+        [],
+        (e) => {
+          throw e
+        },
       )()
       newExpression = updateJSXElementsWithin(newExpression, element.elementsWithin, stripUIDs)
       return TS.createJsxExpression(undefined, newExpression)

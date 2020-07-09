@@ -11,7 +11,13 @@ import { canvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import { selectComponents, setCanvasFrames, wrapInView } from '../editor/actions/actions'
 import { reparentComponents } from '../navigator/actions'
 import * as TP from '../../core/shared/template-path'
-import { pinFrameChange, pinMoveChange, pinSizeChange } from './canvas-types'
+import {
+  pinFrameChange,
+  pinMoveChange,
+  pinSizeChange,
+  singleResizeChange,
+  EdgePosition,
+} from './canvas-types'
 
 const NewUID = 'catdog'
 
@@ -871,6 +877,74 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
   })
 })
 
+describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
+  it('TLWH, but W and H are percentage works', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          style={{ backgroundColor: '#0091FFAA', left: 40, top: 40, width: '50%', height: '20%'  }}
+          layout={{ layoutSystem: 'pinSystem'}}
+          data-uid={'bbb'}
+        />
+      </View>
+      `),
+    )
+
+    const pinChange = singleResizeChange(
+      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      { x: 1, y: 1 } as EdgePosition,
+      { x: -20, y: -10 } as CanvasVector,
+    )
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          style={{ backgroundColor: '#0091FFAA', left: 40, top: 40, height: '17.5%', width: '45%' }}
+          layout={{ layoutSystem: 'pinSystem' }}
+          data-uid={'bbb'}
+        />
+      </View>`,
+      ),
+    )
+  })
+  it('no layout prop on child', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          style={{ backgroundColor: '#0091FFAA' }}
+          data-uid={'bbb'}
+        />
+      </View>
+      `),
+    )
+
+    const pinChange = singleResizeChange(
+      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      { x: 0, y: 0 } as EdgePosition,
+      { x: 50, y: 60 } as CanvasVector,
+    )
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View
+          ${/** pins are magically created */ ''}
+          style={{ backgroundColor: '#0091FFAA', top: -60, height: 60, left: -50, width: 50 }}
+          data-uid={'bbb'}
+        />
+      </View>`,
+      ),
+    )
+  })
+})
+
 describe('moveTemplate', () => {
   it('wraps in 1 element', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1413,6 +1487,104 @@ describe('moveTemplate', () => {
             />
           </View>
         </View>
+      `),
+    )
+  })
+
+  it('reparents an element while dragging', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
+            layout={{ layoutSystem: 'pinSystem' }}
+            data-uid={'bbb'}
+          >
+            <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', top: 10, left: 15, width: 50, height: 60 }} />
+          </View>
+          <View data-uid={'eee'} style={{ backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }} layout={{ layoutSystem: 'pinSystem' }}/>
+        </View>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'eee'])], false)],
+      false,
+    )
+
+    const areaControl = renderResult.renderedDOM.getByTestId(
+      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa/eee-2',
+    )
+
+    const areaControlBounds = areaControl.getBoundingClientRect()
+
+    fireEvent(
+      areaControl,
+      new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: true,
+        clientX: areaControlBounds.left + 5,
+        clientY: areaControlBounds.top + 5,
+        buttons: 1,
+      }),
+    )
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        areaControl,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        window,
+        new MouseEvent('mouseup', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(`
+      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+      <View
+        style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
+        layout={{ layoutSystem: 'pinSystem' }}
+        data-uid={'bbb'}
+      >
+        <View
+          data-uid={'ccc'}
+          style={{ backgroundColor: '#ff00ff' }}
+          layout={{ layoutSystem: 'pinSystem', top: 10, left: 15, width: 50, height: 60 }}
+        />
+        <View
+          data-uid={'eee'}
+          style={{ backgroundColor: '#00ff00', width: 80, height: 80, left: 100, top: 170 }}
+          layout={{ layoutSystem: 'pinSystem' }}
+        />
+      </View>
+    </View>
       `),
     )
   })

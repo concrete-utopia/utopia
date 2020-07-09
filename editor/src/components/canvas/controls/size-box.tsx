@@ -53,6 +53,7 @@ class ResizeControl extends React.Component<ResizeControlProps, {}> {
       const canvasPositions = this.props.windowToCanvasPosition(event.nativeEvent)
       const start: CanvasPoint = canvasPositions.canvasPositionRaw
       const originalFrames = this.props.getOriginalFrames()
+      const isMultiSelect = this.props.selectedViews.length !== 1
       const newDragState = resizeDragState(
         start,
         null,
@@ -65,7 +66,9 @@ class ResizeControl extends React.Component<ResizeControlProps, {}> {
         this.props.enabledDirection,
         this.props.metadata,
         this.props.selectedViews,
+        isMultiSelect,
       )
+
       this.props.dispatch(
         [CanvasActions.createDragState(newDragState), setCanvasAnimationsEnabled(false)],
         'canvas',

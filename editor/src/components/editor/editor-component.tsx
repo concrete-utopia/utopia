@@ -247,10 +247,7 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
       const isDraggedFile =
         draggedTypes != null && draggedTypes.length === 1 && draggedTypes[0] === 'Files'
       const currentMode = editorStoreRef.current.editor.mode
-      if (
-        isSelectMode(currentMode) ||
-        (isDraggedFile && isLiveMode(editorStoreRef.current.editor.mode))
-      ) {
+      if (isDraggedFile && (isSelectMode(currentMode) || isLiveMode(currentMode))) {
         const actions = [
           EditorActions.switchEditorMode(
             EditorModes.insertMode(false, dragAndDropInsertionSubject(null)),
