@@ -230,7 +230,13 @@ const initPreview = () => {
             `Error processing the project files: the build result does not contain the preview file: ${previewJSPath}`,
           )
         } else {
-          processModuleCodes(bundledProjectFiles, require, true)
+          const { requireFn } = processModuleCodes(bundledProjectFiles, require, true)
+          /**
+           * require the js entry point file which will evaluate the module.
+           * the React entry point js file traditionally has a top level side effect,
+           * calling ReactDOM.render() which starts the Preview app.
+           */
+          requireFn('/', previewJSPath, false)
         }
       }
     }
