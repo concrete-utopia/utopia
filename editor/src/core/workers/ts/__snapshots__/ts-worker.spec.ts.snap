@@ -142,53 +142,6 @@ export var App = (props) => {
   };
 }); //# sourceMappingURL=app.js.map",
     },
-    "/src/index.js": Object {
-      "errors": Array [],
-      "sourceMap": Object {
-        "file": "index.js",
-        "mappings": ";;;;;;;;;;;;;;;;AAIM,MAAA,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAP;;AACN,UAAI,IAAI,IAAI,IAAZ,EAAkB;AAClB,QAAA,QAAQ,CAAC,MAAT,CAAgB,KAAA,CAAA,aAAA,CAAC,QAAA,CAAA,GAAD,EAAI,IAAJ,CAAhB,EAAyB,IAAzB;AACC;AAAC",
-        "names": Array [],
-        "sourceRoot": "",
-        "sources": Array [
-          "../../src/index.js",
-        ],
-        "sourcesContent": Array [
-          "import * as React from \\"react\\";
-import * as ReactDOM from \\"react-dom\\";
-import { App } from \\"../app\\";
-
-const root = document.getElementById(\\"root\\");
-if (root != null) {
-ReactDOM.render(<App />, root);
-}",
-        ],
-        "version": 3,
-      },
-      "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../app\\"], function (exports_1, context_1) {
-  \\"use strict\\";
-
-  var React, ReactDOM, app_1, root;
-
-  var __moduleName = context_1 && context_1.id;
-
-  return {
-    setters: [function (React_1) {
-      React = React_1;
-    }, function (ReactDOM_1) {
-      ReactDOM = ReactDOM_1;
-    }, function (app_1_1) {
-      app_1 = app_1_1;
-    }],
-    execute: function execute() {
-      root = document.getElementById(\\"root\\");
-
-      if (root != null) {
-        ReactDOM.render(React.createElement(app_1.App, null), root);
-      }
-    }
-  };
-}); //# sourceMappingURL=index.js.map",
-    },
     "/src/components.js": Object {
       "errors": Array [],
       "sourceMap": Object {
@@ -321,6 +274,53 @@ ComponentWithProps.propertyControls = {
     }
   };
 }); //# sourceMappingURL=components.js.map",
+    },
+    "/src/index.js": Object {
+      "errors": Array [],
+      "sourceMap": Object {
+        "file": "index.js",
+        "mappings": ";;;;;;;;;;;;;;;;AAIM,MAAA,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAP;;AACN,UAAI,IAAI,IAAI,IAAZ,EAAkB;AAClB,QAAA,QAAQ,CAAC,MAAT,CAAgB,KAAA,CAAA,aAAA,CAAC,KAAA,CAAA,GAAD,EAAI,IAAJ,CAAhB,EAAyB,IAAzB;AACC;AAAC",
+        "names": Array [],
+        "sourceRoot": "",
+        "sources": Array [
+          "../../src/index.js",
+        ],
+        "sourcesContent": Array [
+          "import * as React from \\"react\\";
+import * as ReactDOM from \\"react-dom\\";
+import { App } from \\"../app\\";
+
+const root = document.getElementById(\\"root\\");
+if (root != null) {
+ReactDOM.render(<App />, root);
+}",
+        ],
+        "version": 3,
+      },
+      "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../app\\"], function (exports_1, context_1) {
+  \\"use strict\\";
+
+  var React, ReactDOM, app_1, root;
+
+  var __moduleName = context_1 && context_1.id;
+
+  return {
+    setters: [function (React_1) {
+      React = React_1;
+    }, function (ReactDOM_1) {
+      ReactDOM = ReactDOM_1;
+    }, function (app_1_1) {
+      app_1 = app_1_1;
+    }],
+    execute: function execute() {
+      root = document.getElementById(\\"root\\");
+
+      if (root != null) {
+        ReactDOM.render(React.createElement(app_1.App, null), root);
+      }
+    }
+  };
+}); //# sourceMappingURL=index.js.map",
     },
   },
   "exportsInfo": Array [

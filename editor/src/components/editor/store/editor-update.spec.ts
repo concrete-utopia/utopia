@@ -827,9 +827,9 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
           \\"name\\": \\"Utopia Project\\",
           \\"version\\": \\"0.1.0\\",
           \\"utopia\\": {
-            \\"main-ui\\": \\"src/app.ui.js\\",
-            \\"html\\": \\"preview.html\\",
-            \\"js\\": \\"preview.jsx\\"
+            \\"main-ui\\": \\"src/app.js\\",
+            \\"html\\": \\"index.html\\",
+            \\"js\\": \\"index.js\\"
           },
           \\"dependencies\\": {
             \\"mypackage\\": \\"1.0.0\\",

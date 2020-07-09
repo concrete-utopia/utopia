@@ -501,65 +501,6 @@ export var App = (props) => {
 });
 //# sourceMappingURL=app.js.map",
     },
-    "/src/index.js": Object {
-      "error": null,
-      "errors": Array [],
-      "exports": Object {
-        "default": Object {
-          "functionInfo": null,
-          "reactClassInfo": null,
-          "type": "any",
-          "value": Object {
-            "default": [Circular],
-          },
-        },
-      },
-      "sourceMap": Object {
-        "file": "index.js",
-        "mappings": ";;;;;;;;;;;;;;;;;YAIM,IAAI,GAAG,QAAQ,CAAC,cAAc,CAAC,MAAM,CAAC,CAAC;YAC7C,IAAI,IAAI,IAAI,IAAI,EAAE;gBAClB,QAAQ,CAAC,MAAM,CAAC,oBAAC,YAAG,IAAC,KAAK,EAAE,EAAC,IAAI,EAAE,CAAC,EAAE,GAAG,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,MAAM,EAAE,GAAG,EAAC,GAAI,EAAE,IAAI,CAAC,CAAC;aACjF;QAAA,CAAC",
-        "names": Array [],
-        "sourceRoot": "",
-        "sources": Array [
-          "../../src/index.js",
-        ],
-        "sourcesContent": Array [
-          "import * as React from \\"react\\";
-import * as ReactDOM from \\"react-dom\\";
-import { App } from \\"../app\\";
-
-const root = document.getElementById(\\"root\\");
-if (root != null) {
-ReactDOM.render(<App />, root);
-}",
-        ],
-        "version": 3,
-      },
-      "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../app\\"], function (exports_1, context_1) {
-    \\"use strict\\";
-    var React, ReactDOM, app_1, root;
-    var __moduleName = context_1 && context_1.id;
-    return {
-        setters: [
-            function (React_1) {
-                React = React_1;
-            },
-            function (ReactDOM_1) {
-                ReactDOM = ReactDOM_1;
-            },
-            function (app_1_1) {
-                app_1 = app_1_1;
-            }
-        ],
-        execute: function () {
-            root = document.getElementById(\\"root\\");
-            if (root != null) {
-                ReactDOM.render(React.createElement(app_1.App, { style: { left: 0, top: 0, width: 375, height: 812 } }), root);
-            }
-        }
-    };
-});
-//# sourceMappingURL=index.js.map",
-    },
     "/src/components.js": Object {
       "error": null,
       "errors": Array [],
@@ -704,6 +645,65 @@ ComponentWithProps.propertyControls = {
     };
 });
 //# sourceMappingURL=components.js.map",
+    },
+    "/src/index.js": Object {
+      "error": null,
+      "errors": Array [],
+      "exports": Object {
+        "default": Object {
+          "functionInfo": null,
+          "reactClassInfo": null,
+          "type": "any",
+          "value": Object {
+            "default": [Circular],
+          },
+        },
+      },
+      "sourceMap": Object {
+        "file": "index.js",
+        "mappings": ";;;;;;;;;;;;;;;;;YAIM,IAAI,GAAG,QAAQ,CAAC,cAAc,CAAC,MAAM,CAAC,CAAC;YAC7C,IAAI,IAAI,IAAI,IAAI,EAAE;gBAClB,QAAQ,CAAC,MAAM,CAAC,oBAAC,YAAG,IAAC,KAAK,EAAE,EAAC,IAAI,EAAE,CAAC,EAAE,GAAG,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,MAAM,EAAE,GAAG,EAAC,GAAI,EAAE,IAAI,CAAC,CAAC;aACjF;QAAA,CAAC",
+        "names": Array [],
+        "sourceRoot": "",
+        "sources": Array [
+          "../../src/index.js",
+        ],
+        "sourcesContent": Array [
+          "import * as React from \\"react\\";
+import * as ReactDOM from \\"react-dom\\";
+import { App } from \\"../app\\";
+
+const root = document.getElementById(\\"root\\");
+if (root != null) {
+ReactDOM.render(<App />, root);
+}",
+        ],
+        "version": 3,
+      },
+      "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../app\\"], function (exports_1, context_1) {
+    \\"use strict\\";
+    var React, ReactDOM, app_1, root;
+    var __moduleName = context_1 && context_1.id;
+    return {
+        setters: [
+            function (React_1) {
+                React = React_1;
+            },
+            function (ReactDOM_1) {
+                ReactDOM = ReactDOM_1;
+            },
+            function (app_1_1) {
+                app_1 = app_1_1;
+            }
+        ],
+        execute: function () {
+            root = document.getElementById(\\"root\\");
+            if (root != null) {
+                ReactDOM.render(React.createElement(app_1.App, { style: { left: 0, top: 0, width: 375, height: 812 } }), root);
+            }
+        }
+    };
+});
+//# sourceMappingURL=index.js.map",
     },
   },
   "error": null,
@@ -899,7 +899,6 @@ ReactDOM.render(<App />, root);
   ],
   "propertyControlsInfo": Object {
     "/app": Object {},
-    "/public/preview": Object {},
     "/src/components": Object {
       "ComponentWithProps": Object {
         "num": Object {
@@ -919,6 +918,7 @@ ReactDOM.render(<App />, root);
         },
       },
     },
+    "/src/index": Object {},
   },
   "requireFn": [Function],
   "skipDeepFreeze": true,
