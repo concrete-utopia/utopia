@@ -1490,4 +1490,102 @@ describe('moveTemplate', () => {
       `),
     )
   })
+
+  it('reparents an element while dragging', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
+            layout={{ layoutSystem: 'pinSystem' }}
+            data-uid={'bbb'}
+          >
+            <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', top: 10, left: 15, width: 50, height: 60 }} />
+          </View>
+          <View data-uid={'eee'} style={{ backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }} layout={{ layoutSystem: 'pinSystem' }}/>
+        </View>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'eee'])], false)],
+      false,
+    )
+
+    const areaControl = renderResult.renderedDOM.getByTestId(
+      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa/eee-2',
+    )
+
+    const areaControlBounds = areaControl.getBoundingClientRect()
+
+    fireEvent(
+      areaControl,
+      new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: true,
+        clientX: areaControlBounds.left + 5,
+        clientY: areaControlBounds.top + 5,
+        buttons: 1,
+      }),
+    )
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        areaControl,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        window,
+        new MouseEvent('mouseup', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(`
+      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+      <View
+        style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
+        layout={{ layoutSystem: 'pinSystem' }}
+        data-uid={'bbb'}
+      >
+        <View
+          data-uid={'ccc'}
+          style={{ backgroundColor: '#ff00ff' }}
+          layout={{ layoutSystem: 'pinSystem', top: 10, left: 15, width: 50, height: 60 }}
+        />
+        <View
+          data-uid={'eee'}
+          style={{ backgroundColor: '#00ff00', width: 80, height: 80, left: 100, top: 170 }}
+          layout={{ layoutSystem: 'pinSystem' }}
+        />
+      </View>
+    </View>
+      `),
+    )
+  })
 })

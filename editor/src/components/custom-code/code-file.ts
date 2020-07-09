@@ -54,14 +54,12 @@ export function processModuleCodes(
   npmRequireFn: RequireFn,
   fullBuild: boolean,
 ): {
-  exports: { [module: string]: ModuleExportValues }
   requireFn: UtopiaRequireFn
   error: Error | null
 } {
   const System = Es6MicroLoader.System
   Es6MicroLoader.reset(npmRequireFn, fullBuild)
 
-  let exports: { [module: string]: ModuleExportValues } = {}
   let error: Error | null = null
 
   const moduleNames = Object.keys(buildResult)
@@ -84,7 +82,37 @@ export function processModuleCodes(
     }
   })
 
-  // The get all the modules from System to fill in the exports with their values
+  // This requireFn uses the System created and populated above, containing all project files + the npm bundle
+  const requireFn = (importOrigin: string, toImport: string, silent: boolean) => {
+    return System.getModule(importOrigin, toImport, silent)
+  }
+
+  return {
+    requireFn: requireFn,
+    error: error,
+  }
+}
+
+function getExportValuesFromAllModules(
+  buildResult: MultiFileBuildResult,
+  requireFn: UtopiaRequireFn,
+): { [module: string]: ModuleExportValues } {
+  /**
+   * TODO
+   * we are requiring every user module here. unfortunately it means that if
+   * requiring them has any side effect, we will trigger that side effect here,
+   * even if it was never imported by the user
+   *
+   * a better solution would be to store the exported values as a side effect of the user requiring the module
+   * that way the side effects would happen at the correct time, and we would
+   * still have access to things like the PropertyControls for every component the user
+   * can select (since selecting them requires the component to be on screen, which means it must be imported anyways)
+   *
+   */
+
+  let exports: { [module: string]: ModuleExportValues } = {}
+  const moduleNames = Object.keys(buildResult)
+  // get all the modules from System to fill in the exports with their values
   moduleNames.forEach((moduleName) => {
     const module = buildResult[moduleName]
     if (module.transpiledCode == null) {
@@ -92,7 +120,7 @@ export function processModuleCodes(
     }
     try {
       exports[moduleName] = {}
-      const codeModule = System.getModule('/', moduleName, true)
+      const codeModule = requireFn('/', moduleName, true)
       if (codeModule != null) {
         Object.keys(codeModule).forEach((exp) => {
           exports[moduleName][exp] = codeModule[exp]
@@ -100,21 +128,9 @@ export function processModuleCodes(
       }
     } catch (e) {
       // skipping this module, there is a runtime error executing it
-      // we only store the last error, that is enough now
-      error = e
     }
   })
-
-  // This requireFn uses the System created and populated above, containing all project files + the npm bundle
-  const requireFn = (importOrigin: string, toImport: string, silent: boolean) => {
-    return System.getModule(importOrigin, toImport, silent)
-  }
-
-  return {
-    exports: exports,
-    requireFn: requireFn,
-    error: error,
-  }
+  return exports
 }
 
 function processExportsInfo(exportValues: ModuleExportValues, exportTypes: ModuleExportTypes) {
@@ -158,13 +174,14 @@ export function generateCodeResultCache(
 ): CodeResultCache {
   const npmRequireFn = getMemoizedRequireFn(nodeModules, dispatch)
 
-  const { exports, requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
+  const { requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
+  const exportValues = getExportValuesFromAllModules(modules, requireFn)
   let cache: { [code: string]: CodeResult } = {}
   let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
     npmDependencies,
   )
   Utils.fastForEach(exportsInfo, (result) => {
-    const codeResult = processExportsInfo(exports[result.filename], result.exportTypes)
+    const codeResult = processExportsInfo(exportValues[result.filename], result.exportTypes)
     cache[result.filename] = {
       ...codeResult,
       ...modules[result.filename],
