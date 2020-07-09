@@ -828,8 +828,8 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
           \\"version\\": \\"0.1.0\\",
           \\"utopia\\": {
             \\"main-ui\\": \\"src/app.js\\",
-            \\"html\\": \\"index.html\\",
-            \\"js\\": \\"index.js\\"
+            \\"html\\": \\"public/index.html\\",
+            \\"js\\": \\"src/index.js\\"
           },
           \\"dependencies\\": {
             \\"mypackage\\": \\"1.0.0\\",
