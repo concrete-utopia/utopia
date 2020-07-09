@@ -40,6 +40,7 @@ import {
   JSXElement,
   JSXElementChild,
   UtopiaJSXComponent,
+  ElementInstanceMetadata,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -160,6 +161,7 @@ import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { createSceneTemplatePath, PathForSceneStyle } from '../../core/model/scene-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
+import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -2168,4 +2170,45 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
     },
     selectedFile: openFileTab('/src/app.ui.js'),
   }
+}
+
+export function cullSpyCollector(
+  spyCollector: UiJsxCanvasContextData,
+  elementMetadata: Array<ElementInstanceMetadata>,
+): void {
+  // Note: Mutates `spyCollector`.
+  // Collate all the valid paths.
+  let elementPaths: Set<string> = Utils.emptySet()
+  let scenePaths: Set<string> = Utils.emptySet()
+  fastForEach(elementMetadata, (rootMetadata) => {
+    MetadataUtils.walkElementMetadata(
+      rootMetadata,
+      null,
+      (metadata: ElementInstanceMetadata, parentMetadata: ElementInstanceMetadata | null) => {
+        let workingPath: TemplatePath | null = metadata.templatePath
+        while (workingPath != null) {
+          const pathAsString = TP.toString(workingPath)
+          if (TP.isScenePath(workingPath)) {
+            elementPaths.add(TP.toString(TP.instancePath([], workingPath.sceneElementPath)))
+            scenePaths.add(pathAsString)
+          } else {
+            elementPaths.add(pathAsString)
+          }
+          workingPath = TP.parentPath(workingPath)
+        }
+      },
+    )
+  })
+  // Eliminate the element paths which are invalid.
+  fastForEach(Object.keys(spyCollector.current.spyValues.metadata), (elementPath) => {
+    if (!elementPaths.has(elementPath)) {
+      delete spyCollector.current.spyValues.metadata[elementPath]
+    }
+  })
+  // Eliminate the scene paths which are invalid.
+  fastForEach(Object.keys(spyCollector.current.spyValues.scenes), (scenePath) => {
+    if (!scenePaths.has(scenePath)) {
+      delete spyCollector.current.spyValues.scenes[scenePath]
+    }
+  })
 }

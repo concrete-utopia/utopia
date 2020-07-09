@@ -169,9 +169,9 @@ function mergeElementMetadata(
       mergeCandidates[potentialMergeCandidateIndex] = setThat(fromDOMElement, candidate)
     }
   })
-  return mergeCandidates.map((candidate) =>
-    produceMetadataFromMergeCandidate(elementsByUID, candidate),
-  )
+  return mergeCandidates.map((candidate) => {
+    return produceMetadataFromMergeCandidate(elementsByUID, candidate)
+  })
 }
 
 const ElementsToDrillIntoForTextContent = ['div', 'span']
@@ -1448,6 +1448,19 @@ export const MetadataUtils = {
     }
     return false
   },
+  walkElementMetadata(
+    elementMetadata: ElementInstanceMetadata,
+    parentMetadata: ElementInstanceMetadata | null,
+    withEachElement: (
+      metadata: ElementInstanceMetadata,
+      parentMetadata: ElementInstanceMetadata | null,
+    ) => void,
+  ): void {
+    withEachElement(elementMetadata, parentMetadata)
+    for (const child of elementMetadata.children) {
+      this.walkElementMetadata(child, elementMetadata, withEachElement)
+    }
+  },
   walkMetadata(
     rootMetadata: Array<ComponentMetadata>,
     withEachElement: (
@@ -1455,19 +1468,9 @@ export const MetadataUtils = {
       parentMetadata: ElementInstanceMetadata | null,
     ) => void,
   ): void {
-    function innerWalk(
-      metadata: ElementInstanceMetadata,
-      parentMetadata: ElementInstanceMetadata | null,
-    ): void {
-      withEachElement(metadata, parentMetadata)
-      for (const child of metadata.children) {
-        innerWalk(child, metadata)
-      }
-    }
-
     for (const componentMetadata of rootMetadata) {
       if (componentMetadata.rootElement != null) {
-        innerWalk(componentMetadata.rootElement, null)
+        this.walkElementMetadata(componentMetadata.rootElement, null, withEachElement)
       }
     }
   },

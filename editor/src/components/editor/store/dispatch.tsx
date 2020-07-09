@@ -93,15 +93,16 @@ function processAction(
   dispatchEvent: EditorDispatch,
   working: EditorStore,
   action: EditorAction,
+  spyCollector: UiJsxCanvasContextData
 ): EditorStore {
   const workingHistory = working.history
   // Sidestep around the local actions so that we definitely run them locally.
   if (action.action === 'TRANSIENT_ACTIONS') {
     // Drill into the array.
-    return processActions(dispatchEvent, working, action.transientActions)
+    return processActions(dispatchEvent, working, action.transientActions, spyCollector)
   } else if (action.action === 'ATOMIC') {
     // Drill into the array.
-    return processActions(dispatchEvent, working, action.actions)
+    return processActions(dispatchEvent, working, action.actions, spyCollector)
   } else if (action.action === 'UNDO' && !History.canUndo(workingHistory)) {
     // Bail early and make no changes.
     return working
@@ -118,6 +119,7 @@ function processAction(
       action as EditorAction,
       workingHistory,
       dispatchEvent,
+      spyCollector
     )
     const editorAfterCanvas = runLocalCanvasAction(
       editorAfterUpdateFunction,
@@ -164,9 +166,10 @@ function processActions(
   dispatchEvent: EditorDispatch,
   working: EditorStore,
   actions: Array<EditorAction>,
+  spyCollector: UiJsxCanvasContextData
 ): EditorStore {
   return actions.reduce((workingFuture: EditorStore, action: EditorAction) => {
-    return processAction(dispatchEvent, workingFuture, action)
+    return processAction(dispatchEvent, workingFuture, action, spyCollector)
   }, working)
 }
 
@@ -432,7 +435,7 @@ function editorDispatchInner(
   dispatchedActions: EditorAction[],
   storedState: DispatchResult,
   transient: boolean,
-  spyCollector: UiJsxCanvasContextData,
+  spyCollector: UiJsxCanvasContextData
 ): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
@@ -441,7 +444,7 @@ function editorDispatchInner(
   }
   if (dispatchedActions.length > 0) {
     // Run everything in a big chain.
-    let result = processActions(boundDispatch, storedState, dispatchedActions)
+    let result = processActions(boundDispatch, storedState, dispatchedActions, spyCollector)
 
     const anyUndoOrRedo = R.any(isUndoOrRedo, dispatchedActions)
 
@@ -454,9 +457,10 @@ function editorDispatchInner(
     // IMPORTANT This code assumes only a single ui file can be open at a time. If we ever want to
     // support multiple ui files side by side in a multi-tabbed view we'll need to rethink
     // how and where we store the jsx metadata
+    /*
     const isUiJsFileSelected = fileTypeFromFileName(getOpenFilename(result.editor)) === 'UI_JS_FILE'
     let spyResult: ComponentMetadata[]
-
+    
     if (isUiJsFileSelected) {
       // Needs to run here as changes may have been made which need to be reflected in the
       // spy result, which only runs if the canvas props are determined to have changed.
@@ -483,6 +487,7 @@ function editorDispatchInner(
         spyMetadataKILLME: spyResult,
       },
     })
+    */
 
     const domMetadataChanged =
       storedState.editor.domMetadataKILLME !== result.editor.domMetadataKILLME
