@@ -2074,10 +2074,13 @@ function produceMoveTransientCanvasState(
 
     if (reparentTarget.shouldReparent) {
       Utils.fastForEach(elementsToTarget, (target) => {
+        const frame = originalFrames.find((originalFrameAndTarget) => {
+          return TP.pathsEqual(originalFrameAndTarget.target, target)
+        })?.frame
         const reparentResult = moveTemplate(
           target,
           target,
-          SkipFrameChange,
+          frame ?? null,
           { type: 'front' },
           reparentTarget.newParent,
           null,
