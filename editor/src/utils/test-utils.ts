@@ -46,7 +46,7 @@ import { create } from '../core/shared/property-path'
 import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 
 export function createEditorStates(
-  selectedFileOrTab: string | EditorTab = '/src/app.ui.js',
+  selectedFileOrTab: string | EditorTab = '/src/app.js',
   selectedViews: TemplatePath[] = [],
 ): {
   editor: EditorState
@@ -58,7 +58,7 @@ export function createEditorStates(
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: {
-      '/src/app.ui.js': uiJsFile(
+      '/src/app.js': uiJsFile(
         right(
           parseSuccess(
             sampleImportsForTests,

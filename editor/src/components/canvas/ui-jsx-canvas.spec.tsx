@@ -82,7 +82,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
     error: FancyError
     errorInfo?: React.ErrorInfo
   }> = []
-  const uiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.ui.js'
+  const uiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.js'
   const requireFn: UiJsxCanvasProps['requireFn'] = dumbRequireFn
   const fileBlobs: UiJsxCanvasProps['fileBlobs'] = {}
   const reportError: CanvasReactErrorCallback['reportError'] = (

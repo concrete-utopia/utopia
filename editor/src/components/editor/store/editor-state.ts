@@ -1270,9 +1270,9 @@ export const DefaultPackageJson = {
   name: 'Utopia Project',
   version: '0.1.0',
   utopia: {
-    'main-ui': 'src/app.ui.js',
-    html: 'preview.html',
-    js: 'preview.jsx',
+    'main-ui': 'src/app.js',
+    html: 'public/index.html',
+    js: 'src/index.js',
   },
   dependencies: {
     ...defaultDependencies,
