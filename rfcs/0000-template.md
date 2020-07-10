@@ -8,8 +8,8 @@ Brief explanation of the feature.
 
 # Basic example
 
-If the proposal involves a new or changed API, include a basic code example.
-Omit this section if it's not applicable.
+If the proposal involves a new or changed API or feature, include a basic code example,
+mock-up, or written example. Omit this section if it's not applicable.
 
 # Motivation
 
@@ -24,7 +24,7 @@ closely to the solution you have in mind.
 # Detailed design
 
 This is the bulk of the RFC. Explain the design in enough detail for somebody
-familiar with React to understand, and for somebody familiar with the
+familiar with Utopia to understand, and for somebody familiar with the
 implementation to implement. This should get into specifics and corner-cases,
 and include examples of how the feature is used. Any new terminology should be
 defined here.
@@ -37,7 +37,7 @@ Why should we *not* do this? Please consider:
 - whether the proposed feature can be implemented in user space
 - the impact on teaching people Utopia
 - integration of this feature with other existing and planned features
-- cost of migrating existing React applications (is it a breaking change?)
+- cost of migrating existing Utopia projects (is it a breaking change?)
 
 There are tradeoffs to choosing any path. Attempt to identify them here.
 
