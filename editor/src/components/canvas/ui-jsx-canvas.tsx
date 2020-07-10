@@ -86,8 +86,10 @@ import { EditorDispatch } from '../editor/action-types'
 import { resolveModule } from '../../core/es-modules/package-manager/module-resolution'
 import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { usePrevious } from '../editor/hook-utils'
-import { arrayEquals } from '../../core/shared/utils'
-import { clearInjectedCSSFiles } from '../../core/shared/css-style-loader'
+import { arrayEquals, fastForEach } from '../../core/shared/utils'
+import { unimportCSSFile } from '../../core/shared/css-style-loader'
+import { removeAll } from '../../core/shared/array-utils'
+import { normalizeName } from '../custom-code/custom-code-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -380,18 +382,23 @@ export const UiJsxCanvas = betterReactMemo(
       proxyConsole(console, addToConsoleLogs)
     }
 
-    // Handle the imports changing, this needs to run _before_ any require function
-    // calls as it's modifying the underlying DOM elements. This is somewhat working
-    // like useEffect, except that runs after everything has rendered.
-    const cssImports = useKeepReferenceEqualityIfPossible(cssImportsFromImports(imports))
-    const previousCSSImports = usePrevious(cssImports)
-    const previousFilePath = usePrevious(uiFilePath)
-    if (
-      uiFilePath !== previousFilePath ||
-      previousCSSImports == undefined ||
-      !arrayEquals(cssImports, previousCSSImports)
-    ) {
-      clearInjectedCSSFiles()
+    if (!spyEnabled) {
+      // Handle the imports changing, this needs to run _before_ any require function
+      // calls as it's modifying the underlying DOM elements. This is somewhat working
+      // like useEffect, except that runs after everything has rendered.
+      const cssImports = useKeepReferenceEqualityIfPossible(cssImportsFromImports(imports))
+      const previousCSSImports = usePrevious(cssImports)
+
+      if (
+        uiFilePath != null &&
+        previousCSSImports != null &&
+        !arrayEquals(cssImports, previousCSSImports)
+      ) {
+        const removed = removeAll(previousCSSImports, cssImports)
+        fastForEach(removed, (toRemove) => {
+          unimportCSSFile(normalizeName(uiFilePath, toRemove))
+        })
+      }
     }
 
     const reportErrorWithPath = React.useCallback(

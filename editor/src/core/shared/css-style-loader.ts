@@ -1,11 +1,14 @@
 export const InjectedCSSFilePrefix = 'injected-css-file-'
 
-export function clearInjectedCSSFiles(): void {
+export function unimportCSSFile(filename: string): void {
   const head = document.querySelector('head')
   if (head != null) {
     for (let index = 0; index < head.children.length; index++) {
       const child = head.children[index]
-      if (child.id.startsWith(InjectedCSSFilePrefix)) {
+      if (child.id.startsWith(InjectedCSSFilePrefix) && child.id.endsWith(filename)) {
+        // Finding the exact ID requires knowing the fully resolved module, so until we remove the
+        // micro-loader this seems like a good enough solution. Once that has happened we should consider
+        // how we could supporting unloading of a file via whatever the new solution is
         child.remove()
       }
     }
