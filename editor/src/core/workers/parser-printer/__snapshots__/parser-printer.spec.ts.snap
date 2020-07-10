@@ -27,7 +27,7 @@ Object {
         "/",
       ],
       "sources": Array [
-        "/src/app.ui.js",
+        "/src/app.js",
       ],
       "sourcesContent": Array [
         "/** @jsx jsx */
@@ -664,7 +664,7 @@ Object {
         "endColumn": undefined,
         "endLine": undefined,
         "errorCode": null,
-        "fileName": "test.ui.js",
+        "fileName": "test.js",
         "message": "Parsing error: Unexpected token",
         "passTime": 12345678,
         "severity": "fatal",

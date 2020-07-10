@@ -18,11 +18,21 @@ import { generateUidWithExistingComponents } from '../model/element-template-uti
 import { right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
 import { BakedInStoryboardUID } from '../model/scene-utils'
+import { wait } from '../../utils/test-utils'
 
 const NewUID = 'catdog'
 
 describe('maybeSwitchLayoutProps', () => {
   it('removes pin related layout props when pasting to flex element', async () => {
+    // Code kept commented for any future person who needs it.
+    //const currentWindow = require('electron').remote.getCurrentWindow()
+    //currentWindow.show()
+    //currentWindow.setPosition(500, 200)
+    //currentWindow.setSize(2200, 1000)
+    //currentWindow.openDevTools()
+    // This is necessary because the test code races against the Electron process
+    // opening the window it would appear.
+    //await wait(5000)
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
@@ -106,6 +116,7 @@ describe('maybeSwitchLayoutProps', () => {
       metadata,
     )
     await renderResult.dispatch([pasteElements], true)
+
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
       makeTestProjectCodeWithSnippet(
         `<View

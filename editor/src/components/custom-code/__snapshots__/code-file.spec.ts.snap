@@ -292,7 +292,7 @@ ComponentWithProps.propertyControls = {
 exports[`Generating codeResultCache Generates codeResultCache for multi file build result 1`] = `
 Object {
   "cache": Object {
-    "/app.ui.js": Object {
+    "/app.js": Object {
       "error": null,
       "errors": Array [],
       "exports": Object {
@@ -380,12 +380,12 @@ Object {
         },
       },
       "sourceMap": Object {
-        "file": "app.ui.js",
+        "file": "app.js",
         "mappings": ";;;;;;;;;;;;;;YAkDA,4BAAW,cAAc,GAAG;gBAC1B,YAAY,EAAE,EAAE;gBAChB,YAAY,EAAE,EAAE;gBAChB,MAAM,EAAE;oBACN;wBACE,SAAS,EAAE,KAAK;wBAChB,KAAK,EAAE,EAAE,MAAM,EAAE,GAAG,EAAE,IAAI,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,GAAG,EAAE,CAAC,EAAE;wBACnD,KAAK,EAAE,EAAE,MAAM,EAAE,EAAE,GAAG,EAAE,CAAC,EAAE,IAAI,EAAE,CAAC,EAAE,MAAM,EAAE,CAAC,EAAE,KAAK,EAAE,CAAC,EAAE,EAAE;wBAC3D,SAAS,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE;qBACzC;iBACF;gBACD,eAAe,EAAE,EAAE;aACpB,EAAA;YAGD,iBAAW,GAAG,GAAG,CAAC,KAAK,EAAE,EAAE;gBACzB,OAAO,CACL,iBAAC,iBAAI,IACH,KAAK,kCAAO,CAAC,KAAK,CAAC,KAAK,IAAI,EAAE,CAAC,KAAE,eAAe,EAAE,kBAAU,CAAC,KAAK,CAAC,KAAK,KACxE,MAAM,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE,cAC3B,KAAK,GACT,CACT,CAAA;YACH,CAAC,EAAA;QAED,CAAC",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
-          "../app.ui.js",
+          "../app.js",
         ],
         "sourcesContent": Array [
           "/** @jsx jsx */
@@ -499,66 +499,7 @@ export var App = (props) => {
         }
     };
 });
-//# sourceMappingURL=app.ui.js.map",
-    },
-    "/public/preview.jsx": Object {
-      "error": null,
-      "errors": Array [],
-      "exports": Object {
-        "default": Object {
-          "functionInfo": null,
-          "reactClassInfo": null,
-          "type": "any",
-          "value": Object {
-            "default": [Circular],
-          },
-        },
-      },
-      "sourceMap": Object {
-        "file": "preview.js",
-        "mappings": ";;;;;;;;;;;;;;;;;YAIM,IAAI,GAAG,QAAQ,CAAC,cAAc,CAAC,MAAM,CAAC,CAAC;YAC7C,IAAI,IAAI,IAAI,IAAI,EAAE;gBAClB,QAAQ,CAAC,MAAM,CAAC,oBAAC,YAAG,IAAC,KAAK,EAAE,EAAC,IAAI,EAAE,CAAC,EAAE,GAAG,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,MAAM,EAAE,GAAG,EAAC,GAAI,EAAE,IAAI,CAAC,CAAC;aACjF;QAAA,CAAC",
-        "names": Array [],
-        "sourceRoot": "",
-        "sources": Array [
-          "../../public/preview.jsx",
-        ],
-        "sourcesContent": Array [
-          "import * as React from \\"react\\";
-import * as ReactDOM from \\"react-dom\\";
-import { App } from \\"../app.ui\\";
-
-const root = document.getElementById(\\"root\\");
-if (root != null) {
-ReactDOM.render(<App />, root);
-}",
-        ],
-        "version": 3,
-      },
-      "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../app.ui\\"], function (exports_1, context_1) {
-    \\"use strict\\";
-    var React, ReactDOM, app_ui_1, root;
-    var __moduleName = context_1 && context_1.id;
-    return {
-        setters: [
-            function (React_1) {
-                React = React_1;
-            },
-            function (ReactDOM_1) {
-                ReactDOM = ReactDOM_1;
-            },
-            function (app_ui_1_1) {
-                app_ui_1 = app_ui_1_1;
-            }
-        ],
-        execute: function () {
-            root = document.getElementById(\\"root\\");
-            if (root != null) {
-                ReactDOM.render(React.createElement(app_ui_1.App, { style: { left: 0, top: 0, width: 375, height: 812 } }), root);
-            }
-        }
-    };
-});
-//# sourceMappingURL=preview.js.map",
+//# sourceMappingURL=app.js.map",
     },
     "/src/components.js": Object {
       "error": null,
@@ -705,6 +646,65 @@ ComponentWithProps.propertyControls = {
 });
 //# sourceMappingURL=components.js.map",
     },
+    "/src/index.js": Object {
+      "error": null,
+      "errors": Array [],
+      "exports": Object {
+        "default": Object {
+          "functionInfo": null,
+          "reactClassInfo": null,
+          "type": "any",
+          "value": Object {
+            "default": [Circular],
+          },
+        },
+      },
+      "sourceMap": Object {
+        "file": "index.js",
+        "mappings": ";;;;;;;;;;;;;;;;;YAIM,IAAI,GAAG,QAAQ,CAAC,cAAc,CAAC,MAAM,CAAC,CAAC;YAC7C,IAAI,IAAI,IAAI,IAAI,EAAE;gBAClB,QAAQ,CAAC,MAAM,CAAC,oBAAC,YAAG,IAAC,KAAK,EAAE,EAAC,IAAI,EAAE,CAAC,EAAE,GAAG,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,MAAM,EAAE,GAAG,EAAC,GAAI,EAAE,IAAI,CAAC,CAAC;aACjF;QAAA,CAAC",
+        "names": Array [],
+        "sourceRoot": "",
+        "sources": Array [
+          "../../src/index.js",
+        ],
+        "sourcesContent": Array [
+          "import * as React from \\"react\\";
+import * as ReactDOM from \\"react-dom\\";
+import { App } from \\"../app\\";
+
+const root = document.getElementById(\\"root\\");
+if (root != null) {
+ReactDOM.render(<App />, root);
+}",
+        ],
+        "version": 3,
+      },
+      "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../app\\"], function (exports_1, context_1) {
+    \\"use strict\\";
+    var React, ReactDOM, app_1, root;
+    var __moduleName = context_1 && context_1.id;
+    return {
+        setters: [
+            function (React_1) {
+                React = React_1;
+            },
+            function (ReactDOM_1) {
+                ReactDOM = ReactDOM_1;
+            },
+            function (app_1_1) {
+                app_1 = app_1_1;
+            }
+        ],
+        execute: function () {
+            root = document.getElementById(\\"root\\");
+            if (root != null) {
+                ReactDOM.render(React.createElement(app_1.App, { style: { left: 0, top: 0, width: 375, height: 812 } }), root);
+            }
+        }
+    };
+});
+//# sourceMappingURL=index.js.map",
+    },
   },
   "error": null,
   "exportsInfo": Array [
@@ -804,7 +804,7 @@ export var App = (props) => {
           "type": "{ specialNodes: any[]; nodeMetadata: {}; scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { ...; }; }[]; elementMetadata: {}; }",
         },
       },
-      "filename": "/app.ui.js",
+      "filename": "/app.js",
     },
     Object {
       "code": "// component library
@@ -887,19 +887,18 @@ ComponentWithProps.propertyControls = {
     Object {
       "code": "import * as React from \\"react\\";
 import * as ReactDOM from \\"react-dom\\";
-import { App } from \\"../app.ui\\";
+import { App } from \\"../app\\";
 
 const root = document.getElementById(\\"root\\");
 if (root != null) {
 ReactDOM.render(<App />, root);
 }",
       "exportTypes": Object {},
-      "filename": "/public/preview.jsx",
+      "filename": "/src/index.js",
     },
   ],
   "propertyControlsInfo": Object {
-    "/app.ui": Object {},
-    "/public/preview": Object {},
+    "/app": Object {},
     "/src/components": Object {
       "ComponentWithProps": Object {
         "num": Object {
@@ -919,6 +918,7 @@ ReactDOM.render(<App />, root);
         },
       },
     },
+    "/src/index": Object {},
   },
   "requireFn": [Function],
   "skipDeepFreeze": true,
@@ -928,7 +928,7 @@ ReactDOM.render(<App />, root);
 exports[`Generating codeResultCache Generates codeResultCache for single file build result 1`] = `
 Object {
   "cache": Object {
-    "/app.ui.js": Object {
+    "/app.js": Object {
       "error": null,
       "errors": Array [],
       "exports": Object {
@@ -1016,12 +1016,12 @@ Object {
         },
       },
       "sourceMap": Object {
-        "file": "app.ui.js",
+        "file": "app.js",
         "mappings": ";;;;;;;;;;;;;;YAiDA,4BAAW,cAAc,GAAG;gBAC1B,YAAY,EAAE,EAAE;gBAChB,YAAY,EAAE,EAAE;gBAChB,MAAM,EAAE;oBACN;wBACE,SAAS,EAAE,KAAK;wBAChB,KAAK,EAAE,EAAE,MAAM,EAAE,GAAG,EAAE,IAAI,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,GAAG,EAAE,CAAC,EAAE;wBACnD,KAAK,EAAE,EAAE,MAAM,EAAE,EAAE,GAAG,EAAE,CAAC,EAAE,IAAI,EAAE,CAAC,EAAE,MAAM,EAAE,CAAC,EAAE,KAAK,EAAE,CAAC,EAAE,EAAE;wBAC3D,SAAS,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE;qBACzC;iBACF;gBACD,eAAe,EAAE,EAAE;aACpB,EAAA;YAED,iBAAW,GAAG,GAAG,CAAC,KAAK,EAAE,EAAE;gBACzB,OAAO,CACL,iBAAC,iBAAI,IACH,KAAK,kCAAO,CAAC,KAAK,CAAC,KAAK,IAAI,EAAE,CAAC,KAAE,eAAe,EAAE,kBAAU,CAAC,KAAK,CAAC,KAAK,KACxE,MAAM,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE,cAC3B,KAAK,GACT,CACT,CAAA;YACH,CAAC,EAAA;QAED,CAAC",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
-          "../app.ui.js",
+          "../app.js",
         ],
         "sourcesContent": Array [
           "/** @jsx jsx */
@@ -1134,7 +1134,7 @@ export var App = (props) => {
         }
     };
 });
-//# sourceMappingURL=app.ui.js.map",
+//# sourceMappingURL=app.js.map",
     },
   },
   "error": null,
@@ -1234,11 +1234,11 @@ export var App = (props) => {
           "type": "{ specialNodes: any[]; nodeMetadata: {}; scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { ...; }; }[]; elementMetadata: {}; }",
         },
       },
-      "filename": "/app.ui.js",
+      "filename": "/app.js",
     },
   ],
   "propertyControlsInfo": Object {
-    "/app.ui": Object {},
+    "/app": Object {},
   },
   "requireFn": [Function],
   "skipDeepFreeze": true,

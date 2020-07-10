@@ -27,6 +27,7 @@ import {
   UiJsxCanvasContextData,
   UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
+  emptyUiJsxCanvasContextData,
 } from './ui-jsx-canvas'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
@@ -70,11 +71,7 @@ function stripUidsFromMetadata(metadata: MetadataWithoutChildren): MetadataWitho
 }
 
 function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | null, code: string) {
-  const spyCollector: UiJsxCanvasContextData = {
-    current: {
-      spyValues: { metadata: {}, scenes: {} },
-    },
-  }
+  const spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
   const parsedCode = testParseCode(code)
   let errorsReported: Array<{
@@ -82,7 +79,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
     error: FancyError
     errorInfo?: React.ErrorInfo
   }> = []
-  const uiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.ui.js'
+  const uiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.js'
   const requireFn: UiJsxCanvasProps['requireFn'] = dumbRequireFn
   const fileBlobs: UiJsxCanvasProps['fileBlobs'] = {}
   const reportError: CanvasReactErrorCallback['reportError'] = (
@@ -135,7 +132,6 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       editedTextElement: null,
       mountCount: 0,
       walkDOM: false,
-      spyEnabled: true,
       imports: imports,
       topLevelElementsIncludingScenes: topLevelElements,
       dependencyOrdering: dependencyOrdering,
@@ -155,7 +151,6 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       reportError: reportError,
       clearErrors: clearErrors,
       walkDOM: false,
-      spyEnabled: true,
       imports: imports,
       topLevelElementsIncludingScenes: topLevelElements,
       dependencyOrdering: dependencyOrdering,
@@ -192,7 +187,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
 
   try {
     const flatFormatSpyDisabled = ReactDOMServer.renderToStaticMarkup(
-      <UiJsxCanvasContext.Provider value={{ current: { spyValues: { metadata: {}, scenes: {} } } }}>
+      <UiJsxCanvasContext.Provider value={emptyUiJsxCanvasContextData()}>
         <UiJsxCanvas {...canvasPropsSpyDisabled} />
       </UiJsxCanvasContext.Provider>,
     )
