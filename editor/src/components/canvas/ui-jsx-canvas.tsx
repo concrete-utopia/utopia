@@ -366,12 +366,6 @@ export const UiJsxCanvas = betterReactMemo(
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
 
-    // If the top level elements have changed, clear all the spy values.
-    const previousTopLevelElements = usePrevious(topLevelElementsIncludingScenes)
-    if (topLevelElementsIncludingScenes !== previousTopLevelElements) {
-      metadataContext.current = emptyUiJsxCanvasContextData().current
-    }
-
     const reportErrorWithPath = React.useCallback(
       (error: Error, errorInfo?: React.ErrorInfo) => {
         if (uiFilePath == null) {
