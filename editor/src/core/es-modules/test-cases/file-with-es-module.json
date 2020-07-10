@@ -6,7 +6,7 @@
       "requires": []
     },
     "/node_modules/mypackage/package.json": {
-      "content": "{\"name\": \"mypackage\", \"version\": \"0.0.1\", \"main\": \"index.js\", \"module\": \"index.js\"}",
+      "content": "{\"name\": \"mypackage\", \"version\": \"0.0.1\", \"module\": \"index.js\"}",
       "isModule": false,
       "requires": []
     }

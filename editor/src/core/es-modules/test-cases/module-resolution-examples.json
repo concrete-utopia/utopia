@@ -150,6 +150,11 @@
       "isModule": false,
       "requires": []
     },
+    "/node_modules/es-module-only-package/package.json": {
+      "content": "{\"name\": \"es-module-only-package\", \"module\": \"index.js\"}",
+      "isModule": false,
+      "requires": []
+    },
     "my-package-with-package-root/src/deep-folder/moduleA.js": {
       "content": "exports.cica = 'kitten';",
       "isModule": false,

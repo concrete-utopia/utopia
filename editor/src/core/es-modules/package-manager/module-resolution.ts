@@ -58,22 +58,23 @@ function processPackageJson(
   potentiallyJsonCode: string,
   containerFolder: string[],
 ): string[] | null {
+  var packageJson: any
   try {
-    const packageJson = JSON.parse(potentiallyJsonCode)
-    const moduleName = packageJson.name ?? containerFolder
-    const mainEntry = packageJson.main ?? null
-    const moduleEntry = packageJson.module ?? null
-    if (moduleEntry != null && mainEntry == null) {
-      throw createEsModuleError(
-        moduleName,
-        new Error('Module error: package.json has a missing `main` entry'),
-      )
-    }
-    if (mainEntry != null) {
-      return normalizePath([...containerFolder, ...pathToElements(mainEntry)])
-    }
+    packageJson = JSON.parse(potentiallyJsonCode)
   } catch {
-    // empty block
+    return null
+  }
+  const moduleName = packageJson.name ?? containerFolder
+  const mainEntry = packageJson.main ?? null
+  const moduleEntry = packageJson.module ?? null
+  if (moduleEntry != null && mainEntry == null) {
+    throw createEsModuleError(
+      moduleName,
+      new Error('Module error: package.json has a missing `main` entry'),
+    )
+  }
+  if (mainEntry != null) {
+    return normalizePath([...containerFolder, ...pathToElements(mainEntry)])
   }
   return null
 }
