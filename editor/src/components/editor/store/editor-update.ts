@@ -8,7 +8,7 @@ import {
   createClipboardDataFromSelectionNewWorld,
 } from '../../../utils/clipboard'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import {UiJsxCanvasContextData} from '../../canvas/ui-jsx-canvas'
+import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -18,7 +18,7 @@ export function runLocalEditorAction(
   action: EditorAction,
   stateHistory: StateHistory,
   dispatch: EditorDispatch,
-  spyCollector: UiJsxCanvasContextData
+  spyCollector: UiJsxCanvasContextData,
 ): EditorState {
   switch (action.action) {
     case 'SET_CANVAS_FRAMES':
@@ -38,7 +38,7 @@ export function runLocalEditorAction(
         action,
         stateHistory,
         dispatch,
-        spyCollector
+        spyCollector,
       )
   }
 }
@@ -51,7 +51,7 @@ export function runSimpleLocalEditorAction(
   action: EditorAction,
   stateHistory: StateHistory,
   dispatch: EditorDispatch,
-  spyCollector: UiJsxCanvasContextData
+  spyCollector: UiJsxCanvasContextData,
 ): EditorState {
   switch (action.action) {
     case 'NEW':

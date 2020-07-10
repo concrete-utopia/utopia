@@ -114,6 +114,11 @@ function getExportValuesFromAllModules(
   const moduleNames = Object.keys(buildResult)
   // get all the modules from System to fill in the exports with their values
   moduleNames.forEach((moduleName) => {
+    if (moduleName.toLowerCase().endsWith('.css')) {
+      // Skip eager evalution of css
+      return
+    }
+
     const module = buildResult[moduleName]
     if (module.transpiledCode == null) {
       return

@@ -56,7 +56,7 @@ import {
   ScenePath1ForTestUiJsFile,
 } from '../../../core/model/test-ui-js-file'
 import { npmDependency } from '../../../core/shared/npm-dependency-types'
-import {emptyUiJsxCanvasContextData} from '../../canvas/ui-jsx-canvas'
+import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 const chaiExpect = Chai.expect
 
 /* eslint-disable @typescript-eslint/no-empty-function */
@@ -80,7 +80,7 @@ describe('action SELECT_VIEWS', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testTemplatePath])
   })
@@ -95,7 +95,7 @@ describe('action SELECT_VIEWS', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const action2 = selectComponents([testTemplatePath], false)
     const updatedEditor = runLocalEditorAction(
@@ -106,7 +106,7 @@ describe('action SELECT_VIEWS', () => {
       action2,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testTemplatePath])
     chaiExpect(updatedEditor.navigator.collapsedViews).to.deep.equal([testTemplatePath])
@@ -122,7 +122,7 @@ describe('action SELECT_VIEWS', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testScenePath])
   })
@@ -137,7 +137,7 @@ describe('action SELECT_VIEWS', () => {
       selectComponents([testScenePath, testTemplatePath], false),
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(withOneScene.selectedViews).to.deep.equal([testScenePath])
 
@@ -149,7 +149,7 @@ describe('action SELECT_VIEWS', () => {
       selectComponents([ScenePathForTestUiJsFile, testTemplatePath, testScenePath], false),
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(withMultipleScenes.selectedViews).to.deep.equal([testScenePath])
   })
@@ -167,7 +167,7 @@ describe('action CLEAR_SELECTION', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testTemplatePath])
 
@@ -180,7 +180,7 @@ describe('action CLEAR_SELECTION', () => {
       clearAction,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor2.selectedViews).to.deep.equal([])
   })
@@ -199,7 +199,7 @@ describe('action RENAME_COMPONENT', () => {
       renameAction,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
     chaiExpect(MetadataUtils.getElementLabel(target, updatedMetadata)).to.deep.equal(newName)
@@ -213,7 +213,7 @@ describe('action RENAME_COMPONENT', () => {
       clearNameAction,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const clearedNameMetadata = createFakeMetadataForEditor(clearedNameEditor)
     chaiExpect(MetadataUtils.getElementLabel(target, clearedNameMetadata)).to.deep.equal(
@@ -238,7 +238,7 @@ describe('action TOGGLE_PANE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const updatedEditor2 = runLocalEditorAction(
       updatedEditor,
@@ -248,7 +248,7 @@ describe('action TOGGLE_PANE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor2.inspector.visible).to.not.equal(updatedEditor.inspector.visible)
   })
@@ -264,7 +264,7 @@ describe('action TOGGLE_PANE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const updatedEditor2 = runLocalEditorAction(
       updatedEditor,
@@ -274,7 +274,7 @@ describe('action TOGGLE_PANE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor2.preview.visible).to.not.equal(updatedEditor.preview.visible)
   })
@@ -306,7 +306,7 @@ describe('action NAVIGATOR_REORDER', () => {
         reparentAction,
         History.init(editor, derivedState),
         dispatch,
-        emptyUiJsxCanvasContextData()
+        emptyUiJsxCanvasContextData(),
       )
 
       const updatedMainUIJSFile = updatedEditor.projectContents['/src/app.js']
@@ -352,7 +352,7 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       duplicateAction,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
     const oldUIJSFile = editor.projectContents['/src/app.js']
@@ -393,7 +393,7 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       duplicateAction,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
     const oldUIJSFile = editor.projectContents['/src/app.js']
@@ -457,7 +457,7 @@ describe('action DELETE_VIEWS', () => {
       deleteAction,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
     if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
@@ -512,7 +512,7 @@ describe('INSERT_JSX_ELEMENT', () => {
       insertAction,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const updatedComponents = getOpenUtopiaJSXComponentsFromState(updatedEditor)
     const parentAfterInsert = findJSXElementChildAtPath(updatedComponents, parentPath)
@@ -569,7 +569,7 @@ describe('INSERT_JSX_ELEMENT', () => {
       insertAction,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const updatedComponents = getOpenUtopiaJSXComponentsFromState(updatedEditor)
     const insertedElement = findJSXElementChildAtPath(
@@ -597,7 +597,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
       reparentAction,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
 
@@ -628,7 +628,7 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
       updateFrameDimensionsAction,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
     if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
@@ -667,7 +667,7 @@ describe('action OPEN_FILE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     const selectedFile = updatedEditor.selectedFile
     if (selectedFile == null) {
@@ -692,7 +692,7 @@ describe('action SET_SAFE_MODE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     expect(updatedEditor.safeMode).toBeTruthy()
   })
@@ -711,7 +711,7 @@ describe('action SET_SAVE_ERROR', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     expect(updatedEditor.saveError).toBeTruthy()
   })
@@ -729,7 +729,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       pushToast({ message: 'toast1' }),
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     expect(updatedEditor.toasts).toHaveLength(1)
     expect(updatedEditor.toasts[0]).toEqual({ message: 'toast1' })
@@ -742,7 +742,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       pushToast({ message: 'toast2' }),
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
     expect(updatedEditor2.toasts).toHaveLength(2)
     expect(updatedEditor2.toasts[0]).toEqual({ message: 'toast1' })
@@ -756,7 +756,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       popToast(),
       History.init(editor, derivedState),
       dispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
 
     expect(updatedEditor3.toasts).toHaveLength(1)
@@ -775,7 +775,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       pushToast({ message: 'toast1' }),
       History.init(editor, derivedState),
       mockDispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
 
     jest.runAllTimers()
@@ -804,7 +804,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       action,
       History.init(editor, derivedState),
       mockDispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
 
     expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeDefined()
@@ -827,7 +827,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       action,
       History.init(editor, derivedState),
       mockDispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
 
     expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeUndefined()
@@ -848,7 +848,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       action,
       History.init(editor, derivedState),
       mockDispatch,
-      emptyUiJsxCanvasContextData()
+      emptyUiJsxCanvasContextData(),
     )
 
     const packageJsonFile = updatedEditor.projectContents['/package.json']
