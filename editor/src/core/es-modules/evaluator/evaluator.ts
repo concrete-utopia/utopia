@@ -10,6 +10,10 @@ function getFileExtension(filepath: string) {
 function isEsModuleError(error: Error) {
   return (
     error.name === 'SyntaxError' &&
+    // this might accidentally trip on SyntaxErrors that have export and import in their text but are not related
+    // I cannot test for a more explicit string because Node.js (Jest) and Chrome has slightly different error messages,
+    // and it made me feel like I shouldn't codify the string matching to today's version of Chrome, so
+    // I went with this more generic solution.
     (error.message.indexOf('export') > -1 || error.message.indexOf('import') > -1)
   )
 }
