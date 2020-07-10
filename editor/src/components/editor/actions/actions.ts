@@ -3549,6 +3549,9 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     spyCollector: UiJsxCanvasContextData,
   ): EditorModel => {
+    // Note: If this DOM report only includes values for a single canvas
+    // it will wipe out any spy data that any other canvas may have produced.
+
     // Keep the size of the spy collector down to some manageable level.
     cullSpyCollector(spyCollector, action.elementMetadata)
 
