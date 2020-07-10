@@ -395,10 +395,10 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
   const toggleSettings = React.useCallback(() => setShowSettings((value) => !value), [
     setShowSettings,
   ])
-  const [selectedStopIndex, setSelectedStopIndex] = React.useState(0)
+  const [selectedStopUnorderedIndex, setSelectedStopUnorderedIndex] = React.useState(0)
 
   const [onSubmitColorValue, onTransientSubmitColorValue] = props.useSubmitValueFactory(
-    getIndexedUpdateCSSBackgroundLayerStop(selectedStopIndex, props.backgroundLayerIndex),
+    getIndexedUpdateCSSBackgroundLayerStop(selectedStopUnorderedIndex, props.backgroundLayerIndex),
   )
   const [onSubmitBackgroundLayerType] = props.useSubmitValueFactory(
     getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(props.backgroundLayerIndex),
@@ -530,15 +530,14 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
                 stops={props.value.stops}
                 onSubmitValue={onSubmitValueStops}
                 onTransientSubmitValue={onTransientSubmitValueStops}
-                selectedStopIndex={selectedStopIndex}
-                setSelectedStopIndex={setSelectedStopIndex}
+                selectedStopUnorderedIndex={selectedStopUnorderedIndex}
+                setSelectedStopUnorderedIndex={setSelectedStopUnorderedIndex}
                 useSubmitValueFactory={props.useSubmitValueFactory}
-                selectedLayerIndex={props.backgroundLayerIndex}
               />
             ) : null}
             {isCSSSolidBackgroundLayer(props.value) || isCSSGradientBackgroundLayer(props.value) ? (
               <ColorPickerInner
-                value={getSelectedColor(props.value, selectedStopIndex)}
+                value={getSelectedColor(props.value, selectedStopUnorderedIndex)}
                 onSubmitValue={onSubmitColorValue}
                 onTransientSubmitValue={onTransientSubmitColorValue}
                 offsetX={props.offsetX}
