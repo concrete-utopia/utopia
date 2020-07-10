@@ -112,15 +112,7 @@ export function SafeFunction(
       extraParamKeys,
     )(onError)
   } catch (e) {
-    processErrorWithSourceMap(
-      (error) => {
-        throw error
-      },
-      e,
-      code,
-      null,
-      true,
-    )
-    throw new Error('never')
+    processErrorWithSourceMap(onError, e, code, null, true)
+    return NO_OP
   }
 }

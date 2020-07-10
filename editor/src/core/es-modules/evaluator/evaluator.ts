@@ -1,12 +1,21 @@
 import { SafeFunction } from '../../shared/code-exec-utils'
 import { transformCssNodeModule } from '../../shared/css-style-loader'
+import { createEsModuleError } from '../package-manager/package-manager'
 
 function getFileExtension(filepath: string) {
   const lastDot = filepath.lastIndexOf('.')
   return filepath.slice(lastDot + 1)
 }
 
+function isEsModuleError(error: Error) {
+  return (
+    error.name === 'SyntaxError' &&
+    (error.message === `Unexpected token 'export'` || error.message === `Unexpected token 'import'`)
+  )
+}
+
 function evaluateJs(
+  filePath: string,
   moduleCode: string,
   partialModule: { exports: {} },
   requireFn: (toImport: string) => unknown,
@@ -31,6 +40,9 @@ function evaluateJs(
     [],
     (error) => {
       // we throw the error here, the require fn will catch it
+      if (isEsModuleError(error)) {
+        createEsModuleError(filePath, error)
+      }
       throw error
     },
   )()
@@ -45,7 +57,7 @@ function evaluateCss(
   requireFn: (toImport: string) => unknown,
 ) {
   const transpiledCode = transformCssNodeModule(filepath, moduleCode)
-  return evaluateJs(transpiledCode, partialModule, requireFn)
+  return evaluateJs(filepath, transpiledCode, partialModule, requireFn)
 }
 
 export function evaluator(
@@ -57,7 +69,7 @@ export function evaluator(
   const fileExtension = getFileExtension(filepath)
   switch (fileExtension) {
     case 'js':
-      return evaluateJs(moduleCode, partialModule, requireFn)
+      return evaluateJs(filepath, moduleCode, partialModule, requireFn)
     case 'css':
       return evaluateCss(filepath, moduleCode, partialModule, requireFn)
     default:
