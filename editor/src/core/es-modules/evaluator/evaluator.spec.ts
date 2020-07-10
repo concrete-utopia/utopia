@@ -1,6 +1,9 @@
 import * as fileNoImports from '../test-cases/file-no-imports.json'
 import * as fileWithImports from '../test-cases/file-with-imports.json'
+import * as fileWithEsModule from '../test-cases/file-with-es-module.json'
 import { evaluator } from './evaluator'
+import { NO_OP } from '../../shared/utils'
+import { FriendlyErrorMessage } from '../package-manager/package-manager'
 
 describe('ESModule Evaluator', () => {
   it('evalautes a module that has no imports', () => {
@@ -44,5 +47,13 @@ describe('ESModule Evaluator', () => {
     )
     expect(result.exports).toHaveProperty('hello')
     expect((result.exports as any).hello).toEqual('hello!')
+  })
+
+  it('when trying to evaluate an ES Module, we throw a friendly error', () => {
+    const mainFile = fileWithEsModule.contents['/node_modules/mypackage/index.js'].content
+    const fakeRequire = NO_OP
+    expect(() =>
+      evaluator('/node_modules/mypackage/index.js', mainFile, { exports: {} }, fakeRequire),
+    ).toThrowError(FriendlyErrorMessage)
   })
 })

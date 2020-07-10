@@ -10,7 +10,7 @@ function getFileExtension(filepath: string) {
 function isEsModuleError(error: Error) {
   return (
     error.name === 'SyntaxError' &&
-    (error.message === `Unexpected token 'export'` || error.message === `Unexpected token 'import'`)
+    (error.message.indexOf('export') > -1 || error.message.indexOf('import') > -1)
   )
 }
 

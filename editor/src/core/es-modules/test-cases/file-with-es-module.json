@@ -1,0 +1,20 @@
+{
+  "contents": {
+    "/node_modules/mypackage/index.js": {
+      "content": "export const cica = 'hello';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/package.json": {
+      "content": "{\"name\": \"mypackage\", \"version\": \"0.0.1\", \"main\": \"index.js\", \"module\": \"index.js\"}",
+      "isModule": false,
+      "requires": []
+    }
+  },
+  "dependency": {
+    "name": "mypackage",
+    "version": "0.0.1"
+  },
+  "peerDependencies": {},
+  "dependencyDependencies": {}
+}
