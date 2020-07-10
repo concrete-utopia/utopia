@@ -58,7 +58,7 @@ function processPackageJson(
   potentiallyJsonCode: string,
   containerFolder: string[],
 ): string[] | null {
-  var packageJson: any
+  let packageJson: any
   try {
     packageJson = JSON.parse(potentiallyJsonCode)
   } catch {
