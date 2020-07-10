@@ -3,7 +3,7 @@ import * as fileWithImports from '../test-cases/file-with-imports.json'
 import * as fileWithEsModule from '../test-cases/file-with-es-module.json'
 import { evaluator } from './evaluator'
 import { NO_OP } from '../../shared/utils'
-import { FriendlyErrorMessage } from '../package-manager/package-manager'
+import { FriendlyEsModuleErrorMessage } from '../package-manager/package-manager'
 
 describe('ESModule Evaluator', () => {
   it('evalautes a module that has no imports', () => {
@@ -54,6 +54,6 @@ describe('ESModule Evaluator', () => {
     const fakeRequire = NO_OP
     expect(() =>
       evaluator('/node_modules/mypackage/index.js', mainFile, { exports: {} }, fakeRequire),
-    ).toThrowError(FriendlyErrorMessage)
+    ).toThrowError(FriendlyEsModuleErrorMessage)
   })
 })

@@ -1,7 +1,7 @@
 import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
 import { resolveModule } from './module-resolution'
 import { createNodeModules } from './test-utils'
-import { FriendlyErrorMessage } from './package-manager'
+import { FriendlyEsModuleErrorMessage } from './package-manager'
 
 describe('ES Package Manager Module Resolution', () => {
   function resolve(toImport: string): string | null {
@@ -90,7 +90,7 @@ describe('ES Package Manager Module Resolution', () => {
   })
 
   it('throws a friendly error when finding a package.json that has no main entry and only has a module entry', () => {
-    expect(() => resolve('es-module-only-package')).toThrowError(FriendlyErrorMessage)
+    expect(() => resolve('es-module-only-package')).toThrowError(FriendlyEsModuleErrorMessage)
   })
 
   // it('loads self references', () => {

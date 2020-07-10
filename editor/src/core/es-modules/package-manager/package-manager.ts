@@ -27,13 +27,13 @@ export function createDependencyNotFoundError(importOrigin: string, toImport: st
   return error
 }
 
-export const FriendlyErrorMessage = `This probably means that you tried to load an ES Module. Utopia doesn't currently support ES Modules. NPM probably has another variant of this module which supports Node Modules.`
+export const FriendlyEsModuleErrorMessage = `This probably means that you tried to load an ES Module. Utopia doesn't currently support ES Modules. NPM probably has another variant of this module which supports Node Modules.`
 export function createEsModuleError(filePath: string, error: Error) {
   return (error.message = `${error.message}
 
 Error found in: ${filePath}
 
-${FriendlyErrorMessage}`)
+${FriendlyEsModuleErrorMessage}`)
 }
 
 function resolveBuiltinDependency(toImport: string): any | undefined {
