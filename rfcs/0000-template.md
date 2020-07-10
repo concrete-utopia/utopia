@@ -35,7 +35,7 @@ Why should we *not* do this? Please consider:
 
 - implementation cost, both in term of code size and complexity
 - whether the proposed feature can be implemented in user space
-- the impact on teaching people React
+- the impact on teaching people Utopia
 - integration of this feature with other existing and planned features
 - cost of migrating existing React applications (is it a breaking change?)
 
