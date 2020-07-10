@@ -171,3 +171,9 @@ function createFakeMetadataForJSXElement(
     throw new Error(`Not a JSX element ${element}`)
   }
 }
+
+export function wait(timeout: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout)
+  })
+}

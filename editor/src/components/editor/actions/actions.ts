@@ -34,6 +34,7 @@ import {
   findElementAtPath,
   MetadataUtils,
   findJSXElementAtPath,
+  convertMetadataMap,
 } from '../../../core/model/element-metadata-utils'
 import {
   ComponentMetadata,
@@ -177,6 +178,7 @@ import {
   produceCanvasTransientState,
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
+  cullSpyCollector,
 } from '../../canvas/canvas-utils'
 import { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../../common/actions'
@@ -425,6 +427,7 @@ import {
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
 import { urlSafeText } from '../../../core/shared/dom-utils'
+import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 
 export function clearSelection(): EditorAction {
   return {
@@ -3541,10 +3544,30 @@ export const UPDATE_FNS = {
       }
     }
   },
-  SAVE_DOM_REPORT: (action: SaveDOMReport, editor: EditorModel): EditorModel => {
+  SAVE_DOM_REPORT: (
+    action: SaveDOMReport,
+    editor: EditorModel,
+    spyCollector: UiJsxCanvasContextData,
+  ): EditorModel => {
+    // Note: If this DOM report only includes values for a single canvas
+    // it will wipe out any spy data that any other canvas may have produced.
+
+    // Keep the size of the spy collector down to some manageable level.
+    cullSpyCollector(spyCollector, action.elementMetadata)
+
+    // Calculate the spy metadata given what has been collected.
+    const spyResult = convertMetadataMap(
+      spyCollector.current.spyValues.metadata,
+      spyCollector.current.spyValues.scenes,
+    )
+
     return keepDeepReferenceEqualityIfPossible(editor, {
       ...editor,
-      domMetadataKILLME: action.elementMetadata,
+      domMetadataKILLME: keepDeepReferenceEqualityIfPossible(
+        editor.domMetadataKILLME,
+        action.elementMetadata,
+      ),
+      spyMetadataKILLME: keepDeepReferenceEqualityIfPossible(editor.spyMetadataKILLME, spyResult),
     })
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {

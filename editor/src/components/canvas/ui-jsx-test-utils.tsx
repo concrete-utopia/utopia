@@ -52,6 +52,7 @@ import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { scenePath } from '../../core/shared/template-path'
 import { NO_OP } from '../../core/shared/utils'
+import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer-test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 
@@ -61,20 +62,6 @@ function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInsta
     element: left('REMOVED_FROM_TEST'),
     children: element.children.map(sanitizeElementMetadata),
   }
-}
-
-function sanitizeJsxMetadata(jsxMetadata: ComponentMetadata[]) {
-  return jsxMetadata.map((componentMetadata) => {
-    const rootElement = componentMetadata.rootElement
-    if (rootElement != null) {
-      return {
-        ...componentMetadata,
-        rootElement: sanitizeElementMetadata(rootElement),
-      }
-    } else {
-      return componentMetadata
-    }
-  })
 }
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -107,13 +94,15 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
     api.setState(workingEditorState)
   }
 
+  const spyCollector = emptyUiJsxCanvasContextData()
+
   const asyncTestDispatch = async (
     actions: ReadonlyArray<EditorAction>,
     priority?: DispatchPriority, // priority is not used in the editorDispatch now, but we didn't delete this param yet
     waitForDispatchEntireUpdate = false,
     waitForADomReport = false,
   ) => {
-    const result = editorDispatch(asyncTestDispatch, actions, workingEditorState)
+    const result = editorDispatch(asyncTestDispatch, actions, workingEditorState, spyCollector)
     result.entireUpdateFinished.then(() => dispatchFollowUpActionsFinished.resolve())
     workingEditorState = result
     if (actions[0]?.action === 'SAVE_DOM_REPORT') {
@@ -163,9 +152,10 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
         numberOfCommits++
       }}
     >
-      <HotRoot api={api} useStore={storeHook} />
+      <HotRoot api={api} useStore={storeHook} spyCollector={spyCollector} />
     </React.Profiler>,
   )
+
   const noFileOpenText = result.getByText('No file open')
   expect(noFileOpenText).toBeDefined()
 
