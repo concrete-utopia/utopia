@@ -345,7 +345,23 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key === 'Backspace' || e.key === 'Delete') {
+          const previousPosition = stops[selectedStopUnorderedIndex].position.value
+          const { indexWithLowestDistance } = stops.reduce(
+            (working, stop, i) => {
+              const distance = Math.abs(previousPosition - stop.position.value)
+              if (distance < working.lowestDistance) {
+                working.lowestDistance = distance
+                working.indexWithLowestDistance = i
+              }
+              return working
+            },
+            {
+              lowestDistance: 100,
+              indexWithLowestDistance: 0,
+            },
+          )
           setStops(deleteStop(selectedStopUnorderedIndex, stops), false)
+          setSelectedStopUnorderedIndex(indexWithLowestDistance)
           e.stopPropagation()
         } else if (e.key === 'ArrowLeft') {
           // TODO: transient actions when holding
@@ -363,7 +379,7 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
           e.stopPropagation()
         }
       },
-      [selectedStopUnorderedIndex, stops, setStops],
+      [selectedStopUnorderedIndex, stops, setStops, setSelectedStopUnorderedIndex],
     )
 
     const focusStopEditor = React.useCallback(() => {
