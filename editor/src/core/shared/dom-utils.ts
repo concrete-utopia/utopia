@@ -1,6 +1,5 @@
 import { ReactDOM } from 'react'
 import { canvasRectangle, CanvasRectangle, scaleRect } from './math-utils'
-import { replaceAll } from './string-utils'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -219,8 +218,4 @@ export function getCanvasRectangleFromElement(
     }),
     scale,
   )
-}
-
-export function urlSafeText(text: string): string {
-  return encodeURIComponent(replaceAll(text.toLowerCase(), ' ', '-'))
 }

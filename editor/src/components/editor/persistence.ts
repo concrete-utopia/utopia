@@ -24,10 +24,8 @@ import {
 } from './server'
 import { createNewProjectName, PersistentModel } from './store/editor-state'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
-import { arrayContains } from '../../core/shared/utils'
+import { arrayContains, projectURLForProject } from '../../core/shared/utils'
 import { getPNGBufferOfElementWithID } from './screenshot-utils'
-import * as friendlyWords from 'friendly-words'
-import { urlSafeText } from '../../core/shared/dom-utils'
 
 const domtoimage = require('domtoimage')
 
@@ -183,10 +181,9 @@ export async function createNewProjectFromSampleProject(
 export function pushProjectURLToBrowserHistory(
   title: string,
   projectId: string,
-  suffix: string,
+  projectName: string,
 ): void {
-  const safeSuffix = urlSafeText(suffix)
-  window.top.history.pushState({}, title, `/p/${projectId}-${safeSuffix}/`)
+  window.top.history.pushState({}, title, projectURLForProject(projectId, projectName))
 }
 
 function onFirstSaveCompleted(projectId: string, name: string, dispatch: EditorDispatch) {
