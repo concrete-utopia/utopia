@@ -55,6 +55,18 @@ export type SetStateAndPropsValue<T> = (
   transient: boolean,
 ) => void
 
+/**
+ * Hook with similar functionality to `usePropControlledState`, but with an
+ * added custom equality check so derived local states can be checked against
+ * props.
+ *
+ * An example: in the gradient stop picker we need to keep stop index constant
+ * even when stops' positions don't match their array index order. This means
+ * props (which are ordered during printing) won't necessarily match the stops'
+ * order. The @shouldPropsUpdateState parameter lets us order state stops to
+ * see if the props value could be derived from the state value.
+ *
+ */
 export function usePropControlledDerivedState<T>(
   propValue: T,
   shouldPropsUpdateState: ShouldPropsUpdateStateFn<T>,
