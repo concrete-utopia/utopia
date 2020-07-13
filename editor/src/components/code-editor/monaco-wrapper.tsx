@@ -27,6 +27,8 @@ import { arrayEquals } from '../../core/shared/utils'
 import * as TP from '../../core/shared/template-path'
 import * as FontFaceObserver from 'fontfaceobserver'
 
+const CodeEditorFont = 'Inconsolata'
+
 interface MonacoWrapperProps {
   value: string
   filename: string
@@ -309,7 +311,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
 
     this.initCompletionProvider()
     this.initHoverProvider()
-    this.measureCustomFont('Inconsolata')
+    this.measureCustomFont(CodeEditorFont)
   }
 
   initCompletionProvider = () => {
@@ -504,7 +506,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
         value: 'model: null',
         language: 'model: null',
         model: this.getOrCreateModel(fileUri),
-        fontFamily: 'Inconsolata, Akkurat-Mono Menlo, Monaco, fixed',
+        fontFamily: `${CodeEditorFont}, Akkurat-Mono Menlo, Monaco, fixed`,
         fontSize: 14,
         wordWrap: 'on',
         smoothScrolling: true,
