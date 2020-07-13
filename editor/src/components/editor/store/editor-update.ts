@@ -55,9 +55,9 @@ export function runSimpleLocalEditorAction(
 ): EditorState {
   switch (action.action) {
     case 'NEW':
-      return UPDATE_FNS.NEW(action, state, workers, dispatch)
+      return UPDATE_FNS.NEW(action, state, workers)
     case 'LOAD':
-      return UPDATE_FNS.LOAD(action, state, dispatch)
+      return UPDATE_FNS.LOAD(action, state)
     case 'DUPLICATE_SELECTED':
       return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch)
     case 'UPDATE_DUPLICATION_STATE':
