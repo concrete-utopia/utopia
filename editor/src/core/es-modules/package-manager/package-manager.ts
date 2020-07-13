@@ -91,7 +91,7 @@ function resolveBuiltinDependency(toImport: string): any | undefined {
 export const getMemoizedRequireFn = memoize(
   (nodeModules: NodeModules, dispatch: EditorDispatch) => {
     return getRequireFn(
-      (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, false)]),
+      (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
       nodeModules,
     )
   },

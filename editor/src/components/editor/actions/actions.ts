@@ -145,7 +145,7 @@ import {
   codeNeedsPrinting,
   mergeImports,
 } from '../../../core/workers/common/project-file-utils'
-import { OutgoingWorkerMessage, isJsFile } from '../../../core/workers/ts/ts-worker'
+import { OutgoingWorkerMessage, isJsFile, BuildType } from '../../../core/workers/ts/ts-worker'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { defaultProject, sampleProjectForId } from '../../../sample-projects/sample-project-utils'
 import { KeysPressed } from '../../../utils/keyboard'
@@ -1304,6 +1304,7 @@ export const UPDATE_FNS = {
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
+        projectFilesBuildResults: {},
       },
       codeResultCache: action.codeResultCache,
     }
@@ -1317,6 +1318,7 @@ export const UPDATE_FNS = {
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
+        projectFilesBuildResults: {},
       },
       codeResultCache: action.codeResultCache,
       safeMode: action.safeMode,
@@ -2956,13 +2958,14 @@ export const UPDATE_FNS = {
       codeResultCache: {
         skipDeepFreeze: true,
         cache: {
-          ...(editor.codeResultCache == null ? {} : editor.codeResultCache.cache),
+          ...editor.codeResultCache.cache,
           ...action.codeResultCache.cache,
         },
         exportsInfo: action.codeResultCache.exportsInfo,
         propertyControlsInfo: action.codeResultCache.propertyControlsInfo,
         error: action.codeResultCache.error,
         requireFn: action.codeResultCache.requireFn,
+        projectModules: action.codeResultCache.projectModules,
       },
     }
   },
@@ -3223,7 +3226,7 @@ export const UPDATE_FNS = {
       const deps = dependenciesFromPackageJsonContents(file.fileContents)
       if (deps != null) {
         fetchNodeModules(deps).then((nodeModules) =>
-          dispatch([updateNodeModulesContents(nodeModules, true)]),
+          dispatch([updateNodeModulesContents(nodeModules, 'full-build')]),
         )
       }
     }
@@ -3922,7 +3925,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorState => {
     let result: EditorState
-    if (action.startFromScratch) {
+    if (action.buildType === 'full-build') {
       result = produce(editor, (draft) => {
         draft.nodeModules.files = action.contentsToAdd
       })
@@ -3938,12 +3941,13 @@ export const UPDATE_FNS = {
     result = {
       ...result,
       codeResultCache: generateCodeResultCache(
+        editor.codeResultCache.projectModules,
         codeCacheToBuildResult(result.codeResultCache.cache),
         result.codeResultCache.exportsInfo,
         result.nodeModules.files,
         dispatch,
         dependenciesFromProjectContents(result.projectContents),
-        action.startFromScratch,
+        action.buildType,
       ),
     }
 
@@ -4235,12 +4239,13 @@ export async function newProject(
   const nodeModules = await fetchNodeModules(npmDependencies)
 
   const codeResultCache = generateCodeResultCache(
+    {},
     SampleFileBuildResult,
     SampleFileBundledExportsInfo,
     nodeModules,
     dispatch,
     npmDependencies,
-    true,
+    'full-build',
   )
 
   renderEditorRoot()
@@ -4292,12 +4297,13 @@ export async function load(
   if (model.exportsInfo.length > 0) {
     workers.sendInitMessage(typeDefinitions, model.projectContents)
     codeResultCache = generateCodeResultCache(
+      {},
       model.buildResult,
       model.exportsInfo,
       nodeModules,
       dispatch,
       npmDependencies,
-      true,
+      'full-build',
     )
   } else {
     codeResultCache = await loadCodeResult(
@@ -4346,12 +4352,13 @@ function loadCodeResult(
       switch (data.type) {
         case 'build': {
           const codeResultCache = generateCodeResultCache(
+            {},
             data.buildResult,
             data.exportsInfo,
             nodeModules,
             dispatch,
             dependenciesFromProjectContents(projectContents),
-            true,
+            'full-build',
           )
           resolve(codeResultCache)
           workers.removeBundleResultEventListener(handleMessage)
@@ -4878,10 +4885,14 @@ export function redo(): Redo {
   }
 }
 
-export function updateCodeResultCache(codeResultCache: CodeResultCache): UpdateCodeResultCache {
+export function updateCodeResultCache(
+  codeResultCache: CodeResultCache,
+  buildType: BuildType,
+): UpdateCodeResultCache {
   return {
     action: 'UPDATE_CODE_RESULT_CACHE',
     codeResultCache: codeResultCache,
+    buildType: buildType,
   }
 }
 
@@ -5289,12 +5300,12 @@ export function resetPropToDefault(
 
 export function updateNodeModulesContents(
   contentsToAdd: NodeModules,
-  startFromScratch: boolean,
+  buildType: BuildType,
 ): UpdateNodeModulesContents {
   return {
     action: 'UPDATE_NODE_MODULES_CONTENTS',
     contentsToAdd: contentsToAdd,
-    startFromScratch: startFromScratch,
+    buildType: buildType,
   }
 }
 

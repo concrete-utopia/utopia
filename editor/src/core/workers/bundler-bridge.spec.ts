@@ -32,7 +32,7 @@ describe('Bundler State Machine', () => {
         exportsInfo: [],
         jobID: 'no-id',
         buildResult: {},
-        fullBuild: true,
+        buildType: 'full-build',
       }),
     )
 
@@ -89,7 +89,7 @@ describe('Bundler State Machine', () => {
       exportsInfo: [],
       jobID: 'no-id',
       buildResult: {},
-      fullBuild: true,
+      buildType: 'full-build',
     })
     await updateFilePromise
     // check that the worker goes back to idle after the bundler promise resolves
