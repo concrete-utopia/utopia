@@ -175,5 +175,13 @@ export async function fetchMissingFileDependency(
   const nodeModulesNewEntry: NodeModules = {
     [filepath]: newFile,
   }
+  /**
+   * we flip dependency.downloadStarted back to false. the reason is that there might be a race condition
+   * between saving the nodeModules that triggered this fetchMissingFileDependency and saving the updateNodeModules itself.
+   * in case the other nodeModules wins, we want to re-run fetchMissingFileDependency, to be able to dispatch updateNodeModules for a second time.
+   * this solution is not nice and I hope we can remove it soon
+   */
+  // MUTATION
+  dependency.downloadStarted = false
   updateNodeModules(nodeModulesNewEntry)
 }
