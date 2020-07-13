@@ -71,7 +71,7 @@ export function usePropControlledDerivedState<T>(
   propValue: T,
   shouldPropsUpdateState: ShouldPropsUpdateStateFn<T>,
   onSubmitValue: OnSubmitValue<T>,
-  onTransientSubmitValue: OnSubmitValue<T>,
+  onTransientSubmitValue?: OnSubmitValue<T>,
 ): [T, SetStateAndPropsValue<T>] {
   const [localState, setLocalState] = React.useState<T>(propValue)
 
