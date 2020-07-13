@@ -2912,8 +2912,10 @@ export function isCSSBackground(value: CSSBackground | CSSColor): value is CSSBa
   )
 }
 
-export function orderStops(stops: Array<CSSGradientStop>): Array<CSSGradientStop> {
-  return Utils.stripNulls(stops).sort((stopA, stopB) => stopA.position.value - stopB.position.value)
+export function orderStops(stops: ReadonlyArray<CSSGradientStop>): Array<CSSGradientStop> {
+  return Utils.stripNulls(stops as Array<CSSGradientStop>).sort(
+    (stopA, stopB) => stopA.position.value - stopB.position.value,
+  )
 }
 
 export function printStops(stops: Array<CSSGradientStop>): string {

@@ -323,6 +323,34 @@ function deleteStop(index: number, oldValue: Array<CSSGradientStop>): Array<CSSG
   return working
 }
 
+function deleteStopAndUpdateIndex(
+  index: number,
+  stops: Array<CSSGradientStop>,
+  setStops: SetStateAndPropsValue<Array<CSSGradientStop>>,
+  setSelectedStopUnorderedIndex: React.Dispatch<number>,
+) {
+  const previousPosition = stops[index]?.position.value ?? 0
+  const newStops = deleteStop(index, stops)
+  const { indexWithLowestDistance } = newStops.reduce(
+    (working, stop: CSSGradientStop | undefined, i) => {
+      if (stop != null) {
+        const distance = Math.abs(previousPosition - stop.position.value)
+        if (distance < working.lowestDistance) {
+          working.lowestDistance = distance
+          working.indexWithLowestDistance = i
+        }
+      }
+      return working
+    },
+    {
+      lowestDistance: 100,
+      indexWithLowestDistance: 0,
+    },
+  )
+  setStops(newStops, false)
+  setSelectedStopUnorderedIndex(indexWithLowestDistance)
+}
+
 export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
   'GradientStopsEditor',
   ({ selectedStopUnorderedIndex, setSelectedStopUnorderedIndex, stops, setStops }) => {
@@ -345,23 +373,12 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key === 'Backspace' || e.key === 'Delete') {
-          const previousPosition = stops[selectedStopUnorderedIndex].position.value
-          const { indexWithLowestDistance } = stops.reduce(
-            (working, stop, i) => {
-              const distance = Math.abs(previousPosition - stop.position.value)
-              if (distance < working.lowestDistance) {
-                working.lowestDistance = distance
-                working.indexWithLowestDistance = i
-              }
-              return working
-            },
-            {
-              lowestDistance: 100,
-              indexWithLowestDistance: 0,
-            },
+          deleteStopAndUpdateIndex(
+            selectedStopUnorderedIndex,
+            stops,
+            setStops,
+            setSelectedStopUnorderedIndex,
           )
-          setStops(deleteStop(selectedStopUnorderedIndex, stops), false)
-          setSelectedStopUnorderedIndex(indexWithLowestDistance)
           e.stopPropagation()
         } else if (e.key === 'ArrowLeft') {
           // TODO: transient actions when holding
@@ -398,9 +415,9 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
 
     const getIndexedDeleteStop = React.useCallback(
       (index: number) => () => {
-        deleteStop(index, stops)
+        deleteStopAndUpdateIndex(index, stops, setStops, setSelectedStopUnorderedIndex)
       },
-      [stops],
+      [stops, setStops, setSelectedStopUnorderedIndex],
     )
 
     return (
@@ -434,20 +451,22 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
             }}
             onMouseDown={onMouseDown}
           >
-            {stops.map((stop, unorderedIndex) => (
-              <GradientStop
-                // key={index} is usually an anti-pattern, but reorders only
-                // change stops' position values, leaving array order stable.
-                key={unorderedIndex}
-                stop={stop}
-                unorderedIndex={unorderedIndex}
-                selected={selectedStopUnorderedIndex === unorderedIndex}
-                setSelectedIndex={setSelectedStopUnorderedIndex}
-                focusStopEditor={focusStopEditor}
-                indexedUpdateStop={getIndexedUpdateStop(unorderedIndex, stops, setStops)}
-                indexedDeleteStop={getIndexedDeleteStop(unorderedIndex)}
-              />
-            ))}
+            {stops.map((stop, unorderedIndex) =>
+              stop != null ? (
+                <GradientStop
+                  // key={index} is usually an anti-pattern, but reorders only
+                  // change stops' position values, leaving array order stable.
+                  key={unorderedIndex}
+                  stop={stop}
+                  unorderedIndex={unorderedIndex}
+                  selected={selectedStopUnorderedIndex === unorderedIndex}
+                  setSelectedIndex={setSelectedStopUnorderedIndex}
+                  focusStopEditor={focusStopEditor}
+                  indexedUpdateStop={getIndexedUpdateStop(unorderedIndex, stops, setStops)}
+                  indexedDeleteStop={getIndexedDeleteStop(unorderedIndex)}
+                />
+              ) : null,
+            )}
           </div>
 
           <div

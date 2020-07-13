@@ -23,6 +23,7 @@ import {
   CSSSolidBackgroundLayer,
   CSSURLFunctionBackgroundLayer,
   defaultConicGradientBackgroundLayer,
+  defaultCSSColor,
   defaultCSSRadialGradientSize,
   EmptyInputValue,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
@@ -405,7 +406,10 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
       if (oldBackgroundLayer != null) {
         if (isCSSGradientBackgroundLayer(oldBackgroundLayer)) {
           const newBackgroundLayers = [...oldValue]
-          newBackgroundLayers[backgroundLayerIndex] = { ...oldBackgroundLayer, stops: newStops }
+          newBackgroundLayers[backgroundLayerIndex] = {
+            ...oldBackgroundLayer,
+            stops: newStops as Array<CSSGradientStop>,
+          }
           return newBackgroundLayers
         }
       }
@@ -416,7 +420,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
 
   const [onSubmitValueStops, onTransientSubmitValueStops] = props.useSubmitValueFactory(updateStops)
 
-  const [stops, setStops] = usePropControlledDerivedState(
+  const [stops, setStops] = usePropControlledDerivedState<Array<CSSGradientStop>>(
     isCSSGradientBackgroundLayer(props.value) ? props.value.stops : [],
     shouldPropsUpdateStateStops,
     onSubmitValueStops,
@@ -557,7 +561,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
                 />
               ) : (
                 <ColorPickerInner
-                  value={stops[selectedStopUnorderedIndex].color}
+                  value={stops[selectedStopUnorderedIndex]?.color ?? { ...defaultCSSColor }}
                   onSubmitValue={onSubmitValueColor}
                   onTransientSubmitValue={onTransientSubmitValueColor}
                   offsetX={props.offsetX}
