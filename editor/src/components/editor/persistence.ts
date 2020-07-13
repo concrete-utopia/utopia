@@ -27,6 +27,7 @@ import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { arrayContains } from '../../core/shared/utils'
 import { getPNGBufferOfElementWithID } from './screenshot-utils'
 import * as friendlyWords from 'friendly-words'
+import { urlSafeText } from '../../core/shared/dom-utils'
 
 const domtoimage = require('domtoimage')
 
@@ -184,7 +185,8 @@ export function pushProjectURLToBrowserHistory(
   projectId: string,
   suffix: string,
 ): void {
-  window.top.history.pushState({}, title, `/p/${projectId}-${suffix}/`)
+  const safeSuffix = urlSafeText(suffix)
+  window.top.history.pushState({}, title, `/p/${projectId}-${safeSuffix}/`)
 }
 
 function onFirstSaveCompleted(projectId: string, name: string, dispatch: EditorDispatch) {
