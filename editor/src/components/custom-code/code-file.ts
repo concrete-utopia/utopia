@@ -131,6 +131,19 @@ function processExportsInfo(exportValues: ModuleExportValues, exportTypes: Modul
   }
 }
 
+export function incorporateBuildResult(
+  nodeModules: NodeModules,
+  buildResult: MultiFileBuildResult,
+): void {
+  // Mutates nodeModules.
+  fastForEach(Object.keys(buildResult), (moduleKey) => {
+    const modulesFile = buildResult[moduleKey]
+    if (modulesFile.transpiledCode != null) {
+      nodeModules[moduleKey] = esCodeFile(modulesFile.transpiledCode, null)
+    }
+  })
+}
+
 export function generateCodeResultCache(
   existingModules: MultiFileBuildResult,
   updatedModules: MultiFileBuildResult,
@@ -152,12 +165,7 @@ export function generateCodeResultCache(
           ...existingModules,
           ...updatedModules,
         }
-  fastForEach(Object.keys(modules), (moduleKey) => {
-    const modulesFile = modules[moduleKey]
-    if (modulesFile.transpiledCode != null) {
-      nodeModulesAndProjectFiles[moduleKey] = esCodeFile(modulesFile.transpiledCode, null)
-    }
-  })
+  incorporateBuildResult(nodeModulesAndProjectFiles, modules)
   const requireFn = getMemoizedRequireFn(nodeModulesAndProjectFiles, dispatch)
 
   const exportValues = getExportValuesFromAllModules(modules, requireFn)

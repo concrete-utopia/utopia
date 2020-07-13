@@ -21,6 +21,7 @@ import { fetchNodeModules } from '../core/es-modules/package-manager/fetch-packa
 import { createBundle } from '../core/workers/bundler-promise'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { fastForEach } from '../core/shared/utils'
+import { incorporateBuildResult } from '../components/custom-code/code-file'
 
 interface PolledLoadParams {
   projectId: string
@@ -187,12 +188,7 @@ const initPreview = () => {
       await createBundle(bundlerWorker, emptyTypeDefinitions, projectContents)
     ).buildResult
 
-    fastForEach(Object.keys(bundledProjectFiles), (bundleProjectFileKey) => {
-      const bundledProjectFile = bundledProjectFiles[bundleProjectFileKey]
-      if (bundledProjectFile.transpiledCode != null) {
-        nodeModules[bundleProjectFileKey] = esCodeFile(bundledProjectFile.transpiledCode, null)
-      }
-    })
+    incorporateBuildResult(nodeModules, bundledProjectFiles)
     const require = getRequireFn((modulesToAdd: NodeModules) => {
       // MUTATION
       Object.assign(nodeModules, modulesToAdd)
