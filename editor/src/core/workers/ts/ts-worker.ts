@@ -96,12 +96,14 @@ export interface MultiFileBuildResult {
   [filename: string]: SingleFileBuildResult
 }
 
+export type BuildType = 'full-build' | 'incremental'
+
 export interface BuildResultMessage {
   type: 'build'
   exportsInfo: ReadonlyArray<ExportsInfo>
   buildResult: MultiFileBuildResult
   jobID: string
-  fullBuild: boolean
+  buildType: BuildType
 }
 
 export interface UpdateProcessedMessage {
@@ -174,14 +176,14 @@ function createBuildResultMessage(
   exportsInfo: Array<ExportsInfo>,
   buildResult: MultiFileBuildResult,
   jobID: string,
-  fullBuild: boolean,
+  buildType: BuildType,
 ): BuildResultMessage {
   return {
     type: 'build',
     exportsInfo: exportsInfo,
     buildResult: buildResult,
     jobID: jobID,
-    fullBuild: fullBuild,
+    buildType: buildType,
   }
 }
 
@@ -681,7 +683,7 @@ function watch(
               [filename]: buildResult,
             },
             jobIDInner,
-            false,
+            'incremental',
           ),
         )
       }
@@ -698,7 +700,7 @@ function watch(
       }
       exportsInfo.push(parseExportsInfo(rootFile))
     })
-    sendMessage(createBuildResultMessage(exportsInfo, projectBuild, jobID, true))
+    sendMessage(createBuildResultMessage(exportsInfo, projectBuild, jobID, 'full-build'))
   }
 
   function parseExportsInfo(fileName: string): ExportsInfo {

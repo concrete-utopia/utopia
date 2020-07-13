@@ -376,6 +376,7 @@ if (root != null) {
 } //# sourceMappingURL=index.js.map",
     },
   },
+  "buildType": "full-build",
   "exportsInfo": Array [
     Object {
       "code": "/** @jsx jsx */
@@ -564,7 +565,6 @@ ReactDOM.render(<App />, root);
       "filename": "/src/index.js",
     },
   ],
-  "fullBuild": true,
   "jobID": "9897a53d_15b6_400d_be5f_ca5d66e47087",
   "type": "build",
 }
@@ -745,6 +745,7 @@ exports.ComponentWithProps.propertyControls = {
 }; //# sourceMappingURL=components.js.map",
     },
   },
+  "buildType": "incremental",
   "exportsInfo": Array [
     Object {
       "code": "// component library
@@ -825,7 +826,6 @@ ComponentWithProps.propertyControls = {
       "filename": "/src/components.js",
     },
   ],
-  "fullBuild": false,
   "jobID": "689b7b1b_d5ed_4876_ba62_bc66e2096bf6",
   "type": "build",
 }
@@ -864,6 +864,7 @@ Object {
       "transpiledCode": null,
     },
   },
+  "buildType": "incremental",
   "exportsInfo": Array [
     Object {
       "code": "// component library
@@ -944,7 +945,6 @@ ComponentWithProps.propertyControls = {
       "filename": "/src/components.js",
     },
   ],
-  "fullBuild": false,
   "jobID": "ffcc378d_6bc8_4635_9fd9_e54565241f27",
   "type": "build",
 }

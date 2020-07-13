@@ -796,7 +796,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     }
 
     const nodeModules = createNodeModules(fileWithImports.contents)
-    const action = updateNodeModulesContents(nodeModules, false)
+    const action = updateNodeModulesContents(nodeModules, 'incremental')
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
@@ -819,7 +819,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     const mockDispatch = jest.fn()
 
     const nodeModules = createNodeModules(fileWithImports.contents)
-    const action = updateNodeModulesContents(nodeModules, true)
+    const action = updateNodeModulesContents(nodeModules, 'full-build')
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,

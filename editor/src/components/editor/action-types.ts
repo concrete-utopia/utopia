@@ -46,6 +46,7 @@ import {
   StoredEditorState,
 } from './store/editor-state'
 import { Notice } from '../common/notices'
+import { BuildType } from '../../core/workers/ts/ts-worker'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
 export interface PropertyTarget {
@@ -469,7 +470,7 @@ export interface SelectAllSiblings {
 export interface UpdateCodeResultCache {
   action: 'UPDATE_CODE_RESULT_CACHE'
   codeResultCache: CodeResultCache
-  fullBuild: boolean
+  buildType: BuildType
 }
 
 export interface SetCodeEditorVisibility {
@@ -718,7 +719,7 @@ export interface ResetPropToDefault {
 export interface UpdateNodeModulesContents {
   action: 'UPDATE_NODE_MODULES_CONTENTS'
   contentsToAdd: NodeModules
-  startFromScratch: boolean
+  buildType: BuildType
 }
 
 export interface UpdatePackageJson {

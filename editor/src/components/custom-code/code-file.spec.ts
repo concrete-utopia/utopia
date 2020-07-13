@@ -246,7 +246,7 @@ describe('Generating codeResultCache', () => {
       {},
       NO_OP,
       [],
-      false,
+      'incremental',
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -259,7 +259,7 @@ describe('Generating codeResultCache', () => {
       SampleNodeModules,
       NO_OP,
       [],
-      false,
+      'incremental',
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -272,7 +272,7 @@ describe('Generating codeResultCache', () => {
       {},
       NO_OP,
       [],
-      false,
+      'incremental',
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -287,7 +287,7 @@ describe('Creating require function', () => {
       {},
       NO_OP,
       [],
-      false,
+      'incremental',
     )
 
     expect(codeResultCache.requireFn('/', './app', false)).toMatchSnapshot()
@@ -300,7 +300,7 @@ describe('Creating require function', () => {
       {},
       NO_OP,
       [],
-      false,
+      'incremental',
     )
 
     expect(codeResultCache.requireFn('/', './app', false)).toMatchSnapshot()
@@ -314,7 +314,7 @@ describe('Creating require function', () => {
       {},
       NO_OP,
       [],
-      false,
+      'incremental',
     )
 
     expect(() => codeResultCache.requireFn('/', './src/code', false)).toThrowErrorMatchingSnapshot()
@@ -327,7 +327,7 @@ describe('Creating require function', () => {
       {},
       NO_OP,
       [],
-      false,
+      'incremental',
     )
 
     expect(() => codeResultCache.requireFn('/', 'foo', false)).toThrowErrorMatchingSnapshot()

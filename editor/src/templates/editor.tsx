@@ -136,11 +136,11 @@ export class Editor {
               this.storedState.editor.nodeModules.files,
               this.boundDispatch,
               dependenciesFromProjectContents(this.storedState.editor.projectContents),
-              msg.fullBuild,
+              msg.buildType,
             )
 
             if (codeResultCache != null) {
-              actions.push(EditorActions.updateCodeResultCache(codeResultCache, msg.fullBuild))
+              actions.push(EditorActions.updateCodeResultCache(codeResultCache, msg.buildType))
             }
           }
           const errors = getAllErrorsFromBuildResult(msg.buildResult)

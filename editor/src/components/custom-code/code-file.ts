@@ -1,6 +1,11 @@
 import Utils from '../../utils/utils'
 import { RequireFn, NpmDependency } from '../../core/shared/npm-dependency-types'
-import { ExportType, ExportsInfo, MultiFileBuildResult } from '../../core/workers/ts/ts-worker'
+import {
+  ExportType,
+  ExportsInfo,
+  MultiFileBuildResult,
+  BuildType,
+} from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
@@ -133,19 +138,20 @@ export function generateCodeResultCache(
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
   npmDependencies: NpmDependency[],
-  fullBuild: boolean,
+  fullBuild: BuildType,
 ): CodeResultCache {
   let nodeModulesAndProjectFiles: NodeModules = {
     ...nodeModules,
   }
   // Makes the assumption that `fullBuild` and `updatedModules` are in line
   // with each other.
-  let modules: MultiFileBuildResult = fullBuild
-    ? { ...updatedModules }
-    : {
-        ...existingModules,
-        ...updatedModules,
-      }
+  let modules: MultiFileBuildResult =
+    fullBuild === 'full-build'
+      ? { ...updatedModules }
+      : {
+          ...existingModules,
+          ...updatedModules,
+        }
   fastForEach(Object.keys(modules), (moduleKey) => {
     const modulesFile = modules[moduleKey]
     if (modulesFile.transpiledCode != null) {
