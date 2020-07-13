@@ -1304,6 +1304,7 @@ export const UPDATE_FNS = {
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
+        projectFilesBuildResults: {},
       },
       codeResultCache: action.codeResultCache,
     }
@@ -1317,6 +1318,7 @@ export const UPDATE_FNS = {
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
+        projectFilesBuildResults: {},
       },
       codeResultCache: action.codeResultCache,
       safeMode: action.safeMode,
@@ -2956,13 +2958,14 @@ export const UPDATE_FNS = {
       codeResultCache: {
         skipDeepFreeze: true,
         cache: {
-          ...(editor.codeResultCache == null ? {} : editor.codeResultCache.cache),
+          ...editor.codeResultCache.cache,
           ...action.codeResultCache.cache,
         },
         exportsInfo: action.codeResultCache.exportsInfo,
         propertyControlsInfo: action.codeResultCache.propertyControlsInfo,
         error: action.codeResultCache.error,
         requireFn: action.codeResultCache.requireFn,
+        projectModules: action.codeResultCache.projectModules,
       },
     }
   },
@@ -3938,6 +3941,7 @@ export const UPDATE_FNS = {
     result = {
       ...result,
       codeResultCache: generateCodeResultCache(
+        editor.codeResultCache.projectModules,
         codeCacheToBuildResult(result.codeResultCache.cache),
         result.codeResultCache.exportsInfo,
         result.nodeModules.files,
@@ -4235,6 +4239,7 @@ export async function newProject(
   const nodeModules = await fetchNodeModules(npmDependencies)
 
   const codeResultCache = generateCodeResultCache(
+    {},
     SampleFileBuildResult,
     SampleFileBundledExportsInfo,
     nodeModules,
@@ -4292,6 +4297,7 @@ export async function load(
   if (model.exportsInfo.length > 0) {
     workers.sendInitMessage(typeDefinitions, model.projectContents)
     codeResultCache = generateCodeResultCache(
+      {},
       model.buildResult,
       model.exportsInfo,
       nodeModules,
@@ -4346,6 +4352,7 @@ function loadCodeResult(
       switch (data.type) {
         case 'build': {
           const codeResultCache = generateCodeResultCache(
+            {},
             data.buildResult,
             data.exportsInfo,
             nodeModules,
@@ -4878,10 +4885,14 @@ export function redo(): Redo {
   }
 }
 
-export function updateCodeResultCache(codeResultCache: CodeResultCache): UpdateCodeResultCache {
+export function updateCodeResultCache(
+  codeResultCache: CodeResultCache,
+  fullBuild: boolean,
+): UpdateCodeResultCache {
   return {
     action: 'UPDATE_CODE_RESULT_CACHE',
     codeResultCache: codeResultCache,
+    fullBuild: fullBuild,
   }
 }
 

@@ -792,6 +792,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       files: {
         '/node_modules/example.js': esCodeFile('nothing to see here', null),
       },
+      projectFilesBuildResults: {},
     }
 
     const nodeModules = createNodeModules(fileWithImports.contents)

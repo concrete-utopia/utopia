@@ -1,16 +1,16 @@
 import Utils from '../../utils/utils'
-import * as Es6MicroLoader from './es6-micro-loader'
 import { RequireFn, NpmDependency } from '../../core/shared/npm-dependency-types'
 import { ExportType, ExportsInfo, MultiFileBuildResult } from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
 import { getControlsForExternalDependencies } from '../../core/property-controls/property-controls-utils'
-import { NodeModules } from '../../core/shared/project-file-types'
+import { NodeModules, esCodeFile } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
 import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import { updateNodeModulesContents } from '../editor/actions/actions'
+import { fastForEach } from '../../core/shared/utils'
 export interface CodeResult {
   exports: ModuleExportTypesAndValues
   transpiledCode: string | null
@@ -42,56 +42,13 @@ export type CodeResultCache = {
   propertyControlsInfo: PropertyControlsInfo
   error: Error | null
   requireFn: UtopiaRequireFn
+  projectModules: MultiFileBuildResult
 }
 
 type ModuleExportValues = { [name: string]: any }
 type ModuleExportTypes = { [name: string]: ExportType }
 type ExportValue = { value: any }
 type ModuleExportTypesAndValues = { [name: string]: ExportType & ExportValue }
-
-export function processModuleCodes(
-  buildResult: MultiFileBuildResult,
-  npmRequireFn: RequireFn,
-  fullBuild: boolean,
-): {
-  requireFn: UtopiaRequireFn
-  error: Error | null
-} {
-  const System = Es6MicroLoader.System
-  Es6MicroLoader.reset(npmRequireFn, fullBuild)
-
-  let error: Error | null = null
-
-  const moduleNames = Object.keys(buildResult)
-
-  // First eval all buildResult to fill in the System object with the transpiled codes
-  moduleNames.forEach((moduleName) => {
-    const module = buildResult[moduleName]
-    if (module.transpiledCode == null) {
-      return
-    }
-    try {
-      // the transpiled code contains calls to System.register
-      // this is the point where we populate Es6microLoader with the project files
-      System.setModule(moduleName, module.sourceMap)
-      eval(module.transpiledCode)
-    } catch (e) {
-      // skipping this module, there is a runtime error evaluating it
-      // we only store the last error, that is enough now
-      error = e
-    }
-  })
-
-  // This requireFn uses the System created and populated above, containing all project files + the npm bundle
-  const requireFn = (importOrigin: string, toImport: string, silent: boolean) => {
-    return System.getModule(importOrigin, toImport, silent)
-  }
-
-  return {
-    requireFn: requireFn,
-    error: error,
-  }
-}
 
 function getExportValuesFromAllModules(
   buildResult: MultiFileBuildResult,
@@ -170,16 +127,33 @@ function processExportsInfo(exportValues: ModuleExportValues, exportTypes: Modul
 }
 
 export function generateCodeResultCache(
-  modules: MultiFileBuildResult,
+  existingModules: MultiFileBuildResult,
+  updatedModules: MultiFileBuildResult,
   exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
   npmDependencies: NpmDependency[],
   fullBuild: boolean,
 ): CodeResultCache {
-  const npmRequireFn = getMemoizedRequireFn(nodeModules, dispatch)
+  let nodeModulesAndProjectFiles: NodeModules = {
+    ...nodeModules,
+  }
+  // Makes the assumption that `fullBuild` and `updatedModules` are in line
+  // with each other.
+  let modules: MultiFileBuildResult = fullBuild
+    ? { ...updatedModules }
+    : {
+        ...existingModules,
+        ...updatedModules,
+      }
+  fastForEach(Object.keys(modules), (moduleKey) => {
+    const modulesFile = modules[moduleKey]
+    if (modulesFile.transpiledCode != null) {
+      nodeModulesAndProjectFiles[moduleKey] = esCodeFile(modulesFile.transpiledCode, null)
+    }
+  })
+  const requireFn = getMemoizedRequireFn(nodeModulesAndProjectFiles, dispatch)
 
-  const { requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
   const exportValues = getExportValuesFromAllModules(modules, requireFn)
   let cache: { [code: string]: CodeResult } = {}
   let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
@@ -210,8 +184,9 @@ export function generateCodeResultCache(
     exportsInfo: exportsInfo,
     cache: cache,
     propertyControlsInfo: propertyControlsInfo,
-    error: error,
+    error: null,
     requireFn: requireFn,
+    projectModules: modules,
   }
 }
 

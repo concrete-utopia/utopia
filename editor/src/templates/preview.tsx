@@ -3,7 +3,6 @@ import * as R from 'ramda'
 import * as ReactErrorOverlay from 'react-error-overlay'
 import { getProjectID, PREVIEW_IS_EMBEDDED, BASE_URL, getQueryParam } from '../common/env-vars'
 import { fetchLocalProject } from '../common/persistence'
-import { processModuleCodes } from '../components/custom-code/code-file'
 import { sendPreviewModel } from '../components/editor/actions/actions'
 import { dependenciesFromProjectContents } from '../components/editor/npm-dependency/npm-dependency'
 import { projectIsStoredLocally } from '../components/editor/persistence'
@@ -21,6 +20,7 @@ import { objectMap } from '../core/shared/object-utils'
 import { fetchNodeModules } from '../core/es-modules/package-manager/fetch-packages'
 import { createBundle } from '../core/workers/bundler-promise'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
+import { fastForEach } from '../core/shared/utils'
 
 interface PolledLoadParams {
   projectId: string
@@ -173,10 +173,7 @@ const initPreview = () => {
   const previewRender = async (projectContents: ProjectContents) => {
     const npmDependencies = dependenciesFromProjectContents(projectContents)
     let nodeModules = await fetchNodeModules(npmDependencies)
-    const require = getRequireFn((modulesToAdd: NodeModules) => {
-      // MUTATION
-      Object.assign(nodeModules, modulesToAdd)
-    }, nodeModules)
+
     /**
      * please note that we are passing in an empty object instead of the .d.ts files
      * the reason for this is that we only use the bundler as a transpiler here
@@ -189,6 +186,17 @@ const initPreview = () => {
     const bundledProjectFiles = (
       await createBundle(bundlerWorker, emptyTypeDefinitions, projectContents)
     ).buildResult
+
+    fastForEach(Object.keys(bundledProjectFiles), (bundleProjectFileKey) => {
+      const bundledProjectFile = bundledProjectFiles[bundleProjectFileKey]
+      if (bundledProjectFile.transpiledCode != null) {
+        nodeModules[bundleProjectFileKey] = esCodeFile(bundledProjectFile.transpiledCode, null)
+      }
+    })
+    const require = getRequireFn((modulesToAdd: NodeModules) => {
+      // MUTATION
+      Object.assign(nodeModules, modulesToAdd)
+    }, nodeModules)
 
     // replacing the document body first
     const packageJson = projectContents['/package.json']
@@ -230,13 +238,12 @@ const initPreview = () => {
             `Error processing the project files: the build result does not contain the preview file: ${previewJSPath}`,
           )
         } else {
-          const { requireFn } = processModuleCodes(bundledProjectFiles, require, true)
           /**
            * require the js entry point file which will evaluate the module.
            * the React entry point js file traditionally has a top level side effect,
            * calling ReactDOM.render() which starts the Preview app.
            */
-          requireFn('/', previewJSPath, false)
+          require('/', previewJSPath)
         }
       }
     }

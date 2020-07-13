@@ -228,6 +228,7 @@ export interface EditorState {
   nodeModules: {
     skipDeepFreeze: true // when we evaluate the code files we plan to mutate the content with the eval result
     files: NodeModules
+    projectFilesBuildResults: MultiFileBuildResult
   }
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
@@ -966,10 +967,11 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
     projectContents: {},
-    codeResultCache: generateCodeResultCache({}, [], {}, dispatch, [], true),
+    codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, [], true),
     nodeModules: {
       skipDeepFreeze: true,
       files: {},
+      projectFilesBuildResults: {},
     },
     selectedViews: [],
     highlightedViews: [],

@@ -469,6 +469,7 @@ export interface SelectAllSiblings {
 export interface UpdateCodeResultCache {
   action: 'UPDATE_CODE_RESULT_CACHE'
   codeResultCache: CodeResultCache
+  fullBuild: boolean
 }
 
 export interface SetCodeEditorVisibility {
