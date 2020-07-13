@@ -44,6 +44,7 @@ import {
 import { NO_OP } from '../core/shared/utils'
 import { create } from '../core/shared/property-path'
 import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
+import { generateCodeResultCache } from '../components/custom-code/code-file'
 
 export function createEditorStates(
   selectedFileOrTab: string | EditorTab = '/src/app.js',
@@ -56,7 +57,7 @@ export function createEditorStates(
   const selectedTab: EditorTab =
     typeof selectedFileOrTab === 'string' ? openFileTab(selectedFileOrTab) : selectedFileOrTab
   const editor: EditorState = {
-    ...createEditorState(NO_OP),
+    ...createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true)),
     projectContents: {
       '/src/app.js': uiJsFile(
         right(

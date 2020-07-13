@@ -10,7 +10,7 @@ import {
   PRODUCTION_ENV,
   requireElectron,
 } from '../common/env-vars'
-import { EditorID } from '../core/shared/utils'
+import { EditorID, NO_OP } from '../core/shared/utils'
 import CanvasActions from '../components/canvas/canvas-actions'
 import { CodeResultCache, generateCodeResultCache } from '../components/custom-code/code-file'
 import { getAllErrorsFromBuildResult } from '../components/custom-code/custom-code-utils'
@@ -87,7 +87,7 @@ export class Editor {
     updateCssVars()
     startPreviewConnectedMonitoring(this.boundDispatch)
 
-    let emptyEditorState = createEditorState(this.boundDispatch)
+    let emptyEditorState = createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true))
     const fromScratchResult = deriveState(emptyEditorState, null, false)
     emptyEditorState = fromScratchResult.editor
     const derivedState = fromScratchResult.derived

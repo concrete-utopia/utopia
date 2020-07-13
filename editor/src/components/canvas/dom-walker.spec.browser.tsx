@@ -33,6 +33,7 @@ import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
+import { generateCodeResultCache } from '../custom-code/code-file'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   return {
@@ -57,7 +58,7 @@ function sanitizeJsxMetadata(jsxMetadata: ComponentMetadata[]) {
 }
 
 async function renderTestEditorWithCode(appUiJsFileCode: string) {
-  let emptyEditorState = createEditorState(NO_OP)
+  let emptyEditorState = createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true))
   const fromScratchResult = deriveState(emptyEditorState, null, false)
   emptyEditorState = fromScratchResult.editor
   const derivedState = fromScratchResult.derived

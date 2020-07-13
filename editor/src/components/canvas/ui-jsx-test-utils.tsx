@@ -55,6 +55,7 @@ import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer-test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
+import { generateCodeResultCache } from '../custom-code/code-file'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   return {
@@ -71,7 +72,7 @@ process.on('unhandledRejection', (reason, promise) => {
 export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const renderCountBaseline = renderCount
 
-  let emptyEditorState = createEditorState(NO_OP)
+  let emptyEditorState = createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true))
   const fromScratchResult = deriveState(emptyEditorState, null, false)
   emptyEditorState = fromScratchResult.editor
   const derivedState = fromScratchResult.derived

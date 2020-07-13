@@ -68,6 +68,7 @@ import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
 import { TestScenePath } from '../../canvas/ui-jsx-test-utils'
 import { NO_OP } from '../../../core/shared/utils'
+import { generateCodeResultCache } from '../../custom-code/code-file'
 const chaiExpect = Chai.expect
 
 describe('SET_PROP', () => {
@@ -110,7 +111,7 @@ describe('SET_PROP', () => {
     ),
   )
   const testEditor: EditorState = deepFreeze({
-    ...createEditorState(NO_OP),
+    ...createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true)),
     projectContents: {
       '/src/app.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
     },
@@ -202,7 +203,7 @@ describe('SET_CANVAS_FRAMES', () => {
     ),
   )
   const testEditor: EditorState = deepFreeze({
-    ...createEditorState(NO_OP),
+    ...createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true)),
     projectContents: {
       '/src/app.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
     },
@@ -319,7 +320,7 @@ describe('moveTemplate', () => {
 
   function testEditor(uiFile: Readonly<ParseSuccess>): EditorState {
     let editor: EditorState = {
-      ...createEditorState(NO_OP),
+      ...createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true)),
       projectContents: {
         '/src/app.js': uiJsFile(right(uiFile), null, RevisionsState.ParsedAhead, 0),
       },
@@ -745,7 +746,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     0,
   )
   const testEditorWithPins: EditorState = deepFreeze({
-    ...createEditorState(NO_OP),
+    ...createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true)),
     projectContents: {
       '/src/app.js': fileForUI,
     },

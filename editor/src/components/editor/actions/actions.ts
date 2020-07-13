@@ -1287,14 +1287,9 @@ let checkpointTimeoutId: number | undefined = undefined
 
 // JS Editor Actions:
 export const UPDATE_FNS = {
-  NEW: (
-    action: NewProject,
-    oldEditor: EditorModel,
-    workers: UtopiaTsWorkers,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
+  NEW: (action: NewProject, oldEditor: EditorModel, workers: UtopiaTsWorkers): EditorModel => {
     const newPersistentModel = applyMigrations(action.persistentModel)
-    const newModel = editorModelFromPersistentModel(newPersistentModel, dispatch)
+    const newModel = editorModelFromPersistentModel(newPersistentModel, action.codeResultCache)
     workers.sendInitMessage(
       getDependencyTypeDefinitions(action.nodeModules),
       newModel.projectContents,
@@ -1308,10 +1303,10 @@ export const UPDATE_FNS = {
       codeResultCache: action.codeResultCache,
     }
   },
-  LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  LOAD: (action: Load, oldEditor: EditorModel): EditorModel => {
     const migratedModel = applyMigrations(action.model)
     const newModel: EditorModel = {
-      ...editorModelFromPersistentModel(migratedModel, dispatch),
+      ...editorModelFromPersistentModel(migratedModel, action.codeResultCache),
       projectName: action.title,
       id: action.projectId,
       nodeModules: {
@@ -4285,7 +4280,6 @@ export async function load(
 
   const npmDependencies = dependenciesFromProjectContents(model.projectContents)
   const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
-
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
 
   let codeResultCache: CodeResultCache

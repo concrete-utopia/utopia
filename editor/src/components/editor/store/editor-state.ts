@@ -952,7 +952,7 @@ export function mergePersistentModel(
   }
 }
 
-export function createEditorState(dispatch: EditorDispatch): EditorState {
+export function createEditorState(codeResultCache: CodeResultCache): EditorState {
   return {
     id: null,
     appID: null,
@@ -966,7 +966,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
     projectContents: {},
-    codeResultCache: generateCodeResultCache({}, [], {}, dispatch, [], true),
+    codeResultCache: codeResultCache,
     nodeModules: {
       skipDeepFreeze: true,
       files: {},
@@ -1204,9 +1204,9 @@ export function createCanvasModelKILLME(
 
 export function editorModelFromPersistentModel(
   persistentModel: PersistentModel,
-  dispatch: EditorDispatch,
+  codeResultCache: CodeResultCache,
 ): EditorState {
-  const createdEditorState = createEditorState(dispatch)
+  const createdEditorState = createEditorState(codeResultCache)
   const editor: EditorState = {
     ...createdEditorState,
     ...{
