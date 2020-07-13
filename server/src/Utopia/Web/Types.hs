@@ -63,6 +63,8 @@ type GetUserAPI = "v1" :> "user" :> Get '[JSON] UserResponse
 
 type EmptyProjectPageAPI = "project" :> Get '[HTML] H.Html
 
+type ShortEmptyProjectPageAPI = "p" :> Get '[HTML] H.Html
+
 type ProjectPageAPI = "project" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
 
 type ShortProjectPageAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
@@ -151,6 +153,7 @@ type Protected = LogoutAPI
 
 type Unprotected = AuthenticateAPI
               :<|> EmptyProjectPageAPI
+              :<|> ShortEmptyProjectPageAPI
               :<|> ProjectPageAPI
               :<|> ShortProjectPageAPI
               :<|> EmptyPreviewPageAPI
