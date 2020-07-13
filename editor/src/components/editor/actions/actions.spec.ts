@@ -111,7 +111,7 @@ describe('SET_PROP', () => {
     ),
   )
   const testEditor: EditorState = deepFreeze({
-    ...createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true)),
+    ...createEditorState(generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build')),
     projectContents: {
       '/src/app.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
     },
@@ -203,7 +203,7 @@ describe('SET_CANVAS_FRAMES', () => {
     ),
   )
   const testEditor: EditorState = deepFreeze({
-    ...createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true)),
+    ...createEditorState(generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build')),
     projectContents: {
       '/src/app.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
     },
@@ -320,7 +320,7 @@ describe('moveTemplate', () => {
 
   function testEditor(uiFile: Readonly<ParseSuccess>): EditorState {
     let editor: EditorState = {
-      ...createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true)),
+      ...createEditorState(generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build')),
       projectContents: {
         '/src/app.js': uiJsFile(right(uiFile), null, RevisionsState.ParsedAhead, 0),
       },
@@ -746,7 +746,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     0,
   )
   const testEditorWithPins: EditorState = deepFreeze({
-    ...createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true)),
+    ...createEditorState(generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build')),
     projectContents: {
       '/src/app.js': fileForUI,
     },

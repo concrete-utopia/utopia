@@ -72,7 +72,9 @@ process.on('unhandledRejection', (reason, promise) => {
 export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const renderCountBaseline = renderCount
 
-  let emptyEditorState = createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true))
+  let emptyEditorState = createEditorState(
+    generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build'),
+  )
   const fromScratchResult = deriveState(emptyEditorState, null, false)
   emptyEditorState = fromScratchResult.editor
   const derivedState = fromScratchResult.derived

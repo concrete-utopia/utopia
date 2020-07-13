@@ -87,7 +87,9 @@ export class Editor {
     updateCssVars()
     startPreviewConnectedMonitoring(this.boundDispatch)
 
-    let emptyEditorState = createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true))
+    let emptyEditorState = createEditorState(
+      generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build'),
+    )
     const fromScratchResult = deriveState(emptyEditorState, null, false)
     emptyEditorState = fromScratchResult.editor
     const derivedState = fromScratchResult.derived

@@ -57,7 +57,7 @@ export function createEditorStates(
   const selectedTab: EditorTab =
     typeof selectedFileOrTab === 'string' ? openFileTab(selectedFileOrTab) : selectedFileOrTab
   const editor: EditorState = {
-    ...createEditorState(generateCodeResultCache({}, [], {}, NO_OP, [], true)),
+    ...createEditorState(generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build')),
     projectContents: {
       '/src/app.js': uiJsFile(
         right(
