@@ -2,7 +2,7 @@ import * as Chroma from 'chroma-js'
 import * as R from 'ramda'
 import * as React from 'react'
 import { colorTheme, FlexColumn } from 'uuiui'
-import { betterReactMemo, Utils } from 'uuiui-deps'
+import { betterReactMemo } from 'uuiui-deps'
 import { ControlStyleDefaults } from '../../../common/control-status'
 import {
   CSSBackgroundLayers,
@@ -13,7 +13,7 @@ import {
   orderStops,
   printLinearGradientBackgroundLayer,
 } from '../../../common/css-utils'
-import { checkerboardBackground } from '../../../common/inspector-utils'
+import { checkerboardBackground, SetStateAndPropsValue } from '../../../common/inspector-utils'
 import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import {
   GradientPickerWidth,
@@ -224,8 +224,7 @@ const GradientStop = betterReactMemo<GradientStopProps>(
 
 export interface GradientControlProps {
   stops: Array<CSSGradientStop>
-  onSubmitValue: (newValue: Array<CSSGradientStop>) => void
-  onTransientSubmitValue: (newValue: Array<CSSGradientStop>) => void
+  setStops: SetStateAndPropsValue<Array<CSSGradientStop>>
   useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers>
   selectedStopUnorderedIndex: number
   setSelectedStopUnorderedIndex: (index: number) => void
@@ -298,14 +297,12 @@ function updateStopWithDrag(
 function getIndexedUpdateStop(
   index: number,
   oldValue: Array<CSSGradientStop>,
-  setStateStops: React.Dispatch<Array<CSSGradientStop>>,
-  setDirtyStops: React.Dispatch<TransientDirtyState>,
+  setStateStops: SetStateAndPropsValue<Array<CSSGradientStop>>,
 ) {
   return function (newStop: CSSGradientStop, transient?: boolean) {
     const workingValue = [...oldValue]
     workingValue[index] = newStop
-    setStateStops(workingValue)
-    setDirtyStops(transient ? 'dirty-transient' : 'dirty')
+    setStateStops(workingValue, false)
   }
 }
 
@@ -326,87 +323,47 @@ function deleteStop(index: number, oldValue: Array<CSSGradientStop>): Array<CSSG
   return working
 }
 
-type TransientDirtyState = 'dirty' | 'dirty-transient' | 'clean'
-
 export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
   'GradientStopsEditor',
-  ({
-    selectedStopUnorderedIndex,
-    setSelectedStopUnorderedIndex,
-    onSubmitValue,
-    onTransientSubmitValue,
-    stops: propsStops,
-  }) => {
+  ({ selectedStopUnorderedIndex, setSelectedStopUnorderedIndex, stops, setStops }) => {
     const ref: React.RefObject<HTMLDivElement> = React.useRef(null)
-    const [stateStops, setStateStops] = React.useState<Array<CSSGradientStop>>(propsStops)
-    const [dirtyStops, setDirtyStops] = React.useState<TransientDirtyState>('clean')
-
-    // console.log(
-    //   propsStops.filter((v) => v).map((s) => s.color?.hex),
-    //   orderStops(stateStops)
-    //     .filter((v) => v)
-    //     .map((s) => s.color?.hex),
-    //   dirtyStops,
-    // )
-
-    React.useEffect(() => {
-      if (dirtyStops === 'clean' && !R.equals(propsStops, orderStops(stateStops))) {
-        setStateStops(propsStops)
-      } else if (dirtyStops === 'dirty') {
-        onSubmitValue(Utils.stripNulls(stateStops))
-        setDirtyStops('clean')
-      } else if (dirtyStops === 'dirty-transient') {
-        onTransientSubmitValue(Utils.stripNulls(stateStops))
-        setDirtyStops('clean')
-      }
-    }, [propsStops, stateStops, dirtyStops, onSubmitValue, onTransientSubmitValue])
 
     const onMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
         if (ref.current != null) {
           const newStops = insertStop(
             Number(((e.nativeEvent.offsetX / GradientPickerWidth) * 100).toFixed(2)),
-            stateStops,
+            stops,
           )
-          setStateStops(newStops)
+          setStops(newStops, false)
           setSelectedStopUnorderedIndex(newStops.length - 1)
-          setDirtyStops('dirty')
         }
       },
-      [stateStops, setSelectedStopUnorderedIndex],
+      [stops, setSelectedStopUnorderedIndex, setStops],
     )
 
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key === 'Backspace' || e.key === 'Delete') {
-          setStateStops(deleteStop(selectedStopUnorderedIndex, stateStops))
-          setDirtyStops('dirty')
+          setStops(deleteStop(selectedStopUnorderedIndex, stops), false)
           e.stopPropagation()
         } else if (e.key === 'ArrowLeft') {
           // TODO: transient actions when holding
-          setStateStops(
-            incrementSelectedStopPosition(
-              e.shiftKey ? -10 : -1,
-              stateStops,
-              selectedStopUnorderedIndex,
-            ),
+          setStops(
+            incrementSelectedStopPosition(e.shiftKey ? -10 : -1, stops, selectedStopUnorderedIndex),
+            false,
           )
-          setDirtyStops('dirty')
           e.stopPropagation()
         } else if (e.key === 'ArrowRight') {
           // TODO: transient actions when holding
-          setStateStops(
-            incrementSelectedStopPosition(
-              e.shiftKey ? 10 : 1,
-              stateStops,
-              selectedStopUnorderedIndex,
-            ),
+          setStops(
+            incrementSelectedStopPosition(e.shiftKey ? 10 : 1, stops, selectedStopUnorderedIndex),
+            false,
           )
-          setDirtyStops('dirty')
           e.stopPropagation()
         }
       },
-      [selectedStopUnorderedIndex, stateStops],
+      [selectedStopUnorderedIndex, stops, setStops],
     )
 
     const focusStopEditor = React.useCallback(() => {
@@ -425,9 +382,9 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
 
     const getIndexedDeleteStop = React.useCallback(
       (index: number) => () => {
-        deleteStop(index, stateStops)
+        deleteStop(index, stops)
       },
-      [stateStops],
+      [stops],
     )
 
     return (
@@ -461,7 +418,7 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
             }}
             onMouseDown={onMouseDown}
           >
-            {stateStops.map((stop, unorderedIndex) => (
+            {stops.map((stop, unorderedIndex) => (
               <GradientStop
                 // key={index} is usually an anti-pattern, but reorders only
                 // change stops' position values, leaving array order stable.
@@ -471,12 +428,7 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
                 selected={selectedStopUnorderedIndex === unorderedIndex}
                 setSelectedIndex={setSelectedStopUnorderedIndex}
                 focusStopEditor={focusStopEditor}
-                indexedUpdateStop={getIndexedUpdateStop(
-                  unorderedIndex,
-                  stateStops,
-                  setStateStops,
-                  setDirtyStops,
-                )}
+                indexedUpdateStop={getIndexedUpdateStop(unorderedIndex, stops, setStops)}
                 indexedDeleteStop={getIndexedDeleteStop(unorderedIndex)}
               />
             ))}
@@ -503,7 +455,7 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
                     unit: 'deg',
                   },
                 },
-                stops: propsStops,
+                stops,
               })},
               ${checkerboardBackground.backgroundImage}`,
               backgroundSize: `100% 100%, ${checkerboardBackground.backgroundSize}`,

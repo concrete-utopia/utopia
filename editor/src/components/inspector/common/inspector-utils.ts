@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { colorTheme } from 'uuiui'
+import { OnSubmitValue } from '../controls/control'
 import { ControlStatus } from './control-status'
 import { CSSBackgroundLayer, CSSTransformItem, CSSUnknownArrayItem } from './css-utils'
 
@@ -45,6 +46,49 @@ export function usePropControlledState<T>(
     setLocalState(propValue)
   }, [propValue, forceUpdateValue])
   return [localState, setLocalState, forceUpdate]
+}
+
+export type ShouldPropsUpdateStateFn<T> = (newStateValue: T, newPropValue: T) => boolean
+
+export type SetStateAndPropsValue<T> = (
+  setStateAction: React.SetStateAction<T>,
+  transient: boolean,
+) => void
+
+export function usePropControlledDerivedState<T>(
+  propValue: T,
+  shouldPropsUpdateState: ShouldPropsUpdateStateFn<T>,
+  onSubmitValue: OnSubmitValue<T>,
+  onTransientSubmitValue: OnSubmitValue<T>,
+): [T, SetStateAndPropsValue<T>] {
+  const [localState, setLocalState] = React.useState<T>(propValue)
+
+  const [dirty, setDirty] = React.useState(false)
+
+  const setStateAndPropsValue: SetStateAndPropsValue<T> = React.useCallback(
+    (setStateAction, transient) => {
+      const newValue =
+        typeof setStateAction === 'function'
+          ? (setStateAction as (prevState: T) => T)(localState)
+          : setStateAction
+      if (transient && onTransientSubmitValue != null) {
+        onTransientSubmitValue(newValue)
+      } else {
+        onSubmitValue(newValue)
+      }
+      setLocalState(newValue)
+      setDirty(true)
+    },
+    [localState, onSubmitValue, onTransientSubmitValue],
+  )
+
+  React.useEffect(() => {
+    if (!dirty && shouldPropsUpdateState(localState, propValue)) {
+      setLocalState(propValue)
+      setDirty(false)
+    }
+  }, [localState, propValue, shouldPropsUpdateState, dirty])
+  return [localState, setStateAndPropsValue]
 }
 
 export const stopPropagation = (e: React.MouseEvent) => {
