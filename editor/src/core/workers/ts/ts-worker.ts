@@ -96,12 +96,14 @@ export interface MultiFileBuildResult {
   [filename: string]: SingleFileBuildResult
 }
 
+export type BuildType = 'full-build' | 'incremental'
+
 export interface BuildResultMessage {
   type: 'build'
   exportsInfo: ReadonlyArray<ExportsInfo>
   buildResult: MultiFileBuildResult
   jobID: string
-  fullBuild: boolean
+  buildType: BuildType
 }
 
 export interface UpdateProcessedMessage {
@@ -114,7 +116,7 @@ export interface InitCompleteMessage {
   jobID: string
 }
 
-interface FileVersion {
+export interface FileVersion {
   versionNr: number
   asStringCached: string | null
 }
@@ -174,14 +176,14 @@ function createBuildResultMessage(
   exportsInfo: Array<ExportsInfo>,
   buildResult: MultiFileBuildResult,
   jobID: string,
-  fullBuild: boolean,
+  buildType: BuildType,
 ): BuildResultMessage {
   return {
     type: 'build',
     exportsInfo: exportsInfo,
     buildResult: buildResult,
     jobID: jobID,
-    fullBuild: fullBuild,
+    buildType: buildType,
   }
 }
 
@@ -258,7 +260,7 @@ export const DefaultLanguageServiceCompilerOptions: TS.CompilerOptions = {
   noEmitOnError: true,
   noImplicitAny: false,
   target: TS.ScriptTarget.ES2015,
-  module: TS.ModuleKind.System,
+  module: TS.ModuleKind.CommonJS,
   moduleResolution: TS.ModuleResolutionKind.NodeJs,
   jsx: TS.JsxEmit.React,
   allowJs: true,
@@ -550,6 +552,75 @@ export function configureLanguageService(
   return TS.createLanguageService(servicesHost, TS.createDocumentRegistry())
 }
 
+function logErrors(services: TS.LanguageService, fileName: string): Array<ErrorMessage> {
+  let allDiagnostics = services
+    .getCompilerOptionsDiagnostics()
+    .concat(services.getSyntacticDiagnostics(fileName))
+    .concat(services.getSemanticDiagnostics(fileName))
+
+  const errorMessages: ErrorMessage[] = allDiagnostics.map(diagnosticToErrorMessage)
+  return errorMessages
+}
+
+export interface EmitFileResult {
+  errors: Array<ErrorMessage>
+  transpiledCode: string | null
+  sourceMap: RawSourceMap | null
+}
+
+export function emitFile(services: TS.LanguageService, filename: string): EmitFileResult {
+  if (isTsFile(filename) || isJsFile(filename)) {
+    let output = services.getEmitOutput(filename)
+    let errorMessages: ErrorMessage[] = []
+
+    if (output.emitSkipped) {
+      errorMessages = logErrors(services, filename)
+      console.warn(`Emitting ${filename} failed`, errorMessages)
+    }
+    // TODO: jetpack jetpack we just expect that single file to be built what is changed
+    // Although potentially other files (e.g. which import from this) can be affected
+    // Let's handle this later, probably not really relevant for js files, where the imports are not checked anyway
+    const buildFile = output.outputFiles.find((outputFile) => outputFile.name.endsWith('.js'))
+    const sourceMapFile = output.outputFiles.find((outputFile) =>
+      outputFile.name.endsWith('.js.map'),
+    )
+
+    let transpiledCode = buildFile != null ? buildFile.text : null
+    let sourceMap = sourceMapFile != null ? (JSON.parse(sourceMapFile.text) as RawSourceMap) : null
+
+    if (buildFile != null) {
+      const babelResult = runBabel(buildFile.text, buildFile.name, sourceMap)
+      transpiledCode = babelResult.code
+      sourceMap =
+        sourceMap != null
+          ? {
+              ...babelResult.map,
+              file: sourceMap.file,
+            }
+          : null
+    }
+
+    return {
+      errors: errorMessages,
+      transpiledCode: transpiledCode,
+      sourceMap: sourceMap,
+    }
+  } else if (isCssFile(filename)) {
+    const content = fs.readFileSync(filename, 'utf8')
+    return {
+      errors: [],
+      transpiledCode: transformCssSystemModule(filename, content),
+      sourceMap: null,
+    }
+  } else {
+    return {
+      errors: [],
+      transpiledCode: null,
+      sourceMap: null,
+    }
+  }
+}
+
 function watch(
   codeFilesToWatch: string[],
   otherFilesToWatch: string[],
@@ -603,7 +674,7 @@ function watch(
     if (buildOrParsePrint === 'build') {
       if (contentChanged) {
         // write the output the browserfs
-        const buildResult = emitFile(filename)
+        const buildResult = emitFile(services, filename)
         const exportsInfo = [parseExportsInfo(filename)]
         sendMessage(
           createBuildResultMessage(
@@ -612,7 +683,7 @@ function watch(
               [filename]: buildResult,
             },
             jobIDInner,
-            false,
+            'incremental',
           ),
         )
       }
@@ -623,67 +694,13 @@ function watch(
     let projectBuild: MultiFileBuildResult = {}
     let exportsInfo: Array<ExportsInfo> = []
     ;[...codeFilesToWatch, ...otherFilesToWatch].forEach((rootFile) => {
-      const buildResult = emitFile(rootFile)
+      const buildResult = emitFile(services, rootFile)
       if (buildResult.transpiledCode != null) {
         projectBuild[rootFile] = buildResult
       }
       exportsInfo.push(parseExportsInfo(rootFile))
     })
-    sendMessage(createBuildResultMessage(exportsInfo, projectBuild, jobID, true))
-  }
-
-  function emitFile(filename: string) {
-    if (isTsFile(filename) || isJsFile(filename)) {
-      let output = services.getEmitOutput(filename)
-      let errorMessages: ErrorMessage[] = []
-
-      if (output.emitSkipped) {
-        errorMessages = logErrors(filename)
-        console.warn(`Emitting ${filename} failed`, errorMessages)
-      }
-      // TODO: jetpack jetpack we just expect that single file to be built what is changed
-      // Although potentially other files (e.g. which import from this) can be affected
-      // Let's handle this later, probably not really relevant for js files, where the imports are not checked anyway
-      const buildFile = output.outputFiles.find((outputFile) => outputFile.name.endsWith('.js'))
-      const sourceMapFile = output.outputFiles.find((outputFile) =>
-        outputFile.name.endsWith('.js.map'),
-      )
-
-      let transpiledCode = buildFile != null ? buildFile.text : null
-      let sourceMap =
-        sourceMapFile != null ? (JSON.parse(sourceMapFile.text) as RawSourceMap) : null
-
-      if (buildFile != null) {
-        const babelResult = runBabel(buildFile.text, buildFile.name, sourceMap)
-        transpiledCode = babelResult.code
-        sourceMap =
-          sourceMap != null
-            ? {
-                ...babelResult.map,
-                file: sourceMap.file,
-              }
-            : null
-      }
-
-      return {
-        errors: errorMessages,
-        transpiledCode: transpiledCode,
-        sourceMap: sourceMap,
-      }
-    } else if (isCssFile(filename)) {
-      const content = fs.readFileSync(filename, 'utf8')
-      return {
-        errors: [],
-        transpiledCode: transformCssSystemModule(filename, content),
-        sourceMap: null,
-      }
-    } else {
-      return {
-        errors: [],
-        transpiledCode: null,
-        sourceMap: null,
-      }
-    }
+    sendMessage(createBuildResultMessage(exportsInfo, projectBuild, jobID, 'full-build'))
   }
 
   function parseExportsInfo(fileName: string): ExportsInfo {
@@ -705,16 +722,6 @@ function watch(
     } else {
       return { filename: fileName, code: '', exportTypes: {} }
     }
-  }
-
-  function logErrors(fileName: string): Array<ErrorMessage> {
-    let allDiagnostics = services
-      .getCompilerOptionsDiagnostics()
-      .concat(services.getSyntacticDiagnostics(fileName))
-      .concat(services.getSemanticDiagnostics(fileName))
-
-    const errorMessages: ErrorMessage[] = allDiagnostics.map(diagnosticToErrorMessage)
-    return errorMessages
   }
 }
 

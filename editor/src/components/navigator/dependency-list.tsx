@@ -255,7 +255,9 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       this.props.editorDispatch([EditorActions.updatePackageJson(npmDependencies)])
 
       fetchNodeModules(npmDependencies).then((nodeModules) => {
-        this.props.editorDispatch([EditorActions.updateNodeModulesContents(nodeModules, true)])
+        this.props.editorDispatch([
+          EditorActions.updateNodeModulesContents(nodeModules, 'full-build'),
+        ])
         this.setState({ dependencyLoadingStatus: 'not-loading' })
       })
 
@@ -377,7 +379,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
               .then((nodeModules) => {
                 this.packagesUpdateSuccess(editedPackageName)
                 this.props.editorDispatch([
-                  EditorActions.updateNodeModulesContents(nodeModules, false),
+                  EditorActions.updateNodeModulesContents(nodeModules, 'incremental'),
                 ])
               })
               .catch((e) => this.packagesUpdateFailed(e, editedPackageName))

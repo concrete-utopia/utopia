@@ -127,25 +127,24 @@ export class Editor {
           // applicable, but since we now clear those on code changes, and failed builds are extremely fast,
           // this is near impossible to reproduce *right now*. However, it could still become a very real
           // issue in the future, so it still needs addressing
-          let updateCodeResultCacheAction: Array<EditorAction> = []
+          let actions: Array<EditorAction> = []
           if (!this.storedState.editor.safeMode) {
             const codeResultCache = generateCodeResultCache(
+              this.storedState.editor.codeResultCache.projectModules,
               msg.buildResult,
               msg.exportsInfo,
               this.storedState.editor.nodeModules.files,
               this.boundDispatch,
               dependenciesFromProjectContents(this.storedState.editor.projectContents),
-              msg.fullBuild,
+              msg.buildType,
             )
 
-            updateCodeResultCacheAction = Utils.maybeToArray(codeResultCache).map(
-              EditorActions.updateCodeResultCache,
-            )
+            if (codeResultCache != null) {
+              actions.push(EditorActions.updateCodeResultCache(codeResultCache, msg.buildType))
+            }
           }
           const errors = getAllErrorsFromBuildResult(msg.buildResult)
-          const actions = updateCodeResultCacheAction.concat(
-            EditorActions.setCodeEditorBuildErrors(errors),
-          )
+          actions.push(EditorActions.setCodeEditorBuildErrors(errors))
           this.storedState.dispatch(actions, 'everyone')
           break
         }
