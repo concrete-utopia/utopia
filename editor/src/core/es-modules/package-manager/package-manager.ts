@@ -27,6 +27,16 @@ export function createDependencyNotFoundError(importOrigin: string, toImport: st
   return error
 }
 
+// instead of making ES Modules work, we just try to solve them with a friendly error message. original ticket https://github.com/concrete-utopia/utopia/issues/83
+export const FriendlyEsModuleErrorMessage = `This probably means that you tried to load an ES Module. Utopia doesn't currently support ES Modules. NPM probably has another variant of this module which supports Node Modules.`
+export function createEsModuleError(filePath: string, error: Error) {
+  return (error.message = `${error.message}
+
+Error found in: ${filePath}
+
+${FriendlyEsModuleErrorMessage}`)
+}
+
 function resolveBuiltinDependency(toImport: string): any | undefined {
   const React = ImportedReact
   const ReactDOM = ImportedReactDOM
