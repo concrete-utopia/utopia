@@ -83,6 +83,13 @@ import {
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import { EditorDispatch } from '../editor/action-types'
+import { resolveModule } from '../../core/es-modules/package-manager/module-resolution'
+import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
+import { usePrevious } from '../editor/hook-utils'
+import { arrayEquals, fastForEach } from '../../core/shared/utils'
+import { unimportCSSFile } from '../../core/shared/css-style-loader'
+import { removeAll } from '../../core/shared/array-utils'
+import { normalizeName } from '../custom-code/custom-code-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -96,14 +103,21 @@ export interface UiJsxCanvasContextData {
     spyValues: SpyValues
   }
 }
-export const UiJsxCanvasContext = React.createContext<UiJsxCanvasContextData>({
-  current: {
-    spyValues: {
-      metadata: {},
-      scenes: {},
+
+export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
+  return {
+    current: {
+      spyValues: {
+        metadata: {},
+        scenes: {},
+      },
     },
-  },
-})
+  }
+}
+
+export const UiJsxCanvasContext = React.createContext<UiJsxCanvasContextData>(
+  emptyUiJsxCanvasContextData(),
+)
 UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
 
 export interface UiJsxCanvasProps {
@@ -117,7 +131,6 @@ export interface UiJsxCanvasProps {
   mountCount: number
   onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void
   walkDOM: boolean
-  spyEnabled: boolean
   imports: Imports
   topLevelElementsIncludingScenes: Array<TopLevelElement>
   dependencyOrdering: Array<string>
@@ -146,7 +159,6 @@ export function pickUiJsxCanvasProps(
   editor: EditorState,
   derived: DerivedState,
   walkDOM: boolean,
-  spyEnabled: boolean,
   onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
@@ -188,7 +200,6 @@ export function pickUiJsxCanvasProps(
     mountCount: editor.canvas.mountCount,
     onDomReport: onDomReport,
     walkDOM: walkDOM,
-    spyEnabled: spyEnabled,
     imports: imports,
     topLevelElementsIncludingScenes: topLevelElementsIncludingScenes,
     dependencyOrdering: dependencyOrdering,
@@ -258,7 +269,6 @@ interface MutableUtopiaContextProps {
   requireResult: MapLike<any>
   fileBlobs: UIFileBase64Blobs
   rootScope: MapLike<any>
-  spyEnabled: boolean
   reportError: (error: Error, errorInfo?: React.ErrorInfo) => void
   jsxFactoryFunctionName: string | null
 }
@@ -268,7 +278,6 @@ const MutableUtopiaContext = React.createContext<{ current: MutableUtopiaContext
     requireResult: {},
     fileBlobs: {},
     rootScope: {},
-    spyEnabled: false,
     reportError: Utils.NO_OP,
     jsxFactoryFunctionName: null,
   },
@@ -335,6 +344,17 @@ export function reorderTopLevelElements(
   return result
 }
 
+function cssImportsFromImports(imports: Imports): Array<string> {
+  let result: Array<string> = []
+  Utils.fastForEach(Object.keys(imports), (importSource) => {
+    if (importSource.endsWith('.css')) {
+      result.push(importSource)
+    }
+  })
+  result.sort()
+  return result
+}
+
 export const UiJsxCanvas = betterReactMemo(
   'UiJsxCanvas',
   (props: UiJsxCanvasPropsWithErrorCallback) => {
@@ -347,7 +367,6 @@ export const UiJsxCanvas = betterReactMemo(
       hiddenInstances,
       fileBlobs,
       walkDOM,
-      spyEnabled,
       reportError,
       onDomReport,
       topLevelElementsIncludingScenes,
@@ -359,9 +378,26 @@ export const UiJsxCanvas = betterReactMemo(
       canvasIsLive,
     } = props
 
-    if (!spyEnabled) {
-      clearConsoleLogs()
-      proxyConsole(console, addToConsoleLogs)
+    clearConsoleLogs()
+    proxyConsole(console, addToConsoleLogs)
+
+    let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
+
+    // Handle the imports changing, this needs to run _before_ any require function
+    // calls as it's modifying the underlying DOM elements. This is somewhat working
+    // like useEffect, except that runs after everything has rendered.
+    const cssImports = useKeepReferenceEqualityIfPossible(cssImportsFromImports(imports))
+    const previousCSSImports = usePrevious(cssImports)
+
+    if (
+      uiFilePath != null &&
+      previousCSSImports != null &&
+      !arrayEquals(cssImports, previousCSSImports)
+    ) {
+      const removed = removeAll(previousCSSImports, cssImports)
+      fastForEach(removed, (toRemove) => {
+        unimportCSSFile(normalizeName(uiFilePath, toRemove))
+      })
     }
 
     const reportErrorWithPath = React.useCallback(
@@ -382,7 +418,6 @@ export const UiJsxCanvas = betterReactMemo(
       reportError: reportErrorWithPath,
       requireResult: {},
       rootScope: {},
-      spyEnabled: props.spyEnabled,
       jsxFactoryFunctionName: null,
     })
 
@@ -402,7 +437,7 @@ export const UiJsxCanvas = betterReactMemo(
         )
 
         const customRequire = (importOrigin: string, toImport: string) =>
-          requireFn(importOrigin, toImport, props.spyEnabled)
+          requireFn(importOrigin, toImport, false)
 
         let requireResult: MapLike<any> = {}
         let codeError: Error | null = null
@@ -417,41 +452,44 @@ export const UiJsxCanvas = betterReactMemo(
 
         let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
 
-        // Make sure there is something in scope for all of the top level components
-        Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-          if (isUtopiaJSXComponent(topLevelElement)) {
-            topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-            if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
-              topLevelComponentRendererComponents.current[
-                topLevelElement.name
-              ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
+        // Should something have blown up previously, don't execute a bunch of code
+        // after now and potentially rewrite this error.
+        if (codeError == null) {
+          // Make sure there is something in scope for all of the top level components
+          Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+            if (isUtopiaJSXComponent(topLevelElement)) {
+              topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
+              if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
+                topLevelComponentRendererComponents.current[
+                  topLevelElement.name
+                ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
+              }
             }
-          }
-        })
+          })
 
-        executionScope = {
-          ...executionScope,
-          ...topLevelComponentRendererComponents.current,
+          executionScope = {
+            ...executionScope,
+            ...topLevelComponentRendererComponents.current,
+          }
+
+          // First make sure everything is in scope
+          Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+            if (isArbitraryJSBlock(topLevelElement)) {
+              runBlockUpdatingScope(requireResult, topLevelElement, executionScope, (error) => {
+                codeError = error
+                reportErrorWithPath(error)
+              })
+            }
+          })
+
+          updateMutableUtopiaContextWithNewProps(mutableContextRef, {
+            requireResult: requireResult,
+            rootScope: executionScope,
+            fileBlobs: fileBlobs,
+            reportError: reportErrorWithPath,
+            jsxFactoryFunctionName: jsxFactoryFunction,
+          })
         }
-
-        // First make sure everything is in scope
-        Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-          if (isArbitraryJSBlock(topLevelElement)) {
-            runBlockUpdatingScope(requireResult, topLevelElement, executionScope, (error) => {
-              codeError = error
-              reportErrorWithPath(error)
-            })
-          }
-        })
-
-        updateMutableUtopiaContextWithNewProps(mutableContextRef, {
-          requireResult: requireResult,
-          rootScope: executionScope,
-          fileBlobs: fileBlobs,
-          reportError: reportErrorWithPath,
-          spyEnabled: props.spyEnabled,
-          jsxFactoryFunctionName: jsxFactoryFunction,
-        })
 
         const topLevelElementsMap = new Map(topLevelJsxComponents)
 
@@ -463,8 +501,7 @@ export const UiJsxCanvas = betterReactMemo(
           rootScenePath,
         } = getStoryboardRoot(topLevelElementsMap, executionScope)
 
-        let metadataContext: UiJsxCanvasContextData | null = React.useContext(UiJsxCanvasContext)
-        if (metadataContext != null && props.shouldIncludeCanvasRootInTheSpy) {
+        if (props.shouldIncludeCanvasRootInTheSpy) {
           metadataContext.current.spyValues.scenes[
             TP.toString(rootScenePath)
           ] = storyboardRootSceneMetadata
@@ -654,7 +691,7 @@ function createComponentRendererComponent(params: {
     const rerenderUtopiaContext = React.useContext(RerenderUtopiaContext)
     const sceneContext = React.useContext(SceneLevelUtopiaContext)
 
-    let metadataContext: UiJsxCanvasContextData | null = React.useContext(UiJsxCanvasContext)
+    let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
 
     const utopiaJsxComponent = rerenderUtopiaContext.topLevelElements.get(
       params.topLevelElementName,
@@ -718,7 +755,6 @@ function createComponentRendererComponent(params: {
       rerenderUtopiaContext.hiddenInstances,
       mutableContext.fileBlobs,
       mutableContext.reportError,
-      mutableContext.spyEnabled,
       sceneContext.validPaths,
       realPassedProps['data-uid'],
       undefined,
@@ -754,7 +790,6 @@ interface SceneRootProps extends CanvasReactReportErrorCallback {
   // we put this here in case the Scene is inside another View
   parentAbsoluteFrame?: NormalisedFrame
   fileBlobs: UIFileBase64Blobs
-  spyEnabled: boolean
 
   sceneUID: string
   sceneLabel: string | undefined
@@ -774,7 +809,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     componentProps,
     frame,
     container,
-    spyEnabled,
     jsxFactoryFunctionName,
     component,
     sceneUID,
@@ -785,34 +819,32 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
   const scenePath = TP.scenePath(TP.elementPathForPath(templatePath))
 
   const rerenderUtopiaContext = React.useContext(RerenderUtopiaContext)
-  let metadataContext: UiJsxCanvasContextData | null = React.useContext(UiJsxCanvasContext)
+  let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
 
-  if (metadataContext != null) {
-    metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
-      scenePath: scenePath,
-      frame: frame,
-      container: container,
-      component: component,
-      label: props.sceneLabel,
-    }
-    if (rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy) {
-      metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
-        element: left('Scene'),
-        templatePath: templatePath as InstancePath,
-        props: {},
-        globalFrame: null,
-        localFrame: null,
-        childrenTemplatePaths: [],
-        componentInstance: false,
-        specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
-      }
+  metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
+    scenePath: scenePath,
+    frame: frame,
+    container: container,
+    component: component,
+    label: props.sceneLabel,
+  }
+  if (rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy) {
+    metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
+      element: left('Scene'),
+      templatePath: templatePath as InstancePath,
+      props: {},
+      globalFrame: null,
+      localFrame: null,
+      childrenTemplatePaths: [],
+      componentInstance: false,
+      specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
     }
   }
 
   // For the sake of backwards compatibility, still pass through the scene's frame if layout is
   // undefined in the props
   // TODO I guess we can remove this backwards compatibility now
-  const passthroughLayout = componentProps?.layout || {
+  const passthroughLayout = componentProps?.layout ?? {
     left: 0,
     top: 0,
     width: frame.width,
@@ -930,11 +962,10 @@ function renderCoreElement(
   hiddenInstances: Array<TemplatePath>,
   fileBlobs: UIFileBase64Blobs,
   reportError: (error: Error, errorInfo?: React.ErrorInfo) => void,
-  spyEnabled: boolean,
   validPaths: Array<InstancePath>,
   uid: string | undefined,
   reactChildren: React.ReactNode | undefined,
-  metadataContext: UiJsxCanvasContextData | null,
+  metadataContext: UiJsxCanvasContextData,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -970,7 +1001,6 @@ function renderCoreElement(
         inScope={inScope}
         reportError={Utils.NO_OP}
         requireResult={requireResult}
-        spyEnabled={spyEnabled}
         templatePath={templatePath}
         component={rootComponentName}
         sceneUID={sceneId}
@@ -1009,7 +1039,6 @@ function renderCoreElement(
       hiddenInstances,
       fileBlobs,
       validPaths,
-      spyEnabled,
       reportError,
       passthroughProps,
       metadataContext,
@@ -1053,7 +1082,6 @@ function renderCoreElement(
         hiddenInstances,
         fileBlobs,
         reportError,
-        spyEnabled,
         validPaths,
         generatedUID,
         reactChildren,
@@ -1106,11 +1134,10 @@ function buildSpyWrappedElement(
   jsx: JSXElement,
   finalProps: any,
   templatePath: InstancePath,
-  metadataContext: UiJsxCanvasContextData | null,
+  metadataContext: UiJsxCanvasContextData,
   childrenTemplatePaths: Array<InstancePath>,
   childrenElements: Array<React.ReactNode>,
   Element: any,
-  spyEnabled: boolean,
   inScope: MapLike<any>,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -1135,37 +1162,26 @@ function buildSpyWrappedElement(
       TP.scenePathForPath(templatePath),
       EmptyScenePathForStoryboard,
     )
-    if (metadataContext != null && (!isChildOfRootScene || shouldIncludeCanvasRootInTheSpy)) {
+    if (!isChildOfRootScene || shouldIncludeCanvasRootInTheSpy) {
       metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = instanceMetadata
     }
   }
-  const shouldWrapInSpy = spyEnabled && metadataContext != null
-  if (shouldWrapInSpy) {
-    const spyWrapperProps: SpyWrapperProps = {
-      elementToRender: Element,
-      spyCallback: spyCallback,
-      inScope: inScope,
-      jsxFactoryFunctionName: jsxFactoryFunctionName,
-    }
-    return renderComponentUsingJsxFactoryFunction(
-      inScope,
-      jsxFactoryFunctionName,
-      SpyWrapper,
-      {
-        ...props,
-        ...spyWrapperProps,
-      },
-      childrenElementsOrNull,
-    )
-  } else {
-    return renderComponentUsingJsxFactoryFunction(
-      inScope,
-      jsxFactoryFunctionName,
-      Element,
-      props,
-      childrenElementsOrNull,
-    )
+  const spyWrapperProps: SpyWrapperProps = {
+    elementToRender: Element,
+    spyCallback: spyCallback,
+    inScope: inScope,
+    jsxFactoryFunctionName: jsxFactoryFunctionName,
   }
+  return renderComponentUsingJsxFactoryFunction(
+    inScope,
+    jsxFactoryFunctionName,
+    SpyWrapper,
+    {
+      ...props,
+      ...spyWrapperProps,
+    },
+    childrenElementsOrNull,
+  )
 }
 
 function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any> | null): any {
@@ -1201,10 +1217,9 @@ function renderJSXElement(
   hiddenInstances: Array<TemplatePath>,
   fileBlobs: UIFileBase64Blobs,
   validPaths: Array<InstancePath>,
-  spyEnabled: boolean,
   reportError: (error: Error, errorInfo?: React.ErrorInfo) => void,
   passthroughProps: MapLike<any>,
-  metadataContext: UiJsxCanvasContextData | null,
+  metadataContext: UiJsxCanvasContextData,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -1227,7 +1242,6 @@ function renderJSXElement(
       hiddenInstances,
       fileBlobs,
       reportError,
-      spyEnabled,
       validPaths,
       undefined,
       undefined,
@@ -1272,7 +1286,6 @@ function renderJSXElement(
       childrenTemplatePaths,
       childrenElements,
       Element,
-      spyEnabled,
       inScope,
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,

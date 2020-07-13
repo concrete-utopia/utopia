@@ -19,6 +19,7 @@ module Utopia.Web.Servant where
 import           Data.Aeson
 import           Data.Aeson.Encode.Pretty
 import qualified Data.ByteString.Lazy     as BL
+import qualified Data.Text                as T
 import           Data.Time.Clock
 import           Data.Time.Format
 import           Network.HTTP.Media       hiding (Accept)
@@ -121,4 +122,11 @@ instance FromHttpApiData LastModifiedTime where
 instance ToHttpApiData LastModifiedTime where
   toUrlPiece (LastModifiedTime lastModifiedTime) = toS $ formatTime defaultTimeLocale lastModifiedFormat lastModifiedTime
 
+data ProjectIdWithSuffix = ProjectIdWithSuffix Text Text
+                         deriving (Eq, Ord, Show)
 
+instance FromHttpApiData ProjectIdWithSuffix where
+  parseUrlPiece toParse = fmap (\(pid, pidsuffix) -> ProjectIdWithSuffix pid (T.drop 1 pidsuffix)) $ fmap (T.breakOn "-") $ parseUrlPiece toParse
+
+instance ToHttpApiData ProjectIdWithSuffix where
+  toUrlPiece (ProjectIdWithSuffix projectId projectSuffix) = projectId <> (if T.null projectSuffix then T.empty else "-" <> projectSuffix)

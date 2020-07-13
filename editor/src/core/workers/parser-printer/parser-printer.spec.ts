@@ -3177,6 +3177,108 @@ export var whatever = props => {
     )
     expect(actualResult).toEqual(expectedResult)
   })
+  it('defined elsewhere values coming from outside the block are recognised in props', () => {
+    const code = `import * as React from "react"
+export var whatever = props => {
+  const a = 30
+  return <div data-uid={'aaa'}>
+    {[1, 2, 3].map(n => {
+      return <div style={{left: n * a, top: n * a}} data-uid={'bbb'} />
+    })}
+  </div>
+}`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
+      return <div style={{left: n * a, top: n * a}} data-uid={'bbb'} />
+    })`
+    const arbitraryBlockCode = `[1, 2, 3].map(n => {
+  return <div style={{ left: n * a, top: n * a }} data-uid={'bbb'} />;
+});`
+    const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
+  return utopiaCanvasJSXLookup("bbb", {
+    n: n,
+    a: a
+  });
+});`
+    const innerElement = jsxElement(
+      'div',
+      {
+        style: jsxAttributeNestedObject([
+          jsxPropertyAssignment(
+            'left',
+            jsxAttributeOtherJavaScript(
+              `n * a`,
+              `return n * a;`,
+              ['n', 'a'],
+              expect.objectContaining({}),
+            ),
+          ),
+          jsxPropertyAssignment(
+            'top',
+            jsxAttributeOtherJavaScript(
+              `n * a`,
+              `return n * a;`,
+              ['n', 'a'],
+              expect.objectContaining({}),
+            ),
+          ),
+        ]),
+        ['data-uid']: jsxAttributeValue('bbb'),
+      },
+      [],
+      null,
+    )
+    const arbitraryBlock = jsxArbitraryBlock(
+      arbitraryBlockOriginalCode,
+      arbitraryBlockCode,
+      arbitraryBlockTranspiledCode,
+      ['a', 'React', 'utopiaCanvasJSXLookup'],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      { bbb: innerElement },
+    )
+
+    const topLevelArbitraryBlock = arbitraryJSBlock(
+      `const a = 30;`,
+      `var a = 30;
+return { a: a };`,
+      ['a'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+    )
+
+    const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa') }, [arbitraryBlock], null)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      topLevelArbitraryBlock,
+    )
+    const expectedResult = clearParseResultUniqueIDs(
+      right(
+        parseSuccess(
+          { react: sampleImportsForTests['react'] },
+          [exported, EmptyUtopiaCanvasComponent],
+          right(defaultCanvasMetadata()),
+          false,
+          code,
+          expect.objectContaining({}),
+          expect.arrayContaining([]),
+          null,
+        ),
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
   it('svg elements are accepted', () => {
     const code = `import * as React from "react"
 export var whatever = props => {
@@ -3317,7 +3419,7 @@ describe('reorderElementDependencies', () => {
       ),
       bounds: testNodeBounds,
     }
-    const actualResult = elementDependencyOrdering('test.ui.js', 'test', [
+    const actualResult = elementDependencyOrdering('test.js', 'test', [
       component1,
       component2,
       component3,
@@ -3335,7 +3437,7 @@ describe('reorderElementDependencies', () => {
             startColumn: 25,
             endLine: 30,
             endColumn: 35,
-            fileName: 'test.ui.js',
+            fileName: 'test.js',
             message:
               'Circular dependency detected. While this is valid javascript, the Utopia editor cannot currently handle circular dependencies.',
             passTime: null,
@@ -3383,7 +3485,7 @@ describe('reorderElementDependencies', () => {
       ),
       bounds: testNodeBounds,
     }
-    const actualResult = elementDependencyOrdering('test.ui.js', 'test', [
+    const actualResult = elementDependencyOrdering('test.js', 'test', [
       component1,
       component3,
       component2,
@@ -3462,7 +3564,7 @@ describe('reorderElementDependencies', () => {
       ),
       bounds: testNodeBounds,
     }
-    const actualResult = elementDependencyOrdering('test.ui.js', 'test', [
+    const actualResult = elementDependencyOrdering('test.js', 'test', [
       component1,
       component2,
       jsBlock,
@@ -3646,7 +3748,7 @@ describe('getHighlightBounds', () => {
 describe('lintAndParse', () => {
   it('returns a syntax error from eslint when something is broken', () => {
     const result = lintAndParse(
-      'test.ui.js',
+      'test.js',
       `
     import {
       Ellipse,
@@ -3699,7 +3801,7 @@ export var App = (props) => {
   return (
     <>
       <View
-        style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+        style={{ ...props.style, backgroundColor: '#FFFFFF' }}
         layout={{ layoutSystem: 'pinSystem' }}
         data-uid={'aaa'}
       ></View>
@@ -3710,7 +3812,7 @@ export var App = (props) => {
       return (
         <>
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           ></View>
@@ -3720,7 +3822,7 @@ export var App = (props) => {
 
     const sourceMap = {
       version: 3,
-      sources: ['/src/app.ui.js'],
+      sources: ['/src/app.js'],
       names: [
         '\n',
         ' ',
@@ -3756,9 +3858,9 @@ export var App = (props) => {
       ],
       mappings:
         'AAcEA;AACDA;AACMC,CAACC,GAAGD,CAACE,GAAGF,CAACG,CAACH,CAACI,CAACC,KAAKC,CAACN,CAACG,CAACI,CAACP,CAACQ,CAACT;AAC7BC,CAACA,CAACS,MAAMT,CAACI,CAACL;AACVC,CAACA,CAACA,CAACA,CAACU,CAACH,CAACR;AACNC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACU,CAACC,IAAIZ;AACXC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACY,KAAKT,CAACK,CAACA,CAACR,CAACa,CAACA,CAACA,CAACT,CAACC,KAAKQ,CAACD,KAAKZ,CAACc,CAACA,CAACd,CAACQ,CAACO,CAACT,CAACU,CAAChB,CAACiB,eAAeC,CAAClB,CAACmB,CAACC,CAACC,MAAMF,CAACnB,CAACe,CAACA,CAAChB;AACtEC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACsB,MAAMnB,CAACK,CAACA,CAACR,CAACuB,YAAYL,CAAClB,CAACmB,CAACK,SAASL,CAACnB,CAACe,CAACA,CAAChB;AAC9CC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACyB,IAAIC,CAACC,GAAGxB,CAACK,CAACW,CAACS,GAAGT,CAACJ,CAAChB;AACxBC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACO,CAACG,CAACmB,CAAClB,IAAIJ,CAACR;AACdC,CAACA,CAACA,CAACA,CAACU,CAACmB,CAACtB,CAACR;AACPC,CAACA,CAACM,CAACP;AACHgB',
-      file: '/src/app.ui.js',
+      file: '/src/app.js',
       sourcesContent: [
-        "/** @jsx jsx */\nimport * as React from 'react'\nimport { View, jsx } from 'utopia-api'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <>\n      <View\n        style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}\n        layout={{ layoutSystem: 'pinSystem' }}\n        data-uid={'aaa'}\n      ></View>\n    </>\n  )\n}\n",
+        "/** @jsx jsx */\nimport * as React from 'react'\nimport { View, jsx } from 'utopia-api'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <>\n      <View\n        style={{ ...props.style, backgroundColor: '#FFFFFF' }}\n        layout={{ layoutSystem: 'pinSystem' }}\n        data-uid={'aaa'}\n      ></View>\n    </>\n  )\n}\n",
       ],
     }
     expect(

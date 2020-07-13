@@ -11,7 +11,7 @@
       "requires": []
     },
     "/node_modules/mypackage/moduleB.js": {
-      "content": "\"use strict\"; const otherpackage = require('./moduleA'); exports.hello = otherpackage.firstExport; console.log('hmm', otherPackage)",
+      "content": "\"use strict\"; const otherpackage = require('./moduleA'); exports.hello = otherpackage.firstExport;",
       "isModule": false,
       "requires": []
     },

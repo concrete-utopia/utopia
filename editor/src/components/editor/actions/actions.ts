@@ -34,6 +34,7 @@ import {
   findElementAtPath,
   MetadataUtils,
   findJSXElementAtPath,
+  convertMetadataMap,
 } from '../../../core/model/element-metadata-utils'
 import {
   ComponentMetadata,
@@ -144,7 +145,7 @@ import {
   codeNeedsPrinting,
   mergeImports,
 } from '../../../core/workers/common/project-file-utils'
-import { OutgoingWorkerMessage, isJsFile } from '../../../core/workers/ts/ts-worker'
+import { OutgoingWorkerMessage, isJsFile, BuildType } from '../../../core/workers/ts/ts-worker'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { defaultProject, sampleProjectForId } from '../../../sample-projects/sample-project-utils'
 import { KeysPressed } from '../../../utils/keyboard'
@@ -177,6 +178,7 @@ import {
   produceCanvasTransientState,
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
+  cullSpyCollector,
 } from '../../canvas/canvas-utils'
 import { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../../common/actions'
@@ -341,12 +343,12 @@ import {
 import * as History from '../history'
 import { StateHistory } from '../history'
 import {
-  dependenciesFromModel,
+  dependenciesFromProjectContents,
   dependenciesFromPackageJsonContents,
   updateDependenciesInEditorState,
   updateDependenciesInPackageJson,
 } from '../npm-dependency/npm-dependency'
-import { updateRemoteThumbnail } from '../persistence'
+import { updateRemoteThumbnail, pushProjectURLToBrowserHistory } from '../persistence'
 import { deleteAssetFile, saveAsset as saveAssetToServer, updateAssetFileName } from '../server'
 import {
   applyParseAndEditorChanges,
@@ -424,6 +426,8 @@ import {
 } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
+import { urlSafeText } from '../../../core/shared/dom-utils'
+import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1300,6 +1304,7 @@ export const UPDATE_FNS = {
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
+        projectFilesBuildResults: {},
       },
       codeResultCache: action.codeResultCache,
     }
@@ -1313,6 +1318,7 @@ export const UPDATE_FNS = {
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
+        projectFilesBuildResults: {},
       },
       codeResultCache: action.codeResultCache,
       safeMode: action.safeMode,
@@ -2952,13 +2958,14 @@ export const UPDATE_FNS = {
       codeResultCache: {
         skipDeepFreeze: true,
         cache: {
-          ...(editor.codeResultCache == null ? {} : editor.codeResultCache.cache),
+          ...editor.codeResultCache.cache,
           ...action.codeResultCache.cache,
         },
         exportsInfo: action.codeResultCache.exportsInfo,
         propertyControlsInfo: action.codeResultCache.propertyControlsInfo,
         error: action.codeResultCache.error,
         requireFn: action.codeResultCache.requireFn,
+        projectModules: action.codeResultCache.projectModules,
       },
     }
   },
@@ -2972,6 +2979,10 @@ export const UPDATE_FNS = {
     }
   },
   SET_PROJECT_NAME: (action: SetProjectName, editor: EditorModel): EditorModel => {
+    // Side effect.
+    if (editor.id != null) {
+      pushProjectURLToBrowserHistory(`Utopia ${action.name}`, editor.id, urlSafeText(action.name))
+    }
     return {
       ...editor,
       projectName: action.name,
@@ -3215,7 +3226,7 @@ export const UPDATE_FNS = {
       const deps = dependenciesFromPackageJsonContents(file.fileContents)
       if (deps != null) {
         fetchNodeModules(deps).then((nodeModules) =>
-          dispatch([updateNodeModulesContents(nodeModules, true)]),
+          dispatch([updateNodeModulesContents(nodeModules, 'full-build')]),
         )
       }
     }
@@ -3380,7 +3391,7 @@ export const UPDATE_FNS = {
     return updatedEditor
   },
   ADD_UI_JS_FILE: (action: AddUIJSFile, editor: EditorModel): EditorModel => {
-    const newFileKey = uniqueProjectContentID('src/new_view.ui.js', editor.projectContents)
+    const newFileKey = uniqueProjectContentID('src/new_view.js', editor.projectContents)
     const newUiJsFile = getDefaultUIJsFile()
 
     // Update the model.
@@ -3536,10 +3547,30 @@ export const UPDATE_FNS = {
       }
     }
   },
-  SAVE_DOM_REPORT: (action: SaveDOMReport, editor: EditorModel): EditorModel => {
+  SAVE_DOM_REPORT: (
+    action: SaveDOMReport,
+    editor: EditorModel,
+    spyCollector: UiJsxCanvasContextData,
+  ): EditorModel => {
+    // Note: If this DOM report only includes values for a single canvas
+    // it will wipe out any spy data that any other canvas may have produced.
+
+    // Keep the size of the spy collector down to some manageable level.
+    cullSpyCollector(spyCollector, action.elementMetadata)
+
+    // Calculate the spy metadata given what has been collected.
+    const spyResult = convertMetadataMap(
+      spyCollector.current.spyValues.metadata,
+      spyCollector.current.spyValues.scenes,
+    )
+
     return keepDeepReferenceEqualityIfPossible(editor, {
       ...editor,
-      domMetadataKILLME: action.elementMetadata,
+      domMetadataKILLME: keepDeepReferenceEqualityIfPossible(
+        editor.domMetadataKILLME,
+        action.elementMetadata,
+      ),
+      spyMetadataKILLME: keepDeepReferenceEqualityIfPossible(editor.spyMetadataKILLME, spyResult),
     })
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
@@ -3894,7 +3925,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorState => {
     let result: EditorState
-    if (action.startFromScratch) {
+    if (action.buildType === 'full-build') {
       result = produce(editor, (draft) => {
         draft.nodeModules.files = action.contentsToAdd
       })
@@ -3910,12 +3941,13 @@ export const UPDATE_FNS = {
     result = {
       ...result,
       codeResultCache: generateCodeResultCache(
+        editor.codeResultCache.projectModules,
         codeCacheToBuildResult(result.codeResultCache.cache),
         result.codeResultCache.exportsInfo,
         result.nodeModules.files,
         dispatch,
-        dependenciesFromModel(result),
-        action.startFromScratch,
+        dependenciesFromProjectContents(result.projectContents),
+        action.buildType,
       ),
     }
 
@@ -4203,16 +4235,17 @@ export async function newProject(
   renderEditorRoot: () => void,
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
-  const npmDependencies = dependenciesFromModel(defaultPersistentModel)
+  const npmDependencies = dependenciesFromProjectContents(defaultPersistentModel.projectContents)
   const nodeModules = await fetchNodeModules(npmDependencies)
 
   const codeResultCache = generateCodeResultCache(
+    {},
     SampleFileBuildResult,
     SampleFileBundledExportsInfo,
     nodeModules,
     dispatch,
     npmDependencies,
-    true,
+    'full-build',
   )
 
   renderEditorRoot()
@@ -4255,7 +4288,7 @@ export async function load(
 ): Promise<void> {
   // this action is now async!
 
-  const npmDependencies = dependenciesFromModel(model)
+  const npmDependencies = dependenciesFromProjectContents(model.projectContents)
   const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
@@ -4264,12 +4297,13 @@ export async function load(
   if (model.exportsInfo.length > 0) {
     workers.sendInitMessage(typeDefinitions, model.projectContents)
     codeResultCache = generateCodeResultCache(
+      {},
       model.buildResult,
       model.exportsInfo,
       nodeModules,
       dispatch,
       npmDependencies,
-      true,
+      'full-build',
     )
   } else {
     codeResultCache = await loadCodeResult(
@@ -4318,12 +4352,13 @@ function loadCodeResult(
       switch (data.type) {
         case 'build': {
           const codeResultCache = generateCodeResultCache(
+            {},
             data.buildResult,
             data.exportsInfo,
             nodeModules,
             dispatch,
-            dependenciesFromModel({ projectContents: projectContents }),
-            true,
+            dependenciesFromProjectContents(projectContents),
+            'full-build',
           )
           resolve(codeResultCache)
           workers.removeBundleResultEventListener(handleMessage)
@@ -4850,10 +4885,14 @@ export function redo(): Redo {
   }
 }
 
-export function updateCodeResultCache(codeResultCache: CodeResultCache): UpdateCodeResultCache {
+export function updateCodeResultCache(
+  codeResultCache: CodeResultCache,
+  buildType: BuildType,
+): UpdateCodeResultCache {
   return {
     action: 'UPDATE_CODE_RESULT_CACHE',
     codeResultCache: codeResultCache,
+    buildType: buildType,
   }
 }
 
@@ -5261,12 +5300,12 @@ export function resetPropToDefault(
 
 export function updateNodeModulesContents(
   contentsToAdd: NodeModules,
-  startFromScratch: boolean,
+  buildType: BuildType,
 ): UpdateNodeModulesContents {
   return {
     action: 'UPDATE_NODE_MODULES_CONTENTS',
     contentsToAdd: contentsToAdd,
-    startFromScratch: startFromScratch,
+    buildType: buildType,
   }
 }
 

@@ -9,6 +9,7 @@ import {
   getOpenUIJSFile,
   openFileTab,
   getSceneElements,
+  getSceneElementsFromParseSuccess,
 } from '../components/editor/store/editor-state'
 import * as TP from '../core/shared/template-path'
 import {
@@ -21,11 +22,16 @@ import {
   TopLevelElement,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
-import { jsxAttributesToProps } from '../core/shared/jsx-attributes'
+import { jsxAttributesToProps, getJSXAttributeAtPath } from '../core/shared/jsx-attributes'
 import { getUtopiaJSXComponentsFromSuccess, uiJsFile } from '../core/model/project-file-utils'
 import { parseSuccess } from '../core/workers/common/project-file-utils'
 import { sampleImportsForTests, sampleJsxComponentWithScene } from '../core/model/test-ui-js-file'
-import { RevisionsState, TemplatePath, isParseFailure } from '../core/shared/project-file-types'
+import {
+  RevisionsState,
+  TemplatePath,
+  isParseFailure,
+  ParseSuccess,
+} from '../core/shared/project-file-types'
 import { right } from '../core/shared/either'
 import Utils from './utils'
 import { CanvasRectangle, LocalRectangle } from '../core/shared/math-utils'
@@ -33,11 +39,14 @@ import {
   unmapScene,
   createSceneUidFromIndex,
   BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
 } from '../core/model/scene-utils'
 import { NO_OP } from '../core/shared/utils'
+import { create } from '../core/shared/property-path'
+import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 
 export function createEditorStates(
-  selectedFileOrTab: string | EditorTab = '/src/app.ui.js',
+  selectedFileOrTab: string | EditorTab = '/src/app.js',
   selectedViews: TemplatePath[] = [],
 ): {
   editor: EditorState
@@ -49,7 +58,7 @@ export function createEditorStates(
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: {
-      '/src/app.ui.js': uiJsFile(
+      '/src/app.js': uiJsFile(
         right(
           parseSuccess(
             sampleImportsForTests,
@@ -94,27 +103,28 @@ export function createFakeMetadataForEditor(editor: EditorState): Array<Componen
     if (isParseFailure(contents)) {
       return []
     } else {
-      const success = contents.value
-      const components = getUtopiaJSXComponentsFromSuccess(success)
-      const sceneElements = Utils.stripNulls(getSceneElements(editor).map(unmapScene))
-      return sceneElements.map((scene, index) => {
-        const component = components.find(
-          (c) => c.name === scene.component && isUtopiaJSXComponent(c),
-        )
-        return {
-          ...scene,
-          scenePath: TP.scenePath([BakedInStoryboardUID, scene.uid]),
-          rootElement:
-            component == null
-              ? null
-              : createFakeMetadataForJSXElement(
-                  component.rootElement,
-                  TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
-                ),
-        }
-      })
+      return createFakeMetadataForParseSuccess(contents.value)
     }
   }
+}
+
+export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<ComponentMetadata> {
+  const components = getUtopiaJSXComponentsFromSuccess(success)
+  const sceneElements = Utils.stripNulls(getSceneElementsFromParseSuccess(success).map(unmapScene))
+  return sceneElements.map((scene, index) => {
+    const component = components.find((c) => c.name === scene.component && isUtopiaJSXComponent(c))
+    return {
+      ...scene,
+      scenePath: TP.scenePath([BakedInStoryboardUID, scene.uid]),
+      rootElement:
+        component == null
+          ? null
+          : createFakeMetadataForJSXElement(
+              component.rootElement,
+              TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+            ),
+    }
+  })
 }
 
 export function createFakeMetadataForComponents(
@@ -160,4 +170,10 @@ function createFakeMetadataForJSXElement(
   } else {
     throw new Error(`Not a JSX element ${element}`)
   }
+}
+
+export function wait(timeout: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout)
+  })
 }

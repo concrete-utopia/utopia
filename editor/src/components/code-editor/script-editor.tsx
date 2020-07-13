@@ -41,7 +41,7 @@ import {
   getOpenUIJSFileKey,
   isOpenFileTab,
   openFileTab,
-  packageJsonFileFromModel,
+  packageJsonFileFromProjectContents,
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -213,7 +213,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
       cursorPositionFromOpenFile:
         store.editor.selectedFile == null ? null : store.editor.selectedFile.initialCursorPosition,
       savedCursorPosition: openFilePath == null ? null : store.editor.cursorPositions[openFilePath],
-      packageJsonFile: packageJsonFileFromModel(store.editor),
+      packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
       typeDefinitions: getDependencyTypeDefinitions(store.editor.nodeModules.files),
       lintErrors: getAllLintErrors(store.editor),
       parserPrinterErrors: parseFailureAsErrorMessages(openUIJSFileKey, openUIJSFile),

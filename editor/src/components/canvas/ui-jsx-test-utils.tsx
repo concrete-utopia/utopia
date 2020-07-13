@@ -26,7 +26,11 @@ jest.setTimeout(10000) // in milliseconds
 import { act, render } from '@testing-library/react'
 import * as Prettier from 'prettier'
 import create from 'zustand'
-import { ComponentMetadata, ElementInstanceMetadata } from '../../core/shared/element-template'
+import {
+  ComponentMetadata,
+  ElementInstanceMetadata,
+  TopLevelElement,
+} from '../../core/shared/element-template'
 import { ParseSuccess, UIJSFile } from '../../core/shared/project-file-types'
 import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
 import {
@@ -37,7 +41,7 @@ import {
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { HotRoot } from '../../templates/editor'
-import { left, Right } from '../../core/shared/either'
+import { left, Right, isLeft } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
@@ -48,6 +52,9 @@ import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { scenePath } from '../../core/shared/template-path'
 import { NO_OP } from '../../core/shared/utils'
+import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
+import { testParseCode } from '../../core/workers/parser-printer/parser-printer-test-utils'
+import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   return {
@@ -55,20 +62,6 @@ function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInsta
     element: left('REMOVED_FROM_TEST'),
     children: element.children.map(sanitizeElementMetadata),
   }
-}
-
-function sanitizeJsxMetadata(jsxMetadata: ComponentMetadata[]) {
-  return jsxMetadata.map((componentMetadata) => {
-    const rootElement = componentMetadata.rootElement
-    if (rootElement != null) {
-      return {
-        ...componentMetadata,
-        rootElement: sanitizeElementMetadata(rootElement),
-      }
-    } else {
-      return componentMetadata
-    }
-  })
 }
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -101,13 +94,15 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
     api.setState(workingEditorState)
   }
 
+  const spyCollector = emptyUiJsxCanvasContextData()
+
   const asyncTestDispatch = async (
     actions: ReadonlyArray<EditorAction>,
     priority?: DispatchPriority, // priority is not used in the editorDispatch now, but we didn't delete this param yet
     waitForDispatchEntireUpdate = false,
     waitForADomReport = false,
   ) => {
-    const result = editorDispatch(asyncTestDispatch, actions, workingEditorState)
+    const result = editorDispatch(asyncTestDispatch, actions, workingEditorState, spyCollector)
     result.entireUpdateFinished.then(() => dispatchFollowUpActionsFinished.resolve())
     workingEditorState = result
     if (actions[0]?.action === 'SAVE_DOM_REPORT') {
@@ -157,9 +152,10 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
         numberOfCommits++
       }}
     >
-      <HotRoot api={api} useStore={storeHook} />
+      <HotRoot api={api} useStore={storeHook} spyCollector={spyCollector} />
     </React.Profiler>,
   )
+
   const noFileOpenText = result.getByText('No file open')
   expect(noFileOpenText).toBeDefined()
 
@@ -200,7 +196,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
 }
 
 export function getPrintedUiJsCode(store: EditorStore): string {
-  return ((store.editor.projectContents['/src/app.ui.js'] as UIJSFile).fileContents as Right<
+  return ((store.editor.projectContents['/src/app.js'] as UIJSFile).fileContents as Right<
     ParseSuccess
   >).value.code
 }
@@ -232,4 +228,21 @@ ${snippet}
   }
 `
   return Prettier.format(code, PrettierConfig)
+}
+
+export function getTestParseSuccess(fileContents: string): ParseSuccess {
+  const parseResult = testParseCode(fileContents)
+  if (isLeft(parseResult)) {
+    throw new Error(`Error parsing test input code: ${parseResult.value.errorMessage}`)
+  }
+  return parseResult.value
+}
+
+export function testPrintCode(parseSuccess: ParseSuccess): string {
+  return printCode(
+    printCodeOptions(false, true, true),
+    parseSuccess.imports,
+    parseSuccess.topLevelElements,
+    parseSuccess.jsxFactoryFunction,
+  )
 }

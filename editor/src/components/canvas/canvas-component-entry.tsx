@@ -26,7 +26,6 @@ export const CanvasComponentEntry = betterReactMemo(
         store.editor,
         store.derived,
         true,
-        false,
         onDomReport,
         props.clearConsoleLogs,
         props.addToConsoleLogs,

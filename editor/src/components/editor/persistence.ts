@@ -26,6 +26,8 @@ import { PersistentModel } from './store/editor-state'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { arrayContains } from '../../core/shared/utils'
 import { getPNGBufferOfElementWithID } from './screenshot-utils'
+import * as friendlyWords from 'friendly-words'
+
 const domtoimage = require('domtoimage')
 
 const SAVE_THROTTLE_DELAY = 30000
@@ -171,9 +173,22 @@ export async function createNewProjectFromSampleProject(
   await loadSampleProject(projectId, dispatch, workers, renderEditorRoot)
 }
 
+export function pushProjectURLToBrowserHistory(
+  title: string,
+  projectId: string,
+  suffix: string,
+): void {
+  window.top.history.pushState({}, title, `/p/${projectId}-${suffix}/`)
+}
+
 function onFirstSaveCompleted(projectId: string, dispatch: EditorDispatch) {
   dispatch([setProjectID(projectId)], 'everyone')
-  window.top.history.pushState({}, `Utopia ${projectId}`, `/project/${projectId}/`)
+  const friendlyWordsPredicate =
+    friendlyWords.predicates[Math.floor(Math.random() * friendlyWords.predicates.length)]
+  const friendlyWordsObject =
+    friendlyWords.objects[Math.floor(Math.random() * friendlyWords.objects.length)]
+  const friendlyWordsSuffix = `${friendlyWordsPredicate}-${friendlyWordsObject}`
+  pushProjectURLToBrowserHistory(`Utopia ${projectId}`, projectId, friendlyWordsSuffix)
 }
 
 export async function saveToServer(

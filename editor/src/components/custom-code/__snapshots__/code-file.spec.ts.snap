@@ -30,7 +30,6 @@ Object {
     ],
     "specialNodes": Array [],
   },
-  "default": [Circular],
 }
 `;
 
@@ -72,89 +71,12 @@ Object {
     ],
     "specialNodes": Array [],
   },
-  "default": [Circular],
 }
 `;
 
 exports[`Creating require function Require throws exception for import from non-existing module 1`] = `"Could not find dependency: 'foo' relative to '/'"`;
 
 exports[`Creating require function Require throws exception for module code 1`] = `"booom"`;
-
-exports[`Filling in SystemJS Fills System with data for multi file build result 1`] = `
-Object {
-  "App": [Function],
-  "canvasMetadata": Object {
-    "elementMetadata": Object {},
-    "nodeMetadata": Object {},
-    "scenes": Array [
-      Object {
-        "component": "App",
-        "container": Object {
-          "layoutSystem": "pinSystem",
-        },
-        "frame": Object {
-          "height": 812,
-          "left": 0,
-          "top": 0,
-          "width": 375,
-        },
-        "props": Object {
-          "layout": Object {
-            "bottom": 0,
-            "left": 0,
-            "right": 0,
-            "top": 0,
-          },
-        },
-      },
-    ],
-    "specialNodes": Array [],
-  },
-  "default": [Circular],
-}
-`;
-
-exports[`Filling in SystemJS Fills System with data for multi file build result 2`] = `
-Object {
-  "ComponentWithProps": [Function],
-  "LABEL": "press me! 😉",
-  "default": [Function],
-}
-`;
-
-exports[`Filling in SystemJS Fills System with data for single file build result 1`] = `
-Object {
-  "App": [Function],
-  "canvasMetadata": Object {
-    "elementMetadata": Object {},
-    "nodeMetadata": Object {},
-    "scenes": Array [
-      Object {
-        "component": "App",
-        "container": Object {
-          "layoutSystem": "pinSystem",
-        },
-        "frame": Object {
-          "height": 812,
-          "left": 0,
-          "top": 0,
-          "width": 375,
-        },
-        "props": Object {
-          "layout": Object {
-            "bottom": 0,
-            "left": 0,
-            "right": 0,
-            "top": 0,
-          },
-        },
-      },
-    ],
-    "specialNodes": Array [],
-  },
-  "default": [Circular],
-}
-`;
 
 exports[`Generating codeResultCache Generates codeResultCache for build error 1`] = `
 Object {
@@ -281,6 +203,46 @@ ComponentWithProps.propertyControls = {
       "filename": "/src/components.js",
     },
   ],
+  "projectModules": Object {
+    "/src/components.js": Object {
+      "errors": Array [
+        Object {
+          "codeSnippet": "  14 |         height: '100%',++
+       ~~~~~~~~~~~~~~~~~~~~~~~~~
+",
+          "endColumn": 26,
+          "endLine": 14,
+          "errorCode": "TS1136",
+          "fileName": "/src/components.js",
+          "message": "Property assignment expected.",
+          "passTime": null,
+          "severity": "fatal",
+          "source": "build",
+          "startColumn": 24,
+          "startLine": 14,
+          "type": "Error",
+        },
+        Object {
+          "codeSnippet": "  15 |       }}
+       ~~~~~~~~
+",
+          "endColumn": 9,
+          "endLine": 15,
+          "errorCode": "TS1003",
+          "fileName": "/src/components.js",
+          "message": "Identifier expected.",
+          "passTime": null,
+          "severity": "fatal",
+          "source": "build",
+          "startColumn": 8,
+          "startLine": 15,
+          "type": "Error",
+        },
+      ],
+      "sourceMap": null,
+      "transpiledCode": null,
+    },
+  },
   "propertyControlsInfo": Object {
     "/src/components": Object {},
   },
@@ -292,7 +254,7 @@ ComponentWithProps.propertyControls = {
 exports[`Generating codeResultCache Generates codeResultCache for multi file build result 1`] = `
 Object {
   "cache": Object {
-    "/app.ui.js": Object {
+    "/app.js": Object {
       "error": null,
       "errors": Array [],
       "exports": Object {
@@ -342,50 +304,14 @@ Object {
             "specialNodes": Array [],
           },
         },
-        "default": Object {
-          "functionInfo": null,
-          "reactClassInfo": null,
-          "type": "any",
-          "value": Object {
-            "App": [Function],
-            "canvasMetadata": Object {
-              "elementMetadata": Object {},
-              "nodeMetadata": Object {},
-              "scenes": Array [
-                Object {
-                  "component": "App",
-                  "container": Object {
-                    "layoutSystem": "pinSystem",
-                  },
-                  "frame": Object {
-                    "height": 812,
-                    "left": 0,
-                    "top": 0,
-                    "width": 375,
-                  },
-                  "props": Object {
-                    "layout": Object {
-                      "bottom": 0,
-                      "left": 0,
-                      "right": 0,
-                      "top": 0,
-                    },
-                  },
-                },
-              ],
-              "specialNodes": Array [],
-            },
-            "default": [Circular],
-          },
-        },
       },
       "sourceMap": Object {
-        "file": "app.ui.js",
-        "mappings": ";;;;;;;;;;;;;;YAkDA,4BAAW,cAAc,GAAG;gBAC1B,YAAY,EAAE,EAAE;gBAChB,YAAY,EAAE,EAAE;gBAChB,MAAM,EAAE;oBACN;wBACE,SAAS,EAAE,KAAK;wBAChB,KAAK,EAAE,EAAE,MAAM,EAAE,GAAG,EAAE,IAAI,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,GAAG,EAAE,CAAC,EAAE;wBACnD,KAAK,EAAE,EAAE,MAAM,EAAE,EAAE,GAAG,EAAE,CAAC,EAAE,IAAI,EAAE,CAAC,EAAE,MAAM,EAAE,CAAC,EAAE,KAAK,EAAE,CAAC,EAAE,EAAE;wBAC3D,SAAS,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE;qBACzC;iBACF;gBACD,eAAe,EAAE,EAAE;aACpB,EAAA;YAGD,iBAAW,GAAG,GAAG,CAAC,KAAK,EAAE,EAAE;gBACzB,OAAO,CACL,iBAAC,iBAAI,IACH,KAAK,kCAAO,CAAC,KAAK,CAAC,KAAK,IAAI,EAAE,CAAC,KAAE,eAAe,EAAE,kBAAU,CAAC,KAAK,CAAC,KAAK,KACxE,MAAM,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE,cAC3B,KAAK,GACT,CACT,CAAA;YACH,CAAC,EAAA;QAED,CAAC",
+        "file": "app.js",
+        "mappings": ";;;;;;;AAEA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAUA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAeA,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD,EAAU;AACzB,SACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAO,KAAK,CAAC,KAAb,CAAA,EAAkB;AAAE,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApC,KAAlB,CADF;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARU,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
-          "../app.ui.js",
+          "../app.js",
         ],
         "sourcesContent": Array [
           "/** @jsx jsx */
@@ -455,7 +381,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>
@@ -466,99 +392,54 @@ export var App = (props) => {
         ],
         "version": 3,
       },
-      "transpiledCode": "System.register([\\"utopia-api\\", \\"uuiui\\"], function (exports_1, context_1) {
-    \\"use strict\\";
-    var utopia_api_1, uuiui_1, canvasMetadata, App;
-    var __moduleName = context_1 && context_1.id;
-    return {
-        setters: [
-            function (utopia_api_1_1) {
-                utopia_api_1 = utopia_api_1_1;
-            },
-            function (uuiui_1_1) {
-                uuiui_1 = uuiui_1_1;
-            }
-        ],
-        execute: function () {
-            exports_1(\\"canvasMetadata\\", canvasMetadata = {
-                specialNodes: [],
-                nodeMetadata: {},
-                scenes: [
-                    {
-                        component: 'App',
-                        frame: { height: 812, left: 0, width: 375, top: 0 },
-                        props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },
-                        container: { layoutSystem: 'pinSystem' },
-                    },
-                ],
-                elementMetadata: {},
-            });
-            exports_1(\\"App\\", App = (props) => {
-                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, (props.style || {})), { backgroundColor: uuiui_1.colorTheme.white.value }), layout: { layoutSystem: 'pinSystem' }, \\"data-uid\\": 'aaa' }));
-            });
-        }
-    };
-});
-//# sourceMappingURL=app.ui.js.map",
-    },
-    "/public/preview.jsx": Object {
-      "error": null,
-      "errors": Array [],
-      "exports": Object {
-        "default": Object {
-          "functionInfo": null,
-          "reactClassInfo": null,
-          "type": "any",
-          "value": Object {
-            "default": [Circular],
-          },
-        },
-      },
-      "sourceMap": Object {
-        "file": "preview.js",
-        "mappings": ";;;;;;;;;;;;;;;;;YAIM,IAAI,GAAG,QAAQ,CAAC,cAAc,CAAC,MAAM,CAAC,CAAC;YAC7C,IAAI,IAAI,IAAI,IAAI,EAAE;gBAClB,QAAQ,CAAC,MAAM,CAAC,oBAAC,YAAG,IAAC,KAAK,EAAE,EAAC,IAAI,EAAE,CAAC,EAAE,GAAG,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,MAAM,EAAE,GAAG,EAAC,GAAI,EAAE,IAAI,CAAC,CAAC;aACjF;QAAA,CAAC",
-        "names": Array [],
-        "sourceRoot": "",
-        "sources": Array [
-          "../../public/preview.jsx",
-        ],
-        "sourcesContent": Array [
-          "import * as React from \\"react\\";
-import * as ReactDOM from \\"react-dom\\";
-import { App } from \\"../app.ui\\";
+      "transpiledCode": "\\"use strict\\";
 
-const root = document.getElementById(\\"root\\");
-if (root != null) {
-ReactDOM.render(<App />, root);
-}",
-        ],
-        "version": 3,
-      },
-      "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../app.ui\\"], function (exports_1, context_1) {
-    \\"use strict\\";
-    var React, ReactDOM, app_ui_1, root;
-    var __moduleName = context_1 && context_1.id;
-    return {
-        setters: [
-            function (React_1) {
-                React = React_1;
-            },
-            function (ReactDOM_1) {
-                ReactDOM = ReactDOM_1;
-            },
-            function (app_ui_1_1) {
-                app_ui_1 = app_ui_1_1;
-            }
-        ],
-        execute: function () {
-            root = document.getElementById(\\"root\\");
-            if (root != null) {
-                ReactDOM.render(React.createElement(app_ui_1.App, { style: { left: 0, top: 0, width: 375, height: 812 } }), root);
-            }
-        }
-    };
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
 });
-//# sourceMappingURL=preview.js.map",
+exports.App = exports.canvasMetadata = void 0;
+
+var utopia_api_1 = require(\\"utopia-api\\");
+
+var uuiui_1 = require(\\"uuiui\\");
+
+exports.canvasMetadata = {
+  specialNodes: [],
+  nodeMetadata: {},
+  scenes: [{
+    component: 'App',
+    frame: {
+      height: 812,
+      left: 0,
+      width: 375,
+      top: 0
+    },
+    props: {
+      layout: {
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0
+      }
+    },
+    container: {
+      layoutSystem: 'pinSystem'
+    }
+  }],
+  elementMetadata: {}
+};
+
+exports.App = function (props) {
+  return utopia_api_1.jsx(utopia_api_1.View, {
+    style: Object.assign(Object.assign({}, props.style), {
+      backgroundColor: uuiui_1.colorTheme.white.value
+    }),
+    layout: {
+      layoutSystem: 'pinSystem'
+    },
+    \\"data-uid\\": 'aaa'
+  });
+}; //# sourceMappingURL=app.js.map",
     },
     "/src/components.js": Object {
       "error": null,
@@ -593,7 +474,7 @@ ReactDOM.render(<App />, root);
       },
       "sourceMap": Object {
         "file": "components.js",
-        "mappings": ";;;;;;;;;;;;;;iCAIe,CAAC,KAAK,EAAE,EAAE,CAAC,CACxB,oBAAC,iBAAI,IAAC,MAAM,EAAE,KAAK,CAAC,MAAM,EAAE,KAAK,EAAE,KAAK,CAAC,KAAK,EAAE,WAAW,EAAE,KAAK,CAAC,WAAW;gBAC5E,oBAAC,iBAAI,IACH,KAAK,EAAE,EAAE,QAAQ,EAAE,EAAE,EAAE,SAAS,EAAE,QAAQ,EAAE,EAC5C,IAAI,EAAE,KAAK,CAAC,IAAI,EAChB,MAAM,EAAE;wBACN,IAAI,EAAE,CAAC;wBACP,GAAG,EAAE,EAAE;wBACP,KAAK,EAAE,MAAM;wBACb,MAAM,EAAE,MAAM;qBACf,EACD,UAAU,EAAE,OAAO,GACnB,CACG,CACR;YAED,mBAAa,KAAK,GAAG,cAAc,EAAA;YAEnC,gCAAa,kBAAkB,GAAG,CAAC,KAAK,EAAE,EAAE;gBAC1C,OAAO,CACL,6BACE,KAAK,kCACA,KAAK,CAAC,KAAK,KACd,eAAe,EAAE,KAAK,CAAC,IAAI,CAAC,CAAC,CAAC,SAAS,CAAC,CAAC,CAAC,aAAa,EACvD,UAAU,EAAE,QAAQ,OAGrB,CAAC,KAAK,CAAC,IAAI,GAAG,GAAG,CAAC,CAAC,MAAM,CAAC,KAAK,CAAC,GAAG,CAAC,CACjC,CACP,CAAA;YACH,CAAC,EAAA;YAED,kBAAkB,CAAC,gBAAgB,GAAG;gBACpC,IAAI,EAAE;oBACJ,IAAI,EAAE,QAAQ;oBACd,KAAK,EAAE,OAAO;oBACd,YAAY,EAAE,WAAW;iBAC1B;gBACD,GAAG,EAAE;oBACH,IAAI,EAAE,QAAQ;oBACd,KAAK,EAAE,QAAQ;oBACf,YAAY,EAAE,CAAC;iBAChB;gBACD,IAAI,EAAE;oBACJ,IAAI,EAAE,SAAS;oBACf,KAAK,EAAE,SAAS;oBAChB,YAAY,EAAE,IAAI;iBACnB;aACF,CAAA;QAED,CAAC",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;qDAAA;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAEA,OAAA,CAAA,OAAA,GAAe,UAAC,KAAD;AAAA,SACb,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AAAC,IAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,IAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,IAAA,WAAW,EAAE,KAAK,CAAC;AAA9D,GAAL,EACE,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE;AAAE,MAAA,QAAQ,EAAE,EAAZ;AAAgB,MAAA,SAAS,EAAE;AAA3B,KADJ;AAEH,IAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,IAAA,MAAM,EAAE;AACN,MAAA,IAAI,EAAE,CADA;AAEN,MAAA,GAAG,EAAE,EAFC;AAGN,MAAA,KAAK,EAAE,MAHD;AAIN,MAAA,MAAM,EAAE;AAJF,KAHL;AASH,IAAA,UAAU,EAAE;AATT,GAAL,CADF,CADa;AAAA,CAAf;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEA,OAAA,CAAA,kBAAA,GAAqB,UAAC,KAAD,EAAU;AAC1C,SACE,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EACA,KAAK,CAAC,KADN,CAAA,EACW;AACd,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAD5B;AAEd,MAAA,UAAU,EAAE;AAFE,KADX;AADP,GAAA,EAOG,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC,CAPH,CADF;AAWD,CAZY;;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -658,52 +539,104 @@ ComponentWithProps.propertyControls = {
         ],
         "version": 3,
       },
-      "transpiledCode": "System.register([\\"react\\", \\"utopia-api\\"], function (exports_1, context_1) {
-    \\"use strict\\";
-    var React, utopia_api_1, LABEL, ComponentWithProps;
-    var __moduleName = context_1 && context_1.id;
-    return {
-        setters: [
-            function (React_1) {
-                React = React_1;
-            },
-            function (utopia_api_1_1) {
-                utopia_api_1 = utopia_api_1_1;
-            }
-        ],
-        execute: function () {
-            exports_1(\\"default\\", (props) => (React.createElement(utopia_api_1.View, { layout: props.layout, style: props.style, onMouseDown: props.onMouseDown },
-                React.createElement(utopia_api_1.Text, { style: { fontSize: 16, textAlign: 'center' }, text: props.text, layout: {
-                        left: 0,
-                        top: 10,
-                        width: '100%',
-                        height: '100%',
-                    }, textSizing: 'fixed' }))));
-            exports_1(\\"LABEL\\", LABEL = 'press me! 😉');
-            exports_1(\\"ComponentWithProps\\", ComponentWithProps = (props) => {
-                return (React.createElement(\\"div\\", { style: Object.assign(Object.assign({}, props.style), { backgroundColor: props.pink ? 'hotpink' : 'transparent', whiteSpace: 'normal' }) }, (props.text + ' ').repeat(props.num)));
-            });
-            ComponentWithProps.propertyControls = {
-                text: {
-                    type: 'string',
-                    title: 'Title',
-                    defaultValue: 'Change me',
-                },
-                num: {
-                    type: 'number',
-                    title: 'amount',
-                    defaultValue: 2,
-                },
-                pink: {
-                    type: 'boolean',
-                    title: 'Enabled',
-                    defaultValue: true,
-                },
-            };
-        }
-    };
+      "transpiledCode": "\\"use strict\\";
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
 });
-//# sourceMappingURL=components.js.map",
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, \\"default\\", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o[\\"default\\"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== \\"default\\" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
+});
+exports.ComponentWithProps = exports.LABEL = void 0; // component library
+
+var React = __importStar(require(\\"react\\"));
+
+var utopia_api_1 = require(\\"utopia-api\\");
+
+exports.default = function (props) {
+  return React.createElement(utopia_api_1.View, {
+    layout: props.layout,
+    style: props.style,
+    onMouseDown: props.onMouseDown
+  }, React.createElement(utopia_api_1.Text, {
+    style: {
+      fontSize: 16,
+      textAlign: 'center'
+    },
+    text: props.text,
+    layout: {
+      left: 0,
+      top: 10,
+      width: '100%',
+      height: '100%'
+    },
+    textSizing: 'fixed'
+  }));
+};
+
+exports.LABEL = 'press me! 😉';
+
+exports.ComponentWithProps = function (props) {
+  return React.createElement(\\"div\\", {
+    style: Object.assign(Object.assign({}, props.style), {
+      backgroundColor: props.pink ? 'hotpink' : 'transparent',
+      whiteSpace: 'normal'
+    })
+  }, (props.text + ' ').repeat(props.num));
+};
+
+exports.ComponentWithProps.propertyControls = {
+  text: {
+    type: 'string',
+    title: 'Title',
+    defaultValue: 'Change me'
+  },
+  num: {
+    type: 'number',
+    title: 'amount',
+    defaultValue: 2
+  },
+  pink: {
+    type: 'boolean',
+    title: 'Enabled',
+    defaultValue: true
+  }
+}; //# sourceMappingURL=components.js.map",
+    },
+    "/src/index.js": Object {
+      "error": [TypeError: Cannot convert undefined or null to object],
+      "exports": Object {},
     },
   },
   "error": null,
@@ -776,7 +709,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>
@@ -804,7 +737,7 @@ export var App = (props) => {
           "type": "{ specialNodes: any[]; nodeMetadata: {}; scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { ...; }; }[]; elementMetadata: {}; }",
         },
       },
-      "filename": "/app.ui.js",
+      "filename": "/app.js",
     },
     Object {
       "code": "// component library
@@ -887,19 +820,396 @@ ComponentWithProps.propertyControls = {
     Object {
       "code": "import * as React from \\"react\\";
 import * as ReactDOM from \\"react-dom\\";
-import { App } from \\"../app.ui\\";
+import { App } from \\"../app\\";
 
 const root = document.getElementById(\\"root\\");
 if (root != null) {
 ReactDOM.render(<App />, root);
 }",
       "exportTypes": Object {},
-      "filename": "/public/preview.jsx",
+      "filename": "/src/index.js",
     },
   ],
+  "projectModules": Object {
+    "/app.js": Object {
+      "errors": Array [],
+      "sourceMap": Object {
+        "file": "app.js",
+        "mappings": ";;;;;;;AAEA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAUA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAeA,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD,EAAU;AACzB,SACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAO,KAAK,CAAC,KAAb,CAAA,EAAkB;AAAE,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApC,KAAlB,CADF;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARU,C",
+        "names": Array [],
+        "sourceRoot": "",
+        "sources": Array [
+          "../app.js",
+        ],
+        "sourcesContent": Array [
+          "/** @jsx jsx */
+import * as React from 'react'
+import {
+  Ellipse,
+  HelperFunctions,
+  Image,
+  NodeImplementations,
+  Rectangle,
+  Text,
+  View,
+  jsx,
+} from 'utopia-api'
+import {
+  colorTheme,
+  Button,
+  Dialog,
+  Icn,
+  Icons,
+  LargerIcons,
+  FunctionIcons,
+  MenuIcons,
+  Isolator,
+  TabComponent,
+  Tooltip,
+  ActionSheet,
+  Avatar,
+  ControlledTextArea,
+  Title,
+  H1,
+  H2,
+  H3,
+  Subdued,
+  InspectorSectionHeader,
+  InspectorSubsectionHeader,
+  FlexColumn,
+  FlexRow,
+  ResizableFlexColumn,
+  PopupList,
+  Section,
+  SectionTitleRow,
+  SectionBodyArea,
+  UtopiaListSelect,
+  UtopiaListItem,
+  CheckboxInput,
+  NumberInput,
+  StringInput,
+  OnClickOutsideHOC,
+} from 'uuiui'
+
+export var canvasMetadata = {
+  specialNodes: [],
+  nodeMetadata: {},
+  scenes: [
+    {
+      component: 'App',
+      frame: { height: 812, left: 0, width: 375, top: 0 },
+      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },
+      container: { layoutSystem: 'pinSystem' },
+    },
+  ],
+  elementMetadata: {},
+}
+
+
+export var App = (props) => {
+  return (
+    <View
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
+      layout={{ layoutSystem: 'pinSystem' }}
+      data-uid={'aaa'}
+    ></View>
+  )
+}
+
+",
+        ],
+        "version": 3,
+      },
+      "transpiledCode": "\\"use strict\\";
+
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
+});
+exports.App = exports.canvasMetadata = void 0;
+
+var utopia_api_1 = require(\\"utopia-api\\");
+
+var uuiui_1 = require(\\"uuiui\\");
+
+exports.canvasMetadata = {
+  specialNodes: [],
+  nodeMetadata: {},
+  scenes: [{
+    component: 'App',
+    frame: {
+      height: 812,
+      left: 0,
+      width: 375,
+      top: 0
+    },
+    props: {
+      layout: {
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0
+      }
+    },
+    container: {
+      layoutSystem: 'pinSystem'
+    }
+  }],
+  elementMetadata: {}
+};
+
+exports.App = function (props) {
+  return utopia_api_1.jsx(utopia_api_1.View, {
+    style: Object.assign(Object.assign({}, props.style), {
+      backgroundColor: uuiui_1.colorTheme.white.value
+    }),
+    layout: {
+      layoutSystem: 'pinSystem'
+    },
+    \\"data-uid\\": 'aaa'
+  });
+}; //# sourceMappingURL=app.js.map",
+    },
+    "/public/preview.jsx": Object {
+      "errors": Array [],
+      "sourceMap": Object {
+        "file": "preview.js",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,QAAA,GAAA,YAAA,CAAA,OAAA,CAAA,WAAA,CAAA,CAAA;;AACA,IAAA,KAAA,GAAA,OAAA,CAAA,QAAA,CAAA;;AAEA,IAAM,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAb;;AACA,IAAI,IAAI,IAAI,IAAZ,EAAkB;AAClB,EAAA,QAAQ,CAAC,MAAT,CAAgB,KAAA,CAAA,aAAA,CAAC,KAAA,CAAA,GAAD,EAAI,IAAJ,CAAhB,EAAyB,IAAzB;AACC,C",
+        "names": Array [],
+        "sourceRoot": "",
+        "sources": Array [
+          "../../public/preview.jsx",
+        ],
+        "sourcesContent": Array [
+          "import * as React from \\"react\\";
+import * as ReactDOM from \\"react-dom\\";
+import { App } from \\"../app\\";
+
+const root = document.getElementById(\\"root\\");
+if (root != null) {
+ReactDOM.render(<App />, root);
+}",
+        ],
+        "version": 3,
+      },
+      "transpiledCode": "\\"use strict\\";
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, \\"default\\", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o[\\"default\\"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== \\"default\\" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
+});
+
+var React = __importStar(require(\\"react\\"));
+
+var ReactDOM = __importStar(require(\\"react-dom\\"));
+
+var app_1 = require(\\"../app\\");
+
+var root = document.getElementById(\\"root\\");
+
+if (root != null) {
+  ReactDOM.render(React.createElement(app_1.App, null), root);
+} //# sourceMappingURL=preview.js.map",
+    },
+    "/src/components.js": Object {
+      "errors": Array [],
+      "sourceMap": Object {
+        "file": "components.js",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;qDAAA;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAEA,OAAA,CAAA,OAAA,GAAe,UAAC,KAAD;AAAA,SACb,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AAAC,IAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,IAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,IAAA,WAAW,EAAE,KAAK,CAAC;AAA9D,GAAL,EACE,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE;AAAE,MAAA,QAAQ,EAAE,EAAZ;AAAgB,MAAA,SAAS,EAAE;AAA3B,KADJ;AAEH,IAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,IAAA,MAAM,EAAE;AACN,MAAA,IAAI,EAAE,CADA;AAEN,MAAA,GAAG,EAAE,EAFC;AAGN,MAAA,KAAK,EAAE,MAHD;AAIN,MAAA,MAAM,EAAE;AAJF,KAHL;AASH,IAAA,UAAU,EAAE;AATT,GAAL,CADF,CADa;AAAA,CAAf;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEA,OAAA,CAAA,kBAAA,GAAqB,UAAC,KAAD,EAAU;AAC1C,SACE,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EACA,KAAK,CAAC,KADN,CAAA,EACW;AACd,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAD5B;AAEd,MAAA,UAAU,EAAE;AAFE,KADX;AADP,GAAA,EAOG,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC,CAPH,CADF;AAWD,CAZY;;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
+        "names": Array [],
+        "sourceRoot": "",
+        "sources": Array [
+          "../../src/components.js",
+        ],
+        "sourcesContent": Array [
+          "// component library
+import * as React from 'react'
+import { Text, View } from 'utopia-api'
+
+export default (props) => (
+  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>
+    <Text
+      style={{ fontSize: 16, textAlign: 'center' }}
+      text={props.text}
+      layout={{
+        left: 0,
+        top: 10,
+        width: '100%',
+        height: '100%',
+      }}
+      textSizing={'fixed'}
+    />
+  </View>
+)
+
+export const LABEL = 'press me! 😉'
+
+export const ComponentWithProps = (props) => {
+  return (
+    <div
+      style={{
+        ...props.style,
+        backgroundColor: props.pink ? 'hotpink' : 'transparent',
+        whiteSpace: 'normal',
+      }}
+    >
+      {(props.text + ' ').repeat(props.num)}
+    </div>
+  )
+}
+
+ComponentWithProps.propertyControls = {
+  text: {
+    type: 'string',
+    title: 'Title',
+    defaultValue: 'Change me',
+  },
+  num: {
+    type: 'number',
+    title: 'amount',
+    defaultValue: 2,
+  },
+  pink: {
+    type: 'boolean',
+    title: 'Enabled',
+    defaultValue: true,
+  },
+}
+
+",
+        ],
+        "version": 3,
+      },
+      "transpiledCode": "\\"use strict\\";
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, \\"default\\", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o[\\"default\\"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== \\"default\\" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
+});
+exports.ComponentWithProps = exports.LABEL = void 0; // component library
+
+var React = __importStar(require(\\"react\\"));
+
+var utopia_api_1 = require(\\"utopia-api\\");
+
+exports.default = function (props) {
+  return React.createElement(utopia_api_1.View, {
+    layout: props.layout,
+    style: props.style,
+    onMouseDown: props.onMouseDown
+  }, React.createElement(utopia_api_1.Text, {
+    style: {
+      fontSize: 16,
+      textAlign: 'center'
+    },
+    text: props.text,
+    layout: {
+      left: 0,
+      top: 10,
+      width: '100%',
+      height: '100%'
+    },
+    textSizing: 'fixed'
+  }));
+};
+
+exports.LABEL = 'press me! 😉';
+
+exports.ComponentWithProps = function (props) {
+  return React.createElement(\\"div\\", {
+    style: Object.assign(Object.assign({}, props.style), {
+      backgroundColor: props.pink ? 'hotpink' : 'transparent',
+      whiteSpace: 'normal'
+    })
+  }, (props.text + ' ').repeat(props.num));
+};
+
+exports.ComponentWithProps.propertyControls = {
+  text: {
+    type: 'string',
+    title: 'Title',
+    defaultValue: 'Change me'
+  },
+  num: {
+    type: 'number',
+    title: 'amount',
+    defaultValue: 2
+  },
+  pink: {
+    type: 'boolean',
+    title: 'Enabled',
+    defaultValue: true
+  }
+}; //# sourceMappingURL=components.js.map",
+    },
+  },
   "propertyControlsInfo": Object {
-    "/app.ui": Object {},
-    "/public/preview": Object {},
+    "/app": Object {},
     "/src/components": Object {
       "ComponentWithProps": Object {
         "num": Object {
@@ -919,6 +1229,7 @@ ReactDOM.render(<App />, root);
         },
       },
     },
+    "/src/index": Object {},
   },
   "requireFn": [Function],
   "skipDeepFreeze": true,
@@ -928,7 +1239,7 @@ ReactDOM.render(<App />, root);
 exports[`Generating codeResultCache Generates codeResultCache for single file build result 1`] = `
 Object {
   "cache": Object {
-    "/app.ui.js": Object {
+    "/app.js": Object {
       "error": null,
       "errors": Array [],
       "exports": Object {
@@ -978,50 +1289,14 @@ Object {
             "specialNodes": Array [],
           },
         },
-        "default": Object {
-          "functionInfo": null,
-          "reactClassInfo": null,
-          "type": "any",
-          "value": Object {
-            "App": [Function],
-            "canvasMetadata": Object {
-              "elementMetadata": Object {},
-              "nodeMetadata": Object {},
-              "scenes": Array [
-                Object {
-                  "component": "App",
-                  "container": Object {
-                    "layoutSystem": "pinSystem",
-                  },
-                  "frame": Object {
-                    "height": 812,
-                    "left": 0,
-                    "top": 0,
-                    "width": 375,
-                  },
-                  "props": Object {
-                    "layout": Object {
-                      "bottom": 0,
-                      "left": 0,
-                      "right": 0,
-                      "top": 0,
-                    },
-                  },
-                },
-              ],
-              "specialNodes": Array [],
-            },
-            "default": [Circular],
-          },
-        },
       },
       "sourceMap": Object {
-        "file": "app.ui.js",
-        "mappings": ";;;;;;;;;;;;;;YAiDA,4BAAW,cAAc,GAAG;gBAC1B,YAAY,EAAE,EAAE;gBAChB,YAAY,EAAE,EAAE;gBAChB,MAAM,EAAE;oBACN;wBACE,SAAS,EAAE,KAAK;wBAChB,KAAK,EAAE,EAAE,MAAM,EAAE,GAAG,EAAE,IAAI,EAAE,CAAC,EAAE,KAAK,EAAE,GAAG,EAAE,GAAG,EAAE,CAAC,EAAE;wBACnD,KAAK,EAAE,EAAE,MAAM,EAAE,EAAE,GAAG,EAAE,CAAC,EAAE,IAAI,EAAE,CAAC,EAAE,MAAM,EAAE,CAAC,EAAE,KAAK,EAAE,CAAC,EAAE,EAAE;wBAC3D,SAAS,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE;qBACzC;iBACF;gBACD,eAAe,EAAE,EAAE;aACpB,EAAA;YAED,iBAAW,GAAG,GAAG,CAAC,KAAK,EAAE,EAAE;gBACzB,OAAO,CACL,iBAAC,iBAAI,IACH,KAAK,kCAAO,CAAC,KAAK,CAAC,KAAK,IAAI,EAAE,CAAC,KAAE,eAAe,EAAE,kBAAU,CAAC,KAAK,CAAC,KAAK,KACxE,MAAM,EAAE,EAAE,YAAY,EAAE,WAAW,EAAE,cAC3B,KAAK,GACT,CACT,CAAA;YACH,CAAC,EAAA;QAED,CAAC",
+        "file": "app.js",
+        "mappings": ";;;;;;;AAEA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAUA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAcA,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD,EAAU;AACzB,SACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAO,KAAK,CAAC,KAAb,CAAA,EAAkB;AAAE,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApC,KAAlB,CADF;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARU,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
-          "../app.ui.js",
+          "../app.js",
         ],
         "sourcesContent": Array [
           "/** @jsx jsx */
@@ -1090,7 +1365,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>
@@ -1101,40 +1376,54 @@ export var App = (props) => {
         ],
         "version": 3,
       },
-      "transpiledCode": "System.register([\\"utopia-api\\", \\"uuiui\\"], function (exports_1, context_1) {
-    \\"use strict\\";
-    var utopia_api_1, uuiui_1, canvasMetadata, App;
-    var __moduleName = context_1 && context_1.id;
-    return {
-        setters: [
-            function (utopia_api_1_1) {
-                utopia_api_1 = utopia_api_1_1;
-            },
-            function (uuiui_1_1) {
-                uuiui_1 = uuiui_1_1;
-            }
-        ],
-        execute: function () {
-            exports_1(\\"canvasMetadata\\", canvasMetadata = {
-                specialNodes: [],
-                nodeMetadata: {},
-                scenes: [
-                    {
-                        component: 'App',
-                        frame: { height: 812, left: 0, width: 375, top: 0 },
-                        props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },
-                        container: { layoutSystem: 'pinSystem' },
-                    },
-                ],
-                elementMetadata: {},
-            });
-            exports_1(\\"App\\", App = (props) => {
-                return (utopia_api_1.jsx(utopia_api_1.View, { style: Object.assign(Object.assign({}, (props.style || {})), { backgroundColor: uuiui_1.colorTheme.white.value }), layout: { layoutSystem: 'pinSystem' }, \\"data-uid\\": 'aaa' }));
-            });
-        }
-    };
+      "transpiledCode": "\\"use strict\\";
+
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
 });
-//# sourceMappingURL=app.ui.js.map",
+exports.App = exports.canvasMetadata = void 0;
+
+var utopia_api_1 = require(\\"utopia-api\\");
+
+var uuiui_1 = require(\\"uuiui\\");
+
+exports.canvasMetadata = {
+  specialNodes: [],
+  nodeMetadata: {},
+  scenes: [{
+    component: 'App',
+    frame: {
+      height: 812,
+      left: 0,
+      width: 375,
+      top: 0
+    },
+    props: {
+      layout: {
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0
+      }
+    },
+    container: {
+      layoutSystem: 'pinSystem'
+    }
+  }],
+  elementMetadata: {}
+};
+
+exports.App = function (props) {
+  return utopia_api_1.jsx(utopia_api_1.View, {
+    style: Object.assign(Object.assign({}, props.style), {
+      backgroundColor: uuiui_1.colorTheme.white.value
+    }),
+    layout: {
+      layoutSystem: 'pinSystem'
+    },
+    \\"data-uid\\": 'aaa'
+  });
+}; //# sourceMappingURL=app.js.map",
     },
   },
   "error": null,
@@ -1206,7 +1495,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>
@@ -1234,11 +1523,150 @@ export var App = (props) => {
           "type": "{ specialNodes: any[]; nodeMetadata: {}; scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { ...; }; }[]; elementMetadata: {}; }",
         },
       },
-      "filename": "/app.ui.js",
+      "filename": "/app.js",
     },
   ],
+  "projectModules": Object {
+    "/app.js": Object {
+      "errors": Array [],
+      "sourceMap": Object {
+        "file": "app.js",
+        "mappings": ";;;;;;;AAEA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAUA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAcA,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD,EAAU;AACzB,SACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAO,KAAK,CAAC,KAAb,CAAA,EAAkB;AAAE,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApC,KAAlB,CADF;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARU,C",
+        "names": Array [],
+        "sourceRoot": "",
+        "sources": Array [
+          "../app.js",
+        ],
+        "sourcesContent": Array [
+          "/** @jsx jsx */
+import * as React from 'react'
+import {
+  Ellipse,
+  HelperFunctions,
+  Image,
+  NodeImplementations,
+  Rectangle,
+  Text,
+  View,
+  jsx,
+} from 'utopia-api'
+import {
+  colorTheme,
+  Button,
+  Dialog,
+  Icn,
+  Icons,
+  LargerIcons,
+  FunctionIcons,
+  MenuIcons,
+  Isolator,
+  TabComponent,
+  Tooltip,
+  ActionSheet,
+  Avatar,
+  ControlledTextArea,
+  Title,
+  H1,
+  H2,
+  H3,
+  Subdued,
+  InspectorSectionHeader,
+  InspectorSubsectionHeader,
+  FlexColumn,
+  FlexRow,
+  ResizableFlexColumn,
+  PopupList,
+  Section,
+  SectionTitleRow,
+  SectionBodyArea,
+  UtopiaListSelect,
+  UtopiaListItem,
+  CheckboxInput,
+  NumberInput,
+  StringInput,
+  OnClickOutsideHOC,
+} from 'uuiui'
+
+export var canvasMetadata = {
+  specialNodes: [],
+  nodeMetadata: {},
+  scenes: [
+    {
+      component: 'App',
+      frame: { height: 812, left: 0, width: 375, top: 0 },
+      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },
+      container: { layoutSystem: 'pinSystem' },
+    },
+  ],
+  elementMetadata: {},
+}
+
+export var App = (props) => {
+  return (
+    <View
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
+      layout={{ layoutSystem: 'pinSystem' }}
+      data-uid={'aaa'}
+    ></View>
+  )
+}
+
+",
+        ],
+        "version": 3,
+      },
+      "transpiledCode": "\\"use strict\\";
+
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
+});
+exports.App = exports.canvasMetadata = void 0;
+
+var utopia_api_1 = require(\\"utopia-api\\");
+
+var uuiui_1 = require(\\"uuiui\\");
+
+exports.canvasMetadata = {
+  specialNodes: [],
+  nodeMetadata: {},
+  scenes: [{
+    component: 'App',
+    frame: {
+      height: 812,
+      left: 0,
+      width: 375,
+      top: 0
+    },
+    props: {
+      layout: {
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0
+      }
+    },
+    container: {
+      layoutSystem: 'pinSystem'
+    }
+  }],
+  elementMetadata: {}
+};
+
+exports.App = function (props) {
+  return utopia_api_1.jsx(utopia_api_1.View, {
+    style: Object.assign(Object.assign({}, props.style), {
+      backgroundColor: uuiui_1.colorTheme.white.value
+    }),
+    layout: {
+      layoutSystem: 'pinSystem'
+    },
+    \\"data-uid\\": 'aaa'
+  });
+}; //# sourceMappingURL=app.js.map",
+    },
+  },
   "propertyControlsInfo": Object {
-    "/app.ui": Object {},
+    "/app": Object {},
   },
   "requireFn": [Function],
   "skipDeepFreeze": true,

@@ -1,5 +1,6 @@
 import { MapLike } from 'typescript'
 import { fastForEach } from './utils'
+import { is } from './equality-utils'
 
 export function stripNulls<T>(array: Array<T | null | undefined>): Array<T> {
   var workingArray: Array<T> = []
@@ -241,6 +242,20 @@ export function joinSpecial(
       result = `${result}${lastSeparator}${next}`
     } else {
       result = `${result}${normalSeparator}${next}`
+    }
+  })
+  return result
+}
+
+export function removeAll<T>(
+  target: ReadonlyArray<T>,
+  toRemove: ReadonlyArray<T>,
+  eqFn: (l: T, R: T) => boolean = is,
+): Array<T> {
+  let result: Array<T> = []
+  fastForEach(target, (nextA) => {
+    if (toRemove.findIndex((nextB) => eqFn(nextA, nextB)) < 0) {
+      result.push(nextA)
     }
   })
   return result

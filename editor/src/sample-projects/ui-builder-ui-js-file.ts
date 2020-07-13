@@ -88,7 +88,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
     ></View>
   )

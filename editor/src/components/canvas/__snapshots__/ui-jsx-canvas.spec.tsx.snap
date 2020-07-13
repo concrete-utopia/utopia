@@ -105,7 +105,7 @@ Object {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'}>
+        return <div style={{ ...props.style}} data-uid={'aaa'}>
           {[1, 2, 3].map(n => {
             return <div data-uid={'bbb'} data-label={'Plane'} />
           })}
@@ -155,15 +155,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAKkCA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAKiCA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -174,7 +172,7 @@ Object {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'}>
+        return <div style={{ ...props.style}} data-uid={'aaa'}>
           {[1, 2, 3].map(n => {
             return <div data-uid={'bbb'} data-label={'Plane'} />
           })}
@@ -197,7 +195,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -354,15 +352,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAKkCA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAKiCA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -373,7 +369,7 @@ Object {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'} data-label={'Hat'} />
+        return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
       }
       export var storyboard = (props) => {
         return (
@@ -392,7 +388,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -889,8 +885,8 @@ Object {
                 "children": Array [
                   Object {
                     "definedElsewhere": Array [
-                      "React",
                       "n",
+                      "React",
                       "utopiaCanvasJSXLookup",
                     ],
                     "elementsWithin": Object {
@@ -1095,8 +1091,8 @@ Object {
             },
             "transpiledJavascript": "return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
-    React: React,
     n: n,
+    React: React,
     utopiaCanvasJSXLookup: utopiaCanvasJSXLookup
   });
 });",
@@ -1552,15 +1548,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAOkCA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAOiCA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -1573,7 +1567,7 @@ Object {
       console.log('root log')
       export var App = (props) => {
         console.log('inside component log')
-        return <div style={{ ...(props.style || {})}} data-uid={'aaa'} />
+        return <div style={{ ...props.style}} data-uid={'aaa'} />
       }
       export var storyboard = (props) => {
         return (
@@ -1592,7 +1586,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -2770,7 +2764,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -2829,15 +2823,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -2851,7 +2843,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -2876,7 +2868,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -3021,7 +3013,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3256,7 +3248,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3315,15 +3307,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -3337,7 +3327,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3362,7 +3352,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -3507,7 +3497,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3739,7 +3729,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3818,15 +3808,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -3840,7 +3828,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -3865,7 +3853,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -4014,7 +4002,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -4272,7 +4260,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -4351,15 +4339,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAQ0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAQyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -4373,7 +4359,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -4398,7 +4384,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -4547,7 +4533,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -5072,7 +5058,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5197,7 +5183,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5336,7 +5322,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5464,7 +5450,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5603,7 +5589,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5701,15 +5687,13 @@ export var storyboard = (props) => {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAmDaA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAmDYA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -5766,7 +5750,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -5811,7 +5795,7 @@ export var storyboard = (props) => {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -6052,7 +6036,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -6177,7 +6161,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -6316,7 +6300,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -6444,7 +6428,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -6583,7 +6567,7 @@ export var App = (props) => {
   return (
     <View
       style={{
-        ...(props.style || {}),
+        ...props.style,
         fontSize: '12px',
         fontFamily: 'Inter',
         color: '#237AFF',
@@ -7325,7 +7309,7 @@ Object {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div ref={() => console.log('functional component')} style={{ ...(props.style || {})}} data-uid={'aaa'} />
+        return <div ref={() => console.log('functional component')} style={{ ...props.style}} data-uid={'aaa'} />
       }
       export var storyboard = (props) => {
         return (
@@ -7358,15 +7342,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAKkFA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAKiFA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -7377,7 +7359,7 @@ Object {
       import * as React from 'react'
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
-        return <div ref={() => console.log('functional component')} style={{ ...(props.style || {})}} data-uid={'aaa'} />
+        return <div ref={() => console.log('functional component')} style={{ ...props.style}} data-uid={'aaa'} />
       }
       export var storyboard = (props) => {
         return (
@@ -7396,7 +7378,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -8149,15 +8131,13 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
-                  "javascript": "(props.style || {})",
+                  "javascript": "props.style",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAO0BA,KAAMC,MAAND,IAAgBE,EAAjBC",
+                    "mappings": "OAOyBA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "style",
-                      "}",
-                      "(",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -8170,7 +8150,7 @@ Object {
       export var App = (props) => {
         return (
           <View
-            style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -8195,7 +8175,7 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return props.style || {};",
+                  "transpiledJavascript": "return props.style;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },

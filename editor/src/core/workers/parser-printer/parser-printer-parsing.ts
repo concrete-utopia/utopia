@@ -117,6 +117,7 @@ function parseArrayLiteralExpression(
   let simpleArrayContents: Array<any> = []
   let highlightBounds = existingHighlightBounds
   let propsUsed: Array<string> = []
+  let definedElsewhere: Array<string> = []
   for (const literalElement of literal.elements) {
     if (TS.isSpreadElement(literalElement)) {
       const subExpression = parseAttributeExpression(
@@ -134,6 +135,7 @@ function parseArrayLiteralExpression(
       } else {
         highlightBounds = subExpression.value.highlightBounds
         propsUsed.push(...subExpression.value.propsUsed)
+        definedElsewhere.push(...subExpression.value.definedElsewhere)
         arrayContents.push(jsxArraySpread(subExpression.value.value))
       }
     } else {
@@ -152,6 +154,7 @@ function parseArrayLiteralExpression(
       } else {
         highlightBounds = subExpression.value.highlightBounds
         propsUsed.push(...subExpression.value.propsUsed)
+        definedElsewhere.push(...subExpression.value.definedElsewhere)
         const subExpressionValue: JSXAttribute = subExpression.value.value
         if (isJSXAttributeValue(subExpressionValue)) {
           simpleArrayContents.push(subExpressionValue.value)
@@ -163,11 +166,21 @@ function parseArrayLiteralExpression(
   // If every value is a JSXAttributeValue, we can simplify.
   if (simpleArrayContents.length === arrayContents.length) {
     return right(
-      withParserMetadata(jsxAttributeValue(simpleArrayContents), highlightBounds, propsUsed),
+      withParserMetadata(
+        jsxAttributeValue(simpleArrayContents),
+        highlightBounds,
+        propsUsed,
+        definedElsewhere,
+      ),
     )
   } else {
     return right(
-      withParserMetadata(jsxAttributeNestedArray(arrayContents), highlightBounds, propsUsed),
+      withParserMetadata(
+        jsxAttributeNestedArray(arrayContents),
+        highlightBounds,
+        propsUsed,
+        definedElsewhere,
+      ),
     )
   }
 }
@@ -189,6 +202,7 @@ function parseObjectLiteralExpression(
   let simpleContentsCount = 0
   let highlightBounds = existingHighlightBounds
   let propsUsed: Array<string> = []
+  let definedElsewhere: Array<string> = []
   for (const literalProp of literal.properties) {
     if (TS.isPropertyAssignment(literalProp) || TS.isShorthandPropertyAssignment(literalProp)) {
       const initializer = TS.isPropertyAssignment(literalProp)
@@ -216,6 +230,7 @@ function parseObjectLiteralExpression(
           contents.push(jsxPropertyAssignment(key, subExpressionValue))
           highlightBounds = subExpression.value.highlightBounds
           propsUsed.push(...subExpression.value.propsUsed)
+          definedElsewhere.push(...subExpression.value.definedElsewhere)
           if (isJSXAttributeValue(subExpressionValue)) {
             simpleContents[key] = subExpressionValue.value
             simpleContentsCount++
@@ -240,14 +255,29 @@ function parseObjectLiteralExpression(
         contents.push(jsxSpreadAssignment(subExpressionValue))
         highlightBounds = subExpression.value.highlightBounds
         propsUsed.push(...subExpression.value.propsUsed)
+        definedElsewhere.push(...subExpression.value.definedElsewhere)
       }
     }
   }
   // If every value is a JSXAttributeValue, we can simplify.
   if (contents.length === simpleContentsCount) {
-    return right(withParserMetadata(jsxAttributeValue(simpleContents), highlightBounds, propsUsed))
+    return right(
+      withParserMetadata(
+        jsxAttributeValue(simpleContents),
+        highlightBounds,
+        propsUsed,
+        definedElsewhere,
+      ),
+    )
   } else {
-    return right(withParserMetadata(jsxAttributeNestedObject(contents), highlightBounds, propsUsed))
+    return right(
+      withParserMetadata(
+        jsxAttributeNestedObject(contents),
+        highlightBounds,
+        propsUsed,
+        definedElsewhere,
+      ),
+    )
   }
 }
 
@@ -481,7 +511,10 @@ function parseOtherJavaScript<E extends TS.Node, T>(
     let parsedElementsWithin: ElementsWithinInPosition = []
     let highlightBounds = existingHighlightBounds
 
-    function addToParsedElementsWithin(node: TS.JsxElement | TS.JsxSelfClosingElement): void {
+    function addToParsedElementsWithin(
+      currentScope: Array<string>,
+      node: TS.JsxElement | TS.JsxSelfClosingElement,
+    ): void {
       const parseResult = parseOutJSXElements(
         sourceFile,
         filename,
@@ -508,6 +541,10 @@ function parseOtherJavaScript<E extends TS.Node, T>(
                   : firstChild.startColumn,
             })
             highlightBounds = success.highlightBounds
+
+            fastForEach(success.definedElsewhere, (val) =>
+              pushToDefinedElsewhereIfNotThere(currentScope, val),
+            )
           }
         }
       })
@@ -650,7 +687,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
               // Since this function will also walk inside this element,
               // prevent this from being reapplied within this element.
               if (!innerInsideJSXElement) {
-                addToParsedElementsWithin(node)
+                addToParsedElementsWithin(scope, node)
                 innerInsideJSXElement = true
               }
               // If there's some JSX, then it's implied we will transform this
@@ -661,7 +698,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
               // Since this function will also walk inside this element,
               // prevent this from being reapplied within this element.
               if (!innerInsideJSXElement) {
-                addToParsedElementsWithin(node)
+                addToParsedElementsWithin(scope, node)
                 innerInsideJSXElement = true
               }
               // If there's some JSX, then it's implied we will transform this
@@ -787,7 +824,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
     })
 
     return mapEither(
-      (created) => withParserMetadata(created, highlightBounds, propsUsed),
+      (created) => withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere),
       create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin),
     )
   }
@@ -956,6 +993,7 @@ function parseAttributeExpression(
         let highlightBounds = existingHighlightBounds
         let parsedArgumentAttributes: Array<JSXAttribute> = []
         let propsUsed: Array<string> = []
+        let definedElsewhere: Array<string> = []
         for (const argument of expression.arguments) {
           const parsedArgument = parseAttributeExpression(
             sourceFile,
@@ -973,6 +1011,7 @@ function parseAttributeExpression(
             parsedArgumentAttributes.push(parsedArgument.value.value)
             highlightBounds = parsedArgument.value.highlightBounds
             propsUsed.push(...parsedArgument.value.propsUsed)
+            definedElsewhere.push(...parsedArgument.value.definedElsewhere)
           }
         }
         return right(
@@ -980,6 +1019,7 @@ function parseAttributeExpression(
             jsxAttributeFunctionCall(identifier.getText(sourceFile), parsedArgumentAttributes),
             highlightBounds,
             propsUsed,
+            definedElsewhere,
           ),
         )
       }
@@ -1012,12 +1052,13 @@ function parseAttributeExpression(
     TS.isIdentifier(expression) &&
     expression.originalKeywordKind === TS.SyntaxKind.UndefinedKeyword
   ) {
-    return right(withParserMetadata(jsxAttributeValue(undefined), existingHighlightBounds, []))
+    return right(withParserMetadata(jsxAttributeValue(undefined), existingHighlightBounds, [], []))
   } else if (TS.isNumericLiteral(expression)) {
     return right(
       withParserMetadata(
         jsxAttributeValue(Number.parseFloat(expression.getText(sourceFile))),
         existingHighlightBounds,
+        [],
         [],
       ),
     )
@@ -1043,6 +1084,7 @@ function parseAttributeExpression(
             jsxAttributeValue(Number.parseFloat(operand.getText(sourceFile)) * -1),
             existingHighlightBounds,
             [],
+            [],
           ),
         )
       }
@@ -1059,16 +1101,16 @@ function parseAttributeExpression(
     )
   } else if (TS.isStringLiteral(expression)) {
     return right(
-      withParserMetadata(jsxAttributeValue(expression.text), existingHighlightBounds, []),
+      withParserMetadata(jsxAttributeValue(expression.text), existingHighlightBounds, [], []),
     )
   } else {
     switch (expression.kind) {
       case TS.SyntaxKind.TrueKeyword:
-        return right(withParserMetadata(jsxAttributeValue(true), existingHighlightBounds, []))
+        return right(withParserMetadata(jsxAttributeValue(true), existingHighlightBounds, [], []))
       case TS.SyntaxKind.FalseKeyword:
-        return right(withParserMetadata(jsxAttributeValue(false), existingHighlightBounds, []))
+        return right(withParserMetadata(jsxAttributeValue(false), existingHighlightBounds, [], []))
       case TS.SyntaxKind.NullKeyword:
-        return right(withParserMetadata(jsxAttributeValue(null), existingHighlightBounds, []))
+        return right(withParserMetadata(jsxAttributeValue(null), existingHighlightBounds, [], []))
       default:
         return parseAttributeOtherJavaScript(
           sourceFile,
@@ -1096,7 +1138,7 @@ function getAttributeExpression(
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   if (TS.isStringLiteral(initializer)) {
     return right(
-      withParserMetadata(jsxAttributeValue(initializer.text), existingHighlightBounds, []),
+      withParserMetadata(jsxAttributeValue(initializer.text), existingHighlightBounds, [], []),
     )
   } else if (TS.isJsxExpression(initializer)) {
     if (initializer.expression == null) {
@@ -1104,6 +1146,7 @@ function getAttributeExpression(
         withParserMetadata(
           jsxAttributeOtherJavaScript('null', 'null', [], null),
           existingHighlightBounds,
+          [],
           [],
         ),
       )
@@ -1137,6 +1180,7 @@ function parseElementProps(
   let result: JSXAttributes = {}
   let highlightBounds = existingHighlightBounds
   let propsUsed = []
+  let definedElsewhere = []
   for (const prop of attributes.properties) {
     if (TS.isJsxAttribute(prop)) {
       if (prop.initializer == null) {
@@ -1158,13 +1202,14 @@ function parseElementProps(
           result[prop.name.getText(sourceFile)] = attributeResult.value.value
           highlightBounds = attributeResult.value.highlightBounds
           propsUsed.push(...attributeResult.value.propsUsed)
+          definedElsewhere.push(...attributeResult.value.definedElsewhere)
         }
       }
     } else {
       return left(`Invalid attribute found.`)
     }
   }
-  return right(withParserMetadata(result, highlightBounds, propsUsed))
+  return right(withParserMetadata(result, highlightBounds, propsUsed, definedElsewhere))
 }
 
 type TSTextOrExpression = TS.JsxText | TS.JsxExpression
@@ -1193,6 +1238,7 @@ export interface WithParserMetadata<T> {
   value: T
   highlightBounds: Readonly<HighlightBoundsForUids>
   propsUsed: Array<string>
+  definedElsewhere: Array<string>
 }
 
 interface SuccessfullyParsedElement {
@@ -1221,11 +1267,13 @@ export function withParserMetadata<T>(
   value: T,
   highlightBounds: Readonly<HighlightBoundsForUids>,
   propsUsed: Array<string>,
+  definedElsewhere: Array<string>,
 ): WithParserMetadata<T> {
   return {
     value: value,
     highlightBounds: highlightBounds,
     propsUsed: propsUsed,
+    definedElsewhere: definedElsewhere,
   }
 }
 
@@ -1331,6 +1379,7 @@ function forciblyUpdateDataUID(
       [uid]: buildHighlightBounds(sourceFile, originatingElement, uid),
     },
     [],
+    [],
   )
 }
 
@@ -1371,6 +1420,7 @@ function createJSXElementAllocatingUID(
             [uid]: buildHighlightBounds(sourceFile, originatingElement, uid),
           },
           [],
+          [],
         )
       }
     },
@@ -1388,6 +1438,7 @@ function createJSXElementAllocatingUID(
     },
     updatedProps.highlightBounds,
     [],
+    [],
   )
 }
 
@@ -1403,6 +1454,7 @@ export function parseOutJSXElements(
 ): ParseElementsResult {
   let highlightBounds = existingHighlightBounds
   let propsUsed: Array<string> = []
+  let definedElsewhere: Array<string> = []
   function innerParse(nodes: Array<TS.Node>): Either<string, Array<SuccessfullyParsedElement>> {
     // First parse to extract the nodes we really want into a sensible form
     // and fail if there's anything unexpected.
@@ -1444,6 +1496,7 @@ export function parseOutJSXElements(
       (success) => {
         highlightBounds = success.highlightBounds
         propsUsed.push(...success.propsUsed)
+        definedElsewhere.push(...success.definedElsewhere)
         return successfullyParsedElement(sourceFile, tsExpression, success.value)
       },
       result,
@@ -1489,6 +1542,7 @@ export function parseOutJSXElements(
       return flatMapEither((attrs) => {
         highlightBounds = attrs.highlightBounds
         propsUsed.push(...attrs.propsUsed)
+        definedElsewhere.push(...attrs.definedElsewhere)
         return flatMapEither((elementName) => {
           if (isJsxNameKnown(elementName, topLevelNames, imports)) {
             const parsedElement = createJSXElementAllocatingUID(
@@ -1522,7 +1576,7 @@ export function parseOutJSXElements(
     result = innerParse(flattened)
   }
   return mapEither((elements) => {
-    return withParserMetadata(elements, highlightBounds, propsUsed)
+    return withParserMetadata(elements, highlightBounds, propsUsed, definedElsewhere)
   }, result)
 }
 
@@ -1653,6 +1707,7 @@ export function liftParsedElementsIntoFunctionContents(
       functionContents(null, parsed.value),
       parsed.highlightBounds,
       parsed.propsUsed,
+      parsed.definedElsewhere,
     )
   }, parsedElements)
 }
@@ -1676,6 +1731,7 @@ export function parseOutFunctionContents(
       const possibleElement = arrowFunctionBody.statements[arrowFunctionBody.statements.length - 1]!
       let jsBlock: ArbitraryJSBlock | null = null
       let propsUsed: Array<string> = []
+      let definedElsewhere: Array<string> = []
       if (possibleBlockExpressions.length > 0) {
         const parseResult = parseArbitraryNodes(
           sourceFile,
@@ -1694,6 +1750,7 @@ export function parseOutFunctionContents(
           highlightBounds = parseResult.value.highlightBounds
           jsBlock = parseResult.value.value
           propsUsed = parseResult.value.propsUsed
+          definedElsewhere = parseResult.value.definedElsewhere
         }
       }
 
@@ -1717,6 +1774,7 @@ export function parseOutFunctionContents(
           functionContents(jsBlock, parsed.value),
           parsed.highlightBounds,
           propsUsed.concat(parsed.propsUsed),
+          definedElsewhere.concat(parsed.definedElsewhere),
         )
       }, parsedElements)
     }

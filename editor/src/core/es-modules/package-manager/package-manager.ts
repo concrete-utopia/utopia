@@ -27,6 +27,16 @@ export function createDependencyNotFoundError(importOrigin: string, toImport: st
   return error
 }
 
+// instead of making ES Modules work, we just try to solve them with a friendly error message. original ticket https://github.com/concrete-utopia/utopia/issues/83
+export const FriendlyEsModuleErrorMessage = `This probably means that you tried to load an ES Module. Utopia doesn't currently support ES Modules. NPM probably has another variant of this module which supports Node Modules.`
+export function createEsModuleError(filePath: string, error: Error) {
+  return (error.message = `${error.message}
+
+Error found in: ${filePath}
+
+${FriendlyEsModuleErrorMessage}`)
+}
+
 function resolveBuiltinDependency(toImport: string): any | undefined {
   const React = ImportedReact
   const ReactDOM = ImportedReactDOM
@@ -81,7 +91,7 @@ function resolveBuiltinDependency(toImport: string): any | undefined {
 export const getMemoizedRequireFn = memoize(
   (nodeModules: NodeModules, dispatch: EditorDispatch) => {
     return getRequireFn(
-      (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, false)]),
+      (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
       nodeModules,
     )
   },
@@ -106,34 +116,48 @@ export function getRequireFn(
       const resolvedFile = nodeModules[resolvedPath]
       if (resolvedFile != null && isEsCodeFile(resolvedFile)) {
         if (resolvedFile.evalResultCache == null) {
-          /**
-           * we create a result cache with an empty exports object here.
-           * the `injectedEvaluator` function is going to mutate this exports object.
-           * the reason is that if we have cyclic dependencies, we want to be able to
-           * return a partial exports object for a module which is under evaluation,
-           * to avoid infinite loops
-           *
-           * https://nodejs.org/api/modules.html#modules_cycles
-           *
-           */
+          try {
+            /**
+             * we create a result cache with an empty exports object here.
+             * the `injectedEvaluator` function is going to mutate this exports object.
+             * the reason is that if we have cyclic dependencies, we want to be able to
+             * return a partial exports object for a module which is under evaluation,
+             * to avoid infinite loops
+             *
+             * https://nodejs.org/api/modules.html#modules_cycles
+             *
+             */
 
-          // TODO this is the node.js `module` object we pass in to the evaluation scope.
-          // we should extend the module objects so it not only contains the exports,
-          // to have feature parity with the popular bundlers (Parcel / webpack)
-          let partialModule = {
-            exports: {},
+            // TODO this is the node.js `module` object we pass in to the evaluation scope.
+            // we should extend the module objects so it not only contains the exports,
+            // to have feature parity with the popular bundlers (Parcel / webpack)
+            let partialModule = {
+              exports: {},
+            }
+            // MUTATION
+            resolvedFile.evalResultCache = { module: partialModule }
+            function partialRequire(name: string): unknown {
+              return require(resolvedPath!, name)
+            }
+            injectedEvaluator(
+              resolvedPath,
+              resolvedFile.fileContents,
+              resolvedFile.evalResultCache.module,
+              partialRequire,
+            )
+          } catch (e) {
+            /**
+             * The module evaluation threw an error. We want to surface this error,
+             * but before we do that, we want to clear out the evalResultCache
+             * so the next time someone tries to run the same require,
+             * we give another change to the evaluator.
+             *
+             * This is inline with the real Node behavior
+             */
+            // MUTATION
+            resolvedFile.evalResultCache = null
+            throw e
           }
-          // MUTATION
-          resolvedFile.evalResultCache = { module: partialModule }
-          function partialRequire(name: string): unknown {
-            return require(resolvedPath!, name)
-          }
-          injectedEvaluator(
-            resolvedPath,
-            resolvedFile.fileContents,
-            resolvedFile.evalResultCache.module,
-            partialRequire,
-          )
         }
         return resolvedFile.evalResultCache.module.exports
       } else if (isEsRemoteDependencyPlaceholder(resolvedFile)) {

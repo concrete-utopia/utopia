@@ -34,7 +34,7 @@ export function processErrorWithSourceMap(
   inSafeFunction: boolean,
 ) {
   const errorStack = error.stack
-  if (errorStack != null && rawSourceMap != null) {
+  if (errorStack != null) {
     try {
       const splitErrorStack = errorStack.split('\n')
       const evalEntryPoint = inSafeFunction
@@ -46,14 +46,19 @@ export function processErrorWithSourceMap(
           inSafeFunction ? stackLine.replace(UTOPIA_FUNCTION_ROOT_NAME, 'eval') : stackLine,
         )
         .join('\n')
-      const sourceMap = getSourceMapConsumer(rawSourceMap as any)
       const fixedSourceCode = sourceCode.split('\n')
       const stackFrames = parseUtopiaError(error, fixedSourceCode)
       const stackFramesWithoutSafeFn = inSafeFunction
         ? unmapUtopiaSafeFunction(stackFrames)
         : stackFrames
-      const enhancedStackFrames = unmapBabelTranspiledCode(stackFramesWithoutSafeFn, sourceMap)
-      ;(error as FancyError).stackFrames = enhancedStackFrames
+
+      if (rawSourceMap == null) {
+        ;(error as FancyError).stackFrames = stackFramesWithoutSafeFn
+      } else {
+        const sourceMap = getSourceMapConsumer(rawSourceMap as any)
+        const enhancedStackFrames = unmapBabelTranspiledCode(stackFramesWithoutSafeFn, sourceMap)
+        ;(error as FancyError).stackFrames = enhancedStackFrames
+      }
     } catch (sourceMapError) {
       console.error('Source map handling threw an error.', sourceMapError)
     }
@@ -95,14 +100,19 @@ export function SafeFunction(
   async: boolean,
   cacheableContext: any,
   code: string,
-  extraParamKeys: Array<string> = [],
-  onError: ErrorHandler = NO_OP,
+  extraParamKeys: Array<string>,
+  onError: ErrorHandler,
 ): (...params: Array<any>) => any {
-  return SafeFunctionCurriedErrorHandler(
-    async,
-    cacheableContext,
-    code,
-    null,
-    extraParamKeys,
-  )(onError)
+  try {
+    return SafeFunctionCurriedErrorHandler(
+      async,
+      cacheableContext,
+      code,
+      null,
+      extraParamKeys,
+    )(onError)
+  } catch (e) {
+    processErrorWithSourceMap(onError, e, code, null, true)
+    return NO_OP
+  }
 }

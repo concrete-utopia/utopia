@@ -3,15 +3,15 @@
 exports[`Typescript worker builds the project initializing a new project 1`] = `
 Object {
   "buildResult": Object {
-    "/app.ui.js": Object {
+    "/app.js": Object {
       "errors": Array [],
       "sourceMap": Object {
-        "file": "app.ui.js",
-        "mappings": ";;;;;;;;;;;;;;AAkDA,MAAA,SAAA,CAAA,gBAAA,EAAW,cAAc,GAAG;AAC1B,QAAA,MAAM,EAAE,CACN;AACE,UAAA,SAAS,EAAE,KADb;AAEE,UAAA,KAAK,EAAE;AAAE,YAAA,MAAM,EAAE,GAAV;AAAe,YAAA,IAAI,EAAE,CAArB;AAAwB,YAAA,KAAK,EAAE,GAA/B;AAAoC,YAAA,GAAG,EAAE;AAAzC,WAFT;AAGE,UAAA,KAAK,EAAE;AAAE,YAAA,MAAM,EAAE;AAAE,cAAA,GAAG,EAAE,CAAP;AAAU,cAAA,IAAI,EAAE,CAAhB;AAAmB,cAAA,MAAM,EAAE,CAA3B;AAA8B,cAAA,KAAK,EAAE;AAArC;AAAV,WAHT;AAIE,UAAA,SAAS,EAAE;AAAE,YAAA,YAAY,EAAE;AAAhB;AAJb,SADM,CADkB;AAS1B,QAAA,eAAe,EAAE;AATS,OAA5B,CAAA;AAYA,MAAA,SAAA,CAAA,KAAA,EAAW,GAAG,GAAG,aAAC,KAAD,EAAU;AACzB,eACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,UAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAQ,KAAK,CAAC,KAAN,IAAe,EAAvB,CAAA,EAA0B;AAAE,YAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApC,WAA1B,CADF;AAEH,UAAA,MAAM,EAAE;AAAE,YAAA,YAAY,EAAE;AAAhB,WAFL;AAEkC,sBAC3B;AAHP,SAAL,CADF;AAOD,OARD,CAAA;AAUC",
+        "file": "app.js",
+        "mappings": ";;;;;;;AAEA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAUA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAsCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CADkB;AAS1B,EAAA,eAAe,EAAE;AATS,CAAjB;;AAYA,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD,EAAU;AACzB,SACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAO,KAAK,CAAC,KAAb,CAAA,EAAkB;AAAE,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApC,KAAlB,CADF;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARU,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
-          "../app.ui.js",
+          "../app.js",
         ],
         "sourcesContent": Array [
           "/** @jsx jsx */
@@ -79,7 +79,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>
@@ -90,110 +90,58 @@ export var App = (props) => {
         ],
         "version": 3,
       },
-      "transpiledCode": "System.register([\\"utopia-api\\", \\"uuiui\\"], function (exports_1, context_1) {
-  \\"use strict\\";
+      "transpiledCode": "\\"use strict\\";
 
-  var utopia_api_1, uuiui_1, canvasMetadata, App;
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
+});
+exports.App = exports.canvasMetadata = void 0;
 
-  var __moduleName = context_1 && context_1.id;
+var utopia_api_1 = require(\\"utopia-api\\");
 
-  return {
-    setters: [function (utopia_api_1_1) {
-      utopia_api_1 = utopia_api_1_1;
-    }, function (uuiui_1_1) {
-      uuiui_1 = uuiui_1_1;
-    }],
-    execute: function execute() {
-      exports_1(\\"canvasMetadata\\", canvasMetadata = {
-        scenes: [{
-          component: 'App',
-          frame: {
-            height: 812,
-            left: 0,
-            width: 375,
-            top: 0
-          },
-          props: {
-            layout: {
-              top: 0,
-              left: 0,
-              bottom: 0,
-              right: 0
-            }
-          },
-          container: {
-            layoutSystem: 'pinSystem'
-          }
-        }],
-        elementMetadata: {}
-      });
-      exports_1(\\"App\\", App = function App(props) {
-        return utopia_api_1.jsx(utopia_api_1.View, {
-          style: Object.assign(Object.assign({}, props.style || {}), {
-            backgroundColor: uuiui_1.colorTheme.white.value
-          }),
-          layout: {
-            layoutSystem: 'pinSystem'
-          },
-          \\"data-uid\\": 'aaa'
-        });
-      });
-    }
-  };
-}); //# sourceMappingURL=app.ui.js.map",
+var uuiui_1 = require(\\"uuiui\\");
+
+exports.canvasMetadata = {
+  scenes: [{
+    component: 'App',
+    frame: {
+      height: 812,
+      left: 0,
+      width: 375,
+      top: 0
     },
-    "/public/preview.jsx": Object {
-      "errors": Array [],
-      "sourceMap": Object {
-        "file": "preview.js",
-        "mappings": ";;;;;;;;;;;;;;;;AAIM,MAAA,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAP;;AACN,UAAI,IAAI,IAAI,IAAZ,EAAkB;AAClB,QAAA,QAAQ,CAAC,MAAT,CAAgB,KAAA,CAAA,aAAA,CAAC,QAAA,CAAA,GAAD,EAAI,IAAJ,CAAhB,EAAyB,IAAzB;AACC;AAAC",
-        "names": Array [],
-        "sourceRoot": "",
-        "sources": Array [
-          "../../public/preview.jsx",
-        ],
-        "sourcesContent": Array [
-          "import * as React from \\"react\\";
-import * as ReactDOM from \\"react-dom\\";
-import { App } from \\"../app.ui\\";
-
-const root = document.getElementById(\\"root\\");
-if (root != null) {
-ReactDOM.render(<App />, root);
-}",
-        ],
-        "version": 3,
-      },
-      "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../app.ui\\"], function (exports_1, context_1) {
-  \\"use strict\\";
-
-  var React, ReactDOM, app_ui_1, root;
-
-  var __moduleName = context_1 && context_1.id;
-
-  return {
-    setters: [function (React_1) {
-      React = React_1;
-    }, function (ReactDOM_1) {
-      ReactDOM = ReactDOM_1;
-    }, function (app_ui_1_1) {
-      app_ui_1 = app_ui_1_1;
-    }],
-    execute: function execute() {
-      root = document.getElementById(\\"root\\");
-
-      if (root != null) {
-        ReactDOM.render(React.createElement(app_ui_1.App, null), root);
+    props: {
+      layout: {
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0
       }
+    },
+    container: {
+      layoutSystem: 'pinSystem'
     }
-  };
-}); //# sourceMappingURL=preview.js.map",
+  }],
+  elementMetadata: {}
+};
+
+exports.App = function (props) {
+  return utopia_api_1.jsx(utopia_api_1.View, {
+    style: Object.assign(Object.assign({}, props.style), {
+      backgroundColor: uuiui_1.colorTheme.white.value
+    }),
+    layout: {
+      layoutSystem: 'pinSystem'
+    },
+    \\"data-uid\\": 'aaa'
+  });
+}; //# sourceMappingURL=app.js.map",
     },
     "/src/components.js": Object {
       "errors": Array [],
       "sourceMap": Object {
         "file": "components.js",
-        "mappings": ";;;;;;;;;;;;;;2BAIe,UAAC,KAAD;AAAA,eACb,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AAAC,UAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,UAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,UAAA,WAAW,EAAE,KAAK,CAAC;AAA9D,SAAL,EACE,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,UAAA,KAAK,EAAE;AAAE,YAAA,QAAQ,EAAE,EAAZ;AAAgB,YAAA,SAAS,EAAE;AAA3B,WADJ;AAEH,UAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,UAAA,MAAM,EAAE;AACN,YAAA,IAAI,EAAE,CADA;AAEN,YAAA,GAAG,EAAE,EAFC;AAGN,YAAA,KAAK,EAAE,MAHD;AAIN,YAAA,MAAM,EAAE;AAJF,WAHL;AASH,UAAA,UAAU,EAAE;AATT,SAAL,CADF,CADa;AAAA,O;AAgBf,MAAA,SAAA,CAAA,OAAA,EAAa,KAAK,GAAG,cAArB,CAAA;AAEA,MAAA,SAAA,CAAA,oBAAA,EAAa,kBAAkB,GAAG,4BAAC,KAAD,EAAU;AAC1C,eACE,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AACE,UAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EACA,KAAK,CAAC,KADN,CAAA,EACW;AACd,YAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAD5B;AAEd,YAAA,UAAU,EAAE;AAFE,WADX;AADP,SAAA,EAOG,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC,CAPH,CADF;AAWD,OAZD,CAAA;AAcA,MAAA,kBAAkB,CAAC,gBAAnB,GAAsC;AACpC,QAAA,IAAI,EAAE;AACJ,UAAA,IAAI,EAAE,QADF;AAEJ,UAAA,KAAK,EAAE,OAFH;AAGJ,UAAA,YAAY,EAAE;AAHV,SAD8B;AAMpC,QAAA,GAAG,EAAE;AACH,UAAA,IAAI,EAAE,QADH;AAEH,UAAA,KAAK,EAAE,QAFJ;AAGH,UAAA,YAAY,EAAE;AAHX,SAN+B;AAWpC,QAAA,IAAI,EAAE;AACJ,UAAA,IAAI,EAAE,SADF;AAEJ,UAAA,KAAK,EAAE,SAFH;AAGJ,UAAA,YAAY,EAAE;AAHV;AAX8B,OAAtC;AAkBC",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;qDAAA;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAEA,OAAA,CAAA,OAAA,GAAe,UAAC,KAAD;AAAA,SACb,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AAAC,IAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,IAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,IAAA,WAAW,EAAE,KAAK,CAAC;AAA9D,GAAL,EACE,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE;AAAE,MAAA,QAAQ,EAAE,EAAZ;AAAgB,MAAA,SAAS,EAAE;AAA3B,KADJ;AAEH,IAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,IAAA,MAAM,EAAE;AACN,MAAA,IAAI,EAAE,CADA;AAEN,MAAA,GAAG,EAAE,EAFC;AAGN,MAAA,KAAK,EAAE,MAHD;AAIN,MAAA,MAAM,EAAE;AAJF,KAHL;AASH,IAAA,UAAU,EAAE;AATT,GAAL,CADF,CADa;AAAA,CAAf;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEA,OAAA,CAAA,kBAAA,GAAqB,UAAC,KAAD,EAAU;AAC1C,SACE,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EACA,KAAK,CAAC,KADN,CAAA,EACW;AACd,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAD5B;AAEd,MAAA,UAAU,EAAE;AAFE,KADX;AADP,GAAA,EAOG,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC,CAPH,CADF;AAWD,CAZY;;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -258,71 +206,177 @@ ComponentWithProps.propertyControls = {
         ],
         "version": 3,
       },
-      "transpiledCode": "System.register([\\"react\\", \\"utopia-api\\"], function (exports_1, context_1) {
-  \\"use strict\\";
+      "transpiledCode": "\\"use strict\\";
 
-  var React, utopia_api_1, LABEL, ComponentWithProps;
-
-  var __moduleName = context_1 && context_1.id;
-
-  return {
-    setters: [function (React_1) {
-      React = React_1;
-    }, function (utopia_api_1_1) {
-      utopia_api_1 = utopia_api_1_1;
-    }],
-    execute: function execute() {
-      exports_1(\\"default\\", function (props) {
-        return React.createElement(utopia_api_1.View, {
-          layout: props.layout,
-          style: props.style,
-          onMouseDown: props.onMouseDown
-        }, React.createElement(utopia_api_1.Text, {
-          style: {
-            fontSize: 16,
-            textAlign: 'center'
-          },
-          text: props.text,
-          layout: {
-            left: 0,
-            top: 10,
-            width: '100%',
-            height: '100%'
-          },
-          textSizing: 'fixed'
-        }));
-      });
-      exports_1(\\"LABEL\\", LABEL = 'press me! 😉');
-      exports_1(\\"ComponentWithProps\\", ComponentWithProps = function ComponentWithProps(props) {
-        return React.createElement(\\"div\\", {
-          style: Object.assign(Object.assign({}, props.style), {
-            backgroundColor: props.pink ? 'hotpink' : 'transparent',
-            whiteSpace: 'normal'
-          })
-        }, (props.text + ' ').repeat(props.num));
-      });
-      ComponentWithProps.propertyControls = {
-        text: {
-          type: 'string',
-          title: 'Title',
-          defaultValue: 'Change me'
-        },
-        num: {
-          type: 'number',
-          title: 'amount',
-          defaultValue: 2
-        },
-        pink: {
-          type: 'boolean',
-          title: 'Enabled',
-          defaultValue: true
-        }
-      };
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
     }
-  };
-}); //# sourceMappingURL=components.js.map",
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, \\"default\\", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o[\\"default\\"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== \\"default\\" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
+});
+exports.ComponentWithProps = exports.LABEL = void 0; // component library
+
+var React = __importStar(require(\\"react\\"));
+
+var utopia_api_1 = require(\\"utopia-api\\");
+
+exports.default = function (props) {
+  return React.createElement(utopia_api_1.View, {
+    layout: props.layout,
+    style: props.style,
+    onMouseDown: props.onMouseDown
+  }, React.createElement(utopia_api_1.Text, {
+    style: {
+      fontSize: 16,
+      textAlign: 'center'
+    },
+    text: props.text,
+    layout: {
+      left: 0,
+      top: 10,
+      width: '100%',
+      height: '100%'
+    },
+    textSizing: 'fixed'
+  }));
+};
+
+exports.LABEL = 'press me! 😉';
+
+exports.ComponentWithProps = function (props) {
+  return React.createElement(\\"div\\", {
+    style: Object.assign(Object.assign({}, props.style), {
+      backgroundColor: props.pink ? 'hotpink' : 'transparent',
+      whiteSpace: 'normal'
+    })
+  }, (props.text + ' ').repeat(props.num));
+};
+
+exports.ComponentWithProps.propertyControls = {
+  text: {
+    type: 'string',
+    title: 'Title',
+    defaultValue: 'Change me'
+  },
+  num: {
+    type: 'number',
+    title: 'amount',
+    defaultValue: 2
+  },
+  pink: {
+    type: 'boolean',
+    title: 'Enabled',
+    defaultValue: true
+  }
+}; //# sourceMappingURL=components.js.map",
+    },
+    "/src/index.js": Object {
+      "errors": Array [],
+      "sourceMap": Object {
+        "file": "index.js",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,QAAA,GAAA,YAAA,CAAA,OAAA,CAAA,WAAA,CAAA,CAAA;;AACA,IAAA,KAAA,GAAA,OAAA,CAAA,QAAA,CAAA;;AAEA,IAAM,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAb;;AACA,IAAI,IAAI,IAAI,IAAZ,EAAkB;AAClB,EAAA,QAAQ,CAAC,MAAT,CAAgB,KAAA,CAAA,aAAA,CAAC,KAAA,CAAA,GAAD,EAAI,IAAJ,CAAhB,EAAyB,IAAzB;AACC,C",
+        "names": Array [],
+        "sourceRoot": "",
+        "sources": Array [
+          "../../src/index.js",
+        ],
+        "sourcesContent": Array [
+          "import * as React from \\"react\\";
+import * as ReactDOM from \\"react-dom\\";
+import { App } from \\"../app\\";
+
+const root = document.getElementById(\\"root\\");
+if (root != null) {
+ReactDOM.render(<App />, root);
+}",
+        ],
+        "version": 3,
+      },
+      "transpiledCode": "\\"use strict\\";
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, \\"default\\", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o[\\"default\\"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== \\"default\\" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
+});
+
+var React = __importStar(require(\\"react\\"));
+
+var ReactDOM = __importStar(require(\\"react-dom\\"));
+
+var app_1 = require(\\"../app\\");
+
+var root = document.getElementById(\\"root\\");
+
+if (root != null) {
+  ReactDOM.render(React.createElement(app_1.App, null), root);
+} //# sourceMappingURL=index.js.map",
     },
   },
+  "buildType": "full-build",
   "exportsInfo": Array [
     Object {
       "code": "/** @jsx jsx */
@@ -390,7 +444,7 @@ export var canvasMetadata = {
 export var App = (props) => {
   return (
     <View
-      style={{ ...(props.style || {}), backgroundColor: colorTheme.white.value }}
+      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
       layout={{ layoutSystem: 'pinSystem' }}
       data-uid={'aaa'}
     ></View>
@@ -418,7 +472,7 @@ export var App = (props) => {
           "type": "{ scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { layoutSystem: string; }; }[]; elementMetadata: {}; }",
         },
       },
-      "filename": "/app.ui.js",
+      "filename": "/app.js",
     },
     Object {
       "code": "// component library
@@ -501,17 +555,16 @@ ComponentWithProps.propertyControls = {
     Object {
       "code": "import * as React from \\"react\\";
 import * as ReactDOM from \\"react-dom\\";
-import { App } from \\"../app.ui\\";
+import { App } from \\"../app\\";
 
 const root = document.getElementById(\\"root\\");
 if (root != null) {
 ReactDOM.render(<App />, root);
 }",
       "exportTypes": Object {},
-      "filename": "/public/preview.jsx",
+      "filename": "/src/index.js",
     },
   ],
-  "fullBuild": true,
   "jobID": "9897a53d_15b6_400d_be5f_ca5d66e47087",
   "type": "build",
 }
@@ -531,7 +584,7 @@ Object {
       "errors": Array [],
       "sourceMap": Object {
         "file": "components.js",
-        "mappings": ";;;;;;;;;;;;;;2BAKe,UAAC,KAAD;AAAA,eACb,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AAAC,UAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,UAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,UAAA,WAAW,EAAE,KAAK,CAAC;AAA9D,SAAL,EACE,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,UAAA,KAAK,EAAE;AAAE,YAAA,QAAQ,EAAE,EAAZ;AAAgB,YAAA,SAAS,EAAE;AAA3B,WADJ;AAEH,UAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,UAAA,MAAM,EAAE;AACN,YAAA,IAAI,EAAE,CADA;AAEN,YAAA,GAAG,EAAE,EAFC;AAGN,YAAA,KAAK,EAAE,MAHD;AAIN,YAAA,MAAM,EAAE;AAJF,WAHL;AASH,UAAA,UAAU,EAAE;AATT,SAAL,CADF,CADa;AAAA,O;AAgBf,MAAA,SAAA,CAAA,OAAA,EAAa,KAAK,GAAG,cAArB,CAAA;AAEA,MAAA,SAAA,CAAA,oBAAA,EAAa,kBAAkB,GAAG,4BAAC,KAAD,EAAU;AAC1C,eACE,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AACE,UAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EACA,KAAK,CAAC,KADN,CAAA,EACW;AACd,YAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAD5B;AAEd,YAAA,UAAU,EAAE;AAFE,WADX;AADP,SAAA,EAOG,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC,CAPH,CADF;AAWD,OAZD,CAAA;AAcA,MAAA,kBAAkB,CAAC,gBAAnB,GAAsC;AACpC,QAAA,IAAI,EAAE;AACJ,UAAA,IAAI,EAAE,QADF;AAEJ,UAAA,KAAK,EAAE,OAFH;AAGJ,UAAA,YAAY,EAAE;AAHV,SAD8B;AAMpC,QAAA,GAAG,EAAE;AACH,UAAA,IAAI,EAAE,QADH;AAEH,UAAA,KAAK,EAAE,QAFJ;AAGH,UAAA,YAAY,EAAE;AAHX,SAN+B;AAWpC,QAAA,IAAI,EAAE;AACJ,UAAA,IAAI,EAAE,SADF;AAEJ,UAAA,KAAK,EAAE,SAFH;AAGJ,UAAA,YAAY,EAAE;AAHV;AAX8B,OAAtC;AAiBC",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;qDAAA;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAGA,OAAA,CAAA,OAAA,GAAe,UAAC,KAAD;AAAA,SACb,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AAAC,IAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,IAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,IAAA,WAAW,EAAE,KAAK,CAAC;AAA9D,GAAL,EACE,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE;AAAE,MAAA,QAAQ,EAAE,EAAZ;AAAgB,MAAA,SAAS,EAAE;AAA3B,KADJ;AAEH,IAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,IAAA,MAAM,EAAE;AACN,MAAA,IAAI,EAAE,CADA;AAEN,MAAA,GAAG,EAAE,EAFC;AAGN,MAAA,KAAK,EAAE,MAHD;AAIN,MAAA,MAAM,EAAE;AAJF,KAHL;AASH,IAAA,UAAU,EAAE;AATT,GAAL,CADF,CADa;AAAA,CAAf;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEA,OAAA,CAAA,kBAAA,GAAqB,UAAC,KAAD,EAAU;AAC1C,SACE,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EACA,KAAK,CAAC,KADN,CAAA,EACW;AACd,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAD5B;AAEd,MAAA,UAAU,EAAE;AAFE,KADX;AADP,GAAA,EAOG,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC,CAPH,CADF;AAWD,CAZY;;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -596,71 +649,103 @@ ComponentWithProps.propertyControls = {
         ],
         "version": 3,
       },
-      "transpiledCode": "System.register([\\"react\\", \\"utopia-api\\"], function (exports_1, context_1) {
-  \\"use strict\\";
+      "transpiledCode": "\\"use strict\\";
 
-  var React, utopia_api_1, LABEL, ComponentWithProps;
-
-  var __moduleName = context_1 && context_1.id;
-
-  return {
-    setters: [function (React_1) {
-      React = React_1;
-    }, function (utopia_api_1_1) {
-      utopia_api_1 = utopia_api_1_1;
-    }],
-    execute: function execute() {
-      exports_1(\\"default\\", function (props) {
-        return React.createElement(utopia_api_1.View, {
-          layout: props.layout,
-          style: props.style,
-          onMouseDown: props.onMouseDown
-        }, React.createElement(utopia_api_1.Text, {
-          style: {
-            fontSize: 16,
-            textAlign: 'center'
-          },
-          text: props.text,
-          layout: {
-            left: 0,
-            top: 10,
-            width: '100%',
-            height: '100%'
-          },
-          textSizing: 'fixed'
-        }));
-      });
-      exports_1(\\"LABEL\\", LABEL = 'press me! 😉');
-      exports_1(\\"ComponentWithProps\\", ComponentWithProps = function ComponentWithProps(props) {
-        return React.createElement(\\"div\\", {
-          style: Object.assign(Object.assign({}, props.style), {
-            backgroundColor: props.pink ? 'hotpink' : 'transparent',
-            whiteSpace: 'normal'
-          })
-        }, (props.text + ' ').repeat(props.num));
-      });
-      ComponentWithProps.propertyControls = {
-        text: {
-          type: 'string',
-          title: 'Title',
-          defaultValue: 'Change me'
-        },
-        num: {
-          type: 'number',
-          title: 'amount',
-          defaultValue: 2
-        },
-        pink: {
-          type: 'boolean',
-          title: 'Enabled',
-          defaultValue: true
-        }
-      };
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
     }
-  };
-}); //# sourceMappingURL=components.js.map",
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, \\"default\\", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o[\\"default\\"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== \\"default\\" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, \\"__esModule\\", {
+  value: true
+});
+exports.ComponentWithProps = exports.LABEL = void 0; // component library
+
+var React = __importStar(require(\\"react\\"));
+
+var utopia_api_1 = require(\\"utopia-api\\");
+
+exports.default = function (props) {
+  return React.createElement(utopia_api_1.View, {
+    layout: props.layout,
+    style: props.style,
+    onMouseDown: props.onMouseDown
+  }, React.createElement(utopia_api_1.Text, {
+    style: {
+      fontSize: 16,
+      textAlign: 'center'
+    },
+    text: props.text,
+    layout: {
+      left: 0,
+      top: 10,
+      width: '100%',
+      height: '100%'
+    },
+    textSizing: 'fixed'
+  }));
+};
+
+exports.LABEL = 'press me! 😉';
+
+exports.ComponentWithProps = function (props) {
+  return React.createElement(\\"div\\", {
+    style: Object.assign(Object.assign({}, props.style), {
+      backgroundColor: props.pink ? 'hotpink' : 'transparent',
+      whiteSpace: 'normal'
+    })
+  }, (props.text + ' ').repeat(props.num));
+};
+
+exports.ComponentWithProps.propertyControls = {
+  text: {
+    type: 'string',
+    title: 'Title',
+    defaultValue: 'Change me'
+  },
+  num: {
+    type: 'number',
+    title: 'amount',
+    defaultValue: 2
+  },
+  pink: {
+    type: 'boolean',
+    title: 'Enabled',
+    defaultValue: true
+  }
+}; //# sourceMappingURL=components.js.map",
     },
   },
+  "buildType": "incremental",
   "exportsInfo": Array [
     Object {
       "code": "// component library
@@ -741,7 +826,6 @@ ComponentWithProps.propertyControls = {
       "filename": "/src/components.js",
     },
   ],
-  "fullBuild": false,
   "jobID": "689b7b1b_d5ed_4876_ba62_bc66e2096bf6",
   "type": "build",
 }
@@ -780,6 +864,7 @@ Object {
       "transpiledCode": null,
     },
   },
+  "buildType": "incremental",
   "exportsInfo": Array [
     Object {
       "code": "// component library
@@ -860,7 +945,6 @@ ComponentWithProps.propertyControls = {
       "filename": "/src/components.js",
     },
   ],
-  "fullBuild": false,
   "jobID": "ffcc378d_6bc8_4635_9fd9_e54565241f27",
   "type": "build",
 }

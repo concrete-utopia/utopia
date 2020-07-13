@@ -71,7 +71,7 @@ import {
   HighlightBounds,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
-import { fastForEach } from '../../shared/utils'
+import { fastForEach, NO_OP } from '../../shared/utils'
 import {
   addImport,
   emptyImports,
@@ -166,6 +166,10 @@ function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
         false,
         { ts: TS, React: React },
         `return ${createExpressionAsString}.statements[0].expression`,
+        [],
+        (e) => {
+          throw e
+        },
       )()
       return newExpression
     case 'ATTRIBUTE_FUNCTION_CALL':
@@ -334,6 +338,10 @@ function jsxElementToExpression(
         false,
         { ts: TS, React: React },
         `var node = ${createExpressionAsString}.statements[0]; return node.expression || node`,
+        [],
+        (e) => {
+          throw e
+        },
       )()
       newExpression = updateJSXElementsWithin(newExpression, element.elementsWithin, stripUIDs)
       return TS.createJsxExpression(undefined, newExpression)
@@ -821,7 +829,9 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
                 if (paramsValue.length === 1) {
                   // Note: We're explicitly ignoring the `propsUsed` value as
                   // that should be handled by the call to `propNamesForParam` below.
-                  return right(withParserMetadata(paramsValue[0], parsedParams.highlightBounds, []))
+                  return right(
+                    withParserMetadata(paramsValue[0], parsedParams.highlightBounds, [], []),
+                  )
                 } else {
                   return left('Invalid number of params')
                 }
@@ -982,7 +992,7 @@ function parseParams(
       return parseResult
     }
   }
-  return right(withParserMetadata(parsedParams, highlightBounds, propsUsed))
+  return right(withParserMetadata(parsedParams, highlightBounds, propsUsed, []))
 }
 
 function parseParam(
@@ -1000,7 +1010,7 @@ function parseParam(
     WithParserMetadata<JSXAttributeOtherJavaScript | undefined>
   > =
     param.initializer == null
-      ? right(withParserMetadata(undefined, existingHighlightBounds, []))
+      ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
       : parseAttributeOtherJavaScript(
           file,
           filename,
@@ -1028,6 +1038,7 @@ function parseParam(
           functionParam(dotDotDotToken, bindingName.value),
           bindingName.highlightBounds,
           bindingName.propsUsed,
+          [],
         ),
       parsedBindingName,
     )
@@ -1058,6 +1069,7 @@ function parseBindingName(
           regularParam(paramName, expression.value ?? null),
           highlightBounds,
           propsUsed,
+          [],
         ),
       parsedParamName,
     )
@@ -1100,7 +1112,7 @@ function parseBindingName(
         return parsedPropertyName
       }
     }
-    return right(withParserMetadata(destructuredObject(parts), highlightBounds, propsUsed))
+    return right(withParserMetadata(destructuredObject(parts), highlightBounds, propsUsed, []))
   } else if (TS.isArrayBindingPattern(elem)) {
     let parts: Array<DestructuredArrayPart> = []
     for (const element of elem.elements) {
@@ -1129,7 +1141,7 @@ function parseBindingName(
         }
       }
     }
-    return right(withParserMetadata(destructuredArray(parts), highlightBounds, propsUsed))
+    return right(withParserMetadata(destructuredArray(parts), highlightBounds, propsUsed, []))
   } else {
     return left('Unable to parse binding element')
   }

@@ -4,46 +4,46 @@ import { ExportsInfo } from '../core/workers/ts/ts-worker'
 // 'Update Saved Bundle' and change the test function from xit(... to it(... to enable it
 
 export const SampleFileBuildResult = JSON.parse(`{
-  "/src/app.ui.js": {
+  "/src/app.js": {
     "errors": [],
-    "transpiledCode": "System.register([\\"utopia-api\\"], function (exports_1, context_1) {\\n  \\"use strict\\";\\n\\n  var utopia_api_1, App, storyboard;\\n\\n  var __moduleName = context_1 && context_1.id;\\n\\n  return {\\n    setters: [function (utopia_api_1_1) {\\n      utopia_api_1 = utopia_api_1_1;\\n    }],\\n    execute: function execute() {\\n      exports_1(\\"App\\", App = function App(props) {\\n        return utopia_api_1.jsx(utopia_api_1.View, {\\n          style: Object.assign(Object.assign({}, props.style || {}), {\\n            backgroundColor: '#FFFFFF'\\n          }),\\n          layout: {\\n            layoutSystem: 'pinSystem'\\n          }\\n        });\\n      });\\n      exports_1(\\"storyboard\\", storyboard = utopia_api_1.jsx(utopia_api_1.Storyboard, {\\n        layout: {\\n          layoutSystem: 'pinSystem'\\n        }\\n      }, utopia_api_1.jsx(utopia_api_1.Scene, {\\n        component: App,\\n        props: {\\n          style: {\\n            top: 0,\\n            left: 0,\\n            bottom: 0,\\n            right: 0\\n          }\\n        },\\n        style: {\\n          left: 0,\\n          top: 0,\\n          width: 375,\\n          height: 812\\n        },\\n        layout: {\\n          layoutSystem: 'pinSystem'\\n        }\\n      })));\\n    }\\n  };\\n}); //# sourceMappingURL=app.ui.js.map",
+    "transpiledCode": "\\"use strict\\";\\n\\nObject.defineProperty(exports, \\"__esModule\\", {\\n  value: true\\n});\\nexports.storyboard = exports.App = void 0;\\n\\nvar utopia_api_1 = require(\\"utopia-api\\");\\n\\nexports.App = function (props) {\\n  return utopia_api_1.jsx(utopia_api_1.View, {\\n    style: Object.assign(Object.assign({}, props.style), {\\n      backgroundColor: '#FFFFFF'\\n    }),\\n    layout: {\\n      layoutSystem: 'pinSystem'\\n    }\\n  });\\n};\\n\\nexports.storyboard = utopia_api_1.jsx(utopia_api_1.Storyboard, {\\n  layout: {\\n    layoutSystem: 'pinSystem'\\n  }\\n}, utopia_api_1.jsx(utopia_api_1.Scene, {\\n  component: exports.App,\\n  props: {\\n    style: {\\n      top: 0,\\n      left: 0,\\n      bottom: 0,\\n      right: 0\\n    }\\n  },\\n  style: {\\n    left: 0,\\n    top: 0,\\n    width: 375,\\n    height: 812\\n  },\\n  layout: {\\n    layoutSystem: 'pinSystem'\\n  }\\n})); //# sourceMappingURL=app.js.map",
     "sourceMap": {
       "version": 3,
       "sources": [
-        "../../src/app.ui.js"
+        "../src/app.js"
       ],
       "names": [],
-      "mappings": ";;;;;;;;;;;;AAGA,MAAA,SAAA,CAAA,KAAA,EAAW,GAAG,GAAG,aAAC,KAAD,EAAU;AACzB,eACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,UAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAQ,KAAK,CAAC,KAAN,IAAe,EAAvB,CAAA,EAA0B;AAAE,YAAA,eAAe,EAAE;AAAnB,WAA1B,CADF;AAEH,UAAA,MAAM,EAAE;AAAE,YAAA,YAAY,EAAE;AAAhB;AAFL,SAAL,CADF;AAMD,OAPD,CAAA;AAQA,MAAA,SAAA,CAAA,YAAA,EAAW,UAAU,GACnB,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,UAAD,EAAW;AAAC,QAAA,MAAM,EAAE;AAAE,UAAA,YAAY,EAAE;AAAhB;AAAT,OAAX,EACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,KAAD,EAAM;AACJ,QAAA,SAAS,EAAE,GADP;AAEJ,QAAA,KAAK,EAAE;AAAE,UAAA,KAAK,EAAE;AAAE,YAAA,GAAG,EAAE,CAAP;AAAU,YAAA,IAAI,EAAE,CAAhB;AAAmB,YAAA,MAAM,EAAE,CAA3B;AAA8B,YAAA,KAAK,EAAE;AAArC;AAAT,SAFH;AAGJ,QAAA,KAAK,EAAE;AAAE,UAAA,IAAI,EAAE,CAAR;AAAW,UAAA,GAAG,EAAE,CAAhB;AAAmB,UAAA,KAAK,EAAE,GAA1B;AAA+B,UAAA,MAAM,EAAE;AAAvC,SAHH;AAIJ,QAAA,MAAM,EAAE;AAAE,UAAA,YAAY,EAAE;AAAhB;AAJJ,OAAN,CADF,CADF,CAAA;AAWC",
+      "mappings": ";;;;;;;AAEA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AACW,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD,EAAU;AACzB,SACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAO,KAAK,CAAC,KAAb,CAAA,EAAkB;AAAE,MAAA,eAAe,EAAE;AAAnB,KAAlB,CADF;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAFL,GAAL,CADF;AAMD,CAPU;;AAQA,OAAA,CAAA,UAAA,GACT,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,UAAD,EAAW;AAAC,EAAA,MAAM,EAAE;AAAE,IAAA,YAAY,EAAE;AAAhB;AAAT,CAAX,EACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,KAAD,EAAM;AACJ,EAAA,SAAS,EAAE,OAAA,CAAA,GADP;AAEJ,EAAA,KAAK,EAAE;AAAE,IAAA,KAAK,EAAE;AAAE,MAAA,GAAG,EAAE,CAAP;AAAU,MAAA,IAAI,EAAE,CAAhB;AAAmB,MAAA,MAAM,EAAE,CAA3B;AAA8B,MAAA,KAAK,EAAE;AAArC;AAAT,GAFH;AAGJ,EAAA,KAAK,EAAE;AAAE,IAAA,IAAI,EAAE,CAAR;AAAW,IAAA,GAAG,EAAE,CAAhB;AAAmB,IAAA,KAAK,EAAE,GAA1B;AAA+B,IAAA,MAAM,EAAE;AAAvC,GAHH;AAIJ,EAAA,MAAM,EAAE;AAAE,IAAA,YAAY,EAAE;AAAhB;AAJJ,CAAN,CADF,CADS,C",
       "sourcesContent": [
-        "/** @jsx jsx */\\nimport * as React from 'react'\\nimport { Scene, Storyboard, View, jsx } from 'utopia-api'\\nexport var App = (props) => {\\n  return (\\n    <View\\n      style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}\\n      layout={{ layoutSystem: 'pinSystem' }}\\n    />\\n  )\\n}\\nexport var storyboard = (\\n  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>\\n    <Scene\\n      component={App}\\n      props={{ style: { top: 0, left: 0, bottom: 0, right: 0 } }}\\n      style={{ left: 0, top: 0, width: 375, height: 812 }}\\n      layout={{ layoutSystem: 'pinSystem' }}\\n    />\\n  </Storyboard>\\n)\\n\\n"
+        "/** @jsx jsx */\\nimport * as React from 'react'\\nimport { Scene, Storyboard, View, jsx } from 'utopia-api'\\nexport var App = (props) => {\\n  return (\\n    <View\\n      style={{ ...props.style, backgroundColor: '#FFFFFF' }}\\n      layout={{ layoutSystem: 'pinSystem' }}\\n    />\\n  )\\n}\\nexport var storyboard = (\\n  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>\\n    <Scene\\n      component={App}\\n      props={{ style: { top: 0, left: 0, bottom: 0, right: 0 } }}\\n      style={{ left: 0, top: 0, width: 375, height: 812 }}\\n      layout={{ layoutSystem: 'pinSystem' }}\\n    />\\n  </Storyboard>\\n)\\n\\n"
       ],
       "sourceRoot": "",
-      "file": "app.ui.js"
+      "file": "app.js"
     }
   },
-  "/public/preview.jsx": {
+  "/src/index.js": {
     "errors": [],
-    "transpiledCode": "System.register([\\"react\\", \\"react-dom\\", \\"../src/app.ui\\"], function (exports_1, context_1) {\\n  \\"use strict\\";\\n\\n  var React, ReactDOM, app_ui_1, root;\\n\\n  var __moduleName = context_1 && context_1.id;\\n\\n  return {\\n    setters: [function (React_1) {\\n      React = React_1;\\n    }, function (ReactDOM_1) {\\n      ReactDOM = ReactDOM_1;\\n    }, function (app_ui_1_1) {\\n      app_ui_1 = app_ui_1_1;\\n    }],\\n    execute: function execute() {\\n      root = document.getElementById(\\"root\\");\\n\\n      if (root != null) {\\n        ReactDOM.render(React.createElement(app_ui_1.App, null), root);\\n      }\\n    }\\n  };\\n}); //# sourceMappingURL=preview.js.map",
+    "transpiledCode": "\\"use strict\\";\\n\\nvar __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {\\n  if (k2 === undefined) k2 = k;\\n  Object.defineProperty(o, k2, {\\n    enumerable: true,\\n    get: function get() {\\n      return m[k];\\n    }\\n  });\\n} : function (o, m, k, k2) {\\n  if (k2 === undefined) k2 = k;\\n  o[k2] = m[k];\\n});\\n\\nvar __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {\\n  Object.defineProperty(o, \\"default\\", {\\n    enumerable: true,\\n    value: v\\n  });\\n} : function (o, v) {\\n  o[\\"default\\"] = v;\\n});\\n\\nvar __importStar = this && this.__importStar || function (mod) {\\n  if (mod && mod.__esModule) return mod;\\n  var result = {};\\n  if (mod != null) for (var k in mod) {\\n    if (k !== \\"default\\" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);\\n  }\\n\\n  __setModuleDefault(result, mod);\\n\\n  return result;\\n};\\n\\nObject.defineProperty(exports, \\"__esModule\\", {\\n  value: true\\n});\\n\\nvar React = __importStar(require(\\"react\\"));\\n\\nvar ReactDOM = __importStar(require(\\"react-dom\\"));\\n\\nvar app_1 = require(\\"../src/app\\");\\n\\nvar root = document.getElementById(\\"root\\");\\n\\nif (root != null) {\\n  ReactDOM.render(React.createElement(app_1.App, null), root);\\n} //# sourceMappingURL=index.js.map",
     "sourceMap": {
       "version": 3,
       "sources": [
-        "../../public/preview.jsx"
+        "../src/index.js"
       ],
       "names": [],
-      "mappings": ";;;;;;;;;;;;;;;;AAIM,MAAA,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAP;;AACN,UAAI,IAAI,IAAI,IAAZ,EAAkB;AAChB,QAAA,QAAQ,CAAC,MAAT,CAAgB,KAAA,CAAA,aAAA,CAAC,QAAA,CAAA,GAAD,EAAI,IAAJ,CAAhB,EAAyB,IAAzB;AACD;AAAC",
+      "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,QAAA,GAAA,YAAA,CAAA,OAAA,CAAA,WAAA,CAAA,CAAA;;AACA,IAAA,KAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAEA,IAAM,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAb;;AACA,IAAI,IAAI,IAAI,IAAZ,EAAkB;AAChB,EAAA,QAAQ,CAAC,MAAT,CAAgB,KAAA,CAAA,aAAA,CAAC,KAAA,CAAA,GAAD,EAAI,IAAJ,CAAhB,EAAyB,IAAzB;AACD,C",
       "sourcesContent": [
-        "import * as React from \\"react\\";\\nimport * as ReactDOM from \\"react-dom\\";\\nimport { App } from \\"../src/app.ui\\";\\n\\nconst root = document.getElementById(\\"root\\");\\nif (root != null) {\\n  ReactDOM.render(<App />, root);\\n}"
+        "import * as React from \\"react\\";\\nimport * as ReactDOM from \\"react-dom\\";\\nimport { App } from \\"../src/app\\";\\n\\nconst root = document.getElementById(\\"root\\");\\nif (root != null) {\\n  ReactDOM.render(<App />, root);\\n}"
       ],
       "sourceRoot": "",
-      "file": "preview.js"
+      "file": "index.js"
     }
   }
 }`)
 
 export const SampleFileBundledExportsInfo: Array<ExportsInfo> = JSON.parse(`[
   {
-    "filename": "/src/app.ui.js",
-    "code": "/** @jsx jsx */\\nimport * as React from 'react'\\nimport { Scene, Storyboard, View, jsx } from 'utopia-api'\\nexport var App = (props) => {\\n  return (\\n    <View\\n      style={{ ...(props.style || {}), backgroundColor: '#FFFFFF' }}\\n      layout={{ layoutSystem: 'pinSystem' }}\\n    />\\n  )\\n}\\nexport var storyboard = (\\n  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>\\n    <Scene\\n      component={App}\\n      props={{ style: { top: 0, left: 0, bottom: 0, right: 0 } }}\\n      style={{ left: 0, top: 0, width: 375, height: 812 }}\\n      layout={{ layoutSystem: 'pinSystem' }}\\n    />\\n  </Storyboard>\\n)\\n\\n",
+    "filename": "/src/app.js",
+    "code": "/** @jsx jsx */\\nimport * as React from 'react'\\nimport { Scene, Storyboard, View, jsx } from 'utopia-api'\\nexport var App = (props) => {\\n  return (\\n    <View\\n      style={{ ...props.style, backgroundColor: '#FFFFFF' }}\\n      layout={{ layoutSystem: 'pinSystem' }}\\n    />\\n  )\\n}\\nexport var storyboard = (\\n  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>\\n    <Scene\\n      component={App}\\n      props={{ style: { top: 0, left: 0, bottom: 0, right: 0 } }}\\n      style={{ left: 0, top: 0, width: 375, height: 812 }}\\n      layout={{ layoutSystem: 'pinSystem' }}\\n    />\\n  </Storyboard>\\n)\\n\\n",
     "exportTypes": {
       "App": {
         "type": "(props: any) => Element",
@@ -66,8 +66,8 @@ export const SampleFileBundledExportsInfo: Array<ExportsInfo> = JSON.parse(`[
     }
   },
   {
-    "filename": "/public/preview.jsx",
-    "code": "import * as React from \\"react\\";\\nimport * as ReactDOM from \\"react-dom\\";\\nimport { App } from \\"../src/app.ui\\";\\n\\nconst root = document.getElementById(\\"root\\");\\nif (root != null) {\\n  ReactDOM.render(<App />, root);\\n}",
+    "filename": "/src/index.js",
+    "code": "import * as React from \\"react\\";\\nimport * as ReactDOM from \\"react-dom\\";\\nimport { App } from \\"../src/app\\";\\n\\nconst root = document.getElementById(\\"root\\");\\nif (root != null) {\\n  ReactDOM.render(<App />, root);\\n}",
     "exportTypes": {}
   }
 ]`)

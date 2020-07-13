@@ -4,6 +4,7 @@ import {
   ESRemoteDependencyPlaceholder,
   isEsCodeFile,
 } from '../../shared/project-file-types'
+import { createEsModuleError } from './package-manager'
 
 function pathToElements(path: string): string[] {
   return path.split('/')
@@ -57,14 +58,23 @@ function processPackageJson(
   potentiallyJsonCode: string,
   containerFolder: string[],
 ): string[] | null {
+  let packageJson: any
   try {
-    const packageJson = JSON.parse(potentiallyJsonCode)
-    const foundPath = packageJson.main ?? null
-    if (foundPath != null) {
-      return normalizePath([...containerFolder, ...pathToElements(foundPath)])
-    }
+    packageJson = JSON.parse(potentiallyJsonCode)
   } catch {
-    // empty block
+    return null
+  }
+  const moduleName = packageJson.name ?? containerFolder
+  const mainEntry = packageJson.main ?? null
+  const moduleEntry = packageJson.module ?? null
+  if (moduleEntry != null && mainEntry == null) {
+    throw createEsModuleError(
+      moduleName,
+      new Error('Module error: package.json has a missing `main` entry'),
+    )
+  }
+  if (mainEntry != null) {
+    return normalizePath([...containerFolder, ...pathToElements(mainEntry)])
   }
   return null
 }

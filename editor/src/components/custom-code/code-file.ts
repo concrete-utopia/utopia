@@ -1,16 +1,21 @@
 import Utils from '../../utils/utils'
-import * as Es6MicroLoader from './es6-micro-loader'
 import { RequireFn, NpmDependency } from '../../core/shared/npm-dependency-types'
-import { ExportType, ExportsInfo, MultiFileBuildResult } from '../../core/workers/ts/ts-worker'
+import {
+  ExportType,
+  ExportsInfo,
+  MultiFileBuildResult,
+  BuildType,
+} from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
 import { getControlsForExternalDependencies } from '../../core/property-controls/property-controls-utils'
-import { NodeModules } from '../../core/shared/project-file-types'
+import { NodeModules, esCodeFile } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
 import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import { updateNodeModulesContents } from '../editor/actions/actions'
+import { fastForEach } from '../../core/shared/utils'
 export interface CodeResult {
   exports: ModuleExportTypesAndValues
   transpiledCode: string | null
@@ -42,6 +47,7 @@ export type CodeResultCache = {
   propertyControlsInfo: PropertyControlsInfo
   error: Error | null
   requireFn: UtopiaRequireFn
+  projectModules: MultiFileBuildResult
 }
 
 type ModuleExportValues = { [name: string]: any }
@@ -49,50 +55,39 @@ type ModuleExportTypes = { [name: string]: ExportType }
 type ExportValue = { value: any }
 type ModuleExportTypesAndValues = { [name: string]: ExportType & ExportValue }
 
-export function processModuleCodes(
+function getExportValuesFromAllModules(
   buildResult: MultiFileBuildResult,
-  npmRequireFn: RequireFn,
-  fullBuild: boolean,
-): {
-  exports: { [module: string]: ModuleExportValues }
-  requireFn: UtopiaRequireFn
-  error: Error | null
-} {
-  const System = Es6MicroLoader.System
-  Es6MicroLoader.reset(npmRequireFn, fullBuild)
+  requireFn: UtopiaRequireFn,
+): { [module: string]: ModuleExportValues } {
+  /**
+   * TODO
+   * we are requiring every user module here. unfortunately it means that if
+   * requiring them has any side effect, we will trigger that side effect here,
+   * even if it was never imported by the user
+   *
+   * a better solution would be to store the exported values as a side effect of the user requiring the module
+   * that way the side effects would happen at the correct time, and we would
+   * still have access to things like the PropertyControls for every component the user
+   * can select (since selecting them requires the component to be on screen, which means it must be imported anyways)
+   *
+   */
 
   let exports: { [module: string]: ModuleExportValues } = {}
-  let error: Error | null = null
-
   const moduleNames = Object.keys(buildResult)
-
-  // First eval all buildResult to fill in the System object with the transpiled codes
+  // get all the modules from System to fill in the exports with their values
   moduleNames.forEach((moduleName) => {
-    const module = buildResult[moduleName]
-    if (module.transpiledCode == null) {
+    if (moduleName.toLowerCase().endsWith('.css')) {
+      // Skip eager evalution of css
       return
     }
-    try {
-      // the transpiled code contains calls to System.register
-      // this is the point where we populate Es6microLoader with the project files
-      System.setModule(moduleName, module.sourceMap)
-      eval(module.transpiledCode)
-    } catch (e) {
-      // skipping this module, there is a runtime error evaluating it
-      // we only store the last error, that is enough now
-      error = e
-    }
-  })
 
-  // The get all the modules from System to fill in the exports with their values
-  moduleNames.forEach((moduleName) => {
     const module = buildResult[moduleName]
     if (module.transpiledCode == null) {
       return
     }
     try {
       exports[moduleName] = {}
-      const codeModule = System.getModule('/', moduleName, true)
+      const codeModule = requireFn('/', moduleName, true)
       if (codeModule != null) {
         Object.keys(codeModule).forEach((exp) => {
           exports[moduleName][exp] = codeModule[exp]
@@ -100,21 +95,9 @@ export function processModuleCodes(
       }
     } catch (e) {
       // skipping this module, there is a runtime error executing it
-      // we only store the last error, that is enough now
-      error = e
     }
   })
-
-  // This requireFn uses the System created and populated above, containing all project files + the npm bundle
-  const requireFn = (importOrigin: string, toImport: string, silent: boolean) => {
-    return System.getModule(importOrigin, toImport, silent)
-  }
-
-  return {
-    exports: exports,
-    requireFn: requireFn,
-    error: error,
-  }
+  return exports
 }
 
 function processExportsInfo(exportValues: ModuleExportValues, exportTypes: ModuleExportTypes) {
@@ -148,23 +131,50 @@ function processExportsInfo(exportValues: ModuleExportValues, exportTypes: Modul
   }
 }
 
+export function incorporateBuildResult(
+  nodeModules: NodeModules,
+  buildResult: MultiFileBuildResult,
+): void {
+  // Mutates nodeModules.
+  fastForEach(Object.keys(buildResult), (moduleKey) => {
+    const modulesFile = buildResult[moduleKey]
+    if (modulesFile.transpiledCode != null) {
+      nodeModules[moduleKey] = esCodeFile(modulesFile.transpiledCode, null)
+    }
+  })
+}
+
 export function generateCodeResultCache(
-  modules: MultiFileBuildResult,
+  existingModules: MultiFileBuildResult,
+  updatedModules: MultiFileBuildResult,
   exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
   npmDependencies: NpmDependency[],
-  fullBuild: boolean,
+  fullBuild: BuildType,
 ): CodeResultCache {
-  const npmRequireFn = getMemoizedRequireFn(nodeModules, dispatch)
+  let nodeModulesAndProjectFiles: NodeModules = {
+    ...nodeModules,
+  }
+  // Makes the assumption that `fullBuild` and `updatedModules` are in line
+  // with each other.
+  let modules: MultiFileBuildResult =
+    fullBuild === 'full-build'
+      ? { ...updatedModules }
+      : {
+          ...existingModules,
+          ...updatedModules,
+        }
+  incorporateBuildResult(nodeModulesAndProjectFiles, modules)
+  const requireFn = getMemoizedRequireFn(nodeModulesAndProjectFiles, dispatch)
 
-  const { exports, requireFn, error } = processModuleCodes(modules, npmRequireFn, fullBuild)
+  const exportValues = getExportValuesFromAllModules(modules, requireFn)
   let cache: { [code: string]: CodeResult } = {}
   let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
     npmDependencies,
   )
   Utils.fastForEach(exportsInfo, (result) => {
-    const codeResult = processExportsInfo(exports[result.filename], result.exportTypes)
+    const codeResult = processExportsInfo(exportValues[result.filename], result.exportTypes)
     cache[result.filename] = {
       ...codeResult,
       ...modules[result.filename],
@@ -188,8 +198,9 @@ export function generateCodeResultCache(
     exportsInfo: exportsInfo,
     cache: cache,
     propertyControlsInfo: propertyControlsInfo,
-    error: error,
+    error: null,
     requireFn: requireFn,
+    projectModules: modules,
   }
 }
 
@@ -199,7 +210,7 @@ export function isJavascriptOrTypescript(filePath: string): boolean {
 }
 
 export const codeCacheToBuildResult = (cache: { [filename: string]: CodeResult }) => {
-  const multiFileBuildResult = Object.keys(cache).reduce((acc, filename) => {
+  const multiFileBuildResult: MultiFileBuildResult = Object.keys(cache).reduce((acc, filename) => {
     return {
       ...acc,
       [filename]: {
@@ -208,7 +219,7 @@ export const codeCacheToBuildResult = (cache: { [filename: string]: CodeResult }
         errors: [], // TODO: this is ugly, these errors are the build errors which are not stored in CodeResultCache, but directly in EditorState.codeEditorErrors
       },
     }
-  }, {} as MultiFileBuildResult)
+  }, {})
 
   return multiFileBuildResult
 }

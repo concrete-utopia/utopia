@@ -23,7 +23,7 @@ import {
   dependenciesFromPackageJson,
   findLatestVersion,
 } from '../editor/npm-dependency/npm-dependency'
-import { packageJsonFileFromModel } from '../editor/store/editor-state'
+import { packageJsonFileFromProjectContents } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
@@ -168,7 +168,7 @@ export const DependencyList = betterReactMemo('DependencyList', () => {
       editorDispatch: store.dispatch,
       minimised: store.editor.dependencyList.minimised,
       focusedPanel: store.editor.focusedPanel,
-      packageJsonFile: packageJsonFileFromModel(store.editor),
+      packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
     }
   })
 
@@ -255,7 +255,9 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       this.props.editorDispatch([EditorActions.updatePackageJson(npmDependencies)])
 
       fetchNodeModules(npmDependencies).then((nodeModules) => {
-        this.props.editorDispatch([EditorActions.updateNodeModulesContents(nodeModules, true)])
+        this.props.editorDispatch([
+          EditorActions.updateNodeModulesContents(nodeModules, 'full-build'),
+        ])
         this.setState({ dependencyLoadingStatus: 'not-loading' })
       })
 
@@ -377,7 +379,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
               .then((nodeModules) => {
                 this.packagesUpdateSuccess(editedPackageName)
                 this.props.editorDispatch([
-                  EditorActions.updateNodeModulesContents(nodeModules, false),
+                  EditorActions.updateNodeModulesContents(nodeModules, 'incremental'),
                 ])
               })
               .catch((e) => this.packagesUpdateFailed(e, editedPackageName))

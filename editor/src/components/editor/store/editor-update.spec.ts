@@ -56,6 +56,7 @@ import {
   ScenePath1ForTestUiJsFile,
 } from '../../../core/model/test-ui-js-file'
 import { npmDependency } from '../../../core/shared/npm-dependency-types'
+import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 const chaiExpect = Chai.expect
 
 /* eslint-disable @typescript-eslint/no-empty-function */
@@ -79,6 +80,7 @@ describe('action SELECT_VIEWS', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testTemplatePath])
   })
@@ -93,6 +95,7 @@ describe('action SELECT_VIEWS', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     const action2 = selectComponents([testTemplatePath], false)
     const updatedEditor = runLocalEditorAction(
@@ -103,6 +106,7 @@ describe('action SELECT_VIEWS', () => {
       action2,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testTemplatePath])
     chaiExpect(updatedEditor.navigator.collapsedViews).to.deep.equal([testTemplatePath])
@@ -118,6 +122,7 @@ describe('action SELECT_VIEWS', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testScenePath])
   })
@@ -132,6 +137,7 @@ describe('action SELECT_VIEWS', () => {
       selectComponents([testScenePath, testTemplatePath], false),
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(withOneScene.selectedViews).to.deep.equal([testScenePath])
 
@@ -143,6 +149,7 @@ describe('action SELECT_VIEWS', () => {
       selectComponents([ScenePathForTestUiJsFile, testTemplatePath, testScenePath], false),
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(withMultipleScenes.selectedViews).to.deep.equal([testScenePath])
   })
@@ -160,6 +167,7 @@ describe('action CLEAR_SELECTION', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testTemplatePath])
 
@@ -172,6 +180,7 @@ describe('action CLEAR_SELECTION', () => {
       clearAction,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor2.selectedViews).to.deep.equal([])
   })
@@ -179,7 +188,7 @@ describe('action CLEAR_SELECTION', () => {
 
 describe('action RENAME_COMPONENT', () => {
   function checkRename(target: TemplatePath, expectedDefaultName: string): void {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
     const newName = 'newName'
     const renameAction = renameComponent(target, newName)
     const updatedEditor = runLocalEditorAction(
@@ -190,6 +199,7 @@ describe('action RENAME_COMPONENT', () => {
       renameAction,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
     chaiExpect(MetadataUtils.getElementLabel(target, updatedMetadata)).to.deep.equal(newName)
@@ -203,6 +213,7 @@ describe('action RENAME_COMPONENT', () => {
       clearNameAction,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     const clearedNameMetadata = createFakeMetadataForEditor(clearedNameEditor)
     chaiExpect(MetadataUtils.getElementLabel(target, clearedNameMetadata)).to.deep.equal(
@@ -227,6 +238,7 @@ describe('action TOGGLE_PANE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     const updatedEditor2 = runLocalEditorAction(
       updatedEditor,
@@ -236,6 +248,7 @@ describe('action TOGGLE_PANE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor2.inspector.visible).to.not.equal(updatedEditor.inspector.visible)
   })
@@ -251,6 +264,7 @@ describe('action TOGGLE_PANE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     const updatedEditor2 = runLocalEditorAction(
       updatedEditor,
@@ -260,6 +274,7 @@ describe('action TOGGLE_PANE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     chaiExpect(updatedEditor2.preview.visible).to.not.equal(updatedEditor.preview.visible)
   })
@@ -268,12 +283,12 @@ describe('action TOGGLE_PANE', () => {
 describe('action NAVIGATOR_REORDER', () => {
   xit('reparents one element, which was a scene before set it to child of target and removes from scene', () => {
     // TODO Scene Implementation
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
     const reparentAction = reparentComponents(
       [TP.instancePath(ScenePath1ForTestUiJsFile, ['jjj'])],
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
     )
-    const mainUIJSFile = editor.projectContents['/src/app.ui.js']
+    const mainUIJSFile = editor.projectContents['/src/app.js']
     if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
       const topLevelElements = mainUIJSFile.fileContents.value.topLevelElements
       const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value)
@@ -291,9 +306,10 @@ describe('action NAVIGATOR_REORDER', () => {
         reparentAction,
         History.init(editor, derivedState),
         dispatch,
+        emptyUiJsxCanvasContextData(),
       )
 
-      const updatedMainUIJSFile = updatedEditor.projectContents['/src/app.ui.js']
+      const updatedMainUIJSFile = updatedEditor.projectContents['/src/app.js']
       if (isUIJSFile(updatedMainUIJSFile) && isRight(updatedMainUIJSFile.fileContents)) {
         const updatedTopLevelElements = updatedMainUIJSFile.fileContents.value.topLevelElements
         const updatedUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
@@ -312,17 +328,17 @@ describe('action NAVIGATOR_REORDER', () => {
         // check if the reparented elements are really in their new parent
         expect(updatedTargetChildren.find((child) => getUtopiaID(child) === 'jjj')).toBeDefined()
       } else {
-        chaiExpect.fail('updated src/app.ui.js file was the wrong type.')
+        chaiExpect.fail('updated src/app.js file was the wrong type.')
       }
     } else {
-      chaiExpect.fail('original src/app.ui.js file was the wrong type.')
+      chaiExpect.fail('original src/app.js file was the wrong type.')
     }
   })
 })
 
 describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
   it('duplicates 1 element', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js', [
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js', [
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'iii']),
     ])
     const duplicateAction = duplicateSpecificElements([
@@ -336,9 +352,10 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       duplicateAction,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = updatedEditor.projectContents['/src/app.ui.js']
-    const oldUIJSFile = editor.projectContents['/src/app.ui.js']
+    const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
+    const oldUIJSFile = editor.projectContents['/src/app.js']
     if (
       isUIJSFile(oldUIJSFile) &&
       isRight(oldUIJSFile.fileContents) &&
@@ -357,13 +374,13 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       )
       expect(updatedChildren).toHaveLength(oldChildren.length + 1)
     } else {
-      chaiExpect.fail('src/app.ui.js file was the wrong type.')
+      chaiExpect.fail('src/app.js file was the wrong type.')
     }
   })
   it('duplicates multiple elements', () => {
     const element1 = TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'iii'])
     const element2 = TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js', [
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js', [
       element1,
       element2,
     ])
@@ -376,9 +393,10 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       duplicateAction,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = updatedEditor.projectContents['/src/app.ui.js']
-    const oldUIJSFile = editor.projectContents['/src/app.ui.js']
+    const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
+    const oldUIJSFile = editor.projectContents['/src/app.js']
     if (
       isUIJSFile(oldUIJSFile) &&
       isRight(oldUIJSFile.fileContents) &&
@@ -406,20 +424,20 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       expect(newElements).toHaveLength(2)
       expect(newElementsInOriginalModel).toHaveLength(0)
     } else {
-      chaiExpect.fail('src/app.ui.js file was the wrong type.')
+      chaiExpect.fail('src/app.js file was the wrong type.')
     }
   })
 })
 
 describe('action DELETE_VIEWS', () => {
   it('deletes all target elements', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
 
     const originalChildrenCount = Utils.pathOr(
       [],
       [0, 'rootElement', 'children'],
       getUtopiaJSXComponentsFromSuccess(
-        (editor.projectContents['/src/app.ui.js'] as any).fileContents.value,
+        (editor.projectContents['/src/app.js'] as any).fileContents.value,
       ),
     ).length
 
@@ -439,8 +457,9 @@ describe('action DELETE_VIEWS', () => {
       deleteAction,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = updatedEditor.projectContents['/src/app.ui.js']
+    const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
     if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
       expect(
         Utils.pathOr(
@@ -462,14 +481,14 @@ describe('action DELETE_VIEWS', () => {
         ),
       ).toBeNull()
     } else {
-      chaiExpect.fail('src/app.ui.js file was the wrong type.')
+      chaiExpect.fail('src/app.js file was the wrong type.')
     }
   })
 })
 
 describe('INSERT_JSX_ELEMENT', () => {
   function testInsertionToParent(parentPath: StaticInstancePath) {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
 
     const parentBeforeInsert = findJSXElementChildAtPath(
       getOpenUtopiaJSXComponentsFromState(editor),
@@ -493,6 +512,7 @@ describe('INSERT_JSX_ELEMENT', () => {
       insertAction,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     const updatedComponents = getOpenUtopiaJSXComponentsFromState(updatedEditor)
     const parentAfterInsert = findJSXElementChildAtPath(updatedComponents, parentPath)
@@ -524,7 +544,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
   xit('inserts an element as a new root component', () => {
     // TODO Scene Implementation
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
     const editorWithNoHighlighted: EditorState = {
       ...editor,
       highlightedViews: [],
@@ -549,6 +569,7 @@ describe('INSERT_JSX_ELEMENT', () => {
       insertAction,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     const updatedComponents = getOpenUtopiaJSXComponentsFromState(updatedEditor)
     const insertedElement = findJSXElementChildAtPath(
@@ -562,7 +583,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
 describe('action MOVE_SELECTED_BACKWARD', () => {
   it('moves the element backward', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
     const editorWithSelectedView = {
       ...editor,
       selectedViews: [TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])],
@@ -576,6 +597,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
       reparentAction,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
 
@@ -593,7 +615,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
 
 describe('action UPDATE_FRAME_DIMENSIONS', () => {
   it('updates text element frame dimension', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
     const targetText = TP.staticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'hhh'])
     const newWidth = 300
     const newHeight = 400
@@ -606,8 +628,9 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
       updateFrameDimensionsAction,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = updatedEditor.projectContents['/src/app.ui.js']
+    const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
     if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
       const components = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value)
       const textElement = Utils.forceNotNull(
@@ -623,14 +646,14 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
         chaiExpect.fail('Not a JSX element.')
       }
     } else {
-      chaiExpect.fail('src/app.ui.js file was the wrong type.')
+      chaiExpect.fail('src/app.js file was the wrong type.')
     }
   })
 })
 
 describe('action OPEN_FILE', () => {
   it('opens a new file with initial cursor position', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
     const cursorPosition = {
       line: 15,
       column: 11,
@@ -644,6 +667,7 @@ describe('action OPEN_FILE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     const selectedFile = updatedEditor.selectedFile
     if (selectedFile == null) {
@@ -657,7 +681,7 @@ describe('action OPEN_FILE', () => {
 
 describe('action SET_SAFE_MODE', () => {
   it('Sets safe mode to true', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
     expect(editor.safeMode).toBeFalsy()
     const action = setSafeMode(true)
     const updatedEditor = runLocalEditorAction(
@@ -668,6 +692,7 @@ describe('action SET_SAFE_MODE', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     expect(updatedEditor.safeMode).toBeTruthy()
   })
@@ -675,7 +700,7 @@ describe('action SET_SAFE_MODE', () => {
 
 describe('action SET_SAVE_ERROR', () => {
   it('Sets save error to true', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
     expect(editor.saveError).toBeFalsy()
     const action = setSaveError(true)
     const updatedEditor = runLocalEditorAction(
@@ -686,6 +711,7 @@ describe('action SET_SAVE_ERROR', () => {
       action,
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     expect(updatedEditor.saveError).toBeTruthy()
   })
@@ -693,7 +719,7 @@ describe('action SET_SAVE_ERROR', () => {
 
 describe('action PUSH_TOAST and POP_TOAST', () => {
   it('PUSH_TOAST pushes to existing toasts in state, POP_TOAST removes oldest one', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
 
     const updatedEditor = runLocalEditorAction(
       editor,
@@ -703,6 +729,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       pushToast({ message: 'toast1' }),
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     expect(updatedEditor.toasts).toHaveLength(1)
     expect(updatedEditor.toasts[0]).toEqual({ message: 'toast1' })
@@ -715,6 +742,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       pushToast({ message: 'toast2' }),
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
     expect(updatedEditor2.toasts).toHaveLength(2)
     expect(updatedEditor2.toasts[0]).toEqual({ message: 'toast1' })
@@ -728,6 +756,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       popToast(),
       History.init(editor, derivedState),
       dispatch,
+      emptyUiJsxCanvasContextData(),
     )
 
     expect(updatedEditor3.toasts).toHaveLength(1)
@@ -735,7 +764,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
   })
 
   it('PUSH_TOAST schedules a POP_TOAST', () => {
-    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState } = createEditorStates('/src/app.js')
     const mockDispatch = jest.fn()
 
     runLocalEditorAction(
@@ -746,6 +775,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       pushToast({ message: 'toast1' }),
       History.init(editor, derivedState),
       mockDispatch,
+      emptyUiJsxCanvasContextData(),
     )
 
     jest.runAllTimers()
@@ -762,10 +792,11 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       files: {
         '/node_modules/example.js': esCodeFile('nothing to see here', null),
       },
+      projectFilesBuildResults: {},
     }
 
     const nodeModules = createNodeModules(fileWithImports.contents)
-    const action = updateNodeModulesContents(nodeModules, false)
+    const action = updateNodeModulesContents(nodeModules, 'incremental')
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
@@ -774,6 +805,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       action,
       History.init(editor, derivedState),
       mockDispatch,
+      emptyUiJsxCanvasContextData(),
     )
 
     expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeDefined()
@@ -787,7 +819,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     const mockDispatch = jest.fn()
 
     const nodeModules = createNodeModules(fileWithImports.contents)
-    const action = updateNodeModulesContents(nodeModules, true)
+    const action = updateNodeModulesContents(nodeModules, 'full-build')
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
@@ -796,6 +828,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       action,
       History.init(editor, derivedState),
       mockDispatch,
+      emptyUiJsxCanvasContextData(),
     )
 
     expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeUndefined()
@@ -816,6 +849,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       action,
       History.init(editor, derivedState),
       mockDispatch,
+      emptyUiJsxCanvasContextData(),
     )
 
     const packageJsonFile = updatedEditor.projectContents['/package.json']
@@ -827,9 +861,9 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
           \\"name\\": \\"Utopia Project\\",
           \\"version\\": \\"0.1.0\\",
           \\"utopia\\": {
-            \\"main-ui\\": \\"src/app.ui.js\\",
-            \\"html\\": \\"preview.html\\",
-            \\"js\\": \\"preview.jsx\\"
+            \\"main-ui\\": \\"src/app.js\\",
+            \\"html\\": \\"public/index.html\\",
+            \\"js\\": \\"src/index.js\\"
           },
           \\"dependencies\\": {
             \\"mypackage\\": \\"1.0.0\\",

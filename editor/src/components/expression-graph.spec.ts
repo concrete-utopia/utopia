@@ -70,7 +70,9 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression)()
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+        throw e
+      })()
     }
     const expectedResult: EvaluateExpressionsResult<string> = {
       type: 'circularreference',
@@ -179,7 +181,9 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression)()
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+        throw e
+      })()
     }
     const expectedResult: EvaluateExpressionsResult<string> = {
       type: 'success',
@@ -268,7 +272,9 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression)()
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+        throw e
+      })()
     }
     const expectedResult: EvaluateExpressionsResult<string> = {
       type: 'success',
@@ -351,7 +357,9 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression)()
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+        throw e
+      })()
     }
     const expectedResult: EvaluateExpressionsResult<string> = {
       type: 'success',
@@ -410,7 +418,9 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression)()
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+        throw e
+      })()
     }
     const expectedResult: EvaluateExpressionsResult<string> = {
       type: 'success',
