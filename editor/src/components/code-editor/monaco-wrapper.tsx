@@ -25,6 +25,7 @@ import { convertVSThemeToMonacoTheme } from './theme-converter'
 import { OPENING_TAG_REGEX } from './monaco-wrapper-helper'
 import { arrayEquals } from '../../core/shared/utils'
 import * as TP from '../../core/shared/template-path'
+import * as FontFaceObserver from 'fontfaceobserver'
 
 interface MonacoWrapperProps {
   value: string
@@ -308,6 +309,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
 
     this.initCompletionProvider()
     this.initHoverProvider()
+    this.measureCustomFont('Inconsolata')
   }
 
   initCompletionProvider = () => {
@@ -433,6 +435,13 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
       js: js,
       ts: ts,
     }
+  }
+
+  measureCustomFont = (fontFamilyName: string) => {
+    const codeEditorFont = new FontFaceObserver(fontFamilyName)
+    codeEditorFont.load().then(() => {
+      monaco.editor.remeasureFonts()
+    })
   }
 
   assignRef = (element: HTMLDivElement) => {
