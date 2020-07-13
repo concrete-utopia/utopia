@@ -196,7 +196,7 @@ export function isJavascriptOrTypescript(filePath: string): boolean {
 }
 
 export const codeCacheToBuildResult = (cache: { [filename: string]: CodeResult }) => {
-  const multiFileBuildResult = Object.keys(cache).reduce((acc, filename) => {
+  const multiFileBuildResult: MultiFileBuildResult = Object.keys(cache).reduce((acc, filename) => {
     return {
       ...acc,
       [filename]: {
@@ -205,7 +205,7 @@ export const codeCacheToBuildResult = (cache: { [filename: string]: CodeResult }
         errors: [], // TODO: this is ugly, these errors are the build errors which are not stored in CodeResultCache, but directly in EditorState.codeEditorErrors
       },
     }
-  }, {} as MultiFileBuildResult)
+  }, {})
 
   return multiFileBuildResult
 }
