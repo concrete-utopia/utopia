@@ -575,14 +575,14 @@ async function save(
   saveType: SaveType,
   forceServerSave: boolean,
 ) {
-  const persistentModel =
+  const modelChange =
     saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
-  const projectName = state.projectName
+  const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null
   try {
     if (isLoggedIn(loginState)) {
-      saveToServer(dispatch, state.id, persistentModel, projectName, forceServerSave)
+      saveToServer(dispatch, state.id, state.projectName, modelChange, nameChange, forceServerSave)
     } else {
-      saveToLocalStorage(dispatch, state.id, persistentModel, projectName)
+      saveToLocalStorage(dispatch, state.id, state.projectName, modelChange, nameChange)
     }
   } catch (error) {
     console.error('Save not successful', error)

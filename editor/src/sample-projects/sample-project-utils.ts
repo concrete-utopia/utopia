@@ -117,7 +117,7 @@ export function sampleProjectForId(projectID: string): SampleProject | null {
   switch (projectID) {
     case UI_BUILDER_PROJECT_ID:
       return {
-        name: 'UI Builder',
+        name: projectID,
         model: uiBuilderProject(),
       }
     default:
