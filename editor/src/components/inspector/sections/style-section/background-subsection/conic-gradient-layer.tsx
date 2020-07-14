@@ -22,7 +22,7 @@ import {
   backgroundLayerTypeSelectOptions,
   conicGradientSelectOption,
   getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue,
-  getIndexedToggleEnabled,
+  getIndexedUpdateEnabled,
   getIndexedUpdateRadialOrConicGradientCenterX,
   getIndexedUpdateRadialOrConicGradientCenterY,
 } from './background-layer-helpers'
@@ -36,7 +36,7 @@ export const ConicGradientBackgroundLayer = betterReactMemo<ConicGradientBackgro
   'ConicGradientBackgroundLayer',
   (props) => {
     const [gradientCheckboxSubmitValue] = props.useSubmitTransformedValuesFactory(
-      getIndexedToggleEnabled(props.index),
+      getIndexedUpdateEnabled(props.index),
     )
     const onEnabledChange = React.useCallback(
       () => gradientCheckboxSubmitValue(!props.value.enabled),

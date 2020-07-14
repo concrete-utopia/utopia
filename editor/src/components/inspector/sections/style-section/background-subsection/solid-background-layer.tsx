@@ -21,7 +21,7 @@ import { stopPropagation } from '../../../common/inspector-utils'
 import { GridRow } from '../../../widgets/grid-row'
 import {
   BackgroundLayerProps,
-  getIndexedToggleEnabled,
+  getIndexedUpdateEnabled,
   UseSubmitTransformedValuesFactory,
 } from './background-layer-helpers'
 import {
@@ -81,7 +81,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
   'SolidBackgroundLayer',
   (props) => {
     const [onCheckboxSubmitValue] = props.useSubmitTransformedValuesFactory(
-      getIndexedToggleEnabled(props.index),
+      getIndexedUpdateEnabled(props.index),
     )
     const [
       onAlphaSubmitValue,

@@ -34,7 +34,11 @@ const parseBGSizeCurlyBrace: Parser<CSSBGSize> = (value: unknown) => {
   /* n.b. this always returns enabled: true, and is overridden by
    *  parseBackgroundSize if need be.
    */
-  return mapEither((v) => cssBGSize(cssDefault(v), true), parsed)
+
+  return mapEither((v) => {
+    const isDefault = v.value.length === 1 && v.value[0].value === 'auto'
+    return cssBGSize(cssDefault(v, isDefault), true)
+  }, parsed)
 }
 
 const parseBGSizeKeyword: Parser<CSSBGSize> = (value: unknown) => {
@@ -42,7 +46,7 @@ const parseBGSizeKeyword: Parser<CSSBGSize> = (value: unknown) => {
   /* n.b. this always returns enabled: true, and is overridden by
    *  parseBackgroundSize if need be.
    */
-  return mapEither((v) => cssBGSize(cssDefault(v), true), parsed)
+  return mapEither((v) => cssBGSize(cssDefault(v, false), true), parsed)
 }
 
 export const parseBGSize: Parser<CSSBGSize> = (value: unknown) => {

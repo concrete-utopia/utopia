@@ -17,6 +17,7 @@ import {
   EmptyInputValue,
   emptyURLFunctionBackgroundLayer,
   isEmptyInputValue,
+  isCSSBackgroundLayerWithBGSize,
 } from '../../../common/css-utils'
 import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import { ControlStatus, ControlStyles } from '../../../common/control-status'
@@ -32,13 +33,18 @@ export interface BackgroundLayerProps {
   unsetContextMenuItem: Array<ContextMenuItem<null>>
 }
 
-export function getIndexedToggleEnabled(index: number) {
+export function getIndexedUpdateEnabled(index: number) {
   return function indexedUpdateEnabled(
     enabled: boolean,
     oldValue: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
     let newCSSBackgroundLayers = [...oldValue]
-    newCSSBackgroundLayers[index].enabled = enabled
+    const workingValue = newCSSBackgroundLayers[index]
+    workingValue.enabled = enabled
+    if (isCSSBackgroundLayerWithBGSize(workingValue)) {
+      workingValue.bgSize.enabled = enabled
+    }
+    newCSSBackgroundLayers[index] = workingValue
     return newCSSBackgroundLayers
   }
 }

@@ -27,7 +27,7 @@ import {
   BackgroundLayerProps,
   backgroundLayerTypeSelectOptions,
   getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue,
-  getIndexedToggleEnabled,
+  getIndexedUpdateEnabled,
   linearGradientSelectOption,
 } from './background-layer-helpers'
 import { BackgroundSolidOrGradientThumbnailControl } from '../../../controls/background-solid-or-gradient-thumbnail-control'
@@ -60,7 +60,7 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
   'LinearGradientBackgroundLayer',
   (props) => {
     const [gradientCheckboxSubmitValue] = props.useSubmitTransformedValuesFactory(
-      getIndexedToggleEnabled(props.index),
+      getIndexedUpdateEnabled(props.index),
     )
     const onEnabledChange = React.useCallback(
       () => gradientCheckboxSubmitValue(!props.value.enabled),
