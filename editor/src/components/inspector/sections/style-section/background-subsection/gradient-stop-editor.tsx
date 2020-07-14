@@ -1,5 +1,4 @@
 import * as Chroma from 'chroma-js'
-import * as R from 'ramda'
 import * as React from 'react'
 import { colorTheme, FlexColumn } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
@@ -22,6 +21,7 @@ import {
   StopsPadding,
 } from '../../../controls/color-picker'
 import { inspectorEdgePadding } from './background-picker'
+import { clampValue } from '../../../../../core/shared/math-utils'
 
 interface GradientStopProps {
   stop: CSSGradientStop
@@ -272,7 +272,7 @@ function incrementSelectedStopPosition(
 ): Array<CSSGradientStop> {
   const workingValue = [...oldValue]
   const workingStop = { ...workingValue[index] }
-  workingStop.position.value = R.clamp(0, 100, workingStop.position.value + incrementValue)
+  workingStop.position.value = clampValue(workingStop.position.value + incrementValue, 0, 100)
   workingValue[index] = workingStop
   return workingValue
 }
@@ -287,9 +287,11 @@ function updateStopWithDrag(
   if (workingStop != null) {
     const deltaX = screenX - dragOriginX
     const calculatedPercent = (deltaX / GradientPickerWidth) * 100 + valueAtDragOrigin
-    const clamped = R.clamp(0, 100, calculatedPercent)
+    const clamped = clampValue(calculatedPercent, 0, 100)
     const rounded = Math.round(clamped)
-    workingStop.position.value = rounded
+    const workingPosition = { ...workingStop.position }
+    workingPosition.value = rounded
+    workingStop.position = workingPosition
   }
   return workingStop
 }
@@ -298,11 +300,11 @@ function getIndexedUpdateStop(
   index: number,
   oldValue: Array<CSSGradientStop>,
   setStateStops: SetStateAndPropsValue<Array<CSSGradientStop>>,
-) {
-  return function (newStop: CSSGradientStop, transient?: boolean) {
+): (newStop: CSSGradientStop, transient: boolean) => void {
+  return function updateStop(newStop, transient) {
     const workingValue = [...oldValue]
     workingValue[index] = newStop
-    setStateStops(workingValue, false)
+    setStateStops(workingValue, transient)
   }
 }
 
@@ -328,27 +330,31 @@ function deleteStopAndUpdateIndex(
   stops: Array<CSSGradientStop>,
   setStops: SetStateAndPropsValue<Array<CSSGradientStop>>,
   setSelectedStopUnorderedIndex: React.Dispatch<number>,
-) {
-  const previousPosition = stops[index]?.position.value ?? 0
-  const newStops = deleteStop(index, stops)
-  const { indexWithLowestDistance } = newStops.reduce(
-    (working, stop: CSSGradientStop | undefined, i) => {
-      if (stop != null) {
-        const distance = Math.abs(previousPosition - stop.position.value)
-        if (distance < working.lowestDistance) {
-          working.lowestDistance = distance
-          working.indexWithLowestDistance = i
+): void {
+  if (stops[index] != null) {
+    const previousPosition = stops[index].position.value
+    const newStops = deleteStop(index, stops)
+    const { lowestDistance, indexWithLowestDistance } = newStops.reduce(
+      (working, stop: CSSGradientStop | undefined, i) => {
+        if (stop != null) {
+          const distance = Math.abs(previousPosition - stop.position.value)
+          if (distance < working.lowestDistance) {
+            working.lowestDistance = distance
+            working.indexWithLowestDistance = i
+          }
         }
-      }
-      return working
-    },
-    {
-      lowestDistance: 100,
-      indexWithLowestDistance: 0,
-    },
-  )
-  setStops(newStops, false)
-  setSelectedStopUnorderedIndex(indexWithLowestDistance)
+        return working
+      },
+      {
+        lowestDistance: Infinity,
+        indexWithLowestDistance: -1,
+      },
+    )
+    if (isFinite(lowestDistance) && indexWithLowestDistance >= 0) {
+      setStops(newStops, false)
+      setSelectedStopUnorderedIndex(indexWithLowestDistance)
+    }
+  }
 }
 
 export const GradientStopsEditor = betterReactMemo<GradientControlProps>(

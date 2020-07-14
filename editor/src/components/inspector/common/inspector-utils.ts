@@ -48,7 +48,7 @@ export function usePropControlledState<T>(
   return [localState, setLocalState, forceUpdate]
 }
 
-export type ShouldPropsUpdateStateFn<T> = (newStateValue: T, newPropValue: T) => boolean
+export type DoPropsAndStateMatchFn<T> = (newStateValue: T, newPropValue: T) => boolean
 
 export type SetStateAndPropsValue<T> = (
   setStateAction: React.SetStateAction<T>,
@@ -69,7 +69,7 @@ export type SetStateAndPropsValue<T> = (
  */
 export function usePropControlledDerivedState<T>(
   propValue: T,
-  shouldPropsUpdateState: ShouldPropsUpdateStateFn<T>,
+  doPropsAndStateMatch: DoPropsAndStateMatchFn<T>,
   onSubmitValue: OnSubmitValue<T>,
   onTransientSubmitValue?: OnSubmitValue<T>,
 ): [T, SetStateAndPropsValue<T>] {
@@ -95,11 +95,13 @@ export function usePropControlledDerivedState<T>(
   )
 
   React.useEffect(() => {
-    if (!dirty && shouldPropsUpdateState(localState, propValue)) {
-      setLocalState(propValue)
+    const propsAndStateMatch = doPropsAndStateMatch(localState, propValue)
+    if (propsAndStateMatch) {
       setDirty(false)
+    } else if (!propsAndStateMatch && !dirty) {
+      setLocalState(propValue)
     }
-  }, [localState, propValue, shouldPropsUpdateState, dirty])
+  }, [localState, propValue, doPropsAndStateMatch, dirty])
   return [localState, setStateAndPropsValue]
 }
 

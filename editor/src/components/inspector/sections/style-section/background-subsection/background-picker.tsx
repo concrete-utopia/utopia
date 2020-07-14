@@ -37,7 +37,7 @@ import {
   orderStops,
 } from '../../../common/css-utils'
 import {
-  ShouldPropsUpdateStateFn,
+  DoPropsAndStateMatchFn,
   stopPropagation,
   useHandleCloseOnESCOrEnter,
   usePropControlledDerivedState,
@@ -369,10 +369,10 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
   )
 }
 
-const shouldPropsUpdateStateStops: ShouldPropsUpdateStateFn<Array<CSSGradientStop>> = (
+const doesPropsEqualStateStops: DoPropsAndStateMatchFn<Array<CSSGradientStop>> = (
   newStateValue,
   newPropsValue,
-) => !fastDeepEquals(orderStops(newStateValue), newPropsValue)
+) => fastDeepEquals(orderStops(newStateValue), newPropsValue)
 
 function setColor(
   stopIndex: number,
@@ -408,7 +408,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
           const newBackgroundLayers = [...oldValue]
           newBackgroundLayers[backgroundLayerIndex] = {
             ...oldBackgroundLayer,
-            stops: newStops as Array<CSSGradientStop>,
+            stops: newStops,
           }
           return newBackgroundLayers
         }
@@ -422,7 +422,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
 
   const [stops, setStops] = usePropControlledDerivedState<Array<CSSGradientStop>>(
     isCSSGradientBackgroundLayer(props.value) ? props.value.stops : [],
-    shouldPropsUpdateStateStops,
+    doesPropsEqualStateStops,
     onSubmitValueStops,
     onTransientSubmitValueStops,
   )
