@@ -10,7 +10,7 @@
     "test-watch": "jest --watch",
     "build": "tsc",
     "watch": "tsc --watch",
-    "dts-bundle": "npm-dts generate && node update-dts.js index.d.ts ../editor/src/components/editor/npm-dependency/utopia-api-typings.ts",
+    "dts-bundle": "npm-dts generate && node update-dts.js index.d.ts ../editor/src/core/es-modules/package-manager/utopia-api-typings.ts",
     "postinstall": "patch-package"
   },
   "repository": {
