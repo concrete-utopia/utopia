@@ -1,4 +1,4 @@
-import * as R from 'ramda'
+import * as fastDeepEquals from 'fast-deep-equal'
 import * as React from 'react'
 import {
   colorTheme,
@@ -372,7 +372,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
 const shouldPropsUpdateStateStops: ShouldPropsUpdateStateFn<Array<CSSGradientStop>> = (
   newStateValue,
   newPropsValue,
-) => !R.equals(orderStops(newStateValue), newPropsValue)
+) => !fastDeepEquals(orderStops(newStateValue), newPropsValue)
 
 function setColor(
   stopIndex: number,
