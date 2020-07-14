@@ -37,10 +37,10 @@ import {
   orderStops,
 } from '../../../common/css-utils'
 import {
-  DoPropsAndStateMatchFn,
+  TransformedStateAndPropsEqualityTest,
   stopPropagation,
   useHandleCloseOnESCOrEnter,
-  usePropControlledDerivedState,
+  usePropControlledTransformableState,
 } from '../../../common/inspector-utils'
 import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import { BGSizeMetadataControl } from '../../../controls/bg-size-metadata-control'
@@ -369,7 +369,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
   )
 }
 
-const doesPropsEqualStateStops: DoPropsAndStateMatchFn<Array<CSSGradientStop>> = (
+const doesPropsEqualStateStops: TransformedStateAndPropsEqualityTest<Array<CSSGradientStop>> = (
   newStateValue,
   newPropsValue,
 ) => fastDeepEquals(orderStops(newStateValue), newPropsValue)
@@ -420,7 +420,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
 
   const [onSubmitValueStops, onTransientSubmitValueStops] = props.useSubmitValueFactory(updateStops)
 
-  const [stops, setStops] = usePropControlledDerivedState<Array<CSSGradientStop>>(
+  const [stops, setStops] = usePropControlledTransformableState<Array<CSSGradientStop>>(
     isCSSGradientBackgroundLayer(props.value) ? props.value.stops : [],
     doesPropsEqualStateStops,
     onSubmitValueStops,

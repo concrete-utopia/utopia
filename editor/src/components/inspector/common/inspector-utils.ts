@@ -48,7 +48,7 @@ export function usePropControlledState<T>(
   return [localState, setLocalState, forceUpdate]
 }
 
-export type DoPropsAndStateMatchFn<T> = (newStateValue: T, newPropValue: T) => boolean
+export type TransformedStateAndPropsEqualityTest<T> = (newStateValue: T, newPropValue: T) => boolean
 
 export type SetStateAndPropsValue<T> = (
   setStateAction: React.SetStateAction<T>,
@@ -63,13 +63,13 @@ export type SetStateAndPropsValue<T> = (
  * An example: in the gradient stop picker we need to keep stop index constant
  * even when stops' positions don't match their array index order. This means
  * props (which are ordered during printing) won't necessarily match the stops'
- * order. The @doPropsAndStateMatch parameter lets us order state stops to
+ * order. The @equalityTest parameter lets us order state stops to
  * see if the props value could be derived from the state value.
  *
  */
-export function usePropControlledDerivedState<T>(
+export function usePropControlledTransformableState<T>(
   propValue: T,
-  doPropsAndStateMatch: DoPropsAndStateMatchFn<T>,
+  equalityTest: TransformedStateAndPropsEqualityTest<T>,
   onSubmitValue: OnSubmitValue<T>,
   onTransientSubmitValue?: OnSubmitValue<T>,
 ): [T, SetStateAndPropsValue<T>] {
@@ -95,13 +95,13 @@ export function usePropControlledDerivedState<T>(
   )
 
   React.useEffect(() => {
-    const propsAndStateMatch = doPropsAndStateMatch(localState, propValue)
-    if (propsAndStateMatch) {
+    const propsAndTransformedStateMatch = equalityTest(localState, propValue)
+    if (propsAndTransformedStateMatch) {
       setDirty(false)
-    } else if (!propsAndStateMatch && !dirty) {
+    } else if (!propsAndTransformedStateMatch && !dirty) {
       setLocalState(propValue)
     }
-  }, [localState, propValue, doPropsAndStateMatch, dirty])
+  }, [localState, propValue, equalityTest, dirty])
   return [localState, setStateAndPropsValue]
 }
 
