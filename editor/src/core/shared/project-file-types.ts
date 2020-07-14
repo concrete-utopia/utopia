@@ -1,5 +1,5 @@
 import * as TS from 'typescript'
-import { FlexParentProps, LayoutSystem, NormalisedFrame } from 'utopia-api'
+import { NormalisedFrame } from 'utopia-api'
 import { Either, Left, Right, isRight, isLeft } from './either'
 import { TopLevelElement, UtopiaJSXComponent } from './element-template'
 import { ErrorMessage } from './error-messages'
@@ -64,7 +64,7 @@ export type CanvasElementMetadataMap = { [utopiaID: string]: ElementCanvasMetada
 
 // KILLME CanvasMetadata is dead
 export interface ScenePinnedContainer {
-  layoutSystem: LayoutSystem.PinSystem
+  layoutSystem: 'pins'
 }
 
 export type SceneContainer = ScenePinnedContainer

@@ -4,7 +4,6 @@ import {
   HorizontalFramePointsExceptSize,
   isFramePoint,
   isPercentPin,
-  LayoutSystem,
   NormalisedFrame,
   valueToUseForPin,
   VerticalFramePointsExceptSize,
@@ -41,6 +40,7 @@ import {
   JSXElementChild,
   UtopiaJSXComponent,
   ElementInstanceMetadata,
+  SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -1798,7 +1798,7 @@ export function moveTemplate(
   componentMetadata: Array<ComponentMetadata>,
   selectedViews: Array<TemplatePath>,
   highlightedViews: Array<TemplatePath>,
-  newParentLayoutSystem: LayoutSystem | null,
+  newParentLayoutSystem: SettableLayoutSystem | null,
 ): MoveTemplateResult {
   function noChanges(): MoveTemplateResult {
     return {

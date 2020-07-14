@@ -1,6 +1,4 @@
 import * as React from 'react'
-import { NormalisedFrame, toNormalisedFrame, toAbsoluteFrame } from '../layout/frame'
-import { LayoutSystem, LayoutProps } from '../layout/layout'
 import { defaultIfNull } from '../utils'
 import {
   Editor as DraftEditor,

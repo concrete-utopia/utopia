@@ -1,5 +1,4 @@
 import { handleMessage, IncomingWorkerMessage } from './ts-worker'
-import { LayoutSystem } from 'utopia-api'
 import { RevisionsState } from '../../shared/project-file-types'
 import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 
@@ -173,12 +172,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                       },
                     ],
                   },
-                  layout: {
-                    type: 'ATTRIBUTE_VALUE',
-                    value: {
-                      layoutSystem: LayoutSystem.PinSystem,
-                    },
-                  },
                   'data-uid': {
                     type: 'ATTRIBUTE_VALUE',
                     value: 'aaa',
@@ -208,7 +201,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                   height: 812,
                 },
                 container: {
-                  layoutSystem: LayoutSystem.PinSystem,
+                  layoutSystem: 'pins',
                 },
               },
             ]),

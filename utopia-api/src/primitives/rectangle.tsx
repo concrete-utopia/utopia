@@ -6,7 +6,7 @@ export interface RectangleProps
     UtopiaComponentProps {}
 
 export const Rectangle: React.FunctionComponent<RectangleProps> = (props: RectangleProps) => {
-  let { layout, 'data-uid': dataUid, 'data-label': dataLabel, ...divProps } = props
+  let { 'data-uid': dataUid, 'data-label': dataLabel, ...divProps } = props
 
   const propsWithEventHandlers = addEventHandlersToDivProps(divProps)
 

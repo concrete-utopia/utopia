@@ -18,7 +18,6 @@ import {
   ControlStatus,
   ControlStyles,
 } from '../../../common/control-status'
-import { LayoutSystem } from 'utopia-api'
 import {
   ChainedNumberInput,
   useWrappedEmptyOrUnknownOnSubmitValue,
@@ -33,21 +32,15 @@ import {
 } from '../../../../../core/shared/element-template'
 
 function useDefaultedLayoutSystemInfo(): {
-  value: LayoutSystem | 'flow'
+  value: string
   controlStatus: ControlStatus
   controlStyles: ControlStyles
 } {
-  const layoutSystemMetadata = useInspectorLayoutInfo('LayoutSystem')
-  const styleDisplayMetadata = useInspectorStyleInfo('display')
-
-  let metadataToUse: InspectorInfo<any> = layoutSystemMetadata
-  if (styleDisplayMetadata.value === 'flex') {
-    metadataToUse = styleDisplayMetadata
-  }
+  const metadataToUse = useInspectorStyleInfo('display')
 
   if (metadataToUse.value == null) {
     const updatedPropertyStatus = {
-      ...layoutSystemMetadata.propertyStatus,
+      ...metadataToUse.propertyStatus,
       set: true,
     }
     const controlStatus = getControlStatusFromPropertyStatus(updatedPropertyStatus)
@@ -72,12 +65,12 @@ function useLayoutSystemData() {
   const onLayoutSystemChange = React.useCallback(
     (layoutSystem: SettableLayoutSystem) => {
       switch (layoutSystem) {
-        case LayoutSystem.PinSystem:
+        case 'pins':
         case 'flow':
         case 'flex':
           dispatch([switchLayoutSystem(layoutSystem)], 'everyone')
           break
-        case LayoutSystem.Group:
+        case 'group':
         case 'grid':
           // 'grid' and 'group' are not clickable buttons, they only have an indicative role
           break
@@ -107,7 +100,6 @@ export const LayoutSystemControl = betterReactMemo(
   'LayoutSystemControl',
   (props: LayoutSystemControlProps) => {
     const layoutSystemData = useLayoutSystemData()
-    const detectedLayoutSystem = props.layoutSystem
     return (
       <OptionChainControl
         id={'layoutSystem'}
@@ -250,7 +242,6 @@ export const FlexPaddingControl = betterReactMemo(
 )
 
 const layoutSystemConfigPropertyPaths = [
-  createLayoutPropertyPath('LayoutSystem'),
   PP.create(['style', 'display']),
   createLayoutPropertyPath('flexDirection'),
   createLayoutPropertyPath('FlexGapMain'),

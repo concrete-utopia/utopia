@@ -1,17 +1,4 @@
 import { defaultIfNull } from '../utils'
-import { LayoutProps } from './layout'
-
-function propOr<T, O extends {}, K extends keyof O>(
-  defaultValue: T,
-  obj: O | undefined,
-  propName: K,
-): T | O[K] {
-  if (obj == null || obj[propName] == null) {
-    return defaultValue
-  } else {
-    return obj[propName]
-  }
-}
 
 export interface Sides {
   top?: number
@@ -115,20 +102,6 @@ export const flexWidthValueToUse = (crossBasis: FlexLength, stretches: boolean, 
 
 export const flexHeightValueToUse = (crossBasis: FlexLength, stretches: boolean, crossAxis: Axis) =>
   valueToUse(crossBasis, stretches, crossAxis === 'vertical')
-
-export function getUnstretchedWidthHeight(
-  props: LayoutProps,
-  parentProps: FlexParentProps,
-): { width: FlexLength; height: FlexLength } {
-  const axis = getMainAxis(parentProps)
-  const { crossBasis, flexBasis, width, height } = props
-  const widthBasis = axis === 'horizontal' ? flexBasis : crossBasis
-  const heightBasis = axis === 'vertical' ? flexBasis : crossBasis
-  return {
-    width: widthBasis || width,
-    height: heightBasis || height,
-  }
-}
 
 export function getFlexSize(
   props: FlexElementProps,

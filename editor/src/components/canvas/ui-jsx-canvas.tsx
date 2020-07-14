@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { MapLike } from 'typescript'
-import { NormalisedFrame, View, Storyboard, PropertyControls } from 'utopia-api'
+import { NormalisedFrame, Storyboard, PropertyControls } from 'utopia-api'
 import { colorTheme, FlexRow, UtopiaStyles, UtopiaTheme } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 // Inject the babel helpers into the global scope
@@ -90,6 +90,7 @@ import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import { unimportCSSFile } from '../../core/shared/css-style-loader'
 import { removeAll } from '../../core/shared/array-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
+import styled from '@emotion/styled'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -879,6 +880,8 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
   }
 
   const sceneStyle: React.CSSProperties = {
+    ...frame,
+    ...container,
     // TODO this should really be a property of the scene that you can change, similar to the preview.
     backgroundColor: colorTheme.emphasizedBackground.value,
     position: 'absolute',
@@ -889,17 +892,13 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
 
   return (
     <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths, scenePath: scenePath }}>
-      <View
+      <div
         data-utopia-scene-id={TP.toString(scenePath)}
         data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
         style={sceneStyle}
-        layout={{
-          ...frame,
-          ...container,
-        }}
       >
         {rootElement}
-      </View>
+      </div>
     </SceneLevelUtopiaContext.Provider>
   )
 }

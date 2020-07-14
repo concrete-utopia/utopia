@@ -1,4 +1,3 @@
-import { LayoutSystem } from 'utopia-api'
 import * as TP from '../shared/template-path'
 import {
   canvasRectangle,
@@ -91,7 +90,7 @@ const testComponentScene: ComponentMetadata = {
   component: 'MyView',
   frame: { left: 0, top: 0, width: 100, height: 100 },
   container: {
-    layoutSystem: LayoutSystem.PinSystem,
+    layoutSystem: 'pins',
   },
   rootElement: testComponentRoot1,
 }
@@ -329,7 +328,7 @@ describe('getElementLabel', () => {
       scenePath: scenePath,
       component: 'App',
       frame: { left: 0, top: 0, width: 100, height: 100 },
-      container: { layoutSystem: LayoutSystem.PinSystem },
+      container: { layoutSystem: 'pins' },
       rootElement: divElementMetadata,
     },
   ]

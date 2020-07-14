@@ -1,4 +1,3 @@
-import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import {
   ComponentMetadata,
   ElementInstanceMetadata,
@@ -428,7 +427,7 @@ export type ResetPins = {
 export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: TemplatePath[]
-  layoutSystem: LayoutSystem
+  layoutSystem: SettableLayoutSystem
 }
 
 export interface UnwrapGroupOrView {

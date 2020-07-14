@@ -1,4 +1,4 @@
-import { FramePin, FlexLength, LayoutSystem, FramePoint } from 'utopia-api'
+import { FramePin, FlexLength, FramePoint } from 'utopia-api'
 import { PropertyPath, PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { ElementInstanceMetadata } from '../shared/element-template'
@@ -60,11 +60,7 @@ export type StyleLayoutProp =
   | 'marginLeft'
   | 'display'
 
-export type LayoutProp =
-  | 'LayoutSystem'
-  | LayoutPinnedProp
-  | LayoutFlexContainerProp
-  | LayoutFlexElementProp
+export type LayoutProp = LayoutPinnedProp | LayoutFlexContainerProp | LayoutFlexElementProp
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {
@@ -115,7 +111,6 @@ export function pinnedPropForFramePoint(point: FramePoint): LayoutPinnedProp {
 }
 
 const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPathPart> } = {
-  LayoutSystem: ['layout', 'layoutSystem'],
   PinnedCenterX: ['layout', 'centerX'],
   PinnedCenterY: ['layout', 'centerY'],
   FlexGapMain: ['layout', 'gapMain'],
@@ -160,8 +155,6 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
 }
 
 export interface LayoutPropertyTypes {
-  LayoutSystem: LayoutSystem | undefined
-
   Width: FramePin | undefined
   Height: FramePin | undefined
 

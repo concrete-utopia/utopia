@@ -4,8 +4,6 @@ import {
   FlexLength,
   FlexStretch,
   FramePoint,
-  getUnstretchedWidthHeight,
-  LayoutSystem,
   UtopiaComponentProps,
 } from 'utopia-api'
 import { FullFrame } from '../../components/frame'
@@ -222,7 +220,7 @@ export const FlexLayoutHelpers = {
     props: UtopiaComponentProps,
     parentProps: UtopiaComponentProps,
   ): { width: FlexLength; height: FlexLength } => {
-    return getUnstretchedWidthHeight(props.layout || {}, parentProps.layout || {})
+    return { width: 'FIXME', height: 'FIXME' }
   },
 }
 
@@ -243,22 +241,6 @@ export const LayoutHelpers = {
     } else {
       return PinLayoutHelpers.updateLayoutPropsWithFrame(elementProps, frame)
     }
-  },
-  getLayoutSystemFromAttributes(props: PropsOrJSXAttributes): Either<string, LayoutSystem> {
-    return getSimpleAttributeAtPath(props, createLayoutPropertyPath('LayoutSystem')) // TODO LAYOUT investigate if we should use the DOM walker results here
-  },
-  getLayoutSystemFromProps(props: PropsOrJSXAttributes): LayoutSystem {
-    const parsedLayoutSystem = this.getLayoutSystemFromAttributes(props)
-    return isRight(parsedLayoutSystem) ? parsedLayoutSystem.value : LayoutSystem.PinSystem
-  },
-  setLayoutAttribute: (newValue: LayoutSystem) => (
-    props: JSXAttributes,
-  ): Either<string, JSXAttributes> => {
-    return setJSXValueAtPath(
-      props,
-      createLayoutPropertyPath('LayoutSystem'),
-      jsxAttributeValue(newValue),
-    )
   },
   stretchesChild(
     parentProps: PropsOrJSXAttributes,

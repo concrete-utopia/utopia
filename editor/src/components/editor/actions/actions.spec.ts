@@ -1,5 +1,5 @@
 import * as Chai from 'chai'
-import { FramePin, LayoutSystem } from 'utopia-api'
+import { FramePin } from 'utopia-api'
 import {
   isUtopiaJSXComponent,
   jsxAttributeNestedObjectSimple,
@@ -308,7 +308,7 @@ describe('moveTemplate', () => {
           top: jsxAttributeValue(y),
           width: jsxAttributeValue(width),
           height: jsxAttributeValue(height),
-          layoutSystem: jsxAttributeValue(LayoutSystem.Group),
+          layoutSystem: jsxAttributeValue('group'),
         }),
         'data-uid': jsxAttributeValue(uid),
       },
@@ -598,7 +598,7 @@ describe('moveTemplate', () => {
       TP.instancePath(ScenePath1ForTestUiJsFile, ['ddd']),
       groupFrame,
       editor,
-      LayoutSystem.Group,
+      'group',
     ).editor
 
     const newUiJsFile = newEditor.projectContents['/src/app.js'] as UIJSFile
@@ -758,7 +758,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
         scenePath: TP.scenePath([BakedInStoryboardUID, `scene-0`]),
         component: 'App',
         frame: { left: 0, top: 0, width: 100, height: 100 },
-        container: { layoutSystem: LayoutSystem.PinSystem },
+        container: { layoutSystem: 'pins' },
         rootElement: {
           navigatorName: 'nope',
           templatePath: TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), ['aaa']),
@@ -809,7 +809,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   it('switches from flex to pins correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')
     let result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
-    const switchActionToPins = switchLayoutSystem(LayoutSystem.PinSystem)
+    const switchActionToPins = switchLayoutSystem('pins')
     result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToPins, result)
     expect(
       getOpenUtopiaJSXComponentsFromState(result).map(clearTopLevelElementUniqueIDs),

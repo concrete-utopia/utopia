@@ -17,7 +17,6 @@ import {
   FlexWrap,
   FramePin,
   isPercentPin,
-  LayoutSystem,
   TextSizing,
   UtopiaUtils,
 } from 'utopia-api'
@@ -3820,11 +3819,6 @@ function isOneOfTheseParser<T extends PrimitiveType>(values: Array<T>): Parser<T
   }
 }
 
-const layoutSystemParser: Parser<LayoutSystem> = isOneOfTheseParser([
-  LayoutSystem.PinSystem,
-  LayoutSystem.Group,
-])
-
 const flexWrapParser: Parser<FlexWrap> = isOneOfTheseParser([
   FlexWrap.NoWrap,
   FlexWrap.Wrap,
@@ -4432,7 +4426,6 @@ const elementPropertiesPrinters: MetadataPrinters = {
 }
 
 interface ParsedLayoutProperties {
-  layoutSystem: LayoutSystem | undefined
   pinLeft: FramePin | undefined
   pinRight: FramePin | undefined
   centerX: FramePin | undefined
@@ -4447,7 +4440,6 @@ interface ParsedLayoutProperties {
 }
 
 export const layoutEmptyValues: ParsedLayoutProperties = {
-  layoutSystem: undefined,
   pinLeft: undefined,
   pinRight: undefined,
   centerX: undefined,
@@ -4466,7 +4458,6 @@ type LayoutParsers = {
 }
 
 const layoutParsers: LayoutParsers = {
-  layoutSystem: layoutSystemParser,
   pinLeft: parseFramePin,
   pinRight: parseFramePin,
   centerX: parseFramePin,
@@ -4485,7 +4476,6 @@ type LayoutPrinters = {
 }
 
 const layoutPrinters: LayoutPrinters = {
-  layoutSystem: jsxAttributeValue,
   pinLeft: jsxAttributeValue,
   pinRight: jsxAttributeValue,
   centerX: jsxAttributeValue,
@@ -4500,8 +4490,6 @@ const layoutPrinters: LayoutPrinters = {
 }
 
 const layoutEmptyValuesNew: LayoutPropertyTypes = {
-  LayoutSystem: undefined,
-
   Width: undefined,
   Height: undefined,
 
@@ -4522,8 +4510,6 @@ type LayoutParsersNew = {
 }
 
 const layoutParsersNew: LayoutParsersNew = {
-  LayoutSystem: layoutSystemParser,
-
   Width: parseFramePin,
   Height: parseFramePin,
 
@@ -4544,8 +4530,6 @@ type LayoutPrintersNew = {
 }
 
 const layoutPrintersNew: LayoutPrintersNew = {
-  LayoutSystem: jsxAttributeValue,
-
   Width: jsxAttributeValue,
   Height: jsxAttributeValue,
 

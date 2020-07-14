@@ -1,4 +1,4 @@
-import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api'
+import { AllFramePoints, AllFramePointsExceptSize } from 'utopia-api'
 import { transformElementAtPath } from '../../components/editor/store/editor-state'
 import * as TP from '../shared/template-path'
 import {
@@ -126,7 +126,7 @@ export function maybeSwitchLayoutProps(
   if (newParent == null && parentFrame != null) {
     // FIXME wrapping in a view now always switches to pinned props. maybe the user wants to keep the parent layoutsystem?
     const switchLayoutFunction =
-      parentLayoutSystem === LayoutSystem.Group
+      parentLayoutSystem === 'group'
         ? switchChildToGroupWithParentFrame
         : switchChildToPinnedWithParentFrame
     const { updatedComponents, updatedMetadata } = switchLayoutFunction(

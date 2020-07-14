@@ -1,18 +1,6 @@
 /** @jsx jsx */
 import { jsx as EmotionJsx } from '@emotion/core'
 import * as React from 'react'
-import {
-  calculateChildStylesToPrepend,
-  calculateOwnStyleProp,
-  calculateChildStylesThatOverwriteStyle,
-} from '../primitives/common'
-import { LayoutProps } from '../layout/layout'
-
-declare module 'react' {
-  interface DOMAttributes<T> {
-    layout?: LayoutProps
-  }
-}
 
 const MAX_CACHE_SIZE = 10000
 type HocCacheItem = { componentToCreateHOCFor: any; createdHOC: any }
@@ -75,71 +63,11 @@ export const jsx = (type: any, ...pragmaParams: any[]) => {
 
       const { layout: passedLayout, ...originalProps } = props
 
-      const childStyles = calculateChildStylesToPrepend(props, reactChildren)
-      const ownStyle = calculateOwnStyleProp(props, reactChildren)
-      const childStylesThatOverwriteStyle = calculateChildStylesThatOverwriteStyle(
-        props,
-        reactChildren,
-      )
+      const finalOwnProps = { ...originalProps }
 
-      const isGroup: boolean = passedLayout == null ? false : passedLayout.layoutSystem === 'group'
-      const styleFromProps = isGroup
-        ? filterFrameFromStyle(originalProps.style)
-        : { ...originalProps.style }
-
-      const styleIsDefined = styleFromProps != null || ownStyle != undefined
-      const finalOwnProps = styleIsDefined
-        ? {
-            ...originalProps,
-            style: {
-              ...ownStyle,
-              ...styleFromProps,
-            },
-          }
-        : originalProps // we don't modify the props object in case there is no need to do so
-
-      const mappedChildren = React.Children.map(reactChildren, (child, index) => {
-        if (
-          (childStyles[index] != null || childStylesThatOverwriteStyle[index] != null) &&
-          React.isValidElement(child)
-        ) {
-          const removeLayoutPropFromReactBuiltins =
-            typeof child.type === 'string' ? { layout: undefined } : {}
-
-          const childProps: any = child.props
-          const childStyleProps =
-            typeof childProps === 'object' &&
-            childProps != null &&
-            typeof childProps.style === 'object'
-              ? childProps.style
-              : {}
-
-          const layoutEnhancedStyleProp = {
-            ...childStyles[index],
-            ...childStyleProps,
-            ...childStylesThatOverwriteStyle[index],
-          }
-          return React.cloneElement(child as any, {
-            ...removeLayoutPropFromReactBuiltins,
-            style: layoutEnhancedStyleProp,
-          })
-        } else {
-          return child
-        }
-      })
-
-      return EmotionJsx(type, finalOwnProps, mappedChildren)
+      return EmotionJsx(type, finalOwnProps, reactChildren)
     })
     pushToHocCache(hocForTypeCache, { componentToCreateHOCFor: type, createdHOC: HOC })
     return EmotionJsx(HOC, ...pragmaParams)
-  }
-}
-
-function filterFrameFromStyle(style: React.CSSProperties | undefined): React.CSSProperties {
-  if (style == null) {
-    return {}
-  } else {
-    const { top, left, width, height, ...styleWithoutFrame } = style
-    return styleWithoutFrame
   }
 }

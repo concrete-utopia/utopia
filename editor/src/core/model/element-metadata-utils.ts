@@ -1,6 +1,6 @@
 import * as OPI from 'object-path-immutable'
 import * as R from 'ramda'
-import { FlexLength, LayoutSystem, Sides } from 'utopia-api'
+import { FlexLength, Sides } from 'utopia-api'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import { foldThese, makeThat, makeThis, mergeThese, setThat, These } from '../../utils/these'
@@ -382,10 +382,8 @@ export const MetadataUtils = {
     } else {
       const instance = this.getElementByInstancePathMaybe(scenes, path)
       if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
-        return (
-          LayoutHelpers.getLayoutSystemFromProps(right(instance.element.value.props)) ===
-          LayoutSystem.Group
-        )
+        // FIXME: How would we determine if something is a group without any special props?
+        return false
       } else {
         return false
       }
@@ -503,8 +501,8 @@ export const MetadataUtils = {
   isAutoSizingView(element: ElementInstanceMetadata | null): boolean {
     if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
       // TODO NEW Property Path
-      const isAutoSizing =
-        LayoutHelpers.getLayoutSystemFromProps(right(element.element.value.props)) === 'group'
+      // FIXME: Feel like this should use `isGroup`.
+      const isAutoSizing = false
       const isYogaLayoutedContainer = this.isFlexLayoutedContainer(element)
       const hasChildren = element.children.length > 0
       const parentIsYoga = this.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(

@@ -5,7 +5,7 @@ import {
   jsxElementName,
   jsxAttributeOtherJavaScript,
 } from '../../core/shared/element-template'
-import { LayoutSystem, NormalisedFrame } from 'utopia-api'
+import { NormalisedFrame } from 'utopia-api'
 
 export function defaultSceneElement(
   uid: string,
@@ -58,13 +58,10 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
   )
 }
 
-export function defaultTransparentViewElement(uid: string, layoutSystem: LayoutSystem): JSXElement {
+export function defaultTransparentViewElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('View', []),
     {
-      layout: jsxAttributeValue({
-        layoutSystem: layoutSystem,
-      }),
       style: jsxAttributeValue({}),
       'data-uid': jsxAttributeValue(uid),
     },

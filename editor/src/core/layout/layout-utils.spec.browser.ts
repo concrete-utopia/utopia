@@ -1,4 +1,4 @@
-import { LayoutSystem, sides } from 'utopia-api'
+import { sides } from 'utopia-api'
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -79,7 +79,7 @@ describe('maybeSwitchLayoutProps', () => {
           height: 812,
         },
         container: {
-          layoutSystem: LayoutSystem.PinSystem,
+          layoutSystem: 'pins',
         },
         rootElement: {
           templatePath: TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], [NewUID]),

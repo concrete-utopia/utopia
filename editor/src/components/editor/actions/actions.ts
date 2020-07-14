@@ -4,13 +4,7 @@ import * as R from 'ramda'
 import * as React from 'react'
 import * as localforage from 'localforage'
 import { CursorPosition } from 'src/components/code-editor/code-editor-utils'
-import {
-  FlexAlignment,
-  FramePoint,
-  LayoutSystem,
-  NormalisedFrame,
-  PropertyControls,
-} from 'utopia-api'
+import { FramePoint } from 'utopia-api'
 import { colorTheme } from 'uuiui'
 import {
   SampleFileBuildResult,
@@ -546,7 +540,6 @@ function switchAndUpdateFrames(
     return editor
   }
 
-  const layoutSystemPath = createLayoutPropertyPath('LayoutSystem')
   const styleDisplayPath = createLayoutPropertyPath('display')
 
   const originalComponents = getOpenUtopiaJSXComponentsFromState(editor)
@@ -554,25 +547,12 @@ function switchAndUpdateFrames(
   let withUpdatedLayoutSystem: EditorModel = editor
   switch (layoutSystem) {
     case 'flex':
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return unsetJSXValueAtPath(attributes, layoutSystemPath)
-        },
-      )
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return setJSXValueAtPath(attributes, styleDisplayPath, jsxAttributeValue('flex'))
-        },
-      )
-      break
     case 'flow':
     case 'grid':
+    case 'pins':
+    case 'group':
+    default:
       const propsToRemove = [
-        layoutSystemPath,
         createLayoutPropertyPath('PinnedLeft'),
         createLayoutPropertyPath('PinnedTop'),
         createLayoutPropertyPath('PinnedRight'),
@@ -589,84 +569,27 @@ function switchAndUpdateFrames(
         },
       )
       break
-    case LayoutSystem.PinSystem:
-    case LayoutSystem.Group:
-    default:
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return unsetJSXValueAtPath(attributes, styleDisplayPath)
-        },
-      )
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        LayoutHelpers.setLayoutAttribute(layoutSystem),
-      )
   }
 
   // This "fixes" an issue where inside `setCanvasFramesInnerNew` looks at the layout type in the
   // metadata which causes a problem as it's effectively out of date after the above call.
-  switch (layoutSystem) {
-    case 'flex':
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
-          target,
-          layoutSystemPath,
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
-          target,
-          styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          'flex',
-        ),
-      }
-      break
-    case 'flow':
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
-          target,
-          layoutSystemPath,
-        ),
-      }
-      break
-    case LayoutSystem.PinSystem:
-    case LayoutSystem.Group:
-    default:
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
-          target,
-          styleDisplayPath,
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
-          target,
-          styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          layoutSystem,
-        ),
-      }
+  withUpdatedLayoutSystem = {
+    ...withUpdatedLayoutSystem,
+    jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
+      withUpdatedLayoutSystem.jsxMetadataKILLME,
+      target,
+      styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
+      'flex',
+    ),
   }
 
   function layoutSystemToSet(): DetectedLayoutSystem {
     switch (layoutSystem) {
       case 'flex':
         return 'flex'
-      case LayoutSystem.PinSystem:
+      case 'pins':
         return 'nonfixed'
-      case LayoutSystem.Group:
+      case 'group':
       default:
         return 'flow'
     }
@@ -731,7 +654,7 @@ export function editorMoveMultiSelectedTemplates(
   newParentPath: TemplatePath | null,
   parentFrame: CanvasRectangle | null,
   editor: EditorModel,
-  newParentLayoutType: LayoutSystem | null,
+  newParentLayoutType: SettableLayoutSystem | null,
 ): {
   editor: EditorModel
   newPaths: Array<TemplatePath>
@@ -781,7 +704,7 @@ export function editorMoveTemplate(
   newParentPath: TemplatePath | null,
   parentFrame: CanvasRectangle | null,
   editor: EditorModel,
-  newParentLayoutSystem: LayoutSystem | null,
+  newParentLayoutSystem: SettableLayoutSystem | null,
 ): {
   editor: EditorModel
   newPath: TemplatePath | null
@@ -1929,10 +1852,7 @@ export const UPDATE_FNS = {
 
           let viewPath: TemplatePath | null = null
           const withWrapperViewAddedNoFrame = modifyOpenParseSuccess((parseSuccess) => {
-            const elementToInsert: JSXElement = defaultTransparentViewElement(
-              newUID,
-              action.layoutSystem,
-            )
+            const elementToInsert: JSXElement = defaultTransparentViewElement(newUID)
             const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
             const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
               parentPath,
@@ -1971,7 +1891,7 @@ export const UPDATE_FNS = {
           // If this is a group parent, realign to the origin
           // to prevent shifting the child frames back towards the origin.
           const parentBounds =
-            action.layoutSystem === LayoutSystem.Group && boundingBox != null
+            action.layoutSystem === 'group' && boundingBox != null
               ? Utils.shiftToOrigin(boundingBox)
               : boundingBox
           // reparent targets to the view
@@ -4765,7 +4685,7 @@ export function wrapInView(targets: Array<TemplatePath>): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',
     targets: targets,
-    layoutSystem: LayoutSystem.PinSystem,
+    layoutSystem: 'pins',
   }
 }
 

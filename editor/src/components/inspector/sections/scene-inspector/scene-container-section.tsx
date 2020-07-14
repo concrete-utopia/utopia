@@ -146,7 +146,7 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
 
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
   // FIXME We need a hook for checking the actual layout system since it's now spread across 2 possible props
-  const layoutSystemMetadata = useInspectorLayoutInfo('LayoutSystem')
+  const layoutSystemMetadata = useInspectorStyleInfo('display')
   return (
     <>
       <PropertyRow style={scenePropertyRowStyle}>

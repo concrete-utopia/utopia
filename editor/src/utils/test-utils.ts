@@ -1,4 +1,3 @@
-import { LayoutSystem } from 'utopia-api'
 import { EditorDispatch } from '../components/editor/action-types'
 import {
   createEditorState,
@@ -137,7 +136,7 @@ export function createFakeMetadataForComponents(
         scenePath: TP.scenePath([BakedInStoryboardUID, `scene-${index}`]),
         component: component.name,
         frame: { left: 0, top: 0, width: 100, height: 100 },
-        container: { layoutSystem: LayoutSystem.PinSystem },
+        container: { layoutSystem: 'pins' },
         rootElement: createFakeMetadataForJSXElement(
           component.rootElement,
           TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
