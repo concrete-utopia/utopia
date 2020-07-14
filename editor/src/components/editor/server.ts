@@ -66,7 +66,7 @@ export async function createNewProjectID(): Promise<string> {
 export async function updateSavedProject(
   projectId: string,
   persistentModel: PersistentModel | null,
-  name: string | null,
+  name: string,
 ): Promise<SaveProjectResponse> {
   // PUTs the persistent model as JSON body.
   const url = projectURL(projectId)

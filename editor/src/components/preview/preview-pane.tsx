@@ -21,17 +21,20 @@ import { SelectOption } from '../inspector/controls/select-control'
 import { isCodeFile, CodeFile } from '../../core/shared/project-file-types'
 import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
 import { eitherToMaybe } from '../../core/shared/either'
+import { shareURLForProject } from '../../core/shared/utils'
 
 export const PreviewIframeId = 'preview-column-container'
 
 interface IntermediatePreviewColumnProps {
   id: string | null
+  projectName: string
   connected: boolean
   packageJSONFile: CodeFile | null
 }
 
 export interface PreviewColumnProps {
   id: string | null
+  projectName: string
   connected: boolean
   editedFilename: string | null
 }
@@ -50,16 +53,20 @@ export interface PreviewColumnState {
 }
 
 export const PreviewColumn = betterReactMemo('PreviewColumn', () => {
-  const { id, connected, packageJSONFile }: IntermediatePreviewColumnProps = useEditorState(
-    (store) => {
-      const possiblePackageJSON = store.editor.projectContents['/package.json']
-      return {
-        id: store.editor.id,
-        connected: store.editor.preview.connected,
-        packageJSONFile: isCodeFile(possiblePackageJSON) ? possiblePackageJSON : null,
-      }
-    },
-  )
+  const {
+    id,
+    projectName,
+    connected,
+    packageJSONFile,
+  }: IntermediatePreviewColumnProps = useEditorState((store) => {
+    const possiblePackageJSON = store.editor.projectContents['/package.json']
+    return {
+      id: store.editor.id,
+      projectName: store.editor.projectName,
+      connected: store.editor.preview.connected,
+      packageJSONFile: isCodeFile(possiblePackageJSON) ? possiblePackageJSON : null,
+    }
+  })
   const props = React.useMemo(() => {
     let editedFilename: string | null = null
     if (packageJSONFile != null) {
@@ -75,10 +82,11 @@ export const PreviewColumn = betterReactMemo('PreviewColumn', () => {
     }
     return {
       id: id,
+      projectName: projectName,
       connected: connected,
       editedFilename: editedFilename,
     }
-  }, [id, connected, packageJSONFile])
+  }, [id, projectName, connected, packageJSONFile])
   return <PreviewColumnContent {...props} />
 })
 PreviewColumn.displayName = 'PreviewColumn'
@@ -190,13 +198,26 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
       }))
     }
 
+    const floatingPreviewURL =
+      this.props.id == null
+        ? ''
+        : shareURLForProject(FLOATING_PREVIEW_BASE_URL, this.props.id, this.props.projectName)
+    const iframePreviewURL =
+      this.props.id == null
+        ? ''
+        : `${floatingPreviewURL}?embedded=true&refreshCount=${this.state.refreshCount}`
+    const popoutPreviewURL =
+      this.props.id == null
+        ? ''
+        : shareURLForProject(BASE_URL, this.props.id, this.props.projectName)
+
     const iFrame = (
       <iframe
         key={PreviewIframeId}
         id={PreviewIframeId}
         width={this.state.useDevice ? this.state.width : '100%'}
         height={this.state.useDevice ? this.state.height : '100%'}
-        src={`${FLOATING_PREVIEW_BASE_URL}share/${this.props.id}?embedded=true&refreshCount=${this.state.refreshCount}`}
+        src={iframePreviewURL}
         allow='autoplay'
         style={{
           backgroundColor: 'transparent',
@@ -240,7 +261,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
           </SquareButton>
           <input
             onKeyPress={handleKeyPress}
-            value={`${BASE_URL}share/${this.props.id}`}
+            value={popoutPreviewURL}
             css={{
               fontSize: 11,
               borderRadius: '20px',
@@ -267,11 +288,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
               <LargerIcons.PlayButton color='black' />
             )}
           </SquareButton>
-          <a
-            target='_blank'
-            rel='noopener noreferrer'
-            href={`${FLOATING_PREVIEW_BASE_URL}share/${this.props.id}`}
-          >
+          <a target='_blank' rel='noopener noreferrer' href={floatingPreviewURL}>
             <SquareButton highlight>
               <LargerIcons.ExternalLink color='black' />
             </SquareButton>

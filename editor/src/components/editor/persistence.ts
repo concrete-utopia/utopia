@@ -22,11 +22,10 @@ import {
   saveThumbnail,
   updateSavedProject,
 } from './server'
-import { PersistentModel } from './store/editor-state'
+import { createNewProjectName, PersistentModel } from './store/editor-state'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
-import { arrayContains } from '../../core/shared/utils'
+import { arrayContains, projectURLForProject } from '../../core/shared/utils'
 import { getPNGBufferOfElementWithID } from './screenshot-utils'
-import * as friendlyWords from 'friendly-words'
 
 const domtoimage = require('domtoimage')
 
@@ -40,8 +39,8 @@ interface NeverSaved {
 interface SaveInProgress {
   type: 'save-in-progress'
   remote: boolean
-  queuedModelSave: PersistentModel | null
-  queuedNameSave: string | null
+  queuedModelChange: PersistentModel | null
+  queuedNameChange: string | null
 }
 
 interface Saved {
@@ -49,9 +48,10 @@ interface Saved {
   remote: boolean
   timestamp: number
   projectId: string
+  projectName: string
   dispatch: EditorDispatch
-  queuedModelSave: PersistentModel | null
-  queuedNameSave: string | null
+  queuedModelChange: PersistentModel | null
+  queuedNameChange: string | null
   setTimeoutId: NodeJS.Timer | null
 }
 
@@ -59,9 +59,10 @@ interface SaveError {
   type: 'save-error'
   remote: boolean
   projectId: string
+  projectName: string
   dispatch: EditorDispatch
-  queuedModelSave: PersistentModel | null
-  queuedNameSave: string | null
+  queuedModelChange: PersistentModel | null
+  queuedNameChange: string | null
   setTimeoutId: NodeJS.Timer
 }
 
@@ -83,14 +84,14 @@ function neverSaved(): NeverSaved {
 
 function saveInProgress(
   remote: boolean,
-  queuedModelSave: PersistentModel | null,
-  queuedNameSave: string | null,
+  queuedModelChange: PersistentModel | null,
+  queuedNameChange: string | null,
 ): SaveInProgress {
   return {
     type: 'save-in-progress',
     remote: remote,
-    queuedModelSave: queuedModelSave,
-    queuedNameSave: queuedNameSave,
+    queuedModelChange: queuedModelChange,
+    queuedNameChange: queuedNameChange,
   }
 }
 
@@ -98,9 +99,10 @@ function saved(
   remote: boolean,
   timestamp: number,
   projectId: string,
+  projectName: string,
   dispatch: EditorDispatch,
-  queuedModelSave: PersistentModel | null,
-  queuedNameSave: string | null,
+  queuedModelChange: PersistentModel | null,
+  queuedNameChange: string | null,
   setTimeoutId: NodeJS.Timer | null,
 ): Saved {
   return {
@@ -108,9 +110,10 @@ function saved(
     remote: remote,
     timestamp: timestamp,
     projectId: projectId,
+    projectName: projectName,
     dispatch: dispatch,
-    queuedModelSave: queuedModelSave,
-    queuedNameSave: queuedNameSave,
+    queuedModelChange: queuedModelChange,
+    queuedNameChange: queuedNameChange,
     setTimeoutId: setTimeoutId,
   }
 }
@@ -118,18 +121,20 @@ function saved(
 function saveError(
   remote: boolean,
   projectId: string,
+  projectName: string,
   dispatch: EditorDispatch,
-  queuedModelSave: PersistentModel | null,
-  queuedNameSave: string | null,
+  queuedModelChange: PersistentModel | null,
+  queuedNameChange: string | null,
   setTimeoutId: NodeJS.Timer,
 ): SaveError {
   return {
     type: 'save-error',
     remote: remote,
     projectId: projectId,
+    projectName: projectName,
     dispatch: dispatch,
-    queuedModelSave: queuedModelSave,
-    queuedNameSave: queuedNameSave,
+    queuedModelChange: queuedModelChange,
+    queuedNameChange: queuedNameChange,
     setTimeoutId: setTimeoutId,
   }
 }
@@ -149,7 +154,7 @@ export interface LocalProject {
   createdAt: string
   lastModified: string
   thumbnail: string
-  name: string | null
+  name: string
 }
 
 export function isLocal(): boolean {
@@ -168,7 +173,7 @@ export async function createNewProjectFromSampleProject(
   workers: UtopiaTsWorkers,
   renderEditorRoot: () => void,
 ) {
-  _saveState = saved(true, Date.now(), projectId, dispatch, null, null, null)
+  _saveState = saved(true, Date.now(), projectId, projectId, dispatch, null, null, null)
   _lastThumbnailGenerated = 0
   await loadSampleProject(projectId, dispatch, workers, renderEditorRoot)
 }
@@ -176,39 +181,35 @@ export async function createNewProjectFromSampleProject(
 export function pushProjectURLToBrowserHistory(
   title: string,
   projectId: string,
-  suffix: string,
+  projectName: string,
 ): void {
-  window.top.history.pushState({}, title, `/p/${projectId}-${suffix}/`)
+  window.top.history.pushState({}, title, projectURLForProject(projectId, projectName))
 }
 
-function onFirstSaveCompleted(projectId: string, dispatch: EditorDispatch) {
+function onFirstSaveCompleted(projectId: string, name: string, dispatch: EditorDispatch) {
   dispatch([setProjectID(projectId)], 'everyone')
-  const friendlyWordsPredicate =
-    friendlyWords.predicates[Math.floor(Math.random() * friendlyWords.predicates.length)]
-  const friendlyWordsObject =
-    friendlyWords.objects[Math.floor(Math.random() * friendlyWords.objects.length)]
-  const friendlyWordsSuffix = `${friendlyWordsPredicate}-${friendlyWordsObject}`
-  pushProjectURLToBrowserHistory(`Utopia ${projectId}`, projectId, friendlyWordsSuffix)
+  pushProjectURLToBrowserHistory(`Utopia ${projectId}`, projectId, name)
 }
 
 export async function saveToServer(
   dispatch: EditorDispatch,
   projectId: string | null,
-  model: PersistentModel | null,
-  name: string | null,
+  projectName: string,
+  modelChange: PersistentModel | null,
+  nameChange: string | null,
   force: boolean,
 ) {
   if (isLocal() || projectId == null) {
-    if (model != null) {
-      await saveLocalProjectToServer(dispatch, projectId, model, name)
+    if (modelChange != null) {
+      await saveLocalProjectToServer(dispatch, projectId, projectName, modelChange, nameChange)
     }
   } else if (isSaveInProgress(_saveState)) {
-    _saveState = saveInProgress(true, model, name)
+    _saveState = saveInProgress(true, modelChange, nameChange)
   } else {
     if (force) {
-      await serverSaveInner(dispatch, projectId, model, name, true)
+      await serverSaveInner(dispatch, projectId, projectName, modelChange, nameChange, true)
     } else {
-      await throttledServerSaveInner(dispatch, projectId, model, name)
+      await throttledServerSaveInner(dispatch, projectId, projectName, modelChange, nameChange)
     }
   }
 }
@@ -225,12 +226,13 @@ async function checkCanSaveProject(projectId: string | null): Promise<boolean> {
 async function throttledServerSaveInner(
   dispatch: EditorDispatch,
   projectId: string,
-  model: PersistentModel | null,
-  name: string | null,
+  projectName: string,
+  modelChange: PersistentModel | null,
+  nameChange: string | null,
 ) {
   switch (_saveState.type) {
     case 'never-saved':
-      await serverSaveInner(dispatch, projectId, model, name, false)
+      await serverSaveInner(dispatch, projectId, projectName, modelChange, nameChange, false)
       break
     case 'saved':
       if (_saveState.setTimeoutId != null) {
@@ -238,18 +240,19 @@ async function throttledServerSaveInner(
       }
       const timeLeftSinceLastSave = Date.now() - _saveState.timestamp
       if (timeLeftSinceLastSave >= SAVE_THROTTLE_DELAY) {
-        await serverSaveInner(dispatch, projectId, model, name, false)
+        await serverSaveInner(dispatch, projectId, projectName, modelChange, nameChange, false)
       } else {
         const setTimeoutId = setTimeout(() => {
-          throttledServerSaveInner(dispatch, projectId, model, name)
+          throttledServerSaveInner(dispatch, projectId, projectName, modelChange, nameChange)
         }, SAVE_THROTTLE_DELAY - timeLeftSinceLastSave)
         _saveState = saved(
           _saveState.remote,
           _saveState.timestamp,
           projectId,
+          projectName,
           dispatch,
-          model,
-          name,
+          modelChange,
+          nameChange,
           setTimeoutId,
         )
       }
@@ -258,10 +261,10 @@ async function throttledServerSaveInner(
       if (_saveState.setTimeoutId != null) {
         clearTimeout(_saveState.setTimeoutId)
       }
-      await serverSaveInner(dispatch, projectId, model, name, false)
+      await serverSaveInner(dispatch, projectId, projectName, modelChange, nameChange, false)
       break
     case 'save-in-progress':
-      _saveState = saveInProgress(_saveState.remote, model, name)
+      _saveState = saveInProgress(_saveState.remote, modelChange, nameChange)
       break
     default:
       const _exhaustiveCheck: never = _saveState
@@ -272,29 +275,39 @@ async function throttledServerSaveInner(
 async function serverSaveInner(
   dispatch: EditorDispatch,
   projectId: string,
-  model: PersistentModel | null,
-  name: string | null,
+  projectName: string,
+  modelChange: PersistentModel | null,
+  nameChange: string | null,
   forceThumbnail: boolean,
 ) {
   _saveState = saveInProgress(true, null, null)
+  const name = nameChange ?? projectName
   try {
     const isOwner = await checkCanSaveProject(projectId)
     if (isOwner) {
-      await updateSavedProject(projectId, model, name)
+      await updateSavedProject(projectId, modelChange, name)
       dispatch([setSaveError(false)], 'everyone')
       updateRemoteThumbnail(projectId, forceThumbnail)
-      maybeTriggerQueuedSave(dispatch, projectId, _saveState)
-      _saveState = saved(_saveState.remote, Date.now(), projectId, dispatch, null, null, null)
+      maybeTriggerQueuedSave(dispatch, projectId, projectName, _saveState)
+      _saveState = saved(_saveState.remote, Date.now(), projectId, name, dispatch, null, null, null)
     } else {
-      if (model != null) {
-        await saveLocalProjectToServer(dispatch, projectId, model, name)
+      if (modelChange != null) {
+        await saveLocalProjectToServer(dispatch, projectId, projectName, modelChange, nameChange)
       }
     }
   } catch (e) {
     const setTimeoutId = setTimeout(() => {
-      throttledServerSaveInner(dispatch, projectId, model, name)
+      throttledServerSaveInner(dispatch, projectId, name, modelChange, nameChange)
     }, SAVE_RETRY_DELAY)
-    _saveState = saveError(_saveState.remote, projectId, dispatch, model, name, setTimeoutId)
+    _saveState = saveError(
+      _saveState.remote,
+      projectId,
+      name,
+      dispatch,
+      modelChange,
+      nameChange,
+      setTimeoutId,
+    )
     dispatch([setSaveError(true)], 'everyone')
   }
 }
@@ -302,16 +315,18 @@ async function serverSaveInner(
 async function saveLocalProjectToServer(
   dispatch: EditorDispatch,
   currentProjectId: string | null,
-  model: PersistentModel,
-  name: string | null,
+  projectName: string,
+  modelChange: PersistentModel,
+  nameChange: string | null,
 ) {
   _saveState = saveInProgress(true, null, null)
+  const name = nameChange ?? projectName
   const isOwner = await checkCanSaveProject(currentProjectId)
   const projectId =
     isOwner && currentProjectId != null
       ? stripOldLocalSuffix(currentProjectId)
       : await createNewProjectID()
-  await updateSavedProject(projectId, model, name)
+  await updateSavedProject(projectId, modelChange, name)
   if (currentProjectId != null) {
     localforage.removeItem(localProjectKey(currentProjectId))
   }
@@ -339,26 +354,42 @@ async function saveLocalProjectToServer(
   }
 
   updateRemoteThumbnail(projectId, false)
-  onFirstSaveCompleted(projectId, dispatch)
-  maybeTriggerQueuedSave(dispatch, projectId, _saveState)
+  onFirstSaveCompleted(projectId, name, dispatch)
+  maybeTriggerQueuedSave(dispatch, projectId, name, _saveState)
 }
 
 function maybeTriggerQueuedSave(
   dispatch: EditorDispatch,
   projectId: string,
+  projectName: string,
   saveState: SaveInProgress,
 ) {
-  const queuedModelSave = saveState.queuedModelSave
-  const queuedNameSave = saveState.queuedNameSave
-  if (queuedModelSave != null || queuedNameSave != null) {
+  const queuedModelChange = saveState.queuedModelChange
+  const queuedNameChange = saveState.queuedNameChange
+  if (queuedModelChange != null || queuedNameChange != null) {
     _saveState = saveInProgress(saveState.remote, null, null)
     if (saveState.remote) {
-      throttledServerSaveInner(dispatch, projectId, queuedModelSave, queuedNameSave)
+      throttledServerSaveInner(
+        dispatch,
+        projectId,
+        projectName,
+        queuedModelChange,
+        queuedNameChange,
+      )
     } else {
-      localSaveInner(dispatch, projectId, queuedModelSave, queuedNameSave)
+      localSaveInner(dispatch, projectId, projectName, queuedModelChange, queuedNameChange)
     }
   } else {
-    _saveState = saved(saveState.remote, Date.now(), projectId, dispatch, null, null, null)
+    _saveState = saved(
+      saveState.remote,
+      Date.now(),
+      projectId,
+      projectName,
+      dispatch,
+      null,
+      null,
+      null,
+    )
   }
 }
 
@@ -376,21 +407,23 @@ function stripOldLocalSuffix(id: string): string {
 export async function saveToLocalStorage(
   dispatch: EditorDispatch,
   projectId: string | null,
+  projectName: string,
   model: PersistentModel | null,
   name: string | null,
 ) {
   if (isSaveInProgress(_saveState)) {
     _saveState = saveInProgress(false, model, name)
   } else {
-    localSaveInner(dispatch, projectId, model, name)
+    localSaveInner(dispatch, projectId, projectName, model, name)
   }
 }
 
 export async function localSaveInner(
   dispatch: EditorDispatch,
   projectId: string | null,
-  model: PersistentModel | null,
-  name: string | null,
+  projectName: string,
+  modelChange: PersistentModel | null,
+  nameChange: string | null,
 ) {
   const alreadyExists = projectId != null && (await projectIsStoredLocally(projectId))
   const isForked = !alreadyExists && !(await checkCanSaveProject(projectId))
@@ -411,23 +444,21 @@ export async function localSaveInner(
 
     const modelToStore: PersistentModel = Utils.forceNotNull(
       'Trying to save with no model at all',
-      existing == null ? model : Utils.defaultIfNull(existing.model, model),
+      existing == null ? modelChange : Utils.defaultIfNull(existing.model, modelChange),
     )
-    const nameToStore: string = Utils.defaultIfNull<string>(
-      'Unnamed',
-      existing == null ? name : Utils.defaultIfNull(existing.name, name),
-    )
+    const name = nameChange ?? existing?.name ?? projectName
+
     const localProject: LocalProject = {
       model: modelToStore,
       createdAt: createdAt,
       lastModified: modifiedAt,
       thumbnail: thumbnail,
-      name: nameToStore,
+      name: name,
     }
 
     localforage.setItem(localProjectKey(projectIdToUse), localProject)
     if (isFirstSave) {
-      onFirstSaveCompleted(projectIdToUse, dispatch)
+      onFirstSaveCompleted(projectIdToUse, name, dispatch)
       dispatch(
         [
           showToast({
@@ -437,11 +468,11 @@ export async function localSaveInner(
         'everyone',
       )
     }
-    maybeTriggerQueuedSave(dispatch, projectIdToUse, _saveState)
+    maybeTriggerQueuedSave(dispatch, projectIdToUse, name, _saveState)
   } catch (e) {
     console.error(e)
     if (isSaveInProgress(_saveState)) {
-      maybeTriggerQueuedSave(dispatch, projectIdToUse, _saveState)
+      maybeTriggerQueuedSave(dispatch, projectIdToUse, projectName, _saveState)
     }
   }
 }
@@ -454,7 +485,7 @@ export async function loadFromServer(
 ) {
   const project = await loadProject(projectId)
   if (project.type === 'ProjectLoaded') {
-    _saveState = saved(true, Date.now(), projectId, dispatch, null, null, null)
+    _saveState = saved(true, Date.now(), projectId, project.title, dispatch, null, null, null)
     _lastThumbnailGenerated = 0
     await load(dispatch, project.content, project.title, projectId, workers, renderEditorRoot)
   } else {
@@ -483,14 +514,14 @@ export async function loadFromLocalStorage(
   if (localProject == null) {
     console.error(`Failed to load project with ID ${projectId} from local storage`)
   } else {
-    _saveState = saved(false, Date.now(), projectId, dispatch, null, null, null)
+    let projectName = localProject.name ?? createNewProjectName() // Should never be null now, but just in case someone has very old local projects lying about
+    _saveState = saved(false, Date.now(), projectId, projectName, dispatch, null, null, null)
     _lastThumbnailGenerated = 0
-    let projectName = Utils.defaultIfNull<string>('Unnamed', localProject.name)
     await load(dispatch, localProject.model, projectName, projectId, workers, renderEditorRoot)
     if (shouldUploadToServer) {
       // Upload the project now that the user has signed in
       saveImagesFromProject(projectId, localProject.model).then((modelWithReplacedImages) => {
-        saveToServer(dispatch, projectId, modelWithReplacedImages, projectName, false)
+        saveToServer(dispatch, projectId, projectName, modelWithReplacedImages, projectName, false)
       })
     }
   }
@@ -501,8 +532,9 @@ export async function forceServerSave() {
     serverSaveInner(
       _saveState.dispatch,
       _saveState.projectId,
-      _saveState.queuedModelSave,
-      _saveState.queuedNameSave,
+      _saveState.projectName,
+      _saveState.queuedModelChange,
+      _saveState.queuedNameChange,
       true,
     )
   }

@@ -22,6 +22,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { SquareButton } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
+import { shareURLForProject } from '../../core/shared/utils'
 
 interface MenuBarProps {
   editorState: EditorState
@@ -85,17 +86,23 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
 }
 
 export const Menubar = betterReactMemo('Menubar', () => {
-  const { dispatch, selectedTab, loginState, leftMenuExpanded, projectId } = useEditorState(
-    (store) => {
-      return {
-        dispatch: store.dispatch,
-        selectedTab: store.editor.leftMenu.selectedTab,
-        loginState: store.loginState,
-        leftMenuExpanded: store.editor.leftMenu.expanded,
-        projectId: store.editor.id,
-      }
-    },
-  )
+  const {
+    dispatch,
+    selectedTab,
+    loginState,
+    leftMenuExpanded,
+    projectId,
+    projectName,
+  } = useEditorState((store) => {
+    return {
+      dispatch: store.dispatch,
+      selectedTab: store.editor.leftMenu.selectedTab,
+      loginState: store.loginState,
+      leftMenuExpanded: store.editor.leftMenu.expanded,
+      projectId: store.editor.id,
+      projectName: store.editor.projectName,
+    }
+  })
 
   const onShow = React.useCallback(
     (menuTab: LeftMenuTab) => {
@@ -131,6 +138,9 @@ export const Menubar = betterReactMemo('Menubar', () => {
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
 
+  const previewURL =
+    projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
+
   return (
     <FlexColumn
       id='leftMenuBar'
@@ -154,11 +164,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
           icon={<MenuIcons.Project />}
           onClick={onShowNavigateTab}
         />
-        <a
-          target='_blank'
-          rel='noopener noreferrer'
-          href={`${FLOATING_PREVIEW_BASE_URL}share/${projectId}`}
-        >
+        <a target='_blank' rel='noopener noreferrer' href={previewURL}>
           <MenuTile selected={false} menuExpanded={false} icon={<MenuIcons.ExternalLink />} />
         </a>
       </FlexColumn>

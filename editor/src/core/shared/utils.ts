@@ -1,4 +1,6 @@
 import { MapLike } from 'typescript'
+import { replaceAll } from './string-utils'
+import urljoin = require('url-join')
 
 // This file shouldn't import anything as it is for exporting simple shared utility functions between various projects
 export const EditorID = 'editor'
@@ -108,3 +110,19 @@ export function xor(a: boolean, b: boolean): boolean {
 }
 
 export const isBrowserEnvironment = process.env.JEST_WORKER_ID == undefined // If true this means we're not running in a Jest environment
+
+export function urlSafeText(text: string): string {
+  return encodeURIComponent(replaceAll(text.toLowerCase(), ' ', '-'))
+}
+
+function getProjectURLSuffix(projectId: string, projectName: string): string {
+  return urlSafeText(`${projectId}-${projectName}`)
+}
+
+export function projectURLForProject(projectId: string, projectName: string): string {
+  return `/p/${getProjectURLSuffix(projectId, projectName)}/`
+}
+
+export function shareURLForProject(prefix: string, projectId: string, projectName: string): string {
+  return urljoin(prefix, `/share/${getProjectURLSuffix(projectId, projectName)}`)
+}
