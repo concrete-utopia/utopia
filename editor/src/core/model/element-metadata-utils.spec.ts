@@ -94,6 +94,12 @@ const testComponentScene: ComponentMetadata = {
     layoutSystem: LayoutSystem.PinSystem,
   },
   rootElement: testComponentRoot1,
+  globalFrame: canvasRectangle({
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  }),
 }
 
 const testComponentMetadata: Array<ComponentMetadata> = [testComponentScene]
@@ -331,6 +337,12 @@ describe('getElementLabel', () => {
       frame: { left: 0, top: 0, width: 100, height: 100 },
       container: { layoutSystem: LayoutSystem.PinSystem },
       rootElement: divElementMetadata,
+      globalFrame: canvasRectangle({
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+      }),
     },
   ]
   it('the label of a spin containing text is that text', () => {
