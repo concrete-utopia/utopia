@@ -198,7 +198,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
               scene,
               TP.instancePath([], TP.elementPathForPath(scenePath)),
               null,
-              false,
               metadata,
             )
             rootMetadata.push(sceneMetadata)
@@ -318,7 +317,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           }
 
           if (pathIsValid) {
-            return [collectMetadata(element, uniquePath, parentPoint, false, metadataOfChildren)]
+            return [collectMetadata(element, uniquePath, parentPoint, metadataOfChildren)]
           } else {
             return metadataOfChildren
           }
@@ -331,7 +330,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         element: HTMLElement,
         instancePath: InstancePath,
         parentPoint: CanvasPoint | null,
-        componentInstance: boolean,
         childrenMetadata: ElementInstanceMetadata[],
       ): ElementInstanceMetadata {
         const globalFrame = globalFrameForElement(element)
@@ -360,7 +358,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           globalFrame,
           localFrame,
           childrenMetadata,
-          componentInstance,
+          false,
           getSpecialMeasurements(element),
         )
       }
