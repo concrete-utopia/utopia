@@ -778,7 +778,7 @@ type ComponentRendererComponent = React.ComponentType<any> & {
 
 interface SceneRootProps extends CanvasReactReportErrorCallback {
   content: ComponentRendererComponent | undefined
-  templatePath: TemplatePath
+  templatePath: InstancePath
   requireResult: MapLike<any>
   inScope: MapLike<any>
   hiddenInstances: Array<TemplatePath>
@@ -825,7 +825,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
 
   metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
     scenePath: scenePath,
-    templatePath: templatePath as InstancePath,
+    templatePath: templatePath,
     frame: frame,
     container: container,
     component: component,
@@ -835,7 +835,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
   if (rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy) {
     metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
       element: left('Scene'),
-      templatePath: templatePath as InstancePath,
+      templatePath: templatePath,
       props: {},
       globalFrame: null,
       localFrame: null,
