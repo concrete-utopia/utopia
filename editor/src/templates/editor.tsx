@@ -277,7 +277,7 @@ export const HotRoot: React.FunctionComponent<{
 })
 HotRoot.displayName = 'Utopia Editor Root'
 
-// we trigger the hasedAssetsUpdate as soon as we can. this will still block the renderRootComponent,
+// we trigger the hashedAssetsUpdate as soon as we can. this will still block the renderRootComponent,
 // but because we start it sooner, there's a chance it finishes by the time we call renderRootComponent
 const blockEditorRenderUntilHashedAssetsUpdate = triggerHashedAssetsUpdate()
 
