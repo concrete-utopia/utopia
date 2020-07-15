@@ -4,6 +4,7 @@ const ForkTsCheckerAsyncOverlayWebpackPlugin = require('fork-ts-checker-async-ov
 const CleanTerminalPlugin = require('clean-terminal-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const path = require('path')
@@ -99,6 +100,14 @@ const config = {
       template: './src/templates/preview.html',
       filename: 'preview.html',
       minify: false,
+    }),
+    new ScriptExtHtmlWebpackPlugin({
+      // Support CORS so we can use the CDN endpoint from either of the domains
+      custom: {
+        test: /\.js$/,
+        attribute: 'crossorigin',
+        value: 'anonymous',
+      },
     }),
     new InterpolateHtmlPlugin(HtmlWebpackPlugin, {
       // This plugin replaces variables of the form %VARIABLE% with the value provided in this object
