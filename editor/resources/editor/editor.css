@@ -1,76 +1,4 @@
-/* font */
-
-@import url('https://rsms.me/inter/inter.css');
-html {
-  font-family: 'Inter', sans-serif;
-}
-@supports (font-variation-settings: normal) {
-  html {
-    font-family: 'Inter var', sans-serif;
-  }
-}
-
 /* actual editor */
-
-body {
-  margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto, Arial,
-    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; /* from GitHub */
-  font-size: 11px !important;
-  overflow: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: geometricPrecision;
-  cursor: default;
-  outline: none;
-  overscroll-behavior-x: contain;
-}
-
-div,
-span,
-img,
-ul,
-li,
-label {
-  user-select: none;
-  -webkit-user-select: none;
-  box-sizing: border-box !important;
-}
-
-.react-error-overlay-allow-text-selection,
-.react-error-overlay-allow-text-selection,
-.react-error-overlay-allow-text-selection span,
-.react-error-overlay-allow-text-selection div,
-.react-error-overlay-allow-text-selection pre {
-  user-select: text;
-  cursor: text;
-}
-
-input {
-  box-sizing: border-box;
-  outline: none;
-  font-family: Inter;
-  font-size: 11px;
-}
-
-span:focus,
-div:focus,
-label:focus,
-button:focus,
-input:focus,
-img:focus,
-svg:focus {
-  outline: none;
-}
-
-#application-wrapper {
-  display: flex;
-  flex-direction: row;
-  -webkit-user-select: none;
-  user-select: none;
-  position: absolute;
-  top: 0;
-}
 
 #nodegraph-and-canvas-container {
   display: flex;
@@ -102,35 +30,6 @@ svg:focus {
 .canvas-zoom {
   padding: 0px 4px 3px 4px;
   text-align: center;
-}
-
-/* todo put this near the contexify CSS after figuring out where _that_ lives */
-.shortcut {
-  float: right;
-}
-
-.fadeout {
-  /* this time needs slightly exceed the toast visibility duration
-     otherwise any delay for queued-up toasts causes issues */
-  animation: fadeout 5.8s;
-  animation-iteration-count: 1;
-}
-
-@keyframes fadeout {
-  0% {
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-    transform: initial;
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(1200px);
-  }
 }
 
 @keyframes bounceup {

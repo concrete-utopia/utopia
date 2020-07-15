@@ -348,7 +348,7 @@ import {
   updateDependenciesInEditorState,
   updateDependenciesInPackageJson,
 } from '../npm-dependency/npm-dependency'
-import { updateRemoteThumbnail, pushProjectURLToBrowserHistory } from '../persistence'
+import { updateRemoteThumbnail } from '../persistence'
 import { deleteAssetFile, saveAsset as saveAssetToServer, updateAssetFileName } from '../server'
 import {
   applyParseAndEditorChanges,
@@ -426,7 +426,6 @@ import {
 } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
-import { urlSafeText } from '../../../core/shared/dom-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 
 export function clearSelection(): EditorAction {
@@ -2979,10 +2978,6 @@ export const UPDATE_FNS = {
     }
   },
   SET_PROJECT_NAME: (action: SetProjectName, editor: EditorModel): EditorModel => {
-    // Side effect.
-    if (editor.id != null) {
-      pushProjectURLToBrowserHistory(`Utopia ${action.name}`, editor.id, urlSafeText(action.name))
-    }
     return {
       ...editor,
       projectName: action.name,

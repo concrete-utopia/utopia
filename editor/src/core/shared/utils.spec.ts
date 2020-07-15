@@ -1,4 +1,4 @@
-import { urlSafeText } from './dom-utils'
+import { urlSafeText } from './utils'
 
 describe('urlSafeText', () => {
   it('for a simple string returns the same thing', () => {

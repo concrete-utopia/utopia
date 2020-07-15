@@ -118,6 +118,7 @@ import {
 
 import { Notice } from '../../common/notices'
 import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
+import * as friendlyWords from 'friendly-words'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -953,11 +954,19 @@ export function mergePersistentModel(
   }
 }
 
+export function createNewProjectName(): string {
+  const friendlyWordsPredicate =
+    friendlyWords.predicates[Math.floor(Math.random() * friendlyWords.predicates.length)]
+  const friendlyWordsObject =
+    friendlyWords.objects[Math.floor(Math.random() * friendlyWords.objects.length)]
+  return `${friendlyWordsPredicate}-${friendlyWordsObject}`
+}
+
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
     appID: null,
-    projectName: 'Unnamed',
+    projectName: createNewProjectName(),
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
     openFiles: [],

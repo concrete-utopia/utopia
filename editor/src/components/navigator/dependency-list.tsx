@@ -115,23 +115,8 @@ export const DefaultPackagesList: Array<PackageDetails> = [
     status: 'default-package',
   },
   {
-    name: '@types/react',
-    version: '16.8.17',
-    status: 'default-package',
-  },
-  {
-    name: 'csstype',
-    version: '2.6.7',
-    status: 'default-package',
-  },
-  {
     name: 'react-dom',
     version: '16.13.1',
-    status: 'default-package',
-  },
-  {
-    name: '@types/react-dom',
-    version: '16.8.4',
     status: 'default-package',
   },
   {

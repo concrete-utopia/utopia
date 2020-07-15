@@ -44,7 +44,7 @@ import { isTransientAction, isUndoOrRedo, isParsedModelUpdate } from '../actions
 import * as EditorActions from '../actions/actions'
 import * as History from '../history'
 import { StateHistory } from '../history'
-import { saveToLocalStorage, saveToServer } from '../persistence'
+import { saveToLocalStorage, saveToServer, pushProjectURLToBrowserHistory } from '../persistence'
 import { saveStoredState } from '../stored-state'
 import {
   DerivedState,
@@ -295,7 +295,8 @@ export function editorDispatch(
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
   const nameUpdated = dispatchedActions.some((action) => action.action === 'SET_PROJECT_NAME')
-  const forceSave = dispatchedActions.some((action) => action.action === 'SAVE_CURRENT_FILE')
+  const forceSave =
+    nameUpdated || dispatchedActions.some((action) => action.action === 'SAVE_CURRENT_FILE')
   const onlyNameUpdated = nameUpdated && dispatchedActions.length === 1
   const allTransient = dispatchedActions.every(isTransientAction)
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
@@ -405,6 +406,14 @@ export function editorDispatch(
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
     saveStoredState(storedState.editor.id, stateToStore)
     notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
+  }
+
+  if (nameUpdated && frozenEditorState.id != null) {
+    pushProjectURLToBrowserHistory(
+      `Utopia ${frozenEditorState.projectName}`,
+      frozenEditorState.id,
+      frozenEditorState.projectName,
+    )
   }
 
   if (shouldSave || anySendPreviewModel) {
@@ -575,14 +584,14 @@ async function save(
   saveType: SaveType,
   forceServerSave: boolean,
 ) {
-  const persistentModel =
+  const modelChange =
     saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
-  const projectName = state.projectName
+  const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null
   try {
     if (isLoggedIn(loginState)) {
-      saveToServer(dispatch, state.id, persistentModel, projectName, forceServerSave)
+      saveToServer(dispatch, state.id, state.projectName, modelChange, nameChange, forceServerSave)
     } else {
-      saveToLocalStorage(dispatch, state.id, persistentModel, projectName)
+      saveToLocalStorage(dispatch, state.id, state.projectName, modelChange, nameChange)
     }
   } catch (error) {
     console.error('Save not successful', error)
