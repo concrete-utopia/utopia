@@ -88,6 +88,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
 
 const testComponentScene: ComponentMetadata = {
   scenePath: TP.scenePath([BakedInStoryboardUID, TestScenePath]),
+  templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
   component: 'MyView',
   frame: { left: 0, top: 0, width: 100, height: 100 },
   container: {
@@ -291,6 +292,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
 
 describe('getElementLabel', () => {
   const scenePath = TP.scenePath([BakedInStoryboardUID, 'scene-0'])
+  const instancePath = TP.instancePath([], [BakedInStoryboardUID, `scene-0`])
   const divPath = TP.appendToPath(scenePath, 'div-1')
   const spanPath = TP.appendToPath(divPath, 'span-1')
   const textBlock = jsxTextBlock('test text')
@@ -333,6 +335,7 @@ describe('getElementLabel', () => {
   const metadata: Array<ComponentMetadata> = [
     {
       scenePath: scenePath,
+      templatePath: instancePath,
       component: 'App',
       frame: { left: 0, top: 0, width: 100, height: 100 },
       container: { layoutSystem: LayoutSystem.PinSystem },

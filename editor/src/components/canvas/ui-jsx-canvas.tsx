@@ -570,6 +570,7 @@ function getStoryboardRoot(
     container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
     frame: {} as any, // TODO BB Hack this is not safe at all, the code expects a frame here
     scenePath: EmptyScenePathForStoryboard,
+    templatePath: TP.instancePath([], []),
     globalFrame: null,
     label: 'Storyboard',
   }
@@ -824,6 +825,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
 
   metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
     scenePath: scenePath,
+    templatePath: templatePath as InstancePath,
     frame: frame,
     container: container,
     component: component,

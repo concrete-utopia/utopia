@@ -71,6 +71,7 @@ describe('maybeSwitchLayoutProps', () => {
     const metadata: ComponentMetadata[] = [
       {
         scenePath: TP.scenePath([BakedInStoryboardUID, 'scene-aaa']),
+        templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
         component: 'Component1',
         frame: {
           left: 0,

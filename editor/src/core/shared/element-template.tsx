@@ -924,6 +924,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
 
 export interface ComponentMetadata {
   scenePath: ScenePath
+  templatePath: InstancePath
   rootElement: ElementInstanceMetadata | null
   component: string | null
   container: SceneContainer

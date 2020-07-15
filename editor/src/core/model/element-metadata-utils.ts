@@ -1225,7 +1225,7 @@ export const MetadataUtils = {
     return fromSpy.map((scene) => {
       const elem = mergedInstanceMetadata.find((m) => TP.isChildOf(m.templatePath, scene.scenePath))
       const sceneMetadata = mergedInstanceMetadata.find((m) =>
-        TP.pathsEqual(TP.scenePath(TP.elementPathForPath(m.templatePath)), scene.scenePath),
+        TP.pathsEqual(m.templatePath, scene.templatePath),
       )
       return {
         ...scene,

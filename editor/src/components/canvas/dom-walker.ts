@@ -209,9 +209,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             if (labelAttribute != null) {
               elementProps['data-label'] = labelAttribute
             }
-
+            const sceneInstancePath = TP.instancePath([], TP.elementPathForPath(scenePath))
             const sceneMetadata = elementInstanceMetadata(
-              scenePath as any, // this is not good, what should i add here?
+              sceneInstancePath,
               left(scene.tagName.toLowerCase()),
               elementProps,
               globalFrame,
