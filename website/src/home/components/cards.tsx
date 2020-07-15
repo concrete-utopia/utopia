@@ -1,12 +1,9 @@
 /** @jsx jsx */
-import React from 'react'
+import type * as React from 'react'
 import { jsx } from '@emotion/core'
 import styled from '@emotion/styled'
 
 import { layout, FlexRow, FlexColumn, FlexWrappingList } from './layout'
-import { H2 } from './style'
-import props from 'ramda/es/props'
-import { ContainerProps } from 'react-select/src/components/containers'
 import { colors } from './theme'
 
 export const cardLayout = {

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import * as React from 'react'
 import { jsx } from '@emotion/core'
-import { breakpoints, BasicStyledComponent, bodyStyles } from './home'
+import { breakpoints, BasicStyledComponent, bodyStyles } from './jobs'
 import Wrapper from './website-wrapper'
 
 export default class Team extends React.Component {

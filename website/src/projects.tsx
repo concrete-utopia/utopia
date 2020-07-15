@@ -9,7 +9,6 @@ import { colors } from './home/components/theme'
 
 import { Global } from '@emotion/core'
 import { fetchProjectList, fetchShowcaseProjects } from './common/server'
-import { Redirect } from 'react-router-dom'
 import {
   ProjectListing,
   deleteProject,
@@ -17,7 +16,6 @@ import {
 } from './common/persistence'
 import * as timeago from 'timeago.js'
 import { Card, cardLayout, cardLayoutStyle } from './home/components/cards'
-import { isNullOrUndefined } from 'util'
 
 interface navItemProps {
   selected: boolean
@@ -307,7 +305,7 @@ export class Projects extends React.Component<{}, ProjectsState> {
       this.state.filteredProjects.length + this.state.filteredLocalProjects.length
 
     return (
-      <>
+      <React.Fragment>
         <Global
           styles={{
             html: {
@@ -371,7 +369,13 @@ export class Projects extends React.Component<{}, ProjectsState> {
                 <span style={{ opacity: 0.3 }}>{visibleProjectCount}</span>
               </H2>
             </div>
-            <div style={{ marginTop: layout.margins.regular + 10, fontSize: 12, opacity: 0.7 }}>
+            <div
+              style={{
+                marginTop: layout.margins.regular + 10,
+                fontSize: 12,
+                opacity: 0.7,
+              }}
+            >
               <span style={{ marginRight: 60 }}>Last Edited ↧</span>
               <span>Public and Private</span>
             </div>
@@ -430,7 +434,7 @@ export class Projects extends React.Component<{}, ProjectsState> {
             </FlexWrappingList>
           </FlexColumn>
         </FlexColumn>
-      </>
+      </React.Fragment>
     )
   }
 }
@@ -457,11 +461,11 @@ export class Featured extends React.PureComponent<{}, ShowcaseState> {
 
   render() {
     return (
-      <>
+      <React.Fragment>
         {this.state.showcase.map((project) => (
           <ProjectCard key={project.id} project={project} selected={false} />
         ))}
-      </>
+      </React.Fragment>
     )
   }
 }

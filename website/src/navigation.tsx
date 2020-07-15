@@ -2,10 +2,13 @@
 import * as React from 'react'
 import { jsx } from '@emotion/core'
 import { Global } from '@emotion/core'
-import { breakpoints } from './home'
+import { breakpoints } from './jobs'
 
 export default class Navigation extends React.Component {
-  NavLink: React.FunctionComponent<{ emotion: Record<string, any>; href: string }> = (props) => {
+  NavLink: React.FunctionComponent<{
+    emotion: Record<string, any>
+    href: string
+  }> = (props) => {
     return (
       <a
         href={props.href}
@@ -29,7 +32,7 @@ export default class Navigation extends React.Component {
 
   render() {
     return (
-      <>
+      <React.Fragment>
         <Global
           styles={{
             body: {
@@ -100,7 +103,7 @@ export default class Navigation extends React.Component {
             </this.NavLink>
           </div>
         </nav>
-      </>
+      </React.Fragment>
     )
   }
 }

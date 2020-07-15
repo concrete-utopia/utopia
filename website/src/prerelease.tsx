@@ -2,7 +2,6 @@
 import * as React from 'react'
 import { jsx } from '@emotion/core'
 import facepaint from 'facepaint'
-import canAutoPlay from 'can-autoplay'
 import Wrapper from './website-wrapper'
 
 export interface BasicStyledComponent {
@@ -333,7 +332,7 @@ export default class Prerelease extends React.Component {
             Utopia offers a powerful visual scripting environment for rapid prototyping and
             construction.
           </this.BodyText>
-          <this.CTA href='/login'>Try Utopia ></this.CTA>
+          <this.CTA href='/login'>Try Utopia</this.CTA>
         </this.Section>
       </Wrapper>
     )

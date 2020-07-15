@@ -1,11 +1,17 @@
 {
+  "include": ["src", "types"],
+  "exclude": ["node_modules"],
+  "extends": "@snowpack/app-scripts-react/tsconfig.base.json",
   "compilerOptions": {
+    // You can't currently define paths in your 'extends' config,
+    // so we have to set 'baseUrl' & 'paths' here.
+    // Don't change these unless you know what you're doing.
+    // See: https://github.com/microsoft/TypeScript/issues/25430
+    "baseUrl": "./",
+    "paths": { "*": ["web_modules/.types/*"] },
+    // Feel free to add/edit new config options below:
     "target": "es2018",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "module": "esnext",
     "moduleResolution": "node",
@@ -13,15 +19,9 @@
     "noEmit": true,
     "declaration": false,
     "removeComments": true,
-    "noImplicitAny": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "strictNullChecks": true,
     "alwaysStrict": true,
     "jsx": "preserve",
     "isolatedModules": true,
-    "strict": false
-  },
-  "include": ["src"]
+    "strict": true
+  }
 }

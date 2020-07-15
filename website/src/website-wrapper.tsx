@@ -7,7 +7,7 @@ import Navigation from './navigation'
 export default class Wrapper extends React.Component {
   render() {
     return (
-      <>
+      <React.Fragment>
         <Global
           styles={{
             body: {
@@ -28,7 +28,7 @@ export default class Wrapper extends React.Component {
           <Navigation />
           {this.props.children}
         </div>
-      </>
+      </React.Fragment>
     )
   }
 }

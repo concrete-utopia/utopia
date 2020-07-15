@@ -1,13 +1,14 @@
 // you can turn on/off debug features individually here
 
-export const PRODUCTION_ENV: boolean = process.env.NODE_ENV === 'production'
-export const PRODUCTION_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
+export const PRODUCTION_ENV: boolean = import.meta.env.NODE_ENV === 'production'
+export const PRODUCTION_CONFIG: boolean =
+  import.meta.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
 
 export const PROBABLY_ELECTRON: boolean =
   typeof window === 'undefined' ||
   (window && (window as any)['process'] && (window as any)['process']['type'])
 
-export const USE_WEBPACK_SERVER = process.env.WEBPACK_DEV_SERVER === 'true'
+export const USE_WEBPACK_SERVER = import.meta.env.WEBPACK_DEV_SERVER === 'true'
 
 export const SHOW_FPS = false
 export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
@@ -25,7 +26,9 @@ export const BASE_URL: string = PRODUCTION_CONFIG ? `https://${HOST}/` : `http:/
 
 export const BASE_WS: string = PRODUCTION_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
-export const STATIC_BASE_URL: string = PRODUCTION_CONFIG ? `https://cdn.${HOST}/` : `http://${HOST}/`
+export const STATIC_BASE_URL: string = PRODUCTION_CONFIG
+  ? `https://cdn.${HOST}/`
+  : `http://${HOST}/`
 
 export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG ? `https://utopia.fm/` : BASE_URL
 export const UTOPIA_BACKEND = BASE_URL + 'v1/'
@@ -35,16 +38,16 @@ export const THUMBNAIL_ENDPOINT = UTOPIA_BACKEND + 'thumbnail/'
 
 export const PREVIEW_IS_EMBEDDED = isEmbedded()
 
-export const AUTH0_REDIRECT_URI: string = process.env.REACT_APP_AUTH0_REDIRECT_URI || ''
-export const AUTH0_CLIENT_ID: string = process.env.REACT_APP_AUTH0_CLIENT_ID || ''
-export const AUTH0_HOST: string = process.env.REACT_APP_AUTH0_ENDPOINT || ''
+export const AUTH0_REDIRECT_URI: string = import.meta.env.REACT_APP_AUTH0_REDIRECT_URI || ''
+export const AUTH0_CLIENT_ID: string = import.meta.env.REACT_APP_AUTH0_CLIENT_ID || ''
+export const AUTH0_HOST: string = import.meta.env.REACT_APP_AUTH0_ENDPOINT || ''
 const USE_AUTH0 = AUTH0_REDIRECT_URI != '' && AUTH0_CLIENT_ID != '' && AUTH0_HOST != ''
 
 export const auth0Url = USE_AUTH0
   ? `https://${AUTH0_HOST}/authorize?scope=openid%20profile%20email&response_type=code&client_id=${AUTH0_CLIENT_ID}&redirect_uri=${AUTH0_REDIRECT_URI}`
   : `${BASE_URL}authenticate?code=logmein`
 
-const COMMIT_HASH = process.env.REACT_APP_COMMIT_HASH || ''
+const COMMIT_HASH = import.meta.env.REACT_APP_COMMIT_HASH || ''
 export const URL_HASH = COMMIT_HASH === '' ? 'nocommit' : COMMIT_HASH
 
 export function requireElectron() {
