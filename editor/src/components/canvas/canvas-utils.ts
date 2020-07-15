@@ -20,6 +20,7 @@ import {
   LayoutPinnedProps,
   LayoutProp,
   pinnedPropForFramePoint,
+  LayoutPinnedProp,
 } from '../../core/layout/layout-helpers-new'
 import {
   maybeSwitchLayoutProps,
@@ -342,19 +343,21 @@ export function updateFramesOfScenesAndComponents(
             (sceneElement) => {
               const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
               if (isRight(styleProps)) {
-                const left = styleProps.value.left + frameAndTarget.delta.x
-                const top = styleProps.value.top + frameAndTarget.delta.y
-                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
-                  {
-                    path: PP.create(['style']),
-                    value: jsxAttributeValue({
-                      left: left,
-                      top: top,
-                      width: styleProps.value.width,
-                      height: styleProps.value.height,
-                    }),
-                  },
-                ])
+                let frameProps: { [k: string]: string | number | undefined } = {}
+                Utils.fastForEach(['PinnedLeft', 'PinnedTop'] as LayoutPinnedProp[], (p) => {
+                  const framePoint = framePointForPinnedProp(p)
+                  const value = getLayoutProperty(p, right(sceneElement.props))
+                  if (isLeft(value) || value.value != null) {
+                    frameProps[framePoint] = value.value
+                  }
+                })
+                let propsToSet = getPropsToSetToMoveElement(
+                  frameAndTarget.delta,
+                  [FramePoint.Top, FramePoint.Left],
+                  frameProps,
+                  null,
+                )
+                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, propsToSet)
                 return foldEither(
                   () => sceneElement,
                   (updatedProps) => {
@@ -380,25 +383,26 @@ export function updateFramesOfScenesAndComponents(
             (sceneElement) => {
               const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
               if (isRight(styleProps)) {
-                const left =
-                  styleProps.value.left +
-                  frameAndTarget.sizeDelta.x * (frameAndTarget.edgePosition.x - 1)
-                const top =
-                  styleProps.value.top +
-                  frameAndTarget.sizeDelta.y * (frameAndTarget.edgePosition.y - 1)
-                const width = styleProps.value.width + frameAndTarget.sizeDelta.x
-                const height = styleProps.value.height + frameAndTarget.sizeDelta.y
-                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
-                  {
-                    path: PP.create(['style']),
-                    value: jsxAttributeValue({
-                      left: left,
-                      top: top,
-                      width: width,
-                      height: height,
-                    }),
+                let frameProps: { [k: string]: string | number | undefined } = {}
+                Utils.fastForEach(
+                  ['PinnedLeft', 'PinnedTop', 'Width', 'Height'] as LayoutPinnedProp[],
+                  (p) => {
+                    const framePoint = framePointForPinnedProp(p)
+                    const value = getLayoutProperty(p, right(sceneElement.props))
+                    if (isLeft(value) || value.value != null) {
+                      frameProps[framePoint] = value.value
+                    }
                   },
-                ])
+                )
+                let propsToSet = getPropsToSetToResizeElement(
+                  frameAndTarget.edgePosition,
+                  frameAndTarget.sizeDelta.x,
+                  frameAndTarget.sizeDelta.y,
+                  [FramePoint.Top, FramePoint.Left, FramePoint.Width, FramePoint.Height],
+                  frameProps,
+                  null,
+                )
+                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, propsToSet)
                 return foldEither(
                   () => sceneElement,
                   (updatedProps) => {
