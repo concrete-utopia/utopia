@@ -47,8 +47,5 @@ export function appendHash(url: string): string {
 editorCSS.forEach((url) => addStyleSheetToPage(url))
 editorCSSDontHash.forEach((url) => addStyleSheetToPage(url, false))
 
-// FIXME This was previously blocking, and can be pretty slow, so we should find a better way to handle this
-triggerHashedAssetsUpdate()
-
 // eslint-disable-next-line
 const EditorRunner = new Editor()
