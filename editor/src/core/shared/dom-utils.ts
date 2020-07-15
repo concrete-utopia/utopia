@@ -1,5 +1,6 @@
 import { ReactDOM } from 'react'
 import { canvasRectangle, CanvasRectangle, scaleRect } from './math-utils'
+import { URL_HASH } from '../../common/env-vars'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -218,4 +219,31 @@ export function getCanvasRectangleFromElement(
     }),
     scale,
   )
+}
+
+export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = true) {
+  const cssElement = document.createElement('link')
+  cssElement.rel = 'stylesheet'
+  cssElement.type = 'text/css'
+  cssElement.href = shouldAppendHash ? appendHash(url) : url
+  document.getElementsByTagName('head')[0].appendChild(cssElement)
+}
+
+function appendHash(url: string): string {
+  return `${url}?hash=${URL_HASH}`
+}
+
+export function addScriptToPage(
+  url: string,
+  checksum: string | null = null,
+  shouldAppendHash: boolean = true,
+) {
+  const script = document.createElement('script')
+  script.src = shouldAppendHash ? appendHash(url) : url
+  script.async = true
+  script.crossOrigin = 'anonymous'
+  if (checksum != null) {
+    script.integrity = checksum
+  }
+  document.body.appendChild(script)
 }
