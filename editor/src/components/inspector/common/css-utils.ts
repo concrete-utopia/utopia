@@ -2282,10 +2282,6 @@ export const defaultCSSGradientStops: Array<CSSGradientStop> = [
   },
 ]
 
-export interface CSSGradientOrderedStop extends CSSGradientStop {
-  originalIndex: number
-}
-
 export type CSSGradientAngleKeywords =
   | 'top'
   | 'right'
@@ -2916,12 +2912,8 @@ export function isCSSBackground(value: CSSBackground | CSSColor): value is CSSBa
   )
 }
 
-export function orderStops(stops: Array<CSSGradientStop>): Array<CSSGradientOrderedStop> {
-  const orderedStops: Array<CSSGradientOrderedStop> = stops.map((stop, originalIndex) => ({
-    ...stop,
-    originalIndex,
-  }))
-  return orderedStops.sort((stopA, stopB) => stopA.position.value - stopB.position.value)
+export function orderStops(stops: Array<CSSGradientStop>): Array<CSSGradientStop> {
+  return Utils.stripNulls(stops).sort((stopA, stopB) => stopA.position.value - stopB.position.value)
 }
 
 export function printStops(stops: Array<CSSGradientStop>): string {

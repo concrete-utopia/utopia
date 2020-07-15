@@ -1,3 +1,4 @@
+import * as fastDeepEquals from 'fast-deep-equal'
 import * as React from 'react'
 import {
   colorTheme,
@@ -7,7 +8,7 @@ import {
   PopupList,
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
 } from 'uuiui'
-import { ColorPickerInner, colorPickerWidth } from '../../../controls/color-picker'
+import { ControlStatus } from '../../../common/control-status'
 import {
   CSSBackgroundLayer,
   CSSBackgroundLayers,
@@ -22,21 +23,29 @@ import {
   CSSSolidBackgroundLayer,
   CSSURLFunctionBackgroundLayer,
   defaultConicGradientBackgroundLayer,
+  defaultCSSColor,
   defaultCSSRadialGradientSize,
   EmptyInputValue,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
+  isCSSBackgroundImageLayer,
+  isCSSBackgroundLayerWithBGSize,
   isCSSConicGradientBackgroundLayer,
   isCSSGradientBackgroundLayer,
   isCSSImageURLBackgroundLayer,
   isCSSRadialGradientBackgroundLayer,
   isCSSSolidBackgroundLayer,
-  isCSSBackgroundLayerWithBGSize,
-  isCSSBackgroundImageLayer,
-  defaultCSSColor,
+  orderStops,
 } from '../../../common/css-utils'
+import {
+  TransformedStateAndPropsEqualityTest,
+  stopPropagation,
+  useHandleCloseOnESCOrEnter,
+  useModelControlledTransformableState,
+} from '../../../common/inspector-utils'
 import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
-import { stopPropagation, useHandleCloseOnESCOrEnter } from '../../../common/inspector-utils'
-import { ControlStatus } from '../../../common/control-status'
+import { BGSizeMetadataControl } from '../../../controls/bg-size-metadata-control'
+import { ColorPickerInner, colorPickerWidth } from '../../../controls/color-picker'
+import { URLBackgroundLayerMetadataControls } from '../../../controls/url-background-layer-metadata-controls'
 import { InspectorModal } from '../../../widgets/inspector-modal'
 import {
   backgroundLayerTypeSelectOptions,
@@ -53,8 +62,6 @@ import {
 import { GradientStopsEditor } from './gradient-stop-editor'
 import { getIndexedUpdateCSSBackgroundLayerLinearGradientAngle } from './linear-gradient-layer'
 import { PickerImagePreview } from './picker-image-preview'
-import { URLBackgroundLayerMetadataControls } from '../../../controls/url-background-layer-metadata-controls'
-import { BGSizeMetadataControl } from '../../../controls/bg-size-metadata-control'
 
 const backgroundLayerOptionsByValue: {
   [key in CSSBackgroundLayerType]: CSSBackgroundLayerTypeSelectOption
@@ -362,31 +369,21 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
   )
 }
 
-function getSelectedColor(
-  value: CSSSolidBackgroundLayer | CSSGradientBackgroundLayer,
-  selectedStopIndex: number,
-) {
-  switch (value.type) {
-    case 'solid-background-layer': {
-      return value.color
-    }
-    case 'linear-gradient-background-layer':
-    case 'radial-gradient-background-layer':
-    case 'conic-gradient-background-layer': {
-      const selectedStop = value.stops[selectedStopIndex]
-      if (selectedStop != null) {
-        return selectedStop.color
-      } else if (value.stops[selectedStopIndex - 1] != null) {
-        return value.stops[selectedStopIndex - 1].color
-      } else {
-        return { ...defaultCSSColor }
-      }
-    }
-    default: {
-      const _exhaustiveCheck: never = value
-      throw new Error(`Unhandled background layer type ${JSON.stringify(value)}`)
-    }
-  }
+const doesPropsEqualStateStops: TransformedStateAndPropsEqualityTest<Array<CSSGradientStop>> = (
+  newStateValue,
+  newPropsValue,
+) => fastDeepEquals(orderStops(newStateValue), newPropsValue)
+
+function setColor(
+  stopIndex: number,
+  newValue: CSSColor,
+  oldValue: Array<CSSGradientStop>,
+): Array<CSSGradientStop> {
+  const workingStops = [...oldValue]
+  const workingStop = { ...workingStops[stopIndex] }
+  workingStop.color = newValue
+  workingStops[stopIndex] = workingStop
+  return workingStops
 }
 
 export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = (props) => {
@@ -395,10 +392,10 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
   const toggleSettings = React.useCallback(() => setShowSettings((value) => !value), [
     setShowSettings,
   ])
-  const [selectedStopIndex, setSelectedStopIndex] = React.useState(0)
+  const [selectedStopUnorderedIndex, setSelectedStopUnorderedIndex] = React.useState(0)
 
   const [onSubmitColorValue, onTransientSubmitColorValue] = props.useSubmitValueFactory(
-    getIndexedUpdateCSSBackgroundLayerStop(selectedStopIndex, props.backgroundLayerIndex),
+    getIndexedUpdateCSSBackgroundLayerStop(selectedStopUnorderedIndex, props.backgroundLayerIndex),
   )
   const [onSubmitBackgroundLayerType] = props.useSubmitValueFactory(
     getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(props.backgroundLayerIndex),
@@ -411,7 +408,10 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
       if (oldBackgroundLayer != null) {
         if (isCSSGradientBackgroundLayer(oldBackgroundLayer)) {
           const newBackgroundLayers = [...oldValue]
-          newBackgroundLayers[backgroundLayerIndex] = { ...oldBackgroundLayer, stops: newStops }
+          newBackgroundLayers[backgroundLayerIndex] = {
+            ...oldBackgroundLayer,
+            stops: newStops,
+          }
           return newBackgroundLayers
         }
       }
@@ -421,6 +421,30 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
   )
 
   const [onSubmitValueStops, onTransientSubmitValueStops] = props.useSubmitValueFactory(updateStops)
+
+  const [stops, onSubmitValueAndUpdateLocalStops] = useModelControlledTransformableState<
+    Array<CSSGradientStop>
+  >(
+    isCSSGradientBackgroundLayer(props.value) ? props.value.stops : [],
+    doesPropsEqualStateStops,
+    onSubmitValueStops,
+    onTransientSubmitValueStops,
+  )
+
+  const onSubmitValueAndUpdateLocalColor = React.useCallback(
+    (newValue: CSSColor) =>
+      onSubmitValueAndUpdateLocalStops(
+        setColor(selectedStopUnorderedIndex, newValue, stops),
+        false,
+      ),
+    [stops, onSubmitValueAndUpdateLocalStops, selectedStopUnorderedIndex],
+  )
+
+  const onTransientSubmitValueAndUpdateLocalColor = React.useCallback(
+    (newValue: CSSColor) =>
+      onSubmitValueAndUpdateLocalStops(setColor(selectedStopUnorderedIndex, newValue, stops), true),
+    [stops, onSubmitValueAndUpdateLocalStops, selectedStopUnorderedIndex],
+  )
 
   const MetadataControls: React.ReactNode = (() => {
     switch (props.value.type) {
@@ -527,22 +551,33 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
           <>
             {isCSSGradientBackgroundLayer(props.value) ? (
               <GradientStopsEditor
-                stops={props.value.stops}
-                onSubmitValue={onSubmitValueStops}
-                onTransientSubmitValue={onTransientSubmitValueStops}
-                selectedIndex={selectedStopIndex}
-                setSelectedIndex={setSelectedStopIndex}
+                stops={stops}
+                onSubmitValueAndUpdateLocalStops={onSubmitValueAndUpdateLocalStops}
+                selectedStopUnorderedIndex={selectedStopUnorderedIndex}
+                setSelectedStopUnorderedIndex={setSelectedStopUnorderedIndex}
+                useSubmitValueFactory={props.useSubmitValueFactory}
               />
             ) : null}
             {isCSSSolidBackgroundLayer(props.value) || isCSSGradientBackgroundLayer(props.value) ? (
-              <ColorPickerInner
-                value={getSelectedColor(props.value, selectedStopIndex)}
-                onSubmitValue={onSubmitColorValue}
-                onTransientSubmitValue={onTransientSubmitColorValue}
-                offsetX={props.offsetX}
-                offsetY={props.offsetY}
-                id={props.id}
-              />
+              isCSSSolidBackgroundLayer(props.value) ? (
+                <ColorPickerInner
+                  value={props.value.color}
+                  onSubmitValue={onSubmitColorValue}
+                  onTransientSubmitValue={onTransientSubmitColorValue}
+                  offsetX={props.offsetX}
+                  offsetY={props.offsetY}
+                  id={props.id}
+                />
+              ) : (
+                <ColorPickerInner
+                  value={stops[selectedStopUnorderedIndex]?.color ?? { ...defaultCSSColor }}
+                  onSubmitValue={onSubmitValueAndUpdateLocalColor}
+                  onTransientSubmitValue={onTransientSubmitValueAndUpdateLocalColor}
+                  offsetX={props.offsetX}
+                  offsetY={props.offsetY}
+                  id={props.id}
+                />
+              )
             ) : null}
           </>
         )}

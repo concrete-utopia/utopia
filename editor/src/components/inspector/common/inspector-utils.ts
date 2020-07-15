@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { colorTheme } from 'uuiui'
+import { OnSubmitValue } from '../controls/control'
 import { ControlStatus } from './control-status'
 import { CSSBackgroundLayer, CSSTransformItem, CSSUnknownArrayItem } from './css-utils'
 
@@ -45,6 +46,62 @@ export function usePropControlledState<T>(
     setLocalState(propValue)
   }, [propValue, forceUpdateValue])
   return [localState, setLocalState, forceUpdate]
+}
+
+export type TransformedStateAndPropsEqualityTest<T> = (newStateValue: T, newPropValue: T) => boolean
+
+export type OnSubmitValueAndUpdateLocalState<T> = (
+  setStateAction: React.SetStateAction<T>,
+  transient: boolean,
+) => void
+
+/**
+ * Hook with similar functionality to `usePropControlledState`, but with:
+ * 1. a custom equality check so local state can be checked against the model.
+ * 2. returns a streamlined setter that updates local state and the model.
+ *
+ * An example: in the gradient stop picker we need to keep stop index constant
+ * even when stops' positions don't match their array index order. This means
+ * props (which are ordered during printing) won't necessarily match the stops'
+ * order. The @equalityTest parameter lets us order state stops to see if the
+ * props value could be derived from the state value.
+ */
+export function useModelControlledTransformableState<T>(
+  propValue: T,
+  equalityTest: TransformedStateAndPropsEqualityTest<T>,
+  onSubmitValue: OnSubmitValue<T>,
+  onTransientSubmitValue?: OnSubmitValue<T>,
+): [T, OnSubmitValueAndUpdateLocalState<T>] {
+  const [localState, setLocalState] = React.useState<T>(propValue)
+
+  const [dirty, setDirty] = React.useState(false)
+
+  const onSubmitValueAndUpdateLocalState: OnSubmitValueAndUpdateLocalState<T> = React.useCallback(
+    (setStateAction, transient) => {
+      const newValue =
+        typeof setStateAction === 'function'
+          ? (setStateAction as (prevState: T) => T)(localState)
+          : setStateAction
+      if (transient && onTransientSubmitValue != null) {
+        onTransientSubmitValue(newValue)
+      } else {
+        onSubmitValue(newValue)
+      }
+      setLocalState(newValue)
+      setDirty(true)
+    },
+    [localState, onSubmitValue, onTransientSubmitValue],
+  )
+
+  React.useEffect(() => {
+    const propsAndTransformedStateMatch = equalityTest(localState, propValue)
+    if (propsAndTransformedStateMatch) {
+      setDirty(false)
+    } else if (!propsAndTransformedStateMatch && !dirty) {
+      setLocalState(propValue)
+    }
+  }, [localState, propValue, equalityTest, dirty])
+  return [localState, onSubmitValueAndUpdateLocalState]
 }
 
 export const stopPropagation = (e: React.MouseEvent) => {

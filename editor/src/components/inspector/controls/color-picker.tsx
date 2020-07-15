@@ -26,6 +26,11 @@ export interface ColorPickerProps extends ColorPickerInnerProps {
 export const colorPickerWidth = 290
 export const MetadataEditorModalPreviewHeight = 150
 
+export const GradientStopSize = 24
+export const GradientStopCaratSize = 5
+export const StopsPadding = GradientStopSize / 2 + inspectorEdgePadding
+export const GradientPickerWidth = colorPickerWidth - StopsPadding * 2
+
 export const ColorPicker: React.FunctionComponent<ColorPickerProps> = ({
   closePopup,
   portalTarget,

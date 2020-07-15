@@ -2,236 +2,246 @@ import * as Chroma from 'chroma-js'
 import * as React from 'react'
 import { colorTheme, FlexColumn } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
+import { ControlStyleDefaults } from '../../../common/control-status'
 import {
+  CSSBackgroundLayers,
   CSSColor,
   cssColorToChromaColorOrDefault,
   CSSGradientStop,
-  CSSNumber,
+  cssNumber,
   orderStops,
-  printColor,
   printLinearGradientBackgroundLayer,
 } from '../../../common/css-utils'
-import { checkerboardBackground } from '../../../common/inspector-utils'
-import { ControlStyleDefaults } from '../../../common/control-status'
+import {
+  checkerboardBackground,
+  OnSubmitValueAndUpdateLocalState,
+} from '../../../common/inspector-utils'
+import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
+import {
+  GradientPickerWidth,
+  GradientStopCaratSize,
+  GradientStopSize,
+  StopsPadding,
+} from '../../../controls/color-picker'
 import { inspectorEdgePadding } from './background-picker'
+import { clampValue } from '../../../../../core/shared/math-utils'
 
 interface GradientStopProps {
   stop: CSSGradientStop
   selected: boolean
   setSelectedIndex: (index: number) => void
-  calculateDraggedValue: (
-    index: number,
-    screenX: number,
-    dragOriginX: number,
-    valueAtDragOrigin: number,
-    transient: boolean,
-  ) => void
-  deleteStop: (index: number) => void
-  index: number
+  unorderedIndex: number
+  focusStopEditor: () => void
+  indexedUpdateStop: (newStop: CSSGradientStop, transient: boolean) => void
+  indexedDeleteStop: () => void
 }
 
-const GradientStopSize = 24
-const GradientStopCaratSize = 5
+const GradientStop = betterReactMemo<GradientStopProps>(
+  'GradientStop',
+  ({
+    stop,
+    selected,
+    setSelectedIndex,
+    unorderedIndex,
+    focusStopEditor,
+    indexedUpdateStop,
+    indexedDeleteStop,
+  }) => {
+    const valueAtDragOrigin = React.useRef<number | undefined>(undefined)
+    const dragScreenOrigin = React.useRef<
+      | {
+          x: number
+          y: number
+        }
+      | undefined
+    >(undefined)
 
-const GradientStop = betterReactMemo<GradientStopProps>('GradientStop', (props) => {
-  let valueAtDragOrigin = React.useRef<number | undefined>(undefined)
-  let dragScreenOrigin = React.useRef<
-    | {
-        x: number
-        y: number
-      }
-    | undefined
-  >(undefined)
+    const rgba = cssColorToChromaColorOrDefault(stop.color).rgba()
+    const rgbString = `rgba(${rgba[0]}, ${rgba[1]}, ${rgba[2]})`
+    const rgbaString = `rgba(${rgba[0]}, ${rgba[1]}, ${rgba[2]}, ${rgba[3]})`
 
-  const rgba = cssColorToChromaColorOrDefault(props.stop.color).rgba()
-  const rgbString = `rgba(${rgba[0]}, ${rgba[1]}, ${rgba[2]})`
-  const rgbaString = `rgba(${rgba[0]}, ${rgba[1]}, ${rgba[2]}, ${rgba[3]})`
+    const focusedStopBoxShadow = selected
+      ? `, 0 0 0 1px ${colorTheme.inspectorFocusedColor.value}`
+      : ''
 
-  const focusedStopBoxShadow = props.selected
-    ? `, 0 0 0 1px ${colorTheme.inspectorFocusedColor.value}`
-    : ''
+    const stopPositionValue = stop.position.value
 
-  const { setSelectedIndex, calculateDraggedValue, index, selected, deleteStop } = props
-  const onMouseMove = React.useCallback(
-    (e: MouseEvent) => {
-      if (valueAtDragOrigin.current != null && dragScreenOrigin.current != null) {
-        calculateDraggedValue(
-          index,
-          e.screenX,
-          dragScreenOrigin.current.x,
-          valueAtDragOrigin.current,
-          true,
-        )
-      }
-    },
-    [dragScreenOrigin, calculateDraggedValue, index, valueAtDragOrigin],
-  )
-
-  const onMouseUp = React.useCallback(
-    (e: MouseEvent) => {
-      if (valueAtDragOrigin.current != null && dragScreenOrigin.current != null) {
-        const deltaX = e.screenX - dragScreenOrigin.current.x
-        const deltaY = e.screenY - dragScreenOrigin.current.y
-        if (Math.abs(deltaY) > 30) {
-          deleteStop(index)
-        } else {
-          if (deltaX !== 0) {
-            calculateDraggedValue(
-              index,
+    const onMouseMove = React.useCallback(
+      (e: MouseEvent) => {
+        if (valueAtDragOrigin.current != null && dragScreenOrigin.current != null) {
+          indexedUpdateStop(
+            updateStopWithDrag(
+              stop,
               e.screenX,
               dragScreenOrigin.current.x,
               valueAtDragOrigin.current,
-              false,
-            )
+            ),
+            true,
+          )
+        }
+      },
+      [dragScreenOrigin, valueAtDragOrigin, indexedUpdateStop, stop],
+    )
+
+    const onMouseUp = React.useCallback(
+      (e: MouseEvent) => {
+        if (valueAtDragOrigin.current != null && dragScreenOrigin.current != null) {
+          const deltaX = e.screenX - dragScreenOrigin.current.x
+          const deltaY = e.screenY - dragScreenOrigin.current.y
+          if (Math.abs(deltaY) > 30) {
+            indexedDeleteStop()
+          } else {
+            if (deltaX !== 0) {
+              indexedUpdateStop(
+                updateStopWithDrag(
+                  stop,
+                  e.screenX,
+                  dragScreenOrigin.current.x,
+                  valueAtDragOrigin.current,
+                ),
+                false,
+              )
+            }
           }
         }
-      }
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    },
-    [dragScreenOrigin, onMouseMove, valueAtDragOrigin, calculateDraggedValue, deleteStop, index],
-  )
+        document.removeEventListener('mousemove', onMouseMove)
+        document.removeEventListener('mouseup', onMouseUp)
+      },
+      [
+        dragScreenOrigin,
+        onMouseMove,
+        valueAtDragOrigin,
+        indexedUpdateStop,
+        stop,
+        indexedDeleteStop,
+      ],
+    )
 
-  const stopPositionValue = props.stop.position.value
-  const onMouseDown = React.useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setSelectedIndex(index)
-      valueAtDragOrigin.current = stopPositionValue
-      dragScreenOrigin.current = {
-        x: e.nativeEvent.screenX,
-        y: e.nativeEvent.screenY,
-      }
-      document.addEventListener('mousemove', onMouseMove)
-      document.addEventListener('mouseup', onMouseUp)
-    },
-    [onMouseMove, onMouseUp, setSelectedIndex, stopPositionValue, index],
-  )
+    const onMouseDown = React.useCallback(
+      (e: React.MouseEvent) => {
+        focusStopEditor()
+        e.stopPropagation()
+        setSelectedIndex(unorderedIndex)
+        valueAtDragOrigin.current = stopPositionValue
+        dragScreenOrigin.current = {
+          x: e.nativeEvent.screenX,
+          y: e.nativeEvent.screenY,
+        }
+        document.addEventListener('mousemove', onMouseMove)
+        document.addEventListener('mouseup', onMouseUp)
+      },
+      [
+        onMouseMove,
+        onMouseUp,
+        setSelectedIndex,
+        stopPositionValue,
+        unorderedIndex,
+        focusStopEditor,
+      ],
+    )
 
-  const position = Math.max(0, Math.min(100, props.stop.position.value))
+    const position = Math.max(0, Math.min(100, stop.position.value))
 
-  return (
-    <FlexColumn
-      style={{
-        position: 'absolute',
-        left: `${position}%`,
-        zIndex: props.selected ? 1 : undefined,
-        marginLeft: -(GradientStopSize / 2),
-        alignItems: 'center',
-      }}
-    >
-      <div
-        id={`gradient-stop-${props.index}`}
-        onMouseDown={onMouseDown}
-        className={'ignore-react-onclickoutside'}
+    return (
+      <FlexColumn
         style={{
-          width: GradientStopSize,
-          height: GradientStopSize,
-          backgroundColor: 'white',
-          boxShadow: `0 0 0 1px rgba(0, 0, 0, 0.12)${focusedStopBoxShadow}`,
-          borderRadius: 3,
-          overflow: 'hidden',
+          position: 'absolute',
+          left: `${position}%`,
+          zIndex: selected ? 1 : undefined,
+          marginLeft: -(GradientStopSize / 2),
+          alignItems: 'center',
         }}
       >
         <div
-          className='stop-color'
+          id={`gradient-stop-${unorderedIndex}`}
+          onMouseDown={onMouseDown}
+          className={'ignore-react-onclickoutside'}
           style={{
-            width: 'calc(100% - 4px)',
-            height: 'calc(100% - 4px)',
-            margin: 2,
+            width: GradientStopSize,
+            height: GradientStopSize,
             backgroundColor: 'white',
-            borderRadius: 2,
-            boxShadow: `0 0 2px rgba(0, 0, 0, 0.24) inset`,
-            backgroundImage: `linear-gradient(135deg, transparent 65%, ${rgbString} 65%),
+            boxShadow: `0 0 0 1px rgba(0, 0, 0, 0.12)${focusedStopBoxShadow}`,
+            borderRadius: 3,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            className='stop-color'
+            style={{
+              width: 'calc(100% - 4px)',
+              height: 'calc(100% - 4px)',
+              margin: 2,
+              backgroundColor: 'white',
+              borderRadius: 2,
+              boxShadow: `0 0 2px rgba(0, 0, 0, 0.24) inset`,
+              backgroundImage: `linear-gradient(135deg, transparent 65%, ${rgbString} 65%),
             linear-gradient(${rgbaString}, ${rgbaString}),
             ${checkerboardBackground.backgroundImage}`,
-            backgroundSize: `100% 100%, 100% 100%, ${checkerboardBackground.backgroundSize}`,
-            backgroundPosition: `0 0, 0 0, ${checkerboardBackground.backgroundPosition}`,
-          }}
-        />
-      </div>
-      <div
-        style={{
-          position: 'relative',
-          width: GradientStopCaratSize * 2,
-        }}
-      >
+              backgroundSize: `100% 100%, 100% 100%, ${checkerboardBackground.backgroundSize}`,
+              backgroundPosition: `0 0, 0 0, ${checkerboardBackground.backgroundPosition}`,
+            }}
+          />
+        </div>
         <div
           style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: 0,
-            height: 0,
-            borderColor: `${
-              props.selected
-                ? colorTheme.inspectorFocusedColor.value
-                : colorTheme.inspectorSetBorderColor.value
-            } transparent transparent transparent`,
-            borderStyle: 'solid',
-            borderWidth: `${GradientStopCaratSize}px ${GradientStopCaratSize}px 0 ${GradientStopCaratSize}px`,
+            position: 'relative',
+            width: GradientStopCaratSize * 2,
           }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            left: 1,
-            top: 0,
-            width: 0,
-            height: 0,
-            borderColor: 'white transparent transparent transparent',
-            borderStyle: 'solid',
-            borderWidth: `${GradientStopCaratSize - 1}px ${GradientStopCaratSize - 1}px 0 ${
-              GradientStopCaratSize - 1
-            }px`,
-            transform: 'translateY(-.5px)',
-          }}
-        />
-      </div>
-    </FlexColumn>
-  )
-})
-
-function calculateNewIndex(
-  currentIndex: number,
-  currentStops: Array<CSSGradientStop>,
-  newPosition: number,
-): number {
-  const localCurrentStops = [...currentStops]
-  localCurrentStops.splice(currentIndex, 1)
-  if (newPosition < localCurrentStops[0].position.value) {
-    return 0
-  }
-  if (localCurrentStops.length >= 2) {
-    for (let i = 0; i < localCurrentStops.length - 1; i++) {
-      const bottomStopPosition = localCurrentStops[i].position.value
-      const topStopPosition = localCurrentStops[i + 1].position.value
-      if (newPosition >= bottomStopPosition && newPosition <= topStopPosition) {
-        return i + 1
-      }
-    }
-  }
-  return localCurrentStops.length
-}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 0,
+              height: 0,
+              borderColor: `${
+                selected
+                  ? colorTheme.inspectorFocusedColor.value
+                  : colorTheme.inspectorSetBorderColor.value
+              } transparent transparent transparent`,
+              borderStyle: 'solid',
+              borderWidth: `${GradientStopCaratSize}px ${GradientStopCaratSize}px 0 ${GradientStopCaratSize}px`,
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              left: 1,
+              top: 0,
+              width: 0,
+              height: 0,
+              borderColor: 'white transparent transparent transparent',
+              borderStyle: 'solid',
+              borderWidth: `${GradientStopCaratSize - 1}px ${GradientStopCaratSize - 1}px 0 ${
+                GradientStopCaratSize - 1
+              }px`,
+              transform: 'translateY(-.5px)',
+            }}
+          />
+        </div>
+      </FlexColumn>
+    )
+  },
+)
 
 export interface GradientControlProps {
   stops: Array<CSSGradientStop>
-  onSubmitValue: (newValue: Array<CSSGradientStop>) => void
-  onTransientSubmitValue: (newValue: Array<CSSGradientStop>) => void
-  selectedIndex: number
-  setSelectedIndex: (index: number) => void
+  onSubmitValueAndUpdateLocalStops: OnSubmitValueAndUpdateLocalState<Array<CSSGradientStop>>
+  useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers>
+  selectedStopUnorderedIndex: number
+  setSelectedStopUnorderedIndex: (index: number) => void
   style?: React.CSSProperties
 }
 
 function calculateIntermediateStopColor(
   newStopPoint: number,
   stops: Array<CSSGradientStop>,
-): { color: CSSColor; newIndex: number } {
+): CSSColor {
   const orderedStops = orderStops([...stops])
   // Is new stop before lowest stop?
   if (newStopPoint <= orderedStops[0].position.value) {
-    return { color: orderedStops[0].color, newIndex: 0 }
+    return orderedStops[0].color
   }
 
   // Is new stop between existing stops?
@@ -248,99 +258,186 @@ function calculateIntermediateStopColor(
       const color2 = cssColorToChromaColorOrDefault(orderedStops[i + 1].color)
       const hex = Chroma.mix(color1, color2, localStopPosition, 'rgb').hex().toUpperCase()
       return {
-        color: {
-          hex,
-          type: 'Hex',
-        },
-        newIndex: i + 1,
+        hex,
+        type: 'Hex',
       }
     }
   }
 
   // New stop is after highest stop
-  return { color: orderedStops[orderedStops.length - 1].color, newIndex: orderedStops.length }
+  return orderedStops[orderedStops.length - 1].color
+}
+
+function incrementSelectedStopPosition(
+  incrementValue: number,
+  oldValue: Array<CSSGradientStop>,
+  index: number,
+): Array<CSSGradientStop> {
+  const workingValue = [...oldValue]
+  const workingStop = { ...workingValue[index] }
+  workingStop.position.value = clampValue(workingStop.position.value + incrementValue, 0, 100)
+  workingValue[index] = workingStop
+  return workingValue
+}
+
+function updateStopWithDrag(
+  oldValue: CSSGradientStop,
+  screenX: number,
+  dragOriginX: number,
+  valueAtDragOrigin: number,
+): CSSGradientStop {
+  const workingStop = { ...oldValue }
+  if (workingStop != null) {
+    const deltaX = screenX - dragOriginX
+    const calculatedPercent = (deltaX / GradientPickerWidth) * 100 + valueAtDragOrigin
+    const clamped = clampValue(calculatedPercent, 0, 100)
+    const rounded = Math.round(clamped)
+    const workingPosition = { ...workingStop.position }
+    workingPosition.value = rounded
+    workingStop.position = workingPosition
+  }
+  return workingStop
+}
+
+function getIndexedUpdateStop(
+  index: number,
+  oldValue: Array<CSSGradientStop>,
+  setStateStops: OnSubmitValueAndUpdateLocalState<Array<CSSGradientStop>>,
+): (newStop: CSSGradientStop, transient: boolean) => void {
+  return function updateStop(newStop, transient) {
+    const workingValue = [...oldValue]
+    workingValue[index] = newStop
+    setStateStops(workingValue, transient)
+  }
+}
+
+function insertStop(position: number, oldValue: Array<CSSGradientStop>): Array<CSSGradientStop> {
+  const color = calculateIntermediateStopColor(position, oldValue)
+  const stop: CSSGradientStop = {
+    color,
+    position: cssNumber(position, '%'),
+  }
+  return [...oldValue, stop]
+}
+
+function deleteStop(index: number, oldValue: Array<CSSGradientStop>): Array<CSSGradientStop> {
+  const working = [...oldValue]
+  if (working.length > 2) {
+    delete working[index]
+  }
+  return working
+}
+
+function deleteStopAndUpdateIndex(
+  index: number,
+  stops: Array<CSSGradientStop>,
+  setStops: OnSubmitValueAndUpdateLocalState<Array<CSSGradientStop>>,
+  setSelectedStopUnorderedIndex: React.Dispatch<number>,
+): void {
+  if (stops[index] != null) {
+    const previousPosition = stops[index].position.value
+    const newStops = deleteStop(index, stops)
+    const { lowestDistance, indexWithLowestDistance } = newStops.reduce(
+      (working, stop: CSSGradientStop | undefined, i) => {
+        if (stop != null) {
+          const distance = Math.abs(previousPosition - stop.position.value)
+          if (distance < working.lowestDistance) {
+            working.lowestDistance = distance
+            working.indexWithLowestDistance = i
+          }
+        }
+        return working
+      },
+      {
+        lowestDistance: Infinity,
+        indexWithLowestDistance: -1,
+      },
+    )
+    if (isFinite(lowestDistance) && indexWithLowestDistance >= 0) {
+      setStops(newStops, false)
+      setSelectedStopUnorderedIndex(indexWithLowestDistance)
+    }
+  }
 }
 
 export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
   'GradientStopsEditor',
-  ({ setSelectedIndex, ...props }) => {
+  ({
+    selectedStopUnorderedIndex,
+    setSelectedStopUnorderedIndex,
+    stops,
+    onSubmitValueAndUpdateLocalStops: setLocalAndEditorStops,
+  }) => {
     const ref: React.RefObject<HTMLDivElement> = React.useRef(null)
-
-    function calculateDraggedValue(
-      index: number,
-      screenX: number,
-      dragOriginX: number,
-      valueAtDragOrigin: number,
-      transient: boolean,
-    ): void {
-      if (ref.current != null) {
-        const width = ref.current.offsetWidth - 8
-        const deltaX = screenX - dragOriginX
-        const clampedValue = Number(
-          (Math.max(0, Math.min(1, deltaX / width + valueAtDragOrigin / 100)) * 100).toFixed(2),
-        )
-        const newStops: Array<CSSGradientStop> = [...props.stops]
-        const newStop: CSSGradientStop = {
-          ...newStops[index],
-          position: { unit: '%', value: clampedValue },
-        }
-        newStops[index] = newStop
-        if (transient) {
-          props.onTransientSubmitValue(newStops)
-        } else {
-          props.onSubmitValue(newStops)
-        }
-        setSelectedIndex(calculateNewIndex(index, newStops, clampedValue))
-      }
-    }
-    const { stops, onSubmitValue } = props
 
     const onMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
         if (ref.current != null) {
-          const width = ref.current.offsetWidth - GradientStopSize - 2
-          const position: CSSNumber = {
-            value: width > 0 ? Number(((e.nativeEvent.offsetX / width) * 100).toFixed(2)) : 0,
-            unit: '%',
-          }
-          const { color, newIndex } = calculateIntermediateStopColor(position.value, stops)
-          const stop: CSSGradientStop = {
-            color,
-            position,
-          }
-          const newStops = [...stops, stop]
-          onSubmitValue(newStops)
-          setSelectedIndex(newIndex)
+          const newStops = insertStop(
+            Number(((e.nativeEvent.offsetX / GradientPickerWidth) * 100).toFixed(2)),
+            stops,
+          )
+          setLocalAndEditorStops(newStops, false)
+          setSelectedStopUnorderedIndex(newStops.length - 1)
         }
       },
-      [stops, onSubmitValue, setSelectedIndex],
+      [stops, setSelectedStopUnorderedIndex, setLocalAndEditorStops],
     )
 
-    const deleteStop = (index: number) => {
-      if (props.stops.length > 2) {
-        if (props.selectedIndex !== 0 && props.selectedIndex === props.stops.length - 1) {
-          setSelectedIndex(props.selectedIndex - 1)
+    const onKeyDown = React.useCallback(
+      (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Backspace' || e.key === 'Delete') {
+          deleteStopAndUpdateIndex(
+            selectedStopUnorderedIndex,
+            stops,
+            setLocalAndEditorStops,
+            setSelectedStopUnorderedIndex,
+          )
+          e.stopPropagation()
+        } else if (e.key === 'ArrowLeft') {
+          // TODO: transient actions when holding
+          setLocalAndEditorStops(
+            incrementSelectedStopPosition(e.shiftKey ? -10 : -1, stops, selectedStopUnorderedIndex),
+            false,
+          )
+          e.stopPropagation()
+        } else if (e.key === 'ArrowRight') {
+          // TODO: transient actions when holding
+          setLocalAndEditorStops(
+            incrementSelectedStopPosition(e.shiftKey ? 10 : 1, stops, selectedStopUnorderedIndex),
+            false,
+          )
+          e.stopPropagation()
         }
-        const newValue = [...props.stops]
-        newValue.splice(index, 1)
-        props.onSubmitValue(newValue)
-      }
-    }
+      },
+      [selectedStopUnorderedIndex, stops, setLocalAndEditorStops, setSelectedStopUnorderedIndex],
+    )
 
-    const gradientStopElements = stops.map((stop, index: number) => {
-      const selected = props.selectedIndex === index
-      return (
-        <GradientStop
-          key={`${printColor(stop.color)}${stop.position.value}${stop.position.unit}`}
-          index={index}
-          stop={stop}
-          selected={selected}
-          setSelectedIndex={setSelectedIndex}
-          calculateDraggedValue={calculateDraggedValue}
-          deleteStop={deleteStop}
-        />
-      )
-    })
+    const focusStopEditor = React.useCallback(() => {
+      if (ref.current != null) {
+        ref.current.focus()
+      }
+    }, [ref])
+
+    const onWrapperMouseDown = React.useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        focusStopEditor()
+      },
+      [focusStopEditor],
+    )
+
+    const getIndexedDeleteStop = React.useCallback(
+      (index: number) => () => {
+        deleteStopAndUpdateIndex(
+          index,
+          stops,
+          setLocalAndEditorStops,
+          setSelectedStopUnorderedIndex,
+        )
+      },
+      [stops, setLocalAndEditorStops, setSelectedStopUnorderedIndex],
+    )
 
     return (
       <div
@@ -352,14 +449,16 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
       >
         <div
           style={{
-            display: 'inline-block',
             position: 'relative',
             width: '100%',
             height: GradientStopSize,
-            paddingLeft: GradientStopSize / 2 + inspectorEdgePadding,
-            paddingRight: GradientStopSize / 2 + inspectorEdgePadding,
+            paddingLeft: StopsPadding,
+            paddingRight: StopsPadding,
           }}
           ref={ref}
+          onMouseDown={onWrapperMouseDown}
+          tabIndex={0}
+          onKeyDown={onKeyDown}
         >
           <div
             key='gradientStopBar'
@@ -371,7 +470,26 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
             }}
             onMouseDown={onMouseDown}
           >
-            {gradientStopElements}
+            {stops.map((stop, unorderedIndex) =>
+              stop != null ? (
+                <GradientStop
+                  // key={index} is usually an anti-pattern, but reorders only
+                  // change stops' position values, leaving array order stable.
+                  key={unorderedIndex}
+                  stop={stop}
+                  unorderedIndex={unorderedIndex}
+                  selected={selectedStopUnorderedIndex === unorderedIndex}
+                  setSelectedIndex={setSelectedStopUnorderedIndex}
+                  focusStopEditor={focusStopEditor}
+                  indexedUpdateStop={getIndexedUpdateStop(
+                    unorderedIndex,
+                    stops,
+                    setLocalAndEditorStops,
+                  )}
+                  indexedDeleteStop={getIndexedDeleteStop(unorderedIndex)}
+                />
+              ) : null,
+            )}
           </div>
 
           <div
