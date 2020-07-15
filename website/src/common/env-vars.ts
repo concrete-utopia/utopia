@@ -1,5 +1,7 @@
 // you can turn on/off debug features individually here
 
+// TODO BALAZS fix import.meta.env vs process.env
+
 export const PRODUCTION_ENV: boolean = import.meta.env.NODE_ENV === 'production'
 export const PRODUCTION_CONFIG: boolean =
   import.meta.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
