@@ -1,6 +1,5 @@
 import { Editor } from './editor'
 import { URL_HASH } from '../common/env-vars'
-import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
 
 const editorCSS = [
   '/editor/editor.css',
