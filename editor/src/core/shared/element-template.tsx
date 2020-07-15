@@ -934,11 +934,7 @@ export interface ComponentMetadata {
 export function isComponentMetadata(
   maybeComponentMetadata: any,
 ): maybeComponentMetadata is ComponentMetadata {
-  return (
-    maybeComponentMetadata.scenePath != null &&
-    maybeComponentMetadata.container != null &&
-    maybeComponentMetadata.frame != null
-  )
+  return maybeComponentMetadata.scenePath != null
 }
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>> // TODO update typescript!!
