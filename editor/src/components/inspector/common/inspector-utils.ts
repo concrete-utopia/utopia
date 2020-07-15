@@ -50,7 +50,7 @@ export function usePropControlledState<T>(
 
 export type TransformedStateAndPropsEqualityTest<T> = (newStateValue: T, newPropValue: T) => boolean
 
-export type SetStateAndPropsValue<T> = (
+export type SetLocalAndEditorState<T> = (
   setStateAction: React.SetStateAction<T>,
   transient: boolean,
 ) => void
@@ -67,17 +67,17 @@ export type SetStateAndPropsValue<T> = (
  * see if the props value could be derived from the state value.
  *
  */
-export function usePropControlledTransformableState<T>(
+export function useModelControlledTransformableState<T>(
   propValue: T,
   equalityTest: TransformedStateAndPropsEqualityTest<T>,
   onSubmitValue: OnSubmitValue<T>,
   onTransientSubmitValue?: OnSubmitValue<T>,
-): [T, SetStateAndPropsValue<T>] {
+): [T, SetLocalAndEditorState<T>] {
   const [localState, setLocalState] = React.useState<T>(propValue)
 
   const [dirty, setDirty] = React.useState(false)
 
-  const setStateAndPropsValue: SetStateAndPropsValue<T> = React.useCallback(
+  const setLocalAndEditorState: SetLocalAndEditorState<T> = React.useCallback(
     (setStateAction, transient) => {
       const newValue =
         typeof setStateAction === 'function'
@@ -102,7 +102,7 @@ export function usePropControlledTransformableState<T>(
       setLocalState(propValue)
     }
   }, [localState, propValue, equalityTest, dirty])
-  return [localState, setStateAndPropsValue]
+  return [localState, setLocalAndEditorState]
 }
 
 export const stopPropagation = (e: React.MouseEvent) => {

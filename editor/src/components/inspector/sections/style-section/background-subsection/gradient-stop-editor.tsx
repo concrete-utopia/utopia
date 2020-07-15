@@ -12,7 +12,7 @@ import {
   orderStops,
   printLinearGradientBackgroundLayer,
 } from '../../../common/css-utils'
-import { checkerboardBackground, SetStateAndPropsValue } from '../../../common/inspector-utils'
+import { checkerboardBackground, SetLocalAndEditorState } from '../../../common/inspector-utils'
 import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import {
   GradientPickerWidth,
@@ -224,7 +224,7 @@ const GradientStop = betterReactMemo<GradientStopProps>(
 
 export interface GradientControlProps {
   stops: Array<CSSGradientStop>
-  setStops: SetStateAndPropsValue<Array<CSSGradientStop>>
+  setLocalAndEditorStops: SetLocalAndEditorState<Array<CSSGradientStop>>
   useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers>
   selectedStopUnorderedIndex: number
   setSelectedStopUnorderedIndex: (index: number) => void
@@ -299,7 +299,7 @@ function updateStopWithDrag(
 function getIndexedUpdateStop(
   index: number,
   oldValue: Array<CSSGradientStop>,
-  setStateStops: SetStateAndPropsValue<Array<CSSGradientStop>>,
+  setStateStops: SetLocalAndEditorState<Array<CSSGradientStop>>,
 ): (newStop: CSSGradientStop, transient: boolean) => void {
   return function updateStop(newStop, transient) {
     const workingValue = [...oldValue]
@@ -328,7 +328,7 @@ function deleteStop(index: number, oldValue: Array<CSSGradientStop>): Array<CSSG
 function deleteStopAndUpdateIndex(
   index: number,
   stops: Array<CSSGradientStop>,
-  setStops: SetStateAndPropsValue<Array<CSSGradientStop>>,
+  setStops: SetLocalAndEditorState<Array<CSSGradientStop>>,
   setSelectedStopUnorderedIndex: React.Dispatch<number>,
 ): void {
   if (stops[index] != null) {
@@ -359,7 +359,12 @@ function deleteStopAndUpdateIndex(
 
 export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
   'GradientStopsEditor',
-  ({ selectedStopUnorderedIndex, setSelectedStopUnorderedIndex, stops, setStops }) => {
+  ({
+    selectedStopUnorderedIndex,
+    setSelectedStopUnorderedIndex,
+    stops,
+    setLocalAndEditorStops,
+  }) => {
     const ref: React.RefObject<HTMLDivElement> = React.useRef(null)
 
     const onMouseDown = React.useCallback(
@@ -369,11 +374,11 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
             Number(((e.nativeEvent.offsetX / GradientPickerWidth) * 100).toFixed(2)),
             stops,
           )
-          setStops(newStops, false)
+          setLocalAndEditorStops(newStops, false)
           setSelectedStopUnorderedIndex(newStops.length - 1)
         }
       },
-      [stops, setSelectedStopUnorderedIndex, setStops],
+      [stops, setSelectedStopUnorderedIndex, setLocalAndEditorStops],
     )
 
     const onKeyDown = React.useCallback(
@@ -382,27 +387,27 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
           deleteStopAndUpdateIndex(
             selectedStopUnorderedIndex,
             stops,
-            setStops,
+            setLocalAndEditorStops,
             setSelectedStopUnorderedIndex,
           )
           e.stopPropagation()
         } else if (e.key === 'ArrowLeft') {
           // TODO: transient actions when holding
-          setStops(
+          setLocalAndEditorStops(
             incrementSelectedStopPosition(e.shiftKey ? -10 : -1, stops, selectedStopUnorderedIndex),
             false,
           )
           e.stopPropagation()
         } else if (e.key === 'ArrowRight') {
           // TODO: transient actions when holding
-          setStops(
+          setLocalAndEditorStops(
             incrementSelectedStopPosition(e.shiftKey ? 10 : 1, stops, selectedStopUnorderedIndex),
             false,
           )
           e.stopPropagation()
         }
       },
-      [selectedStopUnorderedIndex, stops, setStops, setSelectedStopUnorderedIndex],
+      [selectedStopUnorderedIndex, stops, setLocalAndEditorStops, setSelectedStopUnorderedIndex],
     )
 
     const focusStopEditor = React.useCallback(() => {
@@ -421,9 +426,14 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
 
     const getIndexedDeleteStop = React.useCallback(
       (index: number) => () => {
-        deleteStopAndUpdateIndex(index, stops, setStops, setSelectedStopUnorderedIndex)
+        deleteStopAndUpdateIndex(
+          index,
+          stops,
+          setLocalAndEditorStops,
+          setSelectedStopUnorderedIndex,
+        )
       },
-      [stops, setStops, setSelectedStopUnorderedIndex],
+      [stops, setLocalAndEditorStops, setSelectedStopUnorderedIndex],
     )
 
     return (
@@ -468,7 +478,11 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
                   selected={selectedStopUnorderedIndex === unorderedIndex}
                   setSelectedIndex={setSelectedStopUnorderedIndex}
                   focusStopEditor={focusStopEditor}
-                  indexedUpdateStop={getIndexedUpdateStop(unorderedIndex, stops, setStops)}
+                  indexedUpdateStop={getIndexedUpdateStop(
+                    unorderedIndex,
+                    stops,
+                    setLocalAndEditorStops,
+                  )}
                   indexedDeleteStop={getIndexedDeleteStop(unorderedIndex)}
                 />
               ) : null,
