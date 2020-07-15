@@ -277,22 +277,20 @@ export const HotRoot: React.FunctionComponent<{
 })
 HotRoot.displayName = 'Utopia Editor Root'
 
-async function renderRootComponent(
+function renderRootComponent(
   useStore: UtopiaStoreHook,
   api: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
-): Promise<void> {
-  return triggerHashedAssetsUpdate().then(() => {
-    // NOTE: we only need to call this function once,
-    // as subsequent updates will be fed through Zustand
-    const rootElement = document.getElementById(EditorID)
-    if (rootElement != null) {
-      ReactDOM.render(
-        <HotRoot api={api} useStore={useStore} spyCollector={spyCollector} />,
-        rootElement,
-      )
-    }
-  })
+): void {
+  // NOTE: we only need to call this function once,
+  // as subsequent updates will be fed through Zustand
+  const rootElement = document.getElementById(EditorID)
+  if (rootElement != null) {
+    ReactDOM.render(
+      <HotRoot api={api} useStore={useStore} spyCollector={spyCollector} />,
+      rootElement,
+    )
+  }
 }
 
 window.addEventListener('error', (error) => {
