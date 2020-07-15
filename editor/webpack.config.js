@@ -84,7 +84,7 @@ const config = {
     new HtmlWebpackPlugin({
       // First run it to generate the editor's index.html
       chunks: ['editor'],
-      inject: true, // Add the script tags to the end of the <body>
+      inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
       template: './src/templates/index.html',
       minify: false,
@@ -92,7 +92,7 @@ const config = {
     new HtmlWebpackPlugin({
       // Run it again to generate the preview.html
       chunks: ['preview'],
-      inject: true, // Add the script tags to the end of the <body>
+      inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
       template: './src/templates/preview.html',
       filename: 'preview.html',
