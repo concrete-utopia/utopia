@@ -39,6 +39,8 @@ function srcPath(subdir) {
 //                    using the ExtractedTextPlugin - https://v4.webpack.js.org/plugins/extract-text-webpack-plugin/
 const hashPattern = hot ? '[hash]' : '[chunkhash]'
 
+const BaseDomain = isProd ? 'https://cdn.utopia.app' : ''
+
 const config = {
   mode: mode,
 
@@ -70,7 +72,7 @@ const config = {
     path: __dirname + '/lib',
     library: 'utopia',
     libraryTarget: 'umd',
-    publicPath: '/editor/',
+    publicPath: `${BaseDomain}/editor/`,
     globalObject: 'this',
   },
 
@@ -101,6 +103,7 @@ const config = {
     new InterpolateHtmlPlugin(HtmlWebpackPlugin, {
       // This plugin replaces variables of the form %VARIABLE% with the value provided in this object
       GITHUB_SHA: process.env.GITHUB_SHA || 'nocommit',
+      UTOPIA_DOMAIN: BaseDomain,
     }),
 
     // Optionally run the TS compiler in a different thread, but as part of the webpack build still
