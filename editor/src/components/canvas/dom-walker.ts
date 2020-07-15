@@ -318,7 +318,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           }
 
           if (pathIsValid) {
-            return [collectMetadata(element, uniquePath, parentPoint, true, metadataOfChildren)]
+            return [collectMetadata(element, uniquePath, parentPoint, false, metadataOfChildren)]
           } else {
             return metadataOfChildren
           }
