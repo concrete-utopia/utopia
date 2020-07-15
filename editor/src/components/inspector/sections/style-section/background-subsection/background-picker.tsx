@@ -379,9 +379,11 @@ function setColor(
   newValue: CSSColor,
   oldValue: Array<CSSGradientStop>,
 ): Array<CSSGradientStop> {
-  const working = [...oldValue]
-  working[stopIndex].color = newValue
-  return working
+  const workingStops = [...oldValue]
+  const workingStop = { ...workingStops[stopIndex] }
+  workingStop.color = newValue
+  workingStops[stopIndex] = workingStop
+  return workingStops
 }
 
 export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = (props) => {
