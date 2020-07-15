@@ -12,7 +12,10 @@ import {
   orderStops,
   printLinearGradientBackgroundLayer,
 } from '../../../common/css-utils'
-import { checkerboardBackground, SetLocalAndEditorState } from '../../../common/inspector-utils'
+import {
+  checkerboardBackground,
+  OnSubmitValueAndUpdateLocalState,
+} from '../../../common/inspector-utils'
 import { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import {
   GradientPickerWidth,
@@ -224,7 +227,7 @@ const GradientStop = betterReactMemo<GradientStopProps>(
 
 export interface GradientControlProps {
   stops: Array<CSSGradientStop>
-  setLocalAndEditorStops: SetLocalAndEditorState<Array<CSSGradientStop>>
+  onSubmitValueAndUpdateLocalStops: OnSubmitValueAndUpdateLocalState<Array<CSSGradientStop>>
   useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers>
   selectedStopUnorderedIndex: number
   setSelectedStopUnorderedIndex: (index: number) => void
@@ -299,7 +302,7 @@ function updateStopWithDrag(
 function getIndexedUpdateStop(
   index: number,
   oldValue: Array<CSSGradientStop>,
-  setStateStops: SetLocalAndEditorState<Array<CSSGradientStop>>,
+  setStateStops: OnSubmitValueAndUpdateLocalState<Array<CSSGradientStop>>,
 ): (newStop: CSSGradientStop, transient: boolean) => void {
   return function updateStop(newStop, transient) {
     const workingValue = [...oldValue]
@@ -328,7 +331,7 @@ function deleteStop(index: number, oldValue: Array<CSSGradientStop>): Array<CSSG
 function deleteStopAndUpdateIndex(
   index: number,
   stops: Array<CSSGradientStop>,
-  setStops: SetLocalAndEditorState<Array<CSSGradientStop>>,
+  setStops: OnSubmitValueAndUpdateLocalState<Array<CSSGradientStop>>,
   setSelectedStopUnorderedIndex: React.Dispatch<number>,
 ): void {
   if (stops[index] != null) {
@@ -363,7 +366,7 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
     selectedStopUnorderedIndex,
     setSelectedStopUnorderedIndex,
     stops,
-    setLocalAndEditorStops,
+    onSubmitValueAndUpdateLocalStops: setLocalAndEditorStops,
   }) => {
     const ref: React.RefObject<HTMLDivElement> = React.useRef(null)
 

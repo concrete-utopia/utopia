@@ -422,7 +422,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
 
   const [onSubmitValueStops, onTransientSubmitValueStops] = props.useSubmitValueFactory(updateStops)
 
-  const [stops, setLocalAndModelStops] = useModelControlledTransformableState<
+  const [stops, onSubmitValueAndUpdateLocalStops] = useModelControlledTransformableState<
     Array<CSSGradientStop>
   >(
     isCSSGradientBackgroundLayer(props.value) ? props.value.stops : [],
@@ -431,16 +431,19 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
     onTransientSubmitValueStops,
   )
 
-  const setLocalAndModelColor = React.useCallback(
+  const onSubmitValueAndUpdateLocalColor = React.useCallback(
     (newValue: CSSColor) =>
-      setLocalAndModelStops(setColor(selectedStopUnorderedIndex, newValue, stops), false),
-    [stops, setLocalAndModelStops, selectedStopUnorderedIndex],
+      onSubmitValueAndUpdateLocalStops(
+        setColor(selectedStopUnorderedIndex, newValue, stops),
+        false,
+      ),
+    [stops, onSubmitValueAndUpdateLocalStops, selectedStopUnorderedIndex],
   )
 
-  const setLocalAndTransientModelColor = React.useCallback(
+  const onTransientSubmitValueAndUpdateLocalColor = React.useCallback(
     (newValue: CSSColor) =>
-      setLocalAndModelStops(setColor(selectedStopUnorderedIndex, newValue, stops), true),
-    [stops, setLocalAndModelStops, selectedStopUnorderedIndex],
+      onSubmitValueAndUpdateLocalStops(setColor(selectedStopUnorderedIndex, newValue, stops), true),
+    [stops, onSubmitValueAndUpdateLocalStops, selectedStopUnorderedIndex],
   )
 
   const MetadataControls: React.ReactNode = (() => {
@@ -549,7 +552,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
             {isCSSGradientBackgroundLayer(props.value) ? (
               <GradientStopsEditor
                 stops={stops}
-                setLocalAndEditorStops={setLocalAndModelStops}
+                onSubmitValueAndUpdateLocalStops={onSubmitValueAndUpdateLocalStops}
                 selectedStopUnorderedIndex={selectedStopUnorderedIndex}
                 setSelectedStopUnorderedIndex={setSelectedStopUnorderedIndex}
                 useSubmitValueFactory={props.useSubmitValueFactory}
@@ -568,8 +571,8 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
               ) : (
                 <ColorPickerInner
                   value={stops[selectedStopUnorderedIndex]?.color ?? { ...defaultCSSColor }}
-                  onSubmitValue={setLocalAndModelColor}
-                  onTransientSubmitValue={setLocalAndTransientModelColor}
+                  onSubmitValue={onSubmitValueAndUpdateLocalColor}
+                  onTransientSubmitValue={onTransientSubmitValueAndUpdateLocalColor}
                   offsetX={props.offsetX}
                   offsetY={props.offsetY}
                   id={props.id}
