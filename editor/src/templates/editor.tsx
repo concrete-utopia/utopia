@@ -278,16 +278,12 @@ export const HotRoot: React.FunctionComponent<{
 })
 HotRoot.displayName = 'Utopia Editor Root'
 
-// we trigger the hashedAssetsUpdate as soon as we can. this will still block the renderRootComponent,
-// but because we start it sooner, there's a chance it finishes by the time we call renderRootComponent
-const BlockEditorRenderUntilHashedAssetsUpdate = triggerHashedAssetsUpdate()
-
 function renderRootComponent(
   useStore: UtopiaStoreHook,
   api: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
 ): Promise<void> {
-  return BlockEditorRenderUntilHashedAssetsUpdate.then(() => {
+  return triggerHashedAssetsUpdate().then(() => {
     // NOTE: we only need to call this function once,
     // as subsequent updates will be fed through Zustand
     const rootElement = document.getElementById(EditorID)

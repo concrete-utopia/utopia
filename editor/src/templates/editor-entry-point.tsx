@@ -1,4 +1,12 @@
-import { addStyleSheetToPage, addScriptToPage } from '../core/shared/dom-utils'
+// Fire off server requests that later block, to improve initial load on slower connections. These will still block,
+// but this gives us a chance to cache the result first
+import { getLoginState } from '../common/server'
+import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
+
+getLoginState()
+triggerHashedAssetsUpdate()
+
+import { addStyleSheetToPage } from '../core/shared/dom-utils'
 
 const editorCSS = [
   '/editor/editor.css',

@@ -1,5 +1,5 @@
 import { UTOPIA_BACKEND, THUMBNAIL_ENDPOINT, ASSET_ENDPOINT, BASE_URL } from './env-vars'
-import { ProjectListing } from './persistence'
+import type { ProjectListing } from './persistence'
 import { LoginState, notLoggedIn } from './user'
 // Stupid style of import because the website and editor are different
 // and so there's no style of import which works with both projects.
@@ -53,7 +53,19 @@ export function imagePathURL(fileName: string): string {
   return urljoin('./', fileName)
 }
 
+let CachedLoginStatePromise: Promise<LoginState> | null = null
+
 export async function getLoginState(): Promise<LoginState> {
+  if (CachedLoginStatePromise != null) {
+    return CachedLoginStatePromise
+  } else {
+    const promise = createGetLoginStatePromise()
+    CachedLoginStatePromise = promise
+    return promise
+  }
+}
+
+async function createGetLoginStatePromise(): Promise<LoginState> {
   const url = UTOPIA_BACKEND + 'user'
   const response = await fetch(url, {
     method: 'GET',
@@ -62,7 +74,8 @@ export async function getLoginState(): Promise<LoginState> {
     mode: MODE,
   })
   if (response.ok) {
-    return await response.json()
+    const result = await response.json()
+    return result
   } else {
     // FIXME Client should show an error if server requests fail
     console.error(`Fetch user details failed (${response.status}): ${response.statusText}`)
