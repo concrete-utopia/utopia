@@ -928,6 +928,7 @@ export interface ComponentMetadata {
   component: string | null
   container: SceneContainer
   frame: NormalisedFrame
+  globalFrame: CanvasRectangle | null
   label?: string
 }
 

@@ -193,6 +193,34 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             const validPaths = validPathsAttr.value.split(' ')
             const metadata = walkSceneInner(scene, index, scenePath, validPaths)
             rootMetadata.push(...metadata)
+
+            const globalFrame = globalFrameForElement(scene)
+
+            const uidAttribute = getDOMAttribute(scene, 'data-uid')
+            const originalUIDAttribute = getDOMAttribute(scene, UTOPIA_ORIGINAL_ID_KEY)
+            const labelAttribute = getDOMAttribute(scene, 'data-label')
+            let elementProps: any = {}
+            if (uidAttribute != null) {
+              elementProps['data-uid'] = uidAttribute
+            }
+            if (originalUIDAttribute != null) {
+              elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
+            }
+            if (labelAttribute != null) {
+              elementProps['data-label'] = labelAttribute
+            }
+
+            const sceneMetadata = elementInstanceMetadata(
+              scenePath as any, // this is not good, what should i add here?
+              left(scene.tagName.toLowerCase()),
+              elementProps,
+              globalFrame,
+              null,
+              metadata,
+              false,
+              getSpecialMeasurements(scene),
+            )
+            rootMetadata.push(sceneMetadata)
           }
         }
       }

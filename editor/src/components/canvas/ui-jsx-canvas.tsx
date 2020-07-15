@@ -570,6 +570,7 @@ function getStoryboardRoot(
     container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
     frame: {} as any, // TODO BB Hack this is not safe at all, the code expects a frame here
     scenePath: EmptyScenePathForStoryboard,
+    globalFrame: null,
     label: 'Storyboard',
   }
 
@@ -826,6 +827,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     frame: frame,
     container: container,
     component: component,
+    globalFrame: null, // the real frame comes from the DOM walker
     label: props.sceneLabel,
   }
   if (rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy) {
