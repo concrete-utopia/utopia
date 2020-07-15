@@ -27,8 +27,6 @@ import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { arrayContains, projectURLForProject } from '../../core/shared/utils'
 import { getPNGBufferOfElementWithID } from './screenshot-utils'
 
-const domtoimage = require('domtoimage')
-
 const SAVE_THROTTLE_DELAY = 30000
 const SAVE_RETRY_DELAY = 5000
 
