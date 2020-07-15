@@ -56,16 +56,15 @@ export type SetLocalAndEditorState<T> = (
 ) => void
 
 /**
- * Hook with similar functionality to `usePropControlledState`, but with an
- * added custom equality check so derived local states can be checked against
- * props.
+ * Hook with similar functionality to `usePropControlledState`, but with:
+ * 1. a custom equality check so local state can be checked against the model.
+ * 2. returns a streamlined setter that updates local state and the model.
  *
  * An example: in the gradient stop picker we need to keep stop index constant
  * even when stops' positions don't match their array index order. This means
  * props (which are ordered during printing) won't necessarily match the stops'
- * order. The @equalityTest parameter lets us order state stops to
- * see if the props value could be derived from the state value.
- *
+ * order. The @equalityTest parameter lets us order state stops to see if the
+ * props value could be derived from the state value.
  */
 export function useModelControlledTransformableState<T>(
   propValue: T,
