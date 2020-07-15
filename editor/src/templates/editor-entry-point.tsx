@@ -4,7 +4,6 @@ import { URL_HASH } from '../common/env-vars'
 const editorCSS = [
   '/editor/editor.css',
   '/editor/cursors.css',
-  '/editor/css/utopions.css',
   '/editor/ReactContexify.css',
   '/editor/css/topmenu.css',
   '/editor/canvas.css',
