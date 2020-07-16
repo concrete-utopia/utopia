@@ -7,27 +7,27 @@
     "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\""
   },
   "dependencies": {
-    "@emotion/core": "^10.0.28",
-    "@emotion/styled": "^10.0.27",
-    "facepaint": "^1.2.1",
-    "localforage": "^1.7.4",
-    "react": "^16.13.0",
-    "react-dom": "^16.13.0",
-    "react-router-dom": "^5.2.0",
-    "timeago.js": "^4.0.2",
-    "url-join": "^4.0.1"
+    "@emotion/core": "10.0.28",
+    "@emotion/styled": "10.0.27",
+    "facepaint": "1.2.1",
+    "localforage": "1.7.4",
+    "react": "16.13.0",
+    "react-dom": "16.13.0",
+    "react-router-dom": "5.2.0",
+    "timeago.js": "4.0.2",
+    "url-join": "4.0.1"
   },
   "devDependencies": {
-    "@snowpack/app-scripts-react": "^1.6.0-alpha.0",
-    "@testing-library/jest-dom": "^5.5.0",
-    "@testing-library/react": "^10.0.3",
-    "@types/react": "^16.9.35",
-    "@types/react-dom": "^16.9.8",
-    "@types/react-router-dom": "^5.1.5",
-    "@types/url-join": "^4.0.0",
-    "jest": "^25.4.0",
-    "prettier": "^2.0.5",
-    "snowpack": "^2.6.4",
-    "typescript": "^3.8.0"
+    "@snowpack/app-scripts-react": "1.6.0-alpha.0",
+    "@testing-library/jest-dom": "5.5.0",
+    "@testing-library/react": "10.0.3",
+    "@types/react": "16.9.35",
+    "@types/react-dom": "16.9.8",
+    "@types/react-router-dom": "5.1.5",
+    "@types/url-join": "4.0.0",
+    "jest": "25.4.0",
+    "prettier": "2.0.5",
+    "snowpack": "2.6.4",
+    "typescript": "3.8.0"
   }
 }
