@@ -13,7 +13,7 @@ import { Scene, Storyboard, View, jsx } from 'utopia-api'
 export var App = (props) => {
   return (
     <View
-      style={{ ...props.style, backgroundColor: '#FFFFFF' }}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     />
   )
@@ -22,9 +22,8 @@ export var storyboard = (
   <Storyboard layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
       component={App}
-      props={{ style: { top: 0, left: 0, bottom: 0, right: 0 } }}
-      style={{ left: 0, top: 0, width: 375, height: 812 }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
     />
   </Storyboard>
 )
