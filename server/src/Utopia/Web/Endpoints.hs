@@ -317,7 +317,7 @@ servePath pathToServe = do
 -}
 addAccessControlAllowOrigin :: Middleware
 addAccessControlAllowOrigin applicationToWrap request sendResponse = do
-  let withHeaderSendResponse response = sendResponse $ mapResponseHeaders (\headers -> ("Access-Allow-Control-Origin", "*") : headers) response
+  let withHeaderSendResponse response = sendResponse $ mapResponseHeaders (\headers -> ("Access-Control-Allow-Origin", "*") : headers) response
   applicationToWrap request withHeaderSendResponse
 
 editorAssetsEndpoint :: FilePath -> ServerMonad Application
