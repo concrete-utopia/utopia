@@ -23,7 +23,8 @@
     },
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "strictFunctionTypes": true
+    "strictFunctionTypes": true,
+    "noEmit": true
   },
   "exclude": ["node_modules"]
 }
