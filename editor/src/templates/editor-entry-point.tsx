@@ -7,29 +7,30 @@ getLoginState()
 triggerHashedAssetsUpdate()
 
 import { addStyleSheetToPage } from '../core/shared/dom-utils'
+import { STATIC_BASE_URL } from '../common/env-vars'
 
 const editorCSS = [
-  '/editor/editor.css',
-  '/editor/cursors.css',
-  '/editor/ReactContexify.css',
-  '/editor/css/topmenu.css',
-  '/editor/canvas.css',
-  '/editor/spreadsheet-grid.css',
-  '/editor/node-graph.css',
-  '/editor/inspector.css',
-  '/editor/show-hint.css',
-  '/editor/css/react-spinner.css',
-  '/editor/css/loadscreen.css',
-  '/editor/css/light/monaco-overrides.css',
-  '/editor/css/codicons.css',
-  '/editor/css/control-iconcheckbox.css',
-  '/editor/css/control-button.css',
-  '/editor/css/control-slider.css',
-  '/editor/css/control-toggle.css',
-  '/editor/slider.css',
-  '/editor/draft.css',
-  '/editor/utopia-light.css',
-  '/editor/preview.css',
+  `${STATIC_BASE_URL}editor/editor.css`,
+  `${STATIC_BASE_URL}editor/cursors.css`,
+  `${STATIC_BASE_URL}editor/ReactContexify.css`,
+  `${STATIC_BASE_URL}editor/css/topmenu.css`,
+  `${STATIC_BASE_URL}editor/canvas.css`,
+  `${STATIC_BASE_URL}editor/spreadsheet-grid.css`,
+  `${STATIC_BASE_URL}editor/node-graph.css`,
+  `${STATIC_BASE_URL}editor/inspector.css`,
+  `${STATIC_BASE_URL}editor/show-hint.css`,
+  `${STATIC_BASE_URL}editor/css/react-spinner.css`,
+  `${STATIC_BASE_URL}editor/css/loadscreen.css`,
+  `${STATIC_BASE_URL}editor/css/light/monaco-overrides.css`,
+  `${STATIC_BASE_URL}editor/css/codicons.css`,
+  `${STATIC_BASE_URL}editor/css/control-iconcheckbox.css`,
+  `${STATIC_BASE_URL}editor/css/control-button.css`,
+  `${STATIC_BASE_URL}editor/css/control-slider.css`,
+  `${STATIC_BASE_URL}editor/css/control-toggle.css`,
+  `${STATIC_BASE_URL}editor/slider.css`,
+  `${STATIC_BASE_URL}editor/draft.css`,
+  `${STATIC_BASE_URL}editor/utopia-light.css`,
+  `${STATIC_BASE_URL}editor/preview.css`,
 ]
 
 const editorCSSDontHash = [

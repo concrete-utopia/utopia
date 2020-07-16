@@ -4712,7 +4712,7 @@ exports[`UiJsxCanvas render handles an undefined component gracefully 1`] = `
         style=\\"user-select: none;\\"
         width=\\"16\\"
         height=\\"16\\"
-        src=\\"/editor/icons/light/semantic/warningtriangle-gray-16x16@2x.png\\"
+        src=\\"http://localhost/editor/icons/light/semantic/warningtriangle-gray-16x16@2x.png\\"
         draggable=\\"false\\"
       /><span style=\\"margin-left: 4px;\\">Can&#x27;t find MyCard</span>
     </div>
