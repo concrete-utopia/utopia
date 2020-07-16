@@ -1,7 +1,8 @@
 {
   "scripts": {
     "start": "SNOWPACK_PUBLIC_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID SNOWPACK_PUBLIC_AUTH0_ENDPOINT=$AUTH0_ENDPOINT SNOWPACK_PUBLIC_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI SNOWPACK_PUBLIC_COMMIT_HASH=`git rev-parse HEAD` snowpack dev",
-    "build": "snowpack build",
+    "build": "if [ \"$GITHUB_SHA\" = \"\" ]; then echo \"ERROR: Missing GITHUB_SHA\" && exit 1; else npm run actually-build; fi",
+    "actually-build": "SNOWPACK_PUBLIC_ENVIRONMENT_CONFIG='production' SNOWPACK_PUBLIC_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID SNOWPACK_PUBLIC_AUTH0_ENDPOINT=$AUTH0_ENDPOINT SNOWPACK_PUBLIC_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI SNOWPACK_PUBLIC_COMMIT_HASH=`git rev-parse HEAD` snowpack build",
     "test": "jest",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\""
