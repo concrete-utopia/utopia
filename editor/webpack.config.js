@@ -4,6 +4,7 @@ const ForkTsCheckerAsyncOverlayWebpackPlugin = require('fork-ts-checker-async-ov
 const CleanTerminalPlugin = require('clean-terminal-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const path = require('path')
@@ -39,6 +40,8 @@ function srcPath(subdir) {
 //                    using the ExtractedTextPlugin - https://v4.webpack.js.org/plugins/extract-text-webpack-plugin/
 const hashPattern = hot ? '[hash]' : '[chunkhash]'
 
+const BaseDomain = isProd ? 'https://cdn.utopia.app' : ''
+
 const config = {
   mode: mode,
 
@@ -70,7 +73,7 @@ const config = {
     path: __dirname + '/lib',
     library: 'utopia',
     libraryTarget: 'umd',
-    publicPath: '/editor/',
+    publicPath: `${BaseDomain}/editor/`,
     globalObject: 'this',
   },
 
@@ -98,9 +101,18 @@ const config = {
       filename: 'preview.html',
       minify: false,
     }),
+    new ScriptExtHtmlWebpackPlugin({
+      // Support CORS so we can use the CDN endpoint from either of the domains
+      custom: {
+        test: /\.js$/,
+        attribute: 'crossorigin',
+        value: 'anonymous',
+      },
+    }),
     new InterpolateHtmlPlugin(HtmlWebpackPlugin, {
       // This plugin replaces variables of the form %VARIABLE% with the value provided in this object
       GITHUB_SHA: process.env.GITHUB_SHA || 'nocommit',
+      UTOPIA_DOMAIN: BaseDomain,
     }),
 
     // Optionally run the TS compiler in a different thread, but as part of the webpack build still

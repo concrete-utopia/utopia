@@ -1,8 +1,9 @@
 import { HEADERS, MODE } from '../common/server'
-import { BASE_URL } from '../common/env-vars'
+import { BASE_URL, STATIC_BASE_URL } from '../common/env-vars'
 import { isBrowserEnvironment } from '../core/shared/utils'
 import { cachedPromise } from '../core/shared/promise-utils'
 import { PRODUCTION_CONFIG } from '../core/shared/detect-env'
+import urljoin from 'url-join'
 
 const HASHED_ASSETS_ENDPOINT = BASE_URL(PRODUCTION_CONFIG) + 'hashed-assets.json'
 
@@ -26,10 +27,15 @@ export function triggerHashedAssetsUpdate(): Promise<void> {
   })
 }
 
-export function getPossiblyHashedURL(url: string): string {
+function getPossiblyHashedURLInner(url: string): string {
   if (url in HASHED_ASSETS_MAPPINGS) {
     return HASHED_ASSETS_MAPPINGS[url]
   } else {
     return url
   }
+}
+
+export function getPossiblyHashedURL(url: string): string {
+  const relativeURL = getPossiblyHashedURLInner(url)
+  return urljoin(STATIC_BASE_URL, relativeURL)
 }
