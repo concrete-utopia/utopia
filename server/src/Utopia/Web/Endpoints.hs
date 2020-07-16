@@ -19,6 +19,7 @@ import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
 import qualified Data.Text                       as T
 import           Data.Time
+import           Network.Wai
 import           Network.Wai.Middleware.Gzip
 import           Protolude
 import           Servant                         hiding
@@ -311,10 +312,18 @@ servePath :: FilePath -> ServerMonad Application
 servePath pathToServe = do
   servePath' pathToServe identity
 
+{-|
+   Adds `Access-Control-Allow-Origin` Header for the sake of CDN
+-}
+addAccessControlAllowOrigin :: Middleware
+addAccessControlAllowOrigin applicationToWrap request sendResponse = do
+  let withHeaderSendResponse response = sendResponse $ mapResponseHeaders (\headers -> ("Access-Allow-Control-Origin", "*") : headers) response
+  applicationToWrap request withHeaderSendResponse
+
 editorAssetsEndpoint :: FilePath -> ServerMonad Application
 editorAssetsEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
-  maybe (servePath notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 8088 ["editor"]) possibleProxyManager
+  fmap addAccessControlAllowOrigin $ maybe (servePath notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 8088 ["editor"]) possibleProxyManager
 
 monitoringEndpoint :: ServerMonad Value
 monitoringEndpoint = getMetrics
