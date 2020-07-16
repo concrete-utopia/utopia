@@ -964,20 +964,16 @@ export const MetadataUtils = {
       }
     }
   },
-  getSceneFrame(path: ScenePath, scenes: Array<ComponentMetadata>): SimpleRectangle | null {
+  getSceneFrame(path: ScenePath, scenes: Array<ComponentMetadata>): CanvasRectangle | null {
     const maybeScene = MetadataUtils.findSceneByTemplatePath(scenes, path)
-    return optionalMap((scene) => {
-      const { left: x, top: y, width, height } = scene.frame
-      return { x, y, width, height }
-    }, maybeScene)
+    return maybeScene?.globalFrame ?? null
   },
   getFrameInCanvasCoords(
     path: TemplatePath,
     metadata: Array<ComponentMetadata>,
   ): CanvasRectangle | null {
     if (TP.isScenePath(path)) {
-      const frame = this.getSceneFrame(path, metadata)
-      return canvasRectangle(frame)
+      return this.getSceneFrame(path, metadata)
     } else {
       const element = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
       return Utils.optionalMap((e) => e.globalFrame, element)
@@ -1228,8 +1224,12 @@ export const MetadataUtils = {
 
     return fromSpy.map((scene) => {
       const elem = mergedInstanceMetadata.find((m) => TP.isChildOf(m.templatePath, scene.scenePath))
+      const sceneMetadata = mergedInstanceMetadata.find((m) =>
+        TP.pathsEqual(m.templatePath, scene.templatePath),
+      )
       return {
         ...scene,
+        globalFrame: sceneMetadata?.globalFrame ?? null,
         rootElement: elem || null,
       }
     })
@@ -1501,6 +1501,7 @@ export function convertMetadataMap(
 
     result.push({
       ...scene,
+      globalFrame: null,
       rootElement: rootElement == null ? null : convertMetadata(rootElement),
     })
   })

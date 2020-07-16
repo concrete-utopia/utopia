@@ -570,6 +570,8 @@ function getStoryboardRoot(
     container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
     frame: {} as any, // TODO BB Hack this is not safe at all, the code expects a frame here
     scenePath: EmptyScenePathForStoryboard,
+    templatePath: TP.instancePath([], []),
+    globalFrame: null,
     label: 'Storyboard',
   }
 
@@ -776,7 +778,7 @@ type ComponentRendererComponent = React.ComponentType<any> & {
 
 interface SceneRootProps extends CanvasReactReportErrorCallback {
   content: ComponentRendererComponent | undefined
-  templatePath: TemplatePath
+  templatePath: InstancePath
   requireResult: MapLike<any>
   inScope: MapLike<any>
   hiddenInstances: Array<TemplatePath>
@@ -823,15 +825,17 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
 
   metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
     scenePath: scenePath,
+    templatePath: templatePath,
     frame: frame,
     container: container,
     component: component,
+    globalFrame: null, // the real frame comes from the DOM walker
     label: props.sceneLabel,
   }
   if (rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy) {
     metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
       element: left('Scene'),
-      templatePath: templatePath as InstancePath,
+      templatePath: templatePath,
       props: {},
       globalFrame: null,
       localFrame: null,

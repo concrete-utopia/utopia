@@ -6,6 +6,7 @@ Array [
     "component": "storyboard",
     "container": Object {},
     "frame": Object {},
+    "globalFrame": null,
     "label": "Storyboard",
     "rootElement": Object {
       "children": Array [
@@ -116,6 +117,13 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "templatePath": Object {
+      "element": Array [],
+      "scene": Object {
+        "sceneElementPath": Array [],
+        "type": "scenepath",
+      },
+    },
   },
   Object {
     "component": "App",
@@ -127,6 +135,12 @@ Array [
       "left": 0,
       "top": 0,
       "width": 375,
+    },
+    "globalFrame": Object {
+      "height": 812,
+      "width": 375,
+      "x": 0,
+      "y": 0,
     },
     "label": undefined,
     "rootElement": Object {
@@ -470,6 +484,16 @@ Array [
       ],
       "type": "scenepath",
     },
+    "templatePath": Object {
+      "element": Array [
+        "utopia-storyboard-uid",
+        "scene-aaa",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [],
+        "type": "scenepath",
+      },
+    },
   },
 ]
 `;
@@ -480,6 +504,7 @@ Array [
     "component": "storyboard",
     "container": Object {},
     "frame": Object {},
+    "globalFrame": null,
     "label": "Storyboard",
     "rootElement": Object {
       "children": Array [
@@ -590,6 +615,13 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "templatePath": Object {
+      "element": Array [],
+      "scene": Object {
+        "sceneElementPath": Array [],
+        "type": "scenepath",
+      },
+    },
   },
   Object {
     "component": "App",
@@ -601,6 +633,12 @@ Array [
       "left": 0,
       "top": 0,
       "width": 375,
+    },
+    "globalFrame": Object {
+      "height": 812,
+      "width": 375,
+      "x": 0,
+      "y": 0,
     },
     "label": undefined,
     "rootElement": Object {
@@ -713,6 +751,16 @@ Array [
       ],
       "type": "scenepath",
     },
+    "templatePath": Object {
+      "element": Array [
+        "utopia-storyboard-uid",
+        "scene-aaa",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [],
+        "type": "scenepath",
+      },
+    },
   },
 ]
 `;
@@ -723,6 +771,7 @@ Array [
     "component": "storyboard",
     "container": Object {},
     "frame": Object {},
+    "globalFrame": null,
     "label": "Storyboard",
     "rootElement": Object {
       "children": Array [
@@ -833,6 +882,13 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "templatePath": Object {
+      "element": Array [],
+      "scene": Object {
+        "sceneElementPath": Array [],
+        "type": "scenepath",
+      },
+    },
   },
   Object {
     "component": "App",
@@ -844,6 +900,12 @@ Array [
       "left": 0,
       "top": 0,
       "width": 375,
+    },
+    "globalFrame": Object {
+      "height": 812,
+      "width": 375,
+      "x": 0,
+      "y": 0,
     },
     "label": undefined,
     "rootElement": Object {
@@ -1163,6 +1225,16 @@ Array [
       ],
       "type": "scenepath",
     },
+    "templatePath": Object {
+      "element": Array [
+        "utopia-storyboard-uid",
+        "scene-aaa",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [],
+        "type": "scenepath",
+      },
+    },
   },
 ]
 `;
@@ -1173,6 +1245,7 @@ Array [
     "component": "storyboard",
     "container": Object {},
     "frame": Object {},
+    "globalFrame": null,
     "label": "Storyboard",
     "rootElement": Object {
       "children": Array [
@@ -1283,6 +1356,13 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "templatePath": Object {
+      "element": Array [],
+      "scene": Object {
+        "sceneElementPath": Array [],
+        "type": "scenepath",
+      },
+    },
   },
   Object {
     "component": "App",
@@ -1294,6 +1374,12 @@ Array [
       "left": 0,
       "top": 0,
       "width": 375,
+    },
+    "globalFrame": Object {
+      "height": 812,
+      "width": 375,
+      "x": 0,
+      "y": 0,
     },
     "label": undefined,
     "rootElement": Object {
@@ -1614,6 +1700,16 @@ Array [
       ],
       "type": "scenepath",
     },
+    "templatePath": Object {
+      "element": Array [
+        "utopia-storyboard-uid",
+        "scene-aaa",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [],
+        "type": "scenepath",
+      },
+    },
   },
 ]
 `;
@@ -1624,6 +1720,7 @@ Array [
     "component": "storyboard",
     "container": Object {},
     "frame": Object {},
+    "globalFrame": null,
     "label": "Storyboard",
     "rootElement": Object {
       "children": Array [
@@ -1734,6 +1831,13 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "templatePath": Object {
+      "element": Array [],
+      "scene": Object {
+        "sceneElementPath": Array [],
+        "type": "scenepath",
+      },
+    },
   },
   Object {
     "component": "App",
@@ -1745,6 +1849,12 @@ Array [
       "left": 0,
       "top": 0,
       "width": 375,
+    },
+    "globalFrame": Object {
+      "height": 812,
+      "width": 375,
+      "x": 0,
+      "y": 0,
     },
     "label": undefined,
     "rootElement": Object {
@@ -2067,6 +2177,16 @@ Array [
         "scene-aaa",
       ],
       "type": "scenepath",
+    },
+    "templatePath": Object {
+      "element": Array [
+        "utopia-storyboard-uid",
+        "scene-aaa",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [],
+        "type": "scenepath",
+      },
     },
   },
 ]
