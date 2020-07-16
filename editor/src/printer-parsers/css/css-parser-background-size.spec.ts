@@ -3,7 +3,7 @@ import { syntaxParsers } from './css-parser-map'
 describe('backgroundSize', () => {
   it("parses the <'background-size'> property with comments", () => {
     const value =
-      'auto, /*auto*/ /*auto auto*/ /*100px 100px*/ contain, 100% 100%, 100px auto, /* auto */ cover, 0 0'
+      'auto, /*auto*/ /*auto auto*/ /*100px 100px*/ contain, 100% 100%, 100px auto, /* auto */ cover, 0 0 /*cover*/'
     const parseResults = syntaxParsers["<'background-size'>"](value)
     expect(parseResults).toMatchInlineSnapshot(`
       Object {
@@ -44,7 +44,7 @@ describe('backgroundSize', () => {
           Object {
             "enabled": false,
             "size": Object {
-              "default": true,
+              "default": false,
               "value": Object {
                 "type": "parsed-curly-brace",
                 "value": Array [
@@ -64,7 +64,7 @@ describe('backgroundSize', () => {
           Object {
             "enabled": false,
             "size": Object {
-              "default": true,
+              "default": false,
               "value": Object {
                 "type": "parsed-curly-brace",
                 "value": Array [
@@ -84,7 +84,7 @@ describe('backgroundSize', () => {
           Object {
             "enabled": true,
             "size": Object {
-              "default": true,
+              "default": false,
               "value": Object {
                 "type": "keyword",
                 "value": "contain",
@@ -95,7 +95,7 @@ describe('backgroundSize', () => {
           Object {
             "enabled": true,
             "size": Object {
-              "default": true,
+              "default": false,
               "value": Object {
                 "type": "parsed-curly-brace",
                 "value": Array [
@@ -115,7 +115,7 @@ describe('backgroundSize', () => {
           Object {
             "enabled": true,
             "size": Object {
-              "default": true,
+              "default": false,
               "value": Object {
                 "type": "parsed-curly-brace",
                 "value": Array [
@@ -151,7 +151,7 @@ describe('backgroundSize', () => {
           Object {
             "enabled": true,
             "size": Object {
-              "default": true,
+              "default": false,
               "value": Object {
                 "type": "keyword",
                 "value": "cover",
@@ -160,9 +160,9 @@ describe('backgroundSize', () => {
             "type": "bg-size",
           },
           Object {
-            "enabled": true,
+            "enabled": false,
             "size": Object {
-              "default": true,
+              "default": false,
               "value": Object {
                 "type": "parsed-curly-brace",
                 "value": Array [
@@ -175,6 +175,17 @@ describe('backgroundSize', () => {
                     "value": 0,
                   },
                 ],
+              },
+            },
+            "type": "bg-size",
+          },
+          Object {
+            "enabled": false,
+            "size": Object {
+              "default": false,
+              "value": Object {
+                "type": "keyword",
+                "value": "cover",
               },
             },
             "type": "bg-size",

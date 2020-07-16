@@ -24,6 +24,7 @@ import {
   isUnknownInputValue,
   parsedCurlyBrace,
   UnknownOrEmptyInput,
+  cssPixelLength,
 } from '../common/css-utils'
 import { UseSubmitTransformedValuesFactory } from '../sections/style-section/background-subsection/background-layer-helpers'
 import { MetadataControlsStyle } from '../sections/style-section/background-subsection/background-picker'
@@ -68,7 +69,7 @@ function getIndexedUpdateBGSizePopupList(index: number) {
       const bgSize = ((): CSSBGSize => {
         switch (newValue.value) {
           case 'auto': {
-            return cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('auto')])))
+            return cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('auto')]), false))
           }
           case 'contain':
           case 'cover': {
@@ -76,10 +77,7 @@ function getIndexedUpdateBGSizePopupList(index: number) {
           }
           case 'percentage-length': {
             return cssBGSize(
-              cssDefault(
-                parsedCurlyBrace([{ ...cssPixelLengthZero }, { ...cssPixelLengthZero }]),
-                false,
-              ),
+              cssDefault(parsedCurlyBrace([cssPixelLength(100), cssPixelLength(100)]), false),
             )
           }
           default: {
