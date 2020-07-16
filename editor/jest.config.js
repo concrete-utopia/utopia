@@ -18,6 +18,7 @@ module.exports = {
           isolatedModules: true,
         },
       },
+      transformIgnorePatterns: ['/node_modules/(?!utopia-api)'],
     },
     {
       testEnvironment: '@jest-runner/electron/environment',
