@@ -1,3 +1,4 @@
+import { PRODUCTION_CONFIG } from '../core/shared/detect-env'
 // Fire off server requests that later block, to improve initial load on slower connections. These will still block,
 // but this gives us a chance to cache the result first
 import { getLoginState } from '../common/server'
@@ -42,7 +43,6 @@ editorCSS.forEach((url) => addStyleSheetToPage(url))
 editorCSSDontHash.forEach((url) => addStyleSheetToPage(url, false))
 
 import { Editor } from './editor'
-import { PRODUCTION_CONFIG } from '../core/shared/detect-env'
 
 // eslint-disable-next-line
 const EditorRunner = new Editor()
