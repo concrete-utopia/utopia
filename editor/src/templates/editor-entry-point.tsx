@@ -1,10 +1,10 @@
 // Fire off server requests that later block, to improve initial load on slower connections. These will still block,
 // but this gives us a chance to cache the result first
 import { getLoginState } from '../common/server'
-import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
+import { triggerHashedAssetsUpdate, preloadPrioritizedAssets } from '../utils/hashed-assets'
 
 getLoginState()
-triggerHashedAssetsUpdate()
+triggerHashedAssetsUpdate().then(() => preloadPrioritizedAssets())
 
 import { addStyleSheetToPage } from '../core/shared/dom-utils'
 import { STATIC_BASE_URL } from '../common/env-vars'
