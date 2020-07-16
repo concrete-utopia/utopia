@@ -2,3 +2,14 @@
 build
 web_modules
 node_modules
+
+# Local Dev
+*.env
+*.dev
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# The world's most annoying file
+.DS_Store
