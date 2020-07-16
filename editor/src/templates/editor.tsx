@@ -4,12 +4,7 @@ import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
 import { updateCssVars } from 'uuiui'
 import create from 'zustand'
-import {
-  getProjectID,
-  PROBABLY_ELECTRON,
-  PRODUCTION_ENV,
-  requireElectron,
-} from '../common/env-vars'
+import { getProjectID, PROBABLY_ELECTRON, requireElectron } from '../common/env-vars'
 import { EditorID } from '../core/shared/utils'
 import CanvasActions from '../components/canvas/canvas-actions'
 import { CodeResultCache, generateCodeResultCache } from '../components/custom-code/code-file'
@@ -69,6 +64,7 @@ import {
   UiJsxCanvasContext,
 } from '../components/canvas/ui-jsx-canvas'
 import { addStyleSheetToPage } from '../core/shared/dom-utils'
+import { PRODUCTION_ENV, PRODUCTION_CONFIG } from '../core/shared/detect-env'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -182,7 +178,7 @@ export class Editor {
       handleHeartbeatRequestMessage(e.data),
     )
 
-    getLoginState().then((loginState) => {
+    getLoginState(PRODUCTION_CONFIG).then((loginState) => {
       this.storedState.loginState = loginState
 
       const projectId = getProjectID()

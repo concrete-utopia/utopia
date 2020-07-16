@@ -26,6 +26,7 @@ import { createNewProjectName, PersistentModel } from './store/editor-state'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { arrayContains, projectURLForProject } from '../../core/shared/utils'
 import { getPNGBufferOfElementWithID } from './screenshot-utils'
+import { PRODUCTION_CONFIG } from '../../core/shared/detect-env'
 
 const SAVE_THROTTLE_DELAY = 30000
 const SAVE_RETRY_DELAY = 5000
@@ -216,7 +217,7 @@ async function checkCanSaveProject(projectId: string | null): Promise<boolean> {
   if (projectId == null) {
     return true
   } else {
-    const ownerState = await checkProjectOwnership(projectId)
+    const ownerState = await checkProjectOwnership(PRODUCTION_CONFIG, projectId)
     return ownerState === 'unowned' || ownerState.isOwner
   }
 }
@@ -394,7 +395,7 @@ function maybeTriggerQueuedSave(
 export async function updateRemoteThumbnail(projectId: string, force: boolean): Promise<void> {
   const buffer = await generateThumbnail(force)
   if (buffer != null) {
-    await saveThumbnail(buffer, projectId)
+    await saveThumbnail(PRODUCTION_CONFIG, buffer, projectId)
   }
 }
 
@@ -518,9 +519,18 @@ export async function loadFromLocalStorage(
     await load(dispatch, localProject.model, projectName, projectId, workers, renderEditorRoot)
     if (shouldUploadToServer) {
       // Upload the project now that the user has signed in
-      saveImagesFromProject(projectId, localProject.model).then((modelWithReplacedImages) => {
-        saveToServer(dispatch, projectId, projectName, modelWithReplacedImages, projectName, false)
-      })
+      saveImagesFromProject(PRODUCTION_CONFIG, projectId, localProject.model).then(
+        (modelWithReplacedImages) => {
+          saveToServer(
+            dispatch,
+            projectId,
+            projectName,
+            modelWithReplacedImages,
+            projectName,
+            false,
+          )
+        },
+      )
     }
   }
 }

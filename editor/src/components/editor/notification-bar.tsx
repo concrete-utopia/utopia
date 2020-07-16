@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { LoginState, isLoggedIn } from './action-types'
-import { auth0Url } from '../../common/env-vars'
+import { auth0Url } from '../../core/shared/detect-env'
 import { setRedirectUrl } from '../../common/persistence'
 import { colorTheme, SimpleFlexRow, UtopiaStyles, UtopiaTheme } from 'uuiui'
 import { useEditorState } from './store/store-hook'

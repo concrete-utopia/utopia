@@ -22,6 +22,7 @@ import { createBundle } from '../core/workers/bundler-promise'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { fastForEach } from '../core/shared/utils'
 import { incorporateBuildResult } from '../components/custom-code/code-file'
+import { PRODUCTION_CONFIG } from '../core/shared/detect-env'
 
 interface PolledLoadParams {
   projectId: string
@@ -98,7 +99,10 @@ function addOpenInUtopiaButton(): void {
     const projectId = getProjectID()
     if (projectId != null) {
       const openIcon = document.createElement('img')
-      openIcon.setAttribute('src', `${BASE_URL}static/index/logo-smiangle-16x16@2x.png`)
+      openIcon.setAttribute(
+        'src',
+        `${BASE_URL(PRODUCTION_CONFIG)}static/index/logo-smiangle-16x16@2x.png`,
+      )
       openIcon.setAttribute('style', 'width: 32px; height: 32px')
       const openText = document.createElement('span')
       openText.setAttribute('style', 'display: inline-flex; align-items: center; padding: 4px')
@@ -121,7 +125,7 @@ function addOpenInUtopiaButton(): void {
       openInUtopiaButton.setAttribute('style', buttonStyle)
       openInUtopiaButton.setAttribute(
         'onclick',
-        `window.open('${BASE_URL}project/${projectId}/', 'mywindow')`,
+        `window.open('${BASE_URL(PRODUCTION_CONFIG)}project/${projectId}/', 'mywindow')`,
       )
 
       openInUtopiaButton.append(openIcon)

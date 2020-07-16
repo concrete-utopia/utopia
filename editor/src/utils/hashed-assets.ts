@@ -2,8 +2,9 @@ import { HEADERS, MODE } from '../common/server'
 import { BASE_URL } from '../common/env-vars'
 import { isBrowserEnvironment } from '../core/shared/utils'
 import { cachedPromise } from '../core/shared/promise-utils'
+import { PRODUCTION_CONFIG } from '../core/shared/detect-env'
 
-const HASHED_ASSETS_ENDPOINT = BASE_URL + 'hashed-assets.json'
+const HASHED_ASSETS_ENDPOINT = BASE_URL(PRODUCTION_CONFIG) + 'hashed-assets.json'
 
 export let HASHED_ASSETS_MAPPINGS: { [key: string]: string } = {}
 

@@ -16,6 +16,7 @@ import {
 } from './common/persistence'
 import * as timeago from 'timeago.js'
 import { Card, cardLayout, cardLayoutStyle } from './home/components/cards'
+import { PRODUCTION_CONFIG } from './detect-env'
 
 interface navItemProps {
   selected: boolean
@@ -152,7 +153,7 @@ export class Projects extends React.Component<{}, ProjectsState> {
         localProjects: orderedProjects,
       })
     })
-    fetchProjectList().then((projects) => {
+    fetchProjectList(PRODUCTION_CONFIG).then((projects) => {
       var orderedProjects = projects.sort(function (a, b) {
         var aDateNumber = new Date(a.modifiedAt).getTime()
         var bDateNumber = new Date(b.modifiedAt).getTime()
@@ -164,7 +165,7 @@ export class Projects extends React.Component<{}, ProjectsState> {
         filteredProjects: orderedProjects,
       })
     })
-    fetchShowcaseProjects().then((showcase) => {
+    fetchShowcaseProjects(PRODUCTION_CONFIG).then((showcase) => {
       this.setState({
         showcase: showcase,
       })
@@ -187,7 +188,7 @@ export class Projects extends React.Component<{}, ProjectsState> {
           const projectFilter = (project: ProjectListing) =>
             project.id !== this.state.selectedProjectId
 
-          deleteProject(this.state.selectedProjectId)
+          deleteProject(PRODUCTION_CONFIG, this.state.selectedProjectId)
 
           this.setState((previousState) => {
             return {
@@ -241,6 +242,7 @@ export class Projects extends React.Component<{}, ProjectsState> {
     return (
       <ProjectCard
         project={project}
+        key={project.id}
         selected={project.id === this.state.selectedProjectId}
         // eslint-disable-next-line react/jsx-no-bind
         onSelect={() => this.setState({ selectedProjectId: project.id })}
@@ -452,7 +454,7 @@ export class Featured extends React.PureComponent<{}, ShowcaseState> {
   }
 
   componentDidMount() {
-    fetchShowcaseProjects().then((showcase) => {
+    fetchShowcaseProjects(PRODUCTION_CONFIG).then((showcase) => {
       this.setState({
         showcase: showcase,
       })

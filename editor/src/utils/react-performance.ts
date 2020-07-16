@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as fastDeepEqual from 'fast-deep-equal'
-import { PRODUCTION_ENV } from '../common/env-vars'
 import { colorTheme } from 'uuiui'
+import { PRODUCTION_ENV } from '../core/shared/detect-env'
 
 export function useHookUpdateAnalysisStrictEquals<P>(name: string, newValue: P) {
   const previousValue = React.useRef(newValue)

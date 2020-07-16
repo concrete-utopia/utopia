@@ -23,6 +23,7 @@ import { SquareButton } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { shareURLForProject } from '../../core/shared/utils'
+import { PRODUCTION_CONFIG } from '../../core/shared/detect-env'
 
 interface MenuBarProps {
   editorState: EditorState
@@ -139,7 +140,9 @@ export const Menubar = betterReactMemo('Menubar', () => {
   }, [dispatch])
 
   const previewURL =
-    projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
+    projectId == null
+      ? ''
+      : shareURLForProject(FLOATING_PREVIEW_BASE_URL(PRODUCTION_CONFIG), projectId, projectName)
 
   return (
     <FlexColumn

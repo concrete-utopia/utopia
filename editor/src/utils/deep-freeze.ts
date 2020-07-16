@@ -1,4 +1,4 @@
-import { DEEP_FREEZE_STATE } from '../common/env-vars'
+import { DEEP_FREEZE_STATE } from '../core/shared/detect-env'
 
 // modifed version of https://github.com/jsdf/deep-freeze
 

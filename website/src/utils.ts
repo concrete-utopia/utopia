@@ -1,7 +1,7 @@
-import { URL_HASH } from "./common/env-vars";
+import { URL_HASH } from './detect-env'
 
 export function addScriptToPage(url: string) {
-  const script = document.createElement("script")
+  const script = document.createElement('script')
   script.src = appendHash(url)
   script.async = true
   document.body.appendChild(script)

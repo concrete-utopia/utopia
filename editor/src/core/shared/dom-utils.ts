@@ -1,6 +1,6 @@
 import { ReactDOM } from 'react'
 import { canvasRectangle, CanvasRectangle, scaleRect } from './math-utils'
-import { URL_HASH } from '../../common/env-vars'
+import { URL_HASH } from '../../core/shared/detect-env'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',

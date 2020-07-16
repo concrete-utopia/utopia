@@ -427,6 +427,7 @@ import {
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import { PRODUCTION_CONFIG } from '../../../core/shared/detect-env'
 
 export function clearSelection(): EditorAction {
   return {
@@ -2764,7 +2765,13 @@ export const UPDATE_FNS = {
 
     // Side effects.
     if (isLoggedIn(loginState) && editor.id != null) {
-      saveAssetToServer(notNullProjectID, action.fileType, action.base64, assetFilename)
+      saveAssetToServer(
+        PRODUCTION_CONFIG,
+        notNullProjectID,
+        action.fileType,
+        action.base64,
+        assetFilename,
+      )
         .then(() => {
           dispatch(
             [
@@ -3097,7 +3104,7 @@ export const UPDATE_FNS = {
         if (isImageFile(oldContent) || isAssetFile(oldContent)) {
           // Update assets.
           if (isLoggedIn(loginState) && editor.id != null) {
-            updateAssetFileName(editor.id, action.oldPath, action.newPath)
+            updateAssetFileName(PRODUCTION_CONFIG, editor.id, action.oldPath, action.newPath)
           }
         }
       })
@@ -3471,7 +3478,7 @@ export const UPDATE_FNS = {
       case 'IMAGE_FILE': {
         if (isLoggedIn(loginState) && editor.id != null) {
           // Side effect
-          deleteAssetFile(editor.id, action.filename)
+          deleteAssetFile(PRODUCTION_CONFIG, editor.id, action.filename)
         }
 
         return {

@@ -5,7 +5,8 @@ import { LoginState, notLoggedIn } from './user'
 // and so there's no style of import which works with both projects.
 import urljoin from 'url-join'
 
-export const PROJECT_ENDPOINT = UTOPIA_BACKEND + 'project/'
+const PROJECT_ENDPOINT = (productionConfig: boolean) =>
+  UTOPIA_BACKEND(productionConfig) + 'project/'
 
 // if we want to enable CORS, we need the server to be able to answer to preflight OPTION requests with the proper Allow-Access headers
 // until then, this is keeping us safe from attempting a CORS request that results in cryptic error messages
@@ -33,20 +34,24 @@ export interface FetchProjectListResponse {
   projects: Array<ServerProjectListing>
 }
 
-export function assetURL(projectId: string, fileName: string): string {
-  return urljoin(ASSET_ENDPOINT, projectId, fileName)
+export function assetURL(productionConfig: boolean, projectId: string, fileName: string): string {
+  return urljoin(ASSET_ENDPOINT(productionConfig), projectId, fileName)
 }
 
-export function projectURL(projectId: string): string {
-  return urljoin(PROJECT_ENDPOINT, projectId)
+export function projectURL(productionConfig: boolean, projectId: string): string {
+  return urljoin(PROJECT_ENDPOINT(productionConfig), projectId)
 }
 
-export function thumbnailURL(projectId: string): string {
-  return urljoin(THUMBNAIL_ENDPOINT, projectId)
+export function thumbnailURL(productionConfig: boolean, projectId: string): string {
+  return urljoin(THUMBNAIL_ENDPOINT(productionConfig), projectId)
 }
 
-export function imagePathWithoutHashURL(projectId: string, fileName: string): string {
-  return urljoin(BASE_URL, 'project', projectId, fileName)
+export function imagePathWithoutHashURL(
+  productionConfig: boolean,
+  projectId: string,
+  fileName: string,
+): string {
+  return urljoin(BASE_URL(productionConfig), 'project', projectId, fileName)
 }
 
 export function imagePathURL(fileName: string): string {
@@ -55,18 +60,18 @@ export function imagePathURL(fileName: string): string {
 
 let CachedLoginStatePromise: Promise<LoginState> | null = null
 
-export async function getLoginState(): Promise<LoginState> {
+export async function getLoginState(productionConfig: boolean): Promise<LoginState> {
   if (CachedLoginStatePromise != null) {
     return CachedLoginStatePromise
   } else {
-    const promise = createGetLoginStatePromise()
+    const promise = createGetLoginStatePromise(productionConfig)
     CachedLoginStatePromise = promise
     return promise
   }
 }
 
-async function createGetLoginStatePromise(): Promise<LoginState> {
-  const url = UTOPIA_BACKEND + 'user'
+async function createGetLoginStatePromise(productionConfig: boolean): Promise<LoginState> {
+  const url = UTOPIA_BACKEND(productionConfig) + 'user'
   const response = await fetch(url, {
     method: 'GET',
     credentials: 'include',
@@ -83,8 +88,11 @@ async function createGetLoginStatePromise(): Promise<LoginState> {
   }
 }
 
-export async function checkProjectOwnership(projectId: string): Promise<ProjectOwnerState> {
-  const url = `${projectURL(projectId)}/owner`
+export async function checkProjectOwnership(
+  productionConfig: boolean,
+  projectId: string,
+): Promise<ProjectOwnerState> {
+  const url = `${projectURL(productionConfig, projectId)}/owner`
   const response = await fetch(url, {
     method: 'GET',
     credentials: 'include',
@@ -105,19 +113,20 @@ export async function checkProjectOwnership(projectId: string): Promise<ProjectO
 }
 
 function serverProjectListToProjectList(
+  productionConfig: boolean,
   serverProjectList: Array<ServerProjectListing>,
 ): Array<ProjectListing> {
   return serverProjectList.map((listing) => {
     return {
       ...listing,
-      thumbnail: thumbnailURL(listing.id),
+      thumbnail: thumbnailURL(productionConfig, listing.id),
     }
   })
 }
 
-export async function fetchProjectList(): Promise<Array<ProjectListing>> {
+export async function fetchProjectList(productionConfig: boolean): Promise<Array<ProjectListing>> {
   // GETs the list of all project IDs for a user
-  const url = UTOPIA_BACKEND + 'projects/'
+  const url = UTOPIA_BACKEND(productionConfig) + 'projects/'
   const response = await fetch(url, {
     method: 'GET',
     credentials: 'include',
@@ -126,7 +135,7 @@ export async function fetchProjectList(): Promise<Array<ProjectListing>> {
   })
   if (response.ok) {
     const responseBody: FetchProjectListResponse = await response.json()
-    return serverProjectListToProjectList(responseBody.projects.reverse())
+    return serverProjectListToProjectList(productionConfig, responseBody.projects.reverse())
   } else {
     // FIXME Client should show an error if server requests fail
     console.error(`Fetch project list failed (${response.status}): ${response.statusText}`)
@@ -134,9 +143,11 @@ export async function fetchProjectList(): Promise<Array<ProjectListing>> {
   }
 }
 
-export async function fetchShowcaseProjects(): Promise<Array<ProjectListing>> {
+export async function fetchShowcaseProjects(
+  productionConfig: boolean,
+): Promise<Array<ProjectListing>> {
   // GETs the list of all project IDs for a user
-  const url = UTOPIA_BACKEND + 'showcase/'
+  const url = UTOPIA_BACKEND(productionConfig) + 'showcase/'
   const response = await fetch(url, {
     method: 'GET',
     credentials: 'include',
@@ -145,7 +156,7 @@ export async function fetchShowcaseProjects(): Promise<Array<ProjectListing>> {
   })
   if (response.ok) {
     const responseBody: FetchProjectListResponse = await response.json()
-    return serverProjectListToProjectList(responseBody.projects)
+    return serverProjectListToProjectList(productionConfig, responseBody.projects)
   } else {
     // FIXME Client should show an error if server requests fail
     console.error(`Fetch showcase projects failed (${response.status}): ${response.statusText}`)
@@ -153,8 +164,11 @@ export async function fetchShowcaseProjects(): Promise<Array<ProjectListing>> {
   }
 }
 
-export async function deleteProjectFromServer(projectId: string): Promise<void> {
-  const url = projectURL(projectId)
+export async function deleteProjectFromServer(
+  productionConfig: boolean,
+  projectId: string,
+): Promise<void> {
+  const url = projectURL(productionConfig, projectId)
   const response = await fetch(url, {
     method: 'DELETE',
     credentials: 'include',

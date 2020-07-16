@@ -3,7 +3,7 @@
 import { getLoginState } from '../common/server'
 import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
 
-getLoginState()
+getLoginState(PRODUCTION_CONFIG)
 triggerHashedAssetsUpdate()
 
 import { addStyleSheetToPage } from '../core/shared/dom-utils'
@@ -42,6 +42,7 @@ editorCSS.forEach((url) => addStyleSheetToPage(url))
 editorCSSDontHash.forEach((url) => addStyleSheetToPage(url, false))
 
 import { Editor } from './editor'
+import { PRODUCTION_CONFIG } from '../core/shared/detect-env'
 
 // eslint-disable-next-line
 const EditorRunner = new Editor()

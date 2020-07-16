@@ -1,56 +1,26 @@
 // you can turn on/off debug features individually here
 
-// TODO BALAZS fix import.meta.env vs process.env
-
-export const PRODUCTION_ENV: boolean = import.meta.env.NODE_ENV === 'production'
-export const PRODUCTION_CONFIG: boolean =
-  import.meta.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
-
 export const PROBABLY_ELECTRON: boolean =
   typeof window === 'undefined' ||
   (window && (window as any)['process'] && (window as any)['process']['type'])
 
-export const USE_WEBPACK_SERVER = import.meta.env.WEBPACK_DEV_SERVER === 'true'
-
-export const SHOW_FPS = false
-export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
-export const RUN_PERFORMANCE_CHECK = false
-export const REFERENCE_EQUALITY_CHECK = false
-
-export const MIRROR_SERVER: string = PRODUCTION_CONFIG
-  ? 'wss://apps.utopia2d.com/'
-  : 'ws://localhost:8080/'
-export const MIRROR_SERVER_PUBLISH_ENDPOINT: string = MIRROR_SERVER + 'app'
-export const MIRROR_SERVER_LISTEN_ENDPOINT: string = MIRROR_SERVER + 'listen'
-
 export const HOST: string = typeof window === 'undefined' ? '' : window.location.host
-export const BASE_URL: string = PRODUCTION_CONFIG ? `https://${HOST}/` : `http://${HOST}/`
+export const BASE_URL = (productionConfig: boolean) =>
+  productionConfig ? `https://${HOST}/` : `http://${HOST}/`
 
-export const BASE_WS: string = PRODUCTION_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
+export const STATIC_BASE_URL = (productionConfig: boolean) =>
+  productionConfig ? `https://cdn.${HOST}/` : `http://${HOST}/`
 
-export const STATIC_BASE_URL: string = PRODUCTION_CONFIG
-  ? `https://cdn.${HOST}/`
-  : `http://${HOST}/`
+export const FLOATING_PREVIEW_BASE_URL = (productionConfig: boolean) =>
+  productionConfig ? `https://utopia.fm/` : BASE_URL(productionConfig)
 
-export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG ? `https://utopia.fm/` : BASE_URL
-export const UTOPIA_BACKEND = BASE_URL + 'v1/'
-export const UTOPIA_BACKEND_WS = BASE_WS + 'v1/'
-export const ASSET_ENDPOINT = UTOPIA_BACKEND + 'asset/'
-export const THUMBNAIL_ENDPOINT = UTOPIA_BACKEND + 'thumbnail/'
+export const UTOPIA_BACKEND = (productionConfig: boolean) => BASE_URL(productionConfig) + 'v1/'
+export const ASSET_ENDPOINT = (productionConfig: boolean) =>
+  UTOPIA_BACKEND(productionConfig) + 'asset/'
+export const THUMBNAIL_ENDPOINT = (productionConfig: boolean) =>
+  UTOPIA_BACKEND(productionConfig) + 'thumbnail/'
 
 export const PREVIEW_IS_EMBEDDED = isEmbedded()
-
-export const AUTH0_REDIRECT_URI: string = import.meta.env.REACT_APP_AUTH0_REDIRECT_URI || ''
-export const AUTH0_CLIENT_ID: string = import.meta.env.REACT_APP_AUTH0_CLIENT_ID || ''
-export const AUTH0_HOST: string = import.meta.env.REACT_APP_AUTH0_ENDPOINT || ''
-const USE_AUTH0 = AUTH0_REDIRECT_URI != '' && AUTH0_CLIENT_ID != '' && AUTH0_HOST != ''
-
-export const auth0Url = USE_AUTH0
-  ? `https://${AUTH0_HOST}/authorize?scope=openid%20profile%20email&response_type=code&client_id=${AUTH0_CLIENT_ID}&redirect_uri=${AUTH0_REDIRECT_URI}`
-  : `${BASE_URL}authenticate?code=logmein`
-
-const COMMIT_HASH = import.meta.env.REACT_APP_COMMIT_HASH || ''
-export const URL_HASH = COMMIT_HASH === '' ? 'nocommit' : COMMIT_HASH
 
 export function requireElectron() {
   if (PROBABLY_ELECTRON) {

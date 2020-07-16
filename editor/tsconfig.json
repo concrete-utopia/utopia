@@ -22,7 +22,8 @@
       "uuiui-deps": ["src/uuiui-deps"]
     },
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "strictFunctionTypes": true
   },
   "exclude": ["node_modules"]
 }

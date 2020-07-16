@@ -1,4 +1,4 @@
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 import { deleteProjectFromServer } from './server'
 
 export interface ProjectListing {
@@ -64,11 +64,11 @@ export async function getAndClearRedirectUrl(): Promise<string> {
   return redirectUrl == null ? '/projects' : redirectUrl
 }
 
-export async function deleteProject(projectId: string): Promise<void> {
+export async function deleteProject(productionConfig: boolean, projectId: string): Promise<void> {
   const localProject = await fetchLocalProject(projectId)
   if (localProject != null) {
     return localforage.removeItem(localProjectKey(projectId))
   } else {
-    return deleteProjectFromServer(projectId)
+    return deleteProjectFromServer(productionConfig, projectId)
   }
 }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
-import { auth0Url } from './common/env-vars'
+import { auth0Url } from './detect-env'
 import { Projects, Featured } from './projects'
 import { Settings } from './settings'
 import { getAndClearRedirectUrl } from './common/persistence'

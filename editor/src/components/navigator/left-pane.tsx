@@ -37,6 +37,7 @@ import { GridRow } from '../inspector/widgets/grid-row'
 import { DependencyList } from './dependency-list'
 import { NavigatorComponent } from './navigator'
 import { NO_OP } from '../../core/shared/utils'
+import { PRODUCTION_CONFIG } from '../../core/shared/detect-env'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -144,9 +145,10 @@ const previewImageContainerPadding = 4
 
 class ThumbnailComponent extends ReactComponent<ThumbnailProps, {}> {
   render() {
-    const urlToRequest: string = `${thumbnailURL(this.props.projectId)}?lastUpdated=${
-      this.props.thumbnailLastGenerated
-    }`
+    const urlToRequest: string = `${thumbnailURL(
+      PRODUCTION_CONFIG,
+      this.props.projectId,
+    )}?lastUpdated=${this.props.thumbnailLastGenerated}`
     return (
       <div
         onClick={this.props.action}

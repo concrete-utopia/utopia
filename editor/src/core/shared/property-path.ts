@@ -1,6 +1,6 @@
-import { PRODUCTION_ENV } from '../../common/env-vars'
 import { PropertyPath, PropertyPathPart } from './project-file-types'
 import { arrayEquals, fastForEach, longestCommonArray } from './utils'
+import { PRODUCTION_ENV } from './detect-env'
 
 export function fromString(value: string): PropertyPath {
   let fromPathStringCache: PropertyPath | null = globalPathStringToPathCache[value]

@@ -25,6 +25,7 @@ import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { useEditorState } from '../store/store-hook'
 import * as React from 'react'
 import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'
+import { PRODUCTION_CONFIG } from '../../../core/shared/detect-env'
 
 export async function findLatestVersion(packageName: string): Promise<string> {
   const requestInit: RequestInit = {
@@ -35,10 +36,9 @@ export async function findLatestVersion(packageName: string): Promise<string> {
 
   // Calls out to our services because of the wonder of CORS.
   const response = await fetch(
-    `${UTOPIA_BACKEND}javascript/package/metadata/${encodeURIComponent(packageName).replace(
-      /^%40/,
-      '@',
-    )}`,
+    `${UTOPIA_BACKEND(PRODUCTION_CONFIG)}javascript/package/metadata/${encodeURIComponent(
+      packageName,
+    ).replace(/^%40/, '@')}`,
     requestInit,
   )
   if (response.ok) {

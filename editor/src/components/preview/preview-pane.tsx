@@ -22,6 +22,7 @@ import { isCodeFile, CodeFile } from '../../core/shared/project-file-types'
 import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
 import { eitherToMaybe } from '../../core/shared/either'
 import { shareURLForProject } from '../../core/shared/utils'
+import { PRODUCTION_CONFIG } from '../../core/shared/detect-env'
 
 export const PreviewIframeId = 'preview-column-container'
 
@@ -201,7 +202,11 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
     const floatingPreviewURL =
       this.props.id == null
         ? ''
-        : shareURLForProject(FLOATING_PREVIEW_BASE_URL, this.props.id, this.props.projectName)
+        : shareURLForProject(
+            FLOATING_PREVIEW_BASE_URL(PRODUCTION_CONFIG),
+            this.props.id,
+            this.props.projectName,
+          )
     const iframePreviewURL =
       this.props.id == null
         ? ''
@@ -209,7 +214,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
     const popoutPreviewURL =
       this.props.id == null
         ? ''
-        : shareURLForProject(BASE_URL, this.props.id, this.props.projectName)
+        : shareURLForProject(BASE_URL(PRODUCTION_CONFIG), this.props.id, this.props.projectName)
 
     const iFrame = (
       <iframe

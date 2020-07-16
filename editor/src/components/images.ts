@@ -12,6 +12,7 @@ import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/sha
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/actions'
 import { forceNotNull } from '../core/shared/optional-utils'
+import { PRODUCTION_CONFIG } from '../core/shared/detect-env'
 
 export function getImageSrc(
   projectId: string | null,
@@ -28,7 +29,7 @@ export function getImageSrc(
           image.type == null || image.type.endsWith('.svg') ? 'image/svg+xml' : 'text/plain'
         return `data:${dataType};base64,${image.base64}`
       } else if (projectId != null) {
-        return encodeURI(`${BASE_URL}project/${projectId}/${imageId}`)
+        return encodeURI(`${BASE_URL(PRODUCTION_CONFIG)}project/${projectId}/${imageId}`)
       } else {
         console.error(
           `Unabled to find image source as project ID is null: ${JSON.stringify(image)}`,

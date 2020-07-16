@@ -4,10 +4,11 @@ import { imageFile, isImageFile } from '../../core/model/project-file-utils'
 import { ImageFile } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
 import { PersistentModel } from './store/editor-state'
+import { PRODUCTION_CONFIG } from '../../core/shared/detect-env'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
-export const PROJECT_ID_ENDPOINT = UTOPIA_BACKEND + 'projectid/'
+export const PROJECT_ID_ENDPOINT = UTOPIA_BACKEND(PRODUCTION_CONFIG) + 'projectid/'
 
 interface CreateProjectResponse {
   id: string
@@ -69,7 +70,7 @@ export async function updateSavedProject(
   name: string,
 ): Promise<SaveProjectResponse> {
   // PUTs the persistent model as JSON body.
-  const url = projectURL(projectId)
+  const url = projectURL(PRODUCTION_CONFIG, projectId)
   const bodyValue: SaveProjectRequest = {
     name: name,
     content: persistentModel,
@@ -95,7 +96,7 @@ export async function loadProject(
   lastSavedTS: string | null = null,
 ): Promise<LoadProjectResponse> {
   // GETs the persistent model as a JSON body
-  const baseUrl = projectURL(projectId)
+  const baseUrl = projectURL(PRODUCTION_CONFIG, projectId)
   const url = lastSavedTS == null ? baseUrl : `${baseUrl}?last_saved=${lastSavedTS}`
   const response = await fetch(url, {
     method: 'GET',
@@ -112,11 +113,12 @@ export async function loadProject(
 }
 
 export async function updateAssetFileName(
+  productionConfig: boolean,
   projectId: string,
   oldFileName: string,
   newFileName: string,
 ): Promise<void> {
-  const baseUrl = assetURL(projectId, newFileName)
+  const baseUrl = assetURL(productionConfig, projectId, newFileName)
   const url = `${baseUrl}?old_file_name=${oldFileName}`
   const response = await fetch(url, {
     method: 'PUT',
@@ -133,8 +135,12 @@ export async function updateAssetFileName(
   }
 }
 
-export async function deleteAssetFile(projectId: string, fileName: string): Promise<void> {
-  const url = assetURL(projectId, fileName)
+export async function deleteAssetFile(
+  productionConfig: boolean,
+  projectId: string,
+  fileName: string,
+): Promise<void> {
+  const url = assetURL(productionConfig, projectId, fileName)
   const response = await fetch(url, {
     method: 'DELETE',
     credentials: 'include',
@@ -149,13 +155,14 @@ export async function deleteAssetFile(projectId: string, fileName: string): Prom
 }
 
 async function saveAssetRequest(
+  productionConfig: boolean,
   projectId: string,
   fileType: string,
   base64: string,
   fileName: string,
 ): Promise<void> {
   const asset = Buffer.from(base64, 'base64')
-  const url = assetURL(projectId, fileName)
+  const url = assetURL(productionConfig, projectId, fileName)
   const response = await fetch(url, {
     method: 'POST',
     credentials: 'include',
@@ -172,13 +179,14 @@ async function saveAssetRequest(
 }
 
 export async function saveAsset(
+  productionConfig: boolean,
   projectId: string,
   fileType: string,
   base64: string,
   imageId: string,
 ): Promise<void> {
   try {
-    return saveAssetRequest(projectId, fileType, base64, imageId)
+    return saveAssetRequest(productionConfig, projectId, fileType, base64, imageId)
   } catch (e) {
     // FIXME Client should show an error if server requests fail
     console.error(e)
@@ -187,6 +195,7 @@ export async function saveAsset(
 }
 
 export async function saveImagesFromProject(
+  productionConfig: boolean,
   projectId: string,
   model: PersistentModel,
 ): Promise<PersistentModel> {
@@ -202,6 +211,7 @@ export async function saveImagesFromProject(
       try {
         promises.push(
           saveAssetRequest(
+            productionConfig,
             projectId,
             projectContent.imageType,
             projectContent.base64,
@@ -237,8 +247,12 @@ export async function saveImagesFromProject(
   })
 }
 
-export async function saveThumbnail(thumbnail: Buffer, projectId: string): Promise<void> {
-  const url = thumbnailURL(projectId)
+export async function saveThumbnail(
+  productionConfig: boolean,
+  thumbnail: Buffer,
+  projectId: string,
+): Promise<void> {
+  const url = thumbnailURL(productionConfig, projectId)
   const response = await fetch(url, {
     method: 'POST',
     credentials: 'include',
