@@ -5,7 +5,7 @@ import { Projects, Featured } from './projects'
 import { Settings } from './settings'
 import { getAndClearRedirectUrl } from './common/persistence'
 import { Policies } from './legal/policies'
-import Home from './jobs'
+import Jobs from './jobs'
 import Team from './team'
 import Prerelease from './prerelease'
 
@@ -32,7 +32,7 @@ class App extends Component {
       <Router>
         <div style={{ height: '100%' }}>
           <Switch>
-            <Route exact path='/' component={Home} />
+            <Route exact path='/' component={Jobs} />
             <Route exact path='/prerelease' component={Prerelease} />
             <Route exact path='/policies' component={Policies} />
             <Route exact path='/team' component={Team} />

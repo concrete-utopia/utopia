@@ -24,7 +24,7 @@ const Paragraph = styled.p({
   paddingBottom: '1em',
 })
 
-export default class Home extends React.Component {
+export default class Jobs extends React.Component {
   render() {
     return (
       <React.Fragment>
