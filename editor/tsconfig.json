@@ -3,6 +3,7 @@
     "outDir": "./lib",
     "target": "es2019",
     "module": "commonjs",
+    "moduleResolution": "node",
     "declaration": false,
     "removeComments": true,
     "noLib": false,
@@ -20,7 +21,8 @@
       "uuiui": ["src/uuiui"],
       "uuiui-deps": ["src/uuiui-deps"]
     },
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules"]
 }
