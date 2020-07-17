@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import * as React from 'react'
+import React from 'react'
 import { jsx } from '@emotion/core'
 import facepaint from 'facepaint'
 import Wrapper from './website-wrapper'
