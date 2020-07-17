@@ -53,4 +53,5 @@ testEnvironmentRuntime = EnvironmentRuntime
   , _startupLogging = _logOnStartup
   , _metricsStore = view storeForMetrics
   , _cacheForAssets = (\r -> readIORef $ _assetResultCache $ _assetsCaches r)
+  , _forceSSL = const False
   }

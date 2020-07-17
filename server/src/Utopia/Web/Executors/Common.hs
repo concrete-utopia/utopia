@@ -75,6 +75,7 @@ data EnvironmentRuntime r = EnvironmentRuntime
   , _startupLogging      :: r -> Bool
   , _metricsStore        :: r -> Store
   , _cacheForAssets      :: r -> IO AssetResultCache
+  , _forceSSL            :: r -> Bool
   }
 
 data AssetsCaches = AssetsCaches
