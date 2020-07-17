@@ -568,7 +568,6 @@ function getStoryboardRoot(
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElement = {
     component: BakedInStoryboardVariableName,
     container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
-    frame: {} as any, // TODO BB Hack this is not safe at all, the code expects a frame here
     scenePath: EmptyScenePathForStoryboard,
     templatePath: TP.instancePath([], []),
     globalFrame: null,
@@ -783,7 +782,7 @@ interface SceneRootProps extends CanvasReactReportErrorCallback {
   inScope: MapLike<any>
   hiddenInstances: Array<TemplatePath>
   componentProps: MapLike<any>
-  frame: NormalisedFrame
+  style: React.CSSProperties | null
   jsxFactoryFunctionName: string | null
   container: SceneContainer
   component: string | null
@@ -809,7 +808,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     fileBlobs,
     reportError,
     componentProps,
-    frame,
+    style,
     container,
     jsxFactoryFunctionName,
     component,
@@ -826,7 +825,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
   metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
     scenePath: scenePath,
     templatePath: templatePath,
-    frame: frame,
     container: container,
     component: component,
     globalFrame: null, // the real frame comes from the DOM walker
@@ -845,16 +843,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     }
   }
 
-  // For the sake of backwards compatibility, still pass through the scene's frame if layout is
-  // undefined in the props
-  // TODO I guess we can remove this backwards compatibility now
-  const passthroughLayout = componentProps?.layout ?? {
-    left: 0,
-    top: 0,
-    width: frame.width,
-    height: frame.height,
-  }
-
   let rootElement = null
   let validPaths: Array<InstancePath> = []
   if (content != null) {
@@ -863,7 +851,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       ...defaultProps,
       ...inputProps,
       ...componentProps,
-      layout: passthroughLayout,
     }
 
     rootElement = renderComponentUsingJsxFactoryFunction(
@@ -884,8 +871,8 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
 
   const sceneStyle: React.CSSProperties = {
     // TODO this should really be a property of the scene that you can change, similar to the preview.
+    ...style,
     backgroundColor: colorTheme.emphasizedBackground.value,
-    position: 'absolute',
     boxShadow: rerenderUtopiaContext.canvasIsLive
       ? UtopiaStyles.scene.live.boxShadow
       : UtopiaStyles.scene.editing.boxShadow,
@@ -898,7 +885,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
         data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
         style={sceneStyle}
         layout={{
-          ...frame,
           ...container,
         }}
       >
@@ -1001,7 +987,7 @@ function renderCoreElement(
         hiddenInstances={hiddenInstances}
         jsxFactoryFunctionName={jsxFactoryFunctionName}
         fileBlobs={fileBlobs}
-        frame={sceneProps.style}
+        style={sceneProps.style}
         inScope={inScope}
         reportError={Utils.NO_OP}
         requireResult={requireResult}

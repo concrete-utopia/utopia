@@ -73,12 +73,6 @@ describe('maybeSwitchLayoutProps', () => {
         scenePath: TP.scenePath([BakedInStoryboardUID, 'scene-aaa']),
         templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
         component: 'Component1',
-        frame: {
-          left: 0,
-          top: 0,
-          width: 375,
-          height: 812,
-        },
         container: {
           layoutSystem: LayoutSystem.PinSystem,
         },
