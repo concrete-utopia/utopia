@@ -3,7 +3,7 @@ import { BASE_URL, STATIC_BASE_URL } from '../common/env-vars'
 import { isBrowserEnvironment } from '../core/shared/utils'
 import { cachedPromise } from '../core/shared/promise-utils'
 import { PRODUCTION_CONFIG } from '../core/shared/detect-env'
-import urljoin from 'url-join'
+import urljoin = require('url-join')
 
 const HASHED_ASSETS_ENDPOINT = BASE_URL(PRODUCTION_CONFIG) + 'hashed-assets.json'
 
