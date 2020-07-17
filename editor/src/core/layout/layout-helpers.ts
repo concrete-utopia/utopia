@@ -280,7 +280,7 @@ export const LayoutHelpers = {
     child: ElementInstanceMetadata,
   ): Either<string, FlexStretch> {
     const parentScenePropsOrElementAttributes: PropsOrJSXAttributes | null = foldEither(
-      (parentScene) => left(parentScene.container),
+      (parentScene) => left(parentScene.globalFrame),
       (elementMetadata) => {
         return foldEither(
           (_) => null,

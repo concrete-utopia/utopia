@@ -20,7 +20,7 @@ import {
   BackgroundLayerProps,
   backgroundLayerTypeSelectOptions,
   getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue,
-  getIndexedToggleEnabled,
+  getIndexedUpdateEnabled,
   imageSelectOption,
   UseSubmitTransformedValuesFactory,
 } from './background-layer-helpers'
@@ -56,7 +56,7 @@ export const URLBackgroundLayer = betterReactMemo<URLBackgroundLayerProps>(
   'URLBackgroundLayer',
   (props) => {
     const [onCheckboxSubmitValue] = props.useSubmitTransformedValuesFactory(
-      getIndexedToggleEnabled(props.index),
+      getIndexedUpdateEnabled(props.index),
     )
     const [onURLSubmitValue] = props.useSubmitTransformedValuesFactory(
       getIndexedUpdateNewURL(props.index),

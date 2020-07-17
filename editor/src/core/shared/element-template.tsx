@@ -924,21 +924,19 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
 
 export interface ComponentMetadata {
   scenePath: ScenePath
+  templatePath: InstancePath
   rootElement: ElementInstanceMetadata | null
   component: string | null
   container: SceneContainer
   frame: NormalisedFrame
+  globalFrame: CanvasRectangle | null
   label?: string
 }
 
 export function isComponentMetadata(
   maybeComponentMetadata: any,
 ): maybeComponentMetadata is ComponentMetadata {
-  return (
-    maybeComponentMetadata.scenePath != null &&
-    maybeComponentMetadata.container != null &&
-    maybeComponentMetadata.frame != null
-  )
+  return maybeComponentMetadata.scenePath != null
 }
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>> // TODO update typescript!!

@@ -381,12 +381,11 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
             const dependencies = this.props.npmTypeDefinitions.npmDependencies
 
             return {
-              suggestions: Object.keys(dependencies).map(
-                (name) =>
+              suggestions: dependencies.map(
+                (dependency) =>
                   ({
-                    label: name,
-                    insertText: name,
-                    detail: dependencies.find((dep) => dep.name === name),
+                    label: dependency.name,
+                    insertText: dependency.name,
                     kind: monaco.languages.CompletionItemKind.Module,
                   } as monaco.languages.CompletionItem),
               ),

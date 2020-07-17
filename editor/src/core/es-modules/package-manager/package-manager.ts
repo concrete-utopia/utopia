@@ -18,6 +18,8 @@ import { EditorDispatch } from '../../../components/editor/action-types'
 import { memoize } from '../../shared/memoize'
 import { mapArrayToDictionary } from '../../shared/array-utils'
 import { updateNodeModulesContents } from '../../../components/editor/actions/actions'
+import { reactDomTypings, reactGlobalTypings, reactTypings } from './react-typings'
+import { utopiaApiTypings } from './utopia-api-typings'
 
 export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
 
@@ -175,6 +177,14 @@ export function getRequireFn(
   }
 }
 
+// These are used for code completion
+const UtopiaProvidedTypings = {
+  '/node_modules/react/index.d.ts': reactTypings,
+  '/node_modules/react/global.d.ts': reactGlobalTypings,
+  '/node_modules/react-dom/index.d.ts': reactDomTypings,
+  '/node_modules/utopia-api/index.d.ts': utopiaApiTypings,
+}
+
 export const getDependencyTypeDefinitions = memoize(
   (nodeModules: NodeModules): TypeDefinitions => {
     const dtsFilepaths = Object.keys(nodeModules).filter(
@@ -186,7 +196,10 @@ export const getDependencyTypeDefinitions = memoize(
       (filepath) => (nodeModules[filepath] as ESCodeFile).fileContents,
     )
 
-    return ret
+    return {
+      ...UtopiaProvidedTypings,
+      ...ret,
+    }
   },
   {
     maxSize: 1,

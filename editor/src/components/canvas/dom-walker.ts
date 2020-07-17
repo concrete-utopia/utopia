@@ -193,6 +193,14 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             const validPaths = validPathsAttr.value.split(' ')
             const metadata = walkSceneInner(scene, index, scenePath, validPaths)
             rootMetadata.push(...metadata)
+
+            const sceneMetadata = collectMetadata(
+              scene,
+              TP.instancePath([], TP.elementPathForPath(scenePath)),
+              null,
+              metadata,
+            )
+            rootMetadata.push(sceneMetadata)
           }
         }
       }
@@ -264,17 +272,11 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         }
         if (element instanceof HTMLElement) {
           const globalFrame = globalFrameForElement(element)
-          const localFrame = localRectangle(
-            Utils.offsetRect(globalFrame, Utils.negate(parentPoint)),
-          )
-
-          const specialMeasurements = getSpecialMeasurements(element)
 
           // Determine the uid of this element if it has one.
           const uidAttribute = getDOMAttribute(element, 'data-uid')
           const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
           const doNotTraverseAttribute = getDOMAttribute(element, 'data-utopia-do-not-traverse')
-          const labelAttribute = getDOMAttribute(element, 'data-label')
 
           const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
 
@@ -315,37 +317,50 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           }
 
           if (pathIsValid) {
-            const tagName = element.tagName.toLowerCase()
-
-            let elementProps: any = {}
-            if (uidAttribute != null) {
-              elementProps['data-uid'] = uidAttribute
-            }
-            if (originalUIDAttribute != null) {
-              elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
-            }
-            if (labelAttribute != null) {
-              elementProps['data-label'] = labelAttribute
-            }
-
-            return [
-              elementInstanceMetadata(
-                uniquePath,
-                left(tagName),
-                elementProps,
-                globalFrame,
-                localFrame,
-                metadataOfChildren,
-                false,
-                specialMeasurements,
-              ),
-            ]
+            return [collectMetadata(element, uniquePath, parentPoint, metadataOfChildren)]
           } else {
             return metadataOfChildren
           }
         } else {
           return []
         }
+      }
+
+      function collectMetadata(
+        element: HTMLElement,
+        instancePath: InstancePath,
+        parentPoint: CanvasPoint | null,
+        childrenMetadata: ElementInstanceMetadata[],
+      ): ElementInstanceMetadata {
+        const globalFrame = globalFrameForElement(element)
+        const localFrame =
+          parentPoint != null
+            ? localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
+            : null
+
+        const uidAttribute = getDOMAttribute(element, 'data-uid')
+        const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
+        const labelAttribute = getDOMAttribute(element, 'data-label')
+        let elementProps: any = {}
+        if (uidAttribute != null) {
+          elementProps['data-uid'] = uidAttribute
+        }
+        if (originalUIDAttribute != null) {
+          elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
+        }
+        if (labelAttribute != null) {
+          elementProps['data-label'] = labelAttribute
+        }
+        return elementInstanceMetadata(
+          instancePath,
+          left(element.tagName.toLowerCase()),
+          elementProps,
+          globalFrame,
+          localFrame,
+          childrenMetadata,
+          false,
+          getSpecialMeasurements(element),
+        )
       }
 
       let rootMetadata: Array<ElementInstanceMetadata> = []

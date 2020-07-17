@@ -18,8 +18,6 @@ import {
   packageJsonFileFromProjectContents,
   updatePackageJsonInEditorState,
 } from '../store/editor-state'
-import { reactDomTypings, reactGlobalTypings, reactTypings } from './react-typings'
-import { utopiaApiTypings } from './utopia-api-typings'
 import { objectMap } from '../../../core/shared/object-utils'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { useEditorState } from '../store/store-hook'

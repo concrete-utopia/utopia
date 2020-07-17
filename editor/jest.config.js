@@ -18,6 +18,7 @@ module.exports = {
           isolatedModules: true,
         },
       },
+      transformIgnorePatterns: ['/node_modules/(?!utopia-api)'], // this lets ts-jest work on `/node_modules/utopia-api` which is a simlink to `../utopia-api`.
     },
     {
       testEnvironment: '@jest-runner/electron/environment',

@@ -21,7 +21,7 @@ import {
   BackgroundLayerProps,
   backgroundLayerTypeSelectOptions,
   getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue,
-  getIndexedToggleEnabled,
+  getIndexedUpdateEnabled,
   getIndexedUpdateRadialOrConicGradientCenterX,
   getIndexedUpdateRadialOrConicGradientCenterY,
   radialGradientSelectOption,
@@ -36,7 +36,7 @@ export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackg
   'RadialGradientBackgroundLayer',
   (props) => {
     const [gradientCheckboxSubmitValue] = props.useSubmitTransformedValuesFactory(
-      getIndexedToggleEnabled(props.index),
+      getIndexedUpdateEnabled(props.index),
     )
     const onEnabledChange = React.useCallback(
       () => gradientCheckboxSubmitValue(!props.value.enabled),

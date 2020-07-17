@@ -2,7 +2,8 @@
   "name": "utopia-api",
   "version": "0.4.2",
   "description": "Utopia API",
-  "main": "dist/index.js",
+  "main": "src/index.ts",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rm -rf dist/",
@@ -10,7 +11,7 @@
     "test-watch": "jest --watch",
     "build": "tsc",
     "watch": "tsc --watch",
-    "dts-bundle": "npm-dts generate && node update-dts.js index.d.ts ../editor/src/components/editor/npm-dependency/utopia-api-typings.ts",
+    "dts-bundle": "npm-dts generate && node update-dts.js index.d.ts ../editor/src/core/es-modules/package-manager/utopia-api-typings.ts",
     "postinstall": "patch-package"
   },
   "repository": {
@@ -65,6 +66,6 @@
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "ts-jest": "26.1.1",
-    "typescript": "3.9.2"
+    "typescript": "3.9.6"
   }
 }

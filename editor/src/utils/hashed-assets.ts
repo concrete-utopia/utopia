@@ -18,9 +18,8 @@ export function triggerHashedAssetsUpdate(): Promise<void> {
         headers: HEADERS,
         mode: MODE,
       })
-      response.json().then((mappingsJSON) => {
-        HASHED_ASSETS_MAPPINGS = mappingsJSON
-      })
+      const mappingsJSON = await response.json()
+      HASHED_ASSETS_MAPPINGS = mappingsJSON
     } else {
       return Promise.resolve()
     }
@@ -38,4 +37,24 @@ function getPossiblyHashedURLInner(url: string): string {
 export function getPossiblyHashedURL(url: string): string {
   const relativeURL = getPossiblyHashedURLInner(url)
   return urljoin(STATIC_BASE_URL, relativeURL)
+}
+
+const prioritisedAssets = [
+  '/editor/icons/light/semantic/hamburgermenu-black-24x24@2x.png',
+  '/editor/icons/light/semantic/closedcube-black-24x24@2x.png',
+  '/editor/icons/light/semantic/closedcube-white-24x24@2x.png',
+  '/editor/icons/light/filetype/ui-darkgray-18x18@2x.png',
+  '/editor/icons/light/filetype/js-darkgray-18x18@2x.png',
+  '/editor/icons/light/semantic/externallink-large-black-24x24@2x.png',
+  '/editor/icons/light/semantic/cross-small-gray-16x16@2x.png',
+]
+
+export function preloadPrioritizedAssets() {
+  if (isBrowserEnvironment) {
+    prioritisedAssets.forEach((asset) => {
+      const url = getPossiblyHashedURL(asset)
+      fetch(url)
+    })
+    fetch('/editor/fills/light-primaryblue-p3.png') // FIXME Theme.ts should be using the cdn
+  }
 }
