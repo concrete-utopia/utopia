@@ -36,7 +36,7 @@ function getPossiblyHashedURLInner(url: string): string {
 
 export function getPossiblyHashedURL(url: string): string {
   const relativeURL = getPossiblyHashedURLInner(url)
-  return urljoin(STATIC_BASE_URL, relativeURL)
+  return urljoin(STATIC_BASE_URL(PRODUCTION_CONFIG), relativeURL)
 }
 
 const prioritisedAssets = [
