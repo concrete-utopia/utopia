@@ -61,8 +61,12 @@ import {
 } from '../../core/property-controls/property-controls-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { useResolvedPackageDependencies } from './npm-dependency/npm-dependency'
-import { NpmDependency } from '../../core/shared/npm-dependency-types'
+import {
+  PossiblyUnversionedNpmDependency,
+  isNpmDependency,
+} from '../../core/shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
+import { isBuiltinDependency } from '../../core/es-modules/package-manager/package-manager'
 
 interface CurrentFileComponent {
   componentName: string
@@ -78,7 +82,7 @@ interface InsertMenuProps {
   existingUIDs: Array<string>
   currentlyOpenFilename: string | null
   currentFileComponents: Array<CurrentFileComponent>
-  dependencies: Array<NpmDependency>
+  dependencies: Array<PossiblyUnversionedNpmDependency>
 }
 
 export const InsertMenu = betterReactMemo('InsertMenu', () => {
@@ -410,49 +414,57 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
           </InsertGroup>
         )}
         {this.props.dependencies.map((dependency, dependencyIndex) => {
-          const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
-          if (componentDescriptor == null) {
-            return null
-          } else {
-            return (
-              <InsertGroup label={componentDescriptor.name}>
-                {componentDescriptor.components.map((component, componentIndex) => {
-                  const insertItemOnMouseDown = () => {
-                    const newUID = generateUID(this.props.existingUIDs)
-                    const newElement = {
-                      ...component.element,
-                      props: {
-                        ...component.element.props,
-                        ['data-uid']: jsxAttributeValue(newUID),
-                      },
+          if (isNpmDependency(dependency)) {
+            const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
+            if (componentDescriptor == null) {
+              return null
+            } else {
+              return (
+                <InsertGroup label={componentDescriptor.name}>
+                  {componentDescriptor.components.map((component, componentIndex) => {
+                    const insertItemOnMouseDown = () => {
+                      const newUID = generateUID(this.props.existingUIDs)
+                      const newElement = {
+                        ...component.element,
+                        props: {
+                          ...component.element.props,
+                          ['data-uid']: jsxAttributeValue(newUID),
+                        },
+                      }
+                      this.props.editorDispatch(
+                        [
+                          enableInsertModeForJSXElement(
+                            newElement,
+                            newUID,
+                            component.importsToAdd,
+                            null,
+                          ),
+                        ],
+                        'everyone',
+                      )
                     }
-                    this.props.editorDispatch(
-                      [
-                        enableInsertModeForJSXElement(
-                          newElement,
-                          newUID,
-                          component.importsToAdd,
-                          null,
-                        ),
-                      ],
-                      'everyone',
+                    return (
+                      <InsertItem
+                        key={`insert-item-third-party-${dependencyIndex}-${componentIndex}`}
+                        type={'component'}
+                        label={component.name}
+                        selected={componentBeingInsertedEquals(
+                          currentlyBeingInserted,
+                          componentBeingInserted(component.importsToAdd, component.element.name),
+                        )}
+                        onMouseDown={insertItemOnMouseDown}
+                      />
                     )
-                  }
-                  return (
-                    <InsertItem
-                      key={`insert-item-third-party-${dependencyIndex}-${componentIndex}`}
-                      type={'component'}
-                      label={component.name}
-                      selected={componentBeingInsertedEquals(
-                        currentlyBeingInserted,
-                        componentBeingInserted(component.importsToAdd, component.element.name),
-                      )}
-                      onMouseDown={insertItemOnMouseDown}
-                    />
-                  )
-                })}
-              </InsertGroup>
-            )
+                  })}
+                </InsertGroup>
+              )
+            }
+          } else {
+            if (isBuiltinDependency(dependency.name)) {
+              return null
+            } else {
+              return <InsertGroup label={`Loading ${dependency.name}...`} />
+            }
           }
         })}
       </React.Fragment>
