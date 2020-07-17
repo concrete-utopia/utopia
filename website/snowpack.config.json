@@ -1,9 +1,17 @@
 {
   "extends": "@snowpack/app-scripts-react",
-  "scripts": {},
+  "scripts": {
+    "mount:public": "mount public --to /",
+    "mount:src": "mount src --to /static/_dist_",
+    "mount:web_modules": "mount web_modules --to /static/web_modules",
+    "mount:__snowpack__": "mount web_modules --to /static/__snowpack__"
+  },
   "plugins": [],
   "devOptions": {
     "port": 3000,
     "open": "none"
+  },
+  "buildOptions": {
+    "metaDir": "/static/__snowpack__"
   }
 }
