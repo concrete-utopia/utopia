@@ -32,7 +32,8 @@ type SessionState = State SessionStorage
 createSessionState :: Pool SqlBackend -> IO SessionState
 createSessionState pool = do
   let storage = SqlStorage pool
-  createState storage
+  sessionState <- createState storage
+  return $ setIdleTimeout Nothing sessionState
 
 deleteCookie :: SessionState -> SetCookie
 deleteCookie sessionState = def
@@ -70,8 +71,7 @@ getSessionIdFromCookie sessionState possibleCookieContents = do
 getUserIdFromCookie :: SessionState -> Maybe Text -> IO (Maybe Text)
 getUserIdFromCookie sessionState cookieContents = do
   let possibleSessionId = getSessionIdFromCookie sessionState cookieContents
-  (sessionData, saveSessionToken) <- loadSession sessionState $ fmap toS possibleSessionId
-  _ <- saveSession sessionState saveSessionToken sessionData -- Update the last accessed time
+  (sessionData, _) <- loadSession sessionState $ fmap toS possibleSessionId
   let possibleUserId = fmap toS $ M.lookup "user_id" $ unSessionMap sessionData
   return possibleUserId
 
