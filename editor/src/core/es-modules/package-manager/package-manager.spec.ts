@@ -77,7 +77,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    const nodeModules = await fetchNodeModules([{ name: 'react-spring', version: '8.0.27' }])
+    const nodeModules = await fetchNodeModules([npmDependency('react-spring', '8.0.27')])
     const req = getRequireFn(NO_OP, nodeModules)
     const reactSpring = req('/src/index.js', 'react-spring')
     expect(Object.keys(reactSpring)).not.toHaveLength(0)
@@ -99,7 +99,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    const nodeModules = await fetchNodeModules([{ name: 'antd', version: '4.2.5' }])
+    const nodeModules = await fetchNodeModules([npmDependency('antd', '4.2.5')])
     function addNewModules(newModules: NodeModules) {
       const updatedNodeModules = { ...nodeModules, ...newModules }
       const updatedReq = getRequireFn(NO_OP, updatedNodeModules, spyEvaluator)
@@ -136,7 +136,7 @@ describe('ES Dependency Manager — d.ts', () => {
       },
     )
 
-    const nodeModules = await fetchNodeModules([{ name: 'react-spring', version: '8.0.27' }])
+    const nodeModules = await fetchNodeModules([npmDependency('react-spring', '8.0.27')])
     const typings = getDependencyTypeDefinitions(nodeModules)
     expect(typings['/node_modules/react-spring/index.d.ts']).toBeDefined()
     expect(typings['/node_modules/react-spring/native.d.ts']).toBeDefined()
@@ -166,7 +166,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         }
       },
     )
-    const nodeModules = await fetchNodeModules([{ name: 'mypackage', version: '0.0.1' }])
+    const nodeModules = await fetchNodeModules([npmDependency('mypackage', '0.0.1')])
     function addNewModules(newModules: NodeModules) {
       const updatedNodeModules = { ...nodeModules, ...newModules }
       const updatedReq = getRequireFn(NO_OP, updatedNodeModules)
@@ -208,7 +208,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([{ name: 'react-spring', version: '8.0.27' }]).then((nodeModules) => {
+    fetchNodeModules([npmDependency('react-spring', '8.0.27')]).then((nodeModules) => {
       expect(Object.keys(nodeModules)).toHaveLength(228)
       expect(nodeModules['/node_modules/react-spring/index.d.ts']).toBeDefined()
       done()
@@ -222,7 +222,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([{ name: 'react-spring', version: '8.0.27' }]).then((nodeModules) => {
+    fetchNodeModules([npmDependency('react-spring', '8.0.27')]).then((nodeModules) => {
       expect(Object.keys(nodeModules)).toHaveLength(0)
       done()
     })
@@ -247,7 +247,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([{ name: 'react-spring', version: '8.0.27' }], false).then((nodeModules) => {
+    fetchNodeModules([npmDependency('react-spring', '8.0.27')], false).then((nodeModules) => {
       expect(Object.keys(nodeModules)).toHaveLength(0)
       done()
     })

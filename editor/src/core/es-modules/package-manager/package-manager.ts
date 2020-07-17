@@ -39,6 +39,21 @@ Error found in: ${filePath}
 ${FriendlyEsModuleErrorMessage}`)
 }
 
+// Ensure this and `resolveBuiltinDependency` are kept in sync.
+export function isBuiltinDependency(toImport: string): boolean {
+  switch (toImport) {
+    case 'utopia-api':
+    case 'uuiui':
+    case 'uuiui-deps':
+    case 'react':
+    case 'react-dom':
+      return true
+    default:
+      return false
+  }
+}
+
+// Ensure this and `isBuiltinDependency` are kept in sync.
 function resolveBuiltinDependency(toImport: string): any | undefined {
   const React = ImportedReact
   const ReactDOM = ImportedReactDOM
