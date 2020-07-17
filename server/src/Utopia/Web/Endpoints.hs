@@ -325,7 +325,7 @@ addCacheControl :: Middleware
 addCacheControl = addMiddlewareHeader "Cache-Control" "public, immutable, max-age=2592000"
 
 addCDNHeaders :: Middleware
-addCDNHeaders = fmap addAccessControlAllowOrigin $ addCacheControl
+addCDNHeaders = addCacheControl . addAccessControlAllowOrigin
 
 editorAssetsEndpoint :: FilePath -> ServerMonad Application
 editorAssetsEndpoint notProxiedPath = do
