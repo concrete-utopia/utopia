@@ -8,7 +8,7 @@ jobs:
     name: Test Editor
     runs-on: ubuntu-latest
     env:
-      UTOPIA_SHA: ${{ GITHUB_SHA }}
+      UTOPIA_SHA: ${{ github.sha }}
     steps:
       - name: Cancel existing runs on this branch
         uses: fauguste/auto-cancellation-running-action@0.1.4
@@ -63,7 +63,7 @@ jobs:
     name: Test Server
     runs-on: ubuntu-latest
     env:
-      UTOPIA_SHA: ${{ GITHUB_SHA }}
+      UTOPIA_SHA: ${{ github.sha }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
