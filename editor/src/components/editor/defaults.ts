@@ -21,6 +21,7 @@ export function defaultSceneElement(
       layoutSystem: 'pinSystem',
     }),
     component: jsxAttributeOtherJavaScript(component, `return ${componentName}`, [], null),
+    static: jsxAttributeValue(true),
     style: jsxAttributeValue(frame),
   }
 

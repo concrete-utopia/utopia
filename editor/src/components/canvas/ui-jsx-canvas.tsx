@@ -567,6 +567,7 @@ function getStoryboardRoot(
 
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElement = {
     component: BakedInStoryboardVariableName,
+    type: 'static',
     container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
     scenePath: EmptyScenePathForStoryboard,
     templatePath: TP.instancePath([], []),
@@ -782,10 +783,11 @@ interface SceneRootProps extends CanvasReactReportErrorCallback {
   inScope: MapLike<any>
   hiddenInstances: Array<TemplatePath>
   componentProps: MapLike<any>
-  style: React.CSSProperties | null
+  style: React.CSSProperties
   jsxFactoryFunctionName: string | null
   container: SceneContainer
   component: string | null
+  isStatic: boolean
 
   // this is even worse: this is secret props that are passed down from a utopia parent View
   // we put this here in case the Scene is inside another View
@@ -812,6 +814,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     container,
     jsxFactoryFunctionName,
     component,
+    isStatic,
     sceneUID,
     'data-uid': dataUidIgnore,
     ...inputProps
@@ -827,6 +830,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     templatePath: templatePath,
     container: container,
     component: component,
+    type: isStatic ? 'static' : 'dynamic',
     globalFrame: null, // the real frame comes from the DOM walker
     label: props.sceneLabel,
   }
@@ -869,13 +873,21 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     }
   }
 
+  let updatedStyleWithFrame = {}
+  if (isStatic) {
+    updatedStyleWithFrame = style
+  } else {
+    const { width, height, ...styleWithoutWidthHeight } = style
+    updatedStyleWithFrame = styleWithoutWidthHeight
+  }
+
   const sceneStyle: React.CSSProperties = {
     // TODO this should really be a property of the scene that you can change, similar to the preview.
-    ...style,
     backgroundColor: colorTheme.emphasizedBackground.value,
     boxShadow: rerenderUtopiaContext.canvasIsLive
       ? UtopiaStyles.scene.live.boxShadow
       : UtopiaStyles.scene.editing.boxShadow,
+    ...updatedStyleWithFrame,
   }
 
   return (
@@ -977,6 +989,7 @@ function renderCoreElement(
 
     const rootComponent = sceneProps.component
     const rootComponentName = sceneProps.component?.topLevelElementName
+    const isStatic = sceneProps.static
 
     const sceneId: string = sceneProps['data-uid'] || ''
     return (
@@ -987,12 +1000,13 @@ function renderCoreElement(
         hiddenInstances={hiddenInstances}
         jsxFactoryFunctionName={jsxFactoryFunctionName}
         fileBlobs={fileBlobs}
-        style={sceneProps.style}
+        style={sceneProps.style ?? {}}
         inScope={inScope}
         reportError={Utils.NO_OP}
         requireResult={requireResult}
         templatePath={templatePath}
         component={rootComponentName}
+        isStatic={isStatic}
         sceneUID={sceneId}
         sceneLabel={sceneProps['data-label']}
       />

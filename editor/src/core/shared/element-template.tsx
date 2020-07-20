@@ -929,6 +929,7 @@ export interface ComponentMetadata {
   component: string | null
   container: SceneContainer
   globalFrame: CanvasRectangle | null
+  type: 'static' | 'dynamic'
   label?: string
 }
 
