@@ -118,6 +118,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       scenePath: TP.scenePath([BakedInStoryboardUID, scene.uid]),
       templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
+      type: 'static',
       rootElement:
         component == null
           ? null
@@ -141,6 +142,7 @@ export function createFakeMetadataForComponents(
         component: component.name,
         globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
         container: { layoutSystem: LayoutSystem.PinSystem },
+        type: 'static',
         rootElement: createFakeMetadataForJSXElement(
           component.rootElement,
           TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),

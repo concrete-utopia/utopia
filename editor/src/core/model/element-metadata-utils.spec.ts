@@ -94,6 +94,7 @@ const testComponentScene: ComponentMetadata = {
     layoutSystem: LayoutSystem.PinSystem,
   },
   rootElement: testComponentRoot1,
+  type: 'static',
   globalFrame: canvasRectangle({
     x: 0,
     y: 0,
@@ -337,6 +338,7 @@ describe('getElementLabel', () => {
       templatePath: instancePath,
       component: 'App',
       container: { layoutSystem: LayoutSystem.PinSystem },
+      type: 'static',
       rootElement: divElementMetadata,
       globalFrame: canvasRectangle({
         x: 0,
