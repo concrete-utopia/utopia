@@ -18,8 +18,9 @@ import { betterReactMemo } from 'uuiui-deps'
 import { thumbnailURL } from '../../common/server'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
-import { UIJSFile, ProjectFile, isUIJSFile } from '../../core/shared/project-file-types'
 import { isRight } from '../../core/shared/either'
+import { isUIJSFile, ProjectFile } from '../../core/shared/project-file-types'
+import { NO_OP } from '../../core/shared/utils'
 import Utils from '../../utils/utils'
 import { CodeEditorTheme, CodeEditorThemeCollection } from '../code-editor/code-editor-themes'
 import { setFocus } from '../common/actions'
@@ -31,12 +32,12 @@ import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-s
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
-import { SelectOption } from '../inspector/controls/select-control'
 import { getControlStyles } from '../inspector/common/control-status'
+import { SelectOption } from '../inspector/controls/select-control'
 import { GridRow } from '../inspector/widgets/grid-row'
 import { DependencyList } from './dependency-list'
+import { ExternalResourcesList } from './external-resources/external-resources-list'
 import { NavigatorComponent } from './navigator'
-import { NO_OP } from '../../core/shared/utils'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -334,6 +335,7 @@ const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
       <ProjectSettingsPanel />
       <FileBrowser />
       <DependencyList />
+      <ExternalResourcesList />
       {/* <ResizableFlexColumn
         enable={{ bottom: true, right: false }}
         minHeight={100}
