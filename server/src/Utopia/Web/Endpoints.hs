@@ -17,6 +17,7 @@ import           Control.Lens
 import           Data.Aeson
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
+import           Data.CaseInsensitive
 import qualified Data.Text                       as T
 import           Data.Time
 import           Network.Wai
@@ -312,18 +313,24 @@ servePath :: FilePath -> ServerMonad Application
 servePath pathToServe = do
   servePath' pathToServe identity
 
-{-|
-   Adds `Access-Control-Allow-Origin` Header for the sake of CDN
--}
-addAccessControlAllowOrigin :: Middleware
-addAccessControlAllowOrigin applicationToWrap request sendResponse = do
-  let withHeaderSendResponse response = sendResponse $ mapResponseHeaders (\headers -> ("Access-Control-Allow-Origin", "*") : headers) response
+addMiddlewareHeader :: CI ByteString -> ByteString -> Middleware
+addMiddlewareHeader headerName headerValue applicationToWrap request sendResponse = do
+  let withHeaderSendResponse response = sendResponse $ mapResponseHeaders (\headers -> (headerName, headerValue) : headers) response
   applicationToWrap request withHeaderSendResponse
+
+addAccessControlAllowOrigin :: Middleware
+addAccessControlAllowOrigin = addMiddlewareHeader "Access-Control-Allow-Origin" "*"
+
+addCacheControl :: Middleware
+addCacheControl = addMiddlewareHeader "Cache-Control" "public, immutable, max-age=2592000"
+
+addCDNHeaders :: Middleware
+addCDNHeaders = addCacheControl . addAccessControlAllowOrigin
 
 editorAssetsEndpoint :: FilePath -> ServerMonad Application
 editorAssetsEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
-  fmap addAccessControlAllowOrigin $ maybe (servePath notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 8088 ["editor"]) possibleProxyManager
+  maybe (fmap addCDNHeaders $ servePath notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 8088 ["editor"]) possibleProxyManager
 
 monitoringEndpoint :: ServerMonad Value
 monitoringEndpoint = getMetrics
