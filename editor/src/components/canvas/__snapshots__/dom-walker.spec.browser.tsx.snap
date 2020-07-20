@@ -5,7 +5,6 @@ Array [
   Object {
     "component": "storyboard",
     "container": Object {},
-    "frame": Object {},
     "globalFrame": null,
     "label": "Storyboard",
     "rootElement": Object {
@@ -124,17 +123,12 @@ Array [
         "type": "scenepath",
       },
     },
+    "type": "static",
   },
   Object {
     "component": "App",
     "container": Object {
       "layoutSystem": "pinSystem",
-    },
-    "frame": Object {
-      "height": 812,
-      "left": 0,
-      "top": 0,
-      "width": 375,
     },
     "globalFrame": Object {
       "height": 812,
@@ -494,6 +488,7 @@ Array [
         "type": "scenepath",
       },
     },
+    "type": "static",
   },
 ]
 `;
@@ -503,7 +498,6 @@ Array [
   Object {
     "component": "storyboard",
     "container": Object {},
-    "frame": Object {},
     "globalFrame": null,
     "label": "Storyboard",
     "rootElement": Object {
@@ -622,17 +616,12 @@ Array [
         "type": "scenepath",
       },
     },
+    "type": "static",
   },
   Object {
     "component": "App",
     "container": Object {
       "layoutSystem": "pinSystem",
-    },
-    "frame": Object {
-      "height": 812,
-      "left": 0,
-      "top": 0,
-      "width": 375,
     },
     "globalFrame": Object {
       "height": 812,
@@ -761,6 +750,7 @@ Array [
         "type": "scenepath",
       },
     },
+    "type": "static",
   },
 ]
 `;
@@ -770,7 +760,6 @@ Array [
   Object {
     "component": "storyboard",
     "container": Object {},
-    "frame": Object {},
     "globalFrame": null,
     "label": "Storyboard",
     "rootElement": Object {
@@ -889,17 +878,12 @@ Array [
         "type": "scenepath",
       },
     },
+    "type": "static",
   },
   Object {
     "component": "App",
     "container": Object {
       "layoutSystem": "pinSystem",
-    },
-    "frame": Object {
-      "height": 812,
-      "left": 0,
-      "top": 0,
-      "width": 375,
     },
     "globalFrame": Object {
       "height": 812,
@@ -1235,6 +1219,7 @@ Array [
         "type": "scenepath",
       },
     },
+    "type": "static",
   },
 ]
 `;
@@ -1244,7 +1229,6 @@ Array [
   Object {
     "component": "storyboard",
     "container": Object {},
-    "frame": Object {},
     "globalFrame": null,
     "label": "Storyboard",
     "rootElement": Object {
@@ -1363,17 +1347,12 @@ Array [
         "type": "scenepath",
       },
     },
+    "type": "static",
   },
   Object {
     "component": "App",
     "container": Object {
       "layoutSystem": "pinSystem",
-    },
-    "frame": Object {
-      "height": 812,
-      "left": 0,
-      "top": 0,
-      "width": 375,
     },
     "globalFrame": Object {
       "height": 812,
@@ -1710,6 +1689,7 @@ Array [
         "type": "scenepath",
       },
     },
+    "type": "static",
   },
 ]
 `;
@@ -1719,7 +1699,6 @@ Array [
   Object {
     "component": "storyboard",
     "container": Object {},
-    "frame": Object {},
     "globalFrame": null,
     "label": "Storyboard",
     "rootElement": Object {
@@ -1838,17 +1817,12 @@ Array [
         "type": "scenepath",
       },
     },
+    "type": "static",
   },
   Object {
     "component": "App",
     "container": Object {
       "layoutSystem": "pinSystem",
-    },
-    "frame": Object {
-      "height": 812,
-      "left": 0,
-      "top": 0,
-      "width": 375,
     },
     "globalFrame": Object {
       "height": 812,
@@ -2188,6 +2162,7 @@ Array [
         "type": "scenepath",
       },
     },
+    "type": "static",
   },
 ]
 `;

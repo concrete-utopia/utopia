@@ -883,6 +883,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
 
   const sceneStyle: React.CSSProperties = {
     // TODO this should really be a property of the scene that you can change, similar to the preview.
+    position: 'absolute',
     backgroundColor: colorTheme.emphasizedBackground.value,
     boxShadow: rerenderUtopiaContext.canvasIsLive
       ? UtopiaStyles.scene.live.boxShadow
