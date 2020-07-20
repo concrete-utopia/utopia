@@ -256,5 +256,6 @@ productionEnvironmentRuntime = EnvironmentRuntime
   , _startupLogging = const True
   , _metricsStore = view storeForMetrics
   , _cacheForAssets = (\r -> readIORef $ _assetResultCache $ _assetsCaches r)
+  , _forceSSL = const True
   }
 
