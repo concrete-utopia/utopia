@@ -11,6 +11,9 @@ const testFile = `
   <link href="http://utopia.com/styles.css" rel="stylesheet">
   <!-- Random extra comment that doesn't belong -->
   <link href="//utopia.com/styles.css" rel="stylesheet">
+  <link href="/favicon.ico" rel="icon">
+  <link href="apple-icon-114.png" rel="apple-touch-icon-precomposed" sizes="114x114" type="image/png">
+  <link rel="preload" href="myFont.woff2" as="font" type="font/woff2" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa&text=Hello%20World" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa&text=%c2%a1Hola!" rel="stylesheet">
   <!-- End Generated Utopia External Links -->
@@ -35,8 +38,11 @@ describe('external-resources-parser', () => {
         <link href=\\"http://utopia.com/styles.css\\" rel=\\"stylesheet\\">
         <!-- Random extra comment that doesn't belong -->
         <link href=\\"//utopia.com/styles.css\\" rel=\\"stylesheet\\">
+        <link href=\\"/favicon.ico\\" rel=\\"icon\\">
+        <link rel=\\"apple-touch-icon-precomposed\\" sizes=\\"114x114\\" href=\\"apple-icon-114.png\\" type=\\"image/png\\">
         <link href=\\"https://fonts.googleapis.com/css2?family=Comfortaa&text=Hello%20World\\" rel=\\"stylesheet\\">
-        <link href=\\"https://fonts.googleapis.com/css2?family=Comfortaa&text=%c2%a1Hola!\\" rel=\\"stylesheet\\">",
+        <link href=\\"https://fonts.googleapis.com/css2?family=Comfortaa&text=%c2%a1Hola!\\" rel=\\"stylesheet\\">
+        <!-- End Generated Utopia External Links -->",
       }
     `)
 
@@ -48,14 +54,27 @@ describe('external-resources-parser', () => {
           "genericExternalResources": Array [
             Object {
               "href": "https://utopia.com/styles.css",
+              "rel": "stylesheet",
               "type": "generic-external-resource",
             },
             Object {
               "href": "http://utopia.com/styles.css",
+              "rel": "stylesheet",
               "type": "generic-external-resource",
             },
             Object {
               "href": "//utopia.com/styles.css",
+              "rel": "stylesheet",
+              "type": "generic-external-resource",
+            },
+            Object {
+              "href": "/favicon.ico",
+              "rel": "icon",
+              "type": "generic-external-resource",
+            },
+            Object {
+              "href": "apple-icon-114.png",
+              "rel": "apple-touch-icon-precomposed",
               "type": "generic-external-resource",
             },
           ],
