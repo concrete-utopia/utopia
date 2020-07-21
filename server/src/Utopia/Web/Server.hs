@@ -13,6 +13,7 @@ import qualified Network.Wai.Handler.Warp    as Warp
 
 import           Network.HTTP.Types.Method
 import           Network.HTTP.Types.Status
+import           Network.Wai.Middleware.ForceSSL
 import           Network.Wai.Middleware.Gzip
 import           Protolude
 import           Servant
@@ -137,8 +138,10 @@ runServerWithResources EnvironmentRuntime{..} = do
   exceptionSemaphore <- newQSem 1
   let settings = Warp.setPort port $ Warp.setOnException (exceptionHandler exceptionSemaphore) Warp.defaultSettings
   let assetsCache = _cacheForAssets resources
+  let shouldForceSSL = _forceSSL resources
   threadId <- forkIO $ Warp.runSettings settings
     $ limitRequestSizeMiddleware (1024 * 1024 * 5) -- 5MB
+    $ ifRequest (\_ -> shouldForceSSL) forceSSL
     $ redirector [projectPathRedirection, previewInnerPathRedirection]
     $ requestRewriter assetsCache
     $ gzip def

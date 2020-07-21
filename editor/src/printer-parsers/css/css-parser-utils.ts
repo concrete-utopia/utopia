@@ -453,12 +453,19 @@ export function traverseForPreparsedLayers(
   workingValue = '',
 ): Array<PreparsedLayer> {
   if (remaining.length === 0) {
-    layers.push(preparsedLayer(workingValue.trim(), !inComment))
+    const trimmedWorkingValue = workingValue.trim()
+    if (trimmedWorkingValue !== '') {
+      layers.push(preparsedLayer(trimmedWorkingValue, !inComment))
+    }
     return layers
   }
   switch (remaining[0]) {
     case '/': {
       if (remaining[1] === '*') {
+        const trimmedWorkingValue = workingValue.trim()
+        if (trimmedWorkingValue !== '') {
+          layers.push(preparsedLayer(trimmedWorkingValue, false))
+        }
         return traverseForPreparsedLayers(remaining.slice(2), true, layers, '')
       } else {
         return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue + '/')

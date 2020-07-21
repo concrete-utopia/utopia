@@ -5,7 +5,12 @@ import {
 } from './third-party-types'
 import { AntdComponents } from './antd-components'
 import { satisfies } from 'semver'
-import { NpmDependency } from '../shared/npm-dependency-types'
+import {
+  NpmDependency,
+  PossiblyUnversionedNpmDependency,
+  unversionedNpmDependency,
+  npmDependency,
+} from '../shared/npm-dependency-types'
 import { NodeModules, isEsCodeFile } from '../shared/project-file-types'
 import { fastForEach } from '../shared/utils'
 import { parseVersionPackageJsonFile } from '../../utils/package-parser-utils'
@@ -36,15 +41,21 @@ export function getThirdPartyComponents(
 export function resolvedDependencyVersions(
   dependencies: Array<NpmDependency>,
   files: NodeModules,
-): Array<NpmDependency> {
-  let result: Array<NpmDependency> = []
+): Array<PossiblyUnversionedNpmDependency> {
+  let result: Array<PossiblyUnversionedNpmDependency> = []
   fastForEach(dependencies, (dependency) => {
+    let version: string | null = null
     const packageJsonFile = files[`/node_modules/${dependency.name}/package.json`]
     if (packageJsonFile != null && isEsCodeFile(packageJsonFile)) {
       const parseResult = parseVersionPackageJsonFile(packageJsonFile.fileContents)
       forEachRight(parseResult, (resolvedVersion) => {
-        result.push({ name: dependency.name, version: resolvedVersion })
+        version = resolvedVersion
       })
+    }
+    if (version == null) {
+      result.push(unversionedNpmDependency(dependency.name))
+    } else {
+      result.push(npmDependency(dependency.name, version))
     }
   })
   return result

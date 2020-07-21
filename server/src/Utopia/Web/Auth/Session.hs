@@ -32,7 +32,8 @@ type SessionState = State SessionStorage
 createSessionState :: Pool SqlBackend -> IO SessionState
 createSessionState pool = do
   let storage = SqlStorage pool
-  createState storage
+  sessionState <- createState storage
+  return $ setIdleTimeout Nothing sessionState
 
 deleteCookie :: SessionState -> SetCookie
 deleteCookie sessionState = def

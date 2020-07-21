@@ -17,12 +17,12 @@ export function defaultSceneElement(
   const props = {
     'data-uid': jsxAttributeValue(uid),
     'data-label': jsxAttributeValue(label),
-    layout: jsxAttributeValue({
-      layoutSystem: 'pinSystem',
-    }),
     component: jsxAttributeOtherJavaScript(component, `return ${componentName}`, [], null),
     static: jsxAttributeValue(true),
-    style: jsxAttributeValue(frame),
+    style: jsxAttributeValue({
+      position: 'absolute',
+      ...frame,
+    }),
   }
 
   return jsxElement(jsxElementName('Scene', []), props, [], null)

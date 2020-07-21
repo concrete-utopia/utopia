@@ -3,7 +3,11 @@ import * as R from 'ramda'
 import { MapLike } from 'typescript'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { sameCodeFile } from '../../../core/model/project-file-utils'
-import { NpmDependency, npmDependency } from '../../../core/shared/npm-dependency-types'
+import {
+  NpmDependency,
+  npmDependency,
+  PossiblyUnversionedNpmDependency,
+} from '../../../core/shared/npm-dependency-types'
 import {
   isCodeFile,
   Imports,
@@ -136,7 +140,7 @@ export function usePackageDependencies(): Array<NpmDependency> {
   }, [packageJsonFile])
 }
 
-export function useResolvedPackageDependencies(): Array<NpmDependency> {
+export function useResolvedPackageDependencies(): Array<PossiblyUnversionedNpmDependency> {
   const basePackageDependencies = usePackageDependencies()
   const files = useEditorState((store) => {
     return store.editor.nodeModules.files
