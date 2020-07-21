@@ -5,10 +5,12 @@ import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/element-metadata-utils'
 import {
   DetectedLayoutSystem,
   ElementInstanceMetadata,
+  ComputedStyle,
   elementInstanceMetadata,
   SpecialSizeMeasurements,
   specialSizeMeasurements,
   emptySpecialSizeMeasurements,
+  emptyComputedStyle,
 } from '../../core/shared/element-template'
 import { id, TemplatePath, InstancePath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
@@ -172,6 +174,18 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         )
       }
 
+      function getComputedStyle(element: HTMLElement): ComputedStyle {
+        const elementStyle = window.getComputedStyle(element)
+        let computedStyle: ComputedStyle = {}
+        if (elementStyle != null) {
+          Object.keys(elementStyle).forEach((key) => {
+            computedStyle[key] = elementStyle.getPropertyValue(key)
+          })
+        }
+
+        return computedStyle
+      }
+
       function getDOMAttribute(element: HTMLElement, attributeName: string): string | null {
         const attr = element.attributes.getNamedItemNS(null, attributeName)
         if (attr == null) {
@@ -224,6 +238,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           childMetadata,
           false,
           emptySpecialSizeMeasurements,
+          emptyComputedStyle,
         )
         rootMetadata.push(metadata)
       }
@@ -360,6 +375,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           childrenMetadata,
           false,
           getSpecialMeasurements(element),
+          getComputedStyle(element),
         )
       }
 

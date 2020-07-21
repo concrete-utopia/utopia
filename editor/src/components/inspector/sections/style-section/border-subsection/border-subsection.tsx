@@ -166,7 +166,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
     </GridRow>
   )
 
-  const showBorder: boolean = value.width != null || value.color != null || value.style != null
+  const borderSet: boolean = controlStatus !== 'unset'
 
   const contextMenuItems = utils.stripNulls([
     'border' in value ? addOnUnsetValues(['border parameters'], onUnsetValues) : null,
@@ -190,11 +190,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
           Border
         </FlexRow>
         {propertyStatus.overwritable ? (
-          <SquareButton
-            highlight
-            onMouseDown={onInsertMouseDown}
-            disabled={value.color != null || value.width != null || value.style != null}
-          >
+          <SquareButton highlight onMouseDown={onInsertMouseDown} disabled={borderSet}>
             <Icn
               style={{ paddingTop: 1 }}
               category='semantic'
@@ -207,7 +203,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
         ) : null}
       </InspectorSubsectionHeader>
 
-      {showBorder ? (
+      {borderSet ? (
         isCSSUnknownFunctionParameters(value) ? (
           <FakeUnknownArrayItem controlStatus={controlStatus} />
         ) : (

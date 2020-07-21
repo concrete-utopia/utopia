@@ -14,6 +14,7 @@ import {
   defaultPropsParam,
   emptySpecialSizeMeasurements,
   clearTopLevelElementUniqueIDs,
+  emptyComputedStyle,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import { uiJsFile } from '../../../core/model/project-file-utils'
@@ -793,10 +794,12 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
               children: [],
               componentInstance: false,
               specialSizeMeasurements: emptySpecialSizeMeasurements,
+              computedStyle: emptyComputedStyle,
             },
           ],
           componentInstance: false,
           specialSizeMeasurements: emptySpecialSizeMeasurements,
+          computedStyle: emptyComputedStyle,
         },
       },
     ],

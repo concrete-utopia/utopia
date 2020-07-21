@@ -815,6 +815,8 @@ export function isArbitraryJSBlock(
   return topLevelElement.type === 'ARBITRARY_JS_BLOCK'
 }
 
+export type ComputedStyle = { [key: string]: string }
+
 export interface ElementInstanceMetadata {
   templatePath: InstancePath
   element: Either<string, JSXElementChild>
@@ -824,6 +826,7 @@ export interface ElementInstanceMetadata {
   children: Array<ElementInstanceMetadata>
   componentInstance: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
+  computedStyle: ComputedStyle
 }
 
 export function elementInstanceMetadata(
@@ -835,6 +838,7 @@ export function elementInstanceMetadata(
   children: Array<ElementInstanceMetadata>,
   componentInstance: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
+  computedStyle: ComputedStyle,
 ): ElementInstanceMetadata {
   return {
     templatePath: templatePath,
@@ -845,6 +849,7 @@ export function elementInstanceMetadata(
     children: children,
     componentInstance: componentInstance,
     specialSizeMeasurements: sizeMeasurements,
+    computedStyle: computedStyle,
   }
 }
 
@@ -921,6 +926,8 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   0,
 )
+
+export const emptyComputedStyle: ComputedStyle = {}
 
 export interface ComponentMetadata {
   scenePath: ScenePath
