@@ -90,11 +90,11 @@ const testComponentScene: ComponentMetadata = {
   scenePath: TP.scenePath([BakedInStoryboardUID, TestScenePath]),
   templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
   component: 'MyView',
-  frame: { left: 0, top: 0, width: 100, height: 100 },
   container: {
     layoutSystem: LayoutSystem.PinSystem,
   },
   rootElement: testComponentRoot1,
+  type: 'static',
   globalFrame: canvasRectangle({
     x: 0,
     y: 0,
@@ -337,8 +337,8 @@ describe('getElementLabel', () => {
       scenePath: scenePath,
       templatePath: instancePath,
       component: 'App',
-      frame: { left: 0, top: 0, width: 100, height: 100 },
       container: { layoutSystem: LayoutSystem.PinSystem },
+      type: 'static',
       rootElement: divElementMetadata,
       globalFrame: canvasRectangle({
         x: 0,

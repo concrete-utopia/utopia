@@ -125,12 +125,9 @@ const Canvas = {
     }
 
     return Utils.flatMapArray((rootComponent) => {
-      return rootComponent.rootElement == null
+      return rootComponent.rootElement == null || rootComponent.globalFrame == null
         ? []
-        : recurseChildren(
-            normalisedFrameToCanvasFrame(rootComponent.frame),
-            rootComponent.rootElement,
-          ).frames
+        : recurseChildren(rootComponent.globalFrame, rootComponent.rootElement).frames
     }, components)
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {

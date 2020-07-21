@@ -928,8 +928,8 @@ export interface ComponentMetadata {
   rootElement: ElementInstanceMetadata | null
   component: string | null
   container: SceneContainer
-  frame: NormalisedFrame
   globalFrame: CanvasRectangle | null
+  type: 'static' | 'dynamic'
   label?: string
 }
 
