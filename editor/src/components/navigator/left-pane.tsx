@@ -36,7 +36,6 @@ import { getControlStyles } from '../inspector/common/control-status'
 import { SelectOption } from '../inspector/controls/select-control'
 import { GridRow } from '../inspector/widgets/grid-row'
 import { DependencyList } from './dependency-list'
-import { ExternalResourcesList } from './external-resources/external-resources-list'
 import { NavigatorComponent } from './navigator'
 
 export interface LeftPaneProps {
