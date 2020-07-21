@@ -54,6 +54,5 @@ export function preloadPrioritizedAssets() {
       const url = getPossiblyHashedURL(asset)
       fetch(url)
     })
-    fetch('/editor/fills/light-primaryblue-p3.png') // FIXME Theme.ts should be using the cdn
   }
 }

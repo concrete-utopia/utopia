@@ -73,15 +73,10 @@ describe('maybeSwitchLayoutProps', () => {
         scenePath: TP.scenePath([BakedInStoryboardUID, 'scene-aaa']),
         templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
         component: 'Component1',
-        frame: {
-          left: 0,
-          top: 0,
-          width: 375,
-          height: 812,
-        },
         container: {
           layoutSystem: LayoutSystem.PinSystem,
         },
+        type: 'static',
         globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
         rootElement: {
           templatePath: TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], [NewUID]),

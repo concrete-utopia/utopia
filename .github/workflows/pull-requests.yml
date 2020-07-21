@@ -5,6 +5,8 @@ jobs:
   test-editor:
     name: Test Editor PR
     runs-on: ubuntu-latest
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
     steps:
       - name: Cancel existing runs on this branch
         uses: fauguste/auto-cancellation-running-action@0.1.4

@@ -305,7 +305,7 @@ assetPathsAndBuilders =
 
 initialiseResources :: IO DevServerResources
 initialiseResources = do
-  maybeCommitHash <- lookupEnv "GITHUB_SHA"
+  maybeCommitHash <- lookupEnv "UTOPIA_SHA"
   let _commitHash = fromMaybe "nocommit" $ fmap toS maybeCommitHash
   _projectPool <- DB.createDatabasePoolFromEnvironment
   shouldProxy <- shouldProxyWebpack

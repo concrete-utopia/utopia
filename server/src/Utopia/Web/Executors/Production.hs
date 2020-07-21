@@ -221,7 +221,7 @@ assetPathsAndBuilders =
 
 initialiseResources :: IO ProductionServerResources
 initialiseResources = do
-  _commitHash <- fmap toS $ getEnv "GITHUB_SHA"
+  _commitHash <- fmap toS $ getEnv "UTOPIA_SHA"
   _projectPool <- DB.createDatabasePoolFromEnvironment
   maybeAuth0Resources <- getAuth0Environment
   _auth0Resources <- maybe (panic "No Auth0 environment configured") return maybeAuth0Resources
