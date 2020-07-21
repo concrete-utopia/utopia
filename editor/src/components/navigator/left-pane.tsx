@@ -335,7 +335,6 @@ const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
       <ProjectSettingsPanel />
       <FileBrowser />
       <DependencyList />
-      <ExternalResourcesList />
       {/* <ResizableFlexColumn
         enable={{ bottom: true, right: false }}
         minHeight={100}

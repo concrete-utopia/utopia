@@ -1,20 +1,19 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
-import * as React from 'react'
-import { Either, isRight, left, right } from '../../../core/shared/either'
-import { CodeFile, isCodeFile, ProjectContents } from '../../../core/shared/project-file-types'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState } from '../../components/editor/store/store-hook'
+import { Either, isRight, left, right } from '../../core/shared/either'
+import { CodeFile, isCodeFile, ProjectContents } from '../../core/shared/project-file-types'
 
 const googleFontsURIStart = 'https://fonts.googleapis.com/css2?'
 const generatedExternalResourcesLinksOpen = '<!-- Begin Generated Utopia External Links -->'
 const generatedExternalResourcesLinksClose = '<!-- End Generated Utopia External Links -->'
 
-function getGeneratedExternalLinkText(htmlFile: CodeFile): Either<string, string> {
-  const startIndex = htmlFile.fileContents.indexOf(generatedExternalResourcesLinksOpen)
+export function getGeneratedExternalLinkText(htmlFileContents: string): Either<string, string> {
+  const startIndex = htmlFileContents.indexOf(generatedExternalResourcesLinksOpen)
   if (startIndex === -1) {
     return left(`Opening comment ${generatedExternalResourcesLinksOpen} not found`)
   }
-  const beginningTrimmed = htmlFile.fileContents.slice(
+  const beginningTrimmed = htmlFileContents.slice(
     startIndex + generatedExternalResourcesLinksOpen.length,
   )
   const endIndex = beginningTrimmed.indexOf(generatedExternalResourcesLinksClose)
@@ -73,25 +72,29 @@ function genericExternalResource(href: string): GenericExternalResource {
 interface GoogleFontsResource {
   type: 'google-fonts-resource'
   fontFamily: string
-  styles: string // placeholder
+  fontStyleParams?: string // placeholder
 }
 
-function googleFontsResource(fontFamily: string, styles: string): GoogleFontsResource {
+function googleFontsResource(fontFamily: string, fontStyleParams?: string): GoogleFontsResource {
   return {
     type: 'google-fonts-resource',
     fontFamily,
-    styles,
+    fontStyleParams,
   }
 }
 
 function getGoogleFontsResourceFromURL(familyParam: string): GoogleFontsResource {
   const dividerIndex = familyParam.indexOf(':')
-  const fontFamily = familyParam.slice(0, dividerIndex)
-  const fontStyles = familyParam.slice(dividerIndex)
-  return googleFontsResource(fontFamily, fontStyles)
+  if (dividerIndex === -1) {
+    return googleFontsResource(familyParam)
+  } else {
+    const fontFamily = familyParam.slice(0, dividerIndex)
+    const fontStyleParams = familyParam.slice(dividerIndex)
+    return googleFontsResource(fontFamily, fontStyleParams)
+  }
 }
 
-function parseLinkTags(linkTagsText: string): Either<string, ExternalResources> {
+export function parseLinkTags(linkTagsText: string): Either<string, ExternalResources> {
   const parsed = NodeHTMLParser.parse(linkTagsText)
   if (parsed != null && parsed.valid) {
     let genericExternalResources: Array<GenericExternalResource> = []
@@ -124,45 +127,21 @@ function parseLinkTags(linkTagsText: string): Either<string, ExternalResources> 
   }
 }
 
-function GenericExternalResourcesList(props: { values: Array<GenericExternalResource> }) {
-  return null
-}
-function GoogleFontsResourcesList(props: { values: Array<GoogleFontsResource> }) {
-  return null
-}
-
-export const ExternalResourcesList = () => {
+export function useExternalResources(): Either<string, ExternalResources> {
   const { editorState } = useEditorState((store) => ({
     dispatch: store.dispatch,
     editorState: store.editor,
     derivedState: store.derived,
   }))
-
   const parsedContents = getPreviewHTMLFileContents(editorState.projectContents)
-  let resources: ExternalResources | null = null
   if (isRight(parsedContents)) {
-    const parsedLinkTagsText = getGeneratedExternalLinkText(parsedContents.value)
+    const parsedLinkTagsText = getGeneratedExternalLinkText(parsedContents.value.fileContents)
     if (isRight(parsedLinkTagsText)) {
-      const parsedLinkTags = parseLinkTags(parsedLinkTagsText.value)
-      if (isRight(parsedLinkTags)) {
-        resources = parsedLinkTags.value
-      }
+      return parseLinkTags(parsedLinkTagsText.value)
+    } else {
+      return parsedLinkTagsText
     }
-  }
-  if (resources != null) {
-    return (
-      <>
-        {[
-          resources.genericExternalResources.length > 0 ? (
-            <GenericExternalResourcesList values={resources.genericExternalResources} />
-          ) : null,
-          resources.googleFontsResources.length > 0 ? (
-            <GoogleFontsResourcesList values={resources.googleFontsResources} />
-          ) : null,
-        ]}
-      </>
-    )
   } else {
-    return null
+    return parsedContents
   }
 }
