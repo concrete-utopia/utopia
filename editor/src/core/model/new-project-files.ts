@@ -48,11 +48,16 @@ export function getSamplePreviewHTMLFile(): CodeFile {
   return codeFile(previewHtml, null)
 }
 
-const previewHtml = `<!DOCTYPE html>
+export const generatedExternalResourcesLinksOpen = '<!-- Begin Generated Utopia External Links -->'
+export const generatedExternalResourcesLinksClose = '<!-- End Generated Utopia External Links -->'
+
+export const previewHtml = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <title>Utopia React App</title>
+    ${generatedExternalResourcesLinksOpen}
+    ${generatedExternalResourcesLinksClose}
   </head>
   <body>
     <div id="root"></div>

@@ -1,15 +1,19 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
+import { notice } from '../../components/common/notices'
+import { EditorDispatch } from '../../components/editor/action-types'
 import { pushToast, updateCodeFile } from '../../components/editor/actions/actions'
+import { EditorState } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
+import {
+  generatedExternalResourcesLinksClose,
+  generatedExternalResourcesLinksOpen,
+} from '../../core/model/new-project-files'
 import { Either, isRight, left, right } from '../../core/shared/either'
 import { CodeFile, isCodeFile, ProjectContents } from '../../core/shared/project-file-types'
 import { OnSubmitValue } from '../../uuiui-deps'
-import { notice } from '../../components/common/notices'
 
 const googleFontsURIStart = 'https://fonts.googleapis.com/css2?'
-const generatedExternalResourcesLinksOpen = '<!-- Begin Generated Utopia External Links -->'
-const generatedExternalResourcesLinksClose = '<!-- End Generated Utopia External Links -->'
 
 function getBoundingStringIndicesForExternalResources(
   htmlFileContents: string,
@@ -83,7 +87,7 @@ function isHTMLElement(node: NodeHTMLParser.Node): node is NodeHTMLParser.HTMLEl
   return node.nodeType === NodeHTMLParser.NodeType.ELEMENT_NODE
 }
 
-interface ExternalResources {
+export interface ExternalResources {
   genericExternalResources: Array<GenericExternalResource>
   googleFontsResources: Array<GoogleFontsResource>
 }
@@ -109,7 +113,10 @@ interface GoogleFontsResource {
   fontStyleParams?: string // placeholder
 }
 
-function googleFontsResource(fontFamily: string, fontStyleParams?: string): GoogleFontsResource {
+export function googleFontsResource(
+  fontFamily: string,
+  fontStyleParams?: string,
+): GoogleFontsResource {
   return {
     type: 'google-fonts-resource',
     fontFamily,
@@ -188,19 +195,18 @@ function updateHTMLExternalResourcesLinks(
   }
 }
 
-export function useExternalResources(): Either<
+export function getExternalResourcesInfo(
+  editor: EditorState,
+  dispatch: EditorDispatch,
+): Either<
   string,
   { externalResources: ExternalResources; onSubmitValue: OnSubmitValue<ExternalResources> }
 > {
-  const { dispatch, editorState } = useEditorState((store) => ({
-    editorState: store.editor,
-    dispatch: store.dispatch,
-  }))
-  const previewHTMLFilePath = getPreviewHTMLFilePath(editorState.projectContents)
+  const previewHTMLFilePath = getPreviewHTMLFilePath(editor.projectContents)
   if (isRight(previewHTMLFilePath)) {
     const previewHTMLFilePathContents = getCodeFileContents(
       previewHTMLFilePath.value,
-      editorState.projectContents,
+      editor.projectContents,
     )
     if (isRight(previewHTMLFilePathContents)) {
       const fileContents = previewHTMLFilePathContents.value.fileContents
@@ -229,4 +235,12 @@ export function useExternalResources(): Either<
   } else {
     return previewHTMLFilePath
   }
+}
+
+export function useExternalResources() {
+  const { dispatch, editorState } = useEditorState((store) => ({
+    editorState: store.editor,
+    dispatch: store.dispatch,
+  }))
+  return getExternalResourcesInfo(editorState, dispatch)
 }
