@@ -42,6 +42,7 @@ import {
   useInspectorStyleInfo,
 } from './property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 
 interface RenderTestHookProps<T> {
   value: T
@@ -209,7 +210,11 @@ const InspectorSectionProvider = (props: {
 }
 
 describe('useInspectorMetadataForPropsObject memoization', () => {
-  const callbackData = { onSubmitValue: utils.NO_OP, onUnsetValue: utils.NO_OP }
+  const callbackData = {
+    onSubmitValue: utils.NO_OP,
+    onUnsetValue: utils.NO_OP,
+    selectedViewsRef: { current: [] },
+  }
 
   it('make sure the tested component is in testing mode', () => {
     expect((WellBehavedInspectorSubsection as any).whyDidYouRender).toBeTruthy()
@@ -441,12 +446,17 @@ function getPropsForStyleProp(
 }
 
 const makeInspectorHookContextProvider = (
+  selectedViews: Array<TemplatePath>,
   multiselectAttributes: JSXAttributes[],
   targetPath: string[],
   realValues: Array<{ [key: string]: any }>,
 ) => ({ children }: any) => (
   <InspectorPropsContext.Provider
-    value={{ editedMultiSelectedProps: multiselectAttributes, targetPath, realValues: realValues }}
+    value={{
+      editedMultiSelectedProps: multiselectAttributes,
+      targetPath,
+      realValues: realValues,
+    }}
   >
     {children}
   </InspectorPropsContext.Provider>
@@ -468,7 +478,7 @@ function getBackgroundColorHookResult(
     }, realInnerValue)
   })
 
-  const contextProvider = makeInspectorHookContextProvider(propses, targetPath, realValues)
+  const contextProvider = makeInspectorHookContextProvider([], propses, targetPath, realValues)
 
   const { result } = renderHook(
     () =>
@@ -893,6 +903,7 @@ describe('Integration Test: boxShadow property', () => {
     )
 
     const contextProvider = makeInspectorHookContextProvider(
+      [],
       props,
       ['myStyleOuter', 'myStyleInner'],
       realValues,

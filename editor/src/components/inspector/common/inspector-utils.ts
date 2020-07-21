@@ -48,6 +48,17 @@ export function usePropControlledState<T>(
   return [localState, setLocalState, forceUpdate]
 }
 
+export type ReadonlyRef<T> = {
+  readonly current: T
+}
+
+/** please only use this if you absolutely know what you are doing */
+export function usePropControlledRef_DANGEROUS<T>(propValue: T): ReadonlyRef<T> {
+  const ref = React.useRef(propValue)
+  ref.current = propValue
+  return ref
+}
+
 export type TransformedStateAndPropsEqualityTest<T> = (newStateValue: T, newPropValue: T) => boolean
 
 export type OnSubmitValueAndUpdateLocalState<T> = (

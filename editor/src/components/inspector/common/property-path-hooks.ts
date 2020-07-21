@@ -78,13 +78,14 @@ import {
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
 import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
-import { PropertyPath } from '../../../core/shared/project-file-types'
+import type { PropertyPath, TemplatePath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'
+import type { ReadonlyRef } from './inspector-utils'
 
 export interface InspectorPropsContextData {
   editedMultiSelectedProps: readonly JSXAttributes[]
@@ -93,6 +94,7 @@ export interface InspectorPropsContextData {
 }
 
 export interface InspectorCallbackContextData {
+  selectedViewsRef: ReadonlyRef<Array<TemplatePath>>
   onSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
   onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void
 }
@@ -104,6 +106,7 @@ export const InspectorPropsContext = createContext<InspectorPropsContextData>({
 })
 
 export const InspectorCallbackContext = React.createContext<InspectorCallbackContextData>({
+  selectedViewsRef: { current: [] },
   onSubmitValue: Utils.NO_OP,
   onUnsetValue: Utils.NO_OP,
 })
@@ -328,13 +331,16 @@ export function useInspectorLayoutInStyleInfo_UNSAFE<
 }
 
 export function useInspectorContext() {
-  const { onSubmitValue, onUnsetValue } = React.useContext(InspectorCallbackContext)
+  const { onSubmitValue, onUnsetValue, selectedViewsRef } = React.useContext(
+    InspectorCallbackContext,
+  )
   return React.useMemo(() => {
     return {
       onContextSubmitValue: onSubmitValue,
       onContextUnsetValue: onUnsetValue,
+      selectedViewsRef: selectedViewsRef,
     }
-  }, [onSubmitValue, onUnsetValue])
+  }, [onSubmitValue, onUnsetValue, selectedViewsRef])
 }
 
 function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
