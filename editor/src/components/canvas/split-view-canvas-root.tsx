@@ -2,7 +2,7 @@ import { Resizable, ResizeDirection } from 're-resizable'
 import * as React from 'react'
 import { SimpleFlexRow, UtopiaStyles, UtopiaTheme } from 'uuiui'
 
-import { betterReactMemo, Utils } from 'uuiui-deps'
+import { betterReactMemo } from 'uuiui-deps'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { ScriptEditor } from '../code-editor/script-editor'
 import * as EditorActions from '../editor/actions/actions'
@@ -10,7 +10,7 @@ import * as EditorActions from '../editor/actions/actions'
 import { ConsoleLog } from '../editor/store/editor-state'
 
 import { useEditorState } from '../editor/store/store-hook'
-import { InspectorEntryPoint, NewInspectorEntryPoint } from '../inspector/inspector'
+import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
 
@@ -134,7 +134,7 @@ export const SplitViewCanvasRoot = betterReactMemo(
               paddingBottom: 100,
             }}
           >
-            {isInsertMenuSelected ? <InsertMenuPane /> : <NewInspectorEntryPoint />}
+            {isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
           </SimpleFlexRow>
         ) : null}
       </SimpleFlexRow>

@@ -454,7 +454,7 @@ function addFontsForInspectorIfAbsent() {
   }
 }
 
-export const NewInspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
+export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
   'InspectorEntryPoint',
   () => {
     const { selectedViews, jsxMetadataKILLME } = useEditorState((store) => {
@@ -476,22 +476,22 @@ export const NewInspectorEntryPoint: React.FunctionComponent<{}> = betterReactMe
     if (showSceneInspector && rootViewForScene != null) {
       return (
         <>
-          <InspectorEntryPoint selectedViews={selectedViews} />
+          <SingleInspectorEntryPoint selectedViews={selectedViews} />
           <InspectorSectionHeader style={{ paddingTop: UtopiaTheme.layout.rowHeight.small }}>
             Root View
           </InspectorSectionHeader>
-          <InspectorEntryPoint selectedViews={[rootViewForScene]} />
+          <SingleInspectorEntryPoint selectedViews={[rootViewForScene]} />
         </>
       )
     } else {
-      return <InspectorEntryPoint selectedViews={selectedViews} />
+      return <SingleInspectorEntryPoint selectedViews={selectedViews} />
     }
   },
 )
 
-export const InspectorEntryPoint: React.FunctionComponent<{
+export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<TemplatePath>
-}> = betterReactMemo('InspectorEntryPoint', (props) => {
+}> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
   const { dispatch, jsxMetadataKILLME, rootComponents, isUIJSFile, imports } = useEditorState(
     (store) => {
@@ -782,7 +782,7 @@ export const InspectorEntryPoint: React.FunctionComponent<{
 
   return inspector
 })
-InspectorEntryPoint.displayName = 'InspectorEntryPoint'
+SingleInspectorEntryPoint.displayName = 'InspectorEntryPoint'
 
 export const InspectorContextProvider = betterReactMemo<{
   selectedViews: Array<TemplatePath>
