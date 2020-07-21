@@ -28,9 +28,15 @@ import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/a
 import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { getFullFrame } from '../../frame'
-import { InspectorInfo, useInspectorLayoutInfo } from './property-path-hooks'
+import {
+  InspectorInfo,
+  useInspectorLayoutInfo,
+  useSelectedViews,
+  useRefSelectedViews,
+} from './property-path-hooks'
 
 import React = require('react')
+import { usePropControlledRef_DANGEROUS } from './inspector-utils'
 
 const HorizontalPinPreference = [
   FramePoint.Left,
@@ -269,16 +275,17 @@ export interface UsePinTogglingResult {
 
 export function usePinToggling(): UsePinTogglingResult {
   const dispatch = useEditorState((store) => store.dispatch)
+  const selectedViewsRef = useRefSelectedViews()
   const jsxMetadataRef = useRefEditorState((store) => {
     return store.editor.jsxMetadataKILLME
   })
 
-  const filteredSelectedViews = useRefEditorState((store) =>
-    TP.filterScenes(store.editor.selectedViews),
+  const filteredSelectedViews = usePropControlledRef_DANGEROUS(
+    TP.filterScenes(selectedViewsRef.current),
   )
 
   const elementsRef = useRefEditorState((store) =>
-    TP.filterScenes(store.editor.selectedViews).map((e) =>
+    TP.filterScenes(selectedViewsRef.current).map((e) =>
       MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadataKILLME, e),
     ),
   )

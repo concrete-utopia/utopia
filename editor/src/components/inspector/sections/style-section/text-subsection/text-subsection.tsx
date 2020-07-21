@@ -47,6 +47,7 @@ import {
   useInspectorElementInfo,
   useInspectorInfo,
   stylePropPathMappingFn,
+  useRefSelectedViews,
 } from '../../../common/property-path-hooks'
 import { filterScenes } from '../../../../../core/shared/template-path'
 import utils from '../../../../../utils/utils'
@@ -618,10 +619,11 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
 TextSubsection.displayName = 'TextSubsection'
 
 export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsection', () => {
+  const selectedViewsRef = useRefSelectedViews()
   const stateRef = useRefEditorState((store) => {
     return {
       dispatch: store.dispatch,
-      selectedViews: filterScenes(store.editor.selectedViews),
+      selectedViews: filterScenes(selectedViewsRef.current),
       componentMetadata: store.editor.jsxMetadataKILLME,
     }
   })

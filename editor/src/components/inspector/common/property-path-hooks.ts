@@ -88,6 +88,7 @@ import { ParseResult } from '../../../utils/value-parser-utils'
 import type { ReadonlyRef } from './inspector-utils'
 
 export interface InspectorPropsContextData {
+  selectedViews: Array<TemplatePath>
   editedMultiSelectedProps: readonly JSXAttributes[]
   targetPath: readonly string[]
   realValues: ReadonlyArray<{ [key: string]: any }>
@@ -100,6 +101,7 @@ export interface InspectorCallbackContextData {
 }
 
 export const InspectorPropsContext = createContext<InspectorPropsContextData>({
+  selectedViews: [],
   editedMultiSelectedProps: [],
   targetPath: [],
   realValues: [],
@@ -784,9 +786,9 @@ export function useKeepReferenceEqualityIfPossible<T>(possibleNewValue: T, measu
 }
 
 export function useIsSubSectionVisible(sectionName: string): boolean {
-  return useEditorState((store) => {
-    const selectedViews = store.editor.selectedViews
+  const selectedViews = useSelectedViews()
 
+  return useEditorState((store) => {
     const imports = getOpenImportsFromState(store.editor)
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     const types = selectedViews.map((view) => {
@@ -842,8 +844,10 @@ const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
 export function useSelectedPropertyControls(
   includeIgnored: boolean,
 ): ParseResult<ParsedPropertyControls> {
+  const selectedViews = useSelectedViews()
+
   const propertyControls = useEditorState((store) => {
-    const { selectedViews, codeResultCache } = store.editor
+    const { codeResultCache } = store.editor
 
     let selectedPropertyControls: PropertyControls | null = {}
     if (codeResultCache != null) {
@@ -868,8 +872,10 @@ export function useSelectedPropertyControls(
 export function useUsedPropsWithoutControls(): Array<string> {
   const parsedPropertyControls = useSelectedPropertyControls(true)
 
+  const selectedViews = useSelectedViews()
+
   const selectedComponents = useEditorState((store) => {
-    const { selectedViews, jsxMetadataKILLME } = store.editor
+    const { jsxMetadataKILLME } = store.editor
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let components: Array<UtopiaJSXComponent> = []
     const pushComponent = (component: UtopiaJSXComponent) => components.push(component)
@@ -922,8 +928,10 @@ export function useUsedPropsWithoutControls(): Array<string> {
 export function useUsedPropsWithoutDefaults(): Array<string> {
   const parsedPropertyControls = useSelectedPropertyControls(false)
 
+  const selectedViews = useSelectedViews()
+
   const selectedComponentProps = useEditorState((store) => {
-    const { selectedViews, jsxMetadataKILLME } = store.editor
+    const { jsxMetadataKILLME } = store.editor
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let propsUsed: Array<string> = []
     const pushPropsForComponent = (component: UtopiaJSXComponent) =>
@@ -956,8 +964,9 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
 }
 
 export function useInspectorWarningStatus(): boolean {
+  const selectedViews = useSelectedViews()
+
   return useEditorState((store) => {
-    const selectedViews = store.editor.selectedViews
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let hasLayoutInCSSProp = false
     Utils.fastForEach(selectedViews, (view) => {
@@ -983,4 +992,17 @@ export function useInspectorWarningStatus(): boolean {
     })
     return hasLayoutInCSSProp
   })
+}
+
+export function useSelectedViews() {
+  const selectedViews = useContextSelector(
+    InspectorPropsContext,
+    (context) => context.selectedViews,
+  )
+  return selectedViews
+}
+
+export function useRefSelectedViews() {
+  const { selectedViewsRef } = React.useContext(InspectorCallbackContext)
+  return selectedViewsRef
 }

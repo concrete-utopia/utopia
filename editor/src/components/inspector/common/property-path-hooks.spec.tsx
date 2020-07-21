@@ -235,6 +235,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const { rerender } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: propsWithOpacity,
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -245,6 +246,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: propsWithOpacity,
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -267,6 +269,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const { rerender } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -277,6 +280,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -311,6 +315,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const { rerender, getByText } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -321,6 +326,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsChangedOpacitySame],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValuesChanged,
@@ -353,6 +359,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const { rerender, getByText } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['style'],
           realValues: realValues,
@@ -365,6 +372,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacityChanged],
           targetPath: ['style'],
           realValues: realValuesChanged,
@@ -453,6 +461,7 @@ const makeInspectorHookContextProvider = (
 ) => ({ children }: any) => (
   <InspectorPropsContext.Provider
     value={{
+      selectedViews: selectedViews,
       editedMultiSelectedProps: multiselectAttributes,
       targetPath,
       realValues: realValues,
@@ -753,6 +762,7 @@ describe('Integration Test: opacity property', () => {
     const contextProvider = ({ children }: any) => (
       <InspectorPropsContext.Provider
         value={{
+          selectedViews: [],
           editedMultiSelectedProps: propses,
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,

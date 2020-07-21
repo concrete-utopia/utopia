@@ -625,9 +625,9 @@ export const InspectorEntryPoint: React.FunctionComponent<{
 
   const inspectorModelMemoized = useKeepReferenceEqualityIfPossible(inspectorModel)
 
-  const refElementsToTargetForUpdates = useRefEditorState((store) => {
-    return getElementsToTarget(store.editor.selectedViews)
-  })
+  const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
+    getElementsToTarget(selectedViews),
+  )
 
   const elementPath = useKeepReferenceEqualityIfPossible(
     React.useMemo(() => {
@@ -827,9 +827,11 @@ export const InspectorContextProvider = betterReactMemo<{
     getElementsToTarget(selectedViews),
   )
 
-  const refScenesToTargetForUpdates = useRefEditorState((store) => {
-    return store.editor.selectedViews.filter((view) => TP.isScenePath(view)) as ScenePath[]
-  })
+  const refScenesToTargetForUpdates = usePropControlledRef_DANGEROUS(
+    useKeepReferenceEqualityIfPossible(
+      selectedViews.filter((view) => TP.isScenePath(view)) as ScenePath[],
+    ),
+  )
 
   const onSubmitValueForHooks = React.useCallback(
     (newValue: JSXAttribute, path: PropertyPath, transient: boolean) => {
@@ -883,6 +885,7 @@ export const InspectorContextProvider = betterReactMemo<{
     <InspectorCallbackContext.Provider value={callbackContextValueMemoized}>
       <InspectorPropsContext.Provider
         value={{
+          selectedViews: selectedViews,
           editedMultiSelectedProps: editedMultiSelectedProps,
           targetPath: props.targetPath,
           realValues: realValues,

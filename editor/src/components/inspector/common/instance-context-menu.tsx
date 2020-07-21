@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
-import { useRefEditorState, useEditorState } from '../../editor/store/store-hook'
+import { useEditorState } from '../../editor/store/store-hook'
 import { betterReactMemo } from 'uuiui-deps'
 import { ContextMenuItem, requireDispatch } from '../../context-menu-items'
 import { EditorDispatch } from '../../editor/action-types'
