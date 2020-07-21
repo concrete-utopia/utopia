@@ -48,12 +48,14 @@ import {
   useInspectorInfo,
   stylePropPathMappingFn,
   useRefSelectedViews,
+  useSelectedViews,
 } from '../../../common/property-path-hooks'
 import { filterScenes } from '../../../../../core/shared/template-path'
 import utils from '../../../../../utils/utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { betterReactMemo } from 'uuiui-deps'
+import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -619,11 +621,11 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
 TextSubsection.displayName = 'TextSubsection'
 
 export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsection', () => {
-  const selectedViewsRef = useRefSelectedViews()
+  const selectedViewsRef = usePropControlledRef_DANGEROUS(filterScenes(useSelectedViews()))
+
   const stateRef = useRefEditorState((store) => {
     return {
       dispatch: store.dispatch,
-      selectedViews: filterScenes(selectedViewsRef.current),
       componentMetadata: store.editor.jsxMetadataKILLME,
     }
   })
@@ -632,7 +634,7 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
 
   const onSubmitValue = React.useCallback(
     async (newValue: JSXAttribute, propertyPath: PropertyPath, transient: boolean) => {
-      const selectedPaths = stateRef.current.selectedViews
+      const selectedPaths = selectedViewsRef.current
 
       let actions: Array<EditorAction> = []
       for (let path of selectedPaths) {
@@ -679,7 +681,7 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
       stateRef.current.dispatch(actions, 'inspector')
       inspectorContext.onSubmitValue(newValue, propertyPath, transient)
     },
-    [stateRef, inspectorContext],
+    [stateRef, inspectorContext, selectedViewsRef],
   )
 
   const updatedContext = useKeepShallowReferenceEquality({
