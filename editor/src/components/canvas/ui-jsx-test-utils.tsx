@@ -219,6 +219,7 @@ ${snippet}
         <Scene
           style={{ left: 0, top: 0, width: 400, height: 400 }}
           component={App}
+          static
           layout={{ layoutSystem: 'pinSystem' }}
           props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
           data-uid={'${TestSceneUID}'}
