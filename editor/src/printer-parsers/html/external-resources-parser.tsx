@@ -128,11 +128,7 @@ export function parseLinkTags(linkTagsText: string): Either<string, ExternalReso
 }
 
 export function useExternalResources(): Either<string, ExternalResources> {
-  const { editorState } = useEditorState((store) => ({
-    dispatch: store.dispatch,
-    editorState: store.editor,
-    derivedState: store.derived,
-  }))
+  const editorState = useEditorState((store) => store.editor)
   const parsedContents = getPreviewHTMLFileContents(editorState.projectContents)
   if (isRight(parsedContents)) {
     const parsedLinkTagsText = getGeneratedExternalLinkText(parsedContents.value.fileContents)
