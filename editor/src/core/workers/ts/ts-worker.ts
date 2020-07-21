@@ -34,7 +34,6 @@ import { ErrorMessage } from '../../shared/error-messages'
 import { fastForEach } from '../../shared/utils'
 import { getCodeFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
-import { transformCssSystemModule } from '../../shared/css-style-loader'
 
 const TS_LIB_FILES: { [key: string]: string } = {
   'lib.d.ts': libfile,
@@ -609,7 +608,7 @@ export function emitFile(services: TS.LanguageService, filename: string): EmitFi
     const content = fs.readFileSync(filename, 'utf8')
     return {
       errors: [],
-      transpiledCode: transformCssSystemModule(filename, content),
+      transpiledCode: content,
       sourceMap: null,
     }
   } else {
