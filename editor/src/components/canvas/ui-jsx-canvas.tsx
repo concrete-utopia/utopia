@@ -873,14 +873,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     }
   }
 
-  let updatedStyleWithFrame = {}
-  if (isStatic) {
-    updatedStyleWithFrame = style
-  } else {
-    const { width, height, ...styleWithoutWidthHeight } = style
-    updatedStyleWithFrame = styleWithoutWidthHeight
-  }
-
   const sceneStyle: React.CSSProperties = {
     // TODO this should really be a property of the scene that you can change, similar to the preview.
     position: 'absolute',
@@ -888,7 +880,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     boxShadow: rerenderUtopiaContext.canvasIsLive
       ? UtopiaStyles.scene.live.boxShadow
       : UtopiaStyles.scene.editing.boxShadow,
-    ...updatedStyleWithFrame,
+    ...style,
   }
 
   return (
@@ -1001,7 +993,7 @@ function renderCoreElement(
         hiddenInstances={hiddenInstances}
         jsxFactoryFunctionName={jsxFactoryFunctionName}
         fileBlobs={fileBlobs}
-        style={sceneProps.style ?? {}}
+        style={sceneProps.style}
         inScope={inScope}
         reportError={Utils.NO_OP}
         requireResult={requireResult}
