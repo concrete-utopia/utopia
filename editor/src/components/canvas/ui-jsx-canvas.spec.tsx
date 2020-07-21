@@ -1850,7 +1850,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
+import { View, jsx, Storyboard, Scene } from 'utopia-api'
+const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 
 export var App = (props) => {
   return (
@@ -1882,7 +1883,8 @@ export var App = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
+import { View, jsx, Storyboard, Scene } from 'utopia-api'
+const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 
 export var App = (props) => {
   return (
@@ -1914,7 +1916,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
+import { View, jsx, Storyboard, Scene } from 'utopia-api'
+const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 
 export var App = (props) => {
   return (
@@ -1946,7 +1949,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
+import { View, jsx, Storyboard, Scene } from 'utopia-api'
+const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 
 export var App = (props) => {
   '5' + a.a // 18,9
@@ -1979,7 +1983,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
+import { View, jsx, Storyboard, Scene } from 'utopia-api'
+const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 
 export var App = (props) => {
   a.a // 18,3
