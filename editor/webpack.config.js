@@ -111,7 +111,7 @@ const config = {
     }),
     new InterpolateHtmlPlugin(HtmlWebpackPlugin, {
       // This plugin replaces variables of the form %VARIABLE% with the value provided in this object
-      GITHUB_SHA: process.env.GITHUB_SHA || 'nocommit',
+      UTOPIA_SHA: process.env.UTOPIA_SHA || 'nocommit',
       UTOPIA_DOMAIN: BaseDomain,
     }),
 
