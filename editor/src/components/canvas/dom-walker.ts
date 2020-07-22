@@ -29,6 +29,7 @@ import {
   positionValues,
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
+import { camelCaseToDashed } from '../../core/shared/string-utils'
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1
@@ -179,7 +180,13 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         let computedStyle: ComputedStyle = {}
         if (elementStyle != null) {
           Object.keys(elementStyle).forEach((key) => {
-            computedStyle[key] = elementStyle.getPropertyValue(key)
+            // Accessing the value directly often doesn't work, and using `getPropertyValue` requires
+            // using dashed case rather than camel case
+            const caseCorrectedKey = camelCaseToDashed(key)
+            const propertyValue = elementStyle.getPropertyValue(caseCorrectedKey)
+            if (propertyValue != '') {
+              computedStyle[key] = propertyValue
+            }
           })
         }
 
