@@ -156,11 +156,7 @@ function getComputedStyleValues(
   key: string,
   selectedComputedStyles: { [k: string]: ReadonlyArray<string> },
 ): ReadonlyArray<string> {
-  if (key in selectedComputedStyles) {
-    return selectedComputedStyles[key]
-  } else {
-    return []
-  }
+  return selectedComputedStyles[key] ?? []
 }
 
 // TODO also memoize me!
