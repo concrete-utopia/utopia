@@ -786,12 +786,12 @@ export function useKeepReferenceEqualityIfPossible<T>(possibleNewValue: T, measu
 }
 
 export function useIsSubSectionVisible(sectionName: string): boolean {
-  const selectedViews = useSelectedViews()
+  const selectedViews = useRefSelectedViews()
 
   return useEditorState((store) => {
     const imports = getOpenImportsFromState(store.editor)
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
-    const types = selectedViews.map((view) => {
+    const types = selectedViews.current.map((view) => {
       if (TP.isScenePath(view)) {
         return 'scene'
       }
@@ -844,14 +844,14 @@ const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
 export function useSelectedPropertyControls(
   includeIgnored: boolean,
 ): ParseResult<ParsedPropertyControls> {
-  const selectedViews = useSelectedViews()
+  const selectedViews = useRefSelectedViews()
 
   const propertyControls = useEditorState((store) => {
     const { codeResultCache } = store.editor
 
     let selectedPropertyControls: PropertyControls | null = {}
     if (codeResultCache != null) {
-      Utils.fastForEach(selectedViews, (path) => {
+      Utils.fastForEach(selectedViews.current, (path) => {
         // TODO multiselect
         selectedPropertyControls = getPropertyControlsForTarget(path, store.editor) ?? {}
       })
@@ -872,14 +872,14 @@ export function useSelectedPropertyControls(
 export function useUsedPropsWithoutControls(): Array<string> {
   const parsedPropertyControls = useSelectedPropertyControls(true)
 
-  const selectedViews = useSelectedViews()
+  const selectedViews = useRefSelectedViews()
 
   const selectedComponents = useEditorState((store) => {
     const { jsxMetadataKILLME } = store.editor
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let components: Array<UtopiaJSXComponent> = []
     const pushComponent = (component: UtopiaJSXComponent) => components.push(component)
-    fastForEach(selectedViews, (path) => {
+    fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
         const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
         if (scene != null) {
@@ -928,7 +928,7 @@ export function useUsedPropsWithoutControls(): Array<string> {
 export function useUsedPropsWithoutDefaults(): Array<string> {
   const parsedPropertyControls = useSelectedPropertyControls(false)
 
-  const selectedViews = useSelectedViews()
+  const selectedViews = useRefSelectedViews()
 
   const selectedComponentProps = useEditorState((store) => {
     const { jsxMetadataKILLME } = store.editor
@@ -936,7 +936,7 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
     let propsUsed: Array<string> = []
     const pushPropsForComponent = (component: UtopiaJSXComponent) =>
       propsUsed.push(...component.propsUsed)
-    fastForEach(selectedViews, (path) => {
+    fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
         const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
         if (scene != null) {
