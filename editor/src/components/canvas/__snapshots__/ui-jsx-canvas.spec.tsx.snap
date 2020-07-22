@@ -9171,6 +9171,472 @@ Object {
 }
 `;
 
+exports[`UiJsxCanvas render renders fragments correctly 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
+>
+  <div
+    data-utopia-scene-id=\\"eee/fff\\"
+    data-utopia-valid-paths=\\"eee/fff:aaa eee/fff:aaa/bbb eee/fff:aaa/bbb/ccc eee/fff:aaa/ddd\\"
+    style=\\"
+      position: absolute;
+      width: 375px;
+      height: 812px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
+    data-uid=\\"eee\\"
+  >
+    <div
+      style=\\"
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ffffff;
+      \\"
+      data-uid=\\"aaa\\"
+    >
+      <div
+        data-label=\\"random-div\\"
+        style=\\"position: absolute; width: 100px; height: 100px;\\"
+        data-uid=\\"bbb\\"
+      >
+        Hello
+        <div
+          data-label=\\"some-other-div\\"
+          style=\\"width: 100px; height: 100px;\\"
+          data-uid=\\"ccc\\"
+        ></div>
+      </div>
+      <div data-uid=\\"ddd\\" style=\\"position: absolute;\\">World</div>
+    </div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renders fragments correctly 2`] = `
+Object {
+  "eee/fff:aaa": Object {
+    "childrenTemplatePaths": Array [
+      Object {
+        "element": Array [
+          "aaa",
+          "ddd",
+        ],
+        "scene": Object {
+          "sceneElementPath": Array [
+            "eee",
+            "fff",
+          ],
+          "type": "scenepath",
+        },
+      },
+    ],
+    "componentInstance": false,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "text": "
+      ",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [
+                  Object {
+                    "text": "Hello",
+                    "type": "JSX_TEXT_BLOCK",
+                    "uniqueID": "",
+                  },
+                  Object {
+                    "children": Array [
+                      Object {
+                        "children": Array [],
+                        "metadata": null,
+                        "name": Object {
+                          "baseVariable": "div",
+                          "propertyPath": Object {
+                            "propertyElements": Array [],
+                          },
+                        },
+                        "props": Object {
+                          "data-label": Object {
+                            "type": "ATTRIBUTE_VALUE",
+                            "value": "some-other-div",
+                          },
+                          "data-uid": Object {
+                            "type": "ATTRIBUTE_VALUE",
+                            "value": "ccc",
+                          },
+                          "style": Object {
+                            "type": "ATTRIBUTE_VALUE",
+                            "value": Object {
+                              "height": 100,
+                              "width": 100,
+                            },
+                          },
+                        },
+                        "type": "JSX_ELEMENT",
+                      },
+                    ],
+                    "longForm": false,
+                    "type": "JSX_FRAGMENT",
+                    "uniqueID": "",
+                  },
+                ],
+                "metadata": null,
+                "name": Object {
+                  "baseVariable": "div",
+                  "propertyPath": Object {
+                    "propertyElements": Array [],
+                  },
+                },
+                "props": Object {
+                  "data-label": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": "random-div",
+                  },
+                  "data-uid": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": "bbb",
+                  },
+                  "style": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": Object {
+                      "height": 100,
+                      "width": 100,
+                    },
+                  },
+                },
+                "type": "JSX_ELEMENT",
+              },
+            ],
+            "longForm": true,
+            "type": "JSX_FRAGMENT",
+            "uniqueID": "",
+          },
+          Object {
+            "text": "
+      ",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+          Object {
+            "children": Array [
+              Object {
+                "text": "World",
+                "type": "JSX_TEXT_BLOCK",
+                "uniqueID": "",
+              },
+            ],
+            "metadata": null,
+            "name": Object {
+              "baseVariable": "div",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Object {
+              "data-uid": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": "ddd",
+              },
+            },
+            "type": "JSX_ELEMENT",
+          },
+        ],
+        "metadata": null,
+        "name": Object {
+          "baseVariable": "View",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Object {
+          "data-uid": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "aaa",
+          },
+          "layout": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {
+              "layoutSystem": "pinSystem",
+            },
+          },
+          "style": Object {
+            "content": Array [
+              Object {
+                "type": "SPREAD_ASSIGNMENT",
+                "value": Object {
+                  "definedElsewhere": Array [
+                    "props",
+                  ],
+                  "javascript": "props.style",
+                  "sourceMap": Object {
+                    "file": "code.tsx",
+                    "mappings": "OAOmBA,KAAMC,MAAND",
+                    "names": Array [
+                      "props",
+                      "style",
+                    ],
+                    "sources": Array [
+                      "code.tsx",
+                    ],
+                    "sourcesContent": Array [
+                      "
+/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, View, jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <View
+      style={{ ...props.style, backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+      data-uid={'aaa'}
+    >
+      <React.Fragment>
+        <div data-label=\\"random-div\\" style={{ width: 100, height: 100 }} data-uid={'bbb'}>Hello<>
+          <div data-label=\\"some-other-div\\" style={{ width: 100, height: 100 }} data-uid={'ccc'} />
+        </></div>
+      </React.Fragment>
+      <div data-uid={'ddd'}>World</div>
+    </View>
+  )
+}
+export var storyboard = (
+  <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid={'eee'}>
+    <Scene
+      style={{ height: 812, left: 0, width: 375, top: 0 }}
+      component={App}
+      layout={{ layoutSystem: 'pinSystem' }}
+      props={{ style: { bottom: 0, left: 0, right: 0, top: 0 } }}
+      data-uid={'fff'}
+    />
+  </Storyboard>
+)
+",
+                    ],
+                    "version": 3,
+                  },
+                  "transpiledJavascript": "return props.style;",
+                  "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                  "uniqueID": "",
+                },
+              },
+              Object {
+                "key": "backgroundColor",
+                "type": "PROPERTY_ASSIGNMENT",
+                "value": Object {
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "#FFFFFF",
+                },
+              },
+            ],
+            "type": "ATTRIBUTE_NESTED_OBJECT",
+          },
+        },
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "aaa",
+      "data-utopia-original-uid": undefined,
+      "skipDeepFreeze": true,
+      "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
+        "alignSelf": undefined,
+        "backgroundColor": "#FFFFFF",
+        "bottom": 0,
+        "flexBasis": undefined,
+        "flexDirection": undefined,
+        "flexGrow": undefined,
+        "flexShrink": undefined,
+        "flexWrap": undefined,
+        "height": undefined,
+        "justifyContent": undefined,
+        "left": 0,
+        "marginBottom": undefined,
+        "marginLeft": undefined,
+        "marginRight": undefined,
+        "marginTop": undefined,
+        "maxHeight": undefined,
+        "maxWidth": undefined,
+        "minHeight": undefined,
+        "minWidth": undefined,
+        "position": "absolute",
+        "right": 0,
+        "top": 0,
+        "width": undefined,
+      },
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "nonfixed",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentLayoutSystem": "nonfixed",
+      "position": "static",
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "aaa",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [
+          "eee",
+          "fff",
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+  "eee/fff:aaa/ddd": Object {
+    "childrenTemplatePaths": Array [],
+    "componentInstance": false,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "text": "World",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+        ],
+        "metadata": null,
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Object {
+          "data-uid": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "ddd",
+          },
+        },
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "ddd",
+      "data-utopia-original-uid": undefined,
+      "skipDeepFreeze": true,
+      "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
+        "alignSelf": undefined,
+        "bottom": undefined,
+        "flexBasis": undefined,
+        "flexDirection": undefined,
+        "flexGrow": undefined,
+        "flexShrink": undefined,
+        "flexWrap": undefined,
+        "height": undefined,
+        "justifyContent": undefined,
+        "left": undefined,
+        "marginBottom": undefined,
+        "marginLeft": undefined,
+        "marginRight": undefined,
+        "marginTop": undefined,
+        "maxHeight": undefined,
+        "maxWidth": undefined,
+        "minHeight": undefined,
+        "minWidth": undefined,
+        "position": "absolute",
+        "right": undefined,
+        "top": undefined,
+        "width": undefined,
+      },
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "nonfixed",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentLayoutSystem": "nonfixed",
+      "position": "static",
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "aaa",
+        "ddd",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [
+          "eee",
+          "fff",
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
+
 exports[`UiJsxCanvas render renders img tag 1`] = `
 "<div
   id=\\"canvas-container\\"

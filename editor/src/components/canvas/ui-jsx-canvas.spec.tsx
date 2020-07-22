@@ -32,6 +32,7 @@ import {
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { ConsoleLog } from '../editor/store/editor-state'
+import { AwkwardFragmentsCode } from '../../core/workers/parser-printer/parser-printer-fragments-test-utils'
 
 interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -1782,6 +1783,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 }
     `,
     )
+  })
+  it('renders fragments correctly', () => {
+    testCanvasRender(null, AwkwardFragmentsCode)
   })
 })
 

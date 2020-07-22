@@ -59,13 +59,13 @@ import {
   UtopiaJSXComponent,
   isJSXAttributeOtherJavaScript,
   SettableLayoutSystem,
+  walkElements,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
   getUtopiaID,
   setUtopiaID,
   transformJSXComponentAtElementPath,
-  walkElements,
   insertJSXElementChild,
   findJSXElementChildAtPath,
 } from '../../../core/model/element-template-utils'

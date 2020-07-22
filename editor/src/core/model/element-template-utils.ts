@@ -14,6 +14,7 @@ import {
   JSXTextBlock,
   TopLevelElement,
   UtopiaJSXComponent,
+  isJSXFragment,
 } from '../shared/element-template'
 import {
   Imports,
@@ -32,6 +33,7 @@ import {
 import { fastForEach } from '../shared/utils'
 import { isUtopiaAPIComponent } from './project-file-utils'
 import { getStoryboardTemplatePath } from '../../components/editor/store/editor-state'
+import { forEachLeft } from '../shared/either'
 
 function getAllUniqueUidsInner(
   components: Array<UtopiaJSXComponent>,
@@ -101,12 +103,18 @@ export function getValidTemplatePathsFromElement(
   if (isJSXElement(element)) {
     const uid = getUtopiaID(element)
     const path = TP.appendToPath(parentPath, uid)
-    const paths = [path]
+    let paths = [path]
     fastForEach(element.children, (c) => paths.push(...getValidTemplatePathsFromElement(c, path)))
     return paths
   } else if (isJSXArbitraryBlock(element)) {
-    const paths: Array<StaticInstancePath> = []
+    let paths: Array<StaticInstancePath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
+      paths.push(...getValidTemplatePathsFromElement(e, parentPath)),
+    )
+    return paths
+  } else if (isJSXFragment(element)) {
+    let paths: Array<StaticInstancePath> = []
+    fastForEach(Object.values(element.children), (e) =>
       paths.push(...getValidTemplatePathsFromElement(e, parentPath)),
     )
     return paths
@@ -154,26 +162,10 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
     return element.uniqueID
   } else if (isElementInstanceMetadata(element)) {
     return TP.toTemplateId(element.templatePath)
+  } else if (isJSXFragment(element)) {
+    return element.uniqueID
   }
   throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
-}
-
-export function walkElements(
-  rootComponents: Array<UtopiaJSXComponent>,
-  forEach: (element: JSXElementChild, path: StaticElementPath) => void,
-): void {
-  function walkElement(element: JSXElementChild, parentPath: StaticElementPath): void {
-    if (isJSXElement(element)) {
-      const uidAttr = element.props['data-uid']
-      if (isJSXAttributeValue(uidAttr) && typeof uidAttr.value === 'string') {
-        const path = TP.appendToElementPath(parentPath, uidAttr.value)
-        forEach(element, path)
-        fastForEach(element.children, (child) => walkElement(child, path))
-      }
-    }
-  }
-  const emptyPath = ([] as any) as StaticElementPath // Oh my word
-  fastForEach(rootComponents, (rootComponent) => walkElement(rootComponent.rootElement, emptyPath))
 }
 
 export function elementSupportsChildren(imports: Imports, element: JSXElementChild): boolean {
@@ -261,6 +253,21 @@ function transformAtPathOptionally(
           }
         }
       }
+    } else if (isJSXFragment(element)) {
+      let childrenUpdated: boolean = false
+      const updatedChildren = element.children.map((child) => {
+        const possibleUpdate = findAndTransformAtPathInner(child, workingPath)
+        if (possibleUpdate != null) {
+          childrenUpdated = true
+        }
+        return Utils.defaultIfNull(child, possibleUpdate)
+      })
+      if (childrenUpdated) {
+        return {
+          ...element,
+          children: updatedChildren,
+        }
+      }
     }
     return null
   }
@@ -320,6 +327,14 @@ export function findJSXElementChildAtPath(
           return withinResult
         }
       }
+    } else if (isJSXFragment(element)) {
+      const children = element.children
+      for (const child of children) {
+        const childResult = findAtPathInner(child, workingPath)
+        if (childResult != null) {
+          return childResult
+        }
+      }
     }
     return null
   }
@@ -363,18 +378,39 @@ export function removeJSXElementChild(
     // TODO Scene Implementation
     return rootElements
   } else {
+    function removeRelevantChild<T extends JSXElementChild>(
+      parentElement: T,
+      descendIntoElements: boolean,
+    ): T {
+      if (isJSXElement(parentElement) && descendIntoElements) {
+        let updatedChildren = parentElement.children.filter((child) => {
+          return getUtopiaID(child) != targetID
+        })
+        updatedChildren = updatedChildren.map((child) => {
+          return removeRelevantChild(child, false)
+        })
+        return {
+          ...parentElement,
+          children: updatedChildren,
+        }
+      } else if (isJSXFragment(parentElement)) {
+        let updatedChildren = parentElement.children.filter((child) => {
+          return getUtopiaID(child) != targetID
+        })
+        updatedChildren = updatedChildren.map((child) => removeRelevantChild(child, false))
+        return {
+          ...parentElement,
+          children: updatedChildren,
+        }
+      } else {
+        return parentElement
+      }
+    }
     return transformAtPathOptionally(
       rootElements,
       TP.elementPathForPath(parentPath),
-      (parentElement) => {
-        if (isJSXElement(parentElement)) {
-          return {
-            ...parentElement,
-            children: parentElement.children.filter((child) => getUtopiaID(child) != targetID),
-          }
-        } else {
-          return parentElement
-        }
+      (parentElement: JSXElement) => {
+        return removeRelevantChild(parentElement, true)
       },
     ).elements
   }

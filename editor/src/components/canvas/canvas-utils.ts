@@ -2460,13 +2460,13 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
 
 export function cullSpyCollector(
   spyCollector: UiJsxCanvasContextData,
-  elementMetadata: Array<ElementInstanceMetadata>,
+  domMetadata: Array<ElementInstanceMetadata>,
 ): void {
   // Note: Mutates `spyCollector`.
   // Collate all the valid paths.
   let elementPaths: Set<string> = Utils.emptySet()
   let scenePaths: Set<string> = Utils.emptySet()
-  fastForEach(elementMetadata, (rootMetadata) => {
+  fastForEach(domMetadata, (rootMetadata) => {
     MetadataUtils.walkElementMetadata(
       rootMetadata,
       null,
