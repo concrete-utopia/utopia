@@ -482,10 +482,10 @@ export const GiganticSizePinsSubsection = betterReactMemo(
     const maxHeight = useInspectorLayoutInfo('maxHeight')
 
     const hasMinMaxValues =
-      minWidth.value != null ||
-      maxWidth.value != null ||
-      minHeight.value != null ||
-      maxHeight.value != null
+      minWidth.controlStatus !== 'unset' ||
+      maxWidth.controlStatus !== 'unset' ||
+      minHeight.controlStatus !== 'unset' ||
+      maxHeight.controlStatus !== 'unset'
 
     const [minMaxToggled, setMinMaxToggled] = React.useState<boolean>(hasMinMaxValues)
     const toggleMinMax = React.useCallback(() => {

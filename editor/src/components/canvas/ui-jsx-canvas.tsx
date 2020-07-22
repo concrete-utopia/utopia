@@ -33,6 +33,7 @@ import {
   isDestructuredObject,
   isOmittedParam,
   JSXAttributeOtherJavaScript,
+  emptyComputedStyle,
 } from '../../core/shared/element-template'
 import { getUtopiaID, getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
@@ -844,6 +845,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       childrenTemplatePaths: [],
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
+      computedStyle: emptyComputedStyle,
     }
   }
 
@@ -1154,6 +1156,7 @@ function buildSpyWrappedElement(
       childrenTemplatePaths: childrenTemplatePaths,
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
+      computedStyle: emptyComputedStyle,
     }
     const isChildOfRootScene = TP.pathsEqual(
       TP.scenePathForPath(templatePath),
