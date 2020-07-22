@@ -594,6 +594,12 @@ export interface AddCodeFile {
   parentPath: string
 }
 
+export interface UpdateCodeFile {
+  action: 'UPDATE_CODE_FILE'
+  filePath: string
+  newContent: string
+}
+
 export interface SetMainUIFile {
   action: 'SET_MAIN_UI_FILE'
   uiFile: string
@@ -834,6 +840,7 @@ export type EditorAction =
   | DeleteFile
   | AddUIJSFile
   | AddCodeFile
+  | UpdateCodeFile
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors

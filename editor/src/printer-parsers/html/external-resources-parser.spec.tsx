@@ -1,4 +1,13 @@
-import { parseLinkTags, getGeneratedExternalLinkText } from './external-resources-parser'
+import { getStoreHook } from '../../components/inspector/common/inspector-test-utils'
+import { NO_OP } from '../../core/shared/utils'
+import {
+  getExternalResourcesInfo,
+  getGeneratedExternalLinkText,
+  parseLinkTags,
+  googleFontsResource,
+  ExternalResources,
+} from './external-resources-parser'
+import { isRight } from '../../core/shared/either'
 
 const testFile = `
 <!DOCTYPE html>
@@ -11,6 +20,9 @@ const testFile = `
   <link href="http://utopia.com/styles.css" rel="stylesheet">
   <!-- Random extra comment that doesn't belong -->
   <link href="//utopia.com/styles.css" rel="stylesheet">
+  <link href="/favicon.ico" rel="icon">
+  <link href="apple-icon-114.png" rel="apple-touch-icon-precomposed" sizes="114x114" type="image/png">
+  <link rel="preload" href="myFont.woff2" as="font" type="font/woff2" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa&text=Hello%20World" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa&text=%c2%a1Hola!" rel="stylesheet">
   <!-- End Generated Utopia External Links -->
@@ -35,8 +47,12 @@ describe('external-resources-parser', () => {
         <link href=\\"http://utopia.com/styles.css\\" rel=\\"stylesheet\\">
         <!-- Random extra comment that doesn't belong -->
         <link href=\\"//utopia.com/styles.css\\" rel=\\"stylesheet\\">
+        <link href=\\"/favicon.ico\\" rel=\\"icon\\">
+        <link href=\\"apple-icon-114.png\\" rel=\\"apple-touch-icon-precomposed\\" sizes=\\"114x114\\" type=\\"image/png\\">
+        <link rel=\\"preload\\" href=\\"myFont.woff2\\" as=\\"font\\" type=\\"font/woff2\\" crossorigin=\\"anonymous\\">
         <link href=\\"https://fonts.googleapis.com/css2?family=Comfortaa&text=Hello%20World\\" rel=\\"stylesheet\\">
-        <link href=\\"https://fonts.googleapis.com/css2?family=Comfortaa&text=%c2%a1Hola!\\" rel=\\"stylesheet\\">",
+        <link href=\\"https://fonts.googleapis.com/css2?family=Comfortaa&text=%c2%a1Hola!\\" rel=\\"stylesheet\\">
+        <!-- End Generated Utopia External Links -->",
       }
     `)
 
@@ -48,14 +64,32 @@ describe('external-resources-parser', () => {
           "genericExternalResources": Array [
             Object {
               "href": "https://utopia.com/styles.css",
+              "rel": "stylesheet",
               "type": "generic-external-resource",
             },
             Object {
               "href": "http://utopia.com/styles.css",
+              "rel": "stylesheet",
               "type": "generic-external-resource",
             },
             Object {
               "href": "//utopia.com/styles.css",
+              "rel": "stylesheet",
+              "type": "generic-external-resource",
+            },
+            Object {
+              "href": "/favicon.ico",
+              "rel": "icon",
+              "type": "generic-external-resource",
+            },
+            Object {
+              "href": "apple-icon-114.png",
+              "rel": "apple-touch-icon-precomposed",
+              "type": "generic-external-resource",
+            },
+            Object {
+              "href": "myFont.woff2",
+              "rel": "preload",
               "type": "generic-external-resource",
             },
           ],
@@ -84,5 +118,39 @@ describe('external-resources-parser', () => {
         },
       }
     `)
+  })
+
+  // not really sure how this should
+  it('parses and updates editor model', () => {
+    const storeHookForTest = getStoreHook(NO_OP)
+    let originalResources: ExternalResources | null = null
+    storeHookForTest.updateStoreWithImmer((store) => {
+      const parsed = getExternalResourcesInfo(store.editor, store.dispatch)
+      if (isRight(parsed)) {
+        originalResources = { ...parsed.value.externalResources }
+        const { externalResources, onSubmitValue } = parsed.value
+        onSubmitValue({
+          ...externalResources,
+          googleFontsResources: [
+            ...externalResources.googleFontsResources,
+            googleFontsResource('Roboto'),
+          ],
+        })
+      }
+    })
+    expect(originalResources).toMatchInlineSnapshot(`null`) // hmmmm
+
+    const updatedResources: ExternalResources | null = (() => {
+      let updated: ExternalResources | null = null
+      // hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
+      storeHookForTest.useStore((store) => {
+        const parsed = getExternalResourcesInfo(store.editor, store.dispatch)
+        if (isRight(parsed)) {
+          updated = parsed.value.externalResources
+        }
+      })
+      return updated
+    })()
+    expect(updatedResources).toMatchInlineSnapshot(`null`) // hmmmmmmmmmmm
   })
 })

@@ -1,42 +1,65 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
+import { notice } from '../../components/common/notices'
+import { EditorDispatch } from '../../components/editor/action-types'
+import { pushToast, updateCodeFile } from '../../components/editor/actions/actions'
+import { EditorState } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
+import {
+  generatedExternalResourcesLinksClose,
+  generatedExternalResourcesLinksOpen,
+} from '../../core/model/new-project-files'
 import { Either, isRight, left, right } from '../../core/shared/either'
 import { CodeFile, isCodeFile, ProjectContents } from '../../core/shared/project-file-types'
+import { OnSubmitValue } from '../../uuiui-deps'
 
 const googleFontsURIStart = 'https://fonts.googleapis.com/css2?'
-const generatedExternalResourcesLinksOpen = '<!-- Begin Generated Utopia External Links -->'
-const generatedExternalResourcesLinksClose = '<!-- End Generated Utopia External Links -->'
 
-export function getGeneratedExternalLinkText(htmlFileContents: string): Either<string, string> {
+function getBoundingStringIndicesForExternalResources(
+  htmlFileContents: string,
+): Either<string, { startIndex: number; endIndex: number }> {
   const startIndex = htmlFileContents.indexOf(generatedExternalResourcesLinksOpen)
-  if (startIndex === -1) {
-    return left(`Opening comment ${generatedExternalResourcesLinksOpen} not found`)
+  const endIndex = htmlFileContents.indexOf(generatedExternalResourcesLinksClose)
+  if (startIndex > -1 && endIndex > -1) {
+    return right({
+      startIndex,
+      endIndex,
+    })
+  } else {
+    if (startIndex === -1 && endIndex === -1) {
+      return left(
+        `Opening comment '${generatedExternalResourcesLinksOpen}' and closing comment '${generatedExternalResourcesLinksClose}' not found`,
+      )
+    } else if (startIndex === -1) {
+      return left(`Opening comment '${generatedExternalResourcesLinksOpen}' not found`)
+    } else {
+      return left(`Closing comment '${generatedExternalResourcesLinksClose}' not found`)
+    }
   }
-  const beginningTrimmed = htmlFileContents.slice(
-    startIndex + generatedExternalResourcesLinksOpen.length,
-  )
-  const endIndex = beginningTrimmed.indexOf(generatedExternalResourcesLinksClose)
-  if (endIndex === -1) {
-    return left(`Closing comment ${generatedExternalResourcesLinksClose} not found`)
-  }
-  const endTrimmed = beginningTrimmed.slice(0, endIndex).trim()
-  return right(endTrimmed.trim())
 }
 
-function getPreviewHTMLFileContents(projectContents: ProjectContents): Either<string, CodeFile> {
+export function getGeneratedExternalLinkText(htmlFileContents: string): Either<string, string> {
+  const parsedIndices = getBoundingStringIndicesForExternalResources(htmlFileContents)
+  if (isRight(parsedIndices)) {
+    const { startIndex, endIndex } = parsedIndices.value
+    const beginningTrimmed = htmlFileContents.slice(
+      startIndex + generatedExternalResourcesLinksOpen.length,
+    )
+    const endTrimmed = beginningTrimmed.slice(0, endIndex - startIndex).trim()
+    return right(endTrimmed.trim())
+  } else {
+    return parsedIndices
+  }
+}
+
+function getPreviewHTMLFilePath(projectContents: ProjectContents): Either<string, string> {
   const packageJson = projectContents['/package.json']
   if (packageJson != null && isCodeFile(packageJson)) {
     const parsedJSON = json5.parse(packageJson.fileContents)
     if (parsedJSON != null && 'utopia' in parsedJSON) {
       const htmlFilePath = parsedJSON.utopia?.html
       if (htmlFilePath != null) {
-        const previewHTMLFileContents = projectContents[`/${htmlFilePath}`]
-        if (previewHTMLFileContents != null && isCodeFile(previewHTMLFileContents)) {
-          return right(previewHTMLFileContents)
-        } else {
-          return left(`Path '${htmlFilePath}' could not be found`)
-        }
+        return right(htmlFilePath)
       } else {
         return left(`An html root is not specified in package.json`)
       }
@@ -48,24 +71,39 @@ function getPreviewHTMLFileContents(projectContents: ProjectContents): Either<st
   }
 }
 
+function getCodeFileContents(
+  filePath: string,
+  projectContents: ProjectContents,
+): Either<string, CodeFile> {
+  const fileContents = projectContents[`/${filePath}`]
+  if (fileContents != null && isCodeFile(fileContents)) {
+    return right(fileContents)
+  } else {
+    return left(`Path '${projectContents}' could not be found`)
+  }
+}
+
 function isHTMLElement(node: NodeHTMLParser.Node): node is NodeHTMLParser.HTMLElement {
   return node.nodeType === NodeHTMLParser.NodeType.ELEMENT_NODE
 }
 
-interface ExternalResources {
+export interface ExternalResources {
   genericExternalResources: Array<GenericExternalResource>
   googleFontsResources: Array<GoogleFontsResource>
 }
 
+// TODO: support arbitrary attributes
 interface GenericExternalResource {
   type: 'generic-external-resource'
   href: string
+  rel: string
 }
 
-function genericExternalResource(href: string): GenericExternalResource {
+function genericExternalResource(href: string, rel: string): GenericExternalResource {
   return {
     type: 'generic-external-resource',
     href,
+    rel,
   }
 }
 
@@ -75,7 +113,10 @@ interface GoogleFontsResource {
   fontStyleParams?: string // placeholder
 }
 
-function googleFontsResource(fontFamily: string, fontStyleParams?: string): GoogleFontsResource {
+export function googleFontsResource(
+  fontFamily: string,
+  fontStyleParams?: string,
+): GoogleFontsResource {
   return {
     type: 'google-fonts-resource',
     fontFamily,
@@ -101,19 +142,20 @@ export function parseLinkTags(linkTagsText: string): Either<string, ExternalReso
     let googleFontsResources: Array<GoogleFontsResource> = []
     parsed.childNodes.forEach((node) => {
       if (isHTMLElement(node) && node.tagName === 'link') {
-        const href = node.getAttribute('href')
-        if (href != null) {
-          if (href.startsWith(googleFontsURIStart)) {
-            const params = href.slice(googleFontsURIStart.length)
+        const hrefAttribute = node.getAttribute('href')
+        const relAttribute = node.getAttribute('rel')
+        if (hrefAttribute != null && relAttribute != null) {
+          if (hrefAttribute.startsWith(googleFontsURIStart)) {
+            const params = hrefAttribute.slice(googleFontsURIStart.length)
             const parsedParams = new URLSearchParams(params)
             const familyParam = parsedParams.get('family')
             if (familyParam != null) {
               googleFontsResources.push(getGoogleFontsResourceFromURL(familyParam))
             } else {
-              genericExternalResources.push(genericExternalResource(href))
+              genericExternalResources.push(genericExternalResource(hrefAttribute, relAttribute))
             }
           } else {
-            genericExternalResources.push(genericExternalResource(href))
+            genericExternalResources.push(genericExternalResource(hrefAttribute, relAttribute))
           }
         }
       }
@@ -127,17 +169,78 @@ export function parseLinkTags(linkTagsText: string): Either<string, ExternalReso
   }
 }
 
-export function useExternalResources(): Either<string, ExternalResources> {
-  const editorState = useEditorState((store) => store.editor)
-  const parsedContents = getPreviewHTMLFileContents(editorState.projectContents)
-  if (isRight(parsedContents)) {
-    const parsedLinkTagsText = getGeneratedExternalLinkText(parsedContents.value.fileContents)
-    if (isRight(parsedLinkTagsText)) {
-      return parseLinkTags(parsedLinkTagsText.value)
+function printExternalResources(externalResources: ExternalResources): string {
+  const generic = externalResources.genericExternalResources.map((resource) => {
+    return `<link href="${resource.href}" rel="${resource.rel}">`
+  })
+  const google = externalResources.googleFontsResources.map((resource) => {
+    const encodedFontFamily = encodeURIComponent(resource.fontFamily.replace(' ', '+'))
+    return `<link href="${googleFontsURIStart}${encodedFontFamily}" rel="stylesheet">`
+  })
+  return [...generic, ...google].join('\n ')
+}
+
+function updateHTMLExternalResourcesLinks(
+  currentFileContents: string,
+  newExternalResources: ExternalResources,
+): Either<string, string> {
+  const parsedIndices = getBoundingStringIndicesForExternalResources(currentFileContents)
+  if (isRight(parsedIndices)) {
+    const { startIndex, endIndex } = parsedIndices.value
+    const before = currentFileContents.slice(0, startIndex)
+    const after = currentFileContents.slice(endIndex)
+    return right(before + printExternalResources(newExternalResources) + after)
+  } else {
+    return parsedIndices
+  }
+}
+
+export function getExternalResourcesInfo(
+  editor: EditorState,
+  dispatch: EditorDispatch,
+): Either<
+  string,
+  { externalResources: ExternalResources; onSubmitValue: OnSubmitValue<ExternalResources> }
+> {
+  const previewHTMLFilePath = getPreviewHTMLFilePath(editor.projectContents)
+  if (isRight(previewHTMLFilePath)) {
+    const previewHTMLFilePathContents = getCodeFileContents(
+      previewHTMLFilePath.value,
+      editor.projectContents,
+    )
+    if (isRight(previewHTMLFilePathContents)) {
+      const fileContents = previewHTMLFilePathContents.value.fileContents
+      const parsedLinkTagsText = getGeneratedExternalLinkText(fileContents)
+      if (isRight(parsedLinkTagsText)) {
+        const externalResources = parseLinkTags(parsedLinkTagsText.value)
+        if (isRight(externalResources)) {
+          function onSubmitValue(newValue: ExternalResources) {
+            const updatedCodeFile = updateHTMLExternalResourcesLinks(fileContents, newValue)
+            if (isRight(updatedCodeFile)) {
+              dispatch([updateCodeFile(previewHTMLFilePath.value, updatedCodeFile.value)])
+            } else {
+              dispatch([pushToast(notice(updatedCodeFile.value))])
+            }
+          }
+          return right({ externalResources: externalResources.value, onSubmitValue })
+        } else {
+          return externalResources
+        }
+      } else {
+        return parsedLinkTagsText
+      }
     } else {
-      return parsedLinkTagsText
+      return previewHTMLFilePathContents
     }
   } else {
-    return parsedContents
+    return previewHTMLFilePath
   }
+}
+
+export function useExternalResources() {
+  const { dispatch, editorState } = useEditorState((store) => ({
+    editorState: store.editor,
+    dispatch: store.dispatch,
+  }))
+  return getExternalResourcesInfo(editorState, dispatch)
 }

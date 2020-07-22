@@ -138,6 +138,7 @@ import {
   NodeModules,
   Imports,
   importDetails,
+  CodeFile,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -306,6 +307,7 @@ import {
   UnsetSceneProp,
   UnwrapGroupOrView,
   UnwrapLayoutable,
+  UpdateCodeFile,
   UpdateCodeResultCache,
   UpdateDuplicationState,
   UpdateEditorMode,
@@ -3385,6 +3387,26 @@ export const UPDATE_FNS = {
     }
     return updatedEditor
   },
+  UPDATE_CODE_FILE: (action: UpdateCodeFile, editor: EditorModel): EditorModel => {
+    if (
+      editor.projectContents[action.filePath] != null &&
+      isCodeFile(editor.projectContents[action.filePath])
+    ) {
+      return {
+        ...editor,
+        projectContents: {
+          ...editor.projectContents,
+          [action.filePath]: {
+            ...(editor.projectContents[action.filePath] as CodeFile),
+            fileContents: action.newContent,
+            lastSavedContents: null, // is this right?}
+          },
+        },
+      }
+    } else {
+      return editor
+    }
+  },
   ADD_UI_JS_FILE: (action: AddUIJSFile, editor: EditorModel): EditorModel => {
     const newFileKey = uniqueProjectContentID('src/new_view.js', editor.projectContents)
     const newUiJsFile = getDefaultUIJsFile()
@@ -5062,6 +5084,14 @@ export function addCodeFile(parentPath: string, fileName: string): AddCodeFile {
     action: 'ADD_CODE_FILE',
     fileName: fileName,
     parentPath: parentPath,
+  }
+}
+
+export function updateCodeFile(filePath: string, newContent: string): UpdateCodeFile {
+  return {
+    action: 'UPDATE_CODE_FILE',
+    filePath,
+    newContent,
   }
 }
 
