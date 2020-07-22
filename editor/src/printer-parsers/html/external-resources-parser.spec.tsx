@@ -1,13 +1,17 @@
+import { act, renderHook } from '@testing-library/react-hooks'
+import * as React from 'react'
+import { EditorStateContext } from '../../components/editor/store/store-hook'
 import { getStoreHook } from '../../components/inspector/common/inspector-test-utils'
+import { isRight } from '../../core/shared/either'
 import { NO_OP } from '../../core/shared/utils'
 import {
-  getExternalResourcesInfo,
+  externalResources,
+  genericExternalResource,
   getGeneratedExternalLinkText,
-  parseLinkTags,
   googleFontsResource,
-  ExternalResources,
+  parseLinkTags,
+  useExternalResources,
 } from './external-resources-parser'
-import { isRight } from '../../core/shared/either'
 
 const testFile = `
 <!DOCTYPE html>
@@ -120,37 +124,39 @@ describe('external-resources-parser', () => {
     `)
   })
 
-  // not really sure how this should
   it('parses and updates editor model', () => {
+    // the dispatch isn't doing anything here. how do i make this work?
     const storeHookForTest = getStoreHook(NO_OP)
-    let originalResources: ExternalResources | null = null
-    storeHookForTest.updateStoreWithImmer((store) => {
-      const parsed = getExternalResourcesInfo(store.editor, store.dispatch)
-      if (isRight(parsed)) {
-        originalResources = { ...parsed.value.externalResources }
-        const { externalResources, onSubmitValue } = parsed.value
-        onSubmitValue({
-          ...externalResources,
-          googleFontsResources: [
-            ...externalResources.googleFontsResources,
-            googleFontsResource('Roboto'),
-          ],
-        })
+    const wrapper: React.FunctionComponent = ({ children }) => (
+      <EditorStateContext.Provider value={storeHookForTest}>{children}</EditorStateContext.Provider>
+    )
+    const { result, rerender } = renderHook(() => useExternalResources(), { wrapper })
+    expect(isRight(result.current)).toBeTruthy()
+    expect(result.current).toMatchInlineSnapshot(`
+              Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "externalResources": Object {
+                    "genericExternalResources": Array [],
+                    "googleFontsResources": Array [],
+                  },
+                  "onSubmitValue": [Function],
+                },
+              }
+          `)
+
+    act(() => {
+      expect(isRight(result.current)).toBeTruthy()
+      if (isRight(result.current)) {
+        result.current.value.onSubmitValue(
+          externalResources(
+            [genericExternalResource('https://utopia.app/stylesheet.css', 'stylesheet')],
+            [googleFontsResource('Roboto')],
+          ),
+        )
       }
     })
-    expect(originalResources).toMatchInlineSnapshot(`null`) // hmmmm
 
-    const updatedResources: ExternalResources | null = (() => {
-      let updated: ExternalResources | null = null
-      // hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
-      storeHookForTest.useStore((store) => {
-        const parsed = getExternalResourcesInfo(store.editor, store.dispatch)
-        if (isRight(parsed)) {
-          updated = parsed.value.externalResources
-        }
-      })
-      return updated
-    })()
-    expect(updatedResources).toMatchInlineSnapshot(`null`) // hmmmmmmmmmmm
+    expect(result.current).toMatchInlineSnapshot()
   })
 })

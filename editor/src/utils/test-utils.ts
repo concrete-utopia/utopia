@@ -10,6 +10,7 @@ import {
   openFileTab,
   getSceneElements,
   getSceneElementsFromParseSuccess,
+  DefaultPackageJson,
 } from '../components/editor/store/editor-state'
 import * as TP from '../core/shared/template-path'
 import {
@@ -64,6 +65,7 @@ export function createEditorStates(
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: {
+      '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
       '/public/index.html': codeFile(previewHtml, null),
       '/src/app.js': uiJsFile(
         right(

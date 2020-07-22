@@ -92,6 +92,13 @@ export interface ExternalResources {
   googleFontsResources: Array<GoogleFontsResource>
 }
 
+export function externalResources(
+  genericExternalResources: Array<GenericExternalResource>,
+  googleFontsResources: Array<GoogleFontsResource>,
+): ExternalResources {
+  return { genericExternalResources, googleFontsResources }
+}
+
 // TODO: support arbitrary attributes
 interface GenericExternalResource {
   type: 'generic-external-resource'
@@ -99,7 +106,7 @@ interface GenericExternalResource {
   rel: string
 }
 
-function genericExternalResource(href: string, rel: string): GenericExternalResource {
+export function genericExternalResource(href: string, rel: string): GenericExternalResource {
   return {
     type: 'generic-external-resource',
     href,
@@ -169,11 +176,11 @@ export function parseLinkTags(linkTagsText: string): Either<string, ExternalReso
   }
 }
 
-function printExternalResources(externalResources: ExternalResources): string {
-  const generic = externalResources.genericExternalResources.map((resource) => {
+function printExternalResources(value: ExternalResources): string {
+  const generic = value.genericExternalResources.map((resource) => {
     return `<link href="${resource.href}" rel="${resource.rel}">`
   })
-  const google = externalResources.googleFontsResources.map((resource) => {
+  const google = value.googleFontsResources.map((resource) => {
     const encodedFontFamily = encodeURIComponent(resource.fontFamily.replace(' ', '+'))
     return `<link href="${googleFontsURIStart}${encodedFontFamily}" rel="stylesheet">`
   })
@@ -212,8 +219,8 @@ export function getExternalResourcesInfo(
       const fileContents = previewHTMLFilePathContents.value.fileContents
       const parsedLinkTagsText = getGeneratedExternalLinkText(fileContents)
       if (isRight(parsedLinkTagsText)) {
-        const externalResources = parseLinkTags(parsedLinkTagsText.value)
-        if (isRight(externalResources)) {
+        const parsedExternalResources = parseLinkTags(parsedLinkTagsText.value)
+        if (isRight(parsedExternalResources)) {
           function onSubmitValue(newValue: ExternalResources) {
             const updatedCodeFile = updateHTMLExternalResourcesLinks(fileContents, newValue)
             if (isRight(updatedCodeFile)) {
@@ -222,9 +229,9 @@ export function getExternalResourcesInfo(
               dispatch([pushToast(notice(updatedCodeFile.value))])
             }
           }
-          return right({ externalResources: externalResources.value, onSubmitValue })
+          return right({ externalResources: parsedExternalResources.value, onSubmitValue })
         } else {
-          return externalResources
+          return parsedExternalResources
         }
       } else {
         return parsedLinkTagsText
