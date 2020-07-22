@@ -782,7 +782,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
   return inspector
 })
-SingleInspectorEntryPoint.displayName = 'InspectorEntryPoint'
 
 export const InspectorContextProvider = betterReactMemo<{
   selectedViews: Array<TemplatePath>
