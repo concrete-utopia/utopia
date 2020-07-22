@@ -67,7 +67,18 @@ export function determineElementsToOperateOnForDragging(
         }, selectedViews),
       ),
       componentMetadata,
-    )
+    ).map((view) => {
+      const parentPath = TP.parentPath(view)
+      if (
+        parentPath != null &&
+        TP.isScenePath(parentPath) &&
+        MetadataUtils.findSceneByTemplatePath(componentMetadata, parentPath)?.type === 'dynamic'
+      ) {
+        return parentPath
+      } else {
+        return view
+      }
+    })
   } else {
     // Resizing.
     return extendSelectedViewsForInteraction(selectedViews, componentMetadata)
