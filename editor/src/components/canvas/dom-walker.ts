@@ -5,10 +5,12 @@ import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/element-metadata-utils'
 import {
   DetectedLayoutSystem,
   ElementInstanceMetadata,
+  ComputedStyle,
   elementInstanceMetadata,
   SpecialSizeMeasurements,
   specialSizeMeasurements,
   emptySpecialSizeMeasurements,
+  emptyComputedStyle,
 } from '../../core/shared/element-template'
 import { id, TemplatePath, InstancePath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
@@ -27,6 +29,7 @@ import {
   positionValues,
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
+import { camelCaseToDashed } from '../../core/shared/string-utils'
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1
@@ -172,6 +175,24 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         )
       }
 
+      function getComputedStyle(element: HTMLElement): ComputedStyle {
+        const elementStyle = window.getComputedStyle(element)
+        let computedStyle: ComputedStyle = {}
+        if (elementStyle != null) {
+          Object.keys(elementStyle).forEach((key) => {
+            // Accessing the value directly often doesn't work, and using `getPropertyValue` requires
+            // using dashed case rather than camel case
+            const caseCorrectedKey = camelCaseToDashed(key)
+            const propertyValue = elementStyle.getPropertyValue(caseCorrectedKey)
+            if (propertyValue != '') {
+              computedStyle[key] = propertyValue
+            }
+          })
+        }
+
+        return computedStyle
+      }
+
       function getDOMAttribute(element: HTMLElement, attributeName: string): string | null {
         const attr = element.attributes.getNamedItemNS(null, attributeName)
         if (attr == null) {
@@ -224,6 +245,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           childMetadata,
           false,
           emptySpecialSizeMeasurements,
+          emptyComputedStyle,
         )
         rootMetadata.push(metadata)
       }
@@ -360,6 +382,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           childrenMetadata,
           false,
           getSpecialMeasurements(element),
+          getComputedStyle(element),
         )
       }
 

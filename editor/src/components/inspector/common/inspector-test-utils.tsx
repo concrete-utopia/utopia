@@ -4,7 +4,11 @@ import create from 'zustand'
 import { jsxAttributeValue, JSXElement } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { isRight } from '../../../core/shared/either'
-import { PropertyPath, StaticInstancePath } from '../../../core/shared/project-file-types'
+import type {
+  PropertyPath,
+  StaticInstancePath,
+  TemplatePath,
+} from '../../../core/shared/project-file-types'
 import { createEditorStates } from '../../../utils/test-utils'
 import utils from '../../../utils/utils'
 import { EditorDispatch } from '../../editor/action-types'
@@ -54,11 +58,14 @@ export function getStoreHook(
 }
 
 export const TestInspectorContextProvider: React.FunctionComponent<{
+  selectedViews: Array<TemplatePath>
   editorStoreData: EditorStateContextData
 }> = (props) => {
   return (
     <EditorStateContext.Provider value={props.editorStoreData}>
-      <InspectorContextProvider targetPath={['style']}>{props.children}</InspectorContextProvider>
+      <InspectorContextProvider selectedViews={props.selectedViews} targetPath={['style']}>
+        {props.children}
+      </InspectorContextProvider>
     </EditorStateContext.Provider>
   )
 }

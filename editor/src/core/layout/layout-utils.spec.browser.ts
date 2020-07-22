@@ -13,6 +13,7 @@ import {
   jsxAttributeValue,
   jsxElement,
   specialSizeMeasurements,
+  emptyComputedStyle,
 } from '../shared/element-template'
 import { generateUidWithExistingComponents } from '../model/element-template-utils'
 import { right } from '../shared/either'
@@ -104,6 +105,7 @@ describe('maybeSwitchLayoutProps', () => {
             0,
             0,
           ),
+          computedStyle: emptyComputedStyle,
         },
       },
     ]

@@ -18,3 +18,7 @@ export function dropExtension(filename: string): string {
     return filename
   }
 }
+
+export function camelCaseToDashed(s: string): string {
+  return s.replace(/[A-Z]/g, (l) => `-${l.toLowerCase()}`)
+}

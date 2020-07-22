@@ -54,6 +54,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -326,6 +327,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -517,6 +519,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:567": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -628,6 +631,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -876,6 +880,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -1241,6 +1246,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -1348,6 +1354,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:zzz/aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -1421,6 +1428,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:zzz/bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -1532,6 +1540,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -1724,6 +1733,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -1962,6 +1972,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -2226,6 +2237,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -2333,6 +2345,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:zzz/aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -2406,6 +2419,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:zzz/bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -2517,6 +2531,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -2728,6 +2743,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -2981,6 +2997,7 @@ Object {
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -3213,6 +3230,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -3466,6 +3484,7 @@ Object {
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -3691,6 +3710,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -3968,6 +3988,7 @@ Object {
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -4223,6 +4244,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -4500,6 +4522,7 @@ Object {
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -4776,6 +4799,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -4991,6 +5015,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -5977,6 +6002,7 @@ export var storyboard = (props) => {
   "utopia-storyboard-uid/scene-aaa:aaa/03a": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -6828,6 +6854,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -6943,6 +6970,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:zzz/aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -7021,6 +7049,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:zzz/bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -7134,6 +7163,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -7299,6 +7329,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -7601,6 +7632,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -7791,6 +7823,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -7932,6 +7965,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa/d59/dd5": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -8107,6 +8141,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -8305,6 +8340,7 @@ Object {
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -8449,6 +8485,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -8687,6 +8724,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -8926,6 +8964,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -9186,6 +9225,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -9280,6 +9320,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa/bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -9419,6 +9460,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -9537,6 +9579,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -9815,6 +9858,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -9944,6 +9988,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -10041,6 +10086,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:zzz/cloner/cloned": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -10165,6 +10211,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -10278,6 +10325,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {

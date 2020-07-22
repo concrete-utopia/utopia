@@ -7,6 +7,7 @@ import {
   isUtopiaJSXComponent,
   JSXAttributes,
   jsxAttributeValue,
+  ComputedStyle,
 } from '../../../core/shared/element-template'
 import { CanvasMetadataName } from '../../../core/workers/parser-printer/parser-printer-parsing'
 import { testParseCode } from '../../../core/workers/parser-printer/parser-printer-test-utils'
@@ -42,6 +43,7 @@ import {
   useInspectorStyleInfo,
 } from './property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 
 interface RenderTestHookProps<T> {
   value: T
@@ -209,7 +211,11 @@ const InspectorSectionProvider = (props: {
 }
 
 describe('useInspectorMetadataForPropsObject memoization', () => {
-  const callbackData = { onSubmitValue: utils.NO_OP, onUnsetValue: utils.NO_OP }
+  const callbackData = {
+    onSubmitValue: utils.NO_OP,
+    onUnsetValue: utils.NO_OP,
+    selectedViewsRef: { current: [] },
+  }
 
   it('make sure the tested component is in testing mode', () => {
     expect((WellBehavedInspectorSubsection as any).whyDidYouRender).toBeTruthy()
@@ -227,12 +233,19 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         style: { opacity: { value: 0.9 } },
       },
     ]
+    const computedStyles = [
+      {
+        opacity: '0.9',
+      },
+    ]
     const { rerender } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: propsWithOpacity,
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
+          computedStyles: computedStyles,
         }}
         callbackData={callbackData}
       />,
@@ -240,9 +253,11 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: propsWithOpacity,
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
+          computedStyles: computedStyles,
         }}
         callbackData={callbackData}
       />,
@@ -259,12 +274,19 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         style: { opacity: 0.9 },
       },
     ]
+    const computedStyles = [
+      {
+        opacity: '0.9',
+      },
+    ]
     const { rerender } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
+          computedStyles: computedStyles,
         }}
         callbackData={callbackData}
       />,
@@ -272,9 +294,11 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
+          computedStyles: computedStyles,
         }}
         callbackData={callbackData}
       />,
@@ -303,12 +327,26 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         style: { opacity: 0.9, otherProp: 'imdifferent' },
       },
     ]
+    const computedStyles = [
+      {
+        opacity: '0.9',
+        otherProp: 'dontcare',
+      },
+    ]
+    const computedStylesChanged = [
+      {
+        opacity: '0.9',
+        otherProp: 'imdifferent',
+      },
+    ]
     const { rerender, getByText } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
+          computedStyles: computedStyles,
         }}
         callbackData={callbackData}
       />,
@@ -316,9 +354,11 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsChangedOpacitySame],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValuesChanged,
+          computedStyles: computedStylesChanged,
         }}
         callbackData={callbackData}
       />,
@@ -345,12 +385,26 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         style: { opacity: 0.5, otherProp: 'imdifferent' },
       },
     ]
+    const computedStyles = [
+      {
+        opacity: '0.9',
+        otherProp: 'dontcare',
+      },
+    ]
+    const computedStylesChanged = [
+      {
+        opacity: '0.5',
+        otherProp: 'imdifferent',
+      },
+    ]
     const { rerender, getByText } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['style'],
           realValues: realValues,
+          computedStyles: computedStyles,
         }}
         callbackData={callbackData}
       />,
@@ -360,9 +414,11 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacityChanged],
           targetPath: ['style'],
           realValues: realValuesChanged,
+          computedStyles: computedStylesChanged,
         }}
         callbackData={callbackData}
       />,
@@ -441,12 +497,20 @@ function getPropsForStyleProp(
 }
 
 const makeInspectorHookContextProvider = (
+  selectedViews: Array<TemplatePath>,
   multiselectAttributes: JSXAttributes[],
   targetPath: string[],
   realValues: Array<{ [key: string]: any }>,
+  computedStyles: Array<ComputedStyle>,
 ) => ({ children }: any) => (
   <InspectorPropsContext.Provider
-    value={{ editedMultiSelectedProps: multiselectAttributes, targetPath, realValues: realValues }}
+    value={{
+      selectedViews: selectedViews,
+      editedMultiSelectedProps: multiselectAttributes,
+      targetPath,
+      realValues: realValues,
+      computedStyles: computedStyles,
+    }}
   >
     {children}
   </InspectorPropsContext.Provider>
@@ -468,7 +532,7 @@ function getBackgroundColorHookResult(
     }, realInnerValue)
   })
 
-  const contextProvider = makeInspectorHookContextProvider(propses, targetPath, realValues)
+  const contextProvider = makeInspectorHookContextProvider([], propses, targetPath, realValues, []) // FIXME This should be using computed styles
 
   const { result } = renderHook(
     () =>
@@ -735,7 +799,11 @@ describe('Integration Test: backgroundColor property', () => {
 })
 
 describe('Integration Test: opacity property', () => {
-  function getOpacityHookResult(opacityExpressions: Array<string>, realValues: Array<any>) {
+  function getOpacityHookResult(
+    opacityExpressions: Array<string>,
+    realValues: Array<any>,
+    computedStyles: Array<ComputedStyle>,
+  ) {
     const propses = opacityExpressions.map(
       (expression) => getPropsForStyleProp(expression, ['myStyleOuter', 'myStyleInner'])!,
     )
@@ -743,9 +811,11 @@ describe('Integration Test: opacity property', () => {
     const contextProvider = ({ children }: any) => (
       <InspectorPropsContext.Provider
         value={{
+          selectedViews: [],
           editedMultiSelectedProps: propses,
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
+          computedStyles: computedStyles,
         }}
       >
         {children}
@@ -759,20 +829,20 @@ describe('Integration Test: opacity property', () => {
   }
 
   it('parses a off control status', () => {
-    const hookResult = getOpacityHookResult([], [])
+    const hookResult = getOpacityHookResult([], [], [])
 
     const expectedControlStatus: ControlStatus = 'off'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
   it('parses an unset control status', () => {
-    const hookResult = getOpacityHookResult([`{}`], [{}])
+    const hookResult = getOpacityHookResult([`{}`], [{}], [])
     const expectedControlStatus: ControlStatus = 'unset'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
   it('parses a multiselect-identical-unset control status', () => {
-    const hookResult = getOpacityHookResult([`{}`, `{}`], [{}, {}])
+    const hookResult = getOpacityHookResult([`{}`, `{}`], [{}, {}], [])
 
     const expectedControlStatus: ControlStatus = 'multiselect-identical-unset'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
@@ -781,7 +851,11 @@ describe('Integration Test: opacity property', () => {
   it('parses a simple control status', () => {
     const expectedValue = cssNumber(0.9)
 
-    const hookResult = getOpacityHookResult([`{opacity: 0.9}`], [{ opacity: 0.9 }])
+    const hookResult = getOpacityHookResult(
+      [`{opacity: 0.9}`],
+      [{ opacity: 0.9 }],
+      [{ opacity: '0.9' }],
+    )
 
     expect(hookResult.value).toEqual(expectedValue)
 
@@ -790,7 +864,11 @@ describe('Integration Test: opacity property', () => {
   })
 
   it('parses a simple-unknown-css control status', () => {
-    const hookResult = getOpacityHookResult([`{opacity: 'a garbage'}`], [{ opacity: 'a garbage' }])
+    const hookResult = getOpacityHookResult(
+      [`{opacity: 'a garbage'}`],
+      [{ opacity: 'a garbage' }],
+      [{ opacity: 'a garbage' }],
+    )
 
     const expectedControlStatus: ControlStatus = 'simple-unknown-css'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
@@ -802,6 +880,7 @@ describe('Integration Test: opacity property', () => {
     const hookResult = getOpacityHookResult(
       [`{opacity: 0.9}`, `{opacity: 0.9}`],
       [{ opacity: 0.9 }, { opacity: 0.9 }],
+      [{ opacity: '0.9' }, { opacity: '0.9' }],
     )
 
     expect(hookResult.value).toEqual(expectedValue)
@@ -815,14 +894,17 @@ describe('Integration Test: opacity property', () => {
       getOpacityHookResult(
         [`{opacity: 'a garbage'}`, `{opacity: 0.9}`],
         [{ opacity: 'a garbage' }, { opacity: 0.9 }],
+        [{ opacity: 'a garbage' }, { opacity: '0.9' }],
       ),
       getOpacityHookResult(
         [`{opacity: 0.9}`, `{opacity: 'a garbage'}`],
         [{ opacity: 0.9 }, { opacity: 'a garbage' }],
+        [{ opacity: '0.9' }, { opacity: 'a garbage' }],
       ),
       getOpacityHookResult(
         [`{opacity: 1}`, `{opacity: 0.9}`, `{opacity: 'a garbage'}`],
         [{ opacity: 1 }, { opacity: 0.9 }, { opacity: 'a garbage' }],
+        [{ opacity: '1' }, { opacity: '0.9' }, { opacity: 'a garbage' }],
       ),
     ]
 
@@ -838,6 +920,7 @@ describe('Integration Test: opacity property', () => {
     const hookResult = getOpacityHookResult(
       [`{opacity: 0.9}`, `{opacity: 0.5}`],
       [{ opacity: 0.9 }, { opacity: 0.5 }],
+      [{ opacity: '0.9' }, { opacity: '0.5' }],
     )
 
     expect(hookResult.value).toEqual(expectedValue)
@@ -847,7 +930,11 @@ describe('Integration Test: opacity property', () => {
   })
 
   it('parses a controlled control status', () => {
-    const hookResult = getOpacityHookResult([`{opacity: true ? 1 : 0.1}`], [{ opacity: 1 }])
+    const hookResult = getOpacityHookResult(
+      [`{opacity: true ? 1 : 0.1}`],
+      [{ opacity: 1 }],
+      [{ opacity: '1' }],
+    )
     const expectedControlStatus: ControlStatus = 'controlled'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
@@ -856,13 +943,14 @@ describe('Integration Test: opacity property', () => {
     const hookResult = getOpacityHookResult(
       [`{opacity: true ? 1 : 0.1}`, `{opacity: true ? 1 : 0.1}`],
       [{ opacity: 1 }, { opacity: 1 }],
+      [{ opacity: '1' }, { opacity: '1' }],
     )
     const expectedControlStatus: ControlStatus = 'multiselect-controlled'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
   xit('parses an unoverwritable control status', () => {
-    const hookResult = getOpacityHookResult([`nodeValue1`], [`nodeValue1`])
+    const hookResult = getOpacityHookResult([`nodeValue1`], [`nodeValue1`], [])
     const expectedControlStatus: ControlStatus = 'unoverwritable'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
@@ -871,6 +959,7 @@ describe('Integration Test: opacity property', () => {
     const hookResult = getOpacityHookResult(
       [`nodeValue1`, `nodeValue1`],
       [`nodeValue1`, `nodeValue1`],
+      [],
     )
     const expectedControlStatus: ControlStatus = 'multiselect-unoverwritable'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
@@ -880,6 +969,7 @@ describe('Integration Test: opacity property', () => {
     const hookResult = getOpacityHookResult(
       [`nodeValue1`, `nodeValue2`],
       [`nodeValue1`, `nodeValue2`],
+      [],
     )
     const expectedControlStatus: ControlStatus = 'multiselect-unoverwritable'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
@@ -887,15 +977,21 @@ describe('Integration Test: opacity property', () => {
 })
 
 describe('Integration Test: boxShadow property', () => {
-  function getBoxShadowHookResult(boxShadowExpressions: Array<string>, realValues: Array<any>) {
+  function getBoxShadowHookResult(
+    boxShadowExpressions: Array<string>,
+    realValues: Array<any>,
+    computedStyles: Array<ComputedStyle>,
+  ) {
     const props = boxShadowExpressions.map(
       (boxShadow) => getPropsForStyleProp(boxShadow, ['myStyleOuter', 'myStyleInner'])!,
     )
 
     const contextProvider = makeInspectorHookContextProvider(
+      [],
       props,
       ['myStyleOuter', 'myStyleInner'],
       realValues,
+      computedStyles,
     )
 
     const { result } = renderHook(() => useInspectorStyleInfo('boxShadow'), {
@@ -907,6 +1003,7 @@ describe('Integration Test: boxShadow property', () => {
   it('poorly formed shows up as unknown', () => {
     const hookResult = getBoxShadowHookResult(
       [`{ boxShadow: '1px 1px burple' }`],
+      [{ boxShadow: '1px 1px burple' }],
       [{ boxShadow: '1px 1px burple' }],
     )
     const expectedControlStatus: ControlStatus = 'simple-unknown-css'
@@ -927,6 +1024,12 @@ describe('Integration Test: boxShadow property', () => {
         { boxShadow: '1px 1px beeple' },
         { boxShadow: '1px 1px boople' },
       ],
+      [
+        { boxShadow: '1px 1px burple' },
+        { boxShadow: '1px 1px purple' },
+        { boxShadow: '1px 1px beeple' },
+        { boxShadow: '1px 1px boople' },
+      ],
     )
     const expectedControlStatus: ControlStatus = 'multiselect-simple-unknown-css'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
@@ -936,13 +1039,18 @@ describe('Integration Test: boxShadow property', () => {
     const hookResult = getBoxShadowHookResult(
       [`{ boxShadow: '0 0 0 1px #ff00ff' }`],
       [{ boxShadow: '0 0 0 1px #ff00ff' }],
+      [{ boxShadow: '0 0 0 1px #ff00ff' }],
     )
     const expectedControlStatus: ControlStatus = 'simple'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
   it('with a controlled parameter shows up as controlled', () => {
-    const hookResult = getBoxShadowHookResult([`{ boxShadow: 5 + 15 }`], [{ boxShadow: '20' }])
+    const hookResult = getBoxShadowHookResult(
+      [`{ boxShadow: 5 + 15 }`],
+      [{ boxShadow: '20' }],
+      [{ boxShadow: '20' }],
+    )
     const expectedControlStatus: ControlStatus = 'controlled'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
@@ -950,6 +1058,7 @@ describe('Integration Test: boxShadow property', () => {
   it('multiselect, with a controlled parameter shows up as controlled', () => {
     const hookResult = getBoxShadowHookResult(
       [`{ boxShadow: 5 + 15 }`, `{ boxShadow: 5 + 15 }`],
+      [{ boxShadow: '20' }, { boxShadow: '20' }],
       [{ boxShadow: '20' }, { boxShadow: '20' }],
     )
     const expectedControlStatus: ControlStatus = 'multiselect-controlled'
@@ -959,6 +1068,7 @@ describe('Integration Test: boxShadow property', () => {
   it('multiselect with a mixed value, with a controlled parameter shows up as controlled', () => {
     const hookResult = getBoxShadowHookResult(
       [`{ boxShadow: 5 + 15 }`, `{ boxShadow: 5 + 25 }`],
+      [{ boxShadow: '20' }, { boxShadow: '30' }],
       [{ boxShadow: '20' }, { boxShadow: '30' }],
     )
     const expectedControlStatus: ControlStatus = 'multiselect-controlled'

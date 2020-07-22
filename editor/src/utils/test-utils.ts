@@ -20,6 +20,7 @@ import {
   isUtopiaJSXComponent,
   JSXElementChild,
   TopLevelElement,
+  emptyComputedStyle,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, getJSXAttributeAtPath } from '../core/shared/jsx-attributes'
@@ -177,6 +178,7 @@ function createFakeMetadataForJSXElement(
       ),
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
+      computedStyle: emptyComputedStyle,
     }
   } else {
     throw new Error(`Not a JSX element ${element}`)

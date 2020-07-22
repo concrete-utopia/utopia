@@ -2,7 +2,7 @@ import { Resizable, ResizeDirection } from 're-resizable'
 import * as React from 'react'
 import { SimpleFlexRow, UtopiaStyles, UtopiaTheme } from 'uuiui'
 
-import { betterReactMemo, Utils } from 'uuiui-deps'
+import { betterReactMemo } from 'uuiui-deps'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { ScriptEditor } from '../code-editor/script-editor'
 import * as EditorActions from '../editor/actions/actions'
@@ -124,11 +124,14 @@ export const SplitViewCanvasRoot = betterReactMemo(
             className='Inspector-entrypoint'
             style={{
               alignItems: 'stretch',
+              flexDirection: 'column',
               width: 255,
               minWidth: 255,
               maxWidth: 255,
               flexGrow: 0,
               flexShrink: 0,
+              overflowY: 'scroll',
+              paddingBottom: 100,
             }}
           >
             {isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
