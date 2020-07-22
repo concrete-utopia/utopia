@@ -15,7 +15,10 @@ function createBasicComponent(
   propertyControls: PropertyControls | null,
 ): ComponentDescriptor {
   return componentDescriptor(
-    { antd: importDetails(null, [importAlias(baseVariable)], null) },
+    {
+      antd: importDetails(null, [importAlias(baseVariable)], null),
+      'antd/dist/antd.css': importDetails(null, [], null),
+    },
     jsxElement(jsxElementName(baseVariable, propertyPathParts), {}, [], null),
     name,
     propertyControls,

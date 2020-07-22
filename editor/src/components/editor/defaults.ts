@@ -18,6 +18,7 @@ export function defaultSceneElement(
     'data-uid': jsxAttributeValue(uid),
     'data-label': jsxAttributeValue(label),
     component: jsxAttributeOtherJavaScript(component, `return ${componentName}`, [], null),
+    static: jsxAttributeValue(true),
     style: jsxAttributeValue({
       position: 'absolute',
       ...frame,

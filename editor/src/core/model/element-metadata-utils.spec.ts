@@ -20,6 +20,7 @@ import {
   jsxElement,
   jsxAttributeValue,
   elementInstanceMetadata,
+  emptyComputedStyle,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file'
 import { BakedInStoryboardUID } from './scene-utils'
@@ -36,6 +37,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   children: [],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -46,6 +48,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   children: [],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
 }
 
 const testComponentMetadataChild3: ElementInstanceMetadata = {
@@ -69,10 +72,12 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
       children: [],
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
+      computedStyle: emptyComputedStyle,
     },
   ],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -84,17 +89,18 @@ const testComponentRoot1: ElementInstanceMetadata = {
   children: [testComponentMetadataChild1, testComponentMetadataChild2, testComponentMetadataChild3],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
 }
 
 const testComponentScene: ComponentMetadata = {
   scenePath: TP.scenePath([BakedInStoryboardUID, TestScenePath]),
   templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
   component: 'MyView',
-  frame: { left: 0, top: 0, width: 100, height: 100 },
   container: {
     layoutSystem: LayoutSystem.PinSystem,
   },
   rootElement: testComponentRoot1,
+  type: 'static',
   globalFrame: canvasRectangle({
     x: 0,
     y: 0,
@@ -173,6 +179,7 @@ describe('targetElementSupportsChildren', () => {
       children: [],
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
+      computedStyle: emptyComputedStyle,
     }
   }
 
@@ -313,6 +320,7 @@ describe('getElementLabel', () => {
     [],
     false,
     emptySpecialSizeMeasurements,
+    emptyComputedStyle,
   )
   const divElement = jsxElement(
     'div',
@@ -331,14 +339,15 @@ describe('getElementLabel', () => {
     [spanElementMetadata],
     false,
     emptySpecialSizeMeasurements,
+    emptyComputedStyle,
   )
   const metadata: Array<ComponentMetadata> = [
     {
       scenePath: scenePath,
       templatePath: instancePath,
       component: 'App',
-      frame: { left: 0, top: 0, width: 100, height: 100 },
       container: { layoutSystem: LayoutSystem.PinSystem },
+      type: 'static',
       rootElement: divElementMetadata,
       globalFrame: canvasRectangle({
         x: 0,

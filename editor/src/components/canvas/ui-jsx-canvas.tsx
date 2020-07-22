@@ -33,6 +33,7 @@ import {
   isDestructuredObject,
   isOmittedParam,
   JSXAttributeOtherJavaScript,
+  emptyComputedStyle,
 } from '../../core/shared/element-template'
 import { getUtopiaID, getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
@@ -567,8 +568,8 @@ function getStoryboardRoot(
 
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElement = {
     component: BakedInStoryboardVariableName,
+    type: 'static',
     container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
-    frame: {} as any, // TODO BB Hack this is not safe at all, the code expects a frame here
     scenePath: EmptyScenePathForStoryboard,
     templatePath: TP.instancePath([], []),
     globalFrame: null,
@@ -783,10 +784,11 @@ interface SceneRootProps extends CanvasReactReportErrorCallback {
   inScope: MapLike<any>
   hiddenInstances: Array<TemplatePath>
   componentProps: MapLike<any>
-  frame: NormalisedFrame
+  style: React.CSSProperties
   jsxFactoryFunctionName: string | null
   container: SceneContainer
   component: string | null
+  isStatic: boolean
 
   // this is even worse: this is secret props that are passed down from a utopia parent View
   // we put this here in case the Scene is inside another View
@@ -809,10 +811,11 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     fileBlobs,
     reportError,
     componentProps,
-    frame,
+    style,
     container,
     jsxFactoryFunctionName,
     component,
+    isStatic,
     sceneUID,
     'data-uid': dataUidIgnore,
     ...inputProps
@@ -826,9 +829,9 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
   metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
     scenePath: scenePath,
     templatePath: templatePath,
-    frame: frame,
     container: container,
     component: component,
+    type: isStatic ? 'static' : 'dynamic',
     globalFrame: null, // the real frame comes from the DOM walker
     label: props.sceneLabel,
   }
@@ -842,17 +845,8 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       childrenTemplatePaths: [],
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
+      computedStyle: emptyComputedStyle,
     }
-  }
-
-  // For the sake of backwards compatibility, still pass through the scene's frame if layout is
-  // undefined in the props
-  // TODO I guess we can remove this backwards compatibility now
-  const passthroughLayout = componentProps?.layout ?? {
-    left: 0,
-    top: 0,
-    width: frame.width,
-    height: frame.height,
   }
 
   let rootElement = null
@@ -863,7 +857,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       ...defaultProps,
       ...inputProps,
       ...componentProps,
-      layout: passthroughLayout,
     }
 
     rootElement = renderComponentUsingJsxFactoryFunction(
@@ -884,11 +877,12 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
 
   const sceneStyle: React.CSSProperties = {
     // TODO this should really be a property of the scene that you can change, similar to the preview.
-    backgroundColor: colorTheme.emphasizedBackground.value,
     position: 'absolute',
+    backgroundColor: colorTheme.emphasizedBackground.value,
     boxShadow: rerenderUtopiaContext.canvasIsLive
       ? UtopiaStyles.scene.live.boxShadow
       : UtopiaStyles.scene.editing.boxShadow,
+    ...style,
   }
 
   return (
@@ -898,7 +892,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
         data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
         style={sceneStyle}
         layout={{
-          ...frame,
           ...container,
         }}
       >
@@ -991,6 +984,7 @@ function renderCoreElement(
 
     const rootComponent = sceneProps.component
     const rootComponentName = sceneProps.component?.topLevelElementName
+    const isStatic = sceneProps.static
 
     const sceneId: string = sceneProps['data-uid'] || ''
     return (
@@ -1001,12 +995,13 @@ function renderCoreElement(
         hiddenInstances={hiddenInstances}
         jsxFactoryFunctionName={jsxFactoryFunctionName}
         fileBlobs={fileBlobs}
-        frame={sceneProps.style}
+        style={sceneProps.style}
         inScope={inScope}
         reportError={Utils.NO_OP}
         requireResult={requireResult}
         templatePath={templatePath}
         component={rootComponentName}
+        isStatic={isStatic}
         sceneUID={sceneId}
         sceneLabel={sceneProps['data-label']}
       />
@@ -1161,6 +1156,7 @@ function buildSpyWrappedElement(
       childrenTemplatePaths: childrenTemplatePaths,
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
+      computedStyle: emptyComputedStyle,
     }
     const isChildOfRootScene = TP.pathsEqual(
       TP.scenePathForPath(templatePath),

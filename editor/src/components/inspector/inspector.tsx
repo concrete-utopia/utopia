@@ -24,6 +24,7 @@ import {
   DetectedLayoutSystem,
   SpecialSizeMeasurements,
   emptySpecialSizeMeasurements,
+  ComputedStyle,
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
@@ -799,6 +800,7 @@ export const InspectorContextProvider = betterReactMemo<{
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newRealValues: Array<{ [key: string]: any }> = []
+  let newComputedStyles: Array<ComputedStyle> = []
 
   Utils.fastForEach(selectedViews, (path) => {
     if (TP.isScenePath(path)) {
@@ -814,12 +816,14 @@ export const InspectorContextProvider = betterReactMemo<{
         const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
         newEditedMultiSelectedProps.push(jsxAttributes)
         newRealValues.push(elementMetadata.props)
+        newComputedStyles.push(elementMetadata.computedStyle)
       }
     }
   })
 
   const editedMultiSelectedProps = useKeepReferenceEqualityIfPossible(newEditedMultiSelectedProps)
   const realValues = useKeepReferenceEqualityIfPossible(newRealValues)
+  const computedStyles = useKeepReferenceEqualityIfPossible(newComputedStyles)
 
   const selectedViewsRef = usePropControlledRef_DANGEROUS(selectedViews)
   const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
@@ -888,6 +892,7 @@ export const InspectorContextProvider = betterReactMemo<{
           editedMultiSelectedProps: editedMultiSelectedProps,
           targetPath: props.targetPath,
           realValues: realValues,
+          computedStyles: computedStyles,
         }}
       >
         {props.children}

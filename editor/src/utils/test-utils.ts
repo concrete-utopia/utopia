@@ -20,6 +20,7 @@ import {
   isUtopiaJSXComponent,
   JSXElementChild,
   TopLevelElement,
+  emptyComputedStyle,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, getJSXAttributeAtPath } from '../core/shared/jsx-attributes'
@@ -118,6 +119,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       scenePath: TP.scenePath([BakedInStoryboardUID, scene.uid]),
       templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
+      type: 'static',
       rootElement:
         component == null
           ? null
@@ -139,9 +141,9 @@ export function createFakeMetadataForComponents(
         scenePath: TP.scenePath([BakedInStoryboardUID, `scene-${index}`]),
         templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
         component: component.name,
-        frame: { left: 0, top: 0, width: 100, height: 100 },
         globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
         container: { layoutSystem: LayoutSystem.PinSystem },
+        type: 'static',
         rootElement: createFakeMetadataForJSXElement(
           component.rootElement,
           TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
@@ -170,6 +172,7 @@ function createFakeMetadataForJSXElement(
       ),
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
+      computedStyle: emptyComputedStyle,
     }
   } else {
     throw new Error(`Not a JSX element ${element}`)

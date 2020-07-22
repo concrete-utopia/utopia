@@ -138,6 +138,7 @@ describe('DOM Walker tests', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
+              static
               style={{ left: 0, top: 0, width: 375, height: 812 }}
               component={App}
               layout={{ layoutSystem: 'pinSystem' }}
@@ -183,6 +184,7 @@ describe('DOM Walker tests', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
+              static
               style={{ left: 0, top: 0, width: 375, height: 812 }}
               component={App}
               layout={{ layoutSystem: 'pinSystem' }}
@@ -228,6 +230,7 @@ describe('DOM Walker tests', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
+              static
               style={{ left: 0, top: 0, width: 375, height: 812 }}
               component={App}
               layout={{ layoutSystem: 'pinSystem' }}
@@ -259,6 +262,7 @@ describe('DOM Walker tests', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
+              static
               style={{ left: 0, top: 0, width: 375, height: 812 }}
               component={App}
               layout={{ layoutSystem: 'pinSystem' }}
@@ -294,6 +298,7 @@ describe('DOM Walker tests', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
+              static
               style={{ left: 0, top: 0, width: 375, height: 812 }}
               component={App}
               layout={{ layoutSystem: 'pinSystem' }}

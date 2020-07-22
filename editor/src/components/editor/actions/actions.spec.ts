@@ -14,6 +14,7 @@ import {
   defaultPropsParam,
   emptySpecialSizeMeasurements,
   clearTopLevelElementUniqueIDs,
+  emptyComputedStyle,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import { uiJsFile } from '../../../core/model/project-file-utils'
@@ -760,6 +761,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
         component: 'App',
         frame: { left: 0, top: 0, width: 100, height: 100 },
         globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+        type: 'static',
         container: { layoutSystem: LayoutSystem.PinSystem },
         rootElement: {
           navigatorName: 'nope',
@@ -792,10 +794,12 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
               children: [],
               componentInstance: false,
               specialSizeMeasurements: emptySpecialSizeMeasurements,
+              computedStyle: emptyComputedStyle,
             },
           ],
           componentInstance: false,
           specialSizeMeasurements: emptySpecialSizeMeasurements,
+          computedStyle: emptyComputedStyle,
         },
       },
     ],
