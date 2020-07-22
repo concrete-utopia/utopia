@@ -24,14 +24,16 @@ import {
   UIJSFile,
   isParseSuccess,
   isUIJSFile,
+  ParseResult,
 } from '../../../core/shared/project-file-types'
 import {
   defaultCanvasMetadata,
   emptyImports,
   parseSuccess,
+  parseFailure,
 } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
-import { right, forceRight, left } from '../../../core/shared/either'
+import { right, forceRight, left, isRight } from '../../../core/shared/either'
 import { createFakeMetadataForComponents } from '../../../utils/test-utils'
 import Utils from '../../../utils/utils'
 import {
@@ -51,6 +53,7 @@ import {
   reconstructJSXMetadata,
   getOpenUIJSFile,
   getOpenUtopiaJSXComponentsFromState,
+  PersistentModel,
 } from '../store/editor-state'
 import {
   editorMoveTemplate,
@@ -66,9 +69,11 @@ import {
   sampleDefaultImports,
 } from '../../../core/model/test-ui-js-file'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
-import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
+import { getDefaultUIJsFile, sampleCode } from '../../../core/model/new-project-files'
 import { TestScenePath } from '../../canvas/ui-jsx-test-utils'
 import { NO_OP } from '../../../core/shared/utils'
+import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
+import { generateCodeResultCache } from '../../custom-code/code-file'
 const chaiExpect = Chai.expect
 
 describe('SET_PROP', () => {
@@ -820,5 +825,64 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     expect(
       getOpenUtopiaJSXComponentsFromState(result).map(clearTopLevelElementUniqueIDs),
     ).toMatchSnapshot()
+  })
+})
+
+describe('LOAD', () => {
+  it('Parses all UIJS files and bins any previously stored parsed model data', () => {
+    const firstUIJSFile = '/src/app.js'
+    const secondUIJSFile = '/src/some/other/file.js'
+    const initiailFileContents: ParseResult = left(parseFailure(null, null, null, [], sampleCode))
+    const loadedModel: PersistentModel = {
+      appID: null,
+      projectVersion: CURRENT_PROJECT_VERSION,
+      projectContents: {
+        [firstUIJSFile]: uiJsFile(initiailFileContents, null, RevisionsState.BothMatch, 0),
+        [secondUIJSFile]: uiJsFile(initiailFileContents, null, RevisionsState.BothMatch, 0),
+      },
+      exportsInfo: [],
+      buildResult: {},
+      openFiles: [],
+      selectedFile: null,
+      codeEditorErrors: {
+        buildErrors: {},
+        lintErrors: {},
+      },
+      codeEditorTheme: '',
+      lastUsedFont: null,
+      hiddenInstances: [],
+      fileBrowser: {
+        minimised: false,
+      },
+      dependencyList: {
+        minimised: false,
+      },
+      projectSettings: {
+        minimised: false,
+      },
+      navigator: {
+        minimised: false,
+      },
+    }
+
+    const action = {
+      action: 'LOAD' as const,
+      model: loadedModel,
+      nodeModules: {},
+      codeResultCache: generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build'),
+      title: '',
+      projectId: '',
+      storedState: null,
+      safeMode: false,
+    }
+
+    const startingState = deepFreeze(createEditorState(NO_OP))
+    const result = UPDATE_FNS.LOAD(action, startingState, NO_OP)
+    const newFirstFileContents = (result.projectContents[firstUIJSFile] as UIJSFile).fileContents
+    expect(isRight(newFirstFileContents)).toBeTruthy()
+    expect(newFirstFileContents.value.code).toEqual(initiailFileContents.value.code)
+    const newSecondFileContents = (result.projectContents[secondUIJSFile] as UIJSFile).fileContents
+    expect(isRight(newSecondFileContents)).toBeTruthy()
+    expect(newSecondFileContents.value.code).toEqual(initiailFileContents.value.code)
   })
 })

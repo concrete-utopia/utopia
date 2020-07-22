@@ -418,8 +418,7 @@ import {
 } from '../../canvas/right-menu'
 
 import { Notice } from '../../common/notices'
-import { dropExtension } from '../../../core/shared/string-utils'
-import { objectMap } from '../../../core/shared/object-utils'
+import { objectMap, mapValues } from '../../../core/shared/object-utils'
 import {
   getMemoizedRequireFn,
   getDependencyTypeDefinitions,
@@ -427,6 +426,7 @@ import {
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1284,6 +1284,24 @@ function toastOnGeneratedElementsTargeted(
 
 let checkpointTimeoutId: number | undefined = undefined
 
+function parseAllUIJSFiles(model: PersistentModel): PersistentModel {
+  const parsedProjectContents = mapValues((v, k) => {
+    if (isUIJSFile(v)) {
+      const parsedFileContents = lintAndParse(k, v.fileContents.value.code)
+      return {
+        ...v,
+        fileContents: parsedFileContents,
+      }
+    } else {
+      return v
+    }
+  }, model.projectContents)
+  return {
+    ...model,
+    projectContents: parsedProjectContents,
+  }
+}
+
 // JS Editor Actions:
 export const UPDATE_FNS = {
   NEW: (
@@ -1310,8 +1328,9 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
+    const parsedModel = parseAllUIJSFiles(migratedModel)
     const newModel: EditorModel = {
-      ...editorModelFromPersistentModel(migratedModel, dispatch),
+      ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
       nodeModules: {
