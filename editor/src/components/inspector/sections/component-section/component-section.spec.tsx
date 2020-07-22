@@ -43,7 +43,10 @@ describe('Component Section', () => {
     const [getUpdateCount] = setupReactWhyDidYouRender(true)
 
     const { getByText } = render(
-      <TestInspectorContextProvider editorStoreData={storeHookForTest}>
+      <TestInspectorContextProvider
+        selectedViews={storeHookForTest.api.getState().editor.selectedViews}
+        editorStoreData={storeHookForTest}
+      >
         <ComponentSection isScene={false} />
       </TestInspectorContextProvider>,
     )

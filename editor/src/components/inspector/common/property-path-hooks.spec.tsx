@@ -43,6 +43,7 @@ import {
   useInspectorStyleInfo,
 } from './property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 
 interface RenderTestHookProps<T> {
   value: T
@@ -210,7 +211,11 @@ const InspectorSectionProvider = (props: {
 }
 
 describe('useInspectorMetadataForPropsObject memoization', () => {
-  const callbackData = { onSubmitValue: utils.NO_OP, onUnsetValue: utils.NO_OP }
+  const callbackData = {
+    onSubmitValue: utils.NO_OP,
+    onUnsetValue: utils.NO_OP,
+    selectedViewsRef: { current: [] },
+  }
 
   it('make sure the tested component is in testing mode', () => {
     expect((WellBehavedInspectorSubsection as any).whyDidYouRender).toBeTruthy()
@@ -236,6 +241,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const { rerender } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: propsWithOpacity,
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -247,6 +253,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: propsWithOpacity,
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -275,6 +282,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const { rerender } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -286,6 +294,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -333,6 +342,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const { rerender, getByText } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -344,6 +354,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsChangedOpacitySame],
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValuesChanged,
@@ -389,6 +400,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const { rerender, getByText } = render(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['style'],
           realValues: realValues,
@@ -402,6 +414,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     rerender(
       <InspectorSectionProvider
         propsData={{
+          selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacityChanged],
           targetPath: ['style'],
           realValues: realValuesChanged,
@@ -484,6 +497,7 @@ function getPropsForStyleProp(
 }
 
 const makeInspectorHookContextProvider = (
+  selectedViews: Array<TemplatePath>,
   multiselectAttributes: JSXAttributes[],
   targetPath: string[],
   realValues: Array<{ [key: string]: any }>,
@@ -491,6 +505,7 @@ const makeInspectorHookContextProvider = (
 ) => ({ children }: any) => (
   <InspectorPropsContext.Provider
     value={{
+      selectedViews: selectedViews,
       editedMultiSelectedProps: multiselectAttributes,
       targetPath,
       realValues: realValues,
@@ -517,7 +532,7 @@ function getBackgroundColorHookResult(
     }, realInnerValue)
   })
 
-  const contextProvider = makeInspectorHookContextProvider(propses, targetPath, realValues, []) // FIXME This should be using computed styles
+  const contextProvider = makeInspectorHookContextProvider([], propses, targetPath, realValues, []) // FIXME This should be using computed styles
 
   const { result } = renderHook(
     () =>
@@ -796,6 +811,7 @@ describe('Integration Test: opacity property', () => {
     const contextProvider = ({ children }: any) => (
       <InspectorPropsContext.Provider
         value={{
+          selectedViews: [],
           editedMultiSelectedProps: propses,
           targetPath: ['myStyleOuter', 'myStyleInner'],
           realValues: realValues,
@@ -971,6 +987,7 @@ describe('Integration Test: boxShadow property', () => {
     )
 
     const contextProvider = makeInspectorHookContextProvider(
+      [],
       props,
       ['myStyleOuter', 'myStyleInner'],
       realValues,

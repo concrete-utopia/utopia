@@ -79,15 +79,17 @@ import {
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
 import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
-import { PropertyPath } from '../../../core/shared/project-file-types'
+import type { PropertyPath, TemplatePath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'
+import type { ReadonlyRef } from './inspector-utils'
 
 export interface InspectorPropsContextData {
+  selectedViews: Array<TemplatePath>
   editedMultiSelectedProps: readonly JSXAttributes[]
   targetPath: readonly string[]
   realValues: ReadonlyArray<{ [key: string]: any }>
@@ -95,11 +97,13 @@ export interface InspectorPropsContextData {
 }
 
 export interface InspectorCallbackContextData {
+  selectedViewsRef: ReadonlyRef<Array<TemplatePath>>
   onSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
   onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void
 }
 
 export const InspectorPropsContext = createContext<InspectorPropsContextData>({
+  selectedViews: [],
   editedMultiSelectedProps: [],
   targetPath: [],
   realValues: [],
@@ -107,6 +111,7 @@ export const InspectorPropsContext = createContext<InspectorPropsContextData>({
 })
 
 export const InspectorCallbackContext = React.createContext<InspectorCallbackContextData>({
+  selectedViewsRef: { current: [] },
   onSubmitValue: Utils.NO_OP,
   onUnsetValue: Utils.NO_OP,
 })
@@ -343,13 +348,16 @@ export function useInspectorLayoutInStyleInfo_UNSAFE<
 }
 
 export function useInspectorContext() {
-  const { onSubmitValue, onUnsetValue } = React.useContext(InspectorCallbackContext)
+  const { onSubmitValue, onUnsetValue, selectedViewsRef } = React.useContext(
+    InspectorCallbackContext,
+  )
   return React.useMemo(() => {
     return {
       onContextSubmitValue: onSubmitValue,
       onContextUnsetValue: onUnsetValue,
+      selectedViewsRef: selectedViewsRef,
     }
-  }, [onSubmitValue, onUnsetValue])
+  }, [onSubmitValue, onUnsetValue, selectedViewsRef])
 }
 
 function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
@@ -822,12 +830,12 @@ export function useKeepReferenceEqualityIfPossible<T>(possibleNewValue: T, measu
 }
 
 export function useIsSubSectionVisible(sectionName: string): boolean {
-  return useEditorState((store) => {
-    const selectedViews = store.editor.selectedViews
+  const selectedViews = useRefSelectedViews()
 
+  return useEditorState((store) => {
     const imports = getOpenImportsFromState(store.editor)
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
-    const types = selectedViews.map((view) => {
+    const types = selectedViews.current.map((view) => {
       if (TP.isScenePath(view)) {
         return 'scene'
       }
@@ -880,12 +888,14 @@ const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
 export function useSelectedPropertyControls(
   includeIgnored: boolean,
 ): ParseResult<ParsedPropertyControls> {
+  const selectedViews = useRefSelectedViews()
+
   const propertyControls = useEditorState((store) => {
-    const { selectedViews, codeResultCache } = store.editor
+    const { codeResultCache } = store.editor
 
     let selectedPropertyControls: PropertyControls | null = {}
     if (codeResultCache != null) {
-      Utils.fastForEach(selectedViews, (path) => {
+      Utils.fastForEach(selectedViews.current, (path) => {
         // TODO multiselect
         selectedPropertyControls = getPropertyControlsForTarget(path, store.editor) ?? {}
       })
@@ -906,12 +916,14 @@ export function useSelectedPropertyControls(
 export function useUsedPropsWithoutControls(): Array<string> {
   const parsedPropertyControls = useSelectedPropertyControls(true)
 
+  const selectedViews = useRefSelectedViews()
+
   const selectedComponents = useEditorState((store) => {
-    const { selectedViews, jsxMetadataKILLME } = store.editor
+    const { jsxMetadataKILLME } = store.editor
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let components: Array<UtopiaJSXComponent> = []
     const pushComponent = (component: UtopiaJSXComponent) => components.push(component)
-    fastForEach(selectedViews, (path) => {
+    fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
         const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
         if (scene != null) {
@@ -960,13 +972,15 @@ export function useUsedPropsWithoutControls(): Array<string> {
 export function useUsedPropsWithoutDefaults(): Array<string> {
   const parsedPropertyControls = useSelectedPropertyControls(false)
 
+  const selectedViews = useRefSelectedViews()
+
   const selectedComponentProps = useEditorState((store) => {
-    const { selectedViews, jsxMetadataKILLME } = store.editor
+    const { jsxMetadataKILLME } = store.editor
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let propsUsed: Array<string> = []
     const pushPropsForComponent = (component: UtopiaJSXComponent) =>
       propsUsed.push(...component.propsUsed)
-    fastForEach(selectedViews, (path) => {
+    fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
         const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
         if (scene != null) {
@@ -994,8 +1008,9 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
 }
 
 export function useInspectorWarningStatus(): boolean {
+  const selectedViews = useSelectedViews()
+
   return useEditorState((store) => {
-    const selectedViews = store.editor.selectedViews
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let hasLayoutInCSSProp = false
     Utils.fastForEach(selectedViews, (view) => {
@@ -1021,4 +1036,17 @@ export function useInspectorWarningStatus(): boolean {
     })
     return hasLayoutInCSSProp
   })
+}
+
+export function useSelectedViews() {
+  const selectedViews = useContextSelector(
+    InspectorPropsContext,
+    (context) => context.selectedViews,
+  )
+  return selectedViews
+}
+
+export function useRefSelectedViews() {
+  const { selectedViewsRef } = React.useContext(InspectorCallbackContext)
+  return selectedViewsRef
 }
