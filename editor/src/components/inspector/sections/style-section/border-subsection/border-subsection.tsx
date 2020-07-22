@@ -168,9 +168,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
 
   const borderSet: boolean = controlStatus !== 'unset'
 
-  const contextMenuItems = utils.stripNulls([
-    'border' in value ? addOnUnsetValues(['border parameters'], onUnsetValues) : null,
-  ])
+  const contextMenuItems = [addOnUnsetValues(['border parameters'], onUnsetValues)]
 
   if (!isVisible) {
     return null
