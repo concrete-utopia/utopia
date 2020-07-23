@@ -1,6 +1,12 @@
 import * as TS from 'typescript'
 import { SourceNode } from 'source-map'
-import { addUniquely, dropLast, flatMapArray, stripNulls } from '../../shared/array-utils'
+import {
+  addUniquely,
+  dropLast,
+  flatMapArray,
+  stripNulls,
+  traverseArray,
+} from '../../shared/array-utils'
 import { intrinsicHTMLElementNamesAsStrings } from '../../shared/dom-utils'
 import {
   applicative2Either,
@@ -45,8 +51,10 @@ import {
   jsxSpreadAssignment,
   jsxTextBlock,
   ElementsWithin,
+  jsxFragment,
+  jsxElementNameEquals,
 } from '../../shared/element-template'
-import { maybeToArray } from '../../shared/optional-utils'
+import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
   HighlightBounds,
   Imports,
@@ -1214,7 +1222,9 @@ function parseElementProps(
 
 type TSTextOrExpression = TS.JsxText | TS.JsxExpression
 type TSJSXElement = TS.JsxElement | TS.JsxSelfClosingElement
-type ElementsToParse = Array<TSJSXElement | TSTextOrExpression>
+type ElementsToParse = Array<
+  TSJSXElement | TSTextOrExpression | TS.JsxOpeningFragment | TS.JsxClosingFragment | TS.JsxFragment
+>
 
 function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsToParse> {
   let result: ElementsToParse = []
@@ -1224,7 +1234,8 @@ function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsT
       TS.isJsxElement(node) ||
       TS.isJsxSelfClosingElement(node) ||
       TS.isJsxText(node) ||
-      TS.isJsxExpression(node)
+      TS.isJsxExpression(node) ||
+      TS.isJsxFragment(node)
     ) {
       result.push(node)
     } else {
@@ -1458,20 +1469,143 @@ export function parseOutJSXElements(
   function innerParse(nodes: Array<TS.Node>): Either<string, Array<SuccessfullyParsedElement>> {
     // First parse to extract the nodes we really want into a sensible form
     // and fail if there's anything unexpected.
-    const toParse = pullOutElementsToParse(nodes)
-    // Handle the two different cases of either an element or a bunch of JSX inner content.
-    const parsedNodes = flatMapEither((elementsArray) => {
-      return traverseEither((elem) => {
-        if (TS.isJsxElement(elem) || TS.isJsxSelfClosingElement(elem)) {
-          return produceElementFromTSElement(elem)
-        } else if (TS.isJsxExpression(elem)) {
-          return produceArbitraryBlockFromJsxExpression(elem)
+    return flatMapEither((toParse) => {
+      // Handle the two different cases of either an element or a bunch of JSX inner content.
+      let parsedNodes: Array<SuccessfullyParsedElement> = []
+      let fragmentDepth: number = 0
+      let fragmentChildren: { [key: number]: Array<JSXElementChild> } = {}
+      let fragmentStart: { [key: number]: TS.JsxOpeningFragment } = {}
+
+      function addParsedElement(addElement: SuccessfullyParsedElement): void {
+        if (fragmentDepth === 0) {
+          parsedNodes.push(addElement)
         } else {
-          return produceTextFromJsxText(elem)
+          let fragmentArray: Array<JSXElementChild> = fragmentChildren[fragmentDepth]
+          if (fragmentArray == null) {
+            fragmentArray = [addElement.value]
+            fragmentChildren[fragmentDepth] = fragmentArray
+          } else {
+            fragmentArray.push(addElement.value)
+          }
         }
-      }, elementsArray)
-    }, toParse)
-    return mapEither(clearUnnecessarySpacingElements, parsedNodes)
+      }
+
+      for (const elem of toParse) {
+        switch (elem.kind) {
+          case TS.SyntaxKind.JsxFragment: {
+            const possibleFragment = produceFragmentFromJsxFragment(elem)
+            if (isLeft(possibleFragment)) {
+              return possibleFragment
+            } else {
+              addParsedElement(possibleFragment.value)
+            }
+            break
+          }
+          case TS.SyntaxKind.JsxElement: {
+            const possibleElement = produceElementFromTSElement(elem)
+            if (isLeft(possibleElement)) {
+              return possibleElement
+            } else {
+              const parsedElement = possibleElement.value.value
+              if (isJSXElement(parsedElement) && isReactFragmentName(parsedElement.name, imports)) {
+                addParsedElement({
+                  ...possibleElement.value,
+                  value: jsxFragment(parsedElement.children, true),
+                })
+              } else {
+                addParsedElement(possibleElement.value)
+              }
+            }
+            break
+          }
+          case TS.SyntaxKind.JsxSelfClosingElement: {
+            const possibleElement = produceElementFromTSElement(elem)
+            if (isLeft(possibleElement)) {
+              return possibleElement
+            } else {
+              const parsedElement = possibleElement.value.value
+              if (isJSXElement(parsedElement) && isReactFragmentName(parsedElement.name, imports)) {
+                addParsedElement({
+                  ...possibleElement.value,
+                  value: jsxFragment(parsedElement.children, true),
+                })
+              } else {
+                addParsedElement(possibleElement.value)
+              }
+            }
+            break
+          }
+          case TS.SyntaxKind.JsxExpression: {
+            const possibleExpression = produceArbitraryBlockFromJsxExpression(elem)
+            if (isLeft(possibleExpression)) {
+              return possibleExpression
+            } else {
+              addParsedElement(possibleExpression.value)
+            }
+            break
+          }
+          case TS.SyntaxKind.JsxText: {
+            const possibleText = produceTextFromJsxText(elem)
+            if (isLeft(possibleText)) {
+              return possibleText
+            } else {
+              addParsedElement(possibleText.value)
+            }
+            break
+          }
+          case TS.SyntaxKind.JsxOpeningFragment: {
+            fragmentDepth += 1
+            fragmentStart[fragmentDepth] = elem
+            break
+          }
+          case TS.SyntaxKind.JsxClosingFragment: {
+            if (fragmentDepth === 0) {
+              return left('Too many closed fragments.')
+            } else {
+              const childrenOfFragment: Array<JSXElementChild> =
+                fragmentChildren[fragmentDepth] ?? []
+              const start = forceNotNull(
+                'Fragment start should exist.',
+                fragmentStart[fragmentDepth],
+              )
+              delete fragmentChildren[fragmentDepth]
+              delete fragmentStart[fragmentDepth]
+              fragmentDepth -= 1
+              addParsedElement(
+                successfullyParsedElement(
+                  sourceFile,
+                  start,
+                  jsxFragment(childrenOfFragment, false),
+                ),
+              )
+            }
+            break
+          }
+          default:
+            const _exhaustiveCheck: never = elem
+            throw new Error(`Unhandled elem type ${JSON.stringify(elem)}`)
+        }
+      }
+
+      if (fragmentDepth === 0) {
+        return right(clearUnnecessarySpacingElements(parsedNodes))
+      } else {
+        return left('Not enough closed fragments.')
+      }
+    }, pullOutElementsToParse(nodes))
+  }
+
+  function produceFragmentFromJsxFragment(
+    fragment: TS.JsxFragment,
+  ): Either<string, SuccessfullyParsedElement> {
+    // Parse the children.
+    const parsedChildren = mapEither((children) => {
+      return children.map((c) => c.value)
+    }, innerParse(nodeArrayToArray(fragment.children)))
+    // Create the containing fragment.
+    return mapEither((children) => {
+      return successfullyParsedElement(sourceFile, fragment, jsxFragment(children, false))
+    }, parsedChildren)
   }
 
   function produceTextFromJsxText(tsText: TS.JsxText): Either<string, SuccessfullyParsedElement> {
@@ -1603,6 +1737,40 @@ function isJsxNameKnown(
     .concat(intrinsicHTMLElementNamesAsStrings)
   const result = knownNames.includes(name.baseVariable)
   return result
+}
+
+function isReactFragmentName(name: JSXElementName, imports: Imports): boolean {
+  const possibleReactImport = imports['react']
+  if (possibleReactImport == null) {
+    return false
+  } else {
+    if (possibleReactImport.importedAs != null) {
+      if (
+        jsxElementNameEquals(name, jsxElementName(possibleReactImport.importedAs, ['Fragment']))
+      ) {
+        return true
+      }
+    }
+    if (possibleReactImport.importedWithName != null) {
+      if (
+        jsxElementNameEquals(
+          name,
+          jsxElementName(possibleReactImport.importedWithName, ['Fragment']),
+        )
+      ) {
+        return true
+      }
+    }
+    const fromWithin = possibleReactImport.importedFromWithin.find(
+      (within) => within.name === 'Fragment',
+    )
+    if (fromWithin != null) {
+      if (jsxElementNameEquals(name, jsxElementName(fromWithin.alias, []))) {
+        return true
+      }
+    }
+    return false
+  }
 }
 
 export function flattenOutAnnoyingContainers(

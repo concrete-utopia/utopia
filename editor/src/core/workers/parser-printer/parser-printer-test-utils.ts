@@ -507,6 +507,11 @@ function walkElements(
         walkElements(innerElement, walkWith)
       })
       break
+    case 'JSX_FRAGMENT':
+      fastForEach(jsxElementChild.children, (child) => {
+        walkElements(child, walkWith)
+      })
+      break
     default:
       const _exhaustiveCheck: never = jsxElementChild
       throw new Error(`Unhandled type ${JSON.stringify(jsxElementChild)}`)
@@ -530,6 +535,11 @@ function walkAllJSXElementChilds(
       fastForEach(Object.keys(jsxElementChild.elementsWithin), (elementWithinKey) => {
         const innerElement = jsxElementChild.elementsWithin[elementWithinKey]
         walkAllJSXElementChilds(innerElement, walkWith)
+      })
+      break
+    case 'JSX_FRAGMENT':
+      fastForEach(jsxElementChild.children, (child) => {
+        walkAllJSXElementChilds(child, walkWith)
       })
       break
     default:

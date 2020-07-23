@@ -748,7 +748,7 @@ function createComponentRendererComponent(params: {
 
     rootElement = utopiaJsxComponent.rootElement
 
-    return renderCoreElement(
+    const elementsToRender = renderCoreElement(
       rootElement,
       ownTemplatePath,
       mutableContext.rootScope,
@@ -766,6 +766,11 @@ function createComponentRendererComponent(params: {
       codeError,
       rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy,
     )
+    if (Array.isArray(elementsToRender)) {
+      return <>{elementsToRender}</>
+    } else {
+      return elementsToRender
+    }
   }
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
   Component.topLevelElementName = params.topLevelElementName
@@ -1007,107 +1012,142 @@ function renderCoreElement(
       />
     )
   }
-  if (isJSXElement(element)) {
-    const assembledProps = jsxAttributesToProps(
-      inScope,
-      element.props,
-      parentComponentInputProps,
-      requireResult,
-      (error) => {
-        reportError(error)
-        throw error
-      },
-    )
-
-    const passthroughProps: MapLike<any> = {
-      ...assembledProps,
-      'data-uid': Utils.defaultIfNull(assembledProps['data-uid'], uid),
-      [UTOPIA_ORIGINAL_ID_KEY]: Utils.defaultIfNull(
-        assembledProps[UTOPIA_ORIGINAL_ID_KEY],
-        parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
-      ),
-    }
-    return renderJSXElement(
-      TP.toString(templatePath),
-      element,
-      templatePath,
-      parentComponentInputProps,
-      requireResult,
-      rootScope,
-      inScope,
-      hiddenInstances,
-      fileBlobs,
-      validPaths,
-      reportError,
-      passthroughProps,
-      metadataContext,
-      jsxFactoryFunctionName,
-      null,
-      shouldIncludeCanvasRootInTheSpy,
-    )
-  } else if (isJSXArbitraryBlock(element)) {
-    let innerIndex: number = 0
-    function innerRender(innerElement: JSXElement, innerInScope: MapLike<any>): React.ReactElement {
-      innerIndex++
-      const innerPath = TP.appendToPath(templatePath, `index-${innerIndex}`)
-
-      const innerUID = getUtopiaID(innerElement)
-      const withOriginalID = setJSXValueAtPath(
-        innerElement.props,
-        PP.create([UTOPIA_ORIGINAL_ID_KEY]),
-        jsxAttributeValue(innerUID),
-      )
-      const generatedUID = `${innerUID}-${innerIndex}`
-      const withGeneratedUID = flatMapEither(
-        (attrs) =>
-          setJSXValueAtPath(attrs, PP.create(['data-uid']), jsxAttributeValue(generatedUID)),
-        withOriginalID,
-      )
-
-      let augmentedInnerElement = innerElement
-      forEachRight(withGeneratedUID, (attrs) => {
-        augmentedInnerElement = {
-          ...augmentedInnerElement,
-          props: attrs,
-        }
-      })
-      return renderCoreElement(
-        augmentedInnerElement,
-        innerPath,
-        rootScope,
-        innerInScope,
+  switch (element.type) {
+    case 'JSX_ELEMENT': {
+      const assembledProps = jsxAttributesToProps(
+        inScope,
+        element.props,
         parentComponentInputProps,
         requireResult,
+        (error) => {
+          reportError(error)
+          throw error
+        },
+      )
+
+      const passthroughProps: MapLike<any> = {
+        ...assembledProps,
+        'data-uid': Utils.defaultIfNull(assembledProps['data-uid'], uid),
+        [UTOPIA_ORIGINAL_ID_KEY]: Utils.defaultIfNull(
+          assembledProps[UTOPIA_ORIGINAL_ID_KEY],
+          parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
+        ),
+      }
+      return renderJSXElement(
+        TP.toString(templatePath),
+        element,
+        templatePath,
+        parentComponentInputProps,
+        requireResult,
+        rootScope,
+        inScope,
         hiddenInstances,
         fileBlobs,
-        reportError,
         validPaths,
-        generatedUID,
-        reactChildren,
+        reportError,
+        passthroughProps,
         metadataContext,
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
       )
     }
-    const blockScope = {
-      ...inScope,
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
-        element.elementsWithin,
-        inScope,
-        innerRender,
-      ),
+    case 'JSX_ARBITRARY_BLOCK': {
+      let innerIndex: number = 0
+      function innerRender(
+        innerElement: JSXElement,
+        innerInScope: MapLike<any>,
+      ): React.ReactElement {
+        innerIndex++
+        const innerPath = TP.appendToPath(templatePath, `index-${innerIndex}`)
+
+        const innerUID = getUtopiaID(innerElement)
+        const withOriginalID = setJSXValueAtPath(
+          innerElement.props,
+          PP.create([UTOPIA_ORIGINAL_ID_KEY]),
+          jsxAttributeValue(innerUID),
+        )
+        const generatedUID = `${innerUID}-${innerIndex}`
+        const withGeneratedUID = flatMapEither(
+          (attrs) =>
+            setJSXValueAtPath(attrs, PP.create(['data-uid']), jsxAttributeValue(generatedUID)),
+          withOriginalID,
+        )
+
+        let augmentedInnerElement = innerElement
+        forEachRight(withGeneratedUID, (attrs) => {
+          augmentedInnerElement = {
+            ...augmentedInnerElement,
+            props: attrs,
+          }
+        })
+        return renderCoreElement(
+          augmentedInnerElement,
+          innerPath,
+          rootScope,
+          innerInScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          fileBlobs,
+          reportError,
+          validPaths,
+          generatedUID,
+          reactChildren,
+          metadataContext,
+          jsxFactoryFunctionName,
+          null,
+          shouldIncludeCanvasRootInTheSpy,
+        )
+      }
+      const blockScope = {
+        ...inScope,
+        [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+          element.elementsWithin,
+          inScope,
+          innerRender,
+        ),
+      }
+      return runJSXArbitraryBlock(requireResult, element, blockScope, reportError)
     }
-    return runJSXArbitraryBlock(requireResult, element, blockScope, reportError)
-  } else {
-    // JSXTextBlock is the final remaining case.
-    return renderComponentUsingJsxFactoryFunction(
-      inScope,
-      jsxFactoryFunctionName,
-      React.Fragment,
-      { key: TP.toString(templatePath) },
-      element.text,
-    )
+    case 'JSX_FRAGMENT': {
+      let renderedChildren: Array<React.ReactElement> = []
+      fastForEach(element.children, (child) => {
+        const renderResult = renderCoreElement(
+          child,
+          templatePath,
+          rootScope,
+          inScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          fileBlobs,
+          reportError,
+          validPaths,
+          uid,
+          reactChildren,
+          metadataContext,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+        )
+        renderedChildren.push(renderResult)
+      })
+      return <>{renderedChildren}</>
+    }
+    case 'JSX_TEXT_BLOCK': {
+      // JSXTextBlock is the final remaining case.
+      return renderComponentUsingJsxFactoryFunction(
+        inScope,
+        jsxFactoryFunctionName,
+        React.Fragment,
+        { key: TP.toString(templatePath) },
+        element.text,
+      )
+    }
+    default:
+      const _exhaustiveCheck: never = element
+      throw new Error(`Unhandled type ${JSON.stringify(element)}`)
   }
 }
 
@@ -1230,7 +1270,9 @@ function renderJSXElement(
   }
   finalProps = streamlineInFileBlobs(finalProps, fileBlobs)
 
-  const createChildrenElement = (child: JSXElementChild): React.ReactElement => {
+  const createChildrenElement = (
+    child: JSXElementChild,
+  ): React.ReactElement | Array<React.ReactElement> => {
     const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
     return renderCoreElement(
       child,
