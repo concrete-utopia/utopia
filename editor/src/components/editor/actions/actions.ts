@@ -97,7 +97,6 @@ import {
   uniqueProjectContentID,
   updateParseResultCode,
   assetFile,
-  updateLastSavedContents,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -139,7 +138,6 @@ import {
   NodeModules,
   Imports,
   importDetails,
-  CodeFile,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
