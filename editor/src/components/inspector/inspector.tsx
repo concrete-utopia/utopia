@@ -286,6 +286,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
   const {
     dispatch,
     focusedPanel,
+    anyComponents,
     anyHTMLElements,
     anyUnknownElements,
     hasNonDefaultPositionAttributes,
@@ -294,6 +295,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     const rootMetadata = store.editor.jsxMetadataKILLME
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     const imports = getOpenImportsFromState(store.editor)
+    let anyComponentsInner: boolean = false
     let anyHTMLElementsInner: boolean = false
     let anyUnknownElementsInner: boolean = false
     let hasNonDefaultPositionAttributesInner: boolean = false
@@ -303,6 +305,9 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         // TODO Scene Implementation
         return
       }
+      anyComponentsInner =
+        anyComponentsInner ||
+        MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
       const possibleElement = MetadataUtils.getElementByInstancePathMaybe(rootMetadata, view)
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
@@ -338,6 +343,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     return {
       dispatch: store.dispatch,
       focusedPanel: store.editor.focusedPanel,
+      anyComponents: anyComponentsInner,
       anyHTMLElements: anyHTMLElementsInner,
       anyUnknownElements: anyUnknownElementsInner,
       hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
@@ -397,7 +403,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             toggleAspectRatioLock={toggleAspectRatioLock}
             position={props.input.position}
           />
-          <ComponentSection isScene={false} />
+          {anyComponents ? <ComponentSection isScene={false} /> : null}
           <ImgSection />
           <TargetSelectorSection
             targets={props.targets}
