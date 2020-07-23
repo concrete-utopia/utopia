@@ -20,7 +20,9 @@ function getBoundingStringIndicesForExternalResources(
   htmlFileContents: string,
 ): Either<string, { startIndex: number; endIndex: number }> {
   const startIndex = htmlFileContents.indexOf(generatedExternalResourcesLinksOpen)
-  const endIndex = htmlFileContents.indexOf(generatedExternalResourcesLinksClose)
+  const endIndex =
+    htmlFileContents.indexOf(generatedExternalResourcesLinksClose) +
+    generatedExternalResourcesLinksClose.length
   if (startIndex > -1 && endIndex > -1) {
     return right({
       startIndex,
@@ -185,10 +187,10 @@ function printExternalResources(value: ExternalResources): string {
     const encodedFontFamily = encodeURIComponent(resource.fontFamily.replace(' ', '+'))
     return `<link href="${googleFontsURIStart}${encodedFontFamily}" rel="stylesheet">`
   })
-  return [...generic, ...google].join('\n ')
+  return [...generic, ...google].join('\n    ')
 }
 
-function updateHTMLExternalResourcesLinks(
+export function updateHTMLExternalResourcesLinks(
   currentFileContents: string,
   newExternalResources: ExternalResources,
 ): Either<string, string> {
@@ -197,7 +199,15 @@ function updateHTMLExternalResourcesLinks(
     const { startIndex, endIndex } = parsedIndices.value
     const before = currentFileContents.slice(0, startIndex)
     const after = currentFileContents.slice(endIndex)
-    return right(before + printExternalResources(newExternalResources) + after)
+    return right(
+      before +
+        generatedExternalResourcesLinksOpen +
+        '\n    ' +
+        printExternalResources(newExternalResources) +
+        '\n    ' +
+        generatedExternalResourcesLinksClose +
+        after,
+    )
   } else {
     return parsedIndices
   }
