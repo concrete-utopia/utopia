@@ -10,7 +10,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { base16AteliersulphurpoolLight as syntaxTheme } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
 import * as React from 'react'
-import { colorTheme, UtopiaStyles, SimpleFlexRow } from 'uuiui'
+import { colorTheme, UtopiaStyles, SimpleFlexRow, FlexRow, FlexColumn } from 'uuiui'
 import { H1, H2, PrettyKeys, EM, CalloutPrimary as Callout, A, P } from './documentation-components'
 
 const codeString = `
@@ -37,61 +37,239 @@ App.propertyControls = {
 
 `
 
-export const renderedGettingStarted = (
-  <div>
-    <H1>Getting Started</H1>
-    <div>
-      <P>
-        Welcome to the pre-release! A few tips to get you started:
-        <ul>
-          <li>
-            Showing / hiding the code editor: use <PrettyKeys shortcut='⌘⎇.' />
-          </li>
-          <li>
-            Running the code vs editing: use the button in the top right corner, or&nbsp;
-            <PrettyKeys shortcut={['⌘', 'Enter']} />
-          </li>
-          <li>
-            To work on, or preview, one or more components: create them via React code as usual,
-            then hit the "+" Menu and insert a Scene. In the inspector, select the component you'd
-            like to render from a dropdown.
-          </li>
-        </ul>
-        <Callout>
-          You don't need an account to get started, but you'll need to sign up to use assets in your
-          products, and share them with others.
-        </Callout>
-      </P>
-      <P>
-        <H2>Using controls</H2>
-        You can add custom controls to your components, and configure them in the inspector. To try
-        it, copy and paste this code at the end of your project.
-        <SyntaxHighlighter language='jsx' style={syntaxTheme}>
-          {codeString}
-        </SyntaxHighlighter>
-      </P>
+const ProjectCard = (props: any) => (
+  <div
+    css={{
+      transition: 'all .2s ease-in-out',
+      scrollSnapAlign: 'start',
+      '&:hover': {
+        transform: 'scale(1.02)',
+      },
+    }}
+    style={{
+      position: 'relative',
+      flex: '0 0 312px',
+      overflow: 'hidden',
+      cursor: 'pointer',
+      borderRadius: 2,
+      border: '1px solid lightgrey',
+      fontSize: 13,
+    }}
+    onClick={() => alert('TODO TAKE ME THERE')}
+  >
+    <div
+      style={{
+        backgroundImage: `url(${props.previewImageUrl})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+        height: 192,
+      }}
+    />
 
-      <P>
-        <H2>Known Issues</H2>
-        Utopia is in developer preview. You should expect your code to be safe, your projects
-        recoverable, and code errors being reported well and consistently. However, some features -
-        notably visual editing - are still being improved. Their behaviour won't change, but they
-        will work better in edge cases.
-        <ul>
-          <li>
-            The inspector does not yet reliably show different layout options, especially where
-            elements are configured via css classes
-          </li>
-          <li>
-            The editor does not reliably show you styles applied from css files or class names.
-          </li>
-          <li>
-            Text insertion and manipulation via the visual editor inserts a special
-            <code>Text</code> component.
-          </li>
-          <li>Class-based components, and top-level code mutation, don't yet work reliably.</li>
-        </ul>
-      </P>
+    <div>
+      <FlexRow
+        style={{
+          marginTop: 8,
+          fontWeight: 500,
+          fontSize: 13,
+          lineHeight: '1.4em',
+          paddingLeft: 8,
+          paddingRight: 8,
+        }}
+      >
+        <span style={{ overflow: 'hidden', flexGrow: 1, textOverflow: 'ellipsis' }}>
+          {props.title}
+        </span>
+      </FlexRow>
+      <div
+        style={{
+          fontWeight: 400,
+          fontSize: 12,
+          marginTop: 8,
+          height: 33,
+          paddingLeft: 8,
+          paddingRight: 8,
+          color: 'grey',
+          lineHeight: '1.4em',
+          whiteSpace: 'pre-wrap',
+          overflow: 'hidden',
+        }}
+      >
+        {props.description}
+      </div>
+      <FlexRow
+        style={{
+          marginTop: 8,
+          paddingLeft: 8,
+          paddingRight: 8,
+          marginBottom: 4,
+          color: 'grey',
+          fontSize: 11,
+        }}
+      >
+        <div
+          style={{
+            borderRadius: '50%',
+            width: 21,
+            height: 21,
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            backgroundImage: `url(${props.authorAvatarUrl})`,
+          }}
+        />
+
+        <span style={{ marginLeft: 8 }}> {props.author}</span>
+      </FlexRow>
+    </div>
+  </div>
+)
+
+const featuredProjectList = [
+  {
+    title: 'A React Spring Example',
+    description: 'A little animation composed with React Springs',
+    author: 'Evgenii User',
+    previewImageUrl:
+      'https://res.cloudinary.com/jerrick/image/upload/q_auto,w_720/oqwgpec8r2zb2viezsxv.jpg',
+    authorAvatarUrl:
+      'https://images.unsplash.com/photo-1511485977113-f34c92461ad9?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&ixid=eyJhcHBfaWQiOjE3Nzg0fQ',
+  },
+  {
+    title: 'An example of a very long, tedius title that just goes on and on and on',
+    author: 'Evgenii User',
+    description:
+      'Using React, React Fiber, React Three 3, React Redux, React Reflux, Redacted React, and Proactive React',
+    previewImageUrl:
+      'https://res.cloudinary.com/jerrick/image/upload/fl_progressive,q_auto,w_1024/vdgebbzsefzisgruzerw.jpg',
+    authorAvatarUrl:
+      'https://images.unsplash.com/photo-1502378735452-bc7d86632805?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=aa3a807e1bbdfd4364d1f449eaa96d82',
+  },
+  {
+    title: 'An exampleofofaverylongtediustitlethatjustgoesonandonandon',
+    author: 'Eugenie Utenta',
+    previewImageUrl:
+      'https://res.cloudinary.com/jerrick/image/upload/q_auto,w_720/oqwgpec8r2zb2viezsxv.jpg',
+    authorAvatarUrl:
+      'https://images.unsplash.com/photo-1476956207128-beccf17c1771?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=52bbdebca6084fffac43984574db3038',
+  },
+  {
+    title: 'A React Spring Example',
+    author: 'Eugen Benutzer',
+    previewImageUrl:
+      'https://res.cloudinary.com/jerrick/image/upload/q_auto,w_720/oqwgpec8r2zb2viezsxv.jpg',
+    authorAvatarUrl:
+      'https://images.unsplash.com/photo-1476956207128-beccf17c1771?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=52bbdebca6084fffac43984574db3038',
+  },
+  {
+    title: 'Yet another bloody React Spring example',
+    author: 'Alpha Omega',
+    previewImageUrl:
+      'https://res.cloudinary.com/jerrick/image/upload/q_auto,w_720/oqwgpec8r2zb2viezsxv.jpg',
+    authorAvatarUrl:
+      'https://images.unsplash.com/photo-1476956207128-beccf17c1771?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=52bbdebca6084fffac43984574db3038',
+  },
+]
+const FixedWidth = styled.div({ width: 900, marginLeft: 'auto', marginRight: 'auto' })
+
+const renderedFeaturedProjects = (
+  <FlexColumn>
+    <FixedWidth>
+      <H1>Featured Projects</H1>
+    </FixedWidth>
+    <FlexRow
+      style={{
+        position: 'relative',
+        height: 360,
+        overflowX: 'scroll',
+        backgroundColor: '#F9F9F9',
+      }}
+    >
+      <FlexRow
+        style={{
+          position: 'absolute',
+          gap: 30,
+          margin: 30,
+        }}
+      >
+        {featuredProjectList.map((x) => (
+          <ProjectCard
+            title={x.title}
+            description={x.description}
+            author={x.author}
+            authorAvatarUrl={x.authorAvatarUrl}
+            previewImageUrl={x.previewImageUrl}
+          />
+        ))}
+      </FlexRow>
+    </FlexRow>
+  </FlexColumn>
+)
+
+export const renderedGettingStarted = (
+  <FixedWidth>
+    <H1>Welcome to the Developer Preview</H1>
+    <P>
+      Utopia is an online design and coding environment for React. You can go back and forth between
+      design and code, and between design and preview.
+    </P>
+    <P>
+      Our goal is to give you a creative tool to realize your interface ideas by connecting design
+      and code.
+    </P>
+    <P>To get started, check out some of our example projects, or start from scratch.</P>
+    {renderedFeaturedProjects}
+
+    <H1>Keyboard Shortcuts</H1>
+    <P>
+      <ul>
+        <li>
+          Showing / hiding the code editor: use <PrettyKeys shortcut='⌘⎇.' />
+        </li>
+        <li>
+          Running the code vs editing: use the button in the top right corner, or&nbsp;
+          <PrettyKeys shortcut={['⌘', 'Enter']} />
+        </li>
+      </ul>
+      <Callout>
+        You don't need an account to get started, but you'll need to sign up to use assets in your
+        products, and share them with others.
+      </Callout>
+    </P>
+    <P>
+      <H2>Using controls</H2>
+      You can add custom controls to your components, and configure them in the inspector. To try
+      it, copy and paste this code at the end of your project.
+      <SyntaxHighlighter language='jsx' style={syntaxTheme}>
+        {codeString}
+      </SyntaxHighlighter>
+    </P>
+
+    <P>
+      <H2>Known Issues</H2>
+      Utopia is in developer preview. You should expect your code to be safe, your projects
+      recoverable, and code errors being reported well and consistently. However, some features -
+      notably visual editing - are still being improved. Their behaviour won't change, but they will
+      work better in edge cases.
+      <ul>
+        <li>
+          The inspector does not yet reliably show different layout options, especially where
+          elements are configured via css classes
+        </li>
+        <li>The editor does not reliably show you styles applied from css files or class names.</li>
+        <li>
+          Text insertion and manipulation via the visual editor inserts a special
+          <code>Text</code> component.
+        </li>
+        <li>Class-based components, and top-level code mutation, don't yet work reliably.</li>
+      </ul>
+    </P>
+
+    <H1>Change Log - June 2020</H1>
+    <div>
+      <p style={{ marginTop: 36 }}>
+        <EM>Highlights of June</EM>
+        <ul style={{ paddingLeft: 30 }}></ul>
+      </p>
     </div>
 
     <H1>Change Log - May 2020</H1>
@@ -183,5 +361,5 @@ export const renderedGettingStarted = (
         Project Settings and select the theme.
       </p>
     </div>
-  </div>
+  </FixedWidth>
 )
