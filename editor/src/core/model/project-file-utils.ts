@@ -44,6 +44,7 @@ import {
   EmptyUtopiaCanvasComponent,
 } from './scene-utils'
 import { pluck } from '../shared/array-utils'
+import { mapValues } from '../shared/object-utils'
 
 export function emptyElementCanvasMetadata(): ElementCanvasMetadata {
   return {}
@@ -614,4 +615,29 @@ export function correctProjectContentsPath(path: string): string {
       return `/${parsed.dir}/${parsed.base}`
     }
   }
+}
+
+export function applyToAllUIJSFiles(
+  allFiles: ProjectContents,
+  fn: (filename: string, uiJSFile: UIJSFile) => UIJSFile,
+): ProjectContents {
+  return mapValues((v, k) => {
+    if (isUIJSFile(v)) {
+      return fn(k, v)
+    } else {
+      return v
+    }
+  }, allFiles)
+}
+
+export function applyToAllUIJSFilesContents(
+  allFiles: ProjectContents,
+  fn: (filename: string, fileContents: ParseResult) => ParseResult,
+): ProjectContents {
+  return applyToAllUIJSFiles(allFiles, (k, v) => {
+    return {
+      ...v,
+      fileContents: fn(k, v.fileContents),
+    }
+  })
 }

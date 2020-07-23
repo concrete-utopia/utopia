@@ -97,6 +97,7 @@ import {
   uniqueProjectContentID,
   updateParseResultCode,
   assetFile,
+  applyToAllUIJSFilesContents,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -418,7 +419,7 @@ import {
 } from '../../canvas/right-menu'
 
 import { Notice } from '../../common/notices'
-import { objectMap, mapValues } from '../../../core/shared/object-utils'
+import { objectMap } from '../../../core/shared/object-utils'
 import {
   getMemoizedRequireFn,
   getDependencyTypeDefinitions,
@@ -1284,24 +1285,6 @@ function toastOnGeneratedElementsTargeted(
 
 let checkpointTimeoutId: number | undefined = undefined
 
-function parseAllUIJSFiles(model: PersistentModel): PersistentModel {
-  const parsedProjectContents = mapValues((v, k) => {
-    if (isUIJSFile(v)) {
-      const parsedFileContents = lintAndParse(k, v.fileContents.value.code)
-      return {
-        ...v,
-        fileContents: parsedFileContents,
-      }
-    } else {
-      return v
-    }
-  }, model.projectContents)
-  return {
-    ...model,
-    projectContents: parsedProjectContents,
-  }
-}
-
 // JS Editor Actions:
 export const UPDATE_FNS = {
   NEW: (
@@ -1328,7 +1311,13 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
-    const parsedModel = parseAllUIJSFiles(migratedModel)
+    const parsedProjectFiles = applyToAllUIJSFilesContents(migratedModel.projectContents, (k, v) =>
+      lintAndParse(k, v.value.code),
+    )
+    const parsedModel = {
+      ...migratedModel,
+      projectContents: parsedProjectFiles,
+    }
     const newModel: EditorModel = {
       ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
