@@ -78,7 +78,7 @@ export const PinsLayoutNumberControl = betterReactMemo(
       >
         <NumberInput
           value={asCSSNumber}
-          id={props.label}
+          id={`position-${props.prop}-number-input`}
           labelInner={props.label}
           onSubmitValue={wrappedOnSubmit}
           onTransientSubmitValue={wrappedOnTransientSubmit}
