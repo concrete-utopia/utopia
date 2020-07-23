@@ -69,8 +69,9 @@ export interface EditorProps {
 const EmptyArray: Array<RuntimeErrorInfo> = []
 
 const ConsoleLogSizeLimit = 100
+const EmptyConsoleLogs: Array<ConsoleLog> = []
 let consoleLogTimeoutID: number | null = null
-let canvasConsoleLogsVariable: Array<ConsoleLog> = []
+let canvasConsoleLogsVariable: Array<ConsoleLog> = EmptyConsoleLogs
 
 export const EditorComponentInner = betterReactMemo('EditorComponentInner', () => {
   const editorStoreRef = useRefEditorState((store) => store)
@@ -219,7 +220,7 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
   )
 
   const clearConsoleLogs = React.useCallback(() => {
-    modifyLogs((_) => [])
+    modifyLogs((_) => EmptyConsoleLogs)
   }, [modifyLogs])
 
   const addToConsoleLogs = React.useCallback(

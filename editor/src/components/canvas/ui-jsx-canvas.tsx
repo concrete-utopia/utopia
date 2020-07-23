@@ -374,13 +374,23 @@ export const UiJsxCanvas = betterReactMemo(
       imports,
       dependencyOrdering,
       jsxFactoryFunction,
+      clearErrors,
       clearConsoleLogs,
       addToConsoleLogs,
       canvasIsLive,
     } = props
 
-    clearConsoleLogs()
-    proxyConsole(console, addToConsoleLogs)
+    React.useEffect(() => {
+      clearErrors()
+    }, [clearErrors])
+
+    React.useEffect(() => {
+      clearConsoleLogs()
+    }, [clearConsoleLogs])
+
+    React.useEffect(() => {
+      proxyConsole(console, addToConsoleLogs)
+    }, [addToConsoleLogs])
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
 
@@ -421,12 +431,6 @@ export const UiJsxCanvas = betterReactMemo(
       rootScope: {},
       jsxFactoryFunctionName: null,
     })
-
-    if (props.clearErrors != null) {
-      // a new canvas render, a new chance at having no errors
-      // FIXME This is illegal! The line below is triggering a re-render
-      props.clearErrors()
-    }
 
     if (uiFilePath == null) {
       return null
