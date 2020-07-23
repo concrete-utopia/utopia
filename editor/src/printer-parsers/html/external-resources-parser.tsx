@@ -2,13 +2,14 @@ import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
 import { notice } from '../../components/common/notices'
 import { EditorDispatch } from '../../components/editor/action-types'
-import { pushToast, updateCodeFile } from '../../components/editor/actions/actions'
+import { pushToast, updateFile } from '../../components/editor/actions/actions'
 import { EditorState } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
 import {
   generatedExternalResourcesLinksClose,
   generatedExternalResourcesLinksOpen,
 } from '../../core/model/new-project-files'
+import { codeFile } from '../../core/model/project-file-utils'
 import { Either, isRight, left, right } from '../../core/shared/either'
 import { CodeFile, isCodeFile, ProjectContents } from '../../core/shared/project-file-types'
 import { OnSubmitValue } from '../../uuiui-deps'
@@ -222,11 +223,17 @@ export function getExternalResourcesInfo(
         const parsedExternalResources = parseLinkTags(parsedLinkTagsText.value)
         if (isRight(parsedExternalResources)) {
           function onSubmitValue(newValue: ExternalResources) {
-            const updatedCodeFile = updateHTMLExternalResourcesLinks(fileContents, newValue)
-            if (isRight(updatedCodeFile)) {
-              dispatch([updateCodeFile(previewHTMLFilePath.value, updatedCodeFile.value)])
+            const updatedCodeFileContents = updateHTMLExternalResourcesLinks(fileContents, newValue)
+            if (isRight(updatedCodeFileContents)) {
+              dispatch([
+                updateFile(
+                  previewHTMLFilePath.value,
+                  codeFile(fileContents, updatedCodeFileContents.value),
+                  false,
+                ),
+              ])
             } else {
-              dispatch([pushToast(notice(updatedCodeFile.value))])
+              dispatch([pushToast(notice(updatedCodeFileContents.value))])
             }
           }
           return right({ externalResources: parsedExternalResources.value, onSubmitValue })

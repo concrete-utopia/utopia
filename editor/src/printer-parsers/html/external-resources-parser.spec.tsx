@@ -157,6 +157,17 @@ describe('external-resources-parser', () => {
       }
     })
 
-    expect(result.current).toMatchInlineSnapshot()
+    expect(result.current).toMatchInlineSnapshot(`
+      Object {
+        "type": "RIGHT",
+        "value": Object {
+          "externalResources": Object {
+            "genericExternalResources": Array [],
+            "googleFontsResources": Array [],
+          },
+          "onSubmitValue": [Function],
+        },
+      }
+    `)
   })
 })
