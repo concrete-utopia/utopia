@@ -22,14 +22,15 @@ function useMetadataInfoForDomain(target: ReadonlyArray<PropertyPath>) {
 
 export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLabelProps) => {
   const metadata = useMetadataInfoForDomain(props.target)
+  const propsToUnset = props.propNamesToUnset ?? props.target.map(PP.lastPart)
   const contextMenuItems = optionalAddOnUnsetValues(
     metadata.propertyStatus.set,
-    props.propNamesToUnset ?? props.target.map(PP.lastPart),
+    propsToUnset,
     metadata.onUnsetValues,
   )
   return (
     <InspectorContextMenuWrapper
-      id={`property-label-${props.target}`}
+      id={`property-label-${propsToUnset.join('-')}`}
       data={null}
       items={contextMenuItems}
       style={{
