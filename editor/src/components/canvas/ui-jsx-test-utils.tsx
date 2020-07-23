@@ -231,30 +231,6 @@ ${snippet}
   return Prettier.format(code, PrettierConfig)
 }
 
-export function makeTestProjectCodeWithSnippetDynamicScene(snippet: string) {
-  const code = `/** @jsx jsx */
-  import * as React from 'react'
-  import { Scene, Storyboard, View, jsx } from 'utopia-api'
-  export var App = (props) => {
-    return (
-${snippet}
-    )
-  }
-  export var ${BakedInStoryboardVariableName} = (props) => {
-    return (
-      <Storyboard data-uid={'${BakedInStoryboardUID}'}>
-        <Scene
-          style={{ position: 'absolute' }}
-          component={App}
-          data-uid={'${TestSceneUID}'}
-        />
-      </Storyboard>
-    )
-  }
-`
-  return Prettier.format(code, PrettierConfig)
-}
-
 export function getTestParseSuccess(fileContents: string): ParseSuccess {
   const parseResult = testParseCode(fileContents)
   if (isLeft(parseResult)) {

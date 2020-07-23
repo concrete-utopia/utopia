@@ -2,7 +2,6 @@ import {
   getPrintedUiJsCode,
   renderTestEditorWithCode,
   TestScenePath,
-  makeTestProjectCodeWithSnippetDynamicScene,
   makeTestProjectCodeWithSnippet,
 } from './ui-jsx-test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
 import { fireEvent } from '@testing-library/react'
@@ -15,17 +14,40 @@ import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils
 
 describe('moving a scene/rootview on the canvas', () => {
   it('dragging a dynamic scene’s root view sets the scene position', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippetDynamicScene(`
-        <View style={{ width: 375, height: 812 }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
-          <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'bbb'}
-          />
-        </View>
-      `),
+    const testCode = Prettier.format(
+      `
+      /** @jsx jsx */
+        import * as React from 'react'
+        import { Scene, Storyboard, View, jsx } from 'utopia-api'
+        export var App = (props) => {
+          return (
+            <View
+              style={{ width: 375, height: 812 }}
+              layout={{ layoutSystem: 'pinSystem' }}
+              data-uid={'aaa'}
+            >
+              <View
+                style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
+                layout={{ layoutSystem: 'pinSystem' }}
+                data-uid={'bbb'}
+              />
+            </View>
+          )
+        }
+        export var storyboard = (props) => {
+          return (
+            <Storyboard data-uid={'utopia-storyboard-uid'}>
+              <Scene
+                style={{ position: 'absolute' }}
+                component={App}
+                data-uid={'scene-aaa'}
+              />
+            </Storyboard>
+          )
+        }`,
+      PrettierConfig,
     )
+    const renderResult = await renderTestEditorWithCode(testCode)
 
     await renderResult.dispatch(
       [selectComponents([TP.instancePath(TestScenePath, ['aaa'])], false)],
