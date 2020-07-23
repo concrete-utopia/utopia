@@ -394,7 +394,8 @@ declare module 'utopia-api/primitives/view' {
 
 }
 declare module 'utopia-api/property-controls/property-controls' {
-  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'slider' | 'string';
+  import type { CSSProperties } from 'react';
+  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'slider' | 'string' | 'style-object';
   interface AbstractControlDescription<T extends ControlType> {
       title?: string;
       type: T;
@@ -462,7 +463,11 @@ declare module 'utopia-api/property-controls/property-controls' {
       placeholder?: string;
       obscured?: boolean;
   }
-  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | SliderControlDescription | StringControlDescription;
+  export interface StyleObjectControlDescription extends AbstractBaseControlDescription<'style-object'> {
+      defaultValue?: CSSProperties;
+      placeholder?: CSSProperties;
+  }
+  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | SliderControlDescription | StringControlDescription | StyleObjectControlDescription;
   export type HigherLevelControlType = 'array' | 'object' | 'union';
   export type ControlType = BaseControlType | HigherLevelControlType;
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {
