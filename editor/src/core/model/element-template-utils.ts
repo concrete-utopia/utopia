@@ -31,9 +31,8 @@ import {
   setUtopiaIDOnJSXElement,
 } from '../shared/uid-utils'
 import { fastForEach } from '../shared/utils'
-import { isUtopiaAPIComponent } from './project-file-utils'
+import { isUtopiaAPIComponent, getComponentsFromTopLevelElements } from './project-file-utils'
 import { getStoryboardTemplatePath } from '../../components/editor/store/editor-state'
-import { forEachLeft } from '../shared/either'
 
 function getAllUniqueUidsInner(
   components: Array<UtopiaJSXComponent>,
@@ -459,4 +458,26 @@ export function insertJSXElementChild(
       },
     )
   }
+}
+
+export function getZIndexOfElement(
+  topLevelElements: Array<TopLevelElement>,
+  target: StaticInstancePath,
+): number {
+  const parentPath = TP.instancePathParent(target)
+  if (parentPath != null) {
+    if (!TP.isScenePath(parentPath)) {
+      const parentElement = findJSXElementAtStaticPath(
+        getComponentsFromTopLevelElements(topLevelElements),
+        parentPath,
+      )
+      if (parentElement != null) {
+        const elementUID = TP.toUid(target)
+        return parentElement.children.findIndex((child) => {
+          return isJSXElement(child) && getUtopiaID(child) === elementUID
+        })
+      }
+    }
+  }
+  return -1
 }

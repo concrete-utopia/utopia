@@ -616,7 +616,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
       editor.jsxMetadataKILLME,
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
     )
-    expect(updatedZIndex).toBe(oldZIndex - 1)
+    expect(updatedZIndex).toBe(oldZIndex - 2)
   })
 })
 

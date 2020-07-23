@@ -68,6 +68,7 @@ import {
   transformJSXComponentAtElementPath,
   insertJSXElementChild,
   findJSXElementChildAtPath,
+  getZIndexOfElement,
 } from '../../../core/model/element-template-utils'
 import {
   getJSXAttributeAtPath,
@@ -138,6 +139,7 @@ import {
   NodeModules,
   Imports,
   importDetails,
+  StaticInstancePath,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -1048,7 +1050,7 @@ function duplicateMany(paths: TemplatePath[], editor: EditorModel): EditorModel 
 }
 
 function indexPositionForAdjustment(
-  target: TemplatePath,
+  target: StaticInstancePath | InstancePath,
   editor: EditorModel,
   index: 'back' | 'front' | 'backward' | 'forward',
 ): IndexPosition {
@@ -1061,7 +1063,10 @@ function indexPositionForAdjustment(
     case 'forward':
       const openUIJSFile = getOpenUIJSFile(editor)
       if (openUIJSFile != null && isRight(openUIJSFile.fileContents)) {
-        const current = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadataKILLME, target)
+        const current = getZIndexOfElement(
+          openUIJSFile.fileContents.value.topLevelElements,
+          TP.asStatic(target),
+        )
         return {
           type: 'absolute',
           index: index === 'backward' ? Math.max(current - 1, 0) : current + 1,
