@@ -59,15 +59,16 @@ import {
   UtopiaJSXComponent,
   isJSXAttributeOtherJavaScript,
   SettableLayoutSystem,
+  walkElements,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
   getUtopiaID,
   setUtopiaID,
   transformJSXComponentAtElementPath,
-  walkElements,
   insertJSXElementChild,
   findJSXElementChildAtPath,
+  getZIndexOfElement,
 } from '../../../core/model/element-template-utils'
 import {
   getJSXAttributeAtPath,
@@ -97,6 +98,7 @@ import {
   uniqueProjectContentID,
   updateParseResultCode,
   assetFile,
+  applyToAllUIJSFilesContents,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -138,6 +140,7 @@ import {
   NodeModules,
   Imports,
   importDetails,
+  StaticInstancePath,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -418,7 +421,6 @@ import {
 } from '../../canvas/right-menu'
 
 import { Notice } from '../../common/notices'
-import { dropExtension } from '../../../core/shared/string-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import {
   getMemoizedRequireFn,
@@ -427,6 +429,7 @@ import {
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1048,7 +1051,7 @@ function duplicateMany(paths: TemplatePath[], editor: EditorModel): EditorModel 
 }
 
 function indexPositionForAdjustment(
-  target: TemplatePath,
+  target: StaticInstancePath | InstancePath,
   editor: EditorModel,
   index: 'back' | 'front' | 'backward' | 'forward',
 ): IndexPosition {
@@ -1061,7 +1064,10 @@ function indexPositionForAdjustment(
     case 'forward':
       const openUIJSFile = getOpenUIJSFile(editor)
       if (openUIJSFile != null && isRight(openUIJSFile.fileContents)) {
-        const current = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadataKILLME, target)
+        const current = getZIndexOfElement(
+          openUIJSFile.fileContents.value.topLevelElements,
+          TP.asStatic(target),
+        )
         return {
           type: 'absolute',
           index: index === 'backward' ? Math.max(current - 1, 0) : current + 1,
@@ -1310,8 +1316,15 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
+    const parsedProjectFiles = applyToAllUIJSFilesContents(migratedModel.projectContents, (k, v) =>
+      lintAndParse(k, v.value.code),
+    )
+    const parsedModel = {
+      ...migratedModel,
+      projectContents: parsedProjectFiles,
+    }
     const newModel: EditorModel = {
-      ...editorModelFromPersistentModel(migratedModel, dispatch),
+      ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
       nodeModules: {

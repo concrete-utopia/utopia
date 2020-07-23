@@ -5,8 +5,11 @@ import {
   getOpenUtopiaJSXComponentsFromState,
   getOpenImportsFromState,
 } from './store/editor-state'
-import { walkElements } from '../../core/model/element-template-utils'
-import { isJSXElement, isJSXAttributeFunctionCall } from '../../core/shared/element-template'
+import {
+  isJSXElement,
+  isJSXAttributeFunctionCall,
+  walkElements,
+} from '../../core/shared/element-template'
 import { walkAttributes } from '../../core/shared/jsx-attributes'
 import { pluck } from '../../core/shared/array-utils'
 import { importAlias } from '../../core/shared/project-file-types'
