@@ -48,7 +48,11 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
             if (isJSXAttributeOtherJavaScript(attributeValue)) {
               const eventHandlerValue = attributeValue.javascript
               return (
-                <GridRow padded={true} type='<--1fr--><--1fr-->'>
+                <GridRow
+                  key={`event-handler-row-${handlerName}`}
+                  padded={true}
+                  type='<--1fr--><--1fr-->'
+                >
                   <PropertyLabel target={[PP.create([handlerName])]}>{handlerName}</PropertyLabel>
                   <StringInput value={eventHandlerValue} controlStatus='disabled' />
                 </GridRow>
