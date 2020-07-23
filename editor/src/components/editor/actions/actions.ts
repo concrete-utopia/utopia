@@ -97,6 +97,7 @@ import {
   uniqueProjectContentID,
   updateParseResultCode,
   assetFile,
+  applyToAllUIJSFilesContents,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -418,7 +419,6 @@ import {
 } from '../../canvas/right-menu'
 
 import { Notice } from '../../common/notices'
-import { dropExtension } from '../../../core/shared/string-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import {
   getMemoizedRequireFn,
@@ -427,6 +427,7 @@ import {
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1310,8 +1311,15 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
+    const parsedProjectFiles = applyToAllUIJSFilesContents(migratedModel.projectContents, (k, v) =>
+      lintAndParse(k, v.value.code),
+    )
+    const parsedModel = {
+      ...migratedModel,
+      projectContents: parsedProjectFiles,
+    }
     const newModel: EditorModel = {
-      ...editorModelFromPersistentModel(migratedModel, dispatch),
+      ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
       nodeModules: {
