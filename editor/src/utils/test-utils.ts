@@ -116,6 +116,13 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
   const sceneElements = Utils.stripNulls(getSceneElementsFromParseSuccess(success).map(unmapScene))
   return sceneElements.map((scene, index) => {
     const component = components.find((c) => c.name === scene.component && isUtopiaJSXComponent(c))
+    let elementMetadata: ElementInstanceMetadata | Array<ElementInstanceMetadata> | null = null
+    if (component != null) {
+      elementMetadata = createFakeMetadataForJSXElement(
+        component.rootElement,
+        TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+      )
+    }
     return {
       ...scene,
       scenePath: TP.scenePath([BakedInStoryboardUID, scene.uid]),
@@ -123,12 +130,11 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
       type: 'static',
       rootElement:
-        component == null
+        elementMetadata == null
           ? null
-          : createFakeMetadataForJSXElement(
-              component.rootElement,
-              TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
-            ),
+          : Array.isArray(elementMetadata)
+          ? elementMetadata[0]
+          : elementMetadata,
     }
   })
 }
@@ -139,6 +145,10 @@ export function createFakeMetadataForComponents(
   let metadata: Array<ComponentMetadata> = []
   Utils.fastForEach(components, (component, index) => {
     if (isUtopiaJSXComponent(component)) {
+      const elementMetadata = createFakeMetadataForJSXElement(
+        component.rootElement,
+        TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+      )
       metadata.push({
         scenePath: TP.scenePath([BakedInStoryboardUID, `scene-${index}`]),
         templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
@@ -146,10 +156,7 @@ export function createFakeMetadataForComponents(
         globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
         container: { layoutSystem: LayoutSystem.PinSystem },
         type: 'static',
-        rootElement: createFakeMetadataForJSXElement(
-          component.rootElement,
-          TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
-        ),
+        rootElement: Array.isArray(elementMetadata) ? elementMetadata[0] : elementMetadata,
       })
     }
   })

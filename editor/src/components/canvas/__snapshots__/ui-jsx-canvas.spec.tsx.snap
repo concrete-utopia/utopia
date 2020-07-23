@@ -9208,7 +9208,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
     >
       <div
         data-label=\\"random-div\\"
-        style=\\"position: absolute; width: 100px; height: 100px;\\"
+        style=\\"width: 100px; height: 100px;\\"
         data-uid=\\"bbb\\"
       >
         Hello
@@ -9244,6 +9244,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -9532,6 +9533,7 @@ export var storyboard = (
   "eee/fff:aaa/ddd": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
+    "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {

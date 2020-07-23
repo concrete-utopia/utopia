@@ -941,11 +941,8 @@ function hideElement(props: any): any {
 function utopiaCanvasJSXLookup(
   elementsWithin: ElementsWithin,
   executionScope: MapLike<any>,
-  render: (
-    element: JSXElement,
-    inScope: MapLike<any>,
-  ) => React.ReactElement | Array<React.ReactElement>,
-): (uid: string, inScope: MapLike<any>) => React.ReactElement | Array<React.ReactElement> | null {
+  render: (element: JSXElement, inScope: MapLike<any>) => React.ReactElement,
+): (uid: string, inScope: MapLike<any>) => React.ReactElement | null {
   return (uid, inScope) => {
     const element = elementsWithin[uid]
     if (element == null) {
@@ -974,7 +971,7 @@ function renderCoreElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
-): React.ReactElement | Array<React.ReactElement> {
+): React.ReactElement {
   if (codeError != null) {
     throw codeError
   }
@@ -1060,7 +1057,7 @@ function renderCoreElement(
       function innerRender(
         innerElement: JSXElement,
         innerInScope: MapLike<any>,
-      ): React.ReactElement | Array<React.ReactElement> {
+      ): React.ReactElement {
         innerIndex++
         const innerPath = TP.appendToPath(templatePath, `index-${innerIndex}`)
 
@@ -1114,7 +1111,7 @@ function renderCoreElement(
       return runJSXArbitraryBlock(requireResult, element, blockScope, reportError)
     }
     case 'JSX_FRAGMENT': {
-      let renderedElements: Array<React.ReactElement> = []
+      let renderedChildren: Array<React.ReactElement> = []
       fastForEach(element.children, (child) => {
         const renderResult = renderCoreElement(
           child,
@@ -1134,13 +1131,9 @@ function renderCoreElement(
           codeError,
           shouldIncludeCanvasRootInTheSpy,
         )
-        if (Array.isArray(renderResult)) {
-          renderedElements.push(...renderResult)
-        } else {
-          renderedElements.push(renderResult)
-        }
+        renderedChildren.push(renderResult)
       })
-      return renderedElements
+      return <>{renderedChildren}</>
     }
     case 'JSX_TEXT_BLOCK': {
       // JSXTextBlock is the final remaining case.
