@@ -3,7 +3,7 @@ import * as NodeHTMLParser from 'node-html-parser'
 import { notice } from '../../components/common/notices'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { pushToast, updateFile } from '../../components/editor/actions/actions'
-import { EditorState } from '../../components/editor/store/editor-state'
+import { EditorState, defaultIndexHtmlFilePath } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
 import {
   generatedExternalResourcesLinksClose,
@@ -82,7 +82,9 @@ function getCodeFileContentsFromPath(
   if (fileContents != null && isCodeFile(fileContents)) {
     return right(fileContents)
   } else {
-    return left(`Path '${projectContents}' could not be found`)
+    return left(
+      `Path '${projectContents}' could not be found. Check the utopia.html property is set correctly in /package.json`,
+    )
   }
 }
 
@@ -220,44 +222,44 @@ export function getExternalResourcesInfo(
   string,
   { externalResources: ExternalResources; onSubmitValue: OnSubmitValue<ExternalResources> }
 > {
-  const previewHTMLFilePath = getPreviewHTMLFilePath(editor.projectContents)
-  if (isRight(previewHTMLFilePath)) {
-    const previewHTMLFilePathContents = getCodeFileContentsFromPath(
-      previewHTMLFilePath.value,
-      editor.projectContents,
-    )
-    if (isRight(previewHTMLFilePathContents)) {
-      const fileContents = previewHTMLFilePathContents.value.fileContents
-      const parsedLinkTagsText = getGeneratedExternalLinkText(fileContents)
-      if (isRight(parsedLinkTagsText)) {
-        const parsedExternalResources = parseLinkTags(parsedLinkTagsText.value)
-        if (isRight(parsedExternalResources)) {
-          function onSubmitValue(newValue: ExternalResources) {
-            const updatedCodeFileContents = updateHTMLExternalResourcesLinks(fileContents, newValue)
-            if (isRight(updatedCodeFileContents)) {
-              dispatch([
-                updateFile(
-                  previewHTMLFilePath.value,
-                  codeFile(fileContents, updatedCodeFileContents.value),
-                  false,
-                ),
-              ])
-            } else {
-              dispatch([pushToast(notice(updatedCodeFileContents.value))])
-            }
+  const packageJsonHtmlFilePath = getPreviewHTMLFilePath(editor.projectContents)
+  const htmlFilePath: string = isRight(packageJsonHtmlFilePath)
+    ? packageJsonHtmlFilePath.value
+    : defaultIndexHtmlFilePath
+
+  const previewHTMLFilePathContents = getCodeFileContentsFromPath(
+    htmlFilePath,
+    editor.projectContents,
+  )
+  if (isRight(previewHTMLFilePathContents)) {
+    const fileContents = previewHTMLFilePathContents.value.fileContents
+    const parsedLinkTagsText = getGeneratedExternalLinkText(fileContents)
+    if (isRight(parsedLinkTagsText)) {
+      const parsedExternalResources = parseLinkTags(parsedLinkTagsText.value)
+      if (isRight(parsedExternalResources)) {
+        function onSubmitValue(newValue: ExternalResources) {
+          const updatedCodeFileContents = updateHTMLExternalResourcesLinks(fileContents, newValue)
+          if (isRight(updatedCodeFileContents)) {
+            dispatch([
+              updateFile(
+                htmlFilePath,
+                codeFile(fileContents, updatedCodeFileContents.value),
+                false,
+              ),
+            ])
+          } else {
+            dispatch([pushToast(notice(updatedCodeFileContents.value))])
           }
-          return right({ externalResources: parsedExternalResources.value, onSubmitValue })
-        } else {
-          return parsedExternalResources
         }
+        return right({ externalResources: parsedExternalResources.value, onSubmitValue })
       } else {
-        return parsedLinkTagsText
+        return parsedExternalResources
       }
     } else {
-      return previewHTMLFilePathContents
+      return parsedLinkTagsText
     }
   } else {
-    return previewHTMLFilePath
+    return previewHTMLFilePathContents
   }
 }
 
