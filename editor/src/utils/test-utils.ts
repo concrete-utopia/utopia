@@ -10,7 +10,6 @@ import {
   openFileTab,
   getSceneElements,
   getSceneElementsFromParseSuccess,
-  DefaultPackageJson,
 } from '../components/editor/store/editor-state'
 import * as TP from '../core/shared/template-path'
 import {
@@ -25,11 +24,7 @@ import {
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, getJSXAttributeAtPath } from '../core/shared/jsx-attributes'
-import {
-  getUtopiaJSXComponentsFromSuccess,
-  uiJsFile,
-  codeFile,
-} from '../core/model/project-file-utils'
+import { getUtopiaJSXComponentsFromSuccess, uiJsFile } from '../core/model/project-file-utils'
 import { parseSuccess } from '../core/workers/common/project-file-utils'
 import { sampleImportsForTests, sampleJsxComponentWithScene } from '../core/model/test-ui-js-file'
 import {
@@ -50,7 +45,6 @@ import {
 import { NO_OP } from '../core/shared/utils'
 import { create } from '../core/shared/property-path'
 import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
-import { previewHtml } from '../core/model/new-project-files'
 
 export function createEditorStates(
   selectedFileOrTab: string | EditorTab = '/src/app.js',
@@ -65,8 +59,6 @@ export function createEditorStates(
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: {
-      '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
-      '/public/index.html': codeFile(previewHtml, null),
       '/src/app.js': uiJsFile(
         right(
           parseSuccess(
