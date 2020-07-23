@@ -72,7 +72,7 @@ function getPreviewHTMLFilePath(projectContents: ProjectContents): Either<string
   }
 }
 
-function getCodeFileContents(
+function getCodeFileContentsFromPath(
   filePath: string,
   projectContents: ProjectContents,
 ): Either<string, CodeFile> {
@@ -212,7 +212,7 @@ export function getExternalResourcesInfo(
 > {
   const previewHTMLFilePath = getPreviewHTMLFilePath(editor.projectContents)
   if (isRight(previewHTMLFilePath)) {
-    const previewHTMLFilePathContents = getCodeFileContents(
+    const previewHTMLFilePathContents = getCodeFileContentsFromPath(
       previewHTMLFilePath.value,
       editor.projectContents,
     )
