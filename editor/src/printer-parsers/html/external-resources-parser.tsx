@@ -48,7 +48,15 @@ export function getGeneratedExternalLinkText(htmlFileContents: string): Either<s
     const beginningTrimmed = htmlFileContents.slice(
       startIndex + generatedExternalResourcesLinksOpen.length,
     )
-    const endTrimmed = beginningTrimmed.slice(0, endIndex - startIndex).trim()
+    const endTrimmed = beginningTrimmed
+      .slice(
+        0,
+        endIndex -
+          startIndex -
+          generatedExternalResourcesLinksOpen.length -
+          generatedExternalResourcesLinksClose.length,
+      )
+      .trim()
     return right(endTrimmed.trim())
   } else {
     return parsedIndices
@@ -105,7 +113,7 @@ export function externalResources(
 }
 
 // TODO: support arbitrary attributes
-interface GenericExternalResource {
+export interface GenericExternalResource {
   type: 'generic-external-resource'
   href: string
   rel: string
@@ -119,7 +127,7 @@ export function genericExternalResource(href: string, rel: string): GenericExter
   }
 }
 
-interface GoogleFontsResource {
+export interface GoogleFontsResource {
   type: 'google-fonts-resource'
   fontFamily: string
   fontStyleParams?: string // placeholder
@@ -187,7 +195,7 @@ function printExternalResources(value: ExternalResources): string {
   })
   const google = value.googleFontsResources.map((resource) => {
     const encodedFontFamily = encodeURIComponent(resource.fontFamily.replace(' ', '+'))
-    return `<link href="${googleFontsURIStart}${encodedFontFamily}" rel="stylesheet">`
+    return `<link href="${googleFontsURIStart}family=${encodedFontFamily}" rel="stylesheet">`
   })
   return [...generic, ...google].join('\n    ')
 }
