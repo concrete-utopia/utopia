@@ -7,7 +7,6 @@ import {
   googleFontsResource,
 } from './external-resources-parser'
 import { previewHtml } from '../../core/model/new-project-files'
-import { isRight } from '../../core/shared/either'
 
 const testFile = `
 <!DOCTYPE html>
