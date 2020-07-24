@@ -36,8 +36,9 @@ import { getControlStyles } from '../inspector/common/control-status'
 import { SelectOption } from '../inspector/controls/select-control'
 import { GridRow } from '../inspector/widgets/grid-row'
 import { DependencyList } from './dependency-list'
-import { NavigatorComponent } from './navigator'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
+import { GoogleFontsResourcesList } from './external-resources/google-fonts-resources-list'
+import { NavigatorComponent } from './navigator'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -336,6 +337,7 @@ const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
       <FileBrowser />
       <DependencyList />
       <GenericExternalResourcesList />
+      <GoogleFontsResourcesList />
       {/* <ResizableFlexColumn
         enable={{ bottom: true, right: false }}
         minHeight={100}
