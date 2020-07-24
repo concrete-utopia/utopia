@@ -4,6 +4,8 @@ export type LeftMenuPanel =
   | 'navigator'
   | 'filebrowser'
   | 'dependencylist'
+  | 'genericExternalResources'
+  | 'googleFontsResources'
   | 'insertmenu'
   | 'projectsettings'
 
@@ -31,6 +33,10 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
     case 'filebrowser':
       return 'leftmenu'
     case 'dependencylist':
+      return 'leftmenu'
+    case 'genericExternalResources':
+      return 'leftmenu'
+    case 'googleFontsResources':
       return 'leftmenu'
     case 'insertmenu':
       return 'rightmenu'

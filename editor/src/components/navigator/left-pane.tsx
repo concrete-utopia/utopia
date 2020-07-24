@@ -37,6 +37,7 @@ import { SelectOption } from '../inspector/controls/select-control'
 import { GridRow } from '../inspector/widgets/grid-row'
 import { DependencyList } from './dependency-list'
 import { NavigatorComponent } from './navigator'
+import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -334,6 +335,7 @@ const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
       <ProjectSettingsPanel />
       <FileBrowser />
       <DependencyList />
+      <GenericExternalResourcesList />
       {/* <ResizableFlexColumn
         enable={{ bottom: true, right: false }}
         minHeight={100}

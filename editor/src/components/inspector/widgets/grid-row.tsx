@@ -30,6 +30,10 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: 'auto 45px',
   },
+  '<-------auto------->|---60px---|': {
+    gridColumnGap: 4,
+    gridTemplateColumns: 'auto 60px',
+  },
   '<--------auto-------->||22px|': {
     gridColumnGap: 4,
     gridTemplateColumns: 'auto 22px',
@@ -44,7 +48,7 @@ const gridTemplates = {
   },
 } as const
 
-interface GridRowProps {
+export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> {
   /**
    * add a standard horizontal padding
    */
@@ -65,8 +69,9 @@ interface GridRowProps {
   style?: React.CSSProperties
 }
 
-export const GridRow: React.FunctionComponent<GridRowProps> = (props) => (
+export const GridRow: React.FunctionComponent<GridRowProps> = ({ style, ...props }) => (
   <div
+    {...props}
     style={{
       padding: props.padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
       display: 'grid',
@@ -77,7 +82,7 @@ export const GridRow: React.FunctionComponent<GridRowProps> = (props) => (
       overflow: 'hidden',
       alignItems: props.alignItems ?? 'center',
       ...gridTemplates[props.type],
-      ...props.style,
+      ...style,
     }}
   >
     {props.children}
