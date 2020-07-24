@@ -62,7 +62,7 @@
     "lint-staged": "^9.4.3",
     "npm-dts": "1.2.0",
     "patch-package": "6.1.2",
-    "prettier": "^1.19.1",
+    "prettier": "2.0.5",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "ts-jest": "26.1.1",

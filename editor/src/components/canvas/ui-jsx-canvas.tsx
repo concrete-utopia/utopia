@@ -374,11 +374,13 @@ export const UiJsxCanvas = betterReactMemo(
       imports,
       dependencyOrdering,
       jsxFactoryFunction,
+      clearErrors,
       clearConsoleLogs,
       addToConsoleLogs,
       canvasIsLive,
     } = props
 
+    // FIXME This is illegal! The two lines below are triggering a re-render
     clearConsoleLogs()
     proxyConsole(console, addToConsoleLogs)
 

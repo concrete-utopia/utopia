@@ -132,6 +132,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         return
       }
 
+      const keyPrefix = TP.toComponentId(selectedView)
       const instance = TP.isScenePath(selectedView)
         ? null
         : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
@@ -149,6 +150,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         const margin = MetadataUtils.getElementMargin(selectedView, this.props.componentMetadata)
         selectionOutlines.push(
           <MarginControls
+            key={`${keyPrefix}-margin-controls`}
             canvasOffset={this.props.canvasOffset}
             scale={this.props.scale}
             margin={margin}
@@ -158,6 +160,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         const padding = MetadataUtils.getElementPadding(selectedView, this.props.componentMetadata)
         selectionOutlines.push(
           <PaddingControls
+            key={`${keyPrefix}-padding-controls`}
             canvasOffset={this.props.canvasOffset}
             scale={this.props.scale}
             padding={padding}
@@ -169,7 +172,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
       // FIXME the striped overlay needs to be separated from this
       selectionOutlines.push(
         <Outline
-          key={TP.toComponentId(selectedView)}
+          key={`${keyPrefix}-outline-control`}
           rect={rect}
           offset={this.props.canvasOffset}
           scale={this.props.scale}
