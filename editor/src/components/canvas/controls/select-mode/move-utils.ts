@@ -81,7 +81,18 @@ export function determineElementsToOperateOnForDragging(
     })
   } else {
     // Resizing.
-    return extendSelectedViewsForInteraction(selectedViews, componentMetadata)
+    return extendSelectedViewsForInteraction(selectedViews, componentMetadata).map((view) => {
+      if (TP.isScenePath(view)) {
+        const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata, view)
+        if (scene?.type === 'dynamic' && scene.rootElement != null) {
+          return scene.rootElement.templatePath
+        } else {
+          return view
+        }
+      } else {
+        return view
+      }
+    })
   }
 }
 
