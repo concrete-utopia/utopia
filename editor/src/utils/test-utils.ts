@@ -45,6 +45,7 @@ import {
   PathForSceneContainer,
   PathForSceneComponent,
   PathForSceneDataLabel,
+  PathForSceneDataUid,
 } from '../core/model/scene-utils'
 import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
@@ -143,7 +144,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       component: props[PP.toString(PathForSceneComponent)],
       container: props[PP.toString(PathForSceneContainer)],
       label: props[PP.toString(PathForSceneDataLabel)],
-      scenePath: TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+      scenePath: TP.scenePath([BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]),
       templatePath: TP.instancePath([], [BakedInStoryboardUID, createSceneUidFromIndex(index)]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
       type: props['type'] ?? 'dynamic',
