@@ -152,34 +152,3 @@ describe('updates external resources', () => {
     `)
   })
 })
-
-describe('updates external resources', () => {
-  it('adds new resources', () => {
-    const updated = updateHTMLExternalResourcesLinks(
-      previewHtml,
-      externalResources(
-        [genericExternalResource('https://utopia.com/stylesheet.css', 'stylesheet')],
-        [googleFontsResource('Roboto')],
-      ),
-    )
-    expect(updated).toMatchInlineSnapshot(`
-      Object {
-        "type": "RIGHT",
-        "value": "<!DOCTYPE html>
-      <html lang=\\"en\\">
-        <head>
-          <meta charset=\\"utf-8\\">
-          <title>Utopia React App</title>
-          <!-- Begin Generated Utopia External Links -->
-          <link href=\\"https://utopia.com/stylesheet.css\\" rel=\\"stylesheet\\">
-          <link href=\\"https://fonts.googleapis.com/css2?family=Roboto\\" rel=\\"stylesheet\\">
-          <!-- End Generated Utopia External Links -->
-        </head>
-        <body>
-          <div id=\\"root\\"></div>
-        </body>
-      </html>",
-      }
-    `)
-  })
-})
