@@ -13,6 +13,7 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   JSXElement,
+  isJSXFragment,
 } from '../../shared/element-template'
 import { ErrorMessage } from '../../shared/error-messages'
 import { defaultIfNull, forceNotNull } from '../../shared/optional-utils'
@@ -215,6 +216,10 @@ export function elementDependencyOrdering(
     } else if (isJSXArbitraryBlock(element)) {
       // JSXArbitraryBlock
       addToDefinedElsewhere(component, element.definedElsewhere)
+    } else if (isJSXFragment(element)) {
+      fastForEach(element.children, (child) => {
+        walkElement(component, child)
+      })
     }
   }
   for (const elementAndCodeContext of elements) {

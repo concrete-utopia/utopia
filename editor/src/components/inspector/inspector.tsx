@@ -1,6 +1,6 @@
 import * as ObjectPath from 'object-path'
 import * as React from 'react'
-import { colorTheme, Icn } from 'uuiui'
+import { colorTheme, Icn, InspectorSectionHeader, UtopiaTheme } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
@@ -24,6 +24,7 @@ import {
   DetectedLayoutSystem,
   SpecialSizeMeasurements,
   emptySpecialSizeMeasurements,
+  ComputedStyle,
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
@@ -91,6 +92,7 @@ import {
   TargetSelectorSectionProps,
 } from './sections/target-selector-section'
 import { addStyleSheetToPage } from '../../core/shared/dom-utils'
+import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -112,7 +114,9 @@ export interface InspectorProps
     HeaderSectionCoreProps,
     TargetSelectorSectionProps,
     LayoutWrapperCoreProps,
-    NameRowProps {}
+    NameRowProps {
+  selectedViews: Array<TemplatePath>
+}
 
 interface AlignDistributeButtonProps {
   onMouseUp: () => void
@@ -278,28 +282,32 @@ const nonDefaultPositionPaths: Array<PropertyPath> = [
 ]
 
 export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: InspectorProps) => {
-  const { input, onSubmitValue } = props
+  const { selectedViews } = props
   const {
     dispatch,
     focusedPanel,
+    anyComponents,
     anyHTMLElements,
     anyUnknownElements,
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
-    selectedViews,
   } = useEditorState((store) => {
     const rootMetadata = store.editor.jsxMetadataKILLME
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     const imports = getOpenImportsFromState(store.editor)
+    let anyComponentsInner: boolean = false
     let anyHTMLElementsInner: boolean = false
     let anyUnknownElementsInner: boolean = false
     let hasNonDefaultPositionAttributesInner: boolean = false
     let aspectRatioLockedInner: boolean = false
-    Utils.fastForEach(store.editor.selectedViews, (view) => {
+    Utils.fastForEach(selectedViews, (view) => {
       if (TP.isScenePath(view)) {
         // TODO Scene Implementation
         return
       }
+      anyComponentsInner =
+        anyComponentsInner ||
+        MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
       const possibleElement = MetadataUtils.getElementByInstancePathMaybe(rootMetadata, view)
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
@@ -335,11 +343,11 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     return {
       dispatch: store.dispatch,
       focusedPanel: store.editor.focusedPanel,
+      anyComponents: anyComponentsInner,
       anyHTMLElements: anyHTMLElementsInner,
       anyUnknownElements: anyUnknownElementsInner,
       hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
       aspectRatioLocked: aspectRatioLockedInner,
-      selectedViews: store.editor.selectedViews,
     }
   })
   const instancePaths = useKeepReferenceEqualityIfPossible(
@@ -371,7 +379,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       return (
         <React.Fragment>
           <AlignmentButtons numberOfTargets={instancePaths.length} />
-          <div>{props.onSelect}</div>
           <HeaderSection
             elementPath={props.elementPath}
             onSelect={props.onSelect}
@@ -395,7 +402,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             toggleAspectRatioLock={toggleAspectRatioLock}
             position={props.input.position}
           />
-          <ComponentSection isScene={false} />
+          {anyComponents ? <ComponentSection isScene={false} /> : null}
           <ImgSection />
           <TargetSelectorSection
             targets={props.targets}
@@ -417,11 +424,8 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     <div
       id='inspector'
       style={{
-        height: '100%',
         width: '100%',
         position: 'relative',
-        overflowY: 'scroll',
-        paddingBottom: 100,
         color: colorTheme.neutralForeground.value,
       }}
       onFocus={onFocus}
@@ -459,311 +463,341 @@ function addFontsForInspectorIfAbsent() {
 export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
   'InspectorEntryPoint',
   () => {
-    const {
-      dispatch,
-      selectedViews,
-      jsxMetadataKILLME,
-      rootComponents,
-      isUIJSFile,
-      imports,
-    } = useEditorState((store) => {
+    const { selectedViews, jsxMetadataKILLME } = useEditorState((store) => {
+      return {
+        selectedViews: store.editor.selectedViews,
+        jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
+      }
+    })
+
+    const showSceneInspector =
+      selectedViews[0] != null &&
+      TP.depth(selectedViews[0]) === 1 &&
+      TP.isScenePath(selectedViews[0])
+
+    const rootViewForScene = jsxMetadataKILLME.find((m) =>
+      TP.pathsEqual(m.scenePath, selectedViews[0]),
+    )?.rootElement?.templatePath
+
+    if (showSceneInspector && rootViewForScene != null) {
+      return (
+        <>
+          <SingleInspectorEntryPoint selectedViews={selectedViews} />
+          <InspectorSectionHeader style={{ paddingTop: UtopiaTheme.layout.rowHeight.small }}>
+            Root View
+          </InspectorSectionHeader>
+          <SingleInspectorEntryPoint selectedViews={[rootViewForScene]} />
+        </>
+      )
+    } else {
+      return <SingleInspectorEntryPoint selectedViews={selectedViews} />
+    }
+  },
+)
+
+export const SingleInspectorEntryPoint: React.FunctionComponent<{
+  selectedViews: Array<TemplatePath>
+}> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
+  const { selectedViews } = props
+  const { dispatch, jsxMetadataKILLME, rootComponents, isUIJSFile, imports } = useEditorState(
+    (store) => {
       return {
         dispatch: store.dispatch,
-        selectedViews: store.editor.selectedViews,
         jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
         rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
         isUIJSFile: isOpenFileUiJs(store.editor),
         imports: getOpenImportsFromState(store.editor),
       }
-    })
+    },
+  )
 
-    React.useEffect(() => {
-      // Add the google fonts on first render as it's an expensive download
-      addFontsForInspectorIfAbsent()
-    }, [])
+  React.useEffect(() => {
+    // Add the google fonts on first render as it's an expensive download
+    addFontsForInspectorIfAbsent()
+  }, [])
 
-    let inspectorModel: InspectorModel = {
-      isChildOfFlexComponent: false,
-      position: 'static',
-      layoutWrapper: null,
-      label: '',
-      type: null,
-      parentFlexAxis: null,
-      specialSizeMeasurements: emptySpecialSizeMeasurements,
-    }
+  let inspectorModel: InspectorModel = {
+    isChildOfFlexComponent: false,
+    position: 'static',
+    layoutWrapper: null,
+    label: '',
+    type: null,
+    parentFlexAxis: null,
+    specialSizeMeasurements: emptySpecialSizeMeasurements,
+  }
 
-    let targets: Array<CSSTarget> = [...DefaultStyleTargets]
+  let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
-    Utils.fastForEach(TP.filterScenes(selectedViews), (path) => {
-      // TODO multiselect
-      const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
-      if (elementMetadata != null) {
-        const jsxElement = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
-        const parentPath = TP.parentPath(path)
-        const parentElement =
-          parentPath != null && TP.isInstancePath(parentPath)
-            ? findElementAtPath(parentPath, rootComponents, jsxMetadataKILLME)
-            : null
+  Utils.fastForEach(TP.filterScenes(selectedViews), (path) => {
+    // TODO multiselect
+    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
+    if (elementMetadata != null) {
+      const jsxElement = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+      const parentPath = TP.parentPath(path)
+      const parentElement =
+        parentPath != null && TP.isInstancePath(parentPath)
+          ? findElementAtPath(parentPath, rootComponents, jsxMetadataKILLME)
+          : null
 
-        const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadataKILLME, path)
-        const nonGroupAncestorFrame =
-          nonGroupAncestor == null
-            ? null
-            : MetadataUtils.getFrameInCanvasCoords(nonGroupAncestor, jsxMetadataKILLME)
+      const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadataKILLME, path)
+      const nonGroupAncestorFrame =
+        nonGroupAncestor == null
+          ? null
+          : MetadataUtils.getFrameInCanvasCoords(nonGroupAncestor, jsxMetadataKILLME)
 
-        const elementFrame = MetadataUtils.shiftGroupFrame(
-          jsxMetadataKILLME,
-          path,
-          canvasRectangle(elementMetadata.localFrame),
-          true,
-        )
-        inspectorModel.layout = {
-          frame: localRectangle(elementFrame),
-          parentFrame: nonGroupAncestorFrame,
-        }
-        if (jsxElement != null && isJSXElement(jsxElement)) {
-          function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
-            let localTargets: Array<CSSTarget> = []
-            function recursivelyDiscoverStyleTargets(
-              styleObject: any,
-              localPath: Array<string>,
-            ): void {
-              if (typeof styleObject === 'object' && styleObject != null) {
-                let selectorLength: TargetSelectorLength = 0
-                const keys = Object.keys(styleObject)
-                keys.forEach((key) => {
-                  if (typeof styleObject[key] === 'object') {
-                    recursivelyDiscoverStyleTargets((styleObject as any)[key], [...localPath, key])
-                  } else if (typeof selectorLength === 'number') {
-                    selectorLength = selectorLength + 1
-                  }
-                })
-                localTargets.push(cssTarget(localPath, selectorLength))
-              }
-            }
-            let defaults = [...DefaultStyleTargets]
-            defaults.reverse().map((defaultTarget) => {
-              const styleObject = getSimpleAttributeAtPath(
-                right(localJSXElement.props),
-                PP.create(defaultTarget.path),
-              )
-              if (isRight(styleObject) && styleObject.value instanceof Object) {
-                recursivelyDiscoverStyleTargets(styleObject.value, defaultTarget.path)
-              } else {
-                // todo count keys
-                localTargets.push(defaultTarget)
-              }
-            })
-            localTargets.reverse()
-            return localTargets
-          }
-          targets = updateTargets(jsxElement)
-        }
-        if (parentElement != null && isJSXElement(parentElement)) {
-          const isChildOfFlexComponent = MetadataUtils.isParentYogaLayoutedContainerForElement(
-            elementMetadata,
-          )
-          if (isChildOfFlexComponent) {
-            inspectorModel.isChildOfFlexComponent = true
-            const parentFlexDirection = FlexLayoutHelpers.getMainAxis(right(parentElement.props))
-            forEachRight(parentFlexDirection, (mainAxis) => {
-              inspectorModel.parentFlexAxis = mainAxis
-            })
-          }
-        }
-        if (jsxElement != null && isJSXElement(jsxElement)) {
-          const elementName = jsxElement.name.baseVariable
-          inspectorModel.type = elementName
-
-          inspectorModel.specialSizeMeasurements = elementMetadata.specialSizeMeasurements
-          inspectorModel.position = elementMetadata.specialSizeMeasurements.position
-
-          if (jsxElement.props != null) {
-            if (MetadataUtils.isLayoutWrapperAgainstImports(imports, elementMetadata)) {
-              inspectorModel.layoutWrapper = elementName as any
-            }
-            const wrappedComponent = jsxElement.props.wrappedComponent
-            if (wrappedComponent != null && isJSXAttributeOtherJavaScript(wrappedComponent)) {
-              inspectorModel.type = wrappedComponent.javascript
-            }
-          }
-        }
-        inspectorModel.label = MetadataUtils.getElementLabel(path, jsxMetadataKILLME)
+      const elementFrame = MetadataUtils.shiftGroupFrame(
+        jsxMetadataKILLME,
+        path,
+        canvasRectangle(elementMetadata.localFrame),
+        true,
+      )
+      inspectorModel.layout = {
+        frame: localRectangle(elementFrame),
+        parentFrame: nonGroupAncestorFrame,
       }
-    })
-
-    // FIXME TODO HACK until we have better memoization in the Canvas Spy, we sacrifice using R.equals once
-    // in order to prevent a big rerender of the inspector
-
-    const inspectorModelMemoized = useKeepReferenceEqualityIfPossible(inspectorModel)
-
-    const refElementsToTargetForUpdates = useRefEditorState((store) => {
-      return getElementsToTarget(store.editor.selectedViews)
-    })
-
-    const elementPath = useKeepReferenceEqualityIfPossible(
-      React.useMemo(() => {
-        if (selectedViews.length === 0) {
-          return []
-        }
-
-        let elements: Array<ElementPathElement> = []
-        Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-          // TODO Scene Implementation
-          if (TP.isInstancePath(path)) {
-            const component = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
-            if (component != null) {
-              elements.push({
-                name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
-                path: path,
+      if (jsxElement != null && isJSXElement(jsxElement)) {
+        function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
+          let localTargets: Array<CSSTarget> = []
+          function recursivelyDiscoverStyleTargets(
+            styleObject: any,
+            localPath: Array<string>,
+          ): void {
+            if (typeof styleObject === 'object' && styleObject != null) {
+              let selectorLength: TargetSelectorLength = 0
+              const keys = Object.keys(styleObject)
+              keys.forEach((key) => {
+                if (typeof styleObject[key] === 'object') {
+                  recursivelyDiscoverStyleTargets((styleObject as any)[key], [...localPath, key])
+                } else if (typeof selectorLength === 'number') {
+                  selectorLength = selectorLength + 1
+                }
               })
-            }
-          } else {
-            const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
-            if (scene != null) {
-              elements.push({
-                name: scene.label,
-                path: path,
-              })
+              localTargets.push(cssTarget(localPath, selectorLength))
             }
           }
-        })
-        return elements
-      }, [selectedViews, jsxMetadataKILLME]),
-    )
-
-    // Memoized Callbacks
-
-    const onSubmitValue = React.useCallback(
-      (newModel: InspectorModel, paths: PropertyPath[]) => {
-        const updates = paths.map((path) => {
-          return { path: path, value: ObjectPath.get(newModel, PP.getElements(path)) }
-        })
-        const actions = Utils.flatMapArray(
-          (elem) =>
-            updates.map((update) =>
-              setProp_UNSAFE(elem, update.path, jsxAttributeValue(update.value)),
-            ),
-          refElementsToTargetForUpdates.current,
-        )
-        dispatch(actions, 'everyone')
-      },
-      [dispatch, refElementsToTargetForUpdates],
-    )
-
-    const onSelect = React.useCallback(
-      (path) => dispatch([selectComponents([path], false)], 'everyone'),
-      [dispatch],
-    )
-
-    const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(targets[0].path)
-
-    const onSelectTarget = React.useCallback((targetPath: Array<string>) => {
-      setSelectedTarget(targetPath)
-    }, [])
-
-    const onStyleSelectorRename = React.useCallback(
-      (renameTarget: CSSTarget, label: string) => {
-        const originalRenameTarget: CSSTarget = { ...renameTarget }
-        let newPath = [...renameTarget.path]
-        newPath[newPath.length - 1] = label
-        const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
-          EditorActions.renamePropKey(elem, originalRenameTarget, newPath),
-        )
-        let newTargetPath = [...originalRenameTarget.path]
-        newTargetPath[newTargetPath.length - 1] = label
-        if (Utils.shallowEqual(originalRenameTarget, selectedTarget)) {
-          setSelectedTarget(newTargetPath)
+          let defaults = [...DefaultStyleTargets]
+          defaults.reverse().map((defaultTarget) => {
+            const styleObject = getSimpleAttributeAtPath(
+              right(localJSXElement.props),
+              PP.create(defaultTarget.path),
+            )
+            if (isRight(styleObject) && styleObject.value instanceof Object) {
+              recursivelyDiscoverStyleTargets(styleObject.value, defaultTarget.path)
+            } else {
+              // todo count keys
+              localTargets.push(defaultTarget)
+            }
+          })
+          localTargets.reverse()
+          return localTargets
         }
-        dispatch(actions, 'everyone')
-      },
-      [refElementsToTargetForUpdates, dispatch, selectedTarget],
-    )
-
-    const onStyleSelectorDelete = React.useCallback(
-      (deleteTarget: CSSTarget) => {
-        const path = PP.create(deleteTarget.path)
-        const actions = Utils.flatMapArray(
-          (elem) => [EditorActions.unsetProperty(elem, path)],
-          refElementsToTargetForUpdates.current,
+        targets = updateTargets(jsxElement)
+      }
+      if (parentElement != null && isJSXElement(parentElement)) {
+        const isChildOfFlexComponent = MetadataUtils.isParentYogaLayoutedContainerForElement(
+          elementMetadata,
         )
-        dispatch(actions, 'everyone')
-      },
-      [refElementsToTargetForUpdates, dispatch],
-    )
+        if (isChildOfFlexComponent) {
+          inspectorModel.isChildOfFlexComponent = true
+          const parentFlexDirection = FlexLayoutHelpers.getMainAxis(right(parentElement.props))
+          forEachRight(parentFlexDirection, (mainAxis) => {
+            inspectorModel.parentFlexAxis = mainAxis
+          })
+        }
+      }
+      if (jsxElement != null && isJSXElement(jsxElement)) {
+        const elementName = jsxElement.name.baseVariable
+        inspectorModel.type = elementName
 
-    const onStyleSelectorInsert = React.useCallback(
-      (parent: CSSTarget, label: string) => {
-        const newPath = [...parent.path, label]
-        const newPropertyPath = PP.create(newPath)
-        const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
-          EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({})),
-        )
-        dispatch(actions, 'everyone')
-        setSelectedTarget(newPath)
-      },
-      [refElementsToTargetForUpdates, dispatch],
-    )
+        inspectorModel.specialSizeMeasurements = elementMetadata.specialSizeMeasurements
+        inspectorModel.position = elementMetadata.specialSizeMeasurements.position
 
-    const onWrap = React.useCallback(
-      (value: string) => {
-        const actions = refElementsToTargetForUpdates.current.map((path) => {
-          return wrapInLayoutable(path, value as any)
-        })
-        dispatch(actions, 'everyone')
-      },
-      [dispatch, refElementsToTargetForUpdates],
-    )
-    const onUnwrap = React.useCallback(() => {
+        if (jsxElement.props != null) {
+          if (MetadataUtils.isLayoutWrapperAgainstImports(imports, elementMetadata)) {
+            inspectorModel.layoutWrapper = elementName as any
+          }
+          const wrappedComponent = jsxElement.props.wrappedComponent
+          if (wrappedComponent != null && isJSXAttributeOtherJavaScript(wrappedComponent)) {
+            inspectorModel.type = wrappedComponent.javascript
+          }
+        }
+      }
+      inspectorModel.label = MetadataUtils.getElementLabel(path, jsxMetadataKILLME)
+    }
+  })
+
+  // FIXME TODO HACK until we have better memoization in the Canvas Spy, we sacrifice using R.equals once
+  // in order to prevent a big rerender of the inspector
+
+  const inspectorModelMemoized = useKeepReferenceEqualityIfPossible(inspectorModel)
+
+  const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
+    getElementsToTarget(selectedViews),
+  )
+
+  const elementPath = useKeepReferenceEqualityIfPossible(
+    React.useMemo(() => {
+      if (selectedViews.length === 0) {
+        return []
+      }
+
+      let elements: Array<ElementPathElement> = []
+      Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
+        // TODO Scene Implementation
+        if (TP.isInstancePath(path)) {
+          const component = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
+          if (component != null) {
+            elements.push({
+              name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
+              path: path,
+            })
+          }
+        } else {
+          const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
+          if (scene != null) {
+            elements.push({
+              name: scene.label,
+              path: path,
+            })
+          }
+        }
+      })
+      return elements
+    }, [selectedViews, jsxMetadataKILLME]),
+  )
+
+  // Memoized Callbacks
+
+  const onSubmitValue = React.useCallback(
+    (newModel: InspectorModel, paths: PropertyPath[]) => {
+      const updates = paths.map((path) => {
+        return { path: path, value: ObjectPath.get(newModel, PP.getElements(path)) }
+      })
+      const actions = Utils.flatMapArray(
+        (elem) =>
+          updates.map((update) =>
+            setProp_UNSAFE(elem, update.path, jsxAttributeValue(update.value)),
+          ),
+        refElementsToTargetForUpdates.current,
+      )
+      dispatch(actions, 'everyone')
+    },
+    [dispatch, refElementsToTargetForUpdates],
+  )
+
+  const onSelect = React.useCallback(
+    (path) => dispatch([selectComponents([path], false)], 'everyone'),
+    [dispatch],
+  )
+
+  const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(targets[0].path)
+
+  const onSelectTarget = React.useCallback((targetPath: Array<string>) => {
+    setSelectedTarget(targetPath)
+  }, [])
+
+  const onStyleSelectorRename = React.useCallback(
+    (renameTarget: CSSTarget, label: string) => {
+      const originalRenameTarget: CSSTarget = { ...renameTarget }
+      let newPath = [...renameTarget.path]
+      newPath[newPath.length - 1] = label
+      const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
+        EditorActions.renamePropKey(elem, originalRenameTarget, newPath),
+      )
+      let newTargetPath = [...originalRenameTarget.path]
+      newTargetPath[newTargetPath.length - 1] = label
+      if (Utils.shallowEqual(originalRenameTarget, selectedTarget)) {
+        setSelectedTarget(newTargetPath)
+      }
+      dispatch(actions, 'everyone')
+    },
+    [refElementsToTargetForUpdates, dispatch, selectedTarget],
+  )
+
+  const onStyleSelectorDelete = React.useCallback(
+    (deleteTarget: CSSTarget) => {
+      const path = PP.create(deleteTarget.path)
+      const actions = Utils.flatMapArray(
+        (elem) => [EditorActions.unsetProperty(elem, path)],
+        refElementsToTargetForUpdates.current,
+      )
+      dispatch(actions, 'everyone')
+    },
+    [refElementsToTargetForUpdates, dispatch],
+  )
+
+  const onStyleSelectorInsert = React.useCallback(
+    (parent: CSSTarget, label: string) => {
+      const newPath = [...parent.path, label]
+      const newPropertyPath = PP.create(newPath)
+      const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
+        EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({})),
+      )
+      dispatch(actions, 'everyone')
+      setSelectedTarget(newPath)
+    },
+    [refElementsToTargetForUpdates, dispatch],
+  )
+
+  const onWrap = React.useCallback(
+    (value: string) => {
       const actions = refElementsToTargetForUpdates.current.map((path) => {
-        return unwrapLayoutable(path)
+        return wrapInLayoutable(path, value as any)
       })
       dispatch(actions, 'everyone')
-    }, [dispatch, refElementsToTargetForUpdates])
+    },
+    [dispatch, refElementsToTargetForUpdates],
+  )
+  const onUnwrap = React.useCallback(() => {
+    const actions = refElementsToTargetForUpdates.current.map((path) => {
+      return unwrapLayoutable(path)
+    })
+    dispatch(actions, 'everyone')
+  }, [dispatch, refElementsToTargetForUpdates])
 
-    const onElementTypeChange = React.useCallback(
-      (value: JSXElementName) => {
-        const actions = refElementsToTargetForUpdates.current.map((path) => {
-          return EditorActions.updateJSXElementName(path, value)
-        })
-        dispatch(actions, 'everyone')
-      },
-      [dispatch, refElementsToTargetForUpdates],
-    )
+  const onElementTypeChange = React.useCallback(
+    (value: JSXElementName) => {
+      const actions = refElementsToTargetForUpdates.current.map((path) => {
+        return EditorActions.updateJSXElementName(path, value)
+      })
+      dispatch(actions, 'everyone')
+    },
+    [dispatch, refElementsToTargetForUpdates],
+  )
 
-    const inspector = isUIJSFile ? (
-      <InspectorContextProvider targetPath={selectedTarget}>
-        <Inspector
-          input={inspectorModelMemoized}
-          onSubmitValue={onSubmitValue}
-          targets={targets}
-          selectedTargetPath={selectedTarget}
-          elementPath={elementPath}
-          onSelect={onSelect}
-          onSelectTarget={onSelectTarget}
-          onWrap={onWrap}
-          onUnwrap={onUnwrap}
-          onElementTypeChange={onElementTypeChange}
-          onStyleSelectorRename={onStyleSelectorRename}
-          onStyleSelectorDelete={onStyleSelectorDelete}
-          onStyleSelectorInsert={onStyleSelectorInsert}
-        />
-      </InspectorContextProvider>
-    ) : null
+  const inspector = isUIJSFile ? (
+    <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
+      <Inspector
+        selectedViews={selectedViews}
+        input={inspectorModelMemoized}
+        onSubmitValue={onSubmitValue}
+        targets={targets}
+        selectedTargetPath={selectedTarget}
+        elementPath={elementPath}
+        onSelect={onSelect}
+        onSelectTarget={onSelectTarget}
+        onWrap={onWrap}
+        onUnwrap={onUnwrap}
+        onElementTypeChange={onElementTypeChange}
+        onStyleSelectorRename={onStyleSelectorRename}
+        onStyleSelectorDelete={onStyleSelectorDelete}
+        onStyleSelectorInsert={onStyleSelectorInsert}
+      />
+    </InspectorContextProvider>
+  ) : null
 
-    return inspector
-  },
-)
-InspectorEntryPoint.displayName = 'InspectorEntryPoint'
+  return inspector
+})
 
 export const InspectorContextProvider = betterReactMemo<{
+  selectedViews: Array<TemplatePath>
   targetPath: Array<string>
   children: React.ReactNode
 }>('InspectorContextProvider', (props) => {
-  const { dispatch, selectedViews, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
+  const { selectedViews } = props
+  const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
-      selectedViews: store.editor.selectedViews,
       jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
       rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
     }
@@ -771,6 +805,7 @@ export const InspectorContextProvider = betterReactMemo<{
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newRealValues: Array<{ [key: string]: any }> = []
+  let newComputedStyles: Array<ComputedStyle> = []
 
   Utils.fastForEach(selectedViews, (path) => {
     if (TP.isScenePath(path)) {
@@ -786,20 +821,25 @@ export const InspectorContextProvider = betterReactMemo<{
         const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
         newEditedMultiSelectedProps.push(jsxAttributes)
         newRealValues.push(elementMetadata.props)
+        newComputedStyles.push(elementMetadata.computedStyle)
       }
     }
   })
 
   const editedMultiSelectedProps = useKeepReferenceEqualityIfPossible(newEditedMultiSelectedProps)
   const realValues = useKeepReferenceEqualityIfPossible(newRealValues)
+  const computedStyles = useKeepReferenceEqualityIfPossible(newComputedStyles)
 
-  const refElementsToTargetForUpdates = useRefEditorState((store) => {
-    return getElementsToTarget(store.editor.selectedViews)
-  })
+  const selectedViewsRef = usePropControlledRef_DANGEROUS(selectedViews)
+  const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
+    getElementsToTarget(selectedViews),
+  )
 
-  const refScenesToTargetForUpdates = useRefEditorState((store) => {
-    return store.editor.selectedViews.filter((view) => TP.isScenePath(view)) as ScenePath[]
-  })
+  const refScenesToTargetForUpdates = usePropControlledRef_DANGEROUS(
+    useKeepReferenceEqualityIfPossible(
+      selectedViews.filter((view) => TP.isScenePath(view)) as ScenePath[],
+    ),
+  )
 
   const onSubmitValueForHooks = React.useCallback(
     (newValue: JSXAttribute, path: PropertyPath, transient: boolean) => {
@@ -846,15 +886,18 @@ export const InspectorContextProvider = betterReactMemo<{
   const callbackContextValueMemoized = useKeepShallowReferenceEquality({
     onSubmitValue: onSubmitValueForHooks,
     onUnsetValue: onUnsetValue,
+    selectedViewsRef: selectedViewsRef,
   })
 
   return (
     <InspectorCallbackContext.Provider value={callbackContextValueMemoized}>
       <InspectorPropsContext.Provider
         value={{
+          selectedViews: selectedViews,
           editedMultiSelectedProps: editedMultiSelectedProps,
           targetPath: props.targetPath,
           realValues: realValues,
+          computedStyles: computedStyles,
         }}
       >
         {props.children}

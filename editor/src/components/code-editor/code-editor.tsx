@@ -140,22 +140,26 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
       case 'enter':
         if (cmd) {
           clearTimeout(this.autoSaveTimer!)
-          this.setState((state) => {
-            const rawOffset = cursorPositionToRawOffset(state.code, state.cursorPosition)
-            const prettierResult = applyPrettier(state.code, true, rawOffset)
-            const newCursorOffset = rawOffsetToCursorPosition(
-              prettierResult.formatted,
-              prettierResult.cursorOffset,
-            )
-            this.save(prettierResult.formatted, true, {
-              message: 'File saved and formatted',
-              level: 'SUCCESS',
-            })
-            return {
-              code: prettierResult.formatted,
-              cursorPosition: newCursorOffset,
-            }
-          })
+          this.setState(
+            (state) => {
+              const rawOffset = cursorPositionToRawOffset(state.code, state.cursorPosition)
+              const prettierResult = applyPrettier(state.code, true, rawOffset)
+              const newCursorOffset = rawOffsetToCursorPosition(
+                prettierResult.formatted,
+                prettierResult.cursorOffset,
+              )
+              return {
+                code: prettierResult.formatted,
+                cursorPosition: newCursorOffset,
+              }
+            },
+            () => {
+              this.save(this.state.code, true, {
+                message: 'File saved and formatted',
+                level: 'SUCCESS',
+              })
+            },
+          )
         }
         break
       case 'z':

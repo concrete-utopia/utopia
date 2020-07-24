@@ -10,7 +10,11 @@ import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { StringControl } from '../../controls/string-control'
 import { addOnUnsetValues } from '../../common/context-menu-items'
-import { useInspectorElementInfo, useIsSubSectionVisible } from '../../common/property-path-hooks'
+import {
+  useInspectorElementInfo,
+  useIsSubSectionVisible,
+  useSelectedViews,
+} from '../../common/property-path-hooks'
 import { GridRow } from '../../widgets/grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
@@ -18,15 +22,22 @@ import { ImageDensityControl } from './image-density-control'
 const imgSrcProp = [PP.create(['src'])]
 const imgAltProp = [PP.create(['alt'])]
 
+function useSelectedPaths() {
+  const selectedViews = useSelectedViews()
+
+  const selectedPaths = filterScenes(selectedViews)
+  return selectedPaths
+}
+
 export const ImgSection = betterReactMemo('ImgSection', () => {
-  const { dispatch, selectedViews, zerothElementInstanceMetadata } = useEditorState((store) => {
-    const selectedPaths = filterScenes(store.editor.selectedViews)
+  const selectedNonSceneViews = useSelectedPaths()
+
+  const { dispatch, zerothElementInstanceMetadata } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
-      selectedViews: selectedPaths,
       zerothElementInstanceMetadata: MetadataUtils.getElementByInstancePathMaybe(
         store.editor.jsxMetadataKILLME,
-        selectedPaths[0],
+        selectedNonSceneViews[0],
       ),
     }
   })
@@ -113,7 +124,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
         <PropertyLabel target={imgAltProp}>Density</PropertyLabel>
         <ImageDensityControl
           dispatch={dispatch}
-          selectedViews={selectedViews}
+          selectedViews={selectedNonSceneViews}
           naturalWidth={naturalWidth}
           naturalHeight={naturalHeight}
           clientWidth={clientWidth}

@@ -835,6 +835,7 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
             case 0: {
               return (
                 <NumberInput
+                  key={`${idPrefix}-${i}`}
                   id={`${idPrefix}-${i}`}
                   {...props}
                   chained='first'
@@ -845,6 +846,7 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
             case propsArray.length - 1: {
               return (
                 <NumberInput
+                  key={`${idPrefix}-${i}`}
                   id={`${idPrefix}-${i}`}
                   {...props}
                   chained='last'
@@ -855,6 +857,7 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
             default: {
               return (
                 <NumberInput
+                  key={`${idPrefix}-${i}`}
                   id={`${idPrefix}-${i}`}
                   {...props}
                   chained='middle'

@@ -9,6 +9,7 @@ import {
   jsxElement,
   utopiaJSXComponent,
   defaultPropsParam,
+  jsxFragment,
 } from '../shared/element-template'
 import { addImport, emptyImports, mergeImports } from '../workers/common/project-file-utils'
 import {
@@ -93,39 +94,44 @@ const mainComponentForTests = utopiaJSXComponent(
       'data-uid': jsxAttributeValue('aaa'),
     },
     [
-      jsxElement(
-        'Ellipse',
-        {
-          layout: jsxAttributeValue({
-            left: 150,
-            top: 25,
-            width: 100,
-            height: 100,
-          }),
-          style: jsxAttributeNestedObjectSimple({
-            backgroundColor: jsxAttributeValue('lightgreen'),
-          }),
-          'data-uid': jsxAttributeValue('bbb'),
-        },
-        [],
-        null,
-      ),
-      jsxElement(
-        'Rectangle',
-        {
-          layout: jsxAttributeValue({
-            left: 25,
-            top: 25,
-            width: 100,
-            height: 100,
-          }),
-          style: jsxAttributeNestedObjectSimple({
-            backgroundColor: jsxAttributeValue('orange'),
-          }),
-          'data-uid': jsxAttributeValue('ccc'),
-        },
-        [],
-        null,
+      jsxFragment(
+        [
+          jsxElement(
+            'Ellipse',
+            {
+              layout: jsxAttributeValue({
+                left: 150,
+                top: 25,
+                width: 100,
+                height: 100,
+              }),
+              style: jsxAttributeNestedObjectSimple({
+                backgroundColor: jsxAttributeValue('lightgreen'),
+              }),
+              'data-uid': jsxAttributeValue('bbb'),
+            },
+            [],
+            null,
+          ),
+          jsxElement(
+            'Rectangle',
+            {
+              layout: jsxAttributeValue({
+                left: 25,
+                top: 25,
+                width: 100,
+                height: 100,
+              }),
+              style: jsxAttributeNestedObjectSimple({
+                backgroundColor: jsxAttributeValue('orange'),
+              }),
+              'data-uid': jsxAttributeValue('ccc'),
+            },
+            [],
+            null,
+          ),
+        ],
+        false,
       ),
       jsxElement(
         'View',

@@ -467,7 +467,14 @@ describe('action DELETE_VIEWS', () => {
           [0, 'rootElement', 'children'],
           getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value),
         ),
-      ).toHaveLength(originalChildrenCount - 2)
+      ).toHaveLength(originalChildrenCount - 1)
+      expect(
+        Utils.pathOr(
+          [],
+          [0, 'rootElement', 'children', 0, 'children'],
+          getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value),
+        ),
+      ).toHaveLength(1)
       expect(
         findJSXElementChildAtPath(
           getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value),
@@ -609,7 +616,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
       editor.jsxMetadataKILLME,
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
     )
-    expect(updatedZIndex).toBe(oldZIndex - 1)
+    expect(updatedZIndex).toBe(oldZIndex - 2)
   })
 })
 

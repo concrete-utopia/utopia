@@ -24,15 +24,19 @@ describe('Scene Section', () => {
    *     all tests, but pass if run by itself.
    */
   xit('doesnt rerender on irrelevant changes', () => {
+    const selectedViews = [ScenePathForTestUiJsFile]
     const storeHookForTest = getStoreHook(utils.NO_OP)
     storeHookForTest.updateStoreWithImmer((store) => {
-      store.editor.selectedViews = [ScenePathForTestUiJsFile] // setting the first Scene as selected
+      store.editor.selectedViews = selectedViews // setting the first Scene as selected
     })
 
     const [getUpdateCount] = setupReactWhyDidYouRender(true)
 
     const { getByText } = render(
-      <TestInspectorContextProvider editorStoreData={storeHookForTest}>
+      <TestInspectorContextProvider
+        selectedViews={selectedViews}
+        editorStoreData={storeHookForTest}
+      >
         <SceneSection />
       </TestInspectorContextProvider>,
     )

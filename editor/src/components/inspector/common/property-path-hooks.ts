@@ -70,6 +70,7 @@ import {
   JSXAttributes,
   UtopiaJSXComponent,
   SpecialSizeMeasurements,
+  ComputedStyle,
 } from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
@@ -78,32 +79,39 @@ import {
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
 import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
-import { PropertyPath } from '../../../core/shared/project-file-types'
+import type { PropertyPath, TemplatePath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'
+import type { ReadonlyRef } from './inspector-utils'
 
 export interface InspectorPropsContextData {
+  selectedViews: Array<TemplatePath>
   editedMultiSelectedProps: readonly JSXAttributes[]
   targetPath: readonly string[]
   realValues: ReadonlyArray<{ [key: string]: any }>
+  computedStyles: readonly ComputedStyle[]
 }
 
 export interface InspectorCallbackContextData {
+  selectedViewsRef: ReadonlyRef<Array<TemplatePath>>
   onSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
   onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void
 }
 
 export const InspectorPropsContext = createContext<InspectorPropsContextData>({
+  selectedViews: [],
   editedMultiSelectedProps: [],
   targetPath: [],
   realValues: [],
+  computedStyles: [],
 })
 
 export const InspectorCallbackContext = React.createContext<InspectorCallbackContextData>({
+  selectedViewsRef: { current: [] },
   onSubmitValue: Utils.NO_OP,
   onUnsetValue: Utils.NO_OP,
 })
@@ -149,17 +157,26 @@ function getRealValues<P extends string | number>(
   }
 }
 
+function getComputedStyleValues(
+  key: string,
+  selectedComputedStyles: { [k: string]: ReadonlyArray<string> },
+): ReadonlyArray<string> {
+  return selectedComputedStyles[key] ?? []
+}
+
 // TODO also memoize me!
 export function useInspectorInfoFromMultiselectMultiStyleAttribute<
   PropertiesToControl extends ParsedPropertiesKeys
 >(
   multiselectAtProps: MultiselectAtProps<PropertiesToControl>,
   selectedProps: { [key in PropertiesToControl]: ReadonlyArray<any> },
+  selectedComputedStyles: { [key in PropertiesToControl]: ReadonlyArray<string> },
 ): {
   [key in PropertiesToControl]: {
     simpleValues: ReadonlyArray<Either<string, any>>
     rawValues: ReadonlyArray<Either<string, ModifiableAttribute>>
     realValues: ReadonlyArray<any>
+    computedValues: ReadonlyArray<string>
   }
 } {
   const multiselectLength = useContextSelector(InspectorPropsContext, (c) => {
@@ -177,6 +194,7 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
             simpleValues: [left('No value')],
             rawValues: [left('Nothing selected')],
             realValues: [undefined],
+            computedValues: [],
           }
         }
 
@@ -185,15 +203,17 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
           extractSimpleValueFromMultiSelectAttribute(rawValue),
         )
         const realValues = getRealValues(key, selectedProps)
+        const computedValues = getComputedStyleValues(key, selectedComputedStyles)
 
         return {
           simpleValues,
           rawValues,
           realValues,
+          computedValues,
         }
       },
     )
-  }, [multiselectAtProps, multiselectLength, selectedProps])
+  }, [multiselectAtProps, multiselectLength, selectedProps, selectedComputedStyles])
 }
 
 // FIXME: copy pasted for component prop section
@@ -328,13 +348,16 @@ export function useInspectorLayoutInStyleInfo_UNSAFE<
 }
 
 export function useInspectorContext() {
-  const { onSubmitValue, onUnsetValue } = React.useContext(InspectorCallbackContext)
+  const { onSubmitValue, onUnsetValue, selectedViewsRef } = React.useContext(
+    InspectorCallbackContext,
+  )
   return React.useMemo(() => {
     return {
       onContextSubmitValue: onSubmitValue,
       onContextUnsetValue: onUnsetValue,
+      selectedViewsRef: selectedViewsRef,
     }
-  }, [onSubmitValue, onUnsetValue])
+  }, [onSubmitValue, onUnsetValue, selectedViewsRef])
 }
 
 function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
@@ -342,6 +365,7 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   simpleValue: Either<string, any>,
   rawValue: Either<string, ModifiableAttribute>,
   realValue: any,
+  computedValue: string | undefined,
 ): {
   finalValue: ParsedPropertiesValues
   isUnknown: boolean
@@ -351,7 +375,8 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
 
   function finalValueFromReal(): ParsedPropertiesValues {
     if (realValue == null) {
-      return emptyValues[property]
+      const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
+      return defaultEither(emptyValues[property], parsedComputedValue)
     } else {
       const parsedRealValue = parseAnyParseableValue(property, realValue, null)
       return defaultEither(emptyValues[property], parsedRealValue)
@@ -443,9 +468,32 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     ),
   )
 
+  const selectedComputedStyles = useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        const keyFn = (propKey: P) => propKey
+        const mapFn = (propKey: P): string[] => {
+          const path = PP.getElements(pathMappingFn(propKey, contextData.targetPath))
+          const isStylePath = path[0] === 'style' || path[0] === 'css'
+          if (isStylePath && path.length === 2) {
+            return contextData.computedStyles.map((computedStyle) => {
+              return ObjectPath.get(computedStyle, path[1])
+            })
+          } else {
+            return []
+          }
+        }
+        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+      },
+      deepEqual,
+    ),
+  )
+
   const simpleAndRawValues = useInspectorInfoFromMultiselectMultiStyleAttribute(
     multiselectAtProps,
     selectedProps,
+    selectedComputedStyles,
   )
 
   const propertyStatus = calculateMultiPropertyStatusForSelection(
@@ -458,7 +506,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     propKeys,
     (propKey) => propKey,
     (propKey) => {
-      const { simpleValues, rawValues, realValues } = simpleAndRawValues[propKey]
+      const { simpleValues, rawValues, realValues, computedValues } = simpleAndRawValues[propKey]
       if (propertyStatus.identical) {
         const simpleValue: Either<string, any> = Utils.defaultIfNull(
           left('Simple value missing'),
@@ -469,34 +517,38 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           rawValues[0],
         )
         const realValue: any = realValues[0]
+        const computedValue = computedValues[0]
         const { finalValue, isUnknown: pathIsUnknown } = parseFinalValue(
           propKey,
           simpleValue,
           rawValue,
           realValue,
+          computedValue,
         )
         isUnknown = isUnknown || pathIsUnknown
         return finalValue
       } else {
-        let zeroethFinalValue: ParsedPropertiesValues
+        let firstFinalValue: ParsedPropertiesValues
         simpleValues.forEach((simpleValue, i) => {
           const rawValue: Either<string, ModifiableAttribute> = Utils.defaultIfNull(
             left('Raw value missing'),
             rawValues[i],
           )
           const realValue: any = realValues[i]
+          const computedValue = computedValues[i]
           const { finalValue, isUnknown: pathIsUnknown } = parseFinalValue(
             propKey,
             simpleValue,
             rawValue,
             realValue,
+            computedValue,
           )
           if (i === 0) {
-            zeroethFinalValue = finalValue
+            firstFinalValue = finalValue
           }
           isUnknown = isUnknown || pathIsUnknown
         })
-        return zeroethFinalValue
+        return firstFinalValue
       }
     },
   ) as ParsedValues<P>
@@ -778,12 +830,12 @@ export function useKeepReferenceEqualityIfPossible<T>(possibleNewValue: T, measu
 }
 
 export function useIsSubSectionVisible(sectionName: string): boolean {
-  return useEditorState((store) => {
-    const selectedViews = store.editor.selectedViews
+  const selectedViews = useRefSelectedViews()
 
+  return useEditorState((store) => {
     const imports = getOpenImportsFromState(store.editor)
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
-    const types = selectedViews.map((view) => {
+    const types = selectedViews.current.map((view) => {
       if (TP.isScenePath(view)) {
         return 'scene'
       }
@@ -836,12 +888,14 @@ const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
 export function useSelectedPropertyControls(
   includeIgnored: boolean,
 ): ParseResult<ParsedPropertyControls> {
+  const selectedViews = useRefSelectedViews()
+
   const propertyControls = useEditorState((store) => {
-    const { selectedViews, codeResultCache } = store.editor
+    const { codeResultCache } = store.editor
 
     let selectedPropertyControls: PropertyControls | null = {}
     if (codeResultCache != null) {
-      Utils.fastForEach(selectedViews, (path) => {
+      Utils.fastForEach(selectedViews.current, (path) => {
         // TODO multiselect
         selectedPropertyControls = getPropertyControlsForTarget(path, store.editor) ?? {}
       })
@@ -862,12 +916,14 @@ export function useSelectedPropertyControls(
 export function useUsedPropsWithoutControls(): Array<string> {
   const parsedPropertyControls = useSelectedPropertyControls(true)
 
+  const selectedViews = useRefSelectedViews()
+
   const selectedComponents = useEditorState((store) => {
-    const { selectedViews, jsxMetadataKILLME } = store.editor
+    const { jsxMetadataKILLME } = store.editor
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let components: Array<UtopiaJSXComponent> = []
     const pushComponent = (component: UtopiaJSXComponent) => components.push(component)
-    fastForEach(selectedViews, (path) => {
+    fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
         const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
         if (scene != null) {
@@ -916,13 +972,15 @@ export function useUsedPropsWithoutControls(): Array<string> {
 export function useUsedPropsWithoutDefaults(): Array<string> {
   const parsedPropertyControls = useSelectedPropertyControls(false)
 
+  const selectedViews = useRefSelectedViews()
+
   const selectedComponentProps = useEditorState((store) => {
-    const { selectedViews, jsxMetadataKILLME } = store.editor
+    const { jsxMetadataKILLME } = store.editor
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let propsUsed: Array<string> = []
     const pushPropsForComponent = (component: UtopiaJSXComponent) =>
       propsUsed.push(...component.propsUsed)
-    fastForEach(selectedViews, (path) => {
+    fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
         const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
         if (scene != null) {
@@ -950,8 +1008,9 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
 }
 
 export function useInspectorWarningStatus(): boolean {
+  const selectedViews = useSelectedViews()
+
   return useEditorState((store) => {
-    const selectedViews = store.editor.selectedViews
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let hasLayoutInCSSProp = false
     Utils.fastForEach(selectedViews, (view) => {
@@ -977,4 +1036,17 @@ export function useInspectorWarningStatus(): boolean {
     })
     return hasLayoutInCSSProp
   })
+}
+
+export function useSelectedViews() {
+  const selectedViews = useContextSelector(
+    InspectorPropsContext,
+    (context) => context.selectedViews,
+  )
+  return selectedViews
+}
+
+export function useRefSelectedViews() {
+  const { selectedViewsRef } = React.useContext(InspectorCallbackContext)
+  return selectedViewsRef
 }

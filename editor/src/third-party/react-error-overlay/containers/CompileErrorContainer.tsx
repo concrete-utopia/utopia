@@ -68,14 +68,14 @@ class CompileErrorContainer extends PureComponent<Props, {}> {
                   </span>
                 </span>
               </h3>
-              <p>
+              <div>
                 <CodeBlock main={true} codeHTML={generateAnsiHTML(record.codeSnippet)} />
                 <Footer
                   line1={`Error code: ${record.errorCode || 'N/A'} ( ${record.type},  ${
                     record.severity
                   })`}
                 />
-              </p>
+              </div>
             </div>
           ))
         ) : (

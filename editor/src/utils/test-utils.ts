@@ -20,6 +20,9 @@ import {
   isUtopiaJSXComponent,
   JSXElementChild,
   TopLevelElement,
+  emptyComputedStyle,
+  walkElements,
+  isJSXFragment,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, getJSXAttributeAtPath } from '../core/shared/jsx-attributes'
@@ -113,18 +116,25 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
   const sceneElements = Utils.stripNulls(getSceneElementsFromParseSuccess(success).map(unmapScene))
   return sceneElements.map((scene, index) => {
     const component = components.find((c) => c.name === scene.component && isUtopiaJSXComponent(c))
+    let elementMetadata: ElementInstanceMetadata | Array<ElementInstanceMetadata> | null = null
+    if (component != null) {
+      elementMetadata = createFakeMetadataForJSXElement(
+        component.rootElement,
+        TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+      )
+    }
     return {
       ...scene,
       scenePath: TP.scenePath([BakedInStoryboardUID, scene.uid]),
       templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
+      type: 'static',
       rootElement:
-        component == null
+        elementMetadata == null
           ? null
-          : createFakeMetadataForJSXElement(
-              component.rootElement,
-              TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
-            ),
+          : Array.isArray(elementMetadata)
+          ? elementMetadata[0]
+          : elementMetadata,
     }
   })
 }
@@ -135,17 +145,18 @@ export function createFakeMetadataForComponents(
   let metadata: Array<ComponentMetadata> = []
   Utils.fastForEach(components, (component, index) => {
     if (isUtopiaJSXComponent(component)) {
+      const elementMetadata = createFakeMetadataForJSXElement(
+        component.rootElement,
+        TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+      )
       metadata.push({
         scenePath: TP.scenePath([BakedInStoryboardUID, `scene-${index}`]),
         templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
         component: component.name,
-        frame: { left: 0, top: 0, width: 100, height: 100 },
         globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
         container: { layoutSystem: LayoutSystem.PinSystem },
-        rootElement: createFakeMetadataForJSXElement(
-          component.rootElement,
-          TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
-        ),
+        type: 'static',
+        rootElement: Array.isArray(elementMetadata) ? elementMetadata[0] : elementMetadata,
       })
     }
   })
@@ -155,7 +166,7 @@ export function createFakeMetadataForComponents(
 function createFakeMetadataForJSXElement(
   element: JSXElementChild,
   rootPath: TemplatePath,
-): ElementInstanceMetadata {
+): ElementInstanceMetadata | Array<ElementInstanceMetadata> {
   if (isJSXElement(element)) {
     const elementID = getUtopiaID(element)
     const templatePath = TP.appendToPath(rootPath, elementID)
@@ -165,12 +176,17 @@ function createFakeMetadataForJSXElement(
       props: jsxAttributesToProps({}, element.props, {}, Utils.NO_OP, Utils.NO_OP),
       globalFrame: Utils.zeroRectangle as CanvasRectangle, // this could be parametrized to be able to set real rectangles
       localFrame: Utils.zeroRectangle as LocalRectangle,
-      children: element.children.map((child) =>
+      children: element.children.flatMap((child) =>
         createFakeMetadataForJSXElement(child, templatePath),
       ),
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
+      computedStyle: emptyComputedStyle,
     }
+  } else if (isJSXFragment(element)) {
+    return element.children.flatMap((child) => {
+      return createFakeMetadataForJSXElement(child, rootPath)
+    })
   } else {
     throw new Error(`Not a JSX element ${element}`)
   }
@@ -180,4 +196,25 @@ export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout)
   })
+}
+
+export function elementsStructure(elements: Array<TopLevelElement>): string {
+  let structureResults: Array<string> = []
+  walkElements(elements, (element, path) => {
+    const isElement = isJSXElement(element)
+    // Adjustment to cater for things which are not elements
+    // appearing one level too high because they do not modify the
+    // path from walkElements.
+    const depth = path.length + (isElement ? 0 : 1)
+    let elementResult: string = ''
+    for (let index = 0; index < depth; index++) {
+      elementResult += '  '
+    }
+    elementResult += element.type
+    if (isJSXElement(element)) {
+      elementResult += ` - ${getUtopiaID(element)}`
+    }
+    structureResults.push(elementResult)
+  })
+  return structureResults.join('\n')
 }

@@ -33,6 +33,7 @@ import {
   isDestructuredObject,
   isOmittedParam,
   JSXAttributeOtherJavaScript,
+  emptyComputedStyle,
 } from '../../core/shared/element-template'
 import { getUtopiaID, getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
@@ -373,11 +374,13 @@ export const UiJsxCanvas = betterReactMemo(
       imports,
       dependencyOrdering,
       jsxFactoryFunction,
+      clearErrors,
       clearConsoleLogs,
       addToConsoleLogs,
       canvasIsLive,
     } = props
 
+    // FIXME This is illegal! The two lines below are triggering a re-render
     clearConsoleLogs()
     proxyConsole(console, addToConsoleLogs)
 
@@ -567,8 +570,8 @@ function getStoryboardRoot(
 
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElement = {
     component: BakedInStoryboardVariableName,
+    type: 'static',
     container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
-    frame: {} as any, // TODO BB Hack this is not safe at all, the code expects a frame here
     scenePath: EmptyScenePathForStoryboard,
     templatePath: TP.instancePath([], []),
     globalFrame: null,
@@ -747,7 +750,7 @@ function createComponentRendererComponent(params: {
 
     rootElement = utopiaJsxComponent.rootElement
 
-    return renderCoreElement(
+    const elementsToRender = renderCoreElement(
       rootElement,
       ownTemplatePath,
       mutableContext.rootScope,
@@ -765,6 +768,11 @@ function createComponentRendererComponent(params: {
       codeError,
       rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy,
     )
+    if (Array.isArray(elementsToRender)) {
+      return <>{elementsToRender}</>
+    } else {
+      return elementsToRender
+    }
   }
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
   Component.topLevelElementName = params.topLevelElementName
@@ -783,10 +791,11 @@ interface SceneRootProps extends CanvasReactReportErrorCallback {
   inScope: MapLike<any>
   hiddenInstances: Array<TemplatePath>
   componentProps: MapLike<any>
-  frame: NormalisedFrame
+  style: React.CSSProperties
   jsxFactoryFunctionName: string | null
   container: SceneContainer
   component: string | null
+  isStatic: boolean
 
   // this is even worse: this is secret props that are passed down from a utopia parent View
   // we put this here in case the Scene is inside another View
@@ -809,10 +818,11 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     fileBlobs,
     reportError,
     componentProps,
-    frame,
+    style,
     container,
     jsxFactoryFunctionName,
     component,
+    isStatic,
     sceneUID,
     'data-uid': dataUidIgnore,
     ...inputProps
@@ -826,9 +836,9 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
   metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
     scenePath: scenePath,
     templatePath: templatePath,
-    frame: frame,
     container: container,
     component: component,
+    type: isStatic ? 'static' : 'dynamic',
     globalFrame: null, // the real frame comes from the DOM walker
     label: props.sceneLabel,
   }
@@ -842,17 +852,8 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       childrenTemplatePaths: [],
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
+      computedStyle: emptyComputedStyle,
     }
-  }
-
-  // For the sake of backwards compatibility, still pass through the scene's frame if layout is
-  // undefined in the props
-  // TODO I guess we can remove this backwards compatibility now
-  const passthroughLayout = componentProps?.layout ?? {
-    left: 0,
-    top: 0,
-    width: frame.width,
-    height: frame.height,
   }
 
   let rootElement = null
@@ -863,7 +864,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       ...defaultProps,
       ...inputProps,
       ...componentProps,
-      layout: passthroughLayout,
     }
 
     rootElement = renderComponentUsingJsxFactoryFunction(
@@ -884,11 +884,12 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
 
   const sceneStyle: React.CSSProperties = {
     // TODO this should really be a property of the scene that you can change, similar to the preview.
-    backgroundColor: colorTheme.emphasizedBackground.value,
     position: 'absolute',
+    backgroundColor: colorTheme.emphasizedBackground.value,
     boxShadow: rerenderUtopiaContext.canvasIsLive
       ? UtopiaStyles.scene.live.boxShadow
       : UtopiaStyles.scene.editing.boxShadow,
+    ...style,
   }
 
   return (
@@ -898,7 +899,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
         data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
         style={sceneStyle}
         layout={{
-          ...frame,
           ...container,
         }}
       >
@@ -991,6 +991,7 @@ function renderCoreElement(
 
     const rootComponent = sceneProps.component
     const rootComponentName = sceneProps.component?.topLevelElementName
+    const isStatic = sceneProps.static
 
     const sceneId: string = sceneProps['data-uid'] || ''
     return (
@@ -1001,118 +1002,154 @@ function renderCoreElement(
         hiddenInstances={hiddenInstances}
         jsxFactoryFunctionName={jsxFactoryFunctionName}
         fileBlobs={fileBlobs}
-        frame={sceneProps.style}
+        style={sceneProps.style}
         inScope={inScope}
         reportError={Utils.NO_OP}
         requireResult={requireResult}
         templatePath={templatePath}
         component={rootComponentName}
+        isStatic={isStatic}
         sceneUID={sceneId}
         sceneLabel={sceneProps['data-label']}
       />
     )
   }
-  if (isJSXElement(element)) {
-    const assembledProps = jsxAttributesToProps(
-      inScope,
-      element.props,
-      parentComponentInputProps,
-      requireResult,
-      (error) => {
-        reportError(error)
-        throw error
-      },
-    )
-
-    const passthroughProps: MapLike<any> = {
-      ...assembledProps,
-      'data-uid': Utils.defaultIfNull(assembledProps['data-uid'], uid),
-      [UTOPIA_ORIGINAL_ID_KEY]: Utils.defaultIfNull(
-        assembledProps[UTOPIA_ORIGINAL_ID_KEY],
-        parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
-      ),
-    }
-    return renderJSXElement(
-      TP.toString(templatePath),
-      element,
-      templatePath,
-      parentComponentInputProps,
-      requireResult,
-      rootScope,
-      inScope,
-      hiddenInstances,
-      fileBlobs,
-      validPaths,
-      reportError,
-      passthroughProps,
-      metadataContext,
-      jsxFactoryFunctionName,
-      null,
-      shouldIncludeCanvasRootInTheSpy,
-    )
-  } else if (isJSXArbitraryBlock(element)) {
-    let innerIndex: number = 0
-    function innerRender(innerElement: JSXElement, innerInScope: MapLike<any>): React.ReactElement {
-      innerIndex++
-      const innerPath = TP.appendToPath(templatePath, `index-${innerIndex}`)
-
-      const innerUID = getUtopiaID(innerElement)
-      const withOriginalID = setJSXValueAtPath(
-        innerElement.props,
-        PP.create([UTOPIA_ORIGINAL_ID_KEY]),
-        jsxAttributeValue(innerUID),
-      )
-      const generatedUID = `${innerUID}-${innerIndex}`
-      const withGeneratedUID = flatMapEither(
-        (attrs) =>
-          setJSXValueAtPath(attrs, PP.create(['data-uid']), jsxAttributeValue(generatedUID)),
-        withOriginalID,
-      )
-
-      let augmentedInnerElement = innerElement
-      forEachRight(withGeneratedUID, (attrs) => {
-        augmentedInnerElement = {
-          ...augmentedInnerElement,
-          props: attrs,
-        }
-      })
-      return renderCoreElement(
-        augmentedInnerElement,
-        innerPath,
-        rootScope,
-        innerInScope,
+  switch (element.type) {
+    case 'JSX_ELEMENT': {
+      const assembledProps = jsxAttributesToProps(
+        inScope,
+        element.props,
         parentComponentInputProps,
         requireResult,
+        (error) => {
+          reportError(error)
+          throw error
+        },
+      )
+
+      const passthroughProps: MapLike<any> = {
+        ...assembledProps,
+        'data-uid': Utils.defaultIfNull(assembledProps['data-uid'], uid),
+        [UTOPIA_ORIGINAL_ID_KEY]: Utils.defaultIfNull(
+          assembledProps[UTOPIA_ORIGINAL_ID_KEY],
+          parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
+        ),
+      }
+      return renderJSXElement(
+        TP.toString(templatePath),
+        element,
+        templatePath,
+        parentComponentInputProps,
+        requireResult,
+        rootScope,
+        inScope,
         hiddenInstances,
         fileBlobs,
-        reportError,
         validPaths,
-        generatedUID,
-        reactChildren,
+        reportError,
+        passthroughProps,
         metadataContext,
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
       )
     }
-    const blockScope = {
-      ...inScope,
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
-        element.elementsWithin,
-        inScope,
-        innerRender,
-      ),
+    case 'JSX_ARBITRARY_BLOCK': {
+      let innerIndex: number = 0
+      function innerRender(
+        innerElement: JSXElement,
+        innerInScope: MapLike<any>,
+      ): React.ReactElement {
+        innerIndex++
+        const innerPath = TP.appendToPath(templatePath, `index-${innerIndex}`)
+
+        const innerUID = getUtopiaID(innerElement)
+        const withOriginalID = setJSXValueAtPath(
+          innerElement.props,
+          PP.create([UTOPIA_ORIGINAL_ID_KEY]),
+          jsxAttributeValue(innerUID),
+        )
+        const generatedUID = `${innerUID}-${innerIndex}`
+        const withGeneratedUID = flatMapEither(
+          (attrs) =>
+            setJSXValueAtPath(attrs, PP.create(['data-uid']), jsxAttributeValue(generatedUID)),
+          withOriginalID,
+        )
+
+        let augmentedInnerElement = innerElement
+        forEachRight(withGeneratedUID, (attrs) => {
+          augmentedInnerElement = {
+            ...augmentedInnerElement,
+            props: attrs,
+          }
+        })
+        return renderCoreElement(
+          augmentedInnerElement,
+          innerPath,
+          rootScope,
+          innerInScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          fileBlobs,
+          reportError,
+          validPaths,
+          generatedUID,
+          reactChildren,
+          metadataContext,
+          jsxFactoryFunctionName,
+          null,
+          shouldIncludeCanvasRootInTheSpy,
+        )
+      }
+      const blockScope = {
+        ...inScope,
+        [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+          element.elementsWithin,
+          inScope,
+          innerRender,
+        ),
+      }
+      return runJSXArbitraryBlock(requireResult, element, blockScope, reportError)
     }
-    return runJSXArbitraryBlock(requireResult, element, blockScope, reportError)
-  } else {
-    // JSXTextBlock is the final remaining case.
-    return renderComponentUsingJsxFactoryFunction(
-      inScope,
-      jsxFactoryFunctionName,
-      React.Fragment,
-      { key: TP.toString(templatePath) },
-      element.text,
-    )
+    case 'JSX_FRAGMENT': {
+      let renderedChildren: Array<React.ReactElement> = []
+      fastForEach(element.children, (child) => {
+        const renderResult = renderCoreElement(
+          child,
+          templatePath,
+          rootScope,
+          inScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          fileBlobs,
+          reportError,
+          validPaths,
+          uid,
+          reactChildren,
+          metadataContext,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+        )
+        renderedChildren.push(renderResult)
+      })
+      return <>{renderedChildren}</>
+    }
+    case 'JSX_TEXT_BLOCK': {
+      // JSXTextBlock is the final remaining case.
+      return renderComponentUsingJsxFactoryFunction(
+        inScope,
+        jsxFactoryFunctionName,
+        React.Fragment,
+        { key: TP.toString(templatePath) },
+        element.text,
+      )
+    }
+    default:
+      const _exhaustiveCheck: never = element
+      throw new Error(`Unhandled type ${JSON.stringify(element)}`)
   }
 }
 
@@ -1161,6 +1198,7 @@ function buildSpyWrappedElement(
       childrenTemplatePaths: childrenTemplatePaths,
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
+      computedStyle: emptyComputedStyle,
     }
     const isChildOfRootScene = TP.pathsEqual(
       TP.scenePathForPath(templatePath),
@@ -1234,7 +1272,9 @@ function renderJSXElement(
   }
   finalProps = streamlineInFileBlobs(finalProps, fileBlobs)
 
-  const createChildrenElement = (child: JSXElementChild): React.ReactElement => {
+  const createChildrenElement = (
+    child: JSXElementChild,
+  ): React.ReactElement | Array<React.ReactElement> => {
     const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
     return renderCoreElement(
       child,

@@ -170,6 +170,8 @@ export function getDescriptionUnsetOptionalFields(
       addIfFieldEmpty(controlDescription, 'placeholder')
       addIfFieldEmpty(controlDescription, 'obscured')
       break
+    case 'style-object':
+      break
     case 'popuplist':
       addIfFieldEmpty(controlDescription, 'defaultValue')
       break

@@ -41,9 +41,10 @@ import { URLBackgroundLayer } from './url-background-layer'
 
 function insertBackgroundLayer(
   cssBackgroundLayers: CSSBackgroundLayers,
+  wasUnset: boolean,
   onSubmitValue: (newValue: CSSBackgroundLayers) => void,
 ): void {
-  if (cssBackgroundLayers.length === 0) {
+  if (cssBackgroundLayers.length === 0 || wasUnset) {
     onSubmitValue([{ ...defaultSolidBackgroundLayer }])
   } else {
     onSubmitValue([...cssBackgroundLayers, { ...defaultLinearGradientBackgroundLayer }])
@@ -296,12 +297,38 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
   })
 
   const insertBackgroundLayerMouseDown = React.useCallback(() => {
-    insertBackgroundLayer([...value], onSubmitValue)
-  }, [onSubmitValue, value])
+    insertBackgroundLayer([...value], controlStatus === 'unset', onSubmitValue)
+  }, [onSubmitValue, value, controlStatus])
 
   if (!isVisible) {
     return null
   }
+
+  const rowsToRender =
+    controlStatus === 'unset' ? null : (
+      <div
+        style={{
+          height: rowHeight * springs.length,
+        }}
+      >
+        {springs.map((springStyle, index) => {
+          return (
+            <animated.div
+              {...bind(index)}
+              key={index}
+              style={{
+                ...springStyle,
+                width: '100%',
+                position: 'absolute',
+                height: rowHeight,
+              }}
+            >
+              {backgroundLayerArrayForDisplay[index]}
+            </animated.div>
+          )
+        })}
+      </div>
+    )
 
   return (
     <InspectorContextMenuWrapper
@@ -327,28 +354,7 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
       {controlStyles.unknown ? (
         <FakeUnknownArrayItem controlStatus={controlStatus} />
       ) : (
-        <div
-          style={{
-            height: rowHeight * springs.length,
-          }}
-        >
-          {springs.map((springStyle, index) => {
-            return (
-              <animated.div
-                {...bind(index)}
-                key={index}
-                style={{
-                  ...springStyle,
-                  width: '100%',
-                  position: 'absolute',
-                  height: rowHeight,
-                }}
-              >
-                {backgroundLayerArrayForDisplay[index]}
-              </animated.div>
-            )
-          })}
-        </div>
+        rowsToRender
       )}
     </InspectorContextMenuWrapper>
   )

@@ -48,9 +48,9 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   utopiaJSXComponent,
-  collectMetadataFromElements,
   propNamesForParam,
   JSXAttributeOtherJavaScript,
+  jsxElementName,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -220,6 +220,7 @@ function withUID<T>(
 function updateJSXElementsWithin(
   expression: TS.Expression,
   elementsWithin: ElementsWithin,
+  imports: Imports,
   stripUIDs: boolean,
 ): TS.Expression {
   function streamlineInElementsWithin(
@@ -228,7 +229,7 @@ function updateJSXElementsWithin(
   ): TS.Node {
     return withUID(undefined, attributes, originalNode, (uid) => {
       if (uid in elementsWithin) {
-        return jsxElementToExpression(elementsWithin[uid], stripUIDs)
+        return jsxElementToExpression(elementsWithin[uid], imports, stripUIDs)
       } else {
         return originalNode
       }
@@ -276,10 +277,32 @@ function jsxElementNameToExpression(name: JSXElementName): TS.JsxTagNameExpressi
   )
 }
 
+function getFragmentElementNameFromImports(imports: Imports): JSXElementName {
+  const possibleReactImport = imports['react']
+  if (possibleReactImport != null) {
+    const fromWithin = possibleReactImport.importedFromWithin.find(
+      (within) => within.name === 'Fragment',
+    )
+    if (fromWithin != null) {
+      return jsxElementName(fromWithin.alias, [])
+    }
+    if (possibleReactImport.importedAs != null) {
+      return jsxElementName(possibleReactImport.importedAs, ['Fragment'])
+    }
+    if (possibleReactImport.importedWithName != null) {
+      return jsxElementName(possibleReactImport.importedWithName, ['Fragment'])
+    }
+  }
+
+  // Default down to this.
+  return jsxElementName('React', ['Fragment'])
+}
+
 function jsxElementToExpression(
   element: JSXElementChild,
+  imports: Imports,
   stripUIDs: boolean,
-): TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxText | TS.JsxExpression {
+): TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxText | TS.JsxExpression | TS.JsxFragment {
   switch (element.type) {
     case 'JSX_ELEMENT': {
       let attribsArray: Array<TS.JsxAttributeLike> = []
@@ -314,7 +337,7 @@ function jsxElementToExpression(
         const closing = TS.createJsxClosingElement(tagName)
         return TS.createJsxElement(
           opening,
-          element.children.map((child) => jsxElementToExpression(child, stripUIDs)),
+          element.children.map((child) => jsxElementToExpression(child, imports, stripUIDs)),
           closing,
         )
       }
@@ -343,8 +366,34 @@ function jsxElementToExpression(
           throw e
         },
       )()
-      newExpression = updateJSXElementsWithin(newExpression, element.elementsWithin, stripUIDs)
+      newExpression = updateJSXElementsWithin(
+        newExpression,
+        element.elementsWithin,
+        imports,
+        stripUIDs,
+      )
       return TS.createJsxExpression(undefined, newExpression)
+    }
+    case 'JSX_FRAGMENT': {
+      const children = element.children.map((child) => {
+        return jsxElementToExpression(child, imports, stripUIDs)
+      })
+      if (element.longForm) {
+        const tagName = jsxElementNameToExpression(getFragmentElementNameFromImports(imports))
+        if (element.children.length === 0) {
+          return TS.createJsxSelfClosingElement(tagName, undefined, TS.createJsxAttributes([]))
+        } else {
+          const opening = TS.createJsxOpeningElement(tagName, undefined, TS.createJsxAttributes([]))
+          const closing = TS.createJsxClosingElement(tagName)
+          return TS.createJsxElement(opening, children, closing)
+        }
+      } else {
+        return TS.createJsxFragment(
+          TS.createJsxOpeningFragment(),
+          children,
+          TS.createJsxJsxClosingFragment(),
+        )
+      }
     }
     case 'JSX_TEXT_BLOCK': {
       return TS.createJsxText(element.text)
@@ -378,9 +427,10 @@ export function printCodeOptions(
 
 function printUtopiaJSXComponent(
   printOptions: PrintCodeOptions,
+  imports: Imports,
   element: UtopiaJSXComponent,
 ): TS.Node {
-  const asJSX = jsxElementToExpression(element.rootElement, printOptions.stripUIDs)
+  const asJSX = jsxElementToExpression(element.rootElement, imports, printOptions.stripUIDs)
   if (TS.isJsxElement(asJSX) || TS.isJsxSelfClosingElement(asJSX)) {
     if (element.isFunction) {
       const arrowParams = maybeToArray(element.param).map(printParam)
@@ -602,7 +652,7 @@ function printCodeImpl(
   const exportStatements = topLevelElements.map((e) => {
     switch (e.type) {
       case 'UTOPIA_JSX_COMPONENT':
-        return printUtopiaJSXComponent(printOptions, e)
+        return printUtopiaJSXComponent(printOptions, imports, e)
       case 'ARBITRARY_JS_BLOCK':
         return printArbitraryJSBlock(e)
       default:

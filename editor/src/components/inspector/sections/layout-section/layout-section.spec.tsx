@@ -35,7 +35,10 @@ describe('Layout Section', () => {
     const toggleAspectRatioLock = () => {}
 
     const { getByText } = render(
-      <TestInspectorContextProvider editorStoreData={storeHookForTest}>
+      <TestInspectorContextProvider
+        selectedViews={storeHookForTest.api.getState().editor.selectedViews}
+        editorStoreData={storeHookForTest}
+      >
         <LayoutSection
           isChildOfFlexComponent={false}
           hasNonDefaultPositionAttributes={true}

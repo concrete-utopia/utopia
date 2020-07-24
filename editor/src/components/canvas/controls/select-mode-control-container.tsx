@@ -523,6 +523,7 @@ export class SelectModeControlContainer extends React.Component<
           }
           guideLineElements.push(
             <DistanceGuideline
+              key={`${TP.toComponentId(this.props.selectedViews[index])}-distance-guidelines`}
               canvasOffset={this.props.canvasOffset}
               scale={this.props.scale}
               guidelines={distanceGuidelines}
@@ -559,6 +560,7 @@ export class SelectModeControlContainer extends React.Component<
           ) {
             boundingMarks.push(
               <BoundingMarks
+                key={`${TP.toComponentId(targets[0])}-bounding-marks-immediate-parent`}
                 canvasOffset={this.props.canvasOffset}
                 scale={this.props.scale}
                 rect={immediateParentBounds}
@@ -573,6 +575,7 @@ export class SelectModeControlContainer extends React.Component<
           if (coordinateSystemBounds != null) {
             boundingMarks.push(
               <BoundingMarks
+                key={`${TP.toComponentId(targets[0])}-bounding-marks-coordinate-system`}
                 canvasOffset={this.props.canvasOffset}
                 scale={this.props.scale}
                 rect={coordinateSystemBounds}
@@ -622,7 +625,7 @@ export class SelectModeControlContainer extends React.Component<
       >
         {roots.map((root) => {
           return (
-            <React.Fragment key={TP.toComponentId(root)}>
+            <React.Fragment key={`${TP.toComponentId(root)}}-root-controls`}>
               {this.renderLabel(root, allElementsDirectlySelectable || labelDirectlySelectable)}
               {this.renderNonSelectableControl(root)}
             </React.Fragment>

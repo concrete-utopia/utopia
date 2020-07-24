@@ -6,6 +6,7 @@ import {
   CanvasElementMetadataMap,
   SceneContainer,
   ScenePath,
+  StaticElementPath,
 } from './project-file-types'
 import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'
 import { Either, isLeft } from './either'
@@ -19,6 +20,7 @@ import { objectMap } from './object-utils'
 import { parseUID } from './uid-utils'
 import { CSSPosition } from '../../components/inspector/common/css-utils'
 import { ModifiableAttribute } from './jsx-attributes'
+import * as TP from './template-path'
 
 export interface JSXAttributeValue<T> {
   type: 'ATTRIBUTE_VALUE'
@@ -467,7 +469,23 @@ export function jsxTextBlock(text: string): JSXTextBlock {
   }
 }
 
-export type JSXElementChild = JSXElement | JSXArbitraryBlock | JSXTextBlock
+export interface JSXFragment {
+  type: 'JSX_FRAGMENT'
+  children: JSXElementChildren
+  uniqueID: string
+  longForm: boolean // When true, <React.Fragment> instead of <>.
+}
+
+export function jsxFragment(children: JSXElementChildren, longForm: boolean): JSXFragment {
+  return {
+    type: 'JSX_FRAGMENT',
+    children: children,
+    uniqueID: UUID(),
+    longForm: longForm,
+  }
+}
+
+export type JSXElementChild = JSXElement | JSXArbitraryBlock | JSXTextBlock | JSXFragment
 
 export function isJSXElement(element: JSXElementChild): element is JSXElement {
   return element.type === 'JSX_ELEMENT'
@@ -479,6 +497,10 @@ export function isJSXArbitraryBlock(element: JSXElementChild): element is JSXArb
 
 export function isJSXTextBlock(element: JSXElementChild): element is JSXTextBlock {
   return element.type === 'JSX_TEXT_BLOCK'
+}
+
+export function isJSXFragment(element: JSXElementChild): element is JSXFragment {
+  return element.type === 'JSX_FRAGMENT'
 }
 
 export type JSXElementChildren = Array<JSXElementChild>
@@ -498,6 +520,13 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
       ...element,
       uniqueID: '',
       elementsWithin: updatedElementsWithin,
+    }
+  } else if (isJSXFragment(element)) {
+    const updatedChildren: JSXElementChildren = element.children.map(clearJSXElementUniqueIDs)
+    return {
+      ...element,
+      uniqueID: '',
+      children: updatedChildren,
     }
   } else {
     return {
@@ -815,6 +844,8 @@ export function isArbitraryJSBlock(
   return topLevelElement.type === 'ARBITRARY_JS_BLOCK'
 }
 
+export type ComputedStyle = { [key: string]: string }
+
 export interface ElementInstanceMetadata {
   templatePath: InstancePath
   element: Either<string, JSXElementChild>
@@ -824,6 +855,7 @@ export interface ElementInstanceMetadata {
   children: Array<ElementInstanceMetadata>
   componentInstance: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
+  computedStyle: ComputedStyle
 }
 
 export function elementInstanceMetadata(
@@ -835,6 +867,7 @@ export function elementInstanceMetadata(
   children: Array<ElementInstanceMetadata>,
   componentInstance: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
+  computedStyle: ComputedStyle,
 ): ElementInstanceMetadata {
   return {
     templatePath: templatePath,
@@ -845,6 +878,7 @@ export function elementInstanceMetadata(
     children: children,
     componentInstance: componentInstance,
     specialSizeMeasurements: sizeMeasurements,
+    computedStyle: computedStyle,
   }
 }
 
@@ -922,14 +956,16 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
 )
 
+export const emptyComputedStyle: ComputedStyle = {}
+
 export interface ComponentMetadata {
   scenePath: ScenePath
   templatePath: InstancePath
   rootElement: ElementInstanceMetadata | null
   component: string | null
   container: SceneContainer
-  frame: NormalisedFrame
   globalFrame: CanvasRectangle | null
+  type: 'static' | 'dynamic'
   label?: string
 }
 
@@ -948,12 +984,57 @@ export type ComponentMetadataWithoutRootElement = Omit<ComponentMetadata, 'rootE
 
 export type ElementsByUID = { [uid: string]: JSXElement }
 
+export function walkElement(
+  element: JSXElementChild,
+  parentPath: StaticElementPath,
+  forEach: (element: JSXElementChild, path: StaticElementPath) => void,
+): void {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      const uidAttr = element.props['data-uid']
+      if (isJSXAttributeValue(uidAttr) && typeof uidAttr.value === 'string') {
+        const path = TP.appendToElementPath(parentPath, uidAttr.value)
+        forEach(element, path)
+        fastForEach(element.children, (child) => walkElement(child, path, forEach))
+      }
+      break
+    case 'JSX_FRAGMENT':
+      forEach(element, parentPath)
+      fastForEach(element.children, (child) => walkElement(child, parentPath, forEach))
+      break
+    case 'JSX_TEXT_BLOCK':
+      forEach(element, parentPath)
+      break
+    case 'JSX_ARBITRARY_BLOCK':
+      forEach(element, parentPath)
+      fastForEach(Object.keys(element.elementsWithin), (childKey) =>
+        walkElement(element.elementsWithin[childKey], parentPath, forEach),
+      )
+      break
+    default:
+      const _exhaustiveCheck: never = element
+      throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
+  }
+}
+
+export function walkElements(
+  topLevelElements: Array<TopLevelElement>,
+  forEach: (element: JSXElementChild, path: StaticElementPath) => void,
+): void {
+  const emptyPath = ([] as any) as StaticElementPath // Oh my word
+  fastForEach(topLevelElements, (rootComponent) => {
+    if (isUtopiaJSXComponent(rootComponent)) {
+      walkElement(rootComponent.rootElement, emptyPath, forEach)
+    }
+  })
+}
+
 export function getElementsByUIDFromTopLevelElements(
   elements: Array<TopLevelElement>,
 ): ElementsByUID {
   let result: ElementsByUID = {}
 
-  function walkElementChild(element: JSXElementChild): void {
+  walkElements(elements, (element: JSXElementChild) => {
     if (isJSXElement(element)) {
       const possibleUIDAttribute = element.props['data-uid']
       if (
@@ -963,48 +1044,7 @@ export function getElementsByUIDFromTopLevelElements(
       ) {
         result[possibleUIDAttribute.value] = element
       }
-      fastForEach(element.children, (child) => {
-        walkElementChild(child)
-      })
-    } else if (isJSXArbitraryBlock(element)) {
-      fastForEach(Object.values(element.elementsWithin), (elementWithin) => {
-        walkElementChild(elementWithin)
-      })
-    }
-  }
-
-  fastForEach(elements, (element) => {
-    if (isUtopiaJSXComponent(element)) {
-      walkElementChild(element.rootElement)
     }
   })
   return result
-}
-
-export function collectMetadataFromElements(
-  topLevelElements: TopLevelElement[],
-): CanvasElementMetadataMap | null {
-  let metadataMap: CanvasElementMetadataMap = {}
-  let metadataFoundInElements = false
-
-  function walkJSXElements(element: JSXElementChild) {
-    if (isJSXElement(element)) {
-      const utopiaID = parseUID(element.props)
-      if (isLeft(utopiaID)) {
-        throw new Error('Every Utopia Element must have a valid props.data-uid')
-      } else {
-        if (element.metadata != null) {
-          metadataMap[utopiaID.value] = element.metadata
-          metadataFoundInElements = true
-        }
-        fastForEach(element.children, walkJSXElements)
-      }
-    }
-  }
-  fastForEach(topLevelElements, (tle) => {
-    if (tle.type === 'UTOPIA_JSX_COMPONENT') {
-      walkJSXElements(tle.rootElement)
-    }
-  })
-  return metadataFoundInElements ? metadataMap : null
 }

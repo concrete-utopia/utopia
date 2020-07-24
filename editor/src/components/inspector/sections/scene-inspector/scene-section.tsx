@@ -179,7 +179,7 @@ const PositionWidget = betterReactMemo(
           <SimpleNumberInput
             value={inspectorInfo.value as any} // I will delete this code once the scenes are merged to components
             labelInner={label}
-            id={label}
+            id={`scene-frame-${pinnedProp}-number-input`}
             onSubmitValue={wrappedOnSubmitValue}
             onTransientSubmitValue={wrappedOnTransientSubmitValue}
             onForcedSubmitValue={wrappedOnSubmitValue}
@@ -216,7 +216,7 @@ const PositionWidgetForCSSNumber = betterReactMemo(
             numberType='Length'
             value={inspectorInfo.value}
             labelInner={label}
-            id={label}
+            id={`scene-frame-${pinnedProp}-number-input`}
             onSubmitValue={wrappedOnSubmitValue}
             onTransientSubmitValue={wrappedOnTransientSubmitValue}
           />
