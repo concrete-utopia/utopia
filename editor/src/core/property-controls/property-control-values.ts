@@ -187,6 +187,8 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseNumber)
     case 'string':
       return defaultUnwrapFirst(parseString)
+    case 'style-object':
+      return defaultUnwrapFirst(parseAny)
     default:
       const _exhaustiveCheck: never = control
       throw new Error(`Unhandled control ${JSON.stringify(control)}`)
@@ -209,6 +211,7 @@ function unwrapperAndParserForPropertyControl(
     case 'popuplist':
     case 'slider':
     case 'string':
+    case 'style-object':
       return unwrapperAndParserForBaseControl(control)
 
     case 'array':
@@ -274,6 +277,8 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
     case 'slider':
       return printSimple
     case 'string':
+      return printSimple
+    case 'style-object':
       return printSimple
     default:
       const _exhaustiveCheck: never = control

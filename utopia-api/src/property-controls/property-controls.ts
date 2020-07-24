@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { fastForEach } from '../utils'
 
 // Base Level Controls
@@ -15,6 +16,7 @@ export type BaseControlType =
   | 'popuplist'
   | 'slider'
   | 'string'
+  | 'style-object'
 
 interface AbstractControlDescription<T extends ControlType> {
   title?: string
@@ -100,6 +102,12 @@ export interface StringControlDescription extends AbstractBaseControlDescription
   obscured?: boolean
 }
 
+export interface StyleObjectControlDescription
+  extends AbstractBaseControlDescription<'style-object'> {
+  defaultValue?: CSSProperties
+  placeholder?: CSSProperties
+}
+
 export type BaseControlDescription =
   | BooleanControlDescription
   | ColorControlDescription
@@ -113,6 +121,7 @@ export type BaseControlDescription =
   | PopUpListControlDescription
   | SliderControlDescription
   | StringControlDescription
+  | StyleObjectControlDescription
 
 // Higher Level Controls
 
@@ -164,6 +173,7 @@ export function isBaseControlDescription(
     case 'popuplist':
     case 'slider':
     case 'string':
+    case 'style-object':
       return true
     case 'array':
     case 'object':
@@ -191,6 +201,7 @@ export function isHigherLevelControlDescription(
     case 'popuplist':
     case 'slider':
     case 'string':
+    case 'style-object':
       return false
     case 'array':
     case 'object':
