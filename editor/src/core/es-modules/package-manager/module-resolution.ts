@@ -10,9 +10,8 @@ import {
   parseString,
   ParseResult,
 } from '../../../utils/value-parser-utils'
-import { applicative3Either, isRight, foldEither } from '../../shared/either'
+import { applicative3Either, foldEither } from '../../shared/either'
 import { setOptionalProp } from '../../shared/object-utils'
-import { Compare, comparePrimitive } from '../../../utils/compare'
 
 interface ResolveSuccess<T> {
   type: 'RESOLVE_SUCCESS'
@@ -72,17 +71,7 @@ const resolveResultTypes: Array<ResolveResultType> = [
   'RESOLVE_SUCCESS',
 ]
 
-function compareResolveResultTypeOfResolveResult<T>(
-  first: ResolveResult<T>,
-  second: ResolveResult<T>,
-): number {
-  return comparePrimitive(
-    resolveResultTypes.indexOf(first.type),
-    resolveResultTypes.indexOf(second.type),
-  )
-}
-
-export function failoverResultResults<T>(
+export function failoverResolveResults<T>(
   resolveResultCalls: Array<() => ResolveResult<T>>,
 ): ResolveResult<T> {
   let result: ResolveResult<T> = resolveNotPresent
@@ -91,7 +80,8 @@ export function failoverResultResults<T>(
       break
     }
     const newResult = call()
-    if (compareResolveResultTypeOfResolveResult(newResult, result) > 0) {
+    // Prefer elements further along in the array of the types.
+    if (resolveResultTypes.indexOf(newResult.type) > resolveResultTypes.indexOf(result.type)) {
       result = newResult
     }
   }
@@ -207,7 +197,7 @@ function resolvePackageJson(
   if (folderPackageJson != null && isEsCodeFile(folderPackageJson)) {
     const mainEntryPath = processPackageJson(folderPackageJson.fileContents, normalizedFolderPath)
     if (isResolveSuccess(mainEntryPath)) {
-      return failoverResultResults([
+      return failoverResolveResults([
         // try loading the entry path as a file
         () => findFileURIForPath(nodeModules, mainEntryPath.success),
         // fallback to loading it as a folder with an index.js
@@ -233,7 +223,7 @@ function resolveNonRelativeModule(
     return resolveNotPresent
   }
 
-  return failoverResultResults([
+  return failoverResolveResults([
     // 1. look for ./node_modules/<package_name>.js
     () => findFileURIForPath(nodeModules, [...importOrigin, 'node_modules', ...toImport]),
     // 2. look for ./node_modules/<package_name>/package.json
@@ -253,7 +243,7 @@ function resolveRelativeModule(
   importOrigin: string[],
   toImport: string[],
 ): ResolveResult<string> {
-  return failoverResultResults([
+  return failoverResolveResults([
     // 1. look for a file named <import_name>
     () => findFileURIForPath(nodeModules, [...importOrigin, ...toImport]),
     // 2. look for <import_name>/package.json
