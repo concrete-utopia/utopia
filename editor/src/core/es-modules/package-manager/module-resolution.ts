@@ -5,6 +5,98 @@ import {
   isEsCodeFile,
 } from '../../shared/project-file-types'
 import { createEsModuleError } from './package-manager'
+import {
+  optionalObjectKeyParser,
+  parseString,
+  ParseResult,
+} from '../../../utils/value-parser-utils'
+import { applicative3Either, isRight, foldEither } from '../../shared/either'
+import { setOptionalProp } from '../../shared/object-utils'
+import { Compare, comparePrimitive } from '../../../utils/compare'
+
+interface ResolveSuccess<T> {
+  type: 'RESOLVE_SUCCESS'
+  success: T
+}
+
+function resolveSuccess<T>(success: T): ResolveSuccess<T> {
+  return {
+    type: 'RESOLVE_SUCCESS',
+    success: success,
+  }
+}
+
+interface ResolveESModuleFailure {
+  type: 'RESOLVE_ES_MODULE_FAILURE'
+  moduleName: string
+}
+
+function resolveESModuleFailure(moduleName: string): ResolveESModuleFailure {
+  return {
+    type: 'RESOLVE_ES_MODULE_FAILURE',
+    moduleName: moduleName,
+  }
+}
+
+interface ResolveNotPresent {
+  type: 'RESOLVE_NOT_PRESENT'
+}
+
+const resolveNotPresent: ResolveNotPresent = {
+  type: 'RESOLVE_NOT_PRESENT',
+}
+
+type ResolveResult<T> = ResolveNotPresent | ResolveESModuleFailure | ResolveSuccess<T>
+
+function isResolveSuccess<T>(resolveResult: ResolveResult<T>): resolveResult is ResolveSuccess<T> {
+  return resolveResult.type === 'RESOLVE_SUCCESS'
+}
+
+function isResolveESModuleFailure<T>(
+  resolveResult: ResolveResult<T>,
+): resolveResult is ResolveESModuleFailure {
+  return resolveResult.type === 'RESOLVE_ES_MODULE_FAILURE'
+}
+
+function isResolveNotPresent<T>(
+  resolveResult: ResolveResult<T>,
+): resolveResult is ResolveNotPresent {
+  return resolveResult.type === 'RESOLVE_NOT_PRESENT'
+}
+
+type ResolveResultType = ResolveResult<any>['type']
+
+const resolveResultTypes: Array<ResolveResultType> = [
+  'RESOLVE_NOT_PRESENT',
+  'RESOLVE_ES_MODULE_FAILURE',
+  'RESOLVE_SUCCESS',
+]
+
+function compareResolveResultTypeOfResolveResult<T>(
+  first: ResolveResult<T>,
+  second: ResolveResult<T>,
+): number {
+  return comparePrimitive(
+    resolveResultTypes.indexOf(first.type),
+    resolveResultTypes.indexOf(second.type),
+  )
+}
+
+export function failoverResultResults<T>(
+  resolveResultCalls: Array<() => ResolveResult<T>>,
+): ResolveResult<T> {
+  let result: ResolveResult<T> = resolveNotPresent
+  for (const call of resolveResultCalls) {
+    if (isResolveSuccess(result)) {
+      break
+    }
+    const newResult = call()
+    if (compareResolveResultTypeOfResolveResult(newResult, result) > 0) {
+      result = newResult
+    }
+  }
+  return result
+}
 
 function pathToElements(path: string): string[] {
   return path.split('/')
@@ -29,143 +121,146 @@ function findFileForPath(
   nodeModules: NodeModules,
   path: string[],
 ): ESCodeFile | ESRemoteDependencyPlaceholder | null {
-  return nodeModules[path.join('/')]
+  return nodeModules[path.join('/')] ?? null
 }
 
-function findFileURIForPath(nodeModules: NodeModules, path: string[]): string | null {
+function findFileURIForPath(nodeModules: NodeModules, path: string[]): ResolveResult<string> {
   const normalizedPath = normalizePath(path).join('/')
   const uriAsIs = normalizedPath
   if (nodeModules[uriAsIs] != null) {
-    return uriAsIs
+    return resolveSuccess(uriAsIs)
   }
   const uriWithJs = normalizedPath + '.js'
   if (nodeModules[uriWithJs] != null) {
-    return uriWithJs
+    return resolveSuccess(uriWithJs)
   }
   const uriWithJsx = normalizedPath + '.jsx'
   if (nodeModules[uriWithJsx] != null) {
-    return uriWithJsx
+    return resolveSuccess(uriWithJsx)
   }
   // TODO this also needs JSON parsing
   const uriWithJson = normalizedPath + '.json'
   if (nodeModules[uriWithJson] != null) {
-    return uriWithJson
+    return resolveSuccess(uriWithJson)
   }
-  return null
+  return resolveNotPresent
+}
+
+interface PartialPackageJsonDefinition {
+  name?: string
+  main?: string
+  module?: string
+}
+
+export function parsePartialPackageJsonDefinition(
+  value: unknown,
+): ParseResult<PartialPackageJsonDefinition> {
+  return applicative3Either(
+    (name, main, module) => {
+      let result: PartialPackageJsonDefinition = {}
+      setOptionalProp(result, 'name', name)
+      setOptionalProp(result, 'main', main)
+      setOptionalProp(result, 'module', module)
+      return result
+    },
+    optionalObjectKeyParser(parseString, 'name')(value),
+    optionalObjectKeyParser(parseString, 'main')(value),
+    optionalObjectKeyParser(parseString, 'module')(value),
+  )
 }
 
 function processPackageJson(
   potentiallyJsonCode: string,
   containerFolder: string[],
-): string[] | null {
-  let packageJson: any
+): ResolveResult<Array<string>> {
+  let possiblePackageJson: ParseResult<PartialPackageJsonDefinition>
   try {
-    packageJson = JSON.parse(potentiallyJsonCode)
+    const jsonParsed = JSON.parse(potentiallyJsonCode)
+    possiblePackageJson = parsePartialPackageJsonDefinition(jsonParsed)
   } catch {
-    return null
+    return resolveNotPresent
   }
-  const moduleName = packageJson.name ?? containerFolder
-  const mainEntry = packageJson.main ?? null
-  const moduleEntry = packageJson.module ?? null
-  if (moduleEntry != null && mainEntry == null) {
-    throw createEsModuleError(
-      moduleName,
-      new Error('Module error: package.json has a missing `main` entry'),
-    )
-  }
-  if (mainEntry != null) {
-    return normalizePath([...containerFolder, ...pathToElements(mainEntry)])
-  }
-  return null
+  return foldEither(
+    (_) => resolveNotPresent,
+    (packageJson) => {
+      const moduleName: string = packageJson.name ?? containerFolder.join('/')
+      const mainEntry: string | null = packageJson.main ?? null
+      const moduleEntry: string | null = packageJson.module ?? null
+      if (moduleEntry != null && mainEntry == null) {
+        return resolveESModuleFailure(moduleName)
+      }
+      if (mainEntry != null) {
+        return resolveSuccess(normalizePath([...containerFolder, ...pathToElements(mainEntry)]))
+      }
+      return resolveNotPresent
+    },
+    possiblePackageJson,
+  )
 }
 
-function resolvePackageJson(nodeModules: NodeModules, packageJsonFolder: string[]): string | null {
+function resolvePackageJson(
+  nodeModules: NodeModules,
+  packageJsonFolder: string[],
+): ResolveResult<string> {
   const normalizedFolderPath = normalizePath(packageJsonFolder)
   const folderPackageJson = findFileForPath(nodeModules, [...normalizedFolderPath, 'package.json'])
   if (folderPackageJson != null && isEsCodeFile(folderPackageJson)) {
     const mainEntryPath = processPackageJson(folderPackageJson.fileContents, normalizedFolderPath)
-    if (mainEntryPath != null) {
-      // try loading the entry path as a file
-      const mainEntryUri = findFileURIForPath(nodeModules, mainEntryPath)
-      if (mainEntryUri != null) {
-        return mainEntryUri
-      }
-      // fallback to loading it as a folder with an index.js
-      const indexJsPath = [...mainEntryPath, 'index']
-      const indexJsUri = findFileURIForPath(nodeModules, indexJsPath)
-      if (indexJsUri != null) {
-        return indexJsUri
-      }
+    if (isResolveSuccess(mainEntryPath)) {
+      return failoverResultResults([
+        // try loading the entry path as a file
+        () => findFileURIForPath(nodeModules, mainEntryPath.success),
+        // fallback to loading it as a folder with an index.js
+        () => {
+          const indexJsPath = [...mainEntryPath.success, 'index']
+          return findFileURIForPath(nodeModules, indexJsPath)
+        },
+      ])
+    } else {
+      return mainEntryPath
     }
   }
-  return null
+  return resolveNotPresent
 }
 
 function resolveNonRelativeModule(
   nodeModules: NodeModules,
   importOrigin: string[],
   toImport: string[],
-): string | null {
+): ResolveResult<string> {
   if (importOrigin.length === 0) {
     // we exhausted all folders without success
-    return null
+    return resolveNotPresent
   }
 
-  // 1. look for ./node_modules/<package_name>.js
-  const fileWithName = findFileURIForPath(nodeModules, [
-    ...importOrigin,
-    'node_modules',
-    ...toImport,
+  return failoverResultResults([
+    // 1. look for ./node_modules/<package_name>.js
+    () => findFileURIForPath(nodeModules, [...importOrigin, 'node_modules', ...toImport]),
+    // 2. look for ./node_modules/<package_name>/package.json
+    () => resolvePackageJson(nodeModules, [...importOrigin, 'node_modules', ...toImport]),
+    // 3. look for ./node_modules/<package_name>/index.js
+    () => {
+      const indexJsPath = [...importOrigin, 'node_modules', ...toImport, 'index']
+      return findFileURIForPath(nodeModules, indexJsPath)
+    },
+    // 4. repeat in the parent folder
+    () => resolveNonRelativeModule(nodeModules, importOrigin.slice(0, -1), toImport),
   ])
-  if (fileWithName != null) {
-    return fileWithName
-  }
-
-  // 2. look for ./node_modules/<package_name>/package.json
-  const packageJsonBasedUri = resolvePackageJson(nodeModules, [
-    ...importOrigin,
-    'node_modules',
-    ...toImport,
-  ])
-  if (packageJsonBasedUri != null) {
-    return packageJsonBasedUri
-  }
-
-  // 3. look for ./node_modules/<package_name>/index.js
-  const indexJsPath = [...importOrigin, 'node_modules', ...toImport, 'index']
-  const indexJsUri = findFileURIForPath(nodeModules, indexJsPath)
-  if (indexJsUri != null) {
-    return indexJsUri
-  }
-
-  // 4. repeat in the parent folder
-  return resolveNonRelativeModule(nodeModules, importOrigin.slice(0, -1), toImport)
 }
 
 function resolveRelativeModule(
   nodeModules: NodeModules,
   importOrigin: string[],
   toImport: string[],
-): string | null {
-  // 1. look for a file named <import_name>
-  const fileExistsUri = findFileURIForPath(nodeModules, [...importOrigin, ...toImport])
-  if (fileExistsUri != null) {
-    return fileExistsUri
-  }
-
-  // 2. look for <import_name>/package.json
-  const packageJsonBasedUri = resolvePackageJson(nodeModules, [...importOrigin, ...toImport])
-  if (packageJsonBasedUri != null) {
-    return packageJsonBasedUri
-  }
-
-  // 3. look for <import_name>/index.js
-  const indexJsUri = findFileURIForPath(nodeModules, [...importOrigin, ...toImport, 'index'])
-  if (indexJsUri != null) {
-    return indexJsUri
-  }
-
-  return null
+): ResolveResult<string> {
+  return failoverResultResults([
+    // 1. look for a file named <import_name>
+    () => findFileURIForPath(nodeModules, [...importOrigin, ...toImport]),
+    // 2. look for <import_name>/package.json
+    () => resolvePackageJson(nodeModules, [...importOrigin, ...toImport]),
+    // 3. look for <import_name>/index.js
+    () => findFileURIForPath(nodeModules, [...importOrigin, ...toImport, 'index']),
+  ])
 }
 
 // Module resolution logic based on what Node / Typescript does https://www.typescriptlang.org/docs/handbook/module-resolution.html#node
@@ -179,25 +274,42 @@ export function resolveModule(
   importOrigin: string,
   toImport: string,
 ): string | null {
+  let resolveResult: ResolveResult<string> = resolveNotPresent
   if (toImport.startsWith('/')) {
     // absolute import
-    return resolveRelativeModule(
+    resolveResult = resolveRelativeModule(
       nodeModules,
       [], // this import is relative to the root
       pathToElements(toImport),
     )
-  }
-  if (toImport.startsWith('.')) {
-    return resolveRelativeModule(
-      nodeModules,
-      pathToElements(importOrigin).slice(0, -1),
-      pathToElements(toImport),
-    )
   } else {
-    return resolveNonRelativeModule(
-      nodeModules,
-      pathToElements(importOrigin).slice(0, -1),
-      pathToElements(toImport),
-    )
+    if (toImport.startsWith('.')) {
+      resolveResult = resolveRelativeModule(
+        nodeModules,
+        pathToElements(importOrigin).slice(0, -1),
+        pathToElements(toImport),
+      )
+    } else {
+      resolveResult = resolveNonRelativeModule(
+        nodeModules,
+        pathToElements(importOrigin).slice(0, -1),
+        pathToElements(toImport),
+      )
+    }
+  }
+
+  switch (resolveResult.type) {
+    case 'RESOLVE_SUCCESS':
+      return resolveResult.success
+    case 'RESOLVE_NOT_PRESENT':
+      return null
+    case 'RESOLVE_ES_MODULE_FAILURE':
+      throw createEsModuleError(
+        resolveResult.moduleName,
+        'Module error: package.json has a missing `main` entry',
+      )
+    default:
+      const _exhaustiveCheck: never = resolveResult
+      throw new Error(`Unhandled case ${JSON.stringify(resolveResult)}`)
   }
 }
