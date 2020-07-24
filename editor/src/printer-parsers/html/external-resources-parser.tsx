@@ -13,12 +13,22 @@ import { codeFile } from '../../core/model/project-file-utils'
 import { Either, isRight, left, right } from '../../core/shared/either'
 import { CodeFile, isCodeFile, ProjectContents } from '../../core/shared/project-file-types'
 import { OnSubmitValue } from '../../uuiui-deps'
+import {
+  useCallbackFactory,
+  UseSubmitValueFactory,
+} from '../../components/inspector/common/property-path-hooks'
+import { NO_OP } from '../../core/shared/utils'
+import {
+  ParseError,
+  DescriptionParseError,
+  descriptionParseError,
+} from '../../utils/value-parser-utils'
 
 const googleFontsURIStart = 'https://fonts.googleapis.com/css2?'
 
 function getBoundingStringIndicesForExternalResources(
   htmlFileContents: string,
-): Either<string, { startIndex: number; endIndex: number }> {
+): Either<DescriptionParseError, { startIndex: number; endIndex: number }> {
   const startIndex = htmlFileContents.indexOf(generatedExternalResourcesLinksOpen)
   const endIndex =
     htmlFileContents.indexOf(generatedExternalResourcesLinksClose) +
@@ -31,17 +41,27 @@ function getBoundingStringIndicesForExternalResources(
   } else {
     if (startIndex === -1 && endIndex === -1) {
       return left(
-        `Opening comment '${generatedExternalResourcesLinksOpen}' and closing comment '${generatedExternalResourcesLinksClose}' not found`,
+        descriptionParseError(
+          `Opening comment '${generatedExternalResourcesLinksOpen}' and closing comment '${generatedExternalResourcesLinksClose}' not found`,
+        ),
       )
     } else if (startIndex === -1) {
-      return left(`Opening comment '${generatedExternalResourcesLinksOpen}' not found`)
+      return left(
+        descriptionParseError(`Opening comment '${generatedExternalResourcesLinksOpen}' not found`),
+      )
     } else {
-      return left(`Closing comment '${generatedExternalResourcesLinksClose}' not found`)
+      return left(
+        descriptionParseError(
+          `Closing comment '${generatedExternalResourcesLinksClose}' not found`,
+        ),
+      )
     }
   }
 }
 
-export function getGeneratedExternalLinkText(htmlFileContents: string): Either<string, string> {
+export function getGeneratedExternalLinkText(
+  htmlFileContents: string,
+): Either<DescriptionParseError, string> {
   const parsedIndices = getBoundingStringIndicesForExternalResources(htmlFileContents)
   if (isRight(parsedIndices)) {
     const { startIndex, endIndex } = parsedIndices.value
@@ -63,7 +83,9 @@ export function getGeneratedExternalLinkText(htmlFileContents: string): Either<s
   }
 }
 
-function getPreviewHTMLFilePath(projectContents: ProjectContents): Either<string, string> {
+function getPreviewHTMLFilePath(
+  projectContents: ProjectContents,
+): Either<DescriptionParseError, string> {
   const packageJson = projectContents['/package.json']
   if (packageJson != null && isCodeFile(packageJson)) {
     const parsedJSON = json5.parse(packageJson.fileContents)
@@ -72,26 +94,30 @@ function getPreviewHTMLFilePath(projectContents: ProjectContents): Either<string
       if (htmlFilePath != null) {
         return right(htmlFilePath)
       } else {
-        return left(`An html root is not specified in package.json`)
+        return left(descriptionParseError(`An html root is not specified in package.json`))
       }
     } else {
-      return left(`'utopia' field in package.json couldn't be parsed properly`)
+      return left(
+        descriptionParseError(`'utopia' field in package.json couldn't be parsed properly`),
+      )
     }
   } else {
-    return left('No package.json is found in project')
+    return left(descriptionParseError('No package.json is found in project'))
   }
 }
 
 function getCodeFileContentsFromPath(
   filePath: string,
   projectContents: ProjectContents,
-): Either<string, CodeFile> {
+): Either<DescriptionParseError, CodeFile> {
   const fileContents = projectContents[`/${filePath}`]
   if (fileContents != null && isCodeFile(fileContents)) {
     return right(fileContents)
   } else {
     return left(
-      `Path '${projectContents}' could not be found. Check the utopia.html property is set correctly in /package.json`,
+      descriptionParseError(
+        `Path '${projectContents}' could not be found. Check the utopia.html property is set correctly in /package.json`,
+      ),
     )
   }
 }
@@ -155,7 +181,9 @@ function getGoogleFontsResourceFromURL(familyParam: string): GoogleFontsResource
   }
 }
 
-export function parseLinkTags(linkTagsText: string): Either<string, ExternalResources> {
+export function parseLinkTags(
+  linkTagsText: string,
+): Either<DescriptionParseError, ExternalResources> {
   const parsed = NodeHTMLParser.parse(linkTagsText)
   if (parsed != null && parsed.valid) {
     let genericExternalResources: Array<GenericExternalResource> = []
@@ -185,7 +213,7 @@ export function parseLinkTags(linkTagsText: string): Either<string, ExternalReso
       googleFontsResources,
     })
   } else {
-    return left(`Couldn't parse link tags '${linkTagsText}'`)
+    return left(descriptionParseError(`Couldn't parse link tags '${linkTagsText}'`))
   }
 }
 
@@ -203,7 +231,7 @@ function printExternalResources(value: ExternalResources): string {
 export function updateHTMLExternalResourcesLinks(
   currentFileContents: string,
   newExternalResources: ExternalResources,
-): Either<string, string> {
+): Either<DescriptionParseError, string> {
   const parsedIndices = getBoundingStringIndicesForExternalResources(currentFileContents)
   if (isRight(parsedIndices)) {
     const { startIndex, endIndex } = parsedIndices.value
@@ -227,7 +255,7 @@ export function getExternalResourcesInfo(
   editor: EditorState,
   dispatch: EditorDispatch,
 ): Either<
-  string,
+  DescriptionParseError,
   { externalResources: ExternalResources; onSubmitValue: OnSubmitValue<ExternalResources> }
 > {
   const packageJsonHtmlFilePath = getPreviewHTMLFilePath(editor.projectContents)
@@ -256,7 +284,7 @@ export function getExternalResourcesInfo(
               ),
             ])
           } else {
-            dispatch([pushToast(notice(updatedCodeFileContents.value))])
+            dispatch([pushToast(notice(updatedCodeFileContents.value.description))])
           }
         }
         return right({ externalResources: parsedExternalResources.value, onSubmitValue })
@@ -271,10 +299,29 @@ export function getExternalResourcesInfo(
   }
 }
 
-export function useExternalResources() {
+export function useExternalResources(): {
+  values: ExternalResources | ParseError
+  onSubmitValue: OnSubmitValue<ExternalResources>
+  useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
+} {
   const { dispatch, editorState } = useEditorState((store) => ({
     editorState: store.editor,
     dispatch: store.dispatch,
   }))
-  return getExternalResourcesInfo(editorState, dispatch)
+  const externalResourcesInfo = getExternalResourcesInfo(editorState, dispatch)
+  const values = isRight(externalResourcesInfo)
+    ? externalResourcesInfo.value.externalResources
+    : externalResourcesInfo.value
+  const onSubmitValue = isRight(externalResourcesInfo)
+    ? externalResourcesInfo.value.onSubmitValue
+    : NO_OP
+  const useSubmitValueFactory = useCallbackFactory(
+    isRight(externalResourcesInfo) ? (values as ExternalResources) : externalResources([], []),
+    onSubmitValue,
+  )
+  return {
+    values,
+    onSubmitValue,
+    useSubmitValueFactory,
+  }
 }
