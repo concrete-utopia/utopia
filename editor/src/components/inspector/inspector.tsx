@@ -379,7 +379,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       return (
         <React.Fragment>
           <AlignmentButtons numberOfTargets={instancePaths.length} />
-          <div>{props.onSelect}</div>
           <HeaderSection
             elementPath={props.elementPath}
             onSelect={props.onSelect}
