@@ -380,17 +380,9 @@ export const UiJsxCanvas = betterReactMemo(
       canvasIsLive,
     } = props
 
-    React.useEffect(() => {
-      clearErrors()
-    }, [clearErrors])
-
-    React.useEffect(() => {
-      clearConsoleLogs()
-    }, [clearConsoleLogs])
-
-    React.useEffect(() => {
-      proxyConsole(console, addToConsoleLogs)
-    }, [addToConsoleLogs])
+    // FIXME This is illegal! The two lines below are triggering a re-render
+    clearConsoleLogs()
+    proxyConsole(console, addToConsoleLogs)
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
 
@@ -431,6 +423,12 @@ export const UiJsxCanvas = betterReactMemo(
       rootScope: {},
       jsxFactoryFunctionName: null,
     })
+
+    if (props.clearErrors != null) {
+      // a new canvas render, a new chance at having no errors
+      // FIXME This is illegal! The line below is triggering a re-render
+      props.clearErrors()
+    }
 
     if (uiFilePath == null) {
       return null

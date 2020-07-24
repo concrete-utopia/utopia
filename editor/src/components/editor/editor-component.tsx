@@ -207,14 +207,17 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
 
   const modifyLogs = React.useCallback(
     (updateLogs: (logs: Array<ConsoleLog>) => Array<ConsoleLog>) => {
-      canvasConsoleLogsVariable = updateLogs(canvasConsoleLogsVariable)
-      if (consoleLogTimeoutID != null) {
-        clearTimeout(consoleLogTimeoutID)
+      const updatedLogs = updateLogs(canvasConsoleLogsVariable)
+      if (updatedLogs !== canvasConsoleLogsVariable) {
+        canvasConsoleLogsVariable = updateLogs(canvasConsoleLogsVariable)
+        if (consoleLogTimeoutID != null) {
+          clearTimeout(consoleLogTimeoutID)
+        }
+        consoleLogTimeoutID = setTimeout(() => {
+          setCanvasConsoleLogsState(canvasConsoleLogsVariable)
+          consoleLogTimeoutID = null
+        })
       }
-      consoleLogTimeoutID = setTimeout(() => {
-        setCanvasConsoleLogsState(canvasConsoleLogsVariable)
-        consoleLogTimeoutID = null
-      })
     },
     [setCanvasConsoleLogsState],
   )
