@@ -89,8 +89,8 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
       dispatch([clearSelection()], 'everyone')
-      if (focusedPanel !== 'dependencylist') {
-        dispatch([setFocus('dependencylist')], 'everyone')
+      if (focusedPanel !== 'genericExternalResources') {
+        dispatch([setFocus('genericExternalResources')], 'leftpane')
       }
     },
     [focusedPanel, dispatch],
