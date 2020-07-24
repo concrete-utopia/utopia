@@ -1,12 +1,13 @@
+import { previewHtml } from '../../core/model/new-project-files'
+import { isRight } from '../../core/shared/either'
 import {
-  getGeneratedExternalLinkText,
-  parseLinkTags,
-  updateHTMLExternalResourcesLinks,
   externalResources,
   genericExternalResource,
+  getGeneratedExternalLinkText,
   googleFontsResource,
+  parseLinkTags,
+  updateHTMLExternalResourcesLinks,
 } from './external-resources-parser'
-import { previewHtml } from '../../core/model/new-project-files'
 
 const testFile = `
 <!DOCTYPE html>
@@ -54,68 +55,70 @@ describe('external-resources-parser', () => {
       }
     `)
 
-    const parsedLinkTags = parseLinkTags(parsedLinkTagsText.value)
-    expect(parsedLinkTags).toMatchInlineSnapshot(`
-      Object {
-        "type": "RIGHT",
-        "value": Object {
-          "genericExternalResources": Array [
-            Object {
-              "href": "https://utopia.com/styles.css",
-              "rel": "stylesheet",
-              "type": "generic-external-resource",
-            },
-            Object {
-              "href": "http://utopia.com/styles.css",
-              "rel": "stylesheet",
-              "type": "generic-external-resource",
-            },
-            Object {
-              "href": "//utopia.com/styles.css",
-              "rel": "stylesheet",
-              "type": "generic-external-resource",
-            },
-            Object {
-              "href": "/favicon.ico",
-              "rel": "icon",
-              "type": "generic-external-resource",
-            },
-            Object {
-              "href": "apple-icon-114.png",
-              "rel": "apple-touch-icon-precomposed",
-              "type": "generic-external-resource",
-            },
-            Object {
-              "href": "myFont.woff2",
-              "rel": "preload",
-              "type": "generic-external-resource",
-            },
-          ],
-          "googleFontsResources": Array [
-            Object {
-              "fontFamily": "Red Rose",
-              "fontStyleParams": undefined,
-              "type": "google-fonts-resource",
-            },
-            Object {
-              "fontFamily": "Red Rose",
-              "fontStyleParams": ":wght@400",
-              "type": "google-fonts-resource",
-            },
-            Object {
-              "fontFamily": "Comfortaa",
-              "fontStyleParams": undefined,
-              "type": "google-fonts-resource",
-            },
-            Object {
-              "fontFamily": "Comfortaa",
-              "fontStyleParams": undefined,
-              "type": "google-fonts-resource",
-            },
-          ],
-        },
-      }
-    `)
+    if (isRight(parsedLinkTagsText)) {
+      const parsedLinkTags = parseLinkTags(parsedLinkTagsText.value)
+      expect(parsedLinkTags).toMatchInlineSnapshot(`
+        Object {
+          "type": "RIGHT",
+          "value": Object {
+            "genericExternalResources": Array [
+              Object {
+                "href": "https://utopia.com/styles.css",
+                "rel": "stylesheet",
+                "type": "generic-external-resource",
+              },
+              Object {
+                "href": "http://utopia.com/styles.css",
+                "rel": "stylesheet",
+                "type": "generic-external-resource",
+              },
+              Object {
+                "href": "//utopia.com/styles.css",
+                "rel": "stylesheet",
+                "type": "generic-external-resource",
+              },
+              Object {
+                "href": "/favicon.ico",
+                "rel": "icon",
+                "type": "generic-external-resource",
+              },
+              Object {
+                "href": "apple-icon-114.png",
+                "rel": "apple-touch-icon-precomposed",
+                "type": "generic-external-resource",
+              },
+              Object {
+                "href": "myFont.woff2",
+                "rel": "preload",
+                "type": "generic-external-resource",
+              },
+            ],
+            "googleFontsResources": Array [
+              Object {
+                "fontFamily": "Red Rose",
+                "fontStyleParams": undefined,
+                "type": "google-fonts-resource",
+              },
+              Object {
+                "fontFamily": "Red Rose",
+                "fontStyleParams": ":wght@400",
+                "type": "google-fonts-resource",
+              },
+              Object {
+                "fontFamily": "Comfortaa",
+                "fontStyleParams": undefined,
+                "type": "google-fonts-resource",
+              },
+              Object {
+                "fontFamily": "Comfortaa",
+                "fontStyleParams": undefined,
+                "type": "google-fonts-resource",
+              },
+            ],
+          },
+        }
+      `)
+    }
   })
 })
 
