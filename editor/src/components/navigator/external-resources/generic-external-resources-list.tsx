@@ -31,11 +31,12 @@ function updatePushNewGenericResource(
   { hrefValue, relValue }: { hrefValue: string; relValue: string },
   oldValue: ExternalResources,
 ): ExternalResources {
-  oldValue.genericExternalResources = [
+  const working = { ...oldValue }
+  working.genericExternalResources = [
     ...oldValue.genericExternalResources,
     genericExternalResource(hrefValue, relValue),
   ]
-  return oldValue
+  return working
 }
 
 function getIndexedUpdateGenericResource(index: number) {
@@ -43,8 +44,9 @@ function getIndexedUpdateGenericResource(index: number) {
     { hrefValue, relValue }: { hrefValue: string; relValue: string },
     oldValue: ExternalResources,
   ): ExternalResources {
-    oldValue.genericExternalResources[index] = genericExternalResource(hrefValue, relValue)
-    return oldValue
+    const working = { ...oldValue }
+    working.genericExternalResources[index] = genericExternalResource(hrefValue, relValue)
+    return working
   }
 }
 
