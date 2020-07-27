@@ -8,7 +8,7 @@ interface MultiStringControlProps {
   hrefValueToEdit?: string
   relValueToEdit?: string
   closeField: () => void
-  onSubmitValues: ({ hrefValue, relValue }: { hrefValue: string; relValue: string }) => void
+  onSubmitValues: (values: { hrefValue: string; relValue: string }) => void
 }
 
 export const GenericExternalResourcesInput = betterReactMemo(
