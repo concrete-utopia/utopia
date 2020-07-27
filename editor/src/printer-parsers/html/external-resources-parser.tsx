@@ -110,7 +110,7 @@ function getCodeFileContentsFromPath(
   filePath: string,
   projectContents: ProjectContents,
 ): Either<DescriptionParseError, CodeFile> {
-  const fileContents = projectContents[`/${filePath}`]
+  const fileContents = projectContents[filePath]
   if (fileContents != null && isCodeFile(fileContents)) {
     return right(fileContents)
   } else {
@@ -261,9 +261,9 @@ export function getExternalResourcesInfo(
   { externalResources: ExternalResources; onSubmitValue: OnSubmitValue<ExternalResources> }
 > {
   const packageJsonHtmlFilePath = getPreviewHTMLFilePath(editor.projectContents)
-  const htmlFilePath: string = isRight(packageJsonHtmlFilePath)
-    ? packageJsonHtmlFilePath.value
-    : defaultIndexHtmlFilePath
+  const htmlFilePath: string = `/${
+    isRight(packageJsonHtmlFilePath) ? packageJsonHtmlFilePath.value : defaultIndexHtmlFilePath
+  }`
 
   const previewHTMLFilePathContents = getCodeFileContentsFromPath(
     htmlFilePath,
@@ -281,7 +281,7 @@ export function getExternalResourcesInfo(
             dispatch([
               updateFile(
                 htmlFilePath,
-                codeFile(fileContents, updatedCodeFileContents.value),
+                codeFile(updatedCodeFileContents.value, updatedCodeFileContents.value),
                 false,
               ),
             ])
