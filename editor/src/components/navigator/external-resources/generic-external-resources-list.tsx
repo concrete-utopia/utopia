@@ -53,27 +53,12 @@ function getIndexedUpdateGenericResource(index: number) {
 export const GenericExternalResourcesList = betterReactMemo('GenericExternalResourcesList', () => {
   const { values, useSubmitValueFactory } = useExternalResources()
 
-  const [editingIndex, setEditingIndexDirectly] = React.useState<null | number>(null)
-  const [showInsertField, setShowInsertFieldDirectly] = React.useState(false)
-
-  const setEditingIndexAndCloseInsert = React.useCallback(
-    (setStateAction: React.SetStateAction<null | number>) => {
-      setEditingIndexDirectly(setStateAction)
-      setShowInsertFieldDirectly(false)
-    },
-    [],
-  )
-  const setShowInsertFieldAndCloseEdit = React.useCallback(
-    (setStateAction: React.SetStateAction<boolean>) => {
-      setEditingIndexDirectly(null)
-      setShowInsertFieldDirectly(setStateAction)
-    },
-    [],
-  )
+  const [editingIndexOrInserting, setEditingIndexOrInserting] = React.useState<
+    null | number | 'insert-new'
+  >(null)
 
   const closeInsertAndEditingFields = React.useCallback(() => {
-    setEditingIndexDirectly(null)
-    setShowInsertFieldDirectly(false)
+    setEditingIndexOrInserting(null)
   }, [])
 
   const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
@@ -86,6 +71,7 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([togglePanel('genericExternalResources')], 'leftpane')
+    setEditingIndexOrInserting(null)
   }, [dispatch])
 
   const onFocus = React.useCallback(
@@ -98,17 +84,16 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
     [focusedPanel, dispatch],
   )
 
-  const toggleOpenAddInsertField = React.useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation()
-      setShowInsertFieldAndCloseEdit((value) => !value)
-    },
-    [setShowInsertFieldAndCloseEdit],
-  )
+  const toggleOpenAddInsertField = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditingIndexOrInserting((value) => (value === 'insert-new' ? null : 'insert-new'))
+  }, [])
 
   const [pushNewGenericResource] = useSubmitValueFactory(updatePushNewGenericResource)
   const [indexedUpdateGenericResource] = useSubmitValueFactory(
-    getIndexedUpdateGenericResource(editingIndex ?? 0),
+    getIndexedUpdateGenericResource(
+      typeof editingIndexOrInserting === 'number' ? editingIndexOrInserting : 0,
+    ),
   )
 
   return (
@@ -132,7 +117,7 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
         <SectionBodyArea minimised={false}>
           {isRight(values) ? (
             values.value.genericExternalResources.map((value, i) =>
-              editingIndex === i ? (
+              editingIndexOrInserting === i ? (
                 <GenericExternalResourcesInput
                   hrefValueToEdit={value.href}
                   relValueToEdit={value.rel}
@@ -144,14 +129,14 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
                   key={value.href}
                   value={value}
                   index={i}
-                  setEditingIndex={setEditingIndexAndCloseInsert}
+                  setEditingIndex={setEditingIndexOrInserting}
                 />
               ),
             )
           ) : (
             <div>{values.value.description}</div>
           )}
-          {showInsertField ? (
+          {editingIndexOrInserting === 'insert-new' ? (
             <GenericExternalResourcesInput
               closeField={closeInsertAndEditingFields}
               onSubmitValues={pushNewGenericResource}
