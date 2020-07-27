@@ -44,10 +44,13 @@ $(deriveJSON jsonOptions ''SessionUser)
 $(makeFieldsNoPrefix ''SessionUser)
 
 data ProjectListing = ProjectListing
-                    { _id         :: Text
-                    , _title      :: Text
-                    , _createdAt  :: UTCTime
-                    , _modifiedAt :: UTCTime
+                    { _id           :: Text
+                    , _ownerName    :: Maybe Text
+                    , _ownerPicture :: Maybe Text
+                    , _title        :: Text
+                    , _description  :: Maybe Text
+                    , _createdAt    :: UTCTime
+                    , _modifiedAt   :: UTCTime
                     } deriving (Eq, Show)
 
 $(makeFieldsNoPrefix ''ProjectListing)
@@ -62,18 +65,13 @@ data User = User
 $(deriveJSON jsonOptions ''User)
 $(makeFieldsNoPrefix ''User)
 
-listingFromProject :: Project -> ProjectListing
-listingFromProject project = ProjectListing
-                           { _id = projectProjId project
-                           , _title = projectTitle project
-                           , _createdAt = projectCreatedAt project
-                           , _modifiedAt = projectModifiedAt project
-                           }
-
 listingFromProjectMetadata :: ProjectMetadata -> ProjectListing
 listingFromProjectMetadata project = ProjectListing
                                    { _id = view id project
+                                   , _ownerName = view ownerName project
+                                   , _ownerPicture = view ownerPicture project
                                    , _title = view title project
+                                   , _description = view description project
                                    , _createdAt = view createdAt project
                                    , _modifiedAt = view modifiedAt project
                                    }
