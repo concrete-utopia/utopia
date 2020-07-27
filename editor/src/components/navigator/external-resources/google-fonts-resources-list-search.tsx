@@ -1,5 +1,6 @@
 import * as React from 'react'
 import Select, { ValueType } from 'react-select'
+import { GOOGLE_WEB_FONTS_KEY } from '../../../common/env-vars'
 import { PortalTargetID } from '../../../core/shared/utils'
 import {
   ExternalResources,
@@ -23,8 +24,7 @@ function updatePushNewGoogleFontsResource(
   return oldValue
 }
 
-const TempGoogleWebFontsKeyKILLME =
-  'https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyBffJtCo2vL68hdQKH3IYjo0ELFAAGYNW4'
+const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${GOOGLE_WEB_FONTS_KEY}`
 
 export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourcesListSearchProps>(
   'GoogleFontsResourcesListSearch',
@@ -37,7 +37,7 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
     }, [])
 
     React.useEffect(() => {
-      fetch(TempGoogleWebFontsKeyKILLME).then((response) => {
+      fetch(GoogleWebFontsURL).then((response) => {
         response.json().then((object) => {
           setOptions(
             object.items.map(({ family }: { family: string }) => ({
