@@ -135,7 +135,10 @@ const ProjectCard = betterReactMemo('Project Card', (props: ProjectListing) => {
 })
 const FixedWidth = styled.div({ width: 900, marginLeft: 'auto', marginRight: 'auto' })
 
-const FeaturedProjectIDs: ReadonlyArray<string> = []
+const FeaturedProjectIDs: ReadonlyArray<string> = [
+  '6c783a57-western-violin',
+  '97a93d89-react-spring-example',
+]
 
 const LoadedProjectsRow = betterReactMemo(
   'Loaded Projects',
