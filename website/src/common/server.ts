@@ -107,15 +107,19 @@ export async function checkProjectOwnership(projectId: string): Promise<ProjectO
   }
 }
 
-function serverProjectListToProjectList(
+function serverProjectListingToProjectListing(
+  serverProjectListing: ServerProjectListing,
+): ProjectListing {
+  return {
+    ...serverProjectListing,
+    thumbnail: thumbnailURL(serverProjectListing.id),
+  }
+}
+
+function serverProjectsListToProjectsList(
   serverProjectList: Array<ServerProjectListing>,
 ): Array<ProjectListing> {
-  return serverProjectList.map((listing) => {
-    return {
-      ...listing,
-      thumbnail: thumbnailURL(listing.id),
-    }
-  })
+  return serverProjectList.map(serverProjectListingToProjectListing)
 }
 
 export async function fetchProjectList(): Promise<Array<ProjectListing>> {
@@ -129,7 +133,7 @@ export async function fetchProjectList(): Promise<Array<ProjectListing>> {
   })
   if (response.ok) {
     const responseBody: FetchProjectListResponse = await response.json()
-    return serverProjectListToProjectList(responseBody.projects.reverse())
+    return serverProjectsListToProjectsList(responseBody.projects.reverse())
   } else {
     // FIXME Client should show an error if server requests fail
     console.error(`Fetch project list failed (${response.status}): ${response.statusText}`)
@@ -148,11 +152,28 @@ export async function fetchShowcaseProjects(): Promise<Array<ProjectListing>> {
   })
   if (response.ok) {
     const responseBody: FetchProjectListResponse = await response.json()
-    return serverProjectListToProjectList(responseBody.projects)
+    return serverProjectsListToProjectsList(responseBody.projects)
   } else {
     // FIXME Client should show an error if server requests fail
     console.error(`Fetch showcase projects failed (${response.status}): ${response.statusText}`)
     return []
+  }
+}
+
+export async function fetchProjectMetadata(projectId: string): Promise<ProjectListing | null> {
+  // GETs the metadata for a given project ID
+  const url = urljoin(UTOPIA_BACKEND, 'project', projectId, 'metadata')
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+  })
+  if (response.ok) {
+    const responseBody: ServerProjectListing = await response.json()
+    return serverProjectListingToProjectListing(responseBody)
+  } else {
+    return null
   }
 }
 
