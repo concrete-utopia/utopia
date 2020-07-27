@@ -4,6 +4,7 @@ import { setFocus } from '../../../components/common/actions'
 import {
   ExternalResources,
   useExternalResources,
+  isExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
 import { isDescriptionParseError } from '../../../utils/value-parser-utils'
 import { betterReactMemo } from '../../../uuiui-deps'
@@ -52,13 +53,12 @@ export const GoogleFontsResourcesList = betterReactMemo('GoogleFontsResourcesLis
           }}
         >
           <GoogleFontsResourcesListSearch useSubmitValueFactory={useSubmitValueFactory} />
-          {isDescriptionParseError(values) ? (
-            <div>{values.description}</div>
-          ) : (
-            (values as ExternalResources).googleFontsResources.map((value, i) => (
-              <GoogleFontsResourcesListItem key={value.fontFamily} value={value} />
-            ))
-          )}
+          {isDescriptionParseError(values) ? <div>{values.description}</div> : null}
+          {isExternalResources(values)
+            ? values.googleFontsResources.map((value, i) => (
+                <GoogleFontsResourcesListItem key={value.fontFamily} value={value} />
+              ))
+            : null}
         </SectionBodyArea>
       )}
     </div>

@@ -127,6 +127,7 @@ function isHTMLElement(node: NodeHTMLParser.Node): node is NodeHTMLParser.HTMLEl
 }
 
 export interface ExternalResources {
+  type: 'external-resources'
   genericExternalResources: Array<GenericExternalResource>
   googleFontsResources: Array<GoogleFontsResource>
 }
@@ -135,7 +136,15 @@ export function externalResources(
   genericExternalResources: Array<GenericExternalResource>,
   googleFontsResources: Array<GoogleFontsResource>,
 ): ExternalResources {
-  return { genericExternalResources, googleFontsResources }
+  return {
+    type: 'external-resources',
+    genericExternalResources,
+    googleFontsResources,
+  }
+}
+
+export function isExternalResources(value: unknown): value is ExternalResources {
+  return typeof value === 'object' && value != null && (value as any).type === 'external-resources'
 }
 
 // TODO: support arbitrary attributes
@@ -208,10 +217,7 @@ export function parseLinkTags(
         }
       }
     })
-    return right({
-      genericExternalResources,
-      googleFontsResources,
-    })
+    return right(externalResources(genericExternalResources, googleFontsResources))
   } else {
     return left(descriptionParseError(`Couldn't parse link tags '${linkTagsText}'`))
   }
