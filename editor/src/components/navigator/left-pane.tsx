@@ -328,9 +328,9 @@ const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
       id='leftPaneProjectStructure'
       key='leftPaneProjectStructure'
       style={{
-        height: '100%',
         display: 'relative',
         alignItems: 'stretch',
+        paddingBottom: 50,
       }}
     >
       <ProjectSettingsPanel />
