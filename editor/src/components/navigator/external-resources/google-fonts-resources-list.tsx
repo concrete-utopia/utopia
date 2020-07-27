@@ -1,12 +1,8 @@
 import * as React from 'react'
 import { FlexRow, SectionBodyArea, SectionTitleRow, Title } from 'uuiui'
 import { setFocus } from '../../../components/common/actions'
-import {
-  ExternalResources,
-  useExternalResources,
-  isExternalResources,
-} from '../../../printer-parsers/html/external-resources-parser'
-import { isDescriptionParseError } from '../../../utils/value-parser-utils'
+import { isRight } from '../../../core/shared/either'
+import { useExternalResources } from '../../../printer-parsers/html/external-resources-parser'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { clearSelection, togglePanel } from '../../editor/actions/actions'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -53,12 +49,13 @@ export const GoogleFontsResourcesList = betterReactMemo('GoogleFontsResourcesLis
           }}
         >
           <GoogleFontsResourcesListSearch useSubmitValueFactory={useSubmitValueFactory} />
-          {isDescriptionParseError(values) ? <div>{values.description}</div> : null}
-          {isExternalResources(values)
-            ? values.googleFontsResources.map((value, i) => (
-                <GoogleFontsResourcesListItem key={value.fontFamily} value={value} />
-              ))
-            : null}
+          {isRight(values) ? (
+            values.value.googleFontsResources.map((value) => (
+              <GoogleFontsResourcesListItem key={value.fontFamily} value={value} />
+            ))
+          ) : (
+            <div>{values.value.description}</div>
+          )}
         </SectionBodyArea>
       )}
     </div>

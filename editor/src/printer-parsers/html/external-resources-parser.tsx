@@ -143,10 +143,6 @@ export function externalResources(
   }
 }
 
-export function isExternalResources(value: unknown): value is ExternalResources {
-  return typeof value === 'object' && value != null && (value as any).type === 'external-resources'
-}
-
 // TODO: support arbitrary attributes
 export interface GenericExternalResource {
   type: 'generic-external-resource'
@@ -306,7 +302,7 @@ export function getExternalResourcesInfo(
 }
 
 export function useExternalResources(): {
-  values: ExternalResources | ParseError
+  values: Either<DescriptionParseError, ExternalResources>
   onSubmitValue: OnSubmitValue<ExternalResources>
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 } {
@@ -315,14 +311,14 @@ export function useExternalResources(): {
     dispatch: store.dispatch,
   }))
   const externalResourcesInfo = getExternalResourcesInfo(editorState, dispatch)
-  const values = isRight(externalResourcesInfo)
-    ? externalResourcesInfo.value.externalResources
-    : externalResourcesInfo.value
+  const values: Either<DescriptionParseError, ExternalResources> = isRight(externalResourcesInfo)
+    ? right(externalResourcesInfo.value.externalResources)
+    : left(externalResourcesInfo.value)
   const onSubmitValue = isRight(externalResourcesInfo)
     ? externalResourcesInfo.value.onSubmitValue
     : NO_OP
   const useSubmitValueFactory = useCallbackFactory(
-    isRight(externalResourcesInfo) ? (values as ExternalResources) : externalResources([], []),
+    isRight(values) ? values.value : externalResources([], []),
     onSubmitValue,
   )
   return {
