@@ -11,77 +11,98 @@ describe('ES Package Manager Module Resolution', () => {
       toImport,
     )
   }
-  it('resolves all possible non-relative import locations', () => {
-    expect(resolve('srcFolderNodeModuleFile')).toEqual(
-      '/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFile.js',
-    )
-    expect(resolve('srcFolderNodeModuleFolderPackageJson')).toEqual(
-      '/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderPackageJson/actualModuleB.js',
-    )
-    expect(resolve('srcFolderNodeModuleFolderIndexJs')).toEqual(
-      '/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderIndexJs/index.js',
-    )
-    expect(resolve('packageRootNodeModuleFile')).toEqual(
-      '/node_modules/mypackage/node_modules/packageRootNodeModuleFile.js',
-    )
-    expect(resolve('packageRootNodeModuleFolderPackageJson')).toEqual(
-      '/node_modules/mypackage/node_modules/packageRootNodeModuleFolderPackageJson/dist/actualModuleB.js',
-    )
-    expect(resolve('packageRootNodeModuleFolderIndexJs')).toEqual(
-      '/node_modules/mypackage/node_modules/packageRootNodeModuleFolderIndexJs/index.js',
-    )
-    expect(resolve('globalNodeModuleFile')).toEqual('/node_modules/globalNodeModuleFile.js')
-    expect(resolve('globalNodeModuleFolderPackageJson')).toEqual(
-      '/node_modules/globalNodeModuleFolderPackageJson/lib/actualModuleB.js',
-    )
-    expect(resolve('globalNodeModuleFolderIndexJs')).toEqual(
-      '/node_modules/globalNodeModuleFolderIndexJs/index.js',
-    )
-    expect(resolve('@namespaced/module')).toEqual('/node_modules/@namespaced/module/index.js')
-    expect(resolve('@othernamespace/othermodule')).toEqual(
-      '/node_modules/@othernamespace/othermodule/dist/actual.js',
-    )
-    expect(resolve('@othernamespace/module-with-main-entry-pointing-to-directory')).toEqual(
-      '/node_modules/@othernamespace/module-with-main-entry-pointing-to-directory/dist/index.js',
-    )
-    expect(resolve('doesnt-exist-module')).toEqual(null)
-  })
 
-  it('resolves all relative import locations', () => {
-    expect(resolve('./moduleB')).toEqual('/node_modules/mypackage/src/moduleB.js')
-    expect(resolve('./moduleB.js')).toEqual('/node_modules/mypackage/src/moduleB.js')
-    expect(resolve('./folder/moduleC')).toEqual('/node_modules/mypackage/src/folder/moduleC.js')
-    expect(resolve('./folder/moduleC.js')).toEqual('/node_modules/mypackage/src/folder/moduleC.js')
-    expect(resolve('./folder/moduleD')).toEqual('/node_modules/mypackage/src/folder/moduleD.jsx')
-    expect(resolve('./folder/moduleD.jsx')).toEqual(
-      '/node_modules/mypackage/src/folder/moduleD.jsx',
-    )
-    expect(resolve('./folder/../folder/moduleD')).toEqual(
-      '/node_modules/mypackage/src/folder/moduleD.jsx',
-    )
-    // notice the // in the import path
-    expect(resolve('./folder/../folder//moduleD')).toEqual(
-      '/node_modules/mypackage/src/folder/moduleD.jsx',
-    )
-    expect(resolve('../src/folder/moduleD')).toEqual(
-      '/node_modules/mypackage/src/folder/moduleD.jsx',
-    )
-    expect(resolve('../../mypackage/src/folder/moduleD')).toEqual(
-      '/node_modules/mypackage/src/folder/moduleD.jsx',
-    )
-    expect(resolve('../../mypackage/src/folder/moduleE')).toEqual(
-      '/node_modules/mypackage/src/folder/moduleE.json',
-    )
-    expect(resolve('./folderWithPackageJson')).toEqual(
-      '/node_modules/mypackage/src/folderWithPackageJson/actualModuleE.js',
-    )
-    expect(resolve('./folderWithBrokenPackageJson')).toEqual(
-      '/node_modules/mypackage/src/folderWithBrokenPackageJson/index.js',
-    )
-    expect(resolve('./nonexistentImport')).toEqual(null)
-    expect(resolve('./folderWithPackageJsonWithMissingFile')).toEqual(null)
-    expect(resolve('./folderWithpackageJsonMissingField')).toEqual(null)
-  })
+  function testNonRelativeResolve(toImport: string, expectedResult: string | null): void {
+    it(`resolves non-relative path ${toImport}`, () => {
+      expect(resolve(toImport)).toEqual(expectedResult)
+    })
+  }
+
+  testNonRelativeResolve(
+    'srcFolderNodeModuleFile',
+    '/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFile.js',
+  )
+  testNonRelativeResolve(
+    'srcFolderNodeModuleFolderPackageJson',
+    '/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderPackageJson/actualModuleB.js',
+  )
+  testNonRelativeResolve(
+    'srcFolderNodeModuleFolderIndexJs',
+    '/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderIndexJs/index.js',
+  )
+  testNonRelativeResolve(
+    'packageRootNodeModuleFile',
+    '/node_modules/mypackage/node_modules/packageRootNodeModuleFile.js',
+  )
+  testNonRelativeResolve(
+    'packageRootNodeModuleFolderPackageJson',
+    '/node_modules/mypackage/node_modules/packageRootNodeModuleFolderPackageJson/dist/actualModuleB.js',
+  )
+  testNonRelativeResolve(
+    'packageRootNodeModuleFolderIndexJs',
+    '/node_modules/mypackage/node_modules/packageRootNodeModuleFolderIndexJs/index.js',
+  )
+  testNonRelativeResolve('globalNodeModuleFile', '/node_modules/globalNodeModuleFile.js')
+  testNonRelativeResolve(
+    'globalNodeModuleFolderPackageJson',
+    '/node_modules/globalNodeModuleFolderPackageJson/lib/actualModuleB.js',
+  )
+  testNonRelativeResolve(
+    'globalNodeModuleFolderIndexJs',
+    '/node_modules/globalNodeModuleFolderIndexJs/index.js',
+  )
+  testNonRelativeResolve('@namespaced/module', '/node_modules/@namespaced/module/index.js')
+  testNonRelativeResolve(
+    '@othernamespace/othermodule',
+    '/node_modules/@othernamespace/othermodule/dist/actual.js',
+  )
+  testNonRelativeResolve(
+    '@othernamespace/module-with-main-entry-pointing-to-directory',
+    '/node_modules/@othernamespace/module-with-main-entry-pointing-to-directory/dist/index.js',
+  )
+  testNonRelativeResolve('doesnt-exist-module', null)
+
+  function testRelativeResolve(toImport: string, expectedResult: string | null): void {
+    it(`resolves relative path ${toImport}`, () => {
+      expect(resolve(toImport)).toEqual(expectedResult)
+    })
+  }
+
+  testRelativeResolve('./moduleB', '/node_modules/mypackage/src/moduleB.js')
+  testRelativeResolve('./moduleB.js', '/node_modules/mypackage/src/moduleB.js')
+  testRelativeResolve('./folder/moduleC', '/node_modules/mypackage/src/folder/moduleC.js')
+  testRelativeResolve('./folder/moduleC.js', '/node_modules/mypackage/src/folder/moduleC.js')
+  testRelativeResolve('./folder/moduleD', '/node_modules/mypackage/src/folder/moduleD.jsx')
+  testRelativeResolve('./folder/moduleD.jsx', '/node_modules/mypackage/src/folder/moduleD.jsx')
+  testRelativeResolve(
+    './folder/../folder/moduleD',
+    '/node_modules/mypackage/src/folder/moduleD.jsx',
+  )
+  // notice the // in the import path
+  testRelativeResolve(
+    './folder/../folder//moduleD',
+    '/node_modules/mypackage/src/folder/moduleD.jsx',
+  )
+  testRelativeResolve('../src/folder/moduleD', '/node_modules/mypackage/src/folder/moduleD.jsx')
+  testRelativeResolve(
+    '../../mypackage/src/folder/moduleD',
+    '/node_modules/mypackage/src/folder/moduleD.jsx',
+  )
+  testRelativeResolve(
+    '../../mypackage/src/folder/moduleE',
+    '/node_modules/mypackage/src/folder/moduleE.json',
+  )
+  testRelativeResolve(
+    './folderWithPackageJson',
+    '/node_modules/mypackage/src/folderWithPackageJson/actualModuleE.js',
+  )
+  testRelativeResolve(
+    './folderWithBrokenPackageJson',
+    '/node_modules/mypackage/src/folderWithBrokenPackageJson/index.js',
+  )
+  testRelativeResolve('./nonexistentImport', null)
+  testRelativeResolve('./folderWithPackageJsonWithMissingFile', null)
+  testRelativeResolve('./folderWithpackageJsonMissingField', null)
 
   it('resolves absolute relative imports', () => {
     expect(resolve('/node_modules/mypackage/src/folder/moduleD')).toEqual(

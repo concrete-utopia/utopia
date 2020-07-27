@@ -6,7 +6,7 @@ import { NO_OP } from '../../shared/utils'
 import { FriendlyEsModuleErrorMessage } from '../package-manager/package-manager'
 
 describe('ESModule Evaluator', () => {
-  it('evalautes a module that has no imports', () => {
+  it('evaluates a module that has no imports', () => {
     const mainFile = fileNoImports.contents['/node_modules/mypackage/index.js'].content
     const result = evaluator(
       '/node_modules/mypackage/index.js',
@@ -18,7 +18,7 @@ describe('ESModule Evaluator', () => {
     expect((result.exports as any).hello).toEqual('hello!')
   })
 
-  it('evalautes a module that has one import', () => {
+  it('evaluates a module that has one import', () => {
     const mainFile = fileWithImports.contents['/node_modules/mypackage/index.js'].content
     const fakeRequire = () => {
       return { hello: 'hello!' }
@@ -33,7 +33,7 @@ describe('ESModule Evaluator', () => {
     expect((result.exports as any).hello).toEqual('hello!')
   })
 
-  it('evalautes a module that uses module.exports instead of the exports object', () => {
+  it('evaluates a module that uses module.exports instead of the exports object', () => {
     const mainFile =
       fileWithImports.contents['/node_modules/mypackage/code-using-module-exports.js'].content
     const fakeRequire = () => {
