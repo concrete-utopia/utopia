@@ -224,7 +224,7 @@ function printExternalResources(value: ExternalResources): string {
     return `<link href="${resource.href}" rel="${resource.rel}">`
   })
   const google = value.googleFontsResources.map((resource) => {
-    const encodedFontFamily = encodeURIComponent(resource.fontFamily.replace(' ', '+'))
+    const encodedFontFamily = encodeURIComponent(resource.fontFamily).replace('%20', '+')
     return `<link href="${googleFontsURIStart}family=${encodedFontFamily}" rel="stylesheet">`
   })
   return [...generic, ...google].join('\n    ')
