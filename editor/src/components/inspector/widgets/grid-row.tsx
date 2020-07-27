@@ -66,26 +66,33 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
    * alignItems: default value is 'center'
    */
   alignItems?: 'start' | 'center'
-  style?: React.CSSProperties
 }
 
-export const GridRow: React.FunctionComponent<GridRowProps> = ({ style, ...props }) => (
+export const GridRow: React.FunctionComponent<GridRowProps> = ({
+  tall,
+  type,
+  alignItems,
+  style,
+  padded,
+  children,
+  ...props
+}) => (
   <div
     {...props}
     style={{
-      padding: props.padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
+      padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
       display: 'grid',
-      height: props.tall
+      height: tall
         ? UtopiaTheme.layout.gridRowHeight.tall
         : UtopiaTheme.layout.gridRowHeight.normal,
       gridColumnGap: 10,
       overflow: 'hidden',
-      alignItems: props.alignItems ?? 'center',
-      ...gridTemplates[props.type],
+      alignItems: alignItems ?? 'center',
+      ...gridTemplates[type],
       ...style,
     }}
   >
-    {props.children}
+    {children}
   </div>
 )
 GridRow.displayName = 'GridRow'
