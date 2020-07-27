@@ -6,7 +6,7 @@ import * as React from 'react'
 import { colorTheme, UtopiaStyles, SimpleFlexRow } from 'uuiui'
 import { H1, H2, PrettyKeys, EM, CalloutPrimary, A } from './documentation-components'
 
-import { renderedGettingStarted } from './getting-started'
+import { GettingStarted } from './getting-started'
 
 export function ReleaseNotesContent() {
   return (
@@ -29,7 +29,7 @@ export function ReleaseNotesContent() {
         },
       }}
     >
-      {renderedGettingStarted}
+      <GettingStarted />
     </div>
   )
 }
