@@ -1277,12 +1277,14 @@ const defaultDependencies = Utils.mapArrayToDictionary(
   (p) => p.version,
 )
 
+export const defaultIndexHtmlFilePath = 'public/index.html'
+
 export const DefaultPackageJson = {
   name: 'Utopia Project',
   version: '0.1.0',
   utopia: {
     'main-ui': 'src/app.js',
-    html: 'public/index.html',
+    html: defaultIndexHtmlFilePath,
     js: 'src/index.js',
   },
   dependencies: {
