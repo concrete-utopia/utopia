@@ -42,7 +42,10 @@ export const AUTH0_CLIENT_ID: string = process.env.REACT_APP_AUTH0_CLIENT_ID || 
 export const AUTH0_HOST: string = process.env.REACT_APP_AUTH0_ENDPOINT || ''
 const USE_AUTH0 = AUTH0_REDIRECT_URI != '' && AUTH0_CLIENT_ID != '' && AUTH0_HOST != ''
 
-export const GOOGLE_WEB_FONTS_KEY = process.env.GOOGLE_WEB_FONTS_KEY ?? ''
+export const GOOGLE_WEB_FONTS_KEY =
+  process.env.GOOGLE_WEB_FONTS_KEY !== ''
+    ? process.env.GOOGLE_WEB_FONTS_KEY
+    : 'AIzaSyBffJtCo2vL68hdQKH3IYjo0ELFAAGYNW4'
 
 export const auth0Url = USE_AUTH0
   ? `https://${AUTH0_HOST}/authorize?scope=openid%20profile%20email&response_type=code&client_id=${AUTH0_CLIENT_ID}&redirect_uri=${AUTH0_REDIRECT_URI}`
