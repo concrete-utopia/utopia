@@ -17,6 +17,7 @@ import { ProjectListing } from '../../common/persistence'
 import { fetchProjectMetadata } from '../../common/server'
 import { stripNulls } from '../../core/shared/array-utils'
 import { projectURLForProject } from '../../core/shared/utils'
+import { EllipsisSpinner } from '../common/ellipsis-spinner'
 
 const codeString = `
 App.propertyControls = {
@@ -136,26 +137,10 @@ const FixedWidth = styled.div({ width: 900, marginLeft: 'auto', marginRight: 'au
 
 const FeaturedProjectIDs: ReadonlyArray<string> = []
 
-const FeaturedProjects = betterReactMemo('Featured Projects', () => {
-  const [featuredProjectList, setFeaturedProjectList] = React.useState<ReadonlyArray<
-    ProjectListing
-  > | null>(null)
-
-  React.useEffect(() => {
-    const fetchedProjectPromises = FeaturedProjectIDs.map((projectId) =>
-      fetchProjectMetadata(projectId),
-    )
-    Promise.all(fetchedProjectPromises).then((fetchedProjects) => {
-      const withOutNulls = stripNulls(fetchedProjects)
-      setFeaturedProjectList(withOutNulls)
-    })
-  }, [])
-
-  return (
-    <FlexColumn>
-      <FixedWidth>
-        <H1>Featured Projects</H1>
-      </FixedWidth>
+const LoadedProjectsRow = betterReactMemo(
+  'Loaded Projects',
+  ({ projects }: { projects: ReadonlyArray<ProjectListing> }) => {
+    return (
       <FlexRow
         style={{
           position: 'relative',
@@ -171,15 +156,46 @@ const FeaturedProjects = betterReactMemo('Featured Projects', () => {
             margin: 30,
           }}
         >
-          {featuredProjectList == null ? (
-            <div>Loading</div>
-          ) : (
-            featuredProjectList.map((projectListing) => (
-              <ProjectCard key={`project-card-${projectListing.id}`} {...projectListing} />
-            ))
-          )}
+          {projects.map((projectListing) => (
+            <ProjectCard key={`project-card-${projectListing.id}`} {...projectListing} />
+          ))}
         </FlexRow>
       </FlexRow>
+    )
+  },
+)
+
+const FeaturedProjects = betterReactMemo('Featured Projects', () => {
+  const [featuredProjectList, setFeaturedProjectList] = React.useState<ReadonlyArray<
+    ProjectListing
+  > | null>(null)
+
+  React.useEffect(() => {
+    const fetchedProjectPromises = FeaturedProjectIDs.map((projectId) =>
+      fetchProjectMetadata(projectId),
+    )
+    Promise.all(fetchedProjectPromises).then((fetchedProjects) => {
+      const withOutNulls = stripNulls(fetchedProjects)
+      setFeaturedProjectList(withOutNulls)
+    })
+  }, [])
+
+  const spinnerRow = (
+    <FixedWidth>
+      <EllipsisSpinner />
+    </FixedWidth>
+  )
+
+  return (
+    <FlexColumn>
+      <FixedWidth>
+        <H1>Featured Projects</H1>
+      </FixedWidth>
+      {featuredProjectList == null ? (
+        spinnerRow
+      ) : (
+        <LoadedProjectsRow projects={featuredProjectList} />
+      )}
     </FlexColumn>
   )
 })
