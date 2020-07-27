@@ -24,7 +24,10 @@ export type ProjectOwnerState = ProjectOwnerResponse | 'unowned'
 
 export interface ServerProjectListing {
   id: string
+  ownerName: string | null
+  ownerPicture: string | null
   title: string
+  description: string | null
   createdAt: string
   modifiedAt: string
 }
