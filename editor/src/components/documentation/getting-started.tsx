@@ -138,6 +138,7 @@ const FixedWidth = styled.div({ width: 900, marginLeft: 'auto', marginRight: 'au
 const FeaturedProjectIDs: ReadonlyArray<string> = [
   '6c783a57-western-violin',
   '97a93d89-react-spring-example',
+  'f4fcb83b-react-spring-cards',
 ]
 
 const LoadedProjectsRow = betterReactMemo(
