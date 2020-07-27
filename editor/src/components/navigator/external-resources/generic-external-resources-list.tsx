@@ -12,6 +12,7 @@ import {
   ExternalResources,
   genericExternalResource,
   useExternalResources,
+  isExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
 import { isDescriptionParseError } from '../../../utils/value-parser-utils'
 import { betterReactMemo } from '../../../uuiui-deps'
@@ -128,27 +129,26 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
       </SectionTitleRow>
       {minimised ? null : (
         <SectionBodyArea minimised={false}>
-          {isDescriptionParseError(values) ? (
-            <div>{values.description}</div>
-          ) : (
-            (values as ExternalResources).genericExternalResources.map((value, i) =>
-              editingIndex === i ? (
-                <GenericExternalResourcesInput
-                  hrefValueToEdit={value.href}
-                  relValueToEdit={value.rel}
-                  closeField={closeInsertAndEditingFields}
-                  onSubmitValues={indexedUpdateGenericResource}
-                />
-              ) : (
-                <GenericExternalResourcesListItem
-                  key={value.href}
-                  value={value}
-                  index={i}
-                  setEditingIndex={setEditingIndexAndCloseInsert}
-                />
-              ),
-            )
-          )}
+          {isDescriptionParseError(values) ? <div>{values.description}</div> : null}
+          {isExternalResources(values)
+            ? values.genericExternalResources.map((value, i) =>
+                editingIndex === i ? (
+                  <GenericExternalResourcesInput
+                    hrefValueToEdit={value.href}
+                    relValueToEdit={value.rel}
+                    closeField={closeInsertAndEditingFields}
+                    onSubmitValues={indexedUpdateGenericResource}
+                  />
+                ) : (
+                  <GenericExternalResourcesListItem
+                    key={value.href}
+                    value={value}
+                    index={i}
+                    setEditingIndex={setEditingIndexAndCloseInsert}
+                  />
+                ),
+              )
+            : null}
           {showInsertField ? (
             <GenericExternalResourcesInput
               closeField={closeInsertAndEditingFields}
