@@ -69,14 +69,15 @@ defaultProjectTitle :: Text
 defaultProjectTitle = "Unnamed"
 
 data ProjectMetadata = ProjectMetadata
-                     { _id          :: Text
-                     , _ownerId     :: Text
-                     , _ownerName   :: Maybe Text
-                     , _title       :: Text
-                     , _description :: Maybe Text
-                     , _createdAt   :: UTCTime
-                     , _modifiedAt  :: UTCTime
-                     , _deleted     :: Bool
+                     { _id           :: Text
+                     , _ownerId      :: Text
+                     , _ownerName    :: Maybe Text
+                     , _ownerPicture :: Maybe Text
+                     , _title        :: Text
+                     , _description  :: Maybe Text
+                     , _createdAt    :: UTCTime
+                     , _modifiedAt   :: UTCTime
+                     , _deleted      :: Bool
                      } deriving (Eq, Show)
 
 $(makeFieldsNoPrefix ''ProjectMetadata)

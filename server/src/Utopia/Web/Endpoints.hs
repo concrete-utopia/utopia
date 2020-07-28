@@ -188,6 +188,11 @@ getMyProjectsEndpoint cookie = requireUser cookie $ \sessionUser -> do
   projectsForUser <- getProjectsForUser $ view id sessionUser
   return $ ProjectListResponse projectsForUser
 
+getProjectMetadataEndpoint :: ProjectIdWithSuffix -> ServerMonad ProjectListing
+getProjectMetadataEndpoint (ProjectIdWithSuffix projectID _) = do
+  possibleMetadata <- getProjectMetadata projectID
+  maybe notFound (\projectMetadata -> return $ listingFromProjectMetadata projectMetadata) possibleMetadata
+
 getShowcaseEndpoint :: ServerMonad ProjectListResponse
 getShowcaseEndpoint = do
   showcaseProjects <- getShowcaseProjects
@@ -411,6 +416,7 @@ unprotected = authenticate
          :<|> downloadProjectEndpoint
          :<|> loadProjectEndpoint
          :<|> createProjectEndpoint
+         :<|> getProjectMetadataEndpoint
          :<|> getShowcaseEndpoint
          :<|> setShowcaseEndpoint
          :<|> loadProjectAssetEndpoint

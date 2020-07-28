@@ -77,6 +77,8 @@ type DownloadProjectAPI = "project" :> Capture "project_id" ProjectIdWithSuffix 
 
 type ProjectOwnerAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "owner" :> Get '[JSON] ProjectOwnerResponse
 
+type ProjectMetadataEndpoint = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "metadata" :> Get '[JSON] ProjectListing
+
 type LoadProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> QueryParam "last_saved" UTCTime :> Get '[JSON] LoadProjectResponse
 
 type CreateProjectAPI = "v1" :> "projectid" :> Post '[JSON] CreateProjectResponse
@@ -161,6 +163,7 @@ type Unprotected = AuthenticateAPI
               :<|> DownloadProjectAPI
               :<|> LoadProjectAPI
               :<|> CreateProjectAPI
+              :<|> ProjectMetadataEndpoint
               :<|> ShowcaseAPI
               :<|> SetShowcaseAPI
               :<|> LoadProjectAssetAPI

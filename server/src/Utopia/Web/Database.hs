@@ -180,7 +180,7 @@ deleteProject metrics pool userId projectId = invokeAndMeasure (_deleteProjectMe
   unless correctUser $ throwM UserIDIncorrectException
 
 projectMetadataFields :: Text
-projectMetadataFields = "project.proj_id, project.owner_id, user_details.name, project.title, project.created_at, project.modified_at, project.deleted"
+projectMetadataFields = "project.proj_id, project.owner_id, user_details.name, user_details.picture, project.title, project.created_at, project.modified_at, project.deleted"
 
 projectMetadataSelect :: Text -> Text
 projectMetadataSelect fieldToCheck =
@@ -192,9 +192,9 @@ projectMetadataSelectByProjectId = projectMetadataSelect "proj_id"
 projectMetadataSelectByOwnerId :: Text
 projectMetadataSelectByOwnerId = projectMetadataSelect "owner_id"
 
-metadataEntityToMetadata :: (Single Text, Single Text, Single (Maybe Text), Single Text, Single UTCTime, Single UTCTime, Single (Maybe Bool)) -> ProjectMetadata
-metadataEntityToMetadata (pId, pOwnerId, pOwnerName, pTitle, pCreatedAt, pModifiedAt, pDeleted) =
-  ProjectMetadata (unSingle pId) (unSingle pOwnerId) (unSingle pOwnerName) (unSingle pTitle) Nothing (unSingle pCreatedAt) (unSingle pModifiedAt) (fromMaybe False $ unSingle pDeleted)
+metadataEntityToMetadata :: (Single Text, Single Text, Single (Maybe Text), Single (Maybe Text), Single Text, Single UTCTime, Single UTCTime, Single (Maybe Bool)) -> ProjectMetadata
+metadataEntityToMetadata (pId, pOwnerId, pOwnerName, pOwnerPicture, pTitle, pCreatedAt, pModifiedAt, pDeleted) =
+  ProjectMetadata (unSingle pId) (unSingle pOwnerId) (unSingle pOwnerName) (unSingle pOwnerPicture) (unSingle pTitle) Nothing (unSingle pCreatedAt) (unSingle pModifiedAt) (fromMaybe False $ unSingle pDeleted)
 
 getProjectMetadataWithPool :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO (Maybe ProjectMetadata)
 getProjectMetadataWithPool metrics pool projectId = invokeAndMeasure (_getProjectsForUserMetrics metrics) $ do
