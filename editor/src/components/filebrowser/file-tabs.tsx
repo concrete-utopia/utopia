@@ -35,7 +35,7 @@ function getLabelForEditorTab(editorTab: EditorTab): string {
     case 'OPEN_FILE_TAB':
       return Utils.forceNotNull('Invalid state.', R.last(editorTab.filename.split('/')))
     case 'RELEASE_NOTES_TAB':
-      return 'Release Notes'
+      return 'Welcome 👋'
     default:
       const _exhaustiveCheck: never = editorTab
       throw new Error(`Unhandled type ${JSON.stringify(editorTab)}`)

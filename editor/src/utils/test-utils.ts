@@ -25,7 +25,7 @@ import {
   isJSXFragment,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
-import { jsxAttributesToProps, getJSXAttributeAtPath } from '../core/shared/jsx-attributes'
+import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
 import { getUtopiaJSXComponentsFromSuccess, uiJsFile } from '../core/model/project-file-utils'
 import { parseSuccess } from '../core/workers/common/project-file-utils'
 import { sampleImportsForTests, sampleJsxComponentWithScene } from '../core/model/test-ui-js-file'
@@ -35,18 +35,22 @@ import {
   isParseFailure,
   ParseSuccess,
 } from '../core/shared/project-file-types'
-import { right } from '../core/shared/either'
+import { right, eitherToMaybe, isLeft } from '../core/shared/either'
 import Utils from './utils'
 import { CanvasRectangle, LocalRectangle } from '../core/shared/math-utils'
 import {
-  unmapScene,
   createSceneUidFromIndex,
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
+  PathForSceneContainer,
+  PathForSceneComponent,
+  PathForSceneDataLabel,
+  PathForSceneDataUid,
 } from '../core/model/scene-utils'
 import { NO_OP } from '../core/shared/utils'
-import { create } from '../core/shared/property-path'
+import * as PP from '../core/shared/property-path'
 import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
+import { mapArrayToDictionary } from '../core/shared/array-utils'
 
 export function createEditorStates(
   selectedFileOrTab: string | EditorTab = '/src/app.js',
@@ -113,9 +117,22 @@ export function createFakeMetadataForEditor(editor: EditorState): Array<Componen
 
 export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<ComponentMetadata> {
   const components = getUtopiaJSXComponentsFromSuccess(success)
-  const sceneElements = Utils.stripNulls(getSceneElementsFromParseSuccess(success).map(unmapScene))
+  const sceneElements = getSceneElementsFromParseSuccess(success)
   return sceneElements.map((scene, index) => {
-    const component = components.find((c) => c.name === scene.component && isUtopiaJSXComponent(c))
+    const props = mapArrayToDictionary(
+      Object.keys(scene.props),
+      (key) => key,
+      (key) => {
+        const attr = scene.props[key]
+        const simpleValue = jsxSimpleAttributeToValue(scene.props[key])
+        if (isLeft(simpleValue) && attr.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+          return attr.javascript
+        } else {
+          return eitherToMaybe(simpleValue)
+        }
+      },
+    )
+    const component = components.find((c) => c.name === props.component && isUtopiaJSXComponent(c))
     let elementMetadata: ElementInstanceMetadata | Array<ElementInstanceMetadata> | null = null
     if (component != null) {
       elementMetadata = createFakeMetadataForJSXElement(
@@ -124,11 +141,13 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       )
     }
     return {
-      ...scene,
-      scenePath: TP.scenePath([BakedInStoryboardUID, scene.uid]),
-      templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
+      component: props[PP.toString(PathForSceneComponent)],
+      container: props[PP.toString(PathForSceneContainer)],
+      label: props[PP.toString(PathForSceneDataLabel)],
+      scenePath: TP.scenePath([BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]),
+      templatePath: TP.instancePath([], [BakedInStoryboardUID, createSceneUidFromIndex(index)]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
-      type: 'static',
+      type: props['type'] ?? 'dynamic',
       rootElement:
         elementMetadata == null
           ? null

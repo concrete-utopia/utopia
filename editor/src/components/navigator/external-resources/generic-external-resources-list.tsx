@@ -71,7 +71,6 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([togglePanel('genericExternalResources')], 'leftpane')
-    setEditingIndexOrInserting(null)
   }, [dispatch])
 
   const onFocus = React.useCallback(

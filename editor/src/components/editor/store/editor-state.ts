@@ -98,8 +98,6 @@ import { EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
 import {
-  mapScene,
-  unmapScene,
   createSceneTemplatePath,
   isSceneElement,
   BakedInStoryboardVariableName,

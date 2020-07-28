@@ -3,7 +3,10 @@ import { deleteProjectFromServer } from './server'
 
 export interface ProjectListing {
   id: string
+  ownerName: string | null
+  ownerPicture: string | null
   title: string
+  description: string | null
   createdAt: string
   modifiedAt: string
   thumbnail: string
@@ -40,7 +43,10 @@ export async function fetchProjectListFromLocalStorage(): Promise<Array<ProjectL
       } else {
         return {
           id: projectId,
+          ownerName: null,
+          ownerPicture: null,
           title: '',
+          description: null,
           createdAt: localProject.createdAt,
           modifiedAt: localProject.lastModified,
           thumbnail: localProject.thumbnail,

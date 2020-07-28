@@ -45,7 +45,7 @@ function evaluateJs(
     (error) => {
       // we throw the error here, the require fn will catch it
       if (isEsModuleError(error)) {
-        createEsModuleError(filePath, error)
+        error.message = createEsModuleError(filePath, error.message)
       }
       throw error
     },
