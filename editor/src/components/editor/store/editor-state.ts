@@ -284,6 +284,12 @@ export interface EditorState {
   dependencyList: {
     minimised: boolean
   }
+  genericExternalResources: {
+    minimised: boolean
+  }
+  googleFontsResources: {
+    minimised: boolean
+  }
   projectSettings: {
     minimised: boolean
   }
@@ -1030,6 +1036,12 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     dependencyList: {
       minimised: false,
+    },
+    genericExternalResources: {
+      minimised: true,
+    },
+    googleFontsResources: {
+      minimised: true,
     },
     projectSettings: {
       minimised: false,

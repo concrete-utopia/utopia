@@ -927,6 +927,12 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     dependencyList: {
       minimised: currentEditor.dependencyList.minimised,
     },
+    genericExternalResources: {
+      minimised: currentEditor.genericExternalResources.minimised,
+    },
+    googleFontsResources: {
+      minimised: currentEditor.googleFontsResources.minimised,
+    },
     projectSettings: {
       minimised: currentEditor.projectSettings.minimised,
     },
@@ -2110,6 +2116,22 @@ export const UPDATE_FNS = {
             minimised: !action.visible,
           },
         }
+      case 'genericExternalResources':
+        return {
+          ...editor,
+          genericExternalResources: {
+            ...editor.dependencyList,
+            minimised: !action.visible,
+          },
+        }
+      case 'googleFontsResources':
+        return {
+          ...editor,
+          googleFontsResources: {
+            ...editor.dependencyList,
+            minimised: !action.visible,
+          },
+        }
       case 'inspector':
         return {
           ...editor,
@@ -2177,6 +2199,22 @@ export const UPDATE_FNS = {
           dependencyList: {
             ...editor.dependencyList,
             minimised: !editor.dependencyList.minimised,
+          },
+        }
+      case 'genericExternalResources':
+        return {
+          ...editor,
+          genericExternalResources: {
+            ...editor.genericExternalResources,
+            minimised: !editor.genericExternalResources.minimised,
+          },
+        }
+      case 'googleFontsResources':
+        return {
+          ...editor,
+          googleFontsResources: {
+            ...editor.googleFontsResources,
+            minimised: !editor.googleFontsResources.minimised,
           },
         }
       case 'filebrowser':

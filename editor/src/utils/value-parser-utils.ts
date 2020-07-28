@@ -84,6 +84,12 @@ export type ParseError =
   | ObjectFieldParseError
   | DescriptionParseError
 
+export function isDescriptionParseError(value: unknown): value is DescriptionParseError {
+  return (
+    typeof value === 'object' && value != null && (value as any).type === 'DESCRIPTION_PARSE_ERROR'
+  )
+}
+
 export interface ParseErrorDetails {
   path: string
   description: string
