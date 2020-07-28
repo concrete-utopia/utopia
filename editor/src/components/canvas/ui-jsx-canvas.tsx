@@ -34,6 +34,7 @@ import {
   isOmittedParam,
   JSXAttributeOtherJavaScript,
   emptyComputedStyle,
+  isIntrinsicElement,
 } from '../../core/shared/element-template'
 import { getUtopiaID, getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
@@ -56,7 +57,6 @@ import {
 } from '../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
 import { applyUIDMonkeyPatch, makeCanvasElementPropsSafe } from '../../utils/canvas-react-utils'
-import { intrinsicHTMLElementNamesAsStrings } from '../../core/shared/dom-utils'
 import { flatMapEither, forEachRight, right, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { CanvasVector } from '../../core/shared/math-utils'
@@ -1301,11 +1301,7 @@ function renderJSXElement(
   const ElementFromImport = getElementFromScope(jsx, requireResult)
   let Element = Utils.defaultIfNull(ElementFromImport, ElementInScope)
   // Handle intrinsic elements, like divs and the like.
-  if (
-    Element == null &&
-    PP.depth(jsx.name.propertyPath) === 0 &&
-    intrinsicHTMLElementNamesAsStrings.includes(jsx.name.baseVariable)
-  ) {
+  if (Element == null && isIntrinsicElement(jsx.name)) {
     Element = jsx.name.baseVariable
   }
   if (Element == null) {
