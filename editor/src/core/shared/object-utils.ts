@@ -1,4 +1,5 @@
 import { fastForEach } from './utils'
+import { MapLike } from 'typescript'
 
 export function get<O, T, F>(obj: O, unsafeDataOperation: (x: O) => T, valueIfFail: F): T | F {
   try {
@@ -195,6 +196,20 @@ export function omit<K extends string | number, T extends Record<K, any>>(
 
   for (var prop in obj) {
     if (!index.hasOwnProperty(prop)) {
+      result[prop] = obj[prop]
+    }
+  }
+  return result
+}
+
+export function omitWithPredicate<T extends MapLike<any>>(
+  obj: T,
+  pred: (k: keyof T) => boolean,
+): T {
+  var result = {} as T
+
+  for (var prop in obj) {
+    if (!pred(prop)) {
       result[prop] = obj[prop]
     }
   }

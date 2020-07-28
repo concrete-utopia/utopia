@@ -22,6 +22,7 @@ import { CSSPosition } from '../../components/inspector/common/css-utils'
 import { ModifiableAttribute } from './jsx-attributes'
 import * as TP from './template-path'
 import { firstLetterIsLowerCase } from './string-utils'
+import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 
 export interface JSXAttributeValue<T> {
   type: 'ATTRIBUTE_VALUE'
@@ -395,6 +396,10 @@ export function isIntrinsicElement(name: JSXElementName): boolean {
   // Elements with a lowercase first character are assumed to be intrinsic, since React treats them differently
   // https://reactjs.org/docs/jsx-in-depth.html#user-defined-components-must-be-capitalized
   return PP.depth(name.propertyPath) === 0 && firstLetterIsLowerCase(name.baseVariable)
+}
+
+export function isIntrinsicHTMLElement(name: JSXElementName): boolean {
+  return isIntrinsicElement(name) && intrinsicHTMLElementNamesAsStrings.includes(name.baseVariable)
 }
 
 export function getJSXElementNameLastPart(name: JSXElementName): string {

@@ -35,6 +35,7 @@ import {
   JSXAttributeOtherJavaScript,
   emptyComputedStyle,
   isIntrinsicElement,
+  isIntrinsicHTMLElement,
 } from '../../core/shared/element-template'
 import { getUtopiaID, getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
@@ -91,6 +92,7 @@ import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import { unimportCSSFile } from '../../core/shared/css-style-loader'
 import { removeAll } from '../../core/shared/array-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
+import { omitWithPredicate } from '../../core/shared/object-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -1248,6 +1250,10 @@ function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any>
   }
 }
 
+function filterDataProps(props: MapLike<any>): MapLike<any> {
+  return omitWithPredicate(props, (key) => typeof key === 'string' && key.startsWith('data-'))
+}
+
 function renderJSXElement(
   key: string,
   jsx: JSXElement,
@@ -1266,11 +1272,11 @@ function renderJSXElement(
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
 ): React.ReactElement {
-  let finalProps = { key: key, ...passthroughProps }
+  let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, templatePath)) {
-    finalProps = hideElement(finalProps)
+    elementProps = hideElement(elementProps)
   }
-  finalProps = streamlineInFileBlobs(finalProps, fileBlobs)
+  elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
 
   const createChildrenElement = (
     child: JSXElementChild,
@@ -1299,12 +1305,14 @@ function renderJSXElement(
   const childrenElements = jsx.children.map(createChildrenElement)
   const ElementInScope = getElementFromScope(jsx, inScope)
   const ElementFromImport = getElementFromScope(jsx, requireResult)
-  let Element = Utils.defaultIfNull(ElementFromImport, ElementInScope)
-  // Handle intrinsic elements, like divs and the like.
-  if (Element == null && isIntrinsicElement(jsx.name)) {
-    Element = jsx.name.baseVariable
-  }
-  if (Element == null) {
+  const ElementFromScopeOrImport = Utils.defaultIfNull(ElementFromImport, ElementInScope)
+  const elementIsIntrinsic = ElementFromScopeOrImport == null && isIntrinsicElement(jsx.name)
+  const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
+  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : ElementFromScopeOrImport
+  const finalProps =
+    elementIsIntrinsic && !elementIsBaseHTML ? filterDataProps(elementProps) : elementProps
+
+  if (FinalElement == null) {
     return createMissingElement(jsx)
   } else if (TP.containsPath(templatePath, validPaths)) {
     let childrenTemplatePaths: InstancePath[] = []
@@ -1325,7 +1333,7 @@ function renderJSXElement(
       metadataContext,
       childrenTemplatePaths,
       childrenElements,
-      Element,
+      FinalElement,
       inScope,
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
@@ -1335,7 +1343,7 @@ function renderJSXElement(
     return renderComponentUsingJsxFactoryFunction(
       inScope,
       jsxFactoryFunctionName,
-      Element,
+      FinalElement,
       finalProps,
       childrenOrNull,
     )
