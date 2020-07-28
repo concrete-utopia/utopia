@@ -183,7 +183,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
       errorsByFile[fileName].forEach(function (errormessage) {
         outputRows.push(
           <ErrorMessageRow
-            key={`error-row-${fileName}`}
+            key={`error-row-${fileName}-${errormessage.startLine}-${errormessage.startColumn}`}
             errorMessage={errormessage}
             onOpenFile={onOpenFile}
           />,

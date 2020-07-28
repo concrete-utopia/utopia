@@ -294,8 +294,3 @@ function renderRootComponent(
     }
   })
 }
-
-window.addEventListener('error', (error) => {
-  console.error('⚠️ uncaught error! \n' + error.error.stack.split('\n').slice(0, 10).join('\n'))
-  // TODO somehow let our tester know that there was an uncaught error
-})
