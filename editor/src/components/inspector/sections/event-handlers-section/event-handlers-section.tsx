@@ -23,10 +23,6 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
     ppCreate,
   )
 
-  const eventHandlersContextMenuItems = utils.stripNulls([
-    value != null ? addOnUnsetValues(regularArrayDOMEventHandlerNames, onUnsetValues) : null,
-  ])
-
   const valueKeys = Object.keys(value)
 
   if (valueKeys.length === 0) {
@@ -36,18 +32,22 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
   return (
     <>
       <InspectorSectionHeader>Event Handlers</InspectorSectionHeader>
-      <InspectorContextMenuWrapper
-        id='event-handlers-section-context-menu'
-        items={eventHandlersContextMenuItems}
-        style={{ gridColumn: '1 / span 4' }}
-        data={null}
-      >
-        {valueKeys.map((handlerName) => {
-          if (value.hasOwnProperty(handlerName)) {
-            const attributeValue = value[handlerName as DOMEventHandler]
-            if (isJSXAttributeOtherJavaScript(attributeValue)) {
-              const eventHandlerValue = attributeValue.javascript
-              return (
+      {valueKeys.map((handlerName) => {
+        if (value.hasOwnProperty(handlerName)) {
+          const attributeValue = value[handlerName as DOMEventHandler]
+          if (isJSXAttributeOtherJavaScript(attributeValue)) {
+            const eventHandlersContextMenuItems = utils.stripNulls([
+              value != null ? addOnUnsetValues([handlerName], onUnsetValues) : null,
+            ])
+
+            const eventHandlerValue = attributeValue.javascript
+            return (
+              <InspectorContextMenuWrapper
+                id='event-handlers-section-context-menu'
+                items={eventHandlersContextMenuItems}
+                style={{ gridColumn: '1 / span 4' }}
+                data={null}
+              >
                 <GridRow
                   key={`event-handler-row-${handlerName}`}
                   padded={true}
@@ -56,12 +56,12 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
                   <PropertyLabel target={[PP.create([handlerName])]}>{handlerName}</PropertyLabel>
                   <StringInput value={eventHandlerValue} controlStatus='disabled' />
                 </GridRow>
-              )
-            }
+              </InspectorContextMenuWrapper>
+            )
           }
-          return null
-        })}
-      </InspectorContextMenuWrapper>
+        }
+        return null
+      })}
     </>
   )
 })
