@@ -8,12 +8,12 @@ import {
   Title,
 } from 'uuiui'
 import { setFocus } from '../../../components/common/actions'
+import { isRight } from '../../../core/shared/either'
 import {
   ExternalResources,
   genericExternalResource,
   useExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
-import { isDescriptionParseError } from '../../../utils/value-parser-utils'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { clearSelection, togglePanel } from '../../editor/actions/actions'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -31,11 +31,12 @@ function updatePushNewGenericResource(
   { hrefValue, relValue }: { hrefValue: string; relValue: string },
   oldValue: ExternalResources,
 ): ExternalResources {
-  oldValue.genericExternalResources = [
+  const working = { ...oldValue }
+  working.genericExternalResources = [
     ...oldValue.genericExternalResources,
     genericExternalResource(hrefValue, relValue),
   ]
-  return oldValue
+  return working
 }
 
 function getIndexedUpdateGenericResource(index: number) {
@@ -43,35 +44,21 @@ function getIndexedUpdateGenericResource(index: number) {
     { hrefValue, relValue }: { hrefValue: string; relValue: string },
     oldValue: ExternalResources,
   ): ExternalResources {
-    oldValue.genericExternalResources[index] = genericExternalResource(hrefValue, relValue)
-    return oldValue
+    const working = { ...oldValue }
+    working.genericExternalResources[index] = genericExternalResource(hrefValue, relValue)
+    return working
   }
 }
 
 export const GenericExternalResourcesList = betterReactMemo('GenericExternalResourcesList', () => {
   const { values, useSubmitValueFactory } = useExternalResources()
 
-  const [editingIndex, setEditingIndexDirectly] = React.useState<null | number>(null)
-  const [showInsertField, setShowInsertFieldDirectly] = React.useState(false)
-
-  const setEditingIndexAndCloseInsert = React.useCallback(
-    (setStateAction: React.SetStateAction<null | number>) => {
-      setEditingIndexDirectly(setStateAction)
-      setShowInsertFieldDirectly(false)
-    },
-    [],
-  )
-  const setShowInsertFieldAndCloseEdit = React.useCallback(
-    (setStateAction: React.SetStateAction<boolean>) => {
-      setEditingIndexDirectly(null)
-      setShowInsertFieldDirectly(setStateAction)
-    },
-    [],
-  )
+  const [editingIndexOrInserting, setEditingIndexOrInserting] = React.useState<
+    null | number | 'insert-new'
+  >(null)
 
   const closeInsertAndEditingFields = React.useCallback(() => {
-    setEditingIndexDirectly(null)
-    setShowInsertFieldDirectly(false)
+    setEditingIndexOrInserting(null)
   }, [])
 
   const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
@@ -89,24 +76,23 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
       dispatch([clearSelection()], 'everyone')
-      if (focusedPanel !== 'genericExternalResources') {
-        dispatch([setFocus('genericExternalResources')], 'leftpane')
+      if (focusedPanel !== 'dependencylist') {
+        dispatch([setFocus('dependencylist')], 'everyone')
       }
     },
     [focusedPanel, dispatch],
   )
 
-  const toggleOpenAddInsertField = React.useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation()
-      setShowInsertFieldAndCloseEdit((value) => !value)
-    },
-    [setShowInsertFieldAndCloseEdit],
-  )
+  const toggleOpenAddInsertField = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditingIndexOrInserting((value) => (value === 'insert-new' ? null : 'insert-new'))
+  }, [])
 
   const [pushNewGenericResource] = useSubmitValueFactory(updatePushNewGenericResource)
   const [indexedUpdateGenericResource] = useSubmitValueFactory(
-    getIndexedUpdateGenericResource(editingIndex ?? 0),
+    getIndexedUpdateGenericResource(
+      typeof editingIndexOrInserting === 'number' ? editingIndexOrInserting : 0,
+    ),
   )
 
   return (
@@ -128,11 +114,9 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
       </SectionTitleRow>
       {minimised ? null : (
         <SectionBodyArea minimised={false}>
-          {isDescriptionParseError(values) ? (
-            <div>{values.description}</div>
-          ) : (
-            (values as ExternalResources).genericExternalResources.map((value, i) =>
-              editingIndex === i ? (
+          {isRight(values) ? (
+            values.value.genericExternalResources.map((value, i) =>
+              editingIndexOrInserting === i ? (
                 <GenericExternalResourcesInput
                   hrefValueToEdit={value.href}
                   relValueToEdit={value.rel}
@@ -144,12 +128,14 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
                   key={value.href}
                   value={value}
                   index={i}
-                  setEditingIndex={setEditingIndexAndCloseInsert}
+                  setEditingIndex={setEditingIndexOrInserting}
                 />
               ),
             )
+          ) : (
+            <div>{values.value.description}</div>
           )}
-          {showInsertField ? (
+          {editingIndexOrInserting === 'insert-new' ? (
             <GenericExternalResourcesInput
               closeField={closeInsertAndEditingFields}
               onSubmitValues={pushNewGenericResource}

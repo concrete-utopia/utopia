@@ -110,7 +110,7 @@ function getCodeFileContentsFromPath(
   filePath: string,
   projectContents: ProjectContents,
 ): Either<DescriptionParseError, CodeFile> {
-  const fileContents = projectContents[`/${filePath}`]
+  const fileContents = projectContents[filePath]
   if (fileContents != null && isCodeFile(fileContents)) {
     return right(fileContents)
   } else {
@@ -127,6 +127,7 @@ function isHTMLElement(node: NodeHTMLParser.Node): node is NodeHTMLParser.HTMLEl
 }
 
 export interface ExternalResources {
+  type: 'external-resources'
   genericExternalResources: Array<GenericExternalResource>
   googleFontsResources: Array<GoogleFontsResource>
 }
@@ -135,7 +136,11 @@ export function externalResources(
   genericExternalResources: Array<GenericExternalResource>,
   googleFontsResources: Array<GoogleFontsResource>,
 ): ExternalResources {
-  return { genericExternalResources, googleFontsResources }
+  return {
+    type: 'external-resources',
+    genericExternalResources,
+    googleFontsResources,
+  }
 }
 
 // TODO: support arbitrary attributes
@@ -208,10 +213,7 @@ export function parseLinkTags(
         }
       }
     })
-    return right({
-      genericExternalResources,
-      googleFontsResources,
-    })
+    return right(externalResources(genericExternalResources, googleFontsResources))
   } else {
     return left(descriptionParseError(`Couldn't parse link tags '${linkTagsText}'`))
   }
@@ -222,7 +224,7 @@ function printExternalResources(value: ExternalResources): string {
     return `<link href="${resource.href}" rel="${resource.rel}">`
   })
   const google = value.googleFontsResources.map((resource) => {
-    const encodedFontFamily = encodeURIComponent(resource.fontFamily.replace(' ', '+'))
+    const encodedFontFamily = encodeURIComponent(resource.fontFamily).replace('%20', '+')
     return `<link href="${googleFontsURIStart}family=${encodedFontFamily}" rel="stylesheet">`
   })
   return [...generic, ...google].join('\n    ')
@@ -259,9 +261,9 @@ export function getExternalResourcesInfo(
   { externalResources: ExternalResources; onSubmitValue: OnSubmitValue<ExternalResources> }
 > {
   const packageJsonHtmlFilePath = getPreviewHTMLFilePath(editor.projectContents)
-  const htmlFilePath: string = isRight(packageJsonHtmlFilePath)
-    ? packageJsonHtmlFilePath.value
-    : defaultIndexHtmlFilePath
+  const htmlFilePath: string = `/${
+    isRight(packageJsonHtmlFilePath) ? packageJsonHtmlFilePath.value : defaultIndexHtmlFilePath
+  }`
 
   const previewHTMLFilePathContents = getCodeFileContentsFromPath(
     htmlFilePath,
@@ -279,7 +281,7 @@ export function getExternalResourcesInfo(
             dispatch([
               updateFile(
                 htmlFilePath,
-                codeFile(fileContents, updatedCodeFileContents.value),
+                codeFile(updatedCodeFileContents.value, updatedCodeFileContents.value),
                 false,
               ),
             ])
@@ -300,7 +302,7 @@ export function getExternalResourcesInfo(
 }
 
 export function useExternalResources(): {
-  values: ExternalResources | ParseError
+  values: Either<DescriptionParseError, ExternalResources>
   onSubmitValue: OnSubmitValue<ExternalResources>
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 } {
@@ -309,14 +311,14 @@ export function useExternalResources(): {
     dispatch: store.dispatch,
   }))
   const externalResourcesInfo = getExternalResourcesInfo(editorState, dispatch)
-  const values = isRight(externalResourcesInfo)
-    ? externalResourcesInfo.value.externalResources
-    : externalResourcesInfo.value
+  const values: Either<DescriptionParseError, ExternalResources> = isRight(externalResourcesInfo)
+    ? right(externalResourcesInfo.value.externalResources)
+    : left(externalResourcesInfo.value)
   const onSubmitValue = isRight(externalResourcesInfo)
     ? externalResourcesInfo.value.onSubmitValue
     : NO_OP
   const useSubmitValueFactory = useCallbackFactory(
-    isRight(externalResourcesInfo) ? (values as ExternalResources) : externalResources([], []),
+    isRight(values) ? values.value : externalResources([], []),
     onSubmitValue,
   )
   return {

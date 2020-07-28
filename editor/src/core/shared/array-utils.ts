@@ -1,6 +1,6 @@
 import { MapLike } from 'typescript'
-import { fastForEach } from './utils'
 import { is } from './equality-utils'
+import { fastForEach } from './utils'
 
 export function stripNulls<T>(array: Array<T | null | undefined>): Array<T> {
   var workingArray: Array<T> = []
@@ -259,4 +259,14 @@ export function removeAll<T>(
     }
   })
   return result
+}
+
+export function immutablyUpdateArrayIndex<T>(
+  oldValue: Array<T>,
+  newValue: T,
+  indexToReplace: number,
+): Array<T> {
+  let working = [...oldValue]
+  working[indexToReplace] = newValue
+  return working
 }
