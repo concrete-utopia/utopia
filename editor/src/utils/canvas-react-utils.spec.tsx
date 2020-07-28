@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as PropTypes from 'prop-types'
 import { applyUIDMonkeyPatch } from './canvas-react-utils'
 applyUIDMonkeyPatch()
 import * as ReactDOMServer from 'react-dom/server'
@@ -587,6 +588,39 @@ describe('Monkey Function', () => {
           <div data-uid=\\"bbb\\">Hello Dolly!!</div>
         </div>
       </div>
+      "
+    `)
+  })
+
+  it('function components have a working context', () => {
+    const TestFunction = (props: any, context: any) => {
+      return <div data-uid='bbb'>{context.value}</div>
+    }
+    TestFunction.contextTypes = {
+      value: PropTypes.string,
+    }
+    TestFunction.childContextTypes = {
+      value: PropTypes.string,
+    }
+
+    class App extends React.Component {
+      getChildContext() {
+        return { value: 'hello!' }
+      }
+      render() {
+        return (
+          <div data-uid='aaa'>
+            <TestFunction />
+          </div>
+        )
+      }
+    }
+    ;(App as any).childContextTypes = {
+      value: PropTypes.string,
+    }
+
+    expect(renderToFormattedString(<App />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"aaa\\"><div data-uid=\\"bbb\\">hello!</div></div>
       "
     `)
   })

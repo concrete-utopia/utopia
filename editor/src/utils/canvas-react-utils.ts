@@ -87,12 +87,14 @@ function attachDataUidToRoot(
 
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
-    const mangledFunction = (p: any) => {
-      let originalTypeResponse = (type as React.FunctionComponent)(p)
+    const mangledFunction = (p: any, context?: any) => {
+      let originalTypeResponse = (type as React.FunctionComponent)(p, context)
       const res = attachDataUidToRoot(originalTypeResponse, (p as any)?.['data-uid'])
       return res
     }
     ;(mangledFunction as any).theOriginalType = type
+    ;(mangledFunction as any).contextTypes = (type as any).contextTypes
+    ;(mangledFunction as any).childContextTypes = (type as any).childContextTypes
     return mangledFunction
   },
   {
@@ -138,7 +140,7 @@ const mangleExoticType = Utils.memoize(
      *
      * Instead of that we render these fragment-like components, and mangle with their children
      */
-    const wrapperComponent = (p: any) => {
+    const wrapperComponent = (p: any, context?: any) => {
       if (p?.['data-uid'] == null) {
         // early return for the cases where there's no data-uid
         return realCreateElement(type, p)
@@ -169,6 +171,8 @@ const mangleExoticType = Utils.memoize(
       }
     }
     ;(wrapperComponent as any).theOriginalType = type
+    ;(wrapperComponent as any).contextTypes = (type as any).contextTypes
+    ;(wrapperComponent as any).childContextTypes = (type as any).childContextTypes
     return wrapperComponent
   },
   {
