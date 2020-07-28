@@ -1412,9 +1412,24 @@ interface CanvasErrorBoundaryProps extends CanvasReactReportErrorCallback {
   uiFilePath: string
 }
 
+function isErrorObject(e: unknown): e is Error {
+  return typeof e === 'object' && e != null && 'name' in e && 'message' in e
+}
+
+function asErrorObject(e: unknown): Error {
+  // Required because JS supports throwing anything at all
+  if (isErrorObject(e)) {
+    return e
+  } else if (typeof e === 'string') {
+    return new Error(e)
+  } else {
+    return new Error(JSON.stringify(e))
+  }
+}
+
 class CanvasErrorBoundary extends React.PureComponent<CanvasErrorBoundaryProps, {}> {
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    this.props.reportError(this.props.uiFilePath, error, errorInfo)
+  componentDidCatch(error: unknown, errorInfo: React.ErrorInfo) {
+    this.props.reportError(this.props.uiFilePath, asErrorObject(error), errorInfo)
   }
 
   render() {
