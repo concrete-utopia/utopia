@@ -115,6 +115,7 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
               },
             ],
+            "type": "external-resources",
           },
         }
       `)
