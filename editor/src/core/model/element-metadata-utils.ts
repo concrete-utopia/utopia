@@ -9,10 +9,7 @@ import { getLayoutProperty } from '../layout/getLayoutProperty'
 import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
 import { LayoutProp } from '../layout/layout-helpers-new'
 import { flattenArray, mapDropNulls, pluck, stripNulls } from '../shared/array-utils'
-import {
-  intrinsicHTMLElementNamesAsStrings,
-  intrinsicHTMLElementNamesThatSupportChildren,
-} from '../shared/dom-utils'
+import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import {
   alternativeEither,
   Either,
@@ -45,6 +42,7 @@ import {
   UtopiaJSXComponent,
   JSXElementName,
   getJSXElementNameAsString,
+  isIntrinsicElement,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -127,8 +125,7 @@ function produceMetadataFromMergeCandidate(
     if (possibleElement == null) {
       return mergedMetadata
     } else {
-      const simpleName = getJSXElementNameNoPathName(possibleElement.name)
-      if (simpleName !== null && intrinsicHTMLElementNamesAsStrings.includes(simpleName)) {
+      if (isIntrinsicElement(possibleElement.name)) {
         return mergedMetadata
       } else {
         return {
@@ -1423,13 +1420,16 @@ export const MetadataUtils = {
       return false
     } else {
       const jsxElementName = MetadataUtils.getStaticElementName(path, rootElements, metadata)
-      const name = optionalMap(getJSXElementNameLastPart, jsxElementName)
       const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
       return (
-        name != null &&
+        jsxElementName != null &&
         instanceMetadata != null &&
-        !MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instanceMetadata, name) &&
-        !intrinsicHTMLElementNamesAsStrings.includes(name)
+        !MetadataUtils.isGivenUtopiaAPIElementFromImports(
+          imports,
+          instanceMetadata,
+          getJSXElementNameLastPart(jsxElementName),
+        ) &&
+        !isIntrinsicElement(jsxElementName)
       )
     }
   },

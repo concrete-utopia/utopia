@@ -2,6 +2,14 @@ export function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
+export function firstLetterIsLowerCase(value: string): boolean {
+  return value.length > 0 && isLowerCase(value[0])
+}
+
+export function isLowerCase(value: string): boolean {
+  return value === value.toLowerCase()
+}
+
 export function isEmptyString(value: string | null): boolean {
   return value === null || value === undefined || value.trim().length === 0
 }

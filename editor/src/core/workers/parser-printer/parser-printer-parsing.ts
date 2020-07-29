@@ -53,6 +53,7 @@ import {
   ElementsWithin,
   jsxFragment,
   jsxElementNameEquals,
+  isIntrinsicElement,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -1721,22 +1722,24 @@ function isJsxNameKnown(
   knownElements: Array<string>,
   imports: Imports,
 ): boolean {
-  const importsArray = Object.values(imports)
-  const knownImportedNames = stripNulls(
-    flatMapArray(
-      (imp) => [
-        imp.importedWithName,
-        imp.importedAs,
-        ...imp.importedFromWithin.map((i) => i.alias),
-      ],
-      importsArray,
-    ),
-  )
-  const knownNames = knownElements
-    .concat(knownImportedNames as string[])
-    .concat(intrinsicHTMLElementNamesAsStrings)
-  const result = knownNames.includes(name.baseVariable)
-  return result
+  if (isIntrinsicElement(name)) {
+    return true
+  } else {
+    const importsArray = Object.values(imports)
+    const knownImportedNames = stripNulls(
+      flatMapArray(
+        (imp) => [
+          imp.importedWithName,
+          imp.importedAs,
+          ...imp.importedFromWithin.map((i) => i.alias),
+        ],
+        importsArray,
+      ),
+    )
+    const knownNames = knownElements.concat(knownImportedNames as string[])
+    const result = knownNames.includes(name.baseVariable)
+    return result
+  }
 }
 
 function isReactFragmentName(name: JSXElementName, imports: Imports): boolean {
