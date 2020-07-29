@@ -132,6 +132,20 @@ export function forEachValue<T>(fn: (val: ValueOf<T>, key: keyof T) => void, obj
   })
 }
 
+export function mapToArray<T, U>(
+  fn: (val: T, key: string) => U,
+  obj: { [key: string]: T },
+): Array<U> {
+  const keys = Object.keys(obj)
+  let result: Array<U> = []
+  fastForEach(keys, (key) => {
+    const value = obj[key]
+    result.push(fn(value, key))
+  })
+
+  return result
+}
+
 export function mergeObjects<T, U>(
   array: Array<T>,
   fn: (

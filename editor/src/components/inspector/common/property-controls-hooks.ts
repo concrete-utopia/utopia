@@ -139,20 +139,6 @@ function useFirstRealValue(propertyPath: PropertyPath): unknown {
   )
 }
 
-export function useCountForArrayControl(propertyPath: PropertyPath): number {
-  const firstRawValue = useFirstRawValue(propertyPath)
-  const firstRealValue = useFirstRealValue(propertyPath)
-
-  const simpleValue = flatMapEither(jsxSimpleAttributeToValue, firstRawValue)
-  const firstValue = unwrapEither(simpleValue, firstRealValue)
-
-  if (Array.isArray(firstValue)) {
-    return firstValue.length
-  } else {
-    return 0
-  }
-}
-
 export function useControlForUnionControl(
   propertyPath: PropertyPath,
   control: UnionControlDescription,

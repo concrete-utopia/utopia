@@ -50,6 +50,7 @@ import {
 import { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { fastForEach } from '../shared/utils'
+import { mapToArray } from '../shared/object-utils'
 
 type Printer<T> = (value: T) => JSXAttribute
 
@@ -350,13 +351,13 @@ function printerForObject(objectControls: {
   [prop: string]: ControlDescription
 }): Printer<{ [prop: string]: unknown }> {
   return (object: { [prop: string]: unknown }): JSXAttribute => {
-    const printedContents = Object.keys(object).map((key) => {
-      const value = object[key]
+    const printedContents = mapToArray((value, key) => {
       const valueControl = objectControls[key]
       const valuePrinter =
         valueControl == null ? printSimple : printerForPropertyControl(valueControl)
       return jsxPropertyAssignment(key, valuePrinter(value))
-    })
+    }, object)
+
     return jsxAttributeNestedObject(printedContents)
   }
 }

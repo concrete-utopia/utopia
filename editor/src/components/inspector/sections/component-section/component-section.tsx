@@ -1,5 +1,6 @@
 import * as fastDeepEquals from 'fast-deep-equal'
 import * as React from 'react'
+import { animated } from 'react-spring'
 import {
   InspectorSectionHeader,
   PopupList,
@@ -13,6 +14,7 @@ import {
   SimpleFlexRow,
   UtopiaStyles,
   UtopiaTheme,
+  Icn,
 } from 'uuiui'
 import { betterReactMemo, SliderControl, getControlStyles } from 'uuiui-deps'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
@@ -20,8 +22,9 @@ import {
   ControlDescription,
   BaseControlDescription,
   isBaseControlDescription,
-  UnionControlDescription,
   ArrayControlDescription,
+  ObjectControlDescription,
+  UnionControlDescription,
 } from 'utopia-api'
 import { foldEither, right, Either } from '../../../../core/shared/either'
 import Utils from '../../../../utils/utils'
@@ -57,16 +60,17 @@ import {
 } from '../../../../core/property-controls/property-controls-utils'
 import { getDescriptionUnsetOptionalFields } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
+import { mapToArray } from '../../../../core/shared/object-utils'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
 import {
   useInspectorInfoForPropertyControl,
   useControlForUnionControl,
-  useCountForArrayControl,
 } from '../../common/property-controls-hooks'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
 import { OptionsType } from 'react-select'
 import { EventHandlerControl } from '../event-handlers-section/event-handlers-section'
 import { backgroundControlContainerStyle } from '../../controls/background-solid-or-gradient-thumbnail-control'
+import { useArraySuperControl } from '../../controls/array-supercontrol'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -414,9 +418,127 @@ const RowForArrayControl = betterReactMemo(
   (props: RowForArrayControlProps) => {
     const { propPath, controlDescription, isScene } = props
     const title = titleForControl(propPath, controlDescription)
-    const rowCound = useCountForArrayControl(propPath)
+    const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
+      propPath,
+      isScene,
+      controlDescription,
+    )
 
-    return null
+    const rowHeight = UtopiaTheme.layout.gridRowHeight.tall
+    const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight, true)
+    const [insertingRow, setInsertingRow] = React.useState(false)
+
+    let warningTooltip: string | undefined = undefined
+    const unsetOptionalFields = getDescriptionUnsetOptionalFields(controlDescription)
+    if (unsetOptionalFields.length > 0) {
+      warningTooltip = `These optional fields are not set: ${joinSpecial(
+        unsetOptionalFields,
+        ', ',
+        ' and ',
+      )}`
+    }
+    const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
+
+    const insertRow = React.useCallback(() => setInsertingRow(true), [])
+
+    return (
+      <>
+        <GridRow padded={true} type='<--------auto-------->||22px|'>
+          <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+            {warning}
+            {title}
+          </PropertyLabel>
+          {propertyStatus.overwritable ? (
+            <SquareButton highlight onMouseDown={insertRow}>
+              <Icn
+                style={{ paddingTop: 1 }}
+                category='semantic'
+                type='plus'
+                color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+                width={16}
+                height={16}
+              />
+            </SquareButton>
+          ) : null}
+        </GridRow>
+        <div
+          style={{
+            height: rowHeight * springs.length,
+          }}
+        >
+          {springs.map((springStyle, index) => {
+            return (
+              <animated.div
+                {...bind(index)}
+                key={index}
+                style={{
+                  ...springStyle,
+                  width: '100%',
+                  position: 'absolute',
+                  height: rowHeight,
+                }}
+              >
+                <RowForControl
+                  controlDescription={controlDescription.propertyControl}
+                  isScene={isScene}
+                  propPath={PP.appendPropertyPathElems(propPath, [index])}
+                />
+              </animated.div>
+            )
+          })}
+        </div>
+        {insertingRow ? (
+          <RowForControl
+            controlDescription={controlDescription.propertyControl}
+            isScene={isScene}
+            propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
+          />
+        ) : null}
+      </>
+    )
+  },
+)
+
+interface RowForObjectControlProps extends AbstractRowForControlProps {
+  controlDescription: ObjectControlDescription
+}
+
+const RowForObjectControl = betterReactMemo(
+  'RowForObjectControl',
+  (props: RowForObjectControlProps) => {
+    const { propPath, controlDescription, isScene } = props
+    const title = titleForControl(propPath, controlDescription)
+
+    let warningTooltip: string | undefined = undefined
+    const unsetOptionalFields = getDescriptionUnsetOptionalFields(controlDescription)
+    if (unsetOptionalFields.length > 0) {
+      warningTooltip = `These optional fields are not set: ${joinSpecial(
+        unsetOptionalFields,
+        ', ',
+        ' and ',
+      )}`
+    }
+    const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
+
+    return (
+      <>
+        <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+          {warning}
+          {title}
+        </PropertyLabel>
+        {mapToArray((innerControl: ControlDescription, prop: string) => {
+          const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+          return (
+            <RowForControl
+              key={`object-control-row-${PP.toString(innerPropPath)}`}
+              controlDescription={innerControl}
+              isScene={isScene}
+              propPath={innerPropPath}
+            />
+          )
+        }, controlDescription.object)}
+      </>
+    )
   },
 )
 
@@ -500,7 +622,7 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
   } else {
     switch (controlDescription.type) {
       case 'array':
-        return <div>Not yet implemented control type.</div>
+        return <RowForArrayControl {...props} controlDescription={controlDescription} />
       case 'object':
         return <div>Not yet implemented control type.</div>
       case 'union':
