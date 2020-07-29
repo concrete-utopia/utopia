@@ -44,8 +44,9 @@ export const addOnUnsetValues = (
     name = `Unset ${prettyNames.join(' and ')}`
   } else {
     // Unset backgroundColor, backgroundImage, and backgroundSize
-    prettyNames[prettyNames.length - 1] = `and ${prettyNames[prettyNames.length - 1]}`
-    name = `Unset ${prettyNames.join(', ')}`
+    const workingNames = [...prettyNames]
+    workingNames[workingNames.length - 1] = `and ${workingNames[workingNames.length - 1]}`
+    name = `Unset ${workingNames.join(', ')}`
   }
   return {
     name,
