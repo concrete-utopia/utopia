@@ -4,11 +4,16 @@ import * as React from 'react'
 import { useContextSelector } from 'use-context-selector'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import {
-  printerForBasePropertyControl,
-  unwrapperAndParserForBaseControl,
+  printerForPropertyControl,
+  unwrapperAndParserForPropertyControl,
   controlToUseForUnion,
 } from '../../../core/property-controls/property-control-values'
-import { BaseControlDescription, UnionControlDescription, ControlDescription } from 'utopia-api'
+import {
+  BaseControlDescription,
+  UnionControlDescription,
+  ControlDescription,
+  ArrayControlDescription,
+} from 'utopia-api'
 import {
   InspectorInfo,
   useKeepReferenceEqualityIfPossible,
@@ -19,9 +24,10 @@ import {
 import {
   getModifiableJSXAttributeAtPath,
   ModifiableAttribute,
+  jsxSimpleAttributeToValue,
 } from '../../../core/shared/jsx-attributes'
 import * as PP from '../../../core/shared/property-path'
-import { Either, eitherToMaybe } from '../../../core/shared/either'
+import { Either, eitherToMaybe, flatMapEither, unwrapEither } from '../../../core/shared/either'
 import {
   calculatePropertyStatusForSelection,
   getControlStatusFromPropertyStatus,
@@ -33,7 +39,7 @@ type RealValues = unknown[]
 
 export function useInspectorInfoForPropertyControl(
   propertyPath: PropertyPath,
-  control: BaseControlDescription,
+  control: ControlDescription,
 ): InspectorInfo<any> {
   const rawValues: RawValues = useKeepReferenceEqualityIfPossible(
     useContextSelector(
@@ -69,8 +75,8 @@ export function useInspectorInfoForPropertyControl(
     onContextUnsetValue: onSingleUnsetValue,
   } = useInspectorContext()
 
-  const parserFn = unwrapperAndParserForBaseControl(control)
-  const printerFn = printerForBasePropertyControl(control)
+  const parserFn = unwrapperAndParserForPropertyControl(control)
+  const printerFn = printerForPropertyControl(control)
   const parsedValue = eitherToMaybe(parserFn(rawValues[0], realValues[0])) // TODO We need a way to surface these errors to the users
 
   const onSubmitValue = React.useCallback(
@@ -107,11 +113,8 @@ export function useInspectorInfoForPropertyControl(
   }
 }
 
-export function useControlForUnionControl(
-  propertyPath: PropertyPath,
-  control: UnionControlDescription,
-): ControlDescription {
-  const firstRawValue: Either<string, ModifiableAttribute> = useKeepReferenceEqualityIfPossible(
+function useFirstRawValue(propertyPath: PropertyPath): Either<string, ModifiableAttribute> {
+  return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
       (contextData) => {
@@ -121,8 +124,10 @@ export function useControlForUnionControl(
       deepEqual,
     ),
   )
+}
 
-  const firstRealValue: unknown = useKeepReferenceEqualityIfPossible(
+function useFirstRealValue(propertyPath: PropertyPath): unknown {
+  return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
       (contextData) => {
@@ -132,6 +137,28 @@ export function useControlForUnionControl(
       deepEqual,
     ),
   )
+}
+
+export function useCountForArrayControl(propertyPath: PropertyPath): number {
+  const firstRawValue = useFirstRawValue(propertyPath)
+  const firstRealValue = useFirstRealValue(propertyPath)
+
+  const simpleValue = flatMapEither(jsxSimpleAttributeToValue, firstRawValue)
+  const firstValue = unwrapEither(simpleValue, firstRealValue)
+
+  if (Array.isArray(firstValue)) {
+    return firstValue.length
+  } else {
+    return 0
+  }
+}
+
+export function useControlForUnionControl(
+  propertyPath: PropertyPath,
+  control: UnionControlDescription,
+): ControlDescription {
+  const firstRawValue = useFirstRawValue(propertyPath)
+  const firstRealValue = useFirstRealValue(propertyPath)
 
   return controlToUseForUnion(control, firstRawValue, firstRealValue)
 }

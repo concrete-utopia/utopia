@@ -15,6 +15,24 @@ const ppCreate = (p: string) => PP.create([p])
 
 const regularArrayDOMEventHandlerNames = [...DOMEventHandlerNames]
 
+interface EventHandlerControlProps {
+  handlerName: string
+  value: string
+}
+
+export const EventHandlerControl = betterReactMemo(
+  'EventHandlerControl',
+  (props: EventHandlerControlProps) => {
+    const { handlerName, value } = props
+    return (
+      <>
+        <PropertyLabel target={[PP.create([handlerName])]}>{handlerName}</PropertyLabel>
+        <StringInput value={value} controlStatus='disabled' />
+      </>
+    )
+  },
+)
+
 export const EventHandlersSection = betterReactMemo('EventHandlersSection', () => {
   const { value, onUnsetValues } = useInspectorInfo<DOMEventHandler, ParsedValues<DOMEventHandler>>(
     regularArrayDOMEventHandlerNames,
@@ -53,8 +71,7 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
                   padded={true}
                   type='<--1fr--><--1fr-->'
                 >
-                  <PropertyLabel target={[PP.create([handlerName])]}>{handlerName}</PropertyLabel>
-                  <StringInput value={eventHandlerValue} controlStatus='disabled' />
+                  <EventHandlerControl handlerName={handlerName} value={eventHandlerValue} />
                 </GridRow>
               </InspectorContextMenuWrapper>
             )

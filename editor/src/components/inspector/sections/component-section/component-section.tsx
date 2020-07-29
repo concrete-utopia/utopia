@@ -21,6 +21,7 @@ import {
   BaseControlDescription,
   isBaseControlDescription,
   UnionControlDescription,
+  ArrayControlDescription,
 } from 'utopia-api'
 import { foldEither, right, Either } from '../../../../core/shared/either'
 import Utils from '../../../../utils/utils'
@@ -60,14 +61,17 @@ import { WarningIcon } from '../../../../uuiui/warning-icon'
 import {
   useInspectorInfoForPropertyControl,
   useControlForUnionControl,
+  useCountForArrayControl,
 } from '../../common/property-controls-hooks'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
 import { OptionsType } from 'react-select'
+import { EventHandlerControl } from '../event-handlers-section/event-handlers-section'
+import { backgroundControlContainerStyle } from '../../controls/background-solid-or-gradient-thumbnail-control'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
   addPropsToPath: boolean,
-  control: BaseControlDescription,
+  control: ControlDescription,
 ) {
   const propertyPath = addPropsToPath ? PP.append(PathForSceneProps, partialPath) : partialPath
   return useInspectorInfoForPropertyControl(propertyPath, control)
@@ -97,34 +101,6 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
       ? propMetadata.value
       : (controlDescription as any).defaultValue
     switch (controlDescription.type) {
-      case 'string':
-        const stringControlValue = Utils.defaultIfNull('', value)
-        return (
-          <StringControl
-            key={propName}
-            id={controlId}
-            value={stringControlValue}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-          />
-        )
-      case 'number':
-        return (
-          <SimpleNumberInput
-            id={controlId}
-            value={value}
-            onSubmitValue={wrappedOnSubmit}
-            onTransientSubmitValue={wrappedOnTransientSubmit}
-            onForcedSubmitValue={wrappedOnSubmit}
-            controlStatus={propMetadata.controlStatus}
-            incrementControls={controlDescription.displayStepper}
-            stepSize={controlDescription.step}
-            minimum={controlDescription.min}
-            maximum={controlDescription.max}
-            labelInner={controlDescription.unit}
-          />
-        )
       case 'boolean':
         return (
           <BooleanControl
@@ -134,82 +110,6 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
             onSubmitValue={propMetadata.onSubmitValue}
             controlStatus={propMetadata.controlStatus}
             controlStyles={propMetadata.controlStyles}
-          />
-        )
-      case 'enum':
-        // TODO memoize this
-        const options: Array<SelectOption> = controlDescription.options.map((option, index) => {
-          return {
-            value: option as string, // TODO cheating with type
-            label:
-              controlDescription.optionTitles == null ||
-              typeof controlDescription.optionTitles === 'function'
-                ? (option as string)
-                : (controlDescription.optionTitles[index] as string),
-          }
-        })
-        return (
-          <SelectControl
-            style={{
-              fontWeight: 'normal',
-              marginLeft: 4,
-            }}
-            key={propName}
-            id={controlId}
-            value={value}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            options={options}
-          />
-        )
-      case 'slider': {
-        return (
-          <SliderControl
-            key={propName}
-            id={controlId}
-            value={value}
-            onTransientSubmitValue={propMetadata.onTransientSubmitValue}
-            onForcedSubmitValue={propMetadata.onSubmitValue}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            DEPRECATED_controlOptions={{
-              minimum: controlDescription.min,
-              maximum: controlDescription.max,
-              stepSize: controlDescription.step,
-            }}
-          />
-        )
-      }
-      case 'popuplist': {
-        function submitValue(option: SelectOption): void {
-          propMetadata.onSubmitValue(option.value)
-        }
-        const currentValue = controlDescription.options.find((option) => {
-          return fastDeepEquals(option.value, value)
-        })
-
-        return (
-          <PopupList
-            disabled={!propMetadata.controlStyles.interactive}
-            value={currentValue}
-            onSubmitValue={submitValue}
-            options={controlDescription.options}
-            containerMode={'default'}
-          />
-        )
-      }
-      case 'options':
-        return (
-          <OptionChainControl
-            key={propName}
-            id={controlId}
-            value={value}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            onSubmitValue={propMetadata.onSubmitValue}
-            options={controlDescription.options}
           />
         )
       case 'color':
@@ -255,6 +155,131 @@ const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropP
             }}
           />
         )
+      case 'enum':
+        // TODO memoize this
+        const options: Array<SelectOption> = controlDescription.options.map((option, index) => {
+          return {
+            value: option as string, // TODO cheating with type
+            label:
+              controlDescription.optionTitles == null ||
+              typeof controlDescription.optionTitles === 'function'
+                ? (option as string)
+                : (controlDescription.optionTitles[index] as string),
+          }
+        })
+        return (
+          <SelectControl
+            style={{
+              fontWeight: 'normal',
+              marginLeft: 4,
+            }}
+            key={propName}
+            id={controlId}
+            value={value}
+            onSubmitValue={propMetadata.onSubmitValue}
+            controlStatus={propMetadata.controlStatus}
+            controlStyles={propMetadata.controlStyles}
+            options={options}
+          />
+        )
+      case 'eventhandler':
+        return <EventHandlerControl key={propName} handlerName={propName} value={value ?? ''} />
+      case 'ignore':
+        return null
+      case 'image':
+        return (
+          <StringControl
+            key={propName}
+            id={controlId}
+            value={Utils.defaultIfNull('', value)}
+            onSubmitValue={
+              propMetadata.controlStatus === 'controlled' ? Utils.NO_OP : propMetadata.onSubmitValue
+            }
+            controlStatus={propMetadata.controlStatus}
+            controlStyles={{
+              ...propMetadata.controlStyles,
+              showContent: true,
+            }}
+          />
+        )
+      case 'number':
+        return (
+          <SimpleNumberInput
+            id={controlId}
+            value={value}
+            onSubmitValue={wrappedOnSubmit}
+            onTransientSubmitValue={wrappedOnTransientSubmit}
+            onForcedSubmitValue={wrappedOnSubmit}
+            controlStatus={propMetadata.controlStatus}
+            incrementControls={controlDescription.displayStepper}
+            stepSize={controlDescription.step}
+            minimum={controlDescription.min}
+            maximum={controlDescription.max}
+            labelInner={controlDescription.unit}
+          />
+        )
+      case 'options':
+        return (
+          <OptionChainControl
+            key={propName}
+            id={controlId}
+            value={value}
+            controlStatus={propMetadata.controlStatus}
+            controlStyles={propMetadata.controlStyles}
+            onSubmitValue={propMetadata.onSubmitValue}
+            options={controlDescription.options}
+          />
+        )
+      case 'popuplist': {
+        function submitValue(option: SelectOption): void {
+          propMetadata.onSubmitValue(option.value)
+        }
+        const currentValue = controlDescription.options.find((option) => {
+          return fastDeepEquals(option.value, value)
+        })
+
+        return (
+          <PopupList
+            disabled={!propMetadata.controlStyles.interactive}
+            value={currentValue}
+            onSubmitValue={submitValue}
+            options={controlDescription.options}
+            containerMode={'default'}
+          />
+        )
+      }
+      case 'slider': {
+        return (
+          <SliderControl
+            key={propName}
+            id={controlId}
+            value={value}
+            onTransientSubmitValue={propMetadata.onTransientSubmitValue}
+            onForcedSubmitValue={propMetadata.onSubmitValue}
+            onSubmitValue={propMetadata.onSubmitValue}
+            controlStatus={propMetadata.controlStatus}
+            controlStyles={propMetadata.controlStyles}
+            DEPRECATED_controlOptions={{
+              minimum: controlDescription.min,
+              maximum: controlDescription.max,
+              stepSize: controlDescription.step,
+            }}
+          />
+        )
+      }
+      case 'string':
+        const stringControlValue = Utils.defaultIfNull('', value)
+        return (
+          <StringControl
+            key={propName}
+            id={controlId}
+            value={stringControlValue}
+            onSubmitValue={propMetadata.onSubmitValue}
+            controlStatus={propMetadata.controlStatus}
+            controlStyles={propMetadata.controlStyles}
+          />
+        )
+      case 'styleobject':
       default:
         return <div>Not yet implemented control type.</div>
     }
@@ -379,6 +404,21 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
     </InspectorContextMenuWrapper>
   )
 })
+
+interface RowForArrayControlProps extends AbstractRowForControlProps {
+  controlDescription: ArrayControlDescription
+}
+
+const RowForArrayControl = betterReactMemo(
+  'RowForArrayControl',
+  (props: RowForArrayControlProps) => {
+    const { propPath, controlDescription, isScene } = props
+    const title = titleForControl(propPath, controlDescription)
+    const rowCound = useCountForArrayControl(propPath)
+
+    return null
+  },
+)
 
 interface RowForUnionControlProps extends AbstractRowForControlProps {
   controlDescription: UnionControlDescription
