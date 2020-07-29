@@ -39,6 +39,8 @@ endsWithSlash :: Text -> Bool
 endsWithSlash = T.isSuffixOf "/"
 
 projectPathRedirection :: Redirection
+projectPathRedirection ["p", _] method rawPath rawQuery =
+  if endsWithSlash rawPath || method /= methodGet then Nothing else Just (rawPath <> "/" <> rawQuery)
 projectPathRedirection ["project", _] method rawPath rawQuery =
   if endsWithSlash rawPath || method /= methodGet then Nothing else Just (rawPath <> "/" <> rawQuery)
 projectPathRedirection _ _ _ _                            = Nothing
@@ -62,6 +64,18 @@ redirector redirections applicationToWrap request sendResponse =
       passthrough = applicationToWrap request sendResponse
       redirectTo target = sendResponse $ responseLBS temporaryRedirect307 [("Location", toS target)] mempty
   in  maybe passthrough redirectTo possibleRedirection
+
+projectToPPath :: [Text] -> [Text]
+projectToPPath ("project" : pathRemainder) = "p" : pathRemainder
+projectToPPath path = path
+
+{-|
+   Anything starting with '/project' should be rewritten to start with '/p'.
+-}
+projectToPPathMiddleware :: Middleware
+projectToPPathMiddleware applicationToWrap request sendResponse =
+  let updatedRequest = request { pathInfo = projectToPPath $ pathInfo request }
+  in  applicationToWrap updatedRequest sendResponse
 
 tooLargeResponse :: Response
 tooLargeResponse = responseLBS requestEntityTooLarge413 [(hContentType, "text/plain")] "Request body too large to be processed."
@@ -143,6 +157,7 @@ runServerWithResources EnvironmentRuntime{..} = do
     $ limitRequestSizeMiddleware (1024 * 1024 * 5) -- 5MB
     $ ifRequest (\_ -> shouldForceSSL) forceSSL
     $ redirector [projectPathRedirection, previewInnerPathRedirection]
+    $ projectToPPathMiddleware
     $ requestRewriter assetsCache
     $ gzip def
     $ noCacheMiddleware

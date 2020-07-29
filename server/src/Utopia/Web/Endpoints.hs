@@ -408,8 +408,6 @@ protected authCookie = logoutPage authCookie
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate
          :<|> emptyProjectPage
-         :<|> emptyProjectPage
-         :<|> projectPage
          :<|> projectPage
          :<|> emptyPreviewPage
          :<|> previewPage
@@ -419,7 +417,6 @@ unprotected = authenticate
          :<|> getProjectMetadataEndpoint
          :<|> getShowcaseEndpoint
          :<|> setShowcaseEndpoint
-         :<|> loadProjectAssetEndpoint
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectThumbnailEndpoint
