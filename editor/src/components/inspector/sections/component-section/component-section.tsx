@@ -637,7 +637,7 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
       case 'array':
         return <RowForArrayControl {...props} controlDescription={controlDescription} />
       case 'object':
-        return <div>Not yet implemented control type.</div>
+        return <RowForObjectControl {...props} controlDescription={controlDescription} />
       case 'union':
         return <RowForUnionControl {...props} controlDescription={controlDescription} />
       default:
