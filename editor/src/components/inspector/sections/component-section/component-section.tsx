@@ -439,7 +439,9 @@ const RowForArrayControl = betterReactMemo(
     }
     const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
 
-    const insertRow = React.useCallback(() => setInsertingRow(true), [])
+    const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
+
+    React.useEffect(() => setInsertingRow(false), [springs.length])
 
     return (
       <>
@@ -449,15 +451,26 @@ const RowForArrayControl = betterReactMemo(
             {title}
           </PropertyLabel>
           {propertyStatus.overwritable ? (
-            <SquareButton highlight onMouseDown={insertRow}>
-              <Icn
-                style={{ paddingTop: 1 }}
-                category='semantic'
-                type='plus'
-                color={propertyStatus.controlled ? 'blue' : 'darkgray'}
-                width={16}
-                height={16}
-              />
+            <SquareButton highlight onMouseDown={toggleInsertRow}>
+              {insertingRow ? (
+                <Icn
+                  style={{ paddingTop: 1 }}
+                  category='semantic'
+                  type='minus'
+                  color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+                  width={16}
+                  height={16}
+                />
+              ) : (
+                <Icn
+                  style={{ paddingTop: 1 }}
+                  category='semantic'
+                  type='plus'
+                  color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+                  width={16}
+                  height={16}
+                />
+              )}
             </SquareButton>
           ) : null}
         </GridRow>
