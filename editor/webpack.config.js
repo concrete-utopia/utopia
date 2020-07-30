@@ -257,8 +257,8 @@ const config = {
     : {},
 
   optimization: {
-    minimize: isProdOrStaging,
-    minimizer: isProdOrStaging
+    minimize: isProd,
+    minimizer: isProd
       ? [
           new TerserPlugin({
             cache: true,
