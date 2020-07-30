@@ -425,7 +425,7 @@ const RowForArrayControl = betterReactMemo(
     )
 
     const rowHeight = UtopiaTheme.layout.gridRowHeight.tall
-    const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight, true)
+    const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight, false)
     const [insertingRow, setInsertingRow] = React.useState(false)
 
     let warningTooltip: string | undefined = undefined
