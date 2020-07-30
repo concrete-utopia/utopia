@@ -230,6 +230,15 @@ export function omitWithPredicate<T extends MapLike<any>>(
   return result
 }
 
+export function pick<T, K extends keyof T>(keys: Array<K>, obj: T): Pick<T, K> {
+  var result = {} as Pick<T, K>
+
+  fastForEach(keys, (key) => {
+    result[key] = obj[key]
+  })
+  return result
+}
+
 export function objectContainsKey<T>(obj: T, key: keyof T): boolean {
   return key in obj
 }

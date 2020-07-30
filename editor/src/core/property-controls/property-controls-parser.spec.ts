@@ -9,6 +9,9 @@ import {
   ColorControlDescription,
   ComponentInstanceDescription,
   IgnoreControlDescription,
+  EventHandlerControlDescription,
+  ImageControlDescription,
+  StyleObjectControlDescription,
 } from 'utopia-api'
 import {
   parseNumberControlDescription,
@@ -24,8 +27,11 @@ import {
   ParsedPropertyControls,
   parsePropertyControls,
   parseIgnoreControlDescription,
+  parseEventHandlerControlDescription,
+  parseImageControlDescription,
+  parseStyleObjectControlDescription,
 } from './property-controls-parser'
-import { right, left } from '../shared/either'
+import { right, left, isLeft } from '../shared/either'
 import {
   objectFieldParseError,
   descriptionParseError,
@@ -33,6 +39,179 @@ import {
   ParseResult,
   ParseError,
 } from '../../utils/value-parser-utils'
+import { pick } from '../shared/object-utils'
+import { fastForEach } from '../shared/utils'
+
+function runBaseTestSuite<T>(
+  validObject: T,
+  requiredFields: Array<keyof T>,
+  invalidDefaults: unknown[],
+  defaultAllowed: boolean,
+  parseFn: (value: unknown) => ParseResult<T>,
+) {
+  it('parses a full value correctly', () => {
+    expect(parseFn(validObject)).toEqual(right(validObject))
+  })
+  it('parses a minimal value correctly', () => {
+    const value = pick(requiredFields, validObject)
+    expect(parseFn(value)).toEqual(right(value))
+  })
+  it('fails on an invalid title', () => {
+    const value = {
+      ...validObject,
+      title: true,
+    }
+    expect(parseFn(value)).toEqual(
+      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
+    )
+  })
+  it('fails on an invalid type', () => {
+    const value = {
+      ...validObject,
+      type: 'ham sandwich',
+    }
+    expect(parseFn(value)).toEqual(
+      left(
+        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
+      ),
+    )
+  })
+
+  if (defaultAllowed) {
+    it('fails on an invalid default', () => {
+      fastForEach(invalidDefaults, (invalidDefault) => {
+        const value = {
+          ...validObject,
+          defaultValue: invalidDefault,
+        }
+        expect(isLeft(parseFn(value))).toBeTruthy()
+      })
+    })
+  } else {
+    it('ignores a default value', () => {
+      const value = {
+        ...validObject,
+        defaultValue: 'anything really',
+      }
+
+      expect(parseFn(value)).toEqual(right(validObject))
+    })
+  }
+}
+
+const validBooleanControlDescriptionValue: BooleanControlDescription = {
+  title: 'Boolean Control',
+  type: 'boolean',
+  defaultValue: true,
+  disabledTitle: 'Value is not set.',
+  enabledTitle: 'Value is set',
+}
+
+describe('parseBooleanControlDescription', () => {
+  runBaseTestSuite(
+    validBooleanControlDescriptionValue,
+    ['type'],
+    ['hat'],
+    true,
+    parseBooleanControlDescription,
+  )
+})
+
+const validColorControlDescriptionValue: ColorControlDescription = {
+  title: 'Slider Control',
+  type: 'color',
+  defaultValue: '#FFFFFF',
+}
+
+describe('parseColorControlDescription', () => {
+  runBaseTestSuite(
+    validColorControlDescriptionValue,
+    ['type'],
+    ['hat', 9],
+    true,
+    parseColorControlDescription,
+  )
+})
+
+const validComponentInstanceControlDescriptionValue: ComponentInstanceDescription = {
+  title: 'Component Instance Control',
+  type: 'componentinstance',
+}
+
+describe('parseComponentInstanceControlDescription', () => {
+  runBaseTestSuite(
+    validComponentInstanceControlDescriptionValue,
+    ['type'],
+    [],
+    false,
+    parseComponentInstanceControlDescription,
+  )
+})
+
+const validEnumControlDescriptionValue: EnumControlDescription = {
+  title: 'Enum Control',
+  type: 'enum',
+  defaultValue: 5,
+  options: ['hat', 5, true, undefined, null],
+  optionTitles: ['first title', 'second title'],
+  displaySegmentedControl: true,
+}
+
+describe('parseEnumControlDescription', () => {
+  runBaseTestSuite(
+    validEnumControlDescriptionValue,
+    ['type', 'options'],
+    [['hat']],
+    true,
+    parseEnumControlDescription,
+  )
+})
+
+const validEventHandlerControlDescriptionValue: EventHandlerControlDescription = {
+  title: 'Event Handler Control',
+  type: 'eventhandler',
+}
+
+describe('parseEventHandlerControlDescription', () => {
+  runBaseTestSuite(
+    validEventHandlerControlDescriptionValue,
+    ['type'],
+    [],
+    false,
+    parseEventHandlerControlDescription,
+  )
+})
+
+const validIgnoreControlDescriptionValue: IgnoreControlDescription = {
+  title: 'Ignore Description',
+  type: 'ignore',
+}
+
+describe('parseIgnoreControlDescription', () => {
+  runBaseTestSuite(
+    validIgnoreControlDescriptionValue,
+    ['type'],
+    [],
+    false,
+    parseIgnoreControlDescription,
+  )
+})
+
+const validImageControlDescriptionValue: ImageControlDescription = {
+  title: 'Image Control',
+  type: 'image',
+  defaultValue: 'www.somewebsite.com/iamanimage.jpg',
+}
+
+describe('parseImageControlDescription', () => {
+  runBaseTestSuite(
+    validImageControlDescriptionValue,
+    ['type'],
+    [0],
+    true,
+    parseImageControlDescription,
+  )
+})
 
 const validNumberControlDescriptionValue: NumberControlDescription = {
   title: 'Number Title',
@@ -46,258 +225,45 @@ const validNumberControlDescriptionValue: NumberControlDescription = {
 }
 
 describe('parseNumberControlDescription', () => {
-  it('parses a full value correctly', () => {
-    expect(parseNumberControlDescription(validNumberControlDescriptionValue)).toEqual(
-      right(validNumberControlDescriptionValue),
-    )
-  })
-  it('parses a minimal value correctly', () => {
-    const value = {
-      type: 'number',
-    }
-    expect(parseNumberControlDescription(value)).toEqual(right(value))
-  })
-  it('fails on an invalid title', () => {
-    const value = {
-      ...validNumberControlDescriptionValue,
-      title: true,
-    }
-    expect(parseNumberControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
-    )
-  })
-  it('fails on an invalid default value', () => {
-    const value = {
-      ...validNumberControlDescriptionValue,
-      defaultValue: 'hat',
-    }
-    expect(parseNumberControlDescription(value)).toEqual(
-      left(objectFieldParseError('defaultValue', descriptionParseError('Value is not a number.'))),
-    )
-  })
-  it('fails on an invalid type', () => {
-    const value = {
-      ...validNumberControlDescriptionValue,
-      type: 'ham sandwich',
-    }
-    expect(parseNumberControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
-      ),
-    )
-  })
+  runBaseTestSuite(
+    validNumberControlDescriptionValue,
+    ['type'],
+    ['hat'],
+    true,
+    parseNumberControlDescription,
+  )
 })
 
-const validEnumControlDescriptionValue: EnumControlDescription = {
-  title: 'Enum Control',
-  type: 'enum',
+const validOptionsControlDescriptionValue: OptionsControlDescription = {
+  title: 'Pop Up List Control',
+  type: 'options',
   defaultValue: 5,
-  options: ['hat', 5, true, undefined, null],
-  optionTitles: ['first title', 'second title'],
-  displaySegmentedControl: true,
+  options: [
+    { value: 5, label: 'Five' },
+    { value: 8, label: 'Eight' },
+  ],
 }
 
-describe('parseEnumControlDescription', () => {
-  it('parses a full value correctly', () => {
-    expect(parseEnumControlDescription(validEnumControlDescriptionValue)).toEqual(
-      right(validEnumControlDescriptionValue),
-    )
-  })
-  it('parses a minimal value correctly', () => {
+describe('parseOptionsControlDescription', () => {
+  runBaseTestSuite(
+    validOptionsControlDescriptionValue,
+    ['type', 'options'],
+    [],
+    true,
+    parseOptionsControlDescription,
+  )
+
+  it('fails on an invalid option', () => {
     const value = {
-      type: 'enum',
-      options: ['hat', 5, true, undefined, null],
+      ...validOptionsControlDescriptionValue,
+      options: ['error'],
     }
-    expect(parseEnumControlDescription(value)).toEqual(right(value))
-  })
-  it('fails on an invalid title', () => {
-    const value = {
-      ...validEnumControlDescriptionValue,
-      title: true,
-    }
-    expect(parseEnumControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
-    )
-  })
-  it('fails on an invalid default value', () => {
-    const value = {
-      ...validEnumControlDescriptionValue,
-      defaultValue: ['hat'],
-    }
-    expect(parseEnumControlDescription(value)).toEqual(
+    expect(parseOptionsControlDescription(value)).toEqual(
       left(
         objectFieldParseError(
-          'defaultValue',
-          descriptionParseError('Value is not a string/boolean/number/undefined/null.'),
+          'options',
+          arrayIndexParseError(0, descriptionParseError('Value is not an object.')),
         ),
-      ),
-    )
-  })
-  it('fails on an invalid type', () => {
-    const value = {
-      ...validEnumControlDescriptionValue,
-      type: 'ham sandwich',
-    }
-    expect(parseEnumControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
-      ),
-    )
-  })
-})
-
-const validBooleanControlDescriptionValue: BooleanControlDescription = {
-  title: 'Boolean Control',
-  type: 'boolean',
-  defaultValue: true,
-  disabledTitle: 'Value is not set.',
-  enabledTitle: 'Value is set',
-}
-
-describe('parseBooleanControlDescription', () => {
-  it('parses a full value correctly', () => {
-    expect(parseBooleanControlDescription(validBooleanControlDescriptionValue)).toEqual(
-      right(validBooleanControlDescriptionValue),
-    )
-  })
-  it('parses a minimal value correctly', () => {
-    const value = {
-      type: 'boolean',
-    }
-    expect(parseBooleanControlDescription(value)).toEqual(right(value))
-  })
-  it('fails on an invalid title', () => {
-    const value = {
-      ...validBooleanControlDescriptionValue,
-      title: true,
-    }
-    expect(parseBooleanControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
-    )
-  })
-  it('fails on an invalid default value', () => {
-    const value = {
-      ...validBooleanControlDescriptionValue,
-      defaultValue: 'hat',
-    }
-    expect(parseBooleanControlDescription(value)).toEqual(
-      left(objectFieldParseError('defaultValue', descriptionParseError('Value is not a boolean.'))),
-    )
-  })
-  it('fails on an invalid type', () => {
-    const value = {
-      ...validBooleanControlDescriptionValue,
-      type: 'ham sandwich',
-    }
-    expect(parseBooleanControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
-      ),
-    )
-  })
-})
-
-const validStringControlDescriptionValue: StringControlDescription = {
-  title: 'String Control',
-  type: 'string',
-  defaultValue: 'Some text',
-  placeholder: 'Enter text',
-  obscured: true,
-}
-
-describe('parseStringControlDescription', () => {
-  it('parses a full value correctly', () => {
-    expect(parseStringControlDescription(validStringControlDescriptionValue)).toEqual(
-      right(validStringControlDescriptionValue),
-    )
-  })
-  it('parses a minimal value correctly', () => {
-    const value = {
-      type: 'string',
-    }
-    expect(parseStringControlDescription(value)).toEqual(right(value))
-  })
-  it('fails on an invalid title', () => {
-    const value = {
-      ...validStringControlDescriptionValue,
-      title: true,
-    }
-    expect(parseStringControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
-    )
-  })
-  it('fails on an invalid default value', () => {
-    const value = {
-      ...validStringControlDescriptionValue,
-      defaultValue: 9,
-    }
-    expect(parseStringControlDescription(value)).toEqual(
-      left(objectFieldParseError('defaultValue', descriptionParseError('Value is not a string.'))),
-    )
-  })
-  it('fails on an invalid type', () => {
-    const value = {
-      ...validStringControlDescriptionValue,
-      type: 'ham sandwich',
-    }
-    expect(parseStringControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
-      ),
-    )
-  })
-})
-
-const validSliderControlDescriptionValue: SliderControlDescription = {
-  title: 'Slider Control',
-  type: 'slider',
-  defaultValue: 5,
-  min: 2,
-  max: 10,
-  step: 1,
-}
-
-describe('parseSliderControlDescription', () => {
-  it('parses a full value correctly', () => {
-    expect(parseSliderControlDescription(validSliderControlDescriptionValue)).toEqual(
-      right(validSliderControlDescriptionValue),
-    )
-  })
-  it('parses a minimal value correctly', () => {
-    const value = {
-      type: 'slider',
-      min: 2,
-      max: 10,
-      step: 1,
-    }
-    expect(parseSliderControlDescription(value)).toEqual(right(value))
-  })
-  it('fails on an invalid title', () => {
-    const value = {
-      ...validSliderControlDescriptionValue,
-      title: true,
-    }
-    expect(parseSliderControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
-    )
-  })
-  it('fails on an invalid default value', () => {
-    const value = {
-      ...validSliderControlDescriptionValue,
-      defaultValue: 'hat',
-    }
-    expect(parseSliderControlDescription(value)).toEqual(
-      left(objectFieldParseError('defaultValue', descriptionParseError('Value is not a number.'))),
-    )
-  })
-  it('fails on an invalid type', () => {
-    const value = {
-      ...validSliderControlDescriptionValue,
-      type: 'ham sandwich',
-    }
-    expect(parseSliderControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
       ),
     )
   })
@@ -314,27 +280,14 @@ const validPopUpListControlDescriptionValue: PopUpListControlDescription = {
 }
 
 describe('parsePopUpListControlDescription', () => {
-  it('parses a full value correctly', () => {
-    expect(parsePopUpListControlDescription(validPopUpListControlDescriptionValue)).toEqual(
-      right(validPopUpListControlDescriptionValue),
-    )
-  })
-  it('parses a minimal value correctly', () => {
-    const value = {
-      type: 'popuplist',
-      options: [],
-    }
-    expect(parsePopUpListControlDescription(value)).toEqual(right(value))
-  })
-  it('fails on an invalid title', () => {
-    const value = {
-      ...validPopUpListControlDescriptionValue,
-      title: true,
-    }
-    expect(parsePopUpListControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
-    )
-  })
+  runBaseTestSuite(
+    validPopUpListControlDescriptionValue,
+    ['type', 'options'],
+    [],
+    true,
+    parsePopUpListControlDescription,
+  )
+
   it('fails on an invalid option', () => {
     const value = {
       ...validPopUpListControlDescriptionValue,
@@ -349,222 +302,60 @@ describe('parsePopUpListControlDescription', () => {
       ),
     )
   })
-  it('fails on an invalid type', () => {
-    const value = {
-      ...validPopUpListControlDescriptionValue,
-      type: 'ham sandwich',
-    }
-    expect(parsePopUpListControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
-      ),
-    )
-  })
 })
 
-const validOptionsControlDescriptionValue: OptionsControlDescription = {
-  title: 'Pop Up List Control',
-  type: 'options',
-  defaultValue: 5,
-  options: [
-    { value: 5, label: 'Five' },
-    { value: 8, label: 'Eight' },
-  ],
-}
-
-describe('parseOptionsControlDescription', () => {
-  it('parses a full value correctly', () => {
-    expect(parseOptionsControlDescription(validOptionsControlDescriptionValue)).toEqual(
-      right(validOptionsControlDescriptionValue),
-    )
-  })
-  it('parses a minimal value correctly', () => {
-    const value = {
-      type: 'options',
-      options: [],
-    }
-    expect(parseOptionsControlDescription(value)).toEqual(right(value))
-  })
-  it('fails on an invalid title', () => {
-    const value = {
-      ...validOptionsControlDescriptionValue,
-      title: true,
-    }
-    expect(parseOptionsControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
-    )
-  })
-  it('fails on an invalid option', () => {
-    const value = {
-      ...validOptionsControlDescriptionValue,
-      options: ['error'],
-    }
-    expect(parseOptionsControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError(
-          'options',
-          arrayIndexParseError(0, descriptionParseError('Value is not an object.')),
-        ),
-      ),
-    )
-  })
-  it('fails on an invalid type', () => {
-    const value = {
-      ...validOptionsControlDescriptionValue,
-      type: 'ham sandwich',
-    }
-    expect(parseOptionsControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
-      ),
-    )
-  })
-})
-
-const validColorControlDescriptionValue: ColorControlDescription = {
+const validSliderControlDescriptionValue: SliderControlDescription = {
   title: 'Slider Control',
-  type: 'color',
-  defaultValue: '#FFFFFF',
+  type: 'slider',
+  defaultValue: 5,
+  min: 2,
+  max: 10,
+  step: 1,
 }
 
-describe('parseColorControlDescription', () => {
-  it('parses a full value correctly', () => {
-    expect(parseColorControlDescription(validColorControlDescriptionValue)).toEqual(
-      right(validColorControlDescriptionValue),
-    )
-  })
-  it('parses a minimal value correctly', () => {
-    const value = {
-      type: 'color',
-    }
-    expect(parseColorControlDescription(value)).toEqual(right(value))
-  })
-  it('fails on an invalid title', () => {
-    const value = {
-      ...validColorControlDescriptionValue,
-      title: true,
-    }
-    expect(parseColorControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
-    )
-  })
-  it('fails on an invalid default value which is a string', () => {
-    const value = {
-      ...validColorControlDescriptionValue,
-      defaultValue: 'hat',
-    }
-    expect(parseColorControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError(
-          'defaultValue',
-          descriptionParseError('Value is not a valid color string.'),
-        ),
-      ),
-    )
-  })
-  it('fails on an invalid default value which is not a string', () => {
-    const value = {
-      ...validColorControlDescriptionValue,
-      defaultValue: 9,
-    }
-    expect(parseColorControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError(
-          'defaultValue',
-          descriptionParseError('Value is not a valid color string.'),
-        ),
-      ),
-    )
-  })
-  it('fails on an invalid type', () => {
-    const value = {
-      ...validColorControlDescriptionValue,
-      type: 'ham sandwich',
-    }
-    expect(parseColorControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
-      ),
-    )
-  })
+describe('parseSliderControlDescription', () => {
+  runBaseTestSuite(
+    validSliderControlDescriptionValue,
+    ['type', 'max', 'min', 'step'],
+    ['hat'],
+    true,
+    parseSliderControlDescription,
+  )
 })
 
-const validComponentInstanceControlDescriptionValue: ComponentInstanceDescription = {
-  title: 'Component Instance Control',
-  type: 'componentinstance',
+const validStringControlDescriptionValue: StringControlDescription = {
+  title: 'String Control',
+  type: 'string',
+  defaultValue: 'Some text',
+  placeholder: 'Enter text',
+  obscured: true,
 }
 
-describe('parseComponentInstanceControlDescription', () => {
-  it('parses a full value correctly', () => {
-    expect(
-      parseComponentInstanceControlDescription(validComponentInstanceControlDescriptionValue),
-    ).toEqual(right(validComponentInstanceControlDescriptionValue))
-  })
-  it('parses a minimal value correctly', () => {
-    const value = {
-      type: 'componentinstance',
-    }
-    expect(parseComponentInstanceControlDescription(value)).toEqual(right(value))
-  })
-  it('fails on an invalid title', () => {
-    const value = {
-      ...validComponentInstanceControlDescriptionValue,
-      title: true,
-    }
-    expect(parseComponentInstanceControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
-    )
-  })
-  it('fails on an invalid type', () => {
-    const value = {
-      ...validComponentInstanceControlDescriptionValue,
-      type: 'ham sandwich',
-    }
-    expect(parseComponentInstanceControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
-      ),
-    )
-  })
+describe('parseStringControlDescription', () => {
+  runBaseTestSuite(
+    validStringControlDescriptionValue,
+    ['type'],
+    [9],
+    true,
+    parseStringControlDescription,
+  )
 })
 
-const validIgnoreControlDescriptionValue: IgnoreControlDescription = {
-  title: 'Ignore Description',
-  type: 'ignore',
+const validStyleObjectControlDescriptionValue: StyleObjectControlDescription = {
+  title: 'Style Object Control',
+  type: 'styleobject',
+  defaultValue: { width: 100 },
+  placeholder: { height: 100 },
 }
 
-describe('parseIgnoreControlDescription', () => {
-  it('parses a full value correctly', () => {
-    expect(parseIgnoreControlDescription(validIgnoreControlDescriptionValue)).toEqual(
-      right(validIgnoreControlDescriptionValue),
-    )
-  })
-  it('parses a minimal value correctly', () => {
-    const value = {
-      type: 'ignore',
-    }
-    expect(parseIgnoreControlDescription(value)).toEqual(right(value))
-  })
-  it('fails on an invalid title', () => {
-    const value = {
-      ...validIgnoreControlDescriptionValue,
-      title: true,
-    }
-    expect(parseIgnoreControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
-    )
-  })
-  it('fails on an invalid type', () => {
-    const value = {
-      ...validIgnoreControlDescriptionValue,
-      type: 'ham sandwich',
-    }
-    expect(parseIgnoreControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
-      ),
-    )
-  })
+describe('parseStyleObjectControlDescription', () => {
+  runBaseTestSuite(
+    validStyleObjectControlDescriptionValue,
+    ['type'],
+    ['hat', 9],
+    true,
+    parseStyleObjectControlDescription,
+  )
 })
 
 describe('parseControlDescription', () => {

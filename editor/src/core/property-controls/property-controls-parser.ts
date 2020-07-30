@@ -350,7 +350,7 @@ export function parseImageControlDescription(value: unknown): ParseResult<ImageC
   )
 }
 
-export function parseStyleObjectDescription(
+export function parseStyleObjectControlDescription(
   value: unknown,
 ): ParseResult<StyleObjectControlDescription> {
   return applicative4Either(
@@ -366,8 +366,8 @@ export function parseStyleObjectDescription(
     },
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['styleobject']), 'type')(value),
-    optionalObjectKeyParser(parseAny, 'defaultValue')(value), // FIXME
-    optionalObjectKeyParser(parseAny, 'placeholder')(value), // FIXME
+    optionalObjectKeyParser(parseObject(parseAny), 'defaultValue')(value), // FIXME
+    optionalObjectKeyParser(parseObject(parseAny), 'placeholder')(value), // FIXME
   )
 }
 
@@ -459,7 +459,7 @@ export function parseControlDescription(value: unknown): ParseResult<ControlDesc
       case 'string':
         return parseStringControlDescription(value)
       case 'styleobject':
-        return parseStyleObjectDescription(value)
+        return parseStyleObjectControlDescription(value)
       case 'array':
         return parseArrayControlDescription(value)
       case 'object':
