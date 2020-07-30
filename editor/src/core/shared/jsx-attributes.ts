@@ -348,7 +348,7 @@ export function getJSXAttributeAtPathInner(
       } else {
         return getJSXAttributeResult(jsxAttributeNotFound())
       }
-    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_NESTED_OBJECT': {
       // We store objects similar to the TS compiler, so as an array of keys and values.
       // Duplicate keys will mean the last one overwrites, so we traverse backwards
       const nextKey = PP.firstPart(tail)
@@ -370,16 +370,25 @@ export function getJSXAttributeAtPathInner(
       } else {
         return getJSXAttributeResult(jsxAttributeNotFound())
       }
-    case 'ATTRIBUTE_NESTED_ARRAY':
-      // KLUDGE WARNING, we make sure the property path contains an index number here
+    }
+    case 'ATTRIBUTE_NESTED_ARRAY': {
       const possibleIndex = PP.firstPart(tail)
       const index = typeof possibleIndex === 'number' ? possibleIndex : parseInt(possibleIndex)
       if (isNaN(index)) {
         throw new Error(`Attempted to access an array item at index ${possibleIndex}`)
       }
-      // and then we pretend that the array is just an object so that we can recurse into it
-      return getJSXAttributeAtPath(attribute.content as any, tail)
-    //   I'm sorry.（ミ￣ー￣ミ）
+      const foundProp = attribute.content[index]
+      if (foundProp == null) {
+        return getJSXAttributeResult(jsxAttributeNotFound())
+      } else {
+        const newTail = PP.tail(tail)
+        if (PP.depth(newTail) === 0) {
+          return getJSXAttributeResult(foundProp.value)
+        } else {
+          return getJSXAttributeAtPathInner(foundProp.value, newTail)
+        }
+      }
+    }
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Cannot resolve attribute ${JSON.stringify(attribute)}`)
