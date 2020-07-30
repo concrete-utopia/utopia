@@ -1,7 +1,9 @@
 // you can turn on/off debug features individually here
 
 export const PRODUCTION_ENV: boolean = process.env.NODE_ENV === 'production'
-export const PRODUCTION_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
+const PRODUCTION_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
+const STAGING_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'staging'
+const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG
 
 export const PROBABLY_ELECTRON: boolean =
   typeof window === 'undefined' ||
@@ -14,22 +16,22 @@ export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
 export const RUN_PERFORMANCE_CHECK = false
 export const REFERENCE_EQUALITY_CHECK = false
 
-export const MIRROR_SERVER: string = PRODUCTION_CONFIG
-  ? 'wss://apps.utopia2d.com/'
-  : 'ws://localhost:8080/'
-export const MIRROR_SERVER_PUBLISH_ENDPOINT: string = MIRROR_SERVER + 'app'
-export const MIRROR_SERVER_LISTEN_ENDPOINT: string = MIRROR_SERVER + 'listen'
-
 export const HOST: string = typeof window === 'undefined' ? '' : window.location.host
-export const BASE_URL: string = PRODUCTION_CONFIG ? `https://${HOST}/` : `http://${HOST}/`
+export const BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG
+  ? `https://${HOST}/`
+  : `http://${HOST}/`
 
-export const BASE_WS: string = PRODUCTION_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
+export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
-export const STATIC_BASE_URL: string = PRODUCTION_CONFIG
+export const STATIC_BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG
   ? `https://cdn.${HOST}/`
   : `http://${HOST}/`
 
-export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG ? `https://utopia.fm/` : BASE_URL
+export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG
+  ? `https://utopia.fm/`
+  : STAGING_CONFIG
+  ? 'https://utopia.fish/'
+  : BASE_URL
 export const UTOPIA_BACKEND = BASE_URL + 'v1/'
 export const UTOPIA_BACKEND_WS = BASE_WS + 'v1/'
 export const ASSET_ENDPOINT = UTOPIA_BACKEND + 'asset/'

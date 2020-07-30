@@ -11,14 +11,18 @@ const path = require('path')
 const webpack = require('webpack')
 
 const Production = 'production'
+const Staging = 'staging'
 const Development = 'development'
 
 const verbose = process.env.VERBOSE === 'true'
 const performance = process.env.PERFORMANCE === 'true' // This is for performance testing, which combines the dev server with production config
 const hot = !performance && process.env.HOT === 'true' // For running the webpack-dev-server in hot mode
 const mode = process.env.WEBPACK_MODE || (performance ? Production : Development) // Default to 'development' unless we are running the performance test
+const actualMode = mode === Staging ? Production : mode
 const isDev = mode === Development || performance
-const isProd = !isDev
+const isStaging = mode === Staging
+const isProd = !(isDev || isStaging)
+const isProdOrStaging = isProd || isStaging
 
 const runCompiler = isDev && process.env.RUN_COMPILER !== 'false' // For when you want to run the compiler in a separate tab
 
@@ -40,10 +44,10 @@ function srcPath(subdir) {
 //                    using the ExtractedTextPlugin - https://v4.webpack.js.org/plugins/extract-text-webpack-plugin/
 const hashPattern = hot ? '[hash]' : '[chunkhash]'
 
-const BaseDomain = isProd ? 'https://cdn.utopia.app' : ''
+const BaseDomain = isProd ? 'https://cdn.utopia.app' : isStaging ? 'https://cdn.utopia.pizza' : ''
 
 const config = {
-  mode: mode,
+  mode: actualMode,
 
   entry: {
     editor: hot
@@ -128,7 +132,7 @@ const config = {
 
     // Needed when running the webpack-dev-server in hot mode
     ...(hot ? [new webpack.HotModuleReplacementPlugin()] : []),
-    ...(isProd
+    ...(isProdOrStaging
       ? [
           new CleanWebpackPlugin({
             // Clean up TS transpile results after bundling
@@ -253,8 +257,8 @@ const config = {
     : {},
 
   optimization: {
-    minimize: isProd,
-    minimizer: isProd
+    minimize: isProdOrStaging,
+    minimizer: isProdOrStaging
       ? [
           new TerserPlugin({
             cache: true,
@@ -279,8 +283,8 @@ const config = {
         )
       },
       minSize: 10000, // Minimum size before chunking
-      maxAsyncRequests: isProd ? 6 : Infinity,
-      maxInitialRequests: isProd ? 6 : Infinity,
+      maxAsyncRequests: isProdOrStaging ? 6 : Infinity,
+      maxInitialRequests: isProdOrStaging ? 6 : Infinity,
     },
   },
 
@@ -293,7 +297,7 @@ const config = {
   cache: isDev,
 
   // Use default source maps in dev mode, or attach a source map if in prod
-  devtool: isProd ? 'source-map' : 'eval',
+  devtool: isProdOrStaging ? 'source-map' : 'eval',
 }
 
 if (verbose) {
