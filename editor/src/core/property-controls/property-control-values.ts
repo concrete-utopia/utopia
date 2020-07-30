@@ -18,7 +18,12 @@ import {
   UnionControlDescription,
   isBaseControlDescription,
 } from 'utopia-api'
-import { parseColor, CSSColor } from '../../components/inspector/common/css-utils'
+import {
+  parseColor,
+  CSSColor,
+  printColorToJsx,
+  isCSSColor,
+} from '../../components/inspector/common/css-utils'
 import {
   Either,
   foldEither,
@@ -30,6 +35,7 @@ import {
   sequenceEither,
   isLeft,
   reduceWithEither,
+  mapEither,
 } from '../shared/either'
 import { compose } from '../shared/function-utils'
 import {
@@ -66,6 +72,19 @@ export const parseEnumValue: Parser<AllowedEnumType> = parseAlternative<AllowedE
   [parseString, parseBoolean, parseNumber, parseUndefined, parseNull],
   'Value is not a string/boolean/number/undefined/null.',
 )
+
+function parseAllowedEnum(allowedValues: AllowedEnumType[]): Parser<AllowedEnumType> {
+  return (v: unknown) => {
+    const parsed = parseEnumValue(v)
+    return flatMapEither(
+      (parsedValue) =>
+        allowedValues.includes(parsedValue)
+          ? right(parsedValue)
+          : left(descriptionParseError('Value is not an allowed enum')),
+      parsed,
+    )
+  }
+}
 
 function rawAndRealValueAtIndex(
   rawValue: Either<string, ModifiableAttribute>,
@@ -213,9 +232,9 @@ export function unwrapperAndParserForBaseControl(
     case 'color':
       return defaultUnwrapFirst(parseColorValue)
     case 'componentinstance':
-      return jsUnwrapFirst(parseString)
+      return jsUnwrapFirst(parseAny)
     case 'enum':
-      return defaultUnwrapFirst(parseEnumValue)
+      return defaultUnwrapFirst(parseAllowedEnum(control.options))
     case 'eventhandler':
       return jsUnwrapFirst(parseAny)
     case 'ignore':
@@ -297,8 +316,12 @@ function printSimple<T>(value: T): JSXAttribute {
   return jsxAttributeValue(value)
 }
 
-function printAsString<T>(value: T): JSXAttribute {
-  return jsxAttributeValue(`${value}`)
+function printColor(value: unknown): JSXAttribute {
+  if (isCSSColor(value) || value === undefined) {
+    return printColorToJsx(value)
+  } else {
+    return jsxAttributeValue(`${value}`)
+  }
 }
 
 function printJS<T>(value: T): JSXAttribute {
@@ -310,7 +333,7 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
     case 'boolean':
       return printSimple
     case 'color':
-      return printAsString
+      return printColor
     case 'componentinstance':
       return printJS
     case 'enum':
