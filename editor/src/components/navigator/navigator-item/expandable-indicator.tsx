@@ -12,13 +12,16 @@ interface ExpandableIndicatorProps {
   onClick?: (e: any) => void
 }
 
-export const ExpandableIndicator: React.StatelessComponent<ExpandableIndicatorProps> = (props) =>
-  props.visible ? (
-    <Icn
-      category='semantic'
-      type={`expansionarrow-${props.collapsed ? 'right' : 'down'}`}
-      color={props.selected ? 'white' : 'black'}
-      onMouseDown={props.onMouseDown}
-      onClick={props.onClick}
-    />
-  ) : null
+export const ExpandableIndicator: React.StatelessComponent<ExpandableIndicatorProps> = (props) => (
+  <div style={{ width: 16, height: 16 }}>
+    {props.visible ? (
+      <Icn
+        category='semantic'
+        type={`expansionarrow-${props.collapsed ? 'right' : 'down'}`}
+        color={props.selected ? 'white' : 'black'}
+        onMouseDown={props.onMouseDown}
+        onClick={props.onClick}
+      />
+    ) : null}
+  </div>
+)
