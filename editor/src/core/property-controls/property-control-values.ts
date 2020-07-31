@@ -109,20 +109,24 @@ function unwrapAndParseArrayValues(
   return (rawValue: Either<string, ModifiableAttribute>, realValue: unknown) => {
     const unwrapperAndParser = unwrapperAndParserForPropertyControl(propertyControl)
     const unwrappedValue = defaultUnwrapper(rawValue, realValue)
-    const length = Array.isArray(unwrappedValue) ? unwrappedValue.length : 0
+    if (Array.isArray(unwrappedValue)) {
+      const length = unwrappedValue.length
 
-    let parsedContents: Array<unknown> = []
-    for (let i = 0; i < length; i++) {
-      const valuesForIndex = rawAndRealValueAtIndex(rawValue, realValue, i)
-      const innerResult = unwrapperAndParser(valuesForIndex.rawValue, valuesForIndex.realValue)
-      if (isLeft(innerResult)) {
-        return left(descriptionParseError(`Unable to parse object at index ${i}`))
-      } else {
-        parsedContents.push(innerResult.value)
+      let parsedContents: Array<unknown> = []
+      for (let i = 0; i < length; i++) {
+        const valuesForIndex = rawAndRealValueAtIndex(rawValue, realValue, i)
+        const innerResult = unwrapperAndParser(valuesForIndex.rawValue, valuesForIndex.realValue)
+        if (isLeft(innerResult)) {
+          return left(descriptionParseError(`Unable to parse object at index ${i}`))
+        } else {
+          parsedContents.push(innerResult.value)
+        }
       }
-    }
 
-    return right(parsedContents)
+      return right(parsedContents)
+    } else {
+      return left(descriptionParseError(`Value isn't an array`))
+    }
   }
 }
 
