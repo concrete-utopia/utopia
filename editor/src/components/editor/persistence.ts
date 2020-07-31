@@ -287,7 +287,6 @@ async function serverSaveInner(
       dispatch([setSaveError(false)], 'everyone')
       updateRemoteThumbnail(projectId, forceThumbnail)
       maybeTriggerQueuedSave(dispatch, projectId, projectName, _saveState)
-      _saveState = saved(_saveState.remote, Date.now(), projectId, name, dispatch, null, null, null)
     } else {
       if (modelChange != null) {
         await saveLocalProjectToServer(dispatch, projectId, projectName, modelChange, nameChange)
@@ -367,13 +366,7 @@ function maybeTriggerQueuedSave(
   if (queuedModelChange != null || queuedNameChange != null) {
     _saveState = saveInProgress(saveState.remote, null, null)
     if (saveState.remote) {
-      throttledServerSaveInner(
-        dispatch,
-        projectId,
-        projectName,
-        queuedModelChange,
-        queuedNameChange,
-      )
+      serverSaveInner(dispatch, projectId, projectName, queuedModelChange, queuedNameChange, false)
     } else {
       localSaveInner(dispatch, projectId, projectName, queuedModelChange, queuedNameChange)
     }
