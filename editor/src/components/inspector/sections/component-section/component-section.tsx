@@ -445,35 +445,37 @@ const RowForArrayControl = betterReactMemo(
 
     return (
       <>
-        <GridRow padded={true} type='<--------auto-------->||22px|'>
-          <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
-            {warning}
-            {title}
-          </PropertyLabel>
-          {propertyStatus.overwritable ? (
-            <SquareButton highlight onMouseDown={toggleInsertRow}>
-              {insertingRow ? (
-                <Icn
-                  style={{ paddingTop: 1 }}
-                  category='semantic'
-                  type='minus'
-                  color={propertyStatus.controlled ? 'blue' : 'darkgray'}
-                  width={16}
-                  height={16}
-                />
-              ) : (
-                <Icn
-                  style={{ paddingTop: 1 }}
-                  category='semantic'
-                  type='plus'
-                  color={propertyStatus.controlled ? 'blue' : 'darkgray'}
-                  width={16}
-                  height={16}
-                />
-              )}
-            </SquareButton>
-          ) : null}
-        </GridRow>
+        <InspectorSectionHeader>
+          <SimpleFlexRow style={{ flexGrow: 1 }}>
+            <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+              {warning}
+              {title}
+            </PropertyLabel>
+            {propertyStatus.overwritable ? (
+              <SquareButton highlight onMouseDown={toggleInsertRow}>
+                {insertingRow ? (
+                  <Icn
+                    style={{ paddingTop: 1 }}
+                    category='semantic'
+                    type='minus'
+                    color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+                    width={16}
+                    height={16}
+                  />
+                ) : (
+                  <Icn
+                    style={{ paddingTop: 1 }}
+                    category='semantic'
+                    type='plus'
+                    color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+                    width={16}
+                    height={16}
+                  />
+                )}
+              </SquareButton>
+            ) : null}
+          </SimpleFlexRow>
+        </InspectorSectionHeader>
         <div
           style={{
             height: rowHeight * springs.length,
@@ -535,10 +537,14 @@ const RowForObjectControl = betterReactMemo(
 
     return (
       <>
-        <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
-          {warning}
-          {title}
-        </PropertyLabel>
+        <InspectorSectionHeader>
+          <SimpleFlexRow style={{ flexGrow: 1 }}>
+            <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+              {warning}
+              {title}
+            </PropertyLabel>
+          </SimpleFlexRow>
+        </InspectorSectionHeader>
         {mapToArray((innerControl: ControlDescription, prop: string) => {
           const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
           return (
