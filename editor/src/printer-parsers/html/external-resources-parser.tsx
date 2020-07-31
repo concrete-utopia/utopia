@@ -326,15 +326,17 @@ export function parseLinkTags(
 }
 
 function printVariantAxisTuples(variants: Array<FontVariant>): string {
-  return `:ital,wght@${variants
-    .map((variant) => {
-      return `${variant.italic ? 1 : 0},${variant.weight}`
-    })
-    .join(';')}`
+  return variants.length > 0
+    ? `:ital,wght@${variants
+        .map((variant) => {
+          return `${variant.italic ? 1 : 0},${variant.weight}`
+        })
+        .join(';')}`
+    : ''
 }
 
 function replaceSafeGoogleFontsCharacters(value: string): string {
-  return value.replace(/%3A/g, ':').replace(/%2C/g, ',').replace(/%40/g, '@')
+  return value.replace(/%3A/g, ':').replace(/%3B/g, ';').replace(/%2C/g, ',').replace(/%40/g, '@')
 }
 
 function printExternalResources(value: ExternalResources): string {
