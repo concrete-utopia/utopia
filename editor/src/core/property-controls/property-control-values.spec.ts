@@ -11,6 +11,9 @@ import {
   PopUpListControlDescription,
   SliderControlDescription,
   StringControlDescription,
+  ArrayControlDescription,
+  ObjectControlDescription,
+  UnionControlDescription,
 } from 'utopia-api'
 import {
   JSXAttribute,
@@ -19,6 +22,9 @@ import {
   jsxAttributeOtherJavaScript,
   isJSXAttributeOtherJavaScript,
   clearAttributeUniqueIDs,
+  jsxAttributeNestedArray,
+  jsxAttributeNestedObject,
+  jsxPropertyAssignment,
 } from '../shared/element-template'
 import {
   unwrapperAndParserForPropertyControl,
@@ -242,5 +248,201 @@ describe('StringControlDescription', () => {
     wrappedValidValue,
     wrappedInvalidValues,
     stringControlDescriptionValue,
+  )
+})
+
+describe('StringControlDescription', () => {
+  const stringControlDescriptionValue: StringControlDescription = {
+    type: 'string',
+  }
+
+  const validValue = 'hat'
+  const wrappedValidValue = jsxAttributeValue(validValue)
+  const wrappedInvalidValues = [jsxAttributeValue(0)]
+
+  runBaseTestSuite(
+    validValue,
+    wrappedValidValue,
+    wrappedInvalidValues,
+    stringControlDescriptionValue,
+  )
+})
+
+describe('ArrayControlDescription', () => {
+  const simpleArrayControlDescriptionValue: ArrayControlDescription = {
+    type: 'array',
+    propertyControl: {
+      type: 'string',
+    },
+  }
+
+  const simpleValidContents = 'hat'
+  const simpleValidValue = [simpleValidContents]
+  const simpleWrappedValidValue = jsxAttributeNestedArray([
+    jsxArrayValue(jsxAttributeValue(simpleValidContents)),
+  ])
+  const simpleWrappedInvalidValues = [
+    jsxAttributeNestedArray([jsxArrayValue(jsxAttributeValue(0))]),
+  ]
+
+  runBaseTestSuite(
+    simpleValidValue,
+    simpleWrappedValidValue,
+    simpleWrappedInvalidValues,
+    simpleArrayControlDescriptionValue,
+  )
+
+  const complexArrayControlDescriptionValue: ArrayControlDescription = {
+    type: 'array',
+    propertyControl: {
+      type: 'array',
+      propertyControl: {
+        type: 'string',
+      },
+    },
+  }
+
+  const complexValidContents = 'hat'
+  const complexValidValue = [[complexValidContents]]
+  const complexWrappedValidValue = jsxAttributeNestedArray([
+    jsxArrayValue(
+      jsxAttributeNestedArray([jsxArrayValue(jsxAttributeValue(complexValidContents))]),
+    ),
+  ])
+  const complexWrappedInvalidValues = [
+    jsxAttributeNestedArray([
+      jsxArrayValue(jsxAttributeNestedArray([jsxArrayValue(jsxAttributeValue(0))])),
+    ]),
+  ]
+
+  runBaseTestSuite(
+    complexValidValue,
+    complexWrappedValidValue,
+    complexWrappedInvalidValues,
+    complexArrayControlDescriptionValue,
+  )
+})
+
+describe('ObjectControlDescription', () => {
+  const simpleValidKey = 'simple'
+  const simpleObjectControlDescriptionValue: ObjectControlDescription = {
+    type: 'object',
+    object: {
+      [simpleValidKey]: {
+        type: 'string',
+      },
+    },
+  }
+
+  const simpleValidContents = 'hat'
+  const simpleValidValue = { [simpleValidKey]: simpleValidContents }
+  const simpleWrappedValidValue = jsxAttributeNestedObject([
+    jsxPropertyAssignment(simpleValidKey, jsxAttributeValue(simpleValidContents)),
+  ])
+  const simpleWrappedInvalidValues = [
+    jsxAttributeNestedObject([jsxPropertyAssignment(simpleValidKey, jsxAttributeValue(0))]),
+  ]
+
+  runBaseTestSuite(
+    simpleValidValue,
+    simpleWrappedValidValue,
+    simpleWrappedInvalidValues,
+    simpleObjectControlDescriptionValue,
+  )
+
+  const complexValidKey = 'complexValidKey'
+  const complexObjectControlDescriptionValue: ObjectControlDescription = {
+    type: 'object',
+    object: {
+      [complexValidKey]: {
+        type: 'object',
+        object: {
+          [simpleValidKey]: {
+            type: 'string',
+          },
+        },
+      },
+    },
+  }
+
+  const complexValidValue = { [complexValidKey]: { [simpleValidKey]: simpleValidContents } }
+  const complexWrappedValidValue = jsxAttributeNestedObject([
+    jsxPropertyAssignment(
+      complexValidKey,
+      jsxAttributeNestedObject([
+        jsxPropertyAssignment(simpleValidKey, jsxAttributeValue(simpleValidContents)),
+      ]),
+    ),
+  ])
+  const complexWrappedInvalidValues = [
+    jsxAttributeNestedObject([
+      jsxPropertyAssignment(
+        complexValidKey,
+        jsxAttributeNestedObject([jsxPropertyAssignment(simpleValidKey, jsxAttributeValue(0))]),
+      ),
+    ]),
+  ]
+
+  runBaseTestSuite(
+    complexValidValue,
+    complexWrappedValidValue,
+    complexWrappedInvalidValues,
+    complexObjectControlDescriptionValue,
+  )
+})
+
+describe('UnionControlDescription', () => {
+  const simpleUnionControlDescriptionValue: UnionControlDescription = {
+    type: 'union',
+    controls: [
+      {
+        type: 'string',
+      },
+      {
+        type: 'number',
+      },
+    ],
+  }
+
+  const simpleValidValue = 10
+  const simpleWrappedValidValue = jsxAttributeValue(simpleValidValue)
+  const simpleWrappedInvalidValues = [jsxAttributeValue(false)]
+
+  runBaseTestSuite(
+    simpleValidValue,
+    simpleWrappedValidValue,
+    simpleWrappedInvalidValues,
+    simpleUnionControlDescriptionValue,
+  )
+
+  const complexUnionControlDescriptionValue: UnionControlDescription = {
+    type: 'union',
+    controls: [
+      {
+        type: 'string',
+      },
+      {
+        type: 'array',
+        propertyControl: {
+          type: 'string',
+        },
+      },
+    ],
+  }
+
+  const complexValidContents = 'hat'
+  const complexValidValue = [complexValidContents]
+  const complexWrappedValidValue = jsxAttributeNestedArray([
+    jsxArrayValue(jsxAttributeValue(complexValidContents)),
+  ])
+  const complexWrappedInvalidValues = [
+    jsxAttributeNestedArray([jsxArrayValue(jsxAttributeValue(0))]),
+  ]
+
+  runBaseTestSuite(
+    complexValidValue,
+    complexWrappedValidValue,
+    complexWrappedInvalidValues,
+    complexUnionControlDescriptionValue,
   )
 })
