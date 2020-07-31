@@ -1,76 +1,74 @@
-import * as fastDeepEquals from 'fast-deep-equal'
 import * as React from 'react'
+import { OptionsType } from 'react-select'
 import { animated } from 'react-spring'
 import {
-  InspectorSectionHeader,
-  PopupList,
-  SimpleNumberInput,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  colorTheme,
-  Tooltip,
-  FunctionIcons,
-  SquareButton,
-  Icons,
-  SimpleFlexRow,
-  UtopiaStyles,
-  UtopiaTheme,
-  Icn,
-} from 'uuiui'
-import { betterReactMemo, SliderControl, getControlStyles } from 'uuiui-deps'
-import { jsxAttributeValue } from '../../../../core/shared/element-template'
-import {
-  ControlDescription,
-  BaseControlDescription,
-  isBaseControlDescription,
   ArrayControlDescription,
+  BaseControlDescription,
+  ControlDescription,
+  isBaseControlDescription,
   ObjectControlDescription,
   UnionControlDescription,
 } from 'utopia-api'
-import { foldEither, right, Either } from '../../../../core/shared/either'
-import Utils from '../../../../utils/utils'
-import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
-import * as PP from '../../../../core/shared/property-path'
-import { BooleanControl } from '../../controls/boolean-control'
-import { ColorControl } from '../../controls/color-control'
-import { OptionChainControl } from '../../controls/option-chain-control'
-import { SelectControl, SelectOption } from '../../controls/select-control'
-import { StringControl } from '../../controls/string-control'
-import { addOnUnsetValues } from '../../common/context-menu-items'
-import { CSSColor, parseColor, printColor } from '../../common/css-utils'
 import {
-  InspectorInfo,
-  useInspectorInfoSimpleUntyped,
+  colorTheme,
+  FunctionIcons,
+  Icn,
+  InspectorSectionHeader,
+  PopupList,
+  SimpleFlexRow,
+  SquareButton,
+  Tooltip,
+  UtopiaTheme,
+} from 'uuiui'
+import { betterReactMemo, getControlStyles } from 'uuiui-deps'
+import { PathForSceneProps } from '../../../../core/model/scene-utils'
+import {
+  getDescriptionUnsetOptionalFields,
+  getMissingDefaultsWarning,
+  getMissingPropertyControlsWarning,
+} from '../../../../core/property-controls/property-controls-utils'
+import { joinSpecial } from '../../../../core/shared/array-utils'
+import { foldEither } from '../../../../core/shared/either'
+import { mapToArray } from '../../../../core/shared/object-utils'
+import { PropertyPath } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
+import Utils from '../../../../utils/utils'
+import { getParseErrorDetails, ParseError } from '../../../../utils/value-parser-utils'
+import { InfoBox } from '../../../common/notices'
+import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
+import { showContextMenu } from '../../../editor/actions/actions'
+import { useEditorState } from '../../../editor/store/store-hook'
+import { addOnUnsetValues } from '../../common/context-menu-items'
+import { InstanceContextMenu } from '../../common/instance-context-menu'
+import {
+  useControlForUnionControl,
+  useInspectorInfoForPropertyControl,
+} from '../../common/property-controls-hooks'
+import {
   useKeepReferenceEqualityIfPossible,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
   useUsedPropsWithoutDefaults,
 } from '../../common/property-path-hooks'
-import { PropertyRow } from '../../widgets/property-row'
-import { PathForSceneProps } from '../../../../core/model/scene-utils'
+import { useArraySuperControl } from '../../controls/array-supercontrol'
+import { SelectOption } from '../../controls/select-control'
 import { GridRow } from '../../widgets/grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
-import { ParseError, getParseErrorDetails } from '../../../../utils/value-parser-utils'
-import { InfoBox } from '../../../common/notices'
-import { showContextMenu } from '../../../editor/actions/actions'
-import { useEditorState } from '../../../editor/store/store-hook'
-import { InstanceContextMenu } from '../../common/instance-context-menu'
+import { PropertyRow } from '../../widgets/property-row'
 import {
-  getMissingDefaultsWarning,
-  getMissingPropertyControlsWarning,
-} from '../../../../core/property-controls/property-controls-utils'
-import { getDescriptionUnsetOptionalFields } from '../../../../core/property-controls/property-controls-utils'
-import { joinSpecial } from '../../../../core/shared/array-utils'
-import { mapToArray } from '../../../../core/shared/object-utils'
-import { WarningIcon } from '../../../../uuiui/warning-icon'
-import {
-  useInspectorInfoForPropertyControl,
-  useControlForUnionControl,
-} from '../../common/property-controls-hooks'
-import { PropertyPath } from '../../../../core/shared/project-file-types'
-import { OptionsType } from 'react-select'
-import { EventHandlerControl } from '../event-handlers-section/event-handlers-section'
-import { backgroundControlContainerStyle } from '../../controls/background-solid-or-gradient-thumbnail-control'
-import { useArraySuperControl } from '../../controls/array-supercontrol'
+  ControlForBooleanProp,
+  ControlForColorProp,
+  ControlForComponentInstanceProp,
+  ControlForEnumProp,
+  ControlForEventHandlerProp,
+  ControlForImageProp,
+  ControlForNumberProp,
+  ControlForOptionsProp,
+  ControlForPopupListProp,
+  ControlForPropProps,
+  ControlForSliderProp,
+  ControlForStringProp,
+} from './property-control-controls'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -81,214 +79,47 @@ function useComponentPropsInspectorInfo(
   return useInspectorInfoForPropertyControl(propertyPath, control)
 }
 
-interface ControlForPropProps {
-  propName: string
-  controlDescription: BaseControlDescription | undefined
-  propMetadata: InspectorInfo<any>
-}
-
-const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropProps) => {
-  const { propName, propMetadata, controlDescription } = props
-  const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-    propMetadata.onSubmitValue,
-    propMetadata.onUnsetValues,
-  )
-  const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-    propMetadata.onTransientSubmitValue,
-    propMetadata.onUnsetValues,
-  )
-  if (controlDescription == null) {
-    return null
-  } else {
-    const controlId = `${propName}-property-control`
-    const value = propMetadata.propertyStatus.set
-      ? propMetadata.value
-      : (controlDescription as any).defaultValue
-    switch (controlDescription.type) {
-      case 'boolean':
-        return (
-          <BooleanControl
-            key={propName}
-            id={controlId}
-            value={value}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-          />
-        )
-      case 'color':
-        const parsedColor = parseColor(value)
-        return foldEither(
-          (failureReason) => {
-            return <div>{failureReason}</div>
-          },
-          (validColor) => {
-            function transientSubmitValue(color: CSSColor): void {
-              propMetadata.onTransientSubmitValue(printColor(color))
-            }
-            function submitValue(color: CSSColor): void {
-              propMetadata.onSubmitValue(printColor(color))
-            }
-            return (
-              <ColorControl
-                key={propName}
-                id={controlId}
-                value={validColor}
-                controlStatus={propMetadata.controlStatus}
-                controlStyles={propMetadata.controlStyles}
-                onTransientSubmitValue={transientSubmitValue}
-                onSubmitValue={submitValue}
-              />
-            )
-          },
-          parsedColor,
-        )
-      case 'componentinstance':
-        return (
-          <StringControl
-            key={propName}
-            id={controlId}
-            value={Utils.defaultIfNull('', value)}
-            onSubmitValue={
-              propMetadata.controlStatus === 'controlled' ? Utils.NO_OP : propMetadata.onSubmitValue
-            }
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={{
-              ...propMetadata.controlStyles,
-              showContent: true,
-            }}
-          />
-        )
-      case 'enum':
-        // TODO memoize this
-        const options: Array<SelectOption> = controlDescription.options.map((option, index) => {
-          return {
-            value: option as string, // TODO cheating with type
-            label:
-              controlDescription.optionTitles == null ||
-              typeof controlDescription.optionTitles === 'function'
-                ? (option as string)
-                : (controlDescription.optionTitles[index] as string),
-          }
-        })
-        return (
-          <SelectControl
-            style={{
-              fontWeight: 'normal',
-              marginLeft: 4,
-            }}
-            key={propName}
-            id={controlId}
-            value={value}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            options={options}
-          />
-        )
-      case 'eventhandler':
-        return <EventHandlerControl key={propName} handlerName={propName} value={value ?? ''} />
-      case 'ignore':
-        return null
-      case 'image':
-        return (
-          <StringControl
-            key={propName}
-            id={controlId}
-            value={Utils.defaultIfNull('', value)}
-            onSubmitValue={
-              propMetadata.controlStatus === 'controlled' ? Utils.NO_OP : propMetadata.onSubmitValue
-            }
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={{
-              ...propMetadata.controlStyles,
-              showContent: true,
-            }}
-          />
-        )
-      case 'number':
-        return (
-          <SimpleNumberInput
-            id={controlId}
-            value={value}
-            onSubmitValue={wrappedOnSubmit}
-            onTransientSubmitValue={wrappedOnTransientSubmit}
-            onForcedSubmitValue={wrappedOnSubmit}
-            controlStatus={propMetadata.controlStatus}
-            incrementControls={controlDescription.displayStepper}
-            stepSize={controlDescription.step}
-            minimum={controlDescription.min}
-            maximum={controlDescription.max}
-            labelInner={controlDescription.unit}
-          />
-        )
-      case 'options':
-        return (
-          <OptionChainControl
-            key={propName}
-            id={controlId}
-            value={value}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            onSubmitValue={propMetadata.onSubmitValue}
-            options={controlDescription.options}
-          />
-        )
-      case 'popuplist': {
-        function submitValue(option: SelectOption): void {
-          propMetadata.onSubmitValue(option.value)
-        }
-        const currentValue = controlDescription.options.find((option) => {
-          return fastDeepEquals(option.value, value)
-        })
-
-        return (
-          <PopupList
-            disabled={!propMetadata.controlStyles.interactive}
-            value={currentValue}
-            onSubmitValue={submitValue}
-            options={controlDescription.options}
-            containerMode={'default'}
-          />
-        )
+const ControlForProp = betterReactMemo(
+  'ControlForProp',
+  (props: ControlForPropProps<BaseControlDescription>) => {
+    const { controlDescription } = props
+    if (controlDescription == null) {
+      return null
+    } else {
+      switch (controlDescription.type) {
+        case 'boolean':
+          return <ControlForBooleanProp {...props} controlDescription={controlDescription} />
+        case 'color':
+          return <ControlForColorProp {...props} controlDescription={controlDescription} />
+        case 'componentinstance':
+          return (
+            <ControlForComponentInstanceProp {...props} controlDescription={controlDescription} />
+          )
+        case 'enum':
+          return <ControlForEnumProp {...props} controlDescription={controlDescription} />
+        case 'eventhandler':
+          return <ControlForEventHandlerProp {...props} controlDescription={controlDescription} />
+        case 'ignore':
+          return null
+        case 'image':
+          return <ControlForImageProp {...props} controlDescription={controlDescription} />
+        case 'number':
+          return <ControlForNumberProp {...props} controlDescription={controlDescription} />
+        case 'options':
+          return <ControlForOptionsProp {...props} controlDescription={controlDescription} />
+        case 'popuplist':
+          return <ControlForPopupListProp {...props} controlDescription={controlDescription} />
+        case 'slider':
+          return <ControlForSliderProp {...props} controlDescription={controlDescription} />
+        case 'string':
+          return <ControlForStringProp {...props} controlDescription={controlDescription} />
+        case 'styleobject':
+        default:
+          return <div>Not yet implemented control type.</div>
       }
-      case 'slider': {
-        return (
-          <SliderControl
-            key={propName}
-            id={controlId}
-            value={value}
-            onTransientSubmitValue={propMetadata.onTransientSubmitValue}
-            onForcedSubmitValue={propMetadata.onSubmitValue}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            DEPRECATED_controlOptions={{
-              minimum: controlDescription.min,
-              maximum: controlDescription.max,
-              stepSize: controlDescription.step,
-            }}
-          />
-        )
-      }
-      case 'string':
-        const stringControlValue = Utils.defaultIfNull('', value)
-        return (
-          <StringControl
-            key={propName}
-            id={controlId}
-            value={stringControlValue}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-          />
-        )
-      case 'styleobject':
-      default:
-        return <div>Not yet implemented control type.</div>
     }
-  }
-})
+  },
+)
 
 interface ParseErrorProps {
   parseError: ParseError
