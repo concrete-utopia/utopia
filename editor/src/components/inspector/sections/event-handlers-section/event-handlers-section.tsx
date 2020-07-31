@@ -5,7 +5,11 @@ import { identity } from '../../../../core/shared/utils'
 import utils from '../../../../utils/utils'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import { DOMEventHandler, DOMEventHandlerNames } from '../../common/css-utils'
-import { ParsedValues, useInspectorInfo } from '../../common/property-path-hooks'
+import {
+  ParsedValues,
+  useInspectorInfo,
+  useKeepReferenceEqualityIfPossible,
+} from '../../common/property-path-hooks'
 import { GridRow } from '../../widgets/grid-row'
 import { isJSXAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { InspectorSectionHeader, StringInput } from '../../../../uuiui'
@@ -24,9 +28,10 @@ export const EventHandlerControl = betterReactMemo(
   'EventHandlerControl',
   (props: EventHandlerControlProps) => {
     const { handlerName, value } = props
+    const target = useKeepReferenceEqualityIfPossible([PP.create([handlerName])])
     return (
       <>
-        <PropertyLabel target={[PP.create([handlerName])]}>{handlerName}</PropertyLabel>
+        <PropertyLabel target={target}>{handlerName}</PropertyLabel>
         <StringInput value={value} controlStatus='disabled' />
       </>
     )

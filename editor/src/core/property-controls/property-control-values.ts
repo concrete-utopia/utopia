@@ -377,13 +377,13 @@ function printerForArray<T>(control: ControlDescription): Printer<Array<T>> {
 function printerForObject(objectControls: {
   [prop: string]: ControlDescription
 }): Printer<{ [prop: string]: unknown }> {
-  return (object: { [prop: string]: unknown }): JSXAttribute => {
+  return (objectToPrint: { [prop: string]: unknown }): JSXAttribute => {
     const printedContents = mapToArray((value, key) => {
       const valueControl = objectControls[key]
       const valuePrinter =
         valueControl == null ? printSimple : printerForPropertyControl(valueControl)
       return jsxPropertyAssignment(key, valuePrinter(value))
-    }, object)
+    }, objectToPrint)
 
     return jsxAttributeNestedObject(printedContents)
   }
