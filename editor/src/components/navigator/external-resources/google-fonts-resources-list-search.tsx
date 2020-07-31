@@ -8,7 +8,7 @@ import {
 } from '../../../printer-parsers/html/external-resources-parser'
 import { betterReactMemo, SelectOption } from '../../../uuiui-deps'
 import { UseSubmitValueFactory } from '../../inspector/common/property-path-hooks'
-import { fontVariant, GoogleFontVariant } from './google-fonts-utils'
+import { fontVariant, GoogleFontVariant, GoogleWebFontsURL } from './google-fonts-utils'
 
 interface GoogleFontsResourcesListSearchProps {
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
