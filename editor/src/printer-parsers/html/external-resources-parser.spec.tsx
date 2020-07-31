@@ -8,23 +8,33 @@ import {
   parseLinkTags,
   updateHTMLExternalResourcesLinks,
 } from './external-resources-parser'
+import { fontVariant } from '../../components/navigator/external-resources/google-fonts-utils'
 
 const testFile = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
   <!-- Begin Generated Utopia External Links -->
+  
+  <!-- Valid Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Red+Rose:ital,wght@0,400" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;1,400;0,600;1,600" rel="stylesheet">
+
+  <!-- User-generated Google Fonts links parsed with extra query params parsed -->
   <link href="https://fonts.googleapis.com/css2?family=Red+Rose" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Red+Rose:wght@400&display=swap" rel="stylesheet">
-  <link href="https://utopia.com/styles.css" rel="stylesheet">
-  <link href="http://utopia.com/styles.css" rel="stylesheet">
-  <!-- Random extra comment that doesn't belong -->
-  <link href="//utopia.com/styles.css" rel="stylesheet">
-  <link href="/favicon.ico" rel="icon">
-  <link href="apple-icon-114.png" rel="apple-touch-icon-precomposed" sizes="114x114" type="image/png">
-  <link rel="preload" href="myFont.woff2" as="font" type="font/woff2" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa&text=Hello%20World" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa&text=%c2%a1Hola!" rel="stylesheet">
+  
+  <!-- Valid External Resources -->
+  <link href="https://utopia.com/styles.css" rel="stylesheet">
+  <link href="http://utopia.com/styles.css" rel="stylesheet">
+  <link href="//utopia.com/styles.css" rel="stylesheet">
+
+
+  <!-- User-generated links that are partially parsed and destructively printed back -->
+  <link href="apple-icon-114.png" rel="apple-touch-icon-precomposed" sizes="114x114" type="image/png">
+  <link rel="preload" href="myFont.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  
   <!-- End Generated Utopia External Links -->
     <meta charset="utf-8">
     <title>Utopia React App</title>
@@ -41,17 +51,24 @@ describe('external-resources-parser', () => {
     expect(parsedLinkTagsText).toMatchInlineSnapshot(`
       Object {
         "type": "RIGHT",
-        "value": "<link href=\\"https://fonts.googleapis.com/css2?family=Red+Rose\\" rel=\\"stylesheet\\">
-        <link href=\\"https://fonts.googleapis.com/css2?family=Red+Rose:wght@400&display=swap\\" rel=\\"stylesheet\\">
+        "value": "<!-- Valid Google Fonts -->
+        <link href=\\"https://fonts.googleapis.com/css2?family=Red+Rose:ital,wght@0,400\\" rel=\\"stylesheet\\">
+        <link href=\\"https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;1,400;0,600;1,600\\" rel=\\"stylesheet\\">
+
+        <!-- User-generated Google Fonts links parsed with extra query params parsed -->
+        <link href=\\"https://fonts.googleapis.com/css2?family=Red+Rose\\" rel=\\"stylesheet\\">
+        <link href=\\"https://fonts.googleapis.com/css2?family=Comfortaa&text=Hello%20World\\" rel=\\"stylesheet\\">
+        <link href=\\"https://fonts.googleapis.com/css2?family=Comfortaa&text=%c2%a1Hola!\\" rel=\\"stylesheet\\">
+        
+        <!-- Valid External Resources -->
         <link href=\\"https://utopia.com/styles.css\\" rel=\\"stylesheet\\">
         <link href=\\"http://utopia.com/styles.css\\" rel=\\"stylesheet\\">
-        <!-- Random extra comment that doesn't belong -->
         <link href=\\"//utopia.com/styles.css\\" rel=\\"stylesheet\\">
-        <link href=\\"/favicon.ico\\" rel=\\"icon\\">
+
+
+        <!-- User-generated links that are partially parsed and destructively printed back -->
         <link href=\\"apple-icon-114.png\\" rel=\\"apple-touch-icon-precomposed\\" sizes=\\"114x114\\" type=\\"image/png\\">
-        <link rel=\\"preload\\" href=\\"myFont.woff2\\" as=\\"font\\" type=\\"font/woff2\\" crossorigin=\\"anonymous\\">
-        <link href=\\"https://fonts.googleapis.com/css2?family=Comfortaa&text=Hello%20World\\" rel=\\"stylesheet\\">
-        <link href=\\"https://fonts.googleapis.com/css2?family=Comfortaa&text=%c2%a1Hola!\\" rel=\\"stylesheet\\">",
+        <link rel=\\"preload\\" href=\\"myFont.woff2\\" as=\\"font\\" type=\\"font/woff2\\" crossorigin=\\"anonymous\\">",
       }
     `)
 
@@ -78,11 +95,6 @@ describe('external-resources-parser', () => {
                 "type": "generic-external-resource",
               },
               Object {
-                "href": "/favicon.ico",
-                "rel": "icon",
-                "type": "generic-external-resource",
-              },
-              Object {
                 "href": "apple-icon-114.png",
                 "rel": "apple-touch-icon-precomposed",
                 "type": "generic-external-resource",
@@ -96,23 +108,78 @@ describe('external-resources-parser', () => {
             "googleFontsResources": Array [
               Object {
                 "fontFamily": "Red Rose",
-                "fontStyleParams": undefined,
+                "otherQueryStringParams": "",
                 "type": "google-fonts-resource",
+                "variants": Array [
+                  Object {
+                    "italic": false,
+                    "type": "font-variant",
+                    "weight": 400,
+                  },
+                ],
+              },
+              Object {
+                "fontFamily": "Crimson Pro",
+                "otherQueryStringParams": "",
+                "type": "google-fonts-resource",
+                "variants": Array [
+                  Object {
+                    "italic": false,
+                    "type": "font-variant",
+                    "weight": 400,
+                  },
+                  Object {
+                    "italic": true,
+                    "type": "font-variant",
+                    "weight": 400,
+                  },
+                  Object {
+                    "italic": false,
+                    "type": "font-variant",
+                    "weight": 600,
+                  },
+                  Object {
+                    "italic": true,
+                    "type": "font-variant",
+                    "weight": 600,
+                  },
+                ],
               },
               Object {
                 "fontFamily": "Red Rose",
-                "fontStyleParams": ":wght@400",
+                "otherQueryStringParams": "",
                 "type": "google-fonts-resource",
+                "variants": Array [
+                  Object {
+                    "italic": false,
+                    "type": "font-variant",
+                    "weight": 400,
+                  },
+                ],
               },
               Object {
                 "fontFamily": "Comfortaa",
-                "fontStyleParams": undefined,
+                "otherQueryStringParams": "text=Hello+World",
                 "type": "google-fonts-resource",
+                "variants": Array [
+                  Object {
+                    "italic": false,
+                    "type": "font-variant",
+                    "weight": 400,
+                  },
+                ],
               },
               Object {
                 "fontFamily": "Comfortaa",
-                "fontStyleParams": undefined,
+                "otherQueryStringParams": "text=%C2%A1Hola%21",
                 "type": "google-fonts-resource",
+                "variants": Array [
+                  Object {
+                    "italic": false,
+                    "type": "font-variant",
+                    "weight": 400,
+                  },
+                ],
               },
             ],
             "type": "external-resources",
@@ -129,7 +196,7 @@ describe('updates external resources', () => {
       previewHtml,
       externalResources(
         [genericExternalResource('https://utopia.com/stylesheet.css', 'stylesheet')],
-        [googleFontsResource('Roboto')],
+        [googleFontsResource('Roboto', [fontVariant(400, false)])],
       ),
     )
     expect(updated).toMatchInlineSnapshot(`
@@ -142,7 +209,7 @@ describe('updates external resources', () => {
           <title>Utopia React App</title>
           <!-- Begin Generated Utopia External Links -->
           <link href=\\"https://utopia.com/stylesheet.css\\" rel=\\"stylesheet\\">
-          <link href=\\"https://fonts.googleapis.com/css2?family=Roboto\\" rel=\\"stylesheet\\">
+          <link href=\\"https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400\\" rel=\\"stylesheet\\">
           <!-- End Generated Utopia External Links -->
         </head>
         <body>
