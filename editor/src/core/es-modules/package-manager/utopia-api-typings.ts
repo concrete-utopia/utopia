@@ -395,7 +395,7 @@ declare module 'utopia-api/primitives/view' {
 }
 declare module 'utopia-api/property-controls/property-controls' {
   import type { CSSProperties } from 'react';
-  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'slider' | 'string' | 'style-object';
+  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'slider' | 'string' | 'styleobject';
   interface AbstractControlDescription<T extends ControlType> {
       title?: string;
       type: T;
@@ -463,7 +463,7 @@ declare module 'utopia-api/property-controls/property-controls' {
       placeholder?: string;
       obscured?: boolean;
   }
-  export interface StyleObjectControlDescription extends AbstractBaseControlDescription<'style-object'> {
+  export interface StyleObjectControlDescription extends AbstractBaseControlDescription<'styleobject'> {
       defaultValue?: CSSProperties;
       placeholder?: CSSProperties;
   }

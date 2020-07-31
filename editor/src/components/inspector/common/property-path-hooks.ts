@@ -847,11 +847,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
         if (isUtopiaAPIComponent(element.name, imports)) {
           return getJSXElementNameLastPart(element.name).toString().toLowerCase()
         } else if (isHTMLComponent(element.name, imports)) {
-          if (element.name.baseVariable === 'div' || element.name.baseVariable === 'span') {
-            return element.name.baseVariable
-          } else {
-            return 'HTML'
-          }
+          return element.name.baseVariable
         } else {
           return null
         }

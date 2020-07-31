@@ -11,6 +11,11 @@ import {
   StringControlDescription,
   IgnoreControlDescription,
   UnionControlDescription,
+  ImageControlDescription,
+  EventHandlerControlDescription,
+  ArrayControlDescription,
+  ObjectControlDescription,
+  StyleObjectControlDescription,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -27,6 +32,7 @@ import {
   parseFunction,
   parseNull,
   parseNumber,
+  parseObject,
   Parser,
   ParseResult,
   parseString,
@@ -103,6 +109,23 @@ export function parseEnumControlDescription(value: unknown): ParseResult<EnumCon
     objectKeyParser(parseArray(parseEnumValue), 'options')(value),
     optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
     optionalObjectKeyParser(parseBoolean, 'displaySegmentedControl')(value),
+  )
+}
+
+export function parseEventHandlerControlDescription(
+  value: unknown,
+): ParseResult<EventHandlerControlDescription> {
+  return applicative2Either(
+    (title, type) => {
+      let eventHandlerControlDescription: EventHandlerControlDescription = {
+        type: type,
+      }
+      setOptionalProp(eventHandlerControlDescription, 'title', title)
+
+      return eventHandlerControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'title')(value),
+    objectKeyParser(parseEnum(['eventhandler']), 'type')(value),
   )
 }
 
@@ -310,6 +333,86 @@ export function parseIgnoreControlDescription(
   )
 }
 
+export function parseImageControlDescription(value: unknown): ParseResult<ImageControlDescription> {
+  return applicative3Either(
+    (title, type, defaultValue) => {
+      let imageControlDescription: ImageControlDescription = {
+        type: type,
+      }
+      setOptionalProp(imageControlDescription, 'title', title)
+      setOptionalProp(imageControlDescription, 'defaultValue', defaultValue)
+
+      return imageControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'title')(value),
+    objectKeyParser(parseEnum(['image']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'defaultValue')(value),
+  )
+}
+
+export function parseStyleObjectControlDescription(
+  value: unknown,
+): ParseResult<StyleObjectControlDescription> {
+  return applicative4Either(
+    (title, type, defaultValue, placeholder) => {
+      let styleObjectControlDescription: StyleObjectControlDescription = {
+        type: type,
+      }
+      setOptionalProp(styleObjectControlDescription, 'title', title)
+      setOptionalProp(styleObjectControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(styleObjectControlDescription, 'placeholder', placeholder)
+
+      return styleObjectControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'title')(value),
+    objectKeyParser(parseEnum(['styleobject']), 'type')(value),
+    optionalObjectKeyParser(parseObject(parseAny), 'defaultValue')(value), // FIXME
+    optionalObjectKeyParser(parseObject(parseAny), 'placeholder')(value), // FIXME
+  )
+}
+
+export function parseArrayControlDescription(value: unknown): ParseResult<ArrayControlDescription> {
+  return applicative5Either(
+    (title, type, defaultValue, propertyControl, maxCount) => {
+      let arrayControlDescription: ArrayControlDescription = {
+        type: type,
+        propertyControl: propertyControl,
+      }
+      setOptionalProp(arrayControlDescription, 'title', title)
+      setOptionalProp(arrayControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(arrayControlDescription, 'maxCount', maxCount)
+
+      return arrayControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'title')(value),
+    objectKeyParser(parseEnum(['array']), 'type')(value),
+    optionalObjectKeyParser(parseArray(parseAny), 'defaultValue')(value),
+    objectKeyParser(parseControlDescription, 'propertyControl')(value),
+    optionalObjectKeyParser(parseNumber, 'maxCount')(value),
+  )
+}
+
+export function parseObjectControlDescription(
+  value: unknown,
+): ParseResult<ObjectControlDescription> {
+  return applicative4Either(
+    (title, type, defaultValue, object) => {
+      let objectControlDescription: ObjectControlDescription = {
+        type: type,
+        object: object,
+      }
+      setOptionalProp(objectControlDescription, 'title', title)
+      setOptionalProp(objectControlDescription, 'defaultValue', defaultValue)
+
+      return objectControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'title')(value),
+    objectKeyParser(parseEnum(['object']), 'type')(value),
+    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    objectKeyParser(parseObject(parseControlDescription), 'object')(value),
+  )
+}
+
 export function parseUnionControlDescription(value: unknown): ParseResult<UnionControlDescription> {
   return applicative4Either(
     (title, type, defaultValue, controls) => {
@@ -331,26 +434,36 @@ export function parseUnionControlDescription(value: unknown): ParseResult<UnionC
 export function parseControlDescription(value: unknown): ParseResult<ControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
     switch ((value as any)['type']) {
-      case 'number':
-        return parseNumberControlDescription(value)
-      case 'enum':
-        return parseEnumControlDescription(value)
       case 'boolean':
         return parseBooleanControlDescription(value)
-      case 'string':
-        return parseStringControlDescription(value)
-      case 'slider':
-        return parseSliderControlDescription(value)
-      case 'popuplist':
-        return parsePopUpListControlDescription(value)
-      case 'options':
-        return parseOptionsControlDescription(value)
       case 'color':
         return parseColorControlDescription(value)
       case 'componentinstance':
         return parseComponentInstanceControlDescription(value)
+      case 'enum':
+        return parseEnumControlDescription(value)
+      case 'eventhandler':
+        return parseEventHandlerControlDescription(value)
       case 'ignore':
         return parseIgnoreControlDescription(value)
+      case 'image':
+        return parseImageControlDescription(value)
+      case 'number':
+        return parseNumberControlDescription(value)
+      case 'options':
+        return parseOptionsControlDescription(value)
+      case 'popuplist':
+        return parsePopUpListControlDescription(value)
+      case 'slider':
+        return parseSliderControlDescription(value)
+      case 'string':
+        return parseStringControlDescription(value)
+      case 'styleobject':
+        return parseStyleObjectControlDescription(value)
+      case 'array':
+        return parseArrayControlDescription(value)
+      case 'object':
+        return parseObjectControlDescription(value)
       case 'union':
         return parseUnionControlDescription(value)
       case undefined:

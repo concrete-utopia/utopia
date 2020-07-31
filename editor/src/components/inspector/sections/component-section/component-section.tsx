@@ -1,265 +1,125 @@
-import * as fastDeepEquals from 'fast-deep-equal'
 import * as React from 'react'
+import { OptionsType } from 'react-select'
+import { animated } from 'react-spring'
 import {
-  InspectorSectionHeader,
-  PopupList,
-  SimpleNumberInput,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  colorTheme,
-  Tooltip,
-  FunctionIcons,
-  SquareButton,
-  Icons,
-  SimpleFlexRow,
-  UtopiaStyles,
-  UtopiaTheme,
-} from 'uuiui'
-import { betterReactMemo, SliderControl, getControlStyles } from 'uuiui-deps'
-import { jsxAttributeValue } from '../../../../core/shared/element-template'
-import {
-  ControlDescription,
+  ArrayControlDescription,
   BaseControlDescription,
+  ControlDescription,
   isBaseControlDescription,
+  ObjectControlDescription,
   UnionControlDescription,
 } from 'utopia-api'
-import { foldEither, right, Either } from '../../../../core/shared/either'
-import Utils from '../../../../utils/utils'
-import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
-import * as PP from '../../../../core/shared/property-path'
-import { BooleanControl } from '../../controls/boolean-control'
-import { ColorControl } from '../../controls/color-control'
-import { OptionChainControl } from '../../controls/option-chain-control'
-import { SelectControl, SelectOption } from '../../controls/select-control'
-import { StringControl } from '../../controls/string-control'
-import { addOnUnsetValues } from '../../common/context-menu-items'
-import { CSSColor, parseColor, printColor } from '../../common/css-utils'
 import {
-  InspectorInfo,
-  useInspectorInfoSimpleUntyped,
+  colorTheme,
+  FunctionIcons,
+  Icn,
+  InspectorSectionHeader,
+  PopupList,
+  SimpleFlexRow,
+  SquareButton,
+  Tooltip,
+  UtopiaTheme,
+} from 'uuiui'
+import { betterReactMemo, getControlStyles } from 'uuiui-deps'
+import { PathForSceneProps } from '../../../../core/model/scene-utils'
+import {
+  getDescriptionUnsetOptionalFields,
+  getMissingDefaultsWarning,
+  getMissingPropertyControlsWarning,
+} from '../../../../core/property-controls/property-controls-utils'
+import { joinSpecial } from '../../../../core/shared/array-utils'
+import { foldEither } from '../../../../core/shared/either'
+import { mapToArray } from '../../../../core/shared/object-utils'
+import { PropertyPath } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
+import Utils from '../../../../utils/utils'
+import { getParseErrorDetails, ParseError } from '../../../../utils/value-parser-utils'
+import { InfoBox } from '../../../common/notices'
+import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
+import { showContextMenu } from '../../../editor/actions/actions'
+import { useEditorState } from '../../../editor/store/store-hook'
+import { addOnUnsetValues } from '../../common/context-menu-items'
+import { InstanceContextMenu } from '../../common/instance-context-menu'
+import {
+  useControlForUnionControl,
+  useInspectorInfoForPropertyControl,
+} from '../../common/property-controls-hooks'
+import {
   useKeepReferenceEqualityIfPossible,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
   useUsedPropsWithoutDefaults,
 } from '../../common/property-path-hooks'
-import { PropertyRow } from '../../widgets/property-row'
-import { PathForSceneProps } from '../../../../core/model/scene-utils'
+import { useArraySuperControl } from '../../controls/array-supercontrol'
+import { SelectOption } from '../../controls/select-control'
 import { GridRow } from '../../widgets/grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
-import { ParseError, getParseErrorDetails } from '../../../../utils/value-parser-utils'
-import { InfoBox } from '../../../common/notices'
-import { showContextMenu } from '../../../editor/actions/actions'
-import { useEditorState } from '../../../editor/store/store-hook'
-import { InstanceContextMenu } from '../../common/instance-context-menu'
+import { PropertyRow } from '../../widgets/property-row'
 import {
-  getMissingDefaultsWarning,
-  getMissingPropertyControlsWarning,
-} from '../../../../core/property-controls/property-controls-utils'
-import { getDescriptionUnsetOptionalFields } from '../../../../core/property-controls/property-controls-utils'
-import { joinSpecial } from '../../../../core/shared/array-utils'
-import { WarningIcon } from '../../../../uuiui/warning-icon'
-import {
-  useInspectorInfoForPropertyControl,
-  useControlForUnionControl,
-} from '../../common/property-controls-hooks'
-import { PropertyPath } from '../../../../core/shared/project-file-types'
-import { OptionsType } from 'react-select'
+  ControlForBooleanProp,
+  ControlForColorProp,
+  ControlForComponentInstanceProp,
+  ControlForEnumProp,
+  ControlForEventHandlerProp,
+  ControlForImageProp,
+  ControlForNumberProp,
+  ControlForOptionsProp,
+  ControlForPopupListProp,
+  ControlForPropProps,
+  ControlForSliderProp,
+  ControlForStringProp,
+} from './property-control-controls'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
   addPropsToPath: boolean,
-  control: BaseControlDescription,
+  control: ControlDescription,
 ) {
   const propertyPath = addPropsToPath ? PP.append(PathForSceneProps, partialPath) : partialPath
   return useInspectorInfoForPropertyControl(propertyPath, control)
 }
 
-interface ControlForPropProps {
-  propName: string
-  controlDescription: BaseControlDescription | undefined
-  propMetadata: InspectorInfo<any>
-}
-
-const ControlForProp = betterReactMemo('ControlForProp', (props: ControlForPropProps) => {
-  const { propName, propMetadata, controlDescription } = props
-  const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-    propMetadata.onSubmitValue,
-    propMetadata.onUnsetValues,
-  )
-  const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-    propMetadata.onTransientSubmitValue,
-    propMetadata.onUnsetValues,
-  )
-  if (controlDescription == null) {
-    return null
-  } else {
-    const controlId = `${propName}-property-control`
-    const value = propMetadata.propertyStatus.set
-      ? propMetadata.value
-      : (controlDescription as any).defaultValue
-    switch (controlDescription.type) {
-      case 'string':
-        const stringControlValue = Utils.defaultIfNull('', value)
-        return (
-          <StringControl
-            key={propName}
-            id={controlId}
-            value={stringControlValue}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-          />
-        )
-      case 'number':
-        return (
-          <SimpleNumberInput
-            id={controlId}
-            value={value}
-            onSubmitValue={wrappedOnSubmit}
-            onTransientSubmitValue={wrappedOnTransientSubmit}
-            onForcedSubmitValue={wrappedOnSubmit}
-            controlStatus={propMetadata.controlStatus}
-            incrementControls={controlDescription.displayStepper}
-            stepSize={controlDescription.step}
-            minimum={controlDescription.min}
-            maximum={controlDescription.max}
-            labelInner={controlDescription.unit}
-          />
-        )
-      case 'boolean':
-        return (
-          <BooleanControl
-            key={propName}
-            id={controlId}
-            value={value}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-          />
-        )
-      case 'enum':
-        // TODO memoize this
-        const options: Array<SelectOption> = controlDescription.options.map((option, index) => {
-          return {
-            value: option as string, // TODO cheating with type
-            label:
-              controlDescription.optionTitles == null ||
-              typeof controlDescription.optionTitles === 'function'
-                ? (option as string)
-                : (controlDescription.optionTitles[index] as string),
-          }
-        })
-        return (
-          <SelectControl
-            style={{
-              fontWeight: 'normal',
-              marginLeft: 4,
-            }}
-            key={propName}
-            id={controlId}
-            value={value}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            options={options}
-          />
-        )
-      case 'slider': {
-        return (
-          <SliderControl
-            key={propName}
-            id={controlId}
-            value={value}
-            onTransientSubmitValue={propMetadata.onTransientSubmitValue}
-            onForcedSubmitValue={propMetadata.onSubmitValue}
-            onSubmitValue={propMetadata.onSubmitValue}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            DEPRECATED_controlOptions={{
-              minimum: controlDescription.min,
-              maximum: controlDescription.max,
-              stepSize: controlDescription.step,
-            }}
-          />
-        )
+const ControlForProp = betterReactMemo(
+  'ControlForProp',
+  (props: ControlForPropProps<BaseControlDescription>) => {
+    const { controlDescription } = props
+    if (controlDescription == null) {
+      return null
+    } else {
+      switch (controlDescription.type) {
+        case 'boolean':
+          return <ControlForBooleanProp {...props} controlDescription={controlDescription} />
+        case 'color':
+          return <ControlForColorProp {...props} controlDescription={controlDescription} />
+        case 'componentinstance':
+          return (
+            <ControlForComponentInstanceProp {...props} controlDescription={controlDescription} />
+          )
+        case 'enum':
+          return <ControlForEnumProp {...props} controlDescription={controlDescription} />
+        case 'eventhandler':
+          return <ControlForEventHandlerProp {...props} controlDescription={controlDescription} />
+        case 'ignore':
+          return null
+        case 'image':
+          return <ControlForImageProp {...props} controlDescription={controlDescription} />
+        case 'number':
+          return <ControlForNumberProp {...props} controlDescription={controlDescription} />
+        case 'options':
+          return <ControlForOptionsProp {...props} controlDescription={controlDescription} />
+        case 'popuplist':
+          return <ControlForPopupListProp {...props} controlDescription={controlDescription} />
+        case 'slider':
+          return <ControlForSliderProp {...props} controlDescription={controlDescription} />
+        case 'string':
+          return <ControlForStringProp {...props} controlDescription={controlDescription} />
+        case 'styleobject':
+        default:
+          return <div>Not yet implemented control type.</div>
       }
-      case 'popuplist': {
-        function submitValue(option: SelectOption): void {
-          propMetadata.onSubmitValue(option.value)
-        }
-        const currentValue = controlDescription.options.find((option) => {
-          return fastDeepEquals(option.value, value)
-        })
-
-        return (
-          <PopupList
-            disabled={!propMetadata.controlStyles.interactive}
-            value={currentValue}
-            onSubmitValue={submitValue}
-            options={controlDescription.options}
-            containerMode={'default'}
-          />
-        )
-      }
-      case 'options':
-        return (
-          <OptionChainControl
-            key={propName}
-            id={controlId}
-            value={value}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            onSubmitValue={propMetadata.onSubmitValue}
-            options={controlDescription.options}
-          />
-        )
-      case 'color':
-        const parsedColor = parseColor(value)
-        return foldEither(
-          (failureReason) => {
-            return <div>{failureReason}</div>
-          },
-          (validColor) => {
-            function transientSubmitValue(color: CSSColor): void {
-              propMetadata.onTransientSubmitValue(printColor(color))
-            }
-            function submitValue(color: CSSColor): void {
-              propMetadata.onSubmitValue(printColor(color))
-            }
-            return (
-              <ColorControl
-                key={propName}
-                id={controlId}
-                value={validColor}
-                controlStatus={propMetadata.controlStatus}
-                controlStyles={propMetadata.controlStyles}
-                onTransientSubmitValue={transientSubmitValue}
-                onSubmitValue={submitValue}
-              />
-            )
-          },
-          parsedColor,
-        )
-      case 'componentinstance':
-        return (
-          <StringControl
-            key={propName}
-            id={controlId}
-            value={Utils.defaultIfNull('', value)}
-            onSubmitValue={
-              propMetadata.controlStatus === 'controlled' ? Utils.NO_OP : propMetadata.onSubmitValue
-            }
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={{
-              ...propMetadata.controlStyles,
-              showContent: true,
-            }}
-          />
-        )
-      default:
-        return <div>Not yet implemented control type.</div>
     }
-  }
-})
+  },
+)
 
 interface ParseErrorProps {
   parseError: ParseError
@@ -380,6 +240,158 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
   )
 })
 
+interface RowForArrayControlProps extends AbstractRowForControlProps {
+  controlDescription: ArrayControlDescription
+}
+
+const RowForArrayControl = betterReactMemo(
+  'RowForArrayControl',
+  (props: RowForArrayControlProps) => {
+    const { propPath, controlDescription, isScene } = props
+    const title = titleForControl(propPath, controlDescription)
+    const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
+      propPath,
+      isScene,
+      controlDescription,
+    )
+
+    const rowHeight = UtopiaTheme.layout.gridRowHeight.tall
+    const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight, false)
+    const [insertingRow, setInsertingRow] = React.useState(false)
+
+    let warningTooltip: string | undefined = undefined
+    const unsetOptionalFields = getDescriptionUnsetOptionalFields(controlDescription)
+    if (unsetOptionalFields.length > 0) {
+      warningTooltip = `These optional fields are not set: ${joinSpecial(
+        unsetOptionalFields,
+        ', ',
+        ' and ',
+      )}`
+    }
+    const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
+
+    const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
+
+    React.useEffect(() => setInsertingRow(false), [springs.length])
+
+    return (
+      <>
+        <InspectorSectionHeader>
+          <SimpleFlexRow style={{ flexGrow: 1 }}>
+            <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+              {warning}
+              {title}
+            </PropertyLabel>
+            {propertyStatus.overwritable ? (
+              <SquareButton highlight onMouseDown={toggleInsertRow}>
+                {insertingRow ? (
+                  <Icn
+                    style={{ paddingTop: 1 }}
+                    category='semantic'
+                    type='minus'
+                    color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+                    width={16}
+                    height={16}
+                  />
+                ) : (
+                  <Icn
+                    style={{ paddingTop: 1 }}
+                    category='semantic'
+                    type='plus'
+                    color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+                    width={16}
+                    height={16}
+                  />
+                )}
+              </SquareButton>
+            ) : null}
+          </SimpleFlexRow>
+        </InspectorSectionHeader>
+        <div
+          style={{
+            height: rowHeight * springs.length,
+          }}
+        >
+          {springs.map((springStyle, index) => {
+            return (
+              <animated.div
+                {...bind(index)}
+                key={index}
+                style={{
+                  ...springStyle,
+                  width: '100%',
+                  position: 'absolute',
+                  height: rowHeight,
+                }}
+              >
+                <RowForControl
+                  controlDescription={controlDescription.propertyControl}
+                  isScene={isScene}
+                  propPath={PP.appendPropertyPathElems(propPath, [index])}
+                />
+              </animated.div>
+            )
+          })}
+        </div>
+        {insertingRow ? (
+          <RowForControl
+            controlDescription={controlDescription.propertyControl}
+            isScene={isScene}
+            propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
+          />
+        ) : null}
+      </>
+    )
+  },
+)
+
+interface RowForObjectControlProps extends AbstractRowForControlProps {
+  controlDescription: ObjectControlDescription
+}
+
+const RowForObjectControl = betterReactMemo(
+  'RowForObjectControl',
+  (props: RowForObjectControlProps) => {
+    const { propPath, controlDescription, isScene } = props
+    const title = titleForControl(propPath, controlDescription)
+
+    let warningTooltip: string | undefined = undefined
+    const unsetOptionalFields = getDescriptionUnsetOptionalFields(controlDescription)
+    if (unsetOptionalFields.length > 0) {
+      warningTooltip = `These optional fields are not set: ${joinSpecial(
+        unsetOptionalFields,
+        ', ',
+        ' and ',
+      )}`
+    }
+    const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
+
+    return (
+      <>
+        <InspectorSectionHeader>
+          <SimpleFlexRow style={{ flexGrow: 1 }}>
+            <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+              {warning}
+              {title}
+            </PropertyLabel>
+          </SimpleFlexRow>
+        </InspectorSectionHeader>
+        {mapToArray((innerControl: ControlDescription, prop: string) => {
+          const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+          return (
+            <RowForControl
+              key={`object-control-row-${PP.toString(innerPropPath)}`}
+              controlDescription={innerControl}
+              isScene={isScene}
+              propPath={innerPropPath}
+            />
+          )
+        }, controlDescription.object)}
+      </>
+    )
+  },
+)
+
 interface RowForUnionControlProps extends AbstractRowForControlProps {
   controlDescription: UnionControlDescription
 }
@@ -460,9 +472,9 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
   } else {
     switch (controlDescription.type) {
       case 'array':
-        return <div>Not yet implemented control type.</div>
+        return <RowForArrayControl {...props} controlDescription={controlDescription} />
       case 'object':
-        return <div>Not yet implemented control type.</div>
+        return <RowForObjectControl {...props} controlDescription={controlDescription} />
       case 'union':
         return <RowForUnionControl {...props} controlDescription={controlDescription} />
       default:
