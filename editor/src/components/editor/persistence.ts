@@ -28,7 +28,6 @@ import { arrayContains, projectURLForProject } from '../../core/shared/utils'
 import { getPNGBufferOfElementWithID } from './screenshot-utils'
 
 const SAVE_THROTTLE_DELAY = 30000
-const SAVE_RETRY_DELAY = 5000
 
 interface NeverSaved {
   type: 'never-saved'
@@ -62,6 +61,8 @@ interface SaveError {
   queuedModelChange: PersistentModel | null
   queuedNameChange: string | null
   setTimeoutId: NodeJS.Timer
+  errorCount: number
+  timestamp: number
 }
 
 type SaveState = NeverSaved | SaveInProgress | Saved | SaveError
@@ -72,6 +73,14 @@ function isNeverSaved(saveState: SaveState): saveState is NeverSaved {
 
 function isSaveInProgress(saveState: SaveState): saveState is SaveInProgress {
   return saveState.type === 'save-in-progress'
+}
+
+function isSaveError(saveState: SaveState): saveState is SaveError {
+  return saveState.type === 'save-error'
+}
+
+function isSaved(saveState: SaveState): saveState is Saved {
+  return saveState.type === 'saved'
 }
 
 function neverSaved(): NeverSaved {
@@ -124,6 +133,8 @@ function saveError(
   queuedModelChange: PersistentModel | null,
   queuedNameChange: string | null,
   setTimeoutId: NodeJS.Timer,
+  errorCount: number,
+  timestamp: number,
 ): SaveError {
   return {
     type: 'save-error',
@@ -134,6 +145,8 @@ function saveError(
     queuedModelChange: queuedModelChange,
     queuedNameChange: queuedNameChange,
     setTimeoutId: setTimeoutId,
+    errorCount: errorCount,
+    timestamp: timestamp,
   }
 }
 
@@ -221,6 +234,22 @@ async function checkCanSaveProject(projectId: string | null): Promise<boolean> {
   }
 }
 
+function waitTimeForSaveState(): number {
+  switch (_saveState.type) {
+    case 'never-saved':
+      return 0
+    case 'saved':
+      return SAVE_THROTTLE_DELAY
+    case 'save-in-progress':
+      return SAVE_THROTTLE_DELAY
+    case 'save-error':
+      return SAVE_THROTTLE_DELAY * _saveState.errorCount
+    default:
+      const _exhaustiveCheck: never = _saveState
+      throw new Error(`Unhandled saveState type ${JSON.stringify(_saveState)}`)
+  }
+}
+
 async function throttledServerSaveInner(
   dispatch: EditorDispatch,
   projectId: string,
@@ -233,16 +262,18 @@ async function throttledServerSaveInner(
       await serverSaveInner(dispatch, projectId, projectName, modelChange, nameChange, false)
       break
     case 'saved':
+    case 'save-error':
       if (_saveState.setTimeoutId != null) {
         clearTimeout(_saveState.setTimeoutId)
       }
-      const timeLeftSinceLastSave = Date.now() - _saveState.timestamp
-      if (timeLeftSinceLastSave >= SAVE_THROTTLE_DELAY) {
+      const timeSinceLastSave = Date.now() - _saveState.timestamp
+      const waitTime = waitTimeForSaveState() - timeSinceLastSave
+      if (waitTime <= 0) {
         await serverSaveInner(dispatch, projectId, projectName, modelChange, nameChange, false)
       } else {
         const setTimeoutId = setTimeout(() => {
           throttledServerSaveInner(dispatch, projectId, projectName, modelChange, nameChange)
-        }, SAVE_THROTTLE_DELAY - timeLeftSinceLastSave)
+        }, waitTime)
         _saveState = saved(
           _saveState.remote,
           _saveState.timestamp,
@@ -254,12 +285,6 @@ async function throttledServerSaveInner(
           setTimeoutId,
         )
       }
-      break
-    case 'save-error':
-      if (_saveState.setTimeoutId != null) {
-        clearTimeout(_saveState.setTimeoutId)
-      }
-      await serverSaveInner(dispatch, projectId, projectName, modelChange, nameChange, false)
       break
     case 'save-in-progress':
       _saveState = saveInProgress(_saveState.remote, modelChange, nameChange)
@@ -278,6 +303,7 @@ async function serverSaveInner(
   nameChange: string | null,
   forceThumbnail: boolean,
 ) {
+  const priorErrorCount = isSaveError(_saveState) ? _saveState.errorCount : 0
   _saveState = saveInProgress(true, null, null)
   const name = nameChange ?? projectName
   try {
@@ -294,9 +320,10 @@ async function serverSaveInner(
       }
     }
   } catch (e) {
+    const newErrorCount = priorErrorCount + 1
     const setTimeoutId = setTimeout(() => {
       throttledServerSaveInner(dispatch, projectId, name, modelChange, nameChange)
-    }, SAVE_RETRY_DELAY)
+    }, SAVE_THROTTLE_DELAY * newErrorCount)
     _saveState = saveError(
       _saveState.remote,
       projectId,
@@ -305,6 +332,8 @@ async function serverSaveInner(
       modelChange,
       nameChange,
       setTimeoutId,
+      newErrorCount,
+      Date.now(),
     )
     dispatch([setSaveError(true)], 'everyone')
   }
