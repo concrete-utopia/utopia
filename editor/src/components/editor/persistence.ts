@@ -278,6 +278,10 @@ async function serverSaveInner(
   nameChange: string | null,
   forceThumbnail: boolean,
 ) {
+  if (_saveState.type === 'saved' && _saveState.setTimeoutId != null) {
+    clearTimeout(_saveState.setTimeoutId)
+  }
+
   _saveState = saveInProgress(true, null, null)
   const name = nameChange ?? projectName
   try {
@@ -363,24 +367,28 @@ function maybeTriggerQueuedSave(
 ) {
   const queuedModelChange = saveState.queuedModelChange
   const queuedNameChange = saveState.queuedNameChange
+  _saveState = saved(
+    saveState.remote,
+    Date.now(),
+    projectId,
+    projectName,
+    dispatch,
+    null,
+    null,
+    null,
+  )
   if (queuedModelChange != null || queuedNameChange != null) {
-    _saveState = saveInProgress(saveState.remote, null, null)
     if (saveState.remote) {
-      serverSaveInner(dispatch, projectId, projectName, queuedModelChange, queuedNameChange, false)
+      throttledServerSaveInner(
+        dispatch,
+        projectId,
+        projectName,
+        queuedModelChange,
+        queuedNameChange,
+      )
     } else {
       localSaveInner(dispatch, projectId, projectName, queuedModelChange, queuedNameChange)
     }
-  } else {
-    _saveState = saved(
-      saveState.remote,
-      Date.now(),
-      projectId,
-      projectName,
-      dispatch,
-      null,
-      null,
-      null,
-    )
   }
 }
 
