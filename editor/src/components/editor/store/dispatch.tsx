@@ -399,7 +399,7 @@ export function editorDispatch(
   const shouldSave =
     isLoaded &&
     !isLoadAction &&
-    (!allTransient || anyUndoOrRedo || updateCodeResultCache || updateCodeEditorErrors) &&
+    (!transientOrNoChange || anyUndoOrRedo || updateCodeResultCache || updateCodeEditorErrors) &&
     isBrowserEnvironment
   if (shouldSave) {
     save(frozenEditorState, boundDispatch, storedState.loginState, saveType, forceSave)
