@@ -1,10 +1,16 @@
 import * as React from 'react'
 import { betterReactMemo } from 'uuiui-deps'
+import * as TP from '../../../../core/shared/template-path'
+import * as PP from '../../../../core/shared/property-path'
 import Utils from '../../../../utils/utils'
 import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../uuiui'
 import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
 import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
-import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../common/property-path-hooks'
+import {
+  useInspectorLayoutInfo,
+  useInspectorStyleInfo,
+  useInspectorInfoSimpleUntyped,
+} from '../../common/property-path-hooks'
 import { OptionChainControl, OptionChainOption } from '../../controls/option-chain-control'
 import { PropertyRow } from '../../widgets/property-row'
 import {
@@ -16,6 +22,7 @@ import {
   FlexWrapControl,
   getDirectionAwareLabels,
 } from '../layout-section/flex-container-subsection/flex-container-controls'
+import { jsxAttributeValue } from '../../../../core/shared/element-template'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -144,9 +151,24 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
   }
 })
 
+function useSceneType() {
+  return useInspectorInfoSimpleUntyped(
+    [PP.create(['static'])],
+    (targets) => {
+      const isStatic = targets['static']
+      return isStatic === true ? 'static' : 'dynamic'
+    },
+    (type: string) => {
+      const isStatic = type === 'static'
+      return {
+        static: jsxAttributeValue(isStatic),
+      }
+    },
+  )
+}
+
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
-  // FIXME We need a hook for checking the actual layout system since it's now spread across 2 possible props
-  const layoutSystemMetadata = useInspectorLayoutInfo('LayoutSystem')
+  const sceneTypeInfo = useSceneType()
   return (
     <>
       <PropertyRow style={scenePropertyRowStyle}>
@@ -158,9 +180,9 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
           <OptionChainControl
             id={'layoutSystem'}
             key={'layoutSystem'}
-            onSubmitValue={layoutSystemMetadata.onSubmitValue}
-            value={layoutSystemMetadata.value ?? 'pinSystem'}
-            options={getLayoutSystemOptions()}
+            onSubmitValue={sceneTypeInfo.onSubmitValue}
+            value={sceneTypeInfo.value}
+            options={getSceneTypeOptions()}
             controlStatus={simpleControlStatus}
             controlStyles={simpleControlStyles}
           />
@@ -173,11 +195,11 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
 
 SceneContainerSections.displayName = 'SceneContainerSections'
 
-function getLayoutSystemOptions(): Array<OptionChainOption<string>> {
+function getSceneTypeOptions(): Array<OptionChainOption<string>> {
   return [
     {
-      value: 'pinSystem',
-      tooltip: 'Layout children with pins',
+      value: 'dynamic',
+      tooltip: 'Scene size changes dynamically based on content',
       icon: {
         category: 'layout/systems',
         type: 'pins',
@@ -185,11 +207,11 @@ function getLayoutSystemOptions(): Array<OptionChainOption<string>> {
         width: 16,
         height: 16,
       },
-      label: 'View',
+      label: 'Dynamic',
     },
     {
-      value: 'flex',
-      tooltip: 'Layout children with flexbox',
+      value: 'static',
+      tooltip: 'Fixed size',
       icon: {
         category: 'layout/systems',
         type: 'flexbox',
@@ -197,7 +219,7 @@ function getLayoutSystemOptions(): Array<OptionChainOption<string>> {
         width: 16,
         height: 16,
       },
-      label: 'Flex',
+      label: 'Static',
     },
   ]
 }
