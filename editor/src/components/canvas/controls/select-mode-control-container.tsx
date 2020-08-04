@@ -131,7 +131,7 @@ export class SelectModeControlContainer extends React.Component<
     ) {
       const selection = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
       const moveTargets = selection.filter((view) =>
-        this.props.selectedViewsRespectStyleProp.find((path) => TP.pathsEqual(path, view)),
+        this.props.selectedViewsThatRespectLayout.find((path) => TP.pathsEqual(path, view)),
       )
       // setting original frames
       if (moveTargets.length > 0) {
@@ -606,14 +606,14 @@ export class SelectModeControlContainer extends React.Component<
         let rootHasStyleProp = false
         if (rootElement != null) {
           rootHasStyleProp =
-            this.props.selectedViewsRespectStyleProp.find((path) =>
+            this.props.selectedViewsThatRespectLayout.find((path) =>
               TP.pathsEqual(path, rootElement.templatePath),
             ) != null
         }
         return scene?.type === 'static' || rootHasStyleProp
       } else {
         return (
-          this.props.selectedViewsRespectStyleProp.findIndex((path) =>
+          this.props.selectedViewsThatRespectLayout.findIndex((path) =>
             TP.pathsEqual(path, target),
           ) > -1
         )

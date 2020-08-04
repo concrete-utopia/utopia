@@ -35,8 +35,8 @@ import { isLiveMode, EditorModes } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
-import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
+import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -57,7 +57,7 @@ export interface ControlProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
-  selectedViewsRespectStyleProp: Array<TemplatePath>
+  selectedViewsThatRespectLayout: Array<TemplatePath>
 }
 
 interface NewCanvasControlsProps {
@@ -214,7 +214,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     return 'enabled'
   }
 
-  const selectedViewsRespectStyleProp = useEditorState((store) => {
+  const selectedViewsThatRespectLayout = useEditorState((store) => {
     return flatMapArray((view) => {
       if (TP.isScenePath(view)) {
         let sceneAndRootView: TemplatePath[] = [view]
@@ -226,10 +226,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       } else {
         return [view]
       }
-    }, store.editor.selectedViews).filter((view) => {
-      const propControls = getPropertyControlsForTarget(view, store.editor)
-      return propControls?.style && propControls?.style.type === 'styleobject'
-    })
+    }, store.editor.selectedViews).filter((view) => targetRespectsLayout(view, store.editor))
   })
 
   const renderModeControlContainer = () => {
@@ -270,7 +267,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       windowToCanvasPosition: props.windowToCanvasPosition,
       cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
-      selectedViewsRespectStyleProp: selectedViewsRespectStyleProp,
+      selectedViewsThatRespectLayout: selectedViewsThatRespectLayout,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {
