@@ -299,7 +299,7 @@ export function parseLinkTags(
         const relAttribute = node.getAttribute('rel')
         if (hrefAttribute != null && relAttribute != null) {
           if (hrefAttribute.startsWith(googleFontsURIBase)) {
-            const parsedParams = new URL(hrefAttribute).searchParams
+            let parsedParams = new URL(hrefAttribute).searchParams
             const familyParam = parsedParams.get('family')
             parsedParams.delete('family')
             const otherParams = parsedParams.toString()
