@@ -973,7 +973,7 @@ export const emptyComputedStyle: ComputedStyle = {}
 export interface ComponentMetadata {
   scenePath: ScenePath
   templatePath: InstancePath
-  rootElement: ElementInstanceMetadata | null
+  rootElements: Array<ElementInstanceMetadata>
   component: string | null
   container: SceneContainer
   globalFrame: CanvasRectangle | null
@@ -992,7 +992,7 @@ export type MetadataWithoutChildren = Omit<ElementInstanceMetadata, 'children'> 
   childrenTemplatePaths: Array<InstancePath>
 }
 
-export type ComponentMetadataWithoutRootElement = Omit<ComponentMetadata, 'rootElement'>
+export type ComponentMetadataWithoutRootElements = Omit<ComponentMetadata, 'rootElements'>
 
 export type ElementsByUID = { [uid: string]: JSXElement }
 

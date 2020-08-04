@@ -25,7 +25,7 @@ import {
   MetadataWithoutChildren,
   TopLevelElement,
   UtopiaJSXComponent,
-  ComponentMetadataWithoutRootElement,
+  ComponentMetadataWithoutRootElements,
   jsxElement,
   Param,
   isRegularParam,
@@ -36,6 +36,7 @@ import {
   emptyComputedStyle,
   isIntrinsicElement,
   isIntrinsicHTMLElement,
+  isJSXFragment,
 } from '../../core/shared/element-template'
 import { getUtopiaID, getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
@@ -90,7 +91,7 @@ import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property
 import { usePrevious } from '../editor/hook-utils'
 import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import { unimportCSSFile } from '../../core/shared/css-style-loader'
-import { removeAll } from '../../core/shared/array-utils'
+import { removeAll, flatMapArray } from '../../core/shared/array-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
 import { omitWithPredicate } from '../../core/shared/object-utils'
 
@@ -98,7 +99,7 @@ const emptyFileBlobs: UIFileBase64Blobs = {}
 
 export type SpyValues = {
   metadata: { [templatePath: string]: MetadataWithoutChildren }
-  scenes: { [templatePath: string]: ComponentMetadataWithoutRootElement }
+  scenes: { [templatePath: string]: ComponentMetadataWithoutRootElements }
 }
 
 export interface UiJsxCanvasContextData {
@@ -426,10 +427,10 @@ export const UiJsxCanvas = betterReactMemo(
       jsxFactoryFunctionName: null,
     })
 
-    if (props.clearErrors != null) {
+    if (clearErrors != null) {
       // a new canvas render, a new chance at having no errors
       // FIXME This is illegal! The line below is triggering a re-render
-      props.clearErrors()
+      clearErrors()
     }
 
     if (uiFilePath == null) {
@@ -554,7 +555,7 @@ function getStoryboardRoot(
   executionScope: MapLike<any>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
-  storyboardRootSceneMetadata: ComponentMetadataWithoutRootElement
+  storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements
   storyboardRootElementPath: StaticInstancePath
   rootValidPaths: Array<StaticInstancePath>
   rootScenePath: ScenePath
@@ -570,7 +571,7 @@ function getStoryboardRoot(
       : getValidTemplatePaths(storyboardRootJsxComponent, EmptyScenePathForStoryboard)
   const storyboardRootElementPath = validPaths[0] // >:D
 
-  const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElement = {
+  const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements = {
     component: BakedInStoryboardVariableName,
     type: 'static',
     container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
@@ -728,15 +729,7 @@ function createComponentRendererComponent(params: {
     }
 
     const scenePath = sceneContext.scenePath
-    let rootElement: JSXElementChild
-    let ownTemplatePath: InstancePath
     let codeError: Error | null = null
-
-    // so. this template path is ONLY correct if this component is used as a Scene Root.
-    // if this component is used as an instance inside some other component, this template path will be garbage.
-    // but! worry not, because in cases this is an instance, we are not running the DOM-walker and we discard the spy results
-    // so it is not an issue that we have a false template path
-    ownTemplatePath = TP.instancePath(scenePath, [getUtopiaID(utopiaJsxComponent.rootElement)])
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       runBlockUpdatingScope(
@@ -750,31 +743,38 @@ function createComponentRendererComponent(params: {
       )
     }
 
-    rootElement = utopiaJsxComponent.rootElement
+    function buildComponentRenderResult(element: JSXElementChild): React.ReactElement {
+      if (isJSXFragment(element)) {
+        return <>{element.children.map(buildComponentRenderResult)}</>
+      } else {
+        // so. this template path is ONLY correct if this component is used as a Scene Root.
+        // if this component is used as an instance inside some other component, this template path will be garbage.
+        // but! worry not, because in cases this is an instance, we are not running the DOM-walker and we discard the spy results
+        // so it is not an issue that we have a false template path
+        const ownTemplatePath = TP.instancePath(scenePath, [getUtopiaID(element)])
 
-    const elementsToRender = renderCoreElement(
-      rootElement,
-      ownTemplatePath,
-      mutableContext.rootScope,
-      scope,
-      realPassedProps,
-      mutableContext.requireResult,
-      rerenderUtopiaContext.hiddenInstances,
-      mutableContext.fileBlobs,
-      mutableContext.reportError,
-      sceneContext.validPaths,
-      realPassedProps['data-uid'],
-      undefined,
-      metadataContext,
-      mutableContext.jsxFactoryFunctionName,
-      codeError,
-      rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy,
-    )
-    if (Array.isArray(elementsToRender)) {
-      return <>{elementsToRender}</>
-    } else {
-      return elementsToRender
+        return renderCoreElement(
+          element,
+          ownTemplatePath,
+          mutableContext.rootScope,
+          scope,
+          realPassedProps,
+          mutableContext.requireResult,
+          rerenderUtopiaContext.hiddenInstances,
+          mutableContext.fileBlobs,
+          mutableContext.reportError,
+          sceneContext.validPaths,
+          realPassedProps['data-uid'],
+          undefined,
+          metadataContext,
+          mutableContext.jsxFactoryFunctionName,
+          codeError,
+          rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy,
+        )
+      }
     }
+
+    return buildComponentRenderResult(utopiaJsxComponent.rootElement)
   }
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
   Component.topLevelElementName = params.topLevelElementName

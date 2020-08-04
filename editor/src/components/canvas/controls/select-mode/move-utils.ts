@@ -21,6 +21,7 @@ import {
 import { ConstrainedDragAxis, Guideline, Guidelines } from '../../guideline'
 import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
+import { flatMapArray } from '../../../../core/shared/array-utils'
 
 function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {
@@ -81,18 +82,18 @@ export function determineElementsToOperateOnForDragging(
     })
   } else {
     // Resizing.
-    return extendSelectedViewsForInteraction(selectedViews, componentMetadata).map((view) => {
+    return flatMapArray<TemplatePath, TemplatePath>((view) => {
       if (TP.isScenePath(view)) {
         const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata, view)
-        if (scene?.type === 'dynamic' && scene.rootElement != null) {
-          return scene.rootElement.templatePath
+        if (scene?.type === 'dynamic') {
+          return scene.rootElements.map((e) => e.templatePath)
         } else {
-          return view
+          return [view]
         }
       } else {
-        return view
+        return [view]
       }
-    })
+    }, extendSelectedViewsForInteraction(selectedViews, componentMetadata))
   }
 }
 

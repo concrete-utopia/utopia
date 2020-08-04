@@ -475,18 +475,22 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
       TP.depth(selectedViews[0]) === 1 &&
       TP.isScenePath(selectedViews[0])
 
-    const rootViewForScene = jsxMetadataKILLME.find((m) =>
+    let rootViewsForScene: Array<TemplatePath> = []
+    const possibleRootComponent = jsxMetadataKILLME.find((m) =>
       TP.pathsEqual(m.scenePath, selectedViews[0]),
-    )?.rootElement?.templatePath
+    )
+    if (possibleRootComponent != null) {
+      rootViewsForScene = possibleRootComponent.rootElements.map((e) => e.templatePath)
+    }
 
-    if (showSceneInspector && rootViewForScene != null) {
+    if (showSceneInspector && rootViewsForScene != null) {
       return (
         <>
           <SingleInspectorEntryPoint selectedViews={selectedViews} />
           <InspectorSectionHeader style={{ paddingTop: UtopiaTheme.layout.rowHeight.small }}>
             Root View
           </InspectorSectionHeader>
-          <SingleInspectorEntryPoint selectedViews={[rootViewForScene]} />
+          <SingleInspectorEntryPoint selectedViews={rootViewsForScene} />
         </>
       )
     } else {

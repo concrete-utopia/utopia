@@ -768,44 +768,46 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
         globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
         type: 'static',
         container: { layoutSystem: LayoutSystem.PinSystem },
-        rootElement: {
-          navigatorName: 'nope',
-          templatePath: TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), ['aaa']),
-          element: right(firstTopLevelElement.rootElement),
-          props: {
-            'data-uid': 'aaa',
-          },
-          globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-          localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-          children: [
-            {
-              navigatorName: 'nope',
-              templatePath: TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), [
-                'aaa',
-                'bbb',
-              ]),
-              element: right(childElement),
-              props: {
-                'data-uid': 'bbb',
-                style: {
-                  left: 5,
-                  top: 10,
-                  width: 200,
-                  height: 300,
-                },
-              },
-              globalFrame: canvasRectangle({ x: 0, y: 0, width: 200, height: 300 }),
-              localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
-              children: [],
-              componentInstance: false,
-              specialSizeMeasurements: emptySpecialSizeMeasurements,
-              computedStyle: emptyComputedStyle,
+        rootElements: [
+          {
+            navigatorName: 'nope',
+            templatePath: TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), ['aaa']),
+            element: right(firstTopLevelElement.rootElement),
+            props: {
+              'data-uid': 'aaa',
             },
-          ],
-          componentInstance: false,
-          specialSizeMeasurements: emptySpecialSizeMeasurements,
-          computedStyle: emptyComputedStyle,
-        },
+            globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+            localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+            children: [
+              {
+                navigatorName: 'nope',
+                templatePath: TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), [
+                  'aaa',
+                  'bbb',
+                ]),
+                element: right(childElement),
+                props: {
+                  'data-uid': 'bbb',
+                  style: {
+                    left: 5,
+                    top: 10,
+                    width: 200,
+                    height: 300,
+                  },
+                },
+                globalFrame: canvasRectangle({ x: 0, y: 0, width: 200, height: 300 }),
+                localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
+                children: [],
+                componentInstance: false,
+                specialSizeMeasurements: emptySpecialSizeMeasurements,
+                computedStyle: emptyComputedStyle,
+              },
+            ],
+            componentInstance: false,
+            specialSizeMeasurements: emptySpecialSizeMeasurements,
+            computedStyle: emptyComputedStyle,
+          },
+        ],
       },
     ],
     selectedViews: [TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), ['aaa'])],

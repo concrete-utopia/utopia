@@ -44,11 +44,11 @@ function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInsta
 
 function sanitizeJsxMetadata(jsxMetadata: ComponentMetadata[]) {
   return jsxMetadata.map((componentMetadata) => {
-    const rootElement = componentMetadata.rootElement
-    if (rootElement != null) {
+    const rootElements = componentMetadata.rootElements
+    if (rootElements != null) {
       return {
         ...componentMetadata,
-        rootElement: sanitizeElementMetadata(rootElement),
+        rootElements: rootElements.map(sanitizeElementMetadata),
       }
     } else {
       return componentMetadata
