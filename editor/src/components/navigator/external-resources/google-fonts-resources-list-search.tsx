@@ -6,6 +6,7 @@ import {
   googleFontsResource,
   GoogleFontsResource,
 } from '../../../printer-parsers/html/external-resources-parser'
+import { isOptionType } from '../../../utils/utils'
 import { betterReactMemo, SelectOption } from '../../../uuiui-deps'
 import { UseSubmitValueFactory } from '../../inspector/common/property-path-hooks'
 import { fontVariant, GoogleFontVariant, GoogleWebFontsURL } from './google-fonts-utils'
