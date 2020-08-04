@@ -52,10 +52,8 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
 
     const onSubmitValue = React.useCallback(
       (newValue: ValueType<SelectOption>) => {
-        if (newValue != null && !Array.isArray(newValue)) {
-          pushNewGoogleFontsResource(
-            googleFontsResource((newValue as SelectOption).value, [fontVariant(400, false)]),
-          )
+        if (isOptionType(newValue)) {
+          pushNewGoogleFontsResource(googleFontsResource(newValue.value, [fontVariant(400, false)]))
         }
       },
       [pushNewGoogleFontsResource],

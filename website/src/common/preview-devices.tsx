@@ -1,7 +1,9 @@
 import * as React from 'react'
-import { components } from 'react-select'
+import { components, ValueType } from 'react-select'
 import Select from 'react-select'
 import { DeviceID, deviceInfoList } from './devices'
+import { isOptionType } from '../utils/utils'
+import { SelectOption } from '../uuiui-deps'
 
 export const getDeviceReactSelectOption = (deviceID: DeviceID): DeviceReactSelectOption => {
   const device = deviceInfoList[deviceID]
@@ -68,8 +70,8 @@ export const PreviewReactSelectDeviceSelector: React.FunctionComponent<PreviewRe
   }
 
   const selectOnChange = React.useCallback(
-    (newValue: any) => {
-      if (newValue != null && !Array.isArray(newValue)) {
+    (newValue: ValueType<DeviceReactSelectOption>) => {
+      if (isOptionType(newValue)) {
         onChange(newValue)
       }
     },

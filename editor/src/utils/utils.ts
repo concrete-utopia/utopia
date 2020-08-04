@@ -140,6 +140,7 @@ import {
   processErrorWithSourceMap,
 } from '../core/shared/code-exec-utils'
 import { memoize } from '../core/shared/memoize'
+import { ValueType, OptionsType, OptionTypeBase } from 'react-select'
 // TODO Remove re-exported functions
 
 export type FilteredFields<Base, T> = {
@@ -924,6 +925,24 @@ function timeLimitPromise<T>(promise: Promise<T>, limitms: number, message: stri
     })
   })
   return Promise.race([promise, timeoutPromise])
+}
+
+/**
+ * A type guard for React Select's onChange values, which can either be a value
+ * or an array of values.
+ */
+export function isOptionType<T extends OptionTypeBase>(value: ValueType<T>): value is T {
+  return value != null && !Array.isArray(value)
+}
+
+/**
+ * A type guard for React Select's onChange values, which can either be a value
+ * or an array of values.
+ */
+export function isOptionsType<T extends OptionTypeBase>(
+  value: ValueType<T>,
+): value is OptionsType<T> {
+  return Array.isArray(value)
 }
 
 export default {
