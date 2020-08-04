@@ -61,19 +61,17 @@ type LogoutAPI = "logout" :> Get '[HTML] (SetSessionCookies H.Html)
 
 type GetUserAPI = "v1" :> "user" :> Get '[JSON] UserResponse
 
-type EmptyProjectPageAPI = "project" :> Get '[HTML] H.Html
+type EmptyProjectPageAPI = "p" :> Get '[HTML] H.Html
 
-type ShortEmptyProjectPageAPI = "p" :> Get '[HTML] H.Html
+type ProjectPageAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
 
-type ProjectPageAPI = "project" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
-
-type ShortProjectPageAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
+type LoadProjectAssetAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
 
 type EmptyPreviewPageAPI = "share" :> Get '[HTML] H.Html
 
 type PreviewPageAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
 
-type DownloadProjectAPI = "project" :> Capture "project_id" ProjectIdWithSuffix :> "contents.json" :> CaptureAll "remaining_path" Text :> Get '[PrettyJSON] Value
+type DownloadProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "contents.json" :> CaptureAll "remaining_path" Text :> Get '[PrettyJSON] Value
 
 type ProjectOwnerAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "owner" :> Get '[JSON] ProjectOwnerResponse
 
@@ -94,10 +92,6 @@ type MyProjectsAPI = "v1" :> "projects" :> Get '[JSON] ProjectListResponse
 type ShowcaseAPI = "v1" :> "showcase" :> Get '[JSON] ProjectListResponse
 
 type SetShowcaseAPI = "v1" :> "showcase" :> "overwrite" :> QueryParam' '[Required] "projects" Text :> Post '[JSON] NoContent
-
-type LoadProjectAssetAPI = "project" :> Capture "project_id" ProjectIdWithSuffix :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
-
-type ShortLoadProjectAssetAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
 
 type PreviewProjectAssetAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
 
@@ -155,9 +149,7 @@ type Protected = LogoutAPI
 
 type Unprotected = AuthenticateAPI
               :<|> EmptyProjectPageAPI
-              :<|> ShortEmptyProjectPageAPI
               :<|> ProjectPageAPI
-              :<|> ShortProjectPageAPI
               :<|> EmptyPreviewPageAPI
               :<|> PreviewPageAPI
               :<|> DownloadProjectAPI
@@ -167,7 +159,6 @@ type Unprotected = AuthenticateAPI
               :<|> ShowcaseAPI
               :<|> SetShowcaseAPI
               :<|> LoadProjectAssetAPI
-              :<|> ShortLoadProjectAssetAPI
               :<|> PreviewProjectAssetAPI
               :<|> LoadProjectThumbnailAPI
               :<|> MonitoringAPI

@@ -15,9 +15,11 @@ import { NodeModules, isEsCodeFile } from '../shared/project-file-types'
 import { fastForEach } from '../shared/utils'
 import { parseVersionPackageJsonFile } from '../../utils/package-parser-utils'
 import { forEachRight } from '../shared/either'
+import { UtopiaApiComponents } from './utopia-api-components'
 
 const ThirdPartyComponents: DependenciesDescriptors = {
   antd: AntdComponents,
+  'utopia-api': UtopiaApiComponents,
 }
 
 export function getThirdPartyComponents(

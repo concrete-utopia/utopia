@@ -16,7 +16,7 @@ export type BaseControlType =
   | 'popuplist'
   | 'slider'
   | 'string'
-  | 'style-object'
+  | 'styleobject'
 
 interface AbstractControlDescription<T extends ControlType> {
   title?: string
@@ -103,7 +103,7 @@ export interface StringControlDescription extends AbstractBaseControlDescription
 }
 
 export interface StyleObjectControlDescription
-  extends AbstractBaseControlDescription<'style-object'> {
+  extends AbstractBaseControlDescription<'styleobject'> {
   defaultValue?: CSSProperties
   placeholder?: CSSProperties
 }
@@ -173,7 +173,7 @@ export function isBaseControlDescription(
     case 'popuplist':
     case 'slider':
     case 'string':
-    case 'style-object':
+    case 'styleobject':
       return true
     case 'array':
     case 'object':
@@ -201,7 +201,7 @@ export function isHigherLevelControlDescription(
     case 'popuplist':
     case 'slider':
     case 'string':
-    case 'style-object':
+    case 'styleobject':
       return false
     case 'array':
     case 'object':

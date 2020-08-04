@@ -18,7 +18,7 @@ import { fastForEach } from '../shared/utils'
 import { AntdControls } from './third-party-property-controls/antd-controls'
 import { NpmDependency } from '../shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../third-party/third-party-components'
-import { getJSXElementNameAsString } from '../shared/element-template'
+import { getJSXElementNameAsString, isIntrinsicHTMLElement } from '../shared/element-template'
 import { TemplatePath } from '../shared/project-file-types'
 import {
   getOpenImportsFromState,
@@ -28,6 +28,7 @@ import {
   EditorState,
 } from '../../components/editor/store/editor-state'
 import { MetadataUtils } from '../model/element-metadata-utils'
+import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
 
 export function defaultPropertiesForComponentInFile(
   componentName: string,
@@ -170,7 +171,7 @@ export function getDescriptionUnsetOptionalFields(
       addIfFieldEmpty(controlDescription, 'placeholder')
       addIfFieldEmpty(controlDescription, 'obscured')
       break
-    case 'style-object':
+    case 'styleobject':
       break
     case 'popuplist':
       addIfFieldEmpty(controlDescription, 'defaultValue')
@@ -246,11 +247,21 @@ export function getPropertyControlsForTarget(
     rootComponents,
     editor.jsxMetadataKILLME,
   )
+  const jsxName = MetadataUtils.getJSXElementName(target, rootComponents, editor.jsxMetadataKILLME)
   if (importedName != null && tagName != null) {
     // TODO default and star imports
     let filename = Object.keys(imports).find((key) => {
       return pluck(imports[key].importedFromWithin, 'name').includes(importedName)
     })
+    if (filename == null && jsxName != null && isIntrinsicHTMLElement(jsxName)) {
+      /**
+       * We detected an intrinsic HTML Element (such as div, a, span, etc...)
+       * for the sake of simplicity, we assume here that they all support the style prop. if we need more detailed
+       * information for them, feel free to turn this into a real data structure that contains specific props for specific elements,
+       * but for now, I just return a one-size-fits-all PropertyControls result here
+       */
+      return HtmlElementStyleObjectProps
+    }
     if (filename == null && openFilePath != null) {
       filename = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
     }
