@@ -35,6 +35,8 @@ import { isLiveMode, EditorModes } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
+import { flatMapArray } from '../../../core/shared/array-utils'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -55,6 +57,7 @@ export interface ControlProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
+  selectedViewsRespectStyleProp: Array<TemplatePath>
 }
 
 interface NewCanvasControlsProps {
@@ -211,6 +214,24 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     return 'enabled'
   }
 
+  const selectedViewsRespectStyleProp = useEditorState((store) => {
+    return flatMapArray((view) => {
+      if (TP.isScenePath(view)) {
+        let sceneAndRootView: TemplatePath[] = [view]
+        const scene = MetadataUtils.findSceneByTemplatePath(store.editor.jsxMetadataKILLME, view)
+        if (scene?.rootElement != null) {
+          sceneAndRootView.push(scene.rootElement.templatePath)
+        }
+        return sceneAndRootView
+      } else {
+        return [view]
+      }
+    }, store.editor.selectedViews).filter((view) => {
+      const propControls = getPropertyControlsForTarget(view, store.editor)
+      return propControls?.style && propControls?.style.type === 'styleobject'
+    })
+  })
+
   const renderModeControlContainer = () => {
     const fallbackTransientState = props.derived.canvas.transientState
     const targets = fallbackTransientState.selectedViews
@@ -249,6 +270,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       windowToCanvasPosition: props.windowToCanvasPosition,
       cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
+      selectedViewsRespectStyleProp: selectedViewsRespectStyleProp,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {
