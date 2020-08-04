@@ -598,20 +598,8 @@ export class SelectModeControlContainer extends React.Component<
     return this.props.selectedViews.some((et) => TP.pathsEqual(et, tp))
   }
 
-  render() {
-    const cmdPressed = this.props.keysPressed['cmd'] || false
-    const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
-    let labelDirectlySelectable = true
-    let draggableViews = this.getSelectableViews(allElementsDirectlySelectable)
-    if (!this.props.highlightsEnabled) {
-      draggableViews = []
-      labelDirectlySelectable = false
-    }
-
-    let elementsCanBeMovedResized = false
-    if (this.props.selectedViews.length === 1) {
-      const target = this.props.selectedViews[0]
+  canMoveResizeElements(): boolean {
+    return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
         const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, target)
         const rootElement = scene?.rootElement
@@ -622,13 +610,26 @@ export class SelectModeControlContainer extends React.Component<
               TP.pathsEqual(path, rootElement.templatePath),
             ) != null
         }
-        elementsCanBeMovedResized = scene?.type === 'static' || rootHasStyleProp
+        return scene?.type === 'static' || rootHasStyleProp
       } else {
-        elementsCanBeMovedResized =
+        return (
           this.props.selectedViewsRespectStyleProp.findIndex((path) =>
             TP.pathsEqual(path, target),
           ) > -1
+        )
       }
+    })
+  }
+
+  render() {
+    const cmdPressed = this.props.keysPressed['cmd'] || false
+    const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
+    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
+    let labelDirectlySelectable = true
+    let draggableViews = this.getSelectableViews(allElementsDirectlySelectable)
+    if (!this.props.highlightsEnabled) {
+      draggableViews = []
+      labelDirectlySelectable = false
     }
 
     // TODO future span element should be included here
@@ -677,7 +678,7 @@ export class SelectModeControlContainer extends React.Component<
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />
-            {elementsCanBeMovedResized ? (
+            {this.canMoveResizeElements() ? (
               repositionOnly ? (
                 <RepositionableControl {...this.props} />
               ) : (
