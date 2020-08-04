@@ -217,12 +217,12 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
   const selectedViewsThatRespectLayout = useEditorState((store) => {
     return flatMapArray((view) => {
       if (TP.isScenePath(view)) {
-        let sceneAndRootView: TemplatePath[] = [view]
         const scene = MetadataUtils.findSceneByTemplatePath(store.editor.jsxMetadataKILLME, view)
         if (scene?.rootElement != null) {
-          sceneAndRootView.push(scene.rootElement.templatePath)
+          return [view, scene.rootElement.templatePath]
+        } else {
+          return [view]
         }
-        return sceneAndRootView
       } else {
         return [view]
       }
