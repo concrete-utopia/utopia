@@ -18,8 +18,9 @@ function updatePushNewGoogleFontsResource(
   value: GoogleFontsResource,
   oldValue: ExternalResources,
 ): ExternalResources {
-  oldValue.googleFontsResources = [...oldValue.googleFontsResources, value]
-  return oldValue
+  const working = { ...oldValue }
+  working.googleFontsResources = [...oldValue.googleFontsResources, value]
+  return working
 }
 
 export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourcesListSearchProps>(
