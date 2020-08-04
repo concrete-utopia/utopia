@@ -25,6 +25,7 @@ import {
 import { Icn, IcnProps, IcnSpacer } from '../../icn'
 import { colorTheme, UtopiaTheme } from '../../styles/theme'
 import { FlexRow } from '../layout/flex-row'
+import { isOptionType } from '../../../utils/utils'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -491,8 +492,8 @@ export const PopupList = betterReactMemo<PopupListProps>(
   }) => {
     const selectOnSubmitValue = React.useCallback(
       (newValue: ValueType<SelectOption>) => {
-        if (newValue != null && !Array.isArray(newValue)) {
-          onSubmitValue(newValue as SelectOption)
+        if (isOptionType(newValue)) {
+          onSubmitValue(newValue)
         }
       },
       [onSubmitValue],

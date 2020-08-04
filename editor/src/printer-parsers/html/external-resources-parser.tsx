@@ -3,28 +3,30 @@ import * as NodeHTMLParser from 'node-html-parser'
 import { notice } from '../../components/common/notices'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { pushToast, updateFile } from '../../components/editor/actions/actions'
-import { EditorState, defaultIndexHtmlFilePath } from '../../components/editor/store/editor-state'
+import { defaultIndexHtmlFilePath, EditorState } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
+import {
+  useCallbackFactory,
+  UseSubmitValueFactory,
+} from '../../components/inspector/common/property-path-hooks'
+import {
+  FontVariant,
+  fontVariant,
+  FontVariantWeight,
+  isFontVariantWeight,
+} from '../../components/navigator/external-resources/google-fonts-utils'
 import {
   generatedExternalResourcesLinksClose,
   generatedExternalResourcesLinksOpen,
 } from '../../core/model/new-project-files'
 import { codeFile } from '../../core/model/project-file-utils'
-import { Either, isRight, left, right } from '../../core/shared/either'
+import { Either, isRight, left, mapEither, right } from '../../core/shared/either'
 import { CodeFile, isCodeFile, ProjectContents } from '../../core/shared/project-file-types'
-import { OnSubmitValue } from '../../uuiui-deps'
-import {
-  useCallbackFactory,
-  UseSubmitValueFactory,
-} from '../../components/inspector/common/property-path-hooks'
 import { NO_OP } from '../../core/shared/utils'
-import {
-  ParseError,
-  DescriptionParseError,
-  descriptionParseError,
-} from '../../utils/value-parser-utils'
+import { DescriptionParseError, descriptionParseError } from '../../utils/value-parser-utils'
+import { OnSubmitValue } from '../../uuiui-deps'
 
-const googleFontsURIStart = 'https://fonts.googleapis.com/css2?'
+const googleFontsURIBase = 'https://fonts.googleapis.com/css2'
 
 function getBoundingStringIndicesForExternalResources(
   htmlFileContents: string,
@@ -161,28 +163,126 @@ export function genericExternalResource(href: string, rel: string): GenericExter
 export interface GoogleFontsResource {
   type: 'google-fonts-resource'
   fontFamily: string
-  fontStyleParams?: string // placeholder
+  variants: Array<FontVariant>
+  otherQueryStringParams?: string
 }
 
 export function googleFontsResource(
   fontFamily: string,
-  fontStyleParams?: string,
+  variants: Array<FontVariant>,
+  otherQueryStringParams?: string,
 ): GoogleFontsResource {
   return {
     type: 'google-fonts-resource',
     fontFamily,
-    fontStyleParams,
+    variants,
+    otherQueryStringParams,
   }
 }
 
-function getGoogleFontsResourceFromURL(familyParam: string): GoogleFontsResource {
+function axisTuplesToFontVariant(axisTuples: AxisTuples): Array<FontVariant> {
+  return axisTuples.map((axisTuple) => fontVariant(axisTuple[1], axisTuple[0] === 1))
+}
+
+type ItalicAxisValue = 0 | 1
+function isItalicAxisValue(value: number): value is ItalicAxisValue {
+  return value === 0 || value === 1
+}
+type AxisTuple = [ItalicAxisValue, FontVariantWeight]
+type AxisTuples = Array<AxisTuple>
+
+function recursivelyParseAxisTuples(
+  remaining: string,
+  workingAxisValue: string = '',
+  workingAxisTuple: [] | [ItalicAxisValue] = [],
+  workingAxisTuples: AxisTuples = [],
+): Either<DescriptionParseError, AxisTuples> {
+  const currentCharacter = remaining[0]
+  if (currentCharacter == null) {
+    const italValue = workingAxisTuple[0]
+    if (italValue != null) {
+      const wghtValue = Number(workingAxisValue)
+      if (isFontVariantWeight(wghtValue)) {
+        const lastTuple: AxisTuple = [italValue, wghtValue]
+        const finalTuples = [...workingAxisTuples, lastTuple]
+        return right(finalTuples)
+      } else {
+        return left(descriptionParseError(`${wghtValue} is not a valid font-weight keyword value`))
+      }
+    } else {
+      return left(descriptionParseError('Font axis tuple list is not properly formed'))
+    }
+  }
+
+  const nextRemaining = remaining.slice(1)
+
+  switch (currentCharacter) {
+    case ',': {
+      const italValue = Number(workingAxisValue)
+      if (isItalicAxisValue(italValue)) {
+        return recursivelyParseAxisTuples(nextRemaining, '', [italValue], workingAxisTuples)
+      } else {
+        return left(descriptionParseError(`Tuple value ${italValue} is not a number`))
+      }
+    }
+    case ';': {
+      const italValue = workingAxisTuple[0]
+      if (italValue != null) {
+        const wghtValue = Number(workingAxisValue)
+        if (isFontVariantWeight(wghtValue)) {
+          const workingNextTuple: AxisTuple = [italValue, wghtValue]
+          let workingNextTuples = [...workingAxisTuples]
+          workingNextTuples.push(workingNextTuple)
+          return recursivelyParseAxisTuples(nextRemaining, '', [], workingNextTuples)
+        } else {
+          return left(descriptionParseError(`Tuple value ${wghtValue} is not a number`))
+        }
+      } else {
+        return left(descriptionParseError('Tuple ended too early'))
+      }
+    }
+    default: {
+      return recursivelyParseAxisTuples(
+        nextRemaining,
+        workingAxisValue + currentCharacter,
+        workingAxisTuple,
+        workingAxisTuples,
+      )
+    }
+  }
+}
+
+function parseVariantsFromAxisLists(
+  params: string,
+): Either<DescriptionParseError, Array<FontVariant>> {
+  if (params.startsWith('ital,wght@')) {
+    const tuplesString = params.slice('ital,wght@'.length)
+    const parsedTuples = recursivelyParseAxisTuples(tuplesString)
+    return mapEither(axisTuplesToFontVariant, parsedTuples)
+  } else {
+    return left(
+      descriptionParseError('Font variant definition is not properly formed for the parser.'),
+    )
+  }
+}
+
+function getGoogleFontsResourceFromURL(
+  familyParam: string,
+  otherQueryStringParams: string,
+): Either<DescriptionParseError, GoogleFontsResource> {
   const dividerIndex = familyParam.indexOf(':')
   if (dividerIndex === -1) {
-    return googleFontsResource(familyParam)
+    return right(
+      googleFontsResource(familyParam, [fontVariant(400, false)], otherQueryStringParams),
+    )
   } else {
     const fontFamily = familyParam.slice(0, dividerIndex)
-    const fontStyleParams = familyParam.slice(dividerIndex)
-    return googleFontsResource(fontFamily, fontStyleParams)
+    const axisLists = familyParam.slice(dividerIndex + 1)
+    const parsedVariants = parseVariantsFromAxisLists(axisLists)
+    return mapEither(
+      (r) => googleFontsResource(fontFamily, r, otherQueryStringParams),
+      parsedVariants,
+    )
   }
 }
 
@@ -198,12 +298,18 @@ export function parseLinkTags(
         const hrefAttribute = node.getAttribute('href')
         const relAttribute = node.getAttribute('rel')
         if (hrefAttribute != null && relAttribute != null) {
-          if (hrefAttribute.startsWith(googleFontsURIStart)) {
-            const params = hrefAttribute.slice(googleFontsURIStart.length)
-            const parsedParams = new URLSearchParams(params)
+          if (hrefAttribute.startsWith(googleFontsURIBase)) {
+            let parsedParams = new URL(hrefAttribute).searchParams
             const familyParam = parsedParams.get('family')
+            parsedParams.delete('family')
+            const otherParams = parsedParams.toString()
             if (familyParam != null) {
-              googleFontsResources.push(getGoogleFontsResourceFromURL(familyParam))
+              const parsedResource = getGoogleFontsResourceFromURL(familyParam, otherParams)
+              if (isRight(parsedResource)) {
+                googleFontsResources.push(parsedResource.value)
+              } else {
+                genericExternalResources.push(genericExternalResource(hrefAttribute, relAttribute))
+              }
             } else {
               genericExternalResources.push(genericExternalResource(hrefAttribute, relAttribute))
             }
@@ -219,13 +325,31 @@ export function parseLinkTags(
   }
 }
 
+function printVariantAxisTuples(variants: Array<FontVariant>): string {
+  return variants.length > 0
+    ? `:ital,wght@${variants
+        .map((variant) => {
+          return `${variant.italic ? 1 : 0},${variant.weight}`
+        })
+        .join(';')}`
+    : ''
+}
+
+function replaceSafeGoogleFontsCharacters(value: string): string {
+  return value.replace(/%3A/g, ':').replace(/%3B/g, ';').replace(/%2C/g, ',').replace(/%40/g, '@')
+}
+
 function printExternalResources(value: ExternalResources): string {
   const generic = value.genericExternalResources.map((resource) => {
     return `<link href="${resource.href}" rel="${resource.rel}">`
   })
   const google = value.googleFontsResources.map((resource) => {
-    const encodedFontFamily = encodeURIComponent(resource.fontFamily).replace('%20', '+')
-    return `<link href="${googleFontsURIStart}family=${encodedFontFamily}" rel="stylesheet">`
+    const searchParams = new URLSearchParams(resource.otherQueryStringParams)
+    const variantAxisTuples = printVariantAxisTuples(resource.variants)
+    searchParams.append('family', resource.fontFamily + variantAxisTuples)
+    const prettySearchParams = replaceSafeGoogleFontsCharacters(searchParams.toString())
+    const url = new URL(`${googleFontsURIBase}?${prettySearchParams}`)
+    return `<link href="${url.toString()}" rel="stylesheet">`
   })
   return [...generic, ...google].join('\n    ')
 }
