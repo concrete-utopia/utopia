@@ -90,7 +90,8 @@ function googleVariantToFontVariant(
 export function parseAndSortVariants(
   variants: Array<string>,
 ): Either<DescriptionParseError, Array<FontVariant>> {
-  return traverseEither(googleVariantToFontVariant, variants.sort())
+  const sorted = [...variants].sort()
+  return traverseEither(googleVariantToFontVariant, sorted)
 }
 
 export function prettyNameForFontVariant(value: FontVariant): string {
