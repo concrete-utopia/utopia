@@ -230,7 +230,26 @@ export class SelectModeControlContainer extends React.Component<
     if (allElementsDirectlySelectable) {
       candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
     } else {
-      const allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata)
+      const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
+      let rootElementsToFilter: TemplatePath[] = []
+      const dynamicScenesWithFragmentRootViews = scenes.filter((path) => {
+        const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, path)
+        const rootElements = scene?.rootElements
+        if (scene?.type === 'dynamic' && rootElements != null && rootElements.length > 1) {
+          rootElementsToFilter = [
+            ...rootElementsToFilter,
+            ...rootElements.map((element) => element.templatePath),
+          ]
+          return true
+        } else {
+          return false
+        }
+      })
+      const allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata).filter(
+        (rootPath) => {
+          return !rootElementsToFilter.find((path) => TP.pathsEqual(rootPath, path))
+        },
+      )
       let siblings: Array<TemplatePath> = []
       Utils.fastForEach(this.props.selectedViews, (view) => {
         Utils.fastForEach(TP.allPaths(view), (ancestor) => {
@@ -243,7 +262,7 @@ export class SelectModeControlContainer extends React.Component<
         })
       })
 
-      const selectableViews = [...allRoots, ...siblings]
+      const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
       const uniqueSelectableViews = R.uniqWith<TemplatePath>(TP.pathsEqual, selectableViews)
 
       const selectableViewsFiltered = uniqueSelectableViews.filter((view) => {
