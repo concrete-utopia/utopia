@@ -48,7 +48,7 @@ testEnvironmentRuntime :: EnvironmentRuntime DevServerResources
 testEnvironmentRuntime = EnvironmentRuntime
   { _initialiseResources = initialiseTestResources
   , _startup = startup
-  , C._serverPort = serverPortFromResources
+  , C._envServerPort = serverPortFromResources
   , _serverAPI = serverAPI
   , _startupLogging = _logOnStartup
   , _metricsStore = view storeForMetrics
