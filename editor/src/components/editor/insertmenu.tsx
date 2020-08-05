@@ -477,7 +477,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
             } else {
               return (
                 <InsertGroup
-                  label={`Loading ${dependency.name}...`}
+                  label={dependency.name}
                   dependencyStatus={'loading'}
                   dependencyVersion={null}
                 />
