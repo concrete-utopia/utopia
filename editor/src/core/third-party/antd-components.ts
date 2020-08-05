@@ -8,6 +8,12 @@ import { jsxElement, jsxElementName } from '../shared/element-template'
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
 import { PropertyControls } from 'utopia-api'
 
+const StyleObjectProps: PropertyControls = {
+  style: {
+    type: 'styleobject',
+  },
+}
+
 function createBasicComponent(
   baseVariable: string,
   propertyPathParts: PropertyPathPart[],
@@ -21,7 +27,7 @@ function createBasicComponent(
     },
     jsxElement(jsxElementName(baseVariable, propertyPathParts), {}, [], null),
     name,
-    propertyControls,
+    { ...StyleObjectProps, ...propertyControls },
   )
 }
 
