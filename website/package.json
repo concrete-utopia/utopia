@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@types/chroma-js": "1.4.1",
+    "@types/jest": "26.0.3",
     "@types/node": "10.12.18",
     "@types/ramda": "0.25.50",
     "@types/react": "16.7.18",
@@ -44,7 +45,7 @@
     "start": "BROWSER=none PORT=3000 WDS_SOCKET_PORT=3000 REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` react-scripts start",
     "build": "if [ \"$UTOPIA_SHA\" = \"\" ]; then echo \"ERROR: Missing UTOPIA_SHA\" && exit 1; else npm run actually-build; fi",
     "actually-build": "REACT_APP_ENVIRONMENT_CONFIG='production' REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=$UTOPIA_SHA react-scripts build",
-    "test": "react-scripts test --env=jsdom --watchAll=false",
+    "test": "tsc && react-scripts test --env=jsdom --watchAll=false",
     "eject": "react-scripts eject",
     "postinstall": "patch-package"
   },
