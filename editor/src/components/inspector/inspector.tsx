@@ -483,7 +483,7 @@ export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
       rootViewsForScene = possibleRootComponent.rootElements.map((e) => e.templatePath)
     }
 
-    if (showSceneInspector && rootViewsForScene != null) {
+    if (showSceneInspector) {
       return (
         <>
           <SingleInspectorEntryPoint selectedViews={selectedViews} />
