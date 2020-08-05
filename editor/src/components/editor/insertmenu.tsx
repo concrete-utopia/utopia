@@ -67,6 +67,8 @@ import {
 } from '../../core/shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import { isBuiltinDependency } from '../../core/es-modules/package-manager/package-manager'
+import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
+import type { PackageStatus } from '../navigator/dependency-list'
 
 interface CurrentFileComponent {
   componentName: string
@@ -314,7 +316,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
 
     return (
       <React.Fragment>
-        <InsertGroup label='Storyboard'>
+        <InsertGroup label='Storyboard' dependencyStatus='loaded' dependencyVersion={null}>
           <InsertItem
             type='scene'
             label='Scene'
@@ -322,7 +324,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
             onMouseDown={this.sceneInsertMode}
           />
         </InsertGroup>
-        <InsertGroup label='Utopia Components'>
+        <InsertGroup label='Utopia Components' dependencyStatus='loaded' dependencyVersion={null}>
           <InsertItem
             type='view'
             label='View'
@@ -379,7 +381,12 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
           />
         </InsertGroup>
         {this.props.currentlyOpenFilename == null ? null : (
-          <InsertGroup label='Current File' subLabel={this.props.currentlyOpenFilename}>
+          <InsertGroup
+            label='Current File'
+            subLabel={this.props.currentlyOpenFilename}
+            dependencyStatus='loaded'
+            dependencyVersion={null}
+          >
             {this.props.currentFileComponents.map((currentFileComponent) => {
               const { componentName, defaultProps, detectedProps } = currentFileComponent
               const warningMessage = findMissingDefaultsAndGetWarning(detectedProps, defaultProps)
@@ -420,7 +427,12 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
               return null
             } else {
               return (
-                <InsertGroup label={componentDescriptor.name}>
+                <InsertGroup
+                  label={componentDescriptor.name}
+                  key={dependency.name}
+                  dependencyVersion={dependency.version}
+                  dependencyStatus={'loaded'} // TODO FIXME BEFORE MERGE
+                >
                   {componentDescriptor.components.map((component, componentIndex) => {
                     const insertItemOnMouseDown = () => {
                       const newUID = generateUID(this.props.existingUIDs)
@@ -463,7 +475,13 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
             if (isBuiltinDependency(dependency.name)) {
               return null
             } else {
-              return <InsertGroup label={`Loading ${dependency.name}...`} />
+              return (
+                <InsertGroup
+                  label={`Loading ${dependency.name}...`}
+                  dependencyStatus={'loading'}
+                  dependencyVersion={null}
+                />
+              )
             }
           }
         })}
@@ -475,27 +493,38 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
 interface InsertGroupProps {
   label: string
   subLabel?: string
+  dependencyStatus: PackageStatus
+  dependencyVersion: string | null
 }
 
-export const InsertGroup: React.StatelessComponent<InsertGroupProps> = (props) => {
-  return (
-    <div style={{ paddingBottom: 12 }}>
-      <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.medium }}>
-        <InspectorSubsectionHeader>
-          <div style={{ color: colorTheme.emphasizedForeground.value, fontWeight: 500 }}>
-            {props.label}
-          </div>
-          {props.subLabel == null ? null : (
-            <div style={{ color: colorTheme.tertiaryForeground.value, paddingLeft: 10 }}>
-              {props.subLabel}
+export const InsertGroup: React.FunctionComponent<InsertGroupProps> = betterReactMemo(
+  'InsertGroup',
+  (props) => {
+    return (
+      <div style={{ paddingBottom: 12 }}>
+        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.medium }}>
+          <InspectorSubsectionHeader>
+            <div style={{ color: colorTheme.emphasizedForeground.value, fontWeight: 500 }}>
+              {props.label}
             </div>
-          )}
-        </InspectorSubsectionHeader>
-      </FlexRow>
-      <div style={{ padding: 8 }}>{props.children}</div>
-    </div>
-  )
-}
+            {props.subLabel == null ? null : (
+              <div style={{ color: colorTheme.tertiaryForeground.value, paddingLeft: 10 }}>
+                {props.subLabel}
+              </div>
+            )}
+          </InspectorSubsectionHeader>
+          <div style={{ flexGrow: 1, textAlign: 'right' }}>
+            <NpmDependencyVersionAndStatusIndicator
+              status={props.dependencyStatus}
+              version={props.dependencyVersion}
+            />
+          </div>
+        </FlexRow>
+        <div style={{ padding: 8 }}>{props.children}</div>
+      </div>
+    )
+  },
+)
 
 interface InsertItemProps {
   label: string
