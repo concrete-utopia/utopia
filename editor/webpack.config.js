@@ -297,7 +297,7 @@ const config = {
   cache: isDev,
 
   // Use default source maps in dev mode, or attach a source map if in prod
-  devtool: isProdOrStaging ? 'source-map' : 'eval',
+  devtool: isProd ? 'source-map' : 'eval',
 }
 
 if (verbose) {
