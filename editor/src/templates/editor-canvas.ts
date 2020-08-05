@@ -150,7 +150,9 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
         break
 
       case 'MOUSE_UP':
-        optionalDragStateAction = [CanvasActions.clearDragState(true)]
+        if (model.dragState != null) {
+          optionalDragStateAction = [CanvasActions.clearDragState(model.dragState.drag != null)]
+        }
         break
 
       case 'MOUSE_LEFT_WINDOW':

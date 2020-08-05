@@ -10,6 +10,8 @@ import {
   openFileTab,
   getSceneElements,
   getSceneElementsFromParseSuccess,
+  PersistentModel,
+  persistentModelFromEditorModel,
 } from '../components/editor/store/editor-state'
 import * as TP from '../core/shared/template-path'
 import {
@@ -51,6 +53,41 @@ import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
 import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../core/shared/array-utils'
+
+export function delay<T>(time: number): Promise<T> {
+  return new Promise((resolve) => setTimeout(resolve, time))
+}
+
+export function createPersistentModel(): PersistentModel {
+  const editor: EditorState = {
+    ...createEditorState(NO_OP),
+    projectContents: {
+      '/src/app.js': uiJsFile(
+        right(
+          parseSuccess(
+            sampleImportsForTests,
+            sampleJsxComponentWithScene,
+            right({}),
+            true,
+            '',
+            {},
+            [],
+            null,
+          ),
+        ),
+        null,
+        RevisionsState.BothMatch,
+        0,
+      ),
+    },
+    selectedFile: {
+      tab: openFileTab('/src/app.js'),
+      initialCursorPosition: null,
+    },
+  }
+
+  return persistentModelFromEditorModel(editor)
+}
 
 export function createEditorStates(
   selectedFileOrTab: string | EditorTab = '/src/app.js',

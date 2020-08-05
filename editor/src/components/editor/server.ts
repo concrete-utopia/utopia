@@ -13,7 +13,7 @@ interface CreateProjectResponse {
   id: string
 }
 
-interface SaveProjectResponse {
+export interface SaveProjectResponse {
   id: string
   ownerId: string
 }
