@@ -104,6 +104,7 @@ module.exports = {
     'no-shadow': 'error',
     // React specific errors
     'react/jsx-no-comment-textnodes': 'error',
+    'react/jsx-key': ['error', { checkFragmentShorthand: true }],
     'react/no-did-mount-set-state': 'error',
     'react/no-did-update-set-state': 'error',
     'react/no-access-state-in-setstate': 'error',
