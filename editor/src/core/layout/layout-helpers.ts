@@ -37,11 +37,18 @@ import {
   unsetJSXValuesAtPaths,
   ValueAtPath,
 } from '../shared/jsx-attributes'
-import { PropertyPath } from '../shared/project-file-types'
+import { PropertyPath, TemplatePath } from '../shared/project-file-types'
 import { createLayoutPropertyPath, pinnedPropForFramePoint } from './layout-helpers-new'
 import { getLayoutProperty, getLayoutPropertyOr } from './getLayoutProperty'
 import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element-metadata-utils'
 import { EdgePosition } from '../../components/canvas/canvas-types'
+import { EditorState } from '../../components/editor/store/editor-state'
+import { getPropertyControlsForTarget } from '../property-controls/property-controls-utils'
+
+export function targetRespectsLayout(target: TemplatePath, editor: EditorState) {
+  const propControls = getPropertyControlsForTarget(target, editor)
+  return propControls?.style && propControls?.style.type === 'styleobject'
+}
 
 export const PinLayoutHelpers = {
   setLayoutPropsToPinsWithFrame(

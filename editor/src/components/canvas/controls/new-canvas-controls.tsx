@@ -35,6 +35,8 @@ import { isLiveMode, EditorModes } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import { flatMapArray } from '../../../core/shared/array-utils'
+import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -55,6 +57,7 @@ export interface ControlProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
+  selectedViewsThatRespectLayout: Array<TemplatePath>
 }
 
 interface NewCanvasControlsProps {
@@ -211,6 +214,21 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     return 'enabled'
   }
 
+  const selectedViewsThatRespectLayout = useEditorState((store) => {
+    return flatMapArray((view) => {
+      if (TP.isScenePath(view)) {
+        const scene = MetadataUtils.findSceneByTemplatePath(store.editor.jsxMetadataKILLME, view)
+        if (scene?.rootElement != null) {
+          return [view, scene.rootElement.templatePath]
+        } else {
+          return [view]
+        }
+      } else {
+        return [view]
+      }
+    }, store.editor.selectedViews).filter((view) => targetRespectsLayout(view, store.editor))
+  })
+
   const renderModeControlContainer = () => {
     const fallbackTransientState = props.derived.canvas.transientState
     const targets = fallbackTransientState.selectedViews
@@ -249,6 +267,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       windowToCanvasPosition: props.windowToCanvasPosition,
       cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
+      selectedViewsThatRespectLayout: selectedViewsThatRespectLayout,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {

@@ -129,44 +129,49 @@ export class SelectModeControlContainer extends React.Component<
         selectedViews,
       )
     ) {
-      const moveTargets = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
-      // setting original frames
-      let originalFrames = getOriginalCanvasFrames(moveTargets, this.props.componentMetadata)
-      originalFrames = originalFrames.filter((f) => f.frame != null)
-      const selectionArea = Utils.boundingRectangleArray(
-        selectedViews.map((view) => {
-          return MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
-        }),
+      const selection = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
+      const moveTargets = selection.filter((view) =>
+        this.props.selectedViewsThatRespectLayout.find((path) => TP.pathsEqual(path, view)),
       )
+      // setting original frames
+      if (moveTargets.length > 0) {
+        let originalFrames = getOriginalCanvasFrames(moveTargets, this.props.componentMetadata)
+        originalFrames = originalFrames.filter((f) => f.frame != null)
+        const selectionArea = Utils.boundingRectangleArray(
+          selectedViews.map((view) => {
+            return MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
+          }),
+        )
 
-      const duplicate = originalEvent.altKey
-      const duplicateNewUIDs = duplicate
-        ? createDuplicationNewUIDs(
-            this.props.selectedViews,
-            this.props.componentMetadata,
-            this.props.rootComponents,
-          )
-        : null
+        const duplicate = originalEvent.altKey
+        const duplicateNewUIDs = duplicate
+          ? createDuplicationNewUIDs(
+              this.props.selectedViews,
+              this.props.componentMetadata,
+              this.props.rootComponents,
+            )
+          : null
 
-      this.props.dispatch([
-        CanvasActions.createDragState(
-          moveDragState(
-            start,
-            null,
-            null,
-            originalFrames,
-            selectionArea,
-            !originalEvent.metaKey,
-            originalEvent.shiftKey,
-            duplicate,
-            originalEvent.metaKey,
-            duplicateNewUIDs,
-            start,
-            this.props.componentMetadata,
-            moveTargets,
+        this.props.dispatch([
+          CanvasActions.createDragState(
+            moveDragState(
+              start,
+              null,
+              null,
+              originalFrames,
+              selectionArea,
+              !originalEvent.metaKey,
+              originalEvent.shiftKey,
+              duplicate,
+              originalEvent.metaKey,
+              duplicateNewUIDs,
+              start,
+              this.props.componentMetadata,
+              moveTargets,
+            ),
           ),
-        ),
-      ])
+        ])
+      }
     }
   }
 
@@ -593,6 +598,29 @@ export class SelectModeControlContainer extends React.Component<
     return this.props.selectedViews.some((et) => TP.pathsEqual(et, tp))
   }
 
+  canMoveResizeElements(): boolean {
+    return this.props.selectedViews.every((target) => {
+      if (TP.isScenePath(target)) {
+        const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, target)
+        const rootElement = scene?.rootElement
+        let rootHasStyleProp = false
+        if (rootElement != null) {
+          rootHasStyleProp =
+            this.props.selectedViewsThatRespectLayout.find((path) =>
+              TP.pathsEqual(path, rootElement.templatePath),
+            ) != null
+        }
+        return scene?.type === 'static' || rootHasStyleProp
+      } else {
+        return (
+          this.props.selectedViewsThatRespectLayout.findIndex((path) =>
+            TP.pathsEqual(path, target),
+          ) > -1
+        )
+      }
+    })
+  }
+
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
@@ -650,22 +678,24 @@ export class SelectModeControlContainer extends React.Component<
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />
-            {repositionOnly ? (
-              <RepositionableControl {...this.props} />
-            ) : (
-              <>
-                <ConstraintsControls {...this.props} />
-                <YogaControls
-                  {...this.props}
-                  dragState={
-                    this.props.dragState != null &&
-                    this.props.dragState.type === 'RESIZE_DRAG_STATE'
-                      ? this.props.dragState
-                      : null
-                  }
-                />
-              </>
-            )}
+            {this.canMoveResizeElements() ? (
+              repositionOnly ? (
+                <RepositionableControl {...this.props} />
+              ) : (
+                <>
+                  <ConstraintsControls {...this.props} />
+                  <YogaControls
+                    {...this.props}
+                    dragState={
+                      this.props.dragState != null &&
+                      this.props.dragState.type === 'RESIZE_DRAG_STATE'
+                        ? this.props.dragState
+                        : null
+                    }
+                  />
+                </>
+              )
+            ) : null}
           </>
         ) : null}
         {...this.getMoveGuidelines()}
