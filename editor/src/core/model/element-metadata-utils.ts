@@ -8,7 +8,7 @@ import Utils, { IndexPosition } from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
 import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
 import { LayoutProp } from '../layout/layout-helpers-new'
-import { flattenArray, mapDropNulls, pluck, stripNulls } from '../shared/array-utils'
+import { flattenArray, mapDropNulls, pluck, stripNulls, flatMapArray } from '../shared/array-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import {
   alternativeEither,
@@ -26,7 +26,7 @@ import {
 } from '../shared/either'
 import {
   ComponentMetadata,
-  ComponentMetadataWithoutRootElement,
+  ComponentMetadataWithoutRootElements,
   ElementInstanceMetadata,
   ElementsByUID,
   getJSXElementNameLastPart,
@@ -229,17 +229,13 @@ export const MetadataUtils = {
     if (scene == null) {
       return null
     } else {
-      const rootElementPath = scene.rootElement
-      if (rootElementPath == null) {
-        return null
-      } else {
-        return TP.findAtElementPath(
-          [rootElementPath],
-          path.element,
-          MetadataUtils.elementInstanceMetadataGetChildren,
-          getUtopiaID,
-        )
-      }
+      const rootElementPaths = scene.rootElements
+      return TP.findAtElementPath(
+        rootElementPaths,
+        path.element,
+        MetadataUtils.elementInstanceMetadataGetChildren,
+        getUtopiaID,
+      )
     }
   },
   findSceneByTemplatePath(
@@ -254,7 +250,7 @@ export const MetadataUtils = {
     target: InstancePath,
   ): Array<ElementInstanceMetadata> | null {
     const scene = MetadataUtils.findSceneByTemplatePath(components, target)
-    if (scene == null || scene.rootElement == null) {
+    if (scene == null || scene.rootElements == null) {
       return null
     } else {
       let result: Array<ElementInstanceMetadata> = []
@@ -277,7 +273,12 @@ export const MetadataUtils = {
           return 'CONTINUE'
         }
       }
-      findElement(scene.rootElement)
+      for (const rootElement of scene.rootElements) {
+        const findResult = findElement(rootElement)
+        if (findResult !== 'CONTINUE') {
+          break
+        }
+      }
       return result
     }
   },
@@ -285,7 +286,7 @@ export const MetadataUtils = {
     rootElements: ReadonlyArray<ComponentMetadata>,
     predicate: (element: ElementInstanceMetadata) => boolean,
   ): Array<ElementInstanceMetadata> {
-    let elementsToCheck = Utils.stripNulls([...rootElements.map((c) => c.rootElement)])
+    let elementsToCheck = flatMapArray((e) => e.rootElements, rootElements)
     let elements: Array<ElementInstanceMetadata> = []
     let element: ElementInstanceMetadata | undefined = undefined
     while ((element = elementsToCheck.shift()) != null) {
@@ -335,9 +336,9 @@ export const MetadataUtils = {
     } else if (TP.isScenePath(parentPath)) {
       // really this is overkill, since the only "sibling" is itself, but I'm keeping this here so TS
       // can flag it when we support multiple root elements on a component
-      const rootElementPath =
-        MetadataUtils.findSceneByTemplatePath(scenes, target)?.rootElement ?? null
-      return Utils.maybeToArray(rootElementPath)
+      const rootElementPaths =
+        MetadataUtils.findSceneByTemplatePath(scenes, target)?.rootElements ?? []
+      return rootElementPaths
     } else {
       const parent = MetadataUtils.getElementByInstancePathMaybe(scenes, parentPath)
       return parent == null ? [] : parent.children
@@ -668,7 +669,7 @@ export const MetadataUtils = {
   ): Array<ElementInstanceMetadata> {
     if (TP.isScenePath(target)) {
       const scene = MetadataUtils.findSceneByTemplatePath(scenes, target)
-      return Utils.maybeToArray<ElementInstanceMetadata>(scene?.rootElement)
+      return scene?.rootElements ?? []
     } else {
       const element = MetadataUtils.getElementByInstancePathMaybe(scenes, target)
       return element?.children ?? []
@@ -719,7 +720,7 @@ export const MetadataUtils = {
     if (storyboardRoot == null) {
       return []
     } else {
-      const rootChildrenOfStoryboard = Array.from(storyboardRoot.rootElement?.children ?? [])
+      const rootChildrenOfStoryboard = flatMapArray((e) => e.children, storyboardRoot.rootElements)
       return rootChildrenOfStoryboard.map((child) => {
         if (isLeft(child.element) && child.element.value === 'Scene') {
           const foundScenePath = TP.scenePath(child.templatePath.element)
@@ -736,19 +737,17 @@ export const MetadataUtils = {
   },
   getAllCanvasRootPaths(scenes: ComponentMetadata[]): TemplatePath[] {
     const rootScenesAndElements = this.getCanvasRootScenesAndElements(scenes)
-    return stripNulls(
-      rootScenesAndElements.map((root) => {
-        if (isComponentMetadata(root)) {
-          if (root.rootElement != null) {
-            return root.rootElement.templatePath
-          } else {
-            return root.scenePath
-          }
+    return flatMapArray<ElementInstanceMetadata | ComponentMetadata, TemplatePath>((root) => {
+      if (isComponentMetadata(root)) {
+        if (root.rootElements != null) {
+          return root.rootElements.map((e) => e.templatePath)
         } else {
-          return root.templatePath
+          return [root.scenePath]
         }
-      }),
-    )
+      } else {
+        return [root.templatePath]
+      }
+    }, rootScenesAndElements)
   },
   getAllPaths(scenes: ComponentMetadata[]): TemplatePath[] {
     let result: Array<TemplatePath> = []
@@ -762,9 +761,7 @@ export const MetadataUtils = {
       const scene = scenes.find((s) => TP.pathsEqual(scenePath, s.scenePath))
       if (scene != null) {
         result.push(scenePath)
-        if (scene.rootElement != null) {
-          recurseElement(scene.rootElement)
-        }
+        scene.rootElements.forEach(recurseElement)
       }
     })
 
@@ -919,8 +916,10 @@ export const MetadataUtils = {
         .reverse()
         .map((root) => {
           if (isComponentMetadata(root)) {
-            const childrenPathsOfRoot =
-              root.rootElement == null ? [] : getKeysOfElementAndDescendants(root.rootElement)
+            const childrenPathsOfRoot = flatMapArray(
+              (e) => getKeysOfElementAndDescendants(e),
+              root.rootElements,
+            )
             return [root.scenePath, ...childrenPathsOfRoot]
           } else {
             return getKeysOfElementAndDescendants(root)
@@ -936,30 +935,22 @@ export const MetadataUtils = {
     const scenePath = TP.scenePathForPath(path)
     const sceneIndex = components.findIndex((c) => TP.pathsEqual(c.scenePath, scenePath))
     const scene = components[sceneIndex]
-    const rootElement = scene.rootElement
-    if (rootElement == null) {
-      return {
-        elements: components,
-        transformedElement: scene,
-      }
-    } else {
-      const transformResult = TP.findAndTransformAtPath(
-        [rootElement],
-        TP.elementPathForPath(path),
-        MetadataUtils.elementInstanceMetadataGetChildren,
-        getUtopiaID,
-        transform,
-      )
+    const transformResult = TP.findAndTransformAtPath(
+      scene.rootElements,
+      TP.elementPathForPath(path),
+      MetadataUtils.elementInstanceMetadataGetChildren,
+      getUtopiaID,
+      transform,
+    )
 
-      const updatedScene = {
-        ...scene,
-        rootElement: transformResult.elements[0],
-      }
+    const updatedScene: ComponentMetadata = {
+      ...scene,
+      rootElements: transformResult.elements,
+    }
 
-      return {
-        elements: R.update(sceneIndex, updatedScene, components),
-        transformedElement: updatedScene,
-      }
+    return {
+      elements: R.update(sceneIndex, updatedScene, components),
+      transformedElement: updatedScene,
     }
   },
   getSceneFrame(path: ScenePath, scenes: Array<ComponentMetadata>): CanvasRectangle | null {
@@ -1219,18 +1210,20 @@ export const MetadataUtils = {
     fromSpy: Array<ComponentMetadata>,
     fromDOM: Array<ElementInstanceMetadata>,
   ): Array<ComponentMetadata> {
-    const rootElements = mapDropNulls((s) => s.rootElement, fromSpy)
+    const rootElements = flatMapArray((s) => s.rootElements, fromSpy)
     const mergedInstanceMetadata = mergeElementMetadata(elementsByUID, rootElements, fromDOM)
 
     return fromSpy.map((scene) => {
-      const elem = mergedInstanceMetadata.find((m) => TP.isChildOf(m.templatePath, scene.scenePath))
+      const newRootElements = mergedInstanceMetadata.filter((m) =>
+        TP.isChildOf(m.templatePath, scene.scenePath),
+      )
       const sceneMetadata = mergedInstanceMetadata.find((m) =>
         TP.pathsEqual(m.templatePath, scene.templatePath),
       )
       return {
         ...scene,
         globalFrame: sceneMetadata?.globalFrame ?? null,
-        rootElement: elem || null,
+        rootElements: newRootElements,
       }
     })
   },
@@ -1393,7 +1386,7 @@ export const MetadataUtils = {
     return scenes.map((scene) => {
       return {
         ...scene,
-        rootElement: scene.rootElement == null ? null : innerTransform(scene.rootElement),
+        rootElements: scene.rootElements.map(innerTransform),
       }
     })
   },
@@ -1472,8 +1465,8 @@ export const MetadataUtils = {
     ) => void,
   ): void {
     for (const componentMetadata of rootMetadata) {
-      if (componentMetadata.rootElement != null) {
-        this.walkElementMetadata(componentMetadata.rootElement, null, withEachElement)
+      for (const rootElement of componentMetadata.rootElements) {
+        this.walkElementMetadata(rootElement, null, withEachElement)
       }
     }
   },
@@ -1483,7 +1476,7 @@ export function convertMetadataMap(
   metadataMap: {
     [templatePath: string]: MetadataWithoutChildren
   },
-  scenes: { [templatePath: string]: ComponentMetadataWithoutRootElement },
+  scenes: { [templatePath: string]: ComponentMetadataWithoutRootElements },
 ): ComponentMetadata[] {
   function convertMetadata(rootMetadata: MetadataWithoutChildren): ElementInstanceMetadata {
     return {
@@ -1500,12 +1493,12 @@ export function convertMetadataMap(
   Utils.fastForEach(Object.keys(scenes), (sceneIdString) => {
     const scene = scenes[sceneIdString]
     const sceneId = scene.scenePath
-    const rootElement = metadatas.find((m) => TP.isChildOf(m.templatePath, sceneId))
+    const rootElements = metadatas.filter((m) => TP.isChildOf(m.templatePath, sceneId))
 
     result.push({
       ...scene,
       globalFrame: null,
-      rootElement: rootElement == null ? null : convertMetadata(rootElement),
+      rootElements: rootElements.map(convertMetadata),
     })
   })
   return result

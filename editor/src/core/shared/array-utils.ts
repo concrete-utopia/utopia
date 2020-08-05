@@ -22,7 +22,10 @@ export function filterDuplicates<T>(array: Array<T>): Array<T> {
   return workingArray
 }
 
-export function flatMapArray<T, U>(fn: (t: T, index: number) => Array<U>, arr: Array<T>): Array<U> {
+export function flatMapArray<T, U>(
+  fn: (t: T, index: number) => Array<U>,
+  arr: ReadonlyArray<T>,
+): Array<U> {
   var workingArray: Array<U> = []
   fastForEach(arr, (arrayEntry, index) => {
     workingArray.push(...fn(arrayEntry, index))

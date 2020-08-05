@@ -218,8 +218,8 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     return flatMapArray((view) => {
       if (TP.isScenePath(view)) {
         const scene = MetadataUtils.findSceneByTemplatePath(store.editor.jsxMetadataKILLME, view)
-        if (scene?.rootElement != null) {
-          return [view, scene.rootElement.templatePath]
+        if (scene != null) {
+          return [view, ...scene.rootElements.map((e) => e.templatePath)]
         } else {
           return [view]
         }

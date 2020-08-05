@@ -185,12 +185,12 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       templatePath: TP.instancePath([], [BakedInStoryboardUID, createSceneUidFromIndex(index)]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
       type: props['type'] ?? 'dynamic',
-      rootElement:
+      rootElements:
         elementMetadata == null
-          ? null
+          ? []
           : Array.isArray(elementMetadata)
-          ? elementMetadata[0]
-          : elementMetadata,
+          ? elementMetadata
+          : [elementMetadata],
     }
   })
 }
@@ -212,7 +212,7 @@ export function createFakeMetadataForComponents(
         globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
         container: { layoutSystem: LayoutSystem.PinSystem },
         type: 'static',
-        rootElement: Array.isArray(elementMetadata) ? elementMetadata[0] : elementMetadata,
+        rootElements: Array.isArray(elementMetadata) ? elementMetadata : [elementMetadata],
       })
     }
   })

@@ -99,7 +99,7 @@ const testComponentScene: ComponentMetadata = {
   container: {
     layoutSystem: LayoutSystem.PinSystem,
   },
-  rootElement: testComponentRoot1,
+  rootElements: [testComponentRoot1],
   type: 'static',
   globalFrame: canvasRectangle({
     x: 0,
@@ -215,14 +215,16 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     const metadataForTest: Array<ComponentMetadata> = [
       {
         ...testComponentScene,
-        rootElement: {
-          ...testComponentRoot1,
-          specialSizeMeasurements: {
-            ...testComponentRoot1.specialSizeMeasurements,
-            parentLayoutSystem: 'nonfixed',
-            position: 'static',
+        rootElements: [
+          {
+            ...testComponentRoot1,
+            specialSizeMeasurements: {
+              ...testComponentRoot1.specialSizeMeasurements,
+              parentLayoutSystem: 'nonfixed',
+              position: 'static',
+            },
           },
-        },
+        ],
       },
     ]
     expect(
@@ -236,14 +238,16 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     const metadataForTest: Array<ComponentMetadata> = [
       {
         ...testComponentScene,
-        rootElement: {
-          ...testComponentRoot1,
-          specialSizeMeasurements: {
-            ...testComponentRoot1.specialSizeMeasurements,
-            parentLayoutSystem: 'flex',
-            position: 'static',
+        rootElements: [
+          {
+            ...testComponentRoot1,
+            specialSizeMeasurements: {
+              ...testComponentRoot1.specialSizeMeasurements,
+              parentLayoutSystem: 'flex',
+              position: 'static',
+            },
           },
-        },
+        ],
       },
     ]
     expect(
@@ -257,14 +261,16 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     const metadataForTest: Array<ComponentMetadata> = [
       {
         ...testComponentScene,
-        rootElement: {
-          ...testComponentRoot1,
-          specialSizeMeasurements: {
-            ...testComponentRoot1.specialSizeMeasurements,
-            parentLayoutSystem: 'nonfixed',
-            position: 'absolute',
+        rootElements: [
+          {
+            ...testComponentRoot1,
+            specialSizeMeasurements: {
+              ...testComponentRoot1.specialSizeMeasurements,
+              parentLayoutSystem: 'nonfixed',
+              position: 'absolute',
+            },
           },
-        },
+        ],
       },
     ]
     expect(
@@ -278,14 +284,16 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     const metadataForTest: Array<ComponentMetadata> = [
       {
         ...testComponentScene,
-        rootElement: {
-          ...testComponentRoot1,
-          specialSizeMeasurements: {
-            ...testComponentRoot1.specialSizeMeasurements,
-            parentLayoutSystem: 'flex',
-            position: 'absolute',
+        rootElements: [
+          {
+            ...testComponentRoot1,
+            specialSizeMeasurements: {
+              ...testComponentRoot1.specialSizeMeasurements,
+              parentLayoutSystem: 'flex',
+              position: 'absolute',
+            },
           },
-        },
+        ],
       },
     ]
     expect(
@@ -348,7 +356,7 @@ describe('getElementLabel', () => {
       component: 'App',
       container: { layoutSystem: LayoutSystem.PinSystem },
       type: 'static',
-      rootElement: divElementMetadata,
+      rootElements: [divElementMetadata],
       globalFrame: canvasRectangle({
         x: 0,
         y: 0,

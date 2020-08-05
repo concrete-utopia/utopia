@@ -602,13 +602,13 @@ export class SelectModeControlContainer extends React.Component<
     return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
         const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, target)
-        const rootElement = scene?.rootElement
         let rootHasStyleProp = false
-        if (rootElement != null) {
-          rootHasStyleProp =
-            this.props.selectedViewsThatRespectLayout.find((path) =>
-              TP.pathsEqual(path, rootElement.templatePath),
-            ) != null
+        if (scene != null) {
+          rootHasStyleProp = scene.rootElements.some((rootElement) => {
+            return this.props.selectedViewsThatRespectLayout.some((path) => {
+              return TP.pathsEqual(path, rootElement.templatePath)
+            })
+          })
         }
         return scene?.type === 'static' || rootHasStyleProp
       } else {

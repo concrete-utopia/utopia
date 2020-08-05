@@ -1787,6 +1787,33 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('renders fragments correctly', () => {
     testCanvasRender(null, AwkwardFragmentsCode)
   })
+
+  it('renders a component with a fragment at the root', () => {
+    testCanvasRender(
+      null,
+      `import * as React from 'react'
+import { Scene, Storyboard, View, jsx } from 'utopia-api'
+export var Cat = (props) => {
+  return (
+    <React.Fragment>
+      <div data-uid={'aaa'}>hello</div>
+      <div data-uid={'bbb'}>bello</div>
+    </React.Fragment>
+  )
+}
+export var storyboard = (
+  <Storyboard data-uid={'${BakedInStoryboardUID}'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      data-label={'Scene 2'}
+      component={Cat}
+      static
+      style={{ position: 'absolute', left: 406, top: 62, width: 212, height: 188 }}
+      data-uid={'scene-aaa'}
+    />
+  </Storyboard>
+)`,
+    )
+  })
 })
 
 describe('UiJsxCanvas runtime errors', () => {

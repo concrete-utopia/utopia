@@ -51,6 +51,7 @@ import * as PP from '../../core/shared/property-path'
 import * as TP from '../../core/shared/template-path'
 import CanvasActions from './canvas-actions'
 import { adjustAllSelectedFrames } from './controls/select-mode/move-utils'
+import { flatMapArray } from '../../core/shared/array-utils'
 
 export const enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -125,9 +126,15 @@ const Canvas = {
     }
 
     return Utils.flatMapArray((rootComponent) => {
-      return rootComponent.rootElement == null || rootComponent.globalFrame == null
-        ? []
-        : recurseChildren(rootComponent.globalFrame, rootComponent.rootElement).frames
+      if (rootComponent.globalFrame == null) {
+        return []
+      } else {
+        const nonNullGlobalFrame = rootComponent.globalFrame
+        return flatMapArray(
+          (root) => recurseChildren(nonNullGlobalFrame, root).frames,
+          rootComponent.rootElements,
+        )
+      }
     }, components)
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {
