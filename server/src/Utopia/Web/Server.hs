@@ -144,7 +144,7 @@ runServerWithResources EnvironmentRuntime{..} = do
   when loggingEnabled $ putText "Starting"
   shutdown <- _startup resources
   when loggingEnabled $ putText "Startup Processes Completed"
-  let port = _serverPort resources
+  let port = _envServerPort resources
   -- Note: '<>' is used to append text (amongst other things).
   when loggingEnabled $ putText $ "Running On: http://localhost:" <> show port <> "/"
   let storeForMetrics = _metricsStore resources

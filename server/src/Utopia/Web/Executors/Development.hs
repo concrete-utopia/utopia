@@ -247,6 +247,10 @@ innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptP
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"
+innerServerExecutor (GetSiteRoot action) = do
+  portOfServer <- fmap _serverPort ask
+  let siteRoot = "http://localhost:" <> show portOfServer
+  return $ action siteRoot
 
 readIndexHtmlFromDisk :: Text -> IO Text
 readIndexHtmlFromDisk fileName = readFile $ toS $ "../editor/lib/" <> fileName
@@ -328,7 +332,7 @@ devEnvironmentRuntime :: EnvironmentRuntime DevServerResources
 devEnvironmentRuntime = EnvironmentRuntime
   { _initialiseResources = initialiseResources
   , _startup = startup
-  , _serverPort = serverPortFromResources
+  , _envServerPort = serverPortFromResources
   , _serverAPI = serverAPI
   , _startupLogging = _logOnStartup
   , _metricsStore = view storeForMetrics

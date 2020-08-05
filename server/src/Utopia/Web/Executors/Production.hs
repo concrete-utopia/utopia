@@ -57,6 +57,7 @@ data ProductionServerResources = ProductionServerResources
                                , _registryManager :: Manager
                                , _assetsCaches    :: AssetsCaches
                                , _nodeSemaphore   :: QSem
+                               , _siteHost        :: Text
                                }
 
 $(makeFieldsNoPrefix ''ProductionServerResources)
@@ -193,6 +194,10 @@ innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptP
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"
+innerServerExecutor (GetSiteRoot action) = do
+  hostOfServer <- fmap _siteHost ask
+  let siteRoot = "https://" <> hostOfServer
+  return $ action siteRoot
 
 {-|
   Invokes a service call using the supplied resources.
@@ -235,6 +240,7 @@ initialiseResources = do
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
+  _siteHost <- fmap toS $ getEnv "SITE_HOST"
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop
@@ -251,7 +257,7 @@ productionEnvironmentRuntime :: EnvironmentRuntime ProductionServerResources
 productionEnvironmentRuntime = EnvironmentRuntime
   { _initialiseResources = initialiseResources
   , _startup = startup
-  , _serverPort = serverPortFromResources
+  , _envServerPort = serverPortFromResources
   , _serverAPI = serverAPI
   , _startupLogging = const True
   , _metricsStore = view storeForMetrics

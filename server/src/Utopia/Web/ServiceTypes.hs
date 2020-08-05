@@ -114,6 +114,7 @@ data ServiceCallsF a = NotFound
                      | GetHashedAssetPaths (Value -> a)
                      | GetPackagePackagerContent Text Text (Maybe UTCTime) (Maybe (BL.ByteString, UTCTime) -> a)
                      | AccessControlAllowOrigin (Maybe Text) (Maybe Text -> a)
+                     | GetSiteRoot (Text -> a)
                      deriving Functor
 
 {-

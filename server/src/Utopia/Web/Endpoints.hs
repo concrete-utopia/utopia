@@ -89,11 +89,11 @@ maybeSessionUserToUser (Just sessionUser) = do
   return $ maybe NotLoggedIn LoggedInUser maybeUser
 maybeSessionUserToUser _ = return NotLoggedIn
 
-thumbnailUrl :: Text -> Text
-thumbnailUrl projectID = "https://utopia.app/v1/thumbnail/" <> projectID
+thumbnailUrl :: Text -> Text -> Text
+thumbnailUrl siteRoot projectID = siteRoot <> "/v1/thumbnail/" <> projectID
 
-projectUrl :: Text -> Text
-projectUrl projectID = "https://utopia.app/project/" <> projectID
+projectUrl :: Text -> Text -> Text
+projectUrl siteRoot projectID = siteRoot <> "/project/" <> projectID
 
 projectDescription :: Maybe Text -> Text
 projectDescription (Just projectOwner) = "Made by " <> projectOwner <> " with Utopia"
@@ -102,23 +102,23 @@ projectDescription Nothing = "A Utopia project"
 isoFormatTime :: FormatTime t => t -> [Char]
 isoFormatTime = formatTime defaultTimeLocale "%s"
 
-twitterCardMetadata :: ProjectMetadata -> H.Html
-twitterCardMetadata projectMetadata = do
+twitterCardMetadata :: ProjectMetadata -> Text -> H.Html
+twitterCardMetadata projectMetadata siteRoot = do
   H.meta ! HA.name "twitter:card" ! HA.content "summary_large_image"
   H.meta ! HA.name "twitter:site" ! HA.content "@UtopiaApp"
   H.meta ! HA.name "twitter:title" ! HA.content (H.textValue $ view title projectMetadata)
-  H.meta ! HA.name "twitter:image" ! HA.content (H.textValue $ thumbnailUrl $ view id projectMetadata)
+  H.meta ! HA.name "twitter:image" ! HA.content (H.textValue $ thumbnailUrl siteRoot $ view id projectMetadata)
   H.meta ! HA.name "twitter:description" ! HA.content (H.textValue $ projectDescription $ view ownerName projectMetadata)
 
-facebookCardMetadata :: ProjectMetadata -> H.Html
-facebookCardMetadata projectMetadata = do
+facebookCardMetadata :: ProjectMetadata -> Text -> H.Html
+facebookCardMetadata projectMetadata siteRoot = do
   H.meta ! H.customAttribute "property" "fb:app_id" ! HA.content "415342622608327"
-  H.meta ! H.customAttribute "property" "og:image" ! HA.content (H.textValue $ thumbnailUrl $ view id projectMetadata) ! HA.itemprop "thumbnailUrl"
+  H.meta ! H.customAttribute "property" "og:image" ! HA.content (H.textValue $ thumbnailUrl siteRoot $ view id projectMetadata) ! HA.itemprop "thumbnailUrl"
   H.meta ! H.customAttribute "property" "og:image:width" ! HA.content "288px"
   H.meta ! H.customAttribute "property" "og:image:height" ! HA.content "180px"
   H.meta ! H.customAttribute "property" "og:title" ! HA.content (H.textValue $ view title projectMetadata)
   H.meta ! H.customAttribute "property" "og:type" ! HA.content "website"
-  H.meta ! H.customAttribute "property" "og:url" ! HA.content (H.textValue $ projectUrl $ view id projectMetadata)
+  H.meta ! H.customAttribute "property" "og:url" ! HA.content (H.textValue $ projectUrl siteRoot $ view id projectMetadata)
   H.meta ! H.customAttribute "property" "og:updated_time" ! HA.content (H.stringValue $ isoFormatTime $ view modifiedAt projectMetadata)
   H.meta ! H.customAttribute "property" "og:site_name" ! HA.content "Utopia"
   H.meta ! H.customAttribute "property" "og:description" ! HA.content (H.textValue $ projectDescription $ view ownerName projectMetadata)
@@ -133,13 +133,13 @@ noProjectTitleMetadata = do
   H.title "Utopia"
   H.meta ! HA.title "Utopia"
 
-projectHTMLMetadata :: Maybe ProjectMetadata -> H.Html
-projectHTMLMetadata Nothing = do
+projectHTMLMetadata :: Maybe ProjectMetadata -> Text -> H.Html
+projectHTMLMetadata Nothing _ = do
   noProjectTitleMetadata
-projectHTMLMetadata (Just projectMetadata) = do
+projectHTMLMetadata (Just projectMetadata) siteRoot = do
   projectTitleMetadata projectMetadata
-  twitterCardMetadata projectMetadata
-  facebookCardMetadata projectMetadata
+  twitterCardMetadata projectMetadata siteRoot
+  facebookCardMetadata projectMetadata siteRoot
 
 projectIDScript :: ProjectIdWithSuffix -> H.Html
 projectIDScript (ProjectIdWithSuffix projectID _) = do
@@ -149,7 +149,8 @@ projectIDScript (ProjectIdWithSuffix projectID _) = do
 innerProjectPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> ServerMonad H.Html
 innerProjectPage possibleProjectID possibleMetadata = do
   indexHtml <- getEditorIndexHtml
-  let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata
+  siteRoot <- getSiteRoot
+  let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata siteRoot
   let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
   let projectIDScriptHtml = maybe "" (\projectID -> toS $ renderHtml $ projectIDScript projectID) possibleProjectID
   let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
@@ -166,7 +167,8 @@ emptyProjectPage = innerProjectPage Nothing Nothing
 innerPreviewPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> ServerMonad H.Html
 innerPreviewPage possibleProjectID possibleMetadata = do
   indexHtml <- getPreviewIndexHtml
-  let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata
+  siteRoot <- getSiteRoot
+  let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata siteRoot
   let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
   let projectIDScriptHtml = maybe "" (\projectID -> toS $ renderHtml $ projectIDScript projectID) possibleProjectID
   let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags

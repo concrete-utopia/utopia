@@ -43,6 +43,7 @@ import {
   JSXElementName,
   getJSXElementNameAsString,
   isIntrinsicElement,
+  jsxElementName,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -1095,11 +1096,11 @@ export const MetadataUtils = {
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
     metadata: ComponentMetadata[],
-  ): string | null {
+  ): JSXElementName | null {
     if (TP.isScenePath(path)) {
       const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
-      if (scene != null) {
-        return scene.component
+      if (scene != null && scene.component != null) {
+        return jsxElementName(scene.component, [])
       } else {
         return null
       }
@@ -1107,7 +1108,7 @@ export const MetadataUtils = {
       const jsxElement = findElementAtPath(path, components, metadata)
       if (jsxElement != null) {
         if (isJSXElement(jsxElement)) {
-          return getJSXElementNameLastPart(jsxElement.name)
+          return jsxElement.name
         } else {
           return null
         }
@@ -1412,17 +1413,17 @@ export const MetadataUtils = {
     if (TP.isScenePath(path)) {
       return false
     } else {
-      const jsxElementName = MetadataUtils.getStaticElementName(path, rootElements, metadata)
+      const elementName = MetadataUtils.getStaticElementName(path, rootElements, metadata)
       const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
       return (
-        jsxElementName != null &&
+        elementName != null &&
         instanceMetadata != null &&
         !MetadataUtils.isGivenUtopiaAPIElementFromImports(
           imports,
           instanceMetadata,
-          getJSXElementNameLastPart(jsxElementName),
+          getJSXElementNameLastPart(elementName),
         ) &&
-        !isIntrinsicElement(jsxElementName)
+        !isIntrinsicElement(elementName)
       )
     }
   },
