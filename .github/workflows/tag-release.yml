@@ -1,0 +1,39 @@
+name: Tag and Release
+on:
+  workflow_dispatch:
+    inputs:
+      tag-name:
+        description: 'Tag to give this release'
+        required: true
+        default: 'v1.0.*'
+      commit-ref:
+        description: 'Branch or SHA to tag'
+        required: true
+        default: 'master'
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.2.0
+        with:
+          ref: ${{ github.event.inputs.commit-ref }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.tag-name }}
+          release_name: Release ${{ github.event.inputs.tag-name }}
+          body: Release ${{ github.event.inputs.tag-name }}
+          draft: false
+          prerelease: false
+      - name: Trigger production deploy
+        uses: peter-evans/repository-dispatch@v1.1.1
+        with:
+          token: ${{ secrets.DEPLOY_REPO_ACCESS_TOKEN }}
+          repository: concrete-utopia/utopia-deploy
+          event-type: trigger-production-deploy
+          client-payload: '{"commit-ref": "${{ github.event.inputs.tag-name }}"}'
