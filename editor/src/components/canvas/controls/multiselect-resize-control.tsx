@@ -168,9 +168,7 @@ export class MultiselectResizeControl extends React.Component<
               getOriginalFrames={this.obtainOriginalFrames}
               metadata={this.props.componentMetadata}
               onResizeStart={this.onResizeStart}
-              testID={`component-resize-control-${TP.toComponentId(
-                this.props.selectedViews[0],
-              )}-0`}
+              testID={'component-resize-control-0'}
             />
             {...guidelineElements}
           </>
