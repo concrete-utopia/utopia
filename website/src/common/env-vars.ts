@@ -17,6 +17,7 @@ export const RUN_PERFORMANCE_CHECK = false
 export const REFERENCE_EQUALITY_CHECK = false
 
 export const HOST: string = typeof window === 'undefined' ? '' : window.location.host
+export const BARE_HOST = HOST.startsWith('www.') ? HOST.slice(4) : HOST
 export const BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG
   ? `https://${HOST}/`
   : `http://${HOST}/`
@@ -24,8 +25,8 @@ export const BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG
 export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
 export const STATIC_BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG
-  ? `https://cdn.${HOST}/`
-  : `http://${HOST}/`
+  ? `https://cdn.${BARE_HOST}/`
+  : `http://${BARE_HOST}/`
 
 export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
