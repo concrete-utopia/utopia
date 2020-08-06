@@ -110,11 +110,12 @@ import {
   eitherToMaybe,
   mapEither,
 } from '../../../core/shared/either'
-import {
+import type {
   RequireFn,
   TypeDefinitions,
   npmDependency,
   NpmDependency,
+  PackageStatus,
 } from '../../../core/shared/npm-dependency-types'
 import {
   InstancePath,
@@ -333,6 +334,7 @@ import {
   StartCheckpointTimer,
   FinishCheckpointTimer,
   AddMissingDimensions,
+  SetPackageStatus,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1316,6 +1318,7 @@ export const UPDATE_FNS = {
         skipDeepFreeze: true,
         files: action.nodeModules,
         projectFilesBuildResults: {},
+        packageStatus: action.packageResult,
       },
       codeResultCache: action.codeResultCache,
     }
@@ -1337,6 +1340,7 @@ export const UPDATE_FNS = {
         skipDeepFreeze: true,
         files: action.nodeModules,
         projectFilesBuildResults: {},
+        packageStatus: action.packageResult,
       },
       codeResultCache: action.codeResultCache,
       safeMode: action.safeMode,
@@ -4045,6 +4049,12 @@ export const UPDATE_FNS = {
     )
     return setCanvasFramesInnerNew(editor, [frameAndTarget], null)
   },
+  SET_PACKAGE_STATUS: (action: SetPackageStatus, editor: EditorState): EditorState => {
+    const packageName = action.dependency.name
+    return produce(editor, (draft) => {
+      draft.nodeModules.packageStatus[packageName] = { status: action.status }
+    })
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -4294,6 +4304,8 @@ export async function newProject(
     'full-build',
   )
 
+  const FIXME = {}
+
   renderEditorRoot()
   dispatch(
     [
@@ -4302,6 +4314,7 @@ export async function newProject(
         nodeModules: nodeModules,
         persistentModel: defaultPersistentModel,
         codeResultCache: codeResultCache,
+        packageResult: FIXME,
       },
     ],
     'everyone',
@@ -4368,12 +4381,15 @@ export async function load(
 
   renderEditorRoot()
 
+  const FIXME = {}
+
   dispatch(
     [
       {
         action: 'LOAD',
         model: model,
         nodeModules: nodeModules,
+        packageResult: FIXME,
         codeResultCache: codeResultCache,
         title: title,
         projectId: projectId,
@@ -5382,5 +5398,16 @@ export function addMissingDimensions(
     action: 'ADD_MISSING_DIMENSIONS',
     existingSize: existingSize,
     target: target,
+  }
+}
+
+export function setPackageStatus(
+  dependency: NpmDependency,
+  status: PackageStatus,
+): SetPackageStatus {
+  return {
+    action: 'SET_PACKAGE_STATUS',
+    dependency: dependency,
+    status: status,
   }
 }
