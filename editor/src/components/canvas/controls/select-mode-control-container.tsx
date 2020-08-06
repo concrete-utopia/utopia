@@ -3,7 +3,7 @@ import * as React from 'react'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { TemplatePath, ScenePath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
 import { DuplicationState } from '../../editor/store/editor-state'
@@ -230,7 +230,25 @@ export class SelectModeControlContainer extends React.Component<
     if (allElementsDirectlySelectable) {
       candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
     } else {
-      const allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata)
+      const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
+      let rootElementsToFilter: TemplatePath[] = []
+      let dynamicScenesWithFragmentRootViews: ScenePath[] = []
+      Utils.fastForEach(scenes, (path) => {
+        const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, path)
+        const rootElements = scene?.rootElements
+        if (scene?.type === 'dynamic' && rootElements != null && rootElements.length > 1) {
+          rootElementsToFilter = [
+            ...rootElementsToFilter,
+            ...rootElements.map((element) => element.templatePath),
+          ]
+          dynamicScenesWithFragmentRootViews.push(path)
+        }
+      })
+      const allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata).filter(
+        (rootPath) => {
+          return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
+        },
+      )
       let siblings: Array<TemplatePath> = []
       Utils.fastForEach(this.props.selectedViews, (view) => {
         Utils.fastForEach(TP.allPaths(view), (ancestor) => {
@@ -243,7 +261,7 @@ export class SelectModeControlContainer extends React.Component<
         })
       })
 
-      const selectableViews = [...allRoots, ...siblings]
+      const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
       const uniqueSelectableViews = R.uniqWith<TemplatePath>(TP.pathsEqual, selectableViews)
 
       const selectableViewsFiltered = uniqueSelectableViews.filter((view) => {
