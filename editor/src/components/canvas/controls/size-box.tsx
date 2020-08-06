@@ -332,6 +332,7 @@ interface ResizePointProps {
   position: EdgePosition
   resizeStatus: ResizeStatus
   extraStyle?: React.CSSProperties
+  testID: string
 }
 
 class ResizePoint extends React.Component<ResizePointProps, {}> {
@@ -363,6 +364,7 @@ class ResizePoint extends React.Component<ResizePointProps, {}> {
             backgroundColor: 'transparent',
             cursor: this.props.cursor,
           }}
+          data-testid={`${this.props.testID}-${this.props.position.x}-${this.props.position.y}`}
         />
       )
     return (
@@ -418,6 +420,7 @@ interface ResizeRectangleProps {
   getOriginalFrames: () => Array<OriginalCanvasAndLocalFrame>
   metadata: Array<ComponentMetadata>
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
+  testID: string
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
