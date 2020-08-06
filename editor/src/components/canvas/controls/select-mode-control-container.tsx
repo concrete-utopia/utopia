@@ -3,7 +3,7 @@ import * as React from 'react'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { TemplatePath, ScenePath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
 import { DuplicationState } from '../../editor/store/editor-state'
@@ -232,7 +232,8 @@ export class SelectModeControlContainer extends React.Component<
     } else {
       const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
       let rootElementsToFilter: TemplatePath[] = []
-      const dynamicScenesWithFragmentRootViews = scenes.filter((path) => {
+      let dynamicScenesWithFragmentRootViews: ScenePath[] = []
+      Utils.fastForEach(scenes, (path) => {
         const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, path)
         const rootElements = scene?.rootElements
         if (scene?.type === 'dynamic' && rootElements != null && rootElements.length > 1) {
@@ -240,14 +241,12 @@ export class SelectModeControlContainer extends React.Component<
             ...rootElementsToFilter,
             ...rootElements.map((element) => element.templatePath),
           ]
-          return true
-        } else {
-          return false
+          dynamicScenesWithFragmentRootViews.push(path)
         }
       })
       const allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata).filter(
         (rootPath) => {
-          return !rootElementsToFilter.find((path) => TP.pathsEqual(rootPath, path))
+          return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
         },
       )
       let siblings: Array<TemplatePath> = []
