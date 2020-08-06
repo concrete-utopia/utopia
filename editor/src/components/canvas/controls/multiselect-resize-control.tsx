@@ -170,7 +170,7 @@ export class MultiselectResizeControl extends React.Component<
               onResizeStart={this.onResizeStart}
               testID={`component-resize-control-${TP.toComponentId(
                 this.props.selectedViews[0],
-              )}-${0}`}
+              )}-0`}
             />
             {...guidelineElements}
           </>
