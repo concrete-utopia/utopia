@@ -55,21 +55,23 @@ $(deriveJSON jsonOptions ''SaveProjectRequest)
 
 type AuthCookie = Header "Cookie" Text
 
+type BranchNameParam = QueryParam' '[Optional] "branch_name" Text
+
 type AuthenticateAPI = "authenticate" :> QueryParam "code" Text :> Get '[HTML] (SetSessionCookies H.Html)
 
 type LogoutAPI = "logout" :> Get '[HTML] (SetSessionCookies H.Html)
 
 type GetUserAPI = "v1" :> "user" :> Get '[JSON] UserResponse
 
-type EmptyProjectPageAPI = "p" :> Get '[HTML] H.Html
+type EmptyProjectPageAPI = "p" :> BranchNameParam :> Get '[HTML] H.Html
 
-type ProjectPageAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
+type ProjectPageAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> BranchNameParam :> Get '[HTML] H.Html
 
 type LoadProjectAssetAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
 
-type EmptyPreviewPageAPI = "share" :> Get '[HTML] H.Html
+type EmptyPreviewPageAPI = "share" :> BranchNameParam :> Get '[HTML] H.Html
 
-type PreviewPageAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> Get '[HTML] H.Html
+type PreviewPageAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> BranchNameParam :> Get '[HTML] H.Html
 
 type DownloadProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "contents.json" :> CaptureAll "remaining_path" Text :> Get '[PrettyJSON] Value
 

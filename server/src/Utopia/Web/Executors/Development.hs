@@ -45,6 +45,7 @@ import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Web.Cookie
+import           Utopia.Web.Editor.Branches
 
 {-|
   Any long living resources like database pools live in here.
@@ -65,6 +66,7 @@ data DevServerResources = DevServerResources
                         , _registryManager :: Manager
                         , _assetsCaches    :: AssetsCaches
                         , _nodeSemaphore   :: QSem
+                        , _branchDownloads :: BranchDownloads
                         }
 
 $(makeFieldsNoPrefix ''DevServerResources)
@@ -104,6 +106,22 @@ localAuthCodeCheck "logmein" action = do
   successfulAuthCheck metrics pool sessionStore action dummyUser
 localAuthCodeCheck _ action = do
   return $ action Nothing
+
+readIndexHtmlFromDisk :: BranchDownloads -> Maybe Text -> Text -> IO Text
+readIndexHtmlFromDisk _ Nothing fileName = readFile $ toS $ "../editor/lib/" <> fileName
+readIndexHtmlFromDisk downloads (Just branchName) fileName = do
+  readBranchTextContent downloads branchName fileName
+
+readIndexHtmlFromWebpack :: Text -> IO Text
+readIndexHtmlFromWebpack fileName = simpleWebpackRequest ("editor/" <> fileName)
+
+simpleWebpackRequest :: Text -> IO Text
+simpleWebpackRequest endpoint = do
+  let webpackUrl = "http://localhost:8088/" <> endpoint
+  response <- WR.get $ toS webpackUrl
+  return $ toS (response ^. WR.responseBody)
+
+
 
 {-|
   Interpretor for a service call, which converts it into side effecting calls ready to be invoked.
@@ -227,15 +245,11 @@ innerServerExecutor (GetPackageJSON javascriptPackageName action) = do
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
   return $ action hashToUse
-innerServerExecutor (GetEditorIndexHtml action) = do
+innerServerExecutor (GetEditorTextContent branchName fileName action) = do
+  downloads <- fmap _branchDownloads ask
   manager <- fmap _proxyManager ask
-  let readIndexHtml = if isJust manager then readIndexHtmlFromWebpack else readIndexHtmlFromDisk
-  indexHtml <- liftIO $ readIndexHtml "index.html"
-  return $ action indexHtml
-innerServerExecutor (GetPreviewIndexHtml action) = do
-  manager <- fmap _proxyManager ask
-  let readIndexHtml = if isJust manager then readIndexHtmlFromWebpack else readIndexHtmlFromDisk
-  indexHtml <- liftIO $ readIndexHtml "preview.html"
+  let readIndexHtml = if isJust manager && isNothing branchName then readIndexHtmlFromWebpack else readIndexHtmlFromDisk downloads branchName
+  indexHtml <- liftIO $ readIndexHtml fileName
   return $ action indexHtml
 innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask
@@ -251,18 +265,6 @@ innerServerExecutor (GetSiteRoot action) = do
   portOfServer <- fmap _serverPort ask
   let siteRoot = "http://localhost:" <> show portOfServer
   return $ action siteRoot
-
-readIndexHtmlFromDisk :: Text -> IO Text
-readIndexHtmlFromDisk fileName = readFile $ toS $ "../editor/lib/" <> fileName
-
-readIndexHtmlFromWebpack :: Text -> IO Text
-readIndexHtmlFromWebpack fileName = simpleWebpackRequest ("editor/" <> fileName)
-
-simpleWebpackRequest :: Text -> IO Text
-simpleWebpackRequest endpoint = do
-  let webpackUrl = "http://localhost:8088/" <> endpoint
-  response <- WR.get $ toS webpackUrl
-  return $ toS (response ^. WR.responseBody)
 
 {-|
   Invokes a service call using the supplied resources.
@@ -324,6 +326,7 @@ initialiseResources = do
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
+  _branchDownloads <- createBranchDownloads
   let _silentMigration = False
   let _logOnStartup = True
   return $ DevServerResources{..}

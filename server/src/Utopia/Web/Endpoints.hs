@@ -146,9 +146,9 @@ projectIDScript (ProjectIdWithSuffix projectID _) = do
   H.script ! HA.type_ "text/javascript" $ H.toMarkup
     ("window.utopiaProjectID = \"" <> projectID <> "\";")
 
-innerProjectPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> ServerMonad H.Html
-innerProjectPage possibleProjectID possibleMetadata = do
-  indexHtml <- getEditorIndexHtml
+innerProjectPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> ServerMonad H.Html
+innerProjectPage possibleProjectID possibleMetadata branchName = do
+  indexHtml <- getEditorTextContent branchName "index.html"
   siteRoot <- getSiteRoot
   let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata siteRoot
   let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
@@ -156,17 +156,17 @@ innerProjectPage possibleProjectID possibleMetadata = do
   let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
   return $ H.preEscapedToHtml withProjectIdWithSuffixScript
 
-projectPage :: ProjectIdWithSuffix -> ServerMonad H.Html
-projectPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) = do
+projectPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
+projectPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
   possibleMetadata <- getProjectMetadata projectID
-  innerProjectPage (Just projectIDWithSuffix) possibleMetadata
+  innerProjectPage (Just projectIDWithSuffix) possibleMetadata branchName
 
-emptyProjectPage :: ServerMonad H.Html
-emptyProjectPage = innerProjectPage Nothing Nothing
+emptyProjectPage :: Maybe Text -> ServerMonad H.Html
+emptyProjectPage branchName = innerProjectPage Nothing Nothing branchName
 
-innerPreviewPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> ServerMonad H.Html
-innerPreviewPage possibleProjectID possibleMetadata = do
-  indexHtml <- getPreviewIndexHtml
+innerPreviewPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> ServerMonad H.Html
+innerPreviewPage possibleProjectID possibleMetadata branchName = do
+  indexHtml <- getEditorTextContent branchName "preview.html"
   siteRoot <- getSiteRoot
   let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata siteRoot
   let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
@@ -174,13 +174,13 @@ innerPreviewPage possibleProjectID possibleMetadata = do
   let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
   return $ H.preEscapedToHtml withProjectIdWithSuffixScript
 
-previewPage :: ProjectIdWithSuffix -> ServerMonad H.Html
-previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) = do
+previewPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
+previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
   possibleMetadata <- getProjectMetadata projectID
-  innerPreviewPage (Just projectIDWithSuffix) possibleMetadata
+  innerPreviewPage (Just projectIDWithSuffix) possibleMetadata branchName
 
-emptyPreviewPage :: ServerMonad H.Html
-emptyPreviewPage = innerPreviewPage Nothing Nothing
+emptyPreviewPage :: Maybe Text -> ServerMonad H.Html
+emptyPreviewPage branchName = innerPreviewPage Nothing Nothing branchName
 
 getUserEndpoint :: Maybe Text -> ServerMonad UserResponse
 getUserEndpoint cookie = checkForUser cookie maybeSessionUserToUser

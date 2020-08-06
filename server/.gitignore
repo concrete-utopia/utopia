@@ -26,3 +26,4 @@ cabal.project.local~
 utopia-local*
 **/*.dump-splices
 .utopia-cache
+.branches-content

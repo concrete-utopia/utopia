@@ -8,6 +8,10 @@ jobs:
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
       - name: Cancel existing runs on this branch
         uses: fauguste/auto-cancellation-running-action@0.1.4
         with:
@@ -47,3 +51,27 @@ jobs:
       - name: Run the tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-all-ci
+      - name: Build Editor
+        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        working-directory: editor/
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "npm install --unsafe-perm"
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "npm run staging"
+      - name: Create Editor Bundle
+        working-directory: editor/lib/
+        run: |
+          tar -czvf ../${{ steps.extract_branch.outputs.branch }}.tar.gz *
+      - name: Upload Editor Bundle
+        working-directory: editor/
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl private
+        env:
+          AWS_S3_BUCKET: ${{ secrets.STAGING_BUNDLE_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.STAGING_BUNDLE_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_BUNDLE_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
+          SOURCE_DIR: ${{ steps.extract_branch.outputs.branch }}.tar.gz
+
+
+

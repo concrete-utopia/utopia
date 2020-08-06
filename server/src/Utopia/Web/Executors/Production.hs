@@ -40,6 +40,7 @@ import           Utopia.Web.Executors.Common
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
+import           Utopia.Web.Editor.Branches
 
 {-|
   Any long living resources like database pools live in here.
@@ -58,6 +59,7 @@ data ProductionServerResources = ProductionServerResources
                                , _assetsCaches    :: AssetsCaches
                                , _nodeSemaphore   :: QSem
                                , _siteHost        :: Text
+                               , _branchDownloads :: BranchDownloads
                                }
 
 $(makeFieldsNoPrefix ''ProductionServerResources)
@@ -178,11 +180,9 @@ innerServerExecutor (GetPackageJSON javascriptPackageName action) = do
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
   return $ action hashToUse
-innerServerExecutor (GetEditorIndexHtml action) = do
-  indexHtml <- liftIO $ readFile "./editor/index.html"
-  return $ action indexHtml
-innerServerExecutor (GetPreviewIndexHtml action) = do
-  indexHtml <- liftIO $ readFile "./editor/preview.html"
+innerServerExecutor (GetEditorTextContent branchName fileName action) = do
+  downloads <- fmap _branchDownloads ask
+  indexHtml <- liftIO $ readEditorContentFromDisk downloads branchName fileName
   return $ action indexHtml
 innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask
@@ -198,6 +198,11 @@ innerServerExecutor (GetSiteRoot action) = do
   hostOfServer <- fmap _siteHost ask
   let siteRoot = "https://" <> hostOfServer
   return $ action siteRoot
+
+readEditorContentFromDisk :: BranchDownloads -> Maybe Text -> Text -> IO Text
+readEditorContentFromDisk _ Nothing fileName = readFile ("./editor/" <> toS fileName)
+readEditorContentFromDisk downloads (Just branchName) fileName = do
+  readBranchTextContent downloads branchName fileName
 
 {-|
   Invokes a service call using the supplied resources.
@@ -241,6 +246,7 @@ initialiseResources = do
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
   _siteHost <- fmap toS $ getEnv "SITE_HOST"
+  _branchDownloads <- createBranchDownloads
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop
