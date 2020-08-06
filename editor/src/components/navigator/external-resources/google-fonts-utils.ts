@@ -1,6 +1,8 @@
 import { GOOGLE_WEB_FONTS_KEY } from '../../../common/env-vars'
 import { Either, left, right, traverseEither } from '../../../core/shared/either'
 import { DescriptionParseError, descriptionParseError } from '../../../utils/value-parser-utils'
+import { string } from 'prop-types'
+import { stringOf } from 'fast-check/*'
 
 export const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${GOOGLE_WEB_FONTS_KEY}`
 
@@ -20,6 +22,20 @@ const weightAxisPrettyNames: { [key in FontVariantWeight]: string } = {
   900: 'Black',
 }
 
+export interface FontFamilyVariant {
+  type: 'font-family-variant'
+  fontFamily: string
+  fontVariant: FontVariant
+}
+
+export function fontFamilyVariant(fontFamily: string, variant: FontVariant): FontFamilyVariant {
+  return {
+    type: 'font-family-variant',
+    fontFamily,
+    fontVariant: variant,
+  }
+}
+
 export interface FontVariant {
   type: 'font-variant'
   weight: FontVariantWeight
@@ -34,7 +50,7 @@ export function fontVariant(weight: FontVariantWeight, italic: boolean): FontVar
   }
 }
 
-export type GoogleFontVariant =
+export type GoogleFontVariantIdentifier =
   | '100'
   | '200'
   | '300'
@@ -54,7 +70,7 @@ export type GoogleFontVariant =
   | '800italic'
   | '900italic'
 
-const fontVariantMap: { [key in GoogleFontVariant]: FontVariant } = {
+const fontVariantMap: { [key in GoogleFontVariantIdentifier]: FontVariant } = {
   '100': fontVariant(100, false),
   '200': fontVariant(200, false),
   '300': fontVariant(300, false),
@@ -79,7 +95,7 @@ function googleVariantToFontVariant(
   googleVariant: string,
 ): Either<DescriptionParseError, FontVariant> {
   if (fontVariantMap.hasOwnProperty(googleVariant)) {
-    return right(fontVariantMap[googleVariant as GoogleFontVariant])
+    return right(fontVariantMap[googleVariant as GoogleFontVariantIdentifier])
   } else {
     return left(
       descriptionParseError('Only numeric font-weight keyword values are currently supported.'),
@@ -98,4 +114,48 @@ export function prettyNameForFontVariant(value: FontVariant): string {
   const prettyWeightName = weightAxisPrettyNames[value.weight]
   const italicKeyword = value.italic ? ' italic' : ''
   return prettyWeightName + italicKeyword
+}
+
+export interface GoogleFontFamilyOption {
+  label: string
+  options: Array<GoogleFontVariantOption>
+}
+
+export function googleFontFamilyOption(
+  label: string,
+  options: Array<GoogleFontVariantOption>,
+): GoogleFontFamilyOption {
+  return {
+    label,
+    options,
+  }
+}
+
+export interface GoogleFontVariantOption {
+  value: string
+  label: string
+  familyName: string
+  fontFamilyVariant: FontFamilyVariant
+}
+
+export function googleFontsOption(
+  variant: FontFamilyVariant,
+  familyName: string,
+): GoogleFontVariantOption {
+  const variantName = prettyNameForFontVariant(variant.fontVariant)
+  return {
+    value: googleFontsOptionValue(familyName, variantName),
+    label: variantName,
+    fontFamilyVariant: variant,
+    familyName,
+  }
+}
+
+export type GoogleFontsOptionValue = string
+
+export function googleFontsOptionValue(
+  familyName: string,
+  variantName: string,
+): GoogleFontsOptionValue {
+  return `${familyName}_${variantName}`
 }
