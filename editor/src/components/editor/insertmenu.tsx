@@ -431,7 +431,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
                   label={componentDescriptor.name}
                   key={dependency.name}
                   dependencyVersion={dependency.version}
-                  dependencyStatus={'loaded'} // TODO FIXME BEFORE MERGE
+                  dependencyStatus={'loaded'} // TODO Fixme in follow-up PR
                 >
                   {componentDescriptor.components.map((component, componentIndex) => {
                     const insertItemOnMouseDown = () => {
