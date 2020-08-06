@@ -1,10 +1,18 @@
 import { PersistentModel } from './store/editor-state'
-import { saveToServer, setBaseSaveWaitTime, clearSaveState } from './persistence'
+import {
+  saveToServer,
+  setBaseSaveWaitTime,
+  clearSaveState,
+  LocalProject,
+  loadFromLocalStorage,
+} from './persistence'
 import { NO_OP } from '../../core/shared/utils'
 import { createPersistentModel, delay } from '../../utils/test-utils'
 import { generateUID } from '../../core/shared/uid-utils'
 import { UIJSFile } from '../../core/shared/project-file-types'
 import { SaveProjectResponse } from './server'
+import { localProjectKey } from '../../common/persistence'
+import { MockUtopiaTsWorkers } from '../../core/workers/workers'
 
 let saveLog: { [key: string]: Array<PersistentModel> } = {}
 let projectsToError: Set<string> = new Set<string>()
@@ -28,6 +36,16 @@ jest.mock('./server', () => ({
 
     return Promise.resolve({ id: projectId, ownerId: 'Owner' })
   },
+  saveImagesFromProject: async (projectId: string, persistentModel: PersistentModel) => {
+    return Promise.resolve(persistentModel)
+  },
+}))
+
+jest.mock('./actions/actions', () => ({
+  ...(jest.requireActual('./actions/actions') as any), // This pattern allows us to only mock a single function https://jestjs.io/docs/en/jest-object#jestrequireactualmodulename
+  load: async (): Promise<void> => {
+    return Promise.resolve()
+  },
 }))
 
 jest.mock('../../common/server', () => ({
@@ -36,6 +54,30 @@ jest.mock('../../common/server', () => ({
   }),
 }))
 jest.setTimeout(10000)
+
+let localProjects: { [key: string]: LocalProject } = {}
+function addLocalProject(id: string, model: PersistentModel) {
+  const now = new Date().toISOString()
+  localProjects[localProjectKey(id)] = {
+    model: model,
+    createdAt: now,
+    lastModified: now,
+    thumbnail: '',
+    name: ProjectName,
+  }
+}
+
+jest.mock('localforage', () => ({
+  getItem: async (id: string): Promise<LocalProject | null> => {
+    return Promise.resolve(localProjects[id])
+  },
+  setItem: async (id: string, project: LocalProject) => {
+    localProjects[id] = project
+  },
+  removeItem: async (id: string) => {
+    delete localProjects[id]
+  },
+}))
 
 let allProjectIds: Array<string> = []
 function randomProjectID(): string {
@@ -212,5 +254,35 @@ describe('Saving to the server', () => {
       expect(saveLog[projectId].length).toEqual(2)
       expect(saveLog[projectId]).toEqual([ModelChange, secondRevision])
     })
+  })
+
+  it('Clears a local saved project after uploading to the server', async () => {
+    clearSaveState()
+    setBaseSaveWaitTime(10)
+    const projectId = randomProjectID()
+    addLocalProject(projectId, ModelChange)
+    loadFromLocalStorage(projectId, NO_OP, false, new MockUtopiaTsWorkers(), NO_OP) // Load without triggering the upload
+    await delay(20)
+    expect(localProjects[localProjectKey(projectId)]).toBeDefined()
+    saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, true) // Forcibly save to bypass throttling
+    await delay(20)
+    expect(saveLog[projectId].length).toEqual(1)
+    expect(saveLog[projectId]).toEqual([ModelChange])
+    expect(localProjects[localProjectKey(projectId)]).toBeUndefined()
+  })
+})
+
+describe('Loading a local project', () => {
+  it('Uploads to the server if the user is signed in', async () => {
+    clearSaveState()
+    setBaseSaveWaitTime(10)
+    const projectId = randomProjectID()
+    addLocalProject(projectId, ModelChange)
+    expect(localProjects[localProjectKey(projectId)]).toBeDefined()
+    loadFromLocalStorage(projectId, NO_OP, true, new MockUtopiaTsWorkers(), NO_OP)
+    await delay(20)
+    expect(saveLog[projectId].length).toEqual(1)
+    expect(saveLog[projectId]).toEqual([ModelChange])
+    expect(localProjects[localProjectKey(projectId)]).toBeUndefined()
   })
 })
