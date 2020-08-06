@@ -145,7 +145,10 @@ export class MultiselectResizeControl extends React.Component<
         )
       })
 
-      if (TP.areAllElementsInSameScene(this.props.selectedViews)) {
+      if (
+        this.props.selectedViews.length > 1 &&
+        TP.areAllElementsInSameScene(this.props.selectedViews)
+      ) {
         return (
           <>
             <ResizeRectangle
