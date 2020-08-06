@@ -130,8 +130,10 @@ export class SelectModeControlContainer extends React.Component<
       )
     ) {
       const selection = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
-      const moveTargets = selection.filter((view) =>
-        this.props.selectedViewsThatRespectLayout.find((path) => TP.pathsEqual(path, view)),
+      const moveTargets = selection.filter(
+        (view) =>
+          TP.isScenePath(view) ||
+          this.props.selectedViewsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
       // setting original frames
       if (moveTargets.length > 0) {
@@ -616,7 +618,7 @@ export class SelectModeControlContainer extends React.Component<
     return this.props.selectedViews.some((et) => TP.pathsEqual(et, tp))
   }
 
-  canMoveResizeElements(): boolean {
+  canResizeElements(): boolean {
     return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
         const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, target)
@@ -630,11 +632,7 @@ export class SelectModeControlContainer extends React.Component<
         }
         return scene?.type === 'static' || rootHasStyleProp
       } else {
-        return (
-          this.props.selectedViewsThatRespectLayout.findIndex((path) =>
-            TP.pathsEqual(path, target),
-          ) > -1
-        )
+        return this.props.selectedViewsThatRespectLayout.some((path) => TP.pathsEqual(path, target))
       }
     })
   }
@@ -696,7 +694,7 @@ export class SelectModeControlContainer extends React.Component<
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />
-            {this.canMoveResizeElements() ? (
+            {this.canResizeElements() ? (
               repositionOnly ? (
                 <RepositionableControl {...this.props} />
               ) : (
