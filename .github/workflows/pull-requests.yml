@@ -8,10 +8,6 @@ jobs:
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
       - name: Cancel existing runs on this branch
         uses: fauguste/auto-cancellation-running-action@0.1.4
         with:
@@ -59,7 +55,7 @@ jobs:
       - name: Create Editor Bundle
         working-directory: editor/lib/
         run: |
-          tar -czvf ../${{ steps.extract_branch.outputs.branch }}.tar.gz *
+          tar -czvf ../${{ github.head_ref }}.tar.gz *
       - name: Upload Editor Bundle
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
