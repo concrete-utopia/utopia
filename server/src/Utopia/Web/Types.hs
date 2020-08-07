@@ -122,7 +122,7 @@ type MonitoringAPI = "monitoring" :> "secret" :> "location" :> Get '[JSON] Value
 
 type HashedAssetPathsAPI = "hashed-assets.json" :> Get '[JSON] Value
 
-type EditorAssetsAPI = "editor" :> RawM
+type EditorAssetsAPI = "editor" :> BranchNameParam :> RawM
 
 type WebpackSockJSAPI = "sockjs-node" :> RawM
 

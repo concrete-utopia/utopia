@@ -5,11 +5,11 @@
 
 module Utopia.Web.Server where
 
-import qualified Data.Text                   as T
-import qualified Data.Text.IO                as TIO
-import           GHC.IO.Handle               (hFlush)
+import qualified Data.Text                       as T
+import qualified Data.Text.IO                    as TIO
+import           GHC.IO.Handle                   (hFlush)
 import           Network.Wai
-import qualified Network.Wai.Handler.Warp    as Warp
+import qualified Network.Wai.Handler.Warp        as Warp
 
 import           Network.HTTP.Types.Method
 import           Network.HTTP.Types.Status
@@ -24,7 +24,7 @@ import           Utopia.Web.Utils.Files
 
 
 
-import qualified Data.ByteString.Char8       as S8
+import qualified Data.ByteString.Char8           as S8
 import           Data.IORef
 import           Network.HTTP.Types.Header
 
@@ -67,7 +67,7 @@ redirector redirections applicationToWrap request sendResponse =
 
 projectToPPath :: [Text] -> [Text]
 projectToPPath ("project" : pathRemainder) = "p" : pathRemainder
-projectToPPath path = path
+projectToPPath path                        = path
 
 {-|
    Anything starting with '/project' should be rewritten to start with '/p'.

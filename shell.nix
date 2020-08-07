@@ -222,6 +222,7 @@ let
       build-extract-requires
       cabal-update
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      echo "STAGING KEY: $STAGING_BUNDLE_ACCESS_KEY"
       ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
     '')
   ];

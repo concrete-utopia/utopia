@@ -308,17 +308,18 @@ saveProjectThumbnailEndpoint cookie (ProjectIdWithSuffix projectID _) thumbnail 
   saveProjectThumbnail (view id sessionUser) projectID thumbnail
   return NoContent
 
-servePath' :: FilePath -> (StaticSettings -> StaticSettings) -> ServerMonad Application
-servePath' pathToServe settingsChange = do
+servePath' :: FilePath -> (StaticSettings -> StaticSettings) -> Maybe Text -> ServerMonad Application
+servePath' defaultPathToServe settingsChange branchName = do
+  pathToServe <- getPathToServe defaultPathToServe branchName
   let defaultSettings = defaultFileServerSettings pathToServe
   let withIndicesTurnedOff = defaultSettings { ssListing = Nothing }
   app <- serveDirectoryWith $ settingsChange withIndicesTurnedOff
   let gzipConfig = def{gzipFiles = GzipCacheFolder (pathToServe </> ".gzipcache")}
   return $ gzip gzipConfig app
 
-servePath :: FilePath -> ServerMonad Application
-servePath pathToServe = do
-  servePath' pathToServe identity
+servePath :: FilePath -> Maybe Text -> ServerMonad Application
+servePath pathToServe branchName = do
+  servePath' pathToServe identity branchName
 
 addMiddlewareHeader :: CI ByteString -> ByteString -> Middleware
 addMiddlewareHeader headerName headerValue applicationToWrap request sendResponse = do
@@ -334,10 +335,10 @@ addCacheControl = addMiddlewareHeader "Cache-Control" "public, immutable, max-ag
 addCDNHeaders :: Middleware
 addCDNHeaders = addCacheControl . addAccessControlAllowOrigin
 
-editorAssetsEndpoint :: FilePath -> ServerMonad Application
-editorAssetsEndpoint notProxiedPath = do
+editorAssetsEndpoint :: FilePath -> Maybe Text -> ServerMonad Application
+editorAssetsEndpoint notProxiedPath branchName = do
   possibleProxyManager <- getProxyManager
-  maybe (fmap addCDNHeaders $ servePath notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 8088 ["editor"]) possibleProxyManager
+  maybe (fmap addCDNHeaders $ servePath notProxiedPath branchName) (\proxyManager -> return $ proxyApplication proxyManager 8088 ["editor"]) possibleProxyManager
 
 monitoringEndpoint :: ServerMonad Value
 monitoringEndpoint = getMetrics
@@ -345,7 +346,7 @@ monitoringEndpoint = getMetrics
 websiteAssetsEndpoint :: FilePath -> ServerMonad Application
 websiteAssetsEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
-  maybe (servePath notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 3000 ["static"]) possibleProxyManager
+  maybe (servePath notProxiedPath Nothing) (\proxyManager -> return $ proxyApplication proxyManager 3000 ["static"]) possibleProxyManager
 
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ = do
@@ -356,7 +357,7 @@ serveWebAppEndpointNotProxied path = do
   let defaultSettings = defaultFileServerSettings path
   let defaultLookup = ssLookupFile defaultSettings
   let settingsChange settings = settings { ssLookupFile = wrappedWebAppLookup defaultLookup }
-  servePath' path settingsChange
+  servePath' path settingsChange Nothing
 
 serveWebAppEndpoint :: FilePath -> ServerMonad Application
 serveWebAppEndpoint notProxiedPath = do
@@ -427,9 +428,9 @@ unprotected = authenticate
          :<|> getPackageJSONEndpoint
          :<|> hashedAssetPathsEndpoint
          :<|> editorAssetsEndpoint "./editor"
-         :<|> editorAssetsEndpoint "./sockjs-node"
+         :<|> editorAssetsEndpoint "./sockjs-node" Nothing
          :<|> websiteAssetsEndpoint "./public/static"
-         :<|> servePath "./public/.well-known"
+         :<|> servePath "./public/.well-known" Nothing
          :<|> servePackagerEndpoint
          :<|> serveWebAppEndpoint "./public"
 

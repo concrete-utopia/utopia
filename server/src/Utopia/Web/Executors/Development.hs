@@ -39,13 +39,13 @@ import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
 import qualified Utopia.Web.Database         as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Web.Cookie
-import           Utopia.Web.Editor.Branches
 
 {-|
   Any long living resources like database pools live in here.
@@ -66,7 +66,7 @@ data DevServerResources = DevServerResources
                         , _registryManager :: Manager
                         , _assetsCaches    :: AssetsCaches
                         , _nodeSemaphore   :: QSem
-                        , _branchDownloads :: BranchDownloads
+                        , _branchDownloads :: Maybe BranchDownloads
                         }
 
 $(makeFieldsNoPrefix ''DevServerResources)
@@ -107,10 +107,10 @@ localAuthCodeCheck "logmein" action = do
 localAuthCodeCheck _ action = do
   return $ action Nothing
 
-readIndexHtmlFromDisk :: BranchDownloads -> Maybe Text -> Text -> IO Text
-readIndexHtmlFromDisk _ Nothing fileName = readFile $ toS $ "../editor/lib/" <> fileName
-readIndexHtmlFromDisk downloads (Just branchName) fileName = do
-  readBranchTextContent downloads branchName fileName
+readIndexHtmlFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
+readIndexHtmlFromDisk (Just downloads) (Just branchName) fileName = do
+  readBranchHTMLContent downloads branchName fileName
+readIndexHtmlFromDisk _ _ fileName = readFile $ toS $ "../editor/lib/" <> fileName
 
 readIndexHtmlFromWebpack :: Text -> IO Text
 readIndexHtmlFromWebpack fileName = simpleWebpackRequest ("editor/" <> fileName)
@@ -120,8 +120,6 @@ simpleWebpackRequest endpoint = do
   let webpackUrl = "http://localhost:8088/" <> endpoint
   response <- WR.get $ toS webpackUrl
   return $ toS (response ^. WR.responseBody)
-
-
 
 {-|
   Interpretor for a service call, which converts it into side effecting calls ready to be invoked.
@@ -248,7 +246,7 @@ innerServerExecutor (GetCommitHash action) = do
 innerServerExecutor (GetEditorTextContent branchName fileName action) = do
   downloads <- fmap _branchDownloads ask
   manager <- fmap _proxyManager ask
-  let readIndexHtml = if isJust manager && isNothing branchName then readIndexHtmlFromWebpack else readIndexHtmlFromDisk downloads branchName
+  let readIndexHtml = if isJust manager && (isNothing branchName || isNothing downloads) then readIndexHtmlFromWebpack else readIndexHtmlFromDisk downloads branchName
   indexHtml <- liftIO $ readIndexHtml fileName
   return $ action indexHtml
 innerServerExecutor (GetHashedAssetPaths action) = do
@@ -265,6 +263,14 @@ innerServerExecutor (GetSiteRoot action) = do
   portOfServer <- fmap _serverPort ask
   let siteRoot = "http://localhost:" <> show portOfServer
   return $ action siteRoot
+innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
+  possibleDownloads <- fmap _branchDownloads ask
+  liftIO $ print (defaultPathToServe, possibleBranchName, isJust possibleDownloads)
+  pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
+                   ("./editor", (Just branchName), (Just downloads))  -> liftIO $ downloadBranchBundle downloads branchName
+                   _                                                  -> return defaultPathToServe
+  liftIO $ putText ("pathToServe: " <> toS pathToServe)
+  return $ action pathToServe
 
 {-|
   Invokes a service call using the supplied resources.

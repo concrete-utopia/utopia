@@ -114,6 +114,7 @@ data ServiceCallsF a = NotFound
                      | GetPackagePackagerContent Text Text (Maybe UTCTime) (Maybe (BL.ByteString, UTCTime) -> a)
                      | AccessControlAllowOrigin (Maybe Text) (Maybe Text -> a)
                      | GetSiteRoot (Text -> a)
+                     | GetPathToServe FilePath (Maybe Text) (FilePath -> a)
                      deriving Functor
 
 {-

@@ -46,7 +46,6 @@ import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Web.Cookie
-import Utopia.Web.Editor.Branches 
 
 {-|
   When running the 'ServerMonad' type this is the type that we will
@@ -271,9 +270,4 @@ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifMo
     let contents = fmap (\fileContent -> (M.singleton contentText fileContent)) filesAndContent
     let encodingResult = toEncoding $ M.singleton contentsText contents
     return $ toLazyByteString $ fromEncoding encodingResult
-
-readBranchTextContent :: BranchDownloads -> Text -> Text -> IO Text
-readBranchTextContent downloads branchName fileToLoad = do
-  baseFolder <- downloadBranchBundle downloads branchName
-  readFile (baseFolder </> toS fileToLoad)
 

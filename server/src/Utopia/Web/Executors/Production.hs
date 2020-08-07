@@ -35,12 +35,12 @@ import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
 import qualified Utopia.Web.Database         as DB
+import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
-import           Utopia.Web.Editor.Branches
 
 {-|
   Any long living resources like database pools live in here.
@@ -59,7 +59,7 @@ data ProductionServerResources = ProductionServerResources
                                , _assetsCaches    :: AssetsCaches
                                , _nodeSemaphore   :: QSem
                                , _siteHost        :: Text
-                               , _branchDownloads :: BranchDownloads
+                               , _branchDownloads :: Maybe BranchDownloads
                                }
 
 $(makeFieldsNoPrefix ''ProductionServerResources)
@@ -198,11 +198,18 @@ innerServerExecutor (GetSiteRoot action) = do
   hostOfServer <- fmap _siteHost ask
   let siteRoot = "https://" <> hostOfServer
   return $ action siteRoot
+innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
+  possibleDownloads <- fmap _branchDownloads ask
+  pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
+                   ("./editor", (Just branchName), (Just downloads))  -> liftIO $ downloadBranchBundle downloads branchName
+                   _                                                  -> return defaultPathToServe
+  return $ action pathToServe
 
-readEditorContentFromDisk :: BranchDownloads -> Maybe Text -> Text -> IO Text
-readEditorContentFromDisk _ Nothing fileName = readFile ("./editor/" <> toS fileName)
-readEditorContentFromDisk downloads (Just branchName) fileName = do
-  readBranchTextContent downloads branchName fileName
+
+readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
+readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do
+  readBranchHTMLContent downloads branchName fileName
+readEditorContentFromDisk _ _ fileName = readFile ("./editor/" <> toS fileName)
 
 {-|
   Invokes a service call using the supplied resources.
