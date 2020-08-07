@@ -24,18 +24,11 @@ export const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
 })
 
 export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
-  const { loginState, projectId } = useEditorState((store) => {
-    return {
-      loginState: store.loginState,
-      projectId: store.editor.id,
-    }
-  })
+  const loginState = useEditorState((store) => store.loginState)
 
   const onClickCallback = React.useCallback(() => {
-    const redirectUrlSuffix = projectId == null ? '' : `/${projectId}`
-    const redirectUrl = `/project${redirectUrlSuffix}`
-    setRedirectUrl(redirectUrl).then(() => window.top.location.replace(auth0Url))
-  }, [projectId])
+    setRedirectUrl(window.top.location.pathname).then(() => window.top.location.replace(auth0Url))
+  }, [])
 
   if (isLoggedIn(loginState)) {
     return null

@@ -321,7 +321,7 @@ async function serverSaveInner(
   forceThumbnail: boolean,
 ) {
   const priorErrorCount = isSaveError(_saveState) ? _saveState.errorCount : 0
-  const isFirstSave = isNeverSaved(_saveState)
+  const isFirstSave = isLocal()
 
   if (_saveState.type === 'saved' && _saveState.setTimeoutId != null) {
     clearTimeout(_saveState.setTimeoutId)
