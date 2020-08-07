@@ -23,7 +23,6 @@ jest.mock('./server', () => ({
     persistentModel: PersistentModel | null,
     name: string | null,
   ): Promise<SaveProjectResponse> => {
-    await delay(10)
     if (projectsToError.has(projectId)) {
       return Promise.reject(`Deliberately failing for ${projectId}`)
     }
@@ -117,10 +116,11 @@ describe('Saving to the server', () => {
       const projectId = randomProjectID()
       const firstRevision = updateModel(ModelChange)
       const secondRevision = updateModel(ModelChange)
-      saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
-      saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
-      saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, true)
-      await delay(40)
+      await Promise.all([
+        saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false),
+        saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false),
+        saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, true),
+      ])
       expect(saveLog[projectId].length).toEqual(2)
       expect(saveLog[projectId]).toEqual([ModelChange, secondRevision])
     })
@@ -130,9 +130,10 @@ describe('Saving to the server', () => {
       setBaseSaveWaitTime(1000)
       const projectId = randomProjectID()
       const firstRevision = updateModel(ModelChange)
-      saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
-      saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, true)
-      await delay(40)
+      await Promise.all([
+        saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false),
+        saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, true),
+      ])
       expect(saveLog[projectId].length).toEqual(2)
       expect(saveLog[projectId]).toEqual([ModelChange, firstRevision])
     })
@@ -143,10 +144,11 @@ describe('Saving to the server', () => {
       const projectId = randomProjectID()
       const firstRevision = updateModel(ModelChange)
       const secondRevision = updateModel(ModelChange)
-      saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
-      saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, true)
-      saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, false)
-      await delay(40)
+      await Promise.all([
+        saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false),
+        saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, true),
+        saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, false),
+      ])
       expect(saveLog[projectId].length).toEqual(2)
       expect(saveLog[projectId]).toEqual([ModelChange, secondRevision])
     })
@@ -157,13 +159,15 @@ describe('Saving to the server', () => {
       const projectId = randomProjectID()
       const firstRevision = updateModel(ModelChange)
       const secondRevision = updateModel(ModelChange)
-      saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
-      saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, true)
-      await delay(40)
-      saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, false)
-      await delay(40)
+      await Promise.all([
+        saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false),
+        saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, true),
+      ])
+      const nextSave = saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, false)
+      await delay(10)
       expect(saveLog[projectId].length).toEqual(2)
       expect(saveLog[projectId]).toEqual([ModelChange, firstRevision])
+      await nextSave
     })
   })
 
@@ -180,10 +184,9 @@ describe('Saving to the server', () => {
       setBaseSaveWaitTime(10)
       const projectId = randomProjectID()
       const firstRevision = updateModel(ModelChange)
-      saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
-      await delay(40)
-      saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
-      await delay(40)
+      await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
+      await saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
+      await delay(20)
       expect(saveLog[projectId].length).toEqual(2)
       expect(saveLog[projectId]).toEqual([ModelChange, firstRevision])
     })
@@ -193,12 +196,11 @@ describe('Saving to the server', () => {
       setBaseSaveWaitTime(10)
       const projectId = randomProjectID()
       const firstRevision = updateModel(ModelChange)
-      saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
-      await delay(10)
-      saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
-      await delay(10)
+      await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
+      const save = saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
       expect(saveLog[projectId].length).toEqual(1)
       expect(saveLog[projectId]).toEqual([ModelChange])
+      await save
       await delay(20)
       expect(saveLog[projectId].length).toEqual(2)
       expect(saveLog[projectId]).toEqual([ModelChange, firstRevision])
@@ -209,7 +211,7 @@ describe('Saving to the server', () => {
       setBaseSaveWaitTime(10)
       const projectId = randomProjectID()
       projectsToError.add(projectId)
-      saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
+      await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
       await delay(20)
       expect(saveLog[projectId]).toBeUndefined()
       await delay(20)
@@ -226,10 +228,10 @@ describe('Saving to the server', () => {
       const projectId = randomProjectID()
       const firstRevision = updateModel(ModelChange)
       projectsToError.add(projectId)
-      saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
+      await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
       await delay(20)
       expect(saveLog[projectId]).toBeUndefined()
-      saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
+      await saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
       await delay(20)
       expect(saveLog[projectId]).toBeUndefined()
       projectsToError.delete(projectId)
@@ -244,15 +246,17 @@ describe('Saving to the server', () => {
       const projectId = randomProjectID()
       const firstRevision = updateModel(ModelChange)
       const secondRevision = updateModel(ModelChange)
-      saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
-      saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
-      saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, false)
-      await delay(20)
+      await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
+      const saves = [
+        saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false),
+        saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, false),
+      ]
       expect(saveLog[projectId].length).toEqual(1)
       expect(saveLog[projectId]).toEqual([ModelChange])
       await delay(40)
       expect(saveLog[projectId].length).toEqual(2)
       expect(saveLog[projectId]).toEqual([ModelChange, secondRevision])
+      await Promise.all(saves)
     })
   })
 
@@ -261,11 +265,9 @@ describe('Saving to the server', () => {
     setBaseSaveWaitTime(10)
     const projectId = randomProjectID()
     addLocalProject(projectId, ModelChange)
-    loadFromLocalStorage(projectId, NO_OP, false, new MockUtopiaTsWorkers(), NO_OP) // Load without triggering the upload
-    await delay(20)
+    await loadFromLocalStorage(projectId, NO_OP, false, new MockUtopiaTsWorkers(), NO_OP) // Load without triggering the upload
     expect(localProjects[localProjectKey(projectId)]).toBeDefined()
-    saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, true) // Forcibly save to bypass throttling
-    await delay(20)
+    await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, true) // Forcibly save to bypass throttling
     expect(saveLog[projectId].length).toEqual(1)
     expect(saveLog[projectId]).toEqual([ModelChange])
     expect(localProjects[localProjectKey(projectId)]).toBeUndefined()
@@ -279,7 +281,7 @@ describe('Loading a local project', () => {
     const projectId = randomProjectID()
     addLocalProject(projectId, ModelChange)
     expect(localProjects[localProjectKey(projectId)]).toBeDefined()
-    loadFromLocalStorage(projectId, NO_OP, true, new MockUtopiaTsWorkers(), NO_OP)
+    await loadFromLocalStorage(projectId, NO_OP, true, new MockUtopiaTsWorkers(), NO_OP)
     await delay(20)
     expect(saveLog[projectId].length).toEqual(1)
     expect(saveLog[projectId]).toEqual([ModelChange])
