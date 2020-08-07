@@ -65,13 +65,12 @@ jobs:
       - name: Upload Editor Bundle
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
-          args: --acl private
+          args: --acl private --exclude '*' --include 'editor/${{ steps.extract_branch.outputs.branch }}.tar.gz'
         env:
           AWS_S3_BUCKET: ${{ secrets.STAGING_BUNDLE_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGING_BUNDLE_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_BUNDLE_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
-          SOURCE_DIR: editor/${{ steps.extract_branch.outputs.branch }}.tar.gz
 
 
 
