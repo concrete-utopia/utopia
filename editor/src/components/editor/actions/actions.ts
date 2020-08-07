@@ -4050,7 +4050,7 @@ export const UPDATE_FNS = {
     return setCanvasFramesInnerNew(editor, [frameAndTarget], null)
   },
   SET_PACKAGE_STATUS: (action: SetPackageStatus, editor: EditorState): EditorState => {
-    const packageName = action.dependency.name
+    const packageName = action.packageName
     return produce(editor, (draft) => {
       draft.nodeModules.packageStatus[packageName] = { status: action.status }
     })
@@ -5401,13 +5401,10 @@ export function addMissingDimensions(
   }
 }
 
-export function setPackageStatus(
-  dependency: NpmDependency,
-  status: PackageStatus,
-): SetPackageStatus {
+export function setPackageStatus(packageName: string, status: PackageStatus): SetPackageStatus {
   return {
     action: 'SET_PACKAGE_STATUS',
-    dependency: dependency,
+    packageName: packageName,
     status: status,
   }
 }

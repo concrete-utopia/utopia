@@ -749,7 +749,7 @@ export interface AddMissingDimensions {
 
 export interface SetPackageStatus {
   action: 'SET_PACKAGE_STATUS'
-  dependency: NpmDependency
+  packageName: string
   status: PackageStatus
 }
 
