@@ -31,9 +31,11 @@ jobs:
         with:
           version: ${{ steps.get-previous-tag.outputs.tag }}
       - name: Set Explicit Tag Variable
+        # If we have explicitly passed in a tag, use that
         if: ${{ github.event.inputs.tag-name != null }}
         run: echo ::set-env name=NEW_TAG::${{ github.event.inputs.tag-name }}
       - name: Set Calculated Tag Variable
+        # If we haven't explicitly passed in a tag, use the next patch version determined above
         if: ${{ github.event.inputs.tag-name == null }}
         run: echo ::set-env name=NEW_TAG::${{ steps.get-next-tags.outputs.patch }}
       - name: Create Release
