@@ -36,7 +36,7 @@ type DependencyListProps = {
   packageJsonFile: ProjectFile | null
 }
 
-type PackageStatus = 'version-lookup' | 'loading' | 'loaded' | 'error' | 'default-package'
+export type PackageStatus = 'version-lookup' | 'loading' | 'loaded' | 'error' | 'default-package'
 
 // TODO: this should just contain an NpmDependency and a status
 export interface PackageDetails {
@@ -93,19 +93,6 @@ function addInPackage(
   let updatedPackages = packages.filter((p) => p.name !== name && p.name !== oldName)
   updatedPackages = [...updatedPackages, packageDetails(name, version, status)]
   return updatedPackages
-}
-
-function dependenciesFromPackageDetails(packages: Array<PackageDetails>): Array<NpmDependency> {
-  const result: Array<NpmDependency> = []
-  Utils.fastForEach(packages, (p) => {
-    if (
-      (p.status === 'loaded' || p.status === 'loading' || p.status === 'default-package') &&
-      p.version != null
-    ) {
-      result.push(npmDependency(p.name, p.version))
-    }
-  })
-  return result
 }
 
 export const DefaultPackagesList: Array<PackageDetails> = [

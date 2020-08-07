@@ -2,7 +2,8 @@
 import { jsx, keyframes } from '@emotion/core'
 import * as React from 'react'
 import { Button, colorTheme, FlexRow, FunctionIcons, Icons, UtopiaTheme } from 'uuiui'
-import { PackageDetails } from './dependency-list'
+import type { PackageDetails } from './dependency-list'
+import { NpmDependencyVersionAndStatusIndicator } from './dependecy-version-status-indicator'
 
 interface DependencyListItemProps {
   packageDetails: PackageDetails
@@ -41,30 +42,21 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
     packageDetails.status === 'loading' || packageDetails.status === 'version-lookup'
   const isDefault = packageDetails.status === 'default-package'
   const hasError = packageDetails.status === 'error'
-  const version = packageDetails.version
   const name = packageDetails.name
 
-  let versionFieldNode: React.ReactNode
+  const versionFieldNode: React.ReactNode = (
+    <NpmDependencyVersionAndStatusIndicator
+      status={packageDetails.status}
+      version={packageDetails.version}
+    />
+  )
   let textStyle: Pick<React.CSSProperties, 'color' | 'fontStyle'>
 
   if (isLoading) {
-    versionFieldNode = (
-      <React.Fragment>
-        <img
-          src='/editor/animated-icons/animation-loading-14x12@2x.gif'
-          width={14}
-          height={12}
-          style={{ marginRight: 8, position: 'relative', top: 2 }}
-        />
-        loading…
-      </React.Fragment>
-    )
     textStyle = { color: LoadingTextColor, fontStyle: 'italic' }
   } else if (hasError) {
-    versionFieldNode = 'failed to load'
     textStyle = { color: colorTheme.errorForeground.value, fontStyle: 'italic' }
   } else {
-    versionFieldNode = version
     textStyle = {
       color: DefaultTextColor,
     }

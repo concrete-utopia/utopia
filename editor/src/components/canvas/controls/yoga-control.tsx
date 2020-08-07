@@ -95,6 +95,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         getOriginalFrames={this.obtainOriginalFrames}
         metadata={this.props.componentMetadata}
         onResizeStart={Utils.NO_OP}
+        testID={`component-resize-control-${TP.toComponentId(this.props.target)}-0`}
       />
     )
   }

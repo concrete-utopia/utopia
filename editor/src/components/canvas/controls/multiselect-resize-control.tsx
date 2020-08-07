@@ -145,7 +145,10 @@ export class MultiselectResizeControl extends React.Component<
         )
       })
 
-      if (TP.areAllElementsInSameScene(this.props.selectedViews)) {
+      if (
+        this.props.selectedViews.length > 1 &&
+        TP.areAllElementsInSameScene(this.props.selectedViews)
+      ) {
         return (
           <>
             <ResizeRectangle
@@ -168,6 +171,7 @@ export class MultiselectResizeControl extends React.Component<
               getOriginalFrames={this.obtainOriginalFrames}
               metadata={this.props.componentMetadata}
               onResizeStart={this.onResizeStart}
+              testID={'component-resize-control-0'}
             />
             {...guidelineElements}
           </>
@@ -194,7 +198,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
   }
 
   render() {
-    return this.props.selectedViews.map((view) => {
+    return this.props.selectedViews.map((view, index) => {
       const frame = MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
       if (frame != null) {
         return (
@@ -219,6 +223,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
               getOriginalFrames={this.props.obtainOriginalFrames}
               metadata={this.props.componentMetadata}
               onResizeStart={this.props.onResizeStart}
+              testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
             />
           </>
         )
