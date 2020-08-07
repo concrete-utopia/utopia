@@ -64,7 +64,6 @@ type DependencyListState = {
   packages: Array<PackageDetails> | null
   dependencyBeingEdited: string | null
   openVersionInput: boolean
-  packageJsonFile: ProjectFile | null
   newlyLoadedItems: Array<PackageDetails['name']>
   dependencyLoadingStatus: DependencyLoadingStatus
 }
@@ -167,31 +166,28 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       packages: Utils.optionalMap(packageDetailsFromDependencies, dependencies),
       dependencyBeingEdited: null,
       openVersionInput: false,
-      packageJsonFile: props.packageJsonFile,
       newlyLoadedItems: [],
     }
   }
 
-  static getDerivedStateFromProps(
-    props: DependencyListProps,
-    state: DependencyListState,
-  ): DependencyListState | null {
+  componentWillReceiveProps(newProps: DependencyListProps): void {
     if (
-      props.packageJsonFile === state.packageJsonFile ||
-      Utils.shallowEqual(props.packageJsonFile, state.packageJsonFile)
+      newProps.packageJsonFile === this.props.packageJsonFile ||
+      Utils.shallowEqual(newProps.packageJsonFile, this.props.packageJsonFile)
     ) {
-      return null
+      return
     } else {
-      const dependencies = dependenciesFromPackageJson(props.packageJsonFile)
-      return {
-        showInsertField: false,
-        dependencyLoadingStatus: 'not-loading',
-        packages: Utils.optionalMap(packageDetailsFromDependencies, dependencies),
-        dependencyBeingEdited: null,
-        openVersionInput: false,
-        packageJsonFile: props.packageJsonFile,
-        newlyLoadedItems: state.newlyLoadedItems,
-      }
+      this.setState((state) => {
+        const dependencies = dependenciesFromPackageJson(newProps.packageJsonFile)
+        return {
+          showInsertField: false,
+          dependencyLoadingStatus: 'not-loading',
+          packages: Utils.optionalMap(packageDetailsFromDependencies, dependencies),
+          dependencyBeingEdited: null,
+          openVersionInput: false,
+          newlyLoadedItems: state.newlyLoadedItems,
+        }
+      })
     }
   }
 
