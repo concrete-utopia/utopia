@@ -3,6 +3,11 @@ import { Either, left, right, traverseEither } from '../../../core/shared/either
 import { DescriptionParseError, descriptionParseError } from '../../../utils/value-parser-utils'
 import { string } from 'prop-types'
 import { stringOf } from 'fast-check/*'
+import { NodeData } from 'react-vtree/dist/es/Tree'
+import {
+  PushNewFontFamilyVariant,
+  RemoveFontFamilyVariant,
+} from './google-fonts-resources-list-search'
 
 export const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${GOOGLE_WEB_FONTS_KEY}`
 
@@ -118,44 +123,69 @@ export function prettyNameForFontVariant(value: FontVariant): string {
 
 export interface GoogleFontFamilyOption {
   label: string
-  options: Array<GoogleFontVariantOption>
+  variants: Array<FontFamilyVariant>
 }
 
 export function googleFontFamilyOption(
   label: string,
-  options: Array<GoogleFontVariantOption>,
+  variants: Array<FontFamilyVariant>,
 ): GoogleFontFamilyOption {
   return {
     label,
-    options,
+    variants,
   }
 }
 
-export interface GoogleFontVariantOption {
-  value: string
-  label: string
-  familyName: string
-  fontFamilyVariant: FontFamilyVariant
+export interface FontsRoot extends NodeData {
+  type: 'root'
+  children: Array<FontFamilyData>
 }
 
-export function googleFontsOption(
-  variant: FontFamilyVariant,
-  familyName: string,
-): GoogleFontVariantOption {
-  const variantName = prettyNameForFontVariant(variant.fontVariant)
+export interface FontFamilyData extends NodeData {
+  type: 'font-family'
+  fontFamily: string
+  children: Array<FontVariantData>
+}
+
+export function fontFamilyData(
+  fontFamily: string,
+  children: Array<FontVariantData>,
+): FontFamilyData {
   return {
-    value: googleFontsOptionValue(familyName, variantName),
-    label: variantName,
-    fontFamilyVariant: variant,
-    familyName,
+    type: 'font-family',
+    id: fontFamily,
+    fontFamily,
+    children,
+    isOpenByDefault: false,
   }
 }
 
-export type GoogleFontsOptionValue = string
-
-export function googleFontsOptionValue(
-  familyName: string,
-  variantName: string,
-): GoogleFontsOptionValue {
-  return `${familyName}_${variantName}`
+export interface FontVariantData extends NodeData {
+  type: 'font-variant'
+  variant: FontFamilyVariant
+  isDownloaded: boolean
+  pushNewFontFamilyVariant: PushNewFontFamilyVariant
+  removeFontFamilyVariant: RemoveFontFamilyVariant
 }
+export function fontVariantData(
+  variant: FontFamilyVariant,
+  isDownloaded: boolean,
+  pushNewFontFamilyVariant: PushNewFontFamilyVariant,
+  removeFontFamilyVariant: RemoveFontFamilyVariant,
+): FontVariantData {
+  return {
+    type: 'font-variant',
+    id: fontVariantID(variant),
+    variant,
+    isOpenByDefault: false,
+    isDownloaded,
+    pushNewFontFamilyVariant,
+    removeFontFamilyVariant,
+  }
+}
+
+export function fontVariantID(variant: FontFamilyVariant): string {
+  return `${variant.fontFamily}_${prettyNameForFontVariant(variant.fontVariant)}`
+}
+
+export type FontNode = FontsRoot | FontFamilyData | FontVariantData

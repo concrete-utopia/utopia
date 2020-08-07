@@ -1,127 +1,202 @@
 import * as React from 'react'
-import { ValueType, createFilter, OptionsType } from 'react-select'
-import WindowedSelect from 'react-windowed-select'
+import { FixedSizeTree } from 'react-vtree'
+import { TreeWalker } from 'react-vtree/dist/es/Tree'
 import { isRight } from '../../../core/shared/either'
-import { PortalTargetID } from '../../../core/shared/utils'
 import {
   ExternalResources,
-  googleFontsResource,
   GoogleFontsResource,
+  googleFontsResource,
 } from '../../../printer-parsers/html/external-resources-parser'
-import { isOptionType } from '../../../utils/utils'
-import { betterReactMemo, SelectOption, Utils } from '../../../uuiui-deps'
+import { betterReactMemo, Utils } from '../../../uuiui-deps'
 import { UseSubmitValueFactory } from '../../inspector/common/property-path-hooks'
 import {
-  fontVariant,
+  fontFamilyData,
+  fontFamilyVariant,
+  FontNode,
+  FontsRoot,
+  fontVariantData,
   GoogleFontVariantIdentifier,
   GoogleWebFontsURL,
   parseAndSortVariants,
-  prettyNameForFontVariant,
-  googleFontsOption,
-  fontFamilyVariant,
-  GoogleFontVariantOption,
-  GoogleFontFamilyOption,
-  GoogleFontsOptionValue,
-  googleFontFamilyOption,
+  FontFamilyVariant,
 } from './google-fonts-utils'
-import { ObjectInterpolation } from '@emotion/core'
-import { GoogleFontsResourcesListSearchOption } from './google-fonts-resources-list-search-option'
-import { GoogleFontsResourcesListSearchGroupHeading } from './google-fonts-resources-list-search-group-heading'
+import { GoogleFontsListItem } from './google-fonts-variant-list-item'
 
 interface GoogleFontsResourcesListSearchProps {
-  optionsValues: Array<GoogleFontsOptionValue>
+  linkedResources: Array<GoogleFontsResource>
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 }
 
-function updatePushNewGoogleFontsResource(
-  value: GoogleFontsResource,
+export type PushNewFontFamilyVariant = (newValue: FontFamilyVariant) => void
+export type RemoveFontFamilyVariant = (valueToDelete: FontFamilyVariant) => void
+
+function updatePushNewFontFamilyVariant(
+  newValue: FontFamilyVariant,
   oldValue: ExternalResources,
 ): ExternalResources {
-  const working = { ...oldValue }
-  working.googleFontsResources = [...oldValue.googleFontsResources, value]
+  let working = { ...oldValue }
+  const existingFamilyResourceIndex = working.googleFontsResources.findIndex(
+    (resource) => resource.fontFamily === newValue.fontFamily,
+  )
+  if (existingFamilyResourceIndex > -1) {
+    let workingVariants = [...working.googleFontsResources[existingFamilyResourceIndex].variants]
+    workingVariants.push(newValue.fontVariant)
+    working.googleFontsResources[existingFamilyResourceIndex].variants = workingVariants
+  } else {
+    working.googleFontsResources = [
+      ...working.googleFontsResources,
+      googleFontsResource(newValue.fontFamily, [newValue.fontVariant]),
+    ]
+  }
   return working
 }
 
+function updateRemoveFontFamilyVariant(
+  valueToDelete: FontFamilyVariant,
+  oldValue: ExternalResources,
+): ExternalResources {
+  let working = { ...oldValue }
+  const familyIndex = working.googleFontsResources.findIndex(
+    (resource) => resource.fontFamily === valueToDelete.fontFamily,
+  )
+  if (familyIndex > -1) {
+    let workingVariants = [...working.googleFontsResources[familyIndex].variants]
+    const variantIndex = workingVariants.findIndex(
+      (variant) =>
+        variant.italic === valueToDelete.fontVariant.italic &&
+        variant.weight === valueToDelete.fontVariant.weight,
+    )
+    if (variantIndex > -1) {
+      if (workingVariants.length > 1) {
+        workingVariants.splice(variantIndex, 1)
+        working.googleFontsResources[familyIndex].variants = workingVariants
+      } else {
+        const workingGoogleFontsResources = [...working.googleFontsResources]
+        workingGoogleFontsResources.splice(familyIndex, 1)
+        working.googleFontsResources = workingGoogleFontsResources
+      }
+    }
+  }
+  return working
+}
+
+export const GoogleFontsResourcesListItemHeight = 26
+
+type GoogleFontsItems = Array<{ family: string; variants: Array<GoogleFontVariantIdentifier> }>
+
 export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourcesListSearchProps>(
   'GoogleFontsResourcesListSearch',
-  ({ optionsValues, useSubmitValueFactory }) => {
-    const [options, setOptions] = React.useState<Array<GoogleFontFamilyOption>>([])
+  ({ linkedResources, useSubmitValueFactory }) => {
+    const [pushNewFontFamilyVariant] = useSubmitValueFactory(updatePushNewFontFamilyVariant)
+    const [removeFontFamilyVariant] = useSubmitValueFactory(updateRemoveFontFamilyVariant)
+    const [fontData, setFontData] = React.useState<GoogleFontsItems>([])
 
-    const values = Utils.stripNulls(
-      optionsValues.map((optionValue) => {
-        const [familyName, variantPrettyName] = optionValue.split('_')
-        const familyOption = options.find((option) => option.label === familyName)
-        if (familyOption != null) {
-          return familyOption.options.find((v) => v.label === variantPrettyName)
-        } else {
-          return null
-        }
+    const tree = React.useMemo<FontsRoot>(
+      () => ({
+        id: 'root',
+        type: 'root',
+        isOpenByDefault: true,
+        children: Utils.stripNulls(
+          fontData.map((fontDatum) => {
+            const linkedVariants = linkedResources.find(
+              (resource) => resource.fontFamily === fontDatum.family,
+            )
+            const parsedAndSorted = parseAndSortVariants(fontDatum.variants)
+            if (isRight(parsedAndSorted)) {
+              return fontFamilyData(
+                fontDatum.family,
+                parsedAndSorted.value.map((variant) => {
+                  const isDownloaded =
+                    (linkedVariants?.variants.findIndex(
+                      (linkedVariant) =>
+                        linkedVariant.italic === variant.italic &&
+                        linkedVariant.weight === variant.weight,
+                    ) ?? -1) >= 0
+                  return fontVariantData(
+                    fontFamilyVariant(fontDatum.family, variant),
+                    isDownloaded,
+                    pushNewFontFamilyVariant,
+                    removeFontFamilyVariant,
+                  )
+                }),
+              )
+            } else {
+              return null
+            }
+          }),
+        ),
       }),
+      [fontData, linkedResources, pushNewFontFamilyVariant, removeFontFamilyVariant],
     )
+
+    const treeWalker: TreeWalker<FontNode> = function* (refresh: boolean) {
+      const stack = []
+      // Remember all the necessary data of the first node in the stack.
+      stack.push({
+        nestingLevel: 0,
+        node: tree,
+      })
+
+      // Walk through the tree until we have no nodes available.
+      while (stack.length !== 0) {
+        const {
+          node: { children = [], id, type, fontFamily, variant, isOpenByDefault, isDownloaded },
+          nestingLevel,
+        } = stack.pop() as any
+
+        // Here we are sending the information about the node to the Tree component
+        // and receive an information about the openness state from it. The
+        // `refresh` parameter tells us if the full update of the tree is requested;
+        // basing on it we decide to return the full node data or only the node
+        // id to update the nodes order.
+        const isOpened = yield refresh
+          ? {
+              id,
+              children,
+              isLeaf: children.length === 0,
+              isOpenByDefault,
+              nestingLevel,
+              type,
+              fontFamily,
+              variant,
+              isDownloaded,
+              pushNewFontFamilyVariant,
+              removeFontFamilyVariant,
+            }
+          : id
+
+        // Basing on the node openness state we are deciding if we need to render
+        // the child nodes (if they exist).
+        if (children.length !== 0 && isOpened) {
+          // Since it is a stack structure, we need to put nodes we want to render
+          // first to the end of the stack.
+          for (let i = children.length - 1; i >= 0; i--) {
+            stack.push({
+              nestingLevel: nestingLevel + 1,
+              node: children[i],
+            })
+          }
+        }
+      }
+    }
 
     React.useEffect(() => {
       fetch(GoogleWebFontsURL).then((response) => {
-        response
-          .json()
-          .then(
-            (object: {
-              items: Array<{ family: string; variants: Array<GoogleFontVariantIdentifier> }>
-            }) => {
-              const downloadedOptions = Utils.stripNulls(
-                object.items.map((value) => {
-                  const parsedAndSorted = parseAndSortVariants(value.variants)
-                  if (isRight(parsedAndSorted)) {
-                    return googleFontFamilyOption(
-                      value.family,
-                      parsedAndSorted.value.map((variant) =>
-                        googleFontsOption(fontFamilyVariant(value.family, variant), value.family),
-                      ),
-                    )
-                  } else {
-                    return null
-                  }
-                }),
-              )
-              if (downloadedOptions.length > 0) {
-                setOptions(downloadedOptions)
-              }
-            },
-          )
+        response.json().then((responseData: { items: GoogleFontsItems }) => {
+          setFontData(responseData.items)
+        })
       })
     }, [])
 
-    const [pushNewGoogleFontsResource] = useSubmitValueFactory(updatePushNewGoogleFontsResource)
-
-    const onSubmitValue = React.useCallback(
-      (newValue: ValueType<GoogleFontVariantOption>) => {
-        if (isOptionType(newValue)) {
-          pushNewGoogleFontsResource(googleFontsResource(newValue.value, [fontVariant(400, false)]))
-        }
-      },
-      [pushNewGoogleFontsResource],
-    )
-
     return (
-      <WindowedSelect
-        menuIsOpen
-        value={values}
-        placeholder='Search for fonts…'
-        options={options}
-        onChange={onSubmitValue}
-        menuPortalTarget={document.getElementById(PortalTargetID)}
-        menuPlacement='auto'
-        filterOption={createFilter({ ignoreAccents: false })}
-        components={{
-          Option: GoogleFontsResourcesListSearchOption,
-          GroupHeading: GoogleFontsResourcesListSearchGroupHeading,
-        }}
-        styles={{
-          option: (base: ObjectInterpolation<any>, props: any) => ({
-            ...base,
-            paddingLeft: 18 + 12,
-          }),
-        }}
-      />
+      <FixedSizeTree
+        width={227}
+        height={300}
+        itemSize={GoogleFontsResourcesListItemHeight}
+        treeWalker={treeWalker}
+      >
+        {GoogleFontsListItem}
+      </FixedSizeTree>
     )
   },
 )

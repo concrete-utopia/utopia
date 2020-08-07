@@ -2,16 +2,12 @@ import * as React from 'react'
 import { FlexRow, SectionBodyArea, SectionTitleRow, Title } from 'uuiui'
 import { setFocus } from '../../../components/common/actions'
 import { isRight } from '../../../core/shared/either'
-import {
-  useExternalResources,
-  googleFontsResource,
-} from '../../../printer-parsers/html/external-resources-parser'
+import { useExternalResources } from '../../../printer-parsers/html/external-resources-parser'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { clearSelection, togglePanel } from '../../editor/actions/actions'
 import { useEditorState } from '../../editor/store/store-hook'
 import { GoogleFontsResourcesListItem } from './google-fonts-resources-list-item'
 import { GoogleFontsResourcesListSearch } from './google-fonts-resources-list-search'
-import { googleFontsOptionValue, prettyNameForFontVariant } from './google-fonts-utils'
 
 export const GoogleFontsResourcesList = betterReactMemo('GoogleFontsResourcesList', () => {
   const { values, useSubmitValueFactory } = useExternalResources()
@@ -53,27 +49,9 @@ export const GoogleFontsResourcesList = betterReactMemo('GoogleFontsResourcesLis
           }}
         >
           <GoogleFontsResourcesListSearch
-            optionsValues={
-              isRight(values)
-                ? values.value.googleFontsResources.flatMap((resource) =>
-                    resource.variants.map((variant) =>
-                      googleFontsOptionValue(
-                        resource.fontFamily,
-                        prettyNameForFontVariant(variant),
-                      ),
-                    ),
-                  )
-                : []
-            }
+            linkedResources={isRight(values) ? values.value.googleFontsResources : []}
             useSubmitValueFactory={useSubmitValueFactory}
           />
-          {isRight(values) ? (
-            values.value.googleFontsResources.map((value) => (
-              <GoogleFontsResourcesListItem key={value.fontFamily} value={value} />
-            ))
-          ) : (
-            <div>{values.value.description}</div>
-          )}
         </SectionBodyArea>
       )}
     </div>
