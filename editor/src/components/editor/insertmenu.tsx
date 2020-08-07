@@ -64,6 +64,7 @@ import { useResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import {
   PossiblyUnversionedNpmDependency,
   isNpmDependency,
+  PackageStatusMap,
 } from '../../core/shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import { isBuiltinDependency } from '../../core/es-modules/package-manager/package-manager'
@@ -85,6 +86,7 @@ interface InsertMenuProps {
   currentlyOpenFilename: string | null
   currentFileComponents: Array<CurrentFileComponent>
   dependencies: Array<PossiblyUnversionedNpmDependency>
+  packageStatus: PackageStatusMap
 }
 
 export const InsertMenu = betterReactMemo('InsertMenu', () => {
@@ -127,6 +129,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
       existingUIDs: existingUIDs(openUIJSFile),
       currentlyOpenFilename: currentlyOpenFilename,
       currentFileComponents: currentFileComponents,
+      packageStatus: store.editor.nodeModules.packageStatus,
     }
   })
 
@@ -431,7 +434,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
                   label={componentDescriptor.name}
                   key={dependency.name}
                   dependencyVersion={dependency.version}
-                  dependencyStatus={'loaded'} // TODO Fixme in follow-up PR
+                  dependencyStatus={this.props.packageStatus[dependency.name]?.status ?? 'loaded'}
                 >
                   {componentDescriptor.components.map((component, componentIndex) => {
                     const insertItemOnMouseDown = () => {
@@ -478,7 +481,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
               return (
                 <InsertGroup
                   label={dependency.name}
-                  dependencyStatus={'loading'}
+                  dependencyStatus={this.props.packageStatus[dependency.name]?.status ?? 'loading'}
                   dependencyVersion={null}
                 />
               )
