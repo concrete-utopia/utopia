@@ -53,10 +53,9 @@ jobs:
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-all-ci
       - name: Build Editor
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
-        working-directory: editor/
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "npm install --unsafe-perm"
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "npm run staging"
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd editor; npm install --unsafe-perm"
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd editor; npm run staging"
       - name: Create Editor Bundle
         working-directory: editor/lib/
         run: |
