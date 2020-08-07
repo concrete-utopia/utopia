@@ -23,6 +23,9 @@ import {
   getDirectionAwareLabels,
 } from '../layout-section/flex-container-subsection/flex-container-controls'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
+import { useEditorState } from '../../../editor/store/store-hook'
+import { unsetSceneProp } from '../../../editor/actions/actions'
+import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -168,7 +171,28 @@ function useSceneType() {
 }
 
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
+  const dispatch = useEditorState((store) => store.dispatch)
+  const selectedViews = useEditorState((store) => store.editor.selectedViews)
+  const selectedScene = Utils.forceNotNull(
+    'Scene cannot be null in SceneContainerSection',
+    React.useMemo(() => selectedViews.find(TP.isScenePath), [selectedViews]),
+  )
   const sceneTypeInfo = useSceneType()
+  const onSubmitValue = React.useCallback(
+    (newTransformedValues: any, transient?: boolean) => {
+      sceneTypeInfo.onSubmitValue(newTransformedValues, transient)
+      if (newTransformedValues === 'dynamic') {
+        dispatch(
+          [
+            unsetSceneProp(selectedScene, createLayoutPropertyPath('Width')),
+            unsetSceneProp(selectedScene, createLayoutPropertyPath('Height')),
+          ],
+          'inspector',
+        )
+      }
+    },
+    [dispatch, sceneTypeInfo, selectedScene],
+  )
   return (
     <>
       <PropertyRow style={scenePropertyRowStyle}>
@@ -180,7 +204,7 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
           <OptionChainControl
             id={'layoutSystem'}
             key={'layoutSystem'}
-            onSubmitValue={sceneTypeInfo.onSubmitValue}
+            onSubmitValue={onSubmitValue}
             value={sceneTypeInfo.value}
             options={getSceneTypeOptions()}
             controlStatus={simpleControlStatus}
