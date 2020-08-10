@@ -871,6 +871,7 @@ describe('LOAD', () => {
       action: 'LOAD' as const,
       model: loadedModel,
       nodeModules: {},
+      packageResult: {},
       codeResultCache: generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build'),
       title: '',
       projectId: '',

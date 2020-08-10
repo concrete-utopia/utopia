@@ -800,6 +800,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
         '/node_modules/example.js': esCodeFile('nothing to see here', null),
       },
       projectFilesBuildResults: {},
+      packageStatus: {},
     }
 
     const nodeModules = createNodeModules(fileWithImports.contents)

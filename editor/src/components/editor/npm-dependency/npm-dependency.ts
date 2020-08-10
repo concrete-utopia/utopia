@@ -7,6 +7,7 @@ import {
   NpmDependency,
   npmDependency,
   PossiblyUnversionedNpmDependency,
+  PackageStatusMap,
 } from '../../../core/shared/npm-dependency-types'
 import {
   isCodeFile,
@@ -204,4 +205,13 @@ export function importResultFromImports(
     }
   })
   return result
+}
+
+export function createLoadedPackageStatusMapFromDependencies(
+  dependencies: Array<NpmDependency>,
+): PackageStatusMap {
+  return dependencies.reduce((statusMap: PackageStatusMap, dependency) => {
+    statusMap[dependency.name] = { status: 'loaded' }
+    return statusMap
+  }, {})
 }

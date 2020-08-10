@@ -34,7 +34,11 @@ import { LocalNavigatorAction } from '../navigator/actions/index'
 import { LeftMenuTab } from '../navigator/left-pane'
 import { RightMenuTab } from '../canvas/right-menu'
 import { Mode } from './editor-modes'
-import { NpmDependency } from '../../core/shared/npm-dependency-types'
+import type {
+  NpmDependency,
+  PackageStatusMap,
+  PackageStatus,
+} from '../../core/shared/npm-dependency-types'
 import {
   DuplicationState,
   EditorState,
@@ -234,6 +238,7 @@ export type Atomic = {
 export type NewProject = {
   action: 'NEW'
   nodeModules: NodeModules
+  packageResult: PackageStatusMap
   persistentModel: PersistentModel
   codeResultCache: CodeResultCache
 }
@@ -242,6 +247,7 @@ export type Load = {
   action: 'LOAD'
   model: PersistentModel
   nodeModules: NodeModules
+  packageResult: PackageStatusMap
   codeResultCache: CodeResultCache
   title: string
   projectId: string | null
@@ -741,6 +747,12 @@ export interface AddMissingDimensions {
   target: InstancePath
 }
 
+export interface SetPackageStatus {
+  action: 'SET_PACKAGE_STATUS'
+  packageName: string
+  status: PackageStatus
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -865,6 +877,7 @@ export type EditorAction =
   | StartCheckpointTimer
   | FinishCheckpointTimer
   | AddMissingDimensions
+  | SetPackageStatus
 
 export type DispatchPriority =
   | 'everyone'
