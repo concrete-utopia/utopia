@@ -174,13 +174,10 @@ const initPreview = () => {
 
   const previewRender = async (projectContents: ProjectContents) => {
     const npmDependencies = dependenciesFromProjectContents(projectContents)
-    const nodeModulesEither = await fetchNodeModules(npmDependencies)
+    const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
 
-    if (isLeft(nodeModulesEither)) {
-      throw new Error(`Error fetching dependencies`)
-    }
-
-    let nodeModules: NodeModules = nodeModulesEither.value
+    // TODO do we want error handling here?
+    let nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
 
     /**
      * please note that we are passing in an empty object instead of the .d.ts files

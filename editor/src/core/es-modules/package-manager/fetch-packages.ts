@@ -11,7 +11,7 @@ import {
   JsdelivrResponse,
   npmDependency,
 } from '../../shared/npm-dependency-types'
-import { mapArrayToDictionary } from '../../shared/array-utils'
+import { mapArrayToDictionary, pluck } from '../../shared/array-utils'
 import { objectMap } from '../../shared/object-utils'
 import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
 import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
@@ -122,14 +122,15 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
   return result
 }
 
-interface NodeFetchError {
+interface NodeFetchResult {
   dependenciesWithError: Array<NpmDependency>
+  nodeModules: NodeModules
 }
 
 export async function fetchNodeModules(
   newDeps: Array<NpmDependency>,
   shouldRetry: boolean = true,
-): Promise<Either<NodeFetchError, NodeModules>> {
+): Promise<NodeFetchResult> {
   const nodeModulesArr = await Promise.all(
     newDeps.map(
       async (newDep): Promise<Either<NpmDependency, NodeModules>> => {
@@ -166,13 +167,13 @@ export async function fetchNodeModules(
       },
     ),
   )
-  const errors = nodeModulesArr.filter(isLeft)
-  if (errors.length > 0) {
-    const dependenciesWithError = errors.map((e) => e.value)
-    return left({ dependenciesWithError: dependenciesWithError })
-  }
+  const errors = nodeModulesArr.filter(isLeft).map((e) => e.value)
   const successes = nodeModulesArr.filter(isRight)
-  return mapEither(mergeNodeModules, sequenceEither(successes))
+  const nodeModules = mergeNodeModules(pluck(successes, 'value'))
+  return {
+    dependenciesWithError: errors,
+    nodeModules: nodeModules,
+  }
 }
 
 function extractFilePath(packagename: string, filepath: string): string {

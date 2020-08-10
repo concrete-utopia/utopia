@@ -3273,15 +3273,29 @@ export const UPDATE_FNS = {
       [action.filePath]: file,
     })
 
+    let packageLoadingStatus: PackageStatusMap = {}
+
     // Ensure dependencies are updated if the `package.json` file has been changed.
     if (action.filePath === '/package.json' && isCodeFile(file)) {
       const deps = dependenciesFromPackageJsonContents(file.fileContents)
       if (deps != null) {
-        fetchNodeModules(deps).then((nodeModules) => {
-          if (isRight(nodeModules)) {
-            // We are not handling the errors here!
-            dispatch([updateNodeModulesContents(nodeModules.value, 'full-build')])
-          }
+        packageLoadingStatus = deps.reduce((packageStatus: PackageStatusMap, dep) => {
+          packageStatus[dep.name] = { status: 'loading' }
+          return packageStatus
+        }, {})
+
+        fetchNodeModules(deps).then((fetchNodeModulesResult) => {
+          const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
+            deps,
+            fetchNodeModulesResult.dependenciesWithError,
+          )
+          const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
+            setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
+          )
+          dispatch([
+            ...packageErrorActions,
+            updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
+          ])
         })
       }
     }
@@ -3292,6 +3306,13 @@ export const UPDATE_FNS = {
       canvas: {
         ...editor.canvas,
         mountCount: editor.canvas.mountCount + 1,
+      },
+      nodeModules: {
+        ...editor.nodeModules,
+        packageStatus: {
+          ...editor.nodeModules.packageStatus,
+          ...packageLoadingStatus,
+        },
       },
     }
   },
@@ -4297,21 +4318,13 @@ export async function newProject(
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
   const npmDependencies = dependenciesFromProjectContents(defaultPersistentModel.projectContents)
-  const nodeModulesResult = await fetchNodeModules(npmDependencies)
+  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
 
-  let nodeModules: NodeModules
-  let packageResult: PackageStatusMap
-
-  if (isLeft(nodeModulesResult)) {
-    nodeModules = {} // TODO should we support partially succeeding downloading the node modules, or break the entire node_modules on a single package error?
-    packageResult = createLoadedPackageStatusMapFromDependencies(
-      npmDependencies,
-      nodeModulesResult.value.dependenciesWithError,
-    )
-  } else {
-    nodeModules = nodeModulesResult.value
-    packageResult = createLoadedPackageStatusMapFromDependencies(npmDependencies, [])
-  }
+  const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
+  const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
+    npmDependencies,
+    fetchNodeModulesResult.dependenciesWithError,
+  )
 
   const codeResultCache = generateCodeResultCache(
     {},
@@ -4365,20 +4378,13 @@ export async function load(
   // this action is now async!
 
   const npmDependencies = dependenciesFromProjectContents(model.projectContents)
-  const nodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
-  let nodeModules: NodeModules
-  let packageResult: PackageStatusMap
+  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
-  if (isLeft(nodeModulesResult)) {
-    nodeModules = {} // TODO should we support partially succeeding downloading the node modules, or break the entire node_modules on a single package error?
-    packageResult = createLoadedPackageStatusMapFromDependencies(
-      npmDependencies,
-      nodeModulesResult.value.dependenciesWithError,
-    )
-  } else {
-    nodeModules = nodeModulesResult.value
-    packageResult = createLoadedPackageStatusMapFromDependencies(npmDependencies, [])
-  }
+  const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
+  const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
+    npmDependencies,
+    fetchNodeModulesResult.dependenciesWithError,
+  )
 
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
 
