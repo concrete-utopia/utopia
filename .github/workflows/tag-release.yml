@@ -37,7 +37,7 @@ jobs:
       - name: Set Calculated Tag Variable
         # If we haven't explicitly passed in a tag, use the next patch version determined above
         if: ${{ github.event.inputs.tag-name == null }}
-        run: echo ::set-env name=NEW_TAG::${{ steps.get-next-tags.outputs.patch }}
+        run: echo ::set-env name=NEW_TAG::${{ steps.get-next-tags.outputs.v_patch }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
