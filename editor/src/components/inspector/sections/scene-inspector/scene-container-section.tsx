@@ -23,6 +23,9 @@ import {
   getDirectionAwareLabels,
 } from '../layout-section/flex-container-subsection/flex-container-controls'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
+import { useEditorState } from '../../../editor/store/store-hook'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { isPercentPin } from 'utopia-api'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -167,8 +170,43 @@ function useSceneType() {
   )
 }
 
+export function useSceneRootViewInfo() {
+  const { selectedViews, metadata } = useEditorState((state) => {
+    return {
+      selectedViews: state.editor.selectedViews,
+      metadata: state.editor.jsxMetadataKILLME,
+    }
+  })
+
+  const selectedScenePath = Utils.forceNotNull(
+    'missing scene from scene section',
+    selectedViews.find(TP.isScenePath),
+  )
+  const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScenePath)
+  if (scene != null) {
+    return scene.rootElements.map((element) => {
+      return {
+        width: element.props?.style?.width,
+        height: element.props?.style?.height,
+      }
+    })
+  } else {
+    return []
+  }
+}
+
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
   const sceneTypeInfo = useSceneType()
+  let controlStatus: ControlStatus = simpleControlStatus
+  let controlStyles = simpleControlStyles
+  const rootViewsSizeInfo = useSceneRootViewInfo()
+  if (
+    sceneTypeInfo.value === 'static' &&
+    rootViewsSizeInfo.some((size) => isPercentPin(size.width) || isPercentPin(size.height))
+  ) {
+    controlStatus = 'disabled'
+    controlStyles = getControlStyles(controlStatus)
+  }
   return (
     <>
       <PropertyRow style={scenePropertyRowStyle}>
@@ -183,8 +221,8 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
             onSubmitValue={sceneTypeInfo.onSubmitValue}
             value={sceneTypeInfo.value}
             options={getSceneTypeOptions()}
-            controlStatus={simpleControlStatus}
-            controlStyles={simpleControlStyles}
+            controlStatus={controlStatus}
+            controlStyles={controlStyles}
           />
         </div>
       </PropertyRow>
