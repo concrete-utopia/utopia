@@ -352,6 +352,7 @@ import {
   dependenciesFromPackageJsonContents,
   updateDependenciesInEditorState,
   updateDependenciesInPackageJson,
+  createLoadedPackageStatusMapFromDependencies,
 } from '../npm-dependency/npm-dependency'
 import { updateRemoteThumbnail } from '../persistence'
 import { deleteAssetFile, saveAsset as saveAssetToServer, updateAssetFileName } from '../server'
@@ -4304,8 +4305,6 @@ export async function newProject(
     'full-build',
   )
 
-  const FIXME = {}
-
   renderEditorRoot()
   dispatch(
     [
@@ -4314,7 +4313,7 @@ export async function newProject(
         nodeModules: nodeModules,
         persistentModel: defaultPersistentModel,
         codeResultCache: codeResultCache,
-        packageResult: FIXME,
+        packageResult: createLoadedPackageStatusMapFromDependencies(npmDependencies),
       },
     ],
     'everyone',
@@ -4381,15 +4380,13 @@ export async function load(
 
   renderEditorRoot()
 
-  const FIXME = {}
-
   dispatch(
     [
       {
         action: 'LOAD',
         model: model,
         nodeModules: nodeModules,
-        packageResult: FIXME,
+        packageResult: createLoadedPackageStatusMapFromDependencies(npmDependencies),
         codeResultCache: codeResultCache,
         title: title,
         projectId: projectId,

@@ -867,13 +867,11 @@ describe('LOAD', () => {
       },
     }
 
-    const FIXME = {}
-
     const action = {
       action: 'LOAD' as const,
       model: loadedModel,
       nodeModules: {},
-      packageResult: FIXME,
+      packageResult: {},
       codeResultCache: generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build'),
       title: '',
       projectId: '',
