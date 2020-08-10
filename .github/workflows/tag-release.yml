@@ -20,7 +20,7 @@ jobs:
           ref: ${{ github.event.inputs.commit-ref }}
       - name: Get Previous Tag
         id: get-previous-tag
-        uses: WyriHaximus/github-action-get-previous-tag@v0.2.0
+        uses: WyriHaximus/github-action-get-previous-tag@0.2.0
         if: ${{ github.event.inputs.tag-name == null }}
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
