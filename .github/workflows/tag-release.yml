@@ -16,12 +16,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
       - name: Get Previous Tag
         id: get-previous-tag
         uses: WyriHaximus/github-action-get-previous-tag@0.2.0
         if: ${{ github.event.inputs.tag-name == null }}
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: Get Next Tags
         id: get-next-tags
         uses: WyriHaximus/github-action-next-semvers@v1.0
