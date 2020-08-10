@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2.2.0
-        with:
-          ref: ${{ github.event.inputs.commit-ref }}
       - name: Get Previous Tag
         id: get-previous-tag
         uses: WyriHaximus/github-action-get-previous-tag@0.2.0
