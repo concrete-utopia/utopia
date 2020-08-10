@@ -116,6 +116,7 @@ import type {
   npmDependency,
   NpmDependency,
   PackageStatus,
+  PackageStatusMap,
 } from '../../../core/shared/npm-dependency-types'
 import {
   InstancePath,
@@ -3276,9 +3277,12 @@ export const UPDATE_FNS = {
     if (action.filePath === '/package.json' && isCodeFile(file)) {
       const deps = dependenciesFromPackageJsonContents(file.fileContents)
       if (deps != null) {
-        fetchNodeModules(deps).then((nodeModules) =>
-          dispatch([updateNodeModulesContents(nodeModules, 'full-build')]),
-        )
+        fetchNodeModules(deps).then((nodeModules) => {
+          if (isRight(nodeModules)) {
+            // We are not handling the errors here!
+            dispatch([updateNodeModulesContents(nodeModules.value, 'full-build')])
+          }
+        })
       }
     }
 
@@ -4293,7 +4297,21 @@ export async function newProject(
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
   const npmDependencies = dependenciesFromProjectContents(defaultPersistentModel.projectContents)
-  const nodeModules = await fetchNodeModules(npmDependencies)
+  const nodeModulesResult = await fetchNodeModules(npmDependencies)
+
+  let nodeModules: NodeModules
+  let packageResult: PackageStatusMap
+
+  if (isLeft(nodeModulesResult)) {
+    nodeModules = {} // TODO should we support partially succeeding downloading the node modules, or break the entire node_modules on a single package error?
+    packageResult = createLoadedPackageStatusMapFromDependencies(
+      npmDependencies,
+      nodeModulesResult.value.dependenciesWithError,
+    )
+  } else {
+    nodeModules = nodeModulesResult.value
+    packageResult = createLoadedPackageStatusMapFromDependencies(npmDependencies, [])
+  }
 
   const codeResultCache = generateCodeResultCache(
     {},
@@ -4313,7 +4331,7 @@ export async function newProject(
         nodeModules: nodeModules,
         persistentModel: defaultPersistentModel,
         codeResultCache: codeResultCache,
-        packageResult: createLoadedPackageStatusMapFromDependencies(npmDependencies),
+        packageResult: packageResult,
       },
     ],
     'everyone',
@@ -4347,7 +4365,20 @@ export async function load(
   // this action is now async!
 
   const npmDependencies = dependenciesFromProjectContents(model.projectContents)
-  const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
+  const nodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
+  let nodeModules: NodeModules
+  let packageResult: PackageStatusMap
+
+  if (isLeft(nodeModulesResult)) {
+    nodeModules = {} // TODO should we support partially succeeding downloading the node modules, or break the entire node_modules on a single package error?
+    packageResult = createLoadedPackageStatusMapFromDependencies(
+      npmDependencies,
+      nodeModulesResult.value.dependenciesWithError,
+    )
+  } else {
+    nodeModules = nodeModulesResult.value
+    packageResult = createLoadedPackageStatusMapFromDependencies(npmDependencies, [])
+  }
 
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
 
@@ -4386,7 +4417,7 @@ export async function load(
         action: 'LOAD',
         model: model,
         nodeModules: nodeModules,
-        packageResult: createLoadedPackageStatusMapFromDependencies(npmDependencies),
+        packageResult: packageResult,
         codeResultCache: codeResultCache,
         title: title,
         projectId: projectId,

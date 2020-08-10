@@ -32,6 +32,7 @@ import { packageJsonFileFromProjectContents } from '../editor/store/editor-state
 import { useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
+import { isLeft } from '../../core/shared/either'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -198,10 +199,19 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       this.props.editorDispatch([EditorActions.updatePackageJson(npmDependencies)])
 
       fetchNodeModules(npmDependencies).then((nodeModules) => {
-        this.props.editorDispatch([
-          EditorActions.updateNodeModulesContents(nodeModules, 'full-build'),
-        ])
-        this.setState({ dependencyLoadingStatus: 'not-loading' })
+        if (isLeft(nodeModules)) {
+          this.packagesUpdateFailed(
+            `Failed to download the following dependencies: ${JSON.stringify(
+              nodeModules.value.dependenciesWithError.map((d) => d.name),
+            )}`,
+            nodeModules.value.dependenciesWithError[0]?.name,
+          )
+        } else {
+          this.props.editorDispatch([
+            EditorActions.updateNodeModulesContents(nodeModules.value, 'full-build'),
+          ])
+          this.setState({ dependencyLoadingStatus: 'not-loading' })
+        }
       })
 
       this.setState({ dependencyLoadingStatus: 'removing' })
@@ -300,11 +310,20 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
               EditorActions.updatePackageJson(updatedNpmDeps),
             ])
             fetchNodeModules([npmDependency(editedPackageName, editedPackageVersion!)])
-              .then((nodeModules) => {
-                this.packagesUpdateSuccess(editedPackageName)
-                this.props.editorDispatch([
-                  EditorActions.updateNodeModulesContents(nodeModules, 'incremental'),
-                ])
+              .then((nodeModulesResult) => {
+                if (isLeft(nodeModulesResult)) {
+                  this.packagesUpdateFailed(
+                    `Failed to download the following dependencies: ${JSON.stringify(
+                      nodeModulesResult.value.dependenciesWithError.map((d) => d.name),
+                    )}`,
+                    editedPackageName,
+                  )
+                } else {
+                  this.packagesUpdateSuccess(editedPackageName)
+                  this.props.editorDispatch([
+                    EditorActions.updateNodeModulesContents(nodeModulesResult.value, 'incremental'),
+                  ])
+                }
               })
               .catch((e) => this.packagesUpdateFailed(e, editedPackageName))
 

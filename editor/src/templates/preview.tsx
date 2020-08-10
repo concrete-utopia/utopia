@@ -22,6 +22,7 @@ import { createBundle } from '../core/workers/bundler-promise'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { fastForEach } from '../core/shared/utils'
 import { incorporateBuildResult } from '../components/custom-code/code-file'
+import { isLeft } from '../core/shared/either'
 
 interface PolledLoadParams {
   projectId: string
@@ -173,7 +174,13 @@ const initPreview = () => {
 
   const previewRender = async (projectContents: ProjectContents) => {
     const npmDependencies = dependenciesFromProjectContents(projectContents)
-    let nodeModules = await fetchNodeModules(npmDependencies)
+    const nodeModulesEither = await fetchNodeModules(npmDependencies)
+
+    if (isLeft(nodeModulesEither)) {
+      throw new Error(`Error fetching dependencies`)
+    }
+
+    let nodeModules: NodeModules = nodeModulesEither.value
 
     /**
      * please note that we are passing in an empty object instead of the .d.ts files
