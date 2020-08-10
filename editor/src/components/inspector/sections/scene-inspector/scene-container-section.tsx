@@ -24,8 +24,11 @@ import {
 } from '../layout-section/flex-container-subsection/flex-container-controls'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
 import { useEditorState } from '../../../editor/store/store-hook'
-import { unsetSceneProp } from '../../../editor/actions/actions'
+import { unsetSceneProp, setSceneProp } from '../../../editor/actions/actions'
 import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { EditorAction } from '../../../editor/action-types'
+import { ScenePath } from '../../../../core/shared/project-file-types'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -171,12 +174,17 @@ function useSceneType() {
 }
 
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
-  const dispatch = useEditorState((store) => store.dispatch)
+  const { dispatch, metadata } = useEditorState((store) => ({
+    dispatch: store.dispatch,
+    metadata: store.editor.jsxMetadataKILLME,
+  }))
   const selectedViews = useEditorState((store) => store.editor.selectedViews)
   const selectedScene = Utils.forceNotNull(
     'Scene cannot be null in SceneContainerSection',
     React.useMemo(() => selectedViews.find(TP.isScenePath), [selectedViews]),
   )
+  const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScene)
+
   const sceneTypeInfo = useSceneType()
   const onSubmitValue = React.useCallback(
     (newTransformedValues: any, transient?: boolean) => {
@@ -189,9 +197,23 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
           ],
           'inspector',
         )
+      } else if (scene != null) {
+        const actions = [
+          setSceneProp(
+            selectedScene,
+            createLayoutPropertyPath('Width'),
+            jsxAttributeValue(scene.globalFrame?.width),
+          ),
+          setSceneProp(
+            selectedScene,
+            createLayoutPropertyPath('Height'),
+            jsxAttributeValue(scene.globalFrame?.height),
+          ),
+        ]
+        dispatch(actions, 'inspector')
       }
     },
-    [dispatch, sceneTypeInfo, selectedScene],
+    [dispatch, sceneTypeInfo, selectedScene, scene],
   )
   return (
     <>
