@@ -15,6 +15,7 @@ import {
   npmDependency,
   NpmDependency,
   PackageStatusMap,
+  PackageStatus,
 } from '../../core/shared/npm-dependency-types'
 import { ProjectFile } from '../../core/shared/project-file-types'
 import { betterReactMemo } from '../../utils/react-performance'
@@ -40,8 +41,6 @@ type DependencyListProps = {
   packageJsonFile: ProjectFile | null
   packageStatus: PackageStatusMap
 }
-
-export type PackageStatus = 'version-lookup' | 'loading' | 'loaded' | 'error' | 'default-package'
 
 // TODO: this should just contain an NpmDependency and a status
 export interface PackageDetails {

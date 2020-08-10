@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { betterReactMemo } from '../../uuiui-deps'
-import type { PackageStatus } from './dependency-list'
+import type { PackageStatus } from '../../core/shared/npm-dependency-types'
 
 export const NpmDependencyVersionAndStatusIndicator = betterReactMemo<{
   status: PackageStatus
@@ -11,6 +11,7 @@ export const NpmDependencyVersionAndStatusIndicator = betterReactMemo<{
     case 'default-package':
       return <span>{props.version}</span>
     case 'loading':
+    case 'updating':
     case 'version-lookup':
       return (
         <span>

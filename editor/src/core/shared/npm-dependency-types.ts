@@ -3,7 +3,13 @@ export type TypeDefinitions = {
   [fileName: string]: string
 } // the strings are the contents of .d.ts files
 
-export type PackageStatus = 'version-lookup' | 'loading' | 'loaded' | 'error' | 'default-package'
+export type PackageStatus =
+  | 'version-lookup'
+  | 'loading'
+  | 'updating'
+  | 'loaded'
+  | 'error'
+  | 'default-package'
 export interface PackageDetails {
   status: PackageStatus
 }

@@ -65,11 +65,11 @@ import {
   PossiblyUnversionedNpmDependency,
   isNpmDependency,
   PackageStatusMap,
+  PackageStatus,
 } from '../../core/shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import { isBuiltinDependency } from '../../core/es-modules/package-manager/package-manager'
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
-import type { PackageStatus } from '../navigator/dependency-list'
 
 interface CurrentFileComponent {
   componentName: string
