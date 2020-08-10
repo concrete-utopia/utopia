@@ -153,7 +153,16 @@ function saveError(
 
 let _saveState: SaveState = neverSaved()
 
+function clearScheduledSave() {
+  if (isSaved(_saveState) || isSaveError(_saveState)) {
+    if (_saveState.setTimeoutId != null) {
+      clearTimeout(_saveState.setTimeoutId)
+    }
+  }
+}
+
 export function clearSaveState() {
+  clearScheduledSave()
   _saveState = neverSaved()
 }
 
@@ -281,9 +290,7 @@ async function throttledServerSaveInner(
       break
     case 'saved':
     case 'save-error':
-      if (_saveState.setTimeoutId != null) {
-        clearTimeout(_saveState.setTimeoutId)
-      }
+      clearScheduledSave()
       const timeSinceLastSave = Date.now() - _saveState.timestamp
       const waitTime = waitTimeForSaveState() - timeSinceLastSave
       if (waitTime <= 0) {
@@ -321,11 +328,9 @@ async function serverSaveInner(
   forceThumbnail: boolean,
 ) {
   const priorErrorCount = isSaveError(_saveState) ? _saveState.errorCount : 0
-  const isFirstSave = isNeverSaved(_saveState)
+  const isFirstSave = isLocal()
 
-  if (_saveState.type === 'saved' && _saveState.setTimeoutId != null) {
-    clearTimeout(_saveState.setTimeoutId)
-  }
+  clearScheduledSave()
 
   _saveState = saveInProgress(true, null, null, false)
   const name = nameChange ?? projectName
