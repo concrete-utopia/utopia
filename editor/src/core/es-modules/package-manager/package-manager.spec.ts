@@ -271,9 +271,13 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([npmDependency('react-spring', '8.0.27')], false).then((nodeModules) => {
-      expect(Object.keys(nodeModules)).toHaveLength(0)
-      done()
-    })
+    fetchNodeModules([npmDependency('react-spring', '8.0.27')], false).then(
+      (fetchNodeModulesResult) => {
+        expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
+        expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
+        expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(0)
+        done()
+      },
+    )
   })
 })
