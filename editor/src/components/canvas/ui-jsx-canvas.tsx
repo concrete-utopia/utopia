@@ -227,7 +227,7 @@ export function pickUiJsxCanvasProps(
     addToConsoleLogs: addToConsoleLogs,
     canvasIsLive: isLiveMode(editor.mode),
     shouldIncludeCanvasRootInTheSpy: true,
-    linkTags,
+    linkTags: linkTags,
   }
 }
 
