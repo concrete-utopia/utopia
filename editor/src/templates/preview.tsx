@@ -183,7 +183,7 @@ const initPreview = () => {
           pluck(fetchNodeModulesResult.dependenciesWithError, 'name'),
         )}`,
       )
-      ReactErrorOverlay.reportRuntimeError(errorToThrow) // TODO to be honest, I couldn't test this locally, but I think this will work in production
+      ReactErrorOverlay.reportRuntimeError(errorToThrow)
       throw errorToThrow
     }
 
