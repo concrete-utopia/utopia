@@ -139,6 +139,7 @@
     "react-syntax-highlighter": "12.2.1",
     "react-use-gesture": "6.0.2",
     "react-vtree": "2.0.0",
+    "react-window": "1.8.5",
     "resize-observer-polyfill": "1.5.0",
     "scheduler": "0.17.0",
     "semver": "6.0.0",
