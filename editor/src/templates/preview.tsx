@@ -23,6 +23,7 @@ import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bri
 import { fastForEach } from '../core/shared/utils'
 import { incorporateBuildResult } from '../components/custom-code/code-file'
 import { isLeft } from '../core/shared/either'
+import { pluck } from '../core/shared/array-utils'
 
 interface PolledLoadParams {
   projectId: string
@@ -176,7 +177,14 @@ const initPreview = () => {
     const npmDependencies = dependenciesFromProjectContents(projectContents)
     const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
 
-    // TODO do we want error handling here?
+    if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+      throw new Error(
+        `Could not load the following npm dependencies: ${JSON.stringify(
+          pluck(fetchNodeModulesResult.dependenciesWithError, 'name'),
+        )}`,
+      )
+    }
+
     let nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
 
     /**
