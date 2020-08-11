@@ -280,6 +280,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.FINISH_CHECKPOINT_TIMER(action, state)
     case 'ADD_MISSING_DIMENSIONS':
       return UPDATE_FNS.ADD_MISSING_DIMENSIONS(action, state)
+    case 'SET_PACKAGE_STATUS':
+      return UPDATE_FNS.SET_PACKAGE_STATUS(action, state)
     default:
       return state
   }

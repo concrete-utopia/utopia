@@ -76,6 +76,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_SAVE_ERROR':
     case 'UPDATE_NODE_MODULES_CONTENTS':
     case 'START_CHECKPOINT_TIMER':
+    case 'SET_PACKAGE_STATUS':
       return true
 
     case 'NEW':

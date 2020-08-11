@@ -28,7 +28,7 @@ import {
   getHighlightBoundsFromParseResult,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
-import { RequireFn, TypeDefinitions } from '../../../core/shared/npm-dependency-types'
+import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
   CanvasMetadataParseResult,
   CodeFile,
@@ -91,7 +91,7 @@ import {
 } from '../../custom-code/code-file'
 import { EditorModes, Mode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
-import { DefaultPackagesList } from '../../navigator/dependency-list'
+import { DefaultPackagesList, PackageDetails } from '../../navigator/dependency-list'
 import { LeftMenuTab, LeftPaneDefaultWidth } from '../../navigator/left-pane'
 import { DropTargetHint } from '../../navigator/navigator'
 import { EditorDispatch, LoginState, ProjectListing } from '../action-types'
@@ -228,6 +228,7 @@ export interface EditorState {
     skipDeepFreeze: true // when we evaluate the code files we plan to mutate the content with the eval result
     files: NodeModules
     projectFilesBuildResults: MultiFileBuildResult
+    packageStatus: PackageStatusMap
   }
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
@@ -985,6 +986,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       skipDeepFreeze: true,
       files: {},
       projectFilesBuildResults: {},
+      packageStatus: {},
     },
     selectedViews: [],
     highlightedViews: [],
