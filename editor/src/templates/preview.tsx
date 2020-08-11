@@ -178,11 +178,14 @@ const initPreview = () => {
     const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
 
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-      throw new Error(
+      ReactErrorOverlay.startReportingRuntimeErrors({})
+      const errorToThrow = Error(
         `Could not load the following npm dependencies: ${JSON.stringify(
           pluck(fetchNodeModulesResult.dependenciesWithError, 'name'),
         )}`,
       )
+      ReactErrorOverlay.reportRuntimeError(errorToThrow) // TODO to be honest, I couldn't test this locally, but I think this will work in production
+      throw errorToThrow
     }
 
     let nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
