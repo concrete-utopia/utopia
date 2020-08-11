@@ -305,8 +305,11 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
               npmDependency(editedPackageName, editedPackageVersion!),
             ]
 
+            const packageAlreadyExists = this.props.packageStatus[editedPackageName] != null
+            const loadingOrUpdating = packageAlreadyExists ? 'updating' : 'loading'
+
             this.props.editorDispatch([
-              EditorActions.setPackageStatus(editedPackageName, 'loading'),
+              EditorActions.setPackageStatus(editedPackageName, loadingOrUpdating),
               EditorActions.updatePackageJson(updatedNpmDeps),
             ])
             fetchNodeModules([npmDependency(editedPackageName, editedPackageVersion!)])
