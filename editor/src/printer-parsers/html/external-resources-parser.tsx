@@ -91,18 +91,22 @@ function getPreviewHTMLFilePath(
 ): Either<DescriptionParseError, string> {
   const packageJson = projectContents['/package.json']
   if (packageJson != null && isCodeFile(packageJson)) {
-    const parsedJSON = json5.parse(packageJson.fileContents)
-    if (parsedJSON != null && 'utopia' in parsedJSON) {
-      const htmlFilePath = parsedJSON.utopia?.html
-      if (htmlFilePath != null) {
-        return right(htmlFilePath)
+    try {
+      const parsedJSON = json5.parse(packageJson.fileContents)
+      if (parsedJSON != null && 'utopia' in parsedJSON) {
+        const htmlFilePath = parsedJSON.utopia?.html
+        if (htmlFilePath != null) {
+          return right(htmlFilePath)
+        } else {
+          return left(descriptionParseError(`An html root is not specified in package.json`))
+        }
       } else {
-        return left(descriptionParseError(`An html root is not specified in package.json`))
+        return left(
+          descriptionParseError(`'utopia' field in package.json couldn't be parsed properly`),
+        )
       }
-    } else {
-      return left(
-        descriptionParseError(`'utopia' field in package.json couldn't be parsed properly`),
-      )
+    } catch (e) {
+      return left(descriptionParseError(`package.json is not formatted correctly`))
     }
   } else {
     return left(descriptionParseError('No package.json is found in project'))
