@@ -59,7 +59,7 @@ import {
 } from '../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
 import { applyUIDMonkeyPatch, makeCanvasElementPropsSafe } from '../../utils/canvas-react-utils'
-import { flatMapEither, forEachRight, right, left } from '../../core/shared/either'
+import { flatMapEither, forEachRight, right, left, isRight } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { UtopiaRequireFn } from '../custom-code/code-file'
@@ -71,6 +71,7 @@ import {
   getOpenUIJSFileKey,
   UIFileBase64Blobs,
   ConsoleLog,
+  getIndexHtmlFileFromEditorState,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import { useDomWalker } from './dom-walker'
@@ -94,6 +95,9 @@ import { unimportCSSFile } from '../../core/shared/css-style-loader'
 import { removeAll, flatMapArray } from '../../core/shared/array-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
 import { omitWithPredicate } from '../../core/shared/object-utils'
+import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
+import { Helmet } from 'react-helmet'
+import parse from 'html-react-parser'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -143,6 +147,7 @@ export interface UiJsxCanvasProps {
   shouldIncludeCanvasRootInTheSpy: boolean // FOR ui-jsx-canvas.spec TESTS ONLY!!!! this prevents us from having to update the legacy test snapshots
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
+  linkTags: string
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -193,6 +198,16 @@ export function pickUiJsxCanvasProps(
     }
   }
   const requireFn = editor.codeResultCache.requireFn
+
+  let linkTags = ''
+  const indexHtml = getIndexHtmlFileFromEditorState(editor)
+  if (isRight(indexHtml)) {
+    const parsedLinkTags = getGeneratedExternalLinkText(indexHtml.value.fileContents)
+    if (isRight(parsedLinkTags)) {
+      linkTags = parsedLinkTags.value
+    }
+  }
+
   return {
     offset: editor.canvas.roundedCanvasOffset,
     scale: editor.canvas.scale,
@@ -212,6 +227,7 @@ export function pickUiJsxCanvasProps(
     addToConsoleLogs: addToConsoleLogs,
     canvasIsLive: isLiveMode(editor.mode),
     shouldIncludeCanvasRootInTheSpy: true,
+    linkTags,
   }
 }
 
@@ -381,6 +397,7 @@ export const UiJsxCanvas = betterReactMemo(
       clearConsoleLogs,
       addToConsoleLogs,
       canvasIsLive,
+      linkTags,
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
@@ -515,6 +532,7 @@ export const UiJsxCanvas = betterReactMemo(
 
         return (
           <CanvasErrorBoundary uiFilePath={uiFilePath} reportError={props.reportError}>
+            <Helmet>{parse(linkTags)}</Helmet>
             <MutableUtopiaContext.Provider value={mutableContextRef}>
               <RerenderUtopiaContext.Provider
                 value={{
