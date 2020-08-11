@@ -61,6 +61,7 @@ function getBoundingStringIndicesForExternalResources(
   }
 }
 
+/** Does not include the opening and closing comments */
 export function getGeneratedExternalLinkText(
   htmlFileContents: string,
 ): Either<DescriptionParseError, string> {
