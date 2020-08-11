@@ -178,7 +178,6 @@ const initPreview = () => {
     const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
 
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-      ReactErrorOverlay.startReportingRuntimeErrors({})
       const errorToThrow = Error(
         `Could not load the following npm dependencies: ${JSON.stringify(
           pluck(fetchNodeModulesResult.dependenciesWithError, 'name'),
