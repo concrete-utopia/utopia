@@ -116,6 +116,7 @@ import type {
   npmDependency,
   NpmDependency,
   PackageStatus,
+  PackageStatusMap,
 } from '../../../core/shared/npm-dependency-types'
 import {
   InstancePath,
@@ -3272,13 +3273,30 @@ export const UPDATE_FNS = {
       [action.filePath]: file,
     })
 
+    let packageLoadingStatus: PackageStatusMap = {}
+
     // Ensure dependencies are updated if the `package.json` file has been changed.
     if (action.filePath === '/package.json' && isCodeFile(file)) {
       const deps = dependenciesFromPackageJsonContents(file.fileContents)
       if (deps != null) {
-        fetchNodeModules(deps).then((nodeModules) =>
-          dispatch([updateNodeModulesContents(nodeModules, 'full-build')]),
-        )
+        packageLoadingStatus = deps.reduce((packageStatus: PackageStatusMap, dep) => {
+          packageStatus[dep.name] = { status: 'loading' }
+          return packageStatus
+        }, {})
+
+        fetchNodeModules(deps).then((fetchNodeModulesResult) => {
+          const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
+            deps,
+            fetchNodeModulesResult.dependenciesWithError,
+          )
+          const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
+            setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
+          )
+          dispatch([
+            ...packageErrorActions,
+            updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
+          ])
+        })
       }
     }
 
@@ -3288,6 +3306,13 @@ export const UPDATE_FNS = {
       canvas: {
         ...editor.canvas,
         mountCount: editor.canvas.mountCount + 1,
+      },
+      nodeModules: {
+        ...editor.nodeModules,
+        packageStatus: {
+          ...editor.nodeModules.packageStatus,
+          ...packageLoadingStatus,
+        },
       },
     }
   },
@@ -4293,7 +4318,13 @@ export async function newProject(
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
   const npmDependencies = dependenciesFromProjectContents(defaultPersistentModel.projectContents)
-  const nodeModules = await fetchNodeModules(npmDependencies)
+  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
+
+  const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
+  const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
+    npmDependencies,
+    fetchNodeModulesResult.dependenciesWithError,
+  )
 
   const codeResultCache = generateCodeResultCache(
     {},
@@ -4313,7 +4344,7 @@ export async function newProject(
         nodeModules: nodeModules,
         persistentModel: defaultPersistentModel,
         codeResultCache: codeResultCache,
-        packageResult: createLoadedPackageStatusMapFromDependencies(npmDependencies),
+        packageResult: packageResult,
       },
     ],
     'everyone',
@@ -4347,7 +4378,13 @@ export async function load(
   // this action is now async!
 
   const npmDependencies = dependenciesFromProjectContents(model.projectContents)
-  const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
+  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
+
+  const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
+  const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
+    npmDependencies,
+    fetchNodeModulesResult.dependenciesWithError,
+  )
 
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
 
@@ -4386,7 +4423,7 @@ export async function load(
         action: 'LOAD',
         model: model,
         nodeModules: nodeModules,
-        packageResult: createLoadedPackageStatusMapFromDependencies(npmDependencies),
+        packageResult: packageResult,
         codeResultCache: codeResultCache,
         title: title,
         projectId: projectId,

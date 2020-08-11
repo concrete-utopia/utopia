@@ -22,6 +22,8 @@ import { createBundle } from '../core/workers/bundler-promise'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { fastForEach } from '../core/shared/utils'
 import { incorporateBuildResult } from '../components/custom-code/code-file'
+import { isLeft } from '../core/shared/either'
+import { pluck } from '../core/shared/array-utils'
 
 interface PolledLoadParams {
   projectId: string
@@ -173,7 +175,19 @@ const initPreview = () => {
 
   const previewRender = async (projectContents: ProjectContents) => {
     const npmDependencies = dependenciesFromProjectContents(projectContents)
-    let nodeModules = await fetchNodeModules(npmDependencies)
+    const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
+
+    if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+      const errorToThrow = Error(
+        `Could not load the following npm dependencies: ${JSON.stringify(
+          pluck(fetchNodeModulesResult.dependenciesWithError, 'name'),
+        )}`,
+      )
+      ReactErrorOverlay.reportRuntimeError(errorToThrow)
+      throw errorToThrow
+    }
+
+    let nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
 
     /**
      * please note that we are passing in an empty object instead of the .d.ts files

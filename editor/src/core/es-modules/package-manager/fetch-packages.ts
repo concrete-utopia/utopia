@@ -11,10 +11,19 @@ import {
   JsdelivrResponse,
   npmDependency,
 } from '../../shared/npm-dependency-types'
-import { mapArrayToDictionary } from '../../shared/array-utils'
+import { mapArrayToDictionary, pluck } from '../../shared/array-utils'
 import { objectMap } from '../../shared/object-utils'
 import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
 import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
+import {
+  Either,
+  right,
+  left,
+  sequenceEither,
+  mapEither,
+  isLeft,
+  isRight,
+} from '../../shared/either'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 let jsDelivrCache: { [key: string]: JsdelivrResponse } = {}
@@ -113,44 +122,58 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
   return result
 }
 
+interface NodeFetchResult {
+  dependenciesWithError: Array<NpmDependency>
+  nodeModules: NodeModules
+}
+
 export async function fetchNodeModules(
   newDeps: Array<NpmDependency>,
   shouldRetry: boolean = true,
-): Promise<NodeModules> {
+): Promise<NodeFetchResult> {
   const nodeModulesArr = await Promise.all(
-    newDeps.map(async (newDep) => {
-      try {
-        const packagerResponse = shouldRetry
-          ? await fetchPackagerResponseWithRetry(newDep)
-          : await fetchPackagerResponse(newDep)
-        if (packagerResponse != null) {
-          /**
-           * to avoid clashing transitive dependencies,
-           * we "move" all transitive dependencies into a subfolder at
-           * /node_modules/<main_package>/node_modules/<transitive_dep>/
-           *
-           * the module resolution won't mind this, the only downside to this approach is
-           * that if two main dependencies share the exact same version of a transitive
-           * dependency, they will not share that transitive dependency in memory,
-           * so this is wasting a bit of memory.
-           *
-           * but it avoids two of the same transitive dependencies with different versions from
-           * overwriting each other.
-           *
-           * the real nice solution would be to apply npm's module resolution logic that
-           * pulls up shared transitive dependencies to the main /node_modules/ folder.
-           */
-          return mangleNodeModulePaths(newDep.name, packagerResponse)
-        } else {
-          return {}
+    newDeps.map(
+      async (newDep): Promise<Either<NpmDependency, NodeModules>> => {
+        try {
+          // TODO if the package version is garbage, do not spend 5 retries on download, as it takes a long time
+          const packagerResponse = shouldRetry
+            ? await fetchPackagerResponseWithRetry(newDep)
+            : await fetchPackagerResponse(newDep)
+          if (packagerResponse != null) {
+            /**
+             * to avoid clashing transitive dependencies,
+             * we "move" all transitive dependencies into a subfolder at
+             * /node_modules/<main_package>/node_modules/<transitive_dep>/
+             *
+             * the module resolution won't mind this, the only downside to this approach is
+             * that if two main dependencies share the exact same version of a transitive
+             * dependency, they will not share that transitive dependency in memory,
+             * so this is wasting a bit of memory.
+             *
+             * but it avoids two of the same transitive dependencies with different versions from
+             * overwriting each other.
+             *
+             * the real nice solution would be to apply npm's module resolution logic that
+             * pulls up shared transitive dependencies to the main /node_modules/ folder.
+             */
+            return right(mangleNodeModulePaths(newDep.name, packagerResponse))
+          } else {
+            return left(newDep)
+          }
+        } catch (e) {
+          // TODO: proper error handling, now we don't show error for a missing package. The error will be visible when you try to import
+          return left(newDep)
         }
-      } catch (e) {
-        // TODO: proper error handling, now we don't show error for a missing package. The error will be visible when you try to import
-        return Promise.resolve({})
-      }
-    }),
+      },
+    ),
   )
-  return mergeNodeModules(nodeModulesArr)
+  const errors = nodeModulesArr.filter(isLeft).map((e) => e.value)
+  const successes = nodeModulesArr.filter(isRight)
+  const nodeModules = mergeNodeModules(pluck(successes, 'value'))
+  return {
+    dependenciesWithError: errors,
+    nodeModules: nodeModules,
+  }
 }
 
 function extractFilePath(packagename: string, filepath: string): string {
