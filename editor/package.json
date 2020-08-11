@@ -103,7 +103,7 @@
     "friendly-words": "1.1.10",
     "graphlib": "2.1.1",
     "html-entities": "1.2.1",
-    "html-react-parser": "^0.13.0",
+    "html-react-parser": "0.13.0",
     "immer": "3.2.0",
     "immutability-helper": "2.4.0",
     "jest-fetch-mock": "3.0.1",
