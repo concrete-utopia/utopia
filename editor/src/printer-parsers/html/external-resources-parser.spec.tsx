@@ -1,3 +1,4 @@
+import { fontVariant } from '../../components/navigator/external-resources/google-fonts-utils'
 import { previewHtml } from '../../core/model/new-project-files'
 import { isRight } from '../../core/shared/either'
 import {
@@ -6,9 +7,9 @@ import {
   getGeneratedExternalLinkText,
   googleFontsResource,
   parseLinkTags,
+  printExternalResources,
   updateHTMLExternalResourcesLinks,
 } from './external-resources-parser'
-import { fontVariant } from '../../components/navigator/external-resources/google-fonts-utils'
 
 const testFile = `
 <!DOCTYPE html>
@@ -194,9 +195,11 @@ describe('updates external resources', () => {
   it('adds new resources', () => {
     const updated = updateHTMLExternalResourcesLinks(
       previewHtml,
-      externalResources(
-        [genericExternalResource('https://utopia.com/stylesheet.css', 'stylesheet')],
-        [googleFontsResource('Roboto', [fontVariant(400, false)])],
+      printExternalResources(
+        externalResources(
+          [genericExternalResource('https://utopia.com/stylesheet.css', 'stylesheet')],
+          [googleFontsResource('Roboto', [fontVariant(400, false)])],
+        ),
       ),
     )
     expect(updated).toMatchInlineSnapshot(`
