@@ -153,9 +153,6 @@ export function generateCodeResultCache(
   npmDependencies: NpmDependency[],
   fullBuild: BuildType,
 ): CodeResultCache {
-  let nodeModulesAndProjectFiles: NodeModules = {
-    ...nodeModules,
-  }
   // Makes the assumption that `fullBuild` and `updatedModules` are in line
   // with each other.
   let modules: MultiFileBuildResult =
@@ -165,10 +162,10 @@ export function generateCodeResultCache(
           ...existingModules,
           ...updatedModules,
         }
-  incorporateBuildResult(nodeModulesAndProjectFiles, modules)
-  const requireFn = getMemoizedRequireFn(nodeModulesAndProjectFiles, dispatch)
+  incorporateBuildResult(nodeModules, updatedModules)
+  const requireFn = getMemoizedRequireFn(nodeModules, dispatch)
 
-  const exportValues = getExportValuesFromAllModules(modules, requireFn)
+  const exportValues = getExportValuesFromAllModules(updatedModules, requireFn)
   let cache: { [code: string]: CodeResult } = {}
   let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
     npmDependencies,
