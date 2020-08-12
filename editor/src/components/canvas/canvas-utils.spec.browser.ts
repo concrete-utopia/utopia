@@ -1588,4 +1588,97 @@ describe('moveTemplate', () => {
       `),
     )
   })
+  it('canvas selection + move', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <View style={{ width: '100%', height: '100%' }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+          <View
+            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, }}
+            data-uid={'bbb'}
+          />
+          <View
+            style={{ backgroundColor: '#0091FFAA', left: 55, top: 275, width: 200, height: 105 }}
+            data-uid={'ccc'}
+          />
+        </View>
+      `),
+    )
+    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const areaControl = renderResult.renderedDOM.getByTestId(
+      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa/ccc-2',
+    )
+    const areaControlBounds = areaControl.getBoundingClientRect()
+
+    fireEvent(
+      areaControl,
+      new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: true,
+        clientX: areaControlBounds.left + 5,
+        clientY: areaControlBounds.top + 5,
+        buttons: 1,
+      }),
+    )
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        areaControl,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 45,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        window,
+        new MouseEvent('mouseup', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 45,
+          clientY: areaControlBounds.top - 25,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+      makeTestProjectCodeWithSnippet(`
+      <View
+          style={{ width: '100%', height: '100%' }}
+          layout={{ layoutSystem: 'pinSystem' }}
+          data-uid={'aaa'}
+        >
+          <View
+            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
+            data-uid={'bbb'}
+          />
+          <View
+            style={{ backgroundColor: '#0091FFAA', width: 200, height: 105, left: 95, top: 245 }}
+            data-uid={'ccc'}
+          />
+        </View>
+      `),
+    )
+  })
 })
