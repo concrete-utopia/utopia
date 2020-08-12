@@ -245,6 +245,9 @@ export const MetadataUtils = {
     const scenePath = TP.scenePathForPath(path)
     return scenes.find((s) => TP.pathsEqual(s.scenePath, scenePath)) ?? null
   },
+  isSceneTreatedAsDynamic(scene: ComponentMetadata | null): boolean {
+    return scene?.type === 'dynamic' && scene.style.width == null && scene.style.height == null
+  },
   getElementInstanceMetadataAlongPath(
     components: Array<ComponentMetadata>,
     target: InstancePath,

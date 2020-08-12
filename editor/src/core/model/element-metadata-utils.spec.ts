@@ -107,6 +107,10 @@ const testComponentScene: ComponentMetadata = {
     width: 100,
     height: 100,
   }),
+  style: {
+    width: 100,
+    height: 100,
+  },
 }
 
 const testComponentMetadata: Array<ComponentMetadata> = [testComponentScene]
@@ -363,6 +367,10 @@ describe('getElementLabel', () => {
         width: 100,
         height: 100,
       }),
+      style: {
+        width: 100,
+        height: 100,
+      },
     },
   ]
   it('the label of a spin containing text is that text', () => {

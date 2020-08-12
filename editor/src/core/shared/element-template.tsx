@@ -979,6 +979,7 @@ export interface ComponentMetadata {
   globalFrame: CanvasRectangle | null
   type: 'static' | 'dynamic'
   label?: string
+  style: React.CSSProperties
 }
 
 export function isComponentMetadata(
