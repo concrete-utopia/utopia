@@ -497,3 +497,8 @@ export function traverseForPreparsedLayers(
     }
   }
 }
+
+export function cssValueOnlyContainsComments(cssValue: string): boolean {
+  const layers = traverseForPreparsedLayers(cssValue)
+  return layers.every((l) => l.enabled === false)
+}

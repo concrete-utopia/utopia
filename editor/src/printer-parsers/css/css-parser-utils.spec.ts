@@ -1,4 +1,8 @@
-import { preparsedLayer, traverseForPreparsedLayers } from './css-parser-utils'
+import {
+  preparsedLayer,
+  traverseForPreparsedLayers,
+  cssValueOnlyContainsComments,
+} from './css-parser-utils'
 
 describe('preparse layers', () => {
   it('preparses backgroundSize', () => {
@@ -10,5 +14,27 @@ describe('preparse layers', () => {
       preparsedLayer('auto', false),
       preparsedLayer('100px auto', true),
     ])
+  })
+})
+
+describe('cssValueOnlyContainsComments', () => {
+  it('identifies single comment', () => {
+    const testStringOnlyComments = '/*green*/'
+    expect(cssValueOnlyContainsComments(testStringOnlyComments)).toBeTruthy()
+  })
+
+  it('identifies multiple comments and no value', () => {
+    const testStringOnlyComments = '/*red*/ /*green*/'
+    expect(cssValueOnlyContainsComments(testStringOnlyComments)).toBeTruthy()
+  })
+
+  it('identifies one comment and one real value', () => {
+    const testStringWithValue = 'red /*green*/'
+    expect(cssValueOnlyContainsComments(testStringWithValue)).toBeFalsy()
+  })
+
+  it('identifies one comment and one real value', () => {
+    const testStringWithValue = '/*red*/ green'
+    expect(cssValueOnlyContainsComments(testStringWithValue)).toBeFalsy()
   })
 })

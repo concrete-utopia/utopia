@@ -94,10 +94,11 @@ import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import { unimportCSSFile } from '../../core/shared/css-style-loader'
 import { removeAll, flatMapArray } from '../../core/shared/array-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
-import { omitWithPredicate } from '../../core/shared/object-utils'
+import { omitWithPredicate, objectMap } from '../../core/shared/object-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
+import { cssValueOnlyContainsComments } from '../../printer-parsers/css/css-parser-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -260,6 +261,44 @@ function runJSXArbitraryBlock(
   }
 }
 
+function fixStyleObjectRemoveCommentOnlyValues(props: Readonly<unknown>): any {
+  if (typeof props === 'object' && 'style' in props) {
+    const propsAsAny = props as any
+    const style = propsAsAny.style
+    const fixedStyle: any = objectMap((styleProp) => {
+      if (typeof styleProp === 'string' && cssValueOnlyContainsComments(styleProp)) {
+        /**
+         * see https://github.com/facebook/react/issues/19477
+         * our problem: we store the disabled style values as commented out,
+         * and we allow a style prop to only contain commented out values.
+         *
+         * This is fine if you render something from scratch, so this will never be an issue for our users.
+         *
+         * But in the case of the canvas, when you change the value from _something_ to _only comments_,
+         * we expect the DOM API to clear out the previous value. The real behavior however is to ignore the comments-only new value,
+         * and keep the old value alive.
+         *
+         * Solution: we explicitly mange the style prop such that if a property only contains comments, we replace it with a `null`,
+         * which the DOM API will treat as "remove existing value" as expected.
+         *
+         * Example: { backgroundColor: '\/*red*\/ \/*green*\/' } should disable the backgroundColor, so we will
+         * replace it with { backgroundColor: null } in the Canvas.
+         */
+        return null
+      } else {
+        return styleProp
+      }
+    }, style)
+    return {
+      ...propsAsAny,
+      style: fixedStyle,
+    }
+  } else {
+    // no style props, just return the props object without mangling
+    return props
+  }
+}
+
 function renderComponentUsingJsxFactoryFunction(
   inScope: MapLike<any>,
   factoryFunctionName: string | null,
@@ -267,6 +306,7 @@ function renderComponentUsingJsxFactoryFunction(
   props: any,
   ...children: Array<any>
 ): any {
+  const fixedProps = fixStyleObjectRemoveCommentOnlyValues(props)
   let factoryFunction: Function = React.createElement
   if (factoryFunctionName != null) {
     if (factoryFunctionName in inScope) {
@@ -282,7 +322,7 @@ function renderComponentUsingJsxFactoryFunction(
       ? innerChildren[0]
       : innerChildren,
   )
-  return factoryFunction.call(null, type, props, ...childrenToRender)
+  return factoryFunction.call(null, type, fixedProps, ...childrenToRender)
 }
 
 interface MutableUtopiaContextProps {
