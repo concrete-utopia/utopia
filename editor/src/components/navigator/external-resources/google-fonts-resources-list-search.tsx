@@ -11,27 +11,26 @@ import { betterReactMemo, Utils } from '../../../uuiui-deps'
 import { UseSubmitValueFactory } from '../../inspector/common/property-path-hooks'
 import {
   fontFamilyData,
-  fontFamilyVariant,
+  webFontFamilyVariant,
   FontNode,
   FontsRoot,
   fontVariantData,
-  GoogleFontVariantIdentifier,
-  GoogleWebFontsURL,
-  parseAndSortVariants,
-  FontFamilyVariant,
+  googleVariantStringsIntoWebFontVariants,
+  WebFontFamilyVariant,
 } from './google-fonts-utils'
 import { GoogleFontsListItem } from './google-fonts-variant-list-item'
+import { googleFontsList } from '../../../../assets/google-fonts-list'
 
 interface GoogleFontsResourcesListSearchProps {
   linkedResources: Array<GoogleFontsResource>
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 }
 
-export type PushNewFontFamilyVariant = (newValue: FontFamilyVariant) => void
-export type RemoveFontFamilyVariant = (valueToDelete: FontFamilyVariant) => void
+export type PushNewFontFamilyVariant = (newValue: WebFontFamilyVariant) => void
+export type RemoveFontFamilyVariant = (valueToDelete: WebFontFamilyVariant) => void
 
 function updatePushNewFontFamilyVariant(
-  newValue: FontFamilyVariant,
+  newValue: WebFontFamilyVariant,
   oldValue: ExternalResources,
 ): ExternalResources {
   return {
@@ -39,7 +38,7 @@ function updatePushNewFontFamilyVariant(
     googleFontsResources: (() => {
       let workingGoogleFontsResources = [...oldValue.googleFontsResources]
       const existingFamilyResourceIndex = workingGoogleFontsResources.findIndex(
-        (resource) => resource.fontFamily === newValue.fontFamily,
+        (resource) => resource.fontFamily === newValue.familyName,
       )
       if (existingFamilyResourceIndex > -1) {
         let workingGoogleFontsResource: GoogleFontsResource = {
@@ -55,7 +54,7 @@ function updatePushNewFontFamilyVariant(
         workingGoogleFontsResources[existingFamilyResourceIndex] = workingGoogleFontsResource
       } else {
         workingGoogleFontsResources.push(
-          googleFontsResource(newValue.fontFamily, [newValue.fontVariant]),
+          googleFontsResource(newValue.familyName, [newValue.fontVariant]),
         )
       }
       return workingGoogleFontsResources
@@ -64,7 +63,7 @@ function updatePushNewFontFamilyVariant(
 }
 
 function updateRemoveFontFamilyVariant(
-  valueToDelete: FontFamilyVariant,
+  valueToDelete: WebFontFamilyVariant,
   oldValue: ExternalResources,
 ): ExternalResources {
   return {
@@ -72,15 +71,15 @@ function updateRemoveFontFamilyVariant(
     googleFontsResources: (() => {
       let workingGoogleFontsResources = [...oldValue.googleFontsResources]
       const familyIndex = workingGoogleFontsResources.findIndex(
-        (resource) => resource.fontFamily === valueToDelete.fontFamily,
+        (resource) => resource.fontFamily === valueToDelete.familyName,
       )
       if (familyIndex > -1) {
         let workingGoogleFontsResource = workingGoogleFontsResources[familyIndex]
         let workingVariants = [...workingGoogleFontsResource.variants]
         const variantIndex = workingVariants.findIndex(
           (variant) =>
-            variant.italic === valueToDelete.fontVariant.italic &&
-            variant.weight === valueToDelete.fontVariant.weight,
+            variant.webFontStyle === valueToDelete.fontVariant.webFontStyle &&
+            variant.webFontWeight === valueToDelete.fontVariant.webFontWeight,
         )
         if (variantIndex > -1) {
           if (workingVariants.length > 1) {
@@ -99,14 +98,11 @@ function updateRemoveFontFamilyVariant(
 
 export const GoogleFontsResourcesListItemHeight = 26
 
-type GoogleFontsItems = Array<{ family: string; variants: Array<GoogleFontVariantIdentifier> }>
-
 export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourcesListSearchProps>(
   'GoogleFontsResourcesListSearch',
   ({ linkedResources, useSubmitValueFactory }) => {
     const [pushNewFontFamilyVariant] = useSubmitValueFactory(updatePushNewFontFamilyVariant)
     const [removeFontFamilyVariant] = useSubmitValueFactory(updateRemoveFontFamilyVariant)
-    const [fontData, setFontData] = React.useState<GoogleFontsItems>([])
 
     const tree = React.useMemo<FontsRoot>(
       () => ({
@@ -114,11 +110,11 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
         type: 'root',
         isOpenByDefault: true,
         children: Utils.stripNulls(
-          fontData.map((fontDatum) => {
+          googleFontsList.map((fontDatum) => {
             const linkedVariants = linkedResources.find(
               (resource) => resource.fontFamily === fontDatum.family,
             )
-            const parsedAndSorted = parseAndSortVariants(fontDatum.variants)
+            const parsedAndSorted = googleVariantStringsIntoWebFontVariants(fontDatum.variants)
             if (isRight(parsedAndSorted)) {
               return fontFamilyData(
                 fontDatum.family,
@@ -126,11 +122,11 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
                   const isDownloaded =
                     (linkedVariants?.variants.findIndex(
                       (linkedVariant) =>
-                        linkedVariant.italic === variant.italic &&
-                        linkedVariant.weight === variant.weight,
+                        linkedVariant.webFontStyle === variant.webFontStyle &&
+                        linkedVariant.webFontWeight === variant.webFontWeight,
                     ) ?? -1) >= 0
                   return fontVariantData(
-                    fontFamilyVariant(fontDatum.family, variant),
+                    webFontFamilyVariant(fontDatum.family, variant),
                     isDownloaded,
                     pushNewFontFamilyVariant,
                     removeFontFamilyVariant,
@@ -143,7 +139,7 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
           }),
         ),
       }),
-      [fontData, linkedResources, pushNewFontFamilyVariant, removeFontFamilyVariant],
+      [linkedResources, pushNewFontFamilyVariant, removeFontFamilyVariant],
     )
 
     const treeWalker: TreeWalker<FontNode> = React.useCallback(
@@ -158,7 +154,7 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
         // Walk through the tree until we have no nodes available.
         while (stack.length !== 0) {
           const {
-            node: { children = [], id, type, fontFamily, variant, isOpenByDefault, isDownloaded },
+            node: { children = [], id, type, familyName, variant, isOpenByDefault, isDownloaded },
             nestingLevel,
           } = stack.pop() as any
 
@@ -175,7 +171,7 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
                 isOpenByDefault,
                 nestingLevel,
                 type,
-                fontFamily,
+                familyName,
                 variant,
                 isDownloaded,
                 pushNewFontFamilyVariant,
@@ -199,14 +195,6 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
       },
       [pushNewFontFamilyVariant, removeFontFamilyVariant, tree],
     )
-
-    React.useEffect(() => {
-      fetch(GoogleWebFontsURL).then((response) => {
-        response.json().then((responseData: { items: GoogleFontsItems }) => {
-          setFontData(responseData.items)
-        })
-      })
-    }, [])
 
     return (
       <FixedSizeTree
