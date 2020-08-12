@@ -579,6 +579,7 @@ function getStoryboardRoot(
     templatePath: TP.instancePath([], []),
     globalFrame: null,
     label: 'Storyboard',
+    style: {},
   }
 
   return {
@@ -843,6 +844,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     type: isStatic ? 'static' : 'dynamic',
     globalFrame: null, // the real frame comes from the DOM walker
     label: props.sceneLabel,
+    style: style,
   }
   if (rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy) {
     metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
