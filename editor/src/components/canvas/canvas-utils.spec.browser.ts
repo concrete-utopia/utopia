@@ -1588,7 +1588,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  it('canvas selection + move', async () => {
+  it('canvas select a sibling and drag immediately', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ width: '100%', height: '100%' }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
