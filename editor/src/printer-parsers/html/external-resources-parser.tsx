@@ -401,7 +401,10 @@ export function getExternalResourcesInfo(
       const parsedExternalResources = parseLinkTags(parsedLinkTagsText.value)
       if (isRight(parsedExternalResources)) {
         function onSubmitValue(newValue: ExternalResources) {
-          const updatedCodeFileContents = updateHTMLExternalResourcesLinks(fileContents, newValue)
+          const updatedCodeFileContents = updateHTMLExternalResourcesLinks(
+            fileContents,
+            printExternalResources(newValue),
+          )
           if (isRight(updatedCodeFileContents)) {
             dispatch([
               updateFile(
