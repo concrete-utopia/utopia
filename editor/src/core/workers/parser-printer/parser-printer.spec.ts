@@ -70,7 +70,7 @@ import {
 } from '../../model/scene-utils'
 
 describe('JSX parser', () => {
-  it('parses the code when it is a function', () => {
+  it('parses the code when it is a const', () => {
     const code = `import * as React from "react";
 import {
   Ellipse,
@@ -85,6 +85,126 @@ import { cake } from 'cake'
 export var whatever = (props) => <View data-uid={'aaa'}>
   <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
+`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const cakeAttributes: JSXAttributes = {
+      'data-uid': jsxAttributeValue('aab'),
+      style: jsxAttributeValue({ backgroundColor: 'red' }),
+      left: jsxAttributeOtherJavaScript(
+        'props.leftOfTheCake[0].hat',
+        'return props.leftOfTheCake[0].hat;',
+        ['props'],
+        expect.objectContaining({}),
+      ),
+      right: jsxAttributeValue(20),
+      top: jsxAttributeValue(-20),
+    }
+    const cake = jsxElement('cake', cakeAttributes, [], null)
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake], null)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      ['leftOfTheCake'],
+      view,
+      null,
+    )
+    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const expectedResult = clearParseResultUniqueIDs(
+      right(
+        parseSuccess(
+          imports,
+          [exported, EmptyUtopiaCanvasComponent],
+          right(defaultCanvasMetadata()),
+          false,
+          code,
+          expect.objectContaining({}),
+          expect.arrayContaining([]),
+          null,
+        ),
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('parses the code when it is a function', () => {
+    const code = `import * as React from "react";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from "utopia-api";
+import { cake } from 'cake'
+export function whatever(props) {
+  return (
+    <View data-uid={'aaa'}>
+      <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+    </View>
+  )
+}
+`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const cakeAttributes: JSXAttributes = {
+      'data-uid': jsxAttributeValue('aab'),
+      style: jsxAttributeValue({ backgroundColor: 'red' }),
+      left: jsxAttributeOtherJavaScript(
+        'props.leftOfTheCake[0].hat',
+        'return props.leftOfTheCake[0].hat;',
+        ['props'],
+        expect.objectContaining({}),
+      ),
+      right: jsxAttributeValue(20),
+      top: jsxAttributeValue(-20),
+    }
+    const cake = jsxElement('cake', cakeAttributes, [], null)
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake], null)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      ['leftOfTheCake'],
+      view,
+      null,
+    )
+    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const expectedResult = clearParseResultUniqueIDs(
+      right(
+        parseSuccess(
+          imports,
+          [exported, EmptyUtopiaCanvasComponent],
+          right(defaultCanvasMetadata()),
+          false,
+          code,
+          expect.objectContaining({}),
+          expect.arrayContaining([]),
+          null,
+        ),
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('parses the code when it is an export default function', () => {
+    const code = `import * as React from "react";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from "utopia-api";
+import { cake } from 'cake'
+export default function whatever(props) {
+  return (
+    <View data-uid={'aaa'}>
+      <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+    </View>
+  )
+}
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
