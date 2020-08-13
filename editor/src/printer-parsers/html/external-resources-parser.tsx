@@ -344,7 +344,7 @@ function replaceSafeGoogleFontsCharacters(value: string): string {
   return value.replace(/%3A/g, ':').replace(/%3B/g, ';').replace(/%2C/g, ',').replace(/%40/g, '@')
 }
 
-function printExternalResources(value: ExternalResources): string {
+export function printExternalResources(value: ExternalResources): string {
   const generic = value.genericExternalResources.map((resource) => {
     return `<link href="${resource.href}" rel="${resource.rel}">`
   })
@@ -361,7 +361,7 @@ function printExternalResources(value: ExternalResources): string {
 
 export function updateHTMLExternalResourcesLinks(
   currentFileContents: string,
-  newExternalResources: ExternalResources,
+  newExternalResources: string,
 ): Either<DescriptionParseError, string> {
   const parsedIndices = getBoundingStringIndicesForExternalResources(currentFileContents)
   if (isRight(parsedIndices)) {
@@ -372,7 +372,7 @@ export function updateHTMLExternalResourcesLinks(
       before +
         generatedExternalResourcesLinksOpen +
         '\n    ' +
-        printExternalResources(newExternalResources) +
+        newExternalResources +
         '\n    ' +
         generatedExternalResourcesLinksClose +
         after,
@@ -405,7 +405,10 @@ export function getExternalResourcesInfo(
       const parsedExternalResources = parseLinkTags(parsedLinkTagsText.value)
       if (isRight(parsedExternalResources)) {
         function onSubmitValue(newValue: ExternalResources) {
-          const updatedCodeFileContents = updateHTMLExternalResourcesLinks(fileContents, newValue)
+          const updatedCodeFileContents = updateHTMLExternalResourcesLinks(
+            fileContents,
+            printExternalResources(newValue),
+          )
           if (isRight(updatedCodeFileContents)) {
             dispatch([
               updateFile(
