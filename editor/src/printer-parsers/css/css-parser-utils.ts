@@ -464,7 +464,7 @@ export function traverseForPreparsedLayers(
       if (remaining[1] === '*') {
         const trimmedWorkingValue = workingValue.trim()
         if (trimmedWorkingValue !== '') {
-          layers.push(preparsedLayer(trimmedWorkingValue, false))
+          layers.push(preparsedLayer(trimmedWorkingValue, !inComment))
         }
         return traverseForPreparsedLayers(remaining.slice(2), true, layers, '')
       } else {
@@ -496,4 +496,9 @@ export function traverseForPreparsedLayers(
       )
     }
   }
+}
+
+export function cssValueOnlyContainsComments(cssValue: string): boolean {
+  const layers = traverseForPreparsedLayers(cssValue)
+  return layers.every((l) => l.enabled === false)
 }
