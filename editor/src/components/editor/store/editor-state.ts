@@ -1311,7 +1311,11 @@ export function packageJsonFileFromProjectContents(
 }
 
 export function getMainUIFromModel(model: { projectContents: ProjectContents }): string | null {
-  const packageJsonFile = packageJsonFileFromProjectContents(model.projectContents)
+  const packageJsonFile = Utils.forceNotNull(
+    'No package.json file.',
+    packageJsonFileFromProjectContents(model.projectContents),
+  )
+
   const packageJsonContents = isCodeFile(packageJsonFile)
     ? Utils.jsonParseOrNull(packageJsonFile.fileContents)
     : null
