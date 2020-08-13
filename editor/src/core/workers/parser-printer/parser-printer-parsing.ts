@@ -337,7 +337,7 @@ function turnCodeSnippetIntoSourceMapNodes(
   startLine: number,
   startChar: number,
   sourceCode: string,
-  stripExport: boolean,
+  nodeIsExported: boolean,
 ): typeof SourceNode {
   const LetterOrNumber = /[a-zA-Z0-9]/
   const NewLine = /\n/
@@ -348,11 +348,15 @@ function turnCodeSnippetIntoSourceMapNodes(
   let bufferStartChar = currentCol
   let currentStringBuffer = ''
   let exportFound = false
+  let defaultFound = false
   function flushBuffer() {
-    // We should ignore the first "export" keyword we find if stripExport is true
-    const skip = stripExport && !exportFound && currentStringBuffer === 'export'
-    if (skip) {
+    // We should ignore the first "export" and "default" keywords we find if the node is exported
+    const strippingExport = nodeIsExported && !exportFound && currentStringBuffer === 'export'
+    const strippingDefault = nodeIsExported && !defaultFound && currentStringBuffer === 'default'
+    if (strippingExport) {
       exportFound = true
+    } else if (strippingDefault) {
+      defaultFound = true
     } else {
       const node = new SourceNode(
         bufferStartLine + 1,
