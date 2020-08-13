@@ -15,6 +15,18 @@ describe('preparse layers', () => {
       preparsedLayer('100px auto', true),
     ])
   })
+
+  it('handles a first non-commented item followed by commented items', () => {
+    const testString = 'auto /* auto */ cover, /*auto,*/ /*auto*/ 100px auto'
+    expect(traverseForPreparsedLayers(testString)).toMatchObject([
+      preparsedLayer('auto', true),
+      preparsedLayer('auto', false),
+      preparsedLayer('cover', true),
+      preparsedLayer('auto', false),
+      preparsedLayer('auto', false),
+      preparsedLayer('100px auto', true),
+    ])
+  })
 })
 
 describe('cssValueOnlyContainsComments', () => {
