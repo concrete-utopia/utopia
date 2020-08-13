@@ -1,25 +1,28 @@
 import * as React from 'react'
 import { FixedSizeTree } from 'react-vtree'
 import { TreeWalker } from 'react-vtree/dist/es/Tree'
+import { googleFontsList } from '../../../../assets/google-fonts-list'
 import { isRight } from '../../../core/shared/either'
 import {
   ExternalResources,
   GoogleFontsResource,
   googleFontsResource,
 } from '../../../printer-parsers/html/external-resources-parser'
+import { StringInput } from '../../../uuiui'
 import { betterReactMemo, Utils } from '../../../uuiui-deps'
 import { UseSubmitValueFactory } from '../../inspector/common/property-path-hooks'
 import {
   fontFamilyData,
-  webFontFamilyVariant,
+  FontFamilyData,
   FontNode,
   FontsRoot,
+  FontVariantData,
   fontVariantData,
   googleVariantStringsIntoWebFontVariants,
+  webFontFamilyVariant,
   WebFontFamilyVariant,
 } from './google-fonts-utils'
 import { GoogleFontsListItem } from './google-fonts-variant-list-item'
-import { googleFontsList } from '../../../../assets/google-fonts-list'
 
 interface GoogleFontsResourcesListSearchProps {
   linkedResources: Array<GoogleFontsResource>
@@ -101,6 +104,8 @@ export const GoogleFontsResourcesListItemHeight = 26
 export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourcesListSearchProps>(
   'GoogleFontsResourcesListSearch',
   ({ linkedResources, useSubmitValueFactory }) => {
+    const [searchTerm, setSearchTerm] = React.useState('')
+    const lowerCaseSearchTerm = searchTerm.toLowerCase()
     const [pushNewFontFamilyVariant] = useSubmitValueFactory(updatePushNewFontFamilyVariant)
     const [removeFontFamilyVariant] = useSubmitValueFactory(updateRemoveFontFamilyVariant)
 
@@ -153,10 +158,14 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
 
         // Walk through the tree until we have no nodes available.
         while (stack.length !== 0) {
-          const {
-            node: { children = [], id, type, familyName, variant, isOpenByDefault, isDownloaded },
-            nestingLevel,
-          } = stack.pop() as any
+          const { node, nestingLevel } = stack.pop() as any
+          const { id, type, familyName, variant, isOpenByDefault, isDownloaded } = node
+          let children: Array<FontFamilyData | FontVariantData> = node.children ?? []
+          if (type === 'root') {
+            children = (children as Array<FontFamilyData>).filter((child) =>
+              child.familyName.toLowerCase().includes(lowerCaseSearchTerm),
+            )
+          }
 
           // Here we are sending the information about the node to the Tree component
           // and receive an information about the openness state from it. The
@@ -193,18 +202,26 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
           }
         }
       },
-      [pushNewFontFamilyVariant, removeFontFamilyVariant, tree],
+      [pushNewFontFamilyVariant, removeFontFamilyVariant, tree, lowerCaseSearchTerm],
+    )
+
+    const onChange = React.useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value),
+      [],
     )
 
     return (
-      <FixedSizeTree
-        width={227}
-        height={300}
-        itemSize={GoogleFontsResourcesListItemHeight}
-        treeWalker={treeWalker}
-      >
-        {GoogleFontsListItem}
-      </FixedSizeTree>
+      <div>
+        <StringInput placeholder='Search for fonts…' value={searchTerm} onChange={onChange} />
+        <FixedSizeTree
+          width={227}
+          height={300}
+          itemSize={GoogleFontsResourcesListItemHeight}
+          treeWalker={treeWalker}
+        >
+          {GoogleFontsListItem}
+        </FixedSizeTree>
+      </div>
     )
   },
 )

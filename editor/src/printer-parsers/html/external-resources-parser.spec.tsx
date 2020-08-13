@@ -7,6 +7,7 @@ import {
   getGeneratedExternalLinkText,
   googleFontsResource,
   parseLinkTags,
+  printExternalResources,
   updateHTMLExternalResourcesLinks,
 } from './external-resources-parser'
 
@@ -194,9 +195,11 @@ describe('updates external resources', () => {
   it('adds new resources', () => {
     const updated = updateHTMLExternalResourcesLinks(
       previewHtml,
-      externalResources(
-        [genericExternalResource('https://utopia.com/stylesheet.css', 'stylesheet')],
-        [googleFontsResource('Roboto', [webFontVariant(400, 'normal')])],
+      printExternalResources(
+        externalResources(
+          [genericExternalResource('https://utopia.com/stylesheet.css', 'stylesheet')],
+          [googleFontsResource('Roboto', [webFontVariant(400, 'normal')])],
+        ),
       ),
     )
     expect(updated).toMatchInlineSnapshot(`
