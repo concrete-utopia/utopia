@@ -112,9 +112,9 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
                   },
                 ],
               },
@@ -124,24 +124,24 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
                   },
                   Object {
-                    "italic": true,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "italic",
+                    "webFontWeight": 400,
                   },
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 600,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 600,
                   },
                   Object {
-                    "italic": true,
-                    "type": "font-variant",
-                    "weight": 600,
+                    "type": "web-font-variant",
+                    "webFontStyle": "italic",
+                    "webFontWeight": 600,
                   },
                 ],
               },
@@ -151,9 +151,9 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
                   },
                 ],
               },
@@ -163,9 +163,9 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
                   },
                 ],
               },
@@ -175,9 +175,9 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
                   },
                 ],
               },
