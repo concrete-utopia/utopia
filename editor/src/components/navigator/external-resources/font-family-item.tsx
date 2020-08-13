@@ -20,7 +20,7 @@ export const FontFamilyItem: React.FunctionComponent<FontFamilyItem> = ({
       <div style={{ paddingLeft: 4, paddingRight: 4 }}>
         {isOpen ? <Icons.ExpansionArrowDown /> : <Icons.ExpansionArrowRight />}
       </div>
-      <div style={{ flexGrow: 1, paddingBottom: 3 }}>{data.fontFamily}</div>
+      <div style={{ flexGrow: 1, paddingBottom: 3 }}>{data.familyName}</div>
     </FlexRow>
   )
 }
