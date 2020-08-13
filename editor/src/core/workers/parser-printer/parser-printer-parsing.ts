@@ -105,7 +105,9 @@ export function getPropertyNameText(
 }
 
 export function isExported(node: TS.Node): boolean {
-  if (node.modifiers == null) {
+  if (TS.isExportAssignment(node)) {
+    return true
+  } else if (node.modifiers == null) {
     return false
   } else {
     return node.modifiers.some((modifier) => modifier.kind === TS.SyntaxKind.ExportKeyword)
