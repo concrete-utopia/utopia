@@ -151,21 +151,33 @@ export function generateCodeResultCache(
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
   npmDependencies: NpmDependency[],
-  fullBuild: BuildType,
+  buildType: BuildType,
+  mainUiFileName: string | null,
 ): CodeResultCache {
   // Makes the assumption that `fullBuild` and `updatedModules` are in line
   // with each other.
   let modules: MultiFileBuildResult =
-    fullBuild === 'full-build'
+    buildType === 'full-build'
       ? { ...updatedModules }
       : {
           ...existingModules,
           ...updatedModules,
         }
-  incorporateBuildResult(nodeModules, updatedModules)
+
+  // FIXME Rip this awful hack out after we tackle the dependency graph work!
+  // Sneaky hack - if the currently edited file is a canvas file, we don't re-evaluate any other files
+  const updatedFileNames = Object.keys(updatedModules)
+  const onlyCanvasFileUpdated =
+    buildType === 'incremental' &&
+    mainUiFileName != null &&
+    updatedFileNames.length === 1 &&
+    (updatedFileNames[0] === mainUiFileName || updatedFileNames[0] === `/${mainUiFileName}`)
+  const modulesToUpdate = onlyCanvasFileUpdated ? updatedModules : modules
+
+  incorporateBuildResult(nodeModules, modulesToUpdate)
   const requireFn = getMemoizedRequireFn(nodeModules, dispatch)
 
-  const exportValues = getExportValuesFromAllModules(updatedModules, requireFn)
+  const exportValues = getExportValuesFromAllModules(modules, requireFn)
   let cache: { [code: string]: CodeResult } = {}
   let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
     npmDependencies,

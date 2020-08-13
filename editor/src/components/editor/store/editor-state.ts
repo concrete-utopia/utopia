@@ -981,7 +981,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
     projectContents: {},
-    codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, [], 'full-build'),
+    codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, [], 'full-build', null),
     nodeModules: {
       skipDeepFreeze: true,
       files: {},
@@ -1311,10 +1311,7 @@ export function packageJsonFileFromProjectContents(
 }
 
 export function getMainUIFromModel(model: { projectContents: ProjectContents }): string | null {
-  const packageJsonFile = Utils.forceNotNull(
-    'No package.json file.',
-    packageJsonFileFromProjectContents(model.projectContents),
-  )
+  const packageJsonFile = packageJsonFileFromProjectContents(model.projectContents)
   const packageJsonContents = isCodeFile(packageJsonFile)
     ? Utils.jsonParseOrNull(packageJsonFile.fileContents)
     : null

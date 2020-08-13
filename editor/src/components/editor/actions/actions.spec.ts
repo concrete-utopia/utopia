@@ -872,7 +872,7 @@ describe('LOAD', () => {
       model: loadedModel,
       nodeModules: {},
       packageResult: {},
-      codeResultCache: generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build'),
+      codeResultCache: generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build', null),
       title: '',
       projectId: '',
       storedState: null,

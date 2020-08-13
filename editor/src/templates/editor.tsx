@@ -41,6 +41,7 @@ import {
   createEditorState,
   deriveState,
   EditorStore,
+  getMainUIFromModel,
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
@@ -137,6 +138,7 @@ export class Editor {
               this.boundDispatch,
               dependenciesFromProjectContents(this.storedState.editor.projectContents),
               msg.buildType,
+              getMainUIFromModel(this.storedState.editor),
             )
 
             if (codeResultCache != null) {
