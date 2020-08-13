@@ -10,6 +10,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getJSXElementNameAsString, isJSXElement } from '../../../core/shared/element-template'
 import Utils from '../../../utils/utils'
 import { eitherToMaybe } from '../../../core/shared/either'
+import { determineElementsToOperateOnForDragging } from './select-mode/move-utils'
 
 interface SizeBoxLabelProps {
   visible: boolean
@@ -51,7 +52,12 @@ export const SizeBoxLabel = (props: SizeBoxLabelProps) => {
 const ResizeLabel = (props: SizeBoxLabelProps) => {
   // target element name and path
   const metadata = useEditorState((state) => state.editor.jsxMetadataKILLME)
-  const targets = props.dragState?.draggedElements ?? []
+  const targets = determineElementsToOperateOnForDragging(
+    props.dragState?.draggedElements ?? [],
+    metadata,
+    false,
+    true,
+  )
   let elementNames: string[] = []
   Utils.fastForEach(targets, (target) => {
     if (TP.isScenePath(target)) {
