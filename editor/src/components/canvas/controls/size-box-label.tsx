@@ -50,7 +50,6 @@ export const SizeBoxLabel = (props: SizeBoxLabelProps) => {
 }
 
 const ResizeLabel = (props: SizeBoxLabelProps) => {
-  // target element name and path
   const metadata = useEditorState((state) => state.editor.jsxMetadataKILLME)
   const targets = determineElementsToOperateOnForDragging(
     props.dragState?.draggedElements ?? [],
