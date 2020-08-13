@@ -26,6 +26,7 @@ import { ComponentMetadata } from '../../../core/shared/element-template'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { betterReactMemo } from '../../../uuiui-deps'
+import { SizeBoxLabel } from './size-box-label'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -92,9 +93,6 @@ class ResizeControl extends React.Component<ResizeControlProps, {}> {
 
     const labelLeft = left + 20 / this.props.scale
     const labelTop = top + 20 / this.props.scale
-    const fontSize = ControlFontSize / this.props.scale
-    const borderRadius = 2 / this.props.scale
-    const padding = 2 / this.props.scale
     const shouldShowSizeLabel =
       this.props.dragState?.edgePosition.x === this.props.position.x &&
       this.props.dragState?.edgePosition.y === this.props.position.y
@@ -105,46 +103,15 @@ class ResizeControl extends React.Component<ResizeControlProps, {}> {
         ) : (
           this.props.children
         )}
-        <div
-          style={{
-            position: 'fixed',
-            left: labelLeft,
-            top: labelTop,
-            display: shouldShowSizeLabel ? 'block' : 'none',
-            fontSize: fontSize,
-            borderRadius: borderRadius,
-            whiteSpace: 'nowrap',
-            overflow: 'visible',
-            padding: padding,
-            zIndex: 99999,
-            backgroundColor: colorTheme.resizingDisplayBackground.value,
-            color: colorTheme.resizingDisplayForeground.value,
-            cursor: this.props.resizeStatus === 'enabled' ? this.props.cursor : undefined,
-          }}
-        >
-          <table
-            style={{
-              padding: padding,
-              borderCollapse: 'collapse',
-            }}
-          >
-            <tbody>
-              <tr>
-                <td style={{ padding: padding }}>W:</td>
-                <td style={{ padding: padding }}>{currentSize.width}</td>
-              </tr>
-              <tr>
-                <td style={{ padding: padding }}>H:</td>
-                <td style={{ padding: padding }}>{currentSize.height}</td>
-              </tr>
-              {this.props.imageMultiplier == null ? null : (
-                <tr>
-                  <td style={{ padding: padding }}>@{this.props.imageMultiplier}x</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <SizeBoxLabel
+          visible={shouldShowSizeLabel}
+          left={labelLeft}
+          top={labelTop}
+          scale={this.props.scale}
+          size={currentSize}
+          imageMultiplier={this.props.imageMultiplier}
+          dragState={this.props.dragState}
+        />
       </React.Fragment>
     )
   }
