@@ -33047,8 +33047,7 @@ function run() {
                 .then((responseData) => {
                 var _a;
                 if (((_a = responseData === null || responseData === void 0 ? void 0 : responseData.error) === null || _a === void 0 ? void 0 : _a.message) != null) {
-                    core.setFailed(`${responseData.error.message}
-env: ${JSON.stringify(process.env)}`);
+                    core.setFailed(`${responseData.error.message}, current API key: ${process.env.GOOGLE_WEB_FONTS_KEY}`);
                 }
                 else {
                     const data = responseData.items.map(datum => ({
