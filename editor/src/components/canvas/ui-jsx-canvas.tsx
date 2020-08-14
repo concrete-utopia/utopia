@@ -83,6 +83,7 @@ import {
   isSceneElement,
   BakedInStoryboardVariableName,
   EmptyScenePathForStoryboard,
+  PathForResizeContent,
 } from '../../core/model/scene-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
@@ -631,7 +632,7 @@ function getStoryboardRoot(
 
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements = {
     component: BakedInStoryboardVariableName,
-    type: 'static',
+    sceneResizesContent: false,
     container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
     scenePath: EmptyScenePathForStoryboard,
     templatePath: TP.instancePath([], []),
@@ -856,7 +857,7 @@ interface SceneRootProps extends CanvasReactReportErrorCallback {
   jsxFactoryFunctionName: string | null
   container: SceneContainer
   component: string | null
-  isStatic: boolean
+  sceneResizesContent: boolean
 
   // this is even worse: this is secret props that are passed down from a utopia parent View
   // we put this here in case the Scene is inside another View
@@ -883,7 +884,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     container,
     jsxFactoryFunctionName,
     component,
-    isStatic,
+    sceneResizesContent,
     sceneUID,
     'data-uid': dataUidIgnore,
     ...inputProps
@@ -899,7 +900,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     templatePath: templatePath,
     container: container,
     component: component,
-    type: isStatic ? 'static' : 'dynamic',
+    sceneResizesContent: sceneResizesContent,
     globalFrame: null, // the real frame comes from the DOM walker
     label: props.sceneLabel,
     style: style,
@@ -1053,7 +1054,7 @@ function renderCoreElement(
 
     const rootComponent = sceneProps.component
     const rootComponentName = sceneProps.component?.topLevelElementName
-    const isStatic = sceneProps.static
+    const resizesContent = !!Utils.path(PP.getElements(PathForResizeContent), sceneProps)
 
     const sceneId: string = sceneProps['data-uid'] || ''
     return (
@@ -1070,7 +1071,7 @@ function renderCoreElement(
         requireResult={requireResult}
         templatePath={templatePath}
         component={rootComponentName}
-        isStatic={isStatic}
+        sceneResizesContent={resizesContent}
         sceneUID={sceneId}
         sceneLabel={sceneProps['data-label']}
       />

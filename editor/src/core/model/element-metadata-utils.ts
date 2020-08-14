@@ -23,6 +23,8 @@ import {
   mapEither,
   right,
   traverseEither,
+  Left,
+  Right,
 } from '../shared/either'
 import {
   ComponentMetadata,
@@ -245,8 +247,8 @@ export const MetadataUtils = {
     const scenePath = TP.scenePathForPath(path)
     return scenes.find((s) => TP.pathsEqual(s.scenePath, scenePath)) ?? null
   },
-  isSceneTreatedAsDynamic(scene: ComponentMetadata | null): boolean {
-    return scene?.type === 'dynamic' && scene.style.width == null && scene.style.height == null
+  isSceneTreatedAsGroup(scene: ComponentMetadata | null): boolean {
+    return scene?.sceneResizesContent ?? false
   },
   getElementInstanceMetadataAlongPath(
     components: Array<ComponentMetadata>,

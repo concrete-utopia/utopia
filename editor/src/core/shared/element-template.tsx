@@ -977,7 +977,7 @@ export interface ComponentMetadata {
   component: string | null
   container: SceneContainer
   globalFrame: CanvasRectangle | null
-  type: 'static' | 'dynamic'
+  sceneResizesContent: boolean
   label?: string
   style: React.CSSProperties
 }
