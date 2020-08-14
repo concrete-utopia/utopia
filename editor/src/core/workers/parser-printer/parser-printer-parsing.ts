@@ -351,10 +351,14 @@ function turnCodeSnippetIntoSourceMapNodes(
   let currentStringBuffer = ''
   let exportFound = false
   let defaultFound = false
+  let lastKeywordWasExport = false
   function flushBuffer() {
     // We should ignore the first "export" and "default" keywords we find if the node is exported
     const strippingExport = nodeIsExported && !exportFound && currentStringBuffer === 'export'
-    const strippingDefault = nodeIsExported && !defaultFound && currentStringBuffer === 'default'
+    const strippingDefault =
+      lastKeywordWasExport && nodeIsExported && !defaultFound && currentStringBuffer === 'default'
+    lastKeywordWasExport =
+      strippingExport || (lastKeywordWasExport && currentStringBuffer.trim().length === 0)
     if (strippingExport) {
       exportFound = true
     } else if (strippingDefault) {
