@@ -9,10 +9,12 @@ interface GoogleFontsFontMetadata {
 }
 type GoogleFontsList = Array<GoogleFontsFontMetadata>
 
-const GOOGLE_WEB_FONTS_KEY = 'AIzaSyBffJtCo2vL68hdQKH3IYjo0ELFAAGYNW4'
-const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${GOOGLE_WEB_FONTS_KEY}`
+const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${process.env.GOOGLE_WEB_FONTS_KEY}`
 
 async function run(): Promise<void> {
+  if (process.env.GOOGLE_WEB_FONTS_KEY === '') {
+    core.setFailed(`Env variable 'process.env.GOOGLE_WEB_FONTS_KEY' is empty`)
+  }
   fetch(GoogleWebFontsURL)
     .then(response => {
       response
@@ -29,7 +31,7 @@ async function run(): Promise<void> {
             core.setOutput('google-fonts-list-length', data.length)
 
             const dataJSONString = JSON.stringify(data)
-            const uglyFile = `import { GoogleFontsTypefaceMetadata } from "../src/components/navigator/external-resources/google-fonts-utils"
+            const uglyFile = `import { GoogleFontsTypefaceMetadata } from '../src/components/navigator/external-resources/google-fonts-utils'
 
 /** This is auto-generated using this workflow action: https://github.com/concrete-utopia/get-google-fonts-list-file */
 export const googleFontsList: Array<GoogleFontsTypefaceMetadata> = ${dataJSONString}`
