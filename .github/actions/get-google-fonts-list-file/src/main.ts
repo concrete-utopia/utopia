@@ -19,9 +19,9 @@ async function run(): Promise<void> {
     .then(response => {
       response
         .json()
-        .then((responseData: {items: GoogleFontsList; error: string}) => {
-          if (responseData.error != null) {
-            core.setFailed(responseData.error)
+        .then((responseData: {items: GoogleFontsList, error?: any) => {
+          if (responseData?.error?.message != null) {
+            core.setFailed(responseData.error.message)
           } else {
             const data = responseData.items.map(datum => ({
               type: 'google-fonts-typeface',

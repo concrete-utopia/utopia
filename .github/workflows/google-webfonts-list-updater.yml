@@ -17,6 +17,7 @@ jobs:
         uses: ./.github/actions/get-google-fonts-list-file/
         id: get-google-fonts-list-file-contents
       - name: Write to file
+        env: ${{secrets.GOOGLE_WEB_FONTS_KEY}}
         run: echo "${{ steps.get-google-fonts-list-file-contents.outputs.google-fonts-file }}" > $GITHUB_WORKSPACE/editor/assets/google-fonts-list.ts
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3.1.0
