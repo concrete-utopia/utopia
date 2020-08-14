@@ -396,6 +396,9 @@ export const colorTheme = light
 
 export const colorThemeVisualScript = lightVisualScriptTheme
 
+const inspectorXPadding = 8
+const canvasMenuWidth = 38
+
 export const UtopiaTheme = {
   layout: {
     rowHorizontalPadding: 8,
@@ -417,6 +420,9 @@ export const UtopiaTheme = {
       default: 22,
       tall: 26,
     },
+    inspectorXPadding,
+    canvasMenuWidth,
+    inspectorModalBaseOffset: inspectorXPadding + canvasMenuWidth,
   },
   invisibleIndicatorSize: 6,
   inputBorderRadius: 2,

@@ -174,6 +174,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
       style={{
         borderLeft: `1px solid #d3d3d369`,
         alignSelf: 'stretch',
+        width: UtopiaTheme.layout.canvasMenuWidth,
       }}
     >
       <SimpleFlexColumn data-title='group' style={{ marginBottom: 24 }}>

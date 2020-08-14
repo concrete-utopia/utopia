@@ -10,7 +10,6 @@ export type InspectorModalProps = {
   offsetY: number
   portalTarget?: HTMLElement
   closePopup: () => void
-  temporarilyIgnoreClosePopupOnUnmount?: boolean
   children: JSX.Element
   style?: React.CSSProperties
   closePopupOnUnmount?: boolean
@@ -91,6 +90,7 @@ export const InspectorModal: React.FunctionComponent<InspectorModalProps> = ({
               position: 'absolute',
               left: cssOffset.left,
               top: cssOffset.top,
+              zIndex: 1,
               ...style,
             }}
           >

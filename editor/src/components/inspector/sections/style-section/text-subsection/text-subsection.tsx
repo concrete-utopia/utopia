@@ -56,6 +56,7 @@ import { addOnUnsetValues } from '../../../common/context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { betterReactMemo } from 'uuiui-deps'
 import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
+import { FontFamilySelect } from './font-family-select'
 
 const ObjectPathImmutable: any = OPI
 
@@ -226,12 +227,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
       : null,
   ])
 
-  const fontFamilyContextMenuItems = utils.stripNulls([
-    fontFamilyMetadata.controlStyles.unsettable
-      ? addOnUnsetValues(['fontFamily'], fontFamilyMetadata.onUnsetValues)
-      : null,
-  ])
-
   const fontWeightAndStyleContextMenuItems = utils.stripNulls([
     fontWeightAndStyleMetadata.controlStyles.unsettable
       ? addOnUnsetValues(['fontWeight', 'fontStyle'], fontWeightAndStyleMetadata.onUnsetValues)
@@ -339,29 +334,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           <Icons.Gear color={expanded ? 'darkgray' : 'lightgray'} onClick={toggleExpanded} />
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>
-      <PropertyRow style={{ gridColumnGap: 8, marginBottom: 8 }}>
-        <InspectorContextMenuWrapper
-          id='fontFamily-context-menu'
-          items={fontFamilyContextMenuItems}
-          data={null}
-          style={{ gridColumn: '1 / span 6' }}
-        >
-          <SelectControl
-            id='font-family'
-            key='font-family'
-            style={{ fontSize: 14, height: 30 }}
-            value={getFontFamilyValue(fontFamilyMetadata.value)}
-            controlStatus={fontFamilyMetadata.controlStatus}
-            controlStyles={fontFamilyMetadata.controlStyles}
-            onSubmitValue={onFontFamilySubmitValue}
-            DEPRECATED_controlOptions={{
-              tooltip: 'Typeface',
-              creatable: true,
-            }}
-            options={getFontFamilyOptions()}
-          />
-        </InspectorContextMenuWrapper>
-      </PropertyRow>
+      <FontFamilySelect />
       <PropertyRow style={{ gridColumnGap: 8, gridTemplateColumns: '130px 55px 28px' }}>
         <InspectorContextMenuWrapper
           id='fontWeightAndStyle-context-menu'

@@ -1,0 +1,130 @@
+import * as React from 'react'
+import { VariableSizeList } from 'react-window'
+import { betterReactMemo, ControlStyles } from 'uuiui-deps'
+import { googleFontsList } from '../../../../../../assets/google-fonts-list'
+import { FlexColumn, FlexRow, StringInput, UtopiaTheme } from '../../../../../uuiui'
+import {
+  GoogleFontsTypefaceMetadata,
+  systemDefaultFont,
+  SystemDefaultTypefaceMetadata,
+} from '../../../../navigator/external-resources/google-fonts-utils'
+import {
+  OnUnsetValues,
+  ParsedValues,
+  useInspectorStyleInfo,
+  UseSubmitValueFactory,
+} from '../../../common/property-path-hooks'
+import { InspectorModal } from '../../../widgets/inspector-modal'
+import { FontFamilySelectPopupItem } from './font-family-select-popup-item'
+
+interface FontFamilySelectPopupProps {
+  value: ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>
+  onUnsetValues: OnUnsetValues
+  controlStyles: ControlStyles
+  closePopup: () => void
+  useSubmitValueFactory: UseSubmitValueFactory<
+    ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>
+  >
+}
+
+const ModalWidth = 220
+
+const NormalItemSize = 26
+const DefaultSystemFontSize = 70
+
+export interface ItemData {
+  metadata: SystemDefaultTypefaceMetadata | GoogleFontsTypefaceMetadata
+  height: number
+}
+const itemData: Array<ItemData> = [systemDefaultFont, ...googleFontsList].map((item, i) => ({
+  metadata: item,
+  height: i === 0 ? DefaultSystemFontSize : NormalItemSize,
+}))
+
+const getItemSize = (index: number) => itemData[index].height
+
+function updateNewFontFamily(
+  newValue: SystemDefaultTypefaceMetadata | GoogleFontsTypefaceMetadata,
+  oldValue: ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>,
+): ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'> {
+  switch (newValue.type) {
+    case 'system-default-typeface': {
+      return {
+        ...oldValue,
+        fontFamily: [
+          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+        ],
+      }
+    }
+    case 'google-fonts-typeface': {
+      return {
+        ...oldValue,
+        fontFamily: [newValue.name],
+      }
+    }
+  }
+}
+
+export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>(
+  'FontFamilySelectPopup',
+  ({
+    value: { fontWeight, fontStyle },
+    useSubmitValueFactory,
+    onUnsetValues,
+    controlStyles,
+    closePopup,
+  }) => {
+    const [searchTerm, setSearchTerm] = React.useState('')
+    const lowerCaseSearchTerm = searchTerm.toLowerCase()
+    const filteredData = React.useMemo(
+      () =>
+        itemData.filter((datum) => datum.metadata.name.toLowerCase().includes(lowerCaseSearchTerm)),
+      [lowerCaseSearchTerm],
+    )
+
+    const { onUnsetValues: fontFamilyOnUnsetValues } = useInspectorStyleInfo('fontFamily')
+
+    const onChange = React.useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value),
+      [],
+    )
+
+    const [onSubmitFontFamily] = useSubmitValueFactory(updateNewFontFamily)
+
+    return (
+      <InspectorModal
+        offsetX={-(ModalWidth + UtopiaTheme.layout.inspectorModalBaseOffset + 16)}
+        offsetY={0}
+        closePopup={closePopup}
+      >
+        <FlexColumn
+          style={{
+            backgroundColor: 'white',
+            padding: 12,
+            width: ModalWidth,
+            boxShadow: `0 3px 6px #0002`,
+          }}
+        >
+          <FlexRow>
+            <StringInput
+              focusOnMount
+              placeholder='Search for fonts…'
+              value={searchTerm}
+              onChange={onChange}
+              style={{ flexGrow: 1, marginBottom: 12 }}
+            />
+          </FlexRow>
+          <VariableSizeList
+            itemSize={getItemSize}
+            itemData={{ onSubmitFontFamily, itemsArray: filteredData, fontWeight, fontStyle }}
+            width={'100%'}
+            height={215}
+            itemCount={filteredData.length}
+          >
+            {FontFamilySelectPopupItem}
+          </VariableSizeList>
+        </FlexColumn>
+      </InspectorModal>
+    )
+  },
+)
