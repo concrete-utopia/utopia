@@ -28,7 +28,12 @@ async function run(): Promise<void> {
           } else {
             core.setOutput('google-fonts-list-length', data.length)
 
-            const dataJSONString = prettier.format(JSON.stringify(data), {
+            const dataJSONString = JSON.stringify(data)
+            const uglyFile = `import { GoogleFontsTypefaceMetadata } from "../src/components/navigator/external-resources/google-fonts-utils"
+
+/** This is auto-generated using this workflow action: https://github.com/concrete-utopia/get-google-fonts-list-file */
+export const googleFontsList: Array<GoogleFontsTypefaceMetadata> = ${dataJSONString}`
+            const prettyFile = prettier.format(uglyFile, {
               parser: 'typescript',
               plugins: [parserTypescript],
               printWidth: 100,
@@ -42,11 +47,7 @@ async function run(): Promise<void> {
               jsxBracketSameLine: false,
               arrowParens: 'always'
             })
-            const file = `import { GoogleFontsTypefaceMetadata } from "../src/components/navigator/external-resources/google-fonts-utils"
-
-/** This is auto-generated using this workflow action: https://github.com/concrete-utopia/get-google-fonts-list-file */
-export const googleFontsList: Array<GoogleFontsTypefaceMetadata> = ${dataJSONString}`
-            core.setOutput('google-fonts-file', file)
+            core.setOutput('google-fonts-file', prettyFile)
           }
         })
         .catch(error => {
