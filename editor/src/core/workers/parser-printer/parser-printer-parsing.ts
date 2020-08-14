@@ -105,7 +105,9 @@ export function getPropertyNameText(
 }
 
 export function isExported(node: TS.Node): boolean {
-  if (node.modifiers == null) {
+  if (TS.isExportAssignment(node)) {
+    return true
+  } else if (node.modifiers == null) {
     return false
   } else {
     return node.modifiers.some((modifier) => modifier.kind === TS.SyntaxKind.ExportKeyword)
@@ -337,7 +339,7 @@ function turnCodeSnippetIntoSourceMapNodes(
   startLine: number,
   startChar: number,
   sourceCode: string,
-  stripExport: boolean,
+  nodeIsExported: boolean,
 ): typeof SourceNode {
   const LetterOrNumber = /[a-zA-Z0-9]/
   const NewLine = /\n/
@@ -348,11 +350,19 @@ function turnCodeSnippetIntoSourceMapNodes(
   let bufferStartChar = currentCol
   let currentStringBuffer = ''
   let exportFound = false
+  let defaultFound = false
+  let lastKeywordWasExport = false
   function flushBuffer() {
-    // We should ignore the first "export" keyword we find if stripExport is true
-    const skip = stripExport && !exportFound && currentStringBuffer === 'export'
-    if (skip) {
+    // We should ignore the first "export" and "default" keywords we find if the node is exported
+    const strippingExport = nodeIsExported && !exportFound && currentStringBuffer === 'export'
+    const strippingDefault =
+      lastKeywordWasExport && nodeIsExported && !defaultFound && currentStringBuffer === 'default'
+    lastKeywordWasExport =
+      strippingExport || (lastKeywordWasExport && currentStringBuffer.trim().length === 0)
+    if (strippingExport) {
       exportFound = true
+    } else if (strippingDefault) {
+      defaultFound = true
     } else {
       const node = new SourceNode(
         bufferStartLine + 1,

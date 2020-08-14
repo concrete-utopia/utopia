@@ -70,7 +70,7 @@ import {
 } from '../../model/scene-utils'
 
 describe('JSX parser', () => {
-  it('parses the code when it is a function', () => {
+  it('parses the code when it is a const', () => {
     const code = `import * as React from "react";
 import {
   Ellipse,
@@ -85,6 +85,126 @@ import { cake } from 'cake'
 export var whatever = (props) => <View data-uid={'aaa'}>
   <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
+`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const cakeAttributes: JSXAttributes = {
+      'data-uid': jsxAttributeValue('aab'),
+      style: jsxAttributeValue({ backgroundColor: 'red' }),
+      left: jsxAttributeOtherJavaScript(
+        'props.leftOfTheCake[0].hat',
+        'return props.leftOfTheCake[0].hat;',
+        ['props'],
+        expect.objectContaining({}),
+      ),
+      right: jsxAttributeValue(20),
+      top: jsxAttributeValue(-20),
+    }
+    const cake = jsxElement('cake', cakeAttributes, [], null)
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake], null)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      ['leftOfTheCake'],
+      view,
+      null,
+    )
+    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const expectedResult = clearParseResultUniqueIDs(
+      right(
+        parseSuccess(
+          imports,
+          [exported, EmptyUtopiaCanvasComponent],
+          right(defaultCanvasMetadata()),
+          false,
+          code,
+          expect.objectContaining({}),
+          expect.arrayContaining([]),
+          null,
+        ),
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('parses the code when it is a function', () => {
+    const code = `import * as React from "react";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from "utopia-api";
+import { cake } from 'cake'
+export function whatever(props) {
+  return (
+    <View data-uid={'aaa'}>
+      <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+    </View>
+  )
+}
+`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const cakeAttributes: JSXAttributes = {
+      'data-uid': jsxAttributeValue('aab'),
+      style: jsxAttributeValue({ backgroundColor: 'red' }),
+      left: jsxAttributeOtherJavaScript(
+        'props.leftOfTheCake[0].hat',
+        'return props.leftOfTheCake[0].hat;',
+        ['props'],
+        expect.objectContaining({}),
+      ),
+      right: jsxAttributeValue(20),
+      top: jsxAttributeValue(-20),
+    }
+    const cake = jsxElement('cake', cakeAttributes, [], null)
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake], null)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      ['leftOfTheCake'],
+      view,
+      null,
+    )
+    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const expectedResult = clearParseResultUniqueIDs(
+      right(
+        parseSuccess(
+          imports,
+          [exported, EmptyUtopiaCanvasComponent],
+          right(defaultCanvasMetadata()),
+          false,
+          code,
+          expect.objectContaining({}),
+          expect.arrayContaining([]),
+          null,
+        ),
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('parses the code when it is an export default function', () => {
+    const code = `import * as React from "react";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from "utopia-api";
+import { cake } from 'cake'
+export default function whatever(props) {
+  return (
+    <View data-uid={'aaa'}>
+      <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+    </View>
+  )
+}
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
@@ -521,6 +641,250 @@ return { getSizing: getSizing, spacing: spacing };`
       jsCode,
       transpiledJsCode,
       ['getSizing', 'spacing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+    )
+    const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
+    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const expectedResult = right(
+      parseSuccess(
+        imports,
+        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        right(defaultCanvasMetadata()),
+        false,
+        code,
+        expect.objectContaining({}),
+        expect.arrayContaining([]),
+        null,
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('parses the code when it has an export default function', () => {
+    const code = `import * as React from "react";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from "utopia-api";
+import { cake } from 'cake'
+export default function getSizing(n) {
+  return 100 + n
+}
+export var whatever = (props) => <View data-uid={'aaa'}>
+  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+</View>
+`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const cakeAttributes: JSXAttributes = {
+      'data-uid': jsxAttributeValue('aab'),
+      style: jsxAttributeValue({ backgroundColor: 'red' }),
+      left: jsxAttributeOtherJavaScript(
+        'props.leftOfTheCake[0].hat',
+        'return props.leftOfTheCake[0].hat;',
+        ['props'],
+        expect.objectContaining({}),
+      ),
+      right: jsxAttributeValue(20),
+      top: jsxAttributeValue(-20),
+    }
+    const cake = jsxElement('cake', cakeAttributes, [], null)
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake], null)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      ['leftOfTheCake'],
+      view,
+      null,
+    )
+    const jsCode = `export default function getSizing(n) {
+  return 100 + n;
+}`
+    const transpiledJsCode = `function getSizing(n) {
+  return 100 + n;
+}
+return { getSizing: getSizing };`
+    const arbitraryBlock = arbitraryJSBlock(
+      jsCode,
+      transpiledJsCode,
+      ['getSizing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+    )
+    const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
+    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const expectedResult = right(
+      parseSuccess(
+        imports,
+        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        right(defaultCanvasMetadata()),
+        false,
+        code,
+        expect.objectContaining({}),
+        expect.arrayContaining([]),
+        null,
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('parses the code when it has a default keyword elsewhere', () => {
+    const code = `import * as React from "react";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from "utopia-api";
+import { cake } from 'cake'
+export function getSizing(n) {
+  switch (n) {
+    case 100:
+      return 1
+    default:
+      return 100 + n
+  }
+}
+export var whatever = (props) => <View data-uid={'aaa'}>
+  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+</View>
+`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const cakeAttributes: JSXAttributes = {
+      'data-uid': jsxAttributeValue('aab'),
+      style: jsxAttributeValue({ backgroundColor: 'red' }),
+      left: jsxAttributeOtherJavaScript(
+        'props.leftOfTheCake[0].hat',
+        'return props.leftOfTheCake[0].hat;',
+        ['props'],
+        expect.objectContaining({}),
+      ),
+      right: jsxAttributeValue(20),
+      top: jsxAttributeValue(-20),
+    }
+    const cake = jsxElement('cake', cakeAttributes, [], null)
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake], null)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      ['leftOfTheCake'],
+      view,
+      null,
+    )
+    const jsCode = `export function getSizing(n) {
+  switch (n) {
+    case 100:
+      return 1;
+    default:
+      return 100 + n;}
+
+}`
+    const transpiledJsCode = `function getSizing(n) {
+  switch (n) {
+    case 100:
+      return 1;
+
+    default:
+      return 100 + n;
+  }
+}
+return { getSizing: getSizing };`
+    const arbitraryBlock = arbitraryJSBlock(
+      jsCode,
+      transpiledJsCode,
+      ['getSizing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+    )
+    const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
+    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const expectedResult = right(
+      parseSuccess(
+        imports,
+        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        right(defaultCanvasMetadata()),
+        false,
+        code,
+        expect.objectContaining({}),
+        expect.arrayContaining([]),
+        null,
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('parses the code when it has an export default anonymous function', () => {
+    const code = `import * as React from "react";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from "utopia-api";
+import { cake } from 'cake'
+export default (n) => {
+  return 100 + n
+}
+export var whatever = (props) => <View data-uid={'aaa'}>
+  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+</View>
+`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const cakeAttributes: JSXAttributes = {
+      'data-uid': jsxAttributeValue('aab'),
+      style: jsxAttributeValue({ backgroundColor: 'red' }),
+      left: jsxAttributeOtherJavaScript(
+        'props.leftOfTheCake[0].hat',
+        'return props.leftOfTheCake[0].hat;',
+        ['props'],
+        expect.objectContaining({}),
+      ),
+      right: jsxAttributeValue(20),
+      top: jsxAttributeValue(-20),
+    }
+    const cake = jsxElement('cake', cakeAttributes, [], null)
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake], null)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      ['leftOfTheCake'],
+      view,
+      null,
+    )
+    const jsCode = `export default (n => {
+  return 100 + n;
+});`
+    const transpiledJsCode = `(function (n) {
+  return 100 + n;
+});
+return {  };`
+    const arbitraryBlock = arbitraryJSBlock(
+      jsCode,
+      transpiledJsCode,
+      [],
       [],
       expect.objectContaining({
         sources: ['code.tsx'],
