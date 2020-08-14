@@ -26,7 +26,7 @@ interface SizeBoxLabelProps {
   dragState: ResizeDragState | null
 }
 
-export const SizeBoxLabel = (props: SizeBoxLabelProps) => {
+export const SizeBoxLabel = React.memo((props: SizeBoxLabelProps) => {
   const showAdvancedResizeLabel = isFeatureEnabled('Advanced Resize Box')
   const fontSize = ControlFontSize / props.scale
   const borderRadius = 2 / props.scale
@@ -51,7 +51,7 @@ export const SizeBoxLabel = (props: SizeBoxLabelProps) => {
       {showAdvancedResizeLabel ? <ResizeLabel {...props} /> : <SimpleResizeLabel {...props} />}
     </div>
   )
-}
+})
 
 const ResizeLabel = (props: SizeBoxLabelProps) => {
   const metadata = useEditorState((state) => state.editor.jsxMetadataKILLME)
