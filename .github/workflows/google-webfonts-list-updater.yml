@@ -9,6 +9,7 @@ jobs:
         uses: actions/checkout@v2.2.0
         with:
           fetch-depth: 0
+          ref: ${{ github.head_ref }}
       - name: Get Google Fonts list file contents
         uses: ./.github/actions/get-google-fonts-list-file/
         id: get-google-fonts-list-file-contents
