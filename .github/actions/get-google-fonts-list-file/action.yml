@@ -1,14 +1,9 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
-inputs:
-  milliseconds: # change this
-    required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+name: 'Google Web Fonts List Updater'
+description: 'Updates the Google Fonts list for utopia.app'
+author: 'Concrete Utopia'
 outputs:
   google-fonts-file:
-    description: its the google fonts list thank you very much
+    description: google fonts list file as a string
 runs:
   using: 'node12'
   main: 'dist/index.js'
