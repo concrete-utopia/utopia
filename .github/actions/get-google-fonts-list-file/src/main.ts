@@ -1,5 +1,8 @@
 import * as core from '@actions/core'
 import fetch from 'node-fetch'
+import prettier from 'prettier'
+import * as parserTypescript from 'prettier/parser-typescript'
+
 interface GoogleFontsFontMetadata {
   family: string
   variants: Array<string>
@@ -25,7 +28,20 @@ async function run(): Promise<void> {
           } else {
             core.setOutput('google-fonts-list-length', data.length)
 
-            const dataJSONString = JSON.stringify(data)
+            const dataJSONString = prettier.format(JSON.stringify(data), {
+              parser: 'typescript',
+              plugins: [parserTypescript],
+              printWidth: 100,
+              trailingComma: 'all',
+              tabWidth: 2,
+              semi: false,
+              singleQuote: true,
+              quoteProps: 'as-needed',
+              bracketSpacing: true,
+              jsxSingleQuote: true,
+              jsxBracketSameLine: false,
+              arrowParens: 'always'
+            })
             const file = `import { GoogleFontsTypefaceMetadata } from "../src/components/navigator/external-resources/google-fonts-utils"
 
 /** This is auto-generated using this workflow action: https://github.com/concrete-utopia/get-google-fonts-list-file */
