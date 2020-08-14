@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import fetch from 'node-fetch'
-import prettier from 'prettier'
 import * as parserTypescript from 'prettier/parser-typescript'
+import * as prettier from 'prettier/standalone'
 
 interface GoogleFontsFontMetadata {
   family: string
