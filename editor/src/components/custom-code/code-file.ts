@@ -174,6 +174,9 @@ export function generateCodeResultCache(
     (updatedFileNames[0] === mainUiFileName || updatedFileNames[0] === `/${mainUiFileName}`)
 
   if (!onlyCanvasFileUpdated) {
+    // MUTATION ALERT! This function is mutating editorState.nodeModules.files by inserting the project files into it
+    // FIXME Remove this mutation with the dependency graph work and store the eval cache for project files elsewhere
+    // (maybe even in the graph itself)
     incorporateBuildResult(nodeModules, modules)
   }
 
