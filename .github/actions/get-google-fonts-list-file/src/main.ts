@@ -26,7 +26,7 @@ async function run(): Promise<void> {
             core.setOutput('google-fonts-list-length', data.length)
 
             const dataJSONString = JSON.stringify(data)
-            const file = `import { GoogleFontsTypefaceMetadata } from '../src/components/navigator/external-resources/google-fonts-utils'
+            const file = `import { GoogleFontsTypefaceMetadata } from "../src/components/navigator/external-resources/google-fonts-utils"
 
 /** This is auto-generated using this workflow action: https://github.com/concrete-utopia/get-google-fonts-list-file */
 export const googleFontsList: Array<GoogleFontsTypefaceMetadata> = ${dataJSONString}`
