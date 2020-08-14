@@ -1,0 +1,14 @@
+name: 'Your name here'
+description: 'Provide a description here'
+author: 'Your name or organization here'
+inputs:
+  milliseconds: # change this
+    required: true
+    description: 'input description here'
+    default: 'default value if applicable'
+outputs:
+  google-fonts-file:
+    description: its the google fonts list thank you very much
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

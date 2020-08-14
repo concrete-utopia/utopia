@@ -10,7 +10,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Get Google Fonts list file contents
-        uses: concrete-utopia/get-google-fonts-list-file@tronk
+        uses: ./.github/actions/get-google-fonts-list-file/
         id: get-google-fonts-list-file-contents
       - name: Write to file
         run: echo ${{ steps.get-google-fonts-list-file-contents.outputs.google-fonts-file }} > ${{env.GITHUB_WORKSPACE}}/editor/src/components/navigator/external-resources/google-fonts-utils.ts
