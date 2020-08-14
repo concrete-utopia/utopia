@@ -4024,6 +4024,7 @@ export const UPDATE_FNS = {
         dispatch,
         dependenciesFromProjectContents(result.projectContents),
         action.buildType,
+        getMainUIFromModel(result),
       ),
     }
 
@@ -4334,6 +4335,7 @@ export async function newProject(
     dispatch,
     npmDependencies,
     'full-build',
+    null,
   )
 
   renderEditorRoot()
@@ -4399,6 +4401,7 @@ export async function load(
       dispatch,
       npmDependencies,
       'full-build',
+      null,
     )
   } else {
     codeResultCache = await loadCodeResult(
@@ -4455,6 +4458,7 @@ function loadCodeResult(
             dispatch,
             dependenciesFromProjectContents(projectContents),
             'full-build',
+            null,
           )
           resolve(codeResultCache)
           workers.removeBundleResultEventListener(handleMessage)

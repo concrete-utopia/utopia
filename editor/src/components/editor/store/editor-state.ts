@@ -982,7 +982,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
     projectContents: {},
-    codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, [], 'full-build'),
+    codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, [], 'full-build', null),
     nodeModules: {
       skipDeepFreeze: true,
       files: {},
