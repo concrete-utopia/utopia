@@ -19,7 +19,7 @@ async function run(): Promise<void> {
     .then(response => {
       response
         .json()
-        .then((responseData: {items: GoogleFontsList, error?: any) => {
+        .then((responseData: {items: GoogleFontsList; error?: any}) => {
           if (responseData?.error?.message != null) {
             core.setFailed(responseData.error.message)
           } else {
