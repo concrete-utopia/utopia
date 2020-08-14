@@ -172,9 +172,11 @@ export function generateCodeResultCache(
     mainUiFileName != null &&
     updatedFileNames.length === 1 &&
     (updatedFileNames[0] === mainUiFileName || updatedFileNames[0] === `/${mainUiFileName}`)
-  const modulesToUpdate = onlyCanvasFileUpdated ? updatedModules : modules
 
-  incorporateBuildResult(nodeModules, modulesToUpdate)
+  if (!onlyCanvasFileUpdated) {
+    incorporateBuildResult(nodeModules, modules)
+  }
+
   const requireFn = getMemoizedRequireFn(nodeModules, dispatch)
 
   const exportValues = getExportValuesFromAllModules(modules, requireFn)
