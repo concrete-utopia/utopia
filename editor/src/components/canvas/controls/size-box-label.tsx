@@ -5,12 +5,16 @@ import { Size } from '../../../core/shared/math-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { ResizeDragState } from '../canvas-types'
 import * as TP from '../../../core/shared/template-path'
+import * as PP from '../../../core/shared/property-path'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getJSXElementNameAsString, isJSXElement } from '../../../core/shared/element-template'
 import Utils from '../../../utils/utils'
 import { eitherToMaybe } from '../../../core/shared/either'
 import { determineElementsToOperateOnForDragging } from './select-mode/move-utils'
+import { LayoutHelpers } from '../../../core/layout/layout-helpers'
+import { PropertyPath } from '../../../core/shared/project-file-types'
+import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 
 interface SizeBoxLabelProps {
   visible: boolean
@@ -58,6 +62,13 @@ const ResizeLabel = (props: SizeBoxLabelProps) => {
     true,
   )
   let elementNames: string[] = []
+  let targetProperties: {
+    horizontal: PropertyPath
+    vertical: PropertyPath
+  } = {
+    horizontal: createLayoutPropertyPath('Width'),
+    vertical: createLayoutPropertyPath('Height'),
+  }
   Utils.fastForEach(targets, (target) => {
     if (TP.isScenePath(target)) {
       const element = MetadataUtils.findSceneByTemplatePath(metadata, target)
@@ -70,6 +81,7 @@ const ResizeLabel = (props: SizeBoxLabelProps) => {
         const jsxElement = eitherToMaybe(element.element)
         if (jsxElement != null && isJSXElement(jsxElement)) {
           elementNames.push(getJSXElementNameAsString(jsxElement.name))
+          targetProperties = LayoutHelpers.getElementSizePropertyPaths(element)
         }
       }
     }
@@ -79,19 +91,21 @@ const ResizeLabel = (props: SizeBoxLabelProps) => {
   const padding = 2 / props.scale
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex' }}>
-        <div style={{ padding: padding, width: 15 }}>W:</div>
-        <div style={{ padding: padding }}>{props.size.width}</div>
-      </div>
-      <div style={{ display: 'flex' }}>
-        <div style={{ padding: padding, width: 15 }}>H:</div>
-        <div style={{ padding: padding }}>{props.size.height}</div>
-      </div>
       <div style={{ padding: padding }}>
         <div>{elementNames.join(', ')}</div>
-        <div>{isWidthResize ? 'style.width' : ''}</div>
-        <div>{isHeightResize ? 'style.height' : ''}</div>
       </div>
+      {isWidthResize && (
+        <div style={{ display: 'flex' }}>
+          <div style={{ padding: padding }}>{PP.toString(targetProperties?.horizontal)}</div>
+          <div style={{ padding: padding }}>{props.size.width}</div>
+        </div>
+      )}
+      {isHeightResize && (
+        <div style={{ display: 'flex' }}>
+          <div style={{ padding: padding }}>{PP.toString(targetProperties?.vertical)}</div>
+          <div style={{ padding: padding }}>{props.size.height}</div>
+        </div>
+      )}
     </div>
   )
 }
