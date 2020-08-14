@@ -21,7 +21,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3.1.0
         with:
-          author: The Forbidden Smyramid
+          committer: The Forbidden Smyramid <forbidden-smyramid@utopia.app>
           token: ${{secrets.GOOGLE_FONTS_AUTOUPDATER_PAT}}
           commit-message: Update google fonts list (${{steps.get-google-fonts-list-file-contents.outputs.google-fonts-list-length}} fonts)
           branch: chore/update-google-fonts-list
