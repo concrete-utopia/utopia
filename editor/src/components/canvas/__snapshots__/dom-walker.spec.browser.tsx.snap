@@ -120,6 +120,7 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "style": Object {},
     "templatePath": Object {
       "element": Array [],
       "scene": Object {
@@ -1852,6 +1853,12 @@ Array [
       ],
       "type": "scenepath",
     },
+    "style": Object {
+      "height": 812,
+      "left": 0,
+      "top": 0,
+      "width": 375,
+    },
     "templatePath": Object {
       "element": Array [
         "utopia-storyboard-uid",
@@ -1987,6 +1994,7 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "style": Object {},
     "templatePath": Object {
       "element": Array [],
       "scene": Object {
@@ -2462,6 +2470,12 @@ Array [
       ],
       "type": "scenepath",
     },
+    "style": Object {
+      "height": 812,
+      "left": 0,
+      "top": 0,
+      "width": 375,
+    },
     "templatePath": Object {
       "element": Array [
         "utopia-storyboard-uid",
@@ -2597,6 +2611,7 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "style": Object {},
     "templatePath": Object {
       "element": Array [],
       "scene": Object {
@@ -3963,6 +3978,12 @@ Array [
       ],
       "type": "scenepath",
     },
+    "style": Object {
+      "height": 812,
+      "left": 0,
+      "top": 0,
+      "width": 375,
+    },
     "templatePath": Object {
       "element": Array [
         "utopia-storyboard-uid",
@@ -4098,6 +4119,7 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "style": Object {},
     "templatePath": Object {
       "element": Array [],
       "scene": Object {
@@ -5465,6 +5487,12 @@ Array [
       ],
       "type": "scenepath",
     },
+    "style": Object {
+      "height": 812,
+      "left": 0,
+      "top": 0,
+      "width": 375,
+    },
     "templatePath": Object {
       "element": Array [
         "utopia-storyboard-uid",
@@ -5600,6 +5628,7 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "style": Object {},
     "templatePath": Object {
       "element": Array [],
       "scene": Object {
@@ -6969,6 +6998,12 @@ Array [
         "scene-aaa",
       ],
       "type": "scenepath",
+    },
+    "style": Object {
+      "height": 812,
+      "left": 0,
+      "top": 0,
+      "width": 375,
     },
     "templatePath": Object {
       "element": Array [

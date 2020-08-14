@@ -160,7 +160,7 @@ describe('backgroundSize', () => {
             "type": "bg-size",
           },
           Object {
-            "enabled": false,
+            "enabled": true,
             "size": Object {
               "default": false,
               "value": Object {

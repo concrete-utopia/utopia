@@ -10,9 +10,9 @@ import {
   UseSubmitValueFactory,
 } from '../../components/inspector/common/property-path-hooks'
 import {
-  FontVariant,
-  fontVariant,
-  FontVariantWeight,
+  WebFontVariant,
+  webFontVariant,
+  WebFontWeight,
   isFontVariantWeight,
 } from '../../components/navigator/external-resources/google-fonts-utils'
 import {
@@ -61,6 +61,7 @@ function getBoundingStringIndicesForExternalResources(
   }
 }
 
+/** Does not include the opening and closing comments */
 export function getGeneratedExternalLinkText(
   htmlFileContents: string,
 ): Either<DescriptionParseError, string> {
@@ -90,18 +91,22 @@ function getPreviewHTMLFilePath(
 ): Either<DescriptionParseError, string> {
   const packageJson = projectContents['/package.json']
   if (packageJson != null && isCodeFile(packageJson)) {
-    const parsedJSON = json5.parse(packageJson.fileContents)
-    if (parsedJSON != null && 'utopia' in parsedJSON) {
-      const htmlFilePath = parsedJSON.utopia?.html
-      if (htmlFilePath != null) {
-        return right(htmlFilePath)
+    try {
+      const parsedJSON = json5.parse(packageJson.fileContents)
+      if (parsedJSON != null && 'utopia' in parsedJSON) {
+        const htmlFilePath = parsedJSON.utopia?.html
+        if (htmlFilePath != null) {
+          return right(htmlFilePath)
+        } else {
+          return left(descriptionParseError(`An html root is not specified in package.json`))
+        }
       } else {
-        return left(descriptionParseError(`An html root is not specified in package.json`))
+        return left(
+          descriptionParseError(`'utopia' field in package.json couldn't be parsed properly`),
+        )
       }
-    } else {
-      return left(
-        descriptionParseError(`'utopia' field in package.json couldn't be parsed properly`),
-      )
+    } catch (e) {
+      return left(descriptionParseError(`package.json is not formatted correctly`))
     }
   } else {
     return left(descriptionParseError('No package.json is found in project'))
@@ -163,13 +168,13 @@ export function genericExternalResource(href: string, rel: string): GenericExter
 export interface GoogleFontsResource {
   type: 'google-fonts-resource'
   fontFamily: string
-  variants: Array<FontVariant>
+  variants: Array<WebFontVariant>
   otherQueryStringParams?: string
 }
 
 export function googleFontsResource(
   fontFamily: string,
-  variants: Array<FontVariant>,
+  variants: Array<WebFontVariant>,
   otherQueryStringParams?: string,
 ): GoogleFontsResource {
   return {
@@ -180,15 +185,17 @@ export function googleFontsResource(
   }
 }
 
-function axisTuplesToFontVariant(axisTuples: AxisTuples): Array<FontVariant> {
-  return axisTuples.map((axisTuple) => fontVariant(axisTuple[1], axisTuple[0] === 1))
+function axisTuplesToFontVariant(axisTuples: AxisTuples): Array<WebFontVariant> {
+  return axisTuples.map((axisTuple) =>
+    webFontVariant(axisTuple[1], axisTuple[0] === 1 ? 'italic' : 'normal'),
+  )
 }
 
 type ItalicAxisValue = 0 | 1
 function isItalicAxisValue(value: number): value is ItalicAxisValue {
   return value === 0 || value === 1
 }
-type AxisTuple = [ItalicAxisValue, FontVariantWeight]
+type AxisTuple = [ItalicAxisValue, WebFontWeight]
 type AxisTuples = Array<AxisTuple>
 
 function recursivelyParseAxisTuples(
@@ -254,7 +261,7 @@ function recursivelyParseAxisTuples(
 
 function parseVariantsFromAxisLists(
   params: string,
-): Either<DescriptionParseError, Array<FontVariant>> {
+): Either<DescriptionParseError, Array<WebFontVariant>> {
   if (params.startsWith('ital,wght@')) {
     const tuplesString = params.slice('ital,wght@'.length)
     const parsedTuples = recursivelyParseAxisTuples(tuplesString)
@@ -273,7 +280,7 @@ function getGoogleFontsResourceFromURL(
   const dividerIndex = familyParam.indexOf(':')
   if (dividerIndex === -1) {
     return right(
-      googleFontsResource(familyParam, [fontVariant(400, false)], otherQueryStringParams),
+      googleFontsResource(familyParam, [webFontVariant(400, 'normal')], otherQueryStringParams),
     )
   } else {
     const fontFamily = familyParam.slice(0, dividerIndex)
@@ -325,11 +332,11 @@ export function parseLinkTags(
   }
 }
 
-function printVariantAxisTuples(variants: Array<FontVariant>): string {
+function printVariantAxisTuples(variants: Array<WebFontVariant>): string {
   return variants.length > 0
     ? `:ital,wght@${variants
         .map((variant) => {
-          return `${variant.italic ? 1 : 0},${variant.weight}`
+          return `${variant.webFontStyle === 'italic' ? 1 : 0},${variant.webFontWeight}`
         })
         .join(';')}`
     : ''
@@ -339,7 +346,7 @@ function replaceSafeGoogleFontsCharacters(value: string): string {
   return value.replace(/%3A/g, ':').replace(/%3B/g, ';').replace(/%2C/g, ',').replace(/%40/g, '@')
 }
 
-function printExternalResources(value: ExternalResources): string {
+export function printExternalResources(value: ExternalResources): string {
   const generic = value.genericExternalResources.map((resource) => {
     return `<link href="${resource.href}" rel="${resource.rel}">`
   })
@@ -356,7 +363,7 @@ function printExternalResources(value: ExternalResources): string {
 
 export function updateHTMLExternalResourcesLinks(
   currentFileContents: string,
-  newExternalResources: ExternalResources,
+  newExternalResources: string,
 ): Either<DescriptionParseError, string> {
   const parsedIndices = getBoundingStringIndicesForExternalResources(currentFileContents)
   if (isRight(parsedIndices)) {
@@ -367,7 +374,7 @@ export function updateHTMLExternalResourcesLinks(
       before +
         generatedExternalResourcesLinksOpen +
         '\n    ' +
-        printExternalResources(newExternalResources) +
+        newExternalResources +
         '\n    ' +
         generatedExternalResourcesLinksClose +
         after,
@@ -400,7 +407,10 @@ export function getExternalResourcesInfo(
       const parsedExternalResources = parseLinkTags(parsedLinkTagsText.value)
       if (isRight(parsedExternalResources)) {
         function onSubmitValue(newValue: ExternalResources) {
-          const updatedCodeFileContents = updateHTMLExternalResourcesLinks(fileContents, newValue)
+          const updatedCodeFileContents = updateHTMLExternalResourcesLinks(
+            fileContents,
+            printExternalResources(newValue),
+          )
           if (isRight(updatedCodeFileContents)) {
             dispatch([
               updateFile(

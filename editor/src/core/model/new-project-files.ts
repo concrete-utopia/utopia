@@ -48,6 +48,7 @@ export function getSamplePreviewHTMLFile(): CodeFile {
   return codeFile(previewHtml, null)
 }
 
+/** If you change these two values, please change them in src/templates/preview.html too */
 export const generatedExternalResourcesLinksOpen = '<!-- Begin Generated Utopia External Links -->'
 export const generatedExternalResourcesLinksClose = '<!-- End Generated Utopia External Links -->'
 

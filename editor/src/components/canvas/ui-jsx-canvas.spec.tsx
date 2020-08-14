@@ -141,6 +141,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       shouldIncludeCanvasRootInTheSpy: false,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
+      linkTags: '',
     }
   } else {
     canvasProps = {
@@ -160,6 +161,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       shouldIncludeCanvasRootInTheSpy: false,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
+      linkTags: '',
     }
   }
 

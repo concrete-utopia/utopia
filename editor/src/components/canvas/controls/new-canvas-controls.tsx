@@ -57,7 +57,7 @@ export interface ControlProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
-  selectedViewsThatRespectLayout: Array<TemplatePath>
+  elementsThatRespectLayout: Array<TemplatePath>
 }
 
 interface NewCanvasControlsProps {
@@ -214,7 +214,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     return 'enabled'
   }
 
-  const selectedViewsThatRespectLayout = useEditorState((store) => {
+  const elementsThatRespectLayout = useEditorState((store) => {
     return flatMapArray((view) => {
       if (TP.isScenePath(view)) {
         const scene = MetadataUtils.findSceneByTemplatePath(store.editor.jsxMetadataKILLME, view)
@@ -226,7 +226,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       } else {
         return [view]
       }
-    }, store.editor.selectedViews).filter((view) => targetRespectsLayout(view, store.editor))
+    }, store.derived.navigatorTargets).filter((view) => targetRespectsLayout(view, store.editor))
   })
 
   const renderModeControlContainer = () => {
@@ -267,7 +267,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       windowToCanvasPosition: props.windowToCanvasPosition,
       cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
-      selectedViewsThatRespectLayout: selectedViewsThatRespectLayout,
+      elementsThatRespectLayout: elementsThatRespectLayout,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {

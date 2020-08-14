@@ -72,6 +72,8 @@ export const Icons = {
   EyeStrikethrough: makeIcon({ type: 'eye-strikethrough', color: 'gray' }),
   EyeOpen: makeIcon({ type: 'eyeopen', color: 'gray' }),
   FourDots: makeIcon({ type: 'fourdots', color: 'gray' }),
+  Download: makeIcon({ type: 'download', color: 'gray', width: 18, height: 18 }),
+  Downloaded: makeIcon({ type: 'downloaded', color: 'gray', width: 18, height: 18 }),
   Gear: makeIcon({ type: 'gear', color: 'black' }),
   LinkClosed: makeIcon({ type: 'link-closed', color: 'gray' }),
   LinkStrikethrough: makeIcon({ type: 'link-strikethrough', color: 'gray' }),

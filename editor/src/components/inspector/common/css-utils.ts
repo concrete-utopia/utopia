@@ -3297,7 +3297,8 @@ export type CSSFontFamily = Array<string>
 
 export type CSSFontWeight = number | 'bold' | 'normal'
 
-export type CSSFontStyle = 'normal' | 'italic'
+/** Does not account for parsing the variable font feature for oblique angles */
+export type CSSFontStyle = 'normal' | 'italic' | 'oblique'
 
 export type CSSFontWeightAndStyle = {
   fontWeight: CSSFontWeight

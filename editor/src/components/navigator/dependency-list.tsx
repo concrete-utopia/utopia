@@ -290,6 +290,10 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       const packageVersionCoerced = Semver.valid(Semver.coerce(packageVersion + '') + '')
       const dependencyBeingEdited = this.state.dependencyBeingEdited
       const editedPackageName = lowerCasePackageName
+
+      const packageAlreadyExists = this.props.packageStatus[editedPackageName] != null
+      const loadingOrUpdating = packageAlreadyExists ? 'updating' : 'loading'
+
       const editedPackageVersionPromise = emptyVersion
         ? this.packageVersionLookup(lowerCasePackageName, dependencyBeingEdited)
         : Promise.resolve(packageVersionCoerced)
@@ -306,7 +310,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
             ]
 
             this.props.editorDispatch([
-              EditorActions.setPackageStatus(editedPackageName, 'loading'),
+              EditorActions.setPackageStatus(editedPackageName, loadingOrUpdating),
               EditorActions.updatePackageJson(updatedNpmDeps),
             ])
             fetchNodeModules([npmDependency(editedPackageName, editedPackageVersion!)])

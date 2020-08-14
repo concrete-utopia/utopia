@@ -24,6 +24,7 @@ import {
   isLeft,
   isRight,
 } from '../../shared/either'
+import { isBuiltinDependency } from './package-manager'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 let jsDelivrCache: { [key: string]: JsdelivrResponse } = {}
@@ -131,8 +132,9 @@ export async function fetchNodeModules(
   newDeps: Array<NpmDependency>,
   shouldRetry: boolean = true,
 ): Promise<NodeFetchResult> {
+  const dependenciesToDownload = newDeps.filter((d) => !isBuiltinDependency(d.name))
   const nodeModulesArr = await Promise.all(
-    newDeps.map(
+    dependenciesToDownload.map(
       async (newDep): Promise<Either<NpmDependency, NodeModules>> => {
         try {
           // TODO if the package version is garbage, do not spend 5 retries on download, as it takes a long time

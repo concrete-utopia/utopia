@@ -61,6 +61,7 @@ import {
   isRight,
   left,
   mapEither,
+  right,
 } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
@@ -1310,21 +1311,44 @@ export function packageJsonFileFromProjectContents(
   return Utils.defaultIfNull<ProjectFile | null>(null, projectContents['/package.json'])
 }
 
-export function getMainUIFromModel(model: { projectContents: ProjectContents }): string | null {
-  const packageJsonFile = Utils.forceNotNull(
-    'No package.json file.',
-    packageJsonFileFromProjectContents(model.projectContents),
-  )
-
-  const packageJsonContents = isCodeFile(packageJsonFile)
-    ? Utils.jsonParseOrNull(packageJsonFile.fileContents)
-    : null
-  const mainUI = R.path(['utopia', 'main-ui'], packageJsonContents)
-  // Make sure someone hasn't put something bizarro in there.
-  if (typeof mainUI === 'string') {
-    return mainUI
+export function getPackageJsonFromEditorState(editor: EditorState): Either<string, any> {
+  const packageJsonFile = packageJsonFileFromProjectContents(editor.projectContents)
+  if (packageJsonFile != null && isCodeFile(packageJsonFile)) {
+    const packageJsonContents = Utils.jsonParseOrNull(packageJsonFile.fileContents)
+    return packageJsonContents != null
+      ? right(packageJsonContents)
+      : left('package.json parse error')
   } else {
-    return null
+    return left('No package.json file.')
+  }
+}
+
+export function getMainUIFromModel(model: EditorState): string | null {
+  const packageJsonContents = getPackageJsonFromEditorState(model)
+  if (isRight(packageJsonContents)) {
+    const mainUI = R.path(['utopia', 'main-ui'], packageJsonContents.value)
+    // Make sure someone hasn't put something bizarro in there.
+    if (typeof mainUI === 'string') {
+      return mainUI
+    }
+  }
+  return null
+}
+
+export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<string, CodeFile> {
+  const parsedFilePath = mapEither(
+    (contents) => contents?.utopia?.html,
+    getPackageJsonFromEditorState(editor),
+  )
+  const filePath =
+    isRight(parsedFilePath) && typeof parsedFilePath.value === 'string'
+      ? parsedFilePath.value
+      : 'public/index.html'
+  const indexHtml = editor.projectContents[`/${filePath}`]
+  if (indexHtml != null && isCodeFile(indexHtml)) {
+    return right(indexHtml)
+  } else {
+    return left(`Can't find code file at ${filePath}`)
   }
 }
 
