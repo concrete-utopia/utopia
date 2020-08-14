@@ -32,13 +32,16 @@ export const SizeBoxLabel = React.memo((props: SizeBoxLabelProps) => {
   const borderRadius = 2 / props.scale
   const padding = 2 / props.scale
 
+  if (!props.visible) {
+    return null
+  }
+
   return (
     <div
       style={{
         position: 'fixed',
         left: props.left,
         top: props.top,
-        display: props.visible ? 'block' : 'none',
         fontSize: fontSize,
         borderRadius: borderRadius,
         whiteSpace: 'nowrap',
@@ -61,34 +64,41 @@ const ResizeLabel = (props: SizeBoxLabelProps) => {
     false,
     true,
   )
-  let elementNames: string[] = []
-  let targetProperties: {
-    horizontal: PropertyPath
-    vertical: PropertyPath
-  } = {
-    horizontal: createLayoutPropertyPath('Width'),
-    vertical: createLayoutPropertyPath('Height'),
-  }
-  Utils.fastForEach(targets, (target) => {
-    if (TP.isScenePath(target)) {
-      const element = MetadataUtils.findSceneByTemplatePath(metadata, target)
-      if (element != null) {
-        elementNames.push(element.label ?? 'Scene')
-      }
-    } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata, target)
-      if (element != null) {
-        const jsxElement = eitherToMaybe(element.element)
-        if (jsxElement != null && isJSXElement(jsxElement)) {
-          elementNames.push(getJSXElementNameAsString(jsxElement.name))
-          targetProperties = LayoutHelpers.getElementSizePropertyPaths(element)
-        }
-      }
-    }
-  })
   const isWidthResize = props.dragState?.edgePosition.x !== 0.5
   const isHeightResize = props.dragState?.edgePosition.y !== 0.5
   const padding = 2 / props.scale
+
+  const { elementNames, targetProperties } = React.useMemo(() => {
+    let names: string[] = []
+    let properties: {
+      horizontal: PropertyPath
+      vertical: PropertyPath
+    } = {
+      horizontal: createLayoutPropertyPath('Width'),
+      vertical: createLayoutPropertyPath('Height'),
+    }
+    Utils.fastForEach(targets, (target) => {
+      if (TP.isScenePath(target)) {
+        const element = MetadataUtils.findSceneByTemplatePath(metadata, target)
+        if (element != null) {
+          names.push(element.label ?? 'Scene')
+        }
+      } else {
+        const element = MetadataUtils.getElementByInstancePathMaybe(metadata, target)
+        if (element != null) {
+          const jsxElement = eitherToMaybe(element.element)
+          if (jsxElement != null && isJSXElement(jsxElement)) {
+            names.push(getJSXElementNameAsString(jsxElement.name))
+            properties = LayoutHelpers.getElementSizePropertyPaths(element)
+          }
+        }
+      }
+    })
+    return {
+      elementNames: names,
+      targetProperties: properties,
+    }
+  }, [metadata, targets])
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: padding }}>
