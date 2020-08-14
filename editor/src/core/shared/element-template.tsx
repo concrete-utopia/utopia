@@ -912,6 +912,7 @@ export interface SpecialSizeMeasurements {
   naturalHeight: number | null
   clientWidth: number
   clientHeight: number
+  parentFlexDirection: string | null
 }
 
 export function specialSizeMeasurements(
@@ -929,6 +930,7 @@ export function specialSizeMeasurements(
   naturalHeight: number | null,
   clientWidth: number,
   clientHeight: number,
+  parentFlexDirection: string | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -945,6 +947,7 @@ export function specialSizeMeasurements(
     naturalHeight,
     clientWidth,
     clientHeight,
+    parentFlexDirection,
   }
 }
 
@@ -966,6 +969,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   0,
   0,
+  null,
 )
 
 export const emptyComputedStyle: ComputedStyle = {}
