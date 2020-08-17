@@ -3,7 +3,7 @@
 export const HOST: string = typeof window === 'undefined' ? '' : window.location.host
 export const SCHEME: string = typeof window === 'undefined' ? 'http' : window.location.protocol
 export const BARE_HOST = HOST.startsWith('www.') ? HOST.slice(4) : HOST
-export const BASE_URL: string = `${SCHEME}://${HOST}/`
+export const BASE_URL: string = `${SCHEME}//${HOST}/`
 
 export const PRODUCTION_ENV: boolean = process.env.NODE_ENV === 'production'
 const PRODUCTION_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
