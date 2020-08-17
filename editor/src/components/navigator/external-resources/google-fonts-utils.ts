@@ -47,7 +47,7 @@ export function cssFontStyleToWebFontStyle(value: CSSFontStyle): Either<string, 
       return right('normal')
     }
     default: {
-      return left('Variable width webfonts from Google are not supported yet.')
+      return left('Variable italic webfonts from Google are not supported yet.')
     }
   }
 }

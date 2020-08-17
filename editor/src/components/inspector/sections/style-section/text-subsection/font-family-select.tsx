@@ -33,7 +33,7 @@ function getInfoForTypeface(cssFontFamily: CSSFontFamily): WebFontFamily {
 
 export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
   const [popupIsOpen, setPopupIsOpen] = React.useState(false)
-  const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
+  const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
   const { value, useSubmitValueFactory, onUnsetValues, controlStyles } = useInspectorInfo(
@@ -65,7 +65,7 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
           />
         ) : null}
         <FlexRow
-          onClick={openPopup}
+          onMouseDown={togglePopup}
           style={{
             boxShadow: `0 0 0 1px ${controlStyles.borderColor} inset`,
             padding: 4,

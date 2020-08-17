@@ -30,7 +30,7 @@ interface FontFamilySelectPopupProps {
 const ModalWidth = 220
 
 const NormalItemSize = 26
-const DefaultSystemFontSize = 70
+const DefaultSystemFontSize = 84
 
 export interface ItemData {
   metadata: SystemDefaultTypefaceMetadata | GoogleFontsTypefaceMetadata
@@ -40,8 +40,6 @@ const itemData: Array<ItemData> = [systemDefaultFont, ...googleFontsList].map((i
   metadata: item,
   height: i === 0 ? DefaultSystemFontSize : NormalItemSize,
 }))
-
-const getItemSize = (index: number) => itemData[index].height
 
 function updateNewFontFamily(
   newValue: SystemDefaultTypefaceMetadata | GoogleFontsTypefaceMetadata,
@@ -74,6 +72,7 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
     controlStyles,
     closePopup,
   }) => {
+    const ref = React.useRef<VariableSizeList>(null)
     const [searchTerm, setSearchTerm] = React.useState('')
     const lowerCaseSearchTerm = searchTerm.toLowerCase()
     const filteredData = React.useMemo(
@@ -81,13 +80,16 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
         itemData.filter((datum) => datum.metadata.name.toLowerCase().includes(lowerCaseSearchTerm)),
       [lowerCaseSearchTerm],
     )
+    const getItemSize = React.useCallback((index: number) => filteredData[index].height, [
+      filteredData,
+    ])
 
-    const { onUnsetValues: fontFamilyOnUnsetValues } = useInspectorStyleInfo('fontFamily')
-
-    const onChange = React.useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value),
-      [],
-    )
+    const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchTerm(e.target.value)
+      if (ref.current != null) {
+        ref.current.resetAfterIndex(0)
+      }
+    }, [])
 
     const [onSubmitFontFamily] = useSubmitValueFactory(updateNewFontFamily)
 
@@ -100,23 +102,29 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
         <FlexColumn
           style={{
             backgroundColor: 'white',
-            padding: 12,
             width: ModalWidth,
             boxShadow: `0 3px 6px #0002`,
           }}
         >
-          <FlexRow>
+          <FlexRow style={{ padding: 12 }}>
             <StringInput
               focusOnMount
               placeholder='Search for fonts…'
               value={searchTerm}
               onChange={onChange}
-              style={{ flexGrow: 1, marginBottom: 12 }}
+              style={{ flexGrow: 1 }}
             />
           </FlexRow>
           <VariableSizeList
+            ref={ref}
             itemSize={getItemSize}
-            itemData={{ onSubmitFontFamily, itemsArray: filteredData, fontWeight, fontStyle }}
+            itemData={{
+              onSubmitFontFamily,
+              itemsArray: filteredData,
+              fontWeight,
+              fontStyle,
+              closePopup,
+            }}
             width={'100%'}
             height={215}
             itemCount={filteredData.length}
