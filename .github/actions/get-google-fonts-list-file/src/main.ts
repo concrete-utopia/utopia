@@ -97,8 +97,7 @@ function googleVariantToFontVariant(
 function googleVariantStringsIntoWebFontVariants(
   variants: Array<string>
 ): Array<WebFontVariant> {
-  const sorted = [...variants].sort()
-  return sorted
+  return variants
     .map(googleVariantToFontVariant)
     .filter((v): v is WebFontVariant => v != null)
     .sort((a, b) => {
