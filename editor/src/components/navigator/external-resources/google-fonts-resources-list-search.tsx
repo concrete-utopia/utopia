@@ -115,10 +115,10 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
         children: Utils.stripNulls(
           googleFontsList.map((fontDatum) => {
             const linkedVariants = linkedResources.find(
-              (resource) => resource.fontFamily === fontDatum.family,
+              (resource) => resource.fontFamily === fontDatum.name,
             )
             return fontFamilyData(
-              fontDatum.family,
+              fontDatum.name,
               fontDatum.variants.map((variant) => {
                 const isDownloaded =
                   (linkedVariants?.variants.findIndex(
@@ -127,7 +127,7 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
                       linkedVariant.webFontWeight === variant.webFontWeight,
                   ) ?? -1) >= 0
                 return fontVariantData(
-                  webFontFamilyVariant(fontDatum.family, variant),
+                  webFontFamilyVariant(fontDatum.name, variant),
                   isDownloaded,
                   pushNewFontFamilyVariant,
                   removeFontFamilyVariant,
