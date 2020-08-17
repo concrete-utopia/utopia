@@ -33034,6 +33034,13 @@ const core = __importStar(__webpack_require__(470));
 const node_fetch_1 = __importDefault(__webpack_require__(454));
 const parserTypescript = __importStar(__webpack_require__(265));
 const prettier = __importStar(__webpack_require__(22));
+function googleFontsTypeface(name, variants) {
+    return {
+        type: 'google-fonts-typeface',
+        name,
+        variants
+    };
+}
 const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${process.env.GOOGLE_WEB_FONTS_KEY}`;
 function webFontVariant(webFontWeight, webFontStyle) {
     return {
@@ -33079,7 +33086,8 @@ function googleVariantStringsIntoWebFontVariants(variants) {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        if (process.env.GOOGLE_WEB_FONTS_KEY === '') {
+        if (process.env.GOOGLE_WEB_FONTS_KEY === '' ||
+            process.env.GOOGLE_WEB_FONTS_KEY == null) {
             core.setFailed(`Env variable 'process.env.GOOGLE_WEB_FONTS_KEY' is empty`);
         }
         node_fetch_1.default(GoogleWebFontsURL)
@@ -33088,14 +33096,10 @@ function run() {
                 .json()
                 .then((responseData) => {
                 if (responseData.error.message != null) {
-                    core.setFailed(`${responseData.error.message}, current API key: ${process.env.GOOGLE_WEB_FONTS_KEY}`);
+                    core.setFailed(`${responseData.error.message} current API key: ${process.env.GOOGLE_WEB_FONTS_KEY}`);
                 }
                 else {
-                    const data = responseData.items.map(datum => ({
-                        type: 'google-fonts-typeface',
-                        name: datum.family,
-                        variants: googleVariantStringsIntoWebFontVariants(datum.variants)
-                    }));
+                    const data = responseData.items.map(datum => googleFontsTypeface(datum.family, googleVariantStringsIntoWebFontVariants(datum.variants)));
                     if (!(data.length > 0)) {
                         core.setFailed(`Data: ${JSON.stringify(data)} is empty`);
                     }
