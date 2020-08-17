@@ -157,11 +157,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
   const colorMetadata = useInspectorStyleInfo('color')
 
   const fontFamilyMetadata = useInspectorStyleInfo('fontFamily')
-  const [onFontFamilySubmitValue] = fontFamilyMetadata.useSubmitValueFactory(
-    (newFontfamily: string) => {
-      return newFontfamily.split(', ')
-    },
-  )
 
   const fontWeightAndStyleMetadata = useInspectorInfo(
     weightAndStylePaths,
