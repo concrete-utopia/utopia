@@ -3,10 +3,23 @@ import fetch from 'node-fetch'
 import * as parserTypescript from 'prettier/parser-typescript'
 import * as prettier from 'prettier/standalone'
 
-interface GoogleFontsFontMetadata {
-  family: string
-  variants: Array<string>
+interface GoogleFontsTypeface {
+  type: 'google-fonts-typeface'
+  name: string
+  variants: Array<WebFontVariant>
 }
+
+function googleFontsTypeface(
+  name: string,
+  variants: Array<WebFontVariant>
+): GoogleFontsTypeface {
+  return {
+    type: 'google-fonts-typeface',
+    name,
+    variants
+  }
+}
+
 type GoogleFontsList = Array<GoogleFontsFontMetadata>
 
 const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${process.env.GOOGLE_WEB_FONTS_KEY}`
@@ -103,45 +116,51 @@ async function run(): Promise<void> {
     .then((response: any) => {
       response
         .json()
-        .then((responseData: {items: GoogleFontsList; error?: any}) => {
-          if (responseData.error.message != null) {
-            core.setFailed(
-              `${responseData.error.message} current API key: ${process.env.GOOGLE_WEB_FONTS_KEY}`
-            )
-          } else {
-            const data = responseData.items.map(datum => ({
-              type: 'google-fonts-typeface',
-              name: datum.family,
-              variants: googleVariantStringsIntoWebFontVariants(datum.variants)
-            }))
-            if (!(data.length > 0)) {
-              core.setFailed(`Data: ${JSON.stringify(data)} is empty`)
+        .then(
+          (responseData: {
+            items: Array<{family: string; variants: Array<string>}>
+            error?: any
+          }) => {
+            if (responseData.error.message != null) {
+              core.setFailed(
+                `${responseData.error.message} current API key: ${process.env.GOOGLE_WEB_FONTS_KEY}`
+              )
             } else {
-              core.setOutput('google-fonts-list-length', data.length)
+              const data = responseData.items.map(datum =>
+                googleFontsTypeface(
+                  datum.family,
+                  googleVariantStringsIntoWebFontVariants(datum.variants)
+                )
+              )
+              if (!(data.length > 0)) {
+                core.setFailed(`Data: ${JSON.stringify(data)} is empty`)
+              } else {
+                core.setOutput('google-fonts-list-length', data.length)
 
-              const dataJSONString = JSON.stringify(data)
-              const uglyFile = `import { GoogleFontsTypefaceMetadata } from '../src/components/navigator/external-resources/google-fonts-utils'
+                const dataJSONString = JSON.stringify(data)
+                const uglyFile = `import { GoogleFontsTypefaceMetadata } from '../src/components/navigator/external-resources/google-fonts-utils'
 
 /** This is auto-generated using this workflow action: https://github.com/concrete-utopia/get-google-fonts-list-file */
 export const googleFontsList: Array<GoogleFontsTypefaceMetadata> = ${dataJSONString}`
-              const prettyFile = prettier.format(uglyFile, {
-                parser: 'typescript',
-                plugins: [parserTypescript],
-                printWidth: 100,
-                trailingComma: 'all',
-                tabWidth: 2,
-                semi: false,
-                singleQuote: true,
-                quoteProps: 'as-needed',
-                bracketSpacing: true,
-                jsxSingleQuote: true,
-                jsxBracketSameLine: false,
-                arrowParens: 'always'
-              })
-              core.setOutput('google-fonts-file', prettyFile)
+                const prettyFile = prettier.format(uglyFile, {
+                  parser: 'typescript',
+                  plugins: [parserTypescript],
+                  printWidth: 100,
+                  trailingComma: 'all',
+                  tabWidth: 2,
+                  semi: false,
+                  singleQuote: true,
+                  quoteProps: 'as-needed',
+                  bracketSpacing: true,
+                  jsxSingleQuote: true,
+                  jsxBracketSameLine: false,
+                  arrowParens: 'always'
+                })
+                core.setOutput('google-fonts-file', prettyFile)
+              }
             }
           }
-        })
+        )
         .catch((error: any) => {
           core.setFailed(error.message)
         })
