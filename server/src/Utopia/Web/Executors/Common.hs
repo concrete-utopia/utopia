@@ -214,7 +214,7 @@ handleRegistryError _ = return Nothing
 
 commonPackageRequest :: Manager -> Text -> IO (Maybe Value)
 commonPackageRequest registryManager urlSuffix = do
-  let options = WR.defaults & WR.manager .~ Right registryManager & WR.header "Accept" .~ ["application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*"]
+  let options = WR.defaults & WR.manager .~ Right registryManager & WR.header "Accept" .~ ["application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*; q=0.7"]
   let registryUrl = "https://registry.npmjs.org/" <> urlSuffix
   resultFromLookup <- (flip catch) handleRegistryError $ do
     responseFromRegistry <- WR.getWith options (toS registryUrl)
