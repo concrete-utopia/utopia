@@ -1,5 +1,10 @@
 // you can turn on/off debug features individually here
 
+export const HOST: string = typeof window === 'undefined' ? '' : window.location.host
+export const SCHEME: string = typeof window === 'undefined' ? 'http' : window.location.protocol
+export const BARE_HOST = HOST.startsWith('www.') ? HOST.slice(4) : HOST
+export const BASE_URL: string = `${SCHEME}://${HOST}/`
+
 export const PRODUCTION_ENV: boolean = process.env.NODE_ENV === 'production'
 const PRODUCTION_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
 const STAGING_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'staging'
@@ -16,15 +21,9 @@ export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
 export const RUN_PERFORMANCE_CHECK = false
 export const REFERENCE_EQUALITY_CHECK = false
 
-export const HOST: string = typeof window === 'undefined' ? '' : window.location.host
-export const BARE_HOST = HOST.startsWith('www.') ? HOST.slice(4) : HOST
-export const BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG
-  ? `https://${HOST}/`
-  : `http://${HOST}/`
-
 export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
-export const STATIC_BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG
+export const STATIC_BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG && BARE_HOST !== 'localhost'
   ? `https://cdn.${BARE_HOST}/`
   : `http://${BARE_HOST}/`
 
