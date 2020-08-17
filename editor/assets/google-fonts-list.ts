@@ -1,6 +1,8 @@
+import { WebFontVariant } from '../src/components/navigator/external-resources/google-fonts-utils'
+
 export interface GoogleFontsFontMetadata {
   family: string
-  variants: Array<string>
+  variants: Array<WebFontVariant>
 }
 export type GoogleFontsList = Array<GoogleFontsFontMetadata>
 
