@@ -101,6 +101,13 @@ function googleVariantStringsIntoWebFontVariants(
   return sorted
     .map(googleVariantToFontVariant)
     .filter((v): v is WebFontVariant => v != null)
+    .sort((a, b) => {
+      return a.webFontWeight + a.webFontStyle
+        ? 1
+        : 0 - b.webFontWeight + b.webFontStyle
+        ? 1
+        : 0
+    })
 }
 
 async function run(): Promise<void> {
