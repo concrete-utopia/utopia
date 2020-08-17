@@ -11,12 +11,93 @@ type GoogleFontsList = Array<GoogleFontsFontMetadata>
 
 const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${process.env.GOOGLE_WEB_FONTS_KEY}`
 
+type WebFontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
+type WebFontStyle = 'normal' | 'italic'
+
+interface WebFontVariant {
+  type: 'web-font-variant'
+  webFontWeight: WebFontWeight
+  webFontStyle: WebFontStyle
+}
+
+function webFontVariant(
+  webFontWeight: WebFontWeight,
+  webFontStyle: WebFontStyle
+): WebFontVariant {
+  return {
+    type: 'web-font-variant',
+    webFontWeight,
+    webFontStyle
+  }
+}
+
+type GoogleFontVariantIdentifier =
+  | '100'
+  | '200'
+  | '300'
+  | 'regular'
+  | '500'
+  | '600'
+  | '700'
+  | '800'
+  | '900'
+  | '100italic'
+  | '200italic'
+  | '300italic'
+  | 'italic'
+  | '500italic'
+  | '600italic'
+  | '700italic'
+  | '800italic'
+  | '900italic'
+
+const fontVariantMap: {[key in GoogleFontVariantIdentifier]: WebFontVariant} = {
+  '100': webFontVariant(100, 'normal'),
+  '200': webFontVariant(200, 'normal'),
+  '300': webFontVariant(300, 'normal'),
+  regular: webFontVariant(400, 'normal'),
+  '500': webFontVariant(500, 'normal'),
+  '600': webFontVariant(600, 'normal'),
+  '700': webFontVariant(700, 'normal'),
+  '800': webFontVariant(800, 'normal'),
+  '900': webFontVariant(900, 'normal'),
+  '100italic': webFontVariant(100, 'italic'),
+  '200italic': webFontVariant(200, 'italic'),
+  '300italic': webFontVariant(300, 'italic'),
+  italic: webFontVariant(400, 'italic'),
+  '500italic': webFontVariant(500, 'italic'),
+  '600italic': webFontVariant(600, 'italic'),
+  '700italic': webFontVariant(700, 'italic'),
+  '800italic': webFontVariant(800, 'italic'),
+  '900italic': webFontVariant(900, 'italic')
+}
+
+function googleVariantToFontVariant(
+  googleVariant: string
+): WebFontVariant | null {
+  if (fontVariantMap.hasOwnProperty(googleVariant)) {
+    return fontVariantMap[googleVariant as GoogleFontVariantIdentifier]
+  } else {
+    // Only numeric font-weight keyword values are currently supported.
+    return null
+  }
+}
+
+function googleVariantStringsIntoWebFontVariants(
+  variants: Array<string>
+): Array<WebFontVariant> {
+  const sorted = [...variants].sort()
+  return sorted
+    .map(googleVariantToFontVariant)
+    .filter((v): v is WebFontVariant => v != null)
+}
+
 async function run(): Promise<void> {
   if (process.env.GOOGLE_WEB_FONTS_KEY === '') {
     core.setFailed(`Env variable 'process.env.GOOGLE_WEB_FONTS_KEY' is empty`)
   }
   fetch(GoogleWebFontsURL)
-    .then(response => {
+    .then((response: any) => {
       response
         .json()
         .then((responseData: {items: GoogleFontsList; error?: any}) => {
@@ -28,7 +109,7 @@ async function run(): Promise<void> {
             const data = responseData.items.map(datum => ({
               type: 'google-fonts-typeface',
               name: datum.family,
-              variants: datum.variants
+              variants: googleVariantStringsIntoWebFontVariants(datum.variants)
             }))
             if (!(data.length > 0)) {
               core.setFailed(`Data: ${JSON.stringify(data)} is empty`)
@@ -58,11 +139,11 @@ export const googleFontsList: Array<GoogleFontsTypefaceMetadata> = ${dataJSONStr
             }
           }
         })
-        .catch(error => {
+        .catch((error: any) => {
           core.setFailed(error.message)
         })
     })
-    .catch(error => {
+    .catch((error: any) => {
       core.setFailed(error.message)
     })
 }
