@@ -12,6 +12,7 @@ import {
   getSceneElementsFromParseSuccess,
   PersistentModel,
   persistentModelFromEditorModel,
+  DefaultPackageJson,
 } from '../components/editor/store/editor-state'
 import * as TP from '../core/shared/template-path'
 import {
@@ -28,7 +29,11 @@ import {
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
-import { getUtopiaJSXComponentsFromSuccess, uiJsFile } from '../core/model/project-file-utils'
+import {
+  getUtopiaJSXComponentsFromSuccess,
+  uiJsFile,
+  codeFile,
+} from '../core/model/project-file-utils'
 import { parseSuccess } from '../core/workers/common/project-file-utils'
 import { sampleImportsForTests, sampleJsxComponentWithScene } from '../core/model/test-ui-js-file'
 import {
@@ -102,6 +107,7 @@ export function createEditorStates(
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: {
+      '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
       '/src/app.js': uiJsFile(
         right(
           parseSuccess(
@@ -185,6 +191,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       templatePath: TP.instancePath([], [BakedInStoryboardUID, createSceneUidFromIndex(index)]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
       type: props['type'] ?? 'dynamic',
+      style: {},
       rootElements:
         elementMetadata == null
           ? []
@@ -212,6 +219,7 @@ export function createFakeMetadataForComponents(
         globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
         container: { layoutSystem: LayoutSystem.PinSystem },
         type: 'static',
+        style: {},
         rootElements: Array.isArray(elementMetadata) ? elementMetadata : [elementMetadata],
       })
     }

@@ -83,3 +83,8 @@ declare module 'friendly-words' {
   export const teams: Array<string>
   export const collections: Array<string>
 }
+
+declare module 'react-windowed-select' {
+  import { StateManager } from 'react-select'
+  export default StateManager
+}

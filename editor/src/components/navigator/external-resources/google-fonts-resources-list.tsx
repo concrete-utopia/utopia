@@ -48,14 +48,10 @@ export const GoogleFontsResourcesList = betterReactMemo('GoogleFontsResourcesLis
             paddingRight: 8,
           }}
         >
-          <GoogleFontsResourcesListSearch useSubmitValueFactory={useSubmitValueFactory} />
-          {isRight(values) ? (
-            values.value.googleFontsResources.map((value) => (
-              <GoogleFontsResourcesListItem key={value.fontFamily} value={value} />
-            ))
-          ) : (
-            <div>{values.value.description}</div>
-          )}
+          <GoogleFontsResourcesListSearch
+            linkedResources={isRight(values) ? values.value.googleFontsResources : []}
+            useSubmitValueFactory={useSubmitValueFactory}
+          />
         </SectionBodyArea>
       )}
     </div>

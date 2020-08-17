@@ -11,7 +11,12 @@ import {
   SquareButton,
   Title,
 } from 'uuiui'
-import { npmDependency, NpmDependency } from '../../core/shared/npm-dependency-types'
+import {
+  npmDependency,
+  NpmDependency,
+  PackageStatusMap,
+  PackageStatus,
+} from '../../core/shared/npm-dependency-types'
 import { ProjectFile } from '../../core/shared/project-file-types'
 import { betterReactMemo } from '../../utils/react-performance'
 import Utils from '../../utils/utils'
@@ -27,6 +32,7 @@ import { packageJsonFileFromProjectContents } from '../editor/store/editor-state
 import { useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
+import { isLeft } from '../../core/shared/either'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -34,9 +40,8 @@ type DependencyListProps = {
   toggleMinimised?: () => void
   focusedPanel: EditorPanel | null
   packageJsonFile: ProjectFile | null
+  packageStatus: PackageStatusMap
 }
-
-export type PackageStatus = 'version-lookup' | 'loading' | 'loaded' | 'error' | 'default-package'
 
 // TODO: this should just contain an NpmDependency and a status
 export interface PackageDetails {
@@ -61,38 +66,10 @@ export type DependencyLoadingStatus = 'not-loading' | 'adding' | 'removing'
 
 type DependencyListState = {
   showInsertField: boolean
-  packages: Array<PackageDetails> | null
   dependencyBeingEdited: string | null
   openVersionInput: boolean
-  packageJsonFile: ProjectFile | null
   newlyLoadedItems: Array<PackageDetails['name']>
   dependencyLoadingStatus: DependencyLoadingStatus
-}
-
-function setPackageStatus(
-  packages: Array<PackageDetails>,
-  name: string,
-  status: PackageStatus,
-): Array<PackageDetails> {
-  return packages.map((npmPackage) => {
-    if (npmPackage.name === name) {
-      return packageDetails(npmPackage.name, npmPackage.version, status)
-    } else {
-      return npmPackage
-    }
-  })
-}
-
-function addInPackage(
-  packages: Array<PackageDetails>,
-  name: string,
-  version: string | null,
-  status: PackageStatus,
-  oldName: string | null,
-): Array<PackageDetails> {
-  let updatedPackages = packages.filter((p) => p.name !== name && p.name !== oldName)
-  updatedPackages = [...updatedPackages, packageDetails(name, version, status)]
-  return updatedPackages
 }
 
 export const DefaultPackagesList: Array<PackageDetails> = [
@@ -120,6 +97,7 @@ export const DefaultPackagesList: Array<PackageDetails> = [
 
 function packageDetailsFromDependencies(
   npmDependencies: Array<NpmDependency>,
+  packageStatus: PackageStatusMap,
 ): Array<PackageDetails> {
   const userAddedPackages: Array<PackageDetails> = []
   Utils.fastForEach(npmDependencies, (dep) => {
@@ -127,7 +105,7 @@ function packageDetailsFromDependencies(
     const status =
       foundDefaultDependency != null && foundDefaultDependency.version === dep.version
         ? 'default-package'
-        : 'loaded'
+        : packageStatus[dep.name]?.status ?? 'loaded'
     userAddedPackages.push(packageDetails(dep.name, dep.version, status))
   })
 
@@ -141,6 +119,7 @@ export const DependencyList = betterReactMemo('DependencyList', () => {
       minimised: store.editor.dependencyList.minimised,
       focusedPanel: store.editor.focusedPanel,
       packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
+      packageStatus: store.editor.nodeModules.packageStatus,
     }
   })
 
@@ -160,38 +139,31 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
   dependencyVersionInputRef = React.createRef<HTMLInputElement>()
   constructor(props: DependencyListProps) {
     super(props)
-    const dependencies = dependenciesFromPackageJson(this.props.packageJsonFile)
     this.state = {
       showInsertField: false,
       dependencyLoadingStatus: 'not-loading',
-      packages: Utils.optionalMap(packageDetailsFromDependencies, dependencies),
       dependencyBeingEdited: null,
       openVersionInput: false,
-      packageJsonFile: props.packageJsonFile,
       newlyLoadedItems: [],
     }
   }
 
-  static getDerivedStateFromProps(
-    props: DependencyListProps,
-    state: DependencyListState,
-  ): DependencyListState | null {
+  componentWillReceiveProps(newProps: DependencyListProps): void {
     if (
-      props.packageJsonFile === state.packageJsonFile ||
-      Utils.shallowEqual(props.packageJsonFile, state.packageJsonFile)
+      newProps.packageJsonFile === this.props.packageJsonFile ||
+      Utils.shallowEqual(newProps.packageJsonFile, this.props.packageJsonFile)
     ) {
-      return null
+      return
     } else {
-      const dependencies = dependenciesFromPackageJson(props.packageJsonFile)
-      return {
-        showInsertField: false,
-        dependencyLoadingStatus: 'not-loading',
-        packages: Utils.optionalMap(packageDetailsFromDependencies, dependencies),
-        dependencyBeingEdited: null,
-        openVersionInput: false,
-        packageJsonFile: props.packageJsonFile,
-        newlyLoadedItems: state.newlyLoadedItems,
-      }
+      this.setState((state) => {
+        return {
+          showInsertField: false,
+          dependencyLoadingStatus: 'not-loading',
+          dependencyBeingEdited: null,
+          openVersionInput: false,
+          newlyLoadedItems: state.newlyLoadedItems,
+        }
+      })
     }
   }
 
@@ -226,35 +198,30 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
 
       this.props.editorDispatch([EditorActions.updatePackageJson(npmDependencies)])
 
-      fetchNodeModules(npmDependencies).then((nodeModules) => {
-        this.props.editorDispatch([
-          EditorActions.updateNodeModulesContents(nodeModules, 'full-build'),
-        ])
+      fetchNodeModules(npmDependencies).then((fetchNodeModulesResult) => {
+        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+          this.packagesUpdateFailed(
+            `Failed to download the following dependencies: ${JSON.stringify(
+              fetchNodeModulesResult.dependenciesWithError.map((d) => d.name),
+            )}`,
+            fetchNodeModulesResult.dependenciesWithError[0]?.name,
+          )
+        }
         this.setState({ dependencyLoadingStatus: 'not-loading' })
+        this.props.editorDispatch([
+          EditorActions.updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
+        ])
       })
 
       this.setState({ dependencyLoadingStatus: 'removing' })
-
-      this.setState((prevState) => {
-        return {
-          packages: Utils.optionalMap(
-            (packages) => packages.filter((p) => p.name !== key),
-            prevState.packages,
-          ),
-        }
-      })
     }
   }
 
   packagesUpdateSuccess = (packageName: string) => {
+    this.props.editorDispatch([EditorActions.setPackageStatus(packageName, 'loaded')])
     this.setState((prevState) => {
-      const updatedPackages = Utils.optionalMap(
-        (packages) => setPackageStatus(packages, packageName, 'loaded'),
-        prevState.packages,
-      )
       const newlyLoadedItems = [...prevState.newlyLoadedItems, packageName]
       return {
-        packages: updatedPackages,
         newlyLoadedItems,
         dependencyLoadingStatus: 'not-loading',
       }
@@ -262,9 +229,11 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
   }
 
   packagesUpdateFailed = (e: any, packageName: string) => {
+    // TODO make this a packageNames Array
     console.error(e)
     this.props.editorDispatch(
       [
+        EditorActions.setPackageStatus(packageName, 'error'),
         pushToast({
           message: `${packageName} couldn't be added. Check the console for details.`,
           level: 'ERROR',
@@ -274,27 +243,20 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       'leftpane',
     )
     this.setState((prevState) => {
-      const updatedPackages = Utils.optionalMap(
-        (packages) => setPackageStatus(packages, packageName, 'error'),
-        prevState.packages,
-      )
-
       return {
-        packages: updatedPackages,
         dependencyLoadingStatus: 'not-loading',
       }
     })
   }
 
   packageVersionLookup = (packageName: string, oldName: string | null): Promise<string> => {
+    this.props.editorDispatch(
+      [EditorActions.setPackageStatus(packageName, 'version-lookup')],
+      'leftpane',
+    )
     this.setState((prevState) => {
-      const updatedPackages = Utils.optionalMap(
-        (packages) => addInPackage(packages, packageName, null, 'version-lookup', oldName),
-        prevState.packages,
-      )
       return {
         dependencyLoadingStatus: 'adding',
-        packages: updatedPackages,
       }
     })
     return findLatestVersion(packageName)
@@ -328,37 +290,52 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       const packageVersionCoerced = Semver.valid(Semver.coerce(packageVersion + '') + '')
       const dependencyBeingEdited = this.state.dependencyBeingEdited
       const editedPackageName = lowerCasePackageName
+
+      const packageAlreadyExists = this.props.packageStatus[editedPackageName] != null
+      const loadingOrUpdating = packageAlreadyExists ? 'updating' : 'loading'
+
       const editedPackageVersionPromise = emptyVersion
         ? this.packageVersionLookup(lowerCasePackageName, dependencyBeingEdited)
         : Promise.resolve(packageVersionCoerced)
       editedPackageVersionPromise
         .then((editedPackageVersion) => {
           this.setState((prevState) => {
-            const updatedPackages = addInPackage(
-              Utils.defaultIfNull<Array<PackageDetails>>([], prevState.packages),
-              editedPackageName,
-              editedPackageVersion,
-              'loading',
-              dependencyBeingEdited,
+            const currentNpmDeps = dependenciesFromPackageJson(this.props.packageJsonFile)
+            const npmDepsWithoutCurrentDep = currentNpmDeps.filter(
+              (p) => p.name !== editedPackageName && p.name !== dependencyBeingEdited,
             )
-            const updatedNpmDeps = Utils.stripNulls(
-              updatedPackages.map((pack) =>
-                pack.version == null ? null : npmDependency(pack.name, pack.version),
-              ),
-            )
-            this.props.editorDispatch([EditorActions.updatePackageJson(updatedNpmDeps)])
+            const updatedNpmDeps = [
+              ...npmDepsWithoutCurrentDep,
+              npmDependency(editedPackageName, editedPackageVersion!),
+            ]
+
+            this.props.editorDispatch([
+              EditorActions.setPackageStatus(editedPackageName, loadingOrUpdating),
+              EditorActions.updatePackageJson(updatedNpmDeps),
+            ])
             fetchNodeModules([npmDependency(editedPackageName, editedPackageVersion!)])
-              .then((nodeModules) => {
-                this.packagesUpdateSuccess(editedPackageName)
-                this.props.editorDispatch([
-                  EditorActions.updateNodeModulesContents(nodeModules, 'incremental'),
-                ])
+              .then((fetchNodeModulesResult) => {
+                if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+                  this.packagesUpdateFailed(
+                    `Failed to download the following dependencies: ${JSON.stringify(
+                      fetchNodeModulesResult.dependenciesWithError.map((d) => d.name),
+                    )}`,
+                    editedPackageName,
+                  )
+                } else {
+                  this.packagesUpdateSuccess(editedPackageName)
+                  this.props.editorDispatch([
+                    EditorActions.updateNodeModulesContents(
+                      fetchNodeModulesResult.nodeModules,
+                      'incremental',
+                    ),
+                  ])
+                }
               })
               .catch((e) => this.packagesUpdateFailed(e, editedPackageName))
 
             return {
               dependencyLoadingStatus: 'adding',
-              packages: updatedPackages,
             }
           })
         })
@@ -404,8 +381,13 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
   }
 
   render() {
+    const packagesWithStatus: Array<PackageDetails> = packageDetailsFromDependencies(
+      dependenciesFromPackageJson(this.props.packageJsonFile),
+      this.props.packageStatus,
+    )
+
     const loadingPackages =
-      this.state.packages?.filter((dependency) => dependency.status === 'loading') ?? []
+      packagesWithStatus.filter((dependency) => dependency.status === 'loading') ?? []
     let statusNode: React.ReactNode
     if (this.state.dependencyLoadingStatus === 'adding' && loadingPackages.length > 0) {
       statusNode = (
@@ -450,9 +432,9 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
           )}
         </SectionTitleRow>
         <SectionBodyArea minimised={this.props.minimised}>
-          {this.state.packages != null && !this.props.minimised ? (
+          {!this.props.minimised ? (
             <DependencyListItems
-              packages={this.state.packages}
+              packages={packagesWithStatus}
               editingLocked={this.state.dependencyLoadingStatus != 'not-loading'}
               openDependencyEditField={this.openDependencyEditField}
               updateDependencyToLatestVersion={this.updateDependencyToLatestVersion}

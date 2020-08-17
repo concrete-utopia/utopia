@@ -1,3 +1,4 @@
+import { webFontVariant } from '../../components/navigator/external-resources/google-fonts-utils'
 import { previewHtml } from '../../core/model/new-project-files'
 import { isRight } from '../../core/shared/either'
 import {
@@ -6,9 +7,9 @@ import {
   getGeneratedExternalLinkText,
   googleFontsResource,
   parseLinkTags,
+  printExternalResources,
   updateHTMLExternalResourcesLinks,
 } from './external-resources-parser'
-import { fontVariant } from '../../components/navigator/external-resources/google-fonts-utils'
 
 const testFile = `
 <!DOCTYPE html>
@@ -112,9 +113,9 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
                   },
                 ],
               },
@@ -124,24 +125,24 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
                   },
                   Object {
-                    "italic": true,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "italic",
+                    "webFontWeight": 400,
                   },
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 600,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 600,
                   },
                   Object {
-                    "italic": true,
-                    "type": "font-variant",
-                    "weight": 600,
+                    "type": "web-font-variant",
+                    "webFontStyle": "italic",
+                    "webFontWeight": 600,
                   },
                 ],
               },
@@ -151,9 +152,9 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
                   },
                 ],
               },
@@ -163,9 +164,9 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
                   },
                 ],
               },
@@ -175,9 +176,9 @@ describe('external-resources-parser', () => {
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
-                    "italic": false,
-                    "type": "font-variant",
-                    "weight": 400,
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
                   },
                 ],
               },
@@ -194,9 +195,11 @@ describe('updates external resources', () => {
   it('adds new resources', () => {
     const updated = updateHTMLExternalResourcesLinks(
       previewHtml,
-      externalResources(
-        [genericExternalResource('https://utopia.com/stylesheet.css', 'stylesheet')],
-        [googleFontsResource('Roboto', [fontVariant(400, false)])],
+      printExternalResources(
+        externalResources(
+          [genericExternalResource('https://utopia.com/stylesheet.css', 'stylesheet')],
+          [googleFontsResource('Roboto', [webFontVariant(400, 'normal')])],
+        ),
       ),
     )
     expect(updated).toMatchInlineSnapshot(`

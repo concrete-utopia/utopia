@@ -110,11 +110,13 @@ import {
   eitherToMaybe,
   mapEither,
 } from '../../../core/shared/either'
-import {
+import type {
   RequireFn,
   TypeDefinitions,
   npmDependency,
   NpmDependency,
+  PackageStatus,
+  PackageStatusMap,
 } from '../../../core/shared/npm-dependency-types'
 import {
   InstancePath,
@@ -333,6 +335,7 @@ import {
   StartCheckpointTimer,
   FinishCheckpointTimer,
   AddMissingDimensions,
+  SetPackageStatus,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -350,6 +353,7 @@ import {
   dependenciesFromPackageJsonContents,
   updateDependenciesInEditorState,
   updateDependenciesInPackageJson,
+  createLoadedPackageStatusMapFromDependencies,
 } from '../npm-dependency/npm-dependency'
 import { updateRemoteThumbnail } from '../persistence'
 import { deleteAssetFile, saveAsset as saveAssetToServer, updateAssetFileName } from '../server'
@@ -1316,6 +1320,7 @@ export const UPDATE_FNS = {
         skipDeepFreeze: true,
         files: action.nodeModules,
         projectFilesBuildResults: {},
+        packageStatus: action.packageResult,
       },
       codeResultCache: action.codeResultCache,
     }
@@ -1337,6 +1342,7 @@ export const UPDATE_FNS = {
         skipDeepFreeze: true,
         files: action.nodeModules,
         projectFilesBuildResults: {},
+        packageStatus: action.packageResult,
       },
       codeResultCache: action.codeResultCache,
       safeMode: action.safeMode,
@@ -3267,13 +3273,30 @@ export const UPDATE_FNS = {
       [action.filePath]: file,
     })
 
+    let packageLoadingStatus: PackageStatusMap = {}
+
     // Ensure dependencies are updated if the `package.json` file has been changed.
     if (action.filePath === '/package.json' && isCodeFile(file)) {
       const deps = dependenciesFromPackageJsonContents(file.fileContents)
       if (deps != null) {
-        fetchNodeModules(deps).then((nodeModules) =>
-          dispatch([updateNodeModulesContents(nodeModules, 'full-build')]),
-        )
+        packageLoadingStatus = deps.reduce((packageStatus: PackageStatusMap, dep) => {
+          packageStatus[dep.name] = { status: 'loading' }
+          return packageStatus
+        }, {})
+
+        fetchNodeModules(deps).then((fetchNodeModulesResult) => {
+          const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
+            deps,
+            fetchNodeModulesResult.dependenciesWithError,
+          )
+          const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
+            setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
+          )
+          dispatch([
+            ...packageErrorActions,
+            updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
+          ])
+        })
       }
     }
 
@@ -3283,6 +3306,13 @@ export const UPDATE_FNS = {
       canvas: {
         ...editor.canvas,
         mountCount: editor.canvas.mountCount + 1,
+      },
+      nodeModules: {
+        ...editor.nodeModules,
+        packageStatus: {
+          ...editor.nodeModules.packageStatus,
+          ...packageLoadingStatus,
+        },
       },
     }
   },
@@ -3994,6 +4024,7 @@ export const UPDATE_FNS = {
         dispatch,
         dependenciesFromProjectContents(result.projectContents),
         action.buildType,
+        getMainUIFromModel(result),
       ),
     }
 
@@ -4044,6 +4075,12 @@ export const UPDATE_FNS = {
       null,
     )
     return setCanvasFramesInnerNew(editor, [frameAndTarget], null)
+  },
+  SET_PACKAGE_STATUS: (action: SetPackageStatus, editor: EditorState): EditorState => {
+    const packageName = action.packageName
+    return produce(editor, (draft) => {
+      draft.nodeModules.packageStatus[packageName] = { status: action.status }
+    })
   },
 }
 
@@ -4282,7 +4319,13 @@ export async function newProject(
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
   const npmDependencies = dependenciesFromProjectContents(defaultPersistentModel.projectContents)
-  const nodeModules = await fetchNodeModules(npmDependencies)
+  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
+
+  const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
+  const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
+    npmDependencies,
+    fetchNodeModulesResult.dependenciesWithError,
+  )
 
   const codeResultCache = generateCodeResultCache(
     {},
@@ -4292,6 +4335,7 @@ export async function newProject(
     dispatch,
     npmDependencies,
     'full-build',
+    null,
   )
 
   renderEditorRoot()
@@ -4302,6 +4346,7 @@ export async function newProject(
         nodeModules: nodeModules,
         persistentModel: defaultPersistentModel,
         codeResultCache: codeResultCache,
+        packageResult: packageResult,
       },
     ],
     'everyone',
@@ -4335,7 +4380,13 @@ export async function load(
   // this action is now async!
 
   const npmDependencies = dependenciesFromProjectContents(model.projectContents)
-  const nodeModules = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
+  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
+
+  const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
+  const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
+    npmDependencies,
+    fetchNodeModulesResult.dependenciesWithError,
+  )
 
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
 
@@ -4350,6 +4401,7 @@ export async function load(
       dispatch,
       npmDependencies,
       'full-build',
+      null,
     )
   } else {
     codeResultCache = await loadCodeResult(
@@ -4374,6 +4426,7 @@ export async function load(
         action: 'LOAD',
         model: model,
         nodeModules: nodeModules,
+        packageResult: packageResult,
         codeResultCache: codeResultCache,
         title: title,
         projectId: projectId,
@@ -4405,6 +4458,7 @@ function loadCodeResult(
             dispatch,
             dependenciesFromProjectContents(projectContents),
             'full-build',
+            null,
           )
           resolve(codeResultCache)
           workers.removeBundleResultEventListener(handleMessage)
@@ -5382,5 +5436,13 @@ export function addMissingDimensions(
     action: 'ADD_MISSING_DIMENSIONS',
     existingSize: existingSize,
     target: target,
+  }
+}
+
+export function setPackageStatus(packageName: string, status: PackageStatus): SetPackageStatus {
+  return {
+    action: 'SET_PACKAGE_STATUS',
+    packageName: packageName,
+    status: status,
   }
 }

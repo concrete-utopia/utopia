@@ -133,7 +133,7 @@ export class SelectModeControlContainer extends React.Component<
       const moveTargets = selection.filter(
         (view) =>
           TP.isScenePath(view) ||
-          this.props.selectedViewsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
+          this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
       // setting original frames
       if (moveTargets.length > 0) {
@@ -625,14 +625,14 @@ export class SelectModeControlContainer extends React.Component<
         let rootHasStyleProp = false
         if (scene != null) {
           rootHasStyleProp = scene.rootElements.some((rootElement) => {
-            return this.props.selectedViewsThatRespectLayout.some((path) => {
+            return this.props.elementsThatRespectLayout.some((path) => {
               return TP.pathsEqual(path, rootElement.templatePath)
             })
           })
         }
         return scene?.type === 'static' || rootHasStyleProp
       } else {
-        return this.props.selectedViewsThatRespectLayout.some((path) => TP.pathsEqual(path, target))
+        return this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, target))
       }
     })
   }

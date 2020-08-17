@@ -28,7 +28,7 @@ import {
   getHighlightBoundsFromParseResult,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
-import { RequireFn, TypeDefinitions } from '../../../core/shared/npm-dependency-types'
+import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
   CanvasMetadataParseResult,
   CodeFile,
@@ -61,6 +61,7 @@ import {
   isRight,
   left,
   mapEither,
+  right,
 } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
@@ -91,7 +92,7 @@ import {
 } from '../../custom-code/code-file'
 import { EditorModes, Mode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
-import { DefaultPackagesList } from '../../navigator/dependency-list'
+import { DefaultPackagesList, PackageDetails } from '../../navigator/dependency-list'
 import { LeftMenuTab, LeftPaneDefaultWidth } from '../../navigator/left-pane'
 import { DropTargetHint } from '../../navigator/navigator'
 import { EditorDispatch, LoginState, ProjectListing } from '../action-types'
@@ -228,6 +229,7 @@ export interface EditorState {
     skipDeepFreeze: true // when we evaluate the code files we plan to mutate the content with the eval result
     files: NodeModules
     projectFilesBuildResults: MultiFileBuildResult
+    packageStatus: PackageStatusMap
   }
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
@@ -980,11 +982,12 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
     projectContents: {},
-    codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, [], 'full-build'),
+    codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, [], 'full-build', null),
     nodeModules: {
       skipDeepFreeze: true,
       files: {},
       projectFilesBuildResults: {},
+      packageStatus: {},
     },
     selectedViews: [],
     highlightedViews: [],
@@ -1308,20 +1311,44 @@ export function packageJsonFileFromProjectContents(
   return Utils.defaultIfNull<ProjectFile | null>(null, projectContents['/package.json'])
 }
 
-export function getMainUIFromModel(model: { projectContents: ProjectContents }): string | null {
-  const packageJsonFile = Utils.forceNotNull(
-    'No package.json file.',
-    packageJsonFileFromProjectContents(model.projectContents),
-  )
-  const packageJsonContents = isCodeFile(packageJsonFile)
-    ? Utils.jsonParseOrNull(packageJsonFile.fileContents)
-    : null
-  const mainUI = R.path(['utopia', 'main-ui'], packageJsonContents)
-  // Make sure someone hasn't put something bizarro in there.
-  if (typeof mainUI === 'string') {
-    return mainUI
+export function getPackageJsonFromEditorState(editor: EditorState): Either<string, any> {
+  const packageJsonFile = packageJsonFileFromProjectContents(editor.projectContents)
+  if (packageJsonFile != null && isCodeFile(packageJsonFile)) {
+    const packageJsonContents = Utils.jsonParseOrNull(packageJsonFile.fileContents)
+    return packageJsonContents != null
+      ? right(packageJsonContents)
+      : left('package.json parse error')
   } else {
-    return null
+    return left('No package.json file.')
+  }
+}
+
+export function getMainUIFromModel(model: EditorState): string | null {
+  const packageJsonContents = getPackageJsonFromEditorState(model)
+  if (isRight(packageJsonContents)) {
+    const mainUI = R.path(['utopia', 'main-ui'], packageJsonContents.value)
+    // Make sure someone hasn't put something bizarro in there.
+    if (typeof mainUI === 'string') {
+      return mainUI
+    }
+  }
+  return null
+}
+
+export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<string, CodeFile> {
+  const parsedFilePath = mapEither(
+    (contents) => contents?.utopia?.html,
+    getPackageJsonFromEditorState(editor),
+  )
+  const filePath =
+    isRight(parsedFilePath) && typeof parsedFilePath.value === 'string'
+      ? parsedFilePath.value
+      : 'public/index.html'
+  const indexHtml = editor.projectContents[`/${filePath}`]
+  if (indexHtml != null && isCodeFile(indexHtml)) {
+    return right(indexHtml)
+  } else {
+    return left(`Can't find code file at ${filePath}`)
   }
 }
 

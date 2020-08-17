@@ -767,6 +767,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
         frame: { left: 0, top: 0, width: 100, height: 100 },
         globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
         type: 'static',
+        style: { width: 100, height: 100 },
         container: { layoutSystem: LayoutSystem.PinSystem },
         rootElements: [
           {
@@ -871,7 +872,8 @@ describe('LOAD', () => {
       action: 'LOAD' as const,
       model: loadedModel,
       nodeModules: {},
-      codeResultCache: generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build'),
+      packageResult: {},
+      codeResultCache: generateCodeResultCache({}, {}, [], {}, NO_OP, [], 'full-build', null),
       title: '',
       projectId: '',
       storedState: null,

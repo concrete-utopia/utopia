@@ -1,0 +1,57 @@
+name: Tag and Release
+on:
+  workflow_dispatch:
+    inputs:
+      tag-name:
+        description: 'Tag to give this release (will increment patch version by default)'
+        required: false
+      commit-ref:
+        description: 'Branch or SHA to tag'
+        required: true
+        default: 'master'
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
+      - name: Get Previous Tag
+        id: get-previous-tag
+        uses: WyriHaximus/github-action-get-previous-tag@0.2.0
+        if: ${{ github.event.inputs.tag-name == null }}
+      - name: Get Next Tags
+        id: get-next-tags
+        uses: WyriHaximus/github-action-next-semvers@v1.0
+        if: ${{ github.event.inputs.tag-name == null }}
+        with:
+          version: ${{ steps.get-previous-tag.outputs.tag }}
+      - name: Set Explicit Tag Variable
+        # If we have explicitly passed in a tag, use that
+        if: ${{ github.event.inputs.tag-name != null }}
+        run: echo ::set-env name=NEW_TAG::${{ github.event.inputs.tag-name }}
+      - name: Set Calculated Tag Variable
+        # If we haven't explicitly passed in a tag, use the next patch version determined above
+        if: ${{ github.event.inputs.tag-name == null }}
+        run: echo ::set-env name=NEW_TAG::${{ steps.get-next-tags.outputs.v_patch }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          release_name: Release ${{ env.NEW_TAG }}
+          commitish: ${{ github.event.inputs.commit-ref }}
+          body: Release ${{ env.NEW_TAG }}
+          draft: false
+          prerelease: false
+      - name: Trigger production deploy
+        uses: peter-evans/repository-dispatch@v1.1.1
+        with:
+          token: ${{ secrets.DEPLOY_REPO_ACCESS_TOKEN }}
+          repository: concrete-utopia/utopia-deploy
+          event-type: trigger-production-deploy
+          client-payload: '{"commit-ref": "${{ env.NEW_TAG }}"}'

@@ -23,6 +23,11 @@ import {
   getDirectionAwareLabels,
 } from '../layout-section/flex-container-subsection/flex-container-controls'
 import { jsxAttributeValue } from '../../../../core/shared/element-template'
+import { useEditorState } from '../../../editor/store/store-hook'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { isPercentPin } from 'utopia-api'
+import { unsetSceneProp, setSceneProp } from '../../../editor/actions/actions'
+import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -167,8 +172,83 @@ function useSceneType() {
   )
 }
 
+export function useSceneRootViewInfo() {
+  const { selectedViews, metadata } = useEditorState((state) => {
+    return {
+      selectedViews: state.editor.selectedViews,
+      metadata: state.editor.jsxMetadataKILLME,
+    }
+  })
+
+  const selectedScenePath = Utils.forceNotNull(
+    'missing scene from scene section',
+    selectedViews.find(TP.isScenePath),
+  )
+  const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScenePath)
+  if (scene != null) {
+    return scene.rootElements.map((element) => {
+      return {
+        width: element.props?.style?.width,
+        height: element.props?.style?.height,
+      }
+    })
+  } else {
+    return []
+  }
+}
+
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
+  const { dispatch, metadata } = useEditorState((store) => ({
+    dispatch: store.dispatch,
+    metadata: store.editor.jsxMetadataKILLME,
+  }))
+  const selectedViews = useEditorState((store) => store.editor.selectedViews)
+  const selectedScene = Utils.forceNotNull(
+    'Scene cannot be null in SceneContainerSection',
+    React.useMemo(() => selectedViews.find(TP.isScenePath), [selectedViews]),
+  )
+  const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScene)
+
   const sceneTypeInfo = useSceneType()
+  let controlStatus: ControlStatus = simpleControlStatus
+  let controlStyles = simpleControlStyles
+  const rootViewsSizeInfo = useSceneRootViewInfo()
+  if (
+    sceneTypeInfo.value === 'static' &&
+    rootViewsSizeInfo.some((size) => isPercentPin(size.width) || isPercentPin(size.height))
+  ) {
+    controlStatus = 'disabled'
+    controlStyles = getControlStyles(controlStatus)
+  }
+  const onSubmitValue = React.useCallback(
+    (newTransformedValues: any, transient?: boolean) => {
+      sceneTypeInfo.onSubmitValue(newTransformedValues, transient)
+      if (newTransformedValues === 'dynamic') {
+        dispatch(
+          [
+            unsetSceneProp(selectedScene, createLayoutPropertyPath('Width')),
+            unsetSceneProp(selectedScene, createLayoutPropertyPath('Height')),
+          ],
+          'inspector',
+        )
+      } else if (scene != null) {
+        const actions = [
+          setSceneProp(
+            selectedScene,
+            createLayoutPropertyPath('Width'),
+            jsxAttributeValue(scene.globalFrame?.width),
+          ),
+          setSceneProp(
+            selectedScene,
+            createLayoutPropertyPath('Height'),
+            jsxAttributeValue(scene.globalFrame?.height),
+          ),
+        ]
+        dispatch(actions, 'inspector')
+      }
+    },
+    [dispatch, sceneTypeInfo, selectedScene, scene],
+  )
   return (
     <>
       <PropertyRow style={scenePropertyRowStyle}>
@@ -180,11 +260,11 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
           <OptionChainControl
             id={'layoutSystem'}
             key={'layoutSystem'}
-            onSubmitValue={sceneTypeInfo.onSubmitValue}
+            onSubmitValue={onSubmitValue}
             value={sceneTypeInfo.value}
             options={getSceneTypeOptions()}
-            controlStatus={simpleControlStatus}
-            controlStyles={simpleControlStyles}
+            controlStatus={controlStatus}
+            controlStyles={controlStyles}
           />
         </div>
       </PropertyRow>

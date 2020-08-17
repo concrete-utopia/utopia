@@ -7,6 +7,7 @@ import {
   NpmDependency,
   npmDependency,
   PossiblyUnversionedNpmDependency,
+  PackageStatusMap,
 } from '../../../core/shared/npm-dependency-types'
 import {
   isCodeFile,
@@ -23,7 +24,7 @@ import {
   updatePackageJsonInEditorState,
 } from '../store/editor-state'
 import { objectMap } from '../../../core/shared/object-utils'
-import { mapArrayToDictionary } from '../../../core/shared/array-utils'
+import { mapArrayToDictionary, pluck } from '../../../core/shared/array-utils'
 import { useEditorState } from '../store/store-hook'
 import * as React from 'react'
 import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'
@@ -204,4 +205,18 @@ export function importResultFromImports(
     }
   })
   return result
+}
+
+export function createLoadedPackageStatusMapFromDependencies(
+  dependencies: Array<NpmDependency>,
+  dependenciesWithErrors: Array<NpmDependency>,
+): PackageStatusMap {
+  const errorDependencyNames = pluck(dependenciesWithErrors, 'name')
+  return dependencies.reduce((statusMap: PackageStatusMap, dependency) => {
+    const status = errorDependencyNames.includes(dependency.name) ? 'error' : 'loaded'
+    statusMap[dependency.name] = {
+      status: status,
+    }
+    return statusMap
+  }, {})
 }

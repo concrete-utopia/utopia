@@ -1,27 +1,27 @@
 import * as json5 from 'json5'
 import * as R from 'ramda'
 import * as ReactErrorOverlay from 'react-error-overlay'
-import { getProjectID, PREVIEW_IS_EMBEDDED, BASE_URL, getQueryParam } from '../common/env-vars'
+import { BASE_URL, getProjectID, getQueryParam, PREVIEW_IS_EMBEDDED } from '../common/env-vars'
 import { fetchLocalProject } from '../common/persistence'
+import { incorporateBuildResult } from '../components/custom-code/code-file'
 import { sendPreviewModel } from '../components/editor/actions/actions'
 import { dependenciesFromProjectContents } from '../components/editor/npm-dependency/npm-dependency'
 import { projectIsStoredLocally } from '../components/editor/persistence'
 import { loadProject } from '../components/editor/server'
 import { isPersistentModel, PersistentModel } from '../components/editor/store/editor-state'
-import Utils from '../utils/utils'
-import { isCodeFile, ESCodeFile, esCodeFile, NodeModules } from '../core/shared/project-file-types'
-import type { ProjectContents } from '../core/shared/project-file-types'
-import {
-  getRequireFn,
-  getDependencyTypeDefinitions,
-} from '../core/es-modules/package-manager/package-manager'
-import { npmDependency } from '../core/shared/npm-dependency-types'
-import { objectMap } from '../core/shared/object-utils'
 import { fetchNodeModules } from '../core/es-modules/package-manager/fetch-packages'
-import { createBundle } from '../core/workers/bundler-promise'
+import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
+import { pluck } from '../core/shared/array-utils'
+import { isRight } from '../core/shared/either'
+import { isCodeFile, NodeModules } from '../core/shared/project-file-types'
+import type { ProjectContents } from '../core/shared/project-file-types'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
-import { fastForEach } from '../core/shared/utils'
-import { incorporateBuildResult } from '../components/custom-code/code-file'
+import { createBundle } from '../core/workers/bundler-promise'
+import {
+  getGeneratedExternalLinkText,
+  updateHTMLExternalResourcesLinks,
+} from '../printer-parsers/html/external-resources-parser'
+import Utils from '../utils/utils'
 
 interface PolledLoadParams {
   projectId: string
@@ -173,7 +173,19 @@ const initPreview = () => {
 
   const previewRender = async (projectContents: ProjectContents) => {
     const npmDependencies = dependenciesFromProjectContents(projectContents)
-    let nodeModules = await fetchNodeModules(npmDependencies)
+    const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
+
+    if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+      const errorToThrow = Error(
+        `Could not load the following npm dependencies: ${JSON.stringify(
+          pluck(fetchNodeModulesResult.dependenciesWithError, 'name'),
+        )}`,
+      )
+      ReactErrorOverlay.reportRuntimeError(errorToThrow)
+      throw errorToThrow
+    }
+
+    let nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
 
     /**
      * please note that we are passing in an empty object instead of the .d.ts files
@@ -211,6 +223,17 @@ const initPreview = () => {
             } catch (e) {
               // we don't care
             }
+            const linkTags = getGeneratedExternalLinkText(file.fileContents)
+            if (isRight(linkTags)) {
+              const newHead = updateHTMLExternalResourcesLinks(
+                document.head.innerHTML,
+                linkTags.value,
+              )
+              if (isRight(newHead)) {
+                document.head.innerHTML = newHead.value
+              }
+            }
+
             const bodyContent = file.fileContents.split('<body>')[1].split('</body>')[0]
             document.body.innerHTML = bodyContent
             addOpenInUtopiaButton()

@@ -70,12 +70,13 @@ export function determineElementsToOperateOnForDragging(
       componentMetadata,
     ).map((view) => {
       const parentPath = TP.parentPath(view)
-      if (
-        parentPath != null &&
-        TP.isScenePath(parentPath) &&
-        MetadataUtils.findSceneByTemplatePath(componentMetadata, parentPath)?.type === 'dynamic'
-      ) {
-        return parentPath
+      if (parentPath != null && TP.isScenePath(parentPath)) {
+        const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata, parentPath)
+        if (MetadataUtils.isSceneTreatedAsDynamic(scene)) {
+          return parentPath
+        } else {
+          return view
+        }
       } else {
         return view
       }
@@ -85,7 +86,7 @@ export function determineElementsToOperateOnForDragging(
     return flatMapArray<TemplatePath, TemplatePath>((view) => {
       if (TP.isScenePath(view)) {
         const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata, view)
-        if (scene?.type === 'dynamic') {
+        if (scene != null && MetadataUtils.isSceneTreatedAsDynamic(scene)) {
           return scene.rootElements.map((e) => e.templatePath)
         } else {
           return [view]
