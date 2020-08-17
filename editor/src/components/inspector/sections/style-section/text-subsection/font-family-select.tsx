@@ -81,4 +81,3 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
     </PropertyRow>
   )
 })
-FontFamilySelect.displayName = 'FontFamilySelect'
