@@ -2,6 +2,7 @@ import * as React from 'react'
 import { betterReactMemo } from 'uuiui-deps'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'
+import { identity } from '../../../../../core/shared/utils'
 import utils from '../../../../../utils/utils'
 import { FlexRow, Icons, UtopiaTheme } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -38,8 +39,8 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
 
   const { value, useSubmitValueFactory, onUnsetValues, controlStyles } = useInspectorInfo(
     ['fontFamily', 'fontStyle', 'fontWeight'],
-    (newValue) => newValue,
-    (newValue) => newValue,
+    identity,
+    identity,
     stylePropPathMappingFn,
   )
 

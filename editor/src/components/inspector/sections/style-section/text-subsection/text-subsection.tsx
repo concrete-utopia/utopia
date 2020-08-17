@@ -57,6 +57,7 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { betterReactMemo } from 'uuiui-deps'
 import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
 import { FontFamilySelect } from './font-family-select'
+import { FontWeightAndStyleSelect } from './font-weight-and-style-select'
 
 const ObjectPathImmutable: any = OPI
 
@@ -75,12 +76,6 @@ function getInfoForTypeface(cssFontFamily: CSSFontFamily): TypefaceInfo {
   }
 }
 
-function getFontFamilyValue(fontFamily: CSSFontFamily): string {
-  const info = getInfoForTypeface(fontFamily)
-  const fontFamilyString = fontFamilyArrayToCSSFontFamilyString(info.cssFontFamily)
-  return fontFamilyString
-}
-
 function convertTypefaceListToSelectOptionList(
   typefaces: Array<TypefaceInfo>,
 ): Array<SelectOption> {
@@ -96,58 +91,14 @@ function convertTypefaceListToSelectOptionList(
   })
 }
 
-function getFontWeightOptions(typeface: TypefaceInfo): Array<SelectOption> {
-  return typeface.fontWeightsAndStyles.map((variant) => {
-    const utopiaFontWeight = cssFontWeightAndStyleToUtopiaFontWeight(variant)
-    const label = fontWeightsList[utopiaFontWeight].fontWeightAndStyleName
-    return {
-      label: label,
-      value: utopiaFontWeight,
-      style: {
-        ...variant,
-        fontFamily: fontFamilyArrayToCSSFontFamilyString(typeface.cssFontFamily),
-      },
-    }
-  })
-}
-
-function getFontFamilyOptions(): Array<SelectOption> {
-  return convertTypefaceListToSelectOptionList(AllTypefacesAlphabeticallySorted)
-}
-
-function getTypefaceInfoFromCSSFontFamily(cssFontFamily: CSSFontFamily): TypefaceInfo {
-  const value = AllTypefacesAlphabeticallySorted.find(
-    (typeface, i) => typeface.cssFontFamily[0] === cssFontFamily[0],
-  )
-  if (value) {
-    return value
-  } else {
-    return {
-      fontFamilyName: fontFamilyArrayToCSSFontFamilyString(cssFontFamily),
-      cssFontFamily,
-      fontWeightsAndStyles: defaultFontWeightsAndStyles,
-    }
-  }
-}
-
 function updateItalicFontStyle(newValue: boolean, oldValue: CSSFontStyle): CSSFontStyle {
   return newValue ? 'italic' : 'normal'
-}
-
-function utopiaFontWeightToCSSFontWeightAndStyle(
-  utopiaFontWeight: UtopiaFontWeight,
-): CSSFontWeightAndStyle {
-  return {
-    fontWeight: parseInt(utopiaFontWeight.slice(0, 3)),
-    fontStyle: utopiaFontWeight.endsWith('i') ? 'italic' : 'normal',
-  }
 }
 
 function updateUnderlinedTextDecoration(newValue: boolean): CSSTextDecorationLine {
   return newValue ? 'underline' : 'none'
 }
 
-const weightAndStylePaths: Array<'fontWeight' | 'fontStyle'> = ['fontWeight', 'fontStyle']
 const normalLetterSpacingAsCSSNumber = cssNumber(0, 'px')
 const normalLineHeightAsCSSNumber = cssNumber(0, 'px')
 
@@ -158,21 +109,9 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
 
   const fontFamilyMetadata = useInspectorStyleInfo('fontFamily')
 
-  const fontWeightAndStyleMetadata = useInspectorInfo(
-    weightAndStylePaths,
-    cssFontWeightAndStyleToUtopiaFontWeight,
-    utopiaFontWeightToCSSFontWeightAndStyle,
-    stylePropPathMappingFn,
-  )
-
   const fontStyleMetadata = useInspectorStyleInfo('fontStyle')
 
   const [onItalicSubmitValue] = fontStyleMetadata.useSubmitValueFactory(updateItalicFontStyle)
-
-  const fontWeightAndStyleOptions = React.useMemo(
-    () => getFontWeightOptions(getTypefaceInfoFromCSSFontFamily(fontFamilyMetadata.value)),
-    [fontFamilyMetadata.value],
-  )
 
   const fontSizeMetadata = useInspectorStyleInfo('fontSize')
 
@@ -194,7 +133,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
   const showSubsectionUnsetContextMenuItem =
     colorMetadata.controlStyles.unsettable ||
     fontFamilyMetadata.controlStyles.unsettable ||
-    fontWeightAndStyleMetadata.controlStyles.unsettable ||
     fontStyleMetadata.controlStyles.unsettable ||
     fontSizeMetadata.controlStyles.unsettable ||
     textAlignMetadata.controlStyles.unsettable ||
@@ -206,7 +144,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
   const onUnsetSubsectionValues = () => {
     colorMetadata.onUnsetValues()
     fontFamilyMetadata.onUnsetValues()
-    fontWeightAndStyleMetadata.onUnsetValues()
     fontStyleMetadata.onUnsetValues()
     fontSizeMetadata.onUnsetValues()
     textAlignMetadata.onUnsetValues()
@@ -219,12 +156,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
   const subsectionContextMenuItems = utils.stripNulls([
     showSubsectionUnsetContextMenuItem
       ? addOnUnsetValues(['all font properties'], onUnsetSubsectionValues)
-      : null,
-  ])
-
-  const fontWeightAndStyleContextMenuItems = utils.stripNulls([
-    fontWeightAndStyleMetadata.controlStyles.unsettable
-      ? addOnUnsetValues(['fontWeight', 'fontStyle'], fontWeightAndStyleMetadata.onUnsetValues)
       : null,
   ])
 
@@ -331,24 +262,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
       </InspectorContextMenuWrapper>
       <FontFamilySelect />
       <PropertyRow style={{ gridColumnGap: 8, gridTemplateColumns: '130px 55px 28px' }}>
-        <InspectorContextMenuWrapper
-          id='fontWeightAndStyle-context-menu'
-          items={fontWeightAndStyleContextMenuItems}
-          data={null}
-          style={{ gridColumn: '1' }}
-        >
-          <Tooltip title='Font Weight and Style' placement='top'>
-            <SelectControl
-              id={'fontWeightAndStyle'}
-              key={'fontWeightAndStyle'}
-              onSubmitValue={fontWeightAndStyleMetadata.onSubmitValue}
-              value={fontWeightAndStyleMetadata.value}
-              options={fontWeightAndStyleOptions}
-              controlStatus={fontWeightAndStyleMetadata.controlStatus}
-              controlStyles={fontWeightAndStyleMetadata.controlStyles}
-            />
-          </Tooltip>
-        </InspectorContextMenuWrapper>
+        <FontWeightAndStyleSelect />
         <InspectorContextMenuWrapper
           id='fontSize-context-menu'
           items={fontSizeContextMenuItems}
