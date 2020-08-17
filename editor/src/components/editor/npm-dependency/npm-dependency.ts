@@ -29,32 +29,44 @@ import { useEditorState } from '../store/store-hook'
 import * as React from 'react'
 import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'
 
-export async function findLatestVersion(packageName: string): Promise<string> {
+async function packageLookupCall(packageName: string, packageVersion: string | null): Promise<any> {
   const requestInit: RequestInit = {
     headers: {
       accept: 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*',
     },
   }
 
+  const encodedName = encodeURIComponent(packageName).replace(/^%40/, '@')
+  const URLSuffix = packageVersion == null ? encodedName : `${encodedName}/${packageVersion}`
+
   // Calls out to our services because of the wonder of CORS.
   const response = await fetch(
-    `${UTOPIA_BACKEND}javascript/package/metadata/${encodeURIComponent(packageName).replace(
-      /^%40/,
-      '@',
-    )}`,
+    `${UTOPIA_BACKEND}javascript/package/metadata/${URLSuffix}`,
     requestInit,
   )
   if (response.ok) {
-    const packageJson = await response.json()
-    const latestVersion = Utils.path(['dist-tags', 'latest'], packageJson)
-    if (latestVersion == null || typeof latestVersion != 'string') {
-      return Promise.reject(`Received invalid content for package ${packageName}`)
-    } else {
-      return Promise.resolve(latestVersion)
-    }
+    return await response.json()
   } else {
     return Promise.reject(`Received an error for package ${packageName}`)
   }
+}
+
+export async function findLatestVersion(packageName: string): Promise<string> {
+  const metadata = await packageLookupCall(packageName, null)
+  const latestVersion = Utils.path(['dist-tags', 'latest'], metadata)
+  if (latestVersion == null || typeof latestVersion != 'string') {
+    return Promise.reject(`Received invalid content for package ${packageName}`)
+  } else {
+    return Promise.resolve(latestVersion)
+  }
+}
+
+export async function checkPackageVersionExists(
+  packageName: string,
+  version: string,
+): Promise<boolean> {
+  await packageLookupCall(packageName, version)
+  return Promise.resolve(true)
 }
 
 export function dependenciesFromPackageJsonContents(packageJson: string): Array<NpmDependency> {

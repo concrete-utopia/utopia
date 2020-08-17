@@ -27,6 +27,7 @@ import { clearSelection, pushToast } from '../editor/actions/actions'
 import {
   dependenciesFromPackageJson,
   findLatestVersion,
+  checkPackageVersionExists,
 } from '../editor/npm-dependency/npm-dependency'
 import { packageJsonFileFromProjectContents } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -136,7 +137,6 @@ export const DependencyList = betterReactMemo('DependencyList', () => {
 
 class DependencyListInner extends React.PureComponent<DependencyListProps, DependencyListState> {
   DependencyListContainerId = 'dependencyList'
-  dependencyVersionInputRef = React.createRef<HTMLInputElement>()
   constructor(props: DependencyListProps) {
     super(props)
     this.state = {
@@ -174,20 +174,11 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     })
 
   openDependencyEditField = (dependencyName: string, openVersionInput: boolean = false) => {
-    this.setState(
-      {
-        dependencyBeingEdited: dependencyName,
-        showInsertField: false,
-        openVersionInput: openVersionInput,
-      },
-      () => {
-        if (openVersionInput) {
-          if (this.dependencyVersionInputRef.current != null) {
-            this.dependencyVersionInputRef.current.focus()
-          }
-        }
-      },
-    )
+    this.setState({
+      dependencyBeingEdited: dependencyName,
+      showInsertField: false,
+      openVersionInput: openVersionInput,
+    })
   }
 
   removeDependency = (key: string) => {
@@ -249,7 +240,11 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     })
   }
 
-  packageVersionLookup = (packageName: string, oldName: string | null): Promise<string> => {
+  ensurePackageVersionExists = (packageName: string, version: string): Promise<string> => {
+    return checkPackageVersionExists(packageName, version).then(() => version)
+  }
+
+  latestPackageVersionLookup = (packageName: string, oldName: string | null): Promise<string> => {
     this.props.editorDispatch(
       [EditorActions.setPackageStatus(packageName, 'version-lookup')],
       'leftpane',
@@ -286,17 +281,17 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     } else if (packageName !== '' && packageName !== null) {
       const lowerCasePackageName = packageName.toLowerCase()
 
-      const emptyVersion: boolean = packageVersion == null || packageVersion === ''
-      const packageVersionCoerced = Semver.valid(Semver.coerce(packageVersion + '') + '')
+      const trimmedPackageVersion = packageVersion?.trim()
       const dependencyBeingEdited = this.state.dependencyBeingEdited
       const editedPackageName = lowerCasePackageName
 
       const packageAlreadyExists = this.props.packageStatus[editedPackageName] != null
       const loadingOrUpdating = packageAlreadyExists ? 'updating' : 'loading'
 
-      const editedPackageVersionPromise = emptyVersion
-        ? this.packageVersionLookup(lowerCasePackageName, dependencyBeingEdited)
-        : Promise.resolve(packageVersionCoerced)
+      const editedPackageVersionPromise =
+        trimmedPackageVersion == null || trimmedPackageVersion === ''
+          ? this.latestPackageVersionLookup(lowerCasePackageName, dependencyBeingEdited)
+          : this.ensurePackageVersionExists(lowerCasePackageName, trimmedPackageVersion)
       editedPackageVersionPromise
         .then((editedPackageVersion) => {
           this.setState((prevState) => {

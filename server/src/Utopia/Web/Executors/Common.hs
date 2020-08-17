@@ -212,15 +212,21 @@ closeResources dbPool = do
 handleRegistryError :: HttpException -> IO (Maybe Value)
 handleRegistryError _ = return Nothing
 
-lookupPackageJSON :: Manager -> Text -> IO (Maybe Value)
-lookupPackageJSON registryManager javascriptPackageName = do
+commonPackageRequest :: Manager -> Text -> IO (Maybe Value)
+commonPackageRequest registryManager urlSuffix = do
   let options = WR.defaults & WR.manager .~ Right registryManager & WR.header "Accept" .~ ["application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*"]
-  let registryUrl = "https://registry.npmjs.org/" <> javascriptPackageName
+  let registryUrl = "https://registry.npmjs.org/" <> urlSuffix
   resultFromLookup <- (flip catch) handleRegistryError $ do
     responseFromRegistry <- WR.getWith options (toS registryUrl)
     responseAsJSON <- WR.asValue responseFromRegistry
     return (responseAsJSON ^? WR.responseBody)
   return resultFromLookup
+
+lookupPackageJSON :: Manager -> Text -> IO (Maybe Value)
+lookupPackageJSON registryManager javascriptPackageName = commonPackageRequest registryManager javascriptPackageName
+
+lookupSpecificPackageVersionJSON :: Manager -> Text -> Text -> IO (Maybe Value)
+lookupSpecificPackageVersionJSON registryManager javascriptPackageName javascriptPackageVersion = commonPackageRequest registryManager (javascriptPackageName <> "/" <> javascriptPackageVersion)
 
 emptyAssetsCaches :: [PathAndBuilders] -> IO AssetsCaches
 emptyAssetsCaches _assetPathDetails = do
