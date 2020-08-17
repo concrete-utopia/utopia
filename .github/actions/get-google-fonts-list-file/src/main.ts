@@ -20,8 +20,6 @@ function googleFontsTypeface(
   }
 }
 
-type GoogleFontsList = Array<GoogleFontsFontMetadata>
-
 const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${process.env.GOOGLE_WEB_FONTS_KEY}`
 
 type WebFontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
