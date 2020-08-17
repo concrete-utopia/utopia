@@ -335,10 +335,15 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
           })
         })
         .catch((reason) => {
+          const wasFetchingLatest = trimmedPackageVersion == null || trimmedPackageVersion === ''
+          const errorMessage = wasFetchingLatest
+            ? `Couldn't automatically locate latest version for ${lowerCasePackageName}`
+            : `Couldn't fetch version ${trimmedPackageVersion} for ${lowerCasePackageName}`
+
           this.props.editorDispatch(
             [
               pushToast({
-                message: `Couldn't automatically locate latest version for ${lowerCasePackageName}`,
+                message: errorMessage,
                 level: 'ERROR',
               }),
             ],
