@@ -23,7 +23,7 @@ export const REFERENCE_EQUALITY_CHECK = false
 
 export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
-export const STATIC_BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG && BARE_HOST !== 'localhost'
+export const STATIC_BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG && BARE_HOST !== 'localhost:8000'
   ? `https://cdn.${BARE_HOST}/`
   : `http://${BARE_HOST}/`
 
