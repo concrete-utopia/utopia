@@ -33035,13 +33035,55 @@ const node_fetch_1 = __importDefault(__webpack_require__(454));
 const parserTypescript = __importStar(__webpack_require__(265));
 const prettier = __importStar(__webpack_require__(22));
 const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${process.env.GOOGLE_WEB_FONTS_KEY}`;
+function webFontVariant(webFontWeight, webFontStyle) {
+    return {
+        type: 'web-font-variant',
+        webFontWeight,
+        webFontStyle
+    };
+}
+const fontVariantMap = {
+    '100': webFontVariant(100, 'normal'),
+    '200': webFontVariant(200, 'normal'),
+    '300': webFontVariant(300, 'normal'),
+    regular: webFontVariant(400, 'normal'),
+    '500': webFontVariant(500, 'normal'),
+    '600': webFontVariant(600, 'normal'),
+    '700': webFontVariant(700, 'normal'),
+    '800': webFontVariant(800, 'normal'),
+    '900': webFontVariant(900, 'normal'),
+    '100italic': webFontVariant(100, 'italic'),
+    '200italic': webFontVariant(200, 'italic'),
+    '300italic': webFontVariant(300, 'italic'),
+    italic: webFontVariant(400, 'italic'),
+    '500italic': webFontVariant(500, 'italic'),
+    '600italic': webFontVariant(600, 'italic'),
+    '700italic': webFontVariant(700, 'italic'),
+    '800italic': webFontVariant(800, 'italic'),
+    '900italic': webFontVariant(900, 'italic')
+};
+function googleVariantToFontVariant(googleVariant) {
+    if (fontVariantMap.hasOwnProperty(googleVariant)) {
+        return fontVariantMap[googleVariant];
+    }
+    else {
+        // Only numeric font-weight keyword values are currently supported.
+        return null;
+    }
+}
+function googleVariantStringsIntoWebFontVariants(variants) {
+    const sorted = [...variants].sort();
+    return sorted
+        .map(googleVariantToFontVariant)
+        .filter((v) => v != null);
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         if (process.env.GOOGLE_WEB_FONTS_KEY === '') {
             core.setFailed(`Env variable 'process.env.GOOGLE_WEB_FONTS_KEY' is empty`);
         }
         node_fetch_1.default(GoogleWebFontsURL)
-            .then(response => {
+            .then((response) => {
             response
                 .json()
                 .then((responseData) => {
@@ -33052,7 +33094,7 @@ function run() {
                     const data = responseData.items.map(datum => ({
                         type: 'google-fonts-typeface',
                         name: datum.family,
-                        variants: datum.variants
+                        variants: googleVariantStringsIntoWebFontVariants(datum.variants)
                     }));
                     if (!(data.length > 0)) {
                         core.setFailed(`Data: ${JSON.stringify(data)} is empty`);
@@ -33082,11 +33124,11 @@ export const googleFontsList: Array<GoogleFontsTypefaceMetadata> = ${dataJSONStr
                     }
                 }
             })
-                .catch(error => {
+                .catch((error) => {
                 core.setFailed(error.message);
             });
         })
-            .catch(error => {
+            .catch((error) => {
             core.setFailed(error.message);
         });
     });

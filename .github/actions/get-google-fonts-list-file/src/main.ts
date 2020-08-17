@@ -93,7 +93,10 @@ function googleVariantStringsIntoWebFontVariants(
 }
 
 async function run(): Promise<void> {
-  if (process.env.GOOGLE_WEB_FONTS_KEY === '') {
+  if (
+    process.env.GOOGLE_WEB_FONTS_KEY === '' ||
+    process.env.GOOGLE_WEB_FONTS_KEY == null
+  ) {
     core.setFailed(`Env variable 'process.env.GOOGLE_WEB_FONTS_KEY' is empty`)
   }
   fetch(GoogleWebFontsURL)
@@ -103,7 +106,7 @@ async function run(): Promise<void> {
         .then((responseData: {items: GoogleFontsList; error?: any}) => {
           if (responseData.error.message != null) {
             core.setFailed(
-              `${responseData.error.message}, current API key: ${process.env.GOOGLE_WEB_FONTS_KEY}`
+              `${responseData.error.message} current API key: ${process.env.GOOGLE_WEB_FONTS_KEY}`
             )
           } else {
             const data = responseData.items.map(datum => ({
