@@ -166,7 +166,7 @@ function useSceneType(): InspectorInfo<boolean> {
       return resizesContent
     },
     (resizesContent: unknown) => {
-      const resizesConentBoolean = resizesContent ?? false
+      const resizesConentBoolean = Boolean(resizesContent ?? false)
       return {
         [PP.toString(PathForResizeContent)]: jsxAttributeValue(resizesConentBoolean),
       }

@@ -1054,8 +1054,9 @@ function renderCoreElement(
 
     const rootComponent = sceneProps.component
     const rootComponentName = sceneProps.component?.topLevelElementName
-    const resizesContent: boolean =
-      Utils.path(PP.getElements(PathForResizeContent), sceneProps) ?? false
+    const resizesContent = Boolean(
+      Utils.path(PP.getElements(PathForResizeContent), sceneProps) ?? false,
+    )
 
     const sceneId: string = sceneProps['data-uid'] || ''
     return (
