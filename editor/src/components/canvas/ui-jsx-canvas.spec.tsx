@@ -1463,7 +1463,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
           data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
           style=\\"
-            position: absolute;
+            position: relative;
             width: 400px;
             height: 400px;
             left: 0;
@@ -1553,7 +1553,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
           data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
           style=\\"
-            position: absolute;
+            position: relative;
             width: 400px;
             height: 400px;
             left: 0;
