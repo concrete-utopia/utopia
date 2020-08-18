@@ -28,6 +28,8 @@ import {
   dependenciesFromPackageJson,
   findLatestVersion,
   checkPackageVersionExists,
+  VersionLookupResult,
+  isPackageNotFound,
 } from '../editor/npm-dependency/npm-dependency'
 import { packageJsonFileFromProjectContents } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -240,11 +242,29 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     })
   }
 
-  ensurePackageVersionExists = (packageName: string, version: string): Promise<string> => {
-    return checkPackageVersionExists(packageName, version).then(() => version)
+  packagesUpdateNotFound = (packageName: string) => {
+    this.props.editorDispatch(
+      [EditorActions.setPackageStatus(packageName, 'not-found')],
+      'leftpane',
+    )
+    this.setState((prevState) => {
+      return {
+        dependencyLoadingStatus: 'not-loading',
+      }
+    })
   }
 
-  latestPackageVersionLookup = (packageName: string, oldName: string | null): Promise<string> => {
+  ensurePackageVersionExists = (
+    packageName: string,
+    version: string,
+  ): Promise<VersionLookupResult> => {
+    return checkPackageVersionExists(packageName, version)
+  }
+
+  latestPackageVersionLookup = (
+    packageName: string,
+    oldName: string | null,
+  ): Promise<VersionLookupResult> => {
     this.props.editorDispatch(
       [EditorActions.setPackageStatus(packageName, 'version-lookup')],
       'leftpane',
@@ -288,62 +308,77 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       const packageAlreadyExists = this.props.packageStatus[editedPackageName] != null
       const loadingOrUpdating = packageAlreadyExists ? 'updating' : 'loading'
 
+      const packageNameAndVersion =
+        trimmedPackageVersion == null || trimmedPackageVersion === ''
+          ? lowerCasePackageName
+          : `${lowerCasePackageName}@${trimmedPackageVersion}`
+
       const editedPackageVersionPromise =
         trimmedPackageVersion == null || trimmedPackageVersion === ''
           ? this.latestPackageVersionLookup(lowerCasePackageName, dependencyBeingEdited)
           : this.ensurePackageVersionExists(lowerCasePackageName, trimmedPackageVersion)
       editedPackageVersionPromise
-        .then((editedPackageVersion) => {
-          this.setState((prevState) => {
-            const currentNpmDeps = dependenciesFromPackageJson(this.props.packageJsonFile)
-            const npmDepsWithoutCurrentDep = currentNpmDeps.filter(
-              (p) => p.name !== editedPackageName && p.name !== dependencyBeingEdited,
+        .then((versionLookupResult) => {
+          if (isPackageNotFound(versionLookupResult)) {
+            this.props.editorDispatch(
+              [
+                pushToast({
+                  message: `No npm registry entry found for ${packageNameAndVersion}`,
+                  level: 'ERROR',
+                }),
+              ],
+              'leftpane',
             )
-            const updatedNpmDeps = [
-              ...npmDepsWithoutCurrentDep,
-              npmDependency(editedPackageName, editedPackageVersion!),
-            ]
 
-            this.props.editorDispatch([
-              EditorActions.setPackageStatus(editedPackageName, loadingOrUpdating),
-              EditorActions.updatePackageJson(updatedNpmDeps),
-            ])
-            fetchNodeModules([npmDependency(editedPackageName, editedPackageVersion!)])
-              .then((fetchNodeModulesResult) => {
-                if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-                  this.packagesUpdateFailed(
-                    `Failed to download the following dependencies: ${JSON.stringify(
-                      fetchNodeModulesResult.dependenciesWithError.map((d) => d.name),
-                    )}`,
-                    editedPackageName,
-                  )
-                } else {
-                  this.packagesUpdateSuccess(editedPackageName)
-                  this.props.editorDispatch([
-                    EditorActions.updateNodeModulesContents(
-                      fetchNodeModulesResult.nodeModules,
-                      'incremental',
-                    ),
-                  ])
-                }
-              })
-              .catch((e) => this.packagesUpdateFailed(e, editedPackageName))
+            this.packagesUpdateNotFound(editedPackageName)
+          } else {
+            const editedPackageVersion = versionLookupResult.version
+            this.setState((prevState) => {
+              const currentNpmDeps = dependenciesFromPackageJson(this.props.packageJsonFile)
+              const npmDepsWithoutCurrentDep = currentNpmDeps.filter(
+                (p) => p.name !== editedPackageName && p.name !== dependencyBeingEdited,
+              )
+              const updatedNpmDeps = [
+                ...npmDepsWithoutCurrentDep,
+                npmDependency(editedPackageName, editedPackageVersion!),
+              ]
 
-            return {
-              dependencyLoadingStatus: 'adding',
-            }
-          })
+              this.props.editorDispatch([
+                EditorActions.setPackageStatus(editedPackageName, loadingOrUpdating),
+                EditorActions.updatePackageJson(updatedNpmDeps),
+              ])
+              fetchNodeModules([npmDependency(editedPackageName, editedPackageVersion!)])
+                .then((fetchNodeModulesResult) => {
+                  if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+                    this.packagesUpdateFailed(
+                      `Failed to download the following dependencies: ${JSON.stringify(
+                        fetchNodeModulesResult.dependenciesWithError.map((d) => d.name),
+                      )}`,
+                      editedPackageName,
+                    )
+                  } else {
+                    this.packagesUpdateSuccess(editedPackageName)
+                    this.props.editorDispatch([
+                      EditorActions.updateNodeModulesContents(
+                        fetchNodeModulesResult.nodeModules,
+                        'incremental',
+                      ),
+                    ])
+                  }
+                })
+                .catch((e) => this.packagesUpdateFailed(e, editedPackageName))
+
+              return {
+                dependencyLoadingStatus: 'adding',
+              }
+            })
+          }
         })
         .catch((reason) => {
-          const wasFetchingLatest = trimmedPackageVersion == null || trimmedPackageVersion === ''
-          const errorMessage = wasFetchingLatest
-            ? `Couldn't automatically locate latest version for ${lowerCasePackageName}`
-            : `Couldn't fetch version ${trimmedPackageVersion} for ${lowerCasePackageName}`
-
           this.props.editorDispatch(
             [
               pushToast({
-                message: errorMessage,
+                message: `Couldn't fetch metadata for ${packageNameAndVersion}`,
                 level: 'ERROR',
               }),
             ],
