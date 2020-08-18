@@ -64,13 +64,7 @@ function updateNewFontFamily(
 
 export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>(
   'FontFamilySelectPopup',
-  ({
-    value: { fontWeight, fontStyle },
-    useSubmitValueFactory,
-    onUnsetValues,
-    controlStyles,
-    closePopup,
-  }) => {
+  ({ value: { fontWeight, fontStyle }, useSubmitValueFactory, closePopup }) => {
     const ref = React.useRef<VariableSizeList>(null)
     const [searchTerm, setSearchTerm] = React.useState('')
     const lowerCaseSearchTerm = searchTerm.toLowerCase()

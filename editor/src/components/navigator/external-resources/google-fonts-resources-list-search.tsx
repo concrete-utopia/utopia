@@ -42,17 +42,23 @@ export function updatePushNewFontFamilyVariant(
         (resource) => resource.fontFamily === newValue.familyName,
       )
       if (existingFamilyResourceIndex > -1) {
-        let workingGoogleFontsResource: GoogleFontsResource = {
-          ...oldValue.googleFontsResources[existingFamilyResourceIndex],
-          variants: (() => {
-            let workingVariants = [
-              ...oldValue.googleFontsResources[existingFamilyResourceIndex].variants,
-            ]
-            workingVariants.push(newValue.fontVariant)
-            return workingVariants
-          })(),
-        }
-        workingGoogleFontsResources[existingFamilyResourceIndex] = workingGoogleFontsResource
+        const variantIsAlreadyAdded =
+          oldValue.googleFontsResources[existingFamilyResourceIndex].variants.findIndex(
+            (value) =>
+              value.webFontStyle === newValue.fontVariant.webFontStyle &&
+              value.webFontWeight === newValue.fontVariant.webFontWeight,
+          ) > -1
+        if (!variantIsAlreadyAdded)
+          workingGoogleFontsResources[existingFamilyResourceIndex] = {
+            ...oldValue.googleFontsResources[existingFamilyResourceIndex],
+            variants: (() => {
+              let workingVariants = [
+                ...oldValue.googleFontsResources[existingFamilyResourceIndex].variants,
+              ]
+              workingVariants.push(newValue.fontVariant)
+              return workingVariants
+            })(),
+          }
       } else {
         workingGoogleFontsResources.push(
           googleFontsResource(newValue.familyName, [newValue.fontVariant]),

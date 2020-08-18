@@ -5,15 +5,12 @@ import { ListChildComponentProps } from 'react-window'
 import { isRight } from '../../../../../core/shared/either'
 import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
 import { FlexColumn, UtopiaTheme } from '../../../../../uuiui'
-import { notice } from '../../../../common/notices'
-import { pushToast } from '../../../../editor/actions/actions'
 import { useEditorState } from '../../../../editor/store/store-hook'
 import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-resources-list-search'
 import {
   cssFontStyleToWebFontStyle,
   cssFontWeightToWebFontWeight,
   GoogleFontsTypeface,
-  prettyNameForFontVariant,
   SystemDefaultTypeface,
   webFontFamilyVariant,
   webFontVariant,
@@ -37,7 +34,6 @@ export const FontFamilySelectPopupItem: React.FunctionComponent<FontsListChildCo
   style,
   index,
 }) => {
-  const { dispatch } = useEditorState((state) => ({ dispatch: state.dispatch }))
   const metadata = itemsArray[index].metadata
   const { useSubmitValueFactory } = useExternalResources()
   const [pushNewFontFamilyVariant] = useSubmitValueFactory(updatePushNewFontFamilyVariant)
@@ -54,27 +50,9 @@ export const FontFamilySelectPopupItem: React.FunctionComponent<FontsListChildCo
           webFontVariant(webFontWeight.value, webFontStyle.value),
         )
         pushNewFontFamilyVariant(newWebFontFamilyVariant)
-
-        dispatch([
-          pushToast(
-            notice(
-              `${metadata.name} - ${prettyNameForFontVariant(
-                newWebFontFamilyVariant.fontVariant,
-              )} has been added to the project`,
-            ),
-          ),
-        ])
       }
     }
-  }, [
-    onSubmitFontFamily,
-    fontStyle,
-    fontWeight,
-    metadata,
-    pushNewFontFamilyVariant,
-    closePopup,
-    dispatch,
-  ])
+  }, [onSubmitFontFamily, fontStyle, fontWeight, metadata, pushNewFontFamilyVariant, closePopup])
   return (
     <FlexColumn
       style={{ ...style, paddingLeft: 12, paddingRight: 12, paddingTop: 6, paddingBottom: 6 }}
