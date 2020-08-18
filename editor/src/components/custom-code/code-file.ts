@@ -151,22 +151,36 @@ export function generateCodeResultCache(
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
   npmDependencies: NpmDependency[],
-  fullBuild: BuildType,
+  buildType: BuildType,
+  mainUiFileName: string | null,
 ): CodeResultCache {
-  let nodeModulesAndProjectFiles: NodeModules = {
-    ...nodeModules,
-  }
   // Makes the assumption that `fullBuild` and `updatedModules` are in line
   // with each other.
   let modules: MultiFileBuildResult =
-    fullBuild === 'full-build'
+    buildType === 'full-build'
       ? { ...updatedModules }
       : {
           ...existingModules,
           ...updatedModules,
         }
-  incorporateBuildResult(nodeModulesAndProjectFiles, modules)
-  const requireFn = getMemoizedRequireFn(nodeModulesAndProjectFiles, dispatch)
+
+  // FIXME Rip this awful hack out after we tackle the dependency graph work!
+  // Sneaky hack - if the currently edited file is a canvas file, we don't re-evaluate any other files
+  const updatedFileNames = Object.keys(updatedModules)
+  const onlyCanvasFileUpdated =
+    buildType === 'incremental' &&
+    mainUiFileName != null &&
+    updatedFileNames.length === 1 &&
+    (updatedFileNames[0] === mainUiFileName || updatedFileNames[0] === `/${mainUiFileName}`)
+
+  if (!onlyCanvasFileUpdated) {
+    // MUTATION ALERT! This function is mutating editorState.nodeModules.files by inserting the project files into it
+    // FIXME Remove this mutation with the dependency graph work and store the eval cache for project files elsewhere
+    // (maybe even in the graph itself)
+    incorporateBuildResult(nodeModules, modules)
+  }
+
+  const requireFn = getMemoizedRequireFn(nodeModules, dispatch)
 
   const exportValues = getExportValuesFromAllModules(modules, requireFn)
   let cache: { [code: string]: CodeResult } = {}

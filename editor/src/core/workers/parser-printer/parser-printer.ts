@@ -672,9 +672,23 @@ function printCodeImpl(
   return result
 }
 
-interface PossibleCanvasContents {
+interface PossibleCanvasContentsExpression {
   name: string
   initializer: TS.Expression
+}
+
+interface PossibleCanvasContentsFunction {
+  name: string
+  parameters: TS.NodeArray<TS.ParameterDeclaration>
+  body: TS.ConciseBody
+}
+
+type PossibleCanvasContents = PossibleCanvasContentsExpression | PossibleCanvasContentsFunction
+
+function isPossibleCanvasContentsFunction(
+  canvasContents: PossibleCanvasContents,
+): canvasContents is PossibleCanvasContentsFunction {
+  return (canvasContents as PossibleCanvasContentsFunction).body != null
 }
 
 export function looksLikeCanvasElements(
@@ -686,8 +700,18 @@ export function looksLikeCanvasElements(
     if (variableDeclaration != null) {
       if (variableDeclaration.initializer != null) {
         const name = variableDeclaration.name.getText(sourceFile)
-        return right({ name: name, initializer: variableDeclaration.initializer })
+        const initializer = variableDeclaration.initializer
+        if (TS.isArrowFunction(initializer)) {
+          return right({ name: name, parameters: initializer.parameters, body: initializer.body })
+        } else {
+          return right({ name: name, initializer: variableDeclaration.initializer })
+        }
       }
+    }
+  } else if (TS.isFunctionDeclaration(node)) {
+    if (node.name != null && node.body != null) {
+      const name = node.name.getText(sourceFile)
+      return right({ name: name, parameters: node.parameters, body: node.body })
     }
   }
 
@@ -855,18 +879,19 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
         } else {
           const possibleDeclaration = looksLikeCanvasElements(sourceFile, topLevelElement)
           if (isRight(possibleDeclaration)) {
-            const { name, initializer } = possibleDeclaration.value
-            // Check if this is an inline arrow function.
+            const canvasContents = possibleDeclaration.value
+            const { name } = canvasContents
             let parsedContents: Either<string, WithParserMetadata<FunctionContents>> = left(
               'No contents',
             )
-            let isArrowFunction: boolean = false
+            let isFunction: boolean = false
             let parsedFunctionParam: Either<string, WithParserMetadata<Param>> = left('No params')
             let propsUsed: Array<string> = []
-            if (TS.isArrowFunction(initializer)) {
-              isArrowFunction = true
+            if (isPossibleCanvasContentsFunction(canvasContents)) {
+              const { parameters, body } = canvasContents
+              isFunction = true
               const parsedFunctionParams = parseParams(
-                initializer.parameters,
+                parameters,
                 sourceFile,
                 filename,
                 imports,
@@ -898,7 +923,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
                   imports,
                   topLevelNames,
                   propsObjectName,
-                  initializer.body,
+                  body,
                   param.highlightBounds,
                   alreadyExistingUIDs,
                 )
@@ -909,7 +934,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
                 parseOutJSXElements(
                   sourceFile,
                   filename,
-                  [initializer],
+                  [canvasContents.initializer],
                   imports,
                   topLevelNames,
                   null,
@@ -918,7 +943,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
                 ),
               )
             }
-            if (isLeft(parsedContents) || (isArrowFunction && isLeft(parsedFunctionParam))) {
+            if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
               arbitraryNodes.push(topLevelElement)
             } else {
               highlightBounds = parsedContents.value.highlightBounds
@@ -930,7 +955,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
                 applyAndResetArbitraryNodes()
                 const utopiaComponent = utopiaJSXComponent(
                   name,
-                  isArrowFunction,
+                  isFunction,
                   foldEither(
                     (_) => null,
                     (param) => param.value,
