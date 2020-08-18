@@ -320,4 +320,29 @@ export const LayoutHelpers = {
       }
     }
   },
+  getElementSizePropertyPaths(
+    element: ElementInstanceMetadata,
+  ): {
+    horizontal: PropertyPath
+    vertical: PropertyPath
+  } {
+    if (element.specialSizeMeasurements.parentLayoutSystem === 'flex') {
+      if (element.specialSizeMeasurements.parentFlexDirection === 'row') {
+        return {
+          horizontal: createLayoutPropertyPath('FlexFlexBasis'),
+          vertical: createLayoutPropertyPath('FlexCrossBasis'),
+        }
+      } else {
+        return {
+          horizontal: createLayoutPropertyPath('FlexCrossBasis'),
+          vertical: createLayoutPropertyPath('FlexFlexBasis'),
+        }
+      }
+    } else {
+      return {
+        horizontal: createLayoutPropertyPath('Width'),
+        vertical: createLayoutPropertyPath('Height'),
+      }
+    }
+  },
 }
