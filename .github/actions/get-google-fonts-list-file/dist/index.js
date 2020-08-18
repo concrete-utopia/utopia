@@ -33078,17 +33078,17 @@ function googleVariantToFontVariant(googleVariant) {
         return null;
     }
 }
+/** Order the variants from lowest to highest weights, with regular styles
+ *  coming before italic ones.
+ */
 function googleVariantStringsIntoWebFontVariants(variants) {
-    const sorted = [...variants].sort();
-    return sorted
+    return variants
         .map(googleVariantToFontVariant)
         .filter((v) => v != null)
         .sort((a, b) => {
-        return a.webFontWeight + a.webFontStyle
-            ? 1
-            : 0 - b.webFontWeight + b.webFontStyle
-                ? 1
-                : 0;
+        const aFontStyle = a.webFontStyle ? 1 : 0;
+        const bFontStyle = b.webFontStyle ? 1 : 0;
+        return a.webFontWeight + aFontStyle - b.webFontWeight + bFontStyle;
     });
 }
 function run() {
@@ -33102,7 +33102,8 @@ function run() {
             response
                 .json()
                 .then((responseData) => {
-                if (responseData.error.message != null) {
+                if (responseData.error != null &&
+                    responseData.error.message != null) {
                     core.setFailed(`${responseData.error.message} current API key: ${process.env.GOOGLE_WEB_FONTS_KEY}`);
                 }
                 else {

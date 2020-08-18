@@ -123,10 +123,16 @@ async function run(): Promise<void> {
         .json()
         .then(
           (responseData: {
-            items: Array<{family: string; variants: Array<string>}>
+            items: Array<{
+              family: string
+              variants: Array<GoogleFontVariantIdentifier>
+            }>
             error?: any
           }) => {
-            if (responseData.error.message != null) {
+            if (
+              responseData.error != null &&
+              responseData.error.message != null
+            ) {
               core.setFailed(
                 `${responseData.error.message} current API key: ${process.env.GOOGLE_WEB_FONTS_KEY}`
               )
