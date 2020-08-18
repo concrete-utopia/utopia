@@ -77,7 +77,7 @@ describe('maybeSwitchLayoutProps', () => {
         container: {
           layoutSystem: LayoutSystem.PinSystem,
         },
-        type: 'static',
+        sceneResizesContent: false,
         globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
         style: { width: 375, height: 812 },
         rootElements: [
@@ -106,6 +106,7 @@ describe('maybeSwitchLayoutProps', () => {
               null,
               0,
               0,
+              null,
             ),
             computedStyle: emptyComputedStyle,
           },

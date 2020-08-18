@@ -45,6 +45,7 @@ describe('moving a scene/rootview on the canvas', () => {
                 style={{ position: 'absolute' }}
                 component={App}
                 data-uid={'scene-aaa'}
+                resizeContent
               />
             </Storyboard>
           )
@@ -136,6 +137,7 @@ describe('moving a scene/rootview on the canvas', () => {
               style={{ position: 'absolute', top: -30, left: 40 }}
               component={App}
               data-uid={'scene-aaa'}
+              resizeContent
             />
           </Storyboard>
         )
@@ -173,6 +175,7 @@ describe('moving a scene/rootview on the canvas', () => {
                 style={{ position: 'absolute' }}
                 component={App}
                 data-uid={'scene-aaa'}
+                resizeContent
               />
             </Storyboard>
           )
@@ -261,6 +264,7 @@ describe('moving a scene/rootview on the canvas', () => {
               style={{ position: 'absolute', top: 20, left: 40 }}
               component={App}
               data-uid={'scene-aaa'}
+              resizeContent
             />
           </Storyboard>
         )
@@ -384,7 +388,6 @@ describe('moving a scene/rootview on the canvas', () => {
               <Scene
                 style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
                 component={App}
-                static
                 data-uid={'scene-aaa'}
               />
             </Storyboard>
@@ -473,7 +476,6 @@ describe('moving a scene/rootview on the canvas', () => {
           <Scene
             style={{ position: 'absolute', width: 400, height: 400, top: -30, left: 40 }}
             component={App}
-            static
             data-uid={'scene-aaa'}
           />
         </Storyboard>
@@ -514,6 +516,7 @@ describe('resizing a scene/rootview on the canvas', () => {
                 style={{ position: 'absolute' }}
                 component={App}
                 data-uid={'scene-aaa'}
+                resizeContent
               />
             </Storyboard>
           )
@@ -605,6 +608,7 @@ describe('resizing a scene/rootview on the canvas', () => {
               style={{ position: 'absolute' }}
               component={App}
               data-uid={'scene-aaa'}
+              resizeContent
             />
           </Storyboard>
         )
@@ -641,6 +645,7 @@ describe('resizing a scene/rootview on the canvas', () => {
                 style={{ position: 'absolute' }}
                 component={App}
                 data-uid={'scene-aaa'}
+                resizeContent
               />
             </Storyboard>
           )
@@ -729,6 +734,7 @@ describe('resizing a scene/rootview on the canvas', () => {
               style={{ position: 'absolute' }}
               component={App}
               data-uid={'scene-aaa'}
+              resizeContent
             />
           </Storyboard>
         )
@@ -738,7 +744,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
-  it('resizing a dynamic scene that has width and height behaves like a static scene: resizing sets the scene size', async () => {
+  it('resizing a (group-like) scene with resizeContent enabled that also has width and height ignores the width and height: resizing sets the root view size', async () => {
     const testCode = Prettier.format(
       `/** @jsx jsx */
         import * as React from 'react'
@@ -765,6 +771,7 @@ describe('resizing a scene/rootview on the canvas', () => {
                 style={{ position: 'absolute', width: 200, height: 200 }}
                 component={App}
                 data-uid={'scene-aaa'}
+                resizeContent
               />
             </Storyboard>
           )
@@ -834,7 +841,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ width: 200, height: 400 }}
+            style={{ height: 170, width: 240 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
@@ -850,9 +857,10 @@ describe('resizing a scene/rootview on the canvas', () => {
         return (
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
-              style={{ position: 'absolute', width: 240, height: 170 }}
+              style={{ position: 'absolute', width: 200, height: 200 }}
               component={App}
               data-uid={'scene-aaa'}
+              resizeContent
             />
           </Storyboard>
         )
@@ -887,7 +895,6 @@ describe('resizing a scene/rootview on the canvas', () => {
             <Storyboard data-uid={'utopia-storyboard-uid'}>
               <Scene
                 style={{ position: 'absolute', top: 0, left: 0, width: 200, height: 400 }}
-                static
                 component={App}
                 data-uid={'scene-aaa'}
               />
@@ -979,7 +986,6 @@ describe('resizing a scene/rootview on the canvas', () => {
         <Storyboard data-uid={'utopia-storyboard-uid'}>
           <Scene
             style={{ position: 'absolute', top: 0, left: 0, width: 200, height: 400 }}
-            static
             component={App}
             data-uid={'scene-aaa'}
           />
@@ -1016,7 +1022,6 @@ describe('resizing a scene/rootview on the canvas', () => {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               style={{ position: 'absolute', top: 0, left: 0, width: 200, height: 400 }}
-              static
               component={App}
               data-uid={'scene-aaa'}
             />
@@ -1105,7 +1110,6 @@ describe('resizing a scene/rootview on the canvas', () => {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               style={{ position: 'absolute', top: 0, left: 0, width: 240, height: 370 }}
-              static
               component={App}
               data-uid={'scene-aaa'}
             />

@@ -237,6 +237,8 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
+            textDecoration:
+              this.isTargetSelected() || this.props.highlighted ? 'underline' : undefined,
           }}
         >
           {label}
