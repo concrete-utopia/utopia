@@ -25,6 +25,10 @@ import {
   isRight,
 } from '../../shared/either'
 import { isBuiltinDependency } from './package-manager'
+import {
+  checkPackageVersionExists,
+  isPackageNotFound,
+} from '../../../components/editor/npm-dependency/npm-dependency'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 let jsDelivrCache: { [key: string]: JsdelivrResponse } = {}
@@ -82,6 +86,12 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
   if (PACKAGES_TO_SKIP.indexOf(dep.name) > -1) {
     return null
   }
+
+  const packageExistsResponse = await checkPackageVersionExists(dep.name, dep.version)
+  if (isPackageNotFound(packageExistsResponse)) {
+    return null
+  }
+
   const packagesUrl = getPackagerUrl(dep)
   const jsdelivrUrl = getJsDelivrListUrl(dep)
   let result: NodeModules = {}
@@ -137,7 +147,6 @@ export async function fetchNodeModules(
     dependenciesToDownload.map(
       async (newDep): Promise<Either<NpmDependency, NodeModules>> => {
         try {
-          // TODO if the package version is garbage, do not spend 5 retries on download, as it takes a long time
           const packagerResponse = shouldRetry
             ? await fetchPackagerResponseWithRetry(newDep)
             : await fetchPackagerResponse(newDep)
