@@ -94,18 +94,19 @@ function googleVariantToFontVariant(
   }
 }
 
+/** Order the variants from lowest to highest weights, with regular styles
+ *  coming before italic ones.
+ */
 function googleVariantStringsIntoWebFontVariants(
-  variants: Array<string>
+  variants: Array<GoogleFontVariantIdentifier>
 ): Array<WebFontVariant> {
   return variants
     .map(googleVariantToFontVariant)
     .filter((v): v is WebFontVariant => v != null)
     .sort((a, b) => {
-      return a.webFontWeight + a.webFontStyle
-        ? 1
-        : 0 - b.webFontWeight + b.webFontStyle
-        ? 1
-        : 0
+      const aFontStyle = a.webFontStyle ? 1 : 0
+      const bFontStyle = b.webFontStyle ? 1 : 0
+      return a.webFontWeight + aFontStyle - b.webFontWeight + bFontStyle
     })
 }
 
