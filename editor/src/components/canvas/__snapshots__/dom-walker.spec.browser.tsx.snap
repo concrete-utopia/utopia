@@ -122,6 +122,7 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "sceneResizesContent": false,
     "style": Object {},
     "templatePath": Object {
       "element": Array [],
@@ -130,7 +131,6 @@ Array [
         "type": "scenepath",
       },
     },
-    "type": "static",
   },
   Object {
     "component": "App",
@@ -1859,6 +1859,7 @@ Array [
       ],
       "type": "scenepath",
     },
+    "sceneResizesContent": false,
     "style": Object {
       "height": 812,
       "left": 0,
@@ -1875,7 +1876,6 @@ Array [
         "type": "scenepath",
       },
     },
-    "type": "static",
   },
 ]
 `;
@@ -2002,6 +2002,7 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "sceneResizesContent": false,
     "style": Object {},
     "templatePath": Object {
       "element": Array [],
@@ -2010,7 +2011,6 @@ Array [
         "type": "scenepath",
       },
     },
-    "type": "static",
   },
   Object {
     "component": "App",
@@ -2479,6 +2479,7 @@ Array [
       ],
       "type": "scenepath",
     },
+    "sceneResizesContent": false,
     "style": Object {
       "height": 812,
       "left": 0,
@@ -2495,7 +2496,6 @@ Array [
         "type": "scenepath",
       },
     },
-    "type": "static",
   },
 ]
 `;
@@ -2622,6 +2622,7 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "sceneResizesContent": false,
     "style": Object {},
     "templatePath": Object {
       "element": Array [],
@@ -2630,7 +2631,6 @@ Array [
         "type": "scenepath",
       },
     },
-    "type": "static",
   },
   Object {
     "component": "App",
@@ -3992,6 +3992,7 @@ Array [
       ],
       "type": "scenepath",
     },
+    "sceneResizesContent": false,
     "style": Object {
       "height": 812,
       "left": 0,
@@ -4008,7 +4009,6 @@ Array [
         "type": "scenepath",
       },
     },
-    "type": "static",
   },
 ]
 `;
@@ -4135,6 +4135,7 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "sceneResizesContent": false,
     "style": Object {},
     "templatePath": Object {
       "element": Array [],
@@ -4143,7 +4144,6 @@ Array [
         "type": "scenepath",
       },
     },
-    "type": "static",
   },
   Object {
     "component": "App",
@@ -5506,6 +5506,7 @@ Array [
       ],
       "type": "scenepath",
     },
+    "sceneResizesContent": false,
     "style": Object {
       "height": 812,
       "left": 0,
@@ -5522,7 +5523,6 @@ Array [
         "type": "scenepath",
       },
     },
-    "type": "static",
   },
 ]
 `;
@@ -5649,6 +5649,7 @@ Array [
       "sceneElementPath": Array [],
       "type": "scenepath",
     },
+    "sceneResizesContent": false,
     "style": Object {},
     "templatePath": Object {
       "element": Array [],
@@ -5657,7 +5658,6 @@ Array [
         "type": "scenepath",
       },
     },
-    "type": "static",
   },
   Object {
     "component": "App",
@@ -7023,6 +7023,7 @@ Array [
       ],
       "type": "scenepath",
     },
+    "sceneResizesContent": false,
     "style": Object {
       "height": 812,
       "left": 0,
@@ -7039,7 +7040,6 @@ Array [
         "type": "scenepath",
       },
     },
-    "type": "static",
   },
 ]
 `;

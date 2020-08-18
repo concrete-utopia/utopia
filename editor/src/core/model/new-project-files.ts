@@ -23,7 +23,6 @@ export var storyboard = (
     <Scene
       component={App}
       props={{}}
-      static
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
     />
   </Storyboard>

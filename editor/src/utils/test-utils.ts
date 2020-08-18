@@ -53,6 +53,7 @@ import {
   PathForSceneComponent,
   PathForSceneDataLabel,
   PathForSceneDataUid,
+  PathForResizeContent,
 } from '../core/model/scene-utils'
 import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
@@ -190,7 +191,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       scenePath: TP.scenePath([BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]),
       templatePath: TP.instancePath([], [BakedInStoryboardUID, createSceneUidFromIndex(index)]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
-      type: props['type'] ?? 'dynamic',
+      sceneResizesContent: Utils.path(PP.getElements(PathForResizeContent), props) ?? true,
       style: {},
       rootElements:
         elementMetadata == null
@@ -218,7 +219,7 @@ export function createFakeMetadataForComponents(
         component: component.name,
         globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
         container: { layoutSystem: LayoutSystem.PinSystem },
-        type: 'static',
+        sceneResizesContent: false,
         style: {},
         rootElements: Array.isArray(elementMetadata) ? elementMetadata : [elementMetadata],
       })
