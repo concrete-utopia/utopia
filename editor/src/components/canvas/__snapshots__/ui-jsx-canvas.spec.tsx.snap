@@ -14,7 +14,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -303,7 +303,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -500,7 +500,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:567\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -609,7 +609,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -847,7 +847,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -1200,7 +1200,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -1524,7 +1524,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -1717,7 +1717,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -1957,7 +1957,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -2197,7 +2197,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -2521,7 +2521,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -2708,7 +2708,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 200px;
       height: 200px;
       left: 59px;
@@ -3202,7 +3202,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 200px;
       height: 200px;
       left: 59px;
@@ -3679,7 +3679,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 200px;
       height: 200px;
       left: 59px;
@@ -4215,7 +4215,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 200px;
       height: 200px;
       left: 59px;
@@ -4751,7 +4751,7 @@ exports[`UiJsxCanvas render handles an undefined component gracefully 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -4801,7 +4801,7 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -4910,7 +4910,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/03a utopia-storyboard-uid/scene-aaa:aaa/03a/834 utopia-storyboard-uid/scene-aaa:aaa/03a/999 utopia-storyboard-uid/scene-aaa:aaa/03a/999/000\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 375px;
       height: 812px;
       left: 0;
@@ -6829,7 +6829,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -7171,7 +7171,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -7335,7 +7335,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -7576,7 +7576,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/d59 utopia-storyboard-uid/scene-aaa:aaa/d59/dd5\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -8130,7 +8130,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 200px;
       height: 200px;
       left: 59px;
@@ -8496,7 +8496,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -8736,7 +8736,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -8977,7 +8977,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -9890,7 +9890,7 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -10146,7 +10146,7 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -10256,7 +10256,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb utopia-storyboard-uid/scene-aaa:aaa/bbb/ccc\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -10528,7 +10528,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/cloner utopia-storyboard-uid/scene-aaa:zzz/cloner/cloned\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -10897,7 +10897,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
@@ -11011,7 +11011,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: absolute;
+      position: relative;
       width: 400px;
       height: 400px;
       left: 0;
