@@ -1,80 +1,48 @@
 import * as OPI from 'object-path-immutable'
 import * as React from 'react'
+import {
+  Icons,
+  InspectorSubsectionHeader,
+  NumberInput,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+} from 'uuiui'
+import { betterReactMemo } from 'uuiui-deps'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
   isJSXAttributeValue,
   JSXAttribute,
   jsxAttributeValue,
 } from '../../../../../core/shared/element-template'
-import Utils from '../../../../../utils/utils'
-import { Icons, useWrappedEmptyOrUnknownOnSubmitValue } from 'uuiui'
-import { NumberInput } from 'uuiui'
-import { Tooltip } from 'uuiui'
-import { InspectorSubsectionHeader } from 'uuiui'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import * as PP from '../../../../../core/shared/property-path'
+import { filterScenes } from '../../../../../core/shared/template-path'
+import utils from '../../../../../utils/utils'
+import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
 import * as EditorActions from '../../../../editor/actions/actions'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
-import * as PP from '../../../../../core/shared/property-path'
 import { measureTextFieldNew } from '../../../../text-utils'
-import { ColorControl } from '../../../controls/color-control'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
-import { OptionControl } from '../../../controls/option-control'
-import { SelectControl, SelectOption } from '../../../controls/select-control'
-import {
-  AllTypefacesAlphabeticallySorted,
-  cssFontWeightAndStyleToUtopiaFontWeight,
-  defaultFontWeightsAndStyles,
-  fontFamilyArrayToCSSFontFamilyString,
-  fontWeightsList,
-  TypefaceInfo,
-  UtopiaFontWeight,
-} from './fonts-list'
-import { PropertyRow } from '../../../widgets/property-row'
-import {
-  CSSFontFamily,
-  CSSFontWeightAndStyle,
-  CSSLineHeight,
-  CSSTextDecorationLine,
-  CSSFontStyle,
-  cssNumber,
-} from '../../../common/css-utils'
+import { addOnUnsetValues } from '../../../common/context-menu-items'
+import { CSSFontStyle, cssNumber, CSSTextDecorationLine } from '../../../common/css-utils'
+import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
 import {
   InspectorCallbackContext,
+  useInspectorElementInfo,
   useInspectorStyleInfo,
   useIsSubSectionVisible,
   useKeepShallowReferenceEquality,
-  useInspectorElementInfo,
-  useInspectorInfo,
-  stylePropPathMappingFn,
-  useRefSelectedViews,
   useSelectedViews,
 } from '../../../common/property-path-hooks'
-import { filterScenes } from '../../../../../core/shared/template-path'
-import utils from '../../../../../utils/utils'
-import { addOnUnsetValues } from '../../../common/context-menu-items'
-import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { betterReactMemo } from 'uuiui-deps'
-import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
+import { ColorControl } from '../../../controls/color-control'
+import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionControl } from '../../../controls/option-control'
+import { SelectOption } from '../../../controls/select-control'
+import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
-import { FontWeightAndStyleSelect } from './font-weight-and-style-select'
+import { FontVariantSelect } from './font-variant-select'
+import { fontFamilyArrayToCSSFontFamilyString, TypefaceInfo } from './fonts-list'
 
 const ObjectPathImmutable: any = OPI
-
-function getInfoForTypeface(cssFontFamily: CSSFontFamily): TypefaceInfo {
-  const value = AllTypefacesAlphabeticallySorted.find(
-    (typeface) => typeface.cssFontFamily[0] === cssFontFamily[0],
-  )
-  if (value != null) {
-    return value
-  } else {
-    return {
-      fontFamilyName: cssFontFamily[0],
-      cssFontFamily: cssFontFamily,
-      fontWeightsAndStyles: defaultFontWeightsAndStyles,
-    }
-  }
-}
 
 function convertTypefaceListToSelectOptionList(
   typefaces: Array<TypefaceInfo>,
@@ -262,7 +230,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
       </InspectorContextMenuWrapper>
       <FontFamilySelect />
       <PropertyRow style={{ gridColumnGap: 8, gridTemplateColumns: '130px 55px 28px' }}>
-        <FontWeightAndStyleSelect />
+        <FontVariantSelect />
         <InspectorContextMenuWrapper
           id='fontSize-context-menu'
           items={fontSizeContextMenuItems}

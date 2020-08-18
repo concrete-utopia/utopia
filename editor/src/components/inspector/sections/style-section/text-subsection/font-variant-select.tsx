@@ -34,14 +34,13 @@ interface FontWeightAndStyleSelectOption {
   value: WebFontVariant
 }
 
-export const FontWeightAndStyleSelect = betterReactMemo('FontFamilySelect', () => {
-  const {
-    value,
-    controlStatus,
-    controlStyles,
-    onUnsetValues,
-    useSubmitValueFactory,
-  } = useInspectorInfo(weightAndStylePaths, identity, identity, stylePropPathMappingFn)
+export const FontVariantSelect = betterReactMemo('FontVariantSelect', () => {
+  const { value, controlStyles, onUnsetValues, useSubmitValueFactory } = useInspectorInfo(
+    weightAndStylePaths,
+    identity,
+    identity,
+    stylePropPathMappingFn,
+  )
 
   const { value: fontFamilyValue } = useInspectorStyleInfo('fontFamily')
   const primaryFont = fontFamilyValue[0]
