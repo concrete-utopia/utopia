@@ -33,4 +33,6 @@ jobs:
             enidemi
             Rheeseyb
             seanparsons
-          body: Updated to latest available google fonts <img width="143" title="The Forbidden One" src="https://user-images.githubusercontent.com/4676536/90292182-4b3b5000-de36-11ea-9135-278d0669e9e0.png">
+          body: |
+            The Forbidden One requests you update your list of available google fonts.
+            <img width="143" title="The Forbidden One is pleased… for now" src="https://user-images.githubusercontent.com/4676536/90292182-4b3b5000-de36-11ea-9135-278d0669e9e0.png">
