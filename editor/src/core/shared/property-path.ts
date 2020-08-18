@@ -55,7 +55,8 @@ export function create(elements: Array<PropertyPathPart>): PropertyPath {
   }
 }
 
-export function toString(propertyPath: PropertyPath, joinWith: string = '.'): string {
+export function toString(propertyPath: PropertyPath): string {
+  const joinWith = '.'
   const pathCache = getPathCache(propertyPath.propertyElements)
   if (pathCache.cachedToString == null) {
     let result: string = ''
@@ -71,10 +72,6 @@ export function toString(propertyPath: PropertyPath, joinWith: string = '.'): st
   } else {
     return pathCache.cachedToString
   }
-}
-
-export function toVarSafeString(propertyPath: PropertyPath): string {
-  return toString(propertyPath, '_')
 }
 
 export function lastPart(propertyPath: PropertyPath): PropertyPathPart {
