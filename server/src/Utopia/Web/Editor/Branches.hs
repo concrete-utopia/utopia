@@ -81,14 +81,17 @@ triggerDownload BranchDownloads{..} branchName download = do
   let fixedBranchName = T.replace "/" "-" branchName
   let targetURL = "https://" <> _branchDownloadsAWSBucket <> ".s3.amazonaws.com/editor/" <> fixedBranchName <> ".tar.gz"
   void $ forkIO $ do
+    -- On an error put that into the download MVar.
     handle (\e -> putMVar download $ Left e) $ do
       response <- W.getWith wreqOptions (toS targetURL)
       let downloadBytes = view W.responseBody response
-      -- Does this need mangling to encode slashes?
       let branchFolder = _branchDownloadsBaseFolder </> toS fixedBranchName
+      -- Write out the contents of the .tar.gz file.
       let entries = read $ decompress downloadBytes
       let writeResult = foldlEntries (writeEntry branchFolder) (pure ()) entries
+      -- Throw an error if there was one.
       either (\(e, _) -> throwIO e) identity writeResult
+      -- Record the folder that the bundle was exploded into in the download MVar.
       putMVar download $ Right branchFolder
 
 addDownloadStorage :: Text -> BranchDownload -> BranchDownloadsMap -> (BranchDownloadsMap, (Bool, BranchDownload))
