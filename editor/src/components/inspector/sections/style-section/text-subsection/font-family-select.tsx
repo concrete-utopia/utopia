@@ -1,35 +1,13 @@
 import * as React from 'react'
 import { betterReactMemo } from 'uuiui-deps'
-import { googleFontsList } from '../../../../../../assets/google-fonts-list'
-import { isRight } from '../../../../../core/shared/either'
+import { identity } from '../../../../../core/shared/utils'
 import utils from '../../../../../utils/utils'
 import { FlexRow, Icons, UtopiaTheme } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import {
-  defaultWebFontWeightsAndStyles,
-  googleVariantStringsIntoWebFontVariants,
-  WebFontFamily,
-  webFontFamily,
-  webFontVariant,
-} from '../../../../navigator/external-resources/google-fonts-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
-import { CSSFontFamily } from '../../../common/css-utils'
 import { stylePropPathMappingFn, useInspectorInfo } from '../../../common/property-path-hooks'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelectPopup } from './font-family-select-popup'
-
-function getInfoForTypeface(cssFontFamily: CSSFontFamily): WebFontFamily {
-  const value = googleFontsList.find((typeface) => typeface.name === cssFontFamily[0])
-  if (value != null) {
-    const parsedVariants = googleVariantStringsIntoWebFontVariants(value.variants)
-    if (isRight(parsedVariants)) {
-      return webFontFamily(value.name, parsedVariants.value)
-    } else {
-      return webFontFamily(value.name, [webFontVariant(400, 'normal')])
-    }
-  }
-  return webFontFamily(cssFontFamily[0], { ...defaultWebFontWeightsAndStyles })
-}
 
 export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
   const [popupIsOpen, setPopupIsOpen] = React.useState(false)
@@ -38,8 +16,8 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
 
   const { value, useSubmitValueFactory, onUnsetValues, controlStyles } = useInspectorInfo(
     ['fontFamily', 'fontStyle', 'fontWeight'],
-    (newValue) => newValue,
-    (newValue) => newValue,
+    identity,
+    identity,
     stylePropPathMappingFn,
   )
 

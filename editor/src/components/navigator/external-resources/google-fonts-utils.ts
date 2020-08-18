@@ -272,11 +272,6 @@ export function fontVariantID(variant: WebFontFamilyVariant): string {
 
 export type FontNode = FontsRoot | FontFamilyData | FontVariantData
 
-export interface GoogleFontsTypefaceMetadata {
-  type: 'google-fonts-typeface'
-  name: string
-  variants: Array<string>
-}
 export interface SystemDefaultTypefaceMetadata {
   type: 'system-default-typeface'
   name: 'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
@@ -285,4 +280,21 @@ export const systemDefaultFont: SystemDefaultTypefaceMetadata = {
   type: 'system-default-typeface',
   name:
     'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+}
+
+export interface GoogleFontsTypeface {
+  type: 'google-fonts-typeface'
+  name: string
+  variants: Array<WebFontVariant>
+}
+
+export function googleFontsTypeface(
+  name: string,
+  variants: Array<WebFontVariant>,
+): GoogleFontsTypeface {
+  return {
+    type: 'google-fonts-typeface',
+    name,
+    variants,
+  }
 }
