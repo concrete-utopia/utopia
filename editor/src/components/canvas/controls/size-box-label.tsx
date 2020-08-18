@@ -58,12 +58,6 @@ export const SizeBoxLabel = React.memo((props: SizeBoxLabelProps) => {
 
 const ResizeLabel = (props: SizeBoxLabelProps) => {
   const metadata = useEditorState((state) => state.editor.jsxMetadataKILLME)
-  const targets = determineElementsToOperateOnForDragging(
-    props.dragState?.draggedElements ?? [],
-    metadata,
-    false,
-    true,
-  )
   const isWidthResize = props.dragState?.edgePosition.x !== 0.5
   const isHeightResize = props.dragState?.edgePosition.y !== 0.5
   const padding = 2 / props.scale
@@ -77,6 +71,12 @@ const ResizeLabel = (props: SizeBoxLabelProps) => {
       horizontal: createLayoutPropertyPath('Width'),
       vertical: createLayoutPropertyPath('Height'),
     }
+    const targets = determineElementsToOperateOnForDragging(
+      props.dragState?.draggedElements ?? [],
+      metadata,
+      false,
+      true,
+    )
     Utils.fastForEach(targets, (target) => {
       if (TP.isScenePath(target)) {
         const element = MetadataUtils.findSceneByTemplatePath(metadata, target)
@@ -98,7 +98,7 @@ const ResizeLabel = (props: SizeBoxLabelProps) => {
       elementNames: names,
       targetProperties: properties,
     }
-  }, [metadata, targets])
+  }, [metadata, props.dragState])
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: padding }}>
