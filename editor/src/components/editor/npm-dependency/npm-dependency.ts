@@ -8,6 +8,7 @@ import {
   npmDependency,
   PossiblyUnversionedNpmDependency,
   PackageStatusMap,
+  PackageStatus,
 } from '../../../core/shared/npm-dependency-types'
 import {
   isCodeFile,
@@ -296,10 +297,14 @@ export function importResultFromImports(
 export function createLoadedPackageStatusMapFromDependencies(
   dependencies: Array<NpmDependency>,
   dependenciesWithErrors: Array<NpmDependency>,
+  dependenciesNotFound: Array<NpmDependency>,
 ): PackageStatusMap {
   const errorDependencyNames = pluck(dependenciesWithErrors, 'name')
+  const notFoundDependencyNames = pluck(dependenciesNotFound, 'name')
   return dependencies.reduce((statusMap: PackageStatusMap, dependency) => {
-    const status = errorDependencyNames.includes(dependency.name) ? 'error' : 'loaded'
+    const isError = errorDependencyNames.includes(dependency.name)
+    const isNotFound = notFoundDependencyNames.includes(dependency.name)
+    const status: PackageStatus = isError ? 'error' : isNotFound ? 'not-found' : 'loaded'
     statusMap[dependency.name] = {
       status: status,
     }
