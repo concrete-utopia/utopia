@@ -112,15 +112,19 @@ rewriteURL BranchDownloads{..} branchNameQueryParam possibleURL =
   let replacedText = T.replace _branchDownloadsURLTextToReplace _branchDownloadsReplaceURLTextWith possibleURL
       -- Parse the URL so that it can be manipulated later.
       parsedURI = mkURI replacedText
-      -- Function for inserting the branch name query parameter into the parsed form.
+      -- Function for inserting the branch name query parameter into the parsed form, then produces the rendered URL.
       -- Uses the lens operator `<>~` to Semigroup mappend the query param onto the existing query parameters.
       update uri = render (uri & uriQuery <>~ [branchNameQueryParam])
-      -- Check if this is a relative URL and relates to the editor.
-      isRelativeEditorURL uri = view uriScheme uri == Nothing
-                             && firstOf (uriPath . _head . unRText) uri == Just "editor"
+      -- Check if this URL relates to the editor, this is slightly dubious because it will catch
+      -- any URL that starts "/editor" regardless of host.
+      isEditorURL uri = firstOf (uriPath . _head . unRText) uri == Just "editor"
+      -- Ensure this is a ".html" or ".js" file.
+      pathLastPart uri = firstOf (uriPath . _last . unRText) uri
+      isAppropriateFileType Nothing         = False
+      isAppropriateFileType (Just pathEnd)  = T.isSuffixOf ".js" pathEnd || T.isSuffixOf ".html" pathEnd
       -- Check that the URL should be updated.
-      shouldUpdate = possibleURL /= replacedText || maybe False isRelativeEditorURL parsedURI
-  in  if shouldUpdate then maybe possibleURL update parsedURI else possibleURL
+      shouldUpdateWithBranchName = maybe False (\u -> isEditorURL u && isAppropriateFileType (pathLastPart u)) parsedURI
+  in  if shouldUpdateWithBranchName then maybe replacedText update parsedURI else replacedText
 
 rewriteAttribute :: BranchDownloads -> QueryParam -> (Text, Text) -> (Text, Text)
 rewriteAttribute downloads branchNameQueryParam ("src", attrValue)    = ("src", rewriteURL downloads branchNameQueryParam attrValue)

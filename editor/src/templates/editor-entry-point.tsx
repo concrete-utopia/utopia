@@ -39,7 +39,7 @@ const editorCSSDontHash = [
 ]
 
 // Queue up further CSS downloads before going any further
-editorCSS.forEach((url) => addStyleSheetToPage(url))
+editorCSS.forEach((url) => addStyleSheetToPage(url, true))
 editorCSSDontHash.forEach((url) => addStyleSheetToPage(url, false))
 
 import { Editor } from './editor'

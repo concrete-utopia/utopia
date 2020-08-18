@@ -336,9 +336,13 @@ addCDNHeaders :: Middleware
 addCDNHeaders = addCacheControl . addAccessControlAllowOrigin
 
 editorAssetsEndpoint :: FilePath -> Maybe Text -> ServerMonad Application
-editorAssetsEndpoint notProxiedPath branchName = do
+editorAssetsEndpoint notProxiedPath possibleBranchName = do
   possibleProxyManager <- getProxyManager
-  maybe (fmap addCDNHeaders $ servePath notProxiedPath branchName) (\proxyManager -> return $ proxyApplication proxyManager 8088 ["editor"]) possibleProxyManager
+  let loadLocally = fmap addCDNHeaders $ servePath notProxiedPath possibleBranchName
+  let loadFromProxy proxyManager = return $ proxyApplication proxyManager 8088 ["editor"]
+  case possibleBranchName of
+    Just _          -> loadLocally
+    Nothing         -> maybe loadLocally loadFromProxy possibleProxyManager
 
 monitoringEndpoint :: ServerMonad Value
 monitoringEndpoint = getMetrics
