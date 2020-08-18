@@ -55,7 +55,7 @@ export const InspectorSectionHeader = styled(H1)({
   backgroundColor: colorTheme.sectionHeaderBackground.value,
   height: UtopiaTheme.layout.rowHeight.large,
   marginTop: 8,
-  padding: '6px 8px 6px 8px',
+  padding: `6px ${UtopiaTheme.layout.inspectorXPadding}px 6px ${UtopiaTheme.layout.inspectorXPadding}px`,
 })
 InspectorSectionHeader.displayName = 'InspectorSectionHeader'
 
@@ -66,6 +66,6 @@ export const InspectorSubsectionHeader = styled(H2)({
   marginBottom: 4,
   // no margin here so that subsections stack nicely
   // margin bottom needs to go into the subsection body
-  padding: '0 8px',
+  padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
 })
 InspectorSubsectionHeader.displayName = 'InspectorSubsectionHeader'

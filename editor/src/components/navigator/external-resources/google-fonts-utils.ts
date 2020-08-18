@@ -11,7 +11,7 @@ export const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfont
 
 export type WebFontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
 
-function cssFontWeightToWebFontWeight(value: CSSFontWeight): Either<string, WebFontWeight> {
+export function cssFontWeightToWebFontWeight(value: CSSFontWeight): Either<string, WebFontWeight> {
   switch (value) {
     case 'normal': {
       return right(400)
@@ -36,7 +36,7 @@ function cssFontWeightToWebFontWeight(value: CSSFontWeight): Either<string, WebF
   }
 }
 
-function cssFontStyleToWebFontStyle(value: CSSFontStyle): Either<string, WebFontStyle> {
+export function cssFontStyleToWebFontStyle(value: CSSFontStyle): Either<string, WebFontStyle> {
   switch (value) {
     case 'normal':
     case 'italic': {
@@ -46,7 +46,7 @@ function cssFontStyleToWebFontStyle(value: CSSFontStyle): Either<string, WebFont
       return right('normal')
     }
     default: {
-      return left('Variable width webfonts from Google are not supported yet.')
+      return left('Variable italic webfonts from Google are not supported yet.')
     }
   }
 }
@@ -210,6 +210,16 @@ export function fontVariantID(variant: WebFontFamilyVariant): string {
 }
 
 export type FontNode = FontsRoot | FontFamilyData | FontVariantData
+
+export interface SystemDefaultTypeface {
+  type: 'system-default-typeface'
+  name: 'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+}
+export const systemDefaultTypeface: SystemDefaultTypeface = {
+  type: 'system-default-typeface',
+  name:
+    'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+}
 
 export interface GoogleFontsTypeface {
   type: 'google-fonts-typeface'
