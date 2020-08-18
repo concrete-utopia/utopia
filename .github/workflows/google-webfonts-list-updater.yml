@@ -1,7 +1,7 @@
 name: Google Webfonts Updater
 on:
   schedule:
-    - cron: '0 8 * * *' # run daily at 8.00am
+    - cron: '*/5 * * * *' # run daily at 8.00am
 jobs:
   google-web-fonts-updater:
     name: Google Web Fonts Updater
