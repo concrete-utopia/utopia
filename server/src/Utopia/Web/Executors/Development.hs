@@ -265,11 +265,9 @@ innerServerExecutor (GetSiteRoot action) = do
   return $ action siteRoot
 innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
-  liftIO $ print (defaultPathToServe, possibleBranchName, isJust possibleDownloads)
   pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
                    ("./editor", (Just branchName), (Just downloads))  -> liftIO $ downloadBranchBundle downloads branchName
                    _                                                  -> return defaultPathToServe
-  liftIO $ putText ("pathToServe: " <> toS pathToServe)
   return $ action pathToServe
 
 {-|
