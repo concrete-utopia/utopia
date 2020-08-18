@@ -12,9 +12,9 @@ import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-r
 import {
   cssFontStyleToWebFontStyle,
   cssFontWeightToWebFontWeight,
-  GoogleFontsTypefaceMetadata,
+  GoogleFontsTypeface,
   prettyNameForFontVariant,
-  SystemDefaultTypefaceMetadata,
+  SystemDefaultTypeface,
   webFontFamilyVariant,
   webFontVariant,
 } from '../../../../navigator/external-resources/google-fonts-utils'
@@ -26,7 +26,7 @@ interface FontsListChildComponentProps extends ListChildComponentProps {
   data: {
     fontWeight: CSSFontWeight
     fontStyle: CSSFontStyle
-    onSubmitFontFamily: OnSubmitValue<SystemDefaultTypefaceMetadata | GoogleFontsTypefaceMetadata>
+    onSubmitFontFamily: OnSubmitValue<SystemDefaultTypeface | GoogleFontsTypeface>
     itemsArray: Array<ItemData>
     closePopup: () => void
   }

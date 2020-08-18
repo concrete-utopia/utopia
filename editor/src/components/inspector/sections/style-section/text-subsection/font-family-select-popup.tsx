@@ -4,14 +4,13 @@ import { betterReactMemo, ControlStyles } from 'uuiui-deps'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { FlexColumn, FlexRow, StringInput, UtopiaTheme } from '../../../../../uuiui'
 import {
-  GoogleFontsTypefaceMetadata,
-  systemDefaultFont,
-  SystemDefaultTypefaceMetadata,
+  GoogleFontsTypeface,
+  systemDefaultTypeface,
+  SystemDefaultTypeface,
 } from '../../../../navigator/external-resources/google-fonts-utils'
 import {
   OnUnsetValues,
   ParsedValues,
-  useInspectorStyleInfo,
   UseSubmitValueFactory,
 } from '../../../common/property-path-hooks'
 import { InspectorModal } from '../../../widgets/inspector-modal'
@@ -33,16 +32,16 @@ const NormalItemSize = 26
 const DefaultSystemFontSize = 84
 
 export interface ItemData {
-  metadata: SystemDefaultTypefaceMetadata | GoogleFontsTypefaceMetadata
+  metadata: SystemDefaultTypeface | GoogleFontsTypeface
   height: number
 }
-const itemData: Array<ItemData> = [systemDefaultFont, ...googleFontsList].map((item, i) => ({
+const itemData: Array<ItemData> = [systemDefaultTypeface, ...googleFontsList].map((item, i) => ({
   metadata: item,
   height: i === 0 ? DefaultSystemFontSize : NormalItemSize,
 }))
 
 function updateNewFontFamily(
-  newValue: SystemDefaultTypefaceMetadata | GoogleFontsTypefaceMetadata,
+  newValue: SystemDefaultTypeface | GoogleFontsTypeface,
   oldValue: ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>,
 ): ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'> {
   switch (newValue.type) {
