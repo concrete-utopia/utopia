@@ -1,7 +1,7 @@
 name: Google Webfonts Updater
 on:
   schedule:
-    - cron: '*/5 * * * *' # run daily at 8.00am
+    - cron: '0 8 * * *' # run daily at 8.00am
 jobs:
   google-web-fonts-updater:
     name: Google Web Fonts Updater
@@ -33,4 +33,4 @@ jobs:
             enidemi
             Rheeseyb
             seanparsons
-          body: Updated to latest available google fonts <img width="143" title="" " src="https://user-images.githubusercontent.com/4676536/90292182-4b3b5000-de36-11ea-9135-278d0669e9e0.png">
+          body: Updated to latest available google fonts <img width="143" title="The Forbidden One" src="https://user-images.githubusercontent.com/4676536/90292182-4b3b5000-de36-11ea-9135-278d0669e9e0.png">
