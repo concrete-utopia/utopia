@@ -313,3 +313,9 @@ Select prettier as the default formatter in your settings; VSCode may prompt you
 ## Running the Server
 
 To run the server, checkout the [readme](server/readme.md) in the `/server` directory
+
+# Deploying
+
+All pushes to the `master` branch will immediately trigger [this](.github/workflows/master-pushes.yml) workflow that runs the tests and then triggers a deploy to our Staging environment.
+
+To deploy to the Production environment, somebody needs to manually trigger our [`tag-release.yml`](.github/workflows/tag-release.yml) workflow, giving either a specific commit hash or branch name (defaulting to `master`), and optionally a tag name (the default behaviour is to increment the patch version). This can be triggered via the "Run Workflow" button [here](https://github.com/concrete-utopia/utopia/actions?query=workflow%3A%22Tag+and+Release%22)
