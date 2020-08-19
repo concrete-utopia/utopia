@@ -1147,7 +1147,7 @@ export function getElementWarnings(
       absoluteWithUnpositionedParent: false,
       dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(scene),
     }
-    result = addToComplexMap(toString, result, scene.templatePath, elementWarnings)
+    result = addToComplexMap(toString, result, scene.scenePath, elementWarnings)
   })
   return result
 }
