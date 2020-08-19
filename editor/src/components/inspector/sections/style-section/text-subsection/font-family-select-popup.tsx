@@ -178,6 +178,7 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
             break
           }
           case 'Escape': {
+            closePopup()
             break
           }
           default: {
