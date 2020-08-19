@@ -122,6 +122,7 @@ export const DependencyListInputField = React.forwardRef(
             }
           >
             <StringInput
+              focusOnMount
               value={Utils.defaultIfNull<string>('', stateEditedPackageVersion)}
               id='add-package-version'
               key='add-package-version'
