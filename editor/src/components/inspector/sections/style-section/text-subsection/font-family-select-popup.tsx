@@ -150,14 +150,13 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
 
     const onWrapperKeyDown = React.useCallback(
       (e: React.KeyboardEvent) => {
+        e.stopPropagation()
         switch (e.key) {
           case 'ArrowUp': {
-            e.stopPropagation()
             setSelectedOption((v) => filteredData[Math.max(0, getOptionIndex(filteredData, v) - 1)])
             break
           }
           case 'ArrowDown': {
-            e.stopPropagation()
             setSelectedOption(
               (v) =>
                 filteredData[
@@ -182,7 +181,6 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
             break
           }
           default: {
-            e.stopPropagation()
             if (stringInputRef.current != null) {
               stringInputRef.current.focus()
               stringInputRef.current.dispatchEvent(e.nativeEvent)
