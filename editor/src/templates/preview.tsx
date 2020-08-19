@@ -5,7 +5,7 @@ import { BASE_URL, getProjectID, getQueryParam, PREVIEW_IS_EMBEDDED } from '../c
 import { fetchLocalProject } from '../common/persistence'
 import { incorporateBuildResult } from '../components/custom-code/code-file'
 import { sendPreviewModel } from '../components/editor/actions/actions'
-import { dependenciesFromProjectContents } from '../components/editor/npm-dependency/npm-dependency'
+import { dependenciesWithEditorRequirements } from '../components/editor/npm-dependency/npm-dependency'
 import { projectIsStoredLocally } from '../components/editor/persistence'
 import { loadProject } from '../components/editor/server'
 import { isPersistentModel, PersistentModel } from '../components/editor/store/editor-state'
@@ -172,7 +172,7 @@ const initPreview = () => {
   }
 
   const previewRender = async (projectContents: ProjectContents) => {
-    const npmDependencies = dependenciesFromProjectContents(projectContents)
+    const npmDependencies = dependenciesWithEditorRequirements(projectContents)
     const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
 
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
