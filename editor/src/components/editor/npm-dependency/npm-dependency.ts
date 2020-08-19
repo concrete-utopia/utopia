@@ -8,6 +8,7 @@ import {
   npmDependency,
   PossiblyUnversionedNpmDependency,
   PackageStatusMap,
+  PackageStatus,
 } from '../../../core/shared/npm-dependency-types'
 import {
   isCodeFile,
@@ -28,32 +29,118 @@ import { mapArrayToDictionary, pluck } from '../../../core/shared/array-utils'
 import { useEditorState } from '../store/store-hook'
 import * as React from 'react'
 import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'
+import { deepFreeze } from '../../../utils/deep-freeze'
 
-export async function findLatestVersion(packageName: string): Promise<string> {
+interface PackageNotFound {
+  type: 'PACKAGE_NOT_FOUND'
+}
+
+const packageNotFound: PackageNotFound = deepFreeze({
+  type: 'PACKAGE_NOT_FOUND',
+})
+
+interface PackageLookupSuccess {
+  type: 'PACKAGE_LOOKUP_SUCCESS'
+  json: unknown
+}
+
+function packageLookupSuccess(json: unknown): PackageLookupSuccess {
+  return {
+    type: 'PACKAGE_LOOKUP_SUCCESS',
+    json: json,
+  }
+}
+
+type PackageLookupResult = PackageNotFound | PackageLookupSuccess
+
+interface VersionLookupSuccess {
+  type: 'VERSION_LOOKUP_SUCCESS'
+  version: string
+}
+
+function versionLookupSuccess(version: string): VersionLookupSuccess {
+  return {
+    type: 'VERSION_LOOKUP_SUCCESS',
+    version: version,
+  }
+}
+
+export type VersionLookupResult = PackageNotFound | VersionLookupSuccess
+
+export function isPackageNotFound(
+  lookupResult: PackageLookupResult | VersionLookupResult,
+): lookupResult is PackageNotFound {
+  return lookupResult.type === 'PACKAGE_NOT_FOUND'
+}
+
+function isPackageLookupSuccess(
+  lookupResult: PackageLookupResult,
+): lookupResult is PackageLookupSuccess {
+  return lookupResult.type === 'PACKAGE_LOOKUP_SUCCESS'
+}
+
+async function packageLookupCall(
+  packageName: string,
+  packageVersion: string | null,
+): Promise<PackageLookupResult> {
   const requestInit: RequestInit = {
     headers: {
       accept: 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*',
     },
   }
 
+  const encodedName = encodeURIComponent(packageName).replace(/^%40/, '@')
+  const URLSuffix = packageVersion == null ? encodedName : `${encodedName}/${packageVersion}`
+
   // Calls out to our services because of the wonder of CORS.
   const response = await fetch(
-    `${UTOPIA_BACKEND}javascript/package/metadata/${encodeURIComponent(packageName).replace(
-      /^%40/,
-      '@',
-    )}`,
+    `${UTOPIA_BACKEND}javascript/package/metadata/${URLSuffix}`,
     requestInit,
   )
   if (response.ok) {
-    const packageJson = await response.json()
-    const latestVersion = Utils.path(['dist-tags', 'latest'], packageJson)
-    if (latestVersion == null || typeof latestVersion != 'string') {
-      return Promise.reject(`Received invalid content for package ${packageName}`)
-    } else {
-      return Promise.resolve(latestVersion)
-    }
+    const json = await response.json()
+    return packageLookupSuccess(json)
+  } else if (response.status === 404) {
+    return packageNotFound
   } else {
-    return Promise.reject(`Received an error for package ${packageName}`)
+    const packageNameAndVersion =
+      packageVersion == null ? packageName : `${packageName}@${packageVersion}`
+
+    return Promise.reject(`Received an error for package ${packageNameAndVersion}`)
+  }
+}
+
+export async function findLatestVersion(packageName: string): Promise<VersionLookupResult> {
+  const metadata = await packageLookupCall(packageName, null)
+  switch (metadata.type) {
+    case 'PACKAGE_LOOKUP_SUCCESS':
+      const latestVersion = Utils.path(['json', 'dist-tags', 'latest'], metadata)
+      if (latestVersion == null || typeof latestVersion != 'string') {
+        return Promise.reject(`Received invalid content for package ${packageName}`)
+      } else {
+        return Promise.resolve(versionLookupSuccess(latestVersion))
+      }
+    case 'PACKAGE_NOT_FOUND':
+      return packageNotFound
+    default:
+      const _exhaustiveCheck: never = metadata
+      throw new Error(`Unhandled package lookup type ${JSON.stringify(metadata)}`)
+  }
+}
+
+export async function checkPackageVersionExists(
+  packageName: string,
+  version: string,
+): Promise<VersionLookupResult> {
+  const metadata = await packageLookupCall(packageName, version)
+  switch (metadata.type) {
+    case 'PACKAGE_LOOKUP_SUCCESS':
+      return versionLookupSuccess(version)
+    case 'PACKAGE_NOT_FOUND':
+      return packageNotFound
+    default:
+      const _exhaustiveCheck: never = metadata
+      throw new Error(`Unhandled package lookup type ${JSON.stringify(metadata)}`)
   }
 }
 
@@ -210,10 +297,14 @@ export function importResultFromImports(
 export function createLoadedPackageStatusMapFromDependencies(
   dependencies: Array<NpmDependency>,
   dependenciesWithErrors: Array<NpmDependency>,
+  dependenciesNotFound: Array<NpmDependency>,
 ): PackageStatusMap {
   const errorDependencyNames = pluck(dependenciesWithErrors, 'name')
+  const notFoundDependencyNames = pluck(dependenciesNotFound, 'name')
   return dependencies.reduce((statusMap: PackageStatusMap, dependency) => {
-    const status = errorDependencyNames.includes(dependency.name) ? 'error' : 'loaded'
+    const isError = errorDependencyNames.includes(dependency.name)
+    const isNotFound = notFoundDependencyNames.includes(dependency.name)
+    const status: PackageStatus = isError ? 'error' : isNotFound ? 'not-found' : 'loaded'
     statusMap[dependency.name] = {
       status: status,
     }

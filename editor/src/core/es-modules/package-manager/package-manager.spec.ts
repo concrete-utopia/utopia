@@ -15,6 +15,7 @@ import { npmDependency } from '../../shared/npm-dependency-types'
 import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
 import { InjectedCSSFilePrefix } from '../../shared/css-style-loader'
 import { isLeft } from '../../shared/either'
+import { VersionLookupResult } from '../../../components/editor/npm-dependency/npm-dependency'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -23,6 +24,19 @@ const simpleCssContent = '.utopiaClass { background-color: red; }'
 beforeEach(() => {
   resetDepPackagerCache()
 })
+
+jest.mock('../../../components/editor/npm-dependency/npm-dependency', () => ({
+  ...(jest.requireActual('../../../components/editor/npm-dependency/npm-dependency') as any),
+  checkPackageVersionExists: async (
+    packageName: string,
+    version: string,
+  ): Promise<VersionLookupResult> => {
+    return Promise.resolve({
+      type: 'VERSION_LOOKUP_SUCCESS',
+      version: version,
+    })
+  },
+}))
 
 describe('ES Dependency Package Manager', () => {
   it('resolves a file with no imports', () => {

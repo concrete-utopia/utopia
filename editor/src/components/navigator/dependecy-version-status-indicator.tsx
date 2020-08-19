@@ -48,6 +48,8 @@ export const NpmDependencyVersionAndStatusIndicator = betterReactMemo<{
       )
     case 'error':
       return <span>failed to load</span>
+    case 'not-found':
+      return <span>not found</span>
     default:
       const _exhaustiveCheck: never = props.status
       throw new Error(`Unhandled PackageStatus ${JSON.stringify(props.status)}.`)

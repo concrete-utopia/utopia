@@ -25,6 +25,10 @@ import {
   isRight,
 } from '../../shared/either'
 import { isBuiltinDependency } from './package-manager'
+import {
+  checkPackageVersionExists,
+  isPackageNotFound,
+} from '../../../components/editor/npm-dependency/npm-dependency'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 let jsDelivrCache: { [key: string]: JsdelivrResponse } = {}
@@ -82,6 +86,7 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
   if (PACKAGES_TO_SKIP.indexOf(dep.name) > -1) {
     return null
   }
+
   const packagesUrl = getPackagerUrl(dep)
   const jsdelivrUrl = getJsDelivrListUrl(dep)
   let result: NodeModules = {}
@@ -125,7 +130,27 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
 
 interface NodeFetchResult {
   dependenciesWithError: Array<NpmDependency>
+  dependenciesNotFound: Array<NpmDependency>
   nodeModules: NodeModules
+}
+
+interface DependencyFetchError {
+  type: 'FAIL_ERROR' | 'FAIL_NOT_FOUND'
+  dependency: NpmDependency
+}
+
+function failNotFound(dependency: NpmDependency): DependencyFetchError {
+  return {
+    type: 'FAIL_NOT_FOUND',
+    dependency: dependency,
+  }
+}
+
+function failError(dependency: NpmDependency): DependencyFetchError {
+  return {
+    type: 'FAIL_ERROR',
+    dependency: dependency,
+  }
 }
 
 export async function fetchNodeModules(
@@ -135,9 +160,13 @@ export async function fetchNodeModules(
   const dependenciesToDownload = newDeps.filter((d) => !isBuiltinDependency(d.name))
   const nodeModulesArr = await Promise.all(
     dependenciesToDownload.map(
-      async (newDep): Promise<Either<NpmDependency, NodeModules>> => {
+      async (newDep): Promise<Either<DependencyFetchError, NodeModules>> => {
         try {
-          // TODO if the package version is garbage, do not spend 5 retries on download, as it takes a long time
+          const packageExistsResponse = await checkPackageVersionExists(newDep.name, newDep.version)
+          if (isPackageNotFound(packageExistsResponse)) {
+            return left(failNotFound(newDep))
+          }
+
           const packagerResponse = shouldRetry
             ? await fetchPackagerResponseWithRetry(newDep)
             : await fetchPackagerResponse(newDep)
@@ -160,20 +189,28 @@ export async function fetchNodeModules(
              */
             return right(mangleNodeModulePaths(newDep.name, packagerResponse))
           } else {
-            return left(newDep)
+            return left(failError(newDep))
           }
         } catch (e) {
           // TODO: proper error handling, now we don't show error for a missing package. The error will be visible when you try to import
-          return left(newDep)
+          return left(failError(newDep))
         }
       },
     ),
   )
-  const errors = nodeModulesArr.filter(isLeft).map((e) => e.value)
+  const errors = nodeModulesArr
+    .filter(isLeft)
+    .filter((e) => e.value.type === 'FAIL_ERROR')
+    .map((e) => e.value.dependency)
+  const notFound = nodeModulesArr
+    .filter(isLeft)
+    .filter((e) => e.value.type === 'FAIL_NOT_FOUND')
+    .map((e) => e.value.dependency)
   const successes = nodeModulesArr.filter(isRight)
   const nodeModules = mergeNodeModules(pluck(successes, 'value'))
   return {
     dependenciesWithError: errors,
+    dependenciesNotFound: notFound,
     nodeModules: nodeModules,
   }
 }

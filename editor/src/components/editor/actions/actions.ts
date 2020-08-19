@@ -3288,6 +3288,7 @@ export const UPDATE_FNS = {
           const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
             deps,
             fetchNodeModulesResult.dependenciesWithError,
+            fetchNodeModulesResult.dependenciesNotFound,
           )
           const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
             setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
@@ -4325,6 +4326,7 @@ export async function newProject(
   const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
     npmDependencies,
     fetchNodeModulesResult.dependenciesWithError,
+    fetchNodeModulesResult.dependenciesNotFound,
   )
 
   const codeResultCache = generateCodeResultCache(
@@ -4386,6 +4388,7 @@ export async function load(
   const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
     npmDependencies,
     fetchNodeModulesResult.dependenciesWithError,
+    fetchNodeModulesResult.dependenciesNotFound,
   )
 
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
