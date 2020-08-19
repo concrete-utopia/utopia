@@ -1,12 +1,13 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import styled from '@emotion/styled'
+import composeRefs from '@seznam/compose-react-refs'
 import * as React from 'react'
-import { ControlStyles, getControlStyles } from '../../components/inspector/common/control-status'
-import { UtopiaTheme } from '../styles/theme'
-import { OnSubmitValue } from '../../components/inspector/controls/control'
-import { stopPropagation } from '../../components/inspector/common/inspector-utils'
 import { betterReactMemo, ControlStatus } from 'uuiui-deps'
+import { ControlStyles, getControlStyles } from '../../components/inspector/common/control-status'
+import { stopPropagation } from '../../components/inspector/common/inspector-utils'
+import { OnSubmitValue } from '../../components/inspector/controls/control'
+import { UtopiaTheme } from '../styles/theme'
 import { InspectorInput } from './base-input'
 
 interface StringInputOptions {
@@ -38,10 +39,9 @@ export const StringInput = betterReactMemo(
         DEPRECATED_labelBelow: labelBelow,
         ...inputProps
       },
-      initialRef,
+      propsRef,
     ) => {
-      const localRef = React.createRef<HTMLInputElement>()
-      const ref = initialRef ?? localRef
+      const ref = React.useRef<HTMLInputElement>(null)
 
       const [focused, setFocused] = React.useState<boolean>(false)
 
@@ -141,7 +141,7 @@ export const StringInput = betterReactMemo(
             onFocus={onFocus}
             onBlur={onBlur}
             className={inputProps.className}
-            ref={ref}
+            ref={composeRefs(ref, propsRef)}
             placeholder={placeholder}
             disabled={!controlStyles.interactive}
             autoComplete='off'

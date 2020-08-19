@@ -1,4 +1,5 @@
 /** @jsx jsx */
+import composeRefs from '@seznam/compose-react-refs'
 import * as React from 'react'
 import { jsx } from '@emotion/core'
 import {
@@ -18,8 +19,8 @@ export interface CheckboxInputProps extends React.InputHTMLAttributes<HTMLInputE
 export const CheckboxInput = betterReactMemo(
   'CheckboxInput',
   React.forwardRef<HTMLInputElement, CheckboxInputProps>(
-    ({ controlStatus = 'simple', focusOnMount = false, ...props }, initialRef: any) => {
-      const ref = initialRef != null ? initialRef : React.createRef()
+    ({ controlStatus = 'simple', focusOnMount = false, ...props }, propsRef) => {
+      const ref = React.useRef<HTMLInputElement>(null)
 
       const controlStyles: ControlStyles = getControlStyles(controlStatus)
 
@@ -77,7 +78,7 @@ export const CheckboxInput = betterReactMemo(
               ...props.style,
             }}
             checked={checked}
-            ref={ref}
+            ref={composeRefs(ref, propsRef)}
           />
         </div>
       )
