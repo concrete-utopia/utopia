@@ -10,7 +10,7 @@ import { betterReactMemo, ControlStatus } from 'uuiui-deps'
 import { InspectorInput } from './base-input'
 
 interface StringInputOptions {
-  focusOnMount?: true
+  focusOnMount?: boolean
 }
 
 export interface StringInputProps
@@ -25,7 +25,6 @@ export interface StringInputProps
   controlStatus?: ControlStatus
 }
 
-// TODO FIX FUCKED UP REFS SITUATION
 export const StringInput = betterReactMemo(
   'StringInput',
   React.forwardRef<HTMLInputElement, StringInputProps>(
@@ -39,14 +38,15 @@ export const StringInput = betterReactMemo(
         DEPRECATED_labelBelow: labelBelow,
         ...inputProps
       },
-      initialRef: any, // React.RefObject<HTMLInputElement>
+      initialRef,
     ) => {
-      const ref = initialRef != null ? initialRef : React.createRef()
+      const localRef = React.createRef<HTMLInputElement>()
+      const ref = initialRef ?? localRef
 
       const [focused, setFocused] = React.useState<boolean>(false)
 
       React.useEffect(() => {
-        if (focusOnMount && ref.current != null) {
+        if (focusOnMount && typeof ref !== 'function' && ref.current != null) {
           ref.current.focus()
         }
       }, [focusOnMount, ref])
@@ -68,12 +68,12 @@ export const StringInput = betterReactMemo(
             e.key === 'ArrowDown'
           ) {
             // handle navigation events without & with modifiers
-            e.nativeEvent.stopImmediatePropagation()
+            e.stopPropagation()
           }
           if (e.key === 'Escape' || e.key === 'Enter') {
             e.preventDefault()
-            e.nativeEvent.stopImmediatePropagation()
-            if (ref.current != null) {
+            e.stopPropagation()
+            if (typeof ref !== 'function' && ref.current != null) {
               ref.current.blur()
             }
           }
@@ -83,14 +83,13 @@ export const StringInput = betterReactMemo(
 
       const onFocus = React.useCallback(
         (e: React.FocusEvent<HTMLInputElement>) => {
-          if (inputProps.onFocus != null) {
-            // FIXME Should we be doing this in the case where the input is disabled? This feels wrong...
-            inputProps.onFocus(e)
-          }
           if (disabled) {
             e.preventDefault()
             e.target.blur()
           } else {
+            if (inputProps.onFocus != null) {
+              inputProps.onFocus(e)
+            }
             setFocused(true)
             e.target.select()
             e.persist()
