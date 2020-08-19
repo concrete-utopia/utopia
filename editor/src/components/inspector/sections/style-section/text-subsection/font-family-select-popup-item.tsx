@@ -1,23 +1,14 @@
-/** @jsx jsx */
-import { jsx } from '@emotion/core'
 import * as React from 'react'
 import { ListChildComponentProps } from 'react-window'
-import { isRight } from '../../../../../core/shared/either'
-import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
 import { FlexColumn, UtopiaTheme } from '../../../../../uuiui'
-import { useEditorState } from '../../../../editor/store/store-hook'
-import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-resources-list-search'
 import {
-  cssFontStyleToWebFontStyle,
-  cssFontWeightToWebFontWeight,
   GoogleFontsTypeface,
   SystemDefaultTypeface,
-  webFontFamilyVariant,
-  webFontVariant,
+  WebFontFamilyVariant,
 } from '../../../../navigator/external-resources/google-fonts-utils'
 import { CSSFontStyle, CSSFontWeight } from '../../../common/css-utils'
 import { OnSubmitValue } from '../../../controls/control'
-import { ItemData } from './font-family-select-popup'
+import { ItemData, submitAndClosePopup } from './font-family-select-popup'
 
 interface FontsListChildComponentProps extends ListChildComponentProps {
   data: {
@@ -26,57 +17,68 @@ interface FontsListChildComponentProps extends ListChildComponentProps {
     onSubmitFontFamily: OnSubmitValue<SystemDefaultTypeface | GoogleFontsTypeface>
     itemsArray: Array<ItemData>
     closePopup: () => void
+    selectedIndex: number | null
+    setSelectedOption: React.Dispatch<React.SetStateAction<ItemData>>
+    pushNewFontFamilyVariant: (newValue: WebFontFamilyVariant) => void
   }
 }
 
 export const FontFamilySelectPopupItem: React.FunctionComponent<FontsListChildComponentProps> = ({
-  data: { itemsArray, onSubmitFontFamily, fontWeight, fontStyle, closePopup },
+  data: {
+    itemsArray,
+    onSubmitFontFamily,
+    fontWeight,
+    fontStyle,
+    closePopup,
+    selectedIndex,
+    setSelectedOption,
+    pushNewFontFamilyVariant,
+  },
   style,
   index,
 }) => {
   const metadata = itemsArray[index].metadata
-  const { useSubmitValueFactory } = useExternalResources()
-  const [pushNewFontFamilyVariant] = useSubmitValueFactory(updatePushNewFontFamilyVariant)
+
+  const selected = selectedIndex === index
+
+  const onMouseEnter = React.useCallback(() => {
+    setSelectedOption(itemsArray[index])
+  }, [setSelectedOption, itemsArray, index])
 
   const onClick = React.useCallback(() => {
-    onSubmitFontFamily(metadata)
-    closePopup()
-    if (metadata.type === 'google-fonts-typeface') {
-      const webFontWeight = cssFontWeightToWebFontWeight(fontWeight)
-      const webFontStyle = cssFontStyleToWebFontStyle(fontStyle)
-      if (isRight(webFontWeight) && isRight(webFontStyle)) {
-        const newWebFontFamilyVariant = webFontFamilyVariant(
-          metadata.name,
-          webFontVariant(webFontWeight.value, webFontStyle.value),
-        )
-        pushNewFontFamilyVariant(newWebFontFamilyVariant)
-      }
-    }
+    submitAndClosePopup(
+      closePopup,
+      onSubmitFontFamily,
+      metadata,
+      fontWeight,
+      fontStyle,
+      pushNewFontFamilyVariant,
+    )
   }, [onSubmitFontFamily, fontStyle, fontWeight, metadata, pushNewFontFamilyVariant, closePopup])
   return (
     <FlexColumn
-      style={{ ...style, paddingLeft: 12, paddingRight: 12, paddingTop: 6, paddingBottom: 6 }}
-      className='font-family-popup-item'
-      css={{
-        ':hover': {
-          backgroundColor: UtopiaTheme.color.inspectorFocusedColor.value,
-          color: 'white',
-        },
+      style={{
+        ...style,
+        paddingLeft: 12,
+        paddingRight: 12,
+        paddingTop: 6,
+        paddingBottom: 6,
+        backgroundColor: selected ? UtopiaTheme.color.inspectorFocusedColor.value : undefined,
+        color: selected ? 'white' : undefined,
       }}
+      className='font-family-popup-item'
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
     >
       {metadata.type === 'system-default-typeface' ? (
         <React.Fragment>
           <div style={{ fontSize: 12 }}>System Default</div>
           <div
-            css={{
+            style={{
               fontSize: 11,
-              color: '#888',
               whiteSpace: 'normal',
-              '.font-family-popup-item:hover &': {
-                backgroundColor: UtopiaTheme.color.inspectorFocusedColor.value,
-                color: 'white',
-              },
+              backgroundColor: selected ? UtopiaTheme.color.inspectorFocusedColor.value : undefined,
+              color: selected ? 'white' : '#888',
             }}
           >
             Use the default typeface of the operating system: SF Pro on macOS and iOS, Roboto on

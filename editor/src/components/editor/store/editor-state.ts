@@ -103,6 +103,7 @@ import {
   isSceneElement,
   BakedInStoryboardVariableName,
   EmptyScenePathForStoryboard,
+  isDynamicSceneChildWidthHeightPercentage,
 } from '../../../core/model/scene-utils'
 
 import { RightMenuTab } from '../../canvas/right-menu'
@@ -118,6 +119,7 @@ import {
 import { Notice } from '../../common/notices'
 import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
 import * as friendlyWords from 'friendly-words'
+import { fastForEach } from '../../../core/shared/utils'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -860,11 +862,13 @@ export function getMetadata(editor: EditorState): Array<ComponentMetadata> {
 export interface ElementWarnings {
   widthOrHeightZero: boolean
   absoluteWithUnpositionedParent: boolean
+  dynamicSceneChildWidthHeightPercentage: boolean
 }
 
 export const defaultElementWarnings: ElementWarnings = {
   widthOrHeightZero: false,
   absoluteWithUnpositionedParent: false,
+  dynamicSceneChildWidthHeightPercentage: false,
 }
 
 export interface DerivedState {
@@ -1129,10 +1133,22 @@ export function getElementWarnings(
       const elementWarnings: ElementWarnings = {
         widthOrHeightZero: widthOrHeightZero,
         absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
+        dynamicSceneChildWidthHeightPercentage: false,
       }
       result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
     },
   )
+  fastForEach(rootMetadata, (scene) => {
+    const elementWarnings: ElementWarnings = {
+      widthOrHeightZero:
+        scene.globalFrame != null
+          ? scene.globalFrame.width === 0 || scene.globalFrame.height === 0
+          : false,
+      absoluteWithUnpositionedParent: false,
+      dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(scene),
+    }
+    result = addToComplexMap(toString, result, scene.scenePath, elementWarnings)
+  })
   return result
 }
 

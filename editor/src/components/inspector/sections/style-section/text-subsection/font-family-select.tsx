@@ -14,6 +14,14 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
   const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
+  const onMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
+      togglePopup()
+      e.stopPropagation()
+    },
+    [togglePopup],
+  )
+
   const { value, useSubmitValueFactory, onUnsetValues, controlStyles } = useInspectorInfo(
     ['fontFamily', 'fontStyle', 'fontWeight'],
     identity,
@@ -43,7 +51,7 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
           />
         ) : null}
         <FlexRow
-          onMouseDown={togglePopup}
+          onMouseDownCapture={onMouseDown}
           style={{
             boxShadow: `0 0 0 1px ${controlStyles.borderColor} inset`,
             padding: 4,
