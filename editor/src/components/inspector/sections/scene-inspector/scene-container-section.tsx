@@ -29,7 +29,10 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isPercentPin } from 'utopia-api'
 import { unsetSceneProp, setSceneProp } from '../../../editor/actions/actions'
 import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
-import { PathForResizeContent } from '../../../../core/model/scene-utils'
+import {
+  PathForResizeContent,
+  isDynamicSceneChildWidthHeightPercentage,
+} from '../../../../core/model/scene-utils'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -174,7 +177,7 @@ function useSceneType(): InspectorInfo<boolean> {
   )
 }
 
-export function useSceneRootViewInfo() {
+export function useIsDynamicSceneChildWidthHeightPercentage() {
   const { selectedViews, metadata } = useEditorState((state) => {
     return {
       selectedViews: state.editor.selectedViews,
@@ -188,14 +191,9 @@ export function useSceneRootViewInfo() {
   )
   const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScenePath)
   if (scene != null) {
-    return scene.rootElements.map((element) => {
-      return {
-        width: element.props?.style?.width,
-        height: element.props?.style?.height,
-      }
-    })
+    return isDynamicSceneChildWidthHeightPercentage(scene)
   } else {
-    return []
+    return false
   }
 }
 
@@ -214,11 +212,8 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   const sceneResizesContentInfo = useSceneType()
   let controlStatus: ControlStatus = simpleControlStatus
   let controlStyles = simpleControlStyles
-  const rootViewsSizeInfo = useSceneRootViewInfo()
-  if (
-    sceneResizesContentInfo.value &&
-    rootViewsSizeInfo.some((size) => isPercentPin(size.width) || isPercentPin(size.height))
-  ) {
+  const isDynamicSceneChildSizePercent = useIsDynamicSceneChildWidthHeightPercentage()
+  if (isDynamicSceneChildSizePercent) {
     controlStatus = 'disabled'
     controlStyles = getControlStyles(controlStatus)
   }

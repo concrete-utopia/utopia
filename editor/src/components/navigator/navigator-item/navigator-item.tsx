@@ -196,7 +196,9 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     const resultingStyle = computeResultingStyle()
 
     let warningText: string | null = null
-    if (elementWarnings.widthOrHeightZero) {
+    if (elementWarnings.dynamicSceneChildWidthHeightPercentage) {
+      warningText = 'Dynamic scene has child with percentage size'
+    } else if (elementWarnings.widthOrHeightZero) {
       warningText = 'Missing width or height'
     } else if (elementWarnings.absoluteWithUnpositionedParent) {
       warningText = 'Element is trying to be position absolutely with an unconfigured parent'
