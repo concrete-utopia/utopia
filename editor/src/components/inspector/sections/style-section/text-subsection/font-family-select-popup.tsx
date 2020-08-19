@@ -148,6 +148,14 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
       [filteredData, selectedOption],
     )
 
+    const onStringInputKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+      if (
+        !(e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === 'Escape')
+      ) {
+        e.stopPropagation()
+      }
+    }, [])
+
     const onWrapperKeyDown = React.useCallback(
       (e: React.KeyboardEvent) => {
         e.stopPropagation()
@@ -183,7 +191,7 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
           default: {
             if (stringInputRef.current != null) {
               stringInputRef.current.focus()
-              stringInputRef.current.dispatchEvent(e.nativeEvent)
+              onStringInputKeyDown(e)
             }
           }
         }
@@ -196,18 +204,9 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
         onSubmitFontFamily,
         pushNewFontFamilyVariant,
         selectedOption,
+        onStringInputKeyDown,
       ],
     )
-
-    const onStringInputKeyDown = React.useCallback((e: React.KeyboardEvent) => {
-      if (
-        (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === 'Escape') &&
-        wrapperRef.current != null
-      ) {
-        wrapperRef.current.dispatchEvent(e.nativeEvent)
-      }
-      e.stopPropagation()
-    }, [])
 
     const getItemSize = React.useCallback(
       (index: number) => filteredData[index]?.height ?? NormalItemSize,
