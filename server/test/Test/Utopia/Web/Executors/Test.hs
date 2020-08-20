@@ -42,6 +42,7 @@ initialiseTestResources = do
          , _registryManager = npmRegistryManager
          , _assetsCaches = testAssetsCaches
          , _nodeSemaphore = semaphoreForNode
+         , _branchDownloads = Nothing
          }
 
 testEnvironmentRuntime :: EnvironmentRuntime DevServerResources
