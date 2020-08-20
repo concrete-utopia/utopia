@@ -1,14 +1,12 @@
 import * as React from 'react'
 import { ListChildComponentProps } from 'react-window'
 import { FlexColumn, UtopiaTheme } from '../../../../../uuiui'
-import {
-  GoogleFontsTypeface,
-  SystemDefaultTypeface,
-  WebFontFamilyVariant,
-} from '../../../../navigator/external-resources/google-fonts-utils'
+import { WebFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-utils'
 import { CSSFontStyle, CSSFontWeight } from '../../../common/css-utils'
 import { OnSubmitValue } from '../../../controls/control'
-import { ItemData, submitAndClosePopup } from './font-family-select-popup'
+import { isSelectableItemData, ItemData, submitNewValue } from './font-family-select-popup'
+import { ProjectTypefaceItem } from './project-typeface-item'
+import { SystedDefaultFontItem } from './system-default-font-item'
 
 interface FontsListChildComponentProps extends ListChildComponentProps {
   data: {
@@ -24,6 +22,7 @@ interface FontsListChildComponentProps extends ListChildComponentProps {
     selectedIndex: number | null
     setSelectedOption: React.Dispatch<React.SetStateAction<ItemData>>
     pushNewFontFamilyVariant: (newValue: WebFontFamilyVariant) => void
+    updateSizes: () => void
   }
 }
 
@@ -37,61 +36,66 @@ export const FontFamilySelectPopupItem: React.FunctionComponent<FontsListChildCo
     selectedIndex,
     setSelectedOption,
     pushNewFontFamilyVariant,
+    updateSizes,
   },
   style,
   index,
 }) => {
-  const metadata = itemsArray[index].metadata
+  const option = itemsArray[index]
+  const metadata = option.metadata
 
   const selected = selectedIndex === index
 
-  const onMouseEnter = React.useCallback(() => {
-    setSelectedOption(itemsArray[index])
-  }, [setSelectedOption, itemsArray, index])
+  const onMouseOver = React.useCallback(() => {
+    if (isSelectableItemData(option)) {
+      setSelectedOption(option)
+    }
+  }, [setSelectedOption, option])
 
   const onClick = React.useCallback(() => {
-    submitAndClosePopup(
-      closePopup,
-      onSubmitFontFamily,
-      metadata,
-      fontWeight,
-      fontStyle,
-      pushNewFontFamilyVariant,
-    )
-  }, [onSubmitFontFamily, fontStyle, fontWeight, metadata, pushNewFontFamilyVariant, closePopup])
+    if (isSelectableItemData(option)) {
+      closePopup()
+      submitNewValue(onSubmitFontFamily, option, fontWeight, fontStyle, pushNewFontFamilyVariant)
+    }
+  }, [onSubmitFontFamily, fontStyle, fontWeight, option, pushNewFontFamilyVariant, closePopup])
+
   return (
     <FlexColumn
       style={{
         ...style,
+        paddingTop: 5,
+        paddingBottom: 4,
         paddingLeft: 12,
         paddingRight: 12,
-        paddingTop: 6,
-        paddingBottom: 6,
         backgroundColor: selected ? UtopiaTheme.color.inspectorFocusedColor.value : undefined,
+        fontSize: 12,
         color: selected ? 'white' : undefined,
       }}
-      className='font-family-popup-item'
       onClick={onClick}
-      onMouseEnter={onMouseEnter}
+      onMouseOver={onMouseOver}
     >
-      {metadata.type === 'system-default-typeface' ? (
-        <React.Fragment>
-          <div style={{ fontSize: 12 }}>System Default</div>
-          <div
-            style={{
-              fontSize: 11,
-              whiteSpace: 'normal',
-              backgroundColor: selected ? UtopiaTheme.color.inspectorFocusedColor.value : undefined,
-              color: selected ? 'white' : '#888',
-            }}
-          >
-            Use the default typeface of the operating system: SF Pro on macOS and iOS, Roboto on
-            Android and Segoe UI on Windows
-          </div>
-        </React.Fragment>
-      ) : (
-        <div style={{ fontSize: 12 }}>{metadata.name}</div>
-      )}
+      {(() => {
+        switch (metadata.type) {
+          case 'ui-item': {
+            return <metadata.component />
+          }
+          case 'system-default-typeface': {
+            return <SystedDefaultFontItem selected={selected} />
+          }
+          case 'google-fonts-typeface': {
+            return <div>{metadata.name}</div>
+          }
+          case 'project-typeface': {
+            return (
+              <ProjectTypefaceItem
+                typeface={metadata.typeface}
+                selected={selected}
+                updateSizes={updateSizes}
+              />
+            )
+          }
+        }
+      })()}
     </FlexColumn>
   )
 }

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { VariableSizeList } from 'react-window'
-import { betterReactMemo, ControlStyles, OnSubmitValue } from 'uuiui-deps'
+import { betterReactMemo, ControlStyles, OnSubmitValue, Utils } from 'uuiui-deps'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'
 import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
@@ -25,17 +25,26 @@ import {
 } from '../../../common/property-path-hooks'
 import { InspectorModal } from '../../../widgets/inspector-modal'
 import { FontFamilySelectPopupItem } from './font-family-select-popup-item'
+import { ProjectFontDividerItem } from './project-font-divider-item'
+import { ProjectFontHeaderItem } from './project-font-header-item'
 
 function getOptionIndex(
   filteredData: Array<ItemData>,
   selectedOption: ItemData | null | undefined,
 ): number {
-  if (selectedOption != null) {
+  if (selectedOption != null && isSelectableItemData(selectedOption)) {
+    const selectedTypeface = getTypefaceFromItemData(selectedOption)
     const foundIndex = filteredData.findIndex((v) => {
-      return (
-        selectedOption.metadata.type === v.metadata.type &&
-        selectedOption.metadata.name === v.metadata.name
-      )
+      if (isSelectableItemData(v)) {
+        const typefaceToMatchAgainst = getTypefaceFromItemData(v)
+        return (
+          selectedOption.metadata.type === v.metadata.type &&
+          selectedTypeface.type === typefaceToMatchAgainst.type &&
+          selectedTypeface.name === typefaceToMatchAgainst.name
+        )
+      } else {
+        return false
+      }
     })
     return foundIndex > -1 ? foundIndex : 0
   } else {
@@ -48,24 +57,93 @@ interface FontFamilySelectPopupProps {
   onUnsetValues: OnUnsetValues
   controlStyles: ControlStyles
   closePopup: () => void
-  useSubmitValueFactory: UseSubmitValueFactory<
+  useSubmitFontVariantFactory: UseSubmitValueFactory<
     ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>
   >
 }
 
-const ModalWidth = 220
+const ModalWidth = 250
 
 const NormalItemSize = 26
-const DefaultSystemFontSize = 84
+const DefaultSystemFontSize = 70
+
+export interface ProjectTypeface {
+  type: 'project-typeface'
+  typeface: SystemDefaultTypeface | GoogleFontsTypeface
+}
+function projectTypeface(typeface: SystemDefaultTypeface | GoogleFontsTypeface): ProjectTypeface {
+  return {
+    type: 'project-typeface',
+    typeface,
+  }
+}
+function isProjectTypeface(
+  value: ProjectTypeface | SystemDefaultTypeface | GoogleFontsTypeface,
+): value is ProjectTypeface {
+  return value.type === 'project-typeface'
+}
+
+interface UiItem {
+  type: 'ui-item'
+  componentId: string
+  component: React.ElementType
+}
+function uiItem(component: React.ElementType, componentId: string): UiItem {
+  return {
+    type: 'ui-item',
+    componentId,
+    component,
+  }
+}
+
+export function getTypefaceFromItemData(
+  value: SelectableItemData,
+): SystemDefaultTypeface | GoogleFontsTypeface {
+  return isProjectTypeface(value.metadata) ? value.metadata.typeface : value.metadata
+}
 
 export interface ItemData {
-  metadata: SystemDefaultTypeface | GoogleFontsTypeface
+  metadata: ProjectTypeface | SystemDefaultTypeface | GoogleFontsTypeface | UiItem
   height: number
 }
-const itemData: Array<ItemData> = [systemDefaultTypeface, ...googleFontsList].map((item, i) => ({
-  metadata: item,
-  height: i === 0 ? DefaultSystemFontSize : NormalItemSize,
-}))
+function itemData(
+  metadata: ProjectTypeface | SystemDefaultTypeface | GoogleFontsTypeface | UiItem,
+  height: number,
+): ItemData {
+  return {
+    metadata,
+    height,
+  }
+}
+
+export interface SelectableItemData extends ItemData {
+  metadata: ProjectTypeface | SystemDefaultTypeface | GoogleFontsTypeface
+}
+
+export function isSelectableItemData(value: ItemData): value is SelectableItemData {
+  return value.metadata.type !== 'ui-item'
+}
+
+interface ProjectTypefaceItemData extends ItemData {
+  metadata: ProjectTypeface
+}
+
+function projectTypefaceItemData(
+  metadata: ProjectTypeface,
+  height: number,
+): ProjectTypefaceItemData {
+  return { metadata, height }
+}
+
+interface StartingItemData extends ItemData {
+  metadata: SystemDefaultTypeface | GoogleFontsTypeface
+}
+const startingItemData: Array<StartingItemData> = [systemDefaultTypeface, ...googleFontsList].map(
+  (item, i) => ({
+    metadata: item,
+    height: i === 0 ? DefaultSystemFontSize : NormalItemSize,
+  }),
+)
 
 function updateNewFontVariant(newValue: {
   fontFamily: string
@@ -92,28 +170,29 @@ function updateNewFontVariant(newValue: {
   }
 }
 
-export function submitAndClosePopup(
-  closePopup: () => void,
+export function submitNewValue(
   onSubmitFontFamilyVariant: OnSubmitValue<{
     fontFamily: string
     fontWeight: CSSFontWeight
     fontStyle: CSSFontStyle
   }>,
-  metadata: SystemDefaultTypeface | GoogleFontsTypeface,
+  selectedOption: SelectableItemData,
   fontWeight: CSSFontWeight,
   fontStyle: CSSFontStyle,
   pushNewFontFamilyVariant: (newValue: WebFontFamilyVariant) => void,
 ) {
-  closePopup()
   let targetFontWeight: CSSFontWeight = fontWeight
   let targetFontStyle: CSSFontStyle = fontStyle
-  if (metadata.type === 'google-fonts-typeface') {
+  const selectedTypeface = getTypefaceFromItemData(selectedOption)
+  if (selectedTypeface.type === 'google-fonts-typeface') {
     const parsedNewWebFontWeight = cssFontWeightToWebFontWeight(fontWeight)
     const parsedNewWebFontStyle = cssFontStyleToWebFontStyle(fontStyle)
     if (isRight(parsedNewWebFontWeight) && isRight(parsedNewWebFontStyle)) {
       const newWebFontWeight = parsedNewWebFontWeight.value
       const newWebFontStyle = parsedNewWebFontStyle.value
-      const googleFontsTypeface = googleFontsList.find((family) => family.name === metadata.name)
+      const googleFontsTypeface = googleFontsList.find(
+        (family) => family.name === selectedTypeface.name,
+      )
       if (googleFontsTypeface != null) {
         const variantExistsOnTypeface = googleFontsTypeface.variants.some(
           (variant) =>
@@ -151,56 +230,134 @@ export function submitAndClosePopup(
         })()
         targetFontWeight = closestMatchingVariant.webFontWeight
         targetFontStyle = closestMatchingVariant.webFontStyle
-        const newWebFontFamilyVariant = webFontFamilyVariant(metadata.name, closestMatchingVariant)
+        const newWebFontFamilyVariant = webFontFamilyVariant(
+          selectedTypeface.name,
+          closestMatchingVariant,
+        )
         pushNewFontFamilyVariant(newWebFontFamilyVariant)
       }
     }
   }
   onSubmitFontFamilyVariant({
-    fontFamily: metadata.name,
+    fontFamily: selectedTypeface.name,
     fontWeight: targetFontWeight,
     fontStyle: targetFontStyle,
   })
 }
 
-function filterData(data: Array<ItemData>, lowerCaseSearchTerm: string): Array<ItemData> {
-  return data.filter((datum) => datum.metadata.name.toLowerCase().includes(lowerCaseSearchTerm))
+const projectFontHeaderItem = itemData(
+  uiItem(ProjectFontHeaderItem, 'project-font-header'),
+  NormalItemSize,
+)
+const projectFontDividerItem = itemData(uiItem(ProjectFontDividerItem, 'project-font-divider'), 10)
+
+function filterData(
+  data: Array<StartingItemData>,
+  lowerCaseSearchTerm: string,
+  projectTypefaces: Array<ProjectTypefaceItemData>,
+): Array<ItemData> {
+  if (lowerCaseSearchTerm.length === 0) {
+    if (projectTypefaces.length > 0) {
+      if (data.length > 0) {
+        return [projectFontHeaderItem, ...projectTypefaces, projectFontDividerItem, ...data]
+      } else {
+        return [projectFontHeaderItem, ...projectTypefaces]
+      }
+    } else {
+      return [...data]
+    }
+  } else {
+    const filteredProjectTypefaces: Array<SelectableItemData> = projectTypefaces.filter((datum) => {
+      return getTypefaceFromItemData(datum).name.toLowerCase().includes(lowerCaseSearchTerm)
+    })
+    const projectTypefacesHeader =
+      filteredProjectTypefaces.length > 0 ? [projectFontHeaderItem] : []
+    const projectTypefacesDivider =
+      filteredProjectTypefaces.length > 0 ? [projectFontDividerItem] : []
+
+    const filteredData: Array<ItemData> = data.filter((datum) => {
+      const typeface = getTypefaceFromItemData(datum)
+      if (filteredProjectTypefaces.some((v) => getTypefaceFromItemData(v).name === typeface.name)) {
+        return false
+      } else {
+        return typeface.name.toLowerCase().includes(lowerCaseSearchTerm)
+      }
+    })
+
+    return [
+      ...projectTypefacesHeader,
+      ...filteredProjectTypefaces,
+      ...projectTypefacesDivider,
+      ...filteredData,
+    ]
+  }
 }
 
 export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>(
   'FontFamilySelectPopup',
-  ({ value: { fontFamily, fontWeight, fontStyle }, useSubmitValueFactory, closePopup }) => {
+  ({ value: { fontFamily, fontWeight, fontStyle }, useSubmitFontVariantFactory, closePopup }) => {
     const stringInputRef = React.useRef<HTMLInputElement>(null)
     const variableSizeListRef = React.useRef<VariableSizeList>(null)
 
     const [searchTerm, setSearchTerm] = React.useState('')
     const lowerCaseSearchTerm = searchTerm.toLowerCase()
 
-    const filteredData = React.useRef(filterData(itemData, lowerCaseSearchTerm))
+    const { values, useSubmitValueFactory: useResourcesSubmitValueFactory } = useExternalResources()
+    const projectTypefaces: Array<ProjectTypefaceItemData> = React.useMemo(() => {
+      return isRight(values)
+        ? Utils.stripNulls(
+            values.value.googleFontsResources.map((googleFontResource) => {
+              const familyName = googleFontResource.fontFamily
+              const matchedTypeface = startingItemData.find(
+                (datum) => getTypefaceFromItemData(datum).name === familyName,
+              )
+              return matchedTypeface != null
+                ? projectTypefaceItemData(projectTypeface(matchedTypeface.metadata), NormalItemSize)
+                : null
+            }),
+          )
+        : []
+    }, [values])
 
-    const valueOption =
-      itemData.find((v) => {
-        if (v.metadata.type === 'google-fonts-typeface') {
-          return v.metadata.name === fontFamily[0]
-        } else {
-          return fontFamily.join(', ') === systemDefaultTypeface.name
-        }
-      }) ?? null
-
-    const [onSubmitFontVariant] = useSubmitValueFactory(updateNewFontVariant)
-
-    const { useSubmitValueFactory: useResourcesSubmitValueFactory } = useExternalResources()
     const [pushNewFontFamilyVariant] = useResourcesSubmitValueFactory(
       updatePushNewFontFamilyVariant,
     )
 
-    const [selectedOption, setSelectedOption] = React.useState<ItemData>(
-      valueOption ?? filteredData.current[0],
+    const filteredData = React.useMemo(
+      () => filterData(startingItemData, lowerCaseSearchTerm, projectTypefaces),
+      [lowerCaseSearchTerm, projectTypefaces],
     )
-    const filteredDataCurrent = filteredData.current
+
+    const valueOption: SelectableItemData | null =
+      filteredData.find((v): v is SelectableItemData => {
+        switch (v.metadata.type) {
+          case 'project-typeface':
+          case 'google-fonts-typeface': {
+            return getTypefaceFromItemData(v as SelectableItemData).name === fontFamily[0]
+          }
+          case 'system-default-typeface': {
+            return fontFamily.join(', ') === systemDefaultTypeface.name
+          }
+          case 'ui-item': {
+            return false
+          }
+          default: {
+            const _exhaustiveCheck: never = v.metadata
+            throw Error(
+              `Fallthrough case finding a value option with ${JSON.stringify(v.metadata)}`,
+            )
+          }
+        }
+      }) ?? null
+
+    const [onSubmitFontVariant] = useSubmitFontVariantFactory(updateNewFontVariant)
+
+    const [selectedOption, setSelectedOption] = React.useState<SelectableItemData | null>(
+      valueOption,
+    )
     const selectedIndex = React.useMemo<number>(
-      () => getOptionIndex(filteredDataCurrent, selectedOption),
-      [filteredDataCurrent, selectedOption],
+      () => getOptionIndex(filteredData, selectedOption),
+      [filteredData, selectedOption],
     )
 
     const onStringInputKeyDown = React.useCallback((e: React.KeyboardEvent) => {
@@ -216,32 +373,24 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
         e.stopPropagation()
         switch (e.key) {
           case 'ArrowUp': {
-            setSelectedOption(
-              (v) => filteredData.current[Math.max(0, getOptionIndex(filteredData.current, v) - 1)],
-            )
+            setSelectedOption(incrementSelectedOption(filteredData, -1))
             break
           }
           case 'ArrowDown': {
-            setSelectedOption(
-              (v) =>
-                filteredData.current[
-                  Math.min(
-                    getOptionIndex(filteredData.current, v) + 1,
-                    filteredData.current.length - 1,
-                  )
-                ],
-            )
+            setSelectedOption(incrementSelectedOption(filteredData, 1))
             break
           }
           case 'Enter': {
-            submitAndClosePopup(
-              closePopup,
-              onSubmitFontVariant,
-              selectedOption.metadata,
-              fontWeight,
-              fontStyle,
-              pushNewFontFamilyVariant,
-            )
+            closePopup()
+            if (selectedOption != null) {
+              submitNewValue(
+                onSubmitFontVariant,
+                selectedOption,
+                fontWeight,
+                fontStyle,
+                pushNewFontFamilyVariant,
+              )
+            }
             break
           }
           case 'Escape': {
@@ -268,26 +417,23 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
       ],
     )
 
-    const getItemSize = React.useCallback(
-      (index: number) => filteredData.current[index]?.height ?? NormalItemSize,
-      [filteredData],
-    )
+    const getItemSize = React.useCallback((index: number) => filteredData[index].height, [
+      filteredData,
+    ])
+
+    const updateSizes = React.useCallback(() => {
+      if (variableSizeListRef.current != null) {
+        variableSizeListRef.current.resetAfterIndex(0)
+      }
+    }, [])
 
     const onChange = React.useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (variableSizeListRef.current != null) {
-          variableSizeListRef.current.resetAfterIndex(0)
-        }
-
+        updateSizes()
         const newSearchTerm = e.target.value
         setSearchTerm(newSearchTerm)
-
-        const newFilteredData = filterData(itemData, newSearchTerm)
-        filteredData.current = newFilteredData
-        const newFilteredDataSelectedIndex = getOptionIndex(newFilteredData, selectedOption)
-        setSelectedOption(newFilteredData[newFilteredDataSelectedIndex])
       },
-      [selectedOption],
+      [updateSizes],
     )
 
     React.useEffect(() => {
@@ -297,8 +443,13 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
     }, [selectedIndex])
 
     React.useEffect(() => {
-      if (variableSizeListRef.current != null && selectedIndex != null) {
-        variableSizeListRef.current.scrollToItem(selectedIndex, 'start')
+      if (variableSizeListRef.current != null && selectedIndex != null && selectedOption != null) {
+        if (selectedOption.metadata.type === 'project-typeface') {
+          // try and get the "Project Fonts" header in
+          variableSizeListRef.current.scrollToItem(selectedIndex, 'end')
+        } else {
+          variableSizeListRef.current.scrollToItem(selectedIndex, 'start')
+        }
       }
       // we only want to do this on mount
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -323,7 +474,7 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
             width: ModalWidth,
             boxShadow: `0 3px 6px #0002`,
           }}
-          onKeyDown={onWrapperKeyDown}
+          onKeyDownCapture={onWrapperKeyDown}
         >
           <FlexRow style={{ padding: 12 }}>
             <StringInput
@@ -340,17 +491,18 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
             itemSize={getItemSize}
             itemData={{
               onSubmitFontFamily: onSubmitFontVariant,
-              itemsArray: filteredData.current,
+              itemsArray: filteredData,
               fontWeight,
               fontStyle,
               closePopup,
               selectedIndex,
               setSelectedOption,
               pushNewFontFamilyVariant,
+              updateSizes,
             }}
             width={'100%'}
-            height={215}
-            itemCount={filteredData.current.length}
+            height={270}
+            itemCount={filteredData.length}
           >
             {FontFamilySelectPopupItem}
           </VariableSizeList>
@@ -359,3 +511,29 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
     )
   },
 )
+function incrementSelectedOption(
+  filteredData: ItemData[],
+  delta: 1 | -1,
+): React.SetStateAction<SelectableItemData | null> {
+  return (v) => {
+    const currentIndex = getOptionIndex(filteredData, v)
+    let workingNextSelectedItem: SelectableItemData = filteredData[
+      currentIndex
+    ] as SelectableItemData
+    let possibleNextIndex = currentIndex + delta
+    let keepSearching = true
+    while (keepSearching) {
+      const possibleNextSelectedItem: ItemData = filteredData[possibleNextIndex]
+      if (possibleNextSelectedItem != null) {
+        if (isSelectableItemData(possibleNextSelectedItem)) {
+          workingNextSelectedItem = possibleNextSelectedItem
+          keepSearching = false
+        }
+      } else {
+        keepSearching = false
+      }
+      possibleNextIndex = possibleNextIndex + delta
+    }
+    return workingNextSelectedItem
+  }
+}

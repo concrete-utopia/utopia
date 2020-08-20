@@ -47,7 +47,7 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
             onUnsetValues={onUnsetValues}
             controlStyles={controlStyles}
             closePopup={closePopup}
-            useSubmitValueFactory={useSubmitValueFactory}
+            useSubmitFontVariantFactory={useSubmitValueFactory}
           />
         ) : null}
         <FlexRow
