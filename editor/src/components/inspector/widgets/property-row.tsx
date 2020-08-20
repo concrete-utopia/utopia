@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { UtopiaTheme } from '../../../uuiui'
 
 export const PropertyRowHeightDefault = 33
 export const PropertyRowHeightWithLabel = 45
@@ -11,7 +12,8 @@ export const PropertyRow: React.FunctionComponent<{
   const styleProps: React.CSSProperties = React.useMemo(() => {
     return {
       minHeight: PropertyRowHeightDefault,
-      padding: '0 12px',
+      paddingLeft: UtopiaTheme.layout.inspectorXPadding,
+      paddingRight: UtopiaTheme.layout.inspectorXPadding,
       position: 'relative',
       boxSizing: 'border-box',
       display: 'grid',

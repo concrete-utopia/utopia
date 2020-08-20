@@ -238,7 +238,11 @@ export class SelectModeControlContainer extends React.Component<
       Utils.fastForEach(scenes, (path) => {
         const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, path)
         const rootElements = scene?.rootElements
-        if (scene?.type === 'dynamic' && rootElements != null && rootElements.length > 1) {
+        if (
+          MetadataUtils.isSceneTreatedAsGroup(scene) &&
+          rootElements != null &&
+          rootElements.length > 1
+        ) {
           rootElementsToFilter = [
             ...rootElementsToFilter,
             ...rootElements.map((element) => element.templatePath),
@@ -630,7 +634,7 @@ export class SelectModeControlContainer extends React.Component<
             })
           })
         }
-        return scene?.type === 'static' || rootHasStyleProp
+        return MetadataUtils.isSceneTreatedAsGroup(scene) || rootHasStyleProp
       } else {
         return this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, target))
       }

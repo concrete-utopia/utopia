@@ -19,6 +19,7 @@ import {
   JSXAttributes,
   defaultPropsParam,
   jsxAttributeOtherJavaScript,
+  ComponentMetadata,
 } from '../shared/element-template'
 import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
@@ -37,6 +38,7 @@ import {
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
 import { stripNulls } from '../shared/array-utils'
+import { isPercentPin } from 'utopia-api'
 
 export const EmptyScenePathForStoryboard = TP.scenePath([])
 
@@ -53,6 +55,8 @@ export const EmptyUtopiaCanvasComponent = convertScenesToUtopiaCanvasComponent([
 
 export const PathForSceneProps = PP.create(['props'])
 export const PathForSceneStyle = PP.create(['style'])
+
+export const PathForResizeContent = PP.create(['resizeContent'])
 
 export function createSceneUidFromIndex(sceneIndex: number): string {
   return `scene-${sceneIndex}`
@@ -263,4 +267,19 @@ export function sceneMetadata(
 export function isSceneElement(element: JSXElement): boolean {
   // TODO SCENES, how to decide if something is a scene?
   return element.name.baseVariable === 'Scene'
+}
+
+export function isDynamicSceneChildWidthHeightPercentage(scene: ComponentMetadata): boolean {
+  const isDynamicScene = scene.sceneResizesContent
+  const rootElementSizes = scene.rootElements.map((element) => {
+    return {
+      width: element.props?.style?.width,
+      height: element.props?.style?.height,
+    }
+  })
+
+  return (
+    isDynamicScene &&
+    rootElementSizes.some((size) => isPercentPin(size.width) || isPercentPin(size.height))
+  )
 }

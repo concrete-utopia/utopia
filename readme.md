@@ -318,3 +318,9 @@ To enable format-on-save, you should install the VSCode plugin `esbenp.prettier-
 
 Select prettier as the default formatter in your settings; VSCode may prompt you to do so. The last four line items, starting with `[typescript]` reflect this. You should restart VSCode after this.
 
+# Deploying
+
+All pushes to the `master` branch will immediately trigger [this](.github/workflows/master-pushes.yml) workflow that runs the tests and then triggers a deploy to our Staging environment.
+
+To deploy to the Production environment, somebody needs to manually trigger our [`tag-release.yml`](.github/workflows/tag-release.yml) workflow, giving either a specific commit hash or branch name (defaulting to `master`), and optionally a tag name (the default behaviour is to increment the patch version). This can be triggered via the "Run Workflow" button [here](https://github.com/concrete-utopia/utopia/actions?query=workflow%3A%22Tag+and+Release%22)  
+**Note**: in the "Use workflow from" dropdown you have to select "Branch: master" - this is specifying which workflow to run, not which branch to cut the release from.

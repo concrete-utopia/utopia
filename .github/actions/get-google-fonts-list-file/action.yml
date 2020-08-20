@@ -1,0 +1,9 @@
+name: 'Google Web Fonts List Updater'
+description: 'Updates the Google Fonts list for utopia.app'
+author: 'Concrete Utopia'
+outputs:
+  google-fonts-file:
+    description: google fonts list file as a string
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

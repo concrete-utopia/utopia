@@ -10,6 +10,7 @@ export type PackageStatus =
   | 'loaded'
   | 'error'
   | 'default-package'
+  | 'not-found'
 export interface PackageDetails {
   status: PackageStatus
 }

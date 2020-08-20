@@ -2,7 +2,6 @@ import * as React from 'react'
 import { FixedSizeTree } from 'react-vtree'
 import { TreeWalker } from 'react-vtree/dist/es/Tree'
 import { googleFontsList } from '../../../../assets/google-fonts-list'
-import { isRight } from '../../../core/shared/either'
 import {
   ExternalResources,
   GoogleFontsResource,
@@ -18,7 +17,6 @@ import {
   FontsRoot,
   FontVariantData,
   fontVariantData,
-  googleVariantStringsIntoWebFontVariants,
   webFontFamilyVariant,
   WebFontFamilyVariant,
 } from './google-fonts-utils'
@@ -32,7 +30,7 @@ interface GoogleFontsResourcesListSearchProps {
 export type PushNewFontFamilyVariant = (newValue: WebFontFamilyVariant) => void
 export type RemoveFontFamilyVariant = (valueToDelete: WebFontFamilyVariant) => void
 
-function updatePushNewFontFamilyVariant(
+export function updatePushNewFontFamilyVariant(
   newValue: WebFontFamilyVariant,
   oldValue: ExternalResources,
 ): ExternalResources {
@@ -44,17 +42,23 @@ function updatePushNewFontFamilyVariant(
         (resource) => resource.fontFamily === newValue.familyName,
       )
       if (existingFamilyResourceIndex > -1) {
-        let workingGoogleFontsResource: GoogleFontsResource = {
-          ...oldValue.googleFontsResources[existingFamilyResourceIndex],
-          variants: (() => {
-            let workingVariants = [
-              ...oldValue.googleFontsResources[existingFamilyResourceIndex].variants,
-            ]
-            workingVariants.push(newValue.fontVariant)
-            return workingVariants
-          })(),
-        }
-        workingGoogleFontsResources[existingFamilyResourceIndex] = workingGoogleFontsResource
+        const variantIsAlreadyAdded =
+          oldValue.googleFontsResources[existingFamilyResourceIndex].variants.findIndex(
+            (value) =>
+              value.webFontStyle === newValue.fontVariant.webFontStyle &&
+              value.webFontWeight === newValue.fontVariant.webFontWeight,
+          ) > -1
+        if (!variantIsAlreadyAdded)
+          workingGoogleFontsResources[existingFamilyResourceIndex] = {
+            ...oldValue.googleFontsResources[existingFamilyResourceIndex],
+            variants: (() => {
+              let workingVariants = [
+                ...oldValue.googleFontsResources[existingFamilyResourceIndex].variants,
+              ]
+              workingVariants.push(newValue.fontVariant)
+              return workingVariants
+            })(),
+          }
       } else {
         workingGoogleFontsResources.push(
           googleFontsResource(newValue.familyName, [newValue.fontVariant]),
@@ -117,30 +121,25 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
         children: Utils.stripNulls(
           googleFontsList.map((fontDatum) => {
             const linkedVariants = linkedResources.find(
-              (resource) => resource.fontFamily === fontDatum.family,
+              (resource) => resource.fontFamily === fontDatum.name,
             )
-            const parsedAndSorted = googleVariantStringsIntoWebFontVariants(fontDatum.variants)
-            if (isRight(parsedAndSorted)) {
-              return fontFamilyData(
-                fontDatum.family,
-                parsedAndSorted.value.map((variant) => {
-                  const isDownloaded =
-                    (linkedVariants?.variants.findIndex(
-                      (linkedVariant) =>
-                        linkedVariant.webFontStyle === variant.webFontStyle &&
-                        linkedVariant.webFontWeight === variant.webFontWeight,
-                    ) ?? -1) >= 0
-                  return fontVariantData(
-                    webFontFamilyVariant(fontDatum.family, variant),
-                    isDownloaded,
-                    pushNewFontFamilyVariant,
-                    removeFontFamilyVariant,
-                  )
-                }),
-              )
-            } else {
-              return null
-            }
+            return fontFamilyData(
+              fontDatum.name,
+              fontDatum.variants.map((variant) => {
+                const isDownloaded =
+                  (linkedVariants?.variants.findIndex(
+                    (linkedVariant) =>
+                      linkedVariant.webFontStyle === variant.webFontStyle &&
+                      linkedVariant.webFontWeight === variant.webFontWeight,
+                  ) ?? -1) >= 0
+                return fontVariantData(
+                  webFontFamilyVariant(fontDatum.name, variant),
+                  isDownloaded,
+                  pushNewFontFamilyVariant,
+                  removeFontFamilyVariant,
+                )
+              }),
+            )
           }),
         ),
       }),

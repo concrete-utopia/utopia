@@ -8,6 +8,7 @@ const initEvent = {
   payload: {
     typeDefinitions: {},
     projectContents: {},
+    jobID: null,
   },
 } as const
 

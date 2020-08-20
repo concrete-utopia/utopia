@@ -118,6 +118,8 @@ type PackagePackagerAPI = "v1" :> "javascript" :> "packager"
 
 type GetPackageJSONAPI = "v1" :> "javascript" :> "package" :> "metadata" :> Capture "package_name" Text :> Get '[JSON] Value
 
+type GetPackageVersionJSONAPI = "v1" :> "javascript" :> "package" :> "metadata" :> Capture "package_name" Text :> Capture "package_version" Text :> Get '[JSON] Value
+
 type MonitoringAPI = "monitoring" :> "secret" :> "location" :> Get '[JSON] Value
 
 type HashedAssetPathsAPI = "hashed-assets.json" :> Get '[JSON] Value
@@ -166,6 +168,7 @@ type Unprotected = AuthenticateAPI
               :<|> MonitoringAPI
               :<|> PackagePackagerAPI
               :<|> GetPackageJSONAPI
+              :<|> GetPackageVersionJSONAPI
               :<|> HashedAssetPathsAPI
               :<|> EditorAssetsAPI
               :<|> WebpackSockJSAPI

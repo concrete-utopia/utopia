@@ -48,17 +48,20 @@ interface InitializeEvent {
   payload: {
     typeDefinitions: TypeDefinitions
     projectContents: ProjectContents
+    jobID: string | null
   }
 }
 function initializeEvent(
   typeDefinitions: TypeDefinitions,
   projectContents: ProjectContents,
+  jobID: string | null,
 ): InitializeEvent {
   return {
     type: 'INITIALIZE',
     payload: {
       typeDefinitions,
       projectContents,
+      jobID: jobID,
     },
   }
 }
@@ -362,6 +365,7 @@ export class NewBundlerWorker {
               this.worker,
               event.payload.typeDefinitions,
               event.payload.projectContents,
+              event.payload.jobID,
             ),
         },
       }),
@@ -369,8 +373,12 @@ export class NewBundlerWorker {
     this.stateMachine.start()
   }
 
-  sendInitMessage(typeDefinitions: TypeDefinitions, projectContents: ProjectContents) {
-    this.stateMachine.send(initializeEvent(typeDefinitions, projectContents))
+  sendInitMessage(
+    typeDefinitions: TypeDefinitions,
+    projectContents: ProjectContents,
+    jobID: string | null,
+  ) {
+    this.stateMachine.send(initializeEvent(typeDefinitions, projectContents, jobID))
   }
 
   sendUpdateFileMessage(filename: string, content: FileContent) {
@@ -392,8 +400,9 @@ function sendIdGuardedinitializeWorkerPromise(
   worker: BundlerWorker,
   typeDefinitions: TypeDefinitions,
   projectContents: ProjectContents,
+  jobID: string | null,
 ): Promise<InitCompleteMessage> {
-  const generatedJobID = utils.generateUUID()
+  const generatedJobID = jobID == null ? utils.generateUUID() : jobID
 
   return new Promise((resolve, reject) => {
     function handleMessage(event: MessageEvent) {

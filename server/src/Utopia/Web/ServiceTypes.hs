@@ -108,6 +108,7 @@ data ServiceCallsF a = NotFound
                      | SetShowcaseProjects [Text] a
                      | GetMetrics (Value -> a)
                      | GetPackageJSON Text (Maybe Value -> a)
+                     | GetPackageVersionJSON Text Text (Maybe Value -> a)
                      | GetCommitHash (Text -> a)
                      | GetEditorTextContent (Maybe Text) Text (Text -> a)
                      | GetHashedAssetPaths (Value -> a)

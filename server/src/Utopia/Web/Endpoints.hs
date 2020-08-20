@@ -378,6 +378,11 @@ getPackageJSONEndpoint javascriptPackageName = do
   packageMetadata <- getPackageJSON javascriptPackageName
   maybe notFound return packageMetadata
 
+getPackageVersionJSONEndpoint :: Text -> Text -> ServerMonad Value
+getPackageVersionJSONEndpoint javascriptPackageName javascriptPackageVersion = do
+  packageMetadata <- getPackageVersionJSON javascriptPackageName javascriptPackageVersion
+  maybe notFound return packageMetadata
+
 hashedAssetPathsEndpoint :: ServerMonad Value
 hashedAssetPathsEndpoint = getHashedAssetPaths
 
@@ -430,6 +435,7 @@ unprotected = authenticate
          :<|> monitoringEndpoint
          :<|> packagePackagerEndpoint
          :<|> getPackageJSONEndpoint
+         :<|> getPackageVersionJSONEndpoint
          :<|> hashedAssetPathsEndpoint
          :<|> editorAssetsEndpoint "./editor"
          :<|> editorAssetsEndpoint "./sockjs-node" Nothing

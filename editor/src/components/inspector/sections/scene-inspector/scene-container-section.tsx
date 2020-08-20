@@ -10,6 +10,7 @@ import {
   useInspectorLayoutInfo,
   useInspectorStyleInfo,
   useInspectorInfoSimpleUntyped,
+  InspectorInfo,
 } from '../../common/property-path-hooks'
 import { OptionChainControl, OptionChainOption } from '../../controls/option-chain-control'
 import { PropertyRow } from '../../widgets/property-row'
@@ -28,6 +29,10 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isPercentPin } from 'utopia-api'
 import { unsetSceneProp, setSceneProp } from '../../../editor/actions/actions'
 import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
+import {
+  PathForResizeContent,
+  isDynamicSceneChildWidthHeightPercentage,
+} from '../../../../core/model/scene-utils'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -156,23 +161,23 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
   }
 })
 
-function useSceneType() {
+function useSceneType(): InspectorInfo<boolean> {
   return useInspectorInfoSimpleUntyped(
-    [PP.create(['static'])],
+    [PathForResizeContent],
     (targets) => {
-      const isStatic = targets['static']
-      return isStatic === true ? 'static' : 'dynamic'
+      const resizesContent = Utils.path(PP.getElements(PathForResizeContent), targets) ?? false
+      return resizesContent
     },
-    (type: string) => {
-      const isStatic = type === 'static'
+    (resizesContent: unknown) => {
+      const resizesConentBoolean = Boolean(resizesContent ?? false)
       return {
-        static: jsxAttributeValue(isStatic),
+        [PP.toString(PathForResizeContent)]: jsxAttributeValue(resizesConentBoolean),
       }
     },
   )
 }
 
-export function useSceneRootViewInfo() {
+export function useIsDynamicSceneChildWidthHeightPercentage() {
   const { selectedViews, metadata } = useEditorState((state) => {
     return {
       selectedViews: state.editor.selectedViews,
@@ -186,14 +191,9 @@ export function useSceneRootViewInfo() {
   )
   const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScenePath)
   if (scene != null) {
-    return scene.rootElements.map((element) => {
-      return {
-        width: element.props?.style?.width,
-        height: element.props?.style?.height,
-      }
-    })
+    return isDynamicSceneChildWidthHeightPercentage(scene)
   } else {
-    return []
+    return false
   }
 }
 
@@ -209,21 +209,18 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   )
   const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScene)
 
-  const sceneTypeInfo = useSceneType()
+  const sceneResizesContentInfo = useSceneType()
   let controlStatus: ControlStatus = simpleControlStatus
   let controlStyles = simpleControlStyles
-  const rootViewsSizeInfo = useSceneRootViewInfo()
-  if (
-    sceneTypeInfo.value === 'static' &&
-    rootViewsSizeInfo.some((size) => isPercentPin(size.width) || isPercentPin(size.height))
-  ) {
+  const isDynamicSceneChildSizePercent = useIsDynamicSceneChildWidthHeightPercentage()
+  if (isDynamicSceneChildSizePercent) {
     controlStatus = 'disabled'
     controlStyles = getControlStyles(controlStatus)
   }
   const onSubmitValue = React.useCallback(
-    (newTransformedValues: any, transient?: boolean) => {
-      sceneTypeInfo.onSubmitValue(newTransformedValues, transient)
-      if (newTransformedValues === 'dynamic') {
+    (newSceneResizesContentValue: boolean, transient?: boolean) => {
+      sceneResizesContentInfo.onSubmitValue(newSceneResizesContentValue, transient)
+      if (newSceneResizesContentValue === true) {
         dispatch(
           [
             unsetSceneProp(selectedScene, createLayoutPropertyPath('Width')),
@@ -247,7 +244,7 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
         dispatch(actions, 'inspector')
       }
     },
-    [dispatch, sceneTypeInfo, selectedScene, scene],
+    [dispatch, sceneResizesContentInfo, selectedScene, scene],
   )
   return (
     <>
@@ -261,7 +258,7 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
             id={'layoutSystem'}
             key={'layoutSystem'}
             onSubmitValue={onSubmitValue}
-            value={sceneTypeInfo.value}
+            value={sceneResizesContentInfo.value}
             options={getSceneTypeOptions()}
             controlStatus={controlStatus}
             controlStyles={controlStyles}
@@ -275,10 +272,10 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
 
 SceneContainerSections.displayName = 'SceneContainerSections'
 
-function getSceneTypeOptions(): Array<OptionChainOption<string>> {
+function getSceneTypeOptions(): Array<OptionChainOption<boolean>> {
   return [
     {
-      value: 'dynamic',
+      value: true,
       tooltip: 'Scene size changes dynamically based on content',
       icon: {
         category: 'layout/systems',
@@ -287,10 +284,10 @@ function getSceneTypeOptions(): Array<OptionChainOption<string>> {
         width: 16,
         height: 16,
       },
-      label: 'Dynamic',
+      label: 'Resize Content',
     },
     {
-      value: 'static',
+      value: false,
       tooltip: 'Fixed size',
       icon: {
         category: 'layout/systems',
@@ -299,7 +296,7 @@ function getSceneTypeOptions(): Array<OptionChainOption<string>> {
         width: 16,
         height: 16,
       },
-      label: 'Static',
+      label: 'No',
     },
   ]
 }

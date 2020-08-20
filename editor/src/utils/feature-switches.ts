@@ -5,16 +5,19 @@ export type FeatureName =
   | 'Dragging Reparents By Default'
   | 'Dragging Shows Overlay'
   | 'Invisible Element Controls'
+  | 'Advanced Resize Box'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Invisible Element Controls',
+  'Advanced Resize Box',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Reparents By Default': false,
   'Dragging Shows Overlay': false,
   'Invisible Element Controls': false,
+  'Advanced Resize Box': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

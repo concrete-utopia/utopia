@@ -240,6 +240,10 @@ innerServerExecutor (GetPackageJSON javascriptPackageName action) = do
   manager <- fmap _registryManager ask
   packageMetadata <- liftIO $ lookupPackageJSON manager javascriptPackageName
   return $ action packageMetadata
+innerServerExecutor (GetPackageVersionJSON javascriptPackageName javascriptPackageVersion action) = do
+  manager <- fmap _registryManager ask
+  packageMetadata <- liftIO $ lookupSpecificPackageVersionJSON manager javascriptPackageName javascriptPackageVersion
+  return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
   return $ action hashToUse

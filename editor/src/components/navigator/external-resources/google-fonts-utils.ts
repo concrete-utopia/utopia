@@ -1,18 +1,17 @@
 import { NodeData } from 'react-vtree/dist/es/Tree'
 import { GOOGLE_WEB_FONTS_KEY } from '../../../common/env-vars'
-import { Either, left, right, traverseEither } from '../../../core/shared/either'
-import { DescriptionParseError, descriptionParseError } from '../../../utils/value-parser-utils'
+import { Either, left, right } from '../../../core/shared/either'
+import { CSSFontStyle, CSSFontWeight } from '../../inspector/common/css-utils'
 import {
   PushNewFontFamilyVariant,
   RemoveFontFamilyVariant,
 } from './google-fonts-resources-list-search'
-import { CSSFontWeight, CSSFontStyle } from '../../inspector/common/css-utils'
 
 export const GoogleWebFontsURL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${GOOGLE_WEB_FONTS_KEY}`
 
 export type WebFontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
 
-function cssFontWeightToWebFontWeight(value: CSSFontWeight): Either<string, WebFontWeight> {
+export function cssFontWeightToWebFontWeight(value: CSSFontWeight): Either<string, WebFontWeight> {
   switch (value) {
     case 'normal': {
       return right(400)
@@ -37,7 +36,7 @@ function cssFontWeightToWebFontWeight(value: CSSFontWeight): Either<string, WebF
   }
 }
 
-function cssFontStyleToWebFontStyle(value: CSSFontStyle): Either<string, WebFontStyle> {
+export function cssFontStyleToWebFontStyle(value: CSSFontStyle): Either<string, WebFontStyle> {
   switch (value) {
     case 'normal':
     case 'italic': {
@@ -47,7 +46,7 @@ function cssFontStyleToWebFontStyle(value: CSSFontStyle): Either<string, WebFont
       return right('normal')
     }
     default: {
-      return left('Variable width webfonts from Google are not supported yet.')
+      return left('Variable italic webfonts from Google are not supported yet.')
     }
   }
 }
@@ -137,66 +136,6 @@ export function webFontVariant(
   }
 }
 
-export type GoogleFontVariantIdentifier =
-  | '100'
-  | '200'
-  | '300'
-  | 'regular'
-  | '500'
-  | '600'
-  | '700'
-  | '800'
-  | '900'
-  | '100italic'
-  | '200italic'
-  | '300italic'
-  | 'italic'
-  | '500italic'
-  | '600italic'
-  | '700italic'
-  | '800italic'
-  | '900italic'
-
-const fontVariantMap: { [key in GoogleFontVariantIdentifier]: WebFontVariant } = {
-  '100': webFontVariant(100, 'normal'),
-  '200': webFontVariant(200, 'normal'),
-  '300': webFontVariant(300, 'normal'),
-  regular: webFontVariant(400, 'normal'),
-  '500': webFontVariant(500, 'normal'),
-  '600': webFontVariant(600, 'normal'),
-  '700': webFontVariant(700, 'normal'),
-  '800': webFontVariant(800, 'normal'),
-  '900': webFontVariant(900, 'normal'),
-  '100italic': webFontVariant(100, 'italic'),
-  '200italic': webFontVariant(200, 'italic'),
-  '300italic': webFontVariant(300, 'italic'),
-  italic: webFontVariant(400, 'italic'),
-  '500italic': webFontVariant(500, 'italic'),
-  '600italic': webFontVariant(600, 'italic'),
-  '700italic': webFontVariant(700, 'italic'),
-  '800italic': webFontVariant(800, 'italic'),
-  '900italic': webFontVariant(900, 'italic'),
-}
-
-function googleVariantToFontVariant(
-  googleVariant: string,
-): Either<DescriptionParseError, WebFontVariant> {
-  if (fontVariantMap.hasOwnProperty(googleVariant)) {
-    return right(fontVariantMap[googleVariant as GoogleFontVariantIdentifier])
-  } else {
-    return left(
-      descriptionParseError('Only numeric font-weight keyword values are currently supported.'),
-    )
-  }
-}
-
-export function googleVariantStringsIntoWebFontVariants(
-  variants: Array<string>,
-): Either<DescriptionParseError, Array<WebFontVariant>> {
-  const sorted = [...variants].sort()
-  return traverseEither(googleVariantToFontVariant, sorted)
-}
-
 export function prettyNameForFontVariant(value: WebFontVariant): string {
   const prettyWeightName = weightAxisPrettyNames[value.webFontWeight]
   const italicKeyword = value.webFontStyle === 'italic' ? ' italic' : ''
@@ -271,3 +210,30 @@ export function fontVariantID(variant: WebFontFamilyVariant): string {
 }
 
 export type FontNode = FontsRoot | FontFamilyData | FontVariantData
+
+export interface SystemDefaultTypeface {
+  type: 'system-default-typeface'
+  name: 'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+}
+export const systemDefaultTypeface: SystemDefaultTypeface = {
+  type: 'system-default-typeface',
+  name:
+    'San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+}
+
+export interface GoogleFontsTypeface {
+  type: 'google-fonts-typeface'
+  name: string
+  variants: Array<WebFontVariant>
+}
+
+export function googleFontsTypeface(
+  name: string,
+  variants: Array<WebFontVariant>,
+): GoogleFontsTypeface {
+  return {
+    type: 'google-fonts-typeface',
+    name,
+    variants,
+  }
+}

@@ -29,7 +29,7 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   }
 
   sendInitMessage(typeDefinitions: TypeDefinitions, projectContents: ProjectContents) {
-    this.bundlerWorker.sendInitMessage(typeDefinitions, projectContents)
+    this.bundlerWorker.sendInitMessage(typeDefinitions, projectContents, null)
   }
 
   sendUpdateFileMessage(filename: string, content: FileContent) {

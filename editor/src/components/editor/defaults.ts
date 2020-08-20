@@ -6,6 +6,8 @@ import {
   jsxAttributeOtherJavaScript,
 } from '../../core/shared/element-template'
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
+import { PathForResizeContent } from '../../core/model/scene-utils'
+import * as PP from '../../core/shared/property-path'
 
 export function defaultSceneElement(
   uid: string,
@@ -18,7 +20,7 @@ export function defaultSceneElement(
     'data-uid': jsxAttributeValue(uid),
     'data-label': jsxAttributeValue(label),
     component: jsxAttributeOtherJavaScript(component, `return ${componentName}`, [], null),
-    static: jsxAttributeValue(true),
+    [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),
     style: jsxAttributeValue({
       position: 'absolute',
       ...frame,

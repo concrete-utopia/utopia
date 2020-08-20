@@ -84,7 +84,6 @@ export const DependencyListInputField = React.forwardRef(
           alignItems: 'center',
         }}
         key='addeditedPackage'
-        onKeyDown={onKeyDown}
       >
         <SelectControl
           value={Utils.defaultIfNull<string>('', stateEditedPackageName)}
@@ -123,6 +122,7 @@ export const DependencyListInputField = React.forwardRef(
             }
           >
             <StringInput
+              focusOnMount
               value={Utils.defaultIfNull<string>('', stateEditedPackageVersion)}
               id='add-package-version'
               key='add-package-version'
