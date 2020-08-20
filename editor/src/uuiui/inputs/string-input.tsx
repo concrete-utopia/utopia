@@ -1,16 +1,17 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import styled from '@emotion/styled'
+import composeRefs from '@seznam/compose-react-refs'
 import * as React from 'react'
-import { ControlStyles, getControlStyles } from '../../components/inspector/common/control-status'
-import { UtopiaTheme } from '../styles/theme'
-import { OnSubmitValue } from '../../components/inspector/controls/control'
-import { stopPropagation } from '../../components/inspector/common/inspector-utils'
 import { betterReactMemo, ControlStatus } from 'uuiui-deps'
+import { ControlStyles, getControlStyles } from '../../components/inspector/common/control-status'
+import { stopPropagation } from '../../components/inspector/common/inspector-utils'
+import { OnSubmitValue } from '../../components/inspector/controls/control'
+import { UtopiaTheme } from '../styles/theme'
 import { InspectorInput } from './base-input'
 
 interface StringInputOptions {
-  focusOnMount?: true
+  focusOnMount?: boolean
 }
 
 export interface StringInputProps
@@ -25,7 +26,6 @@ export interface StringInputProps
   controlStatus?: ControlStatus
 }
 
-// TODO FIX FUCKED UP REFS SITUATION
 export const StringInput = betterReactMemo(
   'StringInput',
   React.forwardRef<HTMLInputElement, StringInputProps>(
@@ -39,14 +39,14 @@ export const StringInput = betterReactMemo(
         DEPRECATED_labelBelow: labelBelow,
         ...inputProps
       },
-      initialRef: any, // React.RefObject<HTMLInputElement>
+      propsRef,
     ) => {
-      const ref = initialRef != null ? initialRef : React.createRef()
+      const ref = React.useRef<HTMLInputElement>(null)
 
       const [focused, setFocused] = React.useState<boolean>(false)
 
       React.useEffect(() => {
-        if (focusOnMount && ref.current != null) {
+        if (focusOnMount && typeof ref !== 'function' && ref.current != null) {
           ref.current.focus()
         }
       }, [focusOnMount, ref])
@@ -68,12 +68,12 @@ export const StringInput = betterReactMemo(
             e.key === 'ArrowDown'
           ) {
             // handle navigation events without & with modifiers
-            e.nativeEvent.stopImmediatePropagation()
+            e.stopPropagation()
           }
           if (e.key === 'Escape' || e.key === 'Enter') {
             e.preventDefault()
-            e.nativeEvent.stopImmediatePropagation()
-            if (ref.current != null) {
+            e.stopPropagation()
+            if (typeof ref !== 'function' && ref.current != null) {
               ref.current.blur()
             }
           }
@@ -83,14 +83,13 @@ export const StringInput = betterReactMemo(
 
       const onFocus = React.useCallback(
         (e: React.FocusEvent<HTMLInputElement>) => {
-          if (inputProps.onFocus != null) {
-            // FIXME Should we be doing this in the case where the input is disabled? This feels wrong...
-            inputProps.onFocus(e)
-          }
           if (disabled) {
             e.preventDefault()
             e.target.blur()
           } else {
+            if (inputProps.onFocus != null) {
+              inputProps.onFocus(e)
+            }
             setFocused(true)
             e.target.select()
             e.persist()
@@ -142,7 +141,7 @@ export const StringInput = betterReactMemo(
             onFocus={onFocus}
             onBlur={onBlur}
             className={inputProps.className}
-            ref={ref}
+            ref={composeRefs(ref, propsRef)}
             placeholder={placeholder}
             disabled={!controlStyles.interactive}
             autoComplete='off'
