@@ -207,11 +207,19 @@ export function dependenciesFromPackageJson(
   }
 }
 
-export function dependenciesFromProjectContents(
+// Dependencies that the editor needs for code completion primarily.
+// Effectively these are akin to `devDependencies` in `package.json`.
+const EditorTypePackageDependencies: Array<NpmDependency> = [
+  npmDependency('@types/react', '16.9.46'),
+  npmDependency('@types/react-dom', '16.9.8'),
+]
+
+export function dependenciesWithEditorRequirements(
   projectContents: ProjectContents,
 ): Array<NpmDependency> {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
-  return dependenciesFromPackageJson(packageJsonFile)
+  const userDefinedDeps = dependenciesFromPackageJson(packageJsonFile)
+  return [...userDefinedDeps, ...EditorTypePackageDependencies]
 }
 
 export function usePackageDependencies(): Array<NpmDependency> {

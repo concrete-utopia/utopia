@@ -63,7 +63,7 @@ import Utils from '../utils/utils'
 import { HeartbeatRequestMessage } from '../core/workers/watchdog-worker'
 import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
 import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
-import { dependenciesFromProjectContents } from '../components/editor/npm-dependency/npm-dependency'
+import { dependenciesWithEditorRequirements } from '../components/editor/npm-dependency/npm-dependency'
 import {
   UiJsxCanvasContextData,
   emptyUiJsxCanvasContextData,
@@ -136,7 +136,7 @@ export class Editor {
               msg.exportsInfo,
               this.storedState.editor.nodeModules.files,
               this.boundDispatch,
-              dependenciesFromProjectContents(this.storedState.editor.projectContents),
+              dependenciesWithEditorRequirements(this.storedState.editor.projectContents),
               msg.buildType,
               getMainUIFromModel(this.storedState.editor),
             )
