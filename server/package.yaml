@@ -27,6 +27,7 @@ dependencies:
   - exceptions
   - filepath
   - free
+  - zlib
   - http-api-data
   - http-client
   - http-client-tls
@@ -36,6 +37,7 @@ dependencies:
   - lens-aeson
   - lifted-base
   - mime-types
+  - modern-uri
   - monad-control
   - monad-logger
   - mtl
@@ -58,6 +60,8 @@ dependencies:
   - serversession
   - serversession-backend-persistent
   - split
+  - tagsoup
+  - tar
   - temporary
   - text
   - time

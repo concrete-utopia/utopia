@@ -35,6 +35,7 @@ import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
 import qualified Utopia.Web.Database         as DB
+import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.ServiceTypes
@@ -58,6 +59,7 @@ data ProductionServerResources = ProductionServerResources
                                , _assetsCaches    :: AssetsCaches
                                , _nodeSemaphore   :: QSem
                                , _siteHost        :: Text
+                               , _branchDownloads :: Maybe BranchDownloads
                                }
 
 $(makeFieldsNoPrefix ''ProductionServerResources)
@@ -182,11 +184,9 @@ innerServerExecutor (GetPackageVersionJSON javascriptPackageName javascriptPacka
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
   return $ action hashToUse
-innerServerExecutor (GetEditorIndexHtml action) = do
-  indexHtml <- liftIO $ readFile "./editor/index.html"
-  return $ action indexHtml
-innerServerExecutor (GetPreviewIndexHtml action) = do
-  indexHtml <- liftIO $ readFile "./editor/preview.html"
+innerServerExecutor (GetEditorTextContent branchName fileName action) = do
+  downloads <- fmap _branchDownloads ask
+  indexHtml <- liftIO $ readEditorContentFromDisk downloads branchName fileName
   return $ action indexHtml
 innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask
@@ -202,6 +202,18 @@ innerServerExecutor (GetSiteRoot action) = do
   hostOfServer <- fmap _siteHost ask
   let siteRoot = "https://" <> hostOfServer
   return $ action siteRoot
+innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
+  possibleDownloads <- fmap _branchDownloads ask
+  pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
+                   ("./editor", (Just branchName), (Just downloads))  -> liftIO $ downloadBranchBundle downloads branchName
+                   _                                                  -> return defaultPathToServe
+  return $ action pathToServe
+
+
+readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
+readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do
+  readBranchHTMLContent downloads branchName fileName
+readEditorContentFromDisk _ _ fileName = readFile ("./editor/" <> toS fileName)
 
 {-|
   Invokes a service call using the supplied resources.
@@ -245,6 +257,7 @@ initialiseResources = do
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
   _siteHost <- fmap toS $ getEnv "SITE_HOST"
+  _branchDownloads <- createBranchDownloads
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop

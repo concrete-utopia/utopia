@@ -110,12 +110,12 @@ data ServiceCallsF a = NotFound
                      | GetPackageJSON Text (Maybe Value -> a)
                      | GetPackageVersionJSON Text Text (Maybe Value -> a)
                      | GetCommitHash (Text -> a)
-                     | GetEditorIndexHtml (Text -> a)
-                     | GetPreviewIndexHtml (Text -> a)
+                     | GetEditorTextContent (Maybe Text) Text (Text -> a)
                      | GetHashedAssetPaths (Value -> a)
                      | GetPackagePackagerContent Text Text (Maybe UTCTime) (Maybe (BL.ByteString, UTCTime) -> a)
                      | AccessControlAllowOrigin (Maybe Text) (Maybe Text -> a)
                      | GetSiteRoot (Text -> a)
+                     | GetPathToServe FilePath (Maybe Text) (FilePath -> a)
                      deriving Functor
 
 {-

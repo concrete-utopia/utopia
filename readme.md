@@ -128,6 +128,15 @@ Shell 6:
 nix-shell
 watch-website
 ```
+## Pull request bundle support.
+
+When a series of environment variables are set (see `Branches.hs`), the editor supports the ability to get a bundle of editor code from S3 that was created from a PR, and load that instead of the code currently held locally. Which means that changes can be tested without spinning up multiple environments.
+
+To use this if the URL currently is `https://utopia.pizza/p/e976df60-phase-rutabaga/`, the branch name would be added on in a query parameter like so: `https://utopia.pizza/p/e976df60-phase-rutabaga/?branch_name=my-test-branch`.
+
+Limitations:
+- Doesn't currently support Monaco because of the way that builds the workers in a special webpack plugin, so changes to the version of Monaco in that branch may fail in unusual ways.
+- Anything that isn't editor code will not be changed by this, such as the website code or the server endpoints.
 
 # Troubleshooting
 
@@ -159,13 +168,12 @@ And while you're at it, this as well, which will supress the error that you're u
 
 ### Running this without Nix
 
-You'll need five things running concurrently:
+You'll need four things running concurrently:
 
 ```
 editor/npm run webpack
 editor/npx tsc --watch
 Website/npm start
-redis-server
 server/cabal new-run --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N
 
 ```
@@ -309,10 +317,6 @@ To enable format-on-save, you should install the VSCode plugin `esbenp.prettier-
 ```
 
 Select prettier as the default formatter in your settings; VSCode may prompt you to do so. The last four line items, starting with `[typescript]` reflect this. You should restart VSCode after this.
-
-## Running the Server
-
-To run the server, checkout the [readme](server/readme.md) in the `/server` directory
 
 # Deploying
 

@@ -39,6 +39,7 @@ import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
 import qualified Utopia.Web.Database         as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.ServiceTypes
@@ -65,6 +66,7 @@ data DevServerResources = DevServerResources
                         , _registryManager :: Manager
                         , _assetsCaches    :: AssetsCaches
                         , _nodeSemaphore   :: QSem
+                        , _branchDownloads :: Maybe BranchDownloads
                         }
 
 $(makeFieldsNoPrefix ''DevServerResources)
@@ -104,6 +106,20 @@ localAuthCodeCheck "logmein" action = do
   successfulAuthCheck metrics pool sessionStore action dummyUser
 localAuthCodeCheck _ action = do
   return $ action Nothing
+
+readIndexHtmlFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
+readIndexHtmlFromDisk (Just downloads) (Just branchName) fileName = do
+  readBranchHTMLContent downloads branchName fileName
+readIndexHtmlFromDisk _ _ fileName = readFile $ toS $ "../editor/lib/" <> fileName
+
+readIndexHtmlFromWebpack :: Text -> IO Text
+readIndexHtmlFromWebpack fileName = simpleWebpackRequest ("editor/" <> fileName)
+
+simpleWebpackRequest :: Text -> IO Text
+simpleWebpackRequest endpoint = do
+  let webpackUrl = "http://localhost:8088/" <> endpoint
+  response <- WR.get $ toS webpackUrl
+  return $ toS (response ^. WR.responseBody)
 
 {-|
   Interpretor for a service call, which converts it into side effecting calls ready to be invoked.
@@ -231,15 +247,11 @@ innerServerExecutor (GetPackageVersionJSON javascriptPackageName javascriptPacka
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
   return $ action hashToUse
-innerServerExecutor (GetEditorIndexHtml action) = do
+innerServerExecutor (GetEditorTextContent branchName fileName action) = do
+  downloads <- fmap _branchDownloads ask
   manager <- fmap _proxyManager ask
-  let readIndexHtml = if isJust manager then readIndexHtmlFromWebpack else readIndexHtmlFromDisk
-  indexHtml <- liftIO $ readIndexHtml "index.html"
-  return $ action indexHtml
-innerServerExecutor (GetPreviewIndexHtml action) = do
-  manager <- fmap _proxyManager ask
-  let readIndexHtml = if isJust manager then readIndexHtmlFromWebpack else readIndexHtmlFromDisk
-  indexHtml <- liftIO $ readIndexHtml "preview.html"
+  let readIndexHtml = if isJust manager && (isNothing branchName || isNothing downloads) then readIndexHtmlFromWebpack else readIndexHtmlFromDisk downloads branchName
+  indexHtml <- liftIO $ readIndexHtml fileName
   return $ action indexHtml
 innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask
@@ -255,18 +267,12 @@ innerServerExecutor (GetSiteRoot action) = do
   portOfServer <- fmap _serverPort ask
   let siteRoot = "http://localhost:" <> show portOfServer
   return $ action siteRoot
-
-readIndexHtmlFromDisk :: Text -> IO Text
-readIndexHtmlFromDisk fileName = readFile $ toS $ "../editor/lib/" <> fileName
-
-readIndexHtmlFromWebpack :: Text -> IO Text
-readIndexHtmlFromWebpack fileName = simpleWebpackRequest ("editor/" <> fileName)
-
-simpleWebpackRequest :: Text -> IO Text
-simpleWebpackRequest endpoint = do
-  let webpackUrl = "http://localhost:8088/" <> endpoint
-  response <- WR.get $ toS webpackUrl
-  return $ toS (response ^. WR.responseBody)
+innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
+  possibleDownloads <- fmap _branchDownloads ask
+  pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
+                   ("./editor", (Just branchName), (Just downloads))  -> liftIO $ downloadBranchBundle downloads branchName
+                   _                                                  -> return defaultPathToServe
+  return $ action pathToServe
 
 {-|
   Invokes a service call using the supplied resources.
@@ -328,6 +334,7 @@ initialiseResources = do
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
+  _branchDownloads <- createBranchDownloads
   let _silentMigration = False
   let _logOnStartup = True
   return $ DevServerResources{..}

@@ -146,9 +146,9 @@ projectIDScript (ProjectIdWithSuffix projectID _) = do
   H.script ! HA.type_ "text/javascript" $ H.toMarkup
     ("window.utopiaProjectID = \"" <> projectID <> "\";")
 
-innerProjectPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> ServerMonad H.Html
-innerProjectPage possibleProjectID possibleMetadata = do
-  indexHtml <- getEditorIndexHtml
+innerProjectPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> ServerMonad H.Html
+innerProjectPage possibleProjectID possibleMetadata branchName = do
+  indexHtml <- getEditorTextContent branchName "index.html"
   siteRoot <- getSiteRoot
   let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata siteRoot
   let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
@@ -156,17 +156,17 @@ innerProjectPage possibleProjectID possibleMetadata = do
   let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
   return $ H.preEscapedToHtml withProjectIdWithSuffixScript
 
-projectPage :: ProjectIdWithSuffix -> ServerMonad H.Html
-projectPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) = do
+projectPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
+projectPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
   possibleMetadata <- getProjectMetadata projectID
-  innerProjectPage (Just projectIDWithSuffix) possibleMetadata
+  innerProjectPage (Just projectIDWithSuffix) possibleMetadata branchName
 
-emptyProjectPage :: ServerMonad H.Html
-emptyProjectPage = innerProjectPage Nothing Nothing
+emptyProjectPage :: Maybe Text -> ServerMonad H.Html
+emptyProjectPage branchName = innerProjectPage Nothing Nothing branchName
 
-innerPreviewPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> ServerMonad H.Html
-innerPreviewPage possibleProjectID possibleMetadata = do
-  indexHtml <- getPreviewIndexHtml
+innerPreviewPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> ServerMonad H.Html
+innerPreviewPage possibleProjectID possibleMetadata branchName = do
+  indexHtml <- getEditorTextContent branchName "preview.html"
   siteRoot <- getSiteRoot
   let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata siteRoot
   let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
@@ -174,13 +174,13 @@ innerPreviewPage possibleProjectID possibleMetadata = do
   let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
   return $ H.preEscapedToHtml withProjectIdWithSuffixScript
 
-previewPage :: ProjectIdWithSuffix -> ServerMonad H.Html
-previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) = do
+previewPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
+previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
   possibleMetadata <- getProjectMetadata projectID
-  innerPreviewPage (Just projectIDWithSuffix) possibleMetadata
+  innerPreviewPage (Just projectIDWithSuffix) possibleMetadata branchName
 
-emptyPreviewPage :: ServerMonad H.Html
-emptyPreviewPage = innerPreviewPage Nothing Nothing
+emptyPreviewPage :: Maybe Text -> ServerMonad H.Html
+emptyPreviewPage branchName = innerPreviewPage Nothing Nothing branchName
 
 getUserEndpoint :: Maybe Text -> ServerMonad UserResponse
 getUserEndpoint cookie = checkForUser cookie maybeSessionUserToUser
@@ -308,17 +308,18 @@ saveProjectThumbnailEndpoint cookie (ProjectIdWithSuffix projectID _) thumbnail 
   saveProjectThumbnail (view id sessionUser) projectID thumbnail
   return NoContent
 
-servePath' :: FilePath -> (StaticSettings -> StaticSettings) -> ServerMonad Application
-servePath' pathToServe settingsChange = do
+servePath' :: FilePath -> (StaticSettings -> StaticSettings) -> Maybe Text -> ServerMonad Application
+servePath' defaultPathToServe settingsChange branchName = do
+  pathToServe <- getPathToServe defaultPathToServe branchName
   let defaultSettings = defaultFileServerSettings pathToServe
   let withIndicesTurnedOff = defaultSettings { ssListing = Nothing }
   app <- serveDirectoryWith $ settingsChange withIndicesTurnedOff
   let gzipConfig = def{gzipFiles = GzipCacheFolder (pathToServe </> ".gzipcache")}
   return $ gzip gzipConfig app
 
-servePath :: FilePath -> ServerMonad Application
-servePath pathToServe = do
-  servePath' pathToServe identity
+servePath :: FilePath -> Maybe Text -> ServerMonad Application
+servePath pathToServe branchName = do
+  servePath' pathToServe identity branchName
 
 addMiddlewareHeader :: CI ByteString -> ByteString -> Middleware
 addMiddlewareHeader headerName headerValue applicationToWrap request sendResponse = do
@@ -334,10 +335,14 @@ addCacheControl = addMiddlewareHeader "Cache-Control" "public, immutable, max-ag
 addCDNHeaders :: Middleware
 addCDNHeaders = addCacheControl . addAccessControlAllowOrigin
 
-editorAssetsEndpoint :: FilePath -> ServerMonad Application
-editorAssetsEndpoint notProxiedPath = do
+editorAssetsEndpoint :: FilePath -> Maybe Text -> ServerMonad Application
+editorAssetsEndpoint notProxiedPath possibleBranchName = do
   possibleProxyManager <- getProxyManager
-  maybe (fmap addCDNHeaders $ servePath notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 8088 ["editor"]) possibleProxyManager
+  let loadLocally = fmap addCDNHeaders $ servePath notProxiedPath possibleBranchName
+  let loadFromProxy proxyManager = return $ proxyApplication proxyManager 8088 ["editor"]
+  case possibleBranchName of
+    Just _          -> loadLocally
+    Nothing         -> maybe loadLocally loadFromProxy possibleProxyManager
 
 monitoringEndpoint :: ServerMonad Value
 monitoringEndpoint = getMetrics
@@ -345,7 +350,7 @@ monitoringEndpoint = getMetrics
 websiteAssetsEndpoint :: FilePath -> ServerMonad Application
 websiteAssetsEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
-  maybe (servePath notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 3000 ["static"]) possibleProxyManager
+  maybe (servePath notProxiedPath Nothing) (\proxyManager -> return $ proxyApplication proxyManager 3000 ["static"]) possibleProxyManager
 
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ = do
@@ -356,7 +361,7 @@ serveWebAppEndpointNotProxied path = do
   let defaultSettings = defaultFileServerSettings path
   let defaultLookup = ssLookupFile defaultSettings
   let settingsChange settings = settings { ssLookupFile = wrappedWebAppLookup defaultLookup }
-  servePath' path settingsChange
+  servePath' path settingsChange Nothing
 
 serveWebAppEndpoint :: FilePath -> ServerMonad Application
 serveWebAppEndpoint notProxiedPath = do
@@ -433,9 +438,9 @@ unprotected = authenticate
          :<|> getPackageVersionJSONEndpoint
          :<|> hashedAssetPathsEndpoint
          :<|> editorAssetsEndpoint "./editor"
-         :<|> editorAssetsEndpoint "./sockjs-node"
+         :<|> editorAssetsEndpoint "./sockjs-node" Nothing
          :<|> websiteAssetsEndpoint "./public/static"
-         :<|> servePath "./public/.well-known"
+         :<|> servePath "./public/.well-known" Nothing
          :<|> servePackagerEndpoint
          :<|> serveWebAppEndpoint "./public"
 

@@ -276,3 +276,4 @@ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifMo
     let contents = fmap (\fileContent -> (M.singleton contentText fileContent)) filesAndContent
     let encodingResult = toEncoding $ M.singleton contentsText contents
     return $ toLazyByteString $ fromEncoding encodingResult
+

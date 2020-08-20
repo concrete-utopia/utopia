@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 31ecf0bea451f5b557dc92d8156463974dcf373091bd51c9808e8ce926beb3a1
+-- hash: 1b9d5ec207eeb055b866c5bbb80c43a8781ed46eb10bdecee7fa2911beb46361
 
 name:           utopia-web
 version:        0.1.0.4
@@ -29,6 +29,7 @@ executable utopia-web
       Utopia.Web.Auth.Types
       Utopia.Web.Database
       Utopia.Web.Database.Types
+      Utopia.Web.Editor.Branches
       Utopia.Web.Ekg
       Utopia.Web.Endpoints
       Utopia.Web.Exceptions
@@ -81,6 +82,7 @@ executable utopia-web
     , lens-aeson
     , lifted-base
     , mime-types
+    , modern-uri
     , monad-control
     , monad-logger
     , mtl
@@ -103,6 +105,8 @@ executable utopia-web
     , serversession
     , serversession-backend-persistent
     , split
+    , tagsoup
+    , tar
     , temporary
     , text
     , time
@@ -116,6 +120,7 @@ executable utopia-web
     , warp
     , websockets
     , wreq
+    , zlib
   default-language: Haskell2010
 
 test-suite utopia-web-test
@@ -133,6 +138,7 @@ test-suite utopia-web-test
       Utopia.Web.Auth.Types
       Utopia.Web.Database
       Utopia.Web.Database.Types
+      Utopia.Web.Editor.Branches
       Utopia.Web.Ekg
       Utopia.Web.Endpoints
       Utopia.Web.Exceptions
@@ -188,6 +194,7 @@ test-suite utopia-web-test
     , lens-aeson
     , lifted-base
     , mime-types
+    , modern-uri
     , monad-control
     , monad-logger
     , mtl
@@ -212,6 +219,8 @@ test-suite utopia-web-test
     , serversession
     , serversession-backend-persistent
     , split
+    , tagsoup
+    , tar
     , tasty
     , tasty-hedgehog
     , tasty-hspec
@@ -229,4 +238,5 @@ test-suite utopia-web-test
     , warp
     , websockets
     , wreq
+    , zlib
   default-language: Haskell2010
