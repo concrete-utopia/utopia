@@ -67,10 +67,11 @@ const itemData: Array<ItemData> = [systemDefaultTypeface, ...googleFontsList].ma
   height: i === 0 ? DefaultSystemFontSize : NormalItemSize,
 }))
 
-function updateNewFontVariant(
-  newValue: { fontFamily: string; fontWeight: CSSFontWeight; fontStyle: CSSFontStyle },
-  oldValue: ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>,
-): ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'> {
+function updateNewFontVariant(newValue: {
+  fontFamily: string
+  fontWeight: CSSFontWeight
+  fontStyle: CSSFontStyle
+}): ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'> {
   if (
     newValue.fontFamily ===
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
