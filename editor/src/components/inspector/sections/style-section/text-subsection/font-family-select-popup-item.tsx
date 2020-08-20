@@ -14,7 +14,11 @@ interface FontsListChildComponentProps extends ListChildComponentProps {
   data: {
     fontWeight: CSSFontWeight
     fontStyle: CSSFontStyle
-    onSubmitFontFamily: OnSubmitValue<SystemDefaultTypeface | GoogleFontsTypeface>
+    onSubmitFontFamily: OnSubmitValue<{
+      fontFamily: string
+      fontWeight: CSSFontWeight
+      fontStyle: CSSFontStyle
+    }>
     itemsArray: Array<ItemData>
     closePopup: () => void
     selectedIndex: number | null
