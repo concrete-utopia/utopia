@@ -8,6 +8,8 @@ jobs:
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
+      # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
+      # So that later steps can produce a bundle incorporating that into the name and upload it.
       - name: Extract branch name
         shell: bash
         run: |
