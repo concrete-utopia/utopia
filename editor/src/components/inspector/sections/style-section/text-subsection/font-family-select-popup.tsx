@@ -115,12 +115,10 @@ export function submitAndClosePopup(
       const newWebFontStyle = parsedNewWebFontStyle.value
       const googleFontsTypeface = googleFontsList.find((family) => family.name === metadata.name)
       if (googleFontsTypeface != null) {
-        const variantExistsOnTypeface =
-          googleFontsTypeface.variants.find(
-            (variant) =>
-              variant.webFontStyle === newWebFontStyle &&
-              variant.webFontWeight === newWebFontWeight,
-          ) != null
+        const variantExistsOnTypeface = googleFontsTypeface.variants.some(
+          (variant) =>
+            variant.webFontStyle === newWebFontStyle && variant.webFontWeight === newWebFontWeight,
+        )
         const closestMatchingVariant: WebFontVariant = (() => {
           if (variantExistsOnTypeface) {
             return webFontVariant(newWebFontWeight, newWebFontStyle)
