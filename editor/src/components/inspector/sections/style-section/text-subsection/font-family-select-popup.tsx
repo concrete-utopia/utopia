@@ -29,7 +29,7 @@ import { FontFamilySelectPopupItem } from './font-family-select-popup-item'
 function getOptionIndex(
   filteredData: Array<ItemData>,
   selectedOption: ItemData | null | undefined,
-) {
+): number {
   if (selectedOption != null) {
     const foundIndex = filteredData.findIndex((v) => {
       return (
