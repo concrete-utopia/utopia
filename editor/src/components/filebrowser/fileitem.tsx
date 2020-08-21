@@ -735,7 +735,7 @@ class FileBrowserItemInner extends React.PureComponent<
           >
             <StringInput
               value={this.state.addingChildName}
-              autoFocus
+              focusOnMount
               onKeyDown={this.inputLabelKeyDown}
               onChange={this.inputLabelChange}
               onBlur={this.abandonAddingFile}

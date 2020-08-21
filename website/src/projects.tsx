@@ -143,6 +143,8 @@ export class Projects extends React.Component<{}, ProjectsState> {
     }
   }
 
+  inputRef: React.RefObject<HTMLInputElement>
+
   componentDidMount() {
     fetchProjectListFromLocalStorage().then((projects) => {
       var orderedProjects = projects.sort(function (a, b) {
@@ -173,6 +175,10 @@ export class Projects extends React.Component<{}, ProjectsState> {
     })
 
     window.addEventListener('keydown', this.keyHandler)
+
+    if (this.inputRef.current != null) {
+      this.inputRef.current.focus()
+    }
   }
 
   componentWillUnmount() {
@@ -387,7 +393,7 @@ export class Projects extends React.Component<{}, ProjectsState> {
             {this.state.mode === 'filter' ? (
               <div style={{ padding: layout.margins.wide, minHeight: '80px' }}>
                 <input
-                  autoFocus={true}
+                  ref={this.inputRef}
                   onChange={this.onFilterChange}
                   style={{
                     fontSize: 40,

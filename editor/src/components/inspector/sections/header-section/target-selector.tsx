@@ -355,7 +355,7 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
             onKeyDown={onRenameKeydown}
             onChange={onRenameChange}
             onBlurCapture={clearRenameState}
-            autoFocus
+            focusOnMount
             placeholder={itemLabel}
             defaultValue={renameValue !== null ? renameValue : undefined}
           />
@@ -466,7 +466,7 @@ const AddingRow = betterReactMemo('AddingRow', (props: AddingRowProps) => {
       <OnClickOutsideHOC onClickOutside={finishAdding}>
         <StringInput
           style={{ flexGrow: 1 }}
-          autoFocus
+          focusOnMount
           onKeyDown={onAddKeydown}
           onChange={onAddChange}
           value={value}

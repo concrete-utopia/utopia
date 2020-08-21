@@ -8,7 +8,7 @@ module.exports = {
     },
   },
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'prettier', 'react', 'react-hooks'],
+  plugins: ['@typescript-eslint', 'prettier', 'react', 'react-hooks', 'jsx-a11y'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -160,6 +160,10 @@ module.exports = {
     '@typescript-eslint/prefer-interface': 'off',
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/no-var-requires': 'off',
+    /** This is here to make sure we use refs to focus. Autofocus is meant to only be used
+     *  on one element, and acts inconsistently and dangerously otherwise.
+     */
+    'jsx-a11y/no-autofocus': 'error',
   },
   overrides: [
     {
