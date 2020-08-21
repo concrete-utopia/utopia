@@ -51,7 +51,7 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
           />
         ) : null}
         <FlexRow
-          onMouseDownCapture={onMouseDown}
+          onMouseDown={onMouseDown}
           style={{
             boxShadow: `0 0 0 1px ${controlStyles.borderColor} inset`,
             padding: 4,

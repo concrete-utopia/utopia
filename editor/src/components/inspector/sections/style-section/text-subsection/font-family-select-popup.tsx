@@ -485,7 +485,7 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
             width: ModalWidth,
             boxShadow: `0 3px 6px #0002`,
           }}
-          onKeyDownCapture={onWrapperKeyDown}
+          onKeyDown={onWrapperKeyDown}
         >
           <FlexRow style={{ padding: 12 }}>
             <StringInput
