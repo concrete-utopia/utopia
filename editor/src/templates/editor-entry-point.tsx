@@ -34,7 +34,7 @@ const editorCSS = [
 ]
 
 const editorCSSDontHash = [
-  'https://fonts.googleapis.com/css?family=Inter&display=swap',
+  'https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700&display=swap',
   'https://fonts.googleapis.com/css2?family=Inconsolata&display=swap',
 ]
 
