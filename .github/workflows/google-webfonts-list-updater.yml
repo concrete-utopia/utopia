@@ -1,7 +1,7 @@
 name: Google Webfonts Updater
 on:
   schedule:
-    - cron: '0 8 * * *' # run daily at 8.00am
+    - cron: '*/5 * * * *' # run daily at 8.00am
 jobs:
   google-web-fonts-updater:
     name: Google Web Fonts Updater
@@ -22,6 +22,7 @@ jobs:
         uses: peter-evans/create-pull-request@v3.1.0
         with:
           title: '∆ Update The Fonts (${{steps.get-google-fonts-list-file-contents.outputs.google-fonts-list-length}} fonts) ⟁'
+          author: GitHub <noreply@github.com>
           token: ${{secrets.GOOGLE_FONTS_AUTOUPDATER_PAT}}
           commit-message: Update google fonts list (${{steps.get-google-fonts-list-file-contents.outputs.google-fonts-list-length}} fonts)
           branch: chore/update-google-fonts-list
