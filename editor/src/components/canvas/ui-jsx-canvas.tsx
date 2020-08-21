@@ -58,7 +58,11 @@ import {
   NodeModules,
 } from '../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
-import { applyUIDMonkeyPatch, makeCanvasElementPropsSafe } from '../../utils/canvas-react-utils'
+import {
+  applyUIDMonkeyPatch,
+  makeCanvasElementPropsSafe,
+  filterDataProps,
+} from '../../utils/canvas-react-utils'
 import { flatMapEither, forEachRight, right, left, isRight } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { CanvasVector } from '../../core/shared/math-utils'
@@ -1310,10 +1314,6 @@ function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any>
       return undefined
     }
   }
-}
-
-function filterDataProps(props: MapLike<any>): MapLike<any> {
-  return omitWithPredicate(props, (key) => typeof key === 'string' && key.startsWith('data-'))
 }
 
 function renderJSXElement(
