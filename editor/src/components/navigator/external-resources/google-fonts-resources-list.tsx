@@ -6,7 +6,6 @@ import { useExternalResources } from '../../../printer-parsers/html/external-res
 import { betterReactMemo } from '../../../uuiui-deps'
 import { clearSelection, togglePanel } from '../../editor/actions/actions'
 import { useEditorState } from '../../editor/store/store-hook'
-import { GoogleFontsResourcesListItem } from './google-fonts-resources-list-item'
 import { GoogleFontsResourcesListSearch } from './google-fonts-resources-list-search'
 
 export const GoogleFontsResourcesList = betterReactMemo('GoogleFontsResourcesList', () => {

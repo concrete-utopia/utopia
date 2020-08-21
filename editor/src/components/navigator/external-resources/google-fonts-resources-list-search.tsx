@@ -69,7 +69,7 @@ export function updatePushNewFontFamilyVariant(
   }
 }
 
-function updateRemoveFontFamilyVariant(
+export function updateRemoveFontFamilyVariant(
   valueToDelete: WebFontFamilyVariant,
   oldValue: ExternalResources,
 ): ExternalResources {
