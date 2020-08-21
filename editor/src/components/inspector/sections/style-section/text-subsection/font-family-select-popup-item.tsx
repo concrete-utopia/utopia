@@ -59,6 +59,33 @@ export const FontFamilySelectPopupItem: React.FunctionComponent<FontsListChildCo
     }
   }, [onSubmitFontFamily, fontStyle, fontWeight, option, pushNewFontFamilyVariant, closePopup])
 
+  const getPopupItem = () => {
+    switch (metadata.type) {
+      case 'ui-item': {
+        return <metadata.component />
+      }
+      case 'system-default-typeface': {
+        return <SystedDefaultFontItem selected={selected} />
+      }
+      case 'google-fonts-typeface': {
+        return <div>{metadata.name}</div>
+      }
+      case 'project-typeface': {
+        return (
+          <ProjectTypefaceItem
+            typeface={metadata.typeface}
+            selected={selected}
+            updateSizes={updateSizes}
+          />
+        )
+      }
+      default: {
+        const _exhaustiveCheck: never = metadata
+        throw Error('Popup item type not found')
+      }
+    }
+  }
+
   return (
     <FlexColumn
       style={{
@@ -74,28 +101,7 @@ export const FontFamilySelectPopupItem: React.FunctionComponent<FontsListChildCo
       onClick={onClick}
       onMouseOver={onMouseOver}
     >
-      {(() => {
-        switch (metadata.type) {
-          case 'ui-item': {
-            return <metadata.component />
-          }
-          case 'system-default-typeface': {
-            return <SystedDefaultFontItem selected={selected} />
-          }
-          case 'google-fonts-typeface': {
-            return <div>{metadata.name}</div>
-          }
-          case 'project-typeface': {
-            return (
-              <ProjectTypefaceItem
-                typeface={metadata.typeface}
-                selected={selected}
-                updateSizes={updateSizes}
-              />
-            )
-          }
-        }
-      })()}
+      {getPopupItem()}
     </FlexColumn>
   )
 }

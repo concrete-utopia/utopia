@@ -3,6 +3,7 @@ import { betterReactMemo } from 'uuiui-deps'
 import {
   ExternalResources,
   useExternalResources,
+  GoogleFontsResource,
 } from '../../../../../printer-parsers/html/external-resources-parser'
 import { FlexRow, Icons } from '../../../../../uuiui'
 import { ProjectTypeface } from './font-family-select-popup'
@@ -11,18 +12,19 @@ export function updateRemoveFontFamily(
   fontFamilyToDelete: string,
   oldValue: ExternalResources,
 ): ExternalResources {
+  const googleFontsResources: Array<GoogleFontsResource> = (() => {
+    let workingGoogleFontsResources = [...oldValue.googleFontsResources]
+    const familyIndex = workingGoogleFontsResources.findIndex(
+      (resource) => resource.fontFamily === fontFamilyToDelete,
+    )
+    if (familyIndex > -1) {
+      workingGoogleFontsResources.splice(familyIndex, 1)
+    }
+    return workingGoogleFontsResources
+  })()
   return {
     ...oldValue,
-    googleFontsResources: (() => {
-      let workingGoogleFontsResources = [...oldValue.googleFontsResources]
-      const familyIndex = workingGoogleFontsResources.findIndex(
-        (resource) => resource.fontFamily === fontFamilyToDelete,
-      )
-      if (familyIndex > -1) {
-        workingGoogleFontsResources.splice(familyIndex, 1)
-      }
-      return workingGoogleFontsResources
-    })(),
+    googleFontsResources,
   }
 }
 
