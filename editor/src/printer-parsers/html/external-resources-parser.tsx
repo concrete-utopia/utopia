@@ -326,7 +326,12 @@ export function parseLinkTags(
         }
       }
     })
-    return right(externalResources(genericExternalResources, googleFontsResources))
+    return right(
+      externalResources(
+        genericExternalResources,
+        googleFontsResources.sort((a, b) => a.fontFamily.localeCompare(b.fontFamily, 'en')),
+      ),
+    )
   } else {
     return left(descriptionParseError(`Couldn't parse link tags '${linkTagsText}'`))
   }
