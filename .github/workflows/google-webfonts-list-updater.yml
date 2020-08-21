@@ -22,7 +22,8 @@ jobs:
         uses: peter-evans/create-pull-request@v3.1.0
         with:
           title: '∆ Update The Fonts (${{steps.get-google-fonts-list-file-contents.outputs.google-fonts-list-length}} fonts) ⟁'
-          author: GitHub <noreply@github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          committer: GitHub <noreply@github.com>
           token: ${{secrets.GOOGLE_FONTS_AUTOUPDATER_PAT}}
           commit-message: Update google fonts list (${{steps.get-google-fonts-list-file-contents.outputs.google-fonts-list-length}} fonts)
           branch: chore/update-google-fonts-list
