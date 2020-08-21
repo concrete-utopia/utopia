@@ -16,10 +16,10 @@ export function createContentState(text: RawDraftContentState | string): Content
     case 'number':
     case 'boolean':
       return ContentState.createFromText('' + safeText)
+    case 'string':
+      return ContentState.createFromText(safeText)
     default:
-      return typeof safeText === 'string'
-        ? ContentState.createFromText(safeText)
-        : convertFromRaw(safeText)
+      return convertFromRaw(safeText)
   }
 }
 

@@ -366,15 +366,15 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       )
 
       const textStyle =
-        element.props.textSizing == 'auto'
+        element.computedStyle.textSizing == 'auto'
           ? {
-              ...element.props.style,
+              ...element.computedStyle,
               top: 0,
               left: 0,
               visibility: 'visible',
             }
           : {
-              ...element.props.style,
+              ...element.computedStyle,
               top: 0,
               left: 0,
               width: frame.width,

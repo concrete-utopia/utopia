@@ -210,13 +210,22 @@ export function pickUiJsxCanvasProps(
     }
   }
 
+  const editedTextElement = Utils.optionalMap(
+    (textEd) => textEd.templatePath,
+    editor.canvas.textEditor,
+  )
+
+  let hiddenInstances = editor.hiddenInstances
+  if (editedTextElement != null) {
+    hiddenInstances = [...hiddenInstances, editedTextElement]
+  }
   return {
     offset: editor.canvas.roundedCanvasOffset,
     scale: editor.canvas.scale,
     uiFilePath: getOpenUIJSFileKey(editor),
     requireFn: requireFn,
-    hiddenInstances: editor.hiddenInstances,
-    editedTextElement: Utils.optionalMap((textEd) => textEd.templatePath, editor.canvas.textEditor),
+    hiddenInstances: hiddenInstances,
+    editedTextElement: editedTextElement,
     fileBlobs: defaultedFileBlobs,
     mountCount: editor.canvas.mountCount,
     onDomReport: onDomReport,
