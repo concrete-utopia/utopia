@@ -22,7 +22,7 @@ import {
   FlexWrapControl,
   getDirectionAwareLabels,
 } from '../layout-section/flex-container-subsection/flex-container-controls'
-import { jsxAttributeValue } from '../../../../core/shared/element-template'
+import { jsxAttributeValue, isJSXAttributeNotFound } from '../../../../core/shared/element-template'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isPercentPin } from 'utopia-api'
@@ -31,8 +31,11 @@ import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers
 import {
   PathForResizeContent,
   isDynamicSceneChildWidthHeightPercentage,
+  isSceneChildWidthHeightPercentage,
 } from '../../../../core/model/scene-utils'
 import { GridRow } from '../../widgets/grid-row'
+import { WarningIcon } from '../../../../uuiui/warning-icon'
+import { ChildWithPercentageSize } from '../../../common/size-warnings'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -161,6 +164,10 @@ function useSceneType(): InspectorInfo<boolean> {
     [PathForResizeContent],
     (targets) => {
       const resizesContent = Utils.path(PP.getElements(PathForResizeContent), targets) ?? false
+      if (isJSXAttributeNotFound(resizesContent as any)) {
+        // OH MY GOD
+        return false
+      }
       return resizesContent
     },
     (resizesContent: unknown) => {
@@ -172,7 +179,7 @@ function useSceneType(): InspectorInfo<boolean> {
   )
 }
 
-export function useIsDynamicSceneChildWidthHeightPercentage() {
+export function useIsSceneChildWidthHeightPercentage() {
   const { selectedViews, metadata } = useEditorState((state) => {
     return {
       selectedViews: state.editor.selectedViews,
@@ -186,7 +193,7 @@ export function useIsDynamicSceneChildWidthHeightPercentage() {
   )
   const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScenePath)
   if (scene != null) {
-    return isDynamicSceneChildWidthHeightPercentage(scene)
+    return isSceneChildWidthHeightPercentage(scene)
   } else {
     return false
   }
@@ -206,11 +213,9 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
 
   const sceneResizesContentInfo = useSceneType()
   let controlStatus: ControlStatus = simpleControlStatus
-  let controlStyles = simpleControlStyles
-  const isDynamicSceneChildSizePercent = useIsDynamicSceneChildWidthHeightPercentage()
-  if (isDynamicSceneChildSizePercent) {
+  const isDynamicSceneChildSizePercent = useIsSceneChildWidthHeightPercentage()
+  if (isDynamicSceneChildSizePercent && !sceneResizesContentInfo.value) {
     controlStatus = 'disabled'
-    controlStyles = getControlStyles(controlStatus)
   }
   const onSubmitValue = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -244,6 +249,13 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   )
   return (
     <>
+      {!isDynamicSceneChildSizePercent ? null : (
+        <GridRow padded type='<-auto-><----------1fr--------->'>
+          <WarningIcon />
+          <span style={{ whiteSpace: 'normal' }}>{ChildWithPercentageSize}</span>
+        </GridRow>
+      )}
+
       <GridRow padded type='<-auto-><----------1fr--------->'>
         <CheckboxInput
           id='resizeContentToggle'

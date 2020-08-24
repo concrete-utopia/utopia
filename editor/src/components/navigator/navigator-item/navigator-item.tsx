@@ -17,6 +17,7 @@ import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
 import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { WarningIcon } from '../../../uuiui/warning-icon'
 import { ElementWarnings } from '../../editor/store/editor-state'
+import { ChildWithPercentageSize } from '../../common/size-warnings'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -197,7 +198,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
 
     let warningText: string | null = null
     if (elementWarnings.dynamicSceneChildWidthHeightPercentage) {
-      warningText = 'Dynamic scene has child with percentage size'
+      warningText = ChildWithPercentageSize
     } else if (elementWarnings.widthOrHeightZero) {
       warningText = 'Missing width or height'
     } else if (elementWarnings.absoluteWithUnpositionedParent) {
