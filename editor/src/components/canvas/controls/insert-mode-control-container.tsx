@@ -54,6 +54,8 @@ import { InsertionControls } from './insertion-control'
 import { ControlProps } from './new-canvas-controls'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { RightMenuTab } from '../right-menu'
+import { safeIndex } from '../../../core/shared/array-utils'
+import { getStoryboardTemplatePath } from '../../editor/store/editor-state'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -432,7 +434,7 @@ export class InsertModeControlContainer extends React.Component<
       !this.props.mode.insertionStarted
     ) {
       const insertionSubject = this.props.mode.subject
-      const parent = this.props.highlightedViews[0]
+      const parent = safeIndex(this.props.highlightedViews, 0) ?? null
       const staticParent = MetadataUtils.templatePathToStaticTemplatePath(
         this.props.componentMetadata,
         parent,
@@ -493,7 +495,9 @@ export class InsertModeControlContainer extends React.Component<
       const insertionSubject = this.props.mode.subject
       const insertionElement = insertionSubject.element
       let element = null
-      const parentPath = this.props.highlightedViews[0]
+      const parentPath =
+        safeIndex(this.props.highlightedViews, 0) ??
+        getStoryboardTemplatePath(this.props.rootComponents)
       let extraActions: EditorAction[] = []
 
       if (
@@ -516,8 +520,10 @@ export class InsertModeControlContainer extends React.Component<
       }
 
       if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
-        const path = TP.appendToPath(parentPath, insertionSubject.uid)
-        extraActions.push(EditorActions.openTextEditor(path, null))
+        if (parentPath != null) {
+          const path = TP.appendToPath(parentPath, insertionSubject.uid)
+          extraActions.push(EditorActions.openTextEditor(path, null))
+        }
       }
 
       if (element == null) {
@@ -525,7 +531,11 @@ export class InsertModeControlContainer extends React.Component<
       } else {
         this.props.dispatch(
           [
-            EditorActions.insertJSXElement(element, parentPath, insertionSubject.importsToAdd),
+            EditorActions.insertJSXElement(
+              element,
+              parentPath ?? null,
+              insertionSubject.importsToAdd,
+            ),
             ...baseActions,
             ...extraActions,
           ],

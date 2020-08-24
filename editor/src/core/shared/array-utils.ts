@@ -273,3 +273,11 @@ export function immutablyUpdateArrayIndex<T>(
   working[indexToReplace] = newValue
   return working
 }
+
+export function safeIndex<T>(array: Array<T>, index: number): T | undefined {
+  if (index in array) {
+    return array[index]
+  } else {
+    return undefined
+  }
+}
