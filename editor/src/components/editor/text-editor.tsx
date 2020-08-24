@@ -457,12 +457,9 @@ export class TextEditor extends ReactComponent<TextEditorProps, TextEditorState>
         <div
           key={'text-editor-wrapper'}
           style={{
-            left: this.props.offset.x,
-            top: this.props.offset.y,
+            left: (this.props.offset.x * 1) / this.props.scale,
+            top: (this.props.offset.y * 1) / this.props.scale,
             position: 'absolute',
-            zoom: `${(1 / this.props.scale) * 100}%`,
-            transformOrigin: `top left`,
-            transform: `scale(${this.props.scale})`,
           }}
         >
           <div
@@ -484,9 +481,7 @@ export class TextEditor extends ReactComponent<TextEditorProps, TextEditorState>
               keyBindingFn={this.keyBindingFn}
               handleKeyCommand={this.handleKeyCommand}
               customStyleFn={this.customStyleFn}
-              textAlignment={
-                this.props.style.textAlign != null ? this.props.style.textAlign : 'left'
-              }
+              textAlignment={this.props.style.textAlign}
               whiteSpaceStyle={this.isAutoSizing() ? 'nowrap' : 'pre-wrap'}
             />
           </div>
