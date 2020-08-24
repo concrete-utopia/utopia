@@ -5,6 +5,13 @@ import { omitWithPredicate } from '../core/shared/object-utils'
 import { MapLike } from 'typescript'
 import { firstLetterIsLowerCase } from '../core/shared/string-utils'
 import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
+import {
+  UTOPIA_UID_KEY,
+  UTOPIA_LABEL_KEY,
+  UTOPIA_ORIGINAL_ID_KEY,
+  UTOPIA_DO_NOT_TRAVERSE_KEY,
+  UTOPIA_SCENE_ID_KEY,
+} from '../core/model/element-metadata-utils'
 
 const realCreateElement = React.createElement
 
@@ -17,8 +24,21 @@ export function applyUIDMonkeyPatch(): void {
   }
 }
 
+function keyShouldBeExcluded(key: string): boolean {
+  switch (key) {
+    case UTOPIA_UID_KEY:
+    case UTOPIA_LABEL_KEY:
+    case UTOPIA_ORIGINAL_ID_KEY:
+    case UTOPIA_DO_NOT_TRAVERSE_KEY:
+    case UTOPIA_SCENE_ID_KEY:
+      return true
+    default:
+      return false
+  }
+}
+
 export function filterDataProps(props: MapLike<any>): MapLike<any> {
-  return omitWithPredicate(props, (key) => typeof key === 'string' && key.startsWith('data-'))
+  return omitWithPredicate(props, (key) => typeof key === 'string' && keyShouldBeExcluded(key))
 }
 
 export function makeCanvasElementPropsSafe(props: any): any {

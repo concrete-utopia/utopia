@@ -80,7 +80,11 @@ import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 const ObjectPathImmutable: any = OPI
 
+export const UTOPIA_UID_KEY = 'data-uid'
+export const UTOPIA_LABEL_KEY = 'data-label'
 export const UTOPIA_ORIGINAL_ID_KEY = 'data-utopia-original-uid'
+export const UTOPIA_DO_NOT_TRAVERSE_KEY = 'data-utopia-do-not-traverse'
+export const UTOPIA_SCENE_ID_KEY = 'data-utopia-scene-id'
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
 
