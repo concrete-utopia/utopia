@@ -46,9 +46,17 @@ function getOptionIndex(
         return false
       }
     })
-    return foundIndex > -1 ? foundIndex : 0
+    return foundIndex > -1
+      ? foundIndex
+      : Math.max(
+          filteredData.findIndex((v) => isSelectableItemData(v)),
+          0,
+        )
   } else {
-    return 0
+    return Math.max(
+      filteredData.findIndex((v) => isSelectableItemData(v)),
+      0,
+    )
   }
 }
 
@@ -270,11 +278,6 @@ function filterData(
     const filteredProjectTypefaces: Array<SelectableItemData> = projectTypefaces.filter((datum) => {
       return getTypefaceFromItemData(datum).name.toLowerCase().includes(lowerCaseSearchTerm)
     })
-    const projectTypefacesHeader =
-      filteredProjectTypefaces.length > 0 ? [projectFontHeaderItem] : []
-    const projectTypefacesDivider =
-      filteredProjectTypefaces.length > 0 ? [projectFontDividerItem] : []
-
     const filteredData: Array<ItemData> = data.filter((datum) => {
       const typeface = getTypefaceFromItemData(datum)
       if (filteredProjectTypefaces.some((v) => getTypefaceFromItemData(v).name === typeface.name)) {
@@ -284,12 +287,20 @@ function filterData(
       }
     })
 
-    return [
-      ...projectTypefacesHeader,
-      ...filteredProjectTypefaces,
-      ...projectTypefacesDivider,
-      ...filteredData,
-    ]
+    if (filteredProjectTypefaces.length > 0) {
+      if (filteredData.length > 0) {
+        return [
+          projectFontHeaderItem,
+          ...filteredProjectTypefaces,
+          projectFontDividerItem,
+          ...filteredData,
+        ]
+      } else {
+        return [projectFontHeaderItem, ...filteredProjectTypefaces]
+      }
+    } else {
+      return filteredData
+    }
   }
 }
 
@@ -474,7 +485,7 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
             width: ModalWidth,
             boxShadow: `0 3px 6px #0002`,
           }}
-          onKeyDownCapture={onWrapperKeyDown}
+          onKeyDown={onWrapperKeyDown}
         >
           <FlexRow style={{ padding: 12 }}>
             <StringInput
