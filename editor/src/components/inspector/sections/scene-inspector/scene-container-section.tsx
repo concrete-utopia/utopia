@@ -3,7 +3,7 @@ import { betterReactMemo } from 'uuiui-deps'
 import * as TP from '../../../../core/shared/template-path'
 import * as PP from '../../../../core/shared/property-path'
 import Utils from '../../../../utils/utils'
-import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../uuiui'
+import { useWrappedEmptyOrUnknownOnSubmitValue, CheckboxInput } from '../../../../uuiui'
 import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
 import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
 import {
@@ -12,7 +12,6 @@ import {
   useInspectorInfoSimpleUntyped,
   InspectorInfo,
 } from '../../common/property-path-hooks'
-import { OptionChainControl, OptionChainOption } from '../../controls/option-chain-control'
 import { PropertyRow } from '../../widgets/property-row'
 import {
   FlexAlignContentControl,
@@ -33,13 +32,9 @@ import {
   PathForResizeContent,
   isDynamicSceneChildWidthHeightPercentage,
 } from '../../../../core/model/scene-utils'
+import { GridRow } from '../../widgets/grid-row'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
-
-const scenePropertyRowStyle = {
-  gridColumnGap: 16,
-  marginTop: 8,
-}
 
 export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSection', () => {
   const styleDisplayMetadata = useInspectorStyleInfo('display')
@@ -218,8 +213,9 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
     controlStyles = getControlStyles(controlStatus)
   }
   const onSubmitValue = React.useCallback(
-    (newSceneResizesContentValue: boolean, transient?: boolean) => {
-      sceneResizesContentInfo.onSubmitValue(newSceneResizesContentValue, transient)
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const newSceneResizesContentValue = event.target.checked
+      sceneResizesContentInfo.onSubmitValue(newSceneResizesContentValue)
       if (newSceneResizesContentValue === true) {
         dispatch(
           [
@@ -248,55 +244,18 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   )
   return (
     <>
-      <PropertyRow style={scenePropertyRowStyle}>
-        <div
-          style={{
-            gridColumn: '1 / span 6',
-          }}
-        >
-          <OptionChainControl
-            id={'layoutSystem'}
-            key={'layoutSystem'}
-            onSubmitValue={onSubmitValue}
-            value={sceneResizesContentInfo.value}
-            options={getSceneTypeOptions()}
-            controlStatus={controlStatus}
-            controlStyles={controlStyles}
-          />
-        </div>
-      </PropertyRow>
+      <GridRow padded type='<-auto-><----------1fr--------->'>
+        <CheckboxInput
+          id='resizeContentToggle'
+          controlStatus={controlStatus}
+          onChange={onSubmitValue}
+          checked={sceneResizesContentInfo.value}
+        />
+        <label htmlFor='resizeContentToggle'>Resize Content</label>
+      </GridRow>
       <SceneFlexContainerSection />
     </>
   )
 })
 
 SceneContainerSections.displayName = 'SceneContainerSections'
-
-function getSceneTypeOptions(): Array<OptionChainOption<boolean>> {
-  return [
-    {
-      value: true,
-      tooltip: 'Scene size changes dynamically based on content',
-      icon: {
-        category: 'layout/systems',
-        type: 'pins',
-        color: 'darkgray',
-        width: 16,
-        height: 16,
-      },
-      label: 'Resize Content',
-    },
-    {
-      value: false,
-      tooltip: 'Fixed size',
-      icon: {
-        category: 'layout/systems',
-        type: 'flexbox',
-        color: 'darkgray',
-        width: 16,
-        height: 16,
-      },
-      label: 'No',
-    },
-  ]
-}
