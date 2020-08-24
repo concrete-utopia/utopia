@@ -108,8 +108,20 @@ describe('external-resources-parser', () => {
             ],
             "googleFontsResources": Array [
               Object {
-                "fontFamily": "Red Rose",
-                "otherQueryStringParams": "",
+                "fontFamily": "Comfortaa",
+                "otherQueryStringParams": "text=Hello+World",
+                "type": "google-fonts-resource",
+                "variants": Array [
+                  Object {
+                    "type": "web-font-variant",
+                    "webFontStyle": "normal",
+                    "webFontWeight": 400,
+                  },
+                ],
+              },
+              Object {
+                "fontFamily": "Comfortaa",
+                "otherQueryStringParams": "text=%C2%A1Hola%21",
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
@@ -159,20 +171,8 @@ describe('external-resources-parser', () => {
                 ],
               },
               Object {
-                "fontFamily": "Comfortaa",
-                "otherQueryStringParams": "text=Hello+World",
-                "type": "google-fonts-resource",
-                "variants": Array [
-                  Object {
-                    "type": "web-font-variant",
-                    "webFontStyle": "normal",
-                    "webFontWeight": 400,
-                  },
-                ],
-              },
-              Object {
-                "fontFamily": "Comfortaa",
-                "otherQueryStringParams": "text=%C2%A1Hola%21",
+                "fontFamily": "Red Rose",
+                "otherQueryStringParams": "",
                 "type": "google-fonts-resource",
                 "variants": Array [
                   Object {
