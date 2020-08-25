@@ -78,13 +78,8 @@ import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils
 import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
 import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
+import { UTOPIA_ORIGINAL_ID_KEY, UTOPIA_UID_KEY } from './utopia-constants'
 const ObjectPathImmutable: any = OPI
-
-export const UTOPIA_UID_KEY = 'data-uid'
-export const UTOPIA_LABEL_KEY = 'data-label'
-export const UTOPIA_ORIGINAL_ID_KEY = 'data-utopia-original-uid'
-export const UTOPIA_DO_NOT_TRAVERSE_KEY = 'data-utopia-do-not-traverse'
-export const UTOPIA_SCENE_ID_KEY = 'data-utopia-scene-id'
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
 
@@ -122,7 +117,7 @@ function produceMetadataFromMergeCandidate(
   }, mergeCandidate)
 
   const possibleUID: string | null | undefined = Utils.defaultIfNull(
-    mergedMetadata.props['data-uid'],
+    mergedMetadata.props[UTOPIA_UID_KEY],
     mergedMetadata.props[UTOPIA_ORIGINAL_ID_KEY],
   )
   if (possibleUID == null) {

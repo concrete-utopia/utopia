@@ -5,13 +5,7 @@ import { omitWithPredicate } from '../core/shared/object-utils'
 import { MapLike } from 'typescript'
 import { firstLetterIsLowerCase } from '../core/shared/string-utils'
 import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
-import {
-  UTOPIA_UID_KEY,
-  UTOPIA_LABEL_KEY,
-  UTOPIA_ORIGINAL_ID_KEY,
-  UTOPIA_DO_NOT_TRAVERSE_KEY,
-  UTOPIA_SCENE_ID_KEY,
-} from '../core/model/element-metadata-utils'
+import { UtopiaKeys } from '../core/model/utopia-constants'
 
 const realCreateElement = React.createElement
 
@@ -25,16 +19,7 @@ export function applyUIDMonkeyPatch(): void {
 }
 
 function keyShouldBeExcluded(key: string): boolean {
-  switch (key) {
-    case UTOPIA_UID_KEY:
-    case UTOPIA_LABEL_KEY:
-    case UTOPIA_ORIGINAL_ID_KEY:
-    case UTOPIA_DO_NOT_TRAVERSE_KEY:
-    case UTOPIA_SCENE_ID_KEY:
-      return true
-    default:
-      return false
-  }
+  return UtopiaKeys.includes(key)
 }
 
 export function filterDataProps(props: MapLike<any>): MapLike<any> {

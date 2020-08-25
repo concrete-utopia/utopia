@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { sides } from 'utopia-api'
 import * as TP from '../../core/shared/template-path'
-import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/element-metadata-utils'
 import {
   DetectedLayoutSystem,
   ElementInstanceMetadata,
@@ -30,6 +29,7 @@ import {
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
+import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/utopia-constants'
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1

@@ -7,7 +7,6 @@ import { betterReactMemo } from 'uuiui-deps'
 import '../../bundled-dependencies/babelHelpers'
 import * as PP from '../../core/shared/property-path'
 import * as TP from '../../core/shared/template-path'
-import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/element-metadata-utils'
 import {
   ArbitraryJSBlock,
   ElementInstanceMetadata,
@@ -104,6 +103,7 @@ import { getGeneratedExternalLinkText } from '../../printer-parsers/html/externa
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
 import { cssValueOnlyContainsComments } from '../../printer-parsers/css/css-parser-utils'
+import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/utopia-constants'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
