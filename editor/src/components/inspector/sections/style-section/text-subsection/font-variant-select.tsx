@@ -24,6 +24,7 @@ import {
 import {
   useExternalResources,
   ExternalResources,
+  googleFontsResource,
 } from '../../../../../printer-parsers/html/external-resources-parser'
 
 const weightAndStylePaths: Array<'fontWeight' | 'fontStyle'> = ['fontWeight', 'fontStyle']
@@ -52,14 +53,14 @@ function updateAddNewFontVariant(
   )
   if (googleFontsListItemIndex > -1) {
     const googleFontsListItem = googleFontsList[googleFontsListItemIndex]
+    const googleFontVariantExists =
+      googleFontsListItem.variants.some(
+        (v) =>
+          v.webFontStyle === newVariant.webFontStyle &&
+          v.webFontWeight === newVariant.webFontWeight,
+      ) != null
     if (workingFontFamilyIndex > -1) {
       const workingFontFamily = workingGoogleFontsResources[workingFontFamilyIndex]
-      const googleFontVariantExists =
-        googleFontsListItem.variants.some(
-          (v) =>
-            v.webFontStyle === newVariant.webFontStyle &&
-            v.webFontWeight === newVariant.webFontWeight,
-        ) != null
       if (googleFontVariantExists) {
         const variantIsAlreadyAdded = workingFontFamily.variants.findIndex(
           (v) =>
@@ -72,6 +73,12 @@ function updateAddNewFontVariant(
           workingFontFamily.variants = workingVariants
           workingGoogleFontsResources[workingFontFamilyIndex] = workingFontFamily
         }
+      }
+    } else {
+      if (googleFontVariantExists) {
+        workingGoogleFontsResources.push(
+          googleFontsResource(newValue.value.familyName, [newVariant]),
+        )
       }
     }
   }
