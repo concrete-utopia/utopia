@@ -8,7 +8,6 @@ import {
   RawDraftContentState,
 } from 'draft-js'
 import { createContentState, createDraftStyles, getNewSizeFromContent } from '../draft-utils'
-import { TextAlignProperty } from 'csstype'
 import { UtopiaComponentProps } from './common'
 
 export type TextSizing = 'auto' | 'fixed'
@@ -31,10 +30,8 @@ const NoOp = () => {}
 
 export const Text: React.FunctionComponent<TextProps> = (props: TextProps) => {
   const defaultedStyle = defaultIfNull<React.CSSProperties>({}, props.style)
-  const defaultedTextAlign: TextAlignProperty = defaultIfNull<TextAlignProperty>(
-    'left',
-    defaultedStyle.textAlign,
-  )
+  const textAlign = defaultedStyle.textAlign
+
   const draftEditorRef = React.createRef<DraftEditor>()
   const [draftState, setDraftState] = React.useState<TextState>(() => {
     const contentState = createContentState(props.text)
@@ -104,7 +101,7 @@ export const Text: React.FunctionComponent<TextProps> = (props: TextProps) => {
         editorState={draftState.editorState}
         onChange={NoOp}
         customStyleFn={customStyleFn}
-        textAlignment={defaultedTextAlign}
+        textAlignment={textAlign}
         whiteSpaceStyle={isAutoSizing ? 'nowrap' : 'pre-wrap'}
       />
     </div>
