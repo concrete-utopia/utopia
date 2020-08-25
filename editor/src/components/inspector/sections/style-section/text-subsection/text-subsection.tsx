@@ -36,28 +36,11 @@ import {
 import { ColorControl } from '../../../controls/color-control'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { OptionControl } from '../../../controls/option-control'
-import { SelectOption } from '../../../controls/select-control'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
-import { fontFamilyArrayToCSSFontFamilyString, TypefaceInfo } from './fonts-list'
 
 const ObjectPathImmutable: any = OPI
-
-function convertTypefaceListToSelectOptionList(
-  typefaces: Array<TypefaceInfo>,
-): Array<SelectOption> {
-  return typefaces.map((typeface) => {
-    const fontFamily = fontFamilyArrayToCSSFontFamilyString(typeface.cssFontFamily)
-    return {
-      value: fontFamily,
-      label: typeface.fontFamilyName,
-      style: {
-        fontFamily: fontFamily,
-      },
-    }
-  })
-}
 
 function updateItalicFontStyle(newValue: boolean, oldValue: CSSFontStyle): CSSFontStyle {
   return newValue ? 'italic' : 'normal'

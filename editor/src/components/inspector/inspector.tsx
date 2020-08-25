@@ -451,15 +451,6 @@ const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarge
 
 let InspectorFontsAdded = false
 
-function addFontsForInspectorIfAbsent() {
-  if (!InspectorFontsAdded) {
-    InspectorFontsAdded = true
-    const googleFonts =
-      'https://fonts.googleapis.com/css?family=Arvo:400,400i,700,700i|EB+Garamond:400,400i,500,500i,600,600i,700,700i,800,800i|Lora:400,400i,700,700i|Noto+Sans+JP:100,300,400,500,700,900|Noto+Sans+KR:100,300,400,500,700,900|Noto+Sans+SC:100,300,400,500,700,900|Noto+Sans+TC:100,300,400,500,700,900|Noto+Sans:400,400i,700,700i|Noto+Serif+JP:200,300,400,500,600,700,900|Noto+Serif+KR:200,300,400,500,600,700,900|Noto+Serif+SC:200,300,400,500,600,700,900|Noto+Serif+TC:200,300,400,500,600,700,900|Noto+Serif:400,400i,700,700i|Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i|PT+Sans+Narrow:400,700|PT+Sans:400,400i,700,700i|PT+Serif:400,400i,700,700i|Playfair+Display:400,400i,700,700i,900,900i|Roboto+Condensed:300,300i,400,400i,700,700i|Roboto+Mono:100,100i,300,300i,400,400i,500,500i,700,700i|Roboto+Slab:100,300,400,700|Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Sorts+Mill+Goudy:400,400i|Source+Code+Pro:200,300,400,500,600,700,900|Source+Sans+Pro:200,200i,300,300i,400,400i,600,600i,700,700i,900,900i|Source+Serif+Pro:400,600,700|ZCOOL+QingKe+HuangYou'
-    addStyleSheetToPage(googleFonts, false)
-  }
-}
-
 export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
   'InspectorEntryPoint',
   () => {
@@ -514,11 +505,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       }
     },
   )
-
-  React.useEffect(() => {
-    // Add the google fonts on first render as it's an expensive download
-    addFontsForInspectorIfAbsent()
-  }, [])
 
   let inspectorModel: InspectorModel = {
     isChildOfFlexComponent: false,
