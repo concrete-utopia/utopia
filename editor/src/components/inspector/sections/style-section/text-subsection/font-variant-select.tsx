@@ -10,6 +10,9 @@ import {
   defaultWebFontWeightsAndStyles,
   prettyNameForFontVariant,
   WebFontVariant,
+  WebFontFamilyVariant,
+  webFontFamilyVariant,
+  webFontVariant,
 } from '../../../../navigator/external-resources/google-fonts-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import {
@@ -18,6 +21,10 @@ import {
   useInspectorInfo,
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
+import {
+  useExternalResources,
+  ExternalResources,
+} from '../../../../../printer-parsers/html/external-resources-parser'
 
 const weightAndStylePaths: Array<'fontWeight' | 'fontStyle'> = ['fontWeight', 'fontStyle']
 
@@ -25,13 +32,57 @@ function updateFontWeightAndStyle(
   newValue: FontWeightAndStyleSelectOption,
 ): ParsedValues<'fontWeight' | 'fontStyle'> {
   return {
-    fontWeight: newValue.value.webFontWeight,
-    fontStyle: newValue.value.webFontStyle,
+    fontWeight: newValue.value.fontVariant.webFontWeight,
+    fontStyle: newValue.value.fontVariant.webFontStyle,
+  }
+}
+
+function updateAddNewFontVariant(
+  newValue: FontWeightAndStyleSelectOption,
+  oldValue: ExternalResources,
+): ExternalResources {
+  const newVariant = newValue.value.fontVariant
+  let workingGoogleFontsResources = [...oldValue.googleFontsResources]
+  const workingFontFamilyIndex = workingGoogleFontsResources.findIndex(
+    (v) => v.fontFamily === newValue.value.familyName,
+  )
+
+  const googleFontsListItemIndex = googleFontsList.findIndex(
+    (v) => v.name === newValue.value.familyName,
+  )
+  if (googleFontsListItemIndex > -1) {
+    const googleFontsListItem = googleFontsList[googleFontsListItemIndex]
+    if (workingFontFamilyIndex > -1) {
+      const workingFontFamily = workingGoogleFontsResources[workingFontFamilyIndex]
+      const googleFontVariantExists =
+        googleFontsListItem.variants.some(
+          (v) =>
+            v.webFontStyle === newVariant.webFontStyle &&
+            v.webFontWeight === newVariant.webFontWeight,
+        ) != null
+      if (googleFontVariantExists) {
+        const variantIsAlreadyAdded = workingFontFamily.variants.findIndex(
+          (v) =>
+            v.webFontStyle === newVariant.webFontStyle &&
+            v.webFontWeight === newVariant.webFontWeight,
+        )
+        if (!variantIsAlreadyAdded) {
+          const workingVariants = [...workingFontFamily.variants]
+          workingVariants.push(newVariant)
+          workingFontFamily.variants = workingVariants
+          workingGoogleFontsResources[workingFontFamilyIndex] = workingFontFamily
+        }
+      }
+    }
+  }
+  return {
+    ...oldValue,
+    googleFontsResources: workingGoogleFontsResources,
   }
 }
 
 interface FontWeightAndStyleSelectOption {
-  value: WebFontVariant
+  value: WebFontFamilyVariant
 }
 
 export const FontVariantSelect = betterReactMemo('FontVariantSelect', () => {
@@ -54,17 +105,30 @@ export const FontVariantSelect = betterReactMemo('FontVariantSelect', () => {
       defaultWebFontWeightsAndStyles
     return variantsToMap.map((variant) => {
       return {
-        value: variant,
+        value: webFontFamilyVariant(primaryFont, variant),
         label: prettyNameForFontVariant(variant),
         style: { fontWeight: variant.webFontWeight, fontStyle: variant.webFontStyle },
       }
     })
   }, [primaryFont])
 
-  const [onSubmitValue] = useSubmitValueFactory(updateFontWeightAndStyle)
+  const { useSubmitValueFactory: useResourcesSubmitValueFactory } = useExternalResources()
+  const [onSubmitNewFontVariantToResources] = useResourcesSubmitValueFactory(
+    updateAddNewFontVariant,
+  )
+  const [onSubmitFontWeightAndStyle] = useSubmitValueFactory(updateFontWeightAndStyle)
+  const onSubmitValue = React.useCallback(
+    (newValue: FontWeightAndStyleSelectOption) => {
+      onSubmitNewFontVariantToResources(newValue)
+      onSubmitFontWeightAndStyle(newValue)
+    },
+    [onSubmitNewFontVariantToResources, onSubmitFontWeightAndStyle],
+  )
 
   const selectValue = fontWeightAndStyleOptions.find(
-    (v) => v.value.webFontStyle === value.fontStyle && v.value.webFontWeight === value.fontWeight,
+    (v) =>
+      v.value.fontVariant.webFontStyle === value.fontStyle &&
+      v.value.fontVariant.webFontWeight === value.fontWeight,
   )
 
   return (
