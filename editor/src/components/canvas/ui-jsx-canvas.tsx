@@ -7,7 +7,6 @@ import { betterReactMemo } from 'uuiui-deps'
 import '../../bundled-dependencies/babelHelpers'
 import * as PP from '../../core/shared/property-path'
 import * as TP from '../../core/shared/template-path'
-import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/element-metadata-utils'
 import {
   ArbitraryJSBlock,
   ElementInstanceMetadata,
@@ -58,7 +57,11 @@ import {
   NodeModules,
 } from '../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
-import { applyUIDMonkeyPatch, makeCanvasElementPropsSafe } from '../../utils/canvas-react-utils'
+import {
+  applyUIDMonkeyPatch,
+  makeCanvasElementPropsSafe,
+  filterDataProps,
+} from '../../utils/canvas-react-utils'
 import { flatMapEither, forEachRight, right, left, isRight } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { CanvasVector } from '../../core/shared/math-utils'
@@ -100,6 +103,7 @@ import { getGeneratedExternalLinkText } from '../../printer-parsers/html/externa
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
 import { cssValueOnlyContainsComments } from '../../printer-parsers/css/css-parser-utils'
+import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/utopia-constants'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -1310,10 +1314,6 @@ function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any>
       return undefined
     }
   }
-}
-
-function filterDataProps(props: MapLike<any>): MapLike<any> {
-  return omitWithPredicate(props, (key) => typeof key === 'string' && key.startsWith('data-'))
 }
 
 function renderJSXElement(

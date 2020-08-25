@@ -1,7 +1,11 @@
 import * as React from 'react'
 import Utils from './utils'
 import { keepDeepReferenceEqualityIfPossible } from './react-performance'
-import { UTOPIA_ORIGINAL_ID_KEY } from '../core/model/element-metadata-utils'
+import { omitWithPredicate } from '../core/shared/object-utils'
+import { MapLike } from 'typescript'
+import { firstLetterIsLowerCase } from '../core/shared/string-utils'
+import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
+import { UtopiaKeys } from '../core/model/utopia-constants'
 
 const realCreateElement = React.createElement
 
@@ -12,6 +16,14 @@ export function applyUIDMonkeyPatch(): void {
     uidMonkeyPatchApplied = true
     ;(React as any).createElement = patchedCreateReactElement
   }
+}
+
+function keyShouldBeExcluded(key: string): boolean {
+  return UtopiaKeys.includes(key)
+}
+
+export function filterDataProps(props: MapLike<any>): MapLike<any> {
+  return omitWithPredicate(props, (key) => typeof key === 'string' && keyShouldBeExcluded(key))
 }
 
 export function makeCanvasElementPropsSafe(props: any): any {
@@ -60,6 +72,19 @@ export function makeCanvasElementPropsSafe(props: any): any {
   })
 }
 
+function shouldIncludeDataUID(type: any): boolean {
+  if (typeof type === 'string') {
+    const elementIsIntrinsic = firstLetterIsLowerCase(type)
+    const elementIsBaseHTML = isIntrinsicHTMLElementString(type)
+    // Looks like an intrinsic element (div/span/etc), but isn't a recognised
+    // React intrinsic HTML element.
+    if (elementIsIntrinsic && !elementIsBaseHTML) {
+      return false
+    }
+  }
+  return true
+}
+
 function attachDataUidToRoot(
   originalResponse: React.ReactElement | null | undefined,
   dataUid: string | null,
@@ -80,8 +105,11 @@ function attachDataUidToRoot(
   } else if (!React.isValidElement(originalResponse as any)) {
     return originalResponse
   } else {
-    const finalElement = React.cloneElement(originalResponse, { 'data-uid': dataUid })
-    return finalElement
+    if (shouldIncludeDataUID(originalResponse.type)) {
+      return React.cloneElement(originalResponse, { 'data-uid': dataUid })
+    } else {
+      return React.cloneElement(originalResponse)
+    }
   }
 }
 
@@ -201,6 +229,11 @@ function patchedCreateReactElement(type: any, props: any, ...children: any): any
   ) {
     // fragment-like components, the list is not exhaustive, we might need to extend it later
     return realCreateElement(mangleExoticType(type), props, ...children)
+  } else {
+    let updatedProps = props
+    if (!shouldIncludeDataUID(type)) {
+      updatedProps = filterDataProps(updatedProps)
+    }
+    return realCreateElement(type, updatedProps, ...children)
   }
-  return realCreateElement(type, props, ...children)
 }

@@ -398,8 +398,12 @@ export function isIntrinsicElement(name: JSXElementName): boolean {
   return PP.depth(name.propertyPath) === 0 && firstLetterIsLowerCase(name.baseVariable)
 }
 
+export function isIntrinsicHTMLElementString(name: string): boolean {
+  return intrinsicHTMLElementNamesAsStrings.includes(name)
+}
+
 export function isIntrinsicHTMLElement(name: JSXElementName): boolean {
-  return isIntrinsicElement(name) && intrinsicHTMLElementNamesAsStrings.includes(name.baseVariable)
+  return isIntrinsicElement(name) && isIntrinsicHTMLElementString(name.baseVariable)
 }
 
 export function getJSXElementNameLastPart(name: JSXElementName): string {
