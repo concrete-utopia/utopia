@@ -457,8 +457,8 @@ export class TextEditor extends ReactComponent<TextEditorProps, TextEditorState>
         <div
           key={'text-editor-wrapper'}
           style={{
-            left: (this.props.offset.x * 1) / this.props.scale,
-            top: (this.props.offset.y * 1) / this.props.scale,
+            left: this.props.offset.x / this.props.scale,
+            top: this.props.offset.y / this.props.scale,
             position: 'absolute',
           }}
         >
