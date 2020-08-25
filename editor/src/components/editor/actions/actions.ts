@@ -3306,7 +3306,7 @@ export const UPDATE_FNS = {
       projectContents: updatedProjectContents,
       canvas: {
         ...editor.canvas,
-        mountCount: editor.canvas.mountCount + 1,
+        mountCount: editor.canvas.mountCount + (isUIJSFile(file) ? 0 : 1),
       },
       nodeModules: {
         ...editor.nodeModules,
