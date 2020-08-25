@@ -269,8 +269,7 @@ export function isSceneElement(element: JSXElement): boolean {
   return element.name.baseVariable === 'Scene'
 }
 
-export function isDynamicSceneChildWidthHeightPercentage(scene: ComponentMetadata): boolean {
-  const isDynamicScene = scene.sceneResizesContent
+export function isSceneChildWidthHeightPercentage(scene: ComponentMetadata): boolean {
   const rootElementSizes = scene.rootElements.map((element) => {
     return {
       width: element.props?.style?.width,
@@ -278,8 +277,11 @@ export function isDynamicSceneChildWidthHeightPercentage(scene: ComponentMetadat
     }
   })
 
-  return (
-    isDynamicScene &&
-    rootElementSizes.some((size) => isPercentPin(size.width) || isPercentPin(size.height))
-  )
+  return rootElementSizes.some((size) => isPercentPin(size.width) || isPercentPin(size.height))
+}
+
+export function isDynamicSceneChildWidthHeightPercentage(scene: ComponentMetadata): boolean {
+  const isDynamicScene = scene.sceneResizesContent
+
+  return isDynamicScene && isSceneChildWidthHeightPercentage(scene)
 }

@@ -3,7 +3,7 @@ import { betterReactMemo } from 'uuiui-deps'
 import * as TP from '../../../../core/shared/template-path'
 import * as PP from '../../../../core/shared/property-path'
 import Utils from '../../../../utils/utils'
-import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../uuiui'
+import { useWrappedEmptyOrUnknownOnSubmitValue, CheckboxInput } from '../../../../uuiui'
 import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
 import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
 import {
@@ -12,7 +12,6 @@ import {
   useInspectorInfoSimpleUntyped,
   InspectorInfo,
 } from '../../common/property-path-hooks'
-import { OptionChainControl, OptionChainOption } from '../../controls/option-chain-control'
 import { PropertyRow } from '../../widgets/property-row'
 import {
   FlexAlignContentControl,
@@ -23,7 +22,7 @@ import {
   FlexWrapControl,
   getDirectionAwareLabels,
 } from '../layout-section/flex-container-subsection/flex-container-controls'
-import { jsxAttributeValue } from '../../../../core/shared/element-template'
+import { jsxAttributeValue, isJSXAttributeNotFound } from '../../../../core/shared/element-template'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isPercentPin } from 'utopia-api'
@@ -32,14 +31,13 @@ import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers
 import {
   PathForResizeContent,
   isDynamicSceneChildWidthHeightPercentage,
+  isSceneChildWidthHeightPercentage,
 } from '../../../../core/model/scene-utils'
+import { GridRow } from '../../widgets/grid-row'
+import { WarningIcon } from '../../../../uuiui/warning-icon'
+import { ChildWithPercentageSize } from '../../../common/size-warnings'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
-
-const scenePropertyRowStyle = {
-  gridColumnGap: 16,
-  marginTop: 8,
-}
 
 export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSection', () => {
   const styleDisplayMetadata = useInspectorStyleInfo('display')
@@ -166,6 +164,10 @@ function useSceneType(): InspectorInfo<boolean> {
     [PathForResizeContent],
     (targets) => {
       const resizesContent = Utils.path(PP.getElements(PathForResizeContent), targets) ?? false
+      if (isJSXAttributeNotFound(resizesContent)) {
+        // OH MY GOD
+        return false
+      }
       return resizesContent
     },
     (resizesContent: unknown) => {
@@ -177,7 +179,7 @@ function useSceneType(): InspectorInfo<boolean> {
   )
 }
 
-export function useIsDynamicSceneChildWidthHeightPercentage() {
+export function useIsSceneChildWidthHeightPercentage() {
   const { selectedViews, metadata } = useEditorState((state) => {
     return {
       selectedViews: state.editor.selectedViews,
@@ -191,7 +193,7 @@ export function useIsDynamicSceneChildWidthHeightPercentage() {
   )
   const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScenePath)
   if (scene != null) {
-    return isDynamicSceneChildWidthHeightPercentage(scene)
+    return isSceneChildWidthHeightPercentage(scene)
   } else {
     return false
   }
@@ -211,15 +213,14 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
 
   const sceneResizesContentInfo = useSceneType()
   let controlStatus: ControlStatus = simpleControlStatus
-  let controlStyles = simpleControlStyles
-  const isDynamicSceneChildSizePercent = useIsDynamicSceneChildWidthHeightPercentage()
-  if (isDynamicSceneChildSizePercent) {
+  const isDynamicSceneChildSizePercent = useIsSceneChildWidthHeightPercentage()
+  if (isDynamicSceneChildSizePercent && !sceneResizesContentInfo.value) {
     controlStatus = 'disabled'
-    controlStyles = getControlStyles(controlStatus)
   }
   const onSubmitValue = React.useCallback(
-    (newSceneResizesContentValue: boolean, transient?: boolean) => {
-      sceneResizesContentInfo.onSubmitValue(newSceneResizesContentValue, transient)
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const newSceneResizesContentValue = event.target.checked
+      sceneResizesContentInfo.onSubmitValue(newSceneResizesContentValue)
       if (newSceneResizesContentValue === true) {
         dispatch(
           [
@@ -248,55 +249,25 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   )
   return (
     <>
-      <PropertyRow style={scenePropertyRowStyle}>
-        <div
-          style={{
-            gridColumn: '1 / span 6',
-          }}
-        >
-          <OptionChainControl
-            id={'layoutSystem'}
-            key={'layoutSystem'}
-            onSubmitValue={onSubmitValue}
-            value={sceneResizesContentInfo.value}
-            options={getSceneTypeOptions()}
-            controlStatus={controlStatus}
-            controlStyles={controlStyles}
-          />
-        </div>
-      </PropertyRow>
+      {!isDynamicSceneChildSizePercent ? null : (
+        <GridRow padded type='<-auto-><----------1fr--------->'>
+          <WarningIcon />
+          <span style={{ whiteSpace: 'normal' }}>{ChildWithPercentageSize}</span>
+        </GridRow>
+      )}
+
+      <GridRow padded type='<-auto-><----------1fr--------->'>
+        <CheckboxInput
+          id='resizeContentToggle'
+          controlStatus={controlStatus}
+          onChange={onSubmitValue}
+          checked={sceneResizesContentInfo.value}
+        />
+        <label htmlFor='resizeContentToggle'>Resize Content</label>
+      </GridRow>
       <SceneFlexContainerSection />
     </>
   )
 })
 
 SceneContainerSections.displayName = 'SceneContainerSections'
-
-function getSceneTypeOptions(): Array<OptionChainOption<boolean>> {
-  return [
-    {
-      value: true,
-      tooltip: 'Scene size changes dynamically based on content',
-      icon: {
-        category: 'layout/systems',
-        type: 'pins',
-        color: 'darkgray',
-        width: 16,
-        height: 16,
-      },
-      label: 'Resize Content',
-    },
-    {
-      value: false,
-      tooltip: 'Fixed size',
-      icon: {
-        category: 'layout/systems',
-        type: 'flexbox',
-        color: 'darkgray',
-        width: 16,
-        height: 16,
-      },
-      label: 'No',
-    },
-  ]
-}

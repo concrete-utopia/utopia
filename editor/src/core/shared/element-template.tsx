@@ -14,7 +14,7 @@ import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
 import { Sides, sides, NormalisedFrame, LayoutSystem } from 'utopia-api'
-import { fastForEach } from './utils'
+import { fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
 import { parseUID } from './uid-utils'
@@ -315,10 +315,8 @@ export function isJSXAttributeNestedObject(
   return attribute != null && attribute.type === 'ATTRIBUTE_NESTED_OBJECT'
 }
 
-export function isJSXAttributeNotFound(
-  attribute: JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound,
-): attribute is JSXAttributeNotFound {
-  return attribute != null && attribute.type === 'ATTRIBUTE_NOT_FOUND'
+export function isJSXAttributeNotFound(attribute: unknown): attribute is JSXAttributeNotFound {
+  return unknownObjectProperty(attribute, 'type') === 'ATTRIBUTE_NOT_FOUND'
 }
 
 export function isRegularJSXAttribute(
