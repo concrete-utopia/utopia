@@ -126,3 +126,13 @@ export function projectURLForProject(projectId: string, projectName: string): st
 export function shareURLForProject(prefix: string, projectId: string, projectName: string): string {
   return urljoin(prefix, `/share/${getProjectURLSuffix(projectId, projectName)}`)
 }
+
+export function unknownObjectProperty(o: unknown, key: string): any {
+  if (typeof o === 'object' && o != null) {
+    if (key in o) {
+      // at this point we know `o` is an object and it has the prop, but Typescript threw an error
+      return (o as any)[key]
+    }
+  }
+  return undefined
+}

@@ -164,7 +164,7 @@ function useSceneType(): InspectorInfo<boolean> {
     [PathForResizeContent],
     (targets) => {
       const resizesContent = Utils.path(PP.getElements(PathForResizeContent), targets) ?? false
-      if (isJSXAttributeNotFound(resizesContent as any)) {
+      if (isJSXAttributeNotFound(resizesContent)) {
         // OH MY GOD
         return false
       }
