@@ -35,7 +35,7 @@ import { PreviewColumn } from '../preview/preview-pane'
 import { ReleaseNotesContent } from '../documentation/release-notes'
 import { EditorDispatch, LoginState } from './action-types'
 import * as EditorActions from './actions/actions'
-import { handleKeyDown, handleKeyUp } from './editor-interactions'
+import { handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { StateHistory } from './history'
 import { LoginStatusBar, EditorOfflineBar, BrowserInfoBar } from './notification-bar'
 import {
@@ -110,24 +110,14 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
-      handleKeyDown(
-        event,
-        editorStoreRef.current.editor,
-        editorStoreRef.current.derived,
-        editorStoreRef.current.dispatch,
-      )
+      handleKeyDown(event, editorStoreRef.current.editor, editorStoreRef.current.dispatch)
     },
     [editorStoreRef],
   )
 
   const onWindowKeyUp = React.useCallback(
     (event) => {
-      handleKeyUp(
-        event,
-        editorStoreRef.current.editor,
-        editorStoreRef.current.derived,
-        editorStoreRef.current.dispatch,
-      )
+      handleKeyUp(event, editorStoreRef.current.editor, editorStoreRef.current.dispatch)
     },
     [editorStoreRef],
   )
