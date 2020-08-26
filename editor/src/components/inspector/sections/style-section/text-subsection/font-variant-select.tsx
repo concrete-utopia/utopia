@@ -44,7 +44,7 @@ function updateAddNewFontVariant(
 ): ExternalResources {
   const newVariant = newValue.value.fontVariant
   let workingGoogleFontsResources = [...oldValue.googleFontsResources]
-  const workingFontFamilyIndex = workingGoogleFontsResources.findIndex(
+  const workingResourceIndex = workingGoogleFontsResources.findIndex(
     (v) => v.fontFamily === newValue.value.familyName,
   )
 
@@ -59,19 +59,19 @@ function updateAddNewFontVariant(
           v.webFontStyle === newVariant.webFontStyle &&
           v.webFontWeight === newVariant.webFontWeight,
       ) != null
-    if (workingFontFamilyIndex > -1) {
-      const workingFontFamily = workingGoogleFontsResources[workingFontFamilyIndex]
+    if (workingResourceIndex > -1) {
+      const workingResource = workingGoogleFontsResources[workingResourceIndex]
       if (googleFontVariantExists) {
-        const variantIsAlreadyAdded = workingFontFamily.variants.findIndex(
+        const variantIsAlreadyAdded = workingResource.variants.some(
           (v) =>
             v.webFontStyle === newVariant.webFontStyle &&
             v.webFontWeight === newVariant.webFontWeight,
         )
         if (!variantIsAlreadyAdded) {
-          const workingVariants = [...workingFontFamily.variants]
+          const workingVariants = [...workingResource.variants]
           workingVariants.push(newVariant)
-          workingFontFamily.variants = workingVariants
-          workingGoogleFontsResources[workingFontFamilyIndex] = workingFontFamily
+          workingResource.variants = workingVariants
+          workingGoogleFontsResources[workingResourceIndex] = workingResource
         }
       }
     } else {
