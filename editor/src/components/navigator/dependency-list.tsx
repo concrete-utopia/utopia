@@ -150,7 +150,8 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     }
   }
 
-  componentWillReceiveProps(newProps: DependencyListProps): void {
+  // TODO: this is a very very naughty lifecycle event
+  UNSAFE_componentWillReceiveProps(newProps: DependencyListProps): void {
     if (
       newProps.packageJsonFile === this.props.packageJsonFile ||
       Utils.shallowEqual(newProps.packageJsonFile, this.props.packageJsonFile)
