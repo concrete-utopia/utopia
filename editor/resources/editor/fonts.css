@@ -1,0 +1,9 @@
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-VariableFont_slnt\,wght.ttf');
+}
+
+@font-face {
+  font-family: 'utopian-inconsolata';
+  src: url('./fonts/Inconsolata-VariableFont_wdth\,wght.ttf');
+}

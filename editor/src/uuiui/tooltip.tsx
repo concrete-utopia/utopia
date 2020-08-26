@@ -38,7 +38,7 @@ export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProp
           fontWeight: 400,
           fontSize: 11,
           fontFamily:
-            "'Inter', -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
+            "utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
           backgroundColor: `${colorTheme.neutralInvertedBackground.value} !important`,
           color: `${colorTheme.neutralInvertedForeground.value} !important`,
           '& .tippy-content': {
