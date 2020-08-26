@@ -2,7 +2,12 @@ import * as R from 'ramda'
 import * as React from 'react'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
-import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  rectanglesEqual,
+} from '../../../core/shared/math-utils'
 import { TemplatePath, ScenePath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
@@ -28,6 +33,8 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
+import { fastForEach } from '../../../core/shared/utils'
+import { flatMapArray, uniqBy } from '../../../core/shared/array-utils'
 
 export const SnappingThreshold = 5
 
@@ -289,6 +296,82 @@ export class SelectModeControlContainer extends React.Component<
     }
 
     return this.filterHiddenInstances(candidateViews)
+  }
+
+  getOverlappingLabels = (targets: TemplatePath[]): any[] => {
+    const allFrames = Utils.stripNulls(
+      targets.map((target) => {
+        const frame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
+        if (frame == null) {
+          return null
+        }
+        return {
+          frame: frame,
+          target: target,
+        }
+      }),
+    )
+    let overlappingElements: { frame: CanvasRectangle; targets: TemplatePath[] }[] = []
+    fastForEach(allFrames, (targetAndFrame) => {
+      return allFrames.some((allFramesFrame) => {
+        if (
+          TP.isAncestorOf(allFramesFrame.target, targetAndFrame.target, false) &&
+          rectanglesEqual(targetAndFrame.frame, allFramesFrame.frame)
+        ) {
+          const alreadyAdded = overlappingElements.findIndex((overlapData) =>
+            rectanglesEqual(overlapData.frame, allFramesFrame.frame),
+          )
+          if (alreadyAdded > -1) {
+            overlappingElements[alreadyAdded] = {
+              frame: targetAndFrame.frame,
+              targets: uniqBy(
+                [
+                  ...overlappingElements[alreadyAdded].targets,
+                  targetAndFrame.target,
+                  allFramesFrame.target,
+                ],
+                TP.pathsEqual,
+              ),
+            }
+          } else {
+            overlappingElements.push({
+              frame: targetAndFrame.frame,
+              targets: [targetAndFrame.target, allFramesFrame.target],
+            })
+          }
+        }
+      })
+    })
+
+    return flatMapArray((overlapData) => {
+      const frame = overlapData.frame
+      return overlapData.targets.map((target, index) => {
+        const isSelected = this.props.selectedViews.some((view) => TP.pathsEqual(target, view))
+        return (
+          <div
+            key={TP.toString(target)}
+            style={{
+              position: 'absolute',
+              left: frame.x + this.props.canvasOffset.x + 30 * index,
+              top: frame.y + this.props.canvasOffset.y - 12,
+              backgroundColor: isSelected ? 'rgb(255,105,180,0.9)' : 'rgb(255,105,180,0.2)',
+              border: '1px solid hotpink',
+              paddingLeft: 2,
+              fontSize: 8,
+              width: 30,
+              borderRadius: 2,
+            }}
+            onMouseDown={() => {
+              this.props.dispatch([EditorActions.selectComponents([target], false)], 'canvas')
+            }}
+            onMouseOver={() => this.onHover(target)}
+            onMouseLeave={() => this.onHoverEnd(target)}
+          >
+            {index + 1}
+          </div>
+        )
+      })
+    }, overlappingElements)
   }
 
   getClippedArea = (target: TemplatePath): CanvasRectangle | null => {
@@ -664,6 +747,9 @@ export class SelectModeControlContainer extends React.Component<
         element != null && MetadataUtils.isAutoSizingText(this.props.imports, element)
     }
 
+    const overlappingLabels = allElementsDirectlySelectable
+      ? this.getOverlappingLabels(draggableViews)
+      : null
     return (
       <div
         style={{
@@ -718,6 +804,7 @@ export class SelectModeControlContainer extends React.Component<
             ) : null}
           </>
         ) : null}
+        {overlappingLabels}
         {...this.getMoveGuidelines()}
         {this.getDistanceGuidelines()}
         {this.getBoundingMarks()}
