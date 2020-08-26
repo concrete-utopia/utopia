@@ -3,13 +3,19 @@ import { OptionsType } from 'react-select'
 import { betterReactMemo } from 'uuiui-deps'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { identity } from '../../../../../core/shared/utils'
+import {
+  ExternalResources,
+  googleFontsResource,
+  useExternalResources,
+} from '../../../../../printer-parsers/html/external-resources-parser'
 import utils from '../../../../../utils/utils'
 import { PopupList, Tooltip } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import {
   defaultWebFontWeightsAndStyles,
   prettyNameForFontVariant,
-  WebFontVariant,
+  WebFontFamilyVariant,
+  webFontFamilyVariant,
 } from '../../../../navigator/external-resources/google-fonts-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import {
@@ -25,13 +31,63 @@ function updateFontWeightAndStyle(
   newValue: FontWeightAndStyleSelectOption,
 ): ParsedValues<'fontWeight' | 'fontStyle'> {
   return {
-    fontWeight: newValue.value.webFontWeight,
-    fontStyle: newValue.value.webFontStyle,
+    fontWeight: newValue.value.fontVariant.webFontWeight,
+    fontStyle: newValue.value.fontVariant.webFontStyle,
+  }
+}
+
+function updateAddNewFontVariant(
+  newValue: FontWeightAndStyleSelectOption,
+  oldValue: ExternalResources,
+): ExternalResources {
+  const newVariant = newValue.value.fontVariant
+  let workingGoogleFontsResources = [...oldValue.googleFontsResources]
+  const workingResourceIndex = workingGoogleFontsResources.findIndex(
+    (v) => v.fontFamily === newValue.value.familyName,
+  )
+
+  const googleFontsListItemIndex = googleFontsList.findIndex(
+    (v) => v.name === newValue.value.familyName,
+  )
+  if (googleFontsListItemIndex > -1) {
+    const googleFontsListItem = googleFontsList[googleFontsListItemIndex]
+    const googleFontVariantExists =
+      googleFontsListItem.variants.some(
+        (v) =>
+          v.webFontStyle === newVariant.webFontStyle &&
+          v.webFontWeight === newVariant.webFontWeight,
+      ) != null
+    if (workingResourceIndex > -1) {
+      const workingResource = workingGoogleFontsResources[workingResourceIndex]
+      if (googleFontVariantExists) {
+        const variantIsAlreadyAdded = workingResource.variants.some(
+          (v) =>
+            v.webFontStyle === newVariant.webFontStyle &&
+            v.webFontWeight === newVariant.webFontWeight,
+        )
+        if (!variantIsAlreadyAdded) {
+          const workingVariants = [...workingResource.variants]
+          workingVariants.push(newVariant)
+          workingResource.variants = workingVariants
+          workingGoogleFontsResources[workingResourceIndex] = workingResource
+        }
+      }
+    } else {
+      if (googleFontVariantExists) {
+        workingGoogleFontsResources.push(
+          googleFontsResource(newValue.value.familyName, [newVariant]),
+        )
+      }
+    }
+  }
+  return {
+    ...oldValue,
+    googleFontsResources: workingGoogleFontsResources,
   }
 }
 
 interface FontWeightAndStyleSelectOption {
-  value: WebFontVariant
+  value: WebFontFamilyVariant
 }
 
 export const FontVariantSelect = betterReactMemo('FontVariantSelect', () => {
@@ -54,17 +110,30 @@ export const FontVariantSelect = betterReactMemo('FontVariantSelect', () => {
       defaultWebFontWeightsAndStyles
     return variantsToMap.map((variant) => {
       return {
-        value: variant,
+        value: webFontFamilyVariant(primaryFont, variant),
         label: prettyNameForFontVariant(variant),
         style: { fontWeight: variant.webFontWeight, fontStyle: variant.webFontStyle },
       }
     })
   }, [primaryFont])
 
-  const [onSubmitValue] = useSubmitValueFactory(updateFontWeightAndStyle)
+  const { useSubmitValueFactory: useResourcesSubmitValueFactory } = useExternalResources()
+  const [onSubmitNewFontVariantToResources] = useResourcesSubmitValueFactory(
+    updateAddNewFontVariant,
+  )
+  const [onSubmitFontWeightAndStyle] = useSubmitValueFactory(updateFontWeightAndStyle)
+  const onSubmitValue = React.useCallback(
+    (newValue: FontWeightAndStyleSelectOption) => {
+      onSubmitNewFontVariantToResources(newValue)
+      onSubmitFontWeightAndStyle(newValue)
+    },
+    [onSubmitNewFontVariantToResources, onSubmitFontWeightAndStyle],
+  )
 
   const selectValue = fontWeightAndStyleOptions.find(
-    (v) => v.value.webFontStyle === value.fontStyle && v.value.webFontWeight === value.fontWeight,
+    (v) =>
+      v.value.fontVariant.webFontStyle === value.fontStyle &&
+      v.value.fontVariant.webFontWeight === value.fontWeight,
   )
 
   return (
