@@ -3,16 +3,19 @@ import { OptionsType } from 'react-select'
 import { betterReactMemo } from 'uuiui-deps'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { identity } from '../../../../../core/shared/utils'
+import {
+  ExternalResources,
+  googleFontsResource,
+  useExternalResources,
+} from '../../../../../printer-parsers/html/external-resources-parser'
 import utils from '../../../../../utils/utils'
 import { PopupList, Tooltip } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import {
   defaultWebFontWeightsAndStyles,
   prettyNameForFontVariant,
-  WebFontVariant,
   WebFontFamilyVariant,
   webFontFamilyVariant,
-  webFontVariant,
 } from '../../../../navigator/external-resources/google-fonts-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import {
@@ -21,11 +24,6 @@ import {
   useInspectorInfo,
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
-import {
-  useExternalResources,
-  ExternalResources,
-  googleFontsResource,
-} from '../../../../../printer-parsers/html/external-resources-parser'
 
 const weightAndStylePaths: Array<'fontWeight' | 'fontStyle'> = ['fontWeight', 'fontStyle']
 
