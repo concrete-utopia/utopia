@@ -1,8 +1,8 @@
 diff --git a/node_modules/typescript/lib/lib.es5.d.ts b/node_modules/typescript/lib/lib.es5.d.ts
-index 48beead..5b7c123 100644
+index 267fd23..1bf982a 100644
 --- a/node_modules/typescript/lib/lib.es5.d.ts
 +++ b/node_modules/typescript/lib/lib.es5.d.ts
-@@ -1198,7 +1198,7 @@ interface ReadonlyArray<T> {
+@@ -1207,7 +1207,7 @@ interface ReadonlyArray<T> {
       */
      reduceRight<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: readonly T[]) => U, initialValue: U): U;
  

@@ -16,7 +16,12 @@ export const utopiaApiTypings = `declare module 'utopia-api/draft-utils' {
 }
 declare module 'utopia-api/helpers/helper-functions' {
   export type RawSingleBorderWidth = number | string;
-  export type RawSplitBorderWidth = [RawSingleBorderWidth, RawSingleBorderWidth, RawSingleBorderWidth, RawSingleBorderWidth];
+  export type RawSplitBorderWidth = [
+      RawSingleBorderWidth,
+      RawSingleBorderWidth,
+      RawSingleBorderWidth,
+      RawSingleBorderWidth
+  ];
   export type RawBorderWidth = RawSingleBorderWidth | RawSplitBorderWidth;
   export interface ShadowAndBorderParams {
       boxShadow?: string;

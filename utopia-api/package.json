@@ -52,20 +52,20 @@
   },
   "devDependencies": {
     "@types/draft-js": "0.10.19",
-    "@types/jest": "26.0.3",
+    "@types/jest": "26.0.10",
     "@types/prettier": "^1.18.4",
     "@types/react": "16.9.35",
     "@types/react-dom": "16.9.8",
     "@types/uuid": "3.4.5",
-    "jest": "24.4.0",
+    "jest": "26.4.2",
     "jest-environment-jsdom-global": "2.0.4",
     "lint-staged": "^9.4.3",
-    "npm-dts": "1.2.0",
+    "npm-dts": "1.3.1",
     "patch-package": "6.1.2",
     "prettier": "2.0.5",
     "react": "16.13.1",
     "react-dom": "16.13.1",
-    "ts-jest": "26.1.1",
-    "typescript": "3.9.6"
+    "ts-jest": "26.3.0",
+    "typescript": "4.0.2"
   }
 }
