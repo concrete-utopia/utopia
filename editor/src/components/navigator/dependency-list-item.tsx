@@ -1,9 +1,13 @@
 /** @jsx jsx */
 import { jsx, keyframes } from '@emotion/core'
 import * as React from 'react'
-import { Button, colorTheme, FlexRow, FunctionIcons, Icons, UtopiaTheme } from 'uuiui'
+import { Button, colorTheme, FlexRow, FunctionIcons, Icons, UtopiaTheme, Tooltip } from 'uuiui'
 import type { PackageDetails } from './dependency-list'
 import { NpmDependencyVersionAndStatusIndicator } from './dependecy-version-status-indicator'
+import { ContextMenuItem } from '../context-menu-items'
+import { MomentumContextMenu } from '../../uuiui-deps'
+import { MenuProvider } from 'react-contexify'
+import { NO_OP } from '../../core/shared/utils'
 
 interface DependencyListItemProps {
   packageDetails: PackageDetails
@@ -64,9 +68,9 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
 
   const onNameDoubleClick = React.useCallback(
     (e: React.MouseEvent) => {
-      if (isDefault) {
+      if (!isDefault) {
         e.stopPropagation()
-        openDependencyEditField(name, true)
+        openDependencyEditField(name)
       }
     },
     [openDependencyEditField, name, isDefault],
@@ -74,7 +78,7 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
 
   const onVersionDoubleClick = React.useCallback(
     (e: React.MouseEvent) => {
-      if (isDefault) {
+      if (!isDefault) {
         e.stopPropagation()
         openDependencyEditField(name, true)
       }
@@ -82,128 +86,118 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
     [openDependencyEditField, name, isDefault],
   )
 
-  const onUpdateDependencyClick = React.useCallback(() => updateDependencyToLatestVersion(name), [
-    updateDependencyToLatestVersion,
-    name,
-  ])
-  const onOpenDependencyClick = React.useCallback(() => openDependencyEditField(name), [
-    openDependencyEditField,
-    name,
-  ])
-  const onRemoveDependencyClick = React.useCallback(() => removeDependency(name), [
-    removeDependency,
-    name,
-  ])
+  const menuId = `dependency-list-item-contextmenu-${packageDetails.name}`
+  const menuItems: Array<ContextMenuItem<any>> = isDefault
+    ? []
+    : [
+        {
+          name: 'Update to latest version',
+          enabled: true,
+          action: () => {
+            updateDependencyToLatestVersion(name)
+          },
+        },
+        {
+          name: 'Rename',
+          enabled: true,
+          action: () => {
+            openDependencyEditField(name)
+          },
+        },
+        {
+          name: 'Delete',
+          enabled: true,
+          action: () => {
+            removeDependency(name)
+          },
+        },
+      ]
 
   return (
-    <FlexRow
-      ref={ref}
-      key={name}
-      className='dependency-item'
-      css={{
-        ...textStyle,
-        minHeight: UtopiaTheme.layout.rowHeight.medium,
-        display: 'flex',
-        padding: '0 16px',
-        ...(isNewlyLoaded
-          ? {
-              animationName: `${FlashAnimation}`,
-              animationDuration: '10s',
-              animationIterationCount: 1,
-            }
-          : null),
-      }}
-      onDoubleClick={onNameDoubleClick}
-    >
+    <MenuProvider id={menuId} storeRef={false}>
       <FlexRow
-        style={{
-          flexGrow: 1,
-          flexShrink: 0,
+        ref={ref}
+        key={name}
+        className='dependency-item'
+        css={{
+          ...textStyle,
+          minHeight: UtopiaTheme.layout.rowHeight.medium,
+          display: 'flex',
+          padding: '0 16px',
+          ...(isNewlyLoaded
+            ? {
+                animationName: `${FlashAnimation}`,
+                animationDuration: '10s',
+                animationIterationCount: 1,
+              }
+            : null),
         }}
-        className='packageName-container'
+        onDoubleClick={onNameDoubleClick}
       >
+        <FlexRow
+          style={{
+            flexGrow: 1,
+            flexShrink: 0,
+          }}
+          className='packageName-container'
+        >
+          <div
+            style={{
+              textDecoration: 'none',
+            }}
+          >
+            {name}
+          </div>
+          {isDefault ? (
+            <Tooltip title='Dependency is required for Utopian projects'>
+              <FlexRow
+                css={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                  boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.05)',
+                  borderRadius: 2,
+                  height: 14,
+                  padding: '0 3px',
+                  margin: 0,
+                  marginLeft: 6,
+                  display: 'none',
+                  '.dependency-item:hover &': {
+                    display: 'flex',
+                  },
+                  flexGrow: 0,
+                  flexShrink: 0,
+                }}
+              >
+                default
+              </FlexRow>
+            </Tooltip>
+          ) : null}
+          <a
+            target='_blank'
+            rel='noopener noreferrer'
+            href={`https://www.npmjs.com/package/${name}`}
+            css={{
+              display: 'none',
+              '.dependency-item:hover &': {
+                display: 'block',
+              },
+              marginLeft: 4,
+              marginTop: 4,
+            }}
+          >
+            <Icons.ExternalLinkSmaller />
+          </a>
+        </FlexRow>
         <div
           style={{
-            textDecoration: 'none',
+            flexGrow: 0,
+            flexShrink: 0,
           }}
+          onDoubleClick={onVersionDoubleClick}
         >
-          {name}
+          {versionFieldNode}
         </div>
-        <a
-          target='_blank'
-          rel='noopener noreferrer'
-          href={`https://www.npmjs.com/package/${name}`}
-          css={{
-            display: 'none',
-            '.dependency-item:hover &': {
-              display: 'block',
-            },
-            marginLeft: 4,
-            marginTop: 1,
-          }}
-        >
-          <Icons.ExternalLinkSmaller />
-        </a>
       </FlexRow>
-      {isDefault ? (
-        <div
-          css={{
-            backgroundColor: 'rgba(0, 0, 0, 0.05)',
-            boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.05)',
-            borderRadius: 2,
-            height: 14,
-            padding: '0 3px',
-            margin: '0 6px',
-            display: 'none',
-            '.dependency-item:hover &': {
-              display: 'flex',
-            },
-            flexDirection: 'row',
-            flexGrow: 0,
-            flexShrink: 0,
-          }}
-        >
-          default
-        </div>
-      ) : (
-        <div
-          css={{
-            display: 'none',
-            '.dependency-item:hover &': {
-              display: 'flex',
-            },
-            flexDirection: 'row',
-            flexGrow: 0,
-            flexShrink: 0,
-            textAlign: 'center',
-            marginTop: 1,
-            '& > * ': {
-              marginLeft: 4,
-              marginRight: 4,
-            },
-          }}
-        >
-          <Button onClick={onUpdateDependencyClick} disabled={editingLocked || isLoading}>
-            <FunctionIcons.Refresh />
-          </Button>
-          <Button onClick={onOpenDependencyClick} disabled={editingLocked || isLoading}>
-            <FunctionIcons.Edit />
-          </Button>
-          <Button onClick={onRemoveDependencyClick} disabled={editingLocked || isLoading}>
-            <FunctionIcons.Delete />
-          </Button>
-        </div>
-      )}
-
-      <div
-        style={{
-          flexGrow: 0,
-          flexShrink: 0,
-        }}
-        onDoubleClick={onVersionDoubleClick}
-      >
-        {versionFieldNode}
-      </div>
-    </FlexRow>
+      <MomentumContextMenu id={menuId} items={menuItems} getData={NO_OP} />
+    </MenuProvider>
   )
 }
