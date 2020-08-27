@@ -24,7 +24,6 @@ import { GenericExternalResourcesListItem } from './generic-external-resources-l
 export const ResourcesListGridRowConfig: GridRowProps = {
   padded: false,
   type: '<-------auto------->|---60px---|',
-  style: { paddingLeft: 12, paddingRight: 8 },
 }
 
 function updatePushNewGenericResource(

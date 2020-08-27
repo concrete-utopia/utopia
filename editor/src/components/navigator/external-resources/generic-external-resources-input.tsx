@@ -47,8 +47,8 @@ export const GenericExternalResourcesInput = betterReactMemo(
     }, [])
 
     return (
-      <FlexRow>
-        <GridRow {...ResourcesListGridRowConfig}>
+      <FlexRow style={{ paddingLeft: 12, paddingRight: 8 }}>
+        <GridRow {...ResourcesListGridRowConfig} style={{ paddingRight: 8 }}>
           <StringInput
             ref={hrefInputRef}
             value={hrefValue}
