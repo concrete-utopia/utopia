@@ -266,7 +266,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
               fontSize: 11,
               borderRadius: '20px',
               height: 23,
-              fontFamily: 'inter',
+              fontFamily: 'utopian-inter',
               transition: 'all .2s ease-in-out',
               padding: '2px 8px',
               border: '1px solid transparent',

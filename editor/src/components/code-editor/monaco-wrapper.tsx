@@ -27,7 +27,7 @@ import { arrayEquals } from '../../core/shared/utils'
 import * as TP from '../../core/shared/template-path'
 import * as FontFaceObserver from 'fontfaceobserver'
 
-const CodeEditorFont = 'Inconsolata'
+const CodeEditorFont = 'utopian-inconsolata'
 
 interface MonacoWrapperProps {
   value: string

@@ -10,6 +10,7 @@ import { addStyleSheetToPage } from '../core/shared/dom-utils'
 import { STATIC_BASE_URL } from '../common/env-vars'
 
 const editorCSS = [
+  `${STATIC_BASE_URL}editor/fonts.css`,
   `${STATIC_BASE_URL}editor/editor.css`,
   `${STATIC_BASE_URL}editor/cursors.css`,
   `${STATIC_BASE_URL}editor/ReactContexify.css`,
@@ -33,14 +34,8 @@ const editorCSS = [
   `${STATIC_BASE_URL}editor/preview.css`,
 ]
 
-const editorCSSDontHash = [
-  'https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700&display=swap',
-  'https://fonts.googleapis.com/css2?family=Inconsolata&display=swap',
-]
-
 // Queue up further CSS downloads before going any further
 editorCSS.forEach((url) => addStyleSheetToPage(url, true))
-editorCSSDontHash.forEach((url) => addStyleSheetToPage(url, false))
 
 import { Editor } from './editor'
 

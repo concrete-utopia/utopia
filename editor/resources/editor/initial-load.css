@@ -1,7 +1,7 @@
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto, Arial,
-    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; /* from GitHub */
+  font-family: utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto,
+    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; /* from GitHub */
   font-size: 11px !important;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
@@ -35,7 +35,7 @@ label {
 input {
   box-sizing: border-box;
   outline: none;
-  font-family: Inter;
+  font-family: utopian-inter;
   font-size: 11px;
 }
 
