@@ -40,8 +40,8 @@ export const FakeUnknownArrayItem = betterReactMemo<FakeUnknownArrayItemProps>(
 function getIndexedUpdateUnknownArrayItemValue<T>(index: number) {
   return function updateUnknownArrayItemValue(
     newValue: string | EmptyInputValue,
-    oldValue: ReadonlyArray<T>,
-  ): ReadonlyArray<T> {
+    oldValue: Array<T>,
+  ): Array<T> {
     if (oldValue[index] != null) {
       const oldLayer = oldValue[index]
       let newCSSBackgroundLayers = [...oldValue]
@@ -65,7 +65,7 @@ interface UnknownArrayItemProps<T> {
   value: CSSUnknownArrayItem
   controlStatus: ControlStatus
   controlStyles: ControlStyles
-  useSubmitTransformedValuesFactory: UseSubmitValueFactory<ReadonlyArray<T | CSSUnknownArrayItem>>
+  useSubmitTransformedValuesFactory: UseSubmitValueFactory<Array<T | CSSUnknownArrayItem>>
 }
 
 export function UnknownArrayItem<T>(props: UnknownArrayItemProps<T>) {

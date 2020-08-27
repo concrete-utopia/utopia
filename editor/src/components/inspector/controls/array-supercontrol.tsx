@@ -48,8 +48,8 @@ const getStyleForArrayDragItem: GetStyleForArrayDragItem = (
 }
 
 export function useArraySuperControl<T>(
-  values: ReadonlyArray<T>,
-  onSubmitValue: (newValue: ReadonlyArray<T>, transient?: boolean | undefined) => void,
+  values: Array<T>,
+  onSubmitValue: (newValue: Array<T>, transient?: boolean | undefined) => void,
   rowHeight: number,
   reversed: boolean = false,
 ) {
@@ -58,7 +58,6 @@ export function useArraySuperControl<T>(
   const [springs, setSprings] = useSprings(
     values.length,
     getStyleForArrayDragItem(localDraggingIndex.current, reversed, rowHeight),
-    //@ts-ignore
     [values],
   )
 

@@ -29,7 +29,7 @@ export interface DEPRECATEDControlProps<T> {
   controlStyles: ControlStyles
   readOnly?: boolean
   selected?: boolean
-  options?: ReadonlyArray<SelectOption> | ReadonlyArray<OptionChainOption<T>>
+  options?: Array<SelectOption> | Array<OptionChainOption<T>>
   DEPRECATED_controlOptions?:
     | DEPRECATEDGenericControlOptions
     | DEPRECATEDOptionControlOptions
