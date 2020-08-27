@@ -33,12 +33,19 @@ export interface BackgroundLayerProps {
   unsetContextMenuItem: Array<ContextMenuItem<null>>
 }
 
+/**
+ * Cursed copy function. Move me or kill me.
+ */
+function readonlyCopy<T>(original: ReadonlyArray<T>): Array<T> {
+  return [...original] as Array<T>
+}
+
 export function getIndexedUpdateEnabled(index: number) {
   return function indexedUpdateEnabled(
     enabled: boolean,
     oldValue: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    let newCSSBackgroundLayers = [...oldValue]
+    let newCSSBackgroundLayers = readonlyCopy(oldValue)
     const workingValue = newCSSBackgroundLayers[index]
     workingValue.enabled = enabled
     if (isCSSBackgroundLayerWithBGSize(workingValue)) {
