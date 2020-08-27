@@ -506,14 +506,20 @@ export async function loadFromServer(
   dispatch: EditorDispatch,
   workers: UtopiaTsWorkers,
   renderEditorRoot: () => void,
+  renderProjectNotFound: () => void,
 ) {
   const project = await loadProject(projectId)
-  if (project.type === 'ProjectLoaded') {
-    _saveState = saved(true, Date.now(), projectId, project.title, dispatch, null, null, null)
-    _lastThumbnailGenerated = 0
-    await load(dispatch, project.content, project.title, projectId, workers, renderEditorRoot)
-  } else {
-    console.error(`Invalid project load response: ${project}`)
+  switch (project.type) {
+    case 'ProjectLoaded':
+      _saveState = saved(true, Date.now(), projectId, project.title, dispatch, null, null, null)
+      _lastThumbnailGenerated = 0
+      await load(dispatch, project.content, project.title, projectId, workers, renderEditorRoot)
+      break
+    case 'ProjectNotFound':
+      renderProjectNotFound()
+      break
+    default:
+      console.error(`Invalid project load response: ${project}`)
   }
 }
 
