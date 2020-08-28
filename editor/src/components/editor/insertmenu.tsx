@@ -35,7 +35,7 @@ import {
   defaultEllipseElement,
   defaultRectangleElement,
   defaultTextElement,
-  defaultViewElement,
+  defaultDivElement,
 } from './defaults'
 import { FontSettings } from '../inspector/common/css-utils'
 import { existingUIDs } from '../navigator/left-pane'
@@ -176,10 +176,7 @@ export function componentBeingInsertedEquals(
   }
 }
 
-const viewComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('View')], null) },
-  jsxElementName('View', []),
-)
+const divComponentBeingInserted = componentBeingInserted({}, jsxElementName('div', []))
 
 const imageComponentBeingInserted = componentBeingInserted({}, jsxElementName('img', []))
 
@@ -223,17 +220,10 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
     this.props.editorDispatch([enableInsertModeForScene('scene')], 'everyone')
   }
 
-  viewInsertMode = () => {
+  divInsertMode = () => {
     const newUID = generateUID(this.props.existingUIDs)
     this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultViewElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('View')], null) },
-          null,
-        ),
-      ],
+      [enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null)],
       'everyone',
     )
   }
@@ -329,13 +319,13 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
         </InsertGroup>
         <InsertGroup label='Utopia Components' dependencyStatus='loaded' dependencyVersion={null}>
           <InsertItem
-            type='view'
-            label='View'
+            type='div'
+            label='div'
             selected={componentBeingInsertedEquals(
               currentlyBeingInserted,
-              viewComponentBeingInserted,
+              divComponentBeingInserted,
             )}
-            onMouseDown={this.viewInsertMode}
+            onMouseDown={this.divInsertMode}
           />
           <InsertItem
             type='image'

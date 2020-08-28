@@ -118,3 +118,20 @@ export function defaultEllipseElement(uid: string): JSXElement {
     null,
   )
 }
+
+export function defaultDivElement(uid: string): JSXElement {
+  return jsxElement(
+    jsxElementName('div', []),
+    {
+      style: jsxAttributeValue({
+        backgroundColor: '#0091FFAA',
+      }),
+      'data-uid': jsxAttributeValue(uid),
+      layout: jsxAttributeValue({
+        layoutSystem: 'pinSystem',
+      }),
+    },
+    [],
+    null,
+  )
+}
