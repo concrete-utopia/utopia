@@ -386,8 +386,8 @@ export function handleKeyDown(
   }
 
   function getUIFileActions(): Array<EditorAction> {
-    if (!shouldTabBeHandledByBrowser(editor)) {
-      // FIXME: Put around everything else.
+    if (key === 'tab' && shouldTabBeHandledByBrowser(editor)) {
+      return []
     }
     return handleShortcuts<Array<EditorAction>>({}, event, [], {
       [DELETE_SELECTED_SHORTCUT]: () => {
