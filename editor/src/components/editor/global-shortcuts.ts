@@ -1,55 +1,119 @@
 import { findElementAtPath } from '../../core/model/element-metadata-utils'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
 import {
+  importAlias,
+  importDetails,
   InstancePath,
   TemplatePath,
-  importDetails,
-  importAlias,
 } from '../../core/shared/project-file-types'
-import * as TP from '../../core/shared/template-path'
 import * as PP from '../../core/shared/property-path'
+import * as TP from '../../core/shared/template-path'
+import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
   KeyCharacter,
-  modifiersForEvent,
-  strictCheckModifiers,
-  looseCheckModifier,
   KeysPressed,
+  modifiersForEvent,
   StoredKeyCharacters,
+  strictCheckModifiers,
 } from '../../utils/keyboard'
+import { Modifier, Modifiers } from '../../utils/modifiers'
 import Utils from '../../utils/utils'
 import Canvas, { TargetSearchType } from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
+import { adjustAllSelectedFrames } from '../canvas/controls/select-mode/move-utils'
+import {
+  toggleBackgroundLayers,
+  toggleBorder,
+  toggleShadow,
+  toggleStylePropPath,
+  toggleStylePropPaths,
+} from '../inspector/common/css-utils'
+import { LeftMenuTab } from '../navigator/left-pane'
 import { toggleTextFormatting } from '../text-utils'
 import { EditorAction, EditorDispatch } from './action-types'
 import * as EditorActions from './actions/actions'
-import { EditorModes, isInsertMode, isLiveMode } from './editor-modes'
 import {
-  EditorState,
-  getOpenImportsFromState,
-  getOpenUtopiaJSXComponentsFromState,
-  getOpenFile,
-} from './store/editor-state'
-
-import { LeftMenuTab } from '../navigator/left-pane'
-
-import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
-import { adjustAllSelectedFrames } from '../canvas/controls/select-mode/move-utils'
-import {
-  toggleStylePropPath,
-  toggleBorder,
-  toggleStylePropPaths,
-  toggleBackgroundLayers,
-  toggleShadow,
-} from '../inspector/common/css-utils'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import {
-  defaultRectangleElement,
   defaultEllipseElement,
+  defaultRectangleElement,
   defaultTextElement,
   defaultViewElement,
 } from './defaults'
+import { EditorModes, isInsertMode, isLiveMode } from './editor-modes'
 import { insertImage } from './image-insert'
-import { Modifiers, Modifier } from '../../utils/modifiers'
+import {
+  CANCEL_EVERYTHING_SHORTCUT,
+  COPY_SELECTION_SHORTCUT,
+  CUT_SELECTION_SHORTCUT,
+  CYCLE_BACKWARD_SIBLING_TARGETS_SHORTCUT,
+  CYCLE_FORWARD_SIBLING_TARGETS_SHORTCUT,
+  CYCLE_HIERACHY_TARGETS_SHORTCUT,
+  DELETE_SELECTED_SHORTCUT,
+  DUPLICATE_SELECTION_SHORTCUT,
+  FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT,
+  handleShortcuts,
+  HIDE_HIGHLIGHTS_SHORTCUT,
+  INSERT_ELLIPSE_SHORTCUT,
+  INSERT_IMAGE_SHORTCUT,
+  INSERT_RECTANGLE_SHORTCUT,
+  INSERT_TEXT_SHORTCUT,
+  INSERT_VIEW_SHORTCUT,
+  JUMP_TO_PARENT_SHORTCUT,
+  MOVE_ELEMENT_BACKWARD_SHORTCUT,
+  MOVE_ELEMENT_DOWN_MORE_SHORTCUT,
+  MOVE_ELEMENT_DOWN_SHORTCUT,
+  MOVE_ELEMENT_FORWARD_SHORTCUT,
+  MOVE_ELEMENT_LEFT_MORE_SHORTCUT,
+  MOVE_ELEMENT_LEFT_SHORTCUT,
+  MOVE_ELEMENT_RIGHT_MORE_SHORTCUT,
+  MOVE_ELEMENT_RIGHT_SHORTCUT,
+  MOVE_ELEMENT_TO_BACK_SHORTCUT,
+  MOVE_ELEMENT_TO_FRONT_SHORTCUT,
+  MOVE_ELEMENT_UP_MORE_SHORTCUT,
+  MOVE_ELEMENT_UP_SHORTCUT,
+  REDO_CHANGES_SHORTCUT,
+  RESET_CANVAS_ZOOM_SHORTCUT,
+  RESIZE_ELEMENT_DOWN_MORE_SHORTCUT,
+  RESIZE_ELEMENT_DOWN_SHORTCUT,
+  RESIZE_ELEMENT_LEFT_MORE_SHORTCUT,
+  RESIZE_ELEMENT_LEFT_SHORTCUT,
+  RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT,
+  RESIZE_ELEMENT_RIGHT_SHORTCUT,
+  RESIZE_ELEMENT_UP_MORE_SHORTCUT,
+  RESIZE_ELEMENT_UP_SHORTCUT,
+  SAVE_CURRENT_FILE_SHORTCUT,
+  SELECT_ALL_SIBLINGS_SHORTCUT,
+  SHOW_HIGHLIGHTS_SHORTCUT,
+  START_RENAMING_SHORTCUT,
+  TOGGLE_BACKGROUND_SHORTCUT,
+  TOGGLE_BORDER_SHORTCUT,
+  TOGGLE_CODE_EDITOR_SHORTCUT,
+  TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT,
+  TOGGLE_DESIGNER_LAYOUT_REVERSED,
+  TOGGLE_HIDDEN_SHORTCUT,
+  TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT,
+  TOGGLE_LEFT_MENU_SHORTCUT,
+  TOGGLE_LIVE_CANVAS_SHORTCUT,
+  TOGGLE_PREVIEW_SHORTCUT,
+  TOGGLE_RIGHT_MENU_SHORTCUT,
+  TOGGLE_SHADOW_SHORTCUT,
+  TOGGLE_TEXT_BOLD_SHORTCUT,
+  TOGGLE_TEXT_ITALIC_SHORTCUT,
+  TOGGLE_TEXT_UNDERLINE_SHORTCUT,
+  UNDO_CHANGES_SHORTCUT,
+  UNWRAP_ELEMENT_SHORTCUT,
+  WRAP_ELEMENT_SHORTCUT,
+  ZOOM_CANVAS_IN_SHORTCUT,
+  ZOOM_CANVAS_OUT_SHORTCUT,
+  ZOOM_UI_IN_SHORTCUT,
+  ZOOM_UI_OUT_SHORTCUT,
+} from './shortcut-definitions'
+import {
+  EditorState,
+  getOpenFile,
+  getOpenImportsFromState,
+  getOpenUtopiaJSXComponentsFromState,
+} from './store/editor-state'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -125,10 +189,6 @@ function getTextEditorTarget(editor: EditorState): InstancePath | null {
       return null
     }
   }
-}
-
-function frameAdjustment(shiftPressed: boolean): 10 | 1 {
-  return shiftPressed ? 10 : 1
 }
 
 function shouldTabBeHandledByBrowser(editor: EditorState): boolean {
@@ -291,47 +351,65 @@ export function handleKeyDown(
   }
   const updateKeysAction = EditorActions.updateKeys(updatedKeysPressed)
 
-  // Modifiers and the like used throughout various conditions.
-  const modifiers = modifiersForEvent(event)
-  const cmd = strictCheckModifiers(modifiers, ['cmd'])
-  const shift = strictCheckModifiers(modifiers, ['shift'])
-  const altCmd = strictCheckModifiers(modifiers, ['alt', 'cmd'])
-  const shiftCmd = strictCheckModifiers(modifiers, ['shift', 'cmd'])
-  const noModifier = modifiers.length === 0
   const modeType = editor.mode.type
-  const adjustment = frameAdjustment(looseCheckModifier(modifiers, 'shift'))
+
+  function cycleSiblings(forwards: boolean): Array<EditorAction> {
+    if (modeType === 'select') {
+      const tabbedTo = Canvas.jumpToSibling(
+        editor.selectedViews,
+        editor.jsxMetadataKILLME,
+        forwards,
+      )
+      if (tabbedTo != null) {
+        return [EditorActions.selectComponents([tabbedTo], false)]
+      }
+    }
+    return []
+  }
+
+  function adjustFrames(
+    isResizing: boolean,
+    direction: 'vertical' | 'horizontal',
+    directionModifier: -1 | 1,
+    adjustment: 1 | 10,
+  ): Array<EditorAction> {
+    const adjustmentActions = adjustAllSelectedFrames(
+      editor,
+      dispatch,
+      false,
+      isResizing,
+      directionModifier,
+      direction,
+      adjustment,
+    )
+    return [EditorActions.transientActions(adjustmentActions)]
+  }
 
   function getUIFileActions(): Array<EditorAction> {
-    switch (key) {
-      case 'backspace':
-      case 'delete':
-        if (editor.mode.type === 'select') {
-          if (cmd) {
-            return editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
-          }
-        }
+    if (!shouldTabBeHandledByBrowser(editor)) {
+      // FIXME: Put around everything else.
+    }
+    return handleShortcuts<Array<EditorAction>>({}, event, [], {
+      [DELETE_SELECTED_SHORTCUT]: () => {
         return [EditorActions.deleteSelected()]
-      case '0':
-        if (cmd) {
-          return [CanvasActions.zoom(1)]
-        }
-        break
-      case 'plus':
-        if (altCmd) {
-          return [CanvasActions.zoomUI(true)]
-        } else if (cmd) {
-          return [CanvasActions.zoom(Utils.increaseScale(editor.canvas.scale))]
-        }
-        break
-      case 'minus':
-        if (altCmd) {
-          return [CanvasActions.zoomUI(false)]
-        } else if (cmd) {
-          return [CanvasActions.zoom(Utils.decreaseScale(editor.canvas.scale))]
-        }
-        break
-      case 'enter':
-        if (noModifier && modeType === 'select') {
+      },
+      [RESET_CANVAS_ZOOM_SHORTCUT]: () => {
+        return [CanvasActions.zoom(1)]
+      },
+      [ZOOM_UI_IN_SHORTCUT]: () => {
+        return [CanvasActions.zoomUI(true)]
+      },
+      [ZOOM_CANVAS_IN_SHORTCUT]: () => {
+        return [CanvasActions.zoom(Utils.increaseScale(editor.canvas.scale))]
+      },
+      [ZOOM_UI_OUT_SHORTCUT]: () => {
+        return [CanvasActions.zoomUI(false)]
+      },
+      [ZOOM_CANVAS_OUT_SHORTCUT]: () => {
+        return [CanvasActions.zoom(Utils.decreaseScale(editor.canvas.scale))]
+      },
+      [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
+        if (modeType === 'select') {
           const textTarget = getTextEditorTarget(editor)
           if (textTarget != null) {
             return [EditorActions.openTextEditor(textTarget, null)]
@@ -344,27 +422,28 @@ export function handleKeyDown(
               return [EditorActions.selectComponents([childToSelect], false)]
             }
           }
-        } else if (shift && modeType === 'select') {
-          return jumpToParentActions(editor.selectedViews)
-        } else if (cmd) {
-          // Refer to the passthrough hack in monaco-wrapper in case this shortcut needs be changed
-          return [EditorActions.toggleCanvasIsLive()]
         }
-        break
-      case 'esc':
-        if (noModifier) {
-          if (modeType === 'insert') {
-            return [
-              EditorActions.switchEditorMode(EditorModes.selectMode()),
-              CanvasActions.clearDragState(false),
-              EditorActions.clearHighlightedViews(),
-              EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
-            ]
-          } else if (editor.canvas.dragState != null && editor.canvas.dragState.start != null) {
-            return [CanvasActions.clearDragState(false)]
-          } else if (modeType === 'select') {
-            return jumpToParentActions(editor.selectedViews)
-          }
+        return []
+      },
+      [JUMP_TO_PARENT_SHORTCUT]: () => {
+        if (modeType === 'select') {
+          return jumpToParentActions(editor.selectedViews)
+        } else {
+          return []
+        }
+      },
+      [CANCEL_EVERYTHING_SHORTCUT]: () => {
+        if (modeType === 'insert') {
+          return [
+            EditorActions.switchEditorMode(EditorModes.selectMode()),
+            CanvasActions.clearDragState(false),
+            EditorActions.clearHighlightedViews(),
+            EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
+          ]
+        } else if (editor.canvas.dragState != null && editor.canvas.dragState.start != null) {
+          return [CanvasActions.clearDragState(false)]
+        } else if (modeType === 'select') {
+          return jumpToParentActions(editor.selectedViews)
         }
 
         // TODO: Move this around.
@@ -373,9 +452,10 @@ export function handleKeyDown(
         } else if (isInsertMode(editor.mode)) {
           return [EditorActions.updateEditorMode(EditorModes.selectMode())]
         }
-        break
-      case 'space':
-        if (noModifier && modeType === 'select') {
+        return []
+      },
+      [CYCLE_HIERACHY_TARGETS_SHORTCUT]: () => {
+        if (modeType === 'select') {
           if (CanvasMousePositionRaw == null) {
             return [EditorActions.clearSelection()]
           }
@@ -393,137 +473,128 @@ export function handleKeyDown(
             return [EditorActions.selectComponents([nextTarget], false)]
           }
         }
-        break
-      case 'tab':
-        if (!shouldTabBeHandledByBrowser(editor)) {
-          if ((shift || noModifier) && modeType === 'select') {
-            const forwards = !shift
-            const tabbedTo = Canvas.jumpToSibling(
-              editor.selectedViews,
-              editor.jsxMetadataKILLME,
-              forwards,
-            )
-            if (tabbedTo != null) {
-              return [EditorActions.selectComponents([tabbedTo], false)]
-            }
-          }
-        }
-        break
-      case 'up':
-      case 'down':
-        if (altCmd) {
-          return key === 'up'
-            ? [EditorActions.moveSelectedForward()]
-            : [EditorActions.moveSelectedBackward()]
-        } else {
-          const isResizing = looseCheckModifier(modifiers, 'cmd')
-          const verticalAdjustmentActions = adjustAllSelectedFrames(
-            editor,
-            dispatch,
-            false,
-            isResizing,
-            key === 'up' ? -1 : 1,
-            'vertical',
-            adjustment,
-          )
-          return [EditorActions.transientActions(verticalAdjustmentActions)]
-        }
-      case 'left':
-      case 'right':
-        const isResizing = looseCheckModifier(modifiers, 'cmd')
-        const horizontalAdjustmentActions = adjustAllSelectedFrames(
-          editor,
-          dispatch,
-          false,
-          isResizing,
-          key === 'left' ? -1 : 1,
-          'horizontal',
-          adjustment,
+        return []
+      },
+      [CYCLE_FORWARD_SIBLING_TARGETS_SHORTCUT]: () => {
+        return cycleSiblings(true)
+      },
+      [CYCLE_BACKWARD_SIBLING_TARGETS_SHORTCUT]: () => {
+        return cycleSiblings(false)
+      },
+      [RESIZE_ELEMENT_UP_SHORTCUT]: () => {
+        return adjustFrames(true, 'vertical', -1, 1)
+      },
+      [RESIZE_ELEMENT_UP_MORE_SHORTCUT]: () => {
+        return adjustFrames(true, 'vertical', -1, 10)
+      },
+      [MOVE_ELEMENT_UP_SHORTCUT]: () => {
+        return adjustFrames(false, 'vertical', -1, 1)
+      },
+      [MOVE_ELEMENT_UP_MORE_SHORTCUT]: () => {
+        return adjustFrames(false, 'vertical', -1, 10)
+      },
+      [RESIZE_ELEMENT_DOWN_SHORTCUT]: () => {
+        return adjustFrames(true, 'vertical', 1, 1)
+      },
+      [RESIZE_ELEMENT_DOWN_MORE_SHORTCUT]: () => {
+        return adjustFrames(true, 'vertical', 1, 10)
+      },
+      [MOVE_ELEMENT_DOWN_SHORTCUT]: () => {
+        return adjustFrames(false, 'vertical', 1, 1)
+      },
+      [MOVE_ELEMENT_DOWN_MORE_SHORTCUT]: () => {
+        return adjustFrames(false, 'vertical', 1, 10)
+      },
+      [RESIZE_ELEMENT_LEFT_SHORTCUT]: () => {
+        return adjustFrames(true, 'horizontal', -1, 1)
+      },
+      [RESIZE_ELEMENT_LEFT_MORE_SHORTCUT]: () => {
+        return adjustFrames(true, 'horizontal', -1, 10)
+      },
+      [MOVE_ELEMENT_LEFT_SHORTCUT]: () => {
+        return adjustFrames(false, 'horizontal', -1, 1)
+      },
+      [MOVE_ELEMENT_LEFT_MORE_SHORTCUT]: () => {
+        return adjustFrames(false, 'horizontal', -1, 10)
+      },
+      [RESIZE_ELEMENT_RIGHT_SHORTCUT]: () => {
+        return adjustFrames(true, 'horizontal', 1, 1)
+      },
+      [RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT]: () => {
+        return adjustFrames(true, 'horizontal', 1, 10)
+      },
+      [MOVE_ELEMENT_RIGHT_SHORTCUT]: () => {
+        return adjustFrames(false, 'horizontal', 1, 1)
+      },
+      [MOVE_ELEMENT_RIGHT_MORE_SHORTCUT]: () => {
+        return adjustFrames(false, 'horizontal', 1, 10)
+      },
+      [SELECT_ALL_SIBLINGS_SHORTCUT]: () => {
+        return [EditorActions.selectAllSiblings()]
+      },
+      [TOGGLE_TEXT_BOLD_SHORTCUT]: () => {
+        return toggleTextFormatting(editor, dispatch, 'bold')
+      },
+      [TOGGLE_BORDER_SHORTCUT]: () => {
+        return TP.filterScenes(editor.selectedViews).map((target) =>
+          EditorActions.toggleProperty(
+            target,
+            toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
+          ),
         )
-        return [EditorActions.transientActions(horizontalAdjustmentActions)]
-      case 'a':
-        if (cmd) {
-          return [EditorActions.selectAllSiblings()]
-        }
-        break
-      case 'b':
-        if (cmd) {
-          return toggleTextFormatting(editor, dispatch, 'bold')
-        } else if (noModifier && editor.selectedViews.length > 0) {
-          return TP.filterScenes(editor.selectedViews).map((target) =>
-            EditorActions.toggleProperty(
-              target,
-              toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
-            ),
-          )
-        }
-        break
-      case 'c':
-        if (cmd) {
-          return [EditorActions.copySelectionToClipboard()]
-        }
-        break
-      case 'd':
-        if (cmd) {
-          if (editor.selectedViews.length > 0) {
-            return [EditorActions.duplicateSelected()]
-          }
-        }
-        break
-      case 'f':
-        if (noModifier && editor.selectedViews.length > 0) {
-          return TP.filterScenes(editor.selectedViews).map((target) =>
-            EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
-          )
-        }
-        break
-      case 'g':
-        if (editor.selectedViews.length > 0) {
-          if (shiftCmd) {
-            return editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
-          } else if (cmd) {
-            return [EditorActions.wrapInGroup(editor.selectedViews)]
-          }
-        }
-        break
-      case 'h':
-        if (shiftCmd) {
-          if (editor.selectedViews.length > 0) {
-            return [EditorActions.toggleHidden()]
-          }
-        }
-        break
-      case 'i':
-        if (cmd) {
-          return toggleTextFormatting(editor, dispatch, 'italic')
-        } else if (noModifier && (modeType === 'select' || modeType === 'insert')) {
+      },
+      [COPY_SELECTION_SHORTCUT]: () => {
+        return [EditorActions.copySelectionToClipboard()]
+      },
+      [DUPLICATE_SELECTION_SHORTCUT]: () => {
+        return [EditorActions.duplicateSelected()]
+      },
+      [TOGGLE_BACKGROUND_SHORTCUT]: () => {
+        return TP.filterScenes(editor.selectedViews).map((target) =>
+          EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
+        )
+      },
+      [UNWRAP_ELEMENT_SHORTCUT]: () => {
+        return editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
+      },
+      [WRAP_ELEMENT_SHORTCUT]: () => {
+        return [EditorActions.wrapInGroup(editor.selectedViews)]
+      },
+      [TOGGLE_HIDDEN_SHORTCUT]: () => {
+        return [EditorActions.toggleHidden()]
+      },
+      [TOGGLE_TEXT_ITALIC_SHORTCUT]: () => {
+        return toggleTextFormatting(editor, dispatch, 'italic')
+      },
+      [INSERT_IMAGE_SHORTCUT]: () => {
+        if (modeType === 'select' || modeType === 'insert') {
+          // FIXME: Side effects.
           insertImage(dispatch)
-          return []
         }
-        break
-      case 'p':
-        if (cmd) {
-          return [EditorActions.togglePanel('preview')]
-        } else if (shiftCmd) {
-          return [EditorActions.toggleCanvasIsLive()]
+        return []
+      },
+      [TOGGLE_PREVIEW_SHORTCUT]: () => {
+        return [EditorActions.togglePanel('preview')]
+      },
+      [TOGGLE_LIVE_CANVAS_SHORTCUT]: () => {
+        return [EditorActions.toggleCanvasIsLive()]
+      },
+      [START_RENAMING_SHORTCUT]: () => {
+        const exitInsertModeActions = [
+          EditorActions.switchEditorMode(EditorModes.selectMode()),
+          CanvasActions.clearDragState(false),
+          EditorActions.clearHighlightedViews(),
+          EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
+        ]
+        if (editor.selectedViews.length === 1) {
+          const target = editor.selectedViews[0]
+          return [EditorActions.setNavigatorRenamingTarget(target), ...exitInsertModeActions]
+        } else {
+          return exitInsertModeActions
         }
-        break
-      case 'r':
-        if (cmd) {
-          const exitInsertModeActions = [
-            EditorActions.switchEditorMode(EditorModes.selectMode()),
-            CanvasActions.clearDragState(false),
-            EditorActions.clearHighlightedViews(),
-            EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
-          ]
-          if (editor.selectedViews.length === 1) {
-            const target = editor.selectedViews[0]
-            return [EditorActions.setNavigatorRenamingTarget(target), ...exitInsertModeActions]
-          } else {
-            return exitInsertModeActions
-          }
-        }
-        if (noModifier && (modeType === 'select' || modeType === 'insert')) {
+      },
+      [INSERT_RECTANGLE_SHORTCUT]: () => {
+        if (modeType === 'select' || modeType === 'insert') {
           const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
           const newUID = generateUidWithExistingComponents(utopiaComponents)
           return [
@@ -534,10 +605,12 @@ export function handleKeyDown(
               null,
             ),
           ]
+        } else {
+          return []
         }
-        break
-      case 'e':
-        if (noModifier && (modeType === 'select' || modeType === 'insert')) {
+      },
+      [INSERT_ELLIPSE_SHORTCUT]: () => {
+        if (modeType === 'select' || modeType === 'insert') {
           const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
           const newUID = generateUidWithExistingComponents(utopiaComponents)
           return [
@@ -548,22 +621,23 @@ export function handleKeyDown(
               null,
             ),
           ]
+        } else {
+          return []
         }
-        break
-      case 's':
-        if (cmd) {
-          return [EditorActions.saveCurrentFile()]
-        } else if (noModifier && modeType === 'select' && editor.selectedViews.length > 0) {
-          return TP.filterScenes(editor.selectedViews).map((target) =>
-            EditorActions.toggleProperty(
-              target,
-              toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
-            ),
-          )
-        }
-        break
-      case 't':
-        if (noModifier && (modeType === 'select' || modeType === 'insert')) {
+      },
+      [SAVE_CURRENT_FILE_SHORTCUT]: () => {
+        return [EditorActions.saveCurrentFile()]
+      },
+      [TOGGLE_SHADOW_SHORTCUT]: () => {
+        return TP.filterScenes(editor.selectedViews).map((target) =>
+          EditorActions.toggleProperty(
+            target,
+            toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
+          ),
+        )
+      },
+      [INSERT_TEXT_SHORTCUT]: () => {
+        if (modeType === 'select' || modeType === 'insert') {
           const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
           const newUID = generateUidWithExistingComponents(utopiaComponents)
           return [
@@ -574,10 +648,12 @@ export function handleKeyDown(
               null,
             ),
           ]
+        } else {
+          return []
         }
-        break
-      case 'v':
-        if (noModifier && (modeType === 'select' || modeType === 'insert')) {
+      },
+      [INSERT_VIEW_SHORTCUT]: () => {
+        if (modeType === 'select' || modeType === 'insert') {
           const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
           const newUID = generateUidWithExistingComponents(utopiaComponents)
           return [
@@ -588,83 +664,57 @@ export function handleKeyDown(
               null,
             ),
           ]
+        } else {
+          return []
         }
-        break
-      case 'x':
-        if (cmd) {
-          return [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
-        }
-        break
-      case 'z':
-        if (cmd || shiftCmd) {
-          if (shiftCmd) {
-            return [EditorActions.redo()]
-          } else {
-            return [EditorActions.undo()]
-          }
-        } else if (noModifier) {
-          return [EditorActions.setHighlightsEnabled(false), EditorActions.clearHighlightedViews()]
-        }
-        break
-      case '[':
-        if (cmd) {
-          return [EditorActions.moveSelectedBackward()]
-        } else if (altCmd) {
-          return [EditorActions.moveSelectedToBack()]
-        }
-        break
-      case ']':
-        if (cmd) {
-          return [EditorActions.moveSelectedForward()]
-        } else if (altCmd) {
-          return [EditorActions.moveSelectedToFront()]
-        }
-        break
-      case 'u': {
-        if (cmd) {
-          return toggleTextFormatting(editor, dispatch, 'underline')
-        }
-        break
-      }
-      case '1': {
-        if (altCmd) {
-          return [EditorActions.togglePanel('leftmenu')]
-        }
-        break
-      }
-      case '2': {
-        if (altCmd) {
-          return [EditorActions.togglePanel('rightmenu')]
-        }
-        break
-      }
-      case 'y': {
-        if (cmd) {
-          return [EditorActions.toggleInterfaceDesignerAdditionalControls()]
-        }
-        break
-      }
-      case 'period': {
-        if (cmd) {
-          return [EditorActions.toggleInterfaceDesignerCodeEditor()]
-        }
-        break
-      }
-      case 'backslash': {
-        if (cmd) {
-          return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
-        }
-        break
-      }
-      case 'comma': {
-        if (cmd) {
-          // prevent opening new tab
-          return [EditorActions.toggleInterfaceDesignerLayoutReversed()]
-        }
-        break
-      }
-    }
-    return []
+      },
+      [CUT_SELECTION_SHORTCUT]: () => {
+        return [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
+      },
+      [UNDO_CHANGES_SHORTCUT]: () => {
+        return [EditorActions.undo()]
+      },
+      [REDO_CHANGES_SHORTCUT]: () => {
+        return [EditorActions.redo()]
+      },
+      [HIDE_HIGHLIGHTS_SHORTCUT]: () => {
+        return [EditorActions.setHighlightsEnabled(false), EditorActions.clearHighlightedViews()]
+      },
+      [MOVE_ELEMENT_BACKWARD_SHORTCUT]: () => {
+        return [EditorActions.moveSelectedBackward()]
+      },
+      [MOVE_ELEMENT_TO_BACK_SHORTCUT]: () => {
+        return [EditorActions.moveSelectedToBack()]
+      },
+      [MOVE_ELEMENT_FORWARD_SHORTCUT]: () => {
+        return [EditorActions.moveSelectedForward()]
+      },
+      [MOVE_ELEMENT_TO_FRONT_SHORTCUT]: () => {
+        return [EditorActions.moveSelectedToFront()]
+      },
+      [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: () => {
+        return toggleTextFormatting(editor, dispatch, 'underline')
+      },
+      [TOGGLE_LEFT_MENU_SHORTCUT]: () => {
+        return [EditorActions.togglePanel('leftmenu')]
+      },
+      [TOGGLE_RIGHT_MENU_SHORTCUT]: () => {
+        return [EditorActions.togglePanel('rightmenu')]
+      },
+      [TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT]: () => {
+        return [EditorActions.toggleInterfaceDesignerAdditionalControls()]
+      },
+      [TOGGLE_CODE_EDITOR_SHORTCUT]: () => {
+        return [EditorActions.toggleInterfaceDesignerCodeEditor()]
+      },
+      [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: () => {
+        return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
+      },
+      [TOGGLE_DESIGNER_LAYOUT_REVERSED]: () => {
+        // prevent opening new tab
+        return [EditorActions.toggleInterfaceDesignerLayoutReversed()]
+      },
+    })
   }
 
   function getShortcutActions(): Array<EditorAction> {
@@ -717,19 +767,12 @@ export function handleKeyUp(
   }
   const updateKeysAction = EditorActions.updateKeys(updatedKeysPressed)
 
-  // Modifiers and the like used throughout various conditions.
-  const modifiers = modifiersForEvent(event)
-  const noModifier = modifiers.length === 0
-
   function getUIFileActions(): Array<EditorAction> {
-    switch (key) {
-      case 'z':
-        if (noModifier) {
-          return [EditorActions.setHighlightsEnabled(true)]
-        }
-        break
-    }
-    return []
+    return handleShortcuts<Array<EditorAction>>({}, event, [], {
+      [SHOW_HIGHLIGHTS_SHORTCUT]: () => {
+        return [EditorActions.setHighlightsEnabled(true)]
+      },
+    })
   }
 
   function getShortcutActions(): Array<EditorAction> {

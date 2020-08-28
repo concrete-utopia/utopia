@@ -1,4 +1,4 @@
-import * as R from 'ramda'
+import Utils from '../utils/utils'
 
 export type Modifier = 'alt' | 'cmd' | 'ctrl' | 'shift'
 export type Letter =
@@ -55,14 +55,44 @@ export type KeyCharacter =
   | Digit
   | Bracket
 
+let modifiersCache: { [key: string]: ReadonlyArray<Modifier> } = {}
+
+function getCachedModifier(modifiers: ReadonlyArray<Modifier>): ReadonlyArray<Modifier> {
+  const uniqueAndSortedModifiers = Array.from(new Set(modifiers)).sort()
+  const cacheKey = uniqueAndSortedModifiers.join('-')
+  if (cacheKey in modifiersCache) {
+    return modifiersCache[cacheKey]
+  } else {
+    modifiersCache[cacheKey] = uniqueAndSortedModifiers
+    return uniqueAndSortedModifiers
+  }
+}
+
+let keysCache: { [key: string]: Key } = {}
+
+function getCachedKey(character: KeyCharacter, modifiers: ReadonlyArray<Modifier>): Key {
+  const cachedModifiers = getCachedModifier(modifiers)
+  const cacheKey = `${cachedModifiers.join('-')}-${character}`
+  if (cacheKey in keysCache) {
+    return keysCache[cacheKey]
+  } else {
+    const result: Key = {
+      character: character,
+      modifiers: cachedModifiers,
+    }
+    keysCache[cacheKey] = result
+    return result
+  }
+}
+
 // please don't add more keycharacters here, use them directly from keyboard events
 export const StoredKeyCharacters = ['alt', 'cmd', 'ctrl', 'shift', 'z']
 export type StoredKeyCharacter = Modifier | 'z'
 export type KeysPressed = { [key in StoredKeyCharacter]?: boolean }
 
-export type Key = {
+export interface Key {
   character: KeyCharacter
-  modifiers: Array<Modifier>
+  modifiers: ReadonlyArray<Modifier>
 }
 
 export enum KeyCode {
@@ -70,7 +100,7 @@ export enum KeyCode {
   DELETE = 46,
 }
 
-export function modifiersForEvent(event: KeyboardEvent): Array<Modifier> {
+export function modifiersForEvent(event: KeyboardEvent): ReadonlyArray<Modifier> {
   let modifiers: Array<Modifier> = []
   if (event.altKey) {
     modifiers.push('alt')
@@ -86,7 +116,7 @@ export function modifiersForEvent(event: KeyboardEvent): Array<Modifier> {
   if (event.shiftKey) {
     modifiers.push('shift')
   }
-  return modifiers
+  return getCachedModifier(modifiers)
 }
 
 function keyCharacterFromCode(keyCode: number): KeyCharacter {
@@ -147,48 +177,64 @@ function keyCharacterFromCode(keyCode: number): KeyCharacter {
 
 export const Keyboard = {
   keyFromEvent: function (event: KeyboardEvent): Key {
-    return {
-      character: keyCharacterFromCode(event.keyCode).toLowerCase() as KeyCharacter,
-      modifiers: modifiersForEvent(event),
-    }
-  },
-  key: function (character: KeyCharacter, modifiers: Array<Modifier> = []): Key {
-    return {
-      character: character,
-      modifiers: modifiers,
-    }
-  },
-  areSameKey: function (key1: Key, key2: Key): boolean {
-    return (
-      key1.character === key2.character && R.equals(key1.modifiers.sort(), key2.modifiers.sort())
+    return getCachedKey(
+      keyCharacterFromCode(event.keyCode).toLowerCase() as KeyCharacter,
+      modifiersForEvent(event),
     )
+  },
+  key: function (character: KeyCharacter, modifiers: Modifier | Array<Modifier>): Key {
+    return getCachedKey(character, Array.isArray(modifiers) ? modifiers : [modifiers])
+  },
+  modifiersEquals: function (
+    first: ReadonlyArray<Modifier>,
+    second: ReadonlyArray<Modifier>,
+  ): boolean {
+    if (first === second) {
+      return true
+    } else {
+      let workingSet: Set<Modifier> = Utils.emptySet()
+      for (let firstModifier of first) {
+        workingSet.add(firstModifier)
+      }
+      for (let secondModifier of second) {
+        if (workingSet.has(secondModifier)) {
+          workingSet.delete(secondModifier)
+        } else {
+          return false
+        }
+      }
+      return workingSet.size === 0
+    }
+  },
+  areSameKey: function (first: Key, second: Key): boolean {
+    if (first === second) {
+      return true
+    } else {
+      return (
+        first.character === second.character &&
+        Keyboard.modifiersEquals(first.modifiers, second.modifiers)
+      )
+    }
   },
   keyCharacterForCode: keyCharacterFromCode,
-  keyIsModifier: function (key: KeyCharacter): boolean {
-    return R.any(
-      (char) => {
-        return char === key
-      },
-      ['alt', 'cmd', 'ctrl', 'shift'],
-    )
+  keyIsModifier: function (keyChar: KeyCharacter): boolean {
+    return ['alt', 'cmd', 'ctrl', 'shift'].some((char) => {
+      return char === keyChar
+    })
   },
-  keyTriggersScroll: function (key: KeyCharacter, keysPressed: KeysPressed): boolean {
+  keyTriggersScroll: function (keyChar: KeyCharacter, keysPressed: KeysPressed): boolean {
     return (
-      R.any(
-        (char) => {
-          return char === key
-        },
-        ['up', 'down', 'left', 'right', 'space'],
-      ) ||
-      (keysPressed['ctrl'] && (key === 'p' || key === 'n')) ||
-      false
+      ['up', 'down', 'left', 'right', 'space'].some((char) => {
+        return char === keyChar
+      }) ||
+      ('ctrl' in keysPressed && (keyChar === 'p' || keyChar === 'n'))
     )
   },
 }
 
 // looseCheckModifier returns true if the modifiers array contain the expectedModifier value
 export function looseCheckModifier(
-  modifiers: Array<Modifier>,
+  modifiers: ReadonlyArray<Modifier>,
   expectedModifier: Modifier,
 ): boolean {
   return modifiers.indexOf(expectedModifier) > -1
@@ -197,8 +243,8 @@ export function looseCheckModifier(
 // strictCheckModifiers returns true if the modifiers and expectedModifiers are contain exactly
 // the same values
 export function strictCheckModifiers(
-  modifiers: Array<Modifier>,
-  expectedModifiers: Array<Modifier>,
+  modifiers: ReadonlyArray<Modifier>,
+  expectedModifiers: ReadonlyArray<Modifier>,
 ): boolean {
   return (
     modifiers.length == expectedModifiers.length &&
