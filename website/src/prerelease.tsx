@@ -333,7 +333,7 @@ export default class Prerelease extends React.Component {
             Utopia offers a powerful visual scripting environment for rapid prototyping and
             construction.
           </this.BodyText>
-          <this.CTA href='/login'>Try Utopia ></this.CTA>
+          <this.CTA href='/login'>Try Utopia &gt;</this.CTA>
         </this.Section>
       </Wrapper>
     )
