@@ -839,7 +839,7 @@ function cssBoxShadow(
   }
 }
 
-export type CSSBoxShadows = Array<CSSBoxShadow>
+export type CSSBoxShadows = ReadonlyArray<CSSBoxShadow>
 
 export const cssLineWidthKeywordValues = ['thin', 'medium', 'thick'] as const
 export type CSSLineWidthKeywordValue = NonNullable<typeof cssLineWidthKeywordValues[number]>
@@ -1114,7 +1114,7 @@ export type CSSTransformItem =
   | CSSTransformTranslateYItem
   | CSSTransformTranslateZItem
   | CSSUnknownArrayItem
-export type CSSTransforms = Array<CSSTransformItem>
+export type CSSTransforms = ReadonlyArray<CSSTransformItem>
 
 export function cssTransformRotate(
   angle: CSSNumber,
@@ -2347,7 +2347,7 @@ export const defaultBGSize = cssBGSize(cssDefault(parsedCurlyBrace([cssKeyword('
 export type CSSBackgroundSize = Array<CSSBGSize>
 
 export type CSSBackground = CSSGradient | CSSSolidColor | CSSURLFunction | CSSUnknownArrayItem
-export type CSSBackgrounds = Array<CSSBackground>
+export type CSSBackgrounds = ReadonlyArray<CSSBackground>
 
 export interface CSSBackgroundLayerBase {
   bgSize: CSSBGSize
@@ -2491,7 +2491,7 @@ export type CSSBackgroundLayer =
   | CSSURLFunctionBackgroundLayer
   | CSSUnknownArrayItem
 
-export type CSSBackgroundLayers = Array<CSSBackgroundLayer>
+export type CSSBackgroundLayers = ReadonlyArray<CSSBackgroundLayer>
 
 interface LinearGradientBase {
   enabled: boolean
@@ -3356,7 +3356,7 @@ export interface CSSTextShadow {
   color: CSSColor
 }
 
-export type CSSTextShadows = Array<CSSTextShadow>
+export type CSSTextShadows = ReadonlyArray<CSSTextShadow>
 
 export const defaultTextShadow: CSSTextShadow = {
   enabled: true,

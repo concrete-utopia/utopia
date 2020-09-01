@@ -48,8 +48,8 @@ const getStyleForArrayDragItem: GetStyleForArrayDragItem = (
 }
 
 export function useArraySuperControl<T>(
-  values: Array<T>,
-  onSubmitValue: (newValue: Array<T>, transient?: boolean | undefined) => void,
+  values: ReadonlyArray<T>,
+  onSubmitValue: (newValue: ReadonlyArray<T>, transient?: boolean | undefined) => void,
   rowHeight: number,
   reversed: boolean = false,
 ) {
