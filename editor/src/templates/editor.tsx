@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
-import { updateCssVars } from 'uuiui'
+import { updateCssVars, UtopiaStyles } from 'uuiui'
 import create from 'zustand'
 import {
   getProjectID,
@@ -210,8 +210,16 @@ export class Editor {
                 renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
             )
           } else {
-            loadFromServer(projectId, this.boundDispatch, this.storedState.workers, () =>
-              renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
+            loadFromServer(
+              projectId,
+              this.boundDispatch,
+              this.storedState.workers,
+              () => {
+                renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector)
+              },
+              () => {
+                renderProjectNotFound()
+              },
             )
           }
         })
@@ -279,7 +287,7 @@ export const HotRoot: React.FunctionComponent<{
 })
 HotRoot.displayName = 'Utopia Editor Root'
 
-function renderRootComponent(
+async function renderRootComponent(
   useStore: UtopiaStoreHook,
   api: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
@@ -295,4 +303,34 @@ function renderRootComponent(
       )
     }
   })
+}
+
+export const ProjectNotFound = () => {
+  return (
+    <div
+      style={{
+        boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
+        borderRadius: 3,
+        overflowWrap: 'break-word',
+        wordWrap: 'break-word',
+        hyphens: 'auto',
+        whiteSpace: 'normal',
+        maxWidth: 400,
+        width: 400,
+        padding: 12,
+        fontWeight: 500,
+        letterSpacing: 0.2,
+        margin: '5px',
+      }}
+    >
+      Project could not be found.
+    </div>
+  )
+}
+
+async function renderProjectNotFound(): Promise<void> {
+  const rootElement = document.getElementById(EditorID)
+  if (rootElement != null) {
+    ReactDOM.render(<ProjectNotFound />, rootElement)
+  }
 }
