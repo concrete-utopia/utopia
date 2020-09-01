@@ -226,8 +226,8 @@ const ShortcutDetails = {
     key('z', ['cmd', 'shift']),
   ),
   // FIXME: Do these shortcuts need to specify keyup/keydown state?
-  [HIDE_HIGHLIGHTS_SHORTCUT]: shortcut('Hide the highlights.', key('z', [])),
-  [SHOW_HIGHLIGHTS_SHORTCUT]: shortcut('Show the highlights.', key('z', [])),
+  [HIDE_HIGHLIGHTS_SHORTCUT]: shortcut('Hide the highlights.', key('z', [], 'keydown')),
+  [SHOW_HIGHLIGHTS_SHORTCUT]: shortcut('Show the highlights.', key('z', [], 'keyup')),
   [MOVE_ELEMENT_FORWARD_SHORTCUT]: shortcut(
     'Move element forward in z-index related to its siblings.',
     key(']', 'cmd'),

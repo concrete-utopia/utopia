@@ -70,15 +70,20 @@ function getCachedModifier(modifiers: ReadonlyArray<Modifier>): ReadonlyArray<Mo
 
 let keysCache: { [key: string]: Key } = {}
 
-function getCachedKey(character: KeyCharacter, modifiers: ReadonlyArray<Modifier>): Key {
+function getCachedKey(
+  character: KeyCharacter,
+  modifiers: ReadonlyArray<Modifier>,
+  isKeyDown: KeyDownOrUp,
+): Key {
   const cachedModifiers = getCachedModifier(modifiers)
-  const cacheKey = `${cachedModifiers.join('-')}-${character}`
+  const cacheKey = `${cachedModifiers.join('-')}-${character}-${isKeyDown}`
   if (cacheKey in keysCache) {
     return keysCache[cacheKey]
   } else {
     const result: Key = {
       character: character,
       modifiers: cachedModifiers,
+      isKeyDown: isKeyDown,
     }
     keysCache[cacheKey] = result
     return result
@@ -90,9 +95,12 @@ export const StoredKeyCharacters = ['alt', 'cmd', 'ctrl', 'shift', 'z']
 export type StoredKeyCharacter = Modifier | 'z'
 export type KeysPressed = { [key in StoredKeyCharacter]?: boolean }
 
+export type KeyDownOrUp = 'keydown' | 'keyup'
+
 export interface Key {
   character: KeyCharacter
   modifiers: ReadonlyArray<Modifier>
+  isKeyDown: KeyDownOrUp
 }
 
 export enum KeyCode {
@@ -180,10 +188,15 @@ export const Keyboard = {
     return getCachedKey(
       keyCharacterFromCode(event.keyCode).toLowerCase() as KeyCharacter,
       modifiersForEvent(event),
+      event.type !== 'keyup' ? 'keydown' : 'keyup',
     )
   },
-  key: function (character: KeyCharacter, modifiers: Modifier | Array<Modifier>): Key {
-    return getCachedKey(character, Array.isArray(modifiers) ? modifiers : [modifiers])
+  key: function (
+    character: KeyCharacter,
+    modifiers: Modifier | Array<Modifier>,
+    isKeyDown: KeyDownOrUp = 'keydown',
+  ): Key {
+    return getCachedKey(character, Array.isArray(modifiers) ? modifiers : [modifiers], isKeyDown)
   },
   modifiersEquals: function (
     first: ReadonlyArray<Modifier>,
@@ -212,6 +225,7 @@ export const Keyboard = {
     } else {
       return (
         first.character === second.character &&
+        first.isKeyDown === second.isKeyDown &&
         Keyboard.modifiersEquals(first.modifiers, second.modifiers)
       )
     }
