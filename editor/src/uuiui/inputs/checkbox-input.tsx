@@ -75,7 +75,7 @@ export const CheckboxInput = betterReactMemo(
               '&.widget-status-off, &.widget-status-disabled': {
                 cursor: 'inherit',
               },
-              ...props.style,
+              ...(props.style as any), // The types between React and Emotion don't quite match up here so we shouldn't be doing this
             }}
             checked={checked}
             ref={composeRefs(ref, propsRef)}

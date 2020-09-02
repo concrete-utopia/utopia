@@ -10,13 +10,19 @@ export const flexRowStyle: Pick<
   whiteSpace: 'nowrap',
 } as const
 
-export const flexColumnStyle: React.CSSProperties = {
+export const flexColumnStyle: Pick<
+  React.CSSProperties,
+  'display' | 'flexDirection' | 'whiteSpace'
+> = {
   display: 'flex',
   flexDirection: 'column',
   whiteSpace: 'nowrap',
 } as const
 
-export const tileStyle: React.CSSProperties = {
+export const tileStyle: Pick<
+  React.CSSProperties,
+  'display' | 'flexDirection' | 'justifyContent' | 'alignItems'
+> = {
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',

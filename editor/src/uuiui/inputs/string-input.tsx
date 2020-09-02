@@ -92,8 +92,6 @@ export const StringInput = betterReactMemo(
             }
             setFocused(true)
             e.target.select()
-            // TODO: killme when react 17 comes out, event pooling is no longer a thing :)
-            e.persist()
           }
         },
         [disabled, inputProps],
