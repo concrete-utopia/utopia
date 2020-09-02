@@ -771,8 +771,8 @@ function generateOptionalType(node: OptionalTypeNode) {
   return createTsCall('createOptionalTypeNode', [transformVisitor(node.type)])
 }
 
-function generateTypleType(node: TupleTypeNode) {
-  return createTsCall('createTupleTypeNode', [transformVisitors(node.elementTypes)])
+function generateTupleType(node: TupleTypeNode) {
+  return createTsCall('createTupleTypeNode', [transformVisitors(node.elements)])
 }
 
 function generateArrayType(node: ArrayTypeNode) {
@@ -1284,7 +1284,7 @@ function transformVisitor(node?: Node): Expression {
     case SyntaxKind.ArrayType:
       return generateArrayType(node as ArrayTypeNode)
     case SyntaxKind.TupleType:
-      return generateTypleType(node as TupleTypeNode)
+      return generateTupleType(node as TupleTypeNode)
     case SyntaxKind.OptionalType:
       return generateOptionalType(node as OptionalTypeNode)
     case SyntaxKind.RestType:

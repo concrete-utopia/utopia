@@ -1,8 +1,8 @@
 diff --git a/node_modules/sockjs-client/dist/sockjs.js b/node_modules/sockjs-client/dist/sockjs.js
-index c1d94ca..fcf0f1a 100644
+index 24242c0..005b078 100644
 --- a/node_modules/sockjs-client/dist/sockjs.js
 +++ b/node_modules/sockjs-client/dist/sockjs.js
-@@ -3409,7 +3409,11 @@ module.exports = {
+@@ -3410,7 +3410,11 @@ module.exports = {
          // onunload.
          setTimeout(function() {
            if (iframe) {

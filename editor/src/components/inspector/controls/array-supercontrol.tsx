@@ -58,7 +58,6 @@ export function useArraySuperControl<T>(
   const [springs, setSprings] = useSprings(
     values.length,
     getStyleForArrayDragItem(localDraggingIndex.current, reversed, rowHeight),
-    //@ts-ignore
     [values],
   )
 
