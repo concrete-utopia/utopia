@@ -1,14 +1,20 @@
 import styled from '@emotion/styled'
 import { css } from '@emotion/core'
 
-export const flexRowStyle: React.CSSProperties = {
+export const flexRowStyle: Pick<
+  React.CSSProperties,
+  'display' | 'flexDirection' | 'alignItems' | 'whiteSpace'
+> = {
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
   whiteSpace: 'nowrap',
 }
 
-export const flexColumnStyle: React.CSSProperties = {
+export const flexColumnStyle: Pick<
+  React.CSSProperties,
+  'display' | 'flexDirection' | 'alignItems' | 'whiteSpace'
+> = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
