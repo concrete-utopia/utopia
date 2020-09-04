@@ -111,9 +111,9 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
     [editorStoreRef],
   )
 
-  const namesByKey = useEditorState((store) => {
-    return applyShortcutConfigurationToDefaults(store.userState.shortcutConfig)
-  })
+  const namesByKey = React.useMemo(() => {
+    return applyShortcutConfigurationToDefaults(editorStoreRef.current.userState.shortcutConfig)
+  }, [editorStoreRef])
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
