@@ -109,12 +109,17 @@ function processAction(
   } else if (action.action === 'REDO' && !History.canRedo(workingHistory)) {
     // Bail early and make no changes.
     return working
+  } else if (action.action === 'SET_SHORTCUT') {
+    return {
+      ...working,
+      userState: EditorActions.UPDATE_FNS.SET_SHORTCUT(action, working.userState),
+    }
   } else {
     // Process action on the JS side.
     const editorAfterUpdateFunction = runLocalEditorAction(
       working.editor,
       working.derived,
-      working.loginState,
+      working.userState,
       working.workers,
       action as EditorAction,
       workingHistory,
@@ -155,7 +160,7 @@ function processAction(
       editor: editorAfterNavigator,
       derived: working.derived,
       history: newStateHistory,
-      loginState: working.loginState,
+      userState: working.userState,
       workers: working.workers,
       dispatch: dispatchEvent,
     }
@@ -402,7 +407,7 @@ export function editorDispatch(
     (!transientOrNoChange || anyUndoOrRedo || updateCodeResultCache || updateCodeEditorErrors) &&
     isBrowserEnvironment
   if (shouldSave) {
-    save(frozenEditorState, boundDispatch, storedState.loginState, saveType, forceSave)
+    save(frozenEditorState, boundDispatch, storedState.userState.loginState, saveType, forceSave)
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
     saveStoredState(storedState.editor.id, stateToStore)
     notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
@@ -428,7 +433,7 @@ export function editorDispatch(
     editor: frozenEditorState,
     derived: frozenDerivedState,
     history: newHistory,
-    loginState: storedState.loginState,
+    userState: result.userState,
     workers: storedState.workers,
     dispatch: boundDispatch,
     nothingChanged: result.nothingChanged,
@@ -461,7 +466,10 @@ function editorDispatchInner(
       window.performance.mark('derived_state_begin')
     }
 
-    const editorStayedTheSame = storedState.nothingChanged && storedState.editor === result.editor
+    const editorStayedTheSame =
+      storedState.nothingChanged &&
+      storedState.editor === result.editor &&
+      storedState.userState === result.userState
 
     const domMetadataChanged =
       storedState.editor.domMetadataKILLME !== result.editor.domMetadataKILLME
@@ -547,7 +555,7 @@ function editorDispatchInner(
       editor: frozenEditorState,
       derived: frozenDerivedState,
       history: result.history,
-      loginState: storedState.loginState,
+      userState: result.userState,
       workers: storedState.workers,
       dispatch: boundDispatch,
       nothingChanged: editorStayedTheSame,

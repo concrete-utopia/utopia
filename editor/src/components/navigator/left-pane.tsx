@@ -13,6 +13,7 @@ import {
   SectionTitleRow,
   Title,
   UtopiaTheme,
+  Button,
 } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { thumbnailURL } from '../../common/server'
@@ -28,7 +29,12 @@ import { EditorAction, EditorDispatch, LoginState } from '../editor/action-types
 import * as EditorActions from '../editor/actions/actions'
 import { clearSelection, regenerateThumbnail, setProjectName } from '../editor/actions/actions'
 import { InsertMenu } from '../editor/insertmenu'
-import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-state'
+import {
+  DerivedState,
+  EditorState,
+  getOpenFile,
+  userConfigurationTab,
+} from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
@@ -413,7 +419,7 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
     projectName,
     projectId,
     thumbnailLastGenerated,
-    loginState,
+    userState,
     focusedPanel,
     minimised,
     codeEditorTheme,
@@ -423,7 +429,7 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
       projectName: store.editor.projectName,
       projectId: store.editor.id,
       thumbnailLastGenerated: store.editor.thumbnailLastGenerated,
-      loginState: store.loginState,
+      userState: store.userState,
       focusedPanel: store.editor.focusedPanel,
       minimised: store.editor.projectSettings.minimised,
       codeEditorTheme: store.editor.codeEditorTheme,
@@ -472,6 +478,10 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
     e.stopPropagation()
   }, [])
 
+  const switchToUserConfiguration = React.useCallback(() => {
+    dispatch([EditorActions.openEditorTab(userConfigurationTab(), null)], 'everyone')
+  }, [dispatch])
+
   return (
     <FlexColumn key='leftPaneProjectTab'>
       {projectId == null ? null : (
@@ -488,7 +498,7 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
             </FlexRow>
           </SectionTitleRow>
           <SectionBodyArea minimised={minimised}>
-            {loginState.type === 'NOT_LOGGED_IN' ? (
+            {userState.loginState.type === 'NOT_LOGGED_IN' ? (
               <span>Log in or sign up to see settings</span>
             ) : (
               <div>
@@ -500,6 +510,11 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
                 <ThemeSelector dispatch={dispatch} selectedTheme={codeEditorTheme} />
               </div>
             )}
+          </SectionBodyArea>
+          <SectionBodyArea minimised={false}>
+            <Button style={{ marginRight: '2px' }} onClick={switchToUserConfiguration}>
+              Settings
+            </Button>
           </SectionBodyArea>
         </Section>
       )}

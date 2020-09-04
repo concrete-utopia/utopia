@@ -107,12 +107,14 @@ import {
   ZOOM_CANVAS_OUT_SHORTCUT,
   ZOOM_UI_IN_SHORTCUT,
   ZOOM_UI_OUT_SHORTCUT,
+  ShortcutNamesByKey,
 } from './shortcut-definitions'
 import {
   EditorState,
   getOpenFile,
   getOpenImportsFromState,
   getOpenUtopiaJSXComponentsFromState,
+  UserState,
 } from './store/editor-state'
 
 function updateKeysPressed(
@@ -327,6 +329,7 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
 export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
+  namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
 ): void {
   // Stop the browser from firing things like save dialogs.
@@ -389,7 +392,7 @@ export function handleKeyDown(
     if (key === 'tab' && shouldTabBeHandledByBrowser(editor)) {
       return []
     }
-    return handleShortcuts<Array<EditorAction>>({}, event, [], {
+    return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
       [DELETE_SELECTED_SHORTCUT]: () => {
         return [EditorActions.deleteSelected()]
       },
@@ -743,6 +746,7 @@ export function handleKeyDown(
 export function handleKeyUp(
   event: KeyboardEvent,
   editor: EditorState,
+  namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
 ): void {
   // Stop the browser from firing things like save dialogs.
@@ -768,7 +772,7 @@ export function handleKeyUp(
   const updateKeysAction = EditorActions.updateKeys(updatedKeysPressed)
 
   function getUIFileActions(): Array<EditorAction> {
-    return handleShortcuts<Array<EditorAction>>({}, event, [], {
+    return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
       [SHOW_HIGHLIGHTS_SHORTCUT]: () => {
         return [EditorActions.setHighlightsEnabled(true)]
       },

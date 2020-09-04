@@ -153,7 +153,7 @@ import {
 import { OutgoingWorkerMessage, isJsFile, BuildType } from '../../../core/workers/ts/ts-worker'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { defaultProject, sampleProjectForId } from '../../../sample-projects/sample-project-utils'
-import { KeysPressed } from '../../../utils/keyboard'
+import { KeysPressed, Key } from '../../../utils/keyboard'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import RU from '../../../utils/react-utils'
 import Utils, { IndexPosition } from '../../../utils/utils'
@@ -336,6 +336,7 @@ import {
   FinishCheckpointTimer,
   AddMissingDimensions,
   SetPackageStatus,
+  SetShortcut,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -356,7 +357,12 @@ import {
   createLoadedPackageStatusMapFromDependencies,
 } from '../npm-dependency/npm-dependency'
 import { updateRemoteThumbnail } from '../persistence'
-import { deleteAssetFile, saveAsset as saveAssetToServer, updateAssetFileName } from '../server'
+import {
+  deleteAssetFile,
+  saveAsset as saveAssetToServer,
+  updateAssetFileName,
+  saveUserConfiguration,
+} from '../server'
 import {
   applyParseAndEditorChanges,
   applyUtopiaJSXComponentsChanges,
@@ -402,6 +408,8 @@ import {
   getNumberOfScenes,
   getStoryboardTemplatePath,
   addSceneToJSXComponents,
+  UserState,
+  UserConfiguration,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -434,6 +442,7 @@ import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch
 import { getPropertyControlsForTarget } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
+import { ShortcutConfiguration } from '../shortcut-definitions'
 
 export function clearSelection(): EditorAction {
   return {
@@ -2759,7 +2768,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
     dispatch: EditorDispatch,
-    loginState: LoginState,
+    userState: UserState,
   ): EditorModel => {
     const replaceImage = action.imageDetails?.afterSave.type === 'SAVE_IMAGE_REPLACE'
     const assetFilename = replaceImage
@@ -2820,7 +2829,7 @@ export const UPDATE_FNS = {
     actionsToRunAfterSave.push(updateFile(assetFilename, projectFile, true))
 
     // Side effects.
-    if (isLoggedIn(loginState) && editor.id != null) {
+    if (isLoggedIn(userState.loginState) && editor.id != null) {
       saveAssetToServer(notNullProjectID, action.fileType, action.base64, assetFilename)
         .then(() => {
           dispatch(
@@ -3106,7 +3115,7 @@ export const UPDATE_FNS = {
   UPDATE_FILE_PATH: (
     action: UpdateFilePath,
     editor: EditorModel,
-    loginState: LoginState,
+    userState: UserState,
     dispatch: EditorDispatch,
   ): EditorModel => {
     const replaceFilePathResults = replaceFilePath(
@@ -3153,7 +3162,7 @@ export const UPDATE_FNS = {
         const oldContent = editor.projectContents[oldPath]
         if (isImageFile(oldContent) || isAssetFile(oldContent)) {
           // Update assets.
-          if (isLoggedIn(loginState) && editor.id != null) {
+          if (isLoggedIn(userState.loginState) && editor.id != null) {
             updateAssetFileName(editor.id, action.oldPath, action.newPath)
           }
         }
@@ -3495,7 +3504,7 @@ export const UPDATE_FNS = {
     action: DeleteFile,
     editor: EditorModel,
     derived: DerivedState,
-    loginState: LoginState,
+    userState: UserState,
   ): EditorModel => {
     const file = editor.projectContents[action.filename]
     const updatedProjectContents = {
@@ -3537,7 +3546,7 @@ export const UPDATE_FNS = {
             { action: 'DELETE_FILE', filename: filename },
             working,
             derived,
-            loginState,
+            userState,
           )
         }, updatedEditor)
       }
@@ -3551,7 +3560,7 @@ export const UPDATE_FNS = {
       }
       case 'ASSET_FILE':
       case 'IMAGE_FILE': {
-        if (isLoggedIn(loginState) && editor.id != null) {
+        if (isLoggedIn(userState.loginState) && editor.id != null) {
           // Side effect
           deleteAssetFile(editor.id, action.filename)
         }
@@ -4082,6 +4091,24 @@ export const UPDATE_FNS = {
     return produce(editor, (draft) => {
       draft.nodeModules.packageStatus[packageName] = { status: action.status }
     })
+  },
+  SET_SHORTCUT: (action: SetShortcut, userState: UserState): UserState => {
+    let updatedShortcutConfig: ShortcutConfiguration = {}
+    if (userState.shortcutConfig != null) {
+      updatedShortcutConfig = {
+        ...userState.shortcutConfig,
+      }
+    }
+    updatedShortcutConfig[action.shortcutName] = [action.newKey]
+    const updatedUserConfiguration: UserConfiguration = {
+      shortcutConfig: updatedShortcutConfig,
+    }
+    // Side effect.
+    saveUserConfiguration(updatedUserConfiguration)
+    return {
+      ...updatedUserConfiguration,
+      loginState: userState.loginState,
+    }
   },
 }
 
@@ -5447,5 +5474,13 @@ export function setPackageStatus(packageName: string, status: PackageStatus): Se
     action: 'SET_PACKAGE_STATUS',
     packageName: packageName,
     status: status,
+  }
+}
+
+export function setShortcut(shortcutName: string, newKey: Key): SetShortcut {
+  return {
+    action: 'SET_SHORTCUT',
+    shortcutName: shortcutName,
+    newKey: newKey,
   }
 }

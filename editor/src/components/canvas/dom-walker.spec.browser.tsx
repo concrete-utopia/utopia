@@ -74,7 +74,10 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     editor: emptyEditorState,
     derived: derivedState,
     history: history,
-    loginState: notLoggedIn,
+    userState: {
+      loginState: notLoggedIn,
+      shortcutConfig: {},
+    },
     workers: new UtopiaTsWorkersImplementation(
       new FakeBundlerWorker(),
       new FakeParserPrinterWorker(),

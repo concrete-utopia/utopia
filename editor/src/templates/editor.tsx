@@ -35,13 +35,14 @@ import {
   previewIsAlive,
   startPreviewConnectedMonitoring,
 } from '../components/editor/preview-report-handler'
-import { getLoginState } from '../components/editor/server'
+import { getLoginState, getUserConfiguration } from '../components/editor/server'
 import { editorDispatch, simpleStringifyActions } from '../components/editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
   EditorStore,
   getMainUIFromModel,
+  defaultUserState,
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
@@ -105,7 +106,7 @@ export class Editor {
       editor: emptyEditorState,
       derived: derivedState,
       history: history,
-      loginState: notLoggedIn,
+      userState: defaultUserState,
       workers: new UtopiaTsWorkersImplementation(
         new RealBundlerWorker(),
         new RealParserPrinterWorker(),
@@ -184,46 +185,52 @@ export class Editor {
     )
 
     getLoginState().then((loginState) => {
-      this.storedState.loginState = loginState
+      this.storedState.userState.loginState = loginState
+      getUserConfiguration(loginState).then((shortcutConfiguration) => {
+        this.storedState.userState = {
+          ...this.storedState.userState,
+          ...shortcutConfiguration,
+        }
 
-      const projectId = getProjectID()
-      if (projectId == null) {
-        createNewProject(this.boundDispatch, () =>
-          renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
-        )
-      } else if (isSampleProject(projectId)) {
-        createNewProjectFromSampleProject(
-          projectId,
-          this.boundDispatch,
-          this.storedState.workers,
-          () => renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
-        )
-      } else {
-        projectIsStoredLocally(projectId).then((isLocal) => {
-          if (isLocal) {
-            loadFromLocalStorage(
-              projectId,
-              this.boundDispatch,
-              isLoggedIn(loginState),
-              this.storedState.workers,
-              () =>
-                renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
-            )
-          } else {
-            loadFromServer(
-              projectId,
-              this.boundDispatch,
-              this.storedState.workers,
-              () => {
-                renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector)
-              },
-              () => {
-                renderProjectNotFound()
-              },
-            )
-          }
-        })
-      }
+        const projectId = getProjectID()
+        if (projectId == null) {
+          createNewProject(this.boundDispatch, () =>
+            renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
+          )
+        } else if (isSampleProject(projectId)) {
+          createNewProjectFromSampleProject(
+            projectId,
+            this.boundDispatch,
+            this.storedState.workers,
+            () => renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
+          )
+        } else {
+          projectIsStoredLocally(projectId).then((isLocal) => {
+            if (isLocal) {
+              loadFromLocalStorage(
+                projectId,
+                this.boundDispatch,
+                isLoggedIn(loginState),
+                this.storedState.workers,
+                () =>
+                  renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
+              )
+            } else {
+              loadFromServer(
+                projectId,
+                this.boundDispatch,
+                this.storedState.workers,
+                () => {
+                  renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector)
+                },
+                () => {
+                  renderProjectNotFound()
+                },
+              )
+            }
+          })
+        }
+      })
     })
   }
 

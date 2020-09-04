@@ -1,9 +1,18 @@
 import { UTOPIA_BACKEND } from '../../common/env-vars'
-import { assetURL, HEADERS, MODE, projectURL, thumbnailURL } from '../../common/server'
+import {
+  assetURL,
+  HEADERS,
+  MODE,
+  projectURL,
+  thumbnailURL,
+  userConfigURL,
+} from '../../common/server'
 import { imageFile, isImageFile } from '../../core/model/project-file-utils'
 import { ImageFile } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
-import { PersistentModel } from './store/editor-state'
+import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './store/editor-state'
+import { ShortcutConfiguration } from './shortcut-definitions'
+import { LoginState } from '../../uuiui-deps'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -259,5 +268,46 @@ export async function saveThumbnail(thumbnail: Buffer, projectId: string): Promi
     // FIXME Client should show an error if server requests fail
     console.error(`Save thumbnail request failed (${response.status}): ${response.statusText}`)
     return
+  }
+}
+
+export async function getUserConfiguration(loginState: LoginState): Promise<UserConfiguration> {
+  switch (loginState.type) {
+    case 'LOGGED_IN':
+      const url = userConfigURL()
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        headers: HEADERS,
+        mode: MODE,
+      })
+      if (response.ok) {
+        return response.json()
+      } else {
+        // FIXME Client should show an error if server requests fail
+        throw new Error(`server responded with ${response.status} ${response.statusText}`)
+      }
+    case 'NOT_LOGGED_IN':
+      return emptyUserConfiguration()
+    default:
+      const _exhaustiveCheck: never = loginState
+      throw new Error(`Unknown login state.`)
+  }
+}
+
+export async function saveUserConfiguration(userConfig: UserConfiguration): Promise<void> {
+  const url = userConfigURL()
+  const response = await fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+    body: JSON.stringify(userConfig),
+  })
+  if (response.ok) {
+    return
+  } else {
+    // FIXME Client should show an error if server requests fail
+    throw new Error(`server responded with ${response.status} ${response.statusText}`)
   }
 }

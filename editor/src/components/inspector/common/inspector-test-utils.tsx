@@ -12,7 +12,11 @@ import type {
 import { createEditorStates } from '../../../utils/test-utils'
 import utils from '../../../utils/utils'
 import { EditorDispatch } from '../../editor/action-types'
-import { EditorStore, modifyOpenJsxElementAtStaticPath } from '../../editor/store/editor-state'
+import {
+  EditorStore,
+  modifyOpenJsxElementAtStaticPath,
+  defaultUserState,
+} from '../../editor/store/editor-state'
 import { EditorStateContext, EditorStateContextData } from '../../editor/store/store-hook'
 import * as TP from '../../../core/shared/template-path'
 import { InspectorContextProvider } from '../inspector'
@@ -39,7 +43,7 @@ export function getStoreHook(
       next: [],
       current: {} as any,
     },
-    loginState: { type: 'NOT_LOGGED_IN' },
+    userState: defaultUserState,
     workers: null as any,
     dispatch: mockDispatch,
   }

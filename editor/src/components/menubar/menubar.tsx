@@ -89,7 +89,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
   const {
     dispatch,
     selectedTab,
-    loginState,
+    userState,
     leftMenuExpanded,
     projectId,
     projectName,
@@ -97,7 +97,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
     return {
       dispatch: store.dispatch,
       selectedTab: store.editor.leftMenu.selectedTab,
-      loginState: store.loginState,
+      userState: store.userState,
       leftMenuExpanded: store.editor.leftMenu.expanded,
       projectId: store.editor.id,
       projectName: store.editor.projectName,
@@ -171,7 +171,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
       <FlexColumn>
         <Tile>
           <a href='/projects'>
-            <Avatar loginState={loginState} size={28} />
+            <Avatar loginState={userState.loginState} size={28} />
           </a>
         </Tile>
       </FlexColumn>

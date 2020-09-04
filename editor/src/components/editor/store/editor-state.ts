@@ -120,17 +120,38 @@ import { Notice } from '../../common/notices'
 import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
 import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
+import { ShortcutConfiguration } from '../shortcut-definitions'
+import { notLoggedIn } from '../../../common/user'
 
 export interface OriginalPath {
   originalTP: TemplatePath
   currentTP: TemplatePath
 }
 
+export interface UserConfiguration {
+  shortcutConfig: ShortcutConfiguration | null
+}
+
+export function emptyUserConfiguration(): UserConfiguration {
+  return {
+    shortcutConfig: null,
+  }
+}
+
+export interface UserState extends UserConfiguration {
+  loginState: LoginState
+}
+
+export const defaultUserState: UserState = {
+  loginState: notLoggedIn,
+  shortcutConfig: {},
+}
+
 export interface EditorStore {
   editor: EditorState
   derived: DerivedState
   history: StateHistory
-  loginState: LoginState
+  userState: UserState
   workers: UtopiaTsWorkers
   dispatch: EditorDispatch
 }
@@ -194,7 +215,17 @@ export function releaseNotesTab(): ReleaseNotesTab {
   }
 }
 
-export type EditorTab = OpenFileTab | ReleaseNotesTab
+export interface UserConfigurationTab {
+  type: 'USER_CONFIGURATION_TAB'
+}
+
+export function userConfigurationTab(): UserConfigurationTab {
+  return {
+    type: 'USER_CONFIGURATION_TAB',
+  }
+}
+
+export type EditorTab = OpenFileTab | ReleaseNotesTab | UserConfigurationTab
 
 export function isOpenFileTab(editorTab: EditorTab): editorTab is OpenFileTab {
   return editorTab.type === 'OPEN_FILE_TAB'
@@ -202,6 +233,10 @@ export function isOpenFileTab(editorTab: EditorTab): editorTab is OpenFileTab {
 
 export function isReleaseNotesTab(editorTab: EditorTab): editorTab is ReleaseNotesTab {
   return editorTab.type === 'RELEASE_NOTES_TAB'
+}
+
+export function isUserConfigurationTab(editorTab: EditorTab): editorTab is UserConfigurationTab {
+  return editorTab.type === 'USER_CONFIGURATION_TAB'
 }
 
 export interface ConsoleLog {

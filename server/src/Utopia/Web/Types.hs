@@ -43,6 +43,10 @@ $(deriveJSON jsonOptions ''SaveProjectResponse)
 
 $(deriveJSON jsonOptions ''SaveProjectRequest)
 
+$(deriveJSON jsonOptions ''UserConfigurationRequest)
+
+$(deriveJSON jsonOptions ''UserConfigurationResponse)
+
 {-
   The following types define the endpoints that we expose to the world.
   * 'Get' and 'Post' define the HTTP method used to access the endpoint,
@@ -88,6 +92,10 @@ type ForkProjectAPI = "v1" :> "project" :> QueryParam' '[Required, Strict] "orig
 type SaveProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> ReqBody '[JSON] SaveProjectRequest :> Put '[JSON] SaveProjectResponse
 
 type DeleteProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> Delete '[JSON] NoContent
+
+type GetUserConfigurationAPI = "v1" :> "user" :> "config" :> Get '[JSON] UserConfigurationResponse
+
+type SaveUserConfigurationAPI = "v1" :> "user" :> "config" :> ReqBody '[JSON] UserConfigurationRequest :> Post '[JSON] NoContent
 
 type MyProjectsAPI = "v1" :> "projects" :> Get '[JSON] ProjectListResponse
 
@@ -145,6 +153,8 @@ type Protected = LogoutAPI
             :<|> ForkProjectAPI
             :<|> SaveProjectAPI
             :<|> DeleteProjectAPI
+            :<|> GetUserConfigurationAPI
+            :<|> SaveUserConfigurationAPI
             :<|> MyProjectsAPI
             :<|> RenameProjectAssetAPI
             :<|> DeleteProjectAssetAPI

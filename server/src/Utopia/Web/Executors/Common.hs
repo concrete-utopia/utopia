@@ -277,3 +277,11 @@ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifMo
     let encodingResult = toEncoding $ M.singleton contentsText contents
     return $ toLazyByteString $ fromEncoding encodingResult
 
+getUserConfigurationWithPool :: (MonadIO m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> (Maybe DecodedUserConfiguration -> a) -> m a
+getUserConfigurationWithPool metrics pool userID action = do
+  possibleUserConfiguration <- liftIO $ DB.getUserConfiguration metrics pool userID
+  return $ action possibleUserConfiguration
+
+saveUserConfigurationWithPool :: (MonadIO m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> Maybe Value -> m ()
+saveUserConfigurationWithPool metrics pool userID possibleShortcutConfig = do
+  liftIO $ DB.saveUserConfiguration metrics pool userID possibleShortcutConfig
