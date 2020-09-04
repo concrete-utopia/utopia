@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { UtopiaTheme } from '../../../../../uuiui'
 
 interface SystedDefaultFontItemProps {
   selected: boolean
@@ -15,12 +14,11 @@ export const SystedDefaultFontItem: React.FunctionComponent<SystedDefaultFontIte
         style={{
           fontSize: 11,
           whiteSpace: 'normal',
-          backgroundColor: selected ? UtopiaTheme.color.inspectorFocusedColor.value : undefined,
           color: selected ? 'white' : '#888',
         }}
       >
-        Use the default typeface of the operating system: SF Pro on macOS and iOS, Roboto on Android
-        and Segoe UI on Windows
+        Use the operating system font: SF Pro on Apple devices, Roboto on Android, and Segoe UI on
+        Windows
       </div>
     </div>
   )

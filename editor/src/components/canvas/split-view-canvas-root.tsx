@@ -125,9 +125,7 @@ export const SplitViewCanvasRoot = betterReactMemo(
             style={{
               alignItems: 'stretch',
               flexDirection: 'column',
-              width: 255,
-              minWidth: 255,
-              maxWidth: 255,
+              width: UtopiaTheme.layout.inspectorWidth,
               flexGrow: 0,
               flexShrink: 0,
               overflowY: 'scroll',
