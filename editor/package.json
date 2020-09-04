@@ -132,7 +132,7 @@
     "react-contexify": "4.1.1",
     "react-dnd": "10.0.2",
     "react-dnd-html5-backend": "10.0.2",
-    "react-dom": "17.0.0-rc.1",
+    "react-dom": "npm:utopia-react-dom@17.0.0-rc.1",
     "react-error-overlay": "git://github.com/concrete-utopia/react-error-overlay.git#2019809",
     "react-helmet": "6.1.0",
     "react-merge-refs": "1.0.0",
