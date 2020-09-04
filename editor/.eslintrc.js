@@ -174,7 +174,7 @@ module.exports = {
   ],
   settings: {
     react: {
-      version: '16.12',
+      version: '17.0.0-rc.1',
     },
   },
 }

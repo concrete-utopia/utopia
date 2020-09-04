@@ -101,7 +101,7 @@ interface InspectorInputProps extends React.InputHTMLAttributes<HTMLInputElement
   labelInner?: string | IcnProps
   roundCorners?: BoxCorners
   mixed?: boolean
-  value?: string | string[] | number
+  value?: string | readonly string[] | number
 }
 
 const StyledInput = styled.input<InspectorInputProps>(

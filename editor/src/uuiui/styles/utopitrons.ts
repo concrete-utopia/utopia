@@ -2,7 +2,7 @@ import { transparent } from './utopi-colors'
 import { css } from '@emotion/core'
 import { CSSPropertiesWithMultiValues, FunctionInterpolation } from '@emotion/serialize'
 import { UtopiColor } from './utopi-color-helpers'
-import { JustifyContentProperty } from 'csstype'
+import { Property } from 'csstype'
 
 type CSSObject = CSSPropertiesWithMultiValues
 
@@ -242,7 +242,7 @@ export function items(
   }
 }
 
-export function justifyContent(value: JustifyContentProperty): CSSObject {
+export function justifyContent(value: Property.JustifyContent): CSSObject {
   return {
     justifyContent: value,
   }

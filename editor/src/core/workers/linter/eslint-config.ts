@@ -301,6 +301,11 @@ export const ESLINT_CONFIG = {
     'jsx-a11y/role-supports-aria-props': 'warn',
     'jsx-a11y/scope': 'warn',
   },
+  settings: {
+    react: {
+      version: '17.0.0-rc.1',
+    },
+  },
 }
 
 const EslintPluginReactRules = {
