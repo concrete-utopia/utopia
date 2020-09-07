@@ -1,20 +1,26 @@
 import { Key, Keyboard } from '../../utils/keyboard'
+import { objectMap } from '../../core/shared/object-utils'
+import {
+  ComplexMap,
+  emptyComplexMap,
+  addToComplexMap,
+  getKeysFromComplexMap,
+  getValueFromComplexMap,
+} from '../../utils/map'
 
 const key = Keyboard.key
 
 export interface Shortcut {
   description: string
-  defaultShortcuts: Array<Key>
+  shortcutKeys: Array<Key>
 }
 
-export function shortcut(description: string, defaultShortcuts: Key | Array<Key>): Shortcut {
+export function shortcut(description: string, shortcutKeys: Key | Array<Key>): Shortcut {
   return {
     description: description,
-    defaultShortcuts: Array.isArray(defaultShortcuts) ? defaultShortcuts : [defaultShortcuts],
+    shortcutKeys: Array.isArray(shortcutKeys) ? shortcutKeys : [shortcutKeys],
   }
 }
-
-export type ShortcutConfiguration = {}
 
 export const DELETE_SELECTED_SHORTCUT = 'delete-selected'
 export const RESET_CANVAS_ZOOM_SHORTCUT = 'reset-zoom'
@@ -83,7 +89,9 @@ export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
 export const TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT = 'toggle-inspector-and-left-menu'
 export const TOGGLE_DESIGNER_LAYOUT_REVERSED = 'toggle-designer-layout-reversed'
 
-const ShortcutDetails = {
+export type ShortcutDetails = { [key: string]: Shortcut }
+
+const shortcutDetailsWithDefaults: ShortcutDetails = {
   [DELETE_SELECTED_SHORTCUT]: shortcut('Delete the selected element.', [
     key('delete', []),
     key('backspace', []),
@@ -272,34 +280,96 @@ const ShortcutDetails = {
   ),
 }
 
-type ShortcutKeys = keyof typeof ShortcutDetails
+export type ShortcutConfiguration = { [key: string]: Array<Key> }
 
-export type ShortcutCallbacks<T> = { [key in ShortcutKeys]?: () => T }
+export type ShortcutNamesByKey = ComplexMap<Key, string>
+
+export function applyShortcutConfigurationToDefaults(
+  config: ShortcutConfiguration | null,
+): ShortcutNamesByKey {
+  const defaultedConfig: ShortcutConfiguration = config ?? {}
+  let keyToShortcut: ComplexMap<Key, string> = emptyComplexMap<Key, string>()
+  // Add the defaults indexed by the key combination, so as to eliminate multiple settings for
+  // the same key combination.
+  for (const defaultsShortcut of Object.keys(shortcutDetailsWithDefaults) as Array<string>) {
+    // If this is configured, don't set the defaults.
+    if (!(defaultsShortcut in defaultedConfig)) {
+      const defaultsKeys: Shortcut = shortcutDetailsWithDefaults[defaultsShortcut]
+      for (const defaultsKey of defaultsKeys.shortcutKeys) {
+        keyToShortcut = addToComplexMap(
+          Keyboard.keyToString,
+          keyToShortcut,
+          defaultsKey,
+          defaultsShortcut,
+        )
+      }
+    }
+  }
+  // Add the configuration indexed by the key combination, overriding those set by the defaults.
+  for (const configShortcut of Object.keys(defaultedConfig) as Array<string>) {
+    const configKeys = defaultedConfig[configShortcut]
+    for (const configKey of configKeys) {
+      keyToShortcut = addToComplexMap(
+        Keyboard.keyToString,
+        keyToShortcut,
+        configKey,
+        configShortcut,
+      )
+    }
+  }
+
+  return keyToShortcut
+}
+
+export function getShortcutDetails(config: ShortcutConfiguration | null): ShortcutDetails {
+  let result: ShortcutDetails = {}
+  // Ensure any configuration has been applied.
+  const namesByKey = applyShortcutConfigurationToDefaults(config)
+  for (const shortcutKey of getKeysFromComplexMap(namesByKey)) {
+    const shortcutName = getValueFromComplexMap(Keyboard.keyToString, namesByKey, shortcutKey)
+    if (shortcutName != null) {
+      const currentShortcut = result[shortcutName]
+      if (currentShortcut === undefined) {
+        const shortcutDefault = shortcutDetailsWithDefaults[shortcutName]
+        result[shortcutName] = shortcut(shortcutDefault.description, [shortcutKey])
+      } else {
+        result[shortcutName] = shortcut(currentShortcut.description, [
+          ...currentShortcut.shortcutKeys,
+          shortcutKey,
+        ])
+      }
+    }
+  }
+
+  // Add in any which aren't included already, as those are ones without bindings.
+  for (const defaultsShortcut of Object.keys(shortcutDetailsWithDefaults) as Array<string>) {
+    if (!(defaultsShortcut in result)) {
+      const shortcutDefault = shortcutDetailsWithDefaults[defaultsShortcut]
+      result[defaultsShortcut] = shortcut(shortcutDefault.description, [])
+    }
+  }
+
+  return result
+}
+
+export type ShortcutCallbacks<T> = { [key: string]: () => T }
 
 export function handleShortcuts<T>(
-  configuration: ShortcutConfiguration,
+  namesByKey: ShortcutNamesByKey,
   event: KeyboardEvent,
   defaultValue: T,
   callbacks: ShortcutCallbacks<T>,
 ): T {
   const eventKey = Keyboard.keyFromEvent(event)
-  for (const callbackKeyAsString of Object.keys(callbacks)) {
-    // Weird dance around the types because reasons.
-    const callbackKey = (callbackKeyAsString as unknown) as ShortcutKeys
-    if (callbackKey in ShortcutDetails) {
-      const callback = callbacks[callbackKey]
-      if (callback != null) {
-        const details: Shortcut = ShortcutDetails[callbackKey]
-        const shortcutMatches = details.defaultShortcuts.some((defaultShortcut) => {
-          return Keyboard.areSameKey(eventKey, defaultShortcut)
-        })
-        if (shortcutMatches) {
-          return callback()
-        }
-      }
+  const shortcutName = getValueFromComplexMap(Keyboard.keyToString, namesByKey, eventKey)
+  if (shortcutName == null) {
+    return defaultValue
+  } else {
+    const callback = callbacks[shortcutName]
+    if (callback == null) {
+      return defaultValue
     } else {
-      console.error(`Unexpected callback entry ${callbackKey}.`)
+      return callback()
     }
   }
-  return defaultValue
 }

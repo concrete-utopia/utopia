@@ -273,6 +273,15 @@ innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action
                    ("./editor", (Just branchName), (Just downloads))  -> liftIO $ downloadBranchBundle downloads branchName
                    _                                                  -> return defaultPathToServe
   return $ action pathToServe
+innerServerExecutor (GetUserConfiguration user action) = do
+  pool <- fmap _projectPool ask
+  metrics <- fmap _databaseMetrics ask
+  getUserConfigurationWithPool metrics pool user action
+innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig action) = do
+  pool <- fmap _projectPool ask
+  metrics <- fmap _databaseMetrics ask
+  saveUserConfigurationWithPool metrics pool user possibleShortcutConfig
+  return action
 
 {-|
   Invokes a service call using the supplied resources.

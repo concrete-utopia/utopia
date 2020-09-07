@@ -7,7 +7,7 @@ import {
   JSXElementName,
   SettableLayoutSystem,
 } from '../../core/shared/element-template'
-import { KeysPressed } from '../../utils/keyboard'
+import { KeysPressed, Key } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
 import { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
 import { CanvasAction, CSSCursor, PinOrFlexFrameChange } from '../canvas/canvas-types'
@@ -753,6 +753,12 @@ export interface SetPackageStatus {
   status: PackageStatus
 }
 
+export interface SetShortcut {
+  action: 'SET_SHORTCUT'
+  shortcutName: string
+  newKey: Key
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -878,6 +884,7 @@ export type EditorAction =
   | FinishCheckpointTimer
   | AddMissingDimensions
   | SetPackageStatus
+  | SetShortcut
 
 export type DispatchPriority =
   | 'everyone'

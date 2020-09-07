@@ -400,6 +400,22 @@ packagePackagerEndpoint javascriptPackageName javascriptPackageVersionAndSuffix 
     Just (packagerContent, lastModified) -> do
       return $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader packagerContent
 
+emptyUserConfigurationResponse :: UserConfigurationResponse
+emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing }
+
+decodedUserConfigurationToResponse :: DecodedUserConfiguration -> UserConfigurationResponse
+decodedUserConfigurationToResponse DecodedUserConfiguration{..} = UserConfigurationResponse { _shortcutConfig = _shortcutConfig }
+
+getUserConfigurationEndpoint :: Maybe Text -> ServerMonad UserConfigurationResponse 
+getUserConfigurationEndpoint cookie = requireUser cookie $ \sessionUser -> do
+  userConfig <- getUserConfiguration (view id sessionUser)
+  return $ maybe emptyUserConfigurationResponse decodedUserConfigurationToResponse userConfig
+
+saveUserConfigurationEndpoint :: Maybe Text -> UserConfigurationRequest -> ServerMonad NoContent
+saveUserConfigurationEndpoint cookie UserConfigurationRequest{..} = requireUser cookie $ \sessionUser -> do
+  saveUserConfiguration (view id sessionUser) _shortcutConfig
+  return NoContent
+
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -411,6 +427,8 @@ protected authCookie = logoutPage authCookie
                   :<|> forkProjectEndpoint authCookie
                   :<|> saveProjectEndpoint authCookie
                   :<|> deleteProjectEndpoint authCookie
+                  :<|> getUserConfigurationEndpoint authCookie
+                  :<|> saveUserConfigurationEndpoint authCookie
                   :<|> getMyProjectsEndpoint authCookie
                   :<|> renameProjectAssetEndpoint authCookie
                   :<|> deleteProjectAssetEndpoint authCookie

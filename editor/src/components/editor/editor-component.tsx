@@ -45,12 +45,15 @@ import {
   getOpenEditorTab,
   getOpenFile,
   isReleaseNotesTab,
+  isUserConfigurationTab,
 } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { isUIJSFile } from '../../core/shared/project-file-types'
 import { isLiveMode, dragAndDropInsertionSubject, EditorModes, isSelectMode } from './editor-modes'
 import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
+import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
+import { UserConfiguration } from '../user-configuration'
 
 interface NumberSize {
   width: number
@@ -108,18 +111,27 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
     [editorStoreRef],
   )
 
+  const namesByKey = React.useMemo(() => {
+    return applyShortcutConfigurationToDefaults(editorStoreRef.current.userState.shortcutConfig)
+  }, [editorStoreRef])
+
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
-      handleKeyDown(event, editorStoreRef.current.editor, editorStoreRef.current.dispatch)
+      handleKeyDown(
+        event,
+        editorStoreRef.current.editor,
+        namesByKey,
+        editorStoreRef.current.dispatch,
+      )
     },
-    [editorStoreRef],
+    [editorStoreRef, namesByKey],
   )
 
   const onWindowKeyUp = React.useCallback(
     (event) => {
-      handleKeyUp(event, editorStoreRef.current.editor, editorStoreRef.current.dispatch)
+      handleKeyUp(event, editorStoreRef.current.editor, namesByKey, editorStoreRef.current.dispatch)
     },
-    [editorStoreRef],
+    [editorStoreRef, namesByKey],
   )
 
   const preventDefault = React.useCallback((event: MouseEvent) => {
@@ -472,13 +484,19 @@ interface OpenFileEditorProps {
 }
 
 const OpenFileEditor = betterReactMemo('OpenFileEditor', (props: OpenFileEditorProps) => {
-  const { noFileOpen, isUiJsFileOpen, areReleaseNotesOpen } = useEditorState((store) => {
+  const {
+    noFileOpen,
+    isUiJsFileOpen,
+    areReleaseNotesOpen,
+    isUserConfigurationOpen,
+  } = useEditorState((store) => {
     const selectedFile = getOpenFile(store.editor)
     const openEditorTab = getOpenEditorTab(store.editor)
     return {
       noFileOpen: openEditorTab == null,
       isUiJsFileOpen: selectedFile != null && isUIJSFile(selectedFile),
       areReleaseNotesOpen: openEditorTab != null && isReleaseNotesTab(openEditorTab),
+      isUserConfigurationOpen: openEditorTab != null && isUserConfigurationTab(openEditorTab),
     }
   })
 
@@ -488,6 +506,8 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', (props: OpenFileEditorP
     return <ReleaseNotesContent />
   } else if (isUiJsFileOpen) {
     return <SplitViewCanvasRoot {...props} />
+  } else if (isUserConfigurationOpen) {
+    return <UserConfiguration />
   } else {
     return (
       <ScriptEditor

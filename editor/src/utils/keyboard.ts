@@ -57,9 +57,14 @@ export type KeyCharacter =
 
 let modifiersCache: { [key: string]: ReadonlyArray<Modifier> } = {}
 
+function modifiersToString(modifiers: ReadonlyArray<Modifier>): string {
+  const uniqueAndSortedModifiers = Array.from(new Set(modifiers)).sort()
+  return uniqueAndSortedModifiers.join('-')
+}
+
 function getCachedModifier(modifiers: ReadonlyArray<Modifier>): ReadonlyArray<Modifier> {
   const uniqueAndSortedModifiers = Array.from(new Set(modifiers)).sort()
-  const cacheKey = uniqueAndSortedModifiers.join('-')
+  const cacheKey = modifiersToString(uniqueAndSortedModifiers)
   if (cacheKey in modifiersCache) {
     return modifiersCache[cacheKey]
   } else {
@@ -70,20 +75,32 @@ function getCachedModifier(modifiers: ReadonlyArray<Modifier>): ReadonlyArray<Mo
 
 let keysCache: { [key: string]: Key } = {}
 
+function keyPartsToString(
+  character: KeyCharacter,
+  modifiers: ReadonlyArray<Modifier>,
+  keyDownOrUp: KeyDownOrUp,
+): string {
+  return `${modifiersToString(modifiers)}-${keyDownOrUp}-${character}`
+}
+
+function keyToString(key: Key): string {
+  return keyPartsToString(key.character, key.modifiers, key.keyDownOrUp)
+}
+
 function getCachedKey(
   character: KeyCharacter,
   modifiers: ReadonlyArray<Modifier>,
-  isKeyDown: KeyDownOrUp,
+  keyDownOrUp: KeyDownOrUp,
 ): Key {
   const cachedModifiers = getCachedModifier(modifiers)
-  const cacheKey = `${cachedModifiers.join('-')}-${character}-${isKeyDown}`
+  const cacheKey = keyPartsToString(character, modifiers, keyDownOrUp)
   if (cacheKey in keysCache) {
     return keysCache[cacheKey]
   } else {
     const result: Key = {
       character: character,
       modifiers: cachedModifiers,
-      isKeyDown: isKeyDown,
+      keyDownOrUp: keyDownOrUp,
     }
     keysCache[cacheKey] = result
     return result
@@ -100,7 +117,7 @@ export type KeyDownOrUp = 'keydown' | 'keyup'
 export interface Key {
   character: KeyCharacter
   modifiers: ReadonlyArray<Modifier>
-  isKeyDown: KeyDownOrUp
+  keyDownOrUp: KeyDownOrUp
 }
 
 export enum KeyCode {
@@ -184,6 +201,7 @@ function keyCharacterFromCode(keyCode: number): KeyCharacter {
 }
 
 export const Keyboard = {
+  keyToString: keyToString,
   keyFromEvent: function (event: KeyboardEvent): Key {
     return getCachedKey(
       keyCharacterFromCode(event.keyCode).toLowerCase() as KeyCharacter,
@@ -225,7 +243,7 @@ export const Keyboard = {
     } else {
       return (
         first.character === second.character &&
-        first.isKeyDown === second.isKeyDown &&
+        first.keyDownOrUp === second.keyDownOrUp &&
         Keyboard.modifiersEquals(first.modifiers, second.modifiers)
       )
     }
