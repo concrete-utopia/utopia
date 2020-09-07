@@ -40,14 +40,29 @@ import {
 import { PropertyPath, TemplatePath } from '../shared/project-file-types'
 import { createLayoutPropertyPath, pinnedPropForFramePoint } from './layout-helpers-new'
 import { getLayoutProperty, getLayoutPropertyOr } from './getLayoutProperty'
-import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element-metadata-utils'
+import {
+  PropsOrJSXAttributes,
+  getSimpleAttributeAtPath,
+  MetadataUtils,
+} from '../model/element-metadata-utils'
 import { EdgePosition } from '../../components/canvas/canvas-types'
 import { EditorState } from '../../components/editor/store/editor-state'
 import { getPropertyControlsForTarget } from '../property-controls/property-controls-utils'
+import { isScenePath } from '../shared/template-path'
 
 export function targetRespectsLayout(target: TemplatePath, editor: EditorState) {
   const propControls = getPropertyControlsForTarget(target, editor)
-  return propControls?.style && propControls?.style.type === 'styleobject'
+  const hasStyleProperty = propControls?.style && propControls?.style.type === 'styleobject'
+
+  const element = isScenePath(target)
+    ? null
+    : MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, target)
+  const measurements = element?.specialSizeMeasurements
+
+  // const hasGoodLayout = measurements?.immediateParentProvidesLayout ?? false
+
+  // return hasStyleProperty && hasGoodLayout
+  return hasStyleProperty
 }
 
 export const PinLayoutHelpers = {

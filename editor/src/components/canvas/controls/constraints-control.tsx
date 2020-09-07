@@ -4,9 +4,11 @@ import { DragState } from '../canvas-types'
 import { MultiselectResizeControl } from './multiselect-resize-control'
 import { ControlProps } from './new-canvas-controls'
 import { anyInstanceYogaLayouted } from './select-mode/yoga-utils'
+import { isScenePath } from '../../../core/shared/template-path'
 
 export interface ConstraintsControlProps extends ControlProps {
   dragState: DragState | null
+  sideResizeOnly: boolean
 }
 
 export class ConstraintsControls extends React.Component<ConstraintsControlProps> {
@@ -33,6 +35,7 @@ export class ConstraintsControls extends React.Component<ConstraintsControlProps
                 ? this.props.dragState
                 : null
             }
+            sideResizeOnly={this.props.sideResizeOnly}
           />
         )}
       </>

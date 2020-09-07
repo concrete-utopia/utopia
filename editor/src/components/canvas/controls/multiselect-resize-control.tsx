@@ -19,11 +19,13 @@ import { ResizeRectangle } from './size-box'
 
 interface MultiselectResizeProps extends ControlProps {
   dragState: ResizeDragState | null
+  sideResizeOnly: boolean
 }
 
 interface SingleselectResizeProps extends MultiselectResizeProps {
   obtainOriginalFrames: () => OriginalCanvasAndLocalFrame[]
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
+  sideResizeOnly: boolean
 }
 
 interface ConstraintsControlState {
@@ -149,7 +151,7 @@ export class MultiselectResizeControl extends React.Component<
         this.props.selectedViews.length > 1 &&
         TP.areAllElementsInSameScene(this.props.selectedViews)
       ) {
-        return (
+        return this.props.sideResizeOnly ? null : (
           <>
             <ResizeRectangle
               dispatch={this.props.dispatch}
@@ -213,7 +215,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
               selectedViews={[view]}
               elementAspectRatioLocked={this.props.elementAspectRatioLocked}
               imageMultiplier={this.props.imageMultiplier}
-              sideResizer={false}
+              sideResizer={this.props.sideResizeOnly}
               dragState={
                 this.props.dragState != null && this.props.dragState.type === 'RESIZE_DRAG_STATE'
                   ? this.props.dragState

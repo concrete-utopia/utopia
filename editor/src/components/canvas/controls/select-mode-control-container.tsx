@@ -28,6 +28,7 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
+import { cssNumber } from '../../inspector/common/css-utils'
 
 export const SnappingThreshold = 5
 
@@ -133,7 +134,10 @@ export class SelectModeControlContainer extends React.Component<
       const moveTargets = selection.filter(
         (view) =>
           TP.isScenePath(view) ||
-          this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
+          (this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)) &&
+            (MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, view)
+              ?.specialSizeMeasurements?.immediateParentProvidesLayout ??
+              false)),
       )
       // setting original frames
       if (moveTargets.length > 0) {
@@ -664,6 +668,20 @@ export class SelectModeControlContainer extends React.Component<
         element != null && MetadataUtils.isAutoSizingText(this.props.imports, element)
     }
 
+    let sideResizeOnly = false
+    this.props.selectedViews.forEach((selectedView) => {
+      if (!TP.isScenePath(selectedView)) {
+        const element = MetadataUtils.getElementByInstancePathMaybe(
+          this.props.componentMetadata,
+          selectedView,
+        )
+        const measurements = element?.specialSizeMeasurements
+        if (!(measurements?.immediateParentProvidesLayout ?? false)) {
+          sideResizeOnly = true
+        }
+      }
+    })
+
     return (
       <div
         style={{
@@ -703,7 +721,7 @@ export class SelectModeControlContainer extends React.Component<
                 <RepositionableControl {...this.props} />
               ) : (
                 <>
-                  <ConstraintsControls {...this.props} />
+                  <ConstraintsControls {...this.props} sideResizeOnly={sideResizeOnly} />
                   <YogaControls
                     {...this.props}
                     dragState={
