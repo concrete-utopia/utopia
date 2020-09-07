@@ -291,6 +291,104 @@ export class SelectModeControlContainer extends React.Component<
     return this.filterHiddenInstances(candidateViews)
   }
 
+  layoutInfoLabel = (label: string, color: string, elementsUseThisLayout: number): JSX.Element => {
+    return (
+      <div
+        style={{
+          padding: '0px 8px',
+          display: 'flex',
+          alignItems: 'center',
+          borderRadius: 6,
+        }}
+      >
+        <div
+          style={{
+            padding: 2,
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: 4,
+            backgroundColor: elementsUseThisLayout > 0 ? '#e6e6e6' : 'inherit',
+          }}
+        >
+          <div
+            style={{
+              display: 'inline-block',
+              width: 6,
+              height: 6,
+              margin: 5,
+              borderRadius: 6,
+              backgroundColor: elementsUseThisLayout > 0 ? color : '#c2c2c2',
+            }}
+          />
+          <span
+            style={{
+              padding: 2,
+              fontWeight: elementsUseThisLayout > 0 ? 600 : 500,
+            }}
+          >
+            {label}
+          </span>
+          {elementsUseThisLayout > 1 ? (
+            <span
+              style={{
+                paddingRight: 2,
+              }}
+            >
+              {elementsUseThisLayout}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    )
+  }
+
+  layoutInfo = (): JSX.Element | null => {
+    if (this.props.selectedViews.length === 0) {
+      return null
+    }
+    const elementLayouts = this.props.selectedViews.map((view) => {
+      if (TP.isScenePath(view)) {
+        return 'none'
+      } else {
+        const element = MetadataUtils.getElementByInstancePathMaybe(
+          this.props.componentMetadata,
+          view,
+        )
+        if (element?.specialSizeMeasurements.immediateParentProvidesLayout === false) {
+          return 'flow'
+        } else {
+          return element?.specialSizeMeasurements.parentLayoutSystem
+        }
+      }
+    })
+
+    const flow = elementLayouts.filter((layout) => layout === 'flow' || layout === 'none').length
+    const block = elementLayouts.filter((layout) => layout === 'nonfixed').length
+    const flex = elementLayouts.filter((layout) => layout === 'flex').length
+    const grid = elementLayouts.filter((layout) => layout === 'grid').length
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 10,
+          height: 25,
+          marginLeft: 25,
+          marginRight: 25,
+          minWidth: 330,
+          width: 'calc(100% - 50px)',
+          backgroundColor: '#f9f9f9',
+          borderRadius: 8,
+          display: 'flex',
+        }}
+      >
+        {this.layoutInfoLabel('Flow', 'hotpink', flow)}
+        {this.layoutInfoLabel('Block', '#fa006c', block)}
+        {this.layoutInfoLabel('Flex', '#32c5ff', flex)}
+        {this.layoutInfoLabel('Grid', '#18c39e', grid)}
+      </div>
+    )
+  }
+
   getClippedArea = (target: TemplatePath): CanvasRectangle | null => {
     const targetFrame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
 
@@ -664,6 +762,8 @@ export class SelectModeControlContainer extends React.Component<
         element != null && MetadataUtils.isAutoSizingText(this.props.imports, element)
     }
 
+    const selectedElementsLayoutInfo = this.layoutInfo()
+
     return (
       <div
         style={{
@@ -671,6 +771,7 @@ export class SelectModeControlContainer extends React.Component<
         }}
         onContextMenu={this.onContextMenu}
       >
+        {selectedElementsLayoutInfo}
         {roots.map((root) => {
           return (
             <React.Fragment key={`${TP.toComponentId(root)}}-root-controls`}>
