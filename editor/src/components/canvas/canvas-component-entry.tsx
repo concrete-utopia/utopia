@@ -1,6 +1,11 @@
 import * as React from 'react'
 import { useEditorState } from '../editor/store/store-hook'
-import { UiJsxCanvas, pickUiJsxCanvasProps, CanvasReactErrorCallback } from './ui-jsx-canvas'
+import {
+  UiJsxCanvas,
+  pickUiJsxCanvasProps,
+  CanvasReactErrorCallback,
+  CanvasErrorBoundary,
+} from './ui-jsx-canvas'
 import { betterReactMemo } from 'uuiui-deps'
 import { saveDOMReport } from '../editor/actions/actions'
 import { ElementInstanceMetadata } from '../../core/shared/element-template'
@@ -32,12 +37,19 @@ export const CanvasComponentEntry = betterReactMemo(
         store.dispatch,
       ),
     }))
-    return (
-      <UiJsxCanvas
-        {...canvasProps}
-        clearErrors={props.clearErrors}
-        reportError={props.reportError}
-      />
-    )
+
+    if (canvasProps.uiFilePath == null) {
+      return null
+    } else {
+      return (
+        <CanvasErrorBoundary uiFilePath={canvasProps.uiFilePath} reportError={props.reportError}>
+          <UiJsxCanvas
+            {...canvasProps}
+            clearErrors={props.clearErrors}
+            reportError={props.reportError}
+          />
+        </CanvasErrorBoundary>
+      )
+    }
   },
 )
