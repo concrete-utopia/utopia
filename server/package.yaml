@@ -27,6 +27,7 @@ dependencies:
   - exceptions
   - filepath
   - free
+  - github-rest
   - zlib
   - http-api-data
   - http-client

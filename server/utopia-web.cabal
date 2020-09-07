@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1b9d5ec207eeb055b866c5bbb80c43a8781ed46eb10bdecee7fa2911beb46361
+-- hash: 4cb1dd9fc27c79307d6b508d32cd9641e84c35cf054fd98a64b5d592aeff58d0
 
 name:           utopia-web
 version:        0.1.0.4
@@ -36,6 +36,7 @@ executable utopia-web
       Utopia.Web.Executors.Common
       Utopia.Web.Executors.Development
       Utopia.Web.Executors.Production
+      Utopia.Web.Github
       Utopia.Web.JSON
       Utopia.Web.Metrics
       Utopia.Web.Packager.NPM
@@ -73,6 +74,7 @@ executable utopia-web
     , exceptions
     , filepath
     , free
+    , github-rest
     , http-api-data
     , http-client
     , http-client-tls
@@ -145,6 +147,7 @@ test-suite utopia-web-test
       Utopia.Web.Executors.Common
       Utopia.Web.Executors.Development
       Utopia.Web.Executors.Production
+      Utopia.Web.Github
       Utopia.Web.JSON
       Utopia.Web.Metrics
       Utopia.Web.Packager.NPM
@@ -183,6 +186,7 @@ test-suite utopia-web-test
     , exceptions
     , filepath
     , free
+    , github-rest
     , hedgehog
     , hspec
     , http-api-data

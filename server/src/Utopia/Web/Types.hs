@@ -107,6 +107,8 @@ type LoadProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Proje
 
 type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" ProjectIdWithSuffix :> ReqBody '[BMP, GIF, JPG, PNG, SVG] BL.ByteString :> Post '[JSON] NoContent
 
+type DownloadGithubProjectAPI = "v1" :> "github" :> Capture "owner" Text :> Capture "project" Text :> Get '[ZIP] BL.ByteString
+
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] BL.ByteString
 
 type PackagePackagerAPI = "v1" :> "javascript" :> "packager"
@@ -165,6 +167,7 @@ type Unprotected = AuthenticateAPI
               :<|> LoadProjectAssetAPI
               :<|> PreviewProjectAssetAPI
               :<|> LoadProjectThumbnailAPI
+              :<|> DownloadGithubProjectAPI
               :<|> MonitoringAPI
               :<|> PackagePackagerAPI
               :<|> GetPackageJSONAPI
