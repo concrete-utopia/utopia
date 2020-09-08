@@ -26,7 +26,7 @@ function tooltipPropsEqual(
   )
 }
 
-export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProps>, {}> {
+export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProps>> {
   shouldComponentUpdate(nextProps: React.PropsWithChildren<TooltipProps>): boolean {
     return !tooltipPropsEqual(this.props, nextProps)
   }

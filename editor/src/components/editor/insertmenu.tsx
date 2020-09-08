@@ -200,7 +200,7 @@ const animatedDivComponentBeingInserted = componentBeingInserted(
   jsxElementName('animated', ['div']),
 )
 
-class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
+class InsertMenuInner extends React.Component<InsertMenuProps> {
   shouldComponentUpdate(nextProps: InsertMenuProps) {
     const shouldUpdate =
       this.props.lastFontSettings !== nextProps.lastFontSettings ||

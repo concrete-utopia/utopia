@@ -321,7 +321,7 @@ function renderComponentUsingJsxFactoryFunction(
   ...children: Array<any>
 ): any {
   const fixedProps = fixStyleObjectRemoveCommentOnlyValues(props)
-  let factoryFunction: Function = React.createElement
+  let factoryFunction = React.createElement
   if (factoryFunctionName != null) {
     if (factoryFunctionName in inScope) {
       factoryFunction = inScope[factoryFunctionName]
@@ -1502,7 +1502,7 @@ function asErrorObject(e: unknown): Error {
   }
 }
 
-class CanvasErrorBoundary extends React.PureComponent<CanvasErrorBoundaryProps, {}> {
+class CanvasErrorBoundary extends React.PureComponent<CanvasErrorBoundaryProps, unknown> {
   componentDidCatch(error: unknown, errorInfo: React.ErrorInfo) {
     this.props.reportError(this.props.uiFilePath, asErrorObject(error), errorInfo)
   }

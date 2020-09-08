@@ -47,7 +47,7 @@ interface SimpleItem<T> {
   item: ContextMenuItem<T>
 }
 
-export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>, {}> {
+export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> {
   shouldComponentUpdate(nextProps: ContextMenuProps<T>) {
     const result = !fastDeepEquals(this.props.items, nextProps.items)
     return result

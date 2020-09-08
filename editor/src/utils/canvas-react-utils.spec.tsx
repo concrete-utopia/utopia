@@ -117,7 +117,7 @@ describe('Monkey Function', () => {
   })
 
   it('works for simple function components', () => {
-    const TestComponent: React.FunctionComponent<{}> = (props) => {
+    const TestComponent: React.FunctionComponent = (props) => {
       return (
         <div data-uid='test1'>
           <div data-uid='kutya'>Hello!</div>
@@ -136,7 +136,7 @@ describe('Monkey Function', () => {
   })
 
   it('function components have working hooks', () => {
-    const TestComponent: React.FunctionComponent<{}> = (props) => {
+    const TestComponent: React.FunctionComponent = (props) => {
       const [value, setValue] = React.useState('Hello!')
       return (
         <div>
@@ -152,11 +152,11 @@ describe('Monkey Function', () => {
   })
 
   it('works for function components', () => {
-    const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
+    const OtherTestComponent: React.FunctionComponent = (props) => {
       return <div>Hello!</div>
     }
 
-    const TestComponent: React.FunctionComponent<{}> = (props) => {
+    const TestComponent: React.FunctionComponent = (props) => {
       return <OtherTestComponent data-uid={'cica'} />
     }
 
@@ -167,14 +167,14 @@ describe('Monkey Function', () => {
   })
 
   it('works for function components that have uid returning function components', () => {
-    const MyComponent: React.FunctionComponent<{}> = (props) => {
+    const MyComponent: React.FunctionComponent = (props) => {
       return <div>Hello!</div>
     }
-    const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
+    const OtherTestComponent: React.FunctionComponent = (props) => {
       return <MyComponent />
     }
 
-    const TestComponent: React.FunctionComponent<{}> = (props) => {
+    const TestComponent: React.FunctionComponent = (props) => {
       return <OtherTestComponent data-uid={'cica'} />
     }
 
@@ -185,10 +185,10 @@ describe('Monkey Function', () => {
   })
 
   it('works for function components that have uid returning function components wrapped in divs', () => {
-    const MyComponent: React.FunctionComponent<{}> = (props) => {
+    const MyComponent: React.FunctionComponent = (props) => {
       return <div>Hello!</div>
     }
-    const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
+    const OtherTestComponent: React.FunctionComponent = (props) => {
       return (
         <div>
           <MyComponent />
@@ -196,7 +196,7 @@ describe('Monkey Function', () => {
       )
     }
 
-    const TestComponent: React.FunctionComponent<{}> = (props) => {
+    const TestComponent: React.FunctionComponent = (props) => {
       return <OtherTestComponent data-uid={'cica'} />
     }
 
@@ -207,11 +207,11 @@ describe('Monkey Function', () => {
   })
 
   it('works for function components that have no uid returning function components', () => {
-    const OtherTestComponent: React.FunctionComponent<{}> = (props) => {
+    const OtherTestComponent: React.FunctionComponent = (props) => {
       return <div>Hello!</div>
     }
 
-    const TestComponent: React.FunctionComponent<{}> = (props) => {
+    const TestComponent: React.FunctionComponent = (props) => {
       return <OtherTestComponent />
     }
 
@@ -241,7 +241,7 @@ describe('Monkey Function', () => {
   })
 
   it('works with a silly render prop', () => {
-    const CallRenderPropChild: React.FunctionComponent<{}> = (props) => {
+    const CallRenderPropChild: React.FunctionComponent = (props) => {
       return (props.children as any)('Hello!')
     }
 
@@ -262,7 +262,7 @@ describe('Monkey Function', () => {
   })
 
   it('works with a render prop with a class component if there is a uid', () => {
-    const CallRenderPropChild: React.FunctionComponent<{}> = (props) => {
+    const CallRenderPropChild: React.FunctionComponent = (props) => {
       return (props.children as any)('Hello!')
     }
 
@@ -283,7 +283,7 @@ describe('Monkey Function', () => {
   })
 
   it('works with a render prop with a class component if there is NO uid', () => {
-    const CallRenderPropChild: React.FunctionComponent<{}> = (props) => {
+    const CallRenderPropChild: React.FunctionComponent = (props) => {
       return (props.children as any)('Hello!')
     }
 

@@ -20,7 +20,7 @@ export type SliderControlProps = DEPRECATEDControlProps<number> & {
   DEPRECATED_controlOptions: DEPRECATEDSliderControlOptions
 }
 
-export class SliderControl extends React.Component<SliderControlProps, {}> {
+export class SliderControl extends React.Component<SliderControlProps> {
   render() {
     const controlOptions = {
       ...defaultSliderControlOptions,

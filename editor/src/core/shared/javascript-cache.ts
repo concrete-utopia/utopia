@@ -8,9 +8,11 @@ import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
 
 type JavaScriptContainer = JSXAttributeOtherJavaScript | ArbitraryJSBlock | JSXArbitraryBlock
 
-export type GetOrUpdateFunctionCache = (javascript: JavaScriptContainer) => Function
+export type GetOrUpdateFunctionCache = (
+  javascript: JavaScriptContainer,
+) => (...args: Array<any>) => any
 
-let functionCache: { [uniqueID: string]: Function } = {}
+let functionCache: { [uniqueID: string]: (...args: Array<any>) => any } = {}
 
 export function resetFunctionCache() {
   functionCache = {}
@@ -46,7 +48,7 @@ function getOrUpdateFunctionCache(
   javascript: JavaScriptContainer,
   requireResult: MapLike<any>,
   handleError: (error: Error) => void,
-): Function {
+): (...args: Array<any>) => any {
   const fromCache = functionCache[javascript.uniqueID]
   if (fromCache == null) {
     const newCachedFunction = SafeFunctionCurriedErrorHandler(

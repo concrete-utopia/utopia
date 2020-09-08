@@ -58,7 +58,7 @@ const layoutWrapperOptions = [
     icon: {
       category: 'layout/systems',
       type: 'resizable',
-      color: 'black' as 'black',
+      color: 'black' as const,
       width: 16,
       height: 16,
     },
@@ -69,7 +69,7 @@ const layoutWrapperOptions = [
     icon: {
       category: 'layout/systems',
       type: 'positionable',
-      color: 'black' as 'black',
+      color: 'black' as const,
       width: 16,
       height: 16,
     },
