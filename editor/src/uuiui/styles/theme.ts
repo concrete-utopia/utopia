@@ -398,6 +398,8 @@ export const colorThemeVisualScript = lightVisualScriptTheme
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38
+const inspectorWidth = 255
+const inspectorPaddedWidth = inspectorWidth - inspectorXPadding * 2
 
 export const UtopiaTheme = {
   layout: {
@@ -421,6 +423,8 @@ export const UtopiaTheme = {
       tall: 26,
     },
     inspectorXPadding,
+    inspectorPaddedWidth,
+    inspectorWidth,
     canvasMenuWidth,
     inspectorModalBaseOffset: inspectorXPadding + canvasMenuWidth,
   },
