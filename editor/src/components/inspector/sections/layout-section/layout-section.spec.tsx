@@ -16,6 +16,7 @@ import {
 } from '../../common/inspector-test-utils'
 import { LayoutSection } from './layout-section'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
+import { RecoilRoot } from 'recoil'
 
 describe('Layout Section', () => {
   enableWhyDidYouRenderOnComponent(LayoutSection)
@@ -35,34 +36,36 @@ describe('Layout Section', () => {
     const toggleAspectRatioLock = () => {}
 
     const { getByText } = render(
-      <TestInspectorContextProvider
-        selectedViews={storeHookForTest.api.getState().editor.selectedViews}
-        editorStoreData={storeHookForTest}
-      >
-        <LayoutSection
-          isChildOfFlexComponent={false}
-          hasNonDefaultPositionAttributes={true}
-          aspectRatioLocked={false}
-          parentFlexAxis={null}
-          toggleAspectRatioLock={toggleAspectRatioLock}
-          specialSizeMeasurements={emptySpecialSizeMeasurements}
-          position='static'
-          input={{
-            frame: {
-              x: 10,
-              y: 10,
-              width: 200,
-              height: 100,
-            } as LocalRectangle,
-            parentFrame: {
-              x: 0,
-              y: 0,
-              width: 350,
-              height: 850,
-            } as CanvasRectangle,
-          }}
-        />
-      </TestInspectorContextProvider>,
+      <RecoilRoot>
+        <TestInspectorContextProvider
+          selectedViews={storeHookForTest.api.getState().editor.selectedViews}
+          editorStoreData={storeHookForTest}
+        >
+          <LayoutSection
+            isChildOfFlexComponent={false}
+            hasNonDefaultPositionAttributes={true}
+            aspectRatioLocked={false}
+            parentFlexAxis={null}
+            toggleAspectRatioLock={toggleAspectRatioLock}
+            specialSizeMeasurements={emptySpecialSizeMeasurements}
+            position='static'
+            input={{
+              frame: {
+                x: 10,
+                y: 10,
+                width: 200,
+                height: 100,
+              } as LocalRectangle,
+              parentFrame: {
+                x: 0,
+                y: 0,
+                width: 350,
+                height: 850,
+              } as CanvasRectangle,
+            }}
+          />
+        </TestInspectorContextProvider>
+      </RecoilRoot>,
     )
 
     // Component 'W' is picked by the selector
