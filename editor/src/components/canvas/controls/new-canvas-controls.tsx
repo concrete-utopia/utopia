@@ -37,6 +37,8 @@ import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
+import { useRecoilState } from 'recoil'
+import { layoutHoveredState } from '../../../core/shared/inspector-recoil'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -84,7 +86,7 @@ export const NewCanvasControls = betterReactMemo(
 
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.
-    const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', {}> = {
+    const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', unknown> = {
       accept: 'filebrowser',
       canDrop: () => true,
     }
@@ -156,6 +158,8 @@ interface NewCanvasControlsClassProps {
 }
 
 const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
+  const [layoutSectionHovered] = useRecoilState(layoutHoveredState)
+
   const selectionEnabled =
     props.editor.canvas.selectionControlsVisible &&
     !props.editor.keysPressed['z'] &&
@@ -290,6 +294,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
                 : null
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+            layoutInspectorSectionHovered={layoutSectionHovered}
           />
         )
       }

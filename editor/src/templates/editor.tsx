@@ -279,17 +279,21 @@ export class Editor {
   }
 }
 
+import { RecoilRoot } from 'recoil'
+
 export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
 }> = hot(({ api, useStore, spyCollector }) => {
   return (
-    <EditorStateContext.Provider value={{ api, useStore }}>
-      <UiJsxCanvasContext.Provider value={spyCollector}>
-        <EditorComponent />
-      </UiJsxCanvasContext.Provider>
-    </EditorStateContext.Provider>
+    <RecoilRoot>
+      <EditorStateContext.Provider value={{ api, useStore }}>
+        <UiJsxCanvasContext.Provider value={spyCollector}>
+          <EditorComponent />
+        </UiJsxCanvasContext.Provider>
+      </EditorStateContext.Provider>
+    </RecoilRoot>
   )
 })
 HotRoot.displayName = 'Utopia Editor Root'
