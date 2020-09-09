@@ -10,9 +10,9 @@ type JavaScriptContainer = JSXAttributeOtherJavaScript | ArbitraryJSBlock | JSXA
 
 export type GetOrUpdateFunctionCache = (
   javascript: JavaScriptContainer,
-) => (...args: Array<any>) => any
+) => (...args: Array<unknown>) => unknown
 
-let functionCache: { [uniqueID: string]: (...args: Array<any>) => any } = {}
+let functionCache: { [uniqueID: string]: (...args: Array<unknown>) => unknown } = {}
 
 export function resetFunctionCache() {
   functionCache = {}
@@ -48,7 +48,7 @@ function getOrUpdateFunctionCache(
   javascript: JavaScriptContainer,
   requireResult: MapLike<any>,
   handleError: (error: Error) => void,
-): (...args: Array<any>) => any {
+): (...args: Array<unknown>) => unknown {
   const fromCache = functionCache[javascript.uniqueID]
   if (fromCache == null) {
     const newCachedFunction = SafeFunctionCurriedErrorHandler(
