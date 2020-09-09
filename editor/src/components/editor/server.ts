@@ -334,17 +334,17 @@ export async function downloadGithubRepo(owner: string, repo: string): Promise<P
     let loadedProject: ProjectContents = {}
     let promises: Array<Promise<void>> = []
     const loadFile = async (fileName: string, file: jszip.JSZipObject) => {
-      // TODO Shift root directory
+      const shiftedFileName = fileName.replace(/[^\/]*\//, '/') // Github uses the project name and a commit hash as the root directory
       if (file.dir) {
-        loadedProject[fileName] = directory()
+        loadedProject[shiftedFileName] = directory()
       } else {
         const fileBuffer = await file.async('nodebuffer')
-        if (isText(fileName, fileBuffer)) {
+        if (isText(shiftedFileName, fileBuffer)) {
           const fileContents = await file.async('string')
-          loadedProject[fileName] = codeFile(fileContents, null)
+          loadedProject[shiftedFileName] = codeFile(fileContents, null)
         } else {
           // TODO Upload assets
-          loadedProject[fileName] = assetFile()
+          loadedProject[shiftedFileName] = assetFile()
         }
       }
     }
