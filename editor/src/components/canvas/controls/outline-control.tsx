@@ -215,8 +215,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
               <div
                 style={{
                   position: 'absolute',
-                  left: parentFrame.x + this.props.canvasOffset.x - 7,
-                  top: parentFrame.y + this.props.canvasOffset.y - 9,
+                  left: parentFrame.x + this.props.canvasOffset.x - 9,
+                  top: parentFrame.y + this.props.canvasOffset.y - 10,
                 }}
               >
                 <Icn type='cross-small' color='blue' width={16} height={16} />
@@ -224,8 +224,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
               <div
                 style={{
                   position: 'absolute',
-                  left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 8,
-                  top: parentFrame.y + this.props.canvasOffset.y - 9,
+                  left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 9,
+                  top: parentFrame.y + this.props.canvasOffset.y - 10,
                 }}
               >
                 <Icn type='cross-small' color='blue' width={16} height={16} />
@@ -233,8 +233,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
               <div
                 style={{
                   position: 'absolute',
-                  left: parentFrame.x + this.props.canvasOffset.x - 7,
-                  top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 10,
+                  left: parentFrame.x + this.props.canvasOffset.x - 9,
+                  top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 11,
                 }}
               >
                 <Icn type='cross-small' color='blue' width={16} height={16} />
@@ -242,8 +242,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
               <div
                 style={{
                   position: 'absolute',
-                  left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 8,
-                  top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 10,
+                  left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 9,
+                  top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 11,
                 }}
               >
                 <Icn type='cross-small' color='blue' width={16} height={16} />
