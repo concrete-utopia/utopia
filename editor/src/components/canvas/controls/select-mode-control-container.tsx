@@ -53,6 +53,7 @@ interface SelectModeControlContainerProps extends ControlProps {
   maybeClearHighlightsOnHoverEnd: () => void
   duplicationState: DuplicationState | null
   dragState: MoveDragState | ResizeDragState | null
+  layoutInspectorSectionHovered: boolean
 }
 
 interface SelectModeControlContainerState {
@@ -713,10 +714,20 @@ export class SelectModeControlContainer extends React.Component<
                 )
               ) {
                 // only double clickable to select and drag
-                return this.renderControl(draggableView, index, true, cmdPressed)
+                return this.renderControl(
+                  draggableView,
+                  index,
+                  true,
+                  cmdPressed || this.props.layoutInspectorSectionHovered,
+                )
               } else {
                 // directly draggable
-                return this.renderControl(draggableView, index, false, cmdPressed)
+                return this.renderControl(
+                  draggableView,
+                  index,
+                  false,
+                  cmdPressed || this.props.layoutInspectorSectionHovered,
+                )
               }
             })
           : null}

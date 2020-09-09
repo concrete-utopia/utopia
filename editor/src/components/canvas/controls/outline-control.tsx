@@ -46,6 +46,7 @@ export function getSelectionColor(
 export interface OutlineControlsProps extends ControlProps {
   dragState: MoveDragState | ResizeDragState | null
   keysPressed: KeysPressed
+  layoutInspectorSectionHovered: boolean
 }
 
 function isDraggingToMove(
@@ -204,7 +205,9 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         )
       }
     }
-    const parentHighlights = !this.props.keysPressed['cmd']
+    const parentHighlights = !(
+      this.props.keysPressed['cmd'] || this.props.layoutInspectorSectionHovered
+    )
       ? []
       : this.props.selectedViews.map((view) => {
           const parentPath = TP.parentPath(view)
