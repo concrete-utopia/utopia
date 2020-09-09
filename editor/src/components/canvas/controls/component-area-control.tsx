@@ -39,6 +39,7 @@ interface ComponentAreaControlProps {
   imports: Imports
   showAdditionalControls: boolean
   testID?: string
+  siblingIndex?: number
 }
 
 // SelectModeControl is a transparent react component sitting on top of a utopia component.
@@ -197,7 +198,9 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             borderRadius: showInvisibleIndicator ? borderRadius : 0,
           }}
           data-testid={this.props.testID}
-        />
+        >
+          {this.props.siblingIndex}
+        </div>
       </React.Fragment>
     )
   }
