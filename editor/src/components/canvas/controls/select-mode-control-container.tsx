@@ -326,6 +326,12 @@ export class SelectModeControlContainer extends React.Component<
 
   renderControl = (target: TemplatePath, index: number, isChild: boolean): JSX.Element | null => {
     const frame = this.getClippedArea(target)
+    const showSiblingIndex = this.props.selectedViews.some((view) =>
+      TP.pathsEqual(TP.parentPath(view), TP.parentPath(target)),
+    )
+    const siblingIndex = showSiblingIndex
+      ? MetadataUtils.getViewZIndexFromMetadata(this.props.componentMetadata, target) + 1
+      : null
     if (frame != null) {
       return (
         <ComponentAreaControl
@@ -350,6 +356,7 @@ export class SelectModeControlContainer extends React.Component<
           selectedViews={this.props.selectedViews}
           imports={this.props.imports}
           showAdditionalControls={this.props.showAdditionalControls}
+          siblingIndex={siblingIndex}
         />
       )
     } else {
