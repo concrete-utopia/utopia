@@ -208,7 +208,10 @@ export function pushProjectURLToBrowserHistory(
   projectId: string,
   projectName: string,
 ): void {
-  window.top.history.pushState({}, title, projectURLForProject(projectId, projectName))
+  // Make sure we don't replace the query params
+  const queryParams = window.top.location.search
+  const projectURL = projectURLForProject(projectId, projectName)
+  window.top.history.pushState({}, title, `${projectURL}${queryParams}`)
 }
 
 function onFirstSaveCompleted(projectId: string, name: string, dispatch: EditorDispatch) {

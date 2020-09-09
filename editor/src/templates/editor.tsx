@@ -35,7 +35,11 @@ import {
   previewIsAlive,
   startPreviewConnectedMonitoring,
 } from '../components/editor/preview-report-handler'
-import { getLoginState, getUserConfiguration } from '../components/editor/server'
+import {
+  downloadGithubRepo,
+  getLoginState,
+  getUserConfiguration,
+} from '../components/editor/server'
 import { editorDispatch, simpleStringifyActions } from '../components/editor/store/dispatch'
 import {
   createEditorState,
@@ -194,6 +198,16 @@ export class Editor {
 
         const projectId = getProjectID()
         if (projectId == null) {
+          // Check if this is a github import
+          const urlParams = new URLSearchParams(window.location.search)
+          const githubOwner = urlParams.get('github_owner')
+          const githubRepo = urlParams.get('github_repo')
+          if (githubOwner != null && githubRepo != null) {
+            // Trigger the repo download but do nothing with it
+            downloadGithubRepo(githubOwner, githubRepo).then((project) => {
+              // Do nothing
+            })
+          }
           createNewProject(this.boundDispatch, () =>
             renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
           )

@@ -7,12 +7,21 @@ import {
   thumbnailURL,
   userConfigURL,
 } from '../../common/server'
-import { imageFile, isImageFile } from '../../core/model/project-file-utils'
-import { ImageFile } from '../../core/shared/project-file-types'
+import {
+  assetFile,
+  codeFile,
+  directory,
+  imageFile,
+  isImageFile,
+} from '../../core/model/project-file-utils'
+import { ImageFile, ProjectContents } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
 import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './store/editor-state'
 import { ShortcutConfiguration } from './shortcut-definitions'
 import { LoginState } from '../../uuiui-deps'
+import urljoin = require('url-join')
+import * as jszip from 'jszip'
+import { isText } from 'istextorbinary'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -309,5 +318,48 @@ export async function saveUserConfiguration(userConfig: UserConfiguration): Prom
   } else {
     // FIXME Client should show an error if server requests fail
     throw new Error(`server responded with ${response.status} ${response.statusText}`)
+  }
+}
+
+export async function downloadGithubRepo(owner: string, repo: string): Promise<ProjectContents> {
+  const url = urljoin(UTOPIA_BACKEND, 'github', owner, repo)
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    mode: MODE,
+  })
+  if (response.ok) {
+    const buffer = await response.arrayBuffer()
+    const zipFile = await jszip.loadAsync(buffer)
+    let loadedProject: ProjectContents = {}
+    let promises: Array<Promise<void>> = []
+    const loadFile = async (fileName: string, file: jszip.JSZipObject) => {
+      // TODO Shift root directory
+      if (file.dir) {
+        loadedProject[fileName] = directory()
+      } else {
+        const fileBuffer = await file.async('nodebuffer')
+        if (isText(fileName, fileBuffer)) {
+          const fileContents = await file.async('string')
+          loadedProject[fileName] = codeFile(fileContents, null)
+        } else {
+          // TODO Upload assets
+          loadedProject[fileName] = assetFile()
+        }
+      }
+    }
+
+    zipFile.forEach((fileName, file) => {
+      promises.push(loadFile(fileName, file))
+    })
+
+    await Promise.all(promises)
+    return loadedProject
+  } else {
+    // FIXME Client should show an error if server requests fail
+    console.error(
+      `Download github repo request failed (${response.status}): ${response.statusText}`,
+    )
+    return {}
   }
 }
