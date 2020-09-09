@@ -11112,6 +11112,38 @@ Object {
 }
 `;
 
+exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
+>
+  <div
+    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-valid-paths=\\"\\"
+    style=\\"
+      position: relative;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
+    data-uid=\\"utopia-storyboard-uid\\"
+  >
+    hello!
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 2`] = `Object {}`;
+
 exports[`UiJsxCanvas runtime errors an arbitrary jsx attribute has correct source map 1`] = `
 Array [
   Object {
