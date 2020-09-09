@@ -326,9 +326,20 @@ export class SelectModeControlContainer extends React.Component<
 
   renderControl = (target: TemplatePath, index: number, isChild: boolean): JSX.Element | null => {
     const frame = this.getClippedArea(target)
-    const showSiblingIndex = this.props.selectedViews.some((view) =>
+    const siblingIsSelected = this.props.selectedViews.some((view) =>
       TP.pathsEqual(TP.parentPath(view), TP.parentPath(target)),
     )
+    const parentIsSelectedAndFlex = this.props.selectedViews.some((view) => {
+      return (
+        TP.pathsEqual(TP.parentPath(target), view) &&
+        TP.isInstancePath(view) &&
+        MetadataUtils.isFlexLayoutedContainer(
+          MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, view),
+        )
+      )
+    })
+    const showSiblingIndex = siblingIsSelected || parentIsSelectedAndFlex
+
     const siblingIndex = showSiblingIndex
       ? MetadataUtils.getViewZIndexFromMetadata(this.props.componentMetadata, target) + 1
       : null
