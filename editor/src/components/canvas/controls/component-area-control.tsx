@@ -209,8 +209,8 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
               fontSize: fontSize + 'px',
               textAlign: 'center',
               color: this.isTargetSelected()
-                ? UtopiaTheme.color.primary.o(70).value
-                : UtopiaTheme.color.primary.o(30).value,
+                ? UtopiaTheme.color.secondaryBackground.o(70).value
+                : UtopiaTheme.color.secondaryBackground.o(30).value,
             }}
           >
             {this.props.siblingIndex}
