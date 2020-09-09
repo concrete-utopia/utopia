@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1b9d5ec207eeb055b866c5bbb80c43a8781ed46eb10bdecee7fa2911beb46361
+-- hash: 59365a7cae4d2a726cdca15fd8fc3bfbf56f429e927cc5fe7295c4498d64fec9
 
 name:           utopia-web
 version:        0.1.0.4
@@ -36,6 +36,7 @@ executable utopia-web
       Utopia.Web.Executors.Common
       Utopia.Web.Executors.Development
       Utopia.Web.Executors.Production
+      Utopia.Web.Github
       Utopia.Web.JSON
       Utopia.Web.Metrics
       Utopia.Web.Packager.NPM
@@ -145,6 +146,7 @@ test-suite utopia-web-test
       Utopia.Web.Executors.Common
       Utopia.Web.Executors.Development
       Utopia.Web.Executors.Production
+      Utopia.Web.Github
       Utopia.Web.JSON
       Utopia.Web.Metrics
       Utopia.Web.Packager.NPM
