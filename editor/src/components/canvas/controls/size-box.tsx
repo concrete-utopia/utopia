@@ -302,7 +302,7 @@ interface ResizePointProps {
   testID: string
 }
 
-class ResizePoint extends React.Component<ResizePointProps, unknown> {
+class ResizePoint extends React.Component<ResizePointProps> {
   reference = React.createRef<HTMLDivElement>()
 
   render() {
