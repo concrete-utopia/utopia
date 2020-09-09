@@ -324,20 +324,27 @@ export class SelectModeControlContainer extends React.Component<
     )
   }
 
-  renderControl = (target: TemplatePath, index: number, isChild: boolean): JSX.Element | null => {
+  renderControl = (
+    target: TemplatePath,
+    index: number,
+    isChild: boolean,
+    cmdIsPressed: boolean,
+  ): JSX.Element | null => {
     const frame = this.getClippedArea(target)
-    const siblingIsSelected = this.props.selectedViews.some((view) =>
-      TP.pathsEqual(TP.parentPath(view), TP.parentPath(target)),
-    )
-    const parentIsSelectedAndFlex = this.props.selectedViews.some((view) => {
-      return (
-        TP.pathsEqual(TP.parentPath(target), view) &&
-        TP.isInstancePath(view) &&
-        MetadataUtils.isFlexLayoutedContainer(
-          MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, view),
+    const siblingIsSelected =
+      this.props.selectedViews.some((view) =>
+        TP.pathsEqual(TP.parentPath(view), TP.parentPath(target)),
+      ) && cmdIsPressed
+    const parentIsSelectedAndFlex =
+      this.props.selectedViews.some((view) => {
+        return (
+          TP.pathsEqual(TP.parentPath(target), view) &&
+          TP.isInstancePath(view) &&
+          MetadataUtils.isFlexLayoutedContainer(
+            MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, view),
+          )
         )
-      )
-    })
+      }) && !cmdIsPressed
     const showSiblingIndex = siblingIsSelected || parentIsSelectedAndFlex
 
     const siblingIndex = showSiblingIndex
@@ -706,10 +713,10 @@ export class SelectModeControlContainer extends React.Component<
                 )
               ) {
                 // only double clickable to select and drag
-                return this.renderControl(draggableView, index, true)
+                return this.renderControl(draggableView, index, true, cmdPressed)
               } else {
                 // directly draggable
-                return this.renderControl(draggableView, index, false)
+                return this.renderControl(draggableView, index, false, cmdPressed)
               }
             })
           : null}
