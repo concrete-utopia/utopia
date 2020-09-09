@@ -565,14 +565,14 @@ export function modifyOpenParseSuccess(
   function getChanges(
     editor: EditorState,
     success: ParseSuccess,
-  ): ParseSuccessAndEditorChanges<unknown> {
+  ): ParseSuccessAndEditorChanges<Record<string, never>> {
     return {
       parseSuccessTransform: transform,
       editorStateTransform: (e: EditorState) => e,
       additionalData: {},
     }
   }
-  return applyParseAndEditorChanges<unknown>(getChanges, model).editor
+  return applyParseAndEditorChanges<Record<string, never>>(getChanges, model).editor
 }
 
 export function applyUtopiaJSXComponentsChanges(
