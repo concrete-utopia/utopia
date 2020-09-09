@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { colorTheme } from 'uuiui'
+import { colorTheme, Icn } from 'uuiui'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ComponentMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
@@ -202,8 +202,65 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         )
       }
     }
+    const parentHighlights = this.props.selectedViews.map((view) => {
+      const parentPath = TP.parentPath(view)
+      if (parentPath != null) {
+        const parentFrame = MetadataUtils.getFrameInCanvasCoords(
+          parentPath,
+          this.props.componentMetadata,
+        )
+        if (parentFrame != null) {
+          return (
+            <>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: parentFrame.x + this.props.canvasOffset.x - 7,
+                  top: parentFrame.y + this.props.canvasOffset.y - 9,
+                }}
+              >
+                <Icn type='cross-small' color='blue' width={16} height={16} />
+              </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 8,
+                  top: parentFrame.y + this.props.canvasOffset.y - 9,
+                }}
+              >
+                <Icn type='cross-small' color='blue' width={16} height={16} />
+              </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: parentFrame.x + this.props.canvasOffset.x - 7,
+                  top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 10,
+                }}
+              >
+                <Icn type='cross-small' color='blue' width={16} height={16} />
+              </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 8,
+                  top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 10,
+                }}
+              >
+                <Icn type='cross-small' color='blue' width={16} height={16} />
+              </div>
+            </>
+          )
+        } else {
+          return null
+        }
+      } else {
+        return null
+      }
+    })
+
     return (
       <>
+        {...parentHighlights}
         {...selectionOutlines}
         {multiSelectOutline}
       </>
