@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { colorTheme, Icn } from 'uuiui'
+import { colorTheme } from 'uuiui'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ComponentMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
@@ -215,38 +215,46 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
               <div
                 style={{
                   position: 'absolute',
-                  left: parentFrame.x + this.props.canvasOffset.x - 9,
-                  top: parentFrame.y + this.props.canvasOffset.y - 10,
+                  left: parentFrame.x + this.props.canvasOffset.x - 4,
+                  top: parentFrame.y + this.props.canvasOffset.y - 11,
+                  color: colorTheme.red.value,
+                  fontSize: '13px',
                 }}
               >
-                <Icn type='cross-small' color='blue' width={16} height={16} />
+                ×
               </div>
               <div
                 style={{
                   position: 'absolute',
-                  left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 9,
-                  top: parentFrame.y + this.props.canvasOffset.y - 10,
+                  left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 5,
+                  top: parentFrame.y + this.props.canvasOffset.y - 11,
+                  color: colorTheme.red.value,
+                  fontSize: '13px',
                 }}
               >
-                <Icn type='cross-small' color='blue' width={16} height={16} />
+                ×
               </div>
               <div
                 style={{
                   position: 'absolute',
-                  left: parentFrame.x + this.props.canvasOffset.x - 9,
-                  top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 11,
+                  left: parentFrame.x + this.props.canvasOffset.x - 4,
+                  top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 12,
+                  color: colorTheme.red.value,
+                  fontSize: '13px',
                 }}
               >
-                <Icn type='cross-small' color='blue' width={16} height={16} />
+                ×
               </div>
               <div
                 style={{
                   position: 'absolute',
-                  left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 9,
-                  top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 11,
+                  left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 4,
+                  top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 12,
+                  color: colorTheme.red.value,
+                  fontSize: '13px',
                 }}
               >
-                <Icn type='cross-small' color='blue' width={16} height={16} />
+                ×
               </div>
             </>
           )
