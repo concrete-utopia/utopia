@@ -39,7 +39,7 @@ interface ComponentAreaControlProps {
   imports: Imports
   showAdditionalControls: boolean
   testID?: string
-  siblingIndex?: number
+  siblingIndex?: number | null
 }
 
 // SelectModeControl is a transparent react component sitting on top of a utopia component.
