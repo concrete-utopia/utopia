@@ -12,7 +12,7 @@ export type GetOrUpdateFunctionCache = (
   javascript: JavaScriptContainer,
 ) => (...args: Array<unknown>) => unknown
 
-let functionCache: { [uniqueID: string]: (...args: Array<unknown>) => unknown } = {}
+let functionCache: { [uniqueID: string]: (...args: Array<any>) => any } = {}
 
 export function resetFunctionCache() {
   functionCache = {}

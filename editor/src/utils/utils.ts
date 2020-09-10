@@ -806,11 +806,8 @@ function path<T>(
 }
 
 // Because Ramda's `pathOr` function returns any for no fucking reason
-function pathOr<T, U = T>(
-  defaultValue: T,
-  objPath: Array<string | number>,
-  obj: Record<string | number, any>,
-): T | U {
+// eslint-disable-next-line @typescript-eslint/ban-types
+function pathOr<T, U = T>(defaultValue: T, objPath: Array<string | number>, obj: {}): T | U {
   return R.pathOr<T, U>(defaultValue, objPath, obj)
 }
 
