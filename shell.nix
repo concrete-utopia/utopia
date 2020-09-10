@@ -26,11 +26,23 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true install
     '')
+    (pkgs.writeScriptBin "install-editor-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${node}/bin/npm --scripts-prepend-node-path=true ci
+    '')
     (pkgs.writeScriptBin "install-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website
       ${node}/bin/npm --scripts-prepend-node-path=true install
+    '')
+    (pkgs.writeScriptBin "install-website-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website
+      ${node}/bin/npm --scripts-prepend-node-path=true ci
     '')
     (pkgs.writeScriptBin "test-editor" ''
       #!/usr/bin/env bash
@@ -65,8 +77,6 @@ let
     (pkgs.writeScriptBin "test-editor-all-ci" ''
       #!/usr/bin/env bash
       set -e
-      install-editor
-      install-website
       test-editor-ci
       test-website
     '')
