@@ -134,7 +134,7 @@ function onHover(
     if (domNode == null || typeof domNode === 'string') {
       return
     }
-    const dropTargetRectangle = (domNode as Element).getBoundingClientRect()
+    const dropTargetRectangle = (domNode as HTMLElement).getBoundingClientRect()
     const cursor = monitor.getClientOffset()
     const targetAction = props.highlighted
       ? []

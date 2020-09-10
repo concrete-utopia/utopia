@@ -23,7 +23,7 @@ export function forceNotNull<T>(description: string, value: T | null | undefined
 }
 
 // FIXME This shouldn't be converting null into undefined
-export function optionalMap<T, U>(fn: (t: T) => U, t: T | null | undefined): U | null {
+export function optionalMap<T, U>(fn: (param: T) => U, t: T | null | undefined): U | null {
   if (t == null) {
     return null
   } else {
@@ -31,14 +31,14 @@ export function optionalMap<T, U>(fn: (t: T) => U, t: T | null | undefined): U |
   }
 }
 
-export function forEachOptional<T>(fn: (t: T) => void, t: T | null | undefined): void {
+export function forEachOptional<T>(fn: (param: T) => void, t: T | null | undefined): void {
   if (t != null) {
     fn(t)
   }
 }
 
 export function optionalFlatMap<T, U>(
-  fn: (t: T) => U | null | undefined,
+  fn: (param: T) => U | null | undefined,
   t: T | null | undefined,
 ): U | null {
   if (t == null) {

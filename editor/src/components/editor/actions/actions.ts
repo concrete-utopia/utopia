@@ -3133,7 +3133,7 @@ export const UPDATE_FNS = {
     } else {
       const { projectContents, updatedFiles } = replaceFilePathResults
       const mainUIFile = getMainUIFromModel(editor)
-      let updateUIFile: (editor: EditorModel) => EditorModel = R.identity
+      let updateUIFile: (e: EditorModel) => EditorModel = R.identity
       let selectedFile = getOpenEditorTab(editor)
       let updatedOpenFiles = [...editor.openFiles]
       Utils.fastForEach(updatedFiles, (updatedFile) => {

@@ -148,7 +148,7 @@ export interface InspectorInfo<T> {
 
 function getRealValues<P extends string | number>(
   key: P,
-  selectedProps: { [key in P]: ReadonlyArray<any> },
+  selectedProps: { [keyValue in P]: ReadonlyArray<any> },
 ): ReadonlyArray<any> {
   if (key in selectedProps) {
     return selectedProps[key]
@@ -213,6 +213,8 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
         }
       },
     )
+    // KILLME WHEN THIS BUG IS FIXED: https://github.com/facebook/react/issues/19802
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multiselectAtProps, multiselectLength, selectedProps, selectedComputedStyles])
 }
 
@@ -275,9 +277,9 @@ export function useCallbackFactory<T>(
   oldValue: T,
   callback: (newValue: T, transient?: boolean) => void,
 ): <NT>(
-  transform: (newValue: NT, oldValue: T) => T,
+  transform: (newValue: NT, old: T) => T,
 ) => [(newValue: NT) => void, (newValue: NT) => void] {
-  return <NT>(transform: (newValue: NT, oldValue: T) => T) => {
+  return <NT>(transform: (newValue: NT, old: T) => T) => {
     return React.useMemo(() => {
       return [
         (newValue: NT, transient?: boolean) => callback(transform(newValue, oldValue), transient),
@@ -596,9 +598,13 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
       }
       propKeys.forEach(submitValue)
     },
+    // KILLME WHEN THIS BUG IS FIXED: https://github.com/facebook/react/issues/19802
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
   )
 
+  // KILLME WHEN THIS BUG IS FIXED: https://github.com/facebook/react/issues/19802
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const onTransientSubmitValue = React.useCallback((newValue: T) => onSubmitValue(newValue, true), [
     onSubmitValue,
   ])

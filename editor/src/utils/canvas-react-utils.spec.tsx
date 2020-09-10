@@ -370,9 +370,9 @@ describe('Monkey Function', () => {
   })
 
   it('The Storyboard is a special fragment that we leave alone', () => {
-    const Component = () => {
+    const Component = React.useMemo(() => {
       return <div data-uid='cica'>Hello!</div>
-    }
+    }, [])
 
     expect(
       renderToFormattedString(

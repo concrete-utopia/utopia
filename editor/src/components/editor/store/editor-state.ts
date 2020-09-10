@@ -479,7 +479,7 @@ export function simpleParseSuccess(
 }
 
 export function modifyParseSuccessWithSimple(
-  transform: (success: SimpleParseSuccess) => SimpleParseSuccess,
+  transform: (s: SimpleParseSuccess) => SimpleParseSuccess,
   success: ParseSuccess,
 ): ParseSuccess {
   const oldSimpleParseSuccess: SimpleParseSuccess = {
@@ -511,7 +511,7 @@ export interface ParseSuccessAndEditorChanges<T> {
 }
 
 export function applyParseAndEditorChanges<T>(
-  getChanges: (editor: EditorState, success: ParseSuccess) => ParseSuccessAndEditorChanges<T>,
+  getChanges: (e: EditorState, success: ParseSuccess) => ParseSuccessAndEditorChanges<T>,
   editor: EditorState,
 ): { editor: EditorState; additionalData: T | null } {
   const openUIJSFileKey = getOpenUIJSFileKey(editor)

@@ -378,7 +378,7 @@ export function useFlasher<T extends HTMLElement>() {
   return ref
 }
 
-export function betterReactMemo<P extends Record<string, unknown>>(
+export function betterReactMemo<P extends Record<string, any>>(
   displayName: string,
   componentToMemo: React.FunctionComponent<P>,
   propsAreEqual?: (

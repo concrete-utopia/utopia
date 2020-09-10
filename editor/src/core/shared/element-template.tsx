@@ -1006,7 +1006,7 @@ export type ElementsByUID = { [uid: string]: JSXElement }
 export function walkElement(
   element: JSXElementChild,
   parentPath: StaticElementPath,
-  forEach: (element: JSXElementChild, path: StaticElementPath) => void,
+  forEach: (e: JSXElementChild, path: StaticElementPath) => void,
 ): void {
   switch (element.type) {
     case 'JSX_ELEMENT':

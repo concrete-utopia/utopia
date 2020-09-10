@@ -670,7 +670,7 @@ function shallowClone(value: any): any {
 
 function proxyValue(
   valueToProxy: any,
-  recordAssignment: (path: Array<string>, value: any) => any,
+  recordAssignment: (p: Array<string>, value: any) => any,
 ): any {
   function wrapInProxy(toWrap: any, objPath: Array<string>): any {
     if (typeof toWrap == 'object' && toWrap != null) {

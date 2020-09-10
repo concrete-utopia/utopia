@@ -19,12 +19,15 @@ interface SectionTitleRowProps {
 
 export const SectionTitleRow: React.FunctionComponent<SectionTitleRowProps> = (props) => {
   const toggleMinimised = props.toggleMinimised
-  const handleClick = (e: React.MouseEvent) => {
-    if (typeof toggleMinimised !== 'undefined') {
-      toggleMinimised()
-    }
-    e.stopPropagation()
-  }
+  const handleClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (typeof toggleMinimised !== 'undefined') {
+        toggleMinimised()
+      }
+      e.stopPropagation()
+    },
+    [toggleMinimised],
+  )
 
   return (
     <FlexRow
