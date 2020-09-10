@@ -344,6 +344,11 @@ editorAssetsEndpoint notProxiedPath possibleBranchName = do
     Just _          -> loadLocally
     Nothing         -> maybe loadLocally loadFromProxy possibleProxyManager
 
+downloadGithubProjectEndpoint :: Text -> Text -> ServerMonad BL.ByteString
+downloadGithubProjectEndpoint owner repo = do
+  zipball <- getGithubProject owner repo
+  return zipball
+
 monitoringEndpoint :: ServerMonad Value
 monitoringEndpoint = getMetrics
 
@@ -450,6 +455,7 @@ unprotected = authenticate
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectThumbnailEndpoint
+         :<|> downloadGithubProjectEndpoint
          :<|> monitoringEndpoint
          :<|> packagePackagerEndpoint
          :<|> getPackageJSONEndpoint

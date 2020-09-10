@@ -42,6 +42,7 @@ import           Utopia.Web.Database.Types
 import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
+import           Utopia.Web.Github
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
@@ -232,6 +233,9 @@ innerServerExecutor (GetProxyManager action) = do
 innerServerExecutor (GetPackagerProxyManager action) = do
   manager <- fmap _packagerProxy ask
   return $ action manager
+innerServerExecutor (GetGithubProject owner repo action) = do
+  zipball <- liftIO $ fetchRepoArchive owner repo
+  return $ action zipball
 innerServerExecutor (GetMetrics action) = do
   store <- fmap _storeForMetrics ask
   sample <- liftIO $ sampleAll store

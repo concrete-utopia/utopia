@@ -91,6 +91,17 @@ instance MimeUnrender SVG BL.ByteString where
 instance MimeUnrender HTML Text where
   mimeUnrender _ bytes = Right $ toS bytes
 
+data ZIP
+
+instance Accept ZIP where
+  contentType _ = "application" // "zip"
+
+instance MimeRender ZIP BL.ByteString where
+  mimeRender _ bytes = bytes
+
+instance MimeUnrender ZIP BL.ByteString where
+  mimeUnrender _ bytes = Right bytes
+
 
 data PrettyJSON
 
