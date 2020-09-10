@@ -1732,6 +1732,7 @@ export function getReparentTarget(
 ): {
   shouldReparent: boolean
   newParent: TemplatePath | null
+  possibleTargets: TemplatePath[]
 } {
   const result = getReparentTargetAtPosition(editorState, position)
   const possibleNewParent = result == undefined ? null : result
@@ -1739,8 +1740,19 @@ export function getReparentTarget(
     toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadataKILLME, view)),
   )
   let parentSupportsChild = true
+  const imports = getOpenImportsFromState(editorState)
+  const possibleTargets = Canvas.getAllTargetsAtPoint(
+    editorState,
+    position,
+    [TargetSearchType.All],
+    false,
+    'around-the-target',
+  )
+    .filter((target) => editorState.selectedViews.every((view) => !TP.pathsEqual(view, target)))
+    .filter((target) =>
+      MetadataUtils.targetSupportsChildren(imports, editorState.jsxMetadataKILLME, target),
+    )
   if (possibleNewParent != null) {
-    const imports = getOpenImportsFromState(editorState)
     parentSupportsChild = MetadataUtils.targetSupportsChildren(
       imports,
       editorState.jsxMetadataKILLME,
@@ -1752,6 +1764,7 @@ export function getReparentTarget(
     return {
       shouldReparent: storyboardComponent != null,
       newParent: storyboardComponent,
+      possibleTargets: possibleTargets,
     }
   }
   if (
@@ -1763,11 +1776,13 @@ export function getReparentTarget(
     return {
       shouldReparent: true,
       newParent: possibleNewParent,
+      possibleTargets: possibleTargets,
     }
   } else {
     return {
       shouldReparent: false,
       newParent: null,
+      possibleTargets: possibleTargets,
     }
   }
 }
@@ -2097,7 +2112,7 @@ function produceMoveTransientCanvasState(
           highlightedViews,
           null,
         )
-        highlightedViews = reparentResult.highlightedViews
+        highlightedViews = reparentTarget.possibleTargets
         selectedViews = reparentResult.selectedViews
         metadata = reparentResult.metadata
         utopiaComponentsIncludingScenes = reparentResult.utopiaComponentsIncludingScenes
@@ -2113,6 +2128,8 @@ function produceMoveTransientCanvasState(
           }
         })
       })
+    } else {
+      highlightedViews = reparentTarget.possibleTargets
     }
   } else if (dragState.duplicate) {
     const parentTarget = MetadataUtils.getDuplicationParentTargets(selectedViews)

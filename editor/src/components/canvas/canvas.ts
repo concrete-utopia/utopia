@@ -272,9 +272,10 @@ const Canvas = {
     canvasPosition: CanvasPoint,
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
-    looseTargetingForZeroSizedElements: 'strict' | 'loose',
+    looseTargetingForZeroSizedElements: 'strict' | 'loose' | 'around-the-target',
   ): Array<TemplatePath> {
-    const looseReparentThreshold = 5
+    const usesExperiment = looseTargetingForZeroSizedElements === 'around-the-target'
+    const looseReparentThreshold = usesExperiment ? 5 : 35
     const targetFilters = Canvas.targetFilter(editor.selectedViews, searchTypes)
     const framesWithPaths = Canvas.getFramesInCanvasContext(
       editor.jsxMetadataKILLME,
@@ -289,7 +290,7 @@ const Canvas = {
         !editor.hiddenInstances.some((hidden) =>
           TP.isAncestorOf(frameWithPath.path, hidden, true),
         ) &&
-        shouldUseLooseTargeting
+        (shouldUseLooseTargeting || usesExperiment)
         ? rectangleIntersection(
             canvasRectangle({
               x: frameWithPath.frame.x,
