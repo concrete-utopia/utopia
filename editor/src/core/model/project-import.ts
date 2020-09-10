@@ -12,6 +12,7 @@ import {
 } from './project-file-utils'
 import { lintAndParse } from '../workers/parser-printer/parser-printer'
 import { assetResultForBase64, getFileExtension, imageResultForBase64 } from '../shared/file-utils'
+import { Size } from '../shared/math-utils'
 
 async function attemptedTextFileLoad(fileName: string, file: JSZipObject): Promise<string | null> {
   const fileBuffer = await file.async('nodebuffer')
@@ -22,9 +23,23 @@ async function attemptedTextFileLoad(fileName: string, file: JSZipObject): Promi
   }
 }
 
-export async function importZippedGitProject(zipped: JSZip): Promise<ProjectContents> {
+export interface UnsavedAsset {
+  fileName: string
+  fileType: string
+  base64: string
+  hash: string
+  size: Size | null
+}
+
+export interface ProjectImportResult {
+  contents: ProjectContents
+  assetsToUpload: Array<UnsavedAsset>
+}
+
+export async function importZippedGitProject(zipped: JSZip): Promise<ProjectImportResult> {
   let loadedProject: ProjectContents = {}
   let promises: Array<Promise<void>> = []
+  let assetsToUpload: Array<UnsavedAsset> = []
 
   const loadFile = async (fileName: string, file: JSZip.JSZipObject) => {
     const shiftedFileName = fileName.replace(/[^\/]*\//, '/') // Github uses the project name and a commit hash as the root directory
@@ -37,14 +52,27 @@ export async function importZippedGitProject(zipped: JSZip): Promise<ProjectCont
           const fileType = getFileExtension(shiftedFileName)
           const base64 = await file.async('base64')
           const assetResult = assetResultForBase64(shiftedFileName, base64)
+          assetsToUpload.push({
+            fileName: assetResult.filename,
+            fileType: fileType,
+            base64: assetResult.dataUrl,
+            hash: assetResult.hash,
+            size: null,
+          })
           loadedProject[shiftedFileName] = assetFile()
-          // TODO trigger upload
           break
         }
         case 'IMAGE_FILE': {
           const fileType = getFileExtension(shiftedFileName)
           const base64 = await file.async('base64')
           const imageResult = await imageResultForBase64(shiftedFileName, fileType, base64)
+          assetsToUpload.push({
+            fileName: imageResult.filename,
+            fileType: fileType,
+            base64: imageResult.dataUrl,
+            hash: imageResult.hash,
+            size: imageResult.size,
+          })
           loadedProject[shiftedFileName] = imageFile(
             fileType,
             imageResult.dataUrl,
@@ -52,7 +80,6 @@ export async function importZippedGitProject(zipped: JSZip): Promise<ProjectCont
             imageResult.size.height,
             imageResult.hash,
           )
-          // TODO trigger upload
           break
         }
         case 'UI_JS_FILE':
@@ -87,5 +114,9 @@ export async function importZippedGitProject(zipped: JSZip): Promise<ProjectCont
   })
 
   await Promise.all(promises)
-  return loadedProject
+
+  return {
+    contents: loadedProject,
+    assetsToUpload: assetsToUpload,
+  }
 }

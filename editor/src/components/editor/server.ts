@@ -339,10 +339,7 @@ export async function downloadGithubRepo(
     const zipFile = await JSZip.loadAsync(buffer)
     return right(zipFile)
   } else {
-    // FIXME Client should show an error if server requests fail
-    console.error(
-      `Download github repo request failed (${response.status}): ${response.statusText}`,
-    )
+    // FIXME Better handling of different response types
     return left(`Download github repo request failed (${response.status}): ${response.statusText}`)
   }
 }
