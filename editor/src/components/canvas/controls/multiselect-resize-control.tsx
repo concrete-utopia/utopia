@@ -202,6 +202,12 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
   render() {
     return this.props.selectedViews.map((view, index) => {
       const frame = MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
+      const pinnedSides =
+        MetadataUtils.getElementByInstancePathMaybe(
+          this.props.componentMetadata,
+          TP.toInstancePathMaybe(view),
+        )?.specialSizeMeasurements?.activelyPinnedSides ?? undefined
+
       if (frame != null) {
         return (
           <>
@@ -215,7 +221,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
               selectedViews={[view]}
               elementAspectRatioLocked={this.props.elementAspectRatioLocked}
               imageMultiplier={this.props.imageMultiplier}
-              sideResizer={this.props.sideResizeOnly}
+              sideResizer={false}
               dragState={
                 this.props.dragState != null && this.props.dragState.type === 'RESIZE_DRAG_STATE'
                   ? this.props.dragState
@@ -226,6 +232,16 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
               metadata={this.props.componentMetadata}
               onResizeStart={this.props.onResizeStart}
               testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
+              activelyPinnedSides={
+                this.props.sideResizeOnly
+                  ? pinnedSides
+                  : {
+                      left: false,
+                      top: false,
+                      right: false,
+                      bottom: false,
+                    }
+              }
             />
           </>
         )

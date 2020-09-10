@@ -158,6 +158,13 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         let clientWidth = element.clientWidth
         let clientHeight = element.clientHeight
 
+        const pinnedSides = {
+          left: (element as any).attributeStyleMap.has('left'),
+          top: (element as any).attributeStyleMap.has('top'),
+          right: (element as any).attributeStyleMap.has('right'),
+          bottom: (element as any).attributeStyleMap.has('bottom'),
+        }
+
         return specialSizeMeasurements(
           offset,
           coordinateSystemBounds,
@@ -174,6 +181,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           clientWidth,
           clientHeight,
           parentFlexDirection,
+          pinnedSides,
         )
       }
 

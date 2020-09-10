@@ -36,7 +36,7 @@ interface ResizeControlProps extends ResizeRectangleProps {
   dragState: ResizeDragState | null
 }
 
-class ResizeControl extends React.Component<ResizeControlProps, {}> {
+class ResizeControl extends React.Component<ResizeControlProps> {
   reference = React.createRef<HTMLDivElement>()
   constructor(props: ResizeControlProps) {
     super(props)
@@ -128,7 +128,7 @@ interface ResizeEdgeProps {
   resizeStatus: ResizeStatus
 }
 
-class ResizeEdge extends React.Component<ResizeEdgeProps, {}> {
+class ResizeEdge extends React.Component<ResizeEdgeProps> {
   reference = React.createRef<HTMLDivElement>()
 
   render() {
@@ -302,7 +302,7 @@ interface ResizePointProps {
   testID: string
 }
 
-class ResizePoint extends React.Component<ResizePointProps, {}> {
+class ResizePoint extends React.Component<ResizePointProps> {
   reference = React.createRef<HTMLDivElement>()
 
   render() {
@@ -388,11 +388,24 @@ interface ResizeRectangleProps {
   metadata: Array<ComponentMetadata>
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
   testID: string
+  activelyPinnedSides?: {
+    left: boolean
+    top: boolean
+    right: boolean
+    bottom: boolean
+  }
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
   render() {
     const controlProps = this.props
+
+    const activelyPinnedSides = this.props.activelyPinnedSides ?? {
+      left: false,
+      top: false,
+      right: false,
+      bottom: false,
+    }
 
     const { showingInvisibleElement, dimension } = calculateExtraSizeForZeroSizedElement(
       this.props.measureSize,
@@ -480,163 +493,187 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
     ) {
       const pointControls = this.props.sideResizer ? null : (
         <React.Fragment>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNS}
-            position={{ x: 0.5, y: 0 }}
-            enabledDirection={DirectionVertical}
-          >
-            <ResizeEdge
+          {activelyPinnedSides.top ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeNS}
-              direction='horizontal'
               position={{ x: 0.5, y: 0 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNS}
-            position={{ x: 0.5, y: 1 }}
-            enabledDirection={DirectionVertical}
-          >
-            <ResizeEdge
+              enabledDirection={DirectionVertical}
+            >
+              <ResizeEdge
+                {...controlProps}
+                cursor={CSSCursor.ResizeNS}
+                direction='horizontal'
+                position={{ x: 0.5, y: 0 }}
+              />
+            </ResizeControl>
+          )}
+          {activelyPinnedSides.right ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeNS}
-              direction='horizontal'
               position={{ x: 0.5, y: 1 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeEW}
-            position={{ x: 0, y: 0.5 }}
-            enabledDirection={DirectionHorizontal}
-          >
-            <ResizeEdge
+              enabledDirection={DirectionVertical}
+            >
+              <ResizeEdge
+                {...controlProps}
+                cursor={CSSCursor.ResizeNS}
+                direction='horizontal'
+                position={{ x: 0.5, y: 1 }}
+              />
+            </ResizeControl>
+          )}
+          {activelyPinnedSides.left ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeEW}
-              direction='vertical'
               position={{ x: 0, y: 0.5 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeEW}
-            position={{ x: 1, y: 0.5 }}
-            enabledDirection={DirectionHorizontal}
-          >
-            <ResizeEdge
+              enabledDirection={DirectionHorizontal}
+            >
+              <ResizeEdge
+                {...controlProps}
+                cursor={CSSCursor.ResizeEW}
+                direction='vertical'
+                position={{ x: 0, y: 0.5 }}
+              />
+            </ResizeControl>
+          )}
+          {activelyPinnedSides.right ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeEW}
-              direction='vertical'
               position={{ x: 1, y: 0.5 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNWSE}
-            position={{ x: 0, y: 0 }}
-            enabledDirection={DirectionAll}
-          >
-            <ResizePoint
+              enabledDirection={DirectionHorizontal}
+            >
+              <ResizeEdge
+                {...controlProps}
+                cursor={CSSCursor.ResizeEW}
+                direction='vertical'
+                position={{ x: 1, y: 0.5 }}
+              />
+            </ResizeControl>
+          )}
+          {activelyPinnedSides.top || activelyPinnedSides.left ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeNWSE}
               position={{ x: 0, y: 0 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNESW}
-            position={{ x: 1, y: 0 }}
-            enabledDirection={DirectionAll}
-          >
-            <ResizePoint
+              enabledDirection={DirectionAll}
+            >
+              <ResizePoint
+                {...controlProps}
+                cursor={CSSCursor.ResizeNWSE}
+                position={{ x: 0, y: 0 }}
+              />
+            </ResizeControl>
+          )}
+          {activelyPinnedSides.top || activelyPinnedSides.right ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeNESW}
               position={{ x: 1, y: 0 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNESW}
-            position={{ x: 0, y: 1 }}
-            enabledDirection={DirectionAll}
-          >
-            <ResizePoint
+              enabledDirection={DirectionAll}
+            >
+              <ResizePoint
+                {...controlProps}
+                cursor={CSSCursor.ResizeNESW}
+                position={{ x: 1, y: 0 }}
+              />
+            </ResizeControl>
+          )}
+          {activelyPinnedSides.bottom || activelyPinnedSides.left ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeNESW}
               position={{ x: 0, y: 1 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNWSE}
-            position={{ x: 1, y: 1 }}
-            enabledDirection={DirectionAll}
-          >
-            <ResizePoint
+              enabledDirection={DirectionAll}
+            >
+              <ResizePoint
+                {...controlProps}
+                cursor={CSSCursor.ResizeNESW}
+                position={{ x: 0, y: 1 }}
+              />
+            </ResizeControl>
+          )}
+          {activelyPinnedSides.bottom || activelyPinnedSides.right ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeNWSE}
               position={{ x: 1, y: 1 }}
-            />
-          </ResizeControl>
+              enabledDirection={DirectionAll}
+            >
+              <ResizePoint
+                {...controlProps}
+                cursor={CSSCursor.ResizeNWSE}
+                position={{ x: 1, y: 1 }}
+              />
+            </ResizeControl>
+          )}
         </React.Fragment>
       )
 
       const resizeLines = !this.props.sideResizer ? null : (
         <React.Fragment>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNS}
-            position={{ x: 0.5, y: 0 }}
-            enabledDirection={DirectionVertical}
-          >
-            <ResizeLines
+          {activelyPinnedSides.top ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeNS}
-              direction='horizontal'
               position={{ x: 0.5, y: 0 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNS}
-            position={{ x: 0.5, y: 1 }}
-            enabledDirection={DirectionVertical}
-          >
-            <ResizeLines
+              enabledDirection={DirectionVertical}
+            >
+              <ResizeLines
+                {...controlProps}
+                cursor={CSSCursor.ResizeNS}
+                direction='horizontal'
+                position={{ x: 0.5, y: 0 }}
+              />
+            </ResizeControl>
+          )}
+          {activelyPinnedSides.bottom ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeNS}
-              direction='horizontal'
               position={{ x: 0.5, y: 1 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeEW}
-            position={{ x: 0, y: 0.5 }}
-            enabledDirection={DirectionHorizontal}
-          >
-            <ResizeLines
+              enabledDirection={DirectionVertical}
+            >
+              <ResizeLines
+                {...controlProps}
+                cursor={CSSCursor.ResizeNS}
+                direction='horizontal'
+                position={{ x: 0.5, y: 1 }}
+              />
+            </ResizeControl>
+          )}
+          {activelyPinnedSides.left ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeEW}
-              direction='vertical'
               position={{ x: 0, y: 0.5 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeEW}
-            position={{ x: 1, y: 0.5 }}
-            enabledDirection={DirectionHorizontal}
-          >
-            <ResizeLines
+              enabledDirection={DirectionHorizontal}
+            >
+              <ResizeLines
+                {...controlProps}
+                cursor={CSSCursor.ResizeEW}
+                direction='vertical'
+                position={{ x: 0, y: 0.5 }}
+              />
+            </ResizeControl>
+          )}
+          {activelyPinnedSides.right ? null : (
+            <ResizeControl
               {...controlProps}
               cursor={CSSCursor.ResizeEW}
-              direction='vertical'
               position={{ x: 1, y: 0.5 }}
-            />
-          </ResizeControl>
+              enabledDirection={DirectionHorizontal}
+            >
+              <ResizeLines
+                {...controlProps}
+                cursor={CSSCursor.ResizeEW}
+                direction='vertical'
+                position={{ x: 1, y: 0.5 }}
+              />
+            </ResizeControl>
+          )}
         </React.Fragment>
       )
 

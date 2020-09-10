@@ -915,6 +915,12 @@ export interface SpecialSizeMeasurements {
   clientWidth: number
   clientHeight: number
   parentFlexDirection: string | null
+  activelyPinnedSides: {
+    left: boolean
+    top: boolean
+    right: boolean
+    bottom: boolean
+  }
 }
 
 export function specialSizeMeasurements(
@@ -933,6 +939,12 @@ export function specialSizeMeasurements(
   clientWidth: number,
   clientHeight: number,
   parentFlexDirection: string | null,
+  activelyPinnedSides: {
+    left: boolean
+    top: boolean
+    right: boolean
+    bottom: boolean
+  },
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -950,6 +962,7 @@ export function specialSizeMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    activelyPinnedSides,
   }
 }
 
@@ -972,6 +985,12 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   0,
   null,
+  {
+    left: false,
+    top: false,
+    right: false,
+    bottom: false,
+  },
 )
 
 export const emptyComputedStyle: ComputedStyle = {}

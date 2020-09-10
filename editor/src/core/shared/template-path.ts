@@ -114,6 +114,14 @@ export function scenePathForPath(path: TemplatePath): ScenePath {
   }
 }
 
+export function toInstancePathMaybe(path: TemplatePath): InstancePath | null {
+  if (isInstancePath(path)) {
+    return path
+  } else {
+    return null
+  }
+}
+
 export function elementPathForPath(path: ScenePath): StaticElementPath
 export function elementPathForPath(path: StaticInstancePath): StaticElementPath
 export function elementPathForPath(path: InstancePath): ElementPath
