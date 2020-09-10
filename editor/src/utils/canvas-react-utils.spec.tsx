@@ -29,6 +29,10 @@ const Scene = (props: {
   return { ...result }
 }
 
+const SceneComponent = () => {
+  return <div data-uid='cica'>Hello!</div>
+}
+
 describe('Monkey Function', () => {
   it('works for simple class components', () => {
     class TestClass extends React.Component {
@@ -370,14 +374,10 @@ describe('Monkey Function', () => {
   })
 
   it('The Storyboard is a special fragment that we leave alone', () => {
-    const Component = React.useMemo(() => {
-      return <div data-uid='cica'>Hello!</div>
-    }, [])
-
     expect(
       renderToFormattedString(
         <Storyboard data-uid='ignore'>
-          <Scene data-uid='scene' component={Component} />
+          <Scene data-uid='scene' component={SceneComponent} />
         </Storyboard>,
       ),
     ).toMatchInlineSnapshot(`

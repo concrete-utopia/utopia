@@ -213,8 +213,6 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
         }
       },
     )
-    // KILLME WHEN THIS BUG IS FIXED: https://github.com/facebook/react/issues/19802
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multiselectAtProps, multiselectLength, selectedProps, selectedComputedStyles])
 }
 
@@ -598,13 +596,9 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
       }
       propKeys.forEach(submitValue)
     },
-    // KILLME WHEN THIS BUG IS FIXED: https://github.com/facebook/react/issues/19802
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
   )
 
-  // KILLME WHEN THIS BUG IS FIXED: https://github.com/facebook/react/issues/19802
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const onTransientSubmitValue = React.useCallback((newValue: T) => onSubmitValue(newValue, true), [
     onSubmitValue,
   ])
