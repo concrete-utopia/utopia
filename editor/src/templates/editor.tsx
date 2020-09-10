@@ -74,6 +74,8 @@ import {
   emptyUiJsxCanvasContextData,
   UiJsxCanvasContext,
 } from '../components/canvas/ui-jsx-canvas'
+import { isLeft } from '../core/shared/either'
+import { importZippedGitProject } from '../core/model/project-import'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -203,9 +205,15 @@ export class Editor {
           const githubOwner = urlParams.get('github_owner')
           const githubRepo = urlParams.get('github_repo')
           if (githubOwner != null && githubRepo != null) {
-            // Trigger the repo download but do nothing with it
-            downloadGithubRepo(githubOwner, githubRepo).then((project) => {
-              // Do nothing
+            // Trigger the repo download
+            downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
+              if (isLeft(repoResult)) {
+                console.error(repoResult.value)
+              } else {
+                importZippedGitProject(repoResult.value).then((loadedProject) => {
+                  // Do nothing
+                })
+              }
             })
           }
           createNewProject(this.boundDispatch, () =>

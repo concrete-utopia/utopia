@@ -369,7 +369,16 @@ export function mimeTypeLookup(filename: string): string | false {
   }
 }
 
-export function fileTypeFromFileName(filename: string | null): ProjectFileType | null {
+type ProjectFileTypeExcludingDirectory = Exclude<ProjectFileType, 'DIRECTORY'>
+
+export function fileTypeFromFileName(filename: null): null
+export function fileTypeFromFileName(filename: string): ProjectFileTypeExcludingDirectory
+export function fileTypeFromFileName(
+  filename: string | null,
+): ProjectFileTypeExcludingDirectory | null
+export function fileTypeFromFileName(
+  filename: string | null,
+): ProjectFileTypeExcludingDirectory | null {
   if (filename == null) {
     return null
   }
@@ -378,7 +387,7 @@ export function fileTypeFromFileName(filename: string | null): ProjectFileType |
   } else {
     const mimeType = mimeTypeLookup(filename)
     if (mimeType === false) {
-      return null
+      return 'ASSET_FILE'
     } else {
       if (mimeType.startsWith('image/')) {
         return 'IMAGE_FILE'
