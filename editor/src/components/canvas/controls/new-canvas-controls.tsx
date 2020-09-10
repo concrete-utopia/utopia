@@ -84,7 +84,7 @@ export const NewCanvasControls = betterReactMemo(
 
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.
-    const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', {}> = {
+    const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', unknown> = {
       accept: 'filebrowser',
       canDrop: () => true,
     }
@@ -325,9 +325,26 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
           if (frame == null) {
             return null
           }
-          const color = TP.isScenePath(path)
-            ? colorTheme.canvasSelectionSceneOutline.value
-            : colorTheme.canvasSelectionPrimaryOutline.value
+          let striped = false
+          let color = colorTheme.canvasSelectionPrimaryOutline.value
+          if (
+            props.editor.canvas.dragState?.type === 'MOVE_DRAG_STATE' &&
+            props.editor.canvas.dragState.reparent
+          ) {
+            const isNewParent = props.derived.canvas.transientState.selectedViews.some((view) =>
+              TP.pathsEqual(TP.parentPath(view), path),
+            )
+            if (isNewParent) {
+              striped = true
+              color = colorTheme.red.o(70).value
+            } else {
+              color = colorTheme.red.o(50).value
+            }
+          } else {
+            color = TP.isScenePath(path)
+              ? colorTheme.canvasSelectionSceneOutline.value
+              : colorTheme.canvasSelectionPrimaryOutline.value
+          }
           return (
             <HighlightControl
               key={`highlight-control-${TP.toComponentId(path)}`}
@@ -335,6 +352,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
               frame={frame}
               scale={props.editor.canvas.scale}
               canvasOffset={props.canvasOffset}
+              striped={striped}
             />
           )
         })
