@@ -137,6 +137,12 @@ export class SelectModeControlContainer extends React.Component<
           TP.isScenePath(view) ||
           this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
+
+      if (this.props.selectModeState !== 'move') {
+        // early exit
+        return
+      }
+
       // setting original frames
       if (moveTargets.length > 0) {
         let originalFrames = getOriginalCanvasFrames(moveTargets, this.props.componentMetadata)
@@ -625,6 +631,10 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   canResizeElements(): boolean {
+    if (this.props.selectModeState !== 'resize') {
+      return false
+    }
+
     return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
         const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, target)
