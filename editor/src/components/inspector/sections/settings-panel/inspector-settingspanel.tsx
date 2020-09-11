@@ -50,7 +50,7 @@ const FeatureSwitchRow = betterReactMemo('Feature Switch Row', (props: { name: F
   return (
     <StyledFlexRow>
       <CheckboxInput
-        style={{ display: 'flex', alignItems: 'center', marginRight: 4 }}
+        style={{ marginRight: 8 }}
         id={id}
         checked={isFeatureEnabled(name)}
         onChange={onChange}
@@ -88,7 +88,7 @@ export const SettingsPanel = (props: any) => {
       </StyledFlexRow>
       <StyledFlexRow>
         <CheckboxInput
-          style={{ display: 'flex', alignItems: 'center', marginRight: 4 }}
+          style={{ marginRight: 8 }}
           id='showCodeEditorLabel'
           checked={interfaceDesigner.codePaneVisible}
           onChange={toggleCodeEditorVisible}
@@ -97,7 +97,7 @@ export const SettingsPanel = (props: any) => {
       </StyledFlexRow>
       <StyledFlexRow>
         <CheckboxInput
-          style={{ display: 'flex', alignItems: 'center', marginRight: 4 }}
+          style={{ marginRight: 8 }}
           id='toggleInterfaceDesignerLayoutReversed'
           checked={interfaceDesigner.layoutReversed}
           onChange={toggleLayoutReversed}
@@ -106,7 +106,7 @@ export const SettingsPanel = (props: any) => {
       </StyledFlexRow>
       <StyledFlexRow>
         <CheckboxInput
-          style={{ display: 'flex', alignItems: 'center', marginRight: 4 }}
+          style={{ marginRight: 8 }}
           id='toggleInterfaceDesignerAdditionalCanvasControls'
           checked={interfaceDesigner.additionalControls}
           onChange={toggleAdditionalControls}
