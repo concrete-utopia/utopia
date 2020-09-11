@@ -25,6 +25,7 @@ import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
   createNewProject,
+  createNewProjectFromImportedProject,
   createNewProjectFromSampleProject,
   loadFromLocalStorage,
   loadFromServer,
@@ -74,6 +75,8 @@ import {
   emptyUiJsxCanvasContextData,
   UiJsxCanvasContext,
 } from '../components/canvas/ui-jsx-canvas'
+import { isLeft } from '../core/shared/either'
+import { importZippedGitProject } from '../core/model/project-import'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -202,15 +205,44 @@ export class Editor {
           const urlParams = new URLSearchParams(window.location.search)
           const githubOwner = urlParams.get('github_owner')
           const githubRepo = urlParams.get('github_repo')
-          if (githubOwner != null && githubRepo != null) {
-            // Trigger the repo download but do nothing with it
-            downloadGithubRepo(githubOwner, githubRepo).then((project) => {
-              // Do nothing
+          if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
+            // TODO Should we require users to be logged in for this?
+            downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
+              if (isLeft(repoResult)) {
+                console.error(repoResult.value)
+              } else {
+                const projectName = `${githubOwner}-${githubRepo}`
+                importZippedGitProject(projectName, repoResult.value).then((loadedProject) => {
+                  createNewProjectFromImportedProject(
+                    loadedProject,
+                    this.storedState.workers,
+                    this.boundDispatch,
+                    () =>
+                      renderRootComponent(
+                        this.utopiaStoreHook,
+                        this.utopiaStoreApi,
+                        this.spyCollector,
+                      ),
+                  )
+                })
+              }
             })
+          } else {
+            if (githubOwner != null && githubRepo != null) {
+              this.boundDispatch(
+                [
+                  EditorActions.showToast({
+                    message: 'Please log in to fork a github repo',
+                  }),
+                ],
+                'everyone',
+              )
+            }
+
+            createNewProject(this.boundDispatch, () =>
+              renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
+            )
           }
-          createNewProject(this.boundDispatch, () =>
-            renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
-          )
         } else if (isSampleProject(projectId)) {
           createNewProjectFromSampleProject(
             projectId,

@@ -18,14 +18,24 @@ import {
 import {
   createNewProjectID,
   loadProject,
+  saveAssets,
   saveImagesFromProject,
   saveThumbnail,
   updateSavedProject,
 } from './server'
-import { createNewProjectName, PersistentModel } from './store/editor-state'
+import {
+  createNewProjectName,
+  EditorTab,
+  PersistentModel,
+  persistentModelForProjectContents,
+  releaseNotesTab,
+} from './store/editor-state'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { arrayContains, projectURLForProject } from '../../core/shared/utils'
 import { getPNGBufferOfElementWithID } from './screenshot-utils'
+import { ProjectImportResult } from '../../core/model/project-import'
+import { CURRENT_PROJECT_VERSION } from './actions/migrations/migrations'
+import { DefaultTheme } from '../code-editor/code-editor-themes'
 
 interface NeverSaved {
   type: 'never-saved'
@@ -190,6 +200,29 @@ export function createNewProject(dispatch: EditorDispatch, renderEditorRoot: () 
   _lastThumbnailGenerated = 0
   _saveState = neverSaved()
   newProject(dispatch, renderEditorRoot)
+}
+
+export async function createNewProjectFromImportedProject(
+  importedProject: ProjectImportResult,
+  workers: UtopiaTsWorkers,
+  dispatch: EditorDispatch,
+  renderEditorRoot: () => void,
+) {
+  _lastThumbnailGenerated = 0
+  _saveState = neverSaved()
+  const projectId = await createNewProjectID()
+  const persistentModel = persistentModelForProjectContents(importedProject.contents)
+
+  await saveAssets(projectId, importedProject.assetsToUpload)
+  await serverSaveInner(
+    dispatch,
+    projectId,
+    importedProject.projectName,
+    persistentModel,
+    importedProject.projectName,
+    true,
+  )
+  load(dispatch, persistentModel, importedProject.projectName, projectId, workers, renderEditorRoot)
 }
 
 export async function createNewProjectFromSampleProject(
