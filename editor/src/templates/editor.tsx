@@ -211,7 +211,8 @@ export class Editor {
               if (isLeft(repoResult)) {
                 console.error(repoResult.value)
               } else {
-                importZippedGitProject(githubRepo, repoResult.value).then((loadedProject) => {
+                const projectName = `${githubOwner}-${githubRepo}`
+                importZippedGitProject(projectName, repoResult.value).then((loadedProject) => {
                   createNewProjectFromImportedProject(
                     loadedProject,
                     this.storedState.workers,
@@ -227,6 +228,17 @@ export class Editor {
               }
             })
           } else {
+            if (githubOwner != null && githubRepo != null) {
+              this.boundDispatch(
+                [
+                  EditorActions.showToast({
+                    message: 'Please log in to fork a github repo',
+                  }),
+                ],
+                'everyone',
+              )
+            }
+
             createNewProject(this.boundDispatch, () =>
               renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
             )
