@@ -418,6 +418,35 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     ) : null
   }
 
+  const ButtonStyle = {
+    borderRadius: 5,
+    border: `1px solid ${colorTheme.neutralBorder.value}`,
+    backgroundColor: '#fefefe',
+  }
+
+  const renderToolbar = () => {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: 90,
+        }}
+      >
+        <div style={ButtonStyle} onClick={() => setSelectModeState('move')}>
+          → move
+        </div>
+        <div style={ButtonStyle} onClick={() => setSelectModeState('move')}>
+          ↯ translate
+        </div>
+        <div style={ButtonStyle} onClick={() => setSelectModeState('resize')}>
+          ↕️ resize
+        </div>
+      </div>
+    )
+  }
+
   const textEditor =
     props.editor.canvas.textEditor != null
       ? renderTextEditor(props.editor.canvas.textEditor.templatePath)
@@ -436,6 +465,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       {renderModeControlContainer()}
       {renderHighlightControls()}
       {textEditor}
+      {renderToolbar()}
     </div>
   )
 }
