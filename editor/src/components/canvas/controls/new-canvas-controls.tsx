@@ -84,7 +84,7 @@ export const NewCanvasControls = betterReactMemo(
 
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.
-    const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', {}> = {
+    const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS'> = {
       accept: 'filebrowser',
       canDrop: () => true,
     }
@@ -155,7 +155,11 @@ interface NewCanvasControlsClassProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
 }
 
+export type SelectModeState = 'move' | 'translate' | 'resize'
+
 const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
+  const [selectModeState, setSelectModeState] = React.useState<SelectModeState>('move')
+
   const selectionEnabled =
     props.editor.canvas.selectionControlsVisible &&
     !props.editor.keysPressed['z'] &&
@@ -290,6 +294,8 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
                 : null
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+            selectModeState={selectModeState}
+            setSelectModeState={setSelectModeState}
           />
         )
       }

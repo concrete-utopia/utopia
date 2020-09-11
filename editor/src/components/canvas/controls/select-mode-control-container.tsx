@@ -14,7 +14,7 @@ import { ConstraintsControls } from './constraints-control'
 import { DistanceGuideline } from './distance-guideline'
 import { GuidelineControl } from './guideline-control'
 import { collectParentAndSiblingGuidelines, getSnappedGuidelines } from './guideline-helpers'
-import { ControlProps } from './new-canvas-controls'
+import { ControlProps, SelectModeState } from './new-canvas-controls'
 import { ComponentAreaControl, ComponentLabelControl } from './component-area-control'
 import { YogaControls } from './yoga-control'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -53,6 +53,8 @@ interface SelectModeControlContainerProps extends ControlProps {
   maybeClearHighlightsOnHoverEnd: () => void
   duplicationState: DuplicationState | null
   dragState: MoveDragState | ResizeDragState | null
+  selectModeState: SelectModeState
+  setSelectModeState: (newState: SelectModeState) => void
 }
 
 interface SelectModeControlContainerState {
