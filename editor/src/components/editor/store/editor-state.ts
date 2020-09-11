@@ -89,6 +89,7 @@ import {
   codeCacheToBuildResult,
   CodeResultCache,
   generateCodeResultCache,
+  PropertyControlsInfo,
 } from '../../custom-code/code-file'
 import { EditorModes, Mode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
@@ -262,6 +263,7 @@ export interface EditorState {
   jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
   projectContents: ProjectContents
   codeResultCache: CodeResultCache
+  propertyControlsInfo: PropertyControlsInfo
   nodeModules: {
     skipDeepFreeze: true // when we evaluate the code files we plan to mutate the content with the eval result
     files: NodeModules
@@ -1022,6 +1024,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     jsxMetadataKILLME: [],
     projectContents: {},
     codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, [], 'full-build', null),
+    propertyControlsInfo: {},
     nodeModules: {
       skipDeepFreeze: true,
       files: {},

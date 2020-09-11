@@ -33,9 +33,9 @@ import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-eleme
 export function defaultPropertiesForComponentInFile(
   componentName: string,
   filePathNoExtension: string,
-  codeResultCache: CodeResultCache | null,
+  propertyControlsInfo: PropertyControlsInfo,
 ): { [prop: string]: unknown } {
-  const propertyControlsForFile = codeResultCache?.propertyControlsInfo[filePathNoExtension] ?? {}
+  const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
   const parsedPropertyControlsForFile = parsePropertyControlsForFile(propertyControlsForFile)
   const parsedPropertyControls = parsedPropertyControlsForFile[componentName]
   return parsedPropertyControls == null
@@ -209,7 +209,7 @@ export function removeIgnored(
 }
 
 export function getControlsForExternalDependencies(
-  npmDependencies: NpmDependency[],
+  npmDependencies: ReadonlyArray<NpmDependency>,
 ): PropertyControlsInfo {
   let propertyControlsInfo: PropertyControlsInfo = {}
   fastForEach(npmDependencies, (dependency) => {
@@ -233,7 +233,7 @@ export function getPropertyControlsForTarget(
   target: TemplatePath,
   editor: EditorState,
 ): PropertyControls | null {
-  const codeResultCache = editor.codeResultCache
+  const propertyControlsInfo = editor.propertyControlsInfo
   const imports = getOpenImportsFromState(editor)
   const openFilePath = getOpenUIJSFileKey(editor)
   const rootComponents = getOpenUtopiaJSXComponentsFromState(editor)
@@ -269,10 +269,10 @@ export function getPropertyControlsForTarget(
       // TODO figure out absolute filepath
       const absoluteFilePath = filename.startsWith('.') ? `${filename.slice(1)}` : `${filename}`
       if (
-        codeResultCache.propertyControlsInfo[absoluteFilePath] != null &&
-        codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] != null
+        propertyControlsInfo[absoluteFilePath] != null &&
+        propertyControlsInfo[absoluteFilePath][tagName] != null
       ) {
-        return codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] as PropertyControls
+        return propertyControlsInfo[absoluteFilePath][tagName] as PropertyControls
       } else {
         return null
       }

@@ -68,10 +68,10 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
   const frameHeight = useInspectorLayoutInfo('Height')
 
   const sceneTarget = useSceneTarget()
-  const { codeResultCache, components, openFileFullPath } = useKeepReferenceEqualityIfPossible(
+  const { propertyControlsInfo, components, openFileFullPath } = useKeepReferenceEqualityIfPossible(
     useEditorState((store) => {
       return {
-        codeResultCache: store.editor.codeResultCache,
+        propertyControlsInfo: store.editor.propertyControlsInfo,
         components: getOpenUtopiaJSXComponentsFromState(store.editor),
         openFileFullPath: getOpenFilename(store.editor),
       }
@@ -90,7 +90,7 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
           const defaultProps = defaultPropertiesForComponentInFile(
             componentName,
             dropExtension(openFileFullPath),
-            codeResultCache,
+            propertyControlsInfo,
           )
           const detectedProps = component.propsUsed
           const warningMessage = findMissingDefaultsAndGetWarning(detectedProps, defaultProps)

@@ -1,18 +1,23 @@
-import { ParseSuccess } from 'src/core/shared/project-file-types'
+import { NodeModules, ParseSuccess } from 'src/core/shared/project-file-types'
 import {
   createLinterRequestMessage,
   handleMessage as handleLinterMessage,
   OutgoingLinterWorkerMessage,
 } from './linter/linter-worker'
-import { LinterWorker, ParserPrinterWorker, WatchdogWorker } from './workers'
+import { LinterWorker, ParserPrinterWorker, ValuesWorker, WatchdogWorker } from './workers'
 import {
   createParseFileMessage,
   createPrintCodeMessage,
   handleMessage as handleParserPrinterMessage,
   ParserPrinterResultMessage,
 } from './parser-printer/parser-printer-worker'
-import { handleMessage as handleTSWorkerMessage } from './ts/ts-worker'
+import {
+  ExportsInfo,
+  handleMessage as handleTSWorkerMessage,
+  MultiFileBuildResult,
+} from './ts/ts-worker'
 import { BundlerWorker } from './bundler-bridge'
+import { NpmDependency } from '../shared/npm-dependency-types'
 
 export class FakeBundlerWorker implements BundlerWorker {
   messageListeners: Array<(ev: MessageEvent) => any> = []
@@ -85,7 +90,7 @@ export class FakeLinterWorker implements LinterWorker {
 }
 
 export class FakeWatchdogWorker implements WatchdogWorker {
-  initWatchdogWorker(projectID: string): void {
+  initWatchdogWorker(_projectID: string): void {
     // empty
   }
 
@@ -93,11 +98,30 @@ export class FakeWatchdogWorker implements WatchdogWorker {
     // empty
   }
 
-  addHeartbeatRequestEventListener(handler: (e: MessageEvent) => void): void {
+  addHeartbeatRequestEventListener(_handler: (e: MessageEvent) => void): void {
     // empty
   }
 
-  sendHeartbeatResponseMessage(id: NodeJS.Timer, projectId: string): void {
+  sendHeartbeatResponseMessage(_id: NodeJS.Timer, _projectId: string): void {
+    // empty
+  }
+}
+
+export class FakeValuesWorker implements ValuesWorker {
+  sendGetPropertyControlsInfoMessage(
+    _nodeModules: NodeModules,
+    _exportsInfo: ReadonlyArray<ExportsInfo>,
+    _projectModules: MultiFileBuildResult,
+    _npmDependencies: ReadonlyArray<NpmDependency>,
+  ): void {
+    // empty
+  }
+
+  addPropertyControlsInfoEventListener(_handler: (e: MessageEvent) => void): void {
+    // empty
+  }
+
+  removePropertyControlsInfoEventListener(_handler: (e: MessageEvent) => void): void {
     // empty
   }
 }

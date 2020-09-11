@@ -108,7 +108,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
             const defaultProps = defaultPropertiesForComponentInFile(
               componentName,
               dropExtension(openFileFullPath),
-              store.editor.codeResultCache,
+              store.editor.propertyControlsInfo,
             )
             const detectedProps = topLevelElement.propsUsed
             currentFileComponents.push({

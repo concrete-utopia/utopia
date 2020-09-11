@@ -192,6 +192,7 @@ import {
   CodeResultCache,
   generateCodeResultCache,
   codeCacheToBuildResult,
+  PropertyControlsInfo,
 } from '../../custom-code/code-file'
 import { ElementContextMenuInstance } from '../../element-context-menu'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
@@ -337,6 +338,7 @@ import {
   AddMissingDimensions,
   SetPackageStatus,
   SetShortcut,
+  UpdatePropertyControlsInfo,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -885,6 +887,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     cursorPositions: poppedEditor.cursorPositions,
     selectedFile: poppedEditor.selectedFile,
     codeResultCache: currentEditor.codeResultCache,
+    propertyControlsInfo: currentEditor.propertyControlsInfo,
     selectedViews: poppedEditor.selectedViews,
     highlightedViews: poppedEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
@@ -3027,7 +3030,6 @@ export const UPDATE_FNS = {
           ...action.codeResultCache.cache,
         },
         exportsInfo: action.codeResultCache.exportsInfo,
-        propertyControlsInfo: action.codeResultCache.propertyControlsInfo,
         error: action.codeResultCache.error,
         requireFn: action.codeResultCache.requireFn,
         projectModules: action.codeResultCache.projectModules,
@@ -4108,6 +4110,15 @@ export const UPDATE_FNS = {
     return {
       ...updatedUserConfiguration,
       loginState: userState.loginState,
+    }
+  },
+  UPDATE_PROPERTY_CONTROLS_INFO: (
+    action: UpdatePropertyControlsInfo,
+    editor: EditorState,
+  ): EditorState => {
+    return {
+      ...editor,
+      propertyControlsInfo: action.propertyControlsInfo,
     }
   },
 }
@@ -5482,5 +5493,14 @@ export function setShortcut(shortcutName: string, newKey: Key): SetShortcut {
     action: 'SET_SHORTCUT',
     shortcutName: shortcutName,
     newKey: newKey,
+  }
+}
+
+export function updatePropertyControlsInfo(
+  propertyControlsInfo: PropertyControlsInfo,
+): UpdatePropertyControlsInfo {
+  return {
+    action: 'UPDATE_PROPERTY_CONTROLS_INFO',
+    propertyControlsInfo: propertyControlsInfo,
   }
 }

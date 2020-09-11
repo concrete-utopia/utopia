@@ -37,6 +37,7 @@ import {
   FakeBundlerWorker,
   FakeLinterWorker,
   FakeParserPrinterWorker,
+  FakeValuesWorker,
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
@@ -136,6 +137,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
       new FakeParserPrinterWorker(),
       new FakeLinterWorker(),
       new FakeWatchdogWorker(),
+      new FakeValuesWorker(),
     ),
     dispatch: asyncTestDispatch,
   }

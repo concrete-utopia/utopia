@@ -78,6 +78,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'START_CHECKPOINT_TIMER':
     case 'SET_PACKAGE_STATUS':
     case 'SET_SHORTCUT':
+    case 'UPDATE_PROPERTY_CONTROLS_INFO':
       return true
 
     case 'NEW':

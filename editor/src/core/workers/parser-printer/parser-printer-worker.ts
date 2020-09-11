@@ -87,7 +87,7 @@ export type ParserPrinterResultMessage =
 export function handleMessage(
   workerMessage: ParserPrinterRequestMessage,
   sendMessage: (content: ParserPrinterResultMessage) => void,
-) {
+): void {
   switch (workerMessage.type) {
     case 'parsefile': {
       try {

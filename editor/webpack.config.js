@@ -60,6 +60,7 @@ const config = {
     parserPrinterWorker: './src/core/workers/parser-printer/parser-printer.worker.ts',
     linterWorker: './src/core/workers/linter/linter.worker.ts',
     watchdogWorker: './src/core/workers/watchdog.worker.ts',
+    valuesWorker: './src/core/workers/values.worker.ts',
   },
 
   output: {
@@ -70,7 +71,8 @@ const config = {
         name === 'tsWorker' ||
         name === 'parserPrinterWorker' ||
         name === 'linterWorker' ||
-        name === 'watchdogWorker'
+        name === 'watchdogWorker' ||
+        name === 'valuesWorker'
       return nameOnly ? '[name].js' : `[name].${hashPattern}.js`
     },
     chunkFilename: `[id].${hashPattern}.js`,
@@ -279,7 +281,8 @@ const config = {
           chunk.name !== 'tsWorker' &&
           chunk.name !== 'parserPrinterWorker' &&
           chunk.name !== 'linterWorker' &&
-          chunk.name !== 'watchdogWorker'
+          chunk.name !== 'watchdogWorker' &&
+          chunk.name !== 'valuesWorker'
         )
       },
       minSize: 10000, // Minimum size before chunking

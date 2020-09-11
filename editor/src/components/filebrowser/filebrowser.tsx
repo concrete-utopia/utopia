@@ -101,26 +101,20 @@ function collectFileBrowserItems(
       ) {
         const codeResult = codeResultCache.cache[fullPath]
         if (codeResult != null) {
-          if (codeResult.error == null) {
-            Object.keys(codeResult.exports).forEach((exportedVar) => {
-              if (exportedVar != 'default') {
-                const exportedVarValue = codeResult.exports[exportedVar].value
-                const exportedVarIsFunction = typeof exportedVarValue === 'function'
-                fileBrowserItems.push({
-                  path: `${fullPath}/${exportedVar}`,
-                  type: 'export',
-                  fileType: null,
-                  typeInformation: codeResult.exports[exportedVar].type,
-                  originatingPath: originatingPath,
-                  hasErrorMessages: false,
-                  modified: false,
-                  exportedFunction: exportedVarIsFunction,
-                })
-              }
-            })
-          } else {
-            console.warn(`Error parsing JS file "${fullPath}": ${codeResult.error.toString()}`)
-          }
+          Object.keys(codeResult.exports).forEach((exportedVar) => {
+            if (exportedVar != 'default') {
+              fileBrowserItems.push({
+                path: `${fullPath}/${exportedVar}`,
+                type: 'export',
+                fileType: null,
+                typeInformation: codeResult.exports[exportedVar].type,
+                originatingPath: originatingPath,
+                hasErrorMessages: false,
+                modified: false,
+                exportedFunction: false, // FIXME: Check if type covers this. exportedVarIsFunction,
+              })
+            }
+          })
         }
       }
     }
@@ -177,6 +171,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
     errorMessages,
     isOpenUIFileParseSuccess,
     codeResultCache,
+    propertyControlsInfo,
     renamingTarget,
     openUiFileName,
   } = useEditorState((store) => {
@@ -188,6 +183,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
       errorMessages: getAllCodeEditorErrors(store.editor, false, true),
       isOpenUIFileParseSuccess: uiFile != null && isParseSuccess(uiFile.fileContents),
       codeResultCache: store.editor.codeResultCache,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
       renamingTarget: store.editor.fileBrowser.renamingTarget,
       openUiFileName: getOpenUIJSFileKey(store.editor),
     }
@@ -239,7 +235,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
           const defaultProps = defaultPropertiesForComponentInFile(
             exportVarName,
             filePathWithoutExtension,
-            codeResultCache,
+            propertyControlsInfo,
           )
           let props: JSXAttributes = objectMap(jsxAttributeValue, defaultProps)
           props['data-uid'] = jsxAttributeValue(newUID)
@@ -267,7 +263,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
       }
     },
     [
-      codeResultCache,
+      propertyControlsInfo,
       dispatch,
       isOpenUIFileParseSuccess,
       componentUIDsWithStableRef,

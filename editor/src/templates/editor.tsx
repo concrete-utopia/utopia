@@ -58,6 +58,7 @@ import { LinterResultMessage } from '../core/workers/linter/linter-worker'
 import {
   RealLinterWorker,
   RealParserPrinterWorker,
+  RealValuesWorker,
   RealWatchdogWorker,
   UtopiaTsWorkersImplementation,
 } from '../core/workers/workers'
@@ -74,6 +75,7 @@ import {
   emptyUiJsxCanvasContextData,
   UiJsxCanvasContext,
 } from '../components/canvas/ui-jsx-canvas'
+import { OutgoingValuesWorkerMessage } from '../core/workers/values-worker'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -116,6 +118,7 @@ export class Editor {
         new RealParserPrinterWorker(),
         new RealLinterWorker(),
         watchdogWorker,
+        new RealValuesWorker(),
       ),
       dispatch: this.boundDispatch,
     }
@@ -182,10 +185,25 @@ export class Editor {
       }
     }
 
+    const handlePropertyControlsMessage = (msg: OutgoingValuesWorkerMessage) => {
+      switch (msg.type) {
+        case 'getpropertycontrolsinforesult': {
+          this.storedState.dispatch(
+            [EditorActions.updatePropertyControlsInfo(msg.propertyControlsInfo)],
+            'everyone',
+          )
+          break
+        }
+      }
+    }
+
     this.storedState.workers.addBundleResultEventListener((e) => handleWorkerMessage(e.data))
     this.storedState.workers.addLinterResultEventListener((e) => handleLinterMessage(e.data))
     this.storedState.workers.addHeartbeatRequestEventListener((e) =>
       handleHeartbeatRequestMessage(e.data),
+    )
+    this.storedState.workers.addPropertyControlsInfoEventListener((e) =>
+      handlePropertyControlsMessage(e.data),
     )
 
     getLoginState().then((loginState) => {
