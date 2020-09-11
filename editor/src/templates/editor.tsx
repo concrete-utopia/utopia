@@ -25,6 +25,7 @@ import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
   createNewProject,
+  createNewProjectFromImportedProject,
   createNewProjectFromSampleProject,
   loadFromLocalStorage,
   loadFromServer,
@@ -204,21 +205,32 @@ export class Editor {
           const urlParams = new URLSearchParams(window.location.search)
           const githubOwner = urlParams.get('github_owner')
           const githubRepo = urlParams.get('github_repo')
-          if (githubOwner != null && githubRepo != null) {
-            // Trigger the repo download
+          if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
+            // TODO Should we require users to be logged in for this?
             downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
               if (isLeft(repoResult)) {
                 console.error(repoResult.value)
               } else {
-                importZippedGitProject(repoResult.value).then((loadedProject) => {
-                  // Do nothing
+                importZippedGitProject(githubRepo, repoResult.value).then((loadedProject) => {
+                  createNewProjectFromImportedProject(
+                    loadedProject,
+                    this.storedState.workers,
+                    this.boundDispatch,
+                    () =>
+                      renderRootComponent(
+                        this.utopiaStoreHook,
+                        this.utopiaStoreApi,
+                        this.spyCollector,
+                      ),
+                  )
                 })
               }
             })
+          } else {
+            createNewProject(this.boundDispatch, () =>
+              renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
+            )
           }
-          createNewProject(this.boundDispatch, () =>
-            renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
-          )
         } else if (isSampleProject(projectId)) {
           createNewProjectFromSampleProject(
             projectId,

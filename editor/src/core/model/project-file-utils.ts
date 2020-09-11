@@ -387,7 +387,7 @@ export function fileTypeFromFileName(
   } else {
     const mimeType = mimeTypeLookup(filename)
     if (mimeType === false) {
-      return 'ASSET_FILE'
+      return 'CODE_FILE' // FIXME This is definitely not a safe assumption
     } else {
       if (mimeType.startsWith('image/')) {
         return 'IMAGE_FILE'

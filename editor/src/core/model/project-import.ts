@@ -13,6 +13,8 @@ import {
 import { lintAndParse } from '../workers/parser-printer/parser-printer'
 import { assetResultForBase64, getFileExtension, imageResultForBase64 } from '../shared/file-utils'
 import { Size } from '../shared/math-utils'
+import { left } from '../shared/either'
+import { parseFailure } from '../workers/common/project-file-utils'
 
 async function attemptedTextFileLoad(fileName: string, file: JSZipObject): Promise<string | null> {
   const fileBuffer = await file.async('nodebuffer')
@@ -32,17 +34,25 @@ export interface UnsavedAsset {
 }
 
 export interface ProjectImportResult {
+  projectName: string
   contents: ProjectContents
   assetsToUpload: Array<UnsavedAsset>
 }
 
-export async function importZippedGitProject(zipped: JSZip): Promise<ProjectImportResult> {
+export async function importZippedGitProject(
+  projectName: string,
+  zipped: JSZip,
+): Promise<ProjectImportResult> {
   let loadedProject: ProjectContents = {}
   let promises: Array<Promise<void>> = []
   let assetsToUpload: Array<UnsavedAsset> = []
 
   const loadFile = async (fileName: string, file: JSZip.JSZipObject) => {
     const shiftedFileName = fileName.replace(/[^\/]*\//, '/') // Github uses the project name and a commit hash as the root directory
+    if (shiftedFileName.trim() === '/') {
+      // We don't need to create a root directory
+      return
+    }
     if (file.dir) {
       loadedProject[shiftedFileName] = directory()
     } else {
@@ -74,10 +84,10 @@ export async function importZippedGitProject(zipped: JSZip): Promise<ProjectImpo
             size: imageResult.size,
           })
           loadedProject[shiftedFileName] = imageFile(
-            fileType,
-            imageResult.dataUrl,
-            imageResult.size.width,
-            imageResult.size.height,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
             imageResult.hash,
           )
           break
@@ -90,9 +100,9 @@ export async function importZippedGitProject(zipped: JSZip): Promise<ProjectImpo
             console.error(`Failed to parse file ${shiftedFileName} as a text file`)
           } else {
             if (expectedFileType === 'UI_JS_FILE') {
-              const parsedUIFile = lintAndParse(shiftedFileName, loadedFile)
+              // TODO We really need a way to represent unparsed files, or a way to separate the parsed file from the contents
               loadedProject[shiftedFileName] = uiJsFile(
-                parsedUIFile,
+                left(parseFailure(null, null, null, [], loadedFile)),
                 null,
                 RevisionsState.BothMatch,
                 Date.now(),
@@ -116,6 +126,7 @@ export async function importZippedGitProject(zipped: JSZip): Promise<ProjectImpo
   await Promise.all(promises)
 
   return {
+    projectName: projectName,
     contents: loadedProject,
     assetsToUpload: assetsToUpload,
   }
