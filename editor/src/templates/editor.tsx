@@ -84,6 +84,13 @@ if (PROBABLY_ELECTRON) {
   webFrame.setLayoutZoomLevelLimits(0, 0)
 }
 
+function replaceLoadingMessage(newMessage: string) {
+  const loadingMessageElement = document.getElementById('loading-message')
+  if (loadingMessageElement != null) {
+    loadingMessageElement.innerHTML = newMessage
+  }
+}
+
 export class Editor {
   storedState: EditorStore
   utopiaStoreHook: UtopiaStoreHook
@@ -212,7 +219,9 @@ export class Editor {
                 console.error(repoResult.value)
               } else {
                 const projectName = `${githubOwner}-${githubRepo}`
+                replaceLoadingMessage('Downloading Repo...')
                 importZippedGitProject(projectName, repoResult.value).then((loadedProject) => {
+                  replaceLoadingMessage('Importing Project...')
                   createNewProjectFromImportedProject(
                     loadedProject,
                     this.storedState.workers,
