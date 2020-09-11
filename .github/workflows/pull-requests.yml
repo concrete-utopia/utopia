@@ -85,13 +85,6 @@ jobs:
           key: ${{ runner.os }}-node-utopia-api-PRs-${{ hashFiles('utopia-api/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-utopia-api-PRs-
-      - name: Cache website modules
-        uses: actions/cache@v2
-        with:
-          path: website/node_modules
-          key: ${{ runner.os }}-node-website-PRs-${{ hashFiles('website/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-website-PRs-
       - name: Install nix
         uses: Rheeseyb/install-nix-action@master
       - name: Build Editor
