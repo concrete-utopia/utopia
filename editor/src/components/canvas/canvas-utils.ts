@@ -1612,12 +1612,21 @@ export function produceCanvasTransientState(
               const dragState = editorState.canvas.dragState
               switch (dragState.type) {
                 case 'MOVE_DRAG_STATE':
-                  return produceMoveTransientCanvasState(
-                    editorState,
-                    dragState,
-                    parseSuccess,
-                    preventAnimations,
-                  )
+                  if (dragState.translate) {
+                    return produceMoveTransientCanvasState(
+                      editorState,
+                      dragState,
+                      parseSuccess,
+                      preventAnimations,
+                    )
+                  } else {
+                    return produceMoveTransientCanvasState(
+                      editorState,
+                      dragState,
+                      parseSuccess,
+                      preventAnimations,
+                    )
+                  }
                 case 'RESIZE_DRAG_STATE':
                   if (dragState.isMultiSelect) {
                     return produceResizeCanvasTransientState(

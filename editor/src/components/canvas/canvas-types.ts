@@ -334,6 +334,7 @@ export interface MoveDragState {
   canvasPosition: CanvasPoint
   metadata: Array<ComponentMetadata>
   draggedElements: TemplatePath[]
+  translate: boolean
 }
 
 export function moveDragState(
@@ -350,6 +351,7 @@ export function moveDragState(
   canvasPosition: CanvasPoint,
   metadata: Array<ComponentMetadata>,
   draggedElements: TemplatePath[],
+  translate: boolean,
 ): MoveDragState {
   if (duplicate === true && duplicateNewUIDs == null) {
     throw new Error('duplicateNewUIDs cannot be null when duplicate is true')
@@ -373,6 +375,7 @@ export function moveDragState(
     canvasPosition: canvasPosition,
     metadata: metadata,
     draggedElements: draggedElements,
+    translate: translate,
   }
 }
 

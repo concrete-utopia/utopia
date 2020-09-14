@@ -138,7 +138,7 @@ export class SelectModeControlContainer extends React.Component<
           this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
 
-      if (this.props.selectModeState !== 'move') {
+      if (this.props.selectModeState === 'resize') {
         // early exit
         return
       }
@@ -178,6 +178,7 @@ export class SelectModeControlContainer extends React.Component<
               start,
               this.props.componentMetadata,
               moveTargets,
+              this.props.selectModeState === 'translate',
             ),
           ),
         ])
