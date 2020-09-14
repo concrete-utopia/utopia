@@ -74,7 +74,7 @@ import {
   WindowPoint,
   WindowRectangle,
 } from '../core/shared/math-utils'
-import { ImageResult } from '../utils/clipboard-utils'
+import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
 

@@ -5,7 +5,6 @@ import * as pathParse from 'path-parse'
 import * as R from 'ramda'
 import * as React from 'react'
 import { ConnectableElement, ConnectDragPreview, useDrag, useDrop } from 'react-dnd'
-import * as stringHash from 'string-hash'
 import {
   Button,
   colorTheme,
@@ -28,10 +27,11 @@ import { openFileTab } from '../editor/store/editor-state'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { FileBrowserItemInfo, FileBrowserItemType } from './filebrowser'
 import { dropLeadingSlash } from './filepath-utils'
-import { FileResult, PasteResult } from '../../utils/clipboard-utils'
+import { PasteResult } from '../../utils/clipboard-utils'
 import { codeFile } from '../../core/model/project-file-utils'
 import { dragAndDropInsertionSubject, EditorModes } from '../editor/editor-modes'
 import { last } from '../../core/shared/array-utils'
+import { FileResult } from '../../core/shared/file-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
@@ -472,16 +472,14 @@ class FileBrowserItemInner extends React.PureComponent<
         }
         switch (resultFile.type) {
           case 'IMAGE_RESULT': {
-            const mimeStrippedBase64 = resultFile.dataUrl.split(',')[1]
             const afterSave = EditorActions.saveImageReplace()
             if (targetPath != null) {
-              const hash = stringHash(mimeStrippedBase64)
               actions.push(
                 EditorActions.saveAsset(
                   targetPath,
                   resultFile.fileType,
-                  mimeStrippedBase64,
-                  hash,
+                  resultFile.dataUrl,
+                  resultFile.hash,
                   EditorActions.saveImageDetails(resultFile.size, afterSave),
                 ),
               )
@@ -489,16 +487,20 @@ class FileBrowserItemInner extends React.PureComponent<
             break
           }
           case 'ASSET_RESULT': {
-            const mimeStrippedBase64 = resultFile.dataUrl.split(',')[1]
             if (targetPath != null) {
               let fileType: string = ''
               const splitPath = targetPath.split('.')
               if (splitPath.length > 1) {
                 fileType = splitPath[splitPath.length - 1]
               }
-              const hash = stringHash(mimeStrippedBase64)
               actions.push(
-                EditorActions.saveAsset(targetPath, fileType, mimeStrippedBase64, hash, null),
+                EditorActions.saveAsset(
+                  targetPath,
+                  fileType,
+                  resultFile.dataUrl,
+                  resultFile.hash,
+                  null,
+                ),
               )
             }
             break

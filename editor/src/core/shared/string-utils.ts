@@ -18,15 +18,6 @@ export function replaceAll(inString: string, searchFor: string, replaceWith: str
   return inString.split(searchFor).join(replaceWith)
 }
 
-export function dropExtension(filename: string): string {
-  const lastDotIndex = filename.lastIndexOf('.')
-  if (lastDotIndex > 0) {
-    return filename.slice(0, lastDotIndex)
-  } else {
-    return filename
-  }
-}
-
 export function camelCaseToDashed(s: string): string {
   return s.replace(/[A-Z]/g, (l) => `-${l.toLowerCase()}`)
 }

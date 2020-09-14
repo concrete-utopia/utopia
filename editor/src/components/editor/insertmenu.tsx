@@ -53,7 +53,7 @@ import { useEditorState } from './store/store-hook'
 import { last } from '../../core/shared/array-utils'
 import { defaultIfNull } from '../../core/shared/optional-utils'
 import { forEachRight } from '../../core/shared/either'
-import { dropExtension } from '../../core/shared/string-utils'
+import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import {
   defaultPropertiesForComponentInFile,
@@ -107,7 +107,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
             const componentName = topLevelElement.name
             const defaultProps = defaultPropertiesForComponentInFile(
               componentName,
-              dropExtension(openFileFullPath),
+              dropFileExtension(openFileFullPath),
               store.editor.codeResultCache,
             )
             const detectedProps = topLevelElement.propsUsed

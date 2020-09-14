@@ -7,12 +7,24 @@ import {
   thumbnailURL,
   userConfigURL,
 } from '../../common/server'
-import { imageFile, isImageFile } from '../../core/model/project-file-utils'
-import { ImageFile } from '../../core/shared/project-file-types'
+import {
+  assetFile,
+  codeFile,
+  directory,
+  fileTypeFromFileName,
+  imageFile,
+  isImageFile,
+  uiJsFile,
+} from '../../core/model/project-file-utils'
+import { ImageFile, ProjectContents } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
 import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './store/editor-state'
 import { ShortcutConfiguration } from './shortcut-definitions'
 import { LoginState } from '../../uuiui-deps'
+import urljoin = require('url-join')
+import * as JSZip from 'jszip'
+import { isText } from 'istextorbinary'
+import { Either, left, right } from '../../core/shared/either'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -201,6 +213,20 @@ export async function saveAsset(
   }
 }
 
+interface AssetToSave {
+  fileType: string
+  base64: string
+  fileName: string
+}
+
+export async function saveAssets(projectId: string, assets: Array<AssetToSave>): Promise<void> {
+  const promises = assets.map((asset) =>
+    saveAsset(projectId, asset.fileType, asset.base64, asset.fileName),
+  )
+  await Promise.all(promises)
+  return
+}
+
 export async function saveImagesFromProject(
   projectId: string,
   model: PersistentModel,
@@ -309,5 +335,25 @@ export async function saveUserConfiguration(userConfig: UserConfiguration): Prom
   } else {
     // FIXME Client should show an error if server requests fail
     throw new Error(`server responded with ${response.status} ${response.statusText}`)
+  }
+}
+
+export async function downloadGithubRepo(
+  owner: string,
+  repo: string,
+): Promise<Either<string, JSZip>> {
+  const url = urljoin(UTOPIA_BACKEND, 'github', owner, repo)
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    mode: MODE,
+  })
+  if (response.ok) {
+    const buffer = await response.arrayBuffer()
+    const zipFile = await JSZip.loadAsync(buffer)
+    return right(zipFile)
+  } else {
+    // FIXME Better handling of different response types
+    return left(`Download github repo request failed (${response.status}): ${response.statusText}`)
   }
 }

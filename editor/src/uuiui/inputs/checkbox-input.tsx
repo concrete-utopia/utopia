@@ -19,7 +19,7 @@ export interface CheckboxInputProps extends React.InputHTMLAttributes<HTMLInputE
 export const CheckboxInput = betterReactMemo(
   'CheckboxInput',
   React.forwardRef<HTMLInputElement, CheckboxInputProps>(
-    ({ controlStatus = 'simple', focusOnMount = false, ...props }, propsRef) => {
+    ({ controlStatus = 'simple', focusOnMount = false, style, ...props }, propsRef) => {
       const ref = React.useRef<HTMLInputElement>(null)
 
       const controlStyles: ControlStyles = getControlStyles(controlStatus)
@@ -36,51 +36,49 @@ export const CheckboxInput = betterReactMemo(
           : false
 
       return (
-        <div style={props.style}>
-          <input
-            {...props}
-            type='checkbox'
-            disabled={!controlStyles.interactive}
-            css={{
-              WebkitAppearance: 'none',
-              outline: 'none',
-              margin: '5px 2px',
-              boxShadow: `0 0 0 1px ${controlStyles.borderColor}`,
-              backgroundColor: controlStyles.backgroundColor,
-              borderRadius: UtopiaTheme.inputBorderRadius,
-              width: 12,
-              height: 12,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: '55% 55%',
-              backgroundSize: '12px 12px',
-              cursor: controlStyles.interactive ? 'pointer' : 'default',
-              '&:checked': {
-                backgroundImage:
-                  'url("/editor/icons/light/controls/checkbox/checked-dark-12x12@2x.png")',
-              },
-              '&:focus': {
-                boxShadow: `0 0 0 1px ${UtopiaTheme.color.inspectorFocusedColor.value}`,
-              },
-              '&.widget-status-controlled': {
-                backgroundImage:
-                  'url("/editor/icons/light/controls/checkbox/checked-nodegraph-12x12@2x.png")',
-              },
-              '&:not(:checked)': {
-                backgroundImage: 'none',
-              },
-              '&:indeterminate': {
-                backgroundImage:
-                  'url("/editor/icons/light/controls/checkbox/mixed-dark-12x12@2x.png")',
-              },
-              '&.widget-status-off, &.widget-status-disabled': {
-                cursor: 'inherit',
-              },
-              ...(props.style as any), // The types between React and Emotion don't quite match up here so we shouldn't be doing this
-            }}
-            checked={checked}
-            ref={composeRefs(ref, propsRef)}
-          />
-        </div>
+        <input
+          {...props}
+          type='checkbox'
+          disabled={!controlStyles.interactive}
+          style={style}
+          css={{
+            WebkitAppearance: 'none',
+            outline: 'none',
+            margin: '5px 2px',
+            boxShadow: `0 0 0 1px ${controlStyles.borderColor}`,
+            backgroundColor: controlStyles.backgroundColor,
+            borderRadius: UtopiaTheme.inputBorderRadius,
+            width: 12,
+            height: 12,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: '55% 55%',
+            backgroundSize: '12px 12px',
+            cursor: controlStyles.interactive ? 'pointer' : 'default',
+            '&:checked': {
+              backgroundImage:
+                'url("/editor/icons/light/controls/checkbox/checked-dark-12x12@2x.png")',
+            },
+            '&:focus': {
+              boxShadow: `0 0 0 1px ${UtopiaTheme.color.inspectorFocusedColor.value}`,
+            },
+            '&.widget-status-controlled': {
+              backgroundImage:
+                'url("/editor/icons/light/controls/checkbox/checked-nodegraph-12x12@2x.png")',
+            },
+            '&:not(:checked)': {
+              backgroundImage: 'none',
+            },
+            '&:indeterminate': {
+              backgroundImage:
+                'url("/editor/icons/light/controls/checkbox/mixed-dark-12x12@2x.png")',
+            },
+            '&.widget-status-off, &.widget-status-disabled': {
+              cursor: 'inherit',
+            },
+          }}
+          checked={checked}
+          ref={composeRefs(ref, propsRef)}
+        />
       )
     },
   ),

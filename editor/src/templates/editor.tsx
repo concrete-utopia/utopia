@@ -25,6 +25,7 @@ import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
   createNewProject,
+  createNewProjectFromImportedProject,
   createNewProjectFromSampleProject,
   loadFromLocalStorage,
   loadFromServer,
@@ -35,7 +36,11 @@ import {
   previewIsAlive,
   startPreviewConnectedMonitoring,
 } from '../components/editor/preview-report-handler'
-import { getLoginState, getUserConfiguration } from '../components/editor/server'
+import {
+  downloadGithubRepo,
+  getLoginState,
+  getUserConfiguration,
+} from '../components/editor/server'
 import { editorDispatch, simpleStringifyActions } from '../components/editor/store/dispatch'
 import {
   createEditorState,
@@ -70,11 +75,20 @@ import {
   emptyUiJsxCanvasContextData,
   UiJsxCanvasContext,
 } from '../components/canvas/ui-jsx-canvas'
+import { isLeft } from '../core/shared/either'
+import { importZippedGitProject } from '../core/model/project-import'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
   webFrame.setVisualZoomLevelLimits(1, 1)
   webFrame.setLayoutZoomLevelLimits(0, 0)
+}
+
+function replaceLoadingMessage(newMessage: string) {
+  const loadingMessageElement = document.getElementById('loading-message')
+  if (loadingMessageElement != null) {
+    loadingMessageElement.innerHTML = newMessage
+  }
 }
 
 export class Editor {
@@ -194,9 +208,50 @@ export class Editor {
 
         const projectId = getProjectID()
         if (projectId == null) {
-          createNewProject(this.boundDispatch, () =>
-            renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
-          )
+          // Check if this is a github import
+          const urlParams = new URLSearchParams(window.location.search)
+          const githubOwner = urlParams.get('github_owner')
+          const githubRepo = urlParams.get('github_repo')
+          if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
+            // TODO Should we require users to be logged in for this?
+            downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
+              if (isLeft(repoResult)) {
+                console.error(repoResult.value)
+              } else {
+                const projectName = `${githubOwner}-${githubRepo}`
+                replaceLoadingMessage('Downloading Repo...')
+                importZippedGitProject(projectName, repoResult.value).then((loadedProject) => {
+                  replaceLoadingMessage('Importing Project...')
+                  createNewProjectFromImportedProject(
+                    loadedProject,
+                    this.storedState.workers,
+                    this.boundDispatch,
+                    () =>
+                      renderRootComponent(
+                        this.utopiaStoreHook,
+                        this.utopiaStoreApi,
+                        this.spyCollector,
+                      ),
+                  )
+                })
+              }
+            })
+          } else {
+            if (githubOwner != null && githubRepo != null) {
+              this.boundDispatch(
+                [
+                  EditorActions.showToast({
+                    message: 'Please log in to fork a github repo',
+                  }),
+                ],
+                'everyone',
+              )
+            }
+
+            createNewProject(this.boundDispatch, () =>
+              renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
+            )
+          }
         } else if (isSampleProject(projectId)) {
           createNewProjectFromSampleProject(
             projectId,
