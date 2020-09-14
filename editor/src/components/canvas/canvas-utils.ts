@@ -579,6 +579,8 @@ export function updateFramesOfScenesAndComponents(
                 createLayoutPropertyPath('Height'),
                 createLayoutPropertyPath('PinnedLeft'),
                 createLayoutPropertyPath('PinnedTop'),
+                createLayoutPropertyPath('FlexFlexBasis'),
+                createLayoutPropertyPath('FlexCrossBasis'),
               )
               break
             default:
@@ -745,6 +747,8 @@ export function updateFramesOfScenesAndComponents(
               createLayoutPropertyPath('Height'),
               createLayoutPropertyPath('PinnedLeft'),
               createLayoutPropertyPath('PinnedTop'),
+              createLayoutPropertyPath('FlexFlexBasis'),
+              createLayoutPropertyPath('FlexCrossBasis'),
             )
             break
           case 'SINGLE_RESIZE':
