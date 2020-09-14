@@ -2144,7 +2144,7 @@ function produceMoveTransientCanvasState(
     moveGuidelines,
     dragState.dragSelectionBoundingBox,
     dragState.drag,
-    dragState.localReparent
+    dragState.localReparent || dragState.reparent
       ? (Utils.zeroPoint as CanvasPoint)
       : Utils.defaultIfNull(Utils.zeroPoint as CanvasPoint, dragState.drag),
     dragState.enableSnapping,
