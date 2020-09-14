@@ -2080,7 +2080,7 @@ function produceMoveTransientCanvasState(
       )
     : untouchedOpenComponents
 
-  if (dragState.reparent) {
+  if (dragState.reparent || dragState.localReparent) {
     const reparentTarget = getReparentTarget(
       editorState,
       elementsToTarget,
@@ -2089,13 +2089,14 @@ function produceMoveTransientCanvasState(
 
     if (reparentTarget.shouldReparent) {
       Utils.fastForEach(elementsToTarget, (target) => {
-        const frame = originalFrames.find((originalFrameAndTarget) => {
-          return TP.pathsEqual(originalFrameAndTarget.target, target)
-        })?.frame
+        const frame =
+          originalFrames.find((originalFrameAndTarget) => {
+            return TP.pathsEqual(originalFrameAndTarget.target, target)
+          })?.frame ?? null
         const reparentResult = moveTemplate(
           target,
           target,
-          frame ?? null,
+          dragState.localReparent ? 'skipFrameChange' : frame,
           { type: 'front' },
           reparentTarget.newParent,
           null,
@@ -2143,7 +2144,9 @@ function produceMoveTransientCanvasState(
     moveGuidelines,
     dragState.dragSelectionBoundingBox,
     dragState.drag,
-    Utils.defaultIfNull(Utils.zeroPoint as CanvasPoint, dragState.drag),
+    dragState.localReparent
+      ? (Utils.zeroPoint as CanvasPoint)
+      : Utils.defaultIfNull(Utils.zeroPoint as CanvasPoint, dragState.drag),
     dragState.enableSnapping,
     dragState.constrainDragAxis,
     editorState.canvas.scale,

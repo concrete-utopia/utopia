@@ -330,6 +330,7 @@ export interface MoveDragState {
   constrainDragAxis: boolean
   duplicate: boolean
   reparent: boolean
+  localReparent: boolean
   duplicateNewUIDs: Array<DuplicateNewUID> | null
   canvasPosition: CanvasPoint
   metadata: Array<ComponentMetadata>
@@ -347,6 +348,7 @@ export function moveDragState(
   constrainDragAxis: boolean,
   duplicate: boolean,
   reparent: boolean,
+  localReparent: boolean,
   duplicateNewUIDs: Array<DuplicateNewUID> | null,
   canvasPosition: CanvasPoint,
   metadata: Array<ComponentMetadata>,
@@ -371,6 +373,7 @@ export function moveDragState(
     constrainDragAxis: constrainDragAxis,
     duplicate: duplicate,
     reparent: actuallyReparent,
+    localReparent: localReparent,
     duplicateNewUIDs: duplicateNewUIDs,
     canvasPosition: canvasPosition,
     metadata: metadata,
