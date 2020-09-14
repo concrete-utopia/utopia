@@ -418,11 +418,11 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     ) : null
   }
 
-  const ButtonStyle = {
+  const buttonStyle = (active: boolean) => ({
     borderRadius: 5,
     border: `1px solid ${colorTheme.neutralBorder.value}`,
-    backgroundColor: '#fefefe',
-  }
+    backgroundColor: active ? colorTheme.primary.value : '#fefefe',
+  })
 
   const renderToolbar = () => {
     return (
@@ -434,13 +434,22 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
           width: 90,
         }}
       >
-        <div style={ButtonStyle} onClick={() => setSelectModeState('move')}>
+        <div
+          style={buttonStyle(selectModeState === 'move')}
+          onClick={() => setSelectModeState('move')}
+        >
           → move
         </div>
-        <div style={ButtonStyle} onClick={() => setSelectModeState('move')}>
+        <div
+          style={buttonStyle(selectModeState === 'translate')}
+          onClick={() => setSelectModeState('translate')}
+        >
           ↯ translate
         </div>
-        <div style={ButtonStyle} onClick={() => setSelectModeState('resize')}>
+        <div
+          style={buttonStyle(selectModeState === 'resize')}
+          onClick={() => setSelectModeState('resize')}
+        >
           ↕️ resize
         </div>
       </div>
