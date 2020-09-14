@@ -155,7 +155,13 @@ interface NewCanvasControlsClassProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
 }
 
-export type SelectModeState = 'move' | 'translate' | 'resize' | 'reparent' | 'reparentLocal'
+export type SelectModeState =
+  | 'move'
+  | 'translate'
+  | 'resize'
+  | 'reparentMove'
+  | 'reparentGlobal'
+  | 'reparentLocal'
 
 const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
   const [selectModeState, setSelectModeState] = React.useState<SelectModeState>('move')
@@ -431,7 +437,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
           position: 'absolute',
           top: 0,
           left: 0,
-          width: 90,
+          width: 110,
         }}
       >
         <div
@@ -453,10 +459,16 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
           ↕️ resize
         </div>
         <div
-          style={buttonStyle(selectModeState === 'reparent')}
-          onClick={() => setSelectModeState('reparent')}
+          style={buttonStyle(selectModeState === 'reparentMove')}
+          onClick={() => setSelectModeState('reparentMove')}
         >
-          ↲ reparent
+          ↲ reparent(move)
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'reparentGlobal')}
+          onClick={() => setSelectModeState('reparentGlobal')}
+        >
+          ↲ reparent(global)
         </div>
         <div
           style={buttonStyle(selectModeState === 'reparentLocal')}

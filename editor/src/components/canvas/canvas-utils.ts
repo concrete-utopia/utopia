@@ -2171,7 +2171,7 @@ function produceMoveTransientCanvasState(
       )
     : untouchedOpenComponents
 
-  if (dragState.reparent || dragState.localReparent) {
+  if (dragState.reparent || dragState.localReparent || dragState.reparentMove) {
     const reparentTarget = getReparentTarget(
       editorState,
       elementsToTarget,
