@@ -405,7 +405,7 @@ export function updateMoveDragState(
     constrainDragAxis:
       constrainDragAxis === undefined ? current.constrainDragAxis : constrainDragAxis,
     duplicate: duplicate === undefined ? current.duplicate : duplicate,
-    reparent: actuallyReparent,
+    reparent: current.reparent,
     duplicateNewUIDs: duplicateNewUIDs === undefined ? current.duplicateNewUIDs : duplicateNewUIDs,
     canvasPosition: canvasPosition === undefined ? current.canvasPosition : canvasPosition,
   })

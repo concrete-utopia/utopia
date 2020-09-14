@@ -173,7 +173,7 @@ export class SelectModeControlContainer extends React.Component<
               !originalEvent.metaKey,
               originalEvent.shiftKey,
               duplicate,
-              originalEvent.metaKey,
+              this.props.selectModeState === 'reparent',
               duplicateNewUIDs,
               start,
               this.props.componentMetadata,
