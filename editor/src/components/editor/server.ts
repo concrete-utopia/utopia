@@ -11,8 +11,10 @@ import {
   assetFile,
   codeFile,
   directory,
+  fileTypeFromFileName,
   imageFile,
   isImageFile,
+  uiJsFile,
 } from '../../core/model/project-file-utils'
 import { ImageFile, ProjectContents } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
@@ -20,8 +22,9 @@ import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './st
 import { ShortcutConfiguration } from './shortcut-definitions'
 import { LoginState } from '../../uuiui-deps'
 import urljoin = require('url-join')
-import * as jszip from 'jszip'
+import * as JSZip from 'jszip'
 import { isText } from 'istextorbinary'
+import { Either, left, right } from '../../core/shared/either'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -210,6 +213,20 @@ export async function saveAsset(
   }
 }
 
+interface AssetToSave {
+  fileType: string
+  base64: string
+  fileName: string
+}
+
+export async function saveAssets(projectId: string, assets: Array<AssetToSave>): Promise<void> {
+  const promises = assets.map((asset) =>
+    saveAsset(projectId, asset.fileType, asset.base64, asset.fileName),
+  )
+  await Promise.all(promises)
+  return
+}
+
 export async function saveImagesFromProject(
   projectId: string,
   model: PersistentModel,
@@ -321,7 +338,10 @@ export async function saveUserConfiguration(userConfig: UserConfiguration): Prom
   }
 }
 
-export async function downloadGithubRepo(owner: string, repo: string): Promise<ProjectContents> {
+export async function downloadGithubRepo(
+  owner: string,
+  repo: string,
+): Promise<Either<string, JSZip>> {
   const url = urljoin(UTOPIA_BACKEND, 'github', owner, repo)
   const response = await fetch(url, {
     method: 'GET',
@@ -330,36 +350,10 @@ export async function downloadGithubRepo(owner: string, repo: string): Promise<P
   })
   if (response.ok) {
     const buffer = await response.arrayBuffer()
-    const zipFile = await jszip.loadAsync(buffer)
-    let loadedProject: ProjectContents = {}
-    let promises: Array<Promise<void>> = []
-    const loadFile = async (fileName: string, file: jszip.JSZipObject) => {
-      const shiftedFileName = fileName.replace(/[^\/]*\//, '/') // Github uses the project name and a commit hash as the root directory
-      if (file.dir) {
-        loadedProject[shiftedFileName] = directory()
-      } else {
-        const fileBuffer = await file.async('nodebuffer')
-        if (isText(shiftedFileName, fileBuffer)) {
-          const fileContents = await file.async('string')
-          loadedProject[shiftedFileName] = codeFile(fileContents, null)
-        } else {
-          // TODO Upload assets
-          loadedProject[shiftedFileName] = assetFile()
-        }
-      }
-    }
-
-    zipFile.forEach((fileName, file) => {
-      promises.push(loadFile(fileName, file))
-    })
-
-    await Promise.all(promises)
-    return loadedProject
+    const zipFile = await JSZip.loadAsync(buffer)
+    return right(zipFile)
   } else {
-    // FIXME Client should show an error if server requests fail
-    console.error(
-      `Download github repo request failed (${response.status}): ${response.statusText}`,
-    )
-    return {}
+    // FIXME Better handling of different response types
+    return left(`Download github repo request failed (${response.status}): ${response.statusText}`)
   }
 }

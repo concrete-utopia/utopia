@@ -1,7 +1,6 @@
-import { extractImage } from '../../utils/clipboard-utils'
+import { extractImage } from '../../core/shared/file-utils'
 import { EditorDispatch } from './action-types'
 import * as EditorActions from './actions/actions'
-import * as stringHash from 'string-hash'
 
 function handleImageSelected(
   files: FileList | null,
@@ -12,16 +11,14 @@ function handleImageSelected(
     const file = files[0]
     extractImage(file)
       .then((result) => {
-        const mimeStrippedBase64 = result.dataUrl.split(',')[1]
         const afterSave = createImageElement
           ? EditorActions.saveImageSwitchMode()
           : EditorActions.saveImageDoNothing()
-        const hash = stringHash(mimeStrippedBase64)
         const saveImageAction = EditorActions.saveAsset(
           `assets/${result.filename}`,
           file.type,
-          mimeStrippedBase64,
-          hash,
+          result.dataUrl,
+          result.hash,
           EditorActions.saveImageDetails(result.size, afterSave),
         )
         dispatch([saveImageAction], 'everyone')

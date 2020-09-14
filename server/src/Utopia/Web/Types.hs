@@ -162,6 +162,7 @@ type Protected = LogoutAPI
             :<|> DeleteProjectAssetAPI
             :<|> SaveProjectAssetAPI
             :<|> SaveProjectThumbnailAPI
+            :<|> DownloadGithubProjectAPI
 
 type Unprotected = AuthenticateAPI
               :<|> EmptyProjectPageAPI
@@ -177,7 +178,6 @@ type Unprotected = AuthenticateAPI
               :<|> LoadProjectAssetAPI
               :<|> PreviewProjectAssetAPI
               :<|> LoadProjectThumbnailAPI
-              :<|> DownloadGithubProjectAPI
               :<|> MonitoringAPI
               :<|> PackagePackagerAPI
               :<|> GetPackageJSONAPI

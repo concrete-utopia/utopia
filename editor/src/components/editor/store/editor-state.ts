@@ -1335,6 +1335,41 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
   }
 }
 
+export function persistentModelForProjectContents(
+  projectContents: ProjectContents,
+): PersistentModel {
+  const selectedTab: EditorTab = releaseNotesTab()
+
+  return {
+    appID: null,
+    projectVersion: CURRENT_PROJECT_VERSION,
+    projectContents: projectContents,
+    exportsInfo: [],
+    buildResult: {},
+    openFiles: [selectedTab],
+    selectedFile: selectedTab,
+    codeEditorErrors: {
+      buildErrors: {},
+      lintErrors: {},
+    },
+    codeEditorTheme: DefaultTheme,
+    lastUsedFont: null,
+    hiddenInstances: [],
+    fileBrowser: {
+      minimised: false,
+    },
+    dependencyList: {
+      minimised: false,
+    },
+    projectSettings: {
+      minimised: false,
+    },
+    navigator: {
+      minimised: false,
+    },
+  }
+}
+
 const defaultDependencies = Utils.mapArrayToDictionary(
   DefaultPackagesList,
   (p) => p.name,

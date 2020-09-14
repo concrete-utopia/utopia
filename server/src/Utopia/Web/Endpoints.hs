@@ -344,8 +344,8 @@ editorAssetsEndpoint notProxiedPath possibleBranchName = do
     Just _          -> loadLocally
     Nothing         -> maybe loadLocally loadFromProxy possibleProxyManager
 
-downloadGithubProjectEndpoint :: Text -> Text -> ServerMonad BL.ByteString
-downloadGithubProjectEndpoint owner repo = do
+downloadGithubProjectEndpoint :: Maybe Text -> Text -> Text -> ServerMonad BL.ByteString
+downloadGithubProjectEndpoint cookie owner repo = requireUser cookie $ \_ -> do
   zipball <- getGithubProject owner repo
   return zipball
 
@@ -439,6 +439,7 @@ protected authCookie = logoutPage authCookie
                   :<|> deleteProjectAssetEndpoint authCookie
                   :<|> saveProjectAssetEndpoint authCookie
                   :<|> saveProjectThumbnailEndpoint authCookie
+                  :<|> downloadGithubProjectEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate
@@ -455,7 +456,6 @@ unprotected = authenticate
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectThumbnailEndpoint
-         :<|> downloadGithubProjectEndpoint
          :<|> monitoringEndpoint
          :<|> packagePackagerEndpoint
          :<|> getPackageJSONEndpoint

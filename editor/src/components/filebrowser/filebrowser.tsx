@@ -46,7 +46,7 @@ import {
 import { useEditorState } from '../editor/store/store-hook'
 import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { FileBrowserItem } from './fileitem'
-import { dropExtension } from '../../core/shared/string-utils'
+import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
 
@@ -234,7 +234,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
           const fileVarSeparatorIdx = item.path.lastIndexOf('/')
           const exportVarName = item.path.slice(fileVarSeparatorIdx + 1)
           const filePath = item.path.slice(0, fileVarSeparatorIdx)
-          const filePathWithoutExtension = dropExtension(filePath)
+          const filePathWithoutExtension = dropFileExtension(filePath)
           const insertingToItself = openUiFileName === filePath
           const defaultProps = defaultPropertiesForComponentInFile(
             exportVarName,

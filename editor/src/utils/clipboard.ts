@@ -1,5 +1,4 @@
 import * as R from 'ramda'
-import * as stringHash from 'string-hash'
 import { EditorAction } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/actions'
 import { EditorModes } from '../components/editor/editor-modes'
@@ -10,16 +9,11 @@ import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata
 import { ComponentMetadata } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
 import { Imports, InstancePath, TemplatePath } from '../core/shared/project-file-types'
-import {
-  encodeUtopiaDataToHtml,
-  ImageResult,
-  parsePasteEvent,
-  PasteResult,
-  FileResult,
-} from './clipboard-utils'
+import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
 import { isLeft } from '../core/shared/either'
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
+import { FileResult, ImageResult } from '../core/shared/file-utils'
 import { CanvasPoint, CanvasRectangle } from '../core/shared/math-utils'
 import json5 = require('json5')
 import { fastForEach } from '../core/shared/utils'
@@ -127,7 +121,6 @@ export function createDirectInsertImageActions(
     return [
       EditorActions.switchEditorMode(EditorModes.selectMode()),
       ...Utils.flatMapArray((image) => {
-        const mimeStrippedBase64 = image.dataUrl.split(',')[1]
         const { frame, multiplier } = getFrameAndMultiplier(
           centerPoint,
           image.filename,
@@ -135,12 +128,11 @@ export function createDirectInsertImageActions(
           overrideDefaultMultiplier,
         )
         const insertWith = EditorActions.saveImageInsertWith(parentPath, frame, multiplier)
-        const hash = stringHash(mimeStrippedBase64)
         const saveImageAction = EditorActions.saveAsset(
           image.filename,
           image.fileType,
-          mimeStrippedBase64,
-          hash,
+          image.dataUrl,
+          image.hash,
           EditorActions.saveImageDetails(image.size, insertWith),
         )
         return [saveImageAction]
