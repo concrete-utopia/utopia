@@ -60,11 +60,14 @@ export type StyleLayoutProp =
   | 'marginLeft'
   | 'display'
 
+type TransformProp = 'transform'
+
 export type LayoutProp =
   | 'LayoutSystem'
   | LayoutPinnedProp
   | LayoutFlexContainerProp
   | LayoutFlexElementProp
+  | TransformProp
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {
@@ -157,6 +160,8 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
   paddingBottom: ['style', 'paddingBottom'],
   paddingLeft: ['style', 'paddingLeft'],
   display: ['style', 'display'],
+
+  transform: ['style', 'transform'],
 }
 
 export interface LayoutPropertyTypes {

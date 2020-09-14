@@ -198,6 +198,12 @@ export interface PinMoveChange {
   delta: CanvasVector
 }
 
+export interface MoveTranslateChange {
+  type: 'MOVE_TRANSLATE_CHANGE'
+  target: TemplatePath
+  delta: CanvasVector
+}
+
 export interface FlexMoveChange {
   type: 'FLEX_MOVE'
   target: TemplatePath
@@ -225,6 +231,7 @@ export type PinOrFlexFrameChange =
   | FlexMoveChange
   | FlexResizeChange
   | SingleResizeChange
+  | MoveTranslateChange
 
 export function pinFrameChange(
   target: TemplatePath,
@@ -255,6 +262,17 @@ export function pinSizeChange(
 export function pinMoveChange(target: TemplatePath, delta: CanvasVector): PinMoveChange {
   return {
     type: 'PIN_MOVE_CHANGE',
+    target: target,
+    delta: delta,
+  }
+}
+
+export function moveTranslateChange(
+  target: TemplatePath,
+  delta: CanvasVector,
+): MoveTranslateChange {
+  return {
+    type: 'MOVE_TRANSLATE_CHANGE',
     target: target,
     delta: delta,
   }

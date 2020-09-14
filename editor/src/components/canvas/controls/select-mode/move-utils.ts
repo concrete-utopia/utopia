@@ -14,6 +14,8 @@ import {
   flexMoveChange,
   FlexMoveChange,
   flexResizeChange,
+  moveTranslateChange,
+  MoveTranslateChange,
   pinFrameChange,
   PinMoveChange,
   pinMoveChange,
@@ -109,7 +111,8 @@ export function dragComponent(
   enableSnapping: boolean,
   constrainDragAxis: boolean,
   scale: number,
-): Array<PinMoveChange | FlexMoveChange> {
+  translateMode: boolean,
+): Array<PinMoveChange | FlexMoveChange | MoveTranslateChange> {
   const roundedDragDelta = Utils.roundPointTo(dragDelta, 0)
   // TODO: Probably makes more sense to pull this out.
   const viewsToOperateOn = determineElementsToOperateOnForDragging(
@@ -118,7 +121,7 @@ export function dragComponent(
     true,
     false,
   )
-  let dragChanges: Array<PinMoveChange | FlexMoveChange> = []
+  let dragChanges: Array<PinMoveChange | FlexMoveChange | MoveTranslateChange> = []
   Utils.fastForEach(viewsToOperateOn, (view) => {
     const parentPath = TP.parentPath(view)
     const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -130,7 +133,7 @@ export function dragComponent(
       // found a target with no original frame
       return
     }
-    if (isFlexContainer) {
+    if (isFlexContainer && !translateMode) {
       if (originalFrame.frame != null) {
         const flexDirection = MetadataUtils.getYogaDirection(
           MetadataUtils.getParent(componentsMetadata, view),
@@ -171,7 +174,11 @@ export function dragComponent(
         Utils.offsetPoint(roundedDragDelta, snapDelta),
       )
       if (originalFrame.frame != null) {
-        dragChanges.push(pinMoveChange(view, dragDeltaToApply))
+        if (translateMode) {
+          dragChanges.push(moveTranslateChange(view, dragDeltaToApply))
+        } else {
+          dragChanges.push(pinMoveChange(view, dragDeltaToApply))
+        }
       }
     }
   })
@@ -189,6 +196,7 @@ export function dragComponentForActions(
   enableSnapping: boolean,
   constrainDragAxis: boolean,
   scale: number,
+  translateMode: boolean,
 ): Array<EditorAction> {
   const frameAndTargets = dragComponent(
     componentsMetadata,
@@ -201,6 +209,7 @@ export function dragComponentForActions(
     enableSnapping,
     constrainDragAxis,
     scale,
+    translateMode,
   )
   return [setCanvasFrames(frameAndTargets, false)]
 }
@@ -319,6 +328,7 @@ export function adjustAllSelectedFrames(
       false,
       false,
       editor.canvas.scale,
+      false,
     )
   }
 

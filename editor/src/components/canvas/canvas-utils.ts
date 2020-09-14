@@ -32,6 +32,7 @@ import {
 import {
   findElementAtPath,
   findJSXElementAtPath,
+  getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import {
@@ -42,6 +43,7 @@ import {
   JSXElementChild,
   UtopiaJSXComponent,
   ElementInstanceMetadata,
+  JSXAttributeValue,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -89,6 +91,7 @@ import {
   isRight,
   right,
   isLeft,
+  Either,
 } from '../../core/shared/either'
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
@@ -164,6 +167,18 @@ import { createSceneTemplatePath, PathForSceneStyle } from '../../core/model/sce
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import {
+  cssDefault,
+  cssNumber,
+  cssPixelLength,
+  cssPixelLengthZero,
+  CSSTransformItem,
+  cssTransformTranslate,
+  CSSTransformTranslateItem,
+  parseTransform,
+  printTransform,
+} from '../inspector/common/css-utils'
+import { immutablyUpdateArrayIndex } from '../../core/shared/array-utils'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -251,6 +266,42 @@ export function getOriginalCanvasFrames(
     })
   })
   return originalFrames
+}
+
+function updateTransformTranslate(
+  transformValue: Either<string, unknown>,
+  deltaX: number,
+  deltaY: number,
+): JSXAttributeValue<string> {
+  const parsedCssTransformsEither = parseTransform(transformValue.value)
+  if (isRight(parsedCssTransformsEither)) {
+    const parsedCssTransforms = parsedCssTransformsEither.value
+    let lastTranslateIndex = R.findLastIndex(
+      (t: CSSTransformItem): boolean => t.type === 'translate' && t.enabled,
+      parsedCssTransforms,
+    )
+    if (lastTranslateIndex === -1) {
+      lastTranslateIndex = parsedCssTransforms.length
+    }
+
+    const translateTransform =
+      (parsedCssTransforms[lastTranslateIndex] as CSSTransformTranslateItem) ??
+      cssTransformTranslate(cssPixelLengthZero, cssDefault(cssPixelLengthZero))
+
+    const updatedTranslate = cssTransformTranslate(
+      cssPixelLength(translateTransform.values[0].value + deltaX),
+      cssDefault(cssPixelLength(translateTransform.values[1].value.value + deltaY), false),
+    )
+    const updatedArray = immutablyUpdateArrayIndex(
+      parsedCssTransforms,
+      updatedTranslate,
+      lastTranslateIndex,
+    )
+    return printTransform(updatedArray)
+  }
+  return printTransform([
+    cssTransformTranslate(cssPixelLength(deltaX), cssDefault(cssPixelLength(deltaY), false)),
+  ])
 }
 
 export function clearDragState(
@@ -421,6 +472,7 @@ export function updateFramesOfScenesAndComponents(
           break
         case 'FLEX_MOVE':
         case 'FLEX_RESIZE':
+        case 'MOVE_TRANSLATE_CHANGE':
           throw new Error(
             `Attempted to change a scene with a flex change ${JSON.stringify(target)}.`,
           )
@@ -507,6 +559,27 @@ export function updateFramesOfScenesAndComponents(
                   }
                 })
               }
+              break
+            case 'MOVE_TRANSLATE_CHANGE':
+              const updatedAttribute = updateTransformTranslate(
+                getSimpleAttributeAtPath(
+                  right(element.props),
+                  createLayoutPropertyPath('transform'),
+                ),
+                frameAndTarget.delta.x,
+                frameAndTarget.delta.y,
+              )
+
+              propsToSet.push({
+                path: createLayoutPropertyPath('transform'),
+                value: updatedAttribute,
+              })
+              propsToSkip.push(
+                createLayoutPropertyPath('Width'),
+                createLayoutPropertyPath('Height'),
+                createLayoutPropertyPath('PinnedLeft'),
+                createLayoutPropertyPath('PinnedTop'),
+              )
               break
             default:
               const _exhaustiveCheck: never = frameAndTarget
@@ -656,6 +729,24 @@ export function updateFramesOfScenesAndComponents(
             )
             break
           }
+          case 'MOVE_TRANSLATE_CHANGE':
+            const updatedAttribute = updateTransformTranslate(
+              getSimpleAttributeAtPath(right(element.props), createLayoutPropertyPath('transform')),
+              frameAndTarget.delta.x,
+              frameAndTarget.delta.y,
+            )
+
+            propsToSet.push({
+              path: createLayoutPropertyPath('transform'),
+              value: updatedAttribute,
+            })
+            propsToSkip.push(
+              createLayoutPropertyPath('Width'),
+              createLayoutPropertyPath('Height'),
+              createLayoutPropertyPath('PinnedLeft'),
+              createLayoutPropertyPath('PinnedTop'),
+            )
+            break
           case 'SINGLE_RESIZE':
             let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
             Utils.fastForEach(LayoutPinnedProps, (p) => {
@@ -2150,6 +2241,7 @@ function produceMoveTransientCanvasState(
     dragState.enableSnapping,
     dragState.constrainDragAxis,
     editorState.canvas.scale,
+    dragState.translate,
   )
 
   const componentsIncludingFakeUtopiaScene = utopiaComponentsIncludingScenes

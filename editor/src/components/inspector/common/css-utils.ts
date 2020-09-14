@@ -1545,7 +1545,9 @@ function printCSSTransformItem(cssTransform: CSSTransformItem): string {
   }
 }
 
-function printTransform(cssTransforms: CSSTransforms): JSXAttributeValue<Property.Transform> {
+export function printTransform(
+  cssTransforms: CSSTransforms,
+): JSXAttributeValue<Property.Transform> {
   return jsxAttributeValue(cssTransforms.map(printCSSTransformItem).join(' '))
 }
 
