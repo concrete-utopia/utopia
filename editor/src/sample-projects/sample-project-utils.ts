@@ -15,24 +15,6 @@ import { getSampleComponentsFile, getUiBuilderUIJSFile } from './ui-builder-ui-j
 
 export const UI_BUILDER_PROJECT_ID = 'UI-BUILDER'
 
-let generatedFiles: ProjectContents = {}
-for (let index = 0; index < 2000; index++) {
-  const path = `/src/code${index}.js`
-  const code = `/** @jsx jsx */
-import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
-console.log('${path} executed', new Error())
-export var Component${index} = (props) => {
-  return (
-    <div
-      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
-    />
-  )
-}`
-  generatedFiles[path] = codeFile(code, null)
-}
-
 export function defaultProject(): PersistentModel {
   const projectContents: ProjectContents = {
     '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
