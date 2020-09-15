@@ -1,11 +1,8 @@
-import { DefaultTheme } from '../components/code-editor/code-editor-themes'
-import { CURRENT_PROJECT_VERSION } from '../components/editor/actions/migrations/migrations'
 import {
   DefaultPackageJson,
-  EditorTab,
   openFileTab,
   PersistentModel,
-  releaseNotesTab,
+  persistentModelForProjectContents,
 } from '../components/editor/store/editor-state'
 import {
   getDefaultUIJsFile,
@@ -13,95 +10,47 @@ import {
   getSamplePreviewHTMLFile,
 } from '../core/model/new-project-files'
 import { codeFile, directory } from '../core/model/project-file-utils'
+import { ProjectContents } from '../core/shared/project-file-types'
 import { getSampleComponentsFile, getUiBuilderUIJSFile } from './ui-builder-ui-js-file'
 
 export const UI_BUILDER_PROJECT_ID = 'UI-BUILDER'
 
 export function defaultProject(): PersistentModel {
-  const selectedTab: EditorTab = releaseNotesTab()
-  const openFiles: Array<EditorTab> = [openFileTab('/src/app.js'), selectedTab]
-  return {
-    appID: null,
-    projectVersion: CURRENT_PROJECT_VERSION,
-    projectContents: {
-      '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
-      '/src': directory(),
-      '/src/app.js': getDefaultUIJsFile(),
-      '/assets': directory(),
-      '/public': directory(),
-      '/src/index.js': getSamplePreviewFile(),
-      '/public/index.html': getSamplePreviewHTMLFile(),
-    },
-    exportsInfo: [],
-    buildResult: {},
-    openFiles: openFiles,
-    selectedFile: selectedTab,
-    codeEditorErrors: {
-      buildErrors: {},
-      lintErrors: {},
-    },
-    codeEditorTheme: DefaultTheme,
-    lastUsedFont: null,
-    hiddenInstances: [],
-    fileBrowser: {
-      minimised: false,
-    },
-    dependencyList: {
-      minimised: false,
-    },
-    projectSettings: {
-      minimised: false,
-    },
-    navigator: {
-      minimised: false,
-    },
+  const projectContents: ProjectContents = {
+    '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
+    '/src': directory(),
+    '/src/app.js': getDefaultUIJsFile(),
+    '/assets': directory(),
+    '/public': directory(),
+    '/src/index.js': getSamplePreviewFile(),
+    '/public/index.html': getSamplePreviewHTMLFile(),
   }
+
+  let persistentModel = persistentModelForProjectContents(projectContents)
+  persistentModel.openFiles = [openFileTab('/src/app.js'), ...persistentModel.openFiles]
+  return persistentModel
 }
 
 function uiBuilderProject(): PersistentModel {
-  const selectedTab: EditorTab = releaseNotesTab()
-  const openFiles: Array<EditorTab> = [
+  const projectContents: ProjectContents = {
+    '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
+    '/src': directory(),
+    '/src/app.js': getUiBuilderUIJSFile(),
+    '/src/components.js': getSampleComponentsFile(),
+    '/assets': directory(),
+    '/public': directory(),
+    '/src/index.js': getSamplePreviewFile(),
+    '/public/index.html': getSamplePreviewHTMLFile(),
+  }
+
+  let persistentModel = persistentModelForProjectContents(projectContents)
+  persistentModel.openFiles = [
     openFileTab('/src/app.js'),
     openFileTab('/src/components.js'),
-    selectedTab,
+    ...persistentModel.openFiles,
   ]
-  return {
-    appID: null,
-    projectVersion: CURRENT_PROJECT_VERSION,
-    projectContents: {
-      '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
-      '/src': directory(),
-      '/src/app.js': getUiBuilderUIJSFile(),
-      '/src/components.js': getSampleComponentsFile(),
-      '/assets': directory(),
-      '/public': directory(),
-      '/src/index.js': getSamplePreviewFile(),
-      '/public/index.html': getSamplePreviewHTMLFile(),
-    },
-    exportsInfo: [],
-    buildResult: {},
-    openFiles: openFiles,
-    selectedFile: selectedTab,
-    codeEditorErrors: {
-      buildErrors: {},
-      lintErrors: {},
-    },
-    codeEditorTheme: DefaultTheme,
-    lastUsedFont: null,
-    hiddenInstances: [],
-    fileBrowser: {
-      minimised: false,
-    },
-    dependencyList: {
-      minimised: false,
-    },
-    projectSettings: {
-      minimised: false,
-    },
-    navigator: {
-      minimised: false,
-    },
-  }
+
+  return persistentModel
 }
 
 export interface SampleProject {

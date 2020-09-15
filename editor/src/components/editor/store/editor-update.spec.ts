@@ -27,7 +27,6 @@ import * as TP from '../../../core/shared/template-path'
 import * as fileWithImports from '../../../core/es-modules/test-cases/file-with-imports.json'
 import * as fileNoImports from '../../../core/es-modules/test-cases/file-no-imports.json'
 import { createNodeModules } from '../../../core/es-modules/package-manager/test-utils'
-import { notLoggedIn } from '../action-types'
 import {
   clearSelection,
   deleteViews,
@@ -48,7 +47,12 @@ import {
   updatePackageJson,
 } from '../actions/actions'
 import * as History from '../history'
-import { EditorState, getOpenUtopiaJSXComponentsFromState, openFileTab } from './editor-state'
+import {
+  EditorState,
+  getOpenUtopiaJSXComponentsFromState,
+  openFileTab,
+  defaultUserState,
+} from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
@@ -75,7 +79,7 @@ describe('action SELECT_VIEWS', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -90,7 +94,7 @@ describe('action SELECT_VIEWS', () => {
     const editorAfterToggle = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -101,7 +105,7 @@ describe('action SELECT_VIEWS', () => {
     const updatedEditor = runLocalEditorAction(
       editorAfterToggle,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action2,
       History.init(editor, derivedState),
@@ -117,7 +121,7 @@ describe('action SELECT_VIEWS', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -132,7 +136,7 @@ describe('action SELECT_VIEWS', () => {
     const withOneScene = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       selectComponents([testScenePath, testTemplatePath], false),
       History.init(editor, derivedState),
@@ -144,7 +148,7 @@ describe('action SELECT_VIEWS', () => {
     const withMultipleScenes = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       selectComponents([ScenePathForTestUiJsFile, testTemplatePath, testScenePath], false),
       History.init(editor, derivedState),
@@ -162,7 +166,7 @@ describe('action CLEAR_SELECTION', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -175,7 +179,7 @@ describe('action CLEAR_SELECTION', () => {
     const updatedEditor2 = runLocalEditorAction(
       updatedEditor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       clearAction,
       History.init(editor, derivedState),
@@ -194,7 +198,7 @@ describe('action RENAME_COMPONENT', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       renameAction,
       History.init(editor, derivedState),
@@ -208,7 +212,7 @@ describe('action RENAME_COMPONENT', () => {
     const clearedNameEditor = runLocalEditorAction(
       updatedEditor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       clearNameAction,
       History.init(editor, derivedState),
@@ -233,7 +237,7 @@ describe('action TOGGLE_PANE', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -243,7 +247,7 @@ describe('action TOGGLE_PANE', () => {
     const updatedEditor2 = runLocalEditorAction(
       updatedEditor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -259,7 +263,7 @@ describe('action TOGGLE_PANE', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -269,7 +273,7 @@ describe('action TOGGLE_PANE', () => {
     const updatedEditor2 = runLocalEditorAction(
       updatedEditor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -292,43 +296,52 @@ describe('action NAVIGATOR_REORDER', () => {
     if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
       const topLevelElements = mainUIJSFile.fileContents.value.topLevelElements
       const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value)
-      const targetChildren = Utils.pathOr(
-        [],
-        ['rootElement', 'children'],
-        utopiaJSXComponents.find((comp) => getUtopiaID(comp.rootElement) === 'aaa'),
-      )
-
-      const updatedEditor = runLocalEditorAction(
-        editor,
-        derivedState,
-        notLoggedIn,
-        workers,
-        reparentAction,
-        History.init(editor, derivedState),
-        dispatch,
-        emptyUiJsxCanvasContextData(),
-      )
-
-      const updatedMainUIJSFile = updatedEditor.projectContents['/src/app.js']
-      if (isUIJSFile(updatedMainUIJSFile) && isRight(updatedMainUIJSFile.fileContents)) {
-        const updatedTopLevelElements = updatedMainUIJSFile.fileContents.value.topLevelElements
-        const updatedUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
-          updatedMainUIJSFile.fileContents.value,
-        )
-        const updatedTargetChildren = Utils.pathOr(
-          [],
-          ['rootElement', 'children'],
-          updatedUtopiaJSXComponents.find((comp) => getUtopiaID(comp.rootElement) === 'aaa'),
+      const element = utopiaJSXComponents.find((comp) => getUtopiaID(comp.rootElement) === 'aaa')
+      if (element != null) {
+        const targetChildren = Utils.pathOr([], ['rootElement', 'children'], element)
+        const updatedEditor = runLocalEditorAction(
+          editor,
+          derivedState,
+          defaultUserState,
+          workers,
+          reparentAction,
+          History.init(editor, derivedState),
+          dispatch,
+          emptyUiJsxCanvasContextData(),
         )
 
-        // check the number of children after reparenting
-        expect(updatedTopLevelElements).toHaveLength(topLevelElements.length - 1)
-        expect(updatedTargetChildren).toHaveLength(targetChildren.length + 1)
+        const updatedMainUIJSFile = updatedEditor.projectContents['/src/app.js']
+        if (isUIJSFile(updatedMainUIJSFile) && isRight(updatedMainUIJSFile.fileContents)) {
+          const updatedTopLevelElements = updatedMainUIJSFile.fileContents.value.topLevelElements
+          const updatedUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
+            updatedMainUIJSFile.fileContents.value,
+          )
+          const updatedElement = updatedUtopiaJSXComponents.find(
+            (comp) => getUtopiaID(comp.rootElement) === 'aaa',
+          )
+          if (updatedElement != null) {
+            const updatedTargetChildren = Utils.pathOr(
+              [],
+              ['rootElement', 'children'],
+              updatedElement,
+            )
 
-        // check if the reparented elements are really in their new parent
-        expect(updatedTargetChildren.find((child) => getUtopiaID(child) === 'jjj')).toBeDefined()
+            // check the number of children after reparenting
+            expect(updatedTopLevelElements).toHaveLength(topLevelElements.length - 1)
+            expect(updatedTargetChildren).toHaveLength(targetChildren.length + 1)
+
+            // check if the reparented elements are really in their new parent
+            expect(
+              updatedTargetChildren.find((child) => getUtopiaID(child) === 'jjj'),
+            ).toBeDefined()
+          } else {
+            chaiExpect.fail('couldn’t find element after updating.')
+          }
+        } else {
+          chaiExpect.fail('updated src/app.js file was the wrong type.')
+        }
       } else {
-        chaiExpect.fail('updated src/app.js file was the wrong type.')
+        chaiExpect.fail('couldn’t find element.')
       }
     } else {
       chaiExpect.fail('original src/app.js file was the wrong type.')
@@ -347,7 +360,7 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       duplicateAction,
       History.init(editor, derivedState),
@@ -388,7 +401,7 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       duplicateAction,
       History.init(editor, derivedState),
@@ -452,7 +465,7 @@ describe('action DELETE_VIEWS', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       deleteAction,
       History.init(editor, derivedState),
@@ -514,7 +527,7 @@ describe('INSERT_JSX_ELEMENT', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       insertAction,
       History.init(editor, derivedState),
@@ -571,7 +584,7 @@ describe('INSERT_JSX_ELEMENT', () => {
     const updatedEditor = runLocalEditorAction(
       editorWithNoHighlighted,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       insertAction,
       History.init(editor, derivedState),
@@ -599,7 +612,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
     const updatedEditor = runLocalEditorAction(
       editorWithSelectedView,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       reparentAction,
       History.init(editor, derivedState),
@@ -630,7 +643,7 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       updateFrameDimensionsAction,
       History.init(editor, derivedState),
@@ -669,7 +682,7 @@ describe('action OPEN_FILE', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -694,7 +707,7 @@ describe('action SET_SAFE_MODE', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -713,7 +726,7 @@ describe('action SET_SAVE_ERROR', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -731,7 +744,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       pushToast({ message: 'toast1' }),
       History.init(editor, derivedState),
@@ -744,7 +757,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     const updatedEditor2 = runLocalEditorAction(
       updatedEditor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       pushToast({ message: 'toast2' }),
       History.init(editor, derivedState),
@@ -758,7 +771,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     const updatedEditor3 = runLocalEditorAction(
       updatedEditor2,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       popToast(),
       History.init(editor, derivedState),
@@ -777,7 +790,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       pushToast({ message: 'toast1' }),
       History.init(editor, derivedState),
@@ -808,7 +821,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -831,7 +844,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),
@@ -852,7 +865,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
-      notLoggedIn,
+      defaultUserState,
       workers,
       action,
       History.init(editor, derivedState),

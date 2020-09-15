@@ -339,16 +339,14 @@ export function usePinToggling(): UsePinTogglingResult {
   const [lastHorizontalProp, setLastHorizontalProp] = React.useState<LayoutPinnedProp | null>(null)
   const [lastVerticalProp, setLastVerticalProp] = React.useState<LayoutPinnedProp | null>(null)
 
-  const pinsInfo: PinsInfo = {
-    Width: useInspectorLayoutInfo<LayoutPinnedProp>('Width'),
-    Height: useInspectorLayoutInfo<LayoutPinnedProp>('Height'),
-    PinnedLeft: useInspectorLayoutInfo<LayoutPinnedProp>('PinnedLeft'),
-    PinnedTop: useInspectorLayoutInfo<LayoutPinnedProp>('PinnedTop'),
-    PinnedRight: useInspectorLayoutInfo<LayoutPinnedProp>('PinnedRight'),
-    PinnedBottom: useInspectorLayoutInfo<LayoutPinnedProp>('PinnedBottom'),
-    PinnedCenterX: useInspectorLayoutInfo<LayoutPinnedProp>('PinnedCenterX'),
-    PinnedCenterY: useInspectorLayoutInfo<LayoutPinnedProp>('PinnedCenterY'),
-  }
+  const Width = useInspectorLayoutInfo<LayoutPinnedProp>('Width')
+  const Height = useInspectorLayoutInfo<LayoutPinnedProp>('Height')
+  const PinnedLeft = useInspectorLayoutInfo<LayoutPinnedProp>('PinnedLeft')
+  const PinnedTop = useInspectorLayoutInfo<LayoutPinnedProp>('PinnedTop')
+  const PinnedRight = useInspectorLayoutInfo<LayoutPinnedProp>('PinnedRight')
+  const PinnedBottom = useInspectorLayoutInfo<LayoutPinnedProp>('PinnedBottom')
+  const PinnedCenterX = useInspectorLayoutInfo<LayoutPinnedProp>('PinnedCenterX')
+  const PinnedCenterY = useInspectorLayoutInfo<LayoutPinnedProp>('PinnedCenterY')
 
   const togglePin = React.useCallback(
     (newFrameProp: LayoutPinnedProp) => {
@@ -366,7 +364,16 @@ export function usePinToggling(): UsePinTogglingResult {
 
       const { pinsToSet, pinsToUnset, shouldSetHorizontalPin } = changePin(
         newFrameProp,
-        pinsInfo,
+        {
+          Width,
+          Height,
+          PinnedLeft,
+          PinnedTop,
+          PinnedRight,
+          PinnedBottom,
+          PinnedCenterX,
+          PinnedCenterY,
+        },
         frameInfo,
         lastHorizontalProp,
         lastVerticalProp,
@@ -397,7 +404,14 @@ export function usePinToggling(): UsePinTogglingResult {
       elementFrames,
       filteredSelectedViews,
       elementsRef,
-      pinsInfo,
+      Width,
+      Height,
+      PinnedLeft,
+      PinnedTop,
+      PinnedRight,
+      PinnedBottom,
+      PinnedCenterX,
+      PinnedCenterY,
       dispatch,
       jsxMetadataRef,
       lastHorizontalProp,

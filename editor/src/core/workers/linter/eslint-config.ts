@@ -1,4 +1,6 @@
-const EsLintRecommended = {
+import { Linter } from 'eslint'
+
+const EsLintRecommended: Linter.RulesRecord = {
   // Currently on 6.8.0 ruleset: https://github.com/eslint/eslint/blob/v6.8.0/conf/eslint-recommended.js
   // This requires manually updating on each release. Urgh.
   'constructor-super': 'error',
@@ -48,7 +50,7 @@ const EsLintRecommended = {
   'no-unsafe-finally': 'error',
   'no-unsafe-negation': 'error',
   'no-unused-labels': 'error',
-  'no-unused-vars': 'warning',
+  'no-unused-vars': 'warn',
   'no-useless-catch': 'error',
   'no-useless-escape': 'error',
   'no-with': 'error',
@@ -57,7 +59,7 @@ const EsLintRecommended = {
   'valid-typeof': 'error',
 }
 
-export const ESLINT_CONFIG = {
+export const ESLINT_CONFIG: Linter.Config = {
   parser: 'babel-eslint',
   parserOptions: {
     sourceType: 'module',
@@ -300,6 +302,11 @@ export const ESLINT_CONFIG = {
     'jsx-a11y/role-has-required-aria-props': 'warn',
     'jsx-a11y/role-supports-aria-props': 'warn',
     'jsx-a11y/scope': 'warn',
+  },
+  settings: {
+    react: {
+      version: '17.0.0-rc.1',
+    },
   },
 }
 

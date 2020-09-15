@@ -739,10 +739,7 @@ export function unsetJSXValueAtPath(
   }
 }
 
-export function walkAttribute(
-  attribute: JSXAttribute,
-  walk: (attribute: JSXAttribute) => void,
-): void {
+export function walkAttribute(attribute: JSXAttribute, walk: (a: JSXAttribute) => void): void {
   walk(attribute)
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':

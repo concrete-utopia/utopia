@@ -8,11 +8,13 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Utopia.Web.Database where
 
 import           Control.Lens
 import           Control.Monad.Catch
+import Control.Monad.Fail
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Identity
 import           Data.Aeson
@@ -52,6 +54,8 @@ data DatabaseMetrics = DatabaseMetrics
                      , _setShowcaseProjectsMetrics    :: InvocationMetric
                      , _updateUserDetailsMetrics      :: InvocationMetric
                      , _getUserDetailsMetrics         :: InvocationMetric
+                     , _getUserConfigurationMetrics        :: InvocationMetric
+                     , _saveUserConfigurationMetrics       :: InvocationMetric
                      }
 
 createDatabaseMetrics :: Store -> IO DatabaseMetrics
@@ -70,6 +74,8 @@ createDatabaseMetrics store = DatabaseMetrics
   <*> createInvocationMetric "utopia.database.setshowcaseprojects" store
   <*> createInvocationMetric "utopia.database.updateuserdetails" store
   <*> createInvocationMetric "utopia.database.getuserdetails" store
+  <*> createInvocationMetric "utopia.database.getuserconfiguration" store
+  <*> createInvocationMetric "utopia.database.saveuserconfiguration" store
 
 data UserIDIncorrectException = UserIDIncorrectException
                               deriving (Eq, Show)
@@ -241,3 +247,26 @@ getUserDetails :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO (Maybe UserDe
 getUserDetails metrics pool userId = invokeAndMeasure (_getUserDetailsMetrics metrics) $ do
   entity <- usePool pool $ selectFirst [UserDetailsUserId ==. userId] []
   return $ fmap entityVal entity
+
+userConfigurationToDecodedUserConfiguration :: UserConfiguration -> IO DecodedUserConfiguration
+userConfigurationToDecodedUserConfiguration userConf = do
+  let encodedShortcutConfig = userConfigurationShortcutConfig userConf
+  let decodeShortcutConfig conf = either fail return $ eitherDecode $ toS conf
+  decodedShortcutConfig <- traverse decodeShortcutConfig encodedShortcutConfig
+  return $ DecodedUserConfiguration { _id = (userConfigurationUserId userConf)
+                               , _shortcutConfig = decodedShortcutConfig
+                               }
+
+getUserConfiguration :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO (Maybe DecodedUserConfiguration)
+getUserConfiguration metrics pool userId = invokeAndMeasure (_getUserConfigurationMetrics metrics) $ do
+  entity <- usePool pool $ selectFirst [UserConfigurationUserId ==. userId] []
+  traverse userConfigurationToDecodedUserConfiguration $ fmap entityVal entity
+
+saveUserConfiguration :: DatabaseMetrics -> Pool SqlBackend -> Text -> Maybe Value -> IO ()
+saveUserConfiguration metrics pool userId updatedShortcutConfig = invokeAndMeasure (_saveUserConfigurationMetrics metrics) $ do
+  let encodedShortcutConfig = fmap toS $ fmap encode updatedShortcutConfig
+  let newRecord = UserConfiguration { userConfigurationUserId = userId
+                               , userConfigurationShortcutConfig = encodedShortcutConfig
+                               }
+  let recordUnique = UniqueUserConfiguration userId
+  void $ usePool pool $ upsertBy recordUnique newRecord [UserConfigurationShortcutConfig =. encodedShortcutConfig]

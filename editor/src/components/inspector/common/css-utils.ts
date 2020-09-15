@@ -1,15 +1,6 @@
 // FIXME This file shouldn't live under the inspector, and shouldn't be defining types
 import * as Chroma from 'chroma-js'
-import {
-  FontStyleProperty,
-  FontWeightProperty,
-  LetterSpacingProperty,
-  LineHeightProperty,
-  TextAlignProperty,
-  TextDecorationLineProperty,
-  TextDecorationStyleProperty,
-  TransformProperty,
-} from 'csstype'
+import { Property } from 'csstype'
 import {
   FlexAlignment,
   FlexDirection,
@@ -627,7 +618,7 @@ const UnitPart = String.raw`[a-zA-Z%]*`
 
 function parseCSSNumericTypeString(
   input: string,
-  parseUnit: (input: string) => Either<string, CSSNumberUnit>,
+  parseUnit: (i: string) => Either<string, CSSNumberUnit>,
   defaultUnit: CSSNumberUnit | null = null,
 ): Either<string, CSSNumber> {
   const regex = String.raw`^\s*(${LeadingSign}${NumericPart})\s*(${UnitPart})\s*$`
@@ -1554,7 +1545,7 @@ function printCSSTransformItem(cssTransform: CSSTransformItem): string {
   }
 }
 
-function printTransform(cssTransforms: CSSTransforms): JSXAttributeValue<TransformProperty> {
+function printTransform(cssTransforms: CSSTransforms): JSXAttributeValue<Property.Transform> {
   return jsxAttributeValue(cssTransforms.map(printCSSTransformItem).join(' '))
 }
 
@@ -3452,13 +3443,13 @@ function parseFontWeight(fontWeight: unknown): Either<string, CSSFontWeight> {
   }
 }
 
-function printFontWeight(cssFontFamily: CSSFontWeight): JSXAttributeValue<FontWeightProperty> {
+function printFontWeight(cssFontFamily: CSSFontWeight): JSXAttributeValue<Property.FontWeight> {
   return jsxAttributeValue(cssFontFamily)
 }
 
 const parseFontStyle = isOneOfTheseParser<CSSFontStyle>(['normal', 'italic'])
 
-function printFontStyle(cssFontStyle: CSSFontStyle): JSXAttributeValue<FontStyleProperty> {
+function printFontStyle(cssFontStyle: CSSFontStyle): JSXAttributeValue<Property.FontStyle> {
   return jsxAttributeValue(cssFontStyle)
 }
 
@@ -3471,7 +3462,7 @@ const parseTextAlign = isOneOfTheseParser<CSSTextAlign>([
   'end',
 ])
 
-function printTextAlign(cssTextAlign: CSSTextAlign): JSXAttributeValue<TextAlignProperty> {
+function printTextAlign(cssTextAlign: CSSTextAlign): JSXAttributeValue<Property.TextAlign> {
   return jsxAttributeValue(cssTextAlign)
 }
 
@@ -3490,7 +3481,7 @@ const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
 
 function printTextDecorationLine(
   cssTextDecorationLine: CSSTextDecorationLine,
-): JSXAttributeValue<TextDecorationLineProperty> {
+): JSXAttributeValue<Property.TextDecorationLine> {
   return jsxAttributeValue(cssTextDecorationLine)
 }
 
@@ -3504,7 +3495,7 @@ const parseTextDecorationStyle = isOneOfTheseParser<CSSTextDecorationStyle>([
 
 function printTextDecorationStyle(
   cssTextDecorationStyle: CSSTextDecorationStyle,
-): JSXAttributeValue<TextDecorationStyleProperty> {
+): JSXAttributeValue<Property.TextDecorationStyle> {
   return jsxAttributeValue(cssTextDecorationStyle)
 }
 
@@ -3518,7 +3509,7 @@ function parseLetterSpacing(letterSpacing: unknown): Either<string, CSSLetterSpa
 
 function printLetterSpacing(
   cssLetterSpacing: CSSLetterSpacing,
-): JSXAttributeValue<LetterSpacingProperty<string | number>> {
+): JSXAttributeValue<Property.LetterSpacing<string | number>> {
   if (cssLetterSpacing === 'normal') {
     return jsxAttributeValue(cssLetterSpacing)
   } else {
@@ -3536,7 +3527,7 @@ function parseLineHeight(lineHeight: unknown): Either<string, CSSLineHeight> {
 
 function printLineHeight(
   cssLineHeight: CSSLineHeight,
-): JSXAttributeValue<LineHeightProperty<string | number>> {
+): JSXAttributeValue<Property.LineHeight<string | number>> {
   if (cssLineHeight === 'normal') {
     return jsxAttributeValue(cssLineHeight)
   } else {

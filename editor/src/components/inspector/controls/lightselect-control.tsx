@@ -7,20 +7,23 @@ import { SelectOption } from './select-control'
 import { FlexRow } from 'uuiui'
 
 // TODO stronger type for this control
-export const LightSelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>> = (
-  props,
-) => {
+export const LightSelectControl: React.FunctionComponent<DEPRECATEDControlProps<any>> = ({
+  onSubmitValue: propsOnSubmitValue,
+  ...props
+}) => {
   const options = props.options as Array<SelectOption>
   const selectedOption = options.find((option) => option.value === props.value)
   const label = selectedOption != null ? selectedOption.label : props.value + ''
 
   const mixed = props.controlStyles.mixed
-  const onSubmitValue = (newValue: SelectOption) => {
-    if (newValue != null) {
-      props.onSubmitValue(newValue.value)
-    }
-  }
-
+  const onSubmitValue = React.useCallback(
+    (newValue: SelectOption) => {
+      if (newValue != null) {
+        propsOnSubmitValue(newValue.value)
+      }
+    },
+    [propsOnSubmitValue],
+  )
   return (
     <FlexRow className={props.controlClassName} style={props.style}>
       <PopupList

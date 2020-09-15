@@ -18,12 +18,12 @@ describe('Keyboard.keysEquals', () => {
     const first: Key = {
       character: 'b',
       modifiers: ['alt', 'shift'],
-      isKeyDown: 'keydown',
+      keyDownOrUp: 'keydown',
     }
     const second: Key = {
       character: 'b',
       modifiers: ['shift', 'alt'],
-      isKeyDown: 'keydown',
+      keyDownOrUp: 'keydown',
     }
     expect(Keyboard.areSameKey(first, second)).toEqual(true)
   })

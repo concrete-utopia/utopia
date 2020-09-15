@@ -121,6 +121,12 @@ loadProjectAssetClient = client (Proxy :: Proxy LoadProjectAssetAPI)
 renameProjectAssetClient :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> Text -> ClientM NoContent
 renameProjectAssetClient = client (Proxy :: Proxy (AuthCookie :> RenameProjectAssetAPI))
 
+getUserConfigurationClient :: Maybe Text -> ClientM UserConfigurationResponse
+getUserConfigurationClient = client (Proxy :: Proxy (AuthCookie :> GetUserConfigurationAPI))
+
+saveUserConfigurationClient :: Maybe Text -> UserConfigurationRequest -> ClientM NoContent
+saveUserConfigurationClient = client (Proxy :: Proxy (AuthCookie :> SaveUserConfigurationAPI))
+
 jpgMediaType :: MediaType
 jpgMediaType = "image" // "jpg"
 
@@ -178,6 +184,24 @@ deleteAssetSpec =
         (Left (FailureResponse response)) -> responseStatusCode response `shouldBe` notFound404
         (Left _)                          -> expectationFailure "Unexpected response type."
         (Right _)                         -> expectationFailure "Unexpected successful response."
+
+saveUserConfigurationSpec :: Spec
+saveUserConfigurationSpec =
+  describe "GET v1/user/config" $ do
+    it "should return an empty result when nothing has been set" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      userConfig <- withClientEnv clientEnv $ do
+        _ <- authenticateClient (Just "logmein") (Just "")
+        cookieHeader <- getCookieHeader cookieJarTVar
+        getUserConfigurationClient cookieHeader
+      (userConfig ^? _Right) `shouldBe` (Just $ UserConfigurationResponse Nothing)
+    it "should return the previously set config" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      let shortcutConf = Just $ object ["ctrl+m" .= ("do something" :: Text), "ctrl+n" .= ("do something else" :: Text)]
+      userConfig <- withClientEnv clientEnv $ do
+        _ <- authenticateClient (Just "logmein") (Just "")
+        cookieHeader <- getCookieHeader cookieJarTVar
+        _ <- saveUserConfigurationClient cookieHeader (UserConfigurationRequest shortcutConf)
+        getUserConfigurationClient cookieHeader
+      (userConfig ^? _Right) `shouldBe` (Just $ UserConfigurationResponse shortcutConf)
 
 routingSpec :: Spec
 routingSpec = around_ withServer $ do
@@ -330,3 +354,4 @@ routingSpec = around_ withServer $ do
       loadedProjectResult `shouldSatisfy` errorWithStatusCode notFound404
   updateAssetPathSpec
   deleteAssetSpec
+  saveUserConfigurationSpec

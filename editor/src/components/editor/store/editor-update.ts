@@ -1,5 +1,5 @@
-import { EditorState, DerivedState } from './editor-state'
-import { EditorAction, LoginState, EditorDispatch } from '../action-types'
+import { EditorState, DerivedState, UserState } from './editor-state'
+import { EditorAction, EditorDispatch } from '../action-types'
 import { UPDATE_FNS } from '../actions/actions'
 
 import { StateHistory } from '../history'
@@ -13,7 +13,7 @@ import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 export function runLocalEditorAction(
   state: EditorState,
   derivedState: DerivedState,
-  loginState: LoginState,
+  userState: UserState,
   workers: UtopiaTsWorkers,
   action: EditorAction,
   stateHistory: StateHistory,
@@ -28,12 +28,12 @@ export function runLocalEditorAction(
     case 'DISTRIBUTE_SELECTED_VIEWS':
       return UPDATE_FNS.DISTRIBUTE_SELECTED_VIEWS(action, state, derivedState)
     case 'SAVE_ASSET':
-      return UPDATE_FNS.SAVE_ASSET(action, state, derivedState, dispatch, loginState)
+      return UPDATE_FNS.SAVE_ASSET(action, state, derivedState, dispatch, userState)
     default:
       return runSimpleLocalEditorAction(
         state,
         derivedState,
-        loginState,
+        userState,
         workers,
         action,
         stateHistory,
@@ -46,7 +46,7 @@ export function runLocalEditorAction(
 export function runSimpleLocalEditorAction(
   state: EditorState,
   derivedState: DerivedState,
-  loginState: LoginState,
+  userState: UserState,
   workers: UtopiaTsWorkers,
   action: EditorAction,
   stateHistory: StateHistory,
@@ -183,7 +183,7 @@ export function runSimpleLocalEditorAction(
     case 'SEND_PREVIEW_MODEL':
       return UPDATE_FNS.SEND_PREVIEW_MODEL(action, state)
     case 'UPDATE_FILE_PATH':
-      return UPDATE_FNS.UPDATE_FILE_PATH(action, state, loginState, dispatch)
+      return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState, dispatch)
     case 'SET_FOCUS':
       return UPDATE_FNS.SET_FOCUS(action, state)
     case 'RESIZE_LEFTPANE':
@@ -203,7 +203,7 @@ export function runSimpleLocalEditorAction(
     case 'ADD_FOLDER':
       return UPDATE_FNS.ADD_FOLDER(action, state)
     case 'DELETE_FILE':
-      return UPDATE_FNS.DELETE_FILE(action, state, derivedState, loginState)
+      return UPDATE_FNS.DELETE_FILE(action, state, derivedState, userState)
     case 'ADD_CODE_FILE':
       return UPDATE_FNS.ADD_CODE_FILE(action, state)
     case 'ADD_UI_JS_FILE':

@@ -344,6 +344,11 @@ editorAssetsEndpoint notProxiedPath possibleBranchName = do
     Just _          -> loadLocally
     Nothing         -> maybe loadLocally loadFromProxy possibleProxyManager
 
+downloadGithubProjectEndpoint :: Maybe Text -> Text -> Text -> ServerMonad BL.ByteString
+downloadGithubProjectEndpoint cookie owner repo = requireUser cookie $ \_ -> do
+  zipball <- getGithubProject owner repo
+  return zipball
+
 monitoringEndpoint :: ServerMonad Value
 monitoringEndpoint = getMetrics
 
@@ -367,11 +372,6 @@ serveWebAppEndpoint :: FilePath -> ServerMonad Application
 serveWebAppEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
   maybe (serveWebAppEndpointNotProxied notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 3000 []) possibleProxyManager
-
-servePackagerEndpoint :: ServerMonad Application
-servePackagerEndpoint = do
-  packagerProxyManager <- getPackagerProxyManager
-  return $ proxyApplication packagerProxyManager 5001 []
 
 getPackageJSONEndpoint :: Text -> ServerMonad Value
 getPackageJSONEndpoint javascriptPackageName = do
@@ -400,6 +400,22 @@ packagePackagerEndpoint javascriptPackageName javascriptPackageVersionAndSuffix 
     Just (packagerContent, lastModified) -> do
       return $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader packagerContent
 
+emptyUserConfigurationResponse :: UserConfigurationResponse
+emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing }
+
+decodedUserConfigurationToResponse :: DecodedUserConfiguration -> UserConfigurationResponse
+decodedUserConfigurationToResponse DecodedUserConfiguration{..} = UserConfigurationResponse { _shortcutConfig = _shortcutConfig }
+
+getUserConfigurationEndpoint :: Maybe Text -> ServerMonad UserConfigurationResponse 
+getUserConfigurationEndpoint cookie = requireUser cookie $ \sessionUser -> do
+  userConfig <- getUserConfiguration (view id sessionUser)
+  return $ maybe emptyUserConfigurationResponse decodedUserConfigurationToResponse userConfig
+
+saveUserConfigurationEndpoint :: Maybe Text -> UserConfigurationRequest -> ServerMonad NoContent
+saveUserConfigurationEndpoint cookie UserConfigurationRequest{..} = requireUser cookie $ \sessionUser -> do
+  saveUserConfiguration (view id sessionUser) _shortcutConfig
+  return NoContent
+
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -411,11 +427,14 @@ protected authCookie = logoutPage authCookie
                   :<|> forkProjectEndpoint authCookie
                   :<|> saveProjectEndpoint authCookie
                   :<|> deleteProjectEndpoint authCookie
+                  :<|> getUserConfigurationEndpoint authCookie
+                  :<|> saveUserConfigurationEndpoint authCookie
                   :<|> getMyProjectsEndpoint authCookie
                   :<|> renameProjectAssetEndpoint authCookie
                   :<|> deleteProjectAssetEndpoint authCookie
                   :<|> saveProjectAssetEndpoint authCookie
                   :<|> saveProjectThumbnailEndpoint authCookie
+                  :<|> downloadGithubProjectEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate
@@ -441,7 +460,6 @@ unprotected = authenticate
          :<|> editorAssetsEndpoint "./sockjs-node" Nothing
          :<|> websiteAssetsEndpoint "./public/static"
          :<|> servePath "./public/.well-known" Nothing
-         :<|> servePackagerEndpoint
          :<|> serveWebAppEndpoint "./public"
 
 server :: ServerT API ServerMonad

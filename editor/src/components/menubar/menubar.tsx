@@ -49,8 +49,8 @@ export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement> {
 export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
   const [hovered, setHovered] = React.useState(false)
 
-  const handleOnMouseOver = () => setHovered(true)
-  const handleOnMouseOut = () => setHovered(false)
+  const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
+  const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
 
   var foregroundColor: IcnProps['color'] = 'black'
   if (props.menuExpanded && props.selected) {
@@ -89,7 +89,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
   const {
     dispatch,
     selectedTab,
-    loginState,
+    userState,
     leftMenuExpanded,
     projectId,
     projectName,
@@ -97,7 +97,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
     return {
       dispatch: store.dispatch,
       selectedTab: store.editor.leftMenu.selectedTab,
-      loginState: store.loginState,
+      userState: store.userState,
       leftMenuExpanded: store.editor.leftMenu.expanded,
       projectId: store.editor.id,
       projectName: store.editor.projectName,
@@ -170,7 +170,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
       </FlexColumn>
       <Tile style={{ marginTop: 12, marginBottom: 12 }}>
         <a href='/projects'>
-          <Avatar loginState={loginState} size={28} />
+          <Avatar loginState={userState.loginState} size={28} />
         </a>
       </Tile>
     </FlexColumn>

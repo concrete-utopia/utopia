@@ -2044,4 +2044,32 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 `,
     )
   })
+
+  it('React.useEffect at the root fails usefully', () => {
+    testCanvasRender(
+      null,
+      `
+import * as React from "react"
+import { View, jsx, Storyboard, Scene } from 'utopia-api'
+React.useEffect()
+export var App = (props) => {
+  return "hello!"
+}
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+      <Scene
+        static
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        component={App}
+        layout={{ layoutSystem: 'pinSystem' }}
+        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        data-uid={'scene-aaa'}
+      />
+    </Storyboard>
+  )
+}
+`,
+    )
+  })
 })

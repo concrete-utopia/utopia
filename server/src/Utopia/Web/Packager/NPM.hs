@@ -5,11 +5,9 @@
 module Utopia.Web.Packager.NPM where
 
 import           Control.Monad
-import           Data.Aeson
 import           Data.List                 (isSuffixOf, stripPrefix)
 import qualified Data.Text.IO              as T
 import           Protolude
-import           System.Directory
 import           System.Directory.PathWalk
 import           System.FilePath
 import           System.IO.Temp
@@ -51,17 +49,6 @@ getRelevantFiles projectPath = do
       let fileWithContent = fmap (Map.singleton (toS entryFilename)) $ T.readFile fullFilename
       if relevant then fileWithContent else mempty
 
-getTransitiveImportsForPackage :: FilePath -> Text -> IO [FilePath]
-getTransitiveImportsForPackage projectPath javascriptPackageName = do
-  withSystemTempFile "import-analysis-result.txt" $ \importResultFile -> \_ -> do
-    removeFile importResultFile
-    let baseProc = proc "npm" ["start", projectPath </> "node_modules" </> toS javascriptPackageName, importResultFile]
-    -- Currently assumes these live near each other.
-    let procWithCwd = baseProc { cwd = Just "../packager-servers/extract-requires" }
-    _ <- readCreateProcess procWithCwd ""
-    jsonValueOrError <- eitherDecodeFileStrict' importResultFile
-    either fail return jsonValueOrError
-
 readFileAddToMap :: FilePath -> FilesAndContents -> FilePath -> IO FilesAndContents
 readFileAddToMap projectPath currentMap filename = do
   let strippedPath = fromMaybe filename $ stripPrefix projectPath filename
@@ -71,7 +58,5 @@ readFileAddToMap projectPath currentMap filename = do
 getModuleAndDependenciesFiles :: Text -> FilePath -> IO FilesAndContents
 getModuleAndDependenciesFiles _ projectPath = do
   relevantFiles <- getRelevantFiles projectPath
-  -- transitivelyImportedFiles <- getTransitiveImportsForPackage projectPath javascriptPackageName
-  -- moduleAndDependencies <- foldM (readFileAddToMap projectPath) mempty transitivelyImportedFiles
-  let combinedResult = relevantFiles --  <> moduleAndDependencies
+  let combinedResult = relevantFiles
   return combinedResult

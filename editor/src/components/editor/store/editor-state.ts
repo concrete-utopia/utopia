@@ -120,17 +120,38 @@ import { Notice } from '../../common/notices'
 import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
 import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
+import { ShortcutConfiguration } from '../shortcut-definitions'
+import { notLoggedIn } from '../../../common/user'
 
 export interface OriginalPath {
   originalTP: TemplatePath
   currentTP: TemplatePath
 }
 
+export interface UserConfiguration {
+  shortcutConfig: ShortcutConfiguration | null
+}
+
+export function emptyUserConfiguration(): UserConfiguration {
+  return {
+    shortcutConfig: null,
+  }
+}
+
+export interface UserState extends UserConfiguration {
+  loginState: LoginState
+}
+
+export const defaultUserState: UserState = {
+  loginState: notLoggedIn,
+  shortcutConfig: {},
+}
+
 export interface EditorStore {
   editor: EditorState
   derived: DerivedState
   history: StateHistory
-  loginState: LoginState
+  userState: UserState
   workers: UtopiaTsWorkers
   dispatch: EditorDispatch
 }
@@ -194,7 +215,17 @@ export function releaseNotesTab(): ReleaseNotesTab {
   }
 }
 
-export type EditorTab = OpenFileTab | ReleaseNotesTab
+export interface UserConfigurationTab {
+  type: 'USER_CONFIGURATION_TAB'
+}
+
+export function userConfigurationTab(): UserConfigurationTab {
+  return {
+    type: 'USER_CONFIGURATION_TAB',
+  }
+}
+
+export type EditorTab = OpenFileTab | ReleaseNotesTab | UserConfigurationTab
 
 export function isOpenFileTab(editorTab: EditorTab): editorTab is OpenFileTab {
   return editorTab.type === 'OPEN_FILE_TAB'
@@ -202,6 +233,10 @@ export function isOpenFileTab(editorTab: EditorTab): editorTab is OpenFileTab {
 
 export function isReleaseNotesTab(editorTab: EditorTab): editorTab is ReleaseNotesTab {
   return editorTab.type === 'RELEASE_NOTES_TAB'
+}
+
+export function isUserConfigurationTab(editorTab: EditorTab): editorTab is UserConfigurationTab {
+  return editorTab.type === 'USER_CONFIGURATION_TAB'
 }
 
 export interface ConsoleLog {
@@ -444,7 +479,7 @@ export function simpleParseSuccess(
 }
 
 export function modifyParseSuccessWithSimple(
-  transform: (success: SimpleParseSuccess) => SimpleParseSuccess,
+  transform: (s: SimpleParseSuccess) => SimpleParseSuccess,
   success: ParseSuccess,
 ): ParseSuccess {
   const oldSimpleParseSuccess: SimpleParseSuccess = {
@@ -476,7 +511,7 @@ export interface ParseSuccessAndEditorChanges<T> {
 }
 
 export function applyParseAndEditorChanges<T>(
-  getChanges: (editor: EditorState, success: ParseSuccess) => ParseSuccessAndEditorChanges<T>,
+  getChanges: (e: EditorState, success: ParseSuccess) => ParseSuccessAndEditorChanges<T>,
   editor: EditorState,
 ): { editor: EditorState; additionalData: T | null } {
   const openUIJSFileKey = getOpenUIJSFileKey(editor)
@@ -530,14 +565,14 @@ export function modifyOpenParseSuccess(
   function getChanges(
     editor: EditorState,
     success: ParseSuccess,
-  ): ParseSuccessAndEditorChanges<{}> {
+  ): ParseSuccessAndEditorChanges<Record<string, never>> {
     return {
       parseSuccessTransform: transform,
       editorStateTransform: (e: EditorState) => e,
       additionalData: {},
     }
   }
-  return applyParseAndEditorChanges<{}>(getChanges, model).editor
+  return applyParseAndEditorChanges<Record<string, never>>(getChanges, model).editor
 }
 
 export function applyUtopiaJSXComponentsChanges(
@@ -1296,6 +1331,41 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     },
     navigator: {
       minimised: editor.navigator.minimised,
+    },
+  }
+}
+
+export function persistentModelForProjectContents(
+  projectContents: ProjectContents,
+): PersistentModel {
+  const selectedTab: EditorTab = releaseNotesTab()
+
+  return {
+    appID: null,
+    projectVersion: CURRENT_PROJECT_VERSION,
+    projectContents: projectContents,
+    exportsInfo: [],
+    buildResult: {},
+    openFiles: [selectedTab],
+    selectedFile: selectedTab,
+    codeEditorErrors: {
+      buildErrors: {},
+      lintErrors: {},
+    },
+    codeEditorTheme: DefaultTheme,
+    lastUsedFont: null,
+    hiddenInstances: [],
+    fileBrowser: {
+      minimised: false,
+    },
+    dependencyList: {
+      minimised: false,
+    },
+    projectSettings: {
+      minimised: false,
+    },
+    navigator: {
+      minimised: false,
     },
   }
 }

@@ -239,7 +239,7 @@ export function isCodeOrUiJsFile(file: ProjectFile): file is CodeFile | UIJSFile
 
 interface EvalResult {
   module: {
-    exports: {}
+    exports: unknown
   }
 }
 

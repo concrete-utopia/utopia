@@ -35,7 +35,7 @@ import {
   defaultEllipseElement,
   defaultRectangleElement,
   defaultTextElement,
-  defaultViewElement,
+  defaultDivElement,
 } from './defaults'
 import { FontSettings } from '../inspector/common/css-utils'
 import { existingUIDs } from '../navigator/left-pane'
@@ -53,7 +53,7 @@ import { useEditorState } from './store/store-hook'
 import { last } from '../../core/shared/array-utils'
 import { defaultIfNull } from '../../core/shared/optional-utils'
 import { forEachRight } from '../../core/shared/either'
-import { dropExtension } from '../../core/shared/string-utils'
+import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import {
   defaultPropertiesForComponentInFile,
@@ -107,7 +107,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
             const componentName = topLevelElement.name
             const defaultProps = defaultPropertiesForComponentInFile(
               componentName,
-              dropExtension(openFileFullPath),
+              dropFileExtension(openFileFullPath),
               store.editor.codeResultCache,
             )
             const detectedProps = topLevelElement.propsUsed
@@ -176,10 +176,7 @@ export function componentBeingInsertedEquals(
   }
 }
 
-const viewComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('View')], null) },
-  jsxElementName('View', []),
-)
+const divComponentBeingInserted = componentBeingInserted({}, jsxElementName('div', []))
 
 const imageComponentBeingInserted = componentBeingInserted({}, jsxElementName('img', []))
 
@@ -203,7 +200,7 @@ const animatedDivComponentBeingInserted = componentBeingInserted(
   jsxElementName('animated', ['div']),
 )
 
-class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
+class InsertMenuInner extends React.Component<InsertMenuProps> {
   shouldComponentUpdate(nextProps: InsertMenuProps) {
     const shouldUpdate =
       this.props.lastFontSettings !== nextProps.lastFontSettings ||
@@ -223,17 +220,10 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
     this.props.editorDispatch([enableInsertModeForScene('scene')], 'everyone')
   }
 
-  viewInsertMode = () => {
+  divInsertMode = () => {
     const newUID = generateUID(this.props.existingUIDs)
     this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultViewElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('View')], null) },
-          null,
-        ),
-      ],
+      [enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null)],
       'everyone',
     )
   }
@@ -329,13 +319,13 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
         </InsertGroup>
         <InsertGroup label='Utopia Components' dependencyStatus='loaded' dependencyVersion={null}>
           <InsertItem
-            type='view'
-            label='View'
+            type='div'
+            label='div'
             selected={componentBeingInsertedEquals(
               currentlyBeingInserted,
-              viewComponentBeingInserted,
+              divComponentBeingInserted,
             )}
-            onMouseDown={this.viewInsertMode}
+            onMouseDown={this.divInsertMode}
           />
           <InsertItem
             type='image'
@@ -393,7 +383,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
             {this.props.currentFileComponents.map((currentFileComponent) => {
               const { componentName, defaultProps, detectedProps } = currentFileComponent
               const warningMessage = findMissingDefaultsAndGetWarning(detectedProps, defaultProps)
-              const insertItemOnMouseDown = () => {
+              const insertItemOnMouseDown = React.useCallback(() => {
                 const newUID = generateUID(this.props.existingUIDs)
                 let props: JSXAttributes = objectMap(jsxAttributeValue, defaultProps)
                 props['data-uid'] = jsxAttributeValue(newUID)
@@ -402,7 +392,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
                   [enableInsertModeForJSXElement(newElement, newUID, {}, null)],
                   'everyone',
                 )
-              }
+              }, [componentName, defaultProps])
 
               return (
                 <InsertItem
@@ -437,7 +427,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
                   dependencyStatus={this.props.packageStatus[dependency.name]?.status ?? 'loaded'}
                 >
                   {componentDescriptor.components.map((component, componentIndex) => {
-                    const insertItemOnMouseDown = () => {
+                    const insertItemOnMouseDown = React.useCallback(() => {
                       const newUID = generateUID(this.props.existingUIDs)
                       const newElement = {
                         ...component.element,
@@ -457,7 +447,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps, {}> {
                         ],
                         'everyone',
                       )
-                    }
+                    }, [component.element, component.importsToAdd])
                     return (
                       <InsertItem
                         key={`insert-item-third-party-${dependencyIndex}-${componentIndex}`}

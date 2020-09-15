@@ -512,8 +512,8 @@ declare module 'utopia-api/tests/render-tests.spec' {
 }
 declare module 'utopia-api/tests/test-utils' {
   /// <reference types="react" />
-  export const flexRowStyle: React.CSSProperties;
-  export const flexColumnStyle: React.CSSProperties;
+  export const flexRowStyle: Pick<React.CSSProperties, 'display' | 'flexDirection' | 'alignItems' | 'whiteSpace'>;
+  export const flexColumnStyle: Pick<React.CSSProperties, 'display' | 'flexDirection' | 'alignItems' | 'whiteSpace'>;
   interface CommonSenseUtopiaProps {
       flexGrow?: number;
   }

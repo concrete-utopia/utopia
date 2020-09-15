@@ -21,7 +21,7 @@ function isEsModuleError(error: Error) {
 function evaluateJs(
   filePath: string,
   moduleCode: string,
-  partialModule: { exports: {} },
+  partialModule: { exports: unknown },
   requireFn: (toImport: string) => unknown,
 ) {
   // https://nodejs.org/api/modules.html#modules_module_exports
@@ -57,7 +57,7 @@ function evaluateJs(
 function evaluateCss(
   filepath: string,
   moduleCode: string,
-  partialModule: { exports: {} },
+  partialModule: { exports: unknown },
   requireFn: (toImport: string) => unknown,
 ) {
   const transpiledCode = transformCssNodeModule(filepath, moduleCode)
@@ -67,7 +67,7 @@ function evaluateCss(
 export function evaluator(
   filepath: string,
   moduleCode: string,
-  partialModule: { exports: {} },
+  partialModule: { exports: unknown },
   requireFn: (toImport: string) => unknown,
 ) {
   const fileExtension = getFileExtension(filepath)

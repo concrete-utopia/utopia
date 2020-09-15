@@ -74,7 +74,7 @@ import {
   WindowPoint,
   WindowRectangle,
 } from '../core/shared/math-utils'
-import { ImageResult } from '../utils/clipboard-utils'
+import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
 
@@ -1131,7 +1131,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   }
 }
 
-function isTargetContextMenu(target: Element): boolean {
+function isTargetContextMenu(target: HTMLElement): boolean {
   const className = (target.className as string) || ''
   return (
     (typeof className === 'string' && className.includes('react-contexify')) ||
@@ -1139,7 +1139,7 @@ function isTargetContextMenu(target: Element): boolean {
   )
 }
 
-function isTargetInPopup(target: Element, popupId: string | null): boolean {
+function isTargetInPopup(target: HTMLElement, popupId: string | null): boolean {
   if (popupId == null) {
     return false
   } else {

@@ -61,6 +61,7 @@ function getOptionIndex(
 }
 
 interface FontFamilySelectPopupProps {
+  style: React.CSSProperties
   value: ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>
   onUnsetValues: OnUnsetValues
   controlStyles: ControlStyles
@@ -69,8 +70,6 @@ interface FontFamilySelectPopupProps {
     ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>
   >
 }
-
-const ModalWidth = 250
 
 const NormalItemSize = 26
 const DefaultSystemFontSize = 70
@@ -304,186 +303,204 @@ function filterData(
   }
 }
 
-export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>(
+export const FontFamilySelectPopup = betterReactMemo(
   'FontFamilySelectPopup',
-  ({ value: { fontFamily, fontWeight, fontStyle }, useSubmitFontVariantFactory, closePopup }) => {
-    const stringInputRef = React.useRef<HTMLInputElement>(null)
-    const variableSizeListRef = React.useRef<VariableSizeList>(null)
-
-    const [searchTerm, setSearchTerm] = React.useState('')
-    const lowerCaseSearchTerm = searchTerm.toLowerCase()
-
-    const { values, useSubmitValueFactory: useResourcesSubmitValueFactory } = useExternalResources()
-    const projectTypefaces: Array<ProjectTypefaceItemData> = React.useMemo(() => {
-      return isRight(values)
-        ? Utils.stripNulls(
-            values.value.googleFontsResources.map((googleFontResource) => {
-              const familyName = googleFontResource.fontFamily
-              const matchedTypeface = startingItemData.find(
-                (datum) => getTypefaceFromItemData(datum).name === familyName,
-              )
-              return matchedTypeface != null
-                ? projectTypefaceItemData(projectTypeface(matchedTypeface.metadata), NormalItemSize)
-                : null
-            }),
-          )
-        : []
-    }, [values])
-
-    const [pushNewFontFamilyVariant] = useResourcesSubmitValueFactory(
-      updatePushNewFontFamilyVariant,
-    )
-
-    const filteredData = React.useMemo(
-      () => filterData(startingItemData, lowerCaseSearchTerm, projectTypefaces),
-      [lowerCaseSearchTerm, projectTypefaces],
-    )
-
-    const valueOption: SelectableItemData | null =
-      filteredData.find((v): v is SelectableItemData => {
-        switch (v.metadata.type) {
-          case 'project-typeface':
-          case 'google-fonts-typeface': {
-            return getTypefaceFromItemData(v as SelectableItemData).name === fontFamily[0]
-          }
-          case 'system-default-typeface': {
-            return fontFamily.join(', ') === systemDefaultTypeface.name
-          }
-          case 'ui-item': {
-            return false
-          }
-          default: {
-            const _exhaustiveCheck: never = v.metadata
-            throw Error(
-              `Fallthrough case finding a value option with ${JSON.stringify(v.metadata)}`,
-            )
-          }
-        }
-      }) ?? null
-
-    const [onSubmitFontVariant] = useSubmitFontVariantFactory(updateNewFontVariant)
-
-    const [selectedOption, setSelectedOption] = React.useState<SelectableItemData | null>(
-      valueOption,
-    )
-    const selectedIndex = React.useMemo<number>(
-      () => getOptionIndex(filteredData, selectedOption),
-      [filteredData, selectedOption],
-    )
-
-    const onStringInputKeyDown = React.useCallback((e: React.KeyboardEvent) => {
-      if (
-        !(e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === 'Escape')
-      ) {
-        e.stopPropagation()
-      }
-    }, [])
-
-    const onWrapperKeyDown = React.useCallback(
-      (e: React.KeyboardEvent) => {
-        e.stopPropagation()
-        switch (e.key) {
-          case 'ArrowUp': {
-            setSelectedOption(incrementSelectedOption(filteredData, -1))
-            break
-          }
-          case 'ArrowDown': {
-            setSelectedOption(incrementSelectedOption(filteredData, 1))
-            break
-          }
-          case 'Enter': {
-            closePopup()
-            if (selectedOption != null) {
-              submitNewValue(
-                onSubmitFontVariant,
-                selectedOption,
-                fontWeight,
-                fontStyle,
-                pushNewFontFamilyVariant,
-              )
-            }
-            break
-          }
-          case 'Escape': {
-            closePopup()
-            break
-          }
-          default: {
-            if (stringInputRef.current != null) {
-              stringInputRef.current.focus()
-              onStringInputKeyDown(e)
-            }
-          }
-        }
-      },
-      [
+  React.forwardRef<HTMLDivElement, FontFamilySelectPopupProps>(
+    (
+      {
+        style,
+        value: { fontFamily, fontWeight, fontStyle },
+        useSubmitFontVariantFactory,
         closePopup,
-        filteredData,
-        fontStyle,
-        fontWeight,
-        onSubmitFontVariant,
-        pushNewFontFamilyVariant,
-        selectedOption,
-        onStringInputKeyDown,
-      ],
-    )
-
-    const getItemSize = React.useCallback((index: number) => filteredData[index].height, [
-      filteredData,
-    ])
-
-    const updateSizes = React.useCallback(() => {
-      if (variableSizeListRef.current != null) {
-        variableSizeListRef.current.resetAfterIndex(0)
-      }
-    }, [])
-
-    const onChange = React.useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSizes()
-        const newSearchTerm = e.target.value
-        setSearchTerm(newSearchTerm)
       },
-      [updateSizes],
-    )
+      wrapperRef,
+    ) => {
+      const stringInputRef = React.useRef<HTMLInputElement>(null)
+      const variableSizeListRef = React.useRef<VariableSizeList>(null)
 
-    React.useEffect(() => {
-      if (variableSizeListRef.current != null && selectedIndex != null) {
-        variableSizeListRef.current.scrollToItem(selectedIndex, 'auto')
-      }
-    }, [selectedIndex])
+      const [searchTerm, setSearchTerm] = React.useState('')
+      const lowerCaseSearchTerm = searchTerm.toLowerCase()
 
-    React.useEffect(() => {
-      if (variableSizeListRef.current != null && selectedIndex != null && selectedOption != null) {
-        if (selectedOption.metadata.type === 'project-typeface') {
-          // try and get the "Project Fonts" header in
-          variableSizeListRef.current.scrollToItem(selectedIndex, 'end')
-        } else {
-          variableSizeListRef.current.scrollToItem(selectedIndex, 'start')
+      const {
+        values,
+        useSubmitValueFactory: useResourcesSubmitValueFactory,
+      } = useExternalResources()
+      const projectTypefaces: Array<ProjectTypefaceItemData> = React.useMemo(() => {
+        return isRight(values)
+          ? Utils.stripNulls(
+              values.value.googleFontsResources.map((googleFontResource) => {
+                const familyName = googleFontResource.fontFamily
+                const matchedTypeface = startingItemData.find(
+                  (datum) => getTypefaceFromItemData(datum).name === familyName,
+                )
+                return matchedTypeface != null
+                  ? projectTypefaceItemData(
+                      projectTypeface(matchedTypeface.metadata),
+                      NormalItemSize,
+                    )
+                  : null
+              }),
+            )
+          : []
+      }, [values])
+
+      const [pushNewFontFamilyVariant] = useResourcesSubmitValueFactory(
+        updatePushNewFontFamilyVariant,
+      )
+
+      const filteredData = React.useMemo(
+        () => filterData(startingItemData, lowerCaseSearchTerm, projectTypefaces),
+        [lowerCaseSearchTerm, projectTypefaces],
+      )
+
+      const valueOption: SelectableItemData | null =
+        filteredData.find((v): v is SelectableItemData => {
+          switch (v.metadata.type) {
+            case 'project-typeface':
+            case 'google-fonts-typeface': {
+              return getTypefaceFromItemData(v as SelectableItemData).name === fontFamily[0]
+            }
+            case 'system-default-typeface': {
+              return fontFamily.join(', ') === systemDefaultTypeface.name
+            }
+            case 'ui-item': {
+              return false
+            }
+            default: {
+              const _exhaustiveCheck: never = v.metadata
+              throw Error(
+                `Fallthrough case finding a value option with ${JSON.stringify(v.metadata)}`,
+              )
+            }
+          }
+        }) ?? null
+
+      const [onSubmitFontVariant] = useSubmitFontVariantFactory(updateNewFontVariant)
+
+      const [selectedOption, setSelectedOption] = React.useState<SelectableItemData | null>(
+        valueOption,
+      )
+      const selectedIndex = React.useMemo<number>(
+        () => getOptionIndex(filteredData, selectedOption),
+        [filteredData, selectedOption],
+      )
+
+      const onStringInputKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+        if (
+          !(e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === 'Escape')
+        ) {
+          e.stopPropagation()
         }
-      }
-      // we only want to do this on mount
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+      }, [])
 
-    React.useEffect(() => {
-      if (stringInputRef.current != null) {
-        stringInputRef.current.focus()
-      }
-    })
+      const onWrapperKeyDown = React.useCallback(
+        (e: React.KeyboardEvent) => {
+          e.stopPropagation()
+          switch (e.key) {
+            case 'ArrowUp': {
+              setSelectedOption(incrementSelectedOption(filteredData, -1))
+              break
+            }
+            case 'ArrowDown': {
+              setSelectedOption(incrementSelectedOption(filteredData, 1))
+              break
+            }
+            case 'Enter': {
+              closePopup()
+              if (selectedOption != null) {
+                submitNewValue(
+                  onSubmitFontVariant,
+                  selectedOption,
+                  fontWeight,
+                  fontStyle,
+                  pushNewFontFamilyVariant,
+                )
+              }
+              break
+            }
+            case 'Escape': {
+              closePopup()
+              break
+            }
+            default: {
+              if (stringInputRef.current != null) {
+                stringInputRef.current.focus()
+                onStringInputKeyDown(e)
+              }
+            }
+          }
+        },
+        [
+          closePopup,
+          filteredData,
+          fontStyle,
+          fontWeight,
+          onSubmitFontVariant,
+          pushNewFontFamilyVariant,
+          selectedOption,
+          onStringInputKeyDown,
+        ],
+      )
 
-    return (
-      <InspectorModal
-        offsetX={-(ModalWidth + UtopiaTheme.layout.inspectorModalBaseOffset + 16)}
-        offsetY={0}
-        closePopup={closePopup}
-      >
+      const getItemSize = React.useCallback((index: number) => filteredData[index].height, [
+        filteredData,
+      ])
+
+      const updateSizes = React.useCallback(() => {
+        if (variableSizeListRef.current != null) {
+          variableSizeListRef.current.resetAfterIndex(0)
+        }
+      }, [])
+
+      const onChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+          updateSizes()
+          const newSearchTerm = e.target.value
+          setSearchTerm(newSearchTerm)
+        },
+        [updateSizes],
+      )
+
+      React.useEffect(() => {
+        if (variableSizeListRef.current != null && selectedIndex != null) {
+          variableSizeListRef.current.scrollToItem(selectedIndex, 'auto')
+        }
+      }, [selectedIndex])
+
+      React.useEffect(() => {
+        if (
+          variableSizeListRef.current != null &&
+          selectedIndex != null &&
+          selectedOption != null
+        ) {
+          if (selectedOption.metadata.type === 'project-typeface') {
+            // try and get the "Project Fonts" header in
+            variableSizeListRef.current.scrollToItem(selectedIndex, 'end')
+          } else {
+            variableSizeListRef.current.scrollToItem(selectedIndex, 'start')
+          }
+        }
+        // we only want to do this on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [])
+
+      React.useEffect(() => {
+        if (stringInputRef.current != null) {
+          stringInputRef.current.focus()
+        }
+      })
+
+      return (
         <FlexColumn
+          ref={wrapperRef}
           tabIndex={0}
           style={{
+            ...style,
             backgroundColor: 'white',
-            width: ModalWidth,
-            boxShadow: `0 3px 6px #0002`,
+            width: UtopiaTheme.layout.inspectorPaddedWidth,
+            boxShadow: '#0002 0px 0px 0px 1px, #0002 0px 4px 11px',
+            zIndex: 1,
+            borderRadius: UtopiaTheme.inputBorderRadius,
           }}
           onKeyDown={onWrapperKeyDown}
         >
@@ -518,10 +535,11 @@ export const FontFamilySelectPopup = betterReactMemo<FontFamilySelectPopupProps>
             {FontFamilySelectPopupItem}
           </VariableSizeList>
         </FlexColumn>
-      </InspectorModal>
-    )
-  },
+      )
+    },
+  ),
 )
+
 function incrementSelectedOption(
   filteredData: ItemData[],
   delta: 1 | -1,

@@ -56,6 +56,10 @@ export function imagePathURL(fileName: string): string {
   return urljoin('./', fileName)
 }
 
+export function userConfigURL(): string {
+  return urljoin(UTOPIA_BACKEND, 'user', 'config')
+}
+
 let CachedLoginStatePromise: Promise<LoginState> | null = null
 
 export async function getLoginState(): Promise<LoginState> {

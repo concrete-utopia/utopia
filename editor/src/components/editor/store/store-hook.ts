@@ -50,7 +50,7 @@ export const useRefEditorState = <U>(
   }
   React.useEffect(() => {
     if (explainMe) {
-      console.info('subsciribing to the api')
+      console.info('subscribing to the api')
     }
     const unsubscribe = api.subscribe(
       (newSlice: U | null) => {
@@ -66,7 +66,7 @@ export const useRefEditorState = <U>(
     )
     return function cleanup() {
       if (explainMe) {
-        console.info('unsubsciribing from the api')
+        console.info('unsubscribing from the api')
       }
       unsubscribe()
     }

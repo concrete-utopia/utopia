@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { usePopper } from 'react-popper'
 import { betterReactMemo } from 'uuiui-deps'
 import { identity } from '../../../../../core/shared/utils'
 import utils from '../../../../../utils/utils'
@@ -10,6 +11,19 @@ import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelectPopup } from './font-family-select-popup'
 
 export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
+  const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
+  const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [
+      {
+        name: 'offset',
+        options: {
+          offset: [0, 8],
+        },
+      },
+    ],
+  })
+
   const [popupIsOpen, setPopupIsOpen] = React.useState(false)
   const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
@@ -43,6 +57,9 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
       >
         {popupIsOpen ? (
           <FontFamilySelectPopup
+            {...attributes.popper}
+            style={styles.popper}
+            ref={setPopperElement}
             value={value}
             onUnsetValues={onUnsetValues}
             controlStyles={controlStyles}
@@ -51,6 +68,7 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
           />
         ) : null}
         <FlexRow
+          ref={setReferenceElement}
           onMouseDown={onMouseDown}
           style={{
             boxShadow: `0 0 0 1px ${controlStyles.borderColor} inset`,

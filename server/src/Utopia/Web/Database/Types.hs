@@ -53,6 +53,12 @@ UserDetails
     picture Text Maybe
     UniqueUserDetails userId
     deriving Show
+
+UserConfiguration
+    userId Text
+    shortcutConfig Text Maybe
+    UniqueUserConfiguration userId
+    deriving Show
 |]
 
 data DecodedProject = DecodedProject
@@ -81,3 +87,11 @@ data ProjectMetadata = ProjectMetadata
                      } deriving (Eq, Show)
 
 $(makeFieldsNoPrefix ''ProjectMetadata)
+
+data DecodedUserConfiguration = DecodedUserConfiguration
+                         { _id      :: Text
+                         , _shortcutConfig :: Maybe Value
+                         } deriving (Eq, Show)
+
+$(makeFieldsNoPrefix ''DecodedUserConfiguration)
+

@@ -43,6 +43,10 @@ $(deriveJSON jsonOptions ''SaveProjectResponse)
 
 $(deriveJSON jsonOptions ''SaveProjectRequest)
 
+$(deriveJSON jsonOptions ''UserConfigurationRequest)
+
+$(deriveJSON jsonOptions ''UserConfigurationResponse)
+
 {-
   The following types define the endpoints that we expose to the world.
   * 'Get' and 'Post' define the HTTP method used to access the endpoint,
@@ -89,6 +93,10 @@ type SaveProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuf
 
 type DeleteProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> Delete '[JSON] NoContent
 
+type GetUserConfigurationAPI = "v1" :> "user" :> "config" :> Get '[JSON] UserConfigurationResponse
+
+type SaveUserConfigurationAPI = "v1" :> "user" :> "config" :> ReqBody '[JSON] UserConfigurationRequest :> Post '[JSON] NoContent
+
 type MyProjectsAPI = "v1" :> "projects" :> Get '[JSON] ProjectListResponse
 
 type ShowcaseAPI = "v1" :> "showcase" :> Get '[JSON] ProjectListResponse
@@ -106,6 +114,8 @@ type SaveProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" ProjectIdWith
 type LoadProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" ProjectIdWithSuffix :> Get '[BMP, GIF, JPG, PNG, SVG] BL.ByteString
 
 type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" ProjectIdWithSuffix :> ReqBody '[BMP, GIF, JPG, PNG, SVG] BL.ByteString :> Post '[JSON] NoContent
+
+type DownloadGithubProjectAPI = "v1" :> "github" :> Capture "owner" Text :> Capture "project" Text :> Get '[ZIP] BL.ByteString
 
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] BL.ByteString
 
@@ -132,8 +142,6 @@ type WebsiteAssetsAPI = "static" :> RawM
 
 type SSLAPI = ".well-known" :> RawM
 
-type PackagerAPI = "packager" :> RawM
-
 type WebsiteAPI = RawM
 
 {-
@@ -145,11 +153,14 @@ type Protected = LogoutAPI
             :<|> ForkProjectAPI
             :<|> SaveProjectAPI
             :<|> DeleteProjectAPI
+            :<|> GetUserConfigurationAPI
+            :<|> SaveUserConfigurationAPI
             :<|> MyProjectsAPI
             :<|> RenameProjectAssetAPI
             :<|> DeleteProjectAssetAPI
             :<|> SaveProjectAssetAPI
             :<|> SaveProjectThumbnailAPI
+            :<|> DownloadGithubProjectAPI
 
 type Unprotected = AuthenticateAPI
               :<|> EmptyProjectPageAPI
@@ -174,7 +185,6 @@ type Unprotected = AuthenticateAPI
               :<|> WebpackSockJSAPI
               :<|> WebsiteAssetsAPI
               :<|> SSLAPI
-              :<|> PackagerAPI
               :<|> WebsiteAPI
 
 type API = (AuthCookie :> Protected)

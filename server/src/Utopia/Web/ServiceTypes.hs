@@ -102,10 +102,10 @@ data ServiceCallsF a = NotFound
                      | LoadProjectThumbnail Text (Maybe BL.ByteString -> a)
                      | SaveProjectThumbnail Text Text BL.ByteString a
                      | GetProxyManager (Maybe Manager -> a)
-                     | GetPackagerProxyManager (Manager -> a)
                      | GetProjectsForUser Text ([ProjectListing] -> a)
                      | GetShowcaseProjects ([ProjectListing] -> a)
                      | SetShowcaseProjects [Text] a
+                     | GetGithubProject Text Text (BL.ByteString -> a)
                      | GetMetrics (Value -> a)
                      | GetPackageJSON Text (Maybe Value -> a)
                      | GetPackageVersionJSON Text Text (Maybe Value -> a)
@@ -116,6 +116,8 @@ data ServiceCallsF a = NotFound
                      | AccessControlAllowOrigin (Maybe Text) (Maybe Text -> a)
                      | GetSiteRoot (Text -> a)
                      | GetPathToServe FilePath (Maybe Text) (FilePath -> a)
+                     | GetUserConfiguration Text (Maybe DecodedUserConfiguration -> a)
+                     | SaveUserConfiguration Text (Maybe Value) a
                      deriving Functor
 
 {-
@@ -196,3 +198,15 @@ loggedIn = "LOGGED_IN"
 instance ToJSON UserResponse where
   toJSON NotLoggedIn         = object ["type" .= notLoggedIn]
   toJSON (LoggedInUser user) = object ["type" .= loggedIn, "user" .= user]
+
+data UserConfigurationResponse = UserConfigurationResponse
+                               { _shortcutConfig :: Maybe Value
+                               } deriving (Eq, Show)
+
+$(makeFieldsNoPrefix ''UserConfigurationResponse)
+
+data UserConfigurationRequest = UserConfigurationRequest
+                              { _shortcutConfig :: Maybe Value
+                              } deriving (Eq, Show)
+
+$(makeFieldsNoPrefix ''UserConfigurationRequest)

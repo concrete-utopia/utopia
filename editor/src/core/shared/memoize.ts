@@ -23,7 +23,10 @@ function getMemoizeOptions(options?: Partial<MemoizeOptions>): MemoizeOptions {
   }
 }
 
-export function memoize<F extends Function>(func: F, options?: Partial<MemoizeOptions>): F {
+export function memoize<F extends (...args: Array<any>) => any>(
+  func: F,
+  options?: Partial<MemoizeOptions>,
+): F {
   const memoizeOptions = getMemoizeOptions(options)
-  return (moize(memoizeOptions)(func as any) as any) as F // oh my god really
+  return moize(func, memoizeOptions)
 }

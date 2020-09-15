@@ -24,6 +24,8 @@ function getKeyForEditorTab(editorTab: EditorTab): string {
       return `file:${editorTab.filename}`
     case 'RELEASE_NOTES_TAB':
       return 'release-notes'
+    case 'USER_CONFIGURATION_TAB':
+      return 'user-configuration'
     default:
       const _exhaustiveCheck: never = editorTab
       throw new Error(`Unhandled type ${JSON.stringify(editorTab)}`)
@@ -36,6 +38,8 @@ function getLabelForEditorTab(editorTab: EditorTab): string {
       return Utils.forceNotNull('Invalid state.', R.last(editorTab.filename.split('/')))
     case 'RELEASE_NOTES_TAB':
       return 'Welcome 👋'
+    case 'USER_CONFIGURATION_TAB':
+      return 'Settings'
     default:
       const _exhaustiveCheck: never = editorTab
       throw new Error(`Unhandled type ${JSON.stringify(editorTab)}`)
@@ -47,6 +51,8 @@ function isModifiedForEditorTab(projectContents: ProjectContents, editorTab: Edi
     case 'OPEN_FILE_TAB':
       return isModifiedFile(projectContents[editorTab.filename])
     case 'RELEASE_NOTES_TAB':
+      return false
+    case 'USER_CONFIGURATION_TAB':
       return false
     default:
       const _exhaustiveCheck: never = editorTab
@@ -62,6 +68,8 @@ function hasErrorMessagesForEditorTab(
     case 'OPEN_FILE_TAB':
       return fileHasErrorMessages(editorTab.filename, errorMessages)
     case 'RELEASE_NOTES_TAB':
+      return false
+    case 'USER_CONFIGURATION_TAB':
       return false
     default:
       const _exhaustiveCheck: never = editorTab

@@ -10,7 +10,10 @@ export const addSetProperty = {
   },
 }
 
-export function unsetPropertyMenuItem(propName: string, onUnset: () => void): ContextMenuItem<{}> {
+export function unsetPropertyMenuItem(
+  propName: string,
+  onUnset: () => void,
+): ContextMenuItem<unknown> {
   return {
     name: `Unset ${propName}`,
     enabled: true,

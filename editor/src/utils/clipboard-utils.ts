@@ -1,27 +1,5 @@
+import { extractAsset, extractImage, extractText, FileResult } from '../core/shared/file-utils'
 import { CopyData } from './clipboard'
-import { Size } from '../core/shared/math-utils'
-
-export interface ImageResult {
-  type: 'IMAGE_RESULT'
-  filename: string
-  dataUrl: string
-  size: Size
-  fileType: string
-}
-
-export interface AssetResult {
-  type: 'ASSET_RESULT'
-  filename: string
-  dataUrl: string
-}
-
-export interface TextResult {
-  type: 'TEXT_RESULT'
-  filename: string
-  content: string
-}
-
-export type FileResult = ImageResult | AssetResult | TextResult
 
 export interface PasteResult {
   utopiaData: CopyData[]
@@ -69,75 +47,6 @@ function extractFiles(items: DataTransferItemList): Promise<Array<FileResult>> {
       }
     }),
   )
-}
-
-export function extractText(file: File): Promise<TextResult> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const result: string = reader.result as string
-      resolve({
-        type: 'TEXT_RESULT',
-        filename: file.name,
-        content: result,
-      })
-    }
-    reader.onerror = (error) => {
-      reject(error)
-    }
-    reader.readAsText(file)
-  })
-}
-
-export function extractImage(file: File): Promise<ImageResult> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const result: string = reader.result as string
-      const imageSize = await getImageSize(result)
-      resolve({
-        type: 'IMAGE_RESULT',
-        filename: file.name,
-        dataUrl: result,
-        size: imageSize,
-        fileType: file.type,
-      })
-    }
-    reader.onerror = (error) => {
-      reject(error)
-    }
-    reader.readAsDataURL(file)
-  })
-}
-
-export function extractAsset(file: File): Promise<AssetResult> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const result: string = reader.result as string
-      resolve({
-        type: 'ASSET_RESULT',
-        filename: file.name,
-        dataUrl: result,
-      })
-    }
-    reader.onerror = (error) => {
-      reject(error)
-    }
-    reader.readAsDataURL(file)
-  })
-}
-function getImageSize(imageDataUrl: string): Promise<Size> {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.onload = () => {
-      resolve({
-        width: image.naturalWidth,
-        height: image.naturalHeight,
-      })
-    }
-    image.src = imageDataUrl
-  })
 }
 
 function filterNone(node: Node) {

@@ -104,7 +104,6 @@ const calculateMenuScrollPosition = (index: number, menuHeight: number) => {
 const calculateOptionsToCutOff = (
   optionsLength: number,
   windowHeightAboveOrBelowReference: number,
-  bottomOrTop: 'bottom' | 'top',
   index: number = 0,
 ) => {
   return Math.min(
@@ -155,14 +154,12 @@ const getPortalPosition = (
     const numberCroppedTop = calculateOptionsToCutOff(
       optionsLength,
       windowHeightAboveReference,
-      'top',
       optionsLength - centredIndex - 1,
     )
     const howManyElementsToShowAboveSelected = centredIndex - numberCroppedTop
     const numberCroppedBottom = calculateOptionsToCutOff(
       optionsLength,
       windowHeightBelowReference,
-      'bottom',
       centredIndex,
     )
     const howManyElementsToShowBelowSelected =
@@ -178,15 +175,10 @@ const getPortalPosition = (
     }
   } else {
     if (windowHeightAboveReference > windowHeightBelowReference) {
-      const numberCroppedTop = calculateOptionsToCutOff(
-        optionsLength,
-        windowHeightAboveReference,
-        'top',
-      )
+      const numberCroppedTop = calculateOptionsToCutOff(optionsLength, windowHeightAboveReference)
       const numberCroppedBottom = calculateOptionsToCutOff(
         optionsLength,
         windowHeightBelowReference,
-        'bottom',
       )
       const menuHeight = Math.min(
         optionsLength * OptionHeight,
@@ -200,15 +192,10 @@ const getPortalPosition = (
         croppedBottom: numberCroppedBottom > 0,
       }
     } else {
-      const numberCroppedTop = calculateOptionsToCutOff(
-        optionsLength,
-        windowHeightAboveReference,
-        'top',
-      )
+      const numberCroppedTop = calculateOptionsToCutOff(optionsLength, windowHeightAboveReference)
       const numberCroppedBottom = calculateOptionsToCutOff(
         optionsLength,
         windowHeightBelowReference,
-        'bottom',
       )
       const menuHeight = Math.min(
         optionsLength * OptionHeight,

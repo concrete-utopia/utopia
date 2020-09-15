@@ -21,9 +21,7 @@ import           Control.Monad.RWS.Strict
 import           Data.IORef
 import           Data.Pool
 import           Database.Persist.Sqlite
-import           Network.HTTP.Client         (Manager, defaultManagerSettings,
-                                              managerResponseTimeout,
-                                              newManager, responseTimeoutNone)
+import           Network.HTTP.Client         (Manager, newManager)
 import           Network.HTTP.Client.TLS
 import           Protolude
 import           Servant
@@ -38,6 +36,7 @@ import qualified Utopia.Web.Database         as DB
 import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
+import           Utopia.Web.Github
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
@@ -53,7 +52,6 @@ data ProductionServerResources = ProductionServerResources
                                , _sessionState    :: SessionState
                                , _serverPort      :: Int
                                , _storeForMetrics :: Store
-                               , _packagerProxy   :: Manager
                                , _databaseMetrics :: DB.DatabaseMetrics
                                , _registryManager :: Manager
                                , _assetsCaches    :: AssetsCaches
@@ -166,9 +164,9 @@ innerServerExecutor (SaveProjectThumbnail user projectID thumbnail next) = do
   return next
 innerServerExecutor (GetProxyManager action) = do
   return $ action Nothing
-innerServerExecutor (GetPackagerProxyManager action) = do
-  manager <- fmap _packagerProxy ask
-  return $ action manager
+innerServerExecutor (GetGithubProject owner repo action) = do
+  zipball <- liftIO $ fetchRepoArchive owner repo
+  return $ action zipball
 innerServerExecutor (GetMetrics action) = do
   store <- fmap _storeForMetrics ask
   sample <- liftIO $ sampleAll store
@@ -208,6 +206,15 @@ innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action
                    ("./editor", (Just branchName), (Just downloads))  -> liftIO $ downloadBranchBundle downloads branchName
                    _                                                  -> return defaultPathToServe
   return $ action pathToServe
+innerServerExecutor (GetUserConfiguration user action) = do
+  pool <- fmap _projectPool ask
+  metrics <- fmap _databaseMetrics ask
+  getUserConfigurationWithPool metrics pool user action
+innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig action) = do
+  pool <- fmap _projectPool ask
+  metrics <- fmap _databaseMetrics ask
+  saveUserConfigurationWithPool metrics pool user possibleShortcutConfig
+  return action
 
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
@@ -251,7 +258,6 @@ initialiseResources = do
   _sessionState <- createSessionState _projectPool
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore
-  _packagerProxy <- newManager defaultManagerSettings { managerResponseTimeout = responseTimeoutNone }
   _databaseMetrics <- DB.createDatabaseMetrics _storeForMetrics
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders

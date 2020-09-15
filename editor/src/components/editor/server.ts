@@ -1,9 +1,30 @@
 import { UTOPIA_BACKEND } from '../../common/env-vars'
-import { assetURL, HEADERS, MODE, projectURL, thumbnailURL } from '../../common/server'
-import { imageFile, isImageFile } from '../../core/model/project-file-utils'
-import { ImageFile } from '../../core/shared/project-file-types'
+import {
+  assetURL,
+  HEADERS,
+  MODE,
+  projectURL,
+  thumbnailURL,
+  userConfigURL,
+} from '../../common/server'
+import {
+  assetFile,
+  codeFile,
+  directory,
+  fileTypeFromFileName,
+  imageFile,
+  isImageFile,
+  uiJsFile,
+} from '../../core/model/project-file-utils'
+import { ImageFile, ProjectContents } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
-import { PersistentModel } from './store/editor-state'
+import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './store/editor-state'
+import { ShortcutConfiguration } from './shortcut-definitions'
+import { LoginState } from '../../uuiui-deps'
+import urljoin = require('url-join')
+import * as JSZip from 'jszip'
+import { isText } from 'istextorbinary'
+import { Either, left, right } from '../../core/shared/either'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -192,6 +213,20 @@ export async function saveAsset(
   }
 }
 
+interface AssetToSave {
+  fileType: string
+  base64: string
+  fileName: string
+}
+
+export async function saveAssets(projectId: string, assets: Array<AssetToSave>): Promise<void> {
+  const promises = assets.map((asset) =>
+    saveAsset(projectId, asset.fileType, asset.base64, asset.fileName),
+  )
+  await Promise.all(promises)
+  return
+}
+
 export async function saveImagesFromProject(
   projectId: string,
   model: PersistentModel,
@@ -259,5 +294,66 @@ export async function saveThumbnail(thumbnail: Buffer, projectId: string): Promi
     // FIXME Client should show an error if server requests fail
     console.error(`Save thumbnail request failed (${response.status}): ${response.statusText}`)
     return
+  }
+}
+
+export async function getUserConfiguration(loginState: LoginState): Promise<UserConfiguration> {
+  switch (loginState.type) {
+    case 'LOGGED_IN':
+      const url = userConfigURL()
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        headers: HEADERS,
+        mode: MODE,
+      })
+      if (response.ok) {
+        return response.json()
+      } else {
+        // FIXME Client should show an error if server requests fail
+        throw new Error(`server responded with ${response.status} ${response.statusText}`)
+      }
+    case 'NOT_LOGGED_IN':
+      return emptyUserConfiguration()
+    default:
+      const _exhaustiveCheck: never = loginState
+      throw new Error(`Unknown login state.`)
+  }
+}
+
+export async function saveUserConfiguration(userConfig: UserConfiguration): Promise<void> {
+  const url = userConfigURL()
+  const response = await fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+    body: JSON.stringify(userConfig),
+  })
+  if (response.ok) {
+    return
+  } else {
+    // FIXME Client should show an error if server requests fail
+    throw new Error(`server responded with ${response.status} ${response.statusText}`)
+  }
+}
+
+export async function downloadGithubRepo(
+  owner: string,
+  repo: string,
+): Promise<Either<string, JSZip>> {
+  const url = urljoin(UTOPIA_BACKEND, 'github', owner, repo)
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    mode: MODE,
+  })
+  if (response.ok) {
+    const buffer = await response.arrayBuffer()
+    const zipFile = await JSZip.loadAsync(buffer)
+    return right(zipFile)
+  } else {
+    // FIXME Better handling of different response types
+    return left(`Download github repo request failed (${response.status}): ${response.statusText}`)
   }
 }
