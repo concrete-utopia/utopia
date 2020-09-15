@@ -347,7 +347,7 @@ editorAssetsEndpoint notProxiedPath possibleBranchName = do
 downloadGithubProjectEndpoint :: Maybe Text -> Text -> Text -> ServerMonad BL.ByteString
 downloadGithubProjectEndpoint cookie owner repo = requireUser cookie $ \_ -> do
   zipball <- getGithubProject owner repo
-  return zipball
+  maybe notFound return zipball
 
 monitoringEndpoint :: ServerMonad Value
 monitoringEndpoint = getMetrics

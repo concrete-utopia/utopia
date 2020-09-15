@@ -105,7 +105,7 @@ data ServiceCallsF a = NotFound
                      | GetProjectsForUser Text ([ProjectListing] -> a)
                      | GetShowcaseProjects ([ProjectListing] -> a)
                      | SetShowcaseProjects [Text] a
-                     | GetGithubProject Text Text (BL.ByteString -> a)
+                     | GetGithubProject Text Text (Maybe BL.ByteString -> a)
                      | GetMetrics (Value -> a)
                      | GetPackageJSON Text (Maybe Value -> a)
                      | GetPackageVersionJSON Text Text (Maybe Value -> a)

@@ -40,6 +40,7 @@ import {
   downloadGithubRepo,
   getLoginState,
   getUserConfiguration,
+  isRequestFailure,
 } from '../components/editor/server'
 import { editorDispatch, simpleStringifyActions } from '../components/editor/store/dispatch'
 import {
@@ -215,8 +216,12 @@ export class Editor {
           if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
             // TODO Should we require users to be logged in for this?
             downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
-              if (isLeft(repoResult)) {
-                console.error(repoResult.value)
+              if (isRequestFailure(repoResult)) {
+                if (repoResult.statusCode === 404) {
+                  renderProjectNotFound()
+                } else {
+                  console.error(repoResult.errorMessage)
+                }
               } else {
                 const projectName = `${githubOwner}-${githubRepo}`
                 replaceLoadingMessage('Downloading Repo...')
