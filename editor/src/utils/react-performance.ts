@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as fastDeepEqual from 'fast-deep-equal'
 import { PRODUCTION_ENV } from '../common/env-vars'
-import { colorTheme } from 'uuiui'
 
 export function useHookUpdateAnalysisStrictEquals<P>(name: string, newValue: P) {
   const previousValue = React.useRef(newValue)
@@ -135,10 +134,10 @@ export function memoEqualityCheckAnalysis<P>(previousProps: P, nextProps: P): bo
   return true
 }
 
-export function failSafeReactMemo<P extends object>(
+export function failSafeReactMemo<P extends Record<string, unknown>>(
   displayName: string,
   severity: 'strict' | 'gentle',
-  Component: React.SFC<P>,
+  Component: React.FunctionComponent<P>,
 ): React.NamedExoticComponent<P>
 export function failSafeReactMemo<T extends React.ComponentType<any>>(
   displayName: string,
@@ -379,7 +378,7 @@ export function useFlasher<T extends HTMLElement>() {
   return ref
 }
 
-export function betterReactMemo<P extends object>(
+export function betterReactMemo<P extends Record<string, any>>(
   displayName: string,
   componentToMemo: React.FunctionComponent<P>,
   propsAreEqual?: (

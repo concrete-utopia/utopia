@@ -77,25 +77,16 @@ watch-server
 
 If this ever fails with `truncated tar archive`, it's a cabal failure. The fix appears to be to delete `~/.cabal/packages`
 
-### Running the packagers
-
-Shell 3:
-
-```
-nix-shell
-start-packager
-```
-
 ### Running the editor in dev mode (slow but you see react errors)
 
-Shell 4:
+Shell 3:
 
 ```
 nix-shell
 watch-tsc
 ```
 
-Shell 5:
+Shell 4:
 
 ```
 nix-shell
@@ -104,14 +95,14 @@ watch-editor-cowboy
 
 ### Running the editor in fast mode
 
-Shell 4:
+Shell 5:
 
 ```
 nix-shell
 watch-tsc
 ```
 
-Shell 5:
+Shell 6:
 
 ```
 nix-shell
@@ -122,12 +113,13 @@ Alternatively you can run `npm run webpack-production`. Occasionally you'll need
 
 ### Running webpack with the website
 
-Shell 6:
+Shell 7:
 
 ```
 nix-shell
 watch-website
 ```
+
 ## Pull request bundle support.
 
 When a series of environment variables are set (see `Branches.hs`), the editor supports the ability to get a bundle of editor code from S3 that was created from a PR, and load that instead of the code currently held locally. Which means that changes can be tested without spinning up multiple environments.
@@ -135,6 +127,7 @@ When a series of environment variables are set (see `Branches.hs`), the editor s
 To use this if the URL currently is `https://utopia.pizza/p/e976df60-phase-rutabaga/`, the branch name would be added on in a query parameter like so: `https://utopia.pizza/p/e976df60-phase-rutabaga/?branch_name=my-test-branch`.
 
 Limitations:
+
 - Doesn't currently support Monaco because of the way that builds the workers in a special webpack plugin, so changes to the version of Monaco in that branch may fail in unusual ways.
 - Anything that isn't editor code will not be changed by this, such as the website code or the server endpoints.
 

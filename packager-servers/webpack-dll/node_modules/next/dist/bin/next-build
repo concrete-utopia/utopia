@@ -1,0 +1,52 @@
+#!/usr/bin/env node
+'use strict';
+
+var _path = require('path');
+
+var _fs = require('fs');
+
+var _minimist = require('minimist');
+
+var _minimist2 = _interopRequireDefault(_minimist);
+
+var _build = require('../server/build');
+
+var _build2 = _interopRequireDefault(_build);
+
+var _utils = require('../lib/utils');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+
+var argv = (0, _minimist2.default)(process.argv.slice(2), {
+  alias: {
+    h: 'help'
+  },
+  boolean: ['h']
+});
+
+if (argv.help) {
+  console.log('\n    Description\n      Compiles the application for production deployment\n\n    Usage\n      $ next build <dir>\n\n    <dir> represents where the compiled dist folder should go.\n    If no directory is provided, the dist folder will be created in the current directory.\n    You can set a custom folder in config https://github.com/zeit/next.js#custom-configuration, otherwise it will be created inside \'.next\'\n  ');
+  process.exit(0);
+}
+
+var dir = (0, _path.resolve)(argv._[0] || '.');
+
+// Check if pages dir exists and warn if not
+if (!(0, _fs.existsSync)(dir)) {
+  (0, _utils.printAndExit)('> No such directory exists as the project root: ' + dir);
+}
+
+if (!(0, _fs.existsSync)((0, _path.join)(dir, 'pages'))) {
+  if ((0, _fs.existsSync)((0, _path.join)(dir, '..', 'pages'))) {
+    (0, _utils.printAndExit)('> No `pages` directory found. Did you mean to run `next` in the parent (`../`) directory?');
+  }
+
+  (0, _utils.printAndExit)('> Couldn\'t find a `pages` directory. Please create one under the project root');
+}
+
+(0, _build2.default)(dir).catch(function (err) {
+  console.error(err);
+  process.exit(1);
+});

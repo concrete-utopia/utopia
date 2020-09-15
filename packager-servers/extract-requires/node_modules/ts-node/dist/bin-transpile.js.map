@@ -1,0 +1,1 @@
+{"version":3,"file":"bin-transpile.js","sourceRoot":"","sources":["../src/bin-transpile.ts"],"names":[],"mappings":";;;AAEA,+BAA4B;AAE5B,UAAI,CAAC,CAAC,kBAAkB,EAAE,GAAG,OAAO,CAAC,IAAI,CAAC,KAAK,CAAC,CAAC,CAAC,CAAC,CAAC,CAAA","sourcesContent":["#!/usr/bin/env node\n\nimport { main } from './bin'\n\nmain(['--transpile-only', ...process.argv.slice(2)])\n"]}

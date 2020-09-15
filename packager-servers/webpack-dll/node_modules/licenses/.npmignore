@@ -1,0 +1,6 @@
+node_modules
+.DS_Store
+.tern-port
+test/failed.json
+test/results.json
+test.js

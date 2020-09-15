@@ -59,7 +59,7 @@ export namespace Syntax {
   export type SyntaxItem =
     | AtKeyword
     | Comma
-    | Function
+    | Syntax.Function
     | Group
     | Keyword
     | Multiplier

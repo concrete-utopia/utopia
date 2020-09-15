@@ -279,7 +279,7 @@ export function updateDependenciesInEditorState(
 export function importResultFromImports(
   importOrigin: string,
   imports: Imports,
-  requireFn: (importOrigin: string, toImport: string) => any,
+  requireFn: (origin: string, toImport: string) => any,
 ): MapLike<any> {
   let result: MapLike<any> = {}
   Utils.fastForEach(Object.keys(imports), (importSource) => {

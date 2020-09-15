@@ -1,0 +1,15 @@
+{
+  "files": [
+    "redbox-react.d.ts",
+    "tests/redbox.tsx"
+  ],
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "Classic",
+    "lib": ["es6", "dom"],
+    "jsx": "preserve",
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noEmit": true
+  }
+}

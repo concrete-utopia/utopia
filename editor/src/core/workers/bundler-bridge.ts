@@ -1,4 +1,4 @@
-import { Machine, interpret, send, assign, actions, Interpreter } from 'xstate'
+import { Machine, interpret, send, assign, actions, Interpreter, StateSchema } from 'xstate'
 import { FileContent } from './common/worker-types'
 import { TypeDefinitions } from '../shared/npm-dependency-types'
 import { ProjectContents, UIJSFile, CodeFile } from '../shared/project-file-types'
@@ -21,23 +21,23 @@ export interface BundlerContext {
   }
 }
 
-type BundlerSchema = {
+interface BundlerSchema extends StateSchema {
   states: {
     worker: {
       states: {
-        uninitialized: {}
-        initializing: {}
-        initagain: {}
-        idle: {}
-        processing: {}
-        error: {}
+        uninitialized: StateSchema
+        initializing: StateSchema
+        initagain: StateSchema
+        idle: StateSchema
+        processing: StateSchema
+        error: StateSchema
       }
     }
     queue: {
       states: {
-        ready: {}
-        pushing: {}
-        popping: {}
+        ready: StateSchema
+        pushing: StateSchema
+        popping: StateSchema
       }
     }
   }

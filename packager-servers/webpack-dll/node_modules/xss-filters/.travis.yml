@@ -1,0 +1,27 @@
+language: node_js
+node_js:
+- 'node'
+- '4'
+- '0.12'
+env:
+  global:
+    - secure: iaRFUMPT3/tYf4FZhDmWScwfnRCzk8AakeqDoiNhCx/z0O6LMha8gPuJkWF1Cnl34LmCkmQa1ZeFYht50Fjst0g7SEgjC4H4GOSLTuG1bJU3fqQYIxFrODJd0Zw0RpgrwE+I1sShwm67Ywf3PAJQWsqOQAACZjZnohjbsEElpJg=
+    - secure: hBhBSqAoNudFuhgAuweK/DgTEd2ug9tqE2pkqtq4w/sQ+/8mzieiCC+dg8+g54JpArXSmMgJmYLEHT8OGeIeDY8tC35qknQvNmLIYHG2GIJacuLBNWDj/7CnjBTJOX73is+RkYOQ/y/tDYO+FitvYaM0OIUr9R0do/lBY5+6OG0=
+addons:
+  sauce_connect: true
+notifications:
+  email:
+    recipients:
+    - adon@yahoo-inc.com
+  on_success: change
+  on_failure: always
+after_success:
+- test $(cat $TRAVIS_BUILD_DIR/package.json | grep version | awk '{print $2}' | sed 's/"//g' | sed 's/,//g' | awk '{print "v"$1}' ) = $TRAVIS_TAG && test $(echo $TRAVIS_NODE_VERSION | awk '{print $1}' ) = '0.12' && export VALID_VERSION=true
+deploy:
+  provider: npm
+  api_key:
+    secure: UkFovSRO5RhBUZdEe1ZsRs6+XO493XP1GnnZGK9PsFAYU5sHv+z4S8Xz0blFsJy0b7dBQbCGTeIugQlq6NIlAnfhCHGwCRPH3wQIeCOo/FWRDmeCeaBXrQNt1dcpByGzfAPZ6mww/0u4nyy35JPP9MYr2pR2tYVgq91cdd6okOk=
+  on:
+    condition: $VALID_VERSION = true
+    tags: true
+    branch: master

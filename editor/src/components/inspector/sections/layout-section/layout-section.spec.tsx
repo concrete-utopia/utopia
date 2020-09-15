@@ -16,6 +16,7 @@ import {
 } from '../../common/inspector-test-utils'
 import { LayoutSection } from './layout-section'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
+import { NO_OP } from '../../../../core/shared/utils'
 
 describe('Layout Section', () => {
   enableWhyDidYouRenderOnComponent(LayoutSection)
@@ -32,8 +33,6 @@ describe('Layout Section', () => {
 
     const [getUpdateCount] = setupReactWhyDidYouRender(true)
 
-    const toggleAspectRatioLock = () => {}
-
     const { getByText } = render(
       <TestInspectorContextProvider
         selectedViews={storeHookForTest.api.getState().editor.selectedViews}
@@ -44,7 +43,7 @@ describe('Layout Section', () => {
           hasNonDefaultPositionAttributes={true}
           aspectRatioLocked={false}
           parentFlexAxis={null}
-          toggleAspectRatioLock={toggleAspectRatioLock}
+          toggleAspectRatioLock={NO_OP}
           specialSizeMeasurements={emptySpecialSizeMeasurements}
           position='static'
           input={{

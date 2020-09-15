@@ -41,7 +41,7 @@ class RU {
     props?: { key: Key } & ClassAttributes<T> & P,
     ...children: ReactNode[]
   ): ReactSVGElement
-  static create<P extends DOMAttributes<T>, T extends Element>(
+  static create<P extends DOMAttributes<T>, T extends HTMLElement>(
     type: string,
     props?: { key: Key } & ClassAttributes<T> & P,
     ...children: ReactNode[]

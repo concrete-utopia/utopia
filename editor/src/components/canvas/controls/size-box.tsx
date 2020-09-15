@@ -36,7 +36,7 @@ interface ResizeControlProps extends ResizeRectangleProps {
   dragState: ResizeDragState | null
 }
 
-class ResizeControl extends React.Component<ResizeControlProps, unknown> {
+class ResizeControl extends React.Component<ResizeControlProps> {
   reference = React.createRef<HTMLDivElement>()
   constructor(props: ResizeControlProps) {
     super(props)
@@ -388,7 +388,7 @@ interface ResizePointProps {
   testID: string
 }
 
-class ResizePoint extends React.Component<ResizePointProps, unknown> {
+class ResizePoint extends React.Component<ResizePointProps> {
   reference = React.createRef<HTMLDivElement>()
 
   render() {

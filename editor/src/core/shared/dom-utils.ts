@@ -203,7 +203,7 @@ export const intrinsicHTMLElementNamesThatSupportChildren: Array<string> = [
 ]
 
 export function getCanvasRectangleFromElement(
-  element: Element,
+  element: HTMLElement,
   canvasScale: number,
 ): CanvasRectangle {
   const boundingRect = element.getBoundingClientRect()

@@ -64,17 +64,17 @@ export const SettingsPanel = (props: any) => {
   const dispatch = useEditorState((store) => store.dispatch)
   const interfaceDesigner = useEditorState((store) => store.editor.interfaceDesigner)
 
-  const toggleCodeEditorVisible = () => {
+  const toggleCodeEditorVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
-  }
+  }, [dispatch])
 
-  const toggleLayoutReversed = () => {
+  const toggleLayoutReversed = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerLayoutReversed()])
-  }
+  }, [dispatch])
 
-  const toggleAdditionalControls = () => {
+  const toggleAdditionalControls = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerAdditionalControls()])
-  }
+  }, [dispatch])
 
   return (
     <FlexColumn

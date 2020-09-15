@@ -1,0 +1,121 @@
+#!/usr/bin/env node
+'use strict';
+
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+var _path = require('path');
+
+var _minimist = require('minimist');
+
+var _minimist2 = _interopRequireDefault(_minimist);
+
+var _fs = require('mz/fs');
+
+var _mkdirpThen = require('mkdirp-then');
+
+var _mkdirpThen2 = _interopRequireDefault(_mkdirpThen);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var argv = (0, _minimist2.default)(process.argv.slice(2), {
+  alias: {
+    h: 'help'
+  },
+  boolean: ['h']
+});
+
+if (argv.help) {
+  console.log('\n    Description\n      Scaffolds a simple project structure to get started quickly\n\n    Usage\n      $ next init <dir>\n\n      If no directory is provided the current directory will be used.\n\n    Options\n      --help, -h      Displays this message\n  ');
+
+  process.exit(0);
+}
+
+var dir = (0, _path.resolve)(argv._[0] || '.');
+
+if ((0, _path.basename)(dir) === 'pages') {
+  console.warn('Your root directory is named "pages". This looks suspicious. You probably want to go one directory up.');
+  process.exit(1);
+}
+
+(0, _fs.exists)(dir).then(function () {
+  var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(present) {
+    return _regenerator2.default.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            if (present) {
+              _context.next = 3;
+              break;
+            }
+
+            _context.next = 3;
+            return (0, _mkdirpThen2.default)(dir);
+
+          case 3:
+            _context.next = 5;
+            return (0, _fs.exists)((0, _path.join)(dir, 'package.json'));
+
+          case 5:
+            if (_context.sent) {
+              _context.next = 8;
+              break;
+            }
+
+            _context.next = 8;
+            return (0, _fs.writeFile)((0, _path.join)(dir, 'package.json'), basePackage.replace(/my-app/g, (0, _path.basename)(dir)));
+
+          case 8:
+            _context.next = 10;
+            return (0, _fs.exists)((0, _path.join)(dir, 'static'));
+
+          case 10:
+            if (_context.sent) {
+              _context.next = 13;
+              break;
+            }
+
+            _context.next = 13;
+            return (0, _fs.mkdir)((0, _path.join)(dir, 'static'));
+
+          case 13:
+            _context.next = 15;
+            return (0, _fs.exists)((0, _path.join)(dir, 'pages'));
+
+          case 15:
+            if (_context.sent) {
+              _context.next = 20;
+              break;
+            }
+
+            _context.next = 18;
+            return (0, _fs.mkdir)((0, _path.join)(dir, 'pages'));
+
+          case 18:
+            _context.next = 20;
+            return (0, _fs.writeFile)((0, _path.join)(dir, 'pages', 'index.js'), basePage);
+
+          case 20:
+          case 'end':
+            return _context.stop();
+        }
+      }
+    }, _callee, undefined);
+  }));
+
+  return function (_x) {
+    return _ref.apply(this, arguments);
+  };
+}()).catch(function (err) {
+  console.error(err);
+  process.exit(1);
+});
+
+var basePackage = '{\n  "name": "my-app",\n  "description": "",\n  "dependencies": {\n    "next": "latest",\n    "react": "^15.4.2",\n    "react-dom": "^15.4.2"\n  },\n  "scripts": {\n    "dev": "next",\n    "build": "next build",\n    "start": "next start"\n  }\n}';
+
+var basePage = '\nimport Head from \'next/head\'\n\nexport default () => (\n  <div>\n    <Head>\n      <meta name=\'viewport\' content=\'width=device-width, initial-scale=1\'/>\n    </Head>\n\n    <img width=\'112\' src=\'https://cloud.githubusercontent.com/assets/13041/19686250/971bf7f8-9ac0-11e6-975c-188defd82df1.png\' alt=\'next.js\' />\n\n    <style jsx global>{`\n      html, body {\n        height: 100%\n      }\n\n      body {\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        margin: 0;\n      }\n    `}</style>\n  </div>\n)\n';

@@ -154,6 +154,23 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
 
   setSelectedValue = (selectedValue: SelectOption) => this.setState({ scale: selectedValue.value })
 
+  onRestartClick = () => {
+    this.setState((prevState) => ({
+      refreshCount: prevState.refreshCount + 1,
+    }))
+  }
+
+  handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.stopPropagation()
+      this.onRestartClick()
+    }
+  }
+
+  toggleRunning = () => {
+    this.setState((prevState) => ({ running: !prevState.running }))
+  }
+
   render() {
     const ColorButtonGroup = () => (
       <FlexRow
@@ -188,16 +205,6 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
       </FlexRow>
     )
 
-    const toggleRunning = () => {
-      this.setState((prevState) => ({ running: !prevState.running }))
-    }
-
-    const onRestartClick = () => {
-      this.setState((prevState) => ({
-        refreshCount: prevState.refreshCount + 1,
-      }))
-    }
-
     const floatingPreviewURL =
       this.props.id == null
         ? ''
@@ -230,13 +237,6 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
       />
     )
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.stopPropagation
-        onRestartClick()
-      }
-    }
-
     return (
       <FlexColumn
         style={{
@@ -256,11 +256,11 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
             },
           }}
         >
-          <SquareButton highlight onClick={onRestartClick}>
+          <SquareButton highlight onClick={this.onRestartClick}>
             <LargerIcons.Refresh color='black' />
           </SquareButton>
           <input
-            onKeyPress={handleKeyPress}
+            onKeyPress={this.handleKeyPress}
             value={popoutPreviewURL}
             css={{
               fontSize: 11,
@@ -281,7 +281,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
           {this.props.editedFilename == null ? null : (
             <Subdued>{this.props.editedFilename}</Subdued>
           )}
-          <SquareButton highlight onClick={toggleRunning}>
+          <SquareButton highlight onClick={this.toggleRunning}>
             {this.state.running ? (
               <LargerIcons.StopButton color='black' />
             ) : (
@@ -365,7 +365,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
                 backgroundColor: colorTheme.secondaryBackground.value,
               }}
             >
-              <Button onClick={toggleRunning} spotlight>
+              <Button onClick={this.toggleRunning} spotlight>
                 <Icn category='semantic' type='playbutton' width={24} height={24} color='black' />
               </Button>
               <Subdued style={{ marginTop: 8 }}>Start Preview</Subdued>

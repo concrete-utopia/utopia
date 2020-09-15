@@ -1,0 +1,103 @@
+#!/usr/bin/env node
+'use strict';
+
+var _entries = require('babel-runtime/core-js/object/entries');
+
+var _entries2 = _interopRequireDefault(_entries);
+
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+require('source-map-support/register');
+
+var _path = require('path');
+
+var _minimist = require('minimist');
+
+var _minimist2 = _interopRequireDefault(_minimist);
+
+var _fs = require('fs');
+
+var _server = require('../server');
+
+var _server2 = _interopRequireDefault(_server);
+
+var _utils = require('../lib/utils');
+
+var _pkgUp = require('pkg-up');
+
+var _pkgUp2 = _interopRequireDefault(_pkgUp);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
+var argv = (0, _minimist2.default)(process.argv.slice(2), {
+  alias: {
+    h: 'help',
+    p: 'port'
+  },
+  boolean: ['h'],
+  default: {
+    p: 3000
+  }
+});
+
+if (argv.help) {
+  console.log('\n    Description\n      Starts the application in development mode (hot-code reloading, error\n      reporting, etc)\n\n    Usage\n      $ next dev <dir> -p <port number>\n\n    <dir> represents where the compiled folder should go.\n    If no directory is provided, the folder will be created in the current directory.\n    You can set a custom folder in config https://github.com/zeit/next.js#custom-configuration.\n\n    Options\n      --port, -p      A port number on which to start the application\n      --help, -h      Displays this message\n  ');
+  process.exit(0);
+}
+
+var dir = (0, _path.resolve)(argv._[0] || '.');
+
+// Check if pages dir exists and warn if not
+if (!(0, _fs.existsSync)(dir)) {
+  (0, _utils.printAndExit)('> No such directory exists as the project root: ' + dir);
+}
+
+if (!(0, _fs.existsSync)((0, _path.join)(dir, 'pages'))) {
+  if ((0, _fs.existsSync)((0, _path.join)(dir, '..', 'pages'))) {
+    (0, _utils.printAndExit)('> No `pages` directory found. Did you mean to run `next` in the parent (`../`) directory?');
+  }
+
+  (0, _utils.printAndExit)('> Couldn\'t find a `pages` directory. Please create one under the project root');
+}
+
+var srv = new _server2.default({ dir: dir, dev: true });
+srv.start(argv.port).then((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
+  return _regenerator2.default.wrap(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          if (!process.env.NOW) {
+            console.log('> Ready on http://localhost:' + argv.port);
+          }
+
+        case 1:
+        case 'end':
+          return _context.stop();
+      }
+    }
+  }, _callee, undefined);
+}))).catch(function (err) {
+  if (err.code === 'EADDRINUSE') {
+    var errorMessage = 'Port ' + argv.port + ' is already in use.';
+    var pkgAppPath = _pkgUp2.default.sync('.');
+    var appPackage = JSON.parse((0, _fs.readFileSync)(pkgAppPath, 'utf8'));
+    var nextScript = (0, _entries2.default)(appPackage.scripts).find(function (scriptLine) {
+      return scriptLine[1] === 'next';
+    });
+    if (nextScript) errorMessage += '\nUse `npm run ' + nextScript[0] + ' -- -p <some other port>`.';
+    console.error(errorMessage);
+  } else {
+    console.error(err);
+  }
+  process.nextTick(function () {
+    return process.exit(1);
+  });
+});

@@ -102,7 +102,6 @@ data ServiceCallsF a = NotFound
                      | LoadProjectThumbnail Text (Maybe BL.ByteString -> a)
                      | SaveProjectThumbnail Text Text BL.ByteString a
                      | GetProxyManager (Maybe Manager -> a)
-                     | GetPackagerProxyManager (Manager -> a)
                      | GetProjectsForUser Text ([ProjectListing] -> a)
                      | GetShowcaseProjects ([ProjectListing] -> a)
                      | SetShowcaseProjects [Text] a

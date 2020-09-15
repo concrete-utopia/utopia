@@ -1,0 +1,23 @@
+[05-May-2020 03:08:51 UTC] PHP Warning:  require(../lib/importer.class.php): failed to open stream: No such file or directory in /home/canius6/public_html/admin/git-sync/git-sync.class.php on line 178
+[05-May-2020 03:08:51 UTC] PHP Warning:  require(../lib/importer.class.php): failed to open stream: No such file or directory in /home/canius6/public_html/admin/git-sync/git-sync.class.php on line 178
+[05-May-2020 03:08:51 UTC] PHP Fatal error:  require(): Failed opening required '../lib/importer.class.php' (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/canius6/public_html/admin/git-sync/git-sync.class.php on line 178
+[05-May-2020 03:14:13 UTC] PHP Warning:  require(../lib/importer.class.php): failed to open stream: No such file or directory in /home/canius6/public_html/admin/git-sync/git-sync.class.php on line 178
+[05-May-2020 03:14:13 UTC] PHP Warning:  require(../lib/importer.class.php): failed to open stream: No such file or directory in /home/canius6/public_html/admin/git-sync/git-sync.class.php on line 178
+[05-May-2020 03:14:13 UTC] PHP Fatal error:  require(): Failed opening required '../lib/importer.class.php' (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/canius6/public_html/admin/git-sync/git-sync.class.php on line 178
+[14-May-2020 01:25:25 UTC] PHP Fatal error:  Uncaught Exception: Latest repo changes have not yet been imported. Import first before updating repo. in /home/canius6/public_html/admin/git-sync/git-sync.class.php:11
+Stack trace:
+#0 /home/canius6/public_html/admin/git-sync/git-sync.class.php(61): GitSync->error('Latest repo cha...')
+#1 /home/canius6/public_html/admin/git-sync/git-sync.class.php(71): GitSync->checkForChanges()
+#2 /home/canius6/public_html/admin/git-sync/git-sync.class.php(191): GitSync->updateRepoFiles()
+#3 /home/canius6/public_html/admin/git-sync/index.php(13): GitSync->updateGithub()
+#4 {main}
+  thrown in /home/canius6/public_html/admin/git-sync/git-sync.class.php on line 11
+[14-May-2020 01:25:58 UTC] PHP Fatal error:  Uncaught Exception: Latest repo changes have not yet been imported. Import first before updating repo. in /home/canius6/public_html/admin/git-sync/git-sync.class.php:11
+Stack trace:
+#0 /home/canius6/public_html/admin/git-sync/git-sync.class.php(61): GitSync->error('Latest repo cha...')
+#1 /home/canius6/public_html/admin/git-sync/git-sync.class.php(71): GitSync->checkForChanges()
+#2 /home/canius6/public_html/admin/git-sync/git-sync.class.php(191): GitSync->updateRepoFiles()
+#3 /home/canius6/public_html/admin/git-sync/index.php(13): GitSync->updateGithub()
+#4 {main}
+  thrown in /home/canius6/public_html/admin/git-sync/git-sync.class.php on line 11
+[15-May-2020 00:01:48 UTC] PHP Warning:  file_get_contents(/home/canius6/public_html/admin/data/update-times.json): failed to open stream: No such file or directory in /home/canius6/public_html/admin/git-sync/git-sync.class.php on line 199

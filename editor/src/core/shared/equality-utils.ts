@@ -12,7 +12,7 @@ export function abstractEquals(
   objA: any,
   objB: any,
   debugMode: boolean,
-  nestedEqualityFn: (a: any, b: any, debugMode: boolean) => boolean,
+  nestedEqualityFn: (a: any, b: any, mode: boolean) => boolean,
 ): boolean {
   if (is(objA, objB)) return true
   if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {

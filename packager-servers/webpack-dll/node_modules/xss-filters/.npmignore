@@ -1,0 +1,5 @@
+node_modules/
+artifacts/
+dist/docs/
+npm-debug.log
+.*.swp

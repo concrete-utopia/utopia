@@ -101,7 +101,7 @@ module.exports = {
         patterns: ['**/*.spec', '**/*.spec.*'],
       },
     ],
-    'no-shadow': 'error',
+    'no-shadow': 'off', // we need to use typescript's no-shadow rule
     // React specific errors
     'react/jsx-no-comment-textnodes': 'error',
     'react/jsx-key': ['error', { checkFragmentShorthand: true }],

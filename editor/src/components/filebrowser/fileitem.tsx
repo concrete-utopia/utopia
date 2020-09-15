@@ -362,17 +362,17 @@ class FileBrowserItemInner extends React.PureComponent<
     return <Icons.CrossSmall />
   }
 
-  setMainUIContextMenuItem(): ContextMenuItem<{}> {
+  setMainUIContextMenuItem(): ContextMenuItem<unknown> {
     return {
       name: 'Set As Main UI File',
       enabled: this.props.fileType != null && this.props.fileType === 'UI_JS_FILE',
-      action: (data: {}, dispatch?: EditorDispatch) => {
+      action: (data: unknown, dispatch?: EditorDispatch) => {
         requireDispatch(dispatch)([EditorActions.setMainUIFile(this.props.path)], 'noone')
       },
     }
   }
 
-  deleteContextMenuItem(): ContextMenuItem<{}> {
+  deleteContextMenuItem(): ContextMenuItem<unknown> {
     return {
       name: `Delete ${
         this.props.fileType != null
@@ -382,7 +382,7 @@ class FileBrowserItemInner extends React.PureComponent<
           : 'item'
       }`,
       enabled: this.props.fileType != null && canDelete(this.props),
-      action: (data: {}, dispatch?: EditorDispatch) => {
+      action: (data: unknown, dispatch?: EditorDispatch) => {
         requireDispatch(dispatch)(
           [
             EditorActions.showModal({
@@ -396,7 +396,7 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
-  renameContextMenuItem(): ContextMenuItem<{}> {
+  renameContextMenuItem(): ContextMenuItem<unknown> {
     return {
       name: `Rename ${
         this.props.fileType != null

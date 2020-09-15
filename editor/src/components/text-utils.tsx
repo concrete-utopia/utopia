@@ -27,7 +27,7 @@ export function autosizingTextResizeNew(
   dispatch: EditorDispatch,
   property: PropertyPath,
   newValue: any,
-  onChange: (newValue: any) => Array<EditorAction>,
+  onChange: (v: any) => Array<EditorAction>,
 ): Array<EditorAction> {
   const onChangeActions: Array<EditorAction> = onChange(newValue)
   let promises: Array<Promise<Array<EditorAction>>> = []

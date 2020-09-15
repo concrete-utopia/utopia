@@ -1,0 +1,5 @@
+samples/
+test/
+src/
+.git*
+.travis.yml
