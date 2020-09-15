@@ -339,7 +339,7 @@ import {
   SetPackageStatus,
   SetShortcut,
   UpdatePropertyControlsInfo,
-  PropertyControlsIFrameReady
+  PropertyControlsIFrameReady,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -442,11 +442,14 @@ import {
   getDependencyTypeDefinitions,
 } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
-import { getPropertyControlsForTarget, setPropertyControlsIFrameReady } from '../../../core/property-controls/property-controls-utils'
+import {
+  getPropertyControlsForTarget,
+  setPropertyControlsIFrameReady,
+} from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { ShortcutConfiguration } from '../shortcut-definitions'
-import {objectKeyParser, parseString} from '../../../utils/value-parser-utils'
+import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
 
 export function clearSelection(): EditorAction {
   return {
@@ -3137,7 +3140,7 @@ export const UPDATE_FNS = {
     } else {
       const { projectContents, updatedFiles } = replaceFilePathResults
       const mainUIFile = getMainUIFromModel(editor)
-      let updateUIFile: (editor: EditorModel) => EditorModel = R.identity
+      let updateUIFile: (e: EditorModel) => EditorModel = R.identity
       let selectedFile = getOpenEditorTab(editor)
       let updatedOpenFiles = [...editor.openFiles]
       Utils.fastForEach(updatedFiles, (updatedFile) => {
@@ -4123,7 +4126,10 @@ export const UPDATE_FNS = {
       propertyControlsInfo: action.propertyControlsInfo,
     }
   },
-  PROPERTY_CONTROLS_IFRAME_READY: (_action: PropertyControlsIFrameReady, editor: EditorModel): EditorModel => {
+  PROPERTY_CONTROLS_IFRAME_READY: (
+    _action: PropertyControlsIFrameReady,
+    editor: EditorModel,
+  ): EditorModel => {
     // Internal side effect.
     setPropertyControlsIFrameReady(true)
     return editor
@@ -5277,14 +5283,26 @@ export function isSendPreviewModel(action: any): action is SendPreviewModel {
   return action != null && (action as SendPreviewModel).action === 'SEND_PREVIEW_MODEL'
 }
 
-export function isPropertyControlsIFrameReady(action: unknown): action is PropertyControlsIFrameReady {
+export function isPropertyControlsIFrameReady(
+  action: unknown,
+): action is PropertyControlsIFrameReady {
   const parseResult = objectKeyParser(parseString, 'action')(action)
-  return foldEither(_ => false, prop => prop === 'PROPERTY_CONTROLS_IFRAME_READY', parseResult)
+  return foldEither(
+    (_) => false,
+    (prop) => prop === 'PROPERTY_CONTROLS_IFRAME_READY',
+    parseResult,
+  )
 }
 
-export function isUpdatePropertyControlsInfo(action: unknown): action is UpdatePropertyControlsInfo {
+export function isUpdatePropertyControlsInfo(
+  action: unknown,
+): action is UpdatePropertyControlsInfo {
   const parseResult = objectKeyParser(parseString, 'action')(action)
-  return foldEither(_ => false, prop => prop === 'UPDATE_PROPERTY_CONTROLS_INFO', parseResult)
+  return foldEither(
+    (_) => false,
+    (prop) => prop === 'UPDATE_PROPERTY_CONTROLS_INFO',
+    parseResult,
+  )
 }
 
 export function setCodeEditorBuildErrors(buildErrors: ErrorMessages): SetCodeEditorBuildErrors {
@@ -5527,4 +5545,3 @@ export function propertyControlsIFrameReady(): PropertyControlsIFrameReady {
     action: 'PROPERTY_CONTROLS_IFRAME_READY',
   }
 }
-

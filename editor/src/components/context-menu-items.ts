@@ -132,14 +132,14 @@ export const toggleVisibility: ContextMenuItem<CanvasData> = {
   },
 }
 
-export const lineSeparator: ContextMenuItem<{}> = {
+export const lineSeparator: ContextMenuItem<unknown> = {
   name: RU.create('div', { key: 'separator', className: 'react-contexify__separator' }, ''),
   enabled: false,
   isSeparator: true,
   action: () => null,
 }
 
-export const resetPins: ContextMenuItem<{}> = {
+export const resetPins: ContextMenuItem<unknown> = {
   name: 'Reset positioning',
   enabled: true,
   action: (data: any, dispatch?: EditorDispatch) => {

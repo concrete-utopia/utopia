@@ -75,12 +75,6 @@ let
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
 
   serverBaseScripts = [
-    (pkgs.writeScriptBin "build-extract-requires" ''
-      #!/usr/bin/env bash
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/packager-servers/extract-requires
-      ${node}/bin/npm install
-      ${node}/bin/npm run build
-    '')
     (pkgs.writeScriptBin "rebuild-cabal" ''
       #!/usr/bin/env bash
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
@@ -102,14 +96,12 @@ let
     (pkgs.writeScriptBin "test-server" ''
       #!/usr/bin/env bash
       set -e
-      build-extract-requires
       cabal-update
       test-server-inner
     '')
     (pkgs.writeScriptBin "watch-tests" ''
       #!/usr/bin/env bash
       set -e
-      build-extract-requires
       cabal-update
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch test --watch package.yaml --exec test-server-inner
@@ -118,7 +110,6 @@ let
       #!/usr/bin/env bash
       set -e
       cabal-update
-      build-extract-requires
       ${pkgs.parallel}/bin/parallel --delay 10 --halt now,done=1 --line-buffer --tag ::: redis-server test-server-inner
     '')
   ];
@@ -167,32 +158,6 @@ let
 
   withEditorRunScripts = withServerBaseScripts ++ (lib.optionals includeRunLocallySupport editorRunScripts);
 
-  packagerRunScripts = [
-    (pkgs.writeScriptBin "watch-webpack-packager" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/packager-servers/webpack-packager
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run start
-    '')
-    (pkgs.writeScriptBin "watch-webpack-dll" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/packager-servers/webpack-dll
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run start
-    '')
-    (pkgs.writeScriptBin "run-mongodb" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/packager-servers
-      mkdir -p database
-      ${pkgs.mongodb}/bin/mongod --dbpath database
-    '')
-  ];
-
-  withPackagerRunScripts = withEditorRunScripts ++ (lib.optionals includeRunLocallySupport packagerRunScripts);
-
   serverRunScripts = [
     (pkgs.writeScriptBin "style-project" ''
       #!/usr/bin/env bash
@@ -212,29 +177,22 @@ let
     (pkgs.writeScriptBin "run-server" ''
       #!/usr/bin/env bash
       set -e
-      build-extract-requires
       cabal-update
       run-server-inner
     '')
     (pkgs.writeScriptBin "watch-server" ''
       #!/usr/bin/env bash
       set -e
-      build-extract-requires
       cabal-update
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
     '')
   ];
 
-  withServerRunScripts = withPackagerRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
+  withServerRunScripts = withEditorRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
 
   # For the useful scripts in our dev environments
   customDevScripts = [
-    (pkgs.writeScriptBin "start-packager" ''
-      #!/usr/bin/env bash
-      set -e
-      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-webpack-packager watch-webpack-dll run-mongodb
-    '')
     (pkgs.writeScriptBin "start-website-server" ''
       #!/usr/bin/env bash
       set -e
@@ -244,19 +202,19 @@ let
       #!/usr/bin/env bash
       set -e
       install-editor
-      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-editor-cowboy watch-website watch-webpack-packager watch-webpack-dll run-mongodb redis-server
+      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-editor-cowboy watch-website redis-server
     '')
     (pkgs.writeScriptBin "start-performance" ''
       #!/usr/bin/env bash
       set -e
       install-editor
-      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-editor-performance watch-website watch-webpack-packager watch-webpack-dll run-mongodb redis-server
+      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-editor-performance watch-website redis-server
     '')
     (pkgs.writeScriptBin "start-hot-only-ui-work" ''
       #!/usr/bin/env bash
       set -e
       install-editor
-      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-editor-cowboy-danger-hot watch-website watch-webpack-packager watch-webpack-dll run-mongodb redis-server
+      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-editor-cowboy-danger-hot watch-website redis-server
     '')    
   ];
 
@@ -264,19 +222,6 @@ let
 
   # TODO Come back to these when trying to use nix to build a docker container - https://stackoverflow.com/questions/58421505/how-do-i-apply-a-nix-shell-config-in-a-docker-image
   releaseScripts = [
-    (pkgs.writeScriptBin "build-webpack-packager" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/packager-servers/webpack-packager
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-    '')
-    (pkgs.writeScriptBin "build-webpack-dll" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/packager-servers/webpack-dll
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run build
-    '')
     (pkgs.writeScriptBin "build-editor" ''
       #!/usr/bin/env bash
       set -e
@@ -303,8 +248,6 @@ let
     (pkgs.writeScriptBin "build-all" ''
       #!/usr/bin/env bash
       set -e
-      build-webpack-packager
-      build-webpack-dll
       build-editor
       build-website
       build-server
@@ -330,9 +273,8 @@ let
     pkgs.redis
   ];
 
-  packagerRunPackages = [
+  serverRunPackages = [
     pkgs.yarn
-    pkgs.mongodb
     pkgs.python
   ];
 
@@ -342,8 +284,8 @@ let
 
   basePackages = [ node ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
-  withPackagerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport packagerRunPackages);
-  withReleasePackages = withPackagerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);
+  withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
+  withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);
   packagesToUse = withReleasePackages;
 
 in pkgs.mkShell {

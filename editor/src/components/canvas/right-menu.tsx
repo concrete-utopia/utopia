@@ -54,8 +54,8 @@ export interface RightMenuTileProps extends React.HTMLAttributes<HTMLDivElement>
 export const RightMenuTile: React.FunctionComponent<RightMenuTileProps> = (props) => {
   const [hovered, setHovered] = React.useState(false)
 
-  const handleOnMouseOver = () => setHovered(true)
-  const handleOnMouseOut = () => setHovered(false)
+  const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
+  const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
 
   var foregroundColor: IcnProps['color'] = 'black'
   if (props.highlightSelected && props.selected) {

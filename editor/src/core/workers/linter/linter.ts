@@ -11,6 +11,7 @@ BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
 })
 ;(global as any).BrowserFS = BrowserFS
 
+import * as ESLint from 'eslint'
 import * as Linter from 'eslint4b'
 import { ESLINT_CONFIG, EslintPluginRules } from './eslint-config'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -36,7 +37,7 @@ const linter = new CustomUtopiaLinter()
 export function lintCode(
   filename: string,
   code: string,
-  config: {} = ESLINT_CONFIG,
+  config: ESLint.Linter.Config = ESLINT_CONFIG,
 ): ErrorMessage[] {
   const passTime = Date.now()
   const lintResult = linter.verify(code, config, { filename: filename })

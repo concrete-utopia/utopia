@@ -49,8 +49,8 @@ export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement> {
 export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
   const [hovered, setHovered] = React.useState(false)
 
-  const handleOnMouseOver = () => setHovered(true)
-  const handleOnMouseOut = () => setHovered(false)
+  const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
+  const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
 
   var foregroundColor: IcnProps['color'] = 'black'
   if (props.menuExpanded && props.selected) {

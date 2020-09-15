@@ -449,7 +449,7 @@ function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
-export const InspectorEntryPoint: React.FunctionComponent<{}> = betterReactMemo(
+export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
   'InspectorEntryPoint',
   () => {
     const { selectedViews, jsxMetadataKILLME } = useEditorState((store) => {

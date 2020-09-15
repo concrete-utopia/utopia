@@ -39,7 +39,7 @@ export function getElementPadding(templatePath: TemplatePath): number {
 export interface NavigatorItemInnerProps {
   templatePath: TemplatePath
   index: number
-  getSelectedViewsInRange: (index: number) => Array<TemplatePath> // TODO KILLME
+  getSelectedViewsInRange: (i: number) => Array<TemplatePath> // TODO KILLME
   noOfChildren: number
   isAutosizingView: boolean
   label: string
@@ -59,7 +59,7 @@ export interface NavigatorItemInnerProps {
 
 function selectItem(
   dispatch: EditorDispatch,
-  getSelectedViewsInRange: (index: number) => Array<TemplatePath>,
+  getSelectedViewsInRange: (i: number) => Array<TemplatePath>,
   templatePath: TemplatePath,
   index: number,
   selected: boolean,

@@ -481,7 +481,7 @@ export function simpleParseSuccess(
 }
 
 export function modifyParseSuccessWithSimple(
-  transform: (success: SimpleParseSuccess) => SimpleParseSuccess,
+  transform: (s: SimpleParseSuccess) => SimpleParseSuccess,
   success: ParseSuccess,
 ): ParseSuccess {
   const oldSimpleParseSuccess: SimpleParseSuccess = {
@@ -513,7 +513,7 @@ export interface ParseSuccessAndEditorChanges<T> {
 }
 
 export function applyParseAndEditorChanges<T>(
-  getChanges: (editor: EditorState, success: ParseSuccess) => ParseSuccessAndEditorChanges<T>,
+  getChanges: (e: EditorState, success: ParseSuccess) => ParseSuccessAndEditorChanges<T>,
   editor: EditorState,
 ): { editor: EditorState; additionalData: T | null } {
   const openUIJSFileKey = getOpenUIJSFileKey(editor)
@@ -567,14 +567,14 @@ export function modifyOpenParseSuccess(
   function getChanges(
     editor: EditorState,
     success: ParseSuccess,
-  ): ParseSuccessAndEditorChanges<{}> {
+  ): ParseSuccessAndEditorChanges<Record<string, never>> {
     return {
       parseSuccessTransform: transform,
       editorStateTransform: (e: EditorState) => e,
       additionalData: {},
     }
   }
-  return applyParseAndEditorChanges<{}>(getChanges, model).editor
+  return applyParseAndEditorChanges<Record<string, never>>(getChanges, model).editor
 }
 
 export function applyUtopiaJSXComponentsChanges(
@@ -1437,6 +1437,41 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     },
     navigator: {
       minimised: editor.navigator.minimised,
+    },
+  }
+}
+
+export function persistentModelForProjectContents(
+  projectContents: ProjectContents,
+): PersistentModel {
+  const selectedTab: EditorTab = releaseNotesTab()
+
+  return {
+    appID: null,
+    projectVersion: CURRENT_PROJECT_VERSION,
+    projectContents: projectContents,
+    exportsInfo: [],
+    buildResult: {},
+    openFiles: [selectedTab],
+    selectedFile: selectedTab,
+    codeEditorErrors: {
+      buildErrors: {},
+      lintErrors: {},
+    },
+    codeEditorTheme: DefaultTheme,
+    lastUsedFont: null,
+    hiddenInstances: [],
+    fileBrowser: {
+      minimised: false,
+    },
+    dependencyList: {
+      minimised: false,
+    },
+    projectSettings: {
+      minimised: false,
+    },
+    navigator: {
+      minimised: false,
     },
   }
 }

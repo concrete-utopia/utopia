@@ -82,13 +82,6 @@ jobs:
         with:
           path: server/dist-newstyle
           key: ${{ runner.os }}-${{ matrix.ghc }}-server-dist-newstyle-2
-      - name: Cache extract requires node modules
-        uses: actions/cache@v2
-        with:
-          path: packager-servers/extract-requires/node_modules
-          key: ${{ runner.os }}-node-extract-requires-master-${{ hashFiles('editor/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-extract-requires-master-
       - name: Cache server test result
         id: cache-server-tests
         uses: actions/cache@v2

@@ -146,7 +146,7 @@ export function objectValueParserWithError<V>(
 
 // Parses a single key out of an object.
 export function objectKeyParser<V>(
-  parser: (v: unknown, key: string) => ParseResult<V>,
+  parser: (v: unknown, k: string) => ParseResult<V>,
   key: string,
 ): (v: unknown) => ParseResult<V> {
   return (value: unknown) => {
@@ -167,7 +167,7 @@ export function objectKeyParser<V>(
 // Parses a single key out of an object, returning
 // undefined if the key doesn't exist.
 export function optionalObjectKeyParser<V>(
-  parser: (v: unknown, key: string) => ParseResult<V>,
+  parser: (v: unknown, k: string) => ParseResult<V>,
   key: string,
 ): (v: unknown) => ParseResult<V | undefined> {
   return (value: unknown) => {

@@ -1453,7 +1453,7 @@ export const MetadataUtils = {
     parentMetadata: ElementInstanceMetadata | null,
     withEachElement: (
       metadata: ElementInstanceMetadata,
-      parentMetadata: ElementInstanceMetadata | null,
+      parentMetadataWith: ElementInstanceMetadata | null,
     ) => void,
   ): void {
     withEachElement(elementMetadata, parentMetadata)

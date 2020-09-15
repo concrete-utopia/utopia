@@ -28,7 +28,7 @@ import {
   isJSXAttributeOtherJavaScript,
   jsxAttributeOtherJavaScript,
 } from '../../../../core/shared/element-template'
-import { dropExtension } from '../../../../core/shared/string-utils'
+import { dropFileExtension } from '../../../../core/shared/file-utils'
 import { getWarningIconProps } from '../../../../uuiui/warning-icon'
 import {
   getOpenFilename,
@@ -89,7 +89,7 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
           const componentName = component.name
           const defaultProps = defaultPropertiesForComponentInFile(
             componentName,
-            dropExtension(openFileFullPath),
+            dropFileExtension(openFileFullPath),
             propertyControlsInfo,
           )
           const detectedProps = component.propsUsed

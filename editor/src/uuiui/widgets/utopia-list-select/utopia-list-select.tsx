@@ -17,7 +17,7 @@ export interface UtopiaListSelectProps {
   extraListItemClasses: string[]
 }
 
-export class UtopiaListSelect extends React.Component<UtopiaListSelectProps, {}> {
+export class UtopiaListSelect extends React.Component<UtopiaListSelectProps> {
   onListItemMouseOver = (key: string) => {
     this.props.onFocusChange(key)
   }
@@ -97,7 +97,7 @@ interface UtopiaListItemProps {
   onSelect: (key: string) => void
 }
 
-export class UtopiaListItem extends React.Component<UtopiaListItemProps, {}> {
+export class UtopiaListItem extends React.Component<UtopiaListItemProps> {
   onMouseOver = () => {
     this.props.onMouseOver(this.props.itemKey)
   }

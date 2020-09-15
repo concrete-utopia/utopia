@@ -113,7 +113,7 @@ export function handleMessage(
 function parseFile(
   filename: string,
   content: string,
-  sendMessage: (content: ParserPrinterResultMessage) => void,
+  sendMessage: (c: ParserPrinterResultMessage) => void,
 ) {
   const parseResult = lintAndParse(filename, content)
   sendMessage(createParseFileResultMessage(parseResult))

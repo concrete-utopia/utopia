@@ -74,7 +74,7 @@ function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: Templa
 function onDrop(
   props: NavigatorItemDragAndDropWrapperProps,
   monitor?: DropTargetMonitor,
-  component?: {},
+  component?: unknown,
 ) {
   if (monitor != null && component != null) {
     const dragSelections = props.getDragSelections()
@@ -134,7 +134,7 @@ function onHover(
     if (domNode == null || typeof domNode === 'string') {
       return
     }
-    const dropTargetRectangle = (domNode as Element).getBoundingClientRect()
+    const dropTargetRectangle = (domNode as HTMLElement).getBoundingClientRect()
     const cursor = monitor.getClientOffset()
     const targetAction = props.highlighted
       ? []
@@ -216,8 +216,7 @@ function beginDrag(
 }
 
 export class NavigatorItemDndWrapper extends PureComponent<
-  NavigatorItemDragAndDropWrapperProps & CollectResults,
-  {}
+  NavigatorItemDragAndDropWrapperProps & CollectResults
 > {
   constructor(props: NavigatorItemDragAndDropWrapperProps & CollectResults) {
     super(props)

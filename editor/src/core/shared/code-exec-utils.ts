@@ -73,7 +73,7 @@ export const SafeFunctionCurriedErrorHandler = {
     code: string,
     sourceMap: RawSourceMap | null,
     extraParamKeys: Array<string> = [],
-  ): (onError: ErrorHandler) => (...params: Array<any>) => any {
+  ): (onError: ErrorHandler) => (...params: Array<unknown>) => unknown {
     const [contextKeys, contextValues] = Object.keys(cacheableContext).reduce(
       (working, key) => {
         working[0].push(key)
@@ -85,7 +85,7 @@ export const SafeFunctionCurriedErrorHandler = {
     const FunctionOrAsyncFunction = async ? AsyncFunction : Function
     const fn = new FunctionOrAsyncFunction(...contextKeys.concat(extraParamKeys), code)
     fn.displayName = UTOPIA_FUNCTION_ROOT_NAME
-    const safeFn = (onError: ErrorHandler) => (...params: Array<any>) => {
+    const safeFn = (onError: ErrorHandler) => (...params: Array<unknown>) => {
       try {
         return fn(...contextValues, ...params)
       } catch (e) {

@@ -142,8 +142,6 @@ type WebsiteAssetsAPI = "static" :> RawM
 
 type SSLAPI = ".well-known" :> RawM
 
-type PackagerAPI = "packager" :> RawM
-
 type WebsiteAPI = RawM
 
 {-
@@ -162,6 +160,7 @@ type Protected = LogoutAPI
             :<|> DeleteProjectAssetAPI
             :<|> SaveProjectAssetAPI
             :<|> SaveProjectThumbnailAPI
+            :<|> DownloadGithubProjectAPI
 
 type Unprotected = AuthenticateAPI
               :<|> EmptyProjectPageAPI
@@ -177,7 +176,6 @@ type Unprotected = AuthenticateAPI
               :<|> LoadProjectAssetAPI
               :<|> PreviewProjectAssetAPI
               :<|> LoadProjectThumbnailAPI
-              :<|> DownloadGithubProjectAPI
               :<|> MonitoringAPI
               :<|> PackagePackagerAPI
               :<|> GetPackageJSONAPI
@@ -187,7 +185,6 @@ type Unprotected = AuthenticateAPI
               :<|> WebpackSockJSAPI
               :<|> WebsiteAssetsAPI
               :<|> SSLAPI
-              :<|> PackagerAPI
               :<|> WebsiteAPI
 
 type API = (AuthCookie :> Protected)

@@ -344,8 +344,8 @@ editorAssetsEndpoint notProxiedPath possibleBranchName = do
     Just _          -> loadLocally
     Nothing         -> maybe loadLocally loadFromProxy possibleProxyManager
 
-downloadGithubProjectEndpoint :: Text -> Text -> ServerMonad BL.ByteString
-downloadGithubProjectEndpoint owner repo = do
+downloadGithubProjectEndpoint :: Maybe Text -> Text -> Text -> ServerMonad BL.ByteString
+downloadGithubProjectEndpoint cookie owner repo = requireUser cookie $ \_ -> do
   zipball <- getGithubProject owner repo
   return zipball
 
@@ -372,11 +372,6 @@ serveWebAppEndpoint :: FilePath -> ServerMonad Application
 serveWebAppEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
   maybe (serveWebAppEndpointNotProxied notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 3000 []) possibleProxyManager
-
-servePackagerEndpoint :: ServerMonad Application
-servePackagerEndpoint = do
-  packagerProxyManager <- getPackagerProxyManager
-  return $ proxyApplication packagerProxyManager 5001 []
 
 getPackageJSONEndpoint :: Text -> ServerMonad Value
 getPackageJSONEndpoint javascriptPackageName = do
@@ -439,6 +434,7 @@ protected authCookie = logoutPage authCookie
                   :<|> deleteProjectAssetEndpoint authCookie
                   :<|> saveProjectAssetEndpoint authCookie
                   :<|> saveProjectThumbnailEndpoint authCookie
+                  :<|> downloadGithubProjectEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate
@@ -455,7 +451,6 @@ unprotected = authenticate
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectThumbnailEndpoint
-         :<|> downloadGithubProjectEndpoint
          :<|> monitoringEndpoint
          :<|> packagePackagerEndpoint
          :<|> getPackageJSONEndpoint
@@ -465,7 +460,6 @@ unprotected = authenticate
          :<|> editorAssetsEndpoint "./sockjs-node" Nothing
          :<|> websiteAssetsEndpoint "./public/static"
          :<|> servePath "./public/.well-known" Nothing
-         :<|> servePackagerEndpoint
          :<|> serveWebAppEndpoint "./public"
 
 server :: ServerT API ServerMonad
