@@ -126,15 +126,32 @@ interface ResizeEdgeProps {
   scale: number
   position: EdgePosition
   resizeStatus: ResizeStatus
+  labels: {
+    vertical: string
+    horizontal: string
+  }
 }
 
-class ResizeEdge extends React.Component<ResizeEdgeProps> {
+interface ResizeEdgeState {
+  showLabel: boolean
+}
+
+class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
+  constructor(props: ResizeEdgeProps) {
+    super(props)
+    this.state = {
+      showLabel: false,
+    }
+  }
   reference = React.createRef<HTMLDivElement>()
 
   render() {
     if (this.props.resizeStatus != 'enabled') {
       return null
     }
+    const beforeOrAfter =
+      this.props.position.y === 0.5 ? this.props.position.x : this.props.position.y
+    const edge = beforeOrAfter === 0 ? 'before' : 'after'
     const baseLeft =
       this.props.canvasOffset.x +
       this.props.visualSize.x +
@@ -155,19 +172,53 @@ class ResizeEdge extends React.Component<ResizeEdgeProps> {
       (this.props.direction === 'vertical' ? -this.props.visualSize.height / 2 : -lineSize / 2)
 
     return (
-      <div
-        ref={this.reference}
-        style={{
-          position: 'absolute',
-          left: left,
-          top: top,
-          width: width,
-          height: height,
-          boxSizing: 'border-box',
-          backgroundColor: 'transparent',
-          cursor: this.props.resizeStatus === 'enabled' ? this.props.cursor : undefined,
-        }}
-      />
+      <React.Fragment>
+        <div
+          ref={this.reference}
+          onMouseOver={() => this.setState({ showLabel: true })}
+          onMouseOut={() => this.setState({ showLabel: false })}
+          style={{
+            position: 'absolute',
+            left: left,
+            top: top,
+            width: width,
+            height: height,
+            boxSizing: 'border-box',
+            backgroundColor: 'transparent',
+            cursor: this.props.resizeStatus === 'enabled' ? this.props.cursor : undefined,
+          }}
+        />
+        {this.state.showLabel && (
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#d4f3ff',
+              border: `1px solid ${colorTheme.controlledBlue.value}`,
+              borderRadius: 5,
+              top:
+                top +
+                (this.props.direction === 'horizontal'
+                  ? edge === 'before' && this.props.direction === 'horizontal'
+                    ? -25
+                    : 10
+                  : -10),
+              left:
+                left +
+                (this.props.direction === 'vertical'
+                  ? edge === 'before' && this.props.direction === 'vertical'
+                    ? -25
+                    : 10
+                  : -10),
+            }}
+          >
+            <span style={{ padding: 3, color: colorTheme.controlledBlue.value }}>
+              {this.props.direction === 'horizontal'
+                ? this.props.labels.horizontal
+                : this.props.labels.vertical}
+            </span>
+          </div>
+        )}
+      </React.Fragment>
     )
   }
 }
@@ -181,10 +232,15 @@ interface ResizeLinesProps {
   position: EdgePosition
   resizeStatus: ResizeStatus
   color?: string
+  labels: {
+    vertical: string
+    horizontal: string
+  }
 }
 
 const LineOffset = 6
 const ResizeLines = (props: ResizeLinesProps) => {
+  const [showLabel, setShowLabel] = React.useState(false)
   const reference = React.createRef<HTMLDivElement>()
   const LineSVGComponent =
     props.position.y === 0.5 ? DimensionableControlVertical : DimensionableControlHorizontal
@@ -201,6 +257,8 @@ const ResizeLines = (props: ResizeLinesProps) => {
     props.resizeStatus !== 'enabled' ? null : (
       <div
         ref={reference}
+        onMouseOver={() => setShowLabel(true)}
+        onMouseOut={() => setShowLabel(false)}
         style={{
           position: 'absolute',
           width: catchmentSize,
@@ -222,6 +280,34 @@ const ResizeLines = (props: ResizeLinesProps) => {
         edge={edge}
         color={props.color}
       />
+      {showLabel && (
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#d4f3ff',
+            border: `1px solid ${colorTheme.controlledBlue.value}`,
+            borderRadius: 5,
+            top:
+              top +
+              (props.direction === 'horizontal'
+                ? edge === 'before' && props.direction === 'horizontal'
+                  ? -25
+                  : 10
+                : -10),
+            left:
+              left +
+              (props.direction === 'vertical'
+                ? edge === 'before' && props.direction === 'vertical'
+                  ? -25
+                  : 10
+                : -10),
+          }}
+        >
+          <span style={{ padding: 3, color: colorTheme.controlledBlue.value }}>
+            {props.direction === 'horizontal' ? props.labels.horizontal : props.labels.vertical}
+          </span>
+        </div>
+      )}
       {mouseCatcher}
     </React.Fragment>
   )
@@ -249,15 +335,15 @@ const DimensionableControlVertical = (props: DimensionableControlProps) => {
       className='label-dimensionableControlVertical'
       style={{
         position: 'absolute',
-        backgroundColor: 'white',
+        backgroundColor: '#d4f3ff',
         borderRadius: `${5 / props.scale}px`,
         // These just about work. I can clean them up afterwards
-        boxShadow: `0px 0px 0px ${0.3 / props.scale}px hsla(0,0%,0%,.7), 0px ${1 / props.scale}px ${
-          3 / props.scale
-        }px rgba(140,140,140,.9)`,
+        boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.controlledBlue.value}, 0px ${
+          1 / props.scale
+        }px ${3 / props.scale}px rgba(140,140,140,.9)`,
         height: controlLength / props.scale,
         width: controlWidth / props.scale,
-        left: props.centerX + (props.edge === 'before' ? -(controlWidth + 2) : 2) / props.scale,
+        left: props.centerX - 1,
         top: props.centerY + scaledControlOffsetTop,
       }}
     />
@@ -275,16 +361,16 @@ const DimensionableControlHorizontal = (props: DimensionableControlProps) => {
       className='label-dimensionableControlVertical'
       style={{
         position: 'absolute',
-        backgroundColor: 'white',
+        backgroundColor: '#d4f3ff',
         borderRadius: `${5 / props.scale}px`,
         // These just about work. I can clean them up afterwards
-        boxShadow: `0px 0px 0px ${0.3 / props.scale}px hsla(0,0%,0%,.7), 0px ${1 / props.scale}px ${
-          3 / props.scale
-        }px rgba(140,140,140,.9)`,
+        boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.controlledBlue.value}, 0px ${
+          1 / props.scale
+        }px ${3 / props.scale}px rgba(140,140,140,.9)`,
         height: controlLength / props.scale,
         width: controlWidth / props.scale,
         left: props.centerX + scaledControlOffsetLeft,
-        top: props.centerY + (props.edge === 'before' ? -(controlLength + 2) : 2) / props.scale,
+        top: props.centerY - 1,
       }}
     />
   )
@@ -388,6 +474,10 @@ interface ResizeRectangleProps {
   metadata: Array<ComponentMetadata>
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
   testID: string
+  labels: {
+    vertical: string
+    horizontal: string
+  }
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
@@ -588,19 +678,6 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           <ResizeControl
             {...controlProps}
             cursor={CSSCursor.ResizeNS}
-            position={{ x: 0.5, y: 0 }}
-            enabledDirection={DirectionVertical}
-          >
-            <ResizeLines
-              {...controlProps}
-              cursor={CSSCursor.ResizeNS}
-              direction='horizontal'
-              position={{ x: 0.5, y: 0 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNS}
             position={{ x: 0.5, y: 1 }}
             enabledDirection={DirectionVertical}
           >
@@ -609,19 +686,6 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
               cursor={CSSCursor.ResizeNS}
               direction='horizontal'
               position={{ x: 0.5, y: 1 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeEW}
-            position={{ x: 0, y: 0.5 }}
-            enabledDirection={DirectionHorizontal}
-          >
-            <ResizeLines
-              {...controlProps}
-              cursor={CSSCursor.ResizeEW}
-              direction='vertical'
-              position={{ x: 0, y: 0.5 }}
             />
           </ResizeControl>
           <ResizeControl
