@@ -75,7 +75,6 @@ import {
   emptyUiJsxCanvasContextData,
   UiJsxCanvasContext,
 } from '../components/canvas/ui-jsx-canvas'
-import { OutgoingValuesWorkerMessage } from '../core/workers/values-worker'
 import { isLeft } from '../core/shared/either'
 import { importZippedGitProject } from '../core/model/project-import'
 
@@ -189,18 +188,6 @@ export class Editor {
             msg.projectId,
             this.storedState.editor.safeMode,
           )
-        }
-      }
-    }
-
-    const handlePropertyControlsMessage = (msg: OutgoingValuesWorkerMessage) => {
-      switch (msg.type) {
-        case 'getpropertycontrolsinforesult': {
-          this.storedState.dispatch(
-            [EditorActions.updatePropertyControlsInfo(msg.propertyControlsInfo)],
-            'everyone',
-          )
-          break
         }
       }
     }
