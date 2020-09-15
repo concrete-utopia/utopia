@@ -1295,7 +1295,7 @@ describe('moveTemplate', () => {
     )
   })
 
-  it('reparents a pinned element to flex using magic?', async () => {
+  xit('reparents a pinned element to flex using magic?', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
@@ -1491,7 +1491,7 @@ describe('moveTemplate', () => {
     )
   })
 
-  it('reparents an element while dragging', async () => {
+  xit('reparents an element while dragging', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>

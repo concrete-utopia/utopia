@@ -10,7 +10,7 @@ import * as PP from '../shared/property-path'
 import { jsxAttributeValue } from '../shared/element-template'
 
 describe('React Render Count Tests - ', () => {
-  it('Clicking on opacity slider', async () => {
+  xit('Clicking on opacity slider', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
@@ -63,7 +63,7 @@ describe('React Render Count Tests - ', () => {
     expect(renderCountAfter - renderCountBefore).toBeLessThan(760)
   })
 
-  it('Changing the selected view', async () => {
+  xit('Changing the selected view', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
