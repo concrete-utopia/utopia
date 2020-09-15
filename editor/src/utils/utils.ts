@@ -670,7 +670,7 @@ function shallowClone(value: any): any {
 
 function proxyValue(
   valueToProxy: any,
-  recordAssignment: (path: Array<string>, value: any) => any,
+  recordAssignment: (p: Array<string>, value: any) => any,
 ): any {
   function wrapInProxy(toWrap: any, objPath: Array<string>): any {
     if (typeof toWrap == 'object' && toWrap != null) {
@@ -798,12 +798,16 @@ function emptySet<T extends string | boolean | number>(): Set<T> {
   return new Set()
 }
 
-function path<T>(objPath: Array<string | number>, obj: object | undefined | null): T | undefined {
+function path<T>(
+  objPath: Array<string | number>,
+  obj: Record<string | number, any> | undefined | null,
+): T | undefined {
   return R.path(objPath, obj!) // Ramda typing is _wrong_, R.path can and does take undefined and null!
 }
 
 // Because Ramda's `pathOr` function returns any for no fucking reason
-function pathOr<T, U = T>(defaultValue: T, objPath: Array<string | number>, obj: any): T | U {
+// eslint-disable-next-line @typescript-eslint/ban-types
+function pathOr<T, U = T>(defaultValue: T, objPath: Array<string | number>, obj: {}): T | U {
   return R.pathOr<T, U>(defaultValue, objPath, obj)
 }
 

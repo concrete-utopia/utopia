@@ -296,43 +296,52 @@ describe('action NAVIGATOR_REORDER', () => {
     if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
       const topLevelElements = mainUIJSFile.fileContents.value.topLevelElements
       const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value)
-      const targetChildren = Utils.pathOr(
-        [],
-        ['rootElement', 'children'],
-        utopiaJSXComponents.find((comp) => getUtopiaID(comp.rootElement) === 'aaa'),
-      )
-
-      const updatedEditor = runLocalEditorAction(
-        editor,
-        derivedState,
-        defaultUserState,
-        workers,
-        reparentAction,
-        History.init(editor, derivedState),
-        dispatch,
-        emptyUiJsxCanvasContextData(),
-      )
-
-      const updatedMainUIJSFile = updatedEditor.projectContents['/src/app.js']
-      if (isUIJSFile(updatedMainUIJSFile) && isRight(updatedMainUIJSFile.fileContents)) {
-        const updatedTopLevelElements = updatedMainUIJSFile.fileContents.value.topLevelElements
-        const updatedUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
-          updatedMainUIJSFile.fileContents.value,
-        )
-        const updatedTargetChildren = Utils.pathOr(
-          [],
-          ['rootElement', 'children'],
-          updatedUtopiaJSXComponents.find((comp) => getUtopiaID(comp.rootElement) === 'aaa'),
+      const element = utopiaJSXComponents.find((comp) => getUtopiaID(comp.rootElement) === 'aaa')
+      if (element != null) {
+        const targetChildren = Utils.pathOr([], ['rootElement', 'children'], element)
+        const updatedEditor = runLocalEditorAction(
+          editor,
+          derivedState,
+          defaultUserState,
+          workers,
+          reparentAction,
+          History.init(editor, derivedState),
+          dispatch,
+          emptyUiJsxCanvasContextData(),
         )
 
-        // check the number of children after reparenting
-        expect(updatedTopLevelElements).toHaveLength(topLevelElements.length - 1)
-        expect(updatedTargetChildren).toHaveLength(targetChildren.length + 1)
+        const updatedMainUIJSFile = updatedEditor.projectContents['/src/app.js']
+        if (isUIJSFile(updatedMainUIJSFile) && isRight(updatedMainUIJSFile.fileContents)) {
+          const updatedTopLevelElements = updatedMainUIJSFile.fileContents.value.topLevelElements
+          const updatedUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
+            updatedMainUIJSFile.fileContents.value,
+          )
+          const updatedElement = updatedUtopiaJSXComponents.find(
+            (comp) => getUtopiaID(comp.rootElement) === 'aaa',
+          )
+          if (updatedElement != null) {
+            const updatedTargetChildren = Utils.pathOr(
+              [],
+              ['rootElement', 'children'],
+              updatedElement,
+            )
 
-        // check if the reparented elements are really in their new parent
-        expect(updatedTargetChildren.find((child) => getUtopiaID(child) === 'jjj')).toBeDefined()
+            // check the number of children after reparenting
+            expect(updatedTopLevelElements).toHaveLength(topLevelElements.length - 1)
+            expect(updatedTargetChildren).toHaveLength(targetChildren.length + 1)
+
+            // check if the reparented elements are really in their new parent
+            expect(
+              updatedTargetChildren.find((child) => getUtopiaID(child) === 'jjj'),
+            ).toBeDefined()
+          } else {
+            chaiExpect.fail('couldn’t find element after updating.')
+          }
+        } else {
+          chaiExpect.fail('updated src/app.js file was the wrong type.')
+        }
       } else {
-        chaiExpect.fail('updated src/app.js file was the wrong type.')
+        chaiExpect.fail('couldn’t find element.')
       }
     } else {
       chaiExpect.fail('original src/app.js file was the wrong type.')

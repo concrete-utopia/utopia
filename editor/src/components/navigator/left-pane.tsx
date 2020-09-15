@@ -150,7 +150,7 @@ interface ThumbnailProps {
 
 const previewImageContainerPadding = 4
 
-class ThumbnailComponent extends ReactComponent<ThumbnailProps, {}> {
+class ThumbnailComponent extends ReactComponent<ThumbnailProps> {
   render() {
     const urlToRequest: string = `${thumbnailURL(this.props.projectId)}?lastUpdated=${
       this.props.thumbnailLastGenerated

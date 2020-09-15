@@ -100,9 +100,9 @@ function babelRewriteJSXArbitraryBlockCode(
   }
   function handleStringLiteral(
     path: BabelTraverse.NodePath<BabelTypes.JSXElement>,
-    value: object | null | undefined,
+    value: unknown,
   ): void {
-    if (BabelTypes.isStringLiteral(value)) {
+    if (typeof value === 'object' && BabelTypes.isStringLiteral(value)) {
       const uid = value.value
       const foundElementWithin = elementsWithin.find((e) => e.uid === uid)
       if (foundElementWithin != null) {

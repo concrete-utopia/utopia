@@ -1502,7 +1502,7 @@ function asErrorObject(e: unknown): Error {
   }
 }
 
-export class CanvasErrorBoundary extends React.PureComponent<CanvasErrorBoundaryProps, unknown> {
+export class CanvasErrorBoundary extends React.PureComponent<CanvasErrorBoundaryProps> {
   componentDidCatch(error: unknown, errorInfo: React.ErrorInfo) {
     this.props.reportError(this.props.uiFilePath, asErrorObject(error), errorInfo)
   }

@@ -618,7 +618,7 @@ const UnitPart = String.raw`[a-zA-Z%]*`
 
 function parseCSSNumericTypeString(
   input: string,
-  parseUnit: (input: string) => Either<string, CSSNumberUnit>,
+  parseUnit: (i: string) => Either<string, CSSNumberUnit>,
   defaultUnit: CSSNumberUnit | null = null,
 ): Either<string, CSSNumber> {
   const regex = String.raw`^\s*(${LeadingSign}${NumericPart})\s*(${UnitPart})\s*$`

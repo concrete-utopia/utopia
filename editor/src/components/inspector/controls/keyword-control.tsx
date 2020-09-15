@@ -49,15 +49,16 @@ export const KeywordControl = betterReactMemo<KeywordControlProps>(
     const [stateValue, setStateValue] = usePropControlledState<string>(value.value)
     const ref = React.useRef<HTMLInputElement>(null)
 
-    const getDisplayValue = () => {
-      return controlStyles.showContent && !controlStyles.mixed ? stateValue : ''
-    }
+    const { showContent, mixed: controlStylesMixed } = controlStyles
+    const getDisplayValue = React.useCallback(() => {
+      return showContent && !controlStylesMixed ? stateValue : ''
+    }, [controlStylesMixed, showContent, stateValue])
 
     const getValueString = (e: React.ChangeEvent<HTMLInputElement>): string => {
       return e.currentTarget.value
     }
 
-    const inputOnBlur = () => {
+    const inputOnBlur = React.useCallback(() => {
       const newValue = getDisplayValue()
       if (newValue === '') {
         onSubmitValue(emptyInputValue())
@@ -66,12 +67,15 @@ export const KeywordControl = betterReactMemo<KeywordControlProps>(
       } else {
         onSubmitValue(unknownInputValue(newValue))
       }
-    }
+    }, [getDisplayValue, onSubmitValue, validKeywords])
 
-    const inputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setStateValue(getValueString(e))
-      setMixed(false)
-    }
+    const inputOnChange = React.useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        setStateValue(getValueString(e))
+        setMixed(false)
+      },
+      [setMixed, setStateValue],
+    )
 
     const inputClassName = classNames('keyword-control', className)
 

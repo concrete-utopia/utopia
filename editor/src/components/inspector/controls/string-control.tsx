@@ -14,36 +14,46 @@ export interface StringControlOptions {
 export const StringControl = betterReactMemo(
   'StringControl',
   React.forwardRef<HTMLInputElement, DEPRECATEDControlProps<string>>(
-    ({ value: propsValue, ...props }, ref) => {
-      const [mixed, setMixed] = usePropControlledState<boolean>(props.controlStyles.mixed)
+    ({ value: propsValue, controlStyles, onBlur, onSubmitValue, ...props }, ref) => {
+      const [mixed, setMixed] = usePropControlledState<boolean>(controlStyles.mixed)
       const [editDisabled, setEditDisabled] = usePropControlledState<boolean>(
-        !props.controlStyles.interactive,
+        !controlStyles.interactive,
       )
       const [stateValue, setStateValue] = usePropControlledState<string>(propsValue)
 
-      const getDisplayValue = () => {
-        return props.controlStyles.showContent && !props.controlStyles.mixed ? stateValue : ''
-      }
+      const { showContent, mixed: controlStylesMixed } = controlStyles
+      const getDisplayValue = React.useCallback(() => {
+        return showContent && !controlStylesMixed ? stateValue : ''
+      }, [showContent, controlStylesMixed, stateValue])
 
-      const getValueString = (e: React.SyntheticEvent<HTMLInputElement>): string => {
-        return e.currentTarget.value
-      }
+      const getValueString = React.useCallback(
+        (e: React.SyntheticEvent<HTMLInputElement>): string => {
+          return e.currentTarget.value
+        },
+        [],
+      )
 
-      const inputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        if (props.onBlur != null) {
-          props.onBlur(e)
-        }
-        if (propsValue !== stateValue) {
-          props.onSubmitValue(stateValue)
-        }
-      }
+      const inputOnBlur = React.useCallback(
+        (e: React.FocusEvent<HTMLInputElement>) => {
+          if (onBlur != null) {
+            onBlur(e)
+          }
+          if (propsValue !== stateValue) {
+            onSubmitValue(stateValue)
+          }
+        },
+        [onBlur, onSubmitValue, propsValue, stateValue],
+      )
 
-      const inputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = getValueString(e)
-        setStateValue(value)
-        setMixed(false)
-        setEditDisabled(false)
-      }
+      const inputOnChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+          const value = getValueString(e)
+          setStateValue(value)
+          setMixed(false)
+          setEditDisabled(false)
+        },
+        [getValueString, setEditDisabled, setMixed, setStateValue],
+      )
 
       const inputClassName = classNames('string-control', props.controlClassName)
 

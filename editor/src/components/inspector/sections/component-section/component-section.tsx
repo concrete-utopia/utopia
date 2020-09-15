@@ -413,11 +413,6 @@ const RowForUnionControl = betterReactMemo(
       }
     })
 
-    const labelValue: SelectOption = {
-      value: controlToUse,
-      label: title,
-    }
-
     const onLabelChangeValue = React.useCallback(
       (option: SelectOption) => {
         if (option.value !== controlToUse) {
@@ -429,18 +424,24 @@ const RowForUnionControl = betterReactMemo(
 
     const simpleControlStyles = getControlStyles('simple')
 
-    const label = (
-      <PopupList
-        value={labelValue}
-        options={labelOptions}
-        onSubmitValue={onLabelChangeValue}
-        containerMode='showBorderOnHover'
-        controlStyles={simpleControlStyles}
-        style={{
-          maxWidth: '100%',
-          overflow: 'hidden',
-        }}
-      />
+    const label = React.useMemo(
+      () => (
+        <PopupList
+          value={{
+            value: controlToUse,
+            label: title,
+          }}
+          options={labelOptions}
+          onSubmitValue={onLabelChangeValue}
+          containerMode='showBorderOnHover'
+          controlStyles={simpleControlStyles}
+          style={{
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}
+        />
+      ),
+      [controlToUse, labelOptions, onLabelChangeValue, simpleControlStyles, title],
     )
 
     const labelAsRenderProp = React.useCallback(() => label, [label])
