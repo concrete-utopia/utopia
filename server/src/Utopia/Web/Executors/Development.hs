@@ -23,8 +23,7 @@ import           Data.Pool
 import           Data.Text
 import           Database.Persist.Sqlite
 import           Network.HTTP.Client         (Manager, defaultManagerSettings,
-                                              managerResponseTimeout,
-                                              newManager, responseTimeoutNone)
+                                              newManager)
 import           Network.HTTP.Client.TLS
 import qualified Network.Wreq                as WR
 import           Protolude
@@ -62,7 +61,6 @@ data DevServerResources = DevServerResources
                         , _awsResources    :: Maybe AWSResources
                         , _sessionState    :: SessionState
                         , _storeForMetrics :: Store
-                        , _packagerProxy   :: Manager
                         , _databaseMetrics :: DB.DatabaseMetrics
                         , _registryManager :: Manager
                         , _assetsCaches    :: AssetsCaches
@@ -230,9 +228,6 @@ innerServerExecutor (SaveProjectThumbnail user projectID thumbnail next) = do
 innerServerExecutor (GetProxyManager action) = do
   manager <- fmap _proxyManager ask
   return $ action manager
-innerServerExecutor (GetPackagerProxyManager action) = do
-  manager <- fmap _packagerProxy ask
-  return $ action manager
 innerServerExecutor (GetGithubProject owner repo action) = do
   zipball <- liftIO $ fetchRepoArchive owner repo
   return $ action zipball
@@ -342,7 +337,6 @@ initialiseResources = do
   _sessionState <- createSessionState _projectPool
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore
-  _packagerProxy <- newManager defaultManagerSettings { managerResponseTimeout = responseTimeoutNone }
   _databaseMetrics <- DB.createDatabaseMetrics _storeForMetrics
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders

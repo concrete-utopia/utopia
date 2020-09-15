@@ -37,7 +37,6 @@ initialiseTestResources = do
          , _awsResources = Nothing
          , _sessionState = sessionStore
          , _storeForMetrics = store
-         , _packagerProxy = proxyHttpManager
          , _databaseMetrics = dbMetrics
          , _registryManager = npmRegistryManager
          , _assetsCaches = testAssetsCaches

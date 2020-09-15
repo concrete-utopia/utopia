@@ -373,11 +373,6 @@ serveWebAppEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
   maybe (serveWebAppEndpointNotProxied notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 3000 []) possibleProxyManager
 
-servePackagerEndpoint :: ServerMonad Application
-servePackagerEndpoint = do
-  packagerProxyManager <- getPackagerProxyManager
-  return $ proxyApplication packagerProxyManager 5001 []
-
 getPackageJSONEndpoint :: Text -> ServerMonad Value
 getPackageJSONEndpoint javascriptPackageName = do
   packageMetadata <- getPackageJSON javascriptPackageName
@@ -465,7 +460,6 @@ unprotected = authenticate
          :<|> editorAssetsEndpoint "./sockjs-node" Nothing
          :<|> websiteAssetsEndpoint "./public/static"
          :<|> servePath "./public/.well-known" Nothing
-         :<|> servePackagerEndpoint
          :<|> serveWebAppEndpoint "./public"
 
 server :: ServerT API ServerMonad

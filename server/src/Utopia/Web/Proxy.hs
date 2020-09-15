@@ -52,13 +52,6 @@ sendProxiedRequest' webpackManager port sendResponse method headers segments = d
   sendResponse responseToClient
 
 {-|
-  Modifies the paths from the clients.
--}
-modifyRequestPathElements :: [Text] -> [Text]
-modifyRequestPathElements ("packager" : remainingSegments) = remainingSegments
-modifyRequestPathElements path                             = path
-
-{-|
   Takes the incoming request and repackages it as a request to webpack,
   then forwards the response from webpack back to the caller.
 -}
@@ -75,7 +68,7 @@ websocketProxy port pendingConnection = do
   let requestPathBytes = WS.requestPath $ WS.pendingRequest pendingConnection
   let headers = WS.requestHeaders $ WS.pendingRequest pendingConnection
   incomingConnection <- WS.acceptRequest pendingConnection
-  let proxiedPath = toS $ toLazyByteString $ encodePathSegments $ modifyRequestPathElements $ decodePathSegments requestPathBytes
+  let proxiedPath = toS $ toLazyByteString $ encodePathSegments $ decodePathSegments requestPathBytes
   WS.runClientWith "localhost" port proxiedPath WS.defaultConnectionOptions headers $ \outgoingConnection -> do
     let closeConnections = void (closeConnection incomingConnection >> closeConnection outgoingConnection)
     let forwardMessages fromConn toConn = void $ finally (forever (WS.receive fromConn >>= WS.send toConn)) closeConnections
