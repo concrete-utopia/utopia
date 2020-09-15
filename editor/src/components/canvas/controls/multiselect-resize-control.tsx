@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
@@ -16,6 +16,8 @@ import { GuidelineWithSnappingVector } from '../guideline'
 import { GuidelineControl } from './guideline-control'
 import { ControlProps } from './new-canvas-controls'
 import { ResizeRectangle } from './size-box'
+import { FlexLayoutHelpers } from '../../../core/layout/layout-helpers'
+import { eitherToMaybe, right } from '../../../core/shared/either'
 
 interface MultiselectResizeProps extends ControlProps {
   dragState: ResizeDragState | null
@@ -172,6 +174,10 @@ export class MultiselectResizeControl extends React.Component<
               metadata={this.props.componentMetadata}
               onResizeStart={this.onResizeStart}
               testID={'component-resize-control-0'}
+              labels={{
+                vertical: 'width',
+                horizontal: 'height',
+              }}
             />
             {...guidelineElements}
           </>
@@ -199,6 +205,10 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
 
   render() {
     return this.props.selectedViews.map((view, index) => {
+      const labels = {
+        vertical: 'width',
+        horizontal: 'height',
+      }
       const frame = MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
       if (frame != null) {
         return (
@@ -224,6 +234,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
               metadata={this.props.componentMetadata}
               onResizeStart={this.props.onResizeStart}
               testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
+              labels={labels}
             />
           </>
         )
