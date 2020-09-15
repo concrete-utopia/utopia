@@ -21,9 +21,7 @@ import           Control.Monad.RWS.Strict
 import           Data.IORef
 import           Data.Pool
 import           Database.Persist.Sqlite
-import           Network.HTTP.Client         (Manager, defaultManagerSettings,
-                                              managerResponseTimeout,
-                                              newManager, responseTimeoutNone)
+import           Network.HTTP.Client         (Manager, newManager)
 import           Network.HTTP.Client.TLS
 import           Protolude
 import           Servant
@@ -54,7 +52,6 @@ data ProductionServerResources = ProductionServerResources
                                , _sessionState    :: SessionState
                                , _serverPort      :: Int
                                , _storeForMetrics :: Store
-                               , _packagerProxy   :: Manager
                                , _databaseMetrics :: DB.DatabaseMetrics
                                , _registryManager :: Manager
                                , _assetsCaches    :: AssetsCaches
@@ -167,9 +164,6 @@ innerServerExecutor (SaveProjectThumbnail user projectID thumbnail next) = do
   return next
 innerServerExecutor (GetProxyManager action) = do
   return $ action Nothing
-innerServerExecutor (GetPackagerProxyManager action) = do
-  manager <- fmap _packagerProxy ask
-  return $ action manager
 innerServerExecutor (GetGithubProject owner repo action) = do
   zipball <- liftIO $ fetchRepoArchive owner repo
   return $ action zipball
@@ -264,7 +258,6 @@ initialiseResources = do
   _sessionState <- createSessionState _projectPool
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore
-  _packagerProxy <- newManager defaultManagerSettings { managerResponseTimeout = responseTimeoutNone }
   _databaseMetrics <- DB.createDatabaseMetrics _storeForMetrics
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders

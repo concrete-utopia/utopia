@@ -142,8 +142,6 @@ type WebsiteAssetsAPI = "static" :> RawM
 
 type SSLAPI = ".well-known" :> RawM
 
-type PackagerAPI = "packager" :> RawM
-
 type WebsiteAPI = RawM
 
 {-
@@ -187,7 +185,6 @@ type Unprotected = AuthenticateAPI
               :<|> WebpackSockJSAPI
               :<|> WebsiteAssetsAPI
               :<|> SSLAPI
-              :<|> PackagerAPI
               :<|> WebsiteAPI
 
 type API = (AuthCookie :> Protected)
