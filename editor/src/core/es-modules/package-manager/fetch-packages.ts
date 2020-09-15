@@ -128,7 +128,7 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
   return result
 }
 
-interface NodeFetchResult {
+export interface NodeFetchResult {
   dependenciesWithError: Array<NpmDependency>
   dependenciesNotFound: Array<NpmDependency>
   nodeModules: NodeModules

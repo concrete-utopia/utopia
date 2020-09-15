@@ -9,8 +9,8 @@ import {
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
-import { getControlsForExternalDependencies } from '../../core/property-controls/property-controls-utils'
-import { NodeModules, esCodeFile } from '../../core/shared/project-file-types'
+import { getControlsForExternalDependencies, sendPropertyControlsInfoRequest } from '../../core/property-controls/property-controls-utils'
+import { NodeModules, esCodeFile, ProjectContents } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
 import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
@@ -149,12 +149,12 @@ export function incorporateBuildResult(
 }
 
 export function generateCodeResultCache(
+  projectContents: ProjectContents,
   existingModules: MultiFileBuildResult,
   updatedModules: MultiFileBuildResult,
   exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
-  npmDependencies: NpmDependency[],
   buildType: BuildType,
   mainUiFileName: string | null,
 ): CodeResultCache {
@@ -183,6 +183,9 @@ export function generateCodeResultCache(
     // (maybe even in the graph itself)
     incorporateBuildResult(nodeModules, modules)
   }
+
+  // Trigger async call to build the property controls info.
+  sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents)
 
   const requireFn = getMemoizedRequireFn(nodeModules, dispatch)
 

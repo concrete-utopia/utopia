@@ -25,17 +25,8 @@ import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import { bimapEither } from '../../../core/shared/either'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import Utils from '../../../utils/utils'
 import { CanvasAction } from '../../canvas/canvas-types'
-import { produceCanvasTransientState } from '../../canvas/canvas-utils'
-import { removeConsoleProxy } from '../../canvas/console-proxy'
-import {
-  pickUiJsxCanvasProps,
-  UiJsxCanvas,
-  UiJsxCanvasContext,
-  UiJsxCanvasContextData,
-} from '../../canvas/ui-jsx-canvas'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId } from '../../preview/preview-pane'
 import * as TP from '../../../core/shared/template-path'
@@ -66,6 +57,7 @@ import {
 import { runLocalEditorAction } from './editor-update'
 import { arrayEquals, isBrowserEnvironment } from '../../../core/shared/utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
+import {UiJsxCanvasContextData} from '../../canvas/ui-jsx-canvas'
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -660,16 +652,6 @@ function removeNonExistingViewReferencesFromState(editorState: EditorState): Edi
     highlightedViews: updatedHighlightedViews,
     hiddenInstances: updatedHiddenInstances,
   }
-}
-
-function lostElements(
-  elementsToCheck: TemplatePath[],
-  metadata: ComponentMetadata[],
-): TemplatePath[] {
-  return elementsToCheck.filter((path) => {
-    const renderedFrame = MetadataUtils.getFrame(path, metadata)
-    return renderedFrame == null || renderedFrame.height <= 0 || renderedFrame.width <= 0
-  })
 }
 
 function filterNonExistingViews(

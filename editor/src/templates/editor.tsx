@@ -58,7 +58,6 @@ import { LinterResultMessage } from '../core/workers/linter/linter-worker'
 import {
   RealLinterWorker,
   RealParserPrinterWorker,
-  RealValuesWorker,
   RealWatchdogWorker,
   UtopiaTsWorkersImplementation,
 } from '../core/workers/workers'
@@ -118,7 +117,6 @@ export class Editor {
         new RealParserPrinterWorker(),
         new RealLinterWorker(),
         watchdogWorker,
-        new RealValuesWorker(),
       ),
       dispatch: this.boundDispatch,
     }
@@ -139,12 +137,12 @@ export class Editor {
           let actions: Array<EditorAction> = []
           if (!this.storedState.editor.safeMode) {
             const codeResultCache = generateCodeResultCache(
+              this.storedState.editor.projectContents,
               this.storedState.editor.codeResultCache.projectModules,
               msg.buildResult,
               msg.exportsInfo,
               this.storedState.editor.nodeModules.files,
               this.boundDispatch,
-              dependenciesWithEditorRequirements(this.storedState.editor.projectContents),
               msg.buildType,
               getMainUIFromModel(this.storedState.editor),
             )
@@ -201,9 +199,6 @@ export class Editor {
     this.storedState.workers.addLinterResultEventListener((e) => handleLinterMessage(e.data))
     this.storedState.workers.addHeartbeatRequestEventListener((e) =>
       handleHeartbeatRequestMessage(e.data),
-    )
-    this.storedState.workers.addPropertyControlsInfoEventListener((e) =>
-      handlePropertyControlsMessage(e.data),
     )
 
     getLoginState().then((loginState) => {
@@ -266,10 +261,14 @@ export class Editor {
     })
   }
 
-  onMessage = (event: MessageEvent) => {
+  onMessage = (event: MessageEvent): void => {
     const eventData = event.data
     if (EditorActions.isSendPreviewModel(eventData)) {
       previewIsAlive(InternalPreviewTimeout)
+      this.boundDispatch([eventData], 'noone')
+    } else if (EditorActions.isPropertyControlsIFrameReady(eventData)) {
+      this.boundDispatch([eventData], 'noone')
+    } else if (EditorActions.isUpdatePropertyControlsInfo(eventData)) {
       this.boundDispatch([eventData], 'noone')
     }
   }

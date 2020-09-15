@@ -764,6 +764,10 @@ export interface UpdatePropertyControlsInfo {
   propertyControlsInfo: PropertyControlsInfo
 }
 
+export interface PropertyControlsIFrameReady {
+  action: 'PROPERTY_CONTROLS_IFRAME_READY'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -891,6 +895,7 @@ export type EditorAction =
   | SetPackageStatus
   | SetShortcut
   | UpdatePropertyControlsInfo
+  | PropertyControlsIFrameReady
 
 export type DispatchPriority =
   | 'everyone'

@@ -54,6 +54,9 @@ import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
 import { UserConfiguration } from '../user-configuration'
+import urljoin = require('url-join')
+import { PROPERTY_CONTROLS_INFO_BASE_URL } from '../../common/env-vars'
+import {PropertyControlsInfoIFrameID} from '../../core/property-controls/property-controls-utils'
 
 interface NumberSize {
   width: number
@@ -425,6 +428,7 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
       <ToastRenderer />
       <CanvasCursorComponent />
       <HelpTriangle />
+      <PropertyControlsInfoComponent />
     </SimpleFlexRow>
   )
 })
@@ -563,5 +567,26 @@ const ToastRenderer = betterReactMemo('ToastRenderer', () => {
         />
       ))}
     </FlexColumn>
+  )
+})
+
+const PropertyControlsInfoComponent = betterReactMemo('PropertyControlsInfoComponent', () => {
+  const iframeSrc = urljoin(PROPERTY_CONTROLS_INFO_BASE_URL, 'editor', 'property-controls-info.html')
+
+  return (
+    <iframe
+      key={PropertyControlsInfoIFrameID}
+      id={PropertyControlsInfoIFrameID}
+      width='0px'
+      height='0px'
+      src={iframeSrc}
+      allow='autoplay'
+      style={{
+        backgroundColor: 'transparent',
+        width: '0px',
+        height: '0px',
+        borderWidth: 0,
+      }}
+    />
   )
 })

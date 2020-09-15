@@ -241,11 +241,11 @@ describe('Generating codeResultCache', () => {
   it('Generates codeResultCache for single file build result', () => {
     const codeResultCache = generateCodeResultCache(
       {},
+      {},
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
       {},
       NO_OP,
-      [],
       'incremental',
       null,
     )
@@ -255,11 +255,11 @@ describe('Generating codeResultCache', () => {
   it('Generates codeResultCache for multi file build result', () => {
     const codeResultCache = generateCodeResultCache(
       {},
+      {},
       SampleMultiFileBuildResult,
       SampleMultiFileExportsInfo,
       SampleNodeModules,
       NO_OP,
-      [],
       'incremental',
       null,
     )
@@ -269,11 +269,11 @@ describe('Generating codeResultCache', () => {
   it('Generates codeResultCache for build error', () => {
     const codeResultCache = generateCodeResultCache(
       {},
+      {},
       SampleBuildResultWithError,
       SampleExportsInfoWithError,
       {},
       NO_OP,
-      [],
       'incremental',
       null,
     )
@@ -285,11 +285,11 @@ describe('Creating require function', () => {
   it('Creates require function for single file build result', () => {
     const codeResultCache = generateCodeResultCache(
       {},
+      {},
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
       {},
       NO_OP,
-      [],
       'incremental',
       null,
     )
@@ -299,11 +299,11 @@ describe('Creating require function', () => {
   it('Creates require function for multi file build result', () => {
     const codeResultCache = generateCodeResultCache(
       {},
+      {},
       SampleMultiFileBuildResult,
       SampleMultiFileExportsInfo,
       {},
       NO_OP,
-      [],
       'incremental',
       null,
     )
@@ -314,11 +314,11 @@ describe('Creating require function', () => {
   it('Require throws exception for module code', () => {
     const codeResultCache = generateCodeResultCache(
       {},
+      {},
       SampleBuildResultWithException,
       SampleExportsInfoWithException,
       {},
       NO_OP,
-      [],
       'incremental',
       null,
     )
@@ -328,11 +328,11 @@ describe('Creating require function', () => {
   it('Require throws exception for import from non-existing module', () => {
     const codeResultCache = generateCodeResultCache(
       {},
+      {},
       SampleSingleFileBuildResult,
       SampleSingleFileExportsInfo,
       {},
       NO_OP,
-      [],
       'incremental',
       null,
     )

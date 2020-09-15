@@ -16,7 +16,6 @@ import {
 } from './watchdog-worker'
 import { UtopiaTsWorkers, FileContent } from './common/worker-types'
 import { ExportsInfo, MultiFileBuildResult } from './ts/ts-worker'
-import { createGetPropertyControlsInfoMessage } from './values-worker'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   private bundlerWorker: NewBundlerWorker
@@ -26,7 +25,6 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
     private parserPrinterWorker: ParserPrinterWorker,
     private linterWorker: LinterWorker,
     private watchdogWorker: WatchdogWorker,
-    private valuesWorker: ValuesWorker,
   ) {
     this.bundlerWorker = new NewBundlerWorker(bundlerWorker)
   }
@@ -85,28 +83,6 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
 
   sendHeartbeatResponseMessage(id: NodeJS.Timer, projectId: string, safeMode: boolean): void {
     this.watchdogWorker.sendHeartbeatResponseMessage(id, projectId, safeMode)
-  }
-
-  sendGetPropertyControlsInfoMessage(
-    nodeModules: NodeModules,
-    exportsInfo: ReadonlyArray<ExportsInfo>,
-    projectModules: MultiFileBuildResult,
-    npmDependencies: ReadonlyArray<NpmDependency>,
-  ): void {
-    this.valuesWorker.sendGetPropertyControlsInfoMessage(
-      nodeModules,
-      exportsInfo,
-      projectModules,
-      npmDependencies,
-    )
-  }
-
-  addPropertyControlsInfoEventListener(handler: (e: MessageEvent) => void): void {
-    this.valuesWorker.addPropertyControlsInfoEventListener(handler)
-  }
-
-  removePropertyControlsInfoEventListener(handler: (e: MessageEvent) => void): void {
-    this.valuesWorker.removePropertyControlsInfoEventListener(handler)
   }
 }
 
@@ -293,65 +269,5 @@ export class MockUtopiaTsWorkers implements UtopiaTsWorkers {
   sendHeartbeatResponseMessage(_id: NodeJS.Timer, _projectId: string): void {
     // empty
   }
-
-  sendGetPropertyControlsInfoMessage(
-    _nodeModules: NodeModules,
-    _exportsInfo: ReadonlyArray<ExportsInfo>,
-    _projectModules: MultiFileBuildResult,
-    _npmDependencies: ReadonlyArray<NpmDependency>,
-  ): void {
-    // empty
-  }
-
-  addPropertyControlsInfoEventListener(_handler: (e: MessageEvent) => void): void {
-    // empty
-  }
-
-  removePropertyControlsInfoEventListener(_handler: (e: MessageEvent) => void): void {
-    // empty
-  }
 }
 
-export interface ValuesWorker {
-  sendGetPropertyControlsInfoMessage(
-    nodeModules: NodeModules,
-    exportsInfo: ReadonlyArray<ExportsInfo>,
-    projectModules: MultiFileBuildResult,
-    npmDependencies: ReadonlyArray<NpmDependency>,
-  ): void
-
-  addPropertyControlsInfoEventListener(handler: (e: MessageEvent) => void): void
-
-  removePropertyControlsInfoEventListener(handler: (e: MessageEvent) => void): void
-}
-
-export class RealValuesWorker implements ValuesWorker {
-  private worker: Worker
-  constructor() {
-    this.worker = workerForFile('editor/valuesWorker.js')
-  }
-
-  sendGetPropertyControlsInfoMessage(
-    nodeModules: NodeModules,
-    exportsInfo: ReadonlyArray<ExportsInfo>,
-    projectModules: MultiFileBuildResult,
-    npmDependencies: ReadonlyArray<NpmDependency>,
-  ): void {
-    this.worker.postMessage(
-      createGetPropertyControlsInfoMessage(
-        nodeModules,
-        exportsInfo,
-        projectModules,
-        npmDependencies,
-      ),
-    )
-  }
-
-  addPropertyControlsInfoEventListener(handler: (e: MessageEvent) => void): void {
-    this.worker.addEventListener('message', handler)
-  }
-
-  removePropertyControlsInfoEventListener(handler: (e: MessageEvent) => void): void {
-    this.worker.removeEventListener('message', handler)
-  }
-}

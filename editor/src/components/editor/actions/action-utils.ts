@@ -79,6 +79,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_PACKAGE_STATUS':
     case 'SET_SHORTCUT':
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
+    case 'PROPERTY_CONTROLS_IFRAME_READY':
       return true
 
     case 'NEW':

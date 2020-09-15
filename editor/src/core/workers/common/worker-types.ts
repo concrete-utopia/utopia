@@ -1,12 +1,10 @@
-import { NpmDependency, TypeDefinitions } from '../../shared/npm-dependency-types'
+import { TypeDefinitions } from '../../shared/npm-dependency-types'
 import {
   ProjectContents,
   UIJSFile,
   CodeFile,
   ParseSuccess,
-  NodeModules,
 } from '../../shared/project-file-types'
-import { ExportsInfo, MultiFileBuildResult } from '../ts/ts-worker'
 
 export type FileContent = string | UIJSFile | CodeFile
 
@@ -25,12 +23,4 @@ export interface UtopiaTsWorkers {
   initWatchdogWorker(projectID: string): void
   addHeartbeatRequestEventListener(handler: (e: MessageEvent) => void): void
   sendHeartbeatResponseMessage: (id: NodeJS.Timer, projectId: string, safeMode: boolean) => void
-  sendGetPropertyControlsInfoMessage: (
-    nodeModules: NodeModules,
-    exportsInfo: ReadonlyArray<ExportsInfo>,
-    projectModules: MultiFileBuildResult,
-    npmDependencies: ReadonlyArray<NpmDependency>,
-  ) => void
-  addPropertyControlsInfoEventListener: (handler: (e: MessageEvent) => void) => void
-  removePropertyControlsInfoEventListener: (handler: (e: MessageEvent) => void) => void
 }
