@@ -1,12 +1,13 @@
 import * as React from 'react'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { colorTheme } from '../../../uuiui'
 
 interface PropertyTargetSelector {
   top: number
   left: number
-  options: string[]
+  options: LayoutTargetableProp[]
   selected: number
-  setOptionsCallback: (options: string[]) => void
+  setOptionsCallback: (options: Array<LayoutTargetableProp>) => void
 }
 
 export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Element => {

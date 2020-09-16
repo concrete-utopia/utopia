@@ -174,10 +174,12 @@ export class MultiselectResizeControl extends React.Component<
               metadata={this.props.componentMetadata}
               onResizeStart={this.onResizeStart}
               testID={'component-resize-control-0'}
-              labels={{
-                vertical: 'width',
-                horizontal: 'height',
-              }}
+              labels={
+                {
+                  vertical: 'Width',
+                  horizontal: 'Height',
+                } as const
+              }
               propertyTargetOptions={this.props.propertyTargetOptions}
               propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
               setTargetOptionsArray={this.props.setTargetOptionsArray}
@@ -210,9 +212,9 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
   render() {
     return this.props.selectedViews.map((view, index) => {
       const labels = {
-        vertical: 'width',
-        horizontal: 'height',
-      }
+        vertical: 'Width',
+        horizontal: 'Height',
+      } as const
       const frame = MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
       if (frame != null) {
         return (

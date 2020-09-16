@@ -29,6 +29,10 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { SizeBoxLabel } from './size-box-label'
 import { PropertyTargetSelector } from './property-target-selector'
+import {
+  LayoutFlexElementProp,
+  LayoutTargetableProp,
+} from '../../../core/layout/layout-helpers-new'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -134,9 +138,9 @@ interface ResizeEdgeProps {
     horizontal: string
   }
   dragState: DragState | null
-  propertyTargetOptions: Array<string>
+  propertyTargetOptions: Array<LayoutTargetableProp>
   propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<string>) => void
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 interface ResizeEdgeState {
@@ -222,8 +226,8 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
             }
             options={
               this.props.direction === 'horizontal'
-                ? ['height', 'minHeight', 'maxHeight']
-                : ['width', 'minWidth', 'maxWidth']
+                ? ['Height', 'minHeight', 'maxHeight']
+                : ['Width', 'minWidth', 'maxWidth']
             }
             selected={this.props.propertyTargetSelectedIndex}
             setOptionsCallback={this.props.setTargetOptionsArray}
@@ -245,12 +249,12 @@ interface ResizeLinesProps {
   dragState: DragState | null
   color?: string
   labels: {
-    vertical: string
-    horizontal: string
+    vertical: 'Width' | 'FlexFlexBasis' | 'FlexCrossBasis'
+    horizontal: 'Height' | 'FlexFlexBasis' | 'FlexCrossBasis'
   }
-  propertyTargetOptions: Array<string>
+  propertyTargetOptions: Array<LayoutTargetableProp>
   propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<string>) => void
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 const LineOffset = 6
@@ -500,12 +504,12 @@ interface ResizeRectangleProps {
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
   testID: string
   labels: {
-    vertical: string
-    horizontal: string
+    vertical: 'Width' | 'FlexFlexBasis' | 'FlexCrossBasis'
+    horizontal: 'Height' | 'FlexFlexBasis' | 'FlexCrossBasis'
   }
-  propertyTargetOptions: Array<string>
+  propertyTargetOptions: Array<LayoutTargetableProp>
   propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<string>) => void
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {

@@ -40,6 +40,7 @@ import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { usePrevious } from '../../editor/hook-utils'
 import { KeysPressed } from '../../../utils/keyboard'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -61,9 +62,9 @@ export interface ControlProps {
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
   elementsThatRespectLayout: Array<TemplatePath>
-  propertyTargetOptions: Array<string>
+  propertyTargetOptions: Array<LayoutTargetableProp>
   propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<string>) => void
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 interface NewCanvasControlsProps {
@@ -71,8 +72,8 @@ interface NewCanvasControlsProps {
   cursor: CSSCursor
 }
 
-function useArrayAndIndex(defaultTargets: string[]) {
-  const [targets, setTargets] = React.useState(defaultTargets)
+function useArrayAndIndex(defaultTargets: LayoutTargetableProp[]) {
+  const [targets, setTargets] = React.useState<LayoutTargetableProp[]>(defaultTargets)
   const [targetIndex, setTargetIndex] = React.useState(0)
 
   function incrementTargetIndex() {
@@ -83,7 +84,7 @@ function useArrayAndIndex(defaultTargets: string[]) {
     }
   }
 
-  function setTargetsResetIndex(newTargets: string[]) {
+  function setTargetsResetIndex(newTargets: LayoutTargetableProp[]) {
     if (!shallowEqual(targets, newTargets)) {
       setTargets(newTargets)
       setTargetIndex(0)
@@ -93,7 +94,7 @@ function useArrayAndIndex(defaultTargets: string[]) {
   return [targets, targetIndex, setTargetsResetIndex, incrementTargetIndex] as const
 }
 
-function useTargetSelector(defaultTargets: string[], keysPressed: KeysPressed) {
+function useTargetSelector(defaultTargets: LayoutTargetableProp[], keysPressed: KeysPressed) {
   const [targets, targetIndex, setTargets, incrementTargetIndex] = useArrayAndIndex(defaultTargets)
 
   const shiftPressed = keysPressed.shift
@@ -124,7 +125,7 @@ export const NewCanvasControls = betterReactMemo(
     }))
 
     const [targets, targetIndex, setTargetOptionsArray] = useTargetSelector(
-      ['width', 'minWidth', 'maxWidth'],
+      ['Width', 'minWidth', 'maxWidth'],
       canvasControlProps.editor.keysPressed,
     )
 
@@ -202,9 +203,9 @@ interface NewCanvasControlsClassProps {
   canvasOffset: CanvasPoint
   animationEnabled: boolean
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
-  propertyTargetOptions: Array<string>
+  propertyTargetOptions: Array<LayoutTargetableProp>
   propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<string>) => void
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {

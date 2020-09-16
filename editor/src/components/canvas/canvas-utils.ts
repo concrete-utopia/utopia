@@ -21,6 +21,7 @@ import {
   LayoutProp,
   pinnedPropForFramePoint,
   LayoutPinnedProp,
+  LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
 import {
   maybeSwitchLayoutProps,
@@ -32,6 +33,7 @@ import {
 import {
   findElementAtPath,
   findJSXElementAtPath,
+  getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import {
@@ -483,29 +485,34 @@ export function updateFramesOfScenesAndComponents(
                 if (parentElement == null) {
                   throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
                 }
-                // Flex based layout.
-                const possibleFlexProps = FlexLayoutHelpers.convertWidthHeightToFlex(
-                  frameAndTarget.newSize.width,
-                  frameAndTarget.newSize.height,
-                  element.props,
-                  right(parentElement.props),
-                  frameAndTarget.edgePosition,
+
+                const currentAttributeToChange =
+                  eitherToMaybe(
+                    getSimpleAttributeAtPath(
+                      right(element.props),
+                      createLayoutPropertyPath(frameAndTarget.targetProperty),
+                    ),
+                  ) ?? 0
+
+                const newAttributeValue = jsxAttributeValue(
+                  currentAttributeToChange + frameAndTarget.delta,
                 )
-                forEachRight(possibleFlexProps, (flexProps) => {
-                  const { flexBasis, crossBasis } = flexProps
-                  if (flexBasis != null) {
-                    propsToSet.push({
-                      path: createLayoutPropertyPath('FlexFlexBasis'),
-                      value: jsxAttributeValue(flexBasis),
-                    })
-                  }
-                  if (crossBasis != null) {
-                    propsToSet.push({
-                      path: createLayoutPropertyPath('FlexCrossBasis'),
-                      value: jsxAttributeValue(crossBasis),
-                    })
-                  }
+
+                propsToSet.push({
+                  path: createLayoutPropertyPath(frameAndTarget.targetProperty),
+                  value: newAttributeValue,
                 })
+
+                propsToSkip.push(
+                  createLayoutPropertyPath('Width'),
+                  createLayoutPropertyPath('Height'),
+                  createLayoutPropertyPath('minWidth'),
+                  createLayoutPropertyPath('minHeight'),
+                  createLayoutPropertyPath('maxWidth'),
+                  createLayoutPropertyPath('maxHeight'),
+                  createLayoutPropertyPath('FlexCrossBasis'),
+                  createLayoutPropertyPath('FlexFlexBasis'),
+                )
               }
               break
             default:
@@ -1420,7 +1427,10 @@ export function produceResizeCanvasTransientState(
           editorState.jsxMetadataKILLME,
         )
         if (isFlexContainer) {
-          framesAndTargets.push(flexResizeChange(target, roundedFrame, dragState.edgePosition))
+          const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
+            ? dragState.drag?.x ?? 0
+            : dragState.drag?.y ?? 0
+          framesAndTargets.push(flexResizeChange(target, dragState.targetProperty, newDelta))
         } else {
           framesAndTargets.push(pinFrameChange(target, roundedFrame, dragState.edgePosition))
         }
@@ -1460,6 +1470,10 @@ export function produceResizeCanvasTransientState(
   }
 }
 
+export function isTargetPropertyHorizontal(edgePosition: EdgePosition): boolean {
+  return edgePosition.x !== 0.5
+}
+
 export function produceResizeSingleSelectCanvasTransientState(
   editorState: EditorState,
   parseSuccess: ParseSuccess,
@@ -1494,7 +1508,10 @@ export function produceResizeSingleSelectCanvasTransientState(
       editorState.jsxMetadataKILLME,
     )
     if (isFlexContainer) {
-      framesAndTargets.push(flexResizeChange(elementToTarget, roundedFrame, dragState.edgePosition))
+      const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
+        ? dragState.drag?.x ?? 0
+        : dragState.drag?.y ?? 0
+      framesAndTargets.push(flexResizeChange(elementToTarget, dragState.targetProperty, newDelta))
     } else {
       const edgePosition = dragState.centerBasedResize
         ? ({ x: 0.5, y: 0.5 } as EdgePosition)
@@ -1785,7 +1802,7 @@ export function getFrameChange(
   isParentFlex: boolean,
 ): PinOrFlexFrameChange {
   if (isParentFlex) {
-    return flexResizeChange(target, newFrame, null)
+    return flexResizeChange(target, 'FlexFlexBasis', 0) // KILLME
   } else {
     return pinFrameChange(target, newFrame, null)
   }

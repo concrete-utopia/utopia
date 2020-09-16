@@ -279,7 +279,7 @@ export function adjustAllSelectedFrames(
             editor.jsxMetadataKILLME,
           )
           if (hasFlexParent) {
-            return flexResizeChange(view, newFrame)
+            return flexResizeChange(view, 'FlexFlexBasis', adjustment * directionModifier)
           } else {
             return pinFrameChange(view, newFrame)
           }

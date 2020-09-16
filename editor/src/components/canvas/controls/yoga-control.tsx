@@ -76,9 +76,12 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
       return null
     }
 
-    let labels = {
-      vertical: 'flexBasis',
-      horizontal: 'crossBasis',
+    let labels: {
+      vertical: 'FlexFlexBasis' | 'FlexCrossBasis'
+      horizontal: 'FlexFlexBasis' | 'FlexCrossBasis'
+    } = {
+      vertical: 'FlexFlexBasis',
+      horizontal: 'FlexCrossBasis',
     }
     const parentPath = TP.parentPath(this.props.target)
     const parentElement = findJSXElementAtPath(
@@ -91,13 +94,13 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
       if (flexDirection === 'vertical') {
         // column, column-reverse
         labels = {
-          horizontal: 'crossBasis',
-          vertical: 'flexBasis',
+          horizontal: 'FlexCrossBasis',
+          vertical: 'FlexFlexBasis',
         }
       } else {
         labels = {
-          vertical: 'flexBasis',
-          horizontal: 'crossBasis',
+          vertical: 'FlexFlexBasis',
+          horizontal: 'FlexCrossBasis',
         }
       }
     }
