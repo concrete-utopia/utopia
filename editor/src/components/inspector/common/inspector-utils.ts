@@ -101,6 +101,8 @@ export function useModelControlledTransformableState<T>(
       setLocalState(newValue)
       setDirty(true)
     },
+    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [localState, onSubmitValue, onTransientSubmitValue],
   )
 
