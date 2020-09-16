@@ -133,6 +133,9 @@ interface ResizeEdgeProps {
     horizontal: string
   }
   dragState: DragState | null
+  propertyTargetOptions: Array<string>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<string>) => void
 }
 
 interface ResizeEdgeState {
@@ -216,8 +219,8 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
                   : 10
                 : -10)
             }
-            options={['hello', 'egy', 'ketto']}
-            selected={1}
+            options={this.props.propertyTargetOptions}
+            selected={this.props.propertyTargetSelectedIndex}
           />
         )}
       </React.Fragment>
@@ -486,6 +489,9 @@ interface ResizeRectangleProps {
     vertical: string
     horizontal: string
   }
+  propertyTargetOptions: Array<string>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<string>) => void
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {

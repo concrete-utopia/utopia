@@ -178,7 +178,11 @@ export class MultiselectResizeControl extends React.Component<
                 vertical: 'width',
                 horizontal: 'height',
               }}
+              propertyTargetOptions={this.props.propertyTargetOptions}
+              propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
+              setTargetOptionsArray={this.props.setTargetOptionsArray}
             />
+
             {...guidelineElements}
           </>
         )
@@ -235,6 +239,9 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
               onResizeStart={this.props.onResizeStart}
               testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
               labels={labels}
+              propertyTargetOptions={this.props.propertyTargetOptions}
+              propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
+              setTargetOptionsArray={this.props.setTargetOptionsArray}
             />
           </>
         )

@@ -123,6 +123,9 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         onResizeStart={Utils.NO_OP}
         testID={`component-resize-control-${TP.toComponentId(this.props.target)}-0`}
         labels={labels}
+        propertyTargetOptions={this.props.propertyTargetOptions}
+        propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
+        setTargetOptionsArray={this.props.setTargetOptionsArray}
       />
     )
   }
