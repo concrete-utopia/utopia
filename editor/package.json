@@ -15,7 +15,7 @@
     "lint": "npx eslint \"src/**/*.{js,ts,tsx}\"",
     "test": "tsc --noEmit && npm run --silent clean && npm run jest && npm run lint",
     "jest": "jest --config ./jest.config.js",
-    "test-ci": "tsc && NODE_OPTIONS=--max_old_space_size=6656 xvfb-run -a npm run jest -- --maxWorkers=1 && npm run lint",
+    "test-ci": "tsc --noEmit && NODE_OPTIONS=--max_old_space_size=6656 xvfb-run -a npm run jest -- --maxWorkers=1 && npm run lint",
     "test-debug": "node --inspect-brk node_modules/.bin/jest --config ./jest.config.js --runInBand",
     "test-watch": "npm run jest -- --watch",
     "test-update-snapshot": "npm run jest -- --updateSnapshot",
