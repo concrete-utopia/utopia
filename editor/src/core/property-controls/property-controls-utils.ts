@@ -310,10 +310,15 @@ export function getPropertyControlsForTarget(
 export const PropertyControlsInfoIFrameID = 'property-controls-info-frame'
 
 let propertyControlsIFrameReady: boolean = false
+let propertyControlsIFrameAvailable: boolean = false
 let lastPropertyControlsInfoSendID: number | undefined = undefined
 
 export function setPropertyControlsIFrameReady(value: boolean): void {
   propertyControlsIFrameReady = value
+}
+
+export function setPropertyControlsIFrameAvailable(value: boolean): void {
+  propertyControlsIFrameAvailable = value
 }
 
 export function sendPropertyControlsInfoRequest(
@@ -324,8 +329,10 @@ export function sendPropertyControlsInfoRequest(
   sendToIFrame()
 
   function scheduleSend(): void {
-    window.clearTimeout(lastPropertyControlsInfoSendID)
-    lastPropertyControlsInfoSendID = window.setTimeout(async () => sendToIFrame(), 500)
+    if (propertyControlsIFrameAvailable) {
+      window.clearTimeout(lastPropertyControlsInfoSendID)
+      lastPropertyControlsInfoSendID = window.setTimeout(async () => sendToIFrame(), 500)
+    }
   }
 
   function sendToIFrame(): void {

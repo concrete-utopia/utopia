@@ -56,7 +56,7 @@ import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
 import { UserConfiguration } from '../user-configuration'
 import urljoin = require('url-join')
 import { PROPERTY_CONTROLS_INFO_BASE_URL } from '../../common/env-vars'
-import {PropertyControlsInfoIFrameID} from '../../core/property-controls/property-controls-utils'
+import {PropertyControlsInfoIFrameID, setPropertyControlsIFrameAvailable} from '../../core/property-controls/property-controls-utils'
 
 interface NumberSize {
   width: number
@@ -64,12 +64,7 @@ interface NumberSize {
 }
 
 export interface EditorProps {
-  dispatch: EditorDispatch
-  editorState: EditorState
-  derivedState: DerivedState
-  stateHistory: StateHistory
-  loginState: LoginState
-  tsWorker: Worker
+  propertyControlsInfoSupported: boolean
 }
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
@@ -79,7 +74,7 @@ const EmptyConsoleLogs: Array<ConsoleLog> = []
 let consoleLogTimeoutID: number | null = null
 let canvasConsoleLogsVariable: Array<ConsoleLog> = EmptyConsoleLogs
 
-export const EditorComponentInner = betterReactMemo('EditorComponentInner', () => {
+export const EditorComponentInner = betterReactMemo('EditorComponentInner', (props: EditorProps) => {
   const editorStoreRef = useRefEditorState((store) => store)
 
   const onWindowMouseDown = React.useCallback(
@@ -270,6 +265,10 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
     [dispatch, editorStoreRef],
   )
 
+  React.useEffect(() => {
+    setPropertyControlsIFrameAvailable(props.propertyControlsInfoSupported)
+  })
+
   return (
     <SimpleFlexRow
       className='editor-main-vertical-and-modals'
@@ -428,7 +427,7 @@ export const EditorComponentInner = betterReactMemo('EditorComponentInner', () =
       <ToastRenderer />
       <CanvasCursorComponent />
       <HelpTriangle />
-      <PropertyControlsInfoComponent />
+      {props.propertyControlsInfoSupported ? <PropertyControlsInfoComponent /> : null}
     </SimpleFlexRow>
   )
 })
@@ -450,10 +449,10 @@ const ModalComponent = betterReactMemo('ModalComponent', (): React.ReactElement<
   return null
 })
 
-export function EditorComponent() {
+export function EditorComponent(props: EditorProps) {
   return (
     <DndProvider backend={Backend}>
-      <EditorComponentInner />
+      <EditorComponentInner {...props} />
     </DndProvider>
   )
 }
