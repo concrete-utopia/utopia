@@ -85,8 +85,8 @@ function useArrayAndIndex(defaultTargets: string[]) {
 
   function setTargetsResetIndex(newTargets: string[]) {
     if (!shallowEqual(targets, newTargets)) {
+      setTargets(newTargets)
       setTargetIndex(0)
-      setTargets(targets)
     }
   }
 

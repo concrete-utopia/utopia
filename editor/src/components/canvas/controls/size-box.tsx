@@ -219,8 +219,13 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
                   : 10
                 : -10)
             }
-            options={this.props.propertyTargetOptions}
+            options={
+              this.props.direction === 'horizontal'
+                ? ['height', 'minHeight', 'maxHeight']
+                : ['width', 'minWidth', 'maxWidth']
+            }
             selected={this.props.propertyTargetSelectedIndex}
+            setOptionsCallback={this.props.setTargetOptionsArray}
           />
         )}
       </React.Fragment>
@@ -242,6 +247,9 @@ interface ResizeLinesProps {
     vertical: string
     horizontal: string
   }
+  propertyTargetOptions: Array<string>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<string>) => void
 }
 
 const LineOffset = 6
@@ -315,8 +323,13 @@ const ResizeLines = (props: ResizeLinesProps) => {
                 : 10
               : -10)
           }
-          options={['hello', 'egy', 'ketto']}
-          selected={1}
+          options={
+            props.direction === 'vertical'
+              ? [props.labels.vertical, 'minWidth', 'maxWidth']
+              : [props.labels.horizontal, 'minHeight', 'maxHeight']
+          }
+          setOptionsCallback={props.setTargetOptionsArray}
+          selected={props.propertyTargetSelectedIndex}
         />
       )}
       {mouseCatcher}

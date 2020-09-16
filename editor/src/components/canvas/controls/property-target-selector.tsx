@@ -6,9 +6,12 @@ interface PropertyTargetSelector {
   left: number
   options: string[]
   selected: number
+  setOptionsCallback: (options: string[]) => void
 }
 
 export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Element => {
+  props.setOptionsCallback(props.options)
+
   return (
     <div
       style={{
