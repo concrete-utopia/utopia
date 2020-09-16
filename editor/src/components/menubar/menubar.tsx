@@ -168,13 +168,11 @@ export const Menubar = betterReactMemo('Menubar', () => {
           <MenuTile selected={false} menuExpanded={false} icon={<MenuIcons.ExternalLink />} />
         </a>
       </FlexColumn>
-      <FlexColumn>
-        <Tile>
-          <a href='/projects'>
-            <Avatar loginState={userState.loginState} size={28} />
-          </a>
-        </Tile>
-      </FlexColumn>
+      <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+        <a href='/projects'>
+          <Avatar loginState={userState.loginState} size={28} />
+        </a>
+      </Tile>
     </FlexColumn>
   )
 })
