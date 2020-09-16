@@ -70,6 +70,7 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         this.props.metadata,
         this.props.selectedViews,
         isMultiSelect,
+        this.props.propertyTargetOptions[this.props.propertyTargetSelectedIndex],
       )
 
       this.props.dispatch(

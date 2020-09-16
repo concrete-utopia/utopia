@@ -426,6 +426,7 @@ export interface ResizeDragState {
   metadata: Array<ComponentMetadata>
   draggedElements: TemplatePath[]
   isMultiSelect: boolean
+  targetProperty: string
 }
 
 export function resizeDragState(
@@ -441,6 +442,7 @@ export function resizeDragState(
   metadata: Array<ComponentMetadata>,
   draggedElements: TemplatePath[],
   isMultiSelect: boolean,
+  targetProperty: string,
 ): ResizeDragState {
   return {
     type: 'RESIZE_DRAG_STATE',
@@ -456,6 +458,7 @@ export function resizeDragState(
     metadata: metadata,
     draggedElements: draggedElements,
     isMultiSelect: isMultiSelect,
+    targetProperty: targetProperty,
   }
 }
 
