@@ -504,6 +504,10 @@ export function updateFramesOfScenesAndComponents(
                 })
 
                 propsToSkip.push(
+                  createLayoutPropertyPath('left'),
+                  createLayoutPropertyPath('top'),
+                  createLayoutPropertyPath('right'),
+                  createLayoutPropertyPath('bottom'),
                   createLayoutPropertyPath('Width'),
                   createLayoutPropertyPath('Height'),
                   createLayoutPropertyPath('minWidth'),
@@ -1507,7 +1511,7 @@ export function produceResizeSingleSelectCanvasTransientState(
       elementToTarget,
       editorState.jsxMetadataKILLME,
     )
-    if (isFlexContainer) {
+    if (isFlexContainer || dragState.edgePosition.x === 0.5 || dragState.edgePosition.y === 0.5) {
       const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
         ? dragState.drag?.x ?? 0
         : dragState.drag?.y ?? 0
