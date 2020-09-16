@@ -1,8 +1,15 @@
 import * as React from 'react'
-import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
+import {
+  createLayoutPropertyPath,
+  LayoutTargetableProp,
+} from '../../../core/layout/layout-helpers-new'
+import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
+import { bimapEither, eitherToMaybe, left, right } from '../../../core/shared/either'
+import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { colorTheme } from '../../../uuiui'
 
 interface PropertyTargetSelector {
+  targetComponentMetadata: ElementInstanceMetadata | null
   top: number
   left: number
   options: LayoutTargetableProp[]
@@ -25,6 +32,14 @@ export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Eleme
       }}
     >
       {props.options.map((option, index) => {
+        const valueForProp =
+          eitherToMaybe(
+            getSimpleAttributeAtPath(
+              left(props.targetComponentMetadata?.props ?? {}),
+              createLayoutPropertyPath(option),
+            ),
+          ) ?? '—'
+
         return (
           <div
             key={option}
@@ -36,7 +51,7 @@ export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Eleme
               borderRadius: 5,
             }}
           >
-            {option}
+            {option}: <span style={{ float: 'right' }}>{valueForProp}</span>
           </div>
         )
       })}

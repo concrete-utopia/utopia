@@ -108,6 +108,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
 
     return (
       <ResizeRectangle
+        targetComponentMetadata={this.props.targetElement}
         dispatch={this.props.dispatch}
         scale={this.props.scale}
         canvasOffset={this.props.canvasOffset}

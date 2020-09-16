@@ -23,7 +23,7 @@ import { ResizeStatus } from './new-canvas-controls'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import CanvasActions from '../canvas-actions'
 import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
-import { ComponentMetadata } from '../../../core/shared/element-template'
+import { ComponentMetadata, ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { betterReactMemo } from '../../../uuiui-deps'
@@ -33,6 +33,7 @@ import {
   LayoutFlexElementProp,
   LayoutTargetableProp,
 } from '../../../core/layout/layout-helpers-new'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -125,6 +126,7 @@ class ResizeControl extends React.Component<ResizeControlProps> {
 }
 
 interface ResizeEdgeProps {
+  targetComponentMetadata: ElementInstanceMetadata | null
   dispatch: EditorDispatch
   cursor: CSSCursor
   direction: 'horizontal' | 'vertical'
@@ -231,6 +233,7 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
             }
             selected={this.props.propertyTargetSelectedIndex}
             setOptionsCallback={this.props.setTargetOptionsArray}
+            targetComponentMetadata={this.props.targetComponentMetadata}
           />
         )}
       </React.Fragment>
@@ -239,6 +242,7 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
 }
 
 interface ResizeLinesProps {
+  targetComponentMetadata: ElementInstanceMetadata | null
   cursor: CSSCursor
   direction: 'horizontal' | 'vertical'
   canvasOffset: CanvasPoint
@@ -335,6 +339,7 @@ const ResizeLines = (props: ResizeLinesProps) => {
           }
           setOptionsCallback={props.setTargetOptionsArray}
           selected={props.propertyTargetSelectedIndex}
+          targetComponentMetadata={props.targetComponentMetadata}
         />
       )}
       {mouseCatcher}
@@ -486,6 +491,7 @@ interface DoubleClickExtenderProps {
 }
 
 interface ResizeRectangleProps {
+  targetComponentMetadata: ElementInstanceMetadata | null
   dispatch: EditorDispatch
   scale: number
   canvasOffset: CanvasPoint

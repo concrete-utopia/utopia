@@ -154,6 +154,7 @@ export class MultiselectResizeControl extends React.Component<
         return (
           <>
             <ResizeRectangle
+              targetComponentMetadata={null}
               dispatch={this.props.dispatch}
               scale={this.props.scale}
               canvasOffset={this.props.canvasOffset}
@@ -216,10 +217,15 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
         horizontal: 'Height',
       } as const
       const frame = MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
+      const target = MetadataUtils.getElementByInstancePathMaybe(
+        this.props.componentMetadata,
+        TP.toInstancePathMaybe(view),
+      )
       if (frame != null) {
         return (
           <>
             <ResizeRectangle
+              targetComponentMetadata={target}
               dispatch={this.props.dispatch}
               scale={this.props.scale}
               canvasOffset={this.props.canvasOffset}
