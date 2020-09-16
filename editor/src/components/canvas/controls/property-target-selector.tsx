@@ -20,9 +20,18 @@ export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Eleme
         left: props.left,
       }}
     >
-      {props.options.map((option) => {
+      {props.options.map((option, index) => {
         return (
-          <div key={option} style={{ padding: '0 3px', color: colorTheme.controlledBlue.value }}>
+          <div
+            key={option}
+            style={{
+              padding: '0 3px',
+              color: props.selected === index ? 'white' : colorTheme.controlledBlue.value,
+              backgroundColor:
+                props.selected === index ? colorTheme.controlledBlue.value : 'inherit',
+              borderRadius: 5,
+            }}
+          >
             {option}
           </div>
         )
