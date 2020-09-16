@@ -1368,7 +1368,7 @@ describe('moveTemplate', () => {
       await dispatchDone
     })
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View

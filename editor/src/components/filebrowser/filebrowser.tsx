@@ -103,15 +103,16 @@ function collectFileBrowserItems(
         if (codeResult != null) {
           Object.keys(codeResult.exports).forEach((exportedVar) => {
             if (exportedVar != 'default') {
+              const typeInformation = codeResult.exports[exportedVar].type
               fileBrowserItems.push({
                 path: `${fullPath}/${exportedVar}`,
                 type: 'export',
                 fileType: null,
-                typeInformation: codeResult.exports[exportedVar].type,
+                typeInformation: typeInformation,
                 originatingPath: originatingPath,
                 hasErrorMessages: false,
                 modified: false,
-                exportedFunction: false, // FIXME: Check if type covers this. exportedVarIsFunction,
+                exportedFunction: typeInformation.includes('=>')
               })
             }
           })

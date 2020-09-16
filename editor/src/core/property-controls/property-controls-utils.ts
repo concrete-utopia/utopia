@@ -326,8 +326,6 @@ export function sendPropertyControlsInfoRequest(
   nodeModules: NodeModules,
   projectContents: ProjectContents,
 ): void {
-  sendToIFrame()
-
   function scheduleSend(): void {
     if (propertyControlsIFrameAvailable) {
       window.clearTimeout(lastPropertyControlsInfoSendID)
@@ -377,4 +375,7 @@ export function sendPropertyControlsInfoRequest(
       scheduleSend()
     }
   }
+
+  // Initialise the first call.
+  sendToIFrame()
 }

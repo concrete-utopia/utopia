@@ -123,6 +123,8 @@ import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { notLoggedIn } from '../../../common/user'
+import {dependenciesWithEditorRequirements} from '../npm-dependency/npm-dependency'
+import {getControlsForExternalDependencies} from '../../../core/property-controls/property-controls-utils'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -1284,6 +1286,7 @@ export function editorModelFromPersistentModel(
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
 ): EditorState {
+  const npmDependencies = dependenciesWithEditorRequirements(persistentModel.projectContents)
   const editor: EditorState = {
     id: null,
     appID: persistentModel.appID ?? null,
@@ -1306,7 +1309,7 @@ export function editorModelFromPersistentModel(
       null,
     ),
     projectContents: persistentModel.projectContents,
-    propertyControlsInfo: {},
+    propertyControlsInfo: getControlsForExternalDependencies(npmDependencies),
     nodeModules: {
       skipDeepFreeze: true,
       files: {},
