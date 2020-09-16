@@ -38,6 +38,8 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import { usePrevious } from '../../editor/hook-utils'
+import { KeysPressed } from '../../../utils/keyboard'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -91,24 +93,15 @@ function useArrayAndIndex(defaultTargets: string[]) {
   return [targets, targetIndex, setTargetsResetIndex, incrementTargetIndex] as const
 }
 
-function useTargetSelector(defaultTargets: string[]) {
+function useTargetSelector(defaultTargets: string[], keysPressed: KeysPressed) {
   const [targets, targetIndex, setTargets, incrementTargetIndex] = useArrayAndIndex(defaultTargets)
 
-  React.useEffect(() => {
-    const onMouseDown = (ev: KeyboardEvent) => {
-      if (ev.code === '9') {
-        // this is a TAB! yay
-        ev.stopImmediatePropagation()
-        ev.stopPropagation()
+  const shiftPressed = keysPressed.shift
+  const previousShiftPressed = usePrevious(shiftPressed)
 
-        incrementTargetIndex()
-      }
-    }
-    window.addEventListener('keydown', onMouseDown)
-    return function cleanup() {
-      window.removeEventListener('keydown', onMouseDown)
-    }
-  })
+  if (shiftPressed && !previousShiftPressed) {
+    incrementTargetIndex()
+  }
 
   return [targets, targetIndex, setTargets] as const
 }
@@ -130,7 +123,10 @@ export const NewCanvasControls = betterReactMemo(
       focusedPanel: store.editor.focusedPanel,
     }))
 
-    const [targets, targetIndex, setTargetOptionsArray] = useTargetSelector(['width'])
+    const [targets, targetIndex, setTargetOptionsArray] = useTargetSelector(
+      ['width', 'minWidth', 'maxWidth'],
+      canvasControlProps.editor.keysPressed,
+    )
 
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.

@@ -15,9 +15,9 @@ export function useValueResetState<T>(
 export function usePrevious<T>(currentValue: T): T | undefined {
   const previousRef = React.useRef<T>()
 
-  React.useEffect(() => {
-    previousRef.current = currentValue
-  }, [currentValue])
+  const prev = previousRef.current
 
-  return previousRef.current
+  previousRef.current = currentValue
+
+  return prev
 }
