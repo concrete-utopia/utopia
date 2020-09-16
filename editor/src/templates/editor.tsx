@@ -77,7 +77,7 @@ import {
   UiJsxCanvasContext,
 } from '../components/canvas/ui-jsx-canvas'
 import { isLeft } from '../core/shared/either'
-import { importZippedGitProject } from '../core/model/project-import'
+import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -220,25 +220,31 @@ export class Editor {
                 if (repoResult.statusCode === 404) {
                   renderProjectNotFound()
                 } else {
-                  console.error(repoResult.errorMessage)
+                  renderProjectLoadError(repoResult.errorMessage)
                 }
               } else {
                 const projectName = `${githubOwner}-${githubRepo}`
                 replaceLoadingMessage('Downloading Repo...')
-                importZippedGitProject(projectName, repoResult.value).then((loadedProject) => {
-                  replaceLoadingMessage('Importing Project...')
-                  createNewProjectFromImportedProject(
-                    loadedProject,
-                    this.storedState.workers,
-                    this.boundDispatch,
-                    () =>
-                      renderRootComponent(
-                        this.utopiaStoreHook,
-                        this.utopiaStoreApi,
-                        this.spyCollector,
-                      ),
-                  )
-                })
+                importZippedGitProject(projectName, repoResult.value).then(
+                  (importProjectResult) => {
+                    if (isProjectImportSuccess(importProjectResult)) {
+                      replaceLoadingMessage('Importing Project...')
+                      createNewProjectFromImportedProject(
+                        importProjectResult,
+                        this.storedState.workers,
+                        this.boundDispatch,
+                        () =>
+                          renderRootComponent(
+                            this.utopiaStoreHook,
+                            this.utopiaStoreApi,
+                            this.spyCollector,
+                          ),
+                      )
+                    } else {
+                      renderProjectLoadError(importProjectResult.errorMessage)
+                    }
+                  },
+                )
               }
             })
           } else {
@@ -372,7 +378,7 @@ async function renderRootComponent(
   })
 }
 
-export const ProjectNotFound = () => {
+const ProjectLoadError = ({ error }: { error: string }) => {
   return (
     <div
       style={{
@@ -381,7 +387,7 @@ export const ProjectNotFound = () => {
         overflowWrap: 'break-word',
         wordWrap: 'break-word',
         hyphens: 'auto',
-        whiteSpace: 'normal',
+        whiteSpace: 'pre-wrap',
         maxWidth: 400,
         width: 400,
         padding: 12,
@@ -390,14 +396,16 @@ export const ProjectNotFound = () => {
         margin: '5px',
       }}
     >
-      Project could not be found.
+      {error}
     </div>
   )
 }
 
-async function renderProjectNotFound(): Promise<void> {
+const renderProjectNotFound = () => renderProjectLoadError('Project could not be found.')
+
+async function renderProjectLoadError(error: string): Promise<void> {
   const rootElement = document.getElementById(EditorID)
   if (rootElement != null) {
-    ReactDOM.render(<ProjectNotFound />, rootElement)
+    ReactDOM.render(<ProjectLoadError error={error} />, rootElement)
   }
 }

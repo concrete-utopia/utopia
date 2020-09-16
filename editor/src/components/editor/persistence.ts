@@ -33,7 +33,7 @@ import {
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { arrayContains, projectURLForProject } from '../../core/shared/utils'
 import { getPNGBufferOfElementWithID } from './screenshot-utils'
-import { ProjectImportResult } from '../../core/model/project-import'
+import { ProjectImportSuccess } from '../../core/model/project-import'
 import { CURRENT_PROJECT_VERSION } from './actions/migrations/migrations'
 import { DefaultTheme } from '../code-editor/code-editor-themes'
 
@@ -203,7 +203,7 @@ export function createNewProject(dispatch: EditorDispatch, renderEditorRoot: () 
 }
 
 export async function createNewProjectFromImportedProject(
-  importedProject: ProjectImportResult,
+  importedProject: ProjectImportSuccess,
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
   renderEditorRoot: () => void,

@@ -33,10 +33,50 @@ export interface UnsavedAsset {
   size: Size | null
 }
 
-export interface ProjectImportResult {
+export interface ProjectImportSuccess {
+  type: 'SUCCESS'
   projectName: string
   contents: ProjectContents
   assetsToUpload: Array<UnsavedAsset>
+}
+
+export interface ProjectImportFailure {
+  type: 'FAILURE'
+  errorMessage: string
+}
+
+function projectImportSuccess(
+  projectName: string,
+  contents: ProjectContents,
+  assetsToUpload: Array<UnsavedAsset>,
+): ProjectImportSuccess {
+  return {
+    type: 'SUCCESS',
+    projectName: projectName,
+    contents: contents,
+    assetsToUpload: assetsToUpload,
+  }
+}
+
+function projectImportFailure(errorMessage: string): ProjectImportFailure {
+  return {
+    type: 'FAILURE',
+    errorMessage: errorMessage,
+  }
+}
+
+export type ProjectImportResult = ProjectImportSuccess | ProjectImportFailure
+
+export function isProjectImportSuccess(
+  result: ProjectImportResult,
+): result is ProjectImportSuccess {
+  return result.type === 'SUCCESS'
+}
+
+export function isProjectImportFailure(
+  result: ProjectImportResult,
+): result is ProjectImportFailure {
+  return result.type === 'FAILURE'
 }
 
 export async function importZippedGitProject(
@@ -46,6 +86,7 @@ export async function importZippedGitProject(
   let loadedProject: ProjectContents = {}
   let promises: Array<Promise<void>> = []
   let assetsToUpload: Array<UnsavedAsset> = []
+  let errors: Array<string> = []
 
   const loadFile = async (fileName: string, file: JSZip.JSZipObject) => {
     const shiftedFileName = fileName.replace(/[^\/]*\//, '/') // Github uses the project name and a commit hash as the root directory
@@ -96,8 +137,7 @@ export async function importZippedGitProject(
         case 'CODE_FILE':
           const loadedFile = await attemptedTextFileLoad(shiftedFileName, file)
           if (loadedFile == null) {
-            // FIXME Client should show an error if loading a text file fails
-            console.error(`Failed to parse file ${shiftedFileName} as a text file`)
+            errors.push(`Unable to parse file ${shiftedFileName} as a text file`)
           } else {
             if (expectedFileType === 'UI_JS_FILE') {
               // TODO We really need a way to represent unparsed files, or a way to separate the parsed file from the contents
@@ -125,9 +165,9 @@ export async function importZippedGitProject(
 
   await Promise.all(promises)
 
-  return {
-    projectName: projectName,
-    contents: loadedProject,
-    assetsToUpload: assetsToUpload,
+  if (errors.length > 0) {
+    return projectImportFailure(errors.join(`\n`))
+  } else {
+    return projectImportSuccess(projectName, loadedProject, assetsToUpload)
   }
 }
