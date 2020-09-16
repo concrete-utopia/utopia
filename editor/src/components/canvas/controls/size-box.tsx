@@ -27,6 +27,7 @@ import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { SizeBoxLabel } from './size-box-label'
+import { PropertyTargetSelector } from './property-target-selector'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -189,34 +190,26 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
           }}
         />
         {this.state.showLabel && (
-          <div
-            style={{
-              position: 'absolute',
-              backgroundColor: '#d4f3ff',
-              border: `1px solid ${colorTheme.controlledBlue.value}`,
-              borderRadius: 5,
-              top:
-                top +
-                (this.props.direction === 'horizontal'
-                  ? edge === 'before' && this.props.direction === 'horizontal'
-                    ? -25
-                    : 10
-                  : -10),
-              left:
-                left +
-                (this.props.direction === 'vertical'
-                  ? edge === 'before' && this.props.direction === 'vertical'
-                    ? -25
-                    : 10
-                  : -10),
-            }}
-          >
-            <span style={{ padding: 3, color: colorTheme.controlledBlue.value }}>
-              {this.props.direction === 'horizontal'
-                ? this.props.labels.horizontal
-                : this.props.labels.vertical}
-            </span>
-          </div>
+          <PropertyTargetSelector
+            top={
+              top +
+              (this.props.direction === 'horizontal'
+                ? edge === 'before' && this.props.direction === 'horizontal'
+                  ? -25
+                  : 10
+                : -10)
+            }
+            left={
+              left +
+              (this.props.direction === 'vertical'
+                ? edge === 'before' && this.props.direction === 'vertical'
+                  ? -25
+                  : 10
+                : -10)
+            }
+            options={['hello', 'egy', 'ketto']}
+            selected={1}
+          />
         )}
       </React.Fragment>
     )
@@ -281,32 +274,26 @@ const ResizeLines = (props: ResizeLinesProps) => {
         color={props.color}
       />
       {showLabel && (
-        <div
-          style={{
-            position: 'absolute',
-            backgroundColor: '#d4f3ff',
-            border: `1px solid ${colorTheme.controlledBlue.value}`,
-            borderRadius: 5,
-            top:
-              top +
-              (props.direction === 'horizontal'
-                ? edge === 'before' && props.direction === 'horizontal'
-                  ? -25
-                  : 10
-                : -10),
-            left:
-              left +
-              (props.direction === 'vertical'
-                ? edge === 'before' && props.direction === 'vertical'
-                  ? -25
-                  : 10
-                : -10),
-          }}
-        >
-          <span style={{ padding: 3, color: colorTheme.controlledBlue.value }}>
-            {props.direction === 'horizontal' ? props.labels.horizontal : props.labels.vertical}
-          </span>
-        </div>
+        <PropertyTargetSelector
+          top={
+            top +
+            (props.direction === 'horizontal'
+              ? edge === 'before' && props.direction === 'horizontal'
+                ? -25
+                : 10
+              : -10)
+          }
+          left={
+            left +
+            (props.direction === 'vertical'
+              ? edge === 'before' && props.direction === 'vertical'
+                ? -25
+                : 10
+              : -10)
+          }
+          options={['hello', 'egy', 'ketto']}
+          selected={1}
+        />
       )}
       {mouseCatcher}
     </React.Fragment>
