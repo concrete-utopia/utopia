@@ -17,6 +17,7 @@ import {
   DirectionVertical,
   DirectionHorizontal,
   DirectionAll,
+  DragState,
 } from '../canvas-types'
 import { ResizeStatus } from './new-canvas-controls'
 import { TemplatePath } from '../../../core/shared/project-file-types'
@@ -104,7 +105,7 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         ) : (
           this.props.children
         )}
-        <SizeBoxLabel
+        {/* <SizeBoxLabel
           visible={shouldShowSizeLabel}
           left={labelLeft}
           top={labelTop}
@@ -112,7 +113,7 @@ class ResizeControl extends React.Component<ResizeControlProps> {
           size={currentSize}
           imageMultiplier={this.props.imageMultiplier}
           dragState={this.props.dragState}
-        />
+        /> */}
       </React.Fragment>
     )
   }
@@ -131,6 +132,7 @@ interface ResizeEdgeProps {
     vertical: string
     horizontal: string
   }
+  dragState: DragState | null
 }
 
 interface ResizeEdgeState {
@@ -172,6 +174,13 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
       baseTop +
       (this.props.direction === 'vertical' ? -this.props.visualSize.height / 2 : -lineSize / 2)
 
+    const isEdgeDragged =
+      this.props.dragState != null &&
+      this.props.dragState.type === 'RESIZE_DRAG_STATE' &&
+      this.props.dragState.start != null &&
+      this.props.dragState.edgePosition.x === this.props.position.x &&
+      this.props.dragState.edgePosition.y === this.props.position.y
+
     return (
       <React.Fragment>
         <div
@@ -189,7 +198,7 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
             cursor: this.props.resizeStatus === 'enabled' ? this.props.cursor : undefined,
           }}
         />
-        {this.state.showLabel && (
+        {(this.state.showLabel || isEdgeDragged) && (
           <PropertyTargetSelector
             top={
               top +
@@ -224,6 +233,7 @@ interface ResizeLinesProps {
   scale: number
   position: EdgePosition
   resizeStatus: ResizeStatus
+  dragState: DragState | null
   color?: string
   labels: {
     vertical: string
@@ -241,6 +251,13 @@ const ResizeLines = (props: ResizeLinesProps) => {
   const beforeOrAfter = props.position.y === 0.5 ? props.position.x : props.position.y
   const edge = beforeOrAfter === 0 ? 'before' : 'after'
 
+  const isEdgeDragged =
+    props.dragState != null &&
+    props.dragState.type === 'RESIZE_DRAG_STATE' &&
+    props.dragState.start != null &&
+    props.dragState.edgePosition.x === props.position.x &&
+    props.dragState.edgePosition.y === props.position.y
+
   const left = props.canvasOffset.x + props.visualSize.x + props.position.x * props.visualSize.width
   const top = props.canvasOffset.y + props.visualSize.y + props.position.y * props.visualSize.height
 
@@ -250,8 +267,12 @@ const ResizeLines = (props: ResizeLinesProps) => {
     props.resizeStatus !== 'enabled' ? null : (
       <div
         ref={reference}
-        onMouseOver={() => setShowLabel(true)}
-        onMouseOut={() => setShowLabel(false)}
+        onMouseEnter={() => {
+          setShowLabel(true)
+        }}
+        onMouseLeave={() => {
+          setShowLabel(false)
+        }}
         style={{
           position: 'absolute',
           width: catchmentSize,
@@ -273,7 +294,7 @@ const ResizeLines = (props: ResizeLinesProps) => {
         edge={edge}
         color={props.color}
       />
-      {showLabel && (
+      {(showLabel || isEdgeDragged) && (
         <PropertyTargetSelector
           top={
             top +

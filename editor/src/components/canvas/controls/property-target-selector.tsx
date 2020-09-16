@@ -22,9 +22,9 @@ export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Eleme
     >
       {props.options.map((option) => {
         return (
-          <span key={option} style={{ padding: 3, color: colorTheme.controlledBlue.value }}>
+          <div key={option} style={{ padding: '0 3px', color: colorTheme.controlledBlue.value }}>
             {option}
-          </span>
+          </div>
         )
       })}
     </div>
