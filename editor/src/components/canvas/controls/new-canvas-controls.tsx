@@ -37,6 +37,7 @@ import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -58,11 +59,56 @@ export interface ControlProps {
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
   elementsThatRespectLayout: Array<TemplatePath>
+  setTargetOptionsArray: Array<string>
 }
 
 interface NewCanvasControlsProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cursor: CSSCursor
+}
+
+function useArrayAndIndex(defaultTargets: string[]) {
+  const [targets, setTargets] = React.useState(defaultTargets)
+  const [targetIndex, setTargetIndex] = React.useState(0)
+
+  function incrementTargetIndex() {
+    if (targetIndex < targets.length - 1) {
+      setTargetIndex(targetIndex + 1)
+    } else {
+      setTargetIndex(0)
+    }
+  }
+
+  function setTargetsResetIndex(newTargets: string[]) {
+    if (!shallowEqual(targets, newTargets)) {
+      setTargetIndex(0)
+      setTargets(targets)
+    }
+  }
+
+  return [targets, targetIndex, setTargetsResetIndex, incrementTargetIndex] as const
+}
+
+function useTargetSelector(defaultTargets: string[]) {
+  const [targets, targetIndex, setTargets, incrementTargetIndex] = useArrayAndIndex(defaultTargets)
+
+  React.useEffect(() => {
+    const onMouseDown = (ev: KeyboardEvent) => {
+      if (ev.code === '9') {
+        // this is a TAB! yay
+        ev.stopImmediatePropagation()
+        ev.stopPropagation()
+
+        incrementTargetIndex()
+      }
+    }
+    window.addEventListener('keydown', onMouseDown)
+    return function cleanup() {
+      window.removeEventListener('keydown', onMouseDown)
+    }
+  })
+
+  return [targets, targetIndex, setTargets] as const
 }
 
 export const NewCanvasControls = betterReactMemo(
@@ -81,6 +127,8 @@ export const NewCanvasControls = betterReactMemo(
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,
     }))
+
+    const [targets, targetIndex, setTargetOptionsArray] = useTargetSelector(['width'])
 
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.
