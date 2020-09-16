@@ -877,7 +877,7 @@ export function useWrappedEmptyOrUnknownOnSubmitValue<T>(
   onUnsetValue?: OnUnsetValues,
 ): OnSubmitValueOrUnknownOrEmpty<T> {
   return React.useCallback(
-    (value: UnknownOrEmptyInput<T>) => {
+    (value) => {
       if (isEmptyInputValue(value)) {
         if (onUnsetValue != null) {
           onUnsetValue()

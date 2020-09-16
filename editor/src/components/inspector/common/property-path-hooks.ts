@@ -213,6 +213,8 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
         }
       },
     )
+    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multiselectAtProps, multiselectLength, selectedProps, selectedComputedStyles])
 }
 
@@ -579,29 +581,29 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   }, [onUnsetValue, propKeys, pathMappingFn, target])
 
   const transformedValue = transformValue(values)
-  const onSubmitValue = React.useCallback(
-    (newValue: T, transient = false) => {
+  const onSubmitValue: (newValue: T, transient?: boolean) => void = React.useCallback(
+    (newValue, transient = false) => {
       const untransformedValue = untransformValue(newValue)
-      const submitValue = (propKey: P) => {
+      propKeys.forEach((propKey) => {
         const propertyPath = pathMappingFn(propKey, target)
-        if (propKey in untransformedValue) {
-          const printedProperty = printCSSValue(
-            propKey,
-            untransformedValue[propKey] as ParsedProperties[P],
-          )
+        const valueToPrint = untransformedValue[propKey]
+        if (valueToPrint != null) {
+          const printedProperty = printCSSValue(propKey, valueToPrint as ParsedProperties[P])
           onSingleSubmitValue(printedProperty, propertyPath, transient)
         } else {
           onUnsetValue(propertyPath)
         }
-      }
-      propKeys.forEach(submitValue)
+      })
     },
+    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
   )
 
-  const onTransientSubmitValue = React.useCallback((newValue: T) => onSubmitValue(newValue, true), [
-    onSubmitValue,
-  ])
+  const onTransientSubmitValue: (newValue: T) => void = React.useCallback(
+    (newValue) => onSubmitValue(newValue, true),
+    [onSubmitValue],
+  )
 
   const useSubmitValueFactory = useCallbackFactory(transformedValue, onSubmitValue)
 
