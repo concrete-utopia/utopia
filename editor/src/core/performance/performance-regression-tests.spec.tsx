@@ -9,7 +9,7 @@ import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
 import { jsxAttributeValue } from '../shared/element-template'
 
-describe('React Render Count Tests - ', () => {
+xdescribe('React Render Count Tests - ', () => {
   it('Clicking on opacity slider', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
