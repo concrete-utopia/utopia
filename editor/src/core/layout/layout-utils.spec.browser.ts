@@ -120,7 +120,7 @@ describe('maybeSwitchLayoutProps', () => {
     )
     await renderResult.dispatch([pasteElements], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View
           style={{ ...props.style }}
