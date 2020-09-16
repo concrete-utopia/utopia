@@ -59,7 +59,9 @@ export interface ControlProps {
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
   elementsThatRespectLayout: Array<TemplatePath>
-  setTargetOptionsArray: Array<string>
+  propertyTargetOptions: Array<string>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<string>) => void
 }
 
 interface NewCanvasControlsProps {
@@ -184,6 +186,9 @@ export const NewCanvasControls = betterReactMemo(
             <NewCanvasControlsClass
               windowToCanvasPosition={props.windowToCanvasPosition}
               {...canvasControlProps}
+              propertyTargetOptions={targets}
+              propertyTargetSelectedIndex={targetIndex}
+              setTargetOptionsArray={setTargetOptionsArray}
             />
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
@@ -201,6 +206,9 @@ interface NewCanvasControlsClassProps {
   canvasOffset: CanvasPoint
   animationEnabled: boolean
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
+  propertyTargetOptions: Array<string>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<string>) => void
 }
 
 const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
@@ -316,6 +324,9 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
       elementsThatRespectLayout: elementsThatRespectLayout,
+      propertyTargetOptions: props.propertyTargetOptions,
+      propertyTargetSelectedIndex: props.propertyTargetSelectedIndex,
+      setTargetOptionsArray: props.setTargetOptionsArray,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {
