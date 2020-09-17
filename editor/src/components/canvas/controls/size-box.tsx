@@ -44,60 +44,59 @@ interface ResizeControlProps extends ResizeRectangleProps {
   dragState: ResizeDragState | null
 }
 
-class ResizeControl extends React.Component<ResizeControlProps> {
-  reference = React.createRef<HTMLDivElement>()
-  constructor(props: ResizeControlProps) {
-    super(props)
-  }
-
-  componentWillUnmount() {
-    this.props.dispatch([setCanvasAnimationsEnabled(true)], 'canvas')
-  }
-
-  onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (event.buttons === 1) {
-      const centerBasedResize = event.altKey
-      const keepAspectRatio = event.shiftKey || this.props.elementAspectRatioLocked
-      const enableSnapping = !event.metaKey
-      const canvasPositions = this.props.windowToCanvasPosition(event.nativeEvent)
-      const start: CanvasPoint = canvasPositions.canvasPositionRaw
-      const originalFrames = this.props.getOriginalFrames()
-      const isMultiSelect = this.props.selectedViews.length !== 1
-      const newDragState = resizeDragState(
-        start,
-        null,
-        enableSnapping,
-        centerBasedResize,
-        keepAspectRatio,
-        this.props.measureSize,
-        originalFrames,
-        this.props.position,
-        this.props.enabledDirection,
-        this.props.metadata,
-        this.props.selectedViews,
-        isMultiSelect,
-        this.props.activeTargetProperty,
-      )
-
-      this.props.dispatch(
-        [CanvasActions.createDragState(newDragState), setCanvasAnimationsEnabled(false)],
-        'canvas',
-      )
-      this.props.onResizeStart(this.props.measureSize, this.props.position)
+const ResizeControl: React.FunctionComponent<ResizeControlProps> = (props) => {
+  const dispatch = props.dispatch
+  React.useEffect(() => {
+    return function cleanup() {
+      dispatch([setCanvasAnimationsEnabled(true)], 'canvas')
     }
-  }
+  }, [dispatch])
 
-  render() {
-    return (
-      <React.Fragment>
-        {this.props.resizeStatus === 'enabled' ? (
-          <div onMouseDown={this.onMouseDown}>{this.props.children}</div>
-        ) : (
-          this.props.children
-        )}
-      </React.Fragment>
-    )
-  }
+  const onMouseDown = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (event.buttons === 1) {
+        const centerBasedResize = event.altKey
+        const keepAspectRatio = event.shiftKey || props.elementAspectRatioLocked
+        const enableSnapping = !event.metaKey
+        const canvasPositions = props.windowToCanvasPosition(event.nativeEvent)
+        const start: CanvasPoint = canvasPositions.canvasPositionRaw
+        const originalFrames = props.getOriginalFrames()
+        const isMultiSelect = props.selectedViews.length !== 1
+        const newDragState = resizeDragState(
+          start,
+          null,
+          enableSnapping,
+          centerBasedResize,
+          keepAspectRatio,
+          props.measureSize,
+          originalFrames,
+          props.position,
+          props.enabledDirection,
+          props.metadata,
+          props.selectedViews,
+          isMultiSelect,
+          props.activeTargetProperty,
+        )
+
+        props.dispatch(
+          [CanvasActions.createDragState(newDragState), setCanvasAnimationsEnabled(false)],
+          'canvas',
+        )
+        props.onResizeStart(props.measureSize, props.position)
+      }
+    },
+    [props],
+  )
+
+  return (
+    <React.Fragment>
+      {props.resizeStatus === 'enabled' ? (
+        <div onMouseDown={onMouseDown}>{props.children}</div>
+      ) : (
+        props.children
+      )}
+    </React.Fragment>
+  )
 }
 
 interface ResizeEdgeProps {
