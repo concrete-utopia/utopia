@@ -11,9 +11,7 @@ import {
   handleMessage as handleParserPrinterMessage,
   ParserPrinterResultMessage,
 } from './parser-printer/parser-printer-worker'
-import {
-  handleMessage as handleTSWorkerMessage,
-} from './ts/ts-worker'
+import { handleMessage as handleTSWorkerMessage } from './ts/ts-worker'
 import { BundlerWorker } from './bundler-bridge'
 
 export class FakeBundlerWorker implements BundlerWorker {

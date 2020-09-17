@@ -123,8 +123,8 @@ import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { notLoggedIn } from '../../../common/user'
-import {dependenciesWithEditorRequirements} from '../npm-dependency/npm-dependency'
-import {getControlsForExternalDependencies} from '../../../core/property-controls/property-controls-utils'
+import { dependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
+import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 
 export interface OriginalPath {
   originalTP: TemplatePath

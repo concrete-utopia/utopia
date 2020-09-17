@@ -9,7 +9,10 @@ import {
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
-import { getControlsForExternalDependencies, sendPropertyControlsInfoRequest } from '../../core/property-controls/property-controls-utils'
+import {
+  getControlsForExternalDependencies,
+  sendPropertyControlsInfoRequest,
+} from '../../core/property-controls/property-controls-utils'
 import { NodeModules, esCodeFile, ProjectContents } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'

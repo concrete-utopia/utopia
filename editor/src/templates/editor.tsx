@@ -40,6 +40,7 @@ import {
   downloadGithubRepo,
   getLoginState,
   getUserConfiguration,
+  isRequestFailure,
 } from '../components/editor/server'
 import { editorDispatch, simpleStringifyActions } from '../components/editor/store/dispatch'
 import {
@@ -76,7 +77,7 @@ import {
   UiJsxCanvasContext,
 } from '../components/canvas/ui-jsx-canvas'
 import { isLeft } from '../core/shared/either'
-import { importZippedGitProject } from '../core/model/project-import'
+import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -215,26 +216,36 @@ export class Editor {
           if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
             // TODO Should we require users to be logged in for this?
             downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
-              if (isLeft(repoResult)) {
-                console.error(repoResult.value)
+              if (isRequestFailure(repoResult)) {
+                if (repoResult.statusCode === 404) {
+                  renderProjectNotFound()
+                } else {
+                  renderProjectLoadError(repoResult.errorMessage)
+                }
               } else {
                 const projectName = `${githubOwner}-${githubRepo}`
                 replaceLoadingMessage('Downloading Repo...')
-                importZippedGitProject(projectName, repoResult.value).then((loadedProject) => {
-                  replaceLoadingMessage('Importing Project...')
-                  createNewProjectFromImportedProject(
-                    loadedProject,
-                    this.storedState.workers,
-                    this.boundDispatch,
-                    () =>
-                      renderRootComponent(
-                        this.utopiaStoreHook,
-                        this.utopiaStoreApi,
-                        this.spyCollector,
-                        true
-                      ),
-                  )
-                })
+                importZippedGitProject(projectName, repoResult.value).then(
+                  (importProjectResult) => {
+                    if (isProjectImportSuccess(importProjectResult)) {
+                      replaceLoadingMessage('Importing Project...')
+                      createNewProjectFromImportedProject(
+                        importProjectResult,
+                        this.storedState.workers,
+                        this.boundDispatch,
+                        () =>
+                          renderRootComponent(
+                            this.utopiaStoreHook,
+                            this.utopiaStoreApi,
+                            this.spyCollector,
+                            true,
+                          ),
+                      )
+                    } else {
+                      renderProjectLoadError(importProjectResult.errorMessage)
+                    }
+                  },
+                )
               }
             })
           } else {
@@ -250,7 +261,12 @@ export class Editor {
             }
 
             createNewProject(this.boundDispatch, () =>
-              renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true),
+              renderRootComponent(
+                this.utopiaStoreHook,
+                this.utopiaStoreApi,
+                this.spyCollector,
+                true,
+              ),
             )
           }
         } else if (isSampleProject(projectId)) {
@@ -258,7 +274,13 @@ export class Editor {
             projectId,
             this.boundDispatch,
             this.storedState.workers,
-            () => renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true),
+            () =>
+              renderRootComponent(
+                this.utopiaStoreHook,
+                this.utopiaStoreApi,
+                this.spyCollector,
+                true,
+              ),
           )
         } else {
           projectIsStoredLocally(projectId).then((isLocal) => {
@@ -269,7 +291,12 @@ export class Editor {
                 isLoggedIn(loginState),
                 this.storedState.workers,
                 () =>
-                  renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true),
+                  renderRootComponent(
+                    this.utopiaStoreHook,
+                    this.utopiaStoreApi,
+                    this.spyCollector,
+                    true,
+                  ),
               )
             } else {
               loadFromServer(
@@ -277,7 +304,12 @@ export class Editor {
                 this.boundDispatch,
                 this.storedState.workers,
                 () => {
-                  renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true)
+                  renderRootComponent(
+                    this.utopiaStoreHook,
+                    this.utopiaStoreApi,
+                    this.spyCollector,
+                    true,
+                  )
                 },
                 () => {
                   renderProjectNotFound()
@@ -342,7 +374,7 @@ export class Editor {
 export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
-  spyCollector: UiJsxCanvasContextData,
+  spyCollector: UiJsxCanvasContextData
   propertyControlsInfoSupported: boolean
 }> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported }) => {
   return (
@@ -359,7 +391,7 @@ async function renderRootComponent(
   useStore: UtopiaStoreHook,
   api: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
-  propertyControlsInfoSupported: boolean
+  propertyControlsInfoSupported: boolean,
 ): Promise<void> {
   return triggerHashedAssetsUpdate().then(() => {
     // NOTE: we only need to call this function once,
@@ -367,14 +399,19 @@ async function renderRootComponent(
     const rootElement = document.getElementById(EditorID)
     if (rootElement != null) {
       ReactDOM.render(
-        <HotRoot api={api} useStore={useStore} spyCollector={spyCollector} propertyControlsInfoSupported={propertyControlsInfoSupported} />,
+        <HotRoot
+          api={api}
+          useStore={useStore}
+          spyCollector={spyCollector}
+          propertyControlsInfoSupported={propertyControlsInfoSupported}
+        />,
         rootElement,
       )
     }
   })
 }
 
-export const ProjectNotFound = () => {
+const ProjectLoadError = ({ error }: { error: string }) => {
   return (
     <div
       style={{
@@ -383,7 +420,7 @@ export const ProjectNotFound = () => {
         overflowWrap: 'break-word',
         wordWrap: 'break-word',
         hyphens: 'auto',
-        whiteSpace: 'normal',
+        whiteSpace: 'pre-wrap',
         maxWidth: 400,
         width: 400,
         padding: 12,
@@ -392,14 +429,16 @@ export const ProjectNotFound = () => {
         margin: '5px',
       }}
     >
-      Project could not be found.
+      {error}
     </div>
   )
 }
 
-async function renderProjectNotFound(): Promise<void> {
+const renderProjectNotFound = () => renderProjectLoadError('Project could not be found.')
+
+async function renderProjectLoadError(error: string): Promise<void> {
   const rootElement = document.getElementById(EditorID)
   if (rootElement != null) {
-    ReactDOM.render(<ProjectNotFound />, rootElement)
+    ReactDOM.render(<ProjectLoadError error={error} />, rootElement)
   }
 }

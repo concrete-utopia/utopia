@@ -69,6 +69,42 @@ interface SaveProjectRequest {
   content: PersistentModel | null
 }
 
+interface RequestFailure {
+  type: 'FAILURE'
+  statusCode: number
+  errorMessage: string
+}
+
+interface RequestSuccess<T> {
+  type: 'SUCCESS'
+  value: T
+}
+
+function requestFailure(statusCode: number, errorMessage: string): RequestFailure {
+  return {
+    type: 'FAILURE',
+    statusCode: statusCode,
+    errorMessage: errorMessage,
+  }
+}
+
+function requestSuccess<T>(value: T): RequestSuccess<T> {
+  return {
+    type: 'SUCCESS',
+    value: value,
+  }
+}
+
+export type ServerResponse<T> = RequestSuccess<T> | RequestFailure
+
+export function isRequestFailure<T>(response: ServerResponse<T>): response is RequestFailure {
+  return response.type === 'FAILURE'
+}
+
+export function isRequestSuccess<T>(response: ServerResponse<T>): response is RequestSuccess<T> {
+  return response.type === 'SUCCESS'
+}
+
 export async function createNewProjectID(): Promise<string> {
   // POSTs the persistent model as JSON body. receives a project ID
   const response = await fetch(PROJECT_ID_ENDPOINT, {
@@ -341,7 +377,7 @@ export async function saveUserConfiguration(userConfig: UserConfiguration): Prom
 export async function downloadGithubRepo(
   owner: string,
   repo: string,
-): Promise<Either<string, JSZip>> {
+): Promise<ServerResponse<JSZip>> {
   const url = urljoin(UTOPIA_BACKEND, 'github', owner, repo)
   const response = await fetch(url, {
     method: 'GET',
@@ -351,9 +387,11 @@ export async function downloadGithubRepo(
   if (response.ok) {
     const buffer = await response.arrayBuffer()
     const zipFile = await JSZip.loadAsync(buffer)
-    return right(zipFile)
+    return requestSuccess(zipFile)
   } else {
-    // FIXME Better handling of different response types
-    return left(`Download github repo request failed (${response.status}): ${response.statusText}`)
+    return requestFailure(
+      response.status,
+      `Download github repo request failed: ${response.statusText}`,
+    )
   }
 }

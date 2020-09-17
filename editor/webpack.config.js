@@ -73,7 +73,7 @@ const config = {
         name === 'tsWorker' ||
         name === 'parserPrinterWorker' ||
         name === 'linterWorker' ||
-        name === 'watchdogWorker' 
+        name === 'watchdogWorker'
       return nameOnly ? '[name].js' : `[name].${hashPattern}.js`
     },
     chunkFilename: `[id].${hashPattern}.js`,

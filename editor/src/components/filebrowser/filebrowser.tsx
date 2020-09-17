@@ -112,7 +112,7 @@ function collectFileBrowserItems(
                 originatingPath: originatingPath,
                 hasErrorMessages: false,
                 modified: false,
-                exportedFunction: typeInformation.includes('=>')
+                exportedFunction: typeInformation.includes('=>'),
               })
             }
           })

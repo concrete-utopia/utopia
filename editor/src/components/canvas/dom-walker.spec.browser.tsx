@@ -89,7 +89,14 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
 
   const [storeHook, api] = create<EditorStore>((set) => initialEditorStore)
 
-  const result = render(<HotRoot api={api} useStore={storeHook} spyCollector={spyCollector} propertyControlsInfoSupported={false} />)
+  const result = render(
+    <HotRoot
+      api={api}
+      useStore={storeHook}
+      spyCollector={spyCollector}
+      propertyControlsInfoSupported={false}
+    />,
+  )
   const noFileOpenText = result.getByText('No file open')
   expect(noFileOpenText).toBeDefined()
 

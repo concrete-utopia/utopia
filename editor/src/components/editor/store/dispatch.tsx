@@ -57,7 +57,7 @@ import {
 import { runLocalEditorAction } from './editor-update'
 import { arrayEquals, isBrowserEnvironment } from '../../../core/shared/utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
-import {UiJsxCanvasContextData} from '../../canvas/ui-jsx-canvas'
+import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
