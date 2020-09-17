@@ -89,6 +89,7 @@ import {
   codeCacheToBuildResult,
   CodeResultCache,
   generateCodeResultCache,
+  PropertyControlsInfo,
 } from '../../custom-code/code-file'
 import { EditorModes, Mode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
@@ -122,6 +123,8 @@ import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { notLoggedIn } from '../../../common/user'
+import {dependenciesWithEditorRequirements} from '../npm-dependency/npm-dependency'
+import {getControlsForExternalDependencies} from '../../../core/property-controls/property-controls-utils'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -262,6 +265,7 @@ export interface EditorState {
   jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
   projectContents: ProjectContents
   codeResultCache: CodeResultCache
+  propertyControlsInfo: PropertyControlsInfo
   nodeModules: {
     skipDeepFreeze: true // when we evaluate the code files we plan to mutate the content with the eval result
     files: NodeModules
@@ -1021,7 +1025,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
     projectContents: {},
-    codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, [], 'full-build', null),
+    codeResultCache: generateCodeResultCache({}, {}, {}, [], {}, dispatch, 'full-build', null),
+    propertyControlsInfo: {},
     nodeModules: {
       skipDeepFreeze: true,
       files: {},
@@ -1281,25 +1286,129 @@ export function editorModelFromPersistentModel(
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
 ): EditorState {
-  const createdEditorState = createEditorState(dispatch)
+  const npmDependencies = dependenciesWithEditorRequirements(persistentModel.projectContents)
   const editor: EditorState = {
-    ...createdEditorState,
-    ...{
-      ...persistentModel,
-      selectedFile: Utils.optionalMap((tab) => {
-        return {
-          tab: tab,
-          initialCursorPosition: null,
-        }
-      }, persistentModel.selectedFile),
-      navigator: {
-        ...createdEditorState.navigator,
-        ...persistentModel.navigator,
+    id: null,
+    appID: persistentModel.appID ?? null,
+    projectName: createNewProjectName(),
+    projectVersion: persistentModel.projectVersion,
+    isLoaded: false,
+    openFiles: persistentModel.openFiles,
+    cursorPositions: {},
+    spyMetadataKILLME: [],
+    domMetadataKILLME: [],
+    jsxMetadataKILLME: [],
+    codeResultCache: generateCodeResultCache(
+      persistentModel.projectContents,
+      {},
+      {},
+      [],
+      {},
+      dispatch,
+      'full-build',
+      null,
+    ),
+    projectContents: persistentModel.projectContents,
+    propertyControlsInfo: getControlsForExternalDependencies(npmDependencies),
+    nodeModules: {
+      skipDeepFreeze: true,
+      files: {},
+      projectFilesBuildResults: {},
+      packageStatus: {},
+    },
+    selectedViews: [],
+    highlightedViews: [],
+    hiddenInstances: persistentModel.hiddenInstances,
+    warnedInstances: [],
+    mode: EditorModes.selectMode(),
+    focusedPanel: 'canvas',
+    keysPressed: {},
+    openPopupId: null,
+    toasts: [],
+    cursorStack: {
+      fixed: null,
+      mouseOver: [],
+    },
+    leftMenu: {
+      selectedTab: LeftMenuTab.ProjectStructure,
+      expanded: true,
+      paneWidth: LeftPaneDefaultWidth,
+    },
+    rightMenu: {
+      selectedTab: RightMenuTab.Inspector,
+      expanded: true,
+    },
+    interfaceDesigner: {
+      codePaneWidth: 500,
+      codePaneVisible: true,
+      restorableCodePaneWidth: 500,
+      layoutReversed: true,
+      additionalControls: true,
+    },
+    canvas: {
+      dragState: null, // TODO change dragState if editorMode changes
+      visible: true,
+      scale: 1,
+      snappingThreshold: BaseSnappingThreshold,
+      realCanvasOffset: { x: 20, y: 60 } as CanvasPoint,
+      roundedCanvasOffset: { x: 20, y: 60 } as CanvasPoint,
+      textEditor: null,
+      selectionControlsVisible: true,
+      animationsEnabled: true,
+      highlightsEnabled: true,
+      cursor: null,
+      duplicationState: null,
+      base64Blobs: {},
+      mountCount: 0,
+    },
+    inspector: {
+      visible: true,
+    },
+    dependencyList: persistentModel.dependencyList,
+    genericExternalResources: {
+      minimised: true,
+    },
+    googleFontsResources: {
+      minimised: true,
+    },
+    projectSettings: persistentModel.projectSettings,
+    preview: {
+      visible: false,
+      connected: false,
+    },
+    home: {
+      visible: false,
+    },
+    lastUsedFont: persistentModel.lastUsedFont,
+    modal: null,
+    localProjectList: [],
+    projectList: [],
+    showcaseProjects: [],
+    codeEditingEnabled: false,
+    thumbnailLastGenerated: 0,
+    pasteTargetsToIgnore: [],
+    parseOrPrintInFlight: false,
+    codeEditorTheme: persistentModel.codeEditorTheme,
+    safeMode: false,
+    saveError: false,
+    selectedFile: Utils.optionalMap((tab) => {
+      return {
+        tab: tab,
+        initialCursorPosition: null,
+      }
+    }, persistentModel.selectedFile),
+    navigator: {
+      dropTargetHint: {
+        target: null,
+        type: null,
       },
-      fileBrowser: {
-        ...createdEditorState.fileBrowser,
-        ...persistentModel.fileBrowser,
-      },
+      collapsedViews: [],
+      renamingTarget: null,
+      minimised: persistentModel.navigator.minimised,
+    },
+    fileBrowser: {
+      renamingTarget: null,
+      minimised: persistentModel.fileBrowser.minimised,
     },
     codeEditorErrors: persistentModel.codeEditorErrors,
   }
@@ -1394,7 +1503,13 @@ export const DefaultPackageJson = {
 export function packageJsonFileFromProjectContents(
   projectContents: ProjectContents,
 ): ProjectFile | null {
-  return Utils.defaultIfNull<ProjectFile | null>(null, projectContents['/package.json'])
+  if ('package.json' in projectContents) {
+    return projectContents['package.json']
+  } else if ('/package.json' in projectContents) {
+    return projectContents['/package.json']
+  } else {
+    return null
+  }
 }
 
 export function getPackageJsonFromEditorState(editor: EditorState): Either<string, any> {

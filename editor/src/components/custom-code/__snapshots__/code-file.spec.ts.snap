@@ -82,7 +82,6 @@ exports[`Generating codeResultCache Generates codeResultCache for build error 1`
 Object {
   "cache": Object {
     "/src/components.js": Object {
-      "error": [TypeError: Cannot convert undefined or null to object],
       "errors": Array [
         Object {
           "codeSnippet": "  14 |         height: '100%',++
@@ -117,7 +116,26 @@ Object {
           "type": "Error",
         },
       ],
-      "exports": Object {},
+      "exports": Object {
+        "ComponentWithProps": Object {
+          "functionInfo": Array [
+            Object {
+              "memberInfo": Object {
+                "members": Object {},
+                "type": "any",
+              },
+              "name": "props",
+            },
+          ],
+          "reactClassInfo": null,
+          "type": "{ (props: any): Element; propertyControls: { text: { type: string; title: string; defaultValue: string; }; num: { type: string; title: string; defaultValue: number; }; pink: { type: string; title: string; defaultValue: boolean; }; }; }",
+        },
+        "LABEL": Object {
+          "functionInfo": null,
+          "reactClassInfo": null,
+          "type": "\\"press me! 😉\\"",
+        },
+      },
       "sourceMap": null,
       "transpiledCode": null,
     },
@@ -243,9 +261,6 @@ ComponentWithProps.propertyControls = {
       "transpiledCode": null,
     },
   },
-  "propertyControlsInfo": Object {
-    "/src/components": Object {},
-  },
   "requireFn": [Function],
   "skipDeepFreeze": true,
 }
@@ -255,7 +270,6 @@ exports[`Generating codeResultCache Generates codeResultCache for multi file bui
 Object {
   "cache": Object {
     "/app.js": Object {
-      "error": null,
       "errors": Array [],
       "exports": Object {
         "App": Object {
@@ -270,39 +284,11 @@ Object {
           ],
           "reactClassInfo": null,
           "type": "(props: any) => Element",
-          "value": [Function],
         },
         "canvasMetadata": Object {
           "functionInfo": null,
           "reactClassInfo": null,
           "type": "{ specialNodes: any[]; nodeMetadata: {}; scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { ...; }; }[]; elementMetadata: {}; }",
-          "value": Object {
-            "elementMetadata": Object {},
-            "nodeMetadata": Object {},
-            "scenes": Array [
-              Object {
-                "component": "App",
-                "container": Object {
-                  "layoutSystem": "pinSystem",
-                },
-                "frame": Object {
-                  "height": 812,
-                  "left": 0,
-                  "top": 0,
-                  "width": 375,
-                },
-                "props": Object {
-                  "layout": Object {
-                    "bottom": 0,
-                    "left": 0,
-                    "right": 0,
-                    "top": 0,
-                  },
-                },
-              },
-            ],
-            "specialNodes": Array [],
-          },
         },
       },
       "sourceMap": Object {
@@ -442,7 +428,6 @@ exports.App = function (props) {
 }; //# sourceMappingURL=app.js.map",
     },
     "/src/components.js": Object {
-      "error": null,
       "errors": Array [],
       "exports": Object {
         "ComponentWithProps": Object {
@@ -457,19 +442,11 @@ exports.App = function (props) {
           ],
           "reactClassInfo": null,
           "type": "{ (props: any): Element; propertyControls: { text: { type: string; title: string; defaultValue: string; }; num: { type: string; title: string; defaultValue: number; }; pink: { type: string; title: string; defaultValue: boolean; }; }; }",
-          "value": [Function],
         },
         "LABEL": Object {
           "functionInfo": null,
           "reactClassInfo": null,
           "type": "\\"press me! 😉\\"",
-          "value": "press me! 😉",
-        },
-        "default": Object {
-          "functionInfo": null,
-          "reactClassInfo": null,
-          "type": "any",
-          "value": [Function],
         },
       },
       "sourceMap": Object {
@@ -635,7 +612,6 @@ exports.ComponentWithProps.propertyControls = {
 }; //# sourceMappingURL=components.js.map",
     },
     "/src/index.js": Object {
-      "error": [TypeError: Cannot convert undefined or null to object],
       "exports": Object {},
     },
   },
@@ -1208,29 +1184,6 @@ exports.ComponentWithProps.propertyControls = {
 }; //# sourceMappingURL=components.js.map",
     },
   },
-  "propertyControlsInfo": Object {
-    "/app": Object {},
-    "/src/components": Object {
-      "ComponentWithProps": Object {
-        "num": Object {
-          "defaultValue": 2,
-          "title": "amount",
-          "type": "number",
-        },
-        "pink": Object {
-          "defaultValue": true,
-          "title": "Enabled",
-          "type": "boolean",
-        },
-        "text": Object {
-          "defaultValue": "Change me",
-          "title": "Title",
-          "type": "string",
-        },
-      },
-    },
-    "/src/index": Object {},
-  },
   "requireFn": [Function],
   "skipDeepFreeze": true,
 }
@@ -1240,7 +1193,6 @@ exports[`Generating codeResultCache Generates codeResultCache for single file bu
 Object {
   "cache": Object {
     "/app.js": Object {
-      "error": null,
       "errors": Array [],
       "exports": Object {
         "App": Object {
@@ -1255,39 +1207,11 @@ Object {
           ],
           "reactClassInfo": null,
           "type": "(props: any) => Element",
-          "value": [Function],
         },
         "canvasMetadata": Object {
           "functionInfo": null,
           "reactClassInfo": null,
           "type": "{ specialNodes: any[]; nodeMetadata: {}; scenes: { component: string; frame: { height: number; left: number; width: number; top: number; }; props: { layout: { top: number; left: number; bottom: number; right: number; }; }; container: { ...; }; }[]; elementMetadata: {}; }",
-          "value": Object {
-            "elementMetadata": Object {},
-            "nodeMetadata": Object {},
-            "scenes": Array [
-              Object {
-                "component": "App",
-                "container": Object {
-                  "layoutSystem": "pinSystem",
-                },
-                "frame": Object {
-                  "height": 812,
-                  "left": 0,
-                  "top": 0,
-                  "width": 375,
-                },
-                "props": Object {
-                  "layout": Object {
-                    "bottom": 0,
-                    "left": 0,
-                    "right": 0,
-                    "top": 0,
-                  },
-                },
-              },
-            ],
-            "specialNodes": Array [],
-          },
         },
       },
       "sourceMap": Object {
@@ -1664,9 +1588,6 @@ exports.App = function (props) {
   });
 }; //# sourceMappingURL=app.js.map",
     },
-  },
-  "propertyControlsInfo": Object {
-    "/app": Object {},
   },
   "requireFn": [Function],
   "skipDeepFreeze": true,

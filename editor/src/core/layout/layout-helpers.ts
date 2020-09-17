@@ -45,9 +45,9 @@ import { EdgePosition } from '../../components/canvas/canvas-types'
 import { EditorState } from '../../components/editor/store/editor-state'
 import { getPropertyControlsForTarget } from '../property-controls/property-controls-utils'
 
-export function targetRespectsLayout(target: TemplatePath, editor: EditorState) {
+export function targetRespectsLayout(target: TemplatePath, editor: EditorState): boolean {
   const propControls = getPropertyControlsForTarget(target, editor)
-  return propControls?.style && propControls?.style.type === 'styleobject'
+  return propControls?.style?.type === 'styleobject'
 }
 
 export const PinLayoutHelpers = {

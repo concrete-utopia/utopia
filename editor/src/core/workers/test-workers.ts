@@ -1,4 +1,4 @@
-import { ParseSuccess } from 'src/core/shared/project-file-types'
+import { NodeModules, ParseSuccess } from 'src/core/shared/project-file-types'
 import {
   createLinterRequestMessage,
   handleMessage as handleLinterMessage,
@@ -11,7 +11,9 @@ import {
   handleMessage as handleParserPrinterMessage,
   ParserPrinterResultMessage,
 } from './parser-printer/parser-printer-worker'
-import { handleMessage as handleTSWorkerMessage } from './ts/ts-worker'
+import {
+  handleMessage as handleTSWorkerMessage,
+} from './ts/ts-worker'
 import { BundlerWorker } from './bundler-bridge'
 
 export class FakeBundlerWorker implements BundlerWorker {
@@ -85,7 +87,7 @@ export class FakeLinterWorker implements LinterWorker {
 }
 
 export class FakeWatchdogWorker implements WatchdogWorker {
-  initWatchdogWorker(projectID: string): void {
+  initWatchdogWorker(_projectID: string): void {
     // empty
   }
 
@@ -93,11 +95,11 @@ export class FakeWatchdogWorker implements WatchdogWorker {
     // empty
   }
 
-  addHeartbeatRequestEventListener(handler: (e: MessageEvent) => void): void {
+  addHeartbeatRequestEventListener(_handler: (e: MessageEvent) => void): void {
     // empty
   }
 
-  sendHeartbeatResponseMessage(id: NodeJS.Timer, projectId: string): void {
+  sendHeartbeatResponseMessage(_id: NodeJS.Timer, _projectId: string): void {
     // empty
   }
 }

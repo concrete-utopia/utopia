@@ -61,6 +61,7 @@ import {
 } from '../../../core/model/test-ui-js-file'
 import { npmDependency } from '../../../core/shared/npm-dependency-types'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+
 const chaiExpect = Chai.expect
 
 /* eslint-disable @typescript-eslint/no-empty-function */

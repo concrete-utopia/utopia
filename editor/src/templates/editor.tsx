@@ -146,12 +146,12 @@ export class Editor {
           let actions: Array<EditorAction> = []
           if (!this.storedState.editor.safeMode) {
             const codeResultCache = generateCodeResultCache(
+              this.storedState.editor.projectContents,
               this.storedState.editor.codeResultCache.projectModules,
               msg.buildResult,
               msg.exportsInfo,
               this.storedState.editor.nodeModules.files,
               this.boundDispatch,
-              dependenciesWithEditorRequirements(this.storedState.editor.projectContents),
               msg.buildType,
               getMainUIFromModel(this.storedState.editor),
             )
@@ -231,6 +231,7 @@ export class Editor {
                         this.utopiaStoreHook,
                         this.utopiaStoreApi,
                         this.spyCollector,
+                        true
                       ),
                   )
                 })
@@ -249,7 +250,7 @@ export class Editor {
             }
 
             createNewProject(this.boundDispatch, () =>
-              renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
+              renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true),
             )
           }
         } else if (isSampleProject(projectId)) {
@@ -257,7 +258,7 @@ export class Editor {
             projectId,
             this.boundDispatch,
             this.storedState.workers,
-            () => renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
+            () => renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true),
           )
         } else {
           projectIsStoredLocally(projectId).then((isLocal) => {
@@ -268,7 +269,7 @@ export class Editor {
                 isLoggedIn(loginState),
                 this.storedState.workers,
                 () =>
-                  renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector),
+                  renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true),
               )
             } else {
               loadFromServer(
@@ -276,7 +277,7 @@ export class Editor {
                 this.boundDispatch,
                 this.storedState.workers,
                 () => {
-                  renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector)
+                  renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true)
                 },
                 () => {
                   renderProjectNotFound()
@@ -289,10 +290,14 @@ export class Editor {
     })
   }
 
-  onMessage = (event: MessageEvent) => {
+  onMessage = (event: MessageEvent): void => {
     const eventData = event.data
     if (EditorActions.isSendPreviewModel(eventData)) {
       previewIsAlive(InternalPreviewTimeout)
+      this.boundDispatch([eventData], 'noone')
+    } else if (EditorActions.isPropertyControlsIFrameReady(eventData)) {
+      this.boundDispatch([eventData], 'noone')
+    } else if (EditorActions.isUpdatePropertyControlsInfo(eventData)) {
       this.boundDispatch([eventData], 'noone')
     }
   }
@@ -337,12 +342,13 @@ export class Editor {
 export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
-  spyCollector: UiJsxCanvasContextData
-}> = hot(({ api, useStore, spyCollector }) => {
+  spyCollector: UiJsxCanvasContextData,
+  propertyControlsInfoSupported: boolean
+}> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
       <UiJsxCanvasContext.Provider value={spyCollector}>
-        <EditorComponent />
+        <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
       </UiJsxCanvasContext.Provider>
     </EditorStateContext.Provider>
   )
@@ -353,6 +359,7 @@ async function renderRootComponent(
   useStore: UtopiaStoreHook,
   api: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
+  propertyControlsInfoSupported: boolean
 ): Promise<void> {
   return triggerHashedAssetsUpdate().then(() => {
     // NOTE: we only need to call this function once,
@@ -360,7 +367,7 @@ async function renderRootComponent(
     const rootElement = document.getElementById(EditorID)
     if (rootElement != null) {
       ReactDOM.render(
-        <HotRoot api={api} useStore={useStore} spyCollector={spyCollector} />,
+        <HotRoot api={api} useStore={useStore} spyCollector={spyCollector} propertyControlsInfoSupported={propertyControlsInfoSupported} />,
         rootElement,
       )
     }

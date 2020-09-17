@@ -10,32 +10,55 @@ import {
 } from './property-controls-parser'
 import { PropertyControls, getDefaultProps, ControlDescription } from 'utopia-api'
 import { isRight, foldEither } from '../shared/either'
-import { forEachValue } from '../shared/object-utils'
+import { forEachValue, objectMap } from '../shared/object-utils'
 import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
 import { joinSpecial, pluck } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
-import { AntdControls } from './third-party-property-controls/antd-controls'
 import { NpmDependency } from '../shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../third-party/third-party-components'
 import { getJSXElementNameAsString, isIntrinsicHTMLElement } from '../shared/element-template'
-import { TemplatePath } from '../shared/project-file-types'
+import {
+  esCodeFile,
+  isEsCodeFile,
+  NodeModules,
+  ProjectContents,
+  TemplatePath,
+} from '../shared/project-file-types'
 import {
   getOpenImportsFromState,
   getOpenUtopiaJSXComponentsFromState,
-  getOpenUIJSFile,
   getOpenUIJSFileKey,
   EditorState,
 } from '../../components/editor/store/editor-state'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
+import { ExportsInfo } from '../workers/ts/ts-worker'
+
+export interface GetPropertyControlsInfoMessage {
+  exportsInfo: ReadonlyArray<ExportsInfo>
+  nodeModules: NodeModules
+  projectContents: ProjectContents
+}
+
+export function createGetPropertyControlsInfoMessage(
+  exportsInfo: ReadonlyArray<ExportsInfo>,
+  nodeModules: NodeModules,
+  projectContents: ProjectContents,
+): GetPropertyControlsInfoMessage {
+  return {
+    exportsInfo: exportsInfo,
+    nodeModules: nodeModules,
+    projectContents: projectContents,
+  }
+}
 
 export function defaultPropertiesForComponentInFile(
   componentName: string,
   filePathNoExtension: string,
-  codeResultCache: CodeResultCache | null,
+  propertyControlsInfo: PropertyControlsInfo,
 ): { [prop: string]: unknown } {
-  const propertyControlsForFile = codeResultCache?.propertyControlsInfo[filePathNoExtension] ?? {}
+  const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
   const parsedPropertyControlsForFile = parsePropertyControlsForFile(propertyControlsForFile)
   const parsedPropertyControls = parsedPropertyControlsForFile[componentName]
   return parsedPropertyControls == null
@@ -209,7 +232,7 @@ export function removeIgnored(
 }
 
 export function getControlsForExternalDependencies(
-  npmDependencies: NpmDependency[],
+  npmDependencies: ReadonlyArray<NpmDependency>,
 ): PropertyControlsInfo {
   let propertyControlsInfo: PropertyControlsInfo = {}
   fastForEach(npmDependencies, (dependency) => {
@@ -233,7 +256,7 @@ export function getPropertyControlsForTarget(
   target: TemplatePath,
   editor: EditorState,
 ): PropertyControls | null {
-  const codeResultCache = editor.codeResultCache
+  const propertyControlsInfo = editor.propertyControlsInfo
   const imports = getOpenImportsFromState(editor)
   const openFilePath = getOpenUIJSFileKey(editor)
   const rootComponents = getOpenUtopiaJSXComponentsFromState(editor)
@@ -269,10 +292,10 @@ export function getPropertyControlsForTarget(
       // TODO figure out absolute filepath
       const absoluteFilePath = filename.startsWith('.') ? `${filename.slice(1)}` : `${filename}`
       if (
-        codeResultCache.propertyControlsInfo[absoluteFilePath] != null &&
-        codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] != null
+        propertyControlsInfo[absoluteFilePath] != null &&
+        propertyControlsInfo[absoluteFilePath][tagName] != null
       ) {
-        return codeResultCache.propertyControlsInfo[absoluteFilePath][tagName] as PropertyControls
+        return propertyControlsInfo[absoluteFilePath][tagName] as PropertyControls
       } else {
         return null
       }
@@ -282,4 +305,77 @@ export function getPropertyControlsForTarget(
   } else {
     return null
   }
+}
+
+export const PropertyControlsInfoIFrameID = 'property-controls-info-frame'
+
+let propertyControlsIFrameReady: boolean = false
+let propertyControlsIFrameAvailable: boolean = false
+let lastPropertyControlsInfoSendID: number | undefined = undefined
+
+export function setPropertyControlsIFrameReady(value: boolean): void {
+  propertyControlsIFrameReady = value
+}
+
+export function setPropertyControlsIFrameAvailable(value: boolean): void {
+  propertyControlsIFrameAvailable = value
+}
+
+export function sendPropertyControlsInfoRequest(
+  exportsInfo: ReadonlyArray<ExportsInfo>,
+  nodeModules: NodeModules,
+  projectContents: ProjectContents,
+): void {
+  function scheduleSend(): void {
+    if (propertyControlsIFrameAvailable) {
+      window.clearTimeout(lastPropertyControlsInfoSendID)
+      lastPropertyControlsInfoSendID = window.setTimeout(async () => sendToIFrame(), 500)
+    }
+  }
+
+  function sendToIFrame(): void {
+    // Prevent a scheduled send from firing.
+    window.clearTimeout(lastPropertyControlsInfoSendID)
+
+    if (propertyControlsIFrameReady) {
+      const propertyControlsInfoElement = document.getElementById(PropertyControlsInfoIFrameID)
+      if (propertyControlsInfoElement == null) {
+        scheduleSend()
+      } else {
+        const iFramePropertyControlsInfoElement = (propertyControlsInfoElement as any) as HTMLIFrameElement
+        const contentWindow = iFramePropertyControlsInfoElement.contentWindow
+        if (contentWindow == null) {
+          scheduleSend()
+        } else {
+          try {
+            // Need to clear evalResultCache because it may contain things which are not serializable.
+            const clearedNodeModules: NodeModules = objectMap((nodeModule) => {
+              if (isEsCodeFile(nodeModule)) {
+                return esCodeFile(nodeModule.fileContents, null)
+              } else {
+                return nodeModule
+              }
+            }, nodeModules)
+            contentWindow.postMessage(
+              createGetPropertyControlsInfoMessage(
+                exportsInfo,
+                clearedNodeModules,
+                projectContents,
+              ),
+              '*',
+            )
+          } catch (exception) {
+            // Don't nuke the editor if there's an exception posting the message.
+            // This can happen if a value can't be cloned when posted.
+            console.error('Error sending message for property controls info.', exception)
+          }
+        }
+      }
+    } else {
+      scheduleSend()
+    }
+  }
+
+  // Initialise the first call.
+  sendToIFrame()
 }

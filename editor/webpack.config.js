@@ -56,6 +56,9 @@ const config = {
     preview: hot
       ? ['react-hot-loader/patch', './src/templates/preview.tsx']
       : './src/templates/preview.tsx',
+    propertyControlsInfo: hot
+      ? ['react-hot-loader/patch', './src/templates/property-controls-info.tsx']
+      : './src/templates/property-controls-info.tsx',
     tsWorker: './src/core/workers/ts/ts.worker.ts',
     parserPrinterWorker: './src/core/workers/parser-printer/parser-printer.worker.ts',
     linterWorker: './src/core/workers/linter/linter.worker.ts',
@@ -70,7 +73,7 @@ const config = {
         name === 'tsWorker' ||
         name === 'parserPrinterWorker' ||
         name === 'linterWorker' ||
-        name === 'watchdogWorker'
+        name === 'watchdogWorker' 
       return nameOnly ? '[name].js' : `[name].${hashPattern}.js`
     },
     chunkFilename: `[id].${hashPattern}.js`,
@@ -103,6 +106,15 @@ const config = {
       scriptLoading: 'defer',
       template: './src/templates/preview.html',
       filename: 'preview.html',
+      minify: false,
+    }),
+    new HtmlWebpackPlugin({
+      // Run it again to generate the preview.html
+      chunks: ['propertyControlsInfo'],
+      inject: 'head', // Add the script tags to the end of the <head>
+      scriptLoading: 'defer',
+      template: './src/templates/property-controls-info.html',
+      filename: 'property-controls-info.html',
       minify: false,
     }),
     new ScriptExtHtmlWebpackPlugin({

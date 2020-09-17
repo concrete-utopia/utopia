@@ -1,5 +1,5 @@
-import { TypeDefinitions } from '../shared/npm-dependency-types'
-import { ProjectContents, ParseSuccess } from '../shared/project-file-types'
+import { NpmDependency, TypeDefinitions } from '../shared/npm-dependency-types'
+import { ProjectContents, ParseSuccess, NodeModules } from '../shared/project-file-types'
 import {
   createParseFileMessage,
   createPrintCodeMessage,
@@ -15,6 +15,7 @@ import {
   createWatchdogTerminateMessage,
 } from './watchdog-worker'
 import { UtopiaTsWorkers, FileContent } from './common/worker-types'
+import { ExportsInfo, MultiFileBuildResult } from './ts/ts-worker'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   private bundlerWorker: NewBundlerWorker
@@ -28,47 +29,47 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
     this.bundlerWorker = new NewBundlerWorker(bundlerWorker)
   }
 
-  sendInitMessage(typeDefinitions: TypeDefinitions, projectContents: ProjectContents) {
+  sendInitMessage(typeDefinitions: TypeDefinitions, projectContents: ProjectContents): void {
     this.bundlerWorker.sendInitMessage(typeDefinitions, projectContents, null)
   }
 
-  sendUpdateFileMessage(filename: string, content: FileContent) {
+  sendUpdateFileMessage(filename: string, content: FileContent): void {
     this.bundlerWorker.sendUpdateFileMessage(filename, content)
   }
 
-  sendParseFileMessage(filename: string, content: string) {
+  sendParseFileMessage(filename: string, content: string): void {
     this.parserPrinterWorker.sendParseFileMessage(filename, content)
   }
 
-  sendPrintCodeMessage(parseSuccess: ParseSuccess) {
+  sendPrintCodeMessage(parseSuccess: ParseSuccess): void {
     this.parserPrinterWorker.sendPrintCodeMessage(parseSuccess)
   }
 
-  sendLinterRequestMessage(filename: string, content: string) {
+  sendLinterRequestMessage(filename: string, content: string): void {
     this.linterWorker.sendLinterRequestMessage(filename, content)
   }
 
-  addBundleResultEventListener(handler: (e: MessageEvent) => void) {
+  addBundleResultEventListener(handler: (e: MessageEvent) => void): void {
     this.bundlerWorker.addBundleResultEventListener(handler)
   }
 
-  removeBundleResultEventListener(handler: (e: MessageEvent) => void) {
+  removeBundleResultEventListener(handler: (e: MessageEvent) => void): void {
     this.bundlerWorker.removeBundleResultEventListener(handler)
   }
 
-  addParserPrinterEventListener(handler: (e: MessageEvent) => void) {
+  addParserPrinterEventListener(handler: (e: MessageEvent) => void): void {
     this.parserPrinterWorker.addParseFileResultEventListener(handler)
   }
 
-  removeParserPrinterEventListener(handler: (e: MessageEvent) => void) {
+  removeParserPrinterEventListener(handler: (e: MessageEvent) => void): void {
     this.parserPrinterWorker.removeParseFileResultEventListener(handler)
   }
 
-  addLinterResultEventListener(handler: (e: MessageEvent) => void) {
+  addLinterResultEventListener(handler: (e: MessageEvent) => void): void {
     this.linterWorker.addLinterResultEventListener(handler)
   }
 
-  removeLinterResultEventListener(handler: (e: MessageEvent) => void) {
+  removeLinterResultEventListener(handler: (e: MessageEvent) => void): void {
     this.linterWorker.removeLinterResultEventListener(handler)
   }
 
@@ -80,7 +81,7 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
     this.watchdogWorker.addHeartbeatRequestEventListener(handler)
   }
 
-  sendHeartbeatResponseMessage(id: NodeJS.Timer, projectId: string, safeMode: boolean) {
+  sendHeartbeatResponseMessage(id: NodeJS.Timer, projectId: string, safeMode: boolean): void {
     this.watchdogWorker.sendHeartbeatResponseMessage(id, projectId, safeMode)
   }
 }
@@ -101,19 +102,19 @@ export class RealParserPrinterWorker implements ParserPrinterWorker {
     this.worker = workerForFile('editor/parserPrinterWorker.js')
   }
 
-  sendParseFileMessage(filename: string, content: string) {
+  sendParseFileMessage(filename: string, content: string): void {
     this.worker.postMessage(createParseFileMessage(filename, content))
   }
 
-  sendPrintCodeMessage(parseSuccess: ParseSuccess) {
+  sendPrintCodeMessage(parseSuccess: ParseSuccess): void {
     this.worker.postMessage(createPrintCodeMessage(parseSuccess, true))
   }
 
-  addParseFileResultEventListener(handler: (e: MessageEvent) => void) {
+  addParseFileResultEventListener(handler: (e: MessageEvent) => void): void {
     this.worker.addEventListener('message', handler)
   }
 
-  removeParseFileResultEventListener(handler: (e: MessageEvent) => void) {
+  removeParseFileResultEventListener(handler: (e: MessageEvent) => void): void {
     this.worker.removeEventListener('message', handler)
   }
 }
@@ -132,15 +133,15 @@ export class RealLinterWorker implements LinterWorker {
     this.worker = workerForFile('editor/linterWorker.js')
   }
 
-  sendLinterRequestMessage(filename: string, content: string) {
+  sendLinterRequestMessage(filename: string, content: string): void {
     this.worker.postMessage(createLinterRequestMessage(filename, content))
   }
 
-  addLinterResultEventListener(handler: (e: MessageEvent) => void) {
+  addLinterResultEventListener(handler: (e: MessageEvent) => void): void {
     this.worker.addEventListener('message', handler)
   }
 
-  removeLinterResultEventListener(handler: (e: MessageEvent) => void) {
+  removeLinterResultEventListener(handler: (e: MessageEvent) => void): void {
     this.worker.removeEventListener('message', handler)
   }
 }
@@ -213,59 +214,60 @@ export class RealWatchdogWorker implements WatchdogWorker {
 }
 
 export class MockUtopiaTsWorkers implements UtopiaTsWorkers {
-  sendInitMessage(typeDefinitions: TypeDefinitions, projectContents: ProjectContents) {
+  sendInitMessage(_typeDefinitions: TypeDefinitions, _projectContents: ProjectContents): void {
     // empty
   }
 
-  sendUpdateFileMessage(filename: string, content: FileContent, emitBuild: boolean) {
+  sendUpdateFileMessage(_filename: string, _content: FileContent, _emitBuild: boolean): void {
     // empty
   }
 
-  sendParseFileMessage(filename: string, content: string) {
+  sendParseFileMessage(_filename: string, _content: string): void {
     // empty
   }
 
-  sendPrintCodeMessage(parseSuccess: ParseSuccess) {
+  sendPrintCodeMessage(_parseSuccess: ParseSuccess): void {
     // empty
   }
 
-  sendLinterRequestMessage(filename: string, content: string) {
+  sendLinterRequestMessage(_filename: string, _content: string): void {
     // empty
   }
 
-  addBundleResultEventListener(handler: (e: MessageEvent) => void) {
+  addBundleResultEventListener(_handler: (e: MessageEvent) => void): void {
     // empty
   }
 
-  removeBundleResultEventListener(handler: (e: MessageEvent) => void) {
+  removeBundleResultEventListener(_handler: (e: MessageEvent) => void): void {
     // empty
   }
 
-  addParserPrinterEventListener(handler: (e: MessageEvent) => void) {
+  addParserPrinterEventListener(_handler: (e: MessageEvent) => void): void {
     // empty
   }
 
-  removeParserPrinterEventListener(handler: (e: MessageEvent) => void) {
+  removeParserPrinterEventListener(_handler: (e: MessageEvent) => void): void {
     // empty
   }
 
-  addLinterResultEventListener(handler: (e: MessageEvent) => void) {
+  addLinterResultEventListener(_handler: (e: MessageEvent) => void): void {
     // empty
   }
 
-  removeLinterResultEventListener(handler: (e: MessageEvent) => void) {
+  removeLinterResultEventListener(_handler: (e: MessageEvent) => void): void {
     // empty
   }
 
-  initWatchdogWorker(projectID: string): void {
+  initWatchdogWorker(_projectID: string): void {
     // empty
   }
 
-  addHeartbeatRequestEventListener(handler: (e: MessageEvent) => void) {
+  addHeartbeatRequestEventListener(_handler: (e: MessageEvent) => void): void {
     // empty
   }
 
-  sendHeartbeatResponseMessage(id: NodeJS.Timer, projectId: string): void {
+  sendHeartbeatResponseMessage(_id: NodeJS.Timer, _projectId: string): void {
     // empty
   }
 }
+

@@ -1,5 +1,10 @@
 import { TypeDefinitions } from '../../shared/npm-dependency-types'
-import { ProjectContents, UIJSFile, CodeFile, ParseSuccess } from '../../shared/project-file-types'
+import {
+  ProjectContents,
+  UIJSFile,
+  CodeFile,
+  ParseSuccess,
+} from '../../shared/project-file-types'
 
 export type FileContent = string | UIJSFile | CodeFile
 

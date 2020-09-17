@@ -282,6 +282,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.ADD_MISSING_DIMENSIONS(action, state)
     case 'SET_PACKAGE_STATUS':
       return UPDATE_FNS.SET_PACKAGE_STATUS(action, state)
+    case 'UPDATE_PROPERTY_CONTROLS_INFO':
+      return UPDATE_FNS.UPDATE_PROPERTY_CONTROLS_INFO(action, state)
+    case 'PROPERTY_CONTROLS_IFRAME_READY':
+      return UPDATE_FNS.PROPERTY_CONTROLS_IFRAME_READY(action, state)
     default:
       return state
   }

@@ -26,7 +26,7 @@ import {
   NodeModules,
   Imports,
 } from '../../core/shared/project-file-types'
-import { CodeResultCache } from '../custom-code/code-file'
+import { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
 import { ElementContextMenuInstance } from '../element-context-menu'
 import { FontSettings } from '../inspector/common/css-utils'
 import { CSSTarget } from '../inspector/sections/header-section/target-selector'
@@ -759,6 +759,15 @@ export interface SetShortcut {
   newKey: Key
 }
 
+export interface UpdatePropertyControlsInfo {
+  action: 'UPDATE_PROPERTY_CONTROLS_INFO'
+  propertyControlsInfo: PropertyControlsInfo
+}
+
+export interface PropertyControlsIFrameReady {
+  action: 'PROPERTY_CONTROLS_IFRAME_READY'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -885,6 +894,8 @@ export type EditorAction =
   | AddMissingDimensions
   | SetPackageStatus
   | SetShortcut
+  | UpdatePropertyControlsInfo
+  | PropertyControlsIFrameReady
 
 export type DispatchPriority =
   | 'everyone'

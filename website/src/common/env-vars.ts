@@ -32,6 +32,11 @@ export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG
   : STAGING_CONFIG
   ? 'https://utopia.baby/'
   : BASE_URL
+export const PROPERTY_CONTROLS_INFO_BASE_URL: string = PRODUCTION_CONFIG
+  ? `https://utopia.fm/`
+  : STAGING_CONFIG
+  ? 'https://utopia.baby/'
+  : BASE_URL
 export const UTOPIA_BACKEND = BASE_URL + 'v1/'
 export const UTOPIA_BACKEND_WS = BASE_WS + 'v1/'
 export const ASSET_ENDPOINT = UTOPIA_BACKEND + 'asset/'
