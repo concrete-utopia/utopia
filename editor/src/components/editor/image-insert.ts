@@ -17,7 +17,7 @@ function handleImageSelected(
         const saveImageAction = EditorActions.saveAsset(
           `assets/${result.filename}`,
           file.type,
-          result.dataUrl,
+          result.base64Bytes,
           result.hash,
           EditorActions.saveImageDetails(result.size, afterSave),
         )

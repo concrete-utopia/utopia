@@ -171,13 +171,13 @@ function clearScheduledSave() {
   }
 }
 
-export function clearSaveState() {
+export function clearSaveState(): void {
   clearScheduledSave()
   _saveState = neverSaved()
 }
 
 window.addEventListener('beforeunload', (e) => {
-  if (!isSafeToClose(_saveState)) {
+  if (!isSafeToClose()) {
     forceServerSave()
     e.preventDefault()
     e.returnValue = ''
@@ -196,7 +196,7 @@ export function isLocal(): boolean {
   return isNeverSaved(_saveState) || !_saveState.remote
 }
 
-export function createNewProject(dispatch: EditorDispatch, renderEditorRoot: () => void) {
+export function createNewProject(dispatch: EditorDispatch, renderEditorRoot: () => void): void {
   _lastThumbnailGenerated = 0
   _saveState = neverSaved()
   newProject(dispatch, renderEditorRoot)
@@ -207,13 +207,12 @@ export async function createNewProjectFromImportedProject(
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
   renderEditorRoot: () => void,
-) {
+): Promise<void> {
   _lastThumbnailGenerated = 0
   _saveState = neverSaved()
   const projectId = await createNewProjectID()
   const persistentModel = persistentModelForProjectContents(importedProject.contents)
 
-  await saveAssets(projectId, importedProject.assetsToUpload)
   await serverSaveInner(
     dispatch,
     projectId,
@@ -222,6 +221,7 @@ export async function createNewProjectFromImportedProject(
     importedProject.projectName,
     true,
   )
+  await saveAssets(projectId, importedProject.assetsToUpload)
   load(dispatch, persistentModel, importedProject.projectName, projectId, workers, renderEditorRoot)
 }
 
@@ -230,7 +230,7 @@ export async function createNewProjectFromSampleProject(
   dispatch: EditorDispatch,
   workers: UtopiaTsWorkers,
   renderEditorRoot: () => void,
-) {
+): Promise<void> {
   _saveState = saved(true, Date.now(), projectId, projectId, dispatch, null, null, null)
   _lastThumbnailGenerated = 0
   await loadSampleProject(projectId, dispatch, workers, renderEditorRoot)
@@ -259,7 +259,7 @@ export async function saveToServer(
   modelChange: PersistentModel | null,
   nameChange: string | null,
   force: boolean,
-) {
+): Promise<void> {
   if (isLocal() || projectId == null) {
     if (modelChange != null) {
       const projectIDToUse = projectId == null ? await createNewProjectID() : projectId
@@ -293,7 +293,7 @@ async function checkCanSaveProject(projectId: string | null): Promise<boolean> {
 let BaseSaveWaitTime = 30000
 
 // For testing purposes only
-export function setBaseSaveWaitTime(delay: number) {
+export function setBaseSaveWaitTime(delay: number): void {
   BaseSaveWaitTime = delay
 }
 
@@ -470,7 +470,7 @@ export async function saveToLocalStorage(
   projectName: string,
   model: PersistentModel | null,
   name: string | null,
-) {
+): Promise<void> {
   if (isSaveInProgress(_saveState)) {
     _saveState = saveInProgress(false, model, name, _saveState.triggerNextImmediately)
   } else {
@@ -484,7 +484,7 @@ export async function localSaveInner(
   projectName: string,
   modelChange: PersistentModel | null,
   nameChange: string | null,
-) {
+): Promise<void> {
   const alreadyExists = projectId != null && (await projectIsStoredLocally(projectId))
   const isForked = !alreadyExists && !(await checkCanSaveProject(projectId))
   const projectIdToUse = projectId == null || isForked ? await createNewProjectID() : projectId
@@ -543,7 +543,7 @@ export async function loadFromServer(
   workers: UtopiaTsWorkers,
   renderEditorRoot: () => void,
   renderProjectNotFound: () => void,
-) {
+): Promise<void> {
   const project = await loadProject(projectId)
   switch (project.type) {
     case 'ProjectLoaded':
@@ -575,7 +575,7 @@ export async function loadFromLocalStorage(
   shouldUploadToServer: boolean,
   workers: UtopiaTsWorkers,
   renderEditorRoot: () => void,
-) {
+): Promise<void> {
   const localProject = await fetchLocalProject(projectId)
   if (localProject == null) {
     console.error(`Failed to load project with ID ${projectId} from local storage`)
@@ -593,7 +593,7 @@ export async function loadFromLocalStorage(
   }
 }
 
-export async function forceServerSave() {
+export async function forceServerSave(): Promise<void> {
   if ((_saveState.type === 'saved' || _saveState.type === 'save-error') && _saveState.remote) {
     serverSaveInner(
       _saveState.dispatch,
@@ -619,7 +619,7 @@ async function generateThumbnail(force: boolean): Promise<Buffer | null> {
   }
 }
 
-function isSafeToClose(saveState: SaveState) {
+function isSafeToClose(): boolean {
   return (
     _saveState.type === 'never-saved' ||
     (_saveState.type === 'saved' && _saveState.setTimeoutId == null)

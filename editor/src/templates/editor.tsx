@@ -225,8 +225,8 @@ export class Editor {
               } else {
                 const projectName = `${githubOwner}-${githubRepo}`
                 replaceLoadingMessage('Downloading Repo...')
-                importZippedGitProject(projectName, repoResult.value).then(
-                  (importProjectResult) => {
+                importZippedGitProject(projectName, repoResult.value)
+                  .then((importProjectResult) => {
                     if (isProjectImportSuccess(importProjectResult)) {
                       replaceLoadingMessage('Importing Project...')
                       createNewProjectFromImportedProject(
@@ -244,8 +244,10 @@ export class Editor {
                     } else {
                       renderProjectLoadError(importProjectResult.errorMessage)
                     }
-                  },
-                )
+                  })
+                  .catch((err) => {
+                    console.error('Import error.', err)
+                  })
               }
             })
           } else {
