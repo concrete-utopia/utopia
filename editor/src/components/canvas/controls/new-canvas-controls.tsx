@@ -62,10 +62,9 @@ export interface ControlProps {
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
   elementsThatRespectLayout: Array<TemplatePath>
-  propertyTargetOptions: Array<LayoutTargetableProp>
-  propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
   showYogaChildControls: boolean
+  keysPressed: KeysPressed
+  activeTargetProperty: LayoutTargetableProp
 }
 
 interface NewCanvasControlsProps {
@@ -95,8 +94,11 @@ function useArrayAndIndex(defaultTargets: LayoutTargetableProp[]) {
   return [targets, targetIndex, setTargetsResetIndex, incrementTargetIndex] as const
 }
 
-function useTargetSelector(defaultTargets: LayoutTargetableProp[], keysPressed: KeysPressed) {
-  const [targets, targetIndex, setTargets, incrementTargetIndex] = useArrayAndIndex(defaultTargets)
+export function useTargetSelector(
+  defaultTargets: LayoutTargetableProp[],
+  keysPressed: KeysPressed,
+): [Array<LayoutTargetableProp>, number] {
+  const [targets, targetIndex, , incrementTargetIndex] = useArrayAndIndex(defaultTargets)
 
   const shiftPressed = keysPressed.shift
   const previousShiftPressed = usePrevious(shiftPressed)
@@ -105,7 +107,7 @@ function useTargetSelector(defaultTargets: LayoutTargetableProp[], keysPressed: 
     incrementTargetIndex()
   }
 
-  return [targets, targetIndex, setTargets] as const
+  return [targets, targetIndex]
 }
 
 export const NewCanvasControls = betterReactMemo(
@@ -124,11 +126,6 @@ export const NewCanvasControls = betterReactMemo(
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,
     }))
-
-    const [targets, targetIndex, setTargetOptionsArray] = useTargetSelector(
-      ['Width', 'minWidth', 'maxWidth'],
-      canvasControlProps.editor.keysPressed,
-    )
 
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.
@@ -184,9 +181,6 @@ export const NewCanvasControls = betterReactMemo(
             <NewCanvasControlsClass
               windowToCanvasPosition={props.windowToCanvasPosition}
               {...canvasControlProps}
-              propertyTargetOptions={targets}
-              propertyTargetSelectedIndex={targetIndex}
-              setTargetOptionsArray={setTargetOptionsArray}
             />
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
@@ -204,9 +198,6 @@ interface NewCanvasControlsClassProps {
   canvasOffset: CanvasPoint
   animationEnabled: boolean
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
-  propertyTargetOptions: Array<LayoutTargetableProp>
-  propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
@@ -322,10 +313,9 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
       elementsThatRespectLayout: elementsThatRespectLayout,
-      propertyTargetOptions: props.propertyTargetOptions,
-      propertyTargetSelectedIndex: props.propertyTargetSelectedIndex,
-      setTargetOptionsArray: props.setTargetOptionsArray,
       showYogaChildControls: true,
+      activeTargetProperty: 'Width', // FIXME
+      keysPressed: props.editor.keysPressed,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {

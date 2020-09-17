@@ -6,19 +6,21 @@ import {
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { bimapEither, eitherToMaybe, left, right } from '../../../core/shared/either'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import { KeysPressed } from '../../../utils/keyboard'
 import { colorTheme } from '../../../uuiui'
+import { useTargetSelector } from './new-canvas-controls'
 
 interface PropertyTargetSelector {
   targetComponentMetadata: ElementInstanceMetadata | null
   top: number
   left: number
   options: LayoutTargetableProp[]
-  selected: number
-  setOptionsCallback: (options: Array<LayoutTargetableProp>) => void
+  keysPressed: KeysPressed
 }
 
 export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Element => {
-  props.setOptionsCallback(props.options)
+  // props.setOptionsCallback(props.options)
+  const [, targetIndex] = useTargetSelector(props.options, props.keysPressed)
 
   return (
     <div
@@ -45,9 +47,8 @@ export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Eleme
             key={option}
             style={{
               padding: '0 3px',
-              color: props.selected === index ? 'white' : colorTheme.controlledBlue.value,
-              backgroundColor:
-                props.selected === index ? colorTheme.controlledBlue.value : 'inherit',
+              color: targetIndex === index ? 'white' : colorTheme.controlledBlue.value,
+              backgroundColor: targetIndex === index ? colorTheme.controlledBlue.value : 'inherit',
               borderRadius: 5,
             }}
           >

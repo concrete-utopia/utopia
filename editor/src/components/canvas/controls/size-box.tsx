@@ -34,6 +34,7 @@ import {
   LayoutTargetableProp,
 } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { KeysPressed } from '../../../utils/keyboard'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -75,7 +76,7 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         this.props.metadata,
         this.props.selectedViews,
         isMultiSelect,
-        this.props.propertyTargetOptions[this.props.propertyTargetSelectedIndex],
+        this.props.activeTargetProperty,
       )
 
       this.props.dispatch(
@@ -140,9 +141,7 @@ interface ResizeEdgeProps {
     horizontal: string
   }
   dragState: DragState | null
-  propertyTargetOptions: Array<LayoutTargetableProp>
-  propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
+  keysPressed: KeysPressed
 }
 
 interface ResizeEdgeState {
@@ -231,9 +230,8 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
                 ? ['Height', 'minHeight', 'maxHeight']
                 : ['Width', 'minWidth', 'maxWidth']
             }
-            selected={this.props.propertyTargetSelectedIndex}
-            setOptionsCallback={this.props.setTargetOptionsArray}
             targetComponentMetadata={this.props.targetComponentMetadata}
+            keysPressed={this.props.keysPressed}
           />
         )}
       </React.Fragment>
@@ -256,9 +254,7 @@ interface ResizeLinesProps {
     vertical: 'Width' | 'FlexFlexBasis' | 'FlexCrossBasis'
     horizontal: 'Height' | 'FlexFlexBasis' | 'FlexCrossBasis'
   }
-  propertyTargetOptions: Array<LayoutTargetableProp>
-  propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
+  keysPressed: KeysPressed
 }
 
 const LineOffset = 6
@@ -337,9 +333,8 @@ const ResizeLines = (props: ResizeLinesProps) => {
               ? [props.labels.vertical, 'minWidth', 'maxWidth']
               : [props.labels.horizontal, 'minHeight', 'maxHeight']
           }
-          setOptionsCallback={props.setTargetOptionsArray}
-          selected={props.propertyTargetSelectedIndex}
           targetComponentMetadata={props.targetComponentMetadata}
+          keysPressed={props.keysPressed}
         />
       )}
       {mouseCatcher}
@@ -513,9 +508,8 @@ interface ResizeRectangleProps {
     vertical: 'Width' | 'FlexFlexBasis' | 'FlexCrossBasis'
     horizontal: 'Height' | 'FlexFlexBasis' | 'FlexCrossBasis'
   }
-  propertyTargetOptions: Array<LayoutTargetableProp>
-  propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
+  activeTargetProperty: LayoutTargetableProp
+  keysPressed: KeysPressed
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
