@@ -148,6 +148,13 @@ export class YogaControls extends React.Component<YogaControlsProps> {
         )
         if (MetadataUtils.isFlexLayoutedContainer(elementInstance)) {
           return elementInstance?.children.map((child) => child.templatePath) ?? []
+        } else if (
+          MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+            view,
+            this.props.componentMetadata,
+          )
+        ) {
+          return [view]
         } else {
           return []
         }
