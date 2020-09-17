@@ -9,18 +9,20 @@ import {
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
-import { getControlsForExternalDependencies } from '../../core/property-controls/property-controls-utils'
-import { NodeModules, esCodeFile } from '../../core/shared/project-file-types'
+import {
+  getControlsForExternalDependencies,
+  sendPropertyControlsInfoRequest,
+} from '../../core/property-controls/property-controls-utils'
+import { NodeModules, esCodeFile, ProjectContents } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
 import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import { updateNodeModulesContents } from '../editor/actions/actions'
 import { fastForEach } from '../../core/shared/utils'
 export interface CodeResult {
-  exports: ModuleExportTypesAndValues
+  exports: ModuleExportTypes
   transpiledCode: string | null
   sourceMap: RawSourceMap | null
-  error: Error | null
 }
 
 // UtopiaRequireFn is a special require function, where you can control whether the evaluation of the code should happen only once or more.
@@ -44,7 +46,6 @@ export type CodeResultCache = {
   skipDeepFreeze: true
   cache: { [filename: string]: CodeResult }
   exportsInfo: ReadonlyArray<ExportsInfo>
-  propertyControlsInfo: PropertyControlsInfo
   error: Error | null
   requireFn: UtopiaRequireFn
   projectModules: MultiFileBuildResult
@@ -55,7 +56,7 @@ type ModuleExportTypes = { [name: string]: ExportType }
 type ExportValue = { value: any }
 type ModuleExportTypesAndValues = { [name: string]: ExportType & ExportValue }
 
-function getExportValuesFromAllModules(
+export function getExportValuesFromAllModules(
   buildResult: MultiFileBuildResult,
   requireFn: UtopiaRequireFn,
 ): { [module: string]: ModuleExportValues } {
@@ -100,7 +101,13 @@ function getExportValuesFromAllModules(
   return exports
 }
 
-function processExportsInfo(exportValues: ModuleExportValues, exportTypes: ModuleExportTypes) {
+export function processExportsInfo(
+  exportValues: ModuleExportValues,
+  exportTypes: ModuleExportTypes,
+): {
+  exports: ModuleExportTypesAndValues
+  error: Error | null
+} {
   let exportsWithType: ModuleExportTypesAndValues = {}
   try {
     Utils.fastForEach(Object.keys(exportValues), (name: string) => {
@@ -145,12 +152,12 @@ export function incorporateBuildResult(
 }
 
 export function generateCodeResultCache(
+  projectContents: ProjectContents,
   existingModules: MultiFileBuildResult,
   updatedModules: MultiFileBuildResult,
   exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
-  npmDependencies: NpmDependency[],
   buildType: BuildType,
   mainUiFileName: string | null,
 ): CodeResultCache {
@@ -180,30 +187,16 @@ export function generateCodeResultCache(
     incorporateBuildResult(nodeModules, modules)
   }
 
+  // Trigger async call to build the property controls info.
+  sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents)
+
   const requireFn = getMemoizedRequireFn(nodeModules, dispatch)
 
-  const exportValues = getExportValuesFromAllModules(modules, requireFn)
   let cache: { [code: string]: CodeResult } = {}
-  let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
-    npmDependencies,
-  )
   Utils.fastForEach(exportsInfo, (result) => {
-    const codeResult = processExportsInfo(exportValues[result.filename], result.exportTypes)
     cache[result.filename] = {
-      ...codeResult,
+      exports: result.exportTypes,
       ...modules[result.filename],
-    }
-    let propertyControls: { [name: string]: PropertyControls } = {}
-    if (codeResult.exports != null) {
-      Utils.fastForEach(Object.keys(codeResult.exports), (name) => {
-        const exportedObject = codeResult.exports[name].value
-        if (exportedObject != null && exportedObject.propertyControls != null) {
-          // FIXME validate shape
-          propertyControls[name] = exportedObject.propertyControls
-        }
-      })
-      const filenameNoExtension = result.filename.replace(/\.(js|jsx|ts|tsx)$/, '')
-      propertyControlsInfo[filenameNoExtension] = propertyControls
     }
   })
 
@@ -211,7 +204,6 @@ export function generateCodeResultCache(
     skipDeepFreeze: true,
     exportsInfo: exportsInfo,
     cache: cache,
-    propertyControlsInfo: propertyControlsInfo,
     error: null,
     requireFn: requireFn,
     projectModules: modules,

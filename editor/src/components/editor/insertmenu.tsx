@@ -70,6 +70,7 @@ import {
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import { isBuiltinDependency } from '../../core/es-modules/package-manager/package-manager'
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
+import { PropertyControlsInfo } from '../custom-code/code-file'
 
 interface CurrentFileComponent {
   componentName: string
@@ -87,6 +88,7 @@ interface InsertMenuProps {
   currentFileComponents: Array<CurrentFileComponent>
   dependencies: Array<PossiblyUnversionedNpmDependency>
   packageStatus: PackageStatusMap
+  propertyControlsInfo: PropertyControlsInfo
 }
 
 export const InsertMenu = betterReactMemo('InsertMenu', () => {
@@ -108,7 +110,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
             const defaultProps = defaultPropertiesForComponentInFile(
               componentName,
               dropFileExtension(openFileFullPath),
-              store.editor.codeResultCache,
+              store.editor.propertyControlsInfo,
             )
             const detectedProps = topLevelElement.propsUsed
             currentFileComponents.push({
@@ -130,6 +132,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
       currentlyOpenFilename: currentlyOpenFilename,
       currentFileComponents: currentFileComponents,
       packageStatus: store.editor.nodeModules.packageStatus,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
     }
   })
 
@@ -207,7 +210,9 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
       this.props.editorDispatch !== nextProps.editorDispatch ||
       this.props.selectedViews !== nextProps.selectedViews ||
       this.props.mode !== nextProps.mode ||
-      this.props.dependencies !== nextProps.dependencies
+      this.props.dependencies !== nextProps.dependencies ||
+      this.props.packageStatus !== nextProps.packageStatus ||
+      this.props.propertyControlsInfo !== nextProps.propertyControlsInfo
 
     return shouldUpdate
   }
@@ -290,6 +295,22 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
       ],
       'everyone',
     )
+  }
+
+  getDependencyStatus(dependencyName: string, defaultStatus: PackageStatus): PackageStatus {
+    const regularStatus = this.props.packageStatus[dependencyName]?.status
+    switch (regularStatus) {
+      case null:
+        return defaultStatus
+      case 'loaded':
+        if (dependencyName in this.props.propertyControlsInfo) {
+          return 'loaded'
+        } else {
+          return 'loading'
+        }
+      default:
+        return regularStatus
+    }
   }
 
   render() {
@@ -383,7 +404,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             {this.props.currentFileComponents.map((currentFileComponent) => {
               const { componentName, defaultProps, detectedProps } = currentFileComponent
               const warningMessage = findMissingDefaultsAndGetWarning(detectedProps, defaultProps)
-              const insertItemOnMouseDown = React.useCallback(() => {
+              const insertItemOnMouseDown = () => {
                 const newUID = generateUID(this.props.existingUIDs)
                 let props: JSXAttributes = objectMap(jsxAttributeValue, defaultProps)
                 props['data-uid'] = jsxAttributeValue(newUID)
@@ -392,7 +413,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   [enableInsertModeForJSXElement(newElement, newUID, {}, null)],
                   'everyone',
                 )
-              }, [componentName, defaultProps])
+              }
 
               return (
                 <InsertItem
@@ -419,15 +440,17 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             if (componentDescriptor == null) {
               return null
             } else {
+              const dependencyStatus = this.getDependencyStatus(dependency.name, 'loaded')
+              const components = dependencyStatus === 'loaded' ? componentDescriptor.components : []
               return (
                 <InsertGroup
                   label={componentDescriptor.name}
                   key={dependency.name}
                   dependencyVersion={dependency.version}
-                  dependencyStatus={this.props.packageStatus[dependency.name]?.status ?? 'loaded'}
+                  dependencyStatus={dependencyStatus}
                 >
-                  {componentDescriptor.components.map((component, componentIndex) => {
-                    const insertItemOnMouseDown = React.useCallback(() => {
+                  {components.map((component, componentIndex) => {
+                    const insertItemOnMouseDown = () => {
                       const newUID = generateUID(this.props.existingUIDs)
                       const newElement = {
                         ...component.element,
@@ -447,7 +470,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                         ],
                         'everyone',
                       )
-                    }, [component.element, component.importsToAdd])
+                    }
                     return (
                       <InsertItem
                         key={`insert-item-third-party-${dependencyIndex}-${componentIndex}`}
@@ -471,7 +494,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
               return (
                 <InsertGroup
                   label={dependency.name}
-                  dependencyStatus={this.props.packageStatus[dependency.name]?.status ?? 'loading'}
+                  dependencyStatus={this.getDependencyStatus(dependency.name, 'loading')}
                   dependencyVersion={null}
                 />
               )

@@ -37,9 +37,11 @@ export class Avatar extends React.Component<AvatarProps> {
 
     return (
       <div
-        className='roleAvatar fw5 justify-center overflow-hidden'
+        className='user-avatar'
         style={{
           ...backgroundStyle,
+          justifyContent: 'center',
+          overflow: 'hidden',
           width: this.size,
           height: this.size,
           borderRadius: this.size,

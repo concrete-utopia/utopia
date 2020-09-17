@@ -765,7 +765,7 @@ export function handleKeyUp(
     updatedKeysPressed = updateKeysPressed(
       editor.keysPressed,
       key,
-      true,
+      false,
       Modifier.modifiersForKeyboardEvent(event),
     )
   }

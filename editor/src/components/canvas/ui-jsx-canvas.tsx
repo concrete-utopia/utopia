@@ -935,9 +935,7 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
   let rootElement = null
   let validPaths: Array<InstancePath> = []
   if (content != null) {
-    const defaultProps = defaultPropertiesForComponent(content)
     const passthroughProps = {
-      ...defaultProps,
       ...inputProps,
       ...componentProps,
     }

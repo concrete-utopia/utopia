@@ -44,7 +44,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       topLevelElements: transformedComponents,
     }
 
-    expect(testPrintCode(updatedProject)).toMatch(
+    expect(testPrintCode(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -87,7 +87,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       topLevelElements: transformedComponents,
     }
 
-    expect(testPrintCode(updatedProject)).toMatch(
+    expect(testPrintCode(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -130,7 +130,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       topLevelElements: transformedComponents,
     }
 
-    expect(testPrintCode(updatedProject)).toMatch(
+    expect(testPrintCode(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -182,7 +182,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       topLevelElements: transformedComponents,
     }
 
-    expect(testPrintCode(updatedProject)).toMatch(
+    expect(testPrintCode(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -225,7 +225,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       topLevelElements: transformedComponents,
     }
 
-    expect(testPrintCode(updatedProject)).toMatch(
+    expect(testPrintCode(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -269,7 +269,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       topLevelElements: transformedComponents,
     }
 
-    expect(testPrintCode(updatedProject)).toMatch(
+    expect(testPrintCode(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -312,7 +312,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       topLevelElements: transformedComponents,
     }
 
-    expect(testPrintCode(updatedProject)).toMatch(
+    expect(testPrintCode(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View

@@ -42,7 +42,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -75,7 +75,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -108,7 +108,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -141,7 +141,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -174,7 +174,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -208,7 +208,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -241,7 +241,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -273,7 +273,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -308,7 +308,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -341,7 +341,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -374,7 +374,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -407,7 +407,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -440,7 +440,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -473,7 +473,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -506,7 +506,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -539,7 +539,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -572,7 +572,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -605,7 +605,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -644,7 +644,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -677,7 +677,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -710,7 +710,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -757,7 +757,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -793,7 +793,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -829,7 +829,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
 
     // THIS IS THE IMPORTANT TEST, IT POINTS OUT THAT WE DO NOT ADD AN UNNECESSARY TOP PROPERTY, ONLY HEIGHT
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -863,7 +863,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -899,7 +899,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -931,7 +931,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -964,7 +964,7 @@ describe('moveTemplate', () => {
 
     await renderResult.dispatch([wrapInView(targets)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid={'aaa'}>
         <View
@@ -1023,7 +1023,7 @@ describe('moveTemplate', () => {
 
     await renderResult.dispatch([wrapInView(targets)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid={'aaa'}>
         <View
@@ -1085,7 +1085,7 @@ describe('moveTemplate', () => {
 
     await renderResult.dispatch([wrapInView(targets)], true)
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid={'aaa'}>
         <View data-uid={'eee'} />
@@ -1141,7 +1141,7 @@ describe('moveTemplate', () => {
       true,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
           <View data-uid={'eee'}>
@@ -1190,7 +1190,7 @@ describe('moveTemplate', () => {
       true,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
           <View data-uid={'eee'}>
@@ -1236,7 +1236,7 @@ describe('moveTemplate', () => {
       true,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid={'aaa'}>
           <View data-uid={'eee'}>
@@ -1280,7 +1280,7 @@ describe('moveTemplate', () => {
       true,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
@@ -1368,7 +1368,7 @@ describe('moveTemplate', () => {
       await dispatchDone
     })
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -1472,7 +1472,7 @@ describe('moveTemplate', () => {
       await dispatchDone
     })
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
           <View
@@ -1565,7 +1565,7 @@ describe('moveTemplate', () => {
       await dispatchDone
     })
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
       <View
@@ -1662,7 +1662,7 @@ describe('moveTemplate', () => {
       await dispatchDone
     })
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View
           style={{ width: '100%', height: '100%' }}

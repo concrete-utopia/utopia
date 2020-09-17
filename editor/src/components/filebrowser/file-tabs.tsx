@@ -99,6 +99,7 @@ export const FileTabs = betterReactMemo('FileTabs', () => {
           filepath,
           Utils.propOrNull('type', store.editor.projectContents[filepath]),
           false,
+          false,
         )
       } else {
         return 'ui'

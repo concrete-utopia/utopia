@@ -33,7 +33,7 @@ describe('toggle style prop', () => {
       true,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
@@ -69,7 +69,7 @@ describe('toggle style prop', () => {
       true,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
@@ -103,7 +103,7 @@ describe('toggle style prop', () => {
       true,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
@@ -139,7 +139,7 @@ describe('toggle style prop', () => {
       true,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
@@ -174,7 +174,7 @@ describe('toggle style prop', () => {
       true,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
