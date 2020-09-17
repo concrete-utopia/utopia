@@ -14,14 +14,12 @@ interface PropertyTargetSelector {
   targetComponentMetadata: ElementInstanceMetadata | null
   top: number
   left: number
-  options: LayoutTargetableProp[]
+  options: readonly LayoutTargetableProp[]
+  targetIndex: number
   keysPressed: KeysPressed
 }
 
 export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Element => {
-  // props.setOptionsCallback(props.options)
-  const [, targetIndex] = useTargetSelector(props.options, props.keysPressed)
-
   return (
     <div
       style={{
@@ -47,8 +45,9 @@ export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Eleme
             key={option}
             style={{
               padding: '0 3px',
-              color: targetIndex === index ? 'white' : colorTheme.controlledBlue.value,
-              backgroundColor: targetIndex === index ? colorTheme.controlledBlue.value : 'inherit',
+              color: props.targetIndex === index ? 'white' : colorTheme.controlledBlue.value,
+              backgroundColor:
+                props.targetIndex === index ? colorTheme.controlledBlue.value : 'inherit',
               borderRadius: 5,
             }}
           >

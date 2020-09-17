@@ -72,8 +72,8 @@ interface NewCanvasControlsProps {
   cursor: CSSCursor
 }
 
-function useArrayAndIndex(defaultTargets: LayoutTargetableProp[]) {
-  const [targets, setTargets] = React.useState<LayoutTargetableProp[]>(defaultTargets)
+function useArrayAndIndex(defaultTargets: readonly LayoutTargetableProp[]) {
+  const [targets, setTargets] = React.useState<readonly LayoutTargetableProp[]>(defaultTargets)
   const [targetIndex, setTargetIndex] = React.useState(0)
 
   function incrementTargetIndex() {
@@ -95,9 +95,9 @@ function useArrayAndIndex(defaultTargets: LayoutTargetableProp[]) {
 }
 
 export function useTargetSelector(
-  defaultTargets: LayoutTargetableProp[],
+  defaultTargets: readonly LayoutTargetableProp[],
   keysPressed: KeysPressed,
-): [Array<LayoutTargetableProp>, number] {
+): [ReadonlyArray<LayoutTargetableProp>, number] {
   const [targets, targetIndex, , incrementTargetIndex] = useArrayAndIndex(defaultTargets)
 
   const shiftPressed = keysPressed.shift

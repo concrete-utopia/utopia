@@ -19,7 +19,7 @@ import {
   DirectionAll,
   DragState,
 } from '../canvas-types'
-import { ResizeStatus } from './new-canvas-controls'
+import { ResizeStatus, useTargetSelector } from './new-canvas-controls'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import CanvasActions from '../canvas-actions'
 import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
@@ -88,23 +88,6 @@ class ResizeControl extends React.Component<ResizeControlProps> {
   }
 
   render() {
-    const currentSize = this.props.visualSize
-    const top =
-      this.props.canvasOffset.y +
-      this.props.visualSize.y +
-      this.props.position.y * this.props.visualSize.height -
-      this.props.position.y / this.props.scale
-    const left =
-      this.props.canvasOffset.x +
-      this.props.visualSize.x +
-      this.props.position.x * this.props.visualSize.width -
-      this.props.position.x / this.props.scale
-
-    const labelLeft = left + 20 / this.props.scale
-    const labelTop = top + 20 / this.props.scale
-    const shouldShowSizeLabel =
-      this.props.dragState?.edgePosition.x === this.props.position.x &&
-      this.props.dragState?.edgePosition.y === this.props.position.y
     return (
       <React.Fragment>
         {this.props.resizeStatus === 'enabled' ? (
@@ -112,15 +95,6 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         ) : (
           this.props.children
         )}
-        {/* <SizeBoxLabel
-          visible={shouldShowSizeLabel}
-          left={labelLeft}
-          top={labelTop}
-          scale={this.props.scale}
-          size={currentSize}
-          imageMultiplier={this.props.imageMultiplier}
-          dragState={this.props.dragState}
-        /> */}
       </React.Fragment>
     )
   }
@@ -148,95 +122,82 @@ interface ResizeEdgeState {
   showLabel: boolean
 }
 
-class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
-  constructor(props: ResizeEdgeProps) {
-    super(props)
-    this.state = {
-      showLabel: false,
-    }
+const ResizeEdge: React.FunctionComponent<ResizeEdgeProps> = (props) => {
+  const options =
+    props.direction === 'horizontal'
+      ? (['Height', 'minHeight', 'maxHeight'] as const)
+      : (['Width', 'minWidth', 'maxWidth'] as const)
+
+  const [showLabel, setShowLabel] = React.useState(false)
+  const [targets, targetIndex] = useTargetSelector(options, props.keysPressed)
+
+  if (props.resizeStatus != 'enabled') {
+    return null
   }
-  reference = React.createRef<HTMLDivElement>()
+  const beforeOrAfter = props.position.y === 0.5 ? props.position.x : props.position.y
+  const edge = beforeOrAfter === 0 ? 'before' : 'after'
+  const baseLeft =
+    props.canvasOffset.x + props.visualSize.x + props.position.x * props.visualSize.width
+  const baseTop =
+    props.canvasOffset.y + props.visualSize.y + props.position.y * props.visualSize.height
 
-  render() {
-    if (this.props.resizeStatus != 'enabled') {
-      return null
-    }
-    const beforeOrAfter =
-      this.props.position.y === 0.5 ? this.props.position.x : this.props.position.y
-    const edge = beforeOrAfter === 0 ? 'before' : 'after'
-    const baseLeft =
-      this.props.canvasOffset.x +
-      this.props.visualSize.x +
-      this.props.position.x * this.props.visualSize.width
-    const baseTop =
-      this.props.canvasOffset.y +
-      this.props.visualSize.y +
-      this.props.position.y * this.props.visualSize.height
+  const lineSize = 10 / props.scale
+  const width = props.direction === 'horizontal' ? props.visualSize.width : lineSize
+  const height = props.direction === 'vertical' ? props.visualSize.height : lineSize
+  const left =
+    baseLeft + (props.direction === 'horizontal' ? -props.visualSize.width / 2 : -lineSize / 2)
+  const top =
+    baseTop + (props.direction === 'vertical' ? -props.visualSize.height / 2 : -lineSize / 2)
 
-    const lineSize = 10 / this.props.scale
-    const width = this.props.direction === 'horizontal' ? this.props.visualSize.width : lineSize
-    const height = this.props.direction === 'vertical' ? this.props.visualSize.height : lineSize
-    const left =
-      baseLeft +
-      (this.props.direction === 'horizontal' ? -this.props.visualSize.width / 2 : -lineSize / 2)
-    const top =
-      baseTop +
-      (this.props.direction === 'vertical' ? -this.props.visualSize.height / 2 : -lineSize / 2)
+  const isEdgeDragged =
+    props.dragState != null &&
+    props.dragState.type === 'RESIZE_DRAG_STATE' &&
+    props.dragState.start != null &&
+    props.dragState.edgePosition.x === props.position.x &&
+    props.dragState.edgePosition.y === props.position.y
 
-    const isEdgeDragged =
-      this.props.dragState != null &&
-      this.props.dragState.type === 'RESIZE_DRAG_STATE' &&
-      this.props.dragState.start != null &&
-      this.props.dragState.edgePosition.x === this.props.position.x &&
-      this.props.dragState.edgePosition.y === this.props.position.y
-
-    return (
-      <React.Fragment>
-        <div
-          ref={this.reference}
-          onMouseOver={() => this.setState({ showLabel: true })}
-          onMouseOut={() => this.setState({ showLabel: false })}
-          style={{
-            position: 'absolute',
-            left: left,
-            top: top,
-            width: width,
-            height: height,
-            boxSizing: 'border-box',
-            backgroundColor: 'transparent',
-            cursor: this.props.resizeStatus === 'enabled' ? this.props.cursor : undefined,
-          }}
+  return (
+    <React.Fragment>
+      <div
+        onMouseOver={() => setShowLabel(true)}
+        onMouseOut={() => setShowLabel(false)}
+        style={{
+          position: 'absolute',
+          left: left,
+          top: top,
+          width: width,
+          height: height,
+          boxSizing: 'border-box',
+          backgroundColor: 'transparent',
+          cursor: props.resizeStatus === 'enabled' ? props.cursor : undefined,
+        }}
+      />
+      {(showLabel || isEdgeDragged) && (
+        <PropertyTargetSelector
+          top={
+            top +
+            (props.direction === 'horizontal'
+              ? edge === 'before' && props.direction === 'horizontal'
+                ? -25
+                : 10
+              : -10)
+          }
+          left={
+            left +
+            (props.direction === 'vertical'
+              ? edge === 'before' && props.direction === 'vertical'
+                ? -25
+                : 10
+              : -10)
+          }
+          options={targets}
+          targetIndex={targetIndex}
+          targetComponentMetadata={props.targetComponentMetadata}
+          keysPressed={props.keysPressed}
         />
-        {(this.state.showLabel || isEdgeDragged) && (
-          <PropertyTargetSelector
-            top={
-              top +
-              (this.props.direction === 'horizontal'
-                ? edge === 'before' && this.props.direction === 'horizontal'
-                  ? -25
-                  : 10
-                : -10)
-            }
-            left={
-              left +
-              (this.props.direction === 'vertical'
-                ? edge === 'before' && this.props.direction === 'vertical'
-                  ? -25
-                  : 10
-                : -10)
-            }
-            options={
-              this.props.direction === 'horizontal'
-                ? ['Height', 'minHeight', 'maxHeight']
-                : ['Width', 'minWidth', 'maxWidth']
-            }
-            targetComponentMetadata={this.props.targetComponentMetadata}
-            keysPressed={this.props.keysPressed}
-          />
-        )}
-      </React.Fragment>
-    )
-  }
+      )}
+    </React.Fragment>
+  )
 }
 
 interface ResizeLinesProps {
@@ -259,6 +220,13 @@ interface ResizeLinesProps {
 
 const LineOffset = 6
 const ResizeLines = (props: ResizeLinesProps) => {
+  const options =
+    props.direction === 'vertical'
+      ? ([props.labels.vertical, 'minWidth', 'maxWidth'] as const)
+      : ([props.labels.horizontal, 'minHeight', 'maxHeight'] as const)
+
+  const [targets, targetIndex] = useTargetSelector(options, props.keysPressed)
+
   const [showLabel, setShowLabel] = React.useState(false)
   const reference = React.createRef<HTMLDivElement>()
   const LineSVGComponent =
@@ -328,11 +296,8 @@ const ResizeLines = (props: ResizeLinesProps) => {
                 : 10
               : -10)
           }
-          options={
-            props.direction === 'vertical'
-              ? [props.labels.vertical, 'minWidth', 'maxWidth']
-              : [props.labels.horizontal, 'minHeight', 'maxHeight']
-          }
+          options={targets}
+          targetIndex={targetIndex}
           targetComponentMetadata={props.targetComponentMetadata}
           keysPressed={props.keysPressed}
         />
