@@ -65,6 +65,7 @@ export interface ControlProps {
   propertyTargetOptions: Array<LayoutTargetableProp>
   propertyTargetSelectedIndex: number
   setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
+  showYogaChildControls: boolean
 }
 
 interface NewCanvasControlsProps {
@@ -324,6 +325,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       propertyTargetOptions: props.propertyTargetOptions,
       propertyTargetSelectedIndex: props.propertyTargetSelectedIndex,
       setTargetOptionsArray: props.setTargetOptionsArray,
+      showYogaChildControls: true,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {

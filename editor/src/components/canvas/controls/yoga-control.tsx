@@ -141,51 +141,98 @@ export interface YogaControlsProps extends ControlProps {
 
 export class YogaControls extends React.Component<YogaControlsProps> {
   render() {
-    const targets = TP.filterScenes(this.props.selectedViews)
-    const everyThingIsYogaLayouted = targets.every((selectedView) => {
-      return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        selectedView,
-        this.props.componentMetadata,
-      )
-    })
-    const unknownElementsSelected = MetadataUtils.anyUnknownOrGeneratedElements(
-      this.props.rootComponents,
-      this.props.componentMetadata,
-      this.props.selectedViews,
-    )
-    const showResizeControl =
-      targets.length === 1 && everyThingIsYogaLayouted && !unknownElementsSelected
+    if (this.props.showYogaChildControls) {
+      const targets = Utils.flatMapArray((view) => {
+        const elementInstance = MetadataUtils.getElementByInstancePathMaybe(
+          this.props.componentMetadata,
+          view,
+        )
+        if (MetadataUtils.isFlexLayoutedContainer(elementInstance)) {
+          return elementInstance?.children.map((child) => child.templatePath) ?? []
+        } else {
+          return []
+        }
+      }, TP.filterScenes(this.props.selectedViews))
 
-    let color: string = ''
-    if (showResizeControl) {
-      const selectedView = targets[0]
-      const instance = TP.isScenePath(selectedView)
-        ? null
-        : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
-      const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
-      color = getSelectionColor(
-        selectedView,
-        this.props.rootComponents,
-        this.props.componentMetadata,
-        this.props.imports,
-        createsYogaLayout,
-        true,
-      )
-    }
+      return targets.map((target) => {
+        const instance = MetadataUtils.getElementByInstancePathMaybe(
+          this.props.componentMetadata,
+          target,
+        )
+        const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
+        const color = getSelectionColor(
+          target,
+          this.props.rootComponents,
+          this.props.componentMetadata,
+          this.props.imports,
+          createsYogaLayout,
+          true,
+        )
 
-    return (
-      <React.Fragment>
-        {!showResizeControl ? null : (
+        if (instance == null) {
+          return null
+        }
+
+        return (
           <YogaResizeControl
             {...this.props}
-            target={targets[0]}
-            targetElement={
-              MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, targets[0])!
-            }
+            key={TP.toString(target)}
+            target={target}
+            targetElement={instance}
             color={color}
           />
-        )}
-      </React.Fragment>
-    )
+        )
+      })
+    } else {
+      const targets = TP.filterScenes(this.props.selectedViews)
+      const everyThingIsYogaLayouted = targets.every((selectedView) => {
+        return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+          selectedView,
+          this.props.componentMetadata,
+        )
+      })
+      const unknownElementsSelected = MetadataUtils.anyUnknownOrGeneratedElements(
+        this.props.rootComponents,
+        this.props.componentMetadata,
+        this.props.selectedViews,
+      )
+      const showResizeControl =
+        targets.length === 1 && everyThingIsYogaLayouted && !unknownElementsSelected
+
+      let color: string = ''
+      if (showResizeControl) {
+        const selectedView = targets[0]
+        const instance = TP.isScenePath(selectedView)
+          ? null
+          : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
+        const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
+        color = getSelectionColor(
+          selectedView,
+          this.props.rootComponents,
+          this.props.componentMetadata,
+          this.props.imports,
+          createsYogaLayout,
+          true,
+        )
+      }
+
+      return (
+        <React.Fragment>
+          {!showResizeControl ? null : (
+            <YogaResizeControl
+              {...this.props}
+              target={targets[0]}
+              targetElement={
+                MetadataUtils.getElementByInstancePathMaybe(
+                  this.props.componentMetadata,
+                  targets[0],
+                )!
+              }
+              color={color}
+            />
+          )}
+        </React.Fragment>
+      )
+    }
   }
 }
