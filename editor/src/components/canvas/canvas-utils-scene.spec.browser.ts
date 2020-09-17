@@ -143,7 +143,7 @@ describe('moving a scene/rootview on the canvas', () => {
         )
       }`
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
@@ -270,7 +270,7 @@ describe('moving a scene/rootview on the canvas', () => {
         )
       }`
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
@@ -346,7 +346,7 @@ describe('moving a scene/rootview on the canvas', () => {
       await dispatchDone
     })
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View
           style={{ width: '100%', height: '100%', left: 40, top: -30 }}
@@ -482,7 +482,7 @@ describe('moving a scene/rootview on the canvas', () => {
       )
     }`
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
@@ -614,7 +614,7 @@ describe('resizing a scene/rootview on the canvas', () => {
         )
       }`
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
@@ -740,7 +740,7 @@ describe('resizing a scene/rootview on the canvas', () => {
         )
       }`
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
@@ -866,7 +866,7 @@ describe('resizing a scene/rootview on the canvas', () => {
         )
       }`
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
@@ -993,7 +993,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       )
     }`
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
@@ -1117,7 +1117,7 @@ describe('resizing a scene/rootview on the canvas', () => {
         )
       }`
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(expectedCode, PrettierConfig),
     )
   })

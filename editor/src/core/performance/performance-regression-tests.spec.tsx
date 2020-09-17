@@ -46,7 +46,7 @@ describe('React Render Count Tests - ', () => {
       true,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
@@ -98,7 +98,7 @@ describe('React Render Count Tests - ', () => {
       false,
     )
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toMatch(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
         <View
