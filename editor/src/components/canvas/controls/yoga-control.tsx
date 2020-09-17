@@ -115,7 +115,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         measureSize={yogaSize}
         visualSize={visualSize}
         resizeStatus={this.props.resizeStatus}
-        selectedViews={this.props.selectedViews}
+        selectedViews={[this.props.target]}
         elementAspectRatioLocked={this.props.elementAspectRatioLocked}
         imageMultiplier={this.props.imageMultiplier}
         sideResizer={true}

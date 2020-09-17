@@ -224,6 +224,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
         return (
           <>
             <ResizeRectangle
+              key={TP.toString(view)}
               targetComponentMetadata={target}
               dispatch={this.props.dispatch}
               scale={this.props.scale}
