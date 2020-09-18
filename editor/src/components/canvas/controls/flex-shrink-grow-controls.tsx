@@ -3,29 +3,29 @@ import styled from '@emotion/styled'
 
 const arrowHeight = 5
 
-const transparent = `${arrowHeight}px solid transparent`
-const visible = `${arrowHeight}px solid blue`
-
-const Arrowhead = styled.div((props: { direction: 'left' | 'up' | 'right' | 'down' }) => ({
+const Arrowhead = styled.div((props: { color: 'green' | 'red' }) => ({
   display: 'inline-block',
   width: 0,
   height: 0,
-  borderTop: props.direction === 'down' ? visible : transparent,
-  borderBottom: props.direction === 'up' ? visible : transparent,
-  borderRight: props.direction === 'left' ? visible : transparent,
-  borderLeft: props.direction === 'right' ? visible : transparent,
+  borderTop: `${arrowHeight}px solid transparent`,
+  borderBottom: `${arrowHeight}px solid transparent`,
+  borderRight: `${arrowHeight}px solid transparent`,
+  borderLeft: `${arrowHeight}px solid ${props.color}`,
 }))
 
-const Arrowbase = styled.div((props: { length: number }) => ({
+const Arrowbase = styled.div((props: { length: number; color: 'green' | 'red' }) => ({
   display: 'inline-block',
   position: 'relative',
   width: props.length,
   height: arrowHeight,
   top: -arrowHeight / 2,
-  backgroundColor: 'blue',
+  backgroundColor: props.color,
 }))
 
-const Arrow: React.FunctionComponent<{ direction: 'left' | 'up' | 'right' | 'down' }> = (props) => {
+const Arrow: React.FunctionComponent<{
+  direction: 'left' | 'up' | 'right' | 'down'
+  color: 'green' | 'red'
+}> = (props) => {
   const rotation = (() => {
     switch (props.direction) {
       case 'right':
@@ -40,9 +40,14 @@ const Arrow: React.FunctionComponent<{ direction: 'left' | 'up' | 'right' | 'dow
   })()
 
   return (
-    <div style={{ transform: `rotate(${rotation}deg)` }}>
-      <Arrowbase length={10} />
-      <Arrowhead direction={'right'} />
+    <div
+      style={{
+        transform: `rotate(${rotation}deg)`,
+        transformOrigin: '0 50% 0',
+      }}
+    >
+      <Arrowbase length={10} color={props.color} />
+      <Arrowhead color={props.color} />
     </div>
   )
 }
@@ -60,7 +65,25 @@ export const FlexGrowControl: React.FunctionComponent<{
         left: props.left,
       }}
     >
-      <Arrow direction={props.direction === 'row' ? 'right' : 'down'} />
+      <Arrow direction={props.direction === 'row' ? 'right' : 'down'} color={'green'} />
+    </div>
+  )
+}
+
+export const FlexShrinkControl: React.FunctionComponent<{
+  direction: 'row' | 'column'
+  top: number
+  left: number
+}> = (props) => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: props.top,
+        left: props.left,
+      }}
+    >
+      <Arrow direction={props.direction === 'row' ? 'left' : 'up'} color={'red'} />
     </div>
   )
 }

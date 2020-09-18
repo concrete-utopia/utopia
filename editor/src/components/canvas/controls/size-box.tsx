@@ -36,7 +36,7 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { KeysPressed } from '../../../utils/keyboard'
 import * as TP from '../../../core/shared/template-path'
-import { FlexGrowControl } from './flex-shrink-grow-controls'
+import { FlexGrowControl, FlexShrinkControl } from './flex-shrink-grow-controls'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -290,6 +290,11 @@ const ResizeLines = (props: ResizeLinesProps) => {
 
   return (
     <div onMouseDown={onMouseDown}>
+      <FlexShrinkControl
+        direction={props.direction === 'vertical' ? 'row' : 'column'}
+        top={top}
+        left={left}
+      />
       <LineSVGComponent
         scale={props.scale}
         centerX={left}
