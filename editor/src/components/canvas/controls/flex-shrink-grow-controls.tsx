@@ -57,10 +57,10 @@ const Arrow: React.FunctionComponent<{
   )
 }
 
-function useShouldShowArrow(
+export function useShouldShowFlexGrowShrinkControl(
   direction: 'row' | 'column',
   targetComponentMetadata: ElementInstanceMetadata | null,
-) {
+): boolean {
   return targetComponentMetadata?.specialSizeMeasurements.parentFlexDirection === direction
 }
 
@@ -89,7 +89,10 @@ export const FlexGrowControl: React.FunctionComponent<{
 }> = (props) => {
   const arrowSize = useGetArrowSize('flexGrow', props.targetComponentMetadata)
 
-  const shouldShow = useShouldShowArrow(props.direction, props.targetComponentMetadata)
+  const shouldShow = useShouldShowFlexGrowShrinkControl(
+    props.direction,
+    props.targetComponentMetadata,
+  )
   if (!shouldShow || arrowSize === 0) {
     return null
   }
@@ -123,7 +126,10 @@ export const FlexShrinkControl: React.FunctionComponent<{
 }> = (props) => {
   const arrowSize = useGetArrowSize('flexShrink', props.targetComponentMetadata)
 
-  const shouldShow = useShouldShowArrow(props.direction, props.targetComponentMetadata)
+  const shouldShow = useShouldShowFlexGrowShrinkControl(
+    props.direction,
+    props.targetComponentMetadata,
+  )
   if (!shouldShow || arrowSize === 0) {
     return null
   }
