@@ -35,6 +35,7 @@ import {
 } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { KeysPressed } from '../../../utils/keyboard'
+import * as TP from '../../../core/shared/template-path'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -249,7 +250,11 @@ const ResizeLines = (props: ResizeLinesProps) => {
     props.dragState.type === 'RESIZE_DRAG_STATE' &&
     props.dragState.start != null &&
     props.dragState.edgePosition.x === props.position.x &&
-    props.dragState.edgePosition.y === props.position.y
+    props.dragState.edgePosition.y === props.position.y &&
+    props.targetComponentMetadata != null &&
+    props.dragState.draggedElements.some((element) =>
+      TP.pathsEqual(element, props.targetComponentMetadata!.templatePath),
+    )
 
   const left = props.canvasOffset.x + props.visualSize.x + props.position.x * props.visualSize.width
   const top = props.canvasOffset.y + props.visualSize.y + props.position.y * props.visualSize.height
