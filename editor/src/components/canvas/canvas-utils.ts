@@ -494,14 +494,23 @@ export function updateFramesOfScenesAndComponents(
                     ),
                   ) ?? 0
 
-                const newAttributeValue = jsxAttributeValue(
-                  currentAttributeToChange + frameAndTarget.delta,
-                )
+                const newRawValue = currentAttributeToChange + frameAndTarget.delta
+                const newAttributeValue = jsxAttributeValue(newRawValue)
 
-                propsToSet.push({
-                  path: createLayoutPropertyPath(frameAndTarget.targetProperty),
-                  value: newAttributeValue,
-                })
+                if (
+                  frameAndTarget.targetProperty === 'flexShrink' ||
+                  frameAndTarget.targetProperty === 'flexGrow'
+                ) {
+                  propsToSet.push({
+                    path: createLayoutPropertyPath(frameAndTarget.targetProperty),
+                    value: newRawValue < 0 ? jsxAttributeValue(0) : newAttributeValue,
+                  })
+                } else {
+                  propsToSet.push({
+                    path: createLayoutPropertyPath(frameAndTarget.targetProperty),
+                    value: newAttributeValue,
+                  })
+                }
 
                 propsToSkip.push(
                   createLayoutPropertyPath('left'),
@@ -516,6 +525,8 @@ export function updateFramesOfScenesAndComponents(
                   createLayoutPropertyPath('maxHeight'),
                   createLayoutPropertyPath('FlexCrossBasis'),
                   createLayoutPropertyPath('FlexFlexBasis'),
+                  createLayoutPropertyPath('flexGrow'),
+                  createLayoutPropertyPath('flexShrink'),
                 )
               }
               break
@@ -1517,7 +1528,7 @@ export function produceResizeSingleSelectCanvasTransientState(
         : dragState.drag?.y ?? 0
 
       if (dragState.targetProperty === 'flexGrow' || dragState.targetProperty === 'flexShrink') {
-        const flexGrowShrinkSizeChange = newDelta < 0 ? 0 : Math.floor(newDelta / 10)
+        const flexGrowShrinkSizeChange = Math.floor(newDelta / 10)
         framesAndTargets.push(
           flexResizeChange(elementToTarget, dragState.targetProperty, flexGrowShrinkSizeChange),
         )
