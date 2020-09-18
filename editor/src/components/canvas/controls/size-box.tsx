@@ -105,20 +105,7 @@ function useStartDrag(
   return onMouseDown
 }
 
-const ResizeControl: React.FunctionComponent<ResizeControlProps> = (props) => {
-  const onMouseDown = useStartDrag('Width', props)
-  return (
-    <React.Fragment>
-      {props.resizeStatus === 'enabled' ? (
-        <div onMouseDown={onMouseDown}>{props.children}</div>
-      ) : (
-        props.children
-      )}
-    </React.Fragment>
-  )
-}
-
-interface ResizeEdgeProps {
+interface ResizeEdgeProps extends Omit<ResizeControlProps, 'dragState' | 'labels'> {
   targetComponentMetadata: ElementInstanceMetadata | null
   dispatch: EditorDispatch
   cursor: CSSCursor
@@ -149,6 +136,8 @@ const ResizeEdge: React.FunctionComponent<ResizeEdgeProps> = (props) => {
   const [showLabel, setShowLabel] = React.useState(false)
   const [targets, targetIndex] = useTargetSelector(options, props.keysPressed)
 
+  const onMouseDown = useStartDrag(targets[targetIndex], props)
+
   if (props.resizeStatus != 'enabled') {
     return null
   }
@@ -175,7 +164,7 @@ const ResizeEdge: React.FunctionComponent<ResizeEdgeProps> = (props) => {
     props.dragState.edgePosition.y === props.position.y
 
   return (
-    <React.Fragment>
+    <div onMouseDown={onMouseDown}>
       <div
         onMouseOver={() => setShowLabel(true)}
         onMouseOut={() => setShowLabel(false)}
@@ -214,11 +203,11 @@ const ResizeEdge: React.FunctionComponent<ResizeEdgeProps> = (props) => {
           keysPressed={props.keysPressed}
         />
       )}
-    </React.Fragment>
+    </div>
   )
 }
 
-interface ResizeLinesProps {
+interface ResizeLinesProps extends Omit<ResizeControlProps, 'dragState'> {
   targetComponentMetadata: ElementInstanceMetadata | null
   cursor: CSSCursor
   direction: 'horizontal' | 'vertical'
@@ -244,6 +233,8 @@ const ResizeLines = (props: ResizeLinesProps) => {
       : ([props.labels.horizontal, 'minHeight', 'maxHeight'] as const)
 
   const [targets, targetIndex] = useTargetSelector(options, props.keysPressed)
+
+  const onMouseDown = useStartDrag(targets[targetIndex], props)
 
   const [showLabel, setShowLabel] = React.useState(false)
   const reference = React.createRef<HTMLDivElement>()
@@ -288,7 +279,7 @@ const ResizeLines = (props: ResizeLinesProps) => {
     )
 
   return (
-    <React.Fragment>
+    <div onMouseDown={onMouseDown}>
       <LineSVGComponent
         scale={props.scale}
         centerX={left}
@@ -321,7 +312,7 @@ const ResizeLines = (props: ResizeLinesProps) => {
         />
       )}
       {mouseCatcher}
-    </React.Fragment>
+    </div>
   )
 }
 
@@ -388,7 +379,7 @@ const DimensionableControlHorizontal = (props: DimensionableControlProps) => {
   )
 }
 
-interface ResizePointProps {
+interface ResizePointProps extends ResizeControlProps {
   dispatch: EditorDispatch
   cursor: CSSCursor
   canvasOffset: CanvasPoint
@@ -400,65 +391,56 @@ interface ResizePointProps {
   testID: string
 }
 
-class ResizePoint extends React.Component<ResizePointProps> {
-  reference = React.createRef<HTMLDivElement>()
+const ResizePoint: React.FunctionComponent<ResizePointProps> = (props) => {
+  const onMouseDown = useStartDrag('Width', props)
 
-  render() {
-    const left =
-      this.props.canvasOffset.x +
-      this.props.visualSize.x +
-      this.props.position.x * this.props.visualSize.width
-    const top =
-      this.props.canvasOffset.y +
-      this.props.visualSize.y +
-      this.props.position.y * this.props.visualSize.height
+  const left = props.canvasOffset.x + props.visualSize.x + props.position.x * props.visualSize.width
+  const top = props.canvasOffset.y + props.visualSize.y + props.position.y * props.visualSize.height
 
-    const size = 6 / this.props.scale
-    const catchmentSize = 12 / this.props.scale
+  const size = 6 / props.scale
+  const catchmentSize = 12 / props.scale
 
-    const mouseCatcher =
-      this.props.resizeStatus !== 'enabled' ? null : (
-        <div
-          ref={this.reference}
-          style={{
-            position: 'absolute',
-            width: catchmentSize,
-            height: catchmentSize,
-            top: top - catchmentSize / 2,
-            left: left - catchmentSize / 2,
-            backgroundColor: 'transparent',
-            cursor: this.props.cursor,
-          }}
-          data-testid={`${this.props.testID}-${this.props.position.x}-${this.props.position.y}`}
-        />
-      )
-    return (
-      <React.Fragment>
-        <div
-          style={{
-            position: 'absolute',
-            width: size,
-            height: size,
-            top: top - size / 2,
-            left: left - size / 2,
-            borderWidth: 1 / this.props.scale,
-            boxSizing: 'border-box',
-            backgroundColor: colorTheme.canvasControlsSizeBoxBackground.value,
-            borderRadius: '10%',
-            borderStyle: 'none',
-            borderColor: 'transparent',
-            boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px ${
-              1 / this.props.scale
-            }px, ${colorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px ${
-              1 / this.props.scale
-            }px ${2 / this.props.scale}px ${1 / this.props.scale}px `,
-            ...this.props.extraStyle,
-          }}
-        />
-        {mouseCatcher}
-      </React.Fragment>
+  const mouseCatcher =
+    props.resizeStatus !== 'enabled' ? null : (
+      <div
+        style={{
+          position: 'absolute',
+          width: catchmentSize,
+          height: catchmentSize,
+          top: top - catchmentSize / 2,
+          left: left - catchmentSize / 2,
+          backgroundColor: 'transparent',
+          cursor: props.cursor,
+        }}
+        data-testid={`${props.testID}-${props.position.x}-${props.position.y}`}
+      />
     )
-  }
+  return (
+    <div onMouseDown={onMouseDown}>
+      <div
+        style={{
+          position: 'absolute',
+          width: size,
+          height: size,
+          top: top - size / 2,
+          left: left - size / 2,
+          borderWidth: 1 / props.scale,
+          boxSizing: 'border-box',
+          backgroundColor: colorTheme.canvasControlsSizeBoxBackground.value,
+          borderRadius: '10%',
+          borderStyle: 'none',
+          borderColor: 'transparent',
+          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px ${
+            1 / props.scale
+          }px, ${colorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px ${
+            1 / props.scale
+          }px ${2 / props.scale}px ${1 / props.scale}px `,
+          ...props.extraStyle,
+        }}
+      />
+      {mouseCatcher}
+    </div>
+  )
 }
 
 interface DoubleClickExtenderProps {
@@ -507,72 +489,48 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
       const verticalResizeControls =
         dimension === 'vertical' ? (
           <React.Fragment>
-            <ResizeControl
+            <ResizePoint
               {...controlProps}
+              enabledDirection={DirectionVertical}
               cursor={CSSCursor.ResizeNS}
               position={{ x: 0.5, y: 0 }}
-              enabledDirection={DirectionVertical}
-            >
-              <ResizePoint
-                {...controlProps}
-                cursor={CSSCursor.ResizeNS}
-                position={{ x: 0.5, y: 0 }}
-                extraStyle={{
-                  opacity: 0,
-                }}
-              />
-            </ResizeControl>
-            <ResizeControl
+              extraStyle={{
+                opacity: 0,
+              }}
+            />
+            <ResizePoint
               {...controlProps}
+              enabledDirection={DirectionVertical}
               cursor={CSSCursor.ResizeNS}
               position={{ x: 0.5, y: 1 }}
-              enabledDirection={DirectionVertical}
-            >
-              <ResizePoint
-                {...controlProps}
-                cursor={CSSCursor.ResizeNS}
-                position={{ x: 0.5, y: 1 }}
-                extraStyle={{
-                  opacity: 0,
-                }}
-              />
-            </ResizeControl>
+              extraStyle={{
+                opacity: 0,
+              }}
+            />
           </React.Fragment>
         ) : null
 
       const horizontalResizeControls =
         dimension === 'horizontal' ? (
           <React.Fragment>
-            <ResizeControl
+            <ResizePoint
               {...controlProps}
+              enabledDirection={DirectionHorizontal}
               cursor={CSSCursor.ResizeEW}
               position={{ x: 0, y: 0.5 }}
-              enabledDirection={DirectionHorizontal}
-            >
-              <ResizePoint
-                {...controlProps}
-                cursor={CSSCursor.ResizeEW}
-                position={{ x: 0, y: 0.5 }}
-                extraStyle={{
-                  opacity: 0,
-                }}
-              />
-            </ResizeControl>
-            <ResizeControl
+              extraStyle={{
+                opacity: 0,
+              }}
+            />
+            <ResizePoint
               {...controlProps}
+              enabledDirection={DirectionHorizontal}
               cursor={CSSCursor.ResizeEW}
               position={{ x: 1, y: 0.5 }}
-              enabledDirection={DirectionHorizontal}
-            >
-              <ResizePoint
-                {...controlProps}
-                cursor={CSSCursor.ResizeEW}
-                position={{ x: 1, y: 0.5 }}
-                extraStyle={{
-                  opacity: 0,
-                }}
-              />
-            </ResizeControl>
+              extraStyle={{
+                opacity: 0,
+              }}
+            />
           </React.Fragment>
         ) : null
 
@@ -584,137 +542,77 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
     ) {
       const pointControls = this.props.sideResizer ? null : (
         <React.Fragment>
-          <ResizeControl
+          <ResizeEdge
             {...controlProps}
+            enabledDirection={DirectionVertical}
             cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
             position={{ x: 0.5, y: 0 }}
-            enabledDirection={DirectionVertical}
-          >
-            <ResizeEdge
-              {...controlProps}
-              cursor={CSSCursor.ResizeNS}
-              direction='horizontal'
-              position={{ x: 0.5, y: 0 }}
-            />
-          </ResizeControl>
-          <ResizeControl
+          />
+          <ResizeEdge
             {...controlProps}
+            enabledDirection={DirectionVertical}
             cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
             position={{ x: 0.5, y: 1 }}
-            enabledDirection={DirectionVertical}
-          >
-            <ResizeEdge
-              {...controlProps}
-              cursor={CSSCursor.ResizeNS}
-              direction='horizontal'
-              position={{ x: 0.5, y: 1 }}
-            />
-          </ResizeControl>
-          <ResizeControl
+          />
+          <ResizeEdge
             {...controlProps}
+            enabledDirection={DirectionHorizontal}
             cursor={CSSCursor.ResizeEW}
+            direction='vertical'
             position={{ x: 0, y: 0.5 }}
-            enabledDirection={DirectionHorizontal}
-          >
-            <ResizeEdge
-              {...controlProps}
-              cursor={CSSCursor.ResizeEW}
-              direction='vertical'
-              position={{ x: 0, y: 0.5 }}
-            />
-          </ResizeControl>
-          <ResizeControl
+          />
+          <ResizeEdge
             {...controlProps}
+            enabledDirection={DirectionHorizontal}
             cursor={CSSCursor.ResizeEW}
+            direction='vertical'
             position={{ x: 1, y: 0.5 }}
-            enabledDirection={DirectionHorizontal}
-          >
-            <ResizeEdge
-              {...controlProps}
-              cursor={CSSCursor.ResizeEW}
-              direction='vertical'
-              position={{ x: 1, y: 0.5 }}
-            />
-          </ResizeControl>
-          <ResizeControl
+          />
+          <ResizePoint
             {...controlProps}
+            enabledDirection={DirectionAll}
             cursor={CSSCursor.ResizeNWSE}
             position={{ x: 0, y: 0 }}
-            enabledDirection={DirectionAll}
-          >
-            <ResizePoint
-              {...controlProps}
-              cursor={CSSCursor.ResizeNWSE}
-              position={{ x: 0, y: 0 }}
-            />
-          </ResizeControl>
-          <ResizeControl
+          />
+          <ResizePoint
             {...controlProps}
+            enabledDirection={DirectionAll}
             cursor={CSSCursor.ResizeNESW}
             position={{ x: 1, y: 0 }}
-            enabledDirection={DirectionAll}
-          >
-            <ResizePoint
-              {...controlProps}
-              cursor={CSSCursor.ResizeNESW}
-              position={{ x: 1, y: 0 }}
-            />
-          </ResizeControl>
-          <ResizeControl
+          />
+          <ResizePoint
             {...controlProps}
+            enabledDirection={DirectionAll}
             cursor={CSSCursor.ResizeNESW}
             position={{ x: 0, y: 1 }}
-            enabledDirection={DirectionAll}
-          >
-            <ResizePoint
-              {...controlProps}
-              cursor={CSSCursor.ResizeNESW}
-              position={{ x: 0, y: 1 }}
-            />
-          </ResizeControl>
-          <ResizeControl
+          />
+          <ResizePoint
             {...controlProps}
+            enabledDirection={DirectionAll}
             cursor={CSSCursor.ResizeNWSE}
             position={{ x: 1, y: 1 }}
-            enabledDirection={DirectionAll}
-          >
-            <ResizePoint
-              {...controlProps}
-              cursor={CSSCursor.ResizeNWSE}
-              position={{ x: 1, y: 1 }}
-            />
-          </ResizeControl>
+          />
         </React.Fragment>
       )
 
       const resizeLines = !this.props.sideResizer ? null : (
         <React.Fragment>
-          <ResizeControl
+          <ResizeLines
             {...controlProps}
-            cursor={CSSCursor.ResizeNS}
-            position={{ x: 0.5, y: 1 }}
             enabledDirection={DirectionVertical}
-          >
-            <ResizeLines
-              {...controlProps}
-              cursor={CSSCursor.ResizeNS}
-              direction='horizontal'
-              position={{ x: 0.5, y: 1 }}
-            />
-          </ResizeControl>
-          <ResizeControl
+            cursor={CSSCursor.ResizeNS}
+            direction='horizontal'
+            position={{ x: 0.5, y: 1 }}
+          />
+          <ResizeLines
             {...controlProps}
-            cursor={CSSCursor.ResizeEW}
-            position={{ x: 1, y: 0.5 }}
             enabledDirection={DirectionHorizontal}
-          >
-            <ResizeLines
-              {...controlProps}
-              cursor={CSSCursor.ResizeEW}
-              direction='vertical'
-              position={{ x: 1, y: 0.5 }}
-            />
-          </ResizeControl>
+            cursor={CSSCursor.ResizeEW}
+            direction='vertical'
+            position={{ x: 1, y: 0.5 }}
+          />
         </React.Fragment>
       )
 
