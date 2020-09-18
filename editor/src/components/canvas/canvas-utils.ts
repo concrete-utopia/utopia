@@ -1524,7 +1524,17 @@ export function produceResizeSingleSelectCanvasTransientState(
         x: roundedFrame.width - originalFrame.width,
         y: roundedFrame.height - originalFrame.height,
       } as CanvasVector
-      framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
+      if (dragState.targetProperty === 'flexGrow' || dragState.targetProperty === 'flexShrink') {
+        const flexGrowShrinkSizeChange = {
+          x: sizeChange.x < 0 ? 0 : Math.floor(sizeChange.x / 10),
+          y: sizeChange.y < 0 ? 0 : Math.floor(sizeChange.y / 10),
+        } as CanvasVector
+        framesAndTargets.push(
+          singleResizeChange(elementToTarget, edgePosition, flexGrowShrinkSizeChange),
+        )
+      } else {
+        framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
+      }
     }
   }
 
