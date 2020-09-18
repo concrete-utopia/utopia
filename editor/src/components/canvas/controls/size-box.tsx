@@ -292,6 +292,7 @@ const ResizeLines = (props: ResizeLinesProps) => {
     <div onMouseDown={onMouseDown}>
       <FlexShrinkControl
         direction={props.direction === 'vertical' ? 'row' : 'column'}
+        targetComponentMetadata={props.targetComponentMetadata}
         top={top}
         left={left}
       />
@@ -304,6 +305,7 @@ const ResizeLines = (props: ResizeLinesProps) => {
       />
       <FlexGrowControl
         direction={props.direction === 'vertical' ? 'row' : 'column'}
+        targetComponentMetadata={props.targetComponentMetadata}
         top={top}
         left={left}
       />

@@ -1,5 +1,9 @@
 import * as React from 'react'
 import styled from '@emotion/styled'
+import { eitherToMaybe, left } from '../../../core/shared/either'
+import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
+import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
+import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 
 const arrowHeight = 5
 
@@ -25,6 +29,7 @@ const Arrowbase = styled.div((props: { length: number; color: 'green' | 'red' })
 const Arrow: React.FunctionComponent<{
   direction: 'left' | 'up' | 'right' | 'down'
   color: 'green' | 'red'
+  arrowSize: number
 }> = (props) => {
   const rotation = (() => {
     switch (props.direction) {
@@ -46,17 +51,47 @@ const Arrow: React.FunctionComponent<{
         transformOrigin: '0 50% 0',
       }}
     >
-      <Arrowbase length={10} color={props.color} />
+      <Arrowbase length={props.arrowSize} color={props.color} />
       <Arrowhead color={props.color} />
     </div>
   )
+}
+
+function useShouldShowArrow(
+  direction: 'row' | 'column',
+  targetComponentMetadata: ElementInstanceMetadata | null,
+) {
+  return targetComponentMetadata?.specialSizeMeasurements.parentFlexDirection === direction
+}
+
+function useGetArrowSize(
+  flexProp: 'flexShrink' | 'flexGrow',
+  targetComponentMetadata: ElementInstanceMetadata | null,
+) {
+  const valueForProp =
+    eitherToMaybe(
+      getSimpleAttributeAtPath(
+        left(targetComponentMetadata?.props ?? {}),
+        createLayoutPropertyPath(flexProp),
+      ),
+    ) ?? 0
+
+  return 10 + valueForProp * 10
 }
 
 export const FlexGrowControl: React.FunctionComponent<{
   direction: 'row' | 'column'
   top: number
   left: number
+  targetComponentMetadata: ElementInstanceMetadata | null
 }> = (props) => {
+  const arrowSize = useGetArrowSize('flexGrow', props.targetComponentMetadata)
+
+  const shouldShow = useShouldShowArrow(props.direction, props.targetComponentMetadata)
+  if (!shouldShow) {
+    return null
+  }
+
   return (
     <div
       style={{
@@ -65,7 +100,11 @@ export const FlexGrowControl: React.FunctionComponent<{
         left: props.left,
       }}
     >
-      <Arrow direction={props.direction === 'row' ? 'right' : 'down'} color={'green'} />
+      <Arrow
+        direction={props.direction === 'row' ? 'right' : 'down'}
+        color={'green'}
+        arrowSize={arrowSize}
+      />
     </div>
   )
 }
@@ -74,7 +113,15 @@ export const FlexShrinkControl: React.FunctionComponent<{
   direction: 'row' | 'column'
   top: number
   left: number
+  targetComponentMetadata: ElementInstanceMetadata | null
 }> = (props) => {
+  const arrowSize = useGetArrowSize('flexShrink', props.targetComponentMetadata)
+
+  const shouldShow = useShouldShowArrow(props.direction, props.targetComponentMetadata)
+  if (!shouldShow) {
+    return null
+  }
+
   return (
     <div
       style={{
@@ -83,7 +130,11 @@ export const FlexShrinkControl: React.FunctionComponent<{
         left: props.left,
       }}
     >
-      <Arrow direction={props.direction === 'row' ? 'left' : 'up'} color={'red'} />
+      <Arrow
+        direction={props.direction === 'row' ? 'left' : 'up'}
+        color={'red'}
+        arrowSize={arrowSize}
+      />
     </div>
   )
 }
