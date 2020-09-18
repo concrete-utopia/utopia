@@ -1,4 +1,4 @@
-import { NpmDependency, TypeDefinitions } from '../shared/npm-dependency-types'
+import { TypeDefinitions } from '../shared/npm-dependency-types'
 import { ProjectContents, ParseSuccess, NodeModules } from '../shared/project-file-types'
 import {
   createParseFileMessage,

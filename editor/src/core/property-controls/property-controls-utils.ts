@@ -15,7 +15,11 @@ import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
 import { joinSpecial, pluck } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
-import { NpmDependency } from '../shared/npm-dependency-types'
+import {
+  isResolvedNpmDependency,
+  PossiblyUnversionedNpmDependency,
+  ResolvedNpmDependency,
+} from '../shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../third-party/third-party-components'
 import { getJSXElementNameAsString, isIntrinsicHTMLElement } from '../shared/element-template'
 import {
@@ -232,21 +236,23 @@ export function removeIgnored(
 }
 
 export function getControlsForExternalDependencies(
-  npmDependencies: ReadonlyArray<NpmDependency>,
+  npmDependencies: ReadonlyArray<PossiblyUnversionedNpmDependency>,
 ): PropertyControlsInfo {
   let propertyControlsInfo: PropertyControlsInfo = {}
   fastForEach(npmDependencies, (dependency) => {
-    const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
-    if (componentDescriptor != null) {
-      fastForEach(componentDescriptor.components, (descriptor) => {
-        if (descriptor.propertyControls != null) {
-          const jsxElementName = getJSXElementNameAsString(descriptor.element.name)
-          propertyControlsInfo[dependency.name] = {
-            ...propertyControlsInfo[dependency.name],
-            [jsxElementName]: descriptor.propertyControls,
+    if (isResolvedNpmDependency(dependency)) {
+      const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
+      if (componentDescriptor != null) {
+        fastForEach(componentDescriptor.components, (descriptor) => {
+          if (descriptor.propertyControls != null) {
+            const jsxElementName = getJSXElementNameAsString(descriptor.element.name)
+            propertyControlsInfo[dependency.name] = {
+              ...propertyControlsInfo[dependency.name],
+              [jsxElementName]: descriptor.propertyControls,
+            }
           }
-        }
-      })
+        })
+      }
     }
   })
   return propertyControlsInfo

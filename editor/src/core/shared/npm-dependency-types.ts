@@ -22,20 +22,33 @@ function packageDetails(status: PackageStatus): PackageDetails {
 }
 export type PackageStatusMap = { [packagename: string]: PackageDetails }
 
-export interface NpmDependency {
-  type: 'NPM_DEPENDENCY'
+export interface RequestedNpmDependency {
+  type: 'REQUESTED_NPM_DEPENDENCY'
   name: string
   version: string
 }
 
-export function npmDependency(name: string, version: string): NpmDependency {
+export function requestedNpmDependency(name: string, version: string): RequestedNpmDependency {
   return {
-    type: 'NPM_DEPENDENCY',
+    type: 'REQUESTED_NPM_DEPENDENCY',
     name: name,
     version: version,
   }
 }
 
+export interface ResolvedNpmDependency {
+  type: 'RESOLVED_NPM_DEPENDENCY'
+  name: string
+  version: string
+}
+
+export function resolvedNpmDependency(name: string, version: string): ResolvedNpmDependency {
+  return {
+    type: 'RESOLVED_NPM_DEPENDENCY',
+    name: name,
+    version: version,
+  }
+}
 export interface UnversionedNpmDependency {
   type: 'UNVERSIONED_NPM_DEPENDENCY'
   name: string
@@ -48,12 +61,12 @@ export function unversionedNpmDependency(name: string): UnversionedNpmDependency
   }
 }
 
-export type PossiblyUnversionedNpmDependency = NpmDependency | UnversionedNpmDependency
+export type PossiblyUnversionedNpmDependency = ResolvedNpmDependency | UnversionedNpmDependency
 
-export function isNpmDependency(
+export function isResolvedNpmDependency(
   dependency: PossiblyUnversionedNpmDependency,
-): dependency is NpmDependency {
-  return dependency.type === 'NPM_DEPENDENCY'
+): dependency is ResolvedNpmDependency {
+  return dependency.type === 'RESOLVED_NPM_DEPENDENCY'
 }
 
 export function isUnversionedNpmDependency(

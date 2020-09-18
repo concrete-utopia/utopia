@@ -4,11 +4,13 @@ import { MapLike } from 'typescript'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { sameCodeFile } from '../../../core/model/project-file-utils'
 import {
-  NpmDependency,
-  npmDependency,
   PossiblyUnversionedNpmDependency,
   PackageStatusMap,
   PackageStatus,
+  RequestedNpmDependency,
+  requestedNpmDependency,
+  unversionedNpmDependency,
+  resolvedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import {
   isCodeFile,
@@ -30,6 +32,7 @@ import { useEditorState } from '../store/store-hook'
 import * as React from 'react'
 import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'
 import { deepFreeze } from '../../../utils/deep-freeze'
+import * as Semver from 'semver'
 
 interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
@@ -144,17 +147,19 @@ export async function checkPackageVersionExists(
   }
 }
 
-export function dependenciesFromPackageJsonContents(packageJson: string): Array<NpmDependency> {
+export function dependenciesFromPackageJsonContents(
+  packageJson: string,
+): Array<RequestedNpmDependency> {
   try {
     const parsedJSON = json5.parse(packageJson)
 
     const dependenciesJSON = R.path<any>(['dependencies'], parsedJSON)
     if (typeof dependenciesJSON === 'object') {
-      let result: Array<NpmDependency> = []
+      let result: Array<RequestedNpmDependency> = []
       for (const dependencyKey of Object.keys(dependenciesJSON)) {
         const dependencyValue = dependenciesJSON[dependencyKey]
         if (typeof dependencyValue === 'string') {
-          result.push(npmDependency(dependencyKey, dependencyValue))
+          result.push(requestedNpmDependency(dependencyKey, dependencyValue))
         } else {
           return []
         }
@@ -172,14 +177,14 @@ export function dependenciesFromPackageJsonContents(packageJson: string): Array<
 // IMPORTANT: This caching is relied upon indirectly by monaco-wrapper.tsx
 interface PackageJsonAndDeps {
   packageJsonFile: ProjectFile
-  npmDependencies: Array<NpmDependency>
+  npmDependencies: Array<RequestedNpmDependency>
 }
 
 let cachedDependencies: PackageJsonAndDeps | null = null
 
 export function dependenciesFromPackageJson(
   packageJsonFile: ProjectFile | null,
-): Array<NpmDependency> {
+): Array<RequestedNpmDependency> {
   if (packageJsonFile == null) {
     return []
   } else {
@@ -209,20 +214,35 @@ export function dependenciesFromPackageJson(
 
 // Dependencies that the editor needs for code completion primarily.
 // Effectively these are akin to `devDependencies` in `package.json`.
-const EditorTypePackageDependencies: Array<NpmDependency> = [
-  npmDependency('@types/react', '16.9.46'),
-  npmDependency('@types/react-dom', '16.9.8'),
+const EditorTypePackageDependencies: Array<RequestedNpmDependency> = [
+  requestedNpmDependency('@types/react', '16.9.46'),
+  requestedNpmDependency('@types/react-dom', '16.9.8'),
 ]
 
 export function dependenciesWithEditorRequirements(
   projectContents: ProjectContents,
-): Array<NpmDependency> {
+): Array<RequestedNpmDependency> {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const userDefinedDeps = dependenciesFromPackageJson(packageJsonFile)
   return [...userDefinedDeps, ...EditorTypePackageDependencies]
 }
 
-export function usePackageDependencies(): Array<NpmDependency> {
+export function immediatelyResolvableDependenciesWithEditorRequirements(
+  projectContents: ProjectContents,
+): Array<PossiblyUnversionedNpmDependency> {
+  const requestedDependencies = dependenciesWithEditorRequirements(projectContents)
+  return requestedDependencies.map((requestedDependency) => {
+    // As it satisfies the semver parse, we can (for now) assume
+    // it's the version that will be resolved.
+    if (Semver.parse(requestedDependency.version) == null) {
+      return unversionedNpmDependency(requestedDependency.name)
+    } else {
+      return resolvedNpmDependency(requestedDependency.name, requestedDependency.version)
+    }
+  })
+}
+
+export function usePackageDependencies(): Array<RequestedNpmDependency> {
   const packageJsonFile = useEditorState((store) => {
     return packageJsonFileFromProjectContents(store.editor.projectContents)
   })
@@ -236,7 +256,7 @@ export function usePackageDependencies(): Array<NpmDependency> {
   }, [packageJsonFile])
 }
 
-export function useResolvedPackageDependencies(): Array<PossiblyUnversionedNpmDependency> {
+export function usePossiblyResolvedPackageDependencies(): Array<PossiblyUnversionedNpmDependency> {
   const basePackageDependencies = usePackageDependencies()
   const files = useEditorState((store) => {
     return store.editor.nodeModules.files
@@ -248,7 +268,7 @@ export function useResolvedPackageDependencies(): Array<PossiblyUnversionedNpmDe
 
 export function updateDependenciesInPackageJson(
   packageJson: string,
-  npmDependencies: Array<NpmDependency>,
+  npmDependencies: Array<RequestedNpmDependency>,
 ): string {
   function updateDeps(parsedPackageJson: any): string {
     return JSON.stringify(
@@ -268,7 +288,7 @@ export function updateDependenciesInPackageJson(
 
 export function updateDependenciesInEditorState(
   editor: EditorState,
-  npmDependencies: Array<NpmDependency>,
+  npmDependencies: Array<RequestedNpmDependency>,
 ): EditorState {
   const transformPackageJson = (packageJson: string) => {
     return updateDependenciesInPackageJson(packageJson, npmDependencies)
@@ -303,9 +323,9 @@ export function importResultFromImports(
 }
 
 export function createLoadedPackageStatusMapFromDependencies(
-  dependencies: Array<NpmDependency>,
-  dependenciesWithErrors: Array<NpmDependency>,
-  dependenciesNotFound: Array<NpmDependency>,
+  dependencies: Array<RequestedNpmDependency>,
+  dependenciesWithErrors: Array<RequestedNpmDependency>,
+  dependenciesNotFound: Array<RequestedNpmDependency>,
 ): PackageStatusMap {
   const errorDependencyNames = pluck(dependenciesWithErrors, 'name')
   const notFoundDependencyNames = pluck(dependenciesNotFound, 'name')

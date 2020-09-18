@@ -1,16 +1,16 @@
-import { NpmDependency } from '../../shared/npm-dependency-types'
 import { STATIC_BASE_URL } from '../../../common/env-vars'
+import {RequestedNpmDependency, ResolvedNpmDependency} from '../../shared/npm-dependency-types'
 
-export function getPackagerUrl(dep: NpmDependency) {
+export function getPackagerUrl(dep: RequestedNpmDependency): string {
   return `${STATIC_BASE_URL}v1/javascript/packager/${encodeURIComponent(dep.name)}/${
     dep.version
   }.json`
 }
 
-export function getJsDelivrListUrl(dep: NpmDependency) {
+export function getJsDelivrListUrl(dep: ResolvedNpmDependency): string {
   return `https://data.jsdelivr.com/v1/package/npm/${dep.name}@${dep.version}/flat`
 }
 
-export function getJsDelivrFileUrl(dep: NpmDependency, localFilePath: string) {
+export function getJsDelivrFileUrl(dep: ResolvedNpmDependency, localFilePath: string): string {
   return `https://cdn.jsdelivr.net/npm/${dep.name}@${dep.version}${localFilePath}`
 }
