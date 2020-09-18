@@ -1450,7 +1450,6 @@ export function persistentModelForProjectContents(
     projectVersion: CURRENT_PROJECT_VERSION,
     projectContents: projectContents,
     exportsInfo: [],
-    buildResult: {},
     openFiles: [selectedTab],
     selectedFile: selectedTab,
     codeEditorErrors: {
