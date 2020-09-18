@@ -36,7 +36,11 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { KeysPressed } from '../../../utils/keyboard'
 import * as TP from '../../../core/shared/template-path'
-import { FlexGrowControl, FlexShrinkControl } from './flex-shrink-grow-controls'
+import {
+  FlexGrowControl,
+  FlexShrinkControl,
+  useShouldShowFlexGrowShrinkControl,
+} from './flex-shrink-grow-controls'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -233,10 +237,24 @@ interface ResizeLinesProps extends Omit<ResizeControlProps, 'dragState'> {
 
 const LineOffset = 6
 const ResizeLines = (props: ResizeLinesProps) => {
+  const showGrowShrinkControls = useShouldShowFlexGrowShrinkControl(
+    props.direction === 'vertical' ? 'row' : 'column',
+    props.targetComponentMetadata,
+  )
   const options =
     props.direction === 'vertical'
-      ? ([props.labels.vertical, 'minWidth', 'maxWidth', 'flexGrow', 'flexShrink'] as const)
-      : ([props.labels.horizontal, 'minHeight', 'maxHeight'] as const)
+      ? ([
+          props.labels.vertical,
+          ...(showGrowShrinkControls ? ['flexGrow', 'flexShrink'] : []),
+          'minWidth',
+          'maxWidth',
+        ] as const)
+      : ([
+          props.labels.horizontal,
+          ...(showGrowShrinkControls ? ['flexGrow', 'flexShrink'] : []),
+          'minHeight',
+          'maxHeight',
+        ] as const)
 
   const [targets, targetIndex] = useTargetSelector(options, props.keysPressed)
 
