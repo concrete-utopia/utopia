@@ -7,7 +7,7 @@
 
 To try the latest deployed version of the editor, go to https://utopia.app/project
 
-![screenshot of utopia](https://files.slack.com/files-pri/T0F044B7U-F01ARKUDJP8/image.png)
+![screenshot of utopia](https://user-images.githubusercontent.com/2226774/93580752-7b7b8e80-f9a0-11ea-8663-39683a53df2e.png)
 
 # Development
 
