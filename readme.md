@@ -5,6 +5,12 @@
 
 # Welcome to Utopia!
 
+To try the latest deployed version of the editor, go to https://utopia.app/project
+
+![screenshot of utopia](https://files.slack.com/files-pri/T0F044B7U-F01ARKUDJP8/image.png)
+
+# Development
+
 Utopia runs in the browser! To run it, you'll need to run the server (locally) and webpack.
 
 ## Prerequisites
