@@ -76,7 +76,7 @@ function useGetArrowSize(
       ),
     ) ?? 0
 
-  return 10 + valueForProp * 10
+  return valueForProp * 10
 }
 
 export const FlexGrowControl: React.FunctionComponent<{
@@ -90,7 +90,7 @@ export const FlexGrowControl: React.FunctionComponent<{
   const arrowSize = useGetArrowSize('flexGrow', props.targetComponentMetadata)
 
   const shouldShow = useShouldShowArrow(props.direction, props.targetComponentMetadata)
-  if (!shouldShow) {
+  if (!shouldShow || arrowSize === 0) {
     return null
   }
 
@@ -124,7 +124,7 @@ export const FlexShrinkControl: React.FunctionComponent<{
   const arrowSize = useGetArrowSize('flexShrink', props.targetComponentMetadata)
 
   const shouldShow = useShouldShowArrow(props.direction, props.targetComponentMetadata)
-  if (!shouldShow) {
+  if (!shouldShow || arrowSize === 0) {
     return null
   }
 
