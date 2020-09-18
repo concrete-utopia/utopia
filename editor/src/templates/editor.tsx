@@ -250,18 +250,9 @@ export class Editor {
                   })
               }
             })
+          } else if (githubOwner != null && githubRepo != null) {
+            renderProjectLoadError('Github repo import is only supported for logged in users')
           } else {
-            if (githubOwner != null && githubRepo != null) {
-              this.boundDispatch(
-                [
-                  EditorActions.showToast({
-                    message: 'Please log in to fork a github repo',
-                  }),
-                ],
-                'everyone',
-              )
-            }
-
             createNewProject(this.boundDispatch, () =>
               renderRootComponent(
                 this.utopiaStoreHook,
