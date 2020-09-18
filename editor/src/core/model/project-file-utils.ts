@@ -1,8 +1,8 @@
 import * as MimeTypes from 'mime-types'
 import * as pathParse from 'path-parse'
 import * as R from 'ramda'
-import { NormalisedFrame } from 'utopia-api'
 import * as PP from '../shared/property-path'
+import { isText } from 'istextorbinary'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import Utils from '../../utils/utils'
 import { bimapEither, foldEither, mapEither } from '../shared/either'
@@ -385,15 +385,14 @@ export function fileTypeFromFileName(
   if (filename.endsWith('src/app.js')) {
     return 'UI_JS_FILE'
   } else {
-    const mimeType = mimeTypeLookup(filename)
-    if (mimeType === false) {
-      return 'CODE_FILE' // FIXME This is definitely not a safe assumption
+    if (isText(filename)) {
+      return 'CODE_FILE'
     } else {
-      if (mimeType.startsWith('image/')) {
+      const mimeType = mimeTypeLookup(filename)
+      if (mimeType === false) {
+        return 'CODE_FILE' // FIXME This is definitely not a safe assumption
+      } else if (mimeType.startsWith('image/')) {
         return 'IMAGE_FILE'
-      } else if (mimeType.startsWith('application/') || mimeType.startsWith('text/')) {
-        // Note for future us: The 'application/' prefix is possibly a bit wide.
-        return 'CODE_FILE'
       } else {
         return 'ASSET_FILE'
       }
