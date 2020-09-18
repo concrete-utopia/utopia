@@ -163,7 +163,11 @@ const ResizeEdge: React.FunctionComponent<ResizeEdgeProps> = (props) => {
     props.dragState.type === 'RESIZE_DRAG_STATE' &&
     props.dragState.start != null &&
     props.dragState.edgePosition.x === props.position.x &&
-    props.dragState.edgePosition.y === props.position.y
+    props.dragState.edgePosition.y === props.position.y &&
+    props.targetComponentMetadata != null &&
+    props.dragState.draggedElements.some((element) =>
+      TP.pathsEqual(element, props.targetComponentMetadata!.templatePath),
+    )
 
   return (
     <div onMouseDown={onMouseDown}>
