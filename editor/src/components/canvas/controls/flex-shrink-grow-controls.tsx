@@ -25,9 +25,22 @@ const Arrowbase = styled.div((props: { length: number }) => ({
   backgroundColor: 'blue',
 }))
 
-const Arrow: React.FunctionComponent<any> = () => {
+const Arrow: React.FunctionComponent<{ direction: 'left' | 'up' | 'right' | 'down' }> = (props) => {
+  const rotation = (() => {
+    switch (props.direction) {
+      case 'right':
+        return 0
+      case 'down':
+        return 90
+      case 'left':
+        return 180
+      case 'up':
+        return 270
+    }
+  })()
+
   return (
-    <div>
+    <div style={{ transform: `rotate(${rotation}deg)` }}>
       <Arrowbase length={10} />
       <Arrowhead direction={'right'} />
     </div>
@@ -36,10 +49,18 @@ const Arrow: React.FunctionComponent<any> = () => {
 
 export const FlexGrowControl: React.FunctionComponent<{
   direction: 'row' | 'column'
+  top: number
+  left: number
 }> = (props) => {
   return (
-    <div>
-      <Arrow direction='right' />
+    <div
+      style={{
+        position: 'absolute',
+        top: props.top,
+        left: props.left,
+      }}
+    >
+      <Arrow direction={props.direction === 'row' ? 'right' : 'down'} />
     </div>
   )
 }

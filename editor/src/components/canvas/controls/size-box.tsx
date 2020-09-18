@@ -297,7 +297,11 @@ const ResizeLines = (props: ResizeLinesProps) => {
         edge={edge}
         color={props.color}
       />
-      <FlexGrowControl direction={props.direction === 'vertical' ? 'row' : 'column'} />
+      <FlexGrowControl
+        direction={props.direction === 'vertical' ? 'row' : 'column'}
+        top={top}
+        left={left}
+      />
       {(showLabel || isEdgeDragged) && (
         <PropertyTargetSelector
           top={
