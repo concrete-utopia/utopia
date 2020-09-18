@@ -1515,7 +1515,15 @@ export function produceResizeSingleSelectCanvasTransientState(
       const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
         ? dragState.drag?.x ?? 0
         : dragState.drag?.y ?? 0
-      framesAndTargets.push(flexResizeChange(elementToTarget, dragState.targetProperty, newDelta))
+
+      if (dragState.targetProperty === 'flexGrow' || dragState.targetProperty === 'flexShrink') {
+        const flexGrowShrinkSizeChange = newDelta < 0 ? 0 : Math.floor(newDelta / 10)
+        framesAndTargets.push(
+          flexResizeChange(elementToTarget, dragState.targetProperty, flexGrowShrinkSizeChange),
+        )
+      } else {
+        framesAndTargets.push(flexResizeChange(elementToTarget, dragState.targetProperty, newDelta))
+      }
     } else {
       const edgePosition = dragState.centerBasedResize
         ? ({ x: 0.5, y: 0.5 } as EdgePosition)
@@ -1524,17 +1532,7 @@ export function produceResizeSingleSelectCanvasTransientState(
         x: roundedFrame.width - originalFrame.width,
         y: roundedFrame.height - originalFrame.height,
       } as CanvasVector
-      if (dragState.targetProperty === 'flexGrow' || dragState.targetProperty === 'flexShrink') {
-        const flexGrowShrinkSizeChange = {
-          x: sizeChange.x < 0 ? 0 : Math.floor(sizeChange.x / 10),
-          y: sizeChange.y < 0 ? 0 : Math.floor(sizeChange.y / 10),
-        } as CanvasVector
-        framesAndTargets.push(
-          singleResizeChange(elementToTarget, edgePosition, flexGrowShrinkSizeChange),
-        )
-      } else {
-        framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
-      }
+      framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
     }
   }
 

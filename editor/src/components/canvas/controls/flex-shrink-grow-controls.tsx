@@ -84,8 +84,6 @@ export const FlexGrowControl: React.FunctionComponent<{
   top: number
   left: number
   targetComponentMetadata: ElementInstanceMetadata | null
-  onMouseOver: () => void
-  onMouseOut: () => void
 }> = (props) => {
   const arrowSize = useGetArrowSize('flexGrow', props.targetComponentMetadata)
 
@@ -99,8 +97,6 @@ export const FlexGrowControl: React.FunctionComponent<{
 
   return (
     <div
-      onMouseOver={props.onMouseOver}
-      onMouseOut={props.onMouseOut}
       style={{
         position: 'absolute',
         top: props.top,
@@ -121,8 +117,6 @@ export const FlexShrinkControl: React.FunctionComponent<{
   top: number
   left: number
   targetComponentMetadata: ElementInstanceMetadata | null
-  onMouseOver: () => void
-  onMouseOut: () => void
 }> = (props) => {
   const arrowSize = useGetArrowSize('flexShrink', props.targetComponentMetadata)
 
@@ -136,8 +130,6 @@ export const FlexShrinkControl: React.FunctionComponent<{
 
   return (
     <div
-      onMouseOver={props.onMouseOver}
-      onMouseOut={props.onMouseOut}
       style={{
         position: 'absolute',
         top: props.top,
