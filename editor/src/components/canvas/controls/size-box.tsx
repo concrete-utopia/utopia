@@ -269,7 +269,9 @@ const ResizeLines = (props: ResizeLinesProps) => {
   const catchmentSize = 12 / props.scale
 
   const showFlexGrowControl = () => setShowFlexGrowLabel(true)
+  const showFlexShrinkControl = () => setShowFlexShrinkLabel(true)
   const hideFlexGrowControl = () => setShowFlexGrowLabel(false)
+  const hideFlexShrinkControl = () => setShowFlexShrinkLabel(false)
 
   const mouseCatcher =
     props.resizeStatus !== 'enabled' ? null : (
@@ -300,6 +302,8 @@ const ResizeLines = (props: ResizeLinesProps) => {
         targetComponentMetadata={props.targetComponentMetadata}
         top={top}
         left={left}
+        onMouseOver={showFlexShrinkControl}
+        onMouseOut={hideFlexShrinkControl}
       />
       <LineSVGComponent
         scale={props.scale}
@@ -316,6 +320,30 @@ const ResizeLines = (props: ResizeLinesProps) => {
         onMouseOver={showFlexGrowControl}
         onMouseOut={hideFlexGrowControl}
       />
+      {showFlexShrinkLabel && (
+        <PropertyTargetSelector
+          top={
+            top +
+            (props.direction === 'horizontal'
+              ? edge === 'before' && props.direction === 'horizontal'
+                ? -25
+                : 10
+              : -10)
+          }
+          left={
+            left +
+            (props.direction === 'vertical'
+              ? edge === 'before' && props.direction === 'vertical'
+                ? -25
+                : 10
+              : -10)
+          }
+          options={['flexShrink']}
+          targetIndex={0}
+          targetComponentMetadata={props.targetComponentMetadata}
+          keysPressed={props.keysPressed}
+        />
+      )}
       {showFlexGrowLabel && (
         <PropertyTargetSelector
           top={
