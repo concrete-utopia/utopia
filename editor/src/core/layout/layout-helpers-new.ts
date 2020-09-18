@@ -18,6 +18,8 @@ export type LayoutTargetableProp =
   | 'maxWidth'
   | 'minHeight'
   | 'maxHeight'
+  | 'flexGrow'
+  | 'flexShrink'
 
 export type LayoutPinnedProp =
   | LayoutDimension

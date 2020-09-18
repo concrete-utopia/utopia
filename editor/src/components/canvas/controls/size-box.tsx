@@ -243,6 +243,8 @@ const ResizeLines = (props: ResizeLinesProps) => {
   const onMouseDown = useStartDrag(targets[targetIndex], props)
 
   const [showLabel, setShowLabel] = React.useState(false)
+  const [showFlexGrowLabel, setShowFlexGrowLabel] = React.useState(false)
+  const [showFlexShrinkLabel, setShowFlexShrinkLabel] = React.useState(false)
   const reference = React.createRef<HTMLDivElement>()
   const LineSVGComponent =
     props.position.y === 0.5 ? DimensionableControlVertical : DimensionableControlHorizontal
@@ -265,6 +267,9 @@ const ResizeLines = (props: ResizeLinesProps) => {
   const top = props.canvasOffset.y + props.visualSize.y + props.position.y * props.visualSize.height
 
   const catchmentSize = 12 / props.scale
+
+  const showFlexGrowControl = () => setShowFlexGrowLabel(true)
+  const hideFlexGrowControl = () => setShowFlexGrowLabel(false)
 
   const mouseCatcher =
     props.resizeStatus !== 'enabled' ? null : (
@@ -308,7 +313,33 @@ const ResizeLines = (props: ResizeLinesProps) => {
         targetComponentMetadata={props.targetComponentMetadata}
         top={top}
         left={left}
+        onMouseOver={showFlexGrowControl}
+        onMouseOut={hideFlexGrowControl}
       />
+      {showFlexGrowLabel && (
+        <PropertyTargetSelector
+          top={
+            top +
+            (props.direction === 'horizontal'
+              ? edge === 'before' && props.direction === 'horizontal'
+                ? -25
+                : 10
+              : -10)
+          }
+          left={
+            left +
+            (props.direction === 'vertical'
+              ? edge === 'before' && props.direction === 'vertical'
+                ? -25
+                : 10
+              : -10)
+          }
+          options={['flexGrow']}
+          targetIndex={0}
+          targetComponentMetadata={props.targetComponentMetadata}
+          keysPressed={props.keysPressed}
+        />
+      )}
       {(showLabel || isEdgeDragged) && (
         <PropertyTargetSelector
           top={
