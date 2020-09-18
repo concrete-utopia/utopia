@@ -44,7 +44,21 @@ interface ResizeControlProps extends ResizeRectangleProps {
   dragState: ResizeDragState | null
 }
 
-const ResizeControl: React.FunctionComponent<ResizeControlProps> = (props) => {
+function useStartDrag(
+  activeTargetProperty: LayoutTargetableProp,
+  props: {
+    windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
+    elementAspectRatioLocked: boolean
+    dispatch: EditorDispatch
+    getOriginalFrames: () => Array<OriginalCanvasAndLocalFrame>
+    selectedViews: Array<TemplatePath>
+    measureSize: CanvasRectangle // this is the size we want to adjust when the user drags
+    position: EdgePosition
+    enabledDirection: EnabledDirection
+    metadata: Array<ComponentMetadata>
+    onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
+  },
+) {
   const dispatch = props.dispatch
   React.useEffect(() => {
     return function cleanup() {
@@ -75,7 +89,7 @@ const ResizeControl: React.FunctionComponent<ResizeControlProps> = (props) => {
           props.metadata,
           props.selectedViews,
           isMultiSelect,
-          props.activeTargetProperty,
+          activeTargetProperty,
         )
 
         props.dispatch(
@@ -85,9 +99,14 @@ const ResizeControl: React.FunctionComponent<ResizeControlProps> = (props) => {
         props.onResizeStart(props.measureSize, props.position)
       }
     },
-    [props],
+    [props, activeTargetProperty],
   )
 
+  return onMouseDown
+}
+
+const ResizeControl: React.FunctionComponent<ResizeControlProps> = (props) => {
+  const onMouseDown = useStartDrag('Width', props)
   return (
     <React.Fragment>
       {props.resizeStatus === 'enabled' ? (
@@ -472,7 +491,6 @@ interface ResizeRectangleProps {
     vertical: 'Width' | 'FlexFlexBasis' | 'FlexCrossBasis'
     horizontal: 'Height' | 'FlexFlexBasis' | 'FlexCrossBasis'
   }
-  activeTargetProperty: LayoutTargetableProp
   keysPressed: KeysPressed
 }
 

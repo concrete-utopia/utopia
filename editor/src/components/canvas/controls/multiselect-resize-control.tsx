@@ -181,7 +181,6 @@ export class MultiselectResizeControl extends React.Component<
                   horizontal: 'Height',
                 } as const
               }
-              activeTargetProperty={this.props.activeTargetProperty}
               keysPressed={this.props.keysPressed}
             />
 
@@ -247,7 +246,6 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
               onResizeStart={this.props.onResizeStart}
               testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
               labels={labels}
-              activeTargetProperty={this.props.activeTargetProperty}
               keysPressed={this.props.keysPressed}
             />
           </>
