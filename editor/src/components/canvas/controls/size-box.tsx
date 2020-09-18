@@ -36,6 +36,7 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { KeysPressed } from '../../../utils/keyboard'
 import * as TP from '../../../core/shared/template-path'
+import { FlexGrowControl } from './flex-shrink-grow-controls'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -292,6 +293,7 @@ const ResizeLines = (props: ResizeLinesProps) => {
         edge={edge}
         color={props.color}
       />
+      <FlexGrowControl direction={props.direction === 'vertical' ? 'row' : 'column'} />
       {(showLabel || isEdgeDragged) && (
         <PropertyTargetSelector
           top={
