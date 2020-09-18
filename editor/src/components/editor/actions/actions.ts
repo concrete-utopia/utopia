@@ -4450,7 +4450,7 @@ export async function load(
     codeResultCache = generateCodeResultCache(
       model.projectContents,
       {},
-      model.buildResult,
+      {},
       model.exportsInfo,
       nodeModules,
       dispatch,
