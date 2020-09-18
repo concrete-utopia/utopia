@@ -28,6 +28,7 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
+import { MiniNavigator } from './mininavigator'
 
 export const SnappingThreshold = 5
 
@@ -668,9 +669,17 @@ export class SelectModeControlContainer extends React.Component<
       <div
         style={{
           pointerEvents: 'initial',
+          position: 'relative',
         }}
         onContextMenu={this.onContextMenu}
       >
+        <MiniNavigator
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
         {roots.map((root) => {
           return (
             <React.Fragment key={`${TP.toComponentId(root)}}-root-controls`}>

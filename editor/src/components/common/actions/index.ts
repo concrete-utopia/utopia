@@ -9,7 +9,7 @@ export type LeftMenuPanel =
   | 'insertmenu'
   | 'projectsettings'
 
-export type CenterPanel = 'canvas' | 'misccodeeditor'
+export type CenterPanel = 'canvas' | 'misccodeeditor' | 'mininavigator'
 
 export type InspectorPanel = 'inspector'
 
