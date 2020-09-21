@@ -11,6 +11,8 @@ import { EditorState } from '../../../editor/store/editor-state'
 import * as TP from '../../../../core/shared/template-path'
 import {
   CanvasFrameAndTarget,
+  flexAlignChange,
+  FlexAlignChange,
   flexMoveChange,
   FlexMoveChange,
   flexResizeChange,
@@ -22,6 +24,7 @@ import { ConstrainedDragAxis, Guideline, Guidelines } from '../../guideline'
 import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
 import { flatMapArray } from '../../../../core/shared/array-utils'
+import { FlexAlignment } from 'utopia-api'
 
 function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {
@@ -109,7 +112,8 @@ export function dragComponent(
   enableSnapping: boolean,
   constrainDragAxis: boolean,
   scale: number,
-): Array<PinMoveChange | FlexMoveChange> {
+  dragStart: CanvasPoint,
+): Array<PinMoveChange | FlexMoveChange | FlexAlignChange> {
   const roundedDragDelta = Utils.roundPointTo(dragDelta, 0)
   // TODO: Probably makes more sense to pull this out.
   const viewsToOperateOn = determineElementsToOperateOnForDragging(
@@ -118,7 +122,7 @@ export function dragComponent(
     true,
     false,
   )
-  let dragChanges: Array<PinMoveChange | FlexMoveChange> = []
+  let dragChanges: Array<PinMoveChange | FlexMoveChange | FlexAlignChange> = []
   Utils.fastForEach(viewsToOperateOn, (view) => {
     const parentPath = TP.parentPath(view)
     const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -145,6 +149,77 @@ export function dragComponent(
         )
         if (newIndex != null) {
           dragChanges.push(flexMoveChange(view, newIndex))
+        } else {
+          if (parentPath != null) {
+            const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, componentsMetadata)
+            if (parentFrame != null) {
+              let newAlignment: FlexAlignment = FlexAlignment.Auto
+              const draggedPoint = Utils.offsetPoint(dragStart, roundedDragDelta)
+              switch (flexDirection) {
+                case 'column': {
+                  const draggedPointPlacedInParent =
+                    (draggedPoint.x - parentFrame.x) / parentFrame.width
+                  if (draggedPointPlacedInParent >= 0 && draggedPointPlacedInParent < 0.33) {
+                    newAlignment = FlexAlignment.FlexStart
+                  } else if (
+                    draggedPointPlacedInParent >= 0.33 &&
+                    draggedPointPlacedInParent < 0.66
+                  ) {
+                    newAlignment = FlexAlignment.Center
+                  } else if (draggedPointPlacedInParent >= 0.66 && draggedPointPlacedInParent < 1) {
+                    newAlignment = FlexAlignment.FlexEnd
+                  }
+                  break
+                }
+                case 'column-reverse': {
+                  const draggedPointPlacedInParent =
+                    (draggedPoint.x - parentFrame.x) / parentFrame.width
+                  if (draggedPointPlacedInParent >= 0 && draggedPointPlacedInParent < 0.33) {
+                    newAlignment = FlexAlignment.FlexEnd
+                  } else if (
+                    draggedPointPlacedInParent >= 0.33 &&
+                    draggedPointPlacedInParent < 0.66
+                  ) {
+                    newAlignment = FlexAlignment.Center
+                  } else if (draggedPointPlacedInParent >= 0.66 && draggedPointPlacedInParent < 1) {
+                    newAlignment = FlexAlignment.FlexStart
+                  }
+                  break
+                }
+                case 'row': {
+                  const draggedPointPlacedInParent =
+                    (draggedPoint.y - parentFrame.y) / parentFrame.height
+                  if (draggedPointPlacedInParent >= 0 && draggedPointPlacedInParent < 0.33) {
+                    newAlignment = FlexAlignment.FlexStart
+                  } else if (
+                    draggedPointPlacedInParent >= 0.33 &&
+                    draggedPointPlacedInParent < 0.66
+                  ) {
+                    newAlignment = FlexAlignment.Center
+                  } else if (draggedPointPlacedInParent >= 0.66 && draggedPointPlacedInParent < 1) {
+                    newAlignment = FlexAlignment.FlexEnd
+                  }
+                  break
+                }
+                case 'row-reverse': {
+                  const draggedPointPlacedInParent =
+                    (draggedPoint.y - parentFrame.y) / parentFrame.height
+                  if (draggedPointPlacedInParent >= 0 && draggedPointPlacedInParent < 0.33) {
+                    newAlignment = FlexAlignment.FlexEnd
+                  } else if (
+                    draggedPointPlacedInParent >= 0.33 &&
+                    draggedPointPlacedInParent < 0.66
+                  ) {
+                    newAlignment = FlexAlignment.Center
+                  } else if (draggedPointPlacedInParent >= 0.66 && draggedPointPlacedInParent < 1) {
+                    newAlignment = FlexAlignment.FlexStart
+                  }
+                  break
+                }
+              }
+              dragChanges.push(flexAlignChange(view, newAlignment))
+            }
+          }
         }
       }
     } else {
@@ -189,6 +264,7 @@ export function dragComponentForActions(
   enableSnapping: boolean,
   constrainDragAxis: boolean,
   scale: number,
+  start: CanvasPoint,
 ): Array<EditorAction> {
   const frameAndTargets = dragComponent(
     componentsMetadata,
@@ -201,6 +277,7 @@ export function dragComponentForActions(
     enableSnapping,
     constrainDragAxis,
     scale,
+    start,
   )
   return [setCanvasFrames(frameAndTargets, false)]
 }
@@ -319,6 +396,7 @@ export function adjustAllSelectedFrames(
       false,
       false,
       editor.canvas.scale,
+      Utils.zeroPoint as CanvasPoint,
     )
   }
 

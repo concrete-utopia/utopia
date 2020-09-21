@@ -421,6 +421,7 @@ export function updateFramesOfScenesAndComponents(
           break
         case 'FLEX_MOVE':
         case 'FLEX_RESIZE':
+        case 'FLEX_ALIGN':
           throw new Error(
             `Attempted to change a scene with a flex change ${JSON.stringify(target)}.`,
           )
@@ -468,6 +469,15 @@ export function updateFramesOfScenesAndComponents(
                   staticParentPath,
                 )}.`,
               )
+            case 'FLEX_ALIGN': {
+              propsToSet.push({
+                path: createLayoutPropertyPath('alignSelf'),
+                value: jsxAttributeValue(frameAndTarget.alignment),
+              })
+              propsToSkip.push(createLayoutPropertyPath('FlexFlexBasis'))
+              propsToSkip.push(createLayoutPropertyPath('FlexCrossBasis'))
+              break
+            }
             case 'FLEX_MOVE':
               workingComponentsResult = reorderComponent(
                 workingComponentsResult,
@@ -708,6 +718,7 @@ export function updateFramesOfScenesAndComponents(
             break
           case 'FLEX_MOVE':
           case 'FLEX_RESIZE':
+          case 'FLEX_ALIGN':
             throw new Error(
               `Attempted to make a flex change against a pinned element ${JSON.stringify(
                 staticParentPath,
@@ -2138,6 +2149,7 @@ function produceMoveTransientCanvasState(
     dragState.enableSnapping,
     dragState.constrainDragAxis,
     editorState.canvas.scale,
+    dragState.start,
   )
 
   const componentsIncludingFakeUtopiaScene = utopiaComponentsIncludingScenes
