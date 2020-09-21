@@ -1,7 +1,13 @@
 import * as React from 'react'
 import styled from '@emotion/styled'
 import { useEditorState } from '../editor/store/store-hook'
-import { isInstancePath, parentPath } from '../../core/shared/template-path'
+import {
+  appendToPath,
+  instancePath,
+  instancePathForPath,
+  isInstancePath,
+  parentPath,
+} from '../../core/shared/template-path'
 import { findJSXElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { getOpenUtopiaJSXComponentsFromState } from '../editor/store/editor-state'
 import { getUtopiaID } from '../../core/model/element-template-utils'
@@ -9,22 +15,26 @@ import {
   ComponentMetadata,
   getJSXElementNameAsString,
   JSXElement,
+  JSXElementChild,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import { InstancePath, TemplatePath } from '../../core/shared/project-file-types'
+import { last } from '../../core/shared/array-utils'
 
 interface NavigatorItemData {
   id: string
   name: string
   indentation: number
   layoutType: string
+  selected: boolean
 }
 
 function getNavigatorItemDataFromJsxElement(
   metadata: ComponentMetadata[],
   path: InstancePath,
-  element: JSXElement,
+  element: JSXElementChild,
   indentation: number,
+  selected: boolean,
 ): NavigatorItemData {
   return {
     id: getUtopiaID(element),
@@ -33,30 +43,44 @@ function getNavigatorItemDataFromJsxElement(
     layoutType:
       MetadataUtils.getElementByInstancePathMaybe(metadata, path)?.specialSizeMeasurements
         .layoutSystemForChildren ?? '',
+    selected,
   }
 }
 
 function useGetNavigatorItemsToShow(): Array<NavigatorItemData> {
   return useEditorState((store) => {
-    const selectedView = store.editor.selectedViews[0]
+    const selectedView = instancePathForPath(store.editor.selectedViews[0])
     const editedComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     const metadata = store.editor.jsxMetadataKILLME
 
     if (selectedView != null) {
-      const parent = parentPath(selectedView)
+      const selectedViewUid = (isInstancePath(selectedView) && last(selectedView.element)) || null
+
+      const parent = instancePathForPath(parentPath(selectedView))
       const parentElement = findJSXElementAtPath(parent, editedComponents, metadata)
       const parentNavigatorEntry: Array<NavigatorItemData> =
-        parentElement == null || !isInstancePath(parent)
+        parentElement == null || parent == null
           ? []
-          : [getNavigatorItemDataFromJsxElement(metadata, parent, parentElement, 0)]
+          : [getNavigatorItemDataFromJsxElement(metadata, parent, parentElement, 0, false)]
 
-      const selectedElement = findJSXElementAtPath(selectedView, editedComponents, metadata)
-      const selectedElementEntry: Array<NavigatorItemData> =
-        selectedElement == null || !isInstancePath(selectedView)
+      const siblings = parentElement?.children ?? []
+
+      const siblingElements =
+        parent == null
           ? []
-          : [getNavigatorItemDataFromJsxElement(metadata, selectedView, selectedElement, 1)]
+          : siblings.map((s) => {
+              const uid = getUtopiaID(s)
+              const selected = uid === selectedViewUid
+              return getNavigatorItemDataFromJsxElement(
+                metadata,
+                appendToPath(parent, uid),
+                s,
+                1,
+                selected,
+              )
+            })
 
-      return [...parentNavigatorEntry, ...selectedElementEntry]
+      return [...parentNavigatorEntry, ...siblingElements]
     } else {
       return []
     }
@@ -92,7 +116,14 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData }> = 
     <div>
       <span style={{ width: 10 * props.item.indentation, display: 'inline-block' }}></span>
       <span>⚄ </span>
-      {props.item.name} <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
+      <span
+        style={{
+          color: props.item.selected ? 'blue' : 'black',
+        }}
+      >
+        {props.item.name}{' '}
+      </span>
+      <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
     </div>
   )
 }
