@@ -87,7 +87,12 @@ function useGetNavigatorItemsToShow(): Array<NavigatorItemData> {
   })
 }
 
-const MiniNavigatorRoot = styled.div({ position: 'absolute', top: 25, left: 25 })
+const MiniNavigatorRoot = styled.div({
+  position: 'absolute',
+  top: 25,
+  left: 25,
+  backgroundImage: 'radial-gradient(at 0% 0%, #FFFFFF 75%, #03030300 100%)',
+})
 
 export const MiniNavigator: React.FunctionComponent = () => {
   const items = useGetNavigatorItemsToShow()
