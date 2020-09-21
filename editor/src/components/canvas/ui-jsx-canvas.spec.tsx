@@ -28,6 +28,7 @@ import {
   UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
   emptyUiJsxCanvasContextData,
+  CanvasErrorBoundary,
 } from './ui-jsx-canvas'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
@@ -125,7 +126,6 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       requireFn: requireFn,
       fileBlobs: fileBlobs,
       onDomReport: Utils.NO_OP,
-      reportError: reportError,
       clearErrors: clearErrors,
       offset: canvasPoint({ x: 0, y: 0 }),
       scale: 1,
@@ -150,7 +150,6 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       requireFn: requireFn,
       fileBlobs: fileBlobs,
       onDomReport: Utils.NO_OP,
-      reportError: reportError,
       clearErrors: clearErrors,
       walkDOM: false,
       imports: imports,
@@ -175,7 +174,13 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
   try {
     const flatFormat = ReactDOMServer.renderToStaticMarkup(
       <UiJsxCanvasContext.Provider value={spyCollector}>
-        <UiJsxCanvas {...canvasProps} />
+        <CanvasErrorBoundary
+          uiFilePath={uiFilePath}
+          reportError={reportError}
+          topLevelElementsIncludingScenes={canvasProps.topLevelElementsIncludingScenes}
+        >
+          <UiJsxCanvas {...canvasProps} />
+        </CanvasErrorBoundary>
       </UiJsxCanvasContext.Provider>,
     )
     formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })

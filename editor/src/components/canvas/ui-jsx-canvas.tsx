@@ -160,11 +160,15 @@ export interface CanvasReactReportErrorCallback {
   reportError: (editedFile: string, error: Error, errorInfo?: React.ErrorInfo) => void
 }
 
-export interface CanvasReactErrorCallback extends CanvasReactReportErrorCallback {
+export interface CanvasReactClearErrorsCallback {
   clearErrors: () => void
 }
 
-export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactErrorCallback
+export interface CanvasReactErrorCallback
+  extends CanvasReactReportErrorCallback,
+    CanvasReactClearErrorsCallback {}
+
+export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactClearErrorsCallback
 
 const emptyImports: Imports = {}
 const emptyTopLevelElements: Array<TopLevelElement> = []
@@ -250,29 +254,19 @@ function runBlockUpdatingScope(
   requireResult: MapLike<any>,
   block: ArbitraryJSBlock,
   currentScope: MapLike<any>,
-  errorHandler: (error: Error) => void,
 ): void {
-  try {
-    const result = resolveParamsAndRunJsCode(block, requireResult, currentScope)
-    Utils.fastForEach(block.definedWithin, (within) => {
-      currentScope[within] = result[within]
-    })
-  } catch (e) {
-    errorHandler(e)
-  }
+  const result = resolveParamsAndRunJsCode(block, requireResult, currentScope)
+  Utils.fastForEach(block.definedWithin, (within) => {
+    currentScope[within] = result[within]
+  })
 }
 
 function runJSXArbitraryBlock(
   requireResult: MapLike<any>,
   block: JSXArbitraryBlock,
   currentScope: MapLike<any>,
-  errorHandler: (error: Error) => void,
 ): any {
-  try {
-    return resolveParamsAndRunJsCode(block, requireResult, currentScope)
-  } catch (e) {
-    errorHandler(e)
-  }
+  return resolveParamsAndRunJsCode(block, requireResult, currentScope)
 }
 
 function fixStyleObjectRemoveCommentOnlyValues(props: Readonly<unknown>): any {
@@ -343,7 +337,6 @@ interface MutableUtopiaContextProps {
   requireResult: MapLike<any>
   fileBlobs: UIFileBase64Blobs
   rootScope: MapLike<any>
-  reportError: (error: Error, errorInfo?: React.ErrorInfo) => void
   jsxFactoryFunctionName: string | null
 }
 
@@ -352,7 +345,6 @@ const MutableUtopiaContext = React.createContext<{ current: MutableUtopiaContext
     requireResult: {},
     fileBlobs: {},
     rootScope: {},
-    reportError: Utils.NO_OP,
     jsxFactoryFunctionName: null,
   },
 })
@@ -441,7 +433,6 @@ export const UiJsxCanvas = betterReactMemo(
       hiddenInstances,
       fileBlobs,
       walkDOM,
-      reportError,
       onDomReport,
       topLevelElementsIncludingScenes,
       imports,
@@ -477,22 +468,10 @@ export const UiJsxCanvas = betterReactMemo(
       })
     }
 
-    const reportErrorWithPath = React.useCallback(
-      (error: Error, errorInfo?: React.ErrorInfo) => {
-        if (uiFilePath == null) {
-          console.warn('Reporting an error with no file open.', error, errorInfo)
-        } else {
-          reportError(uiFilePath, error, errorInfo)
-        }
-      },
-      [uiFilePath, reportError],
-    )
-
     let topLevelComponentRendererComponents = React.useRef<MapLike<ComponentRendererComponent>>({})
 
     let mutableContextRef = React.useRef<MutableUtopiaContextProps>({
       fileBlobs: fileBlobs,
-      reportError: reportErrorWithPath,
       requireResult: {},
       rootScope: {},
       jsxFactoryFunctionName: null,
@@ -516,57 +495,47 @@ export const UiJsxCanvas = betterReactMemo(
         const customRequire = (importOrigin: string, toImport: string) =>
           requireFn(importOrigin, toImport, false)
 
-        let requireResult: MapLike<any> = {}
-        let codeError: Error | null = null
-        try {
-          requireResult = importResultFromImports(uiFilePath, imports, customRequire)
-        } catch (e) {
-          codeError = e
-        }
+        const requireResult: MapLike<any> = importResultFromImports(
+          uiFilePath,
+          imports,
+          customRequire,
+        )
 
         let executionScope: MapLike<any> = { ...requireResult }
         // TODO All of this is run on every interaction o_O
 
         let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
 
-        // Should something have blown up previously, don't execute a bunch of code
-        // after now and potentially rewrite this error.
-        if (codeError == null) {
-          // Make sure there is something in scope for all of the top level components
-          Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-            if (isUtopiaJSXComponent(topLevelElement)) {
-              topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-              if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
-                topLevelComponentRendererComponents.current[
-                  topLevelElement.name
-                ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
-              }
+        // Make sure there is something in scope for all of the top level components
+        Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+          if (isUtopiaJSXComponent(topLevelElement)) {
+            topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
+            if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
+              topLevelComponentRendererComponents.current[
+                topLevelElement.name
+              ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
             }
-          })
-
-          executionScope = {
-            ...executionScope,
-            ...topLevelComponentRendererComponents.current,
           }
+        })
 
-          // First make sure everything is in scope
-          Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-            if (isArbitraryJSBlock(topLevelElement)) {
-              runBlockUpdatingScope(requireResult, topLevelElement, executionScope, (error) => {
-                codeError = error
-                reportErrorWithPath(error)
-              })
-            }
-          })
-
-          updateMutableUtopiaContextWithNewProps(mutableContextRef, {
-            requireResult: requireResult,
-            rootScope: executionScope,
-            fileBlobs: fileBlobs,
-            reportError: reportErrorWithPath,
-            jsxFactoryFunctionName: jsxFactoryFunction,
-          })
+        executionScope = {
+          ...executionScope,
+          ...topLevelComponentRendererComponents.current,
         }
+
+        // First make sure everything is in scope
+        Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+          if (isArbitraryJSBlock(topLevelElement)) {
+            runBlockUpdatingScope(requireResult, topLevelElement, executionScope)
+          }
+        })
+
+        updateMutableUtopiaContextWithNewProps(mutableContextRef, {
+          requireResult: requireResult,
+          rootScope: executionScope,
+          fileBlobs: fileBlobs,
+          jsxFactoryFunctionName: jsxFactoryFunction,
+        })
 
         const topLevelElementsMap = new Map(topLevelJsxComponents)
 
@@ -601,7 +570,6 @@ export const UiJsxCanvas = betterReactMemo(
                   scale={scale}
                   offset={offset}
                   onDomReport={onDomReport}
-                  codeError={codeError}
                   validRootPaths={rootValidPaths}
                   canvasRootElementTemplatePath={storyboardRootElementPath}
                 >
@@ -667,7 +635,6 @@ function applyPropsParamToPassedProps(
   inScope: MapLike<any>,
   parentComponentProps: AnyMap,
   requireResult: MapLike<any>,
-  onError: (error: Error) => void,
   passedProps: MapLike<unknown>,
   propsParam: Param,
 ): MapLike<unknown> {
@@ -678,12 +645,7 @@ function applyPropsParamToPassedProps(
     defaultExpression: JSXAttributeOtherJavaScript | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
-      return jsxAttributeToValue(
-        inScope,
-        parentComponentProps,
-        requireResult,
-        onError,
-      )(defaultExpression)
+      return jsxAttributeToValue(inScope, parentComponentProps, requireResult)(defaultExpression)
     } else {
       return value
     }
@@ -789,7 +751,6 @@ function createComponentRendererComponent(params: {
           mutableContext.rootScope,
           realPassedProps,
           mutableContext.requireResult,
-          mutableContext.reportError,
           realPassedProps,
           param,
         ),
@@ -809,10 +770,6 @@ function createComponentRendererComponent(params: {
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
         scope,
-        (error) => {
-          codeError = error
-          mutableContext.reportError(error)
-        },
       )
     }
 
@@ -835,7 +792,6 @@ function createComponentRendererComponent(params: {
           mutableContext.requireResult,
           rerenderUtopiaContext.hiddenInstances,
           mutableContext.fileBlobs,
-          mutableContext.reportError,
           sceneContext.validPaths,
           realPassedProps['data-uid'],
           undefined,
@@ -859,7 +815,7 @@ type ComponentRendererComponent = React.ComponentType<any> & {
   propertyControls?: PropertyControls
 }
 
-interface SceneRootProps extends CanvasReactReportErrorCallback {
+interface SceneRootProps {
   content: ComponentRendererComponent | undefined
   templatePath: InstancePath
   requireResult: MapLike<any>
@@ -891,7 +847,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     inScope,
     hiddenInstances,
     fileBlobs,
-    reportError,
     componentProps,
     style,
     container,
@@ -1038,7 +993,6 @@ function renderCoreElement(
   requireResult: MapLike<any>,
   hiddenInstances: Array<TemplatePath>,
   fileBlobs: UIFileBase64Blobs,
-  reportError: (error: Error, errorInfo?: React.ErrorInfo) => void,
   validPaths: Array<InstancePath>,
   uid: string | undefined,
   reactChildren: React.ReactNode | undefined,
@@ -1056,10 +1010,6 @@ function renderCoreElement(
       element.props,
       parentComponentInputProps,
       requireResult,
-      (error) => {
-        reportError(error)
-        throw error
-      },
     )
 
     const rootComponent = sceneProps.component
@@ -1079,7 +1029,6 @@ function renderCoreElement(
         fileBlobs={fileBlobs}
         style={sceneProps.style}
         inScope={inScope}
-        reportError={Utils.NO_OP}
         requireResult={requireResult}
         templatePath={templatePath}
         component={rootComponentName}
@@ -1096,10 +1045,6 @@ function renderCoreElement(
         element.props,
         parentComponentInputProps,
         requireResult,
-        (error) => {
-          reportError(error)
-          throw error
-        },
       )
 
       const passthroughProps: MapLike<any> = {
@@ -1121,7 +1066,6 @@ function renderCoreElement(
         hiddenInstances,
         fileBlobs,
         validPaths,
-        reportError,
         passthroughProps,
         metadataContext,
         jsxFactoryFunctionName,
@@ -1167,7 +1111,6 @@ function renderCoreElement(
           requireResult,
           hiddenInstances,
           fileBlobs,
-          reportError,
           validPaths,
           generatedUID,
           reactChildren,
@@ -1185,7 +1128,7 @@ function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSXArbitraryBlock(requireResult, element, blockScope, reportError)
+      return runJSXArbitraryBlock(requireResult, element, blockScope)
     }
     case 'JSX_FRAGMENT': {
       let renderedChildren: Array<React.ReactElement> = []
@@ -1199,7 +1142,6 @@ function renderCoreElement(
           requireResult,
           hiddenInstances,
           fileBlobs,
-          reportError,
           validPaths,
           uid,
           reactChildren,
@@ -1334,7 +1276,6 @@ function renderJSXElement(
   hiddenInstances: Array<TemplatePath>,
   fileBlobs: UIFileBase64Blobs,
   validPaths: Array<InstancePath>,
-  reportError: (error: Error, errorInfo?: React.ErrorInfo) => void,
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   jsxFactoryFunctionName: string | null,
@@ -1360,7 +1301,6 @@ function renderJSXElement(
       requireResult,
       hiddenInstances,
       fileBlobs,
-      reportError,
       validPaths,
       undefined,
       undefined,
@@ -1424,7 +1364,6 @@ export interface CanvasContainerProps {
   scale: number
   offset: CanvasVector
   onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void
-  codeError: Error | null
   canvasRootElementTemplatePath: TemplatePath
   validRootPaths: Array<StaticInstancePath>
 }
@@ -1434,10 +1373,6 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
 ) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   let containerRef = props.walkDOM ? useDomWalker(props) : React.useRef<HTMLDivElement>(null)
-
-  if (props.codeError != null) {
-    throw props.codeError
-  }
 
   const { scale, offset } = props
   return (

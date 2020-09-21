@@ -114,7 +114,12 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(sampleJsxAttributes(), PP.create(['top']), jsxAttributeValue(55)),
     )
-    const compiledProps = jsxAttributesToProps({}, updatedAttributes, sampleParentProps, {}, NO_OP)
+    const compiledProps = jsxAttributesToProps(
+      { props: sampleParentProps },
+      updatedAttributes,
+      {},
+      {},
+    )
     expect(compiledProps.top).toEqual(55)
   })
 
@@ -137,7 +142,12 @@ describe('setJSXValueAtPath', () => {
         jsxAttributeValue('hello'),
       ),
     )
-    const compiledProps = jsxAttributesToProps({}, updatedAttributes, sampleParentProps, {}, NO_OP)
+    const compiledProps = jsxAttributesToProps(
+      { props: sampleParentProps },
+      updatedAttributes,
+      {},
+      {},
+    )
     expect(compiledProps.my.property.path).toEqual('hello')
   })
 
@@ -149,7 +159,12 @@ describe('setJSXValueAtPath', () => {
         jsxAttributeValue(2000),
       ),
     )
-    const compiledProps = jsxAttributesToProps({}, updatedAttributes, sampleParentProps, {}, NO_OP)
+    const compiledProps = jsxAttributesToProps(
+      { props: sampleParentProps },
+      updatedAttributes,
+      {},
+      {},
+    )
     expect(compiledProps.layout.left).toEqual(2000)
   })
 
@@ -161,7 +176,12 @@ describe('setJSXValueAtPath', () => {
         jsxAttributeValue('easy!'),
       ),
     )
-    const compiledProps = jsxAttributesToProps({}, updatedAttributes, sampleParentProps, {}, NO_OP)
+    const compiledProps = jsxAttributesToProps(
+      { props: sampleParentProps },
+      updatedAttributes,
+      {},
+      {},
+    )
     expect(compiledProps.layout.deep.path).toEqual('easy!')
   })
 
@@ -173,7 +193,12 @@ describe('setJSXValueAtPath', () => {
         jsxAttributeValue('wee'),
       ),
     )
-    const compiledProps = jsxAttributesToProps({}, updatedAttributes, sampleParentProps, {}, NO_OP)
+    const compiledProps = jsxAttributesToProps(
+      { props: sampleParentProps },
+      updatedAttributes,
+      {},
+      {},
+    )
     expect(compiledProps.objectWithArray.array).toEqual([0, 1, 'wee'])
   })
 
@@ -187,11 +212,10 @@ describe('setJSXValueAtPath', () => {
         ),
       )
       const compiledProps = jsxAttributesToProps(
-        {},
+        { props: sampleParentProps },
         updatedAttributes,
-        sampleParentProps,
         {},
-        NO_OP,
+        {},
       )
     }).toThrow()
   })
@@ -204,7 +228,12 @@ describe('setJSXValueAtPath', () => {
         jsxAttributeValue('wee'),
       ),
     )
-    const compiledProps = jsxAttributesToProps({}, updatedAttributes, sampleParentProps, {}, NO_OP)
+    const compiledProps = jsxAttributesToProps(
+      { props: sampleParentProps },
+      updatedAttributes,
+      {},
+      {},
+    )
     expect(compiledProps.style.backgroundColor).toEqual('wee')
   })
 
@@ -223,7 +252,12 @@ describe('setJSXValueAtPath', () => {
         jsxAttributeValue('hola'),
       ),
     )
-    const compiledProps = jsxAttributesToProps({}, updatedAttributes2, sampleParentProps, {}, NO_OP)
+    const compiledProps = jsxAttributesToProps(
+      { props: sampleParentProps },
+      updatedAttributes2,
+      {},
+      {},
+    )
     expect(compiledProps.my.property.path).toEqual('hello')
     expect(compiledProps.my.property.other.path).toEqual('hola')
   })
@@ -236,7 +270,12 @@ describe('setJSXValueAtPath', () => {
         jsxAttributeValue('blue'),
       ),
     )
-    const compiledProps = jsxAttributesToProps({}, updatedAttributes, sampleParentProps, {}, NO_OP)
+    const compiledProps = jsxAttributesToProps(
+      { props: sampleParentProps },
+      updatedAttributes,
+      {},
+      {},
+    )
     expect(compiledProps.style.backgroundColor).toEqual('blue')
   })
 
@@ -272,7 +311,6 @@ describe('jsxAttributesToProps', () => {
       sampleJsxAttributes(),
       sampleParentProps,
       {},
-      NO_OP,
     )
     expect(compiledProps).toEqual(expectedCompiledProps)
   })

@@ -185,6 +185,10 @@ export function createLayoutPropertyPath(layoutProp: LayoutProp | StyleLayoutPro
   return PP.create(LayoutPathMap[layoutProp])
 }
 
+export function createLayoutPropertyPathString(layoutProp: LayoutProp | StyleLayoutProp): string {
+  return PP.toString(createLayoutPropertyPath(layoutProp))
+}
+
 export function getObservedLayoutPixelValue(
   pin: LayoutPinnedProp,
   elementInstanceMetadata: ElementInstanceMetadata,
