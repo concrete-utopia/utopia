@@ -218,6 +218,16 @@ export const MetadataUtils = {
   ): Array<ElementInstanceMetadata> | null {
     return element.children
   },
+  getElementByTemplatePathMaybe(
+    scenes: ComponentMetadata[],
+    path: TemplatePath | null,
+  ): ElementInstanceMetadata | null {
+    if (TP.isInstancePath(path)) {
+      return this.getElementByInstancePathMaybe(scenes, path)
+    } else {
+      return null
+    }
+  },
   getElementByInstancePathMaybe(
     scenes: ComponentMetadata[],
     path: InstancePath | null,
