@@ -1483,6 +1483,7 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
 
 interface CanvasErrorBoundaryProps extends CanvasReactReportErrorCallback {
   uiFilePath: string
+  topLevelElementsIncludingScenes: Array<TopLevelElement>
 }
 
 function isErrorObject(e: unknown): e is Error {
@@ -1500,12 +1501,44 @@ function asErrorObject(e: unknown): Error {
   }
 }
 
-export class CanvasErrorBoundary extends React.PureComponent<CanvasErrorBoundaryProps> {
-  componentDidCatch(error: unknown, errorInfo: React.ErrorInfo) {
+interface CanvasErrorBoundaryState {
+  hasError: boolean
+}
+
+export class CanvasErrorBoundary extends React.Component<
+  CanvasErrorBoundaryProps,
+  CanvasErrorBoundaryState
+> {
+  constructor(props: CanvasErrorBoundaryProps) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(_error: unknown): CanvasErrorBoundaryState {
+    return {
+      hasError: true,
+    }
+  }
+
+  componentDidUpdate(
+    prevProps: CanvasErrorBoundaryProps,
+    _prevState: CanvasErrorBoundaryState,
+  ): void {
+    if (prevProps.topLevelElementsIncludingScenes !== this.props.topLevelElementsIncludingScenes) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ hasError: false })
+    }
+  }
+
+  componentDidCatch(error: unknown, errorInfo: React.ErrorInfo): void {
     this.props.reportError(this.props.uiFilePath, asErrorObject(error), errorInfo)
   }
 
-  render() {
-    return this.props.children
+  render(): React.ReactNode {
+    if (this.state.hasError) {
+      return null
+    } else {
+      return this.props.children
+    }
   }
 }
