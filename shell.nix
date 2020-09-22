@@ -56,18 +56,24 @@ let
       test-editor
       test-website
     '')
-    (pkgs.writeScriptBin "test-editor-ci" ''
+    (pkgs.writeScriptBin "check-editor" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true run test-ci
+      ${node}/bin/npm --scripts-prepend-node-path=true run check
     '')
-    (pkgs.writeScriptBin "test-editor-all-ci" ''
+    (pkgs.writeScriptBin "check-editor-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${node}/bin/npm --scripts-prepend-node-path=true run check-ci
+    '')
+    (pkgs.writeScriptBin "check-editor-all-ci" ''
       #!/usr/bin/env bash
       set -e
       install-editor
       install-website
-      test-editor-ci
+      check-editor-ci
       test-website
     '')
   ];

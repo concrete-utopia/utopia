@@ -48,7 +48,7 @@ jobs:
         uses: Rheeseyb/install-nix-action@master
       - name: Run the tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
-        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-all-ci
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-all-ci
       - name: Send Notification
         uses: bayssmekanique/action-simple-slack-notifier@v1.2.5
         if: failure()
