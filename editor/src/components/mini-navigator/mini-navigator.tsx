@@ -115,8 +115,8 @@ export const MiniNavigator: React.FunctionComponent = () => {
 
   return (
     <MiniNavigatorRoot>
-      {items.map((i) => (
-        <MiniNavigatorItem key={i.id} item={i} />
+      {items.map((i, index) => (
+        <MiniNavigatorItem key={i.id} item={i} index={index} />
       ))}
     </MiniNavigatorRoot>
   )
@@ -141,10 +141,20 @@ const ElementTypeCartouche = styled(Cartouche)({
   borderColor: 'green',
 })
 
-const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData }> = (props) => {
+const ItemHeight = 20
+
+const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; index: number }> = (
+  props,
+) => {
   return (
-    <div>
-      <span style={{ width: 10 * props.item.indentation, display: 'inline-block' }}></span>
+    <div
+      style={{
+        position: 'absolute',
+        left: 10 * props.item.indentation,
+        top: ItemHeight * props.index,
+        transition: 'left 1s, top 1s',
+      }}
+    >
       <span>⚄ </span>
       <ElementTypeCartouche>{props.item.itemType}</ElementTypeCartouche>
       <span
