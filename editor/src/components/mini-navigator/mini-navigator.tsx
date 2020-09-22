@@ -155,7 +155,9 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData }> = 
         {' '}
         {props.item.name}{' '}
       </span>
-      <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
+      {props.item.layoutType ? (
+        <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
+      ) : null}
     </div>
   )
 }
