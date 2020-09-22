@@ -38,14 +38,14 @@ export const CanvasComponentEntry = betterReactMemo(
       ),
     }))
 
-    if (canvasProps.uiFilePath == null) {
+    if (canvasProps == null) {
       return null
     } else {
       return (
         <CanvasErrorBoundary
-          uiFilePath={canvasProps.uiFilePath}
+          fileCode={canvasProps.uiFileCode}
+          filePath={canvasProps.uiFilePath}
           reportError={props.reportError}
-          topLevelElementsIncludingScenes={canvasProps.topLevelElementsIncludingScenes}
         >
           <UiJsxCanvas {...canvasProps} clearErrors={props.clearErrors} />
         </CanvasErrorBoundary>

@@ -122,6 +122,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
   }
   if (possibleProps == null) {
     canvasProps = {
+      uiFileCode: code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
       fileBlobs: fileBlobs,
@@ -146,6 +147,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
   } else {
     canvasProps = {
       ...possibleProps,
+      uiFileCode: code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
       fileBlobs: fileBlobs,
@@ -174,11 +176,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
   try {
     const flatFormat = ReactDOMServer.renderToStaticMarkup(
       <UiJsxCanvasContext.Provider value={spyCollector}>
-        <CanvasErrorBoundary
-          uiFilePath={uiFilePath}
-          reportError={reportError}
-          topLevelElementsIncludingScenes={canvasProps.topLevelElementsIncludingScenes}
-        >
+        <CanvasErrorBoundary fileCode={code} filePath={uiFilePath} reportError={reportError}>
           <UiJsxCanvas {...canvasProps} />
         </CanvasErrorBoundary>
       </UiJsxCanvasContext.Provider>,

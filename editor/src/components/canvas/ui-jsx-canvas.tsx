@@ -137,7 +137,8 @@ UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
 export interface UiJsxCanvasProps {
   offset: CanvasVector
   scale: number
-  uiFilePath: string | null
+  uiFileCode: string
+  uiFilePath: string
   requireFn: UtopiaRequireFn | null
   hiddenInstances: TemplatePath[]
   editedTextElement: InstancePath | null
@@ -182,71 +183,77 @@ export function pickUiJsxCanvasProps(
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
   dispatch: EditorDispatch,
-): UiJsxCanvasProps {
-  const defaultedFileBlobs = Utils.defaultIfNull(
-    emptyFileBlobs,
-    Utils.optionalFlatMap((key) => editor.canvas.base64Blobs[key], getOpenUIJSFileKey(editor)),
-  )
-
-  let imports: Imports = emptyImports
-  let topLevelElementsIncludingScenes: Array<TopLevelElement> = emptyTopLevelElements
-  let dependencyOrdering: Array<string> = emptyDependencyOrdering
-  let jsxFactoryFunction: string | null = null
+): UiJsxCanvasProps | null {
   const uiFile = getOpenUIJSFile(editor)
+  const uiFilePath = getOpenUIJSFileKey(editor)
+  if (uiFile == null || uiFilePath == null) {
+    return null
+  } else {
+    const defaultedFileBlobs = Utils.defaultIfNull(
+      emptyFileBlobs,
+      Utils.optionalFlatMap((key) => editor.canvas.base64Blobs[key], getOpenUIJSFileKey(editor)),
+    )
 
-  if (uiFile != null && isParseSuccess(uiFile.fileContents)) {
-    const success = uiFile.fileContents.value
-    const transientCanvasState = derived.canvas.transientState
-    dependencyOrdering = success.dependencyOrdering
-    imports = uiFile.fileContents.value.imports
-    topLevelElementsIncludingScenes = success.topLevelElements
-    jsxFactoryFunction = success.jsxFactoryFunction
-    const transientFileState = transientCanvasState.fileState
-    if (transientFileState != null) {
-      imports = transientFileState.imports
-      topLevelElementsIncludingScenes = transientFileState.topLevelElementsIncludingScenes
+    let imports: Imports = emptyImports
+    let topLevelElementsIncludingScenes: Array<TopLevelElement> = emptyTopLevelElements
+    let dependencyOrdering: Array<string> = emptyDependencyOrdering
+    let jsxFactoryFunction: string | null = null
+
+    if (uiFile != null && isParseSuccess(uiFile.fileContents)) {
+      const success = uiFile.fileContents.value
+      const transientCanvasState = derived.canvas.transientState
+      dependencyOrdering = success.dependencyOrdering
+      imports = uiFile.fileContents.value.imports
+      topLevelElementsIncludingScenes = success.topLevelElements
+      jsxFactoryFunction = success.jsxFactoryFunction
+      const transientFileState = transientCanvasState.fileState
+      if (transientFileState != null) {
+        imports = transientFileState.imports
+        topLevelElementsIncludingScenes = transientFileState.topLevelElementsIncludingScenes
+      }
     }
-  }
-  const requireFn = editor.codeResultCache.requireFn
+    const requireFn = editor.codeResultCache.requireFn
 
-  let linkTags = ''
-  const indexHtml = getIndexHtmlFileFromEditorState(editor)
-  if (isRight(indexHtml)) {
-    const parsedLinkTags = getGeneratedExternalLinkText(indexHtml.value.fileContents)
-    if (isRight(parsedLinkTags)) {
-      linkTags = parsedLinkTags.value
+    let linkTags = ''
+    const indexHtml = getIndexHtmlFileFromEditorState(editor)
+    if (isRight(indexHtml)) {
+      const parsedLinkTags = getGeneratedExternalLinkText(indexHtml.value.fileContents)
+      if (isRight(parsedLinkTags)) {
+        linkTags = parsedLinkTags.value
+      }
     }
-  }
 
-  const editedTextElement = Utils.optionalMap(
-    (textEd) => textEd.templatePath,
-    editor.canvas.textEditor,
-  )
+    const editedTextElement = Utils.optionalMap(
+      (textEd) => textEd.templatePath,
+      editor.canvas.textEditor,
+    )
 
-  let hiddenInstances = editor.hiddenInstances
-  if (editedTextElement != null) {
-    hiddenInstances = [...hiddenInstances, editedTextElement]
-  }
-  return {
-    offset: editor.canvas.roundedCanvasOffset,
-    scale: editor.canvas.scale,
-    uiFilePath: getOpenUIJSFileKey(editor),
-    requireFn: requireFn,
-    hiddenInstances: hiddenInstances,
-    editedTextElement: editedTextElement,
-    fileBlobs: defaultedFileBlobs,
-    mountCount: editor.canvas.mountCount,
-    onDomReport: onDomReport,
-    walkDOM: walkDOM,
-    imports: imports,
-    topLevelElementsIncludingScenes: topLevelElementsIncludingScenes,
-    dependencyOrdering: dependencyOrdering,
-    jsxFactoryFunction: jsxFactoryFunction,
-    clearConsoleLogs: clearConsoleLogs,
-    addToConsoleLogs: addToConsoleLogs,
-    canvasIsLive: isLiveMode(editor.mode),
-    shouldIncludeCanvasRootInTheSpy: true,
-    linkTags: linkTags,
+    let hiddenInstances = editor.hiddenInstances
+    if (editedTextElement != null) {
+      hiddenInstances = [...hiddenInstances, editedTextElement]
+    }
+    return {
+      offset: editor.canvas.roundedCanvasOffset,
+      scale: editor.canvas.scale,
+      uiFileCode: uiFile.fileContents.value.code,
+      uiFilePath: uiFilePath,
+      requireFn: requireFn,
+      hiddenInstances: hiddenInstances,
+      editedTextElement: editedTextElement,
+      fileBlobs: defaultedFileBlobs,
+      mountCount: editor.canvas.mountCount,
+      onDomReport: onDomReport,
+      walkDOM: walkDOM,
+      imports: imports,
+      topLevelElementsIncludingScenes: topLevelElementsIncludingScenes,
+      dependencyOrdering: dependencyOrdering,
+      jsxFactoryFunction: jsxFactoryFunction,
+      clearConsoleLogs: clearConsoleLogs,
+      addToConsoleLogs: addToConsoleLogs,
+      canvasIsLive: isLiveMode(editor.mode),
+      shouldIncludeCanvasRootInTheSpy: true,
+      linkTags: linkTags,
+    }
   }
 }
 
@@ -457,11 +464,7 @@ export const UiJsxCanvas = betterReactMemo(
     const cssImports = useKeepReferenceEqualityIfPossible(cssImportsFromImports(imports))
     const previousCSSImports = usePrevious(cssImports)
 
-    if (
-      uiFilePath != null &&
-      previousCSSImports != null &&
-      !arrayEquals(cssImports, previousCSSImports)
-    ) {
+    if (previousCSSImports != null && !arrayEquals(cssImports, previousCSSImports)) {
       const removed = removeAll(previousCSSImports, cssImports)
       fastForEach(removed, (toRemove) => {
         unimportCSSFile(normalizeName(uiFilePath, toRemove))
@@ -483,109 +486,105 @@ export const UiJsxCanvas = betterReactMemo(
       clearErrors()
     }
 
-    if (uiFilePath == null) {
-      return null
-    } else {
-      if (requireFn != null) {
-        const orderedTopLevelElements = reorderTopLevelElements(
-          topLevelElementsIncludingScenes,
-          dependencyOrdering,
-        )
+    if (requireFn != null) {
+      const orderedTopLevelElements = reorderTopLevelElements(
+        topLevelElementsIncludingScenes,
+        dependencyOrdering,
+      )
 
-        const customRequire = (importOrigin: string, toImport: string) =>
-          requireFn(importOrigin, toImport, false)
+      const customRequire = (importOrigin: string, toImport: string) =>
+        requireFn(importOrigin, toImport, false)
 
-        const requireResult: MapLike<any> = importResultFromImports(
-          uiFilePath,
-          imports,
-          customRequire,
-        )
+      const requireResult: MapLike<any> = importResultFromImports(
+        uiFilePath,
+        imports,
+        customRequire,
+      )
 
-        let executionScope: MapLike<any> = { ...requireResult }
-        // TODO All of this is run on every interaction o_O
+      let executionScope: MapLike<any> = { ...requireResult }
+      // TODO All of this is run on every interaction o_O
 
-        let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
+      let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
 
-        // Make sure there is something in scope for all of the top level components
-        Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-          if (isUtopiaJSXComponent(topLevelElement)) {
-            topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-            if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
-              topLevelComponentRendererComponents.current[
-                topLevelElement.name
-              ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
-            }
+      // Make sure there is something in scope for all of the top level components
+      Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+        if (isUtopiaJSXComponent(topLevelElement)) {
+          topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
+          if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
+            topLevelComponentRendererComponents.current[
+              topLevelElement.name
+            ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
           }
-        })
-
-        executionScope = {
-          ...executionScope,
-          ...topLevelComponentRendererComponents.current,
         }
+      })
 
-        // First make sure everything is in scope
-        Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-          if (isArbitraryJSBlock(topLevelElement)) {
-            runBlockUpdatingScope(requireResult, topLevelElement, executionScope)
-          }
-        })
-
-        updateMutableUtopiaContextWithNewProps(mutableContextRef, {
-          requireResult: requireResult,
-          rootScope: executionScope,
-          fileBlobs: fileBlobs,
-          jsxFactoryFunctionName: jsxFactoryFunction,
-        })
-
-        const topLevelElementsMap = new Map(topLevelJsxComponents)
-
-        const {
-          StoryboardRootComponent,
-          rootValidPaths,
-          storyboardRootElementPath,
-          storyboardRootSceneMetadata,
-          rootScenePath,
-        } = getStoryboardRoot(topLevelElementsMap, executionScope)
-
-        if (props.shouldIncludeCanvasRootInTheSpy) {
-          metadataContext.current.spyValues.scenes[
-            TP.toString(rootScenePath)
-          ] = storyboardRootSceneMetadata
-        }
-
-        return (
-          <>
-            <Helmet>{parse(linkTags)}</Helmet>
-            <MutableUtopiaContext.Provider value={mutableContextRef}>
-              <RerenderUtopiaContext.Provider
-                value={{
-                  hiddenInstances: hiddenInstances,
-                  topLevelElements: topLevelElementsMap,
-                  canvasIsLive: canvasIsLive,
-                  shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
-                }}
-              >
-                <CanvasContainer
-                  walkDOM={walkDOM}
-                  scale={scale}
-                  offset={offset}
-                  onDomReport={onDomReport}
-                  validRootPaths={rootValidPaths}
-                  canvasRootElementTemplatePath={storyboardRootElementPath}
-                >
-                  <SceneLevelUtopiaContext.Provider
-                    value={{ validPaths: rootValidPaths, scenePath: rootScenePath }}
-                  >
-                    {StoryboardRootComponent == null ? null : <StoryboardRootComponent />}
-                  </SceneLevelUtopiaContext.Provider>
-                </CanvasContainer>
-              </RerenderUtopiaContext.Provider>
-            </MutableUtopiaContext.Provider>
-          </>
-        )
-      } else {
-        return null
+      executionScope = {
+        ...executionScope,
+        ...topLevelComponentRendererComponents.current,
       }
+
+      // First make sure everything is in scope
+      Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+        if (isArbitraryJSBlock(topLevelElement)) {
+          runBlockUpdatingScope(requireResult, topLevelElement, executionScope)
+        }
+      })
+
+      updateMutableUtopiaContextWithNewProps(mutableContextRef, {
+        requireResult: requireResult,
+        rootScope: executionScope,
+        fileBlobs: fileBlobs,
+        jsxFactoryFunctionName: jsxFactoryFunction,
+      })
+
+      const topLevelElementsMap = new Map(topLevelJsxComponents)
+
+      const {
+        StoryboardRootComponent,
+        rootValidPaths,
+        storyboardRootElementPath,
+        storyboardRootSceneMetadata,
+        rootScenePath,
+      } = getStoryboardRoot(topLevelElementsMap, executionScope)
+
+      if (props.shouldIncludeCanvasRootInTheSpy) {
+        metadataContext.current.spyValues.scenes[
+          TP.toString(rootScenePath)
+        ] = storyboardRootSceneMetadata
+      }
+
+      return (
+        <>
+          <Helmet>{parse(linkTags)}</Helmet>
+          <MutableUtopiaContext.Provider value={mutableContextRef}>
+            <RerenderUtopiaContext.Provider
+              value={{
+                hiddenInstances: hiddenInstances,
+                topLevelElements: topLevelElementsMap,
+                canvasIsLive: canvasIsLive,
+                shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+              }}
+            >
+              <CanvasContainer
+                walkDOM={walkDOM}
+                scale={scale}
+                offset={offset}
+                onDomReport={onDomReport}
+                validRootPaths={rootValidPaths}
+                canvasRootElementTemplatePath={storyboardRootElementPath}
+              >
+                <SceneLevelUtopiaContext.Provider
+                  value={{ validPaths: rootValidPaths, scenePath: rootScenePath }}
+                >
+                  {StoryboardRootComponent == null ? null : <StoryboardRootComponent />}
+                </SceneLevelUtopiaContext.Provider>
+              </CanvasContainer>
+            </RerenderUtopiaContext.Provider>
+          </MutableUtopiaContext.Provider>
+        </>
+      )
+    } else {
+      return null
     }
   },
 )
@@ -1417,8 +1416,8 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
 }
 
 interface CanvasErrorBoundaryProps extends CanvasReactReportErrorCallback {
-  uiFilePath: string
-  topLevelElementsIncludingScenes: Array<TopLevelElement>
+  filePath: string
+  fileCode: string
 }
 
 function isErrorObject(e: unknown): e is Error {
@@ -1459,14 +1458,14 @@ export class CanvasErrorBoundary extends React.Component<
     prevProps: CanvasErrorBoundaryProps,
     _prevState: CanvasErrorBoundaryState,
   ): void {
-    if (prevProps.topLevelElementsIncludingScenes !== this.props.topLevelElementsIncludingScenes) {
+    if (prevProps.fileCode !== this.props.fileCode) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ hasError: false })
     }
   }
 
   componentDidCatch(error: unknown, errorInfo: React.ErrorInfo): void {
-    this.props.reportError(this.props.uiFilePath, asErrorObject(error), errorInfo)
+    this.props.reportError(this.props.filePath, asErrorObject(error), errorInfo)
   }
 
   render(): React.ReactNode {
