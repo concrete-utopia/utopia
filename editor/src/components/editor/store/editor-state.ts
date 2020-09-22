@@ -86,7 +86,6 @@ import { CodeEditorTheme, DefaultTheme } from '../../code-editor/code-editor-the
 import { CursorPosition } from '../../code-editor/code-editor-utils'
 import { EditorPanel } from '../../common/actions/index'
 import {
-  codeCacheToBuildResult,
   CodeResultCache,
   generateCodeResultCache,
   PropertyControlsInfo,
@@ -936,7 +935,6 @@ export interface PersistentModel {
   appID?: string | null
   projectVersion: number
   projectContents: ProjectContents
-  buildResult: MultiFileBuildResult
   exportsInfo: ReadonlyArray<ExportsInfo>
   lastUsedFont: FontSettings | null
   hiddenInstances: Array<TemplatePath>
@@ -981,7 +979,6 @@ export function mergePersistentModel(
       ...second.projectContents,
     },
     exportsInfo: second.exportsInfo,
-    buildResult: second.buildResult,
     lastUsedFont: second.lastUsedFont,
     hiddenInstances: [...first.hiddenInstances, ...second.hiddenInstances],
     openFiles: second.openFiles,
@@ -1421,7 +1418,6 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     appID: editor.appID,
     projectVersion: editor.projectVersion,
     projectContents: editor.projectContents,
-    buildResult: codeCacheToBuildResult(editor.codeResultCache.cache),
     exportsInfo: editor.codeResultCache.exportsInfo,
     lastUsedFont: editor.lastUsedFont,
     hiddenInstances: editor.hiddenInstances,
@@ -1454,7 +1450,6 @@ export function persistentModelForProjectContents(
     projectVersion: CURRENT_PROJECT_VERSION,
     projectContents: projectContents,
     exportsInfo: [],
-    buildResult: {},
     openFiles: [selectedTab],
     selectedFile: selectedTab,
     codeEditorErrors: {

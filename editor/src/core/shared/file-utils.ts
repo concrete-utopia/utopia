@@ -1,10 +1,10 @@
 import * as stringHash from 'string-hash'
-import { Size } from './math-utils'
+import { size, Size } from './math-utils'
 
 export interface ImageResult {
   type: 'IMAGE_RESULT'
   filename: string
-  dataUrl: string
+  base64Bytes: string
   size: Size
   fileType: string
   hash: string
@@ -13,7 +13,7 @@ export interface ImageResult {
 export interface AssetResult {
   type: 'ASSET_RESULT'
   filename: string
-  dataUrl: string
+  base64Bytes: string
   hash: string
 }
 
@@ -57,13 +57,27 @@ export function extractAsset(file: File): Promise<AssetResult> {
   })
 }
 
+function getMimeStrippedBase64(base64: string): string {
+  const splitBase64 = base64.split(',')
+  switch (splitBase64.length) {
+    case 1:
+      // No mime prefix.
+      return base64
+    case 2:
+      // Mime prefix.
+      return splitBase64[1]
+    default:
+      throw new Error('Invalid Base64 content for asset.')
+  }
+}
+
 export function assetResultForBase64(filename: string, base64: string): AssetResult {
-  const mimeStrippedBase64 = base64.split(',')[1]
+  const mimeStrippedBase64 = getMimeStrippedBase64(base64)
   const hash = stringHash(mimeStrippedBase64)
   return {
     type: 'ASSET_RESULT',
     filename: filename,
-    dataUrl: mimeStrippedBase64,
+    base64Bytes: mimeStrippedBase64,
     hash: hash,
   }
 }
@@ -87,13 +101,26 @@ export async function imageResultForBase64(
   fileType: string,
   base64: string,
 ): Promise<ImageResult> {
-  const mimeStrippedBase64 = base64.split(',')[1]
+  const mimeStrippedBase64 = getMimeStrippedBase64(base64)
   const hash = stringHash(mimeStrippedBase64)
-  const imageSize = await getImageSize(base64)
+  let imageDataUrl: string
+  if (mimeStrippedBase64 === base64) {
+    imageDataUrl = `data:;base64,${base64}`
+  } else {
+    imageDataUrl = base64
+  }
+  let imageSize: Size
+  if (fileType === '.svg') {
+    // FIXME: SVGs may not have a viewbox or it may be specified
+    // as a ratio, so put in a token value for now.
+    imageSize = size(100, 100)
+  } else {
+    imageSize = await getImageSize(imageDataUrl)
+  }
   return {
     type: 'IMAGE_RESULT',
     filename: filename,
-    dataUrl: mimeStrippedBase64,
+    base64Bytes: mimeStrippedBase64,
     size: imageSize,
     fileType: fileType,
     hash: hash,
@@ -108,6 +135,16 @@ function getImageSize(imageDataUrl: string): Promise<Size> {
         width: image.naturalWidth,
         height: image.naturalHeight,
       })
+    }
+    image.onerror = (error) => {
+      if (typeof error === 'string') {
+        reject(error)
+      } else if (error instanceof ErrorEvent) {
+        reject(error.message)
+      } else {
+        console.error('Image failure.', error)
+        reject('Failed for unknown reason.')
+      }
     }
     image.src = imageDataUrl
   })

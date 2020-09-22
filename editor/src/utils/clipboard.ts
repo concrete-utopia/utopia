@@ -131,7 +131,7 @@ export function createDirectInsertImageActions(
         const saveImageAction = EditorActions.saveAsset(
           image.filename,
           image.fileType,
-          image.dataUrl,
+          image.base64Bytes,
           image.hash,
           EditorActions.saveImageDetails(image.size, insertWith),
         )
