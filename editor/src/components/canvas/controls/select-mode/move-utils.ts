@@ -301,6 +301,8 @@ export function dragComponent(
                         )
                       })
                       dispatch(actions, 'canvas')
+                    } else if (dispatch != null) {
+                      dispatch([EditorActions.clearHighlightedViews()], 'canvas')
                     }
 
                     clearTimeout((window as any)['flexParentHighlightTimer'])
