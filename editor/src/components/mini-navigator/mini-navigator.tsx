@@ -7,6 +7,7 @@ import {
   instancePathForPath,
   isInstancePath,
   parentPath,
+  pathsEqual,
 } from '../../core/shared/template-path'
 import { findJSXElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { getOpenUtopiaJSXComponentsFromState } from '../editor/store/editor-state'
@@ -21,6 +22,7 @@ import {
 } from '../../core/shared/element-template'
 import { InstancePath, TemplatePath } from '../../core/shared/project-file-types'
 import { last } from '../../core/shared/array-utils'
+import { colorTheme } from '../../uuiui'
 
 interface NavigatorItemData {
   id: string
@@ -29,6 +31,7 @@ interface NavigatorItemData {
   itemType: string
   layoutType: string
   selected: boolean
+  highlighted: boolean
 }
 
 function getElementType(element: JSXElementChild): string {
@@ -50,6 +53,7 @@ function getNavigatorItemDataFromJsxElement(
   element: JSXElementChild,
   indentation: number,
   selected: boolean,
+  highlighted: boolean,
 ): NavigatorItemData {
   return {
     id: getUtopiaID(element),
@@ -60,12 +64,18 @@ function getNavigatorItemDataFromJsxElement(
         .layoutSystemForChildren ?? '',
     selected,
     itemType: getElementType(element),
+    highlighted,
   }
+}
+
+function isHighlighted(highlightedViews: TemplatePath[], view: TemplatePath) {
+  return highlightedViews.findIndex((h) => pathsEqual(h, view)) > -1
 }
 
 function useGetNavigatorItemsToShow(): Array<NavigatorItemData> {
   return useEditorState((store) => {
     const selectedView = instancePathForPath(store.editor.selectedViews[0])
+    const highlightedViews = store.editor.highlightedViews
     const editedComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     const metadata = store.editor.jsxMetadataKILLME
 
@@ -77,7 +87,16 @@ function useGetNavigatorItemsToShow(): Array<NavigatorItemData> {
       const parentNavigatorEntry: Array<NavigatorItemData> =
         parentElement == null || parent == null
           ? []
-          : [getNavigatorItemDataFromJsxElement(metadata, parent, parentElement, 0, false)]
+          : [
+              getNavigatorItemDataFromJsxElement(
+                metadata,
+                parent,
+                parentElement,
+                0,
+                false,
+                isHighlighted(highlightedViews, parent),
+              ),
+            ]
 
       const siblings = parentElement?.children ?? []
 
@@ -93,6 +112,7 @@ function useGetNavigatorItemsToShow(): Array<NavigatorItemData> {
                 s,
                 1,
                 selected,
+                isHighlighted(highlightedViews, appendToPath(parent, uid)),
               )
             })
 
@@ -153,18 +173,16 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; inde
         left: 10 * props.item.indentation,
         top: ItemHeight * props.index,
         transition: 'left 1s, top 1s',
+        color: props.item.selected
+          ? colorTheme.primary.value
+          : props.item.highlighted
+          ? 'blue'
+          : 'black',
       }}
     >
       <span>⚄ </span>
       <ElementTypeCartouche>{props.item.itemType}</ElementTypeCartouche>
-      <span
-        style={{
-          color: props.item.selected ? 'blue' : 'black',
-        }}
-      >
-        {' '}
-        {props.item.name}{' '}
-      </span>
+      <span> {props.item.name} </span>
       {props.item.layoutType ? (
         <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
       ) : null}
