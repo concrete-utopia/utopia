@@ -28,6 +28,7 @@ import {
   UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
   emptyUiJsxCanvasContextData,
+  CanvasErrorBoundary,
 } from './ui-jsx-canvas'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
@@ -121,11 +122,11 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
   }
   if (possibleProps == null) {
     canvasProps = {
+      uiFileCode: code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
       fileBlobs: fileBlobs,
       onDomReport: Utils.NO_OP,
-      reportError: reportError,
       clearErrors: clearErrors,
       offset: canvasPoint({ x: 0, y: 0 }),
       scale: 1,
@@ -146,11 +147,11 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
   } else {
     canvasProps = {
       ...possibleProps,
+      uiFileCode: code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
       fileBlobs: fileBlobs,
       onDomReport: Utils.NO_OP,
-      reportError: reportError,
       clearErrors: clearErrors,
       walkDOM: false,
       imports: imports,
@@ -175,7 +176,9 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
   try {
     const flatFormat = ReactDOMServer.renderToStaticMarkup(
       <UiJsxCanvasContext.Provider value={spyCollector}>
-        <UiJsxCanvas {...canvasProps} />
+        <CanvasErrorBoundary fileCode={code} filePath={uiFilePath} reportError={reportError}>
+          <UiJsxCanvas {...canvasProps} />
+        </CanvasErrorBoundary>
       </UiJsxCanvasContext.Provider>,
     )
     formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })

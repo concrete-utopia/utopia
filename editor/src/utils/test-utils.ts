@@ -59,6 +59,7 @@ import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
 import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../core/shared/array-utils'
+import { MapLike } from 'typescript'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -177,11 +178,20 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       },
     )
     const component = components.find((c) => c.name === props.component && isUtopiaJSXComponent(c))
+    const sceneResizesContent =
+      Utils.path<boolean>(PP.getElements(PathForResizeContent), props) ?? true
     let elementMetadata: ElementInstanceMetadata | Array<ElementInstanceMetadata> | null = null
     if (component != null) {
       elementMetadata = createFakeMetadataForJSXElement(
         component.rootElement,
         TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+        {
+          props: {
+            style: sceneResizesContent ? props.style : undefined,
+            ...props.props,
+          },
+        },
+        {},
       )
     }
     return {
@@ -191,7 +201,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       scenePath: TP.scenePath([BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]),
       templatePath: TP.instancePath([], [BakedInStoryboardUID, createSceneUidFromIndex(index)]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
-      sceneResizesContent: Utils.path(PP.getElements(PathForResizeContent), props) ?? true,
+      sceneResizesContent: sceneResizesContent ?? true,
       style: {},
       rootElements:
         elementMetadata == null
@@ -212,6 +222,8 @@ export function createFakeMetadataForComponents(
       const elementMetadata = createFakeMetadataForJSXElement(
         component.rootElement,
         TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+        {},
+        {},
       )
       metadata.push({
         scenePath: TP.scenePath([BakedInStoryboardUID, `scene-${index}`]),
@@ -231,18 +243,21 @@ export function createFakeMetadataForComponents(
 function createFakeMetadataForJSXElement(
   element: JSXElementChild,
   rootPath: TemplatePath,
+  inScope: MapLike<any>,
+  parentProps: MapLike<any>,
 ): ElementInstanceMetadata | Array<ElementInstanceMetadata> {
   if (isJSXElement(element)) {
     const elementID = getUtopiaID(element)
     const templatePath = TP.appendToPath(rootPath, elementID)
+    const props = jsxAttributesToProps(inScope, element.props, parentProps, Utils.NO_OP)
     return {
       templatePath: templatePath,
       element: right(element),
-      props: jsxAttributesToProps({}, element.props, {}, Utils.NO_OP, Utils.NO_OP),
+      props: props,
       globalFrame: Utils.zeroRectangle as CanvasRectangle, // this could be parametrized to be able to set real rectangles
       localFrame: Utils.zeroRectangle as LocalRectangle,
       children: element.children.flatMap((child) =>
-        createFakeMetadataForJSXElement(child, templatePath),
+        createFakeMetadataForJSXElement(child, templatePath, inScope, props),
       ),
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -250,7 +265,7 @@ function createFakeMetadataForJSXElement(
     }
   } else if (isJSXFragment(element)) {
     return element.children.flatMap((child) => {
-      return createFakeMetadataForJSXElement(child, rootPath)
+      return createFakeMetadataForJSXElement(child, rootPath, inScope, parentProps)
     })
   } else {
     throw new Error(`Not a JSX element ${element}`)

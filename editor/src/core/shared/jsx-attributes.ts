@@ -158,7 +158,6 @@ export const jsxAttributeToValue = (
   inScope: MapLike<any>,
   parentComponentProps: AnyMap,
   requireResult: MapLike<any>,
-  onError: (error: Error) => void,
 ) => (attribute: JSXAttribute): any => {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
@@ -166,12 +165,7 @@ export const jsxAttributeToValue = (
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
-        const value = jsxAttributeToValue(
-          inScope,
-          parentComponentProps,
-          requireResult,
-          onError,
-        )(elem.value)
+        const value = jsxAttributeToValue(inScope, parentComponentProps, requireResult)(elem.value)
 
         // We don't need to explicitly handle spreads because `concat` will take care of it for us
         returnArray = returnArray.concat(value)
@@ -181,12 +175,7 @@ export const jsxAttributeToValue = (
     case 'ATTRIBUTE_NESTED_OBJECT':
       let returnObject: { [key: string]: any } = {}
       fastForEach(attribute.content, (prop) => {
-        const value = jsxAttributeToValue(
-          inScope,
-          parentComponentProps,
-          requireResult,
-          onError,
-        )(prop.value)
+        const value = jsxAttributeToValue(inScope, parentComponentProps, requireResult)(prop.value)
 
         switch (prop.type) {
           case 'PROPERTY_ASSIGNMENT':
@@ -206,18 +195,13 @@ export const jsxAttributeToValue = (
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
         const resolvedParameters = attribute.parameters.map(
-          jsxAttributeToValue(inScope, parentComponentProps, requireResult, onError),
+          jsxAttributeToValue(inScope, parentComponentProps, requireResult),
         )
         return foundFunction(...resolvedParameters)
       }
       throw new Error(`Couldn't find helper function with name ${attribute.functionName}`)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      try {
-        return resolveParamsAndRunJsCode(attribute, requireResult, inScope)
-      } catch (e) {
-        onError(e)
-        return undefined
-      }
+      return resolveParamsAndRunJsCode(attribute, requireResult, inScope)
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
@@ -229,12 +213,8 @@ export function jsxAttributesToProps(
   attributes: JSXAttributes,
   parentComponentProps: AnyMap,
   requireResult: MapLike<any>,
-  onError: (error: Error) => void,
 ): MapLike<any> {
-  return objectMap(
-    jsxAttributeToValue(inScope, parentComponentProps, requireResult, onError),
-    attributes,
-  )
+  return objectMap(jsxAttributeToValue(inScope, parentComponentProps, requireResult), attributes)
 }
 
 export type GetModifiableAttributeResult = Either<string, ModifiableAttribute>
