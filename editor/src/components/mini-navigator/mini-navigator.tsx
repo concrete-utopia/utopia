@@ -14,6 +14,7 @@ import { getUtopiaID } from '../../core/model/element-template-utils'
 import {
   ComponentMetadata,
   getJSXElementNameAsString,
+  getJSXElementNameLastPart,
   JSXElement,
   JSXElementChild,
   UtopiaJSXComponent,
@@ -25,8 +26,22 @@ interface NavigatorItemData {
   id: string
   name: string
   indentation: number
+  itemType: string
   layoutType: string
   selected: boolean
+}
+
+function getElementType(element: JSXElementChild): string {
+  switch (element.type) {
+    case 'JSX_ARBITRARY_BLOCK':
+      return 'Expression'
+    case 'JSX_ELEMENT':
+      return getJSXElementNameLastPart(element.name)
+    case 'JSX_FRAGMENT':
+      return 'Fragment'
+    case 'JSX_TEXT_BLOCK':
+      return 'Text'
+  }
 }
 
 function getNavigatorItemDataFromJsxElement(
@@ -44,6 +59,7 @@ function getNavigatorItemDataFromJsxElement(
       MetadataUtils.getElementByInstancePathMaybe(metadata, path)?.specialSizeMeasurements
         .layoutSystemForChildren ?? '',
     selected,
+    itemType: getElementType(element),
   }
 }
 
@@ -106,14 +122,23 @@ export const MiniNavigator: React.FunctionComponent = () => {
   )
 }
 
-const LayoutTypeCartouche = styled.span({
-  border: '1px solid red',
+const Cartouche = styled.span({
+  border: '1px solid black',
   borderRadius: 5,
   textTransform: 'uppercase',
   fontSize: '70%',
-  color: 'red',
   padding: 1,
   fontWeight: 800,
+})
+
+const LayoutTypeCartouche = styled(Cartouche)({
+  color: 'red',
+  borderColor: 'red',
+})
+
+const ElementTypeCartouche = styled(Cartouche)({
+  color: 'green',
+  borderColor: 'green',
 })
 
 const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData }> = (props) => {
@@ -121,11 +146,13 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData }> = 
     <div>
       <span style={{ width: 10 * props.item.indentation, display: 'inline-block' }}></span>
       <span>⚄ </span>
+      <ElementTypeCartouche>{props.item.itemType}</ElementTypeCartouche>
       <span
         style={{
           color: props.item.selected ? 'blue' : 'black',
         }}
       >
+        {' '}
         {props.item.name}{' '}
       </span>
       <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
