@@ -168,28 +168,30 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
     }, [])
 
     let outputRows: Array<React.ReactElement> = []
-    const groupErrors = R.groupBy((error: ErrorMessage) => error.fileName)
-    const errorsByFile = groupErrors(errorMessages)
+    if (isOpen) {
+      const groupErrors = R.groupBy((error: ErrorMessage) => error.fileName)
+      const errorsByFile = groupErrors(errorMessages)
 
-    Object.keys(errorsByFile).forEach(function (fileName) {
-      if (fileName != '') {
-        outputRows.push(
-          <FlexRow key={`error-row-${fileName}-filename`} style={{ padding: '4px 8px' }}>
-            <Icons.React />
-            <span style={{ marginLeft: 4 }}> {fileName}</span>
-          </FlexRow>,
-        )
-      }
-      errorsByFile[fileName].forEach(function (errormessage, index) {
-        outputRows.push(
-          <ErrorMessageRow
-            key={`error-row-${fileName}-${index}-${errormessage.startLine}-${errormessage.startColumn}`}
-            errorMessage={errormessage}
-            onOpenFile={onOpenFile}
-          />,
-        )
+      Object.keys(errorsByFile).forEach(function (fileName) {
+        if (fileName != '') {
+          outputRows.push(
+            <FlexRow key={`error-row-${fileName}-filename`} style={{ padding: '4px 8px' }}>
+              <Icons.React />
+              <span style={{ marginLeft: 4 }}> {fileName}</span>
+            </FlexRow>,
+          )
+        }
+        errorsByFile[fileName].forEach(function (errormessage, index) {
+          outputRows.push(
+            <ErrorMessageRow
+              key={`error-row-${fileName}-${index}-${errormessage.startLine}-${errormessage.startColumn}`}
+              errorMessage={errormessage}
+              onOpenFile={onOpenFile}
+            />,
+          )
+        })
       })
-    })
+    }
 
     const [selectedTab, setSelectedTab] = React.useState<OpenCodeEditorTab>('problems')
 
