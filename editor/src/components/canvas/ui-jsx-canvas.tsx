@@ -165,9 +165,8 @@ export interface CanvasReactClearErrorsCallback {
   clearErrors: () => void
 }
 
-export interface CanvasReactErrorCallback
-  extends CanvasReactReportErrorCallback,
-    CanvasReactClearErrorsCallback {}
+export type CanvasReactErrorCallback = CanvasReactReportErrorCallback &
+  CanvasReactClearErrorsCallback
 
 export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactClearErrorsCallback
 
