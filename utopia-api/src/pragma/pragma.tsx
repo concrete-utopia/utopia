@@ -119,10 +119,15 @@ export const jsx = (type: any, ...pragmaParams: any[]) => {
             ...childStyleProps,
             ...childStylesThatOverwriteStyle[index],
           }
-          return React.cloneElement(child as any, {
-            ...removeLayoutPropFromReactBuiltins,
-            style: layoutEnhancedStyleProp,
-          })
+
+          const updatedProps =
+            (child.type as any).theOriginalType.toString() === 'Symbol(react.fragment)'
+              ? (child.props as any)
+              : {
+                  ...removeLayoutPropFromReactBuiltins,
+                  style: layoutEnhancedStyleProp,
+                }
+          return React.cloneElement(child as any, updatedProps)
         } else {
           return child
         }
