@@ -178,6 +178,8 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       },
     )
     const component = components.find((c) => c.name === props.component && isUtopiaJSXComponent(c))
+    const sceneResizesContent =
+      Utils.path<boolean>(PP.getElements(PathForResizeContent), props) ?? true
     let elementMetadata: ElementInstanceMetadata | Array<ElementInstanceMetadata> | null = null
     if (component != null) {
       elementMetadata = createFakeMetadataForJSXElement(
@@ -185,7 +187,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
         TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
         {
           props: {
-            style: props[PP.toString(PathForResizeContent)] ? props.style : undefined,
+            style: sceneResizesContent ? props.style : undefined,
             ...props.props,
           },
         },
@@ -199,7 +201,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       scenePath: TP.scenePath([BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]),
       templatePath: TP.instancePath([], [BakedInStoryboardUID, createSceneUidFromIndex(index)]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
-      sceneResizesContent: Utils.path(PP.getElements(PathForResizeContent), props) ?? true,
+      sceneResizesContent: sceneResizesContent ?? true,
       style: {},
       rootElements:
         elementMetadata == null
