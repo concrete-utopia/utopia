@@ -133,7 +133,7 @@ export function createEditorStates(
     },
     selectedViews: selectedViews,
   }
-  const derivedResult = deriveState(editor, null, false)
+  const derivedResult = deriveState(editor, null, false, null)
   const componentMetadata = createFakeMetadataForEditor(editor)
   return {
     editor: {

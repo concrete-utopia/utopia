@@ -105,7 +105,7 @@ export class Editor {
     startPreviewConnectedMonitoring(this.boundDispatch)
 
     let emptyEditorState = createEditorState(this.boundDispatch)
-    const fromScratchResult = deriveState(emptyEditorState, null, false)
+    const fromScratchResult = deriveState(emptyEditorState, null, false, null)
     emptyEditorState = fromScratchResult.editor
     const derivedState = fromScratchResult.derived
 

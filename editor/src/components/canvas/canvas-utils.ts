@@ -164,6 +164,7 @@ import { createSceneTemplatePath, PathForSceneStyle } from '../../core/model/sce
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import { EditorDispatch } from '../editor/action-types'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -259,8 +260,13 @@ export function clearDragState(
   applyChanges: boolean,
 ): EditorState {
   let result: EditorState = model
+  clearTimeout((window as any)['flexParentTimer'])
+  clearTimeout((window as any)['flexParentHighlightTimer'])
+  ;(window as any)['flexAlignmentDrag'] = null
+  ;(window as any)['flexParentTimer'] = null
+  ;(window as any)['flexParentHighlightTimer'] = null
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
-    const producedTransientCanvasState = produceCanvasTransientState(result, false)
+    const producedTransientCanvasState = produceCanvasTransientState(result, false, null, derived)
     const producedTransientFileState = producedTransientCanvasState.fileState
     if (producedTransientFileState != null) {
       result = modifyOpenParseSuccess((success) => {
@@ -283,6 +289,7 @@ export function clearDragState(
     selectedViews: applyChanges
       ? derived.canvas.transientState.selectedViews
       : result.selectedViews,
+    highlightedViews: [],
   }
 }
 
@@ -1553,6 +1560,8 @@ export function produceResizeSingleSelectCanvasTransientState(
 export function produceCanvasTransientState(
   editorState: EditorState,
   preventAnimations: boolean,
+  dispatch: EditorDispatch | null,
+  derivedState: DerivedState | null,
 ): TransientCanvasState {
   function noFileTransientCanvasState(): TransientCanvasState {
     return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
@@ -1628,6 +1637,8 @@ export function produceCanvasTransientState(
                     dragState,
                     parseSuccess,
                     preventAnimations,
+                    dispatch,
+                    derivedState,
                   )
                 case 'RESIZE_DRAG_STATE':
                   if (dragState.isMultiSelect) {
@@ -2059,6 +2070,8 @@ function produceMoveTransientCanvasState(
   dragState: MoveDragState,
   parseSuccess: ParseSuccess,
   preventAnimations: boolean,
+  dispatch: EditorDispatch | null,
+  derivedState: DerivedState | null,
 ): TransientCanvasState {
   let selectedViews: Array<TemplatePath> = dragState.draggedElements
   let metadata: Array<ComponentMetadata> = editorState.jsxMetadataKILLME
@@ -2150,6 +2163,9 @@ function produceMoveTransientCanvasState(
     dragState.constrainDragAxis,
     editorState.canvas.scale,
     dragState.start,
+    editorState,
+    dispatch,
+    derivedState,
   )
 
   const componentsIncludingFakeUtopiaScene = utopiaComponentsIncludingScenes

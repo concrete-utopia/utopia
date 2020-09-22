@@ -926,7 +926,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(editorState, false),
+      transientState: produceCanvasTransientState(editorState, false, null, null),
     },
     elementWarnings: emptyComplexMap(),
   }
@@ -1196,6 +1196,7 @@ export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
   uidsChanged: boolean,
+  dispatch: EditorDispatch | null,
 ): EditorAndDerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
@@ -1209,7 +1210,7 @@ export function deriveState(
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
-      transientState: produceCanvasTransientState(editor, true),
+      transientState: produceCanvasTransientState(editor, true, dispatch, oldDerivedState),
     },
     elementWarnings: keepDeepReferenceEqualityIfPossible(
       oldDerivedState?.elementWarnings,

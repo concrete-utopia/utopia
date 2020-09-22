@@ -218,7 +218,7 @@ describe('SET_CANVAS_FRAMES', () => {
     },
     jsxMetadataKILLME: createFakeMetadataForComponents(originalModel.topLevelElements),
   })
-  const derivedState = deriveState(testEditor, null, false).derived
+  const derivedState = deriveState(testEditor, null, false, null).derived
   it('Updates the frame of the child correctly', () => {
     const action = setCanvasFrames(
       [

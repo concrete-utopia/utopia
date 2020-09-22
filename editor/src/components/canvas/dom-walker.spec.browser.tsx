@@ -58,7 +58,7 @@ function sanitizeJsxMetadata(jsxMetadata: ComponentMetadata[]) {
 
 async function renderTestEditorWithCode(appUiJsFileCode: string) {
   let emptyEditorState = createEditorState(NO_OP)
-  const fromScratchResult = deriveState(emptyEditorState, null, false)
+  const fromScratchResult = deriveState(emptyEditorState, null, false, null)
   emptyEditorState = fromScratchResult.editor
   const derivedState = fromScratchResult.derived
 
