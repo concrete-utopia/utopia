@@ -844,7 +844,6 @@ describe('LOAD', () => {
         [secondUIJSFile]: uiJsFile(initiailFileContents, null, RevisionsState.BothMatch, 0),
       },
       exportsInfo: [],
-      buildResult: {},
       openFiles: [],
       selectedFile: null,
       codeEditorErrors: {

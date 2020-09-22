@@ -46,9 +46,16 @@ export type Ellipse = {
   ry: number
 }
 
-export type Size = {
+export interface Size {
   width: number
   height: number
+}
+
+export function size(width: number, height: number): Size {
+  return {
+    width: width,
+    height: height,
+  }
 }
 
 export type RectangleInner = {
@@ -210,13 +217,13 @@ export function rectSize(rectangle: Rectangle<any>): Size {
 
 export function setRectSize<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
-  size: Size,
+  sizeToSet: Size,
 ): Rectangle<C> {
   return {
     x: rectangle.x,
     y: rectangle.y,
-    width: size.width,
-    height: size.height,
+    width: sizeToSet.width,
+    height: sizeToSet.height,
   } as Rectangle<C>
 }
 
@@ -505,10 +512,10 @@ export function stretchRect<C extends CoordinateMarker>(
   } as Rectangle<C>)
 }
 
-export function scaleSize(size: Size, by: number): Size {
+export function scaleSize(sizeToScale: Size, by: number): Size {
   return {
-    width: size.width * by,
-    height: size.height * by,
+    width: sizeToScale.width * by,
+    height: sizeToScale.height * by,
   }
 }
 
@@ -648,10 +655,10 @@ export function rectFromPointVector<C extends CoordinateMarker>(
   return normalizeRect(rectangle)
 }
 
-export function rectSizeToVector<C extends CoordinateMarker>(size: Size): Point<C> {
+export function rectSizeToVector<C extends CoordinateMarker>(sizeOfVector: Size): Point<C> {
   return {
-    x: size.width,
-    y: size.height,
+    x: sizeOfVector.width,
+    y: sizeOfVector.height,
   } as Point<C>
 }
 

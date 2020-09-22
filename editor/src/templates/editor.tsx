@@ -225,8 +225,8 @@ export class Editor {
               } else {
                 const projectName = `${githubOwner}-${githubRepo}`
                 replaceLoadingMessage('Downloading Repo...')
-                importZippedGitProject(projectName, repoResult.value).then(
-                  (importProjectResult) => {
+                importZippedGitProject(projectName, repoResult.value)
+                  .then((importProjectResult) => {
                     if (isProjectImportSuccess(importProjectResult)) {
                       replaceLoadingMessage('Importing Project...')
                       createNewProjectFromImportedProject(
@@ -244,22 +244,15 @@ export class Editor {
                     } else {
                       renderProjectLoadError(importProjectResult.errorMessage)
                     }
-                  },
-                )
+                  })
+                  .catch((err) => {
+                    console.error('Import error.', err)
+                  })
               }
             })
+          } else if (githubOwner != null && githubRepo != null) {
+            renderProjectLoadError('Github repo import is only supported for logged in users')
           } else {
-            if (githubOwner != null && githubRepo != null) {
-              this.boundDispatch(
-                [
-                  EditorActions.showToast({
-                    message: 'Please log in to fork a github repo',
-                  }),
-                ],
-                'everyone',
-              )
-            }
-
             createNewProject(this.boundDispatch, () =>
               renderRootComponent(
                 this.utopiaStoreHook,

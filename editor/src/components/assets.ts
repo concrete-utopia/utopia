@@ -119,7 +119,9 @@ export function mergeTrees(
 }
 
 export function getProjectContentKeyPathElements(projectContentKey: string): Array<string> {
-  return dropLeadingSlash(projectContentKey).split('/')
+  return dropLeadingSlash(projectContentKey)
+    .split('/')
+    .filter((s) => s.length > 0)
 }
 
 export function pathElementsToProjectContentKey(elements: Array<string>): string {

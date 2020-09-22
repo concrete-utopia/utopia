@@ -478,7 +478,7 @@ class FileBrowserItemInner extends React.PureComponent<
                 EditorActions.saveAsset(
                   targetPath,
                   resultFile.fileType,
-                  resultFile.dataUrl,
+                  resultFile.base64Bytes,
                   resultFile.hash,
                   EditorActions.saveImageDetails(resultFile.size, afterSave),
                 ),
@@ -497,7 +497,7 @@ class FileBrowserItemInner extends React.PureComponent<
                 EditorActions.saveAsset(
                   targetPath,
                   fileType,
-                  resultFile.dataUrl,
+                  resultFile.base64Bytes,
                   resultFile.hash,
                   null,
                 ),

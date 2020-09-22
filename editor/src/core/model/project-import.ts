@@ -106,7 +106,7 @@ export async function importZippedGitProject(
           assetsToUpload.push({
             fileName: assetResult.filename,
             fileType: fileType,
-            base64: assetResult.dataUrl,
+            base64: assetResult.base64Bytes,
             hash: assetResult.hash,
             size: null,
           })
@@ -120,7 +120,7 @@ export async function importZippedGitProject(
           assetsToUpload.push({
             fileName: imageResult.filename,
             fileType: fileType,
-            base64: imageResult.dataUrl,
+            base64: imageResult.base64Bytes,
             hash: imageResult.hash,
             size: imageResult.size,
           })
