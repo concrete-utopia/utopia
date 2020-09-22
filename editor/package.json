@@ -14,7 +14,7 @@
     "clean": "rm -rf lib/",
     "check": "tsc --noEmit && npm run lint && npm run test",
     "check-ci": "tsc --noEmit && npm run lint && npm run test-ci",
-    "lint": "npx eslint \"src/**/*.{js,ts,tsx}\"",
+    "lint": "npx eslint \"src/**/*.{js,ts,tsx}\" --quiet",
     "test": "jest --config ./jest.config.js",
     "test-ci": "NODE_OPTIONS=--max_old_space_size=6656 xvfb-run -a npm run test -- --maxWorkers=1",
     "test-debug": "node --inspect-brk node_modules/.bin/jest --config ./jest.config.js --runInBand",
