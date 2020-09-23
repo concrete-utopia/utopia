@@ -134,7 +134,7 @@ const MiniNavigatorRoot = styled.div({
   position: 'absolute',
   top: 25,
   left: 25,
-  backgroundImage: 'radial-gradient(at 0% 0%, #FFFFFF 75%, #03030300 100%)',
+  backgroundImage: 'transparent',
 })
 
 export const MiniNavigator: React.FunctionComponent = () => {
@@ -154,7 +154,7 @@ export const MiniNavigator: React.FunctionComponent = () => {
       }}
       style={{
         height: ItemHeight * items.length,
-        width: 130,
+        width: 180,
       }}
     >
       {items.map((i, index) => (
