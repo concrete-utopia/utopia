@@ -162,15 +162,12 @@ export const NewCanvasControls = betterReactMemo(
                 position: 'absolute',
                 bottom: 0,
                 right: 0,
-                // width: (sceneSize?.width ?? 0 ) / (canvasControlProps.scale * 2),
-                width: (sceneSize?.width ?? 0) / canvasControlProps.scale,
-                // height: (sceneSize?.height ?? 0 ) / (canvasControlProps.scale * 2),
-                height: (sceneSize?.height ?? 0) / canvasControlProps.scale,
+                width: Math.min(300, (sceneSize?.width ?? 0) / canvasControlProps.scale),
+                height: Math.min(500, (sceneSize?.height ?? 0) / canvasControlProps.scale),
                 border: '1px solid black',
                 transformOrigin: 'top left',
                 transform:
                   canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
-                // transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale * 2}) ` : '',
               }}
             >
               <NewCanvasControlsClass
@@ -185,7 +182,6 @@ export const NewCanvasControls = betterReactMemo(
                 canvasOffset={{ x: 0, y: 0 } as CanvasVector}
                 xrayView={true}
                 selectedScene={selectedScene}
-                // scale={canvasControlProps.scale * 2}
                 scale={canvasControlProps.scale}
               />
             </div>
