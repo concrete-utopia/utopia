@@ -115,6 +115,14 @@ let extraLibs: { [fileuri: string]: { js: monaco.IDisposable; ts: monaco.IDispos
 let completionProviders: { js: monaco.IDisposable; ts: monaco.IDisposable } | null = null
 let hoverProviders: { js: monaco.IDisposable; ts: monaco.IDisposable } | null = null
 
+const MaxSupportedLineLength = 200
+
+function areAnyCodeLinesTooLong(code: string): boolean {
+  const lines = code.split('/n')
+  const offendingLine = lines.find((line) => line.length > MaxSupportedLineLength)
+  return offendingLine != null
+}
+
 export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWrapperState> {
   private rootRef: HTMLDivElement | null = null
   private monacoEditor: monaco.editor.IStandaloneCodeEditor | null = null
@@ -481,7 +489,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
       if (code != null) {
         let model = findModel(filename.toString())
         if (model == null || model.isDisposed()) {
-          model = monaco.editor.createModel(code, undefined, filename)
+          model = this.createModel(code, filename)
           model.updateOptions({ tabSize: this.props.tabSize })
         }
       }
@@ -552,10 +560,16 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
     })
   }
 
+  createModel = (code: string, fileUri: monaco.Uri): monaco.editor.ITextModel => {
+    const linesAreTooLong = areAnyCodeLinesTooLong(code)
+    const language: string | undefined = linesAreTooLong ? 'plaintext' : undefined // disable language support of files with long lines
+    return monaco.editor.createModel(code, language, fileUri)
+  }
+
   getOrCreateModel = (fileUri: monaco.Uri) => {
     let model = findModel(fileUri.toString())
     if (model == null || model.isDisposed()) {
-      model = monaco.editor.createModel(this.props.value, undefined, fileUri)
+      model = this.createModel(this.props.value, fileUri)
       model.updateOptions({ tabSize: this.props.tabSize })
     }
     return model
