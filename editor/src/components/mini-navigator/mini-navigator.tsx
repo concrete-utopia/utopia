@@ -161,7 +161,7 @@ const ElementTypeCartouche = styled(Cartouche)({
   borderColor: 'green',
 })
 
-const ItemHeight = 20
+const ItemHeight = 24
 
 const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; index: number }> = (
   props,
@@ -172,12 +172,15 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; inde
         position: 'absolute',
         left: 10 * props.item.indentation,
         top: ItemHeight * props.index,
-        transition: 'left 1s, top 1s',
-        color: props.item.selected
+        transition: 'left 1s, top 1s, background-color 0.3s, color 0.3s',
+        backgroundColor: props.item.selected
           ? colorTheme.primary.value
           : props.item.highlighted
-          ? 'blue'
-          : 'black',
+          ? colorTheme.primary.shade(50).value
+          : 'white',
+        borderRadius: 5,
+        padding: 2,
+        color: props.item.selected || props.item.highlighted ? colorTheme.white.value : 'black',
       }}
     >
       <span>⚄ </span>
