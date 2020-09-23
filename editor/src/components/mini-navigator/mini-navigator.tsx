@@ -190,6 +190,7 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; inde
   props,
 ) => {
   const dispatch = useEditorState((store) => store.dispatch)
+  const isParent = props.item.indentation === 0
   return (
     <motion.div
       onMouseOver={() => {
@@ -225,7 +226,7 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; inde
       <span>⚄ </span>
       <ElementTypeCartouche>{props.item.itemType}</ElementTypeCartouche>
       <span> {props.item.name} </span>
-      {props.item.layoutType ? (
+      {props.item.layoutType && (isParent || props.item.selected) ? (
         <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
       ) : null}
     </motion.div>
