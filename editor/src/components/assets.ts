@@ -11,6 +11,7 @@ import { isDirectory, directory, isImageFile } from '../core/model/project-file-
 import Utils from '../utils/utils'
 import * as R from 'ramda'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
+import { fastForEach } from '../core/shared/utils'
 
 interface ImageAsset {
   assetPath: string
@@ -76,87 +77,78 @@ export function projectContentFile(
 
 export type ProjectContentsTree = ProjectContentDirectory | ProjectContentFile
 
-export function mergeTrees(
-  first: ProjectContentTreeRoot,
-  second: ProjectContentTreeRoot,
-): ProjectContentTreeRoot {
-  let merged: ProjectContentTreeRoot = {}
-  Utils.fastForEach(Object.keys(first), (firstKey) => {
-    const fromFirst = first[firstKey]
-    if (firstKey in second) {
-      const fromSecond = second[firstKey]
-      if (fromFirst.type === 'DIRECTORY') {
-        if (fromSecond.type === 'DIRECTORY') {
-          merged[firstKey] = projectContentDirectory(
-            fromSecond.fullPath,
-            fromSecond.directory,
-            mergeTrees(fromFirst.children, fromSecond.children),
-          )
-        } else {
-          throw new Error(
-            `Unable to merge ${JSON.stringify(fromSecond)} into ${JSON.stringify(fromFirst)}`,
-          )
-        }
-      } else {
-        if (fromSecond.type === 'FILE') {
-          merged[firstKey] = fromSecond
-        } else {
-          throw new Error(
-            `Unable to merge ${JSON.stringify(fromSecond)} into ${JSON.stringify(fromFirst)}`,
-          )
-        }
-      }
-    } else {
-      merged[firstKey] = fromFirst
-    }
-  })
-  Utils.fastForEach(Object.keys(second), (secondKey) => {
-    if (!(secondKey in merged)) {
-      merged[secondKey] = second[secondKey]
-    }
-  })
-  return merged
-}
-
 export function getProjectContentKeyPathElements(projectContentKey: string): Array<string> {
   return dropLeadingSlash(projectContentKey)
     .split('/')
     .filter((s) => s.length > 0)
 }
 
-export function pathElementsToProjectContentKey(elements: Array<string>): string {
-  return '/' + elements.join('/')
+export function pathElementsToProjectContentKey(
+  pathElements: Array<string> | ReadonlyArray<string>,
+  pathIndex: number,
+): string {
+  return '/' + pathElements.slice(0, pathIndex + 1).join('/')
 }
 
-export function contentFileToTreeRoot(
-  fullPath: string,
-  projectFile: ProjectFile,
-): ProjectContentTreeRoot {
-  const pathElements = getProjectContentKeyPathElements(fullPath)
-  const leaf = isDirectory(projectFile)
-    ? projectContentDirectory(fullPath, projectFile, {})
-    : projectContentFile(fullPath, projectFile)
-  const rootDirectory = R.range(1, pathElements.length).reduceRight(
-    (previous, pathElementLength) => {
-      const pathForDir = pathElementsToProjectContentKey(pathElements.slice(0, pathElementLength))
-      return projectContentDirectory(pathForDir, directory(), {
-        [pathElements[pathElementLength]]: previous,
-      })
-    },
-    leaf,
-  )
-  const treeRoot = {
-    [pathElements[0]]: rootDirectory,
+export function addToProjectContentTreeRoot(
+  treeRoot: ProjectContentTreeRoot,
+  pathElements: ReadonlyArray<string>,
+  file: ProjectFile,
+): void {
+  let workingTreeRoot: ProjectContentTreeRoot = treeRoot
+  for (let pathIndex = 0; pathIndex < pathElements.length; pathIndex++) {
+    const pathPart = pathElements[pathIndex]
+    const isLastElement = pathIndex >= pathElements.length - 1
+
+    function addNewFile(innerValue: ProjectContentsTree | null | undefined): void {
+      const pathString = pathElementsToProjectContentKey(pathElements, pathIndex)
+      if (isDirectory(file) || !isLastElement) {
+        let newTreeRoot: ProjectContentTreeRoot = {}
+        if (innerValue != null && innerValue.type === 'DIRECTORY') {
+          newTreeRoot = innerValue.children
+        } else {
+          workingTreeRoot[pathPart] = projectContentDirectory(
+            pathString,
+            isDirectory(file) ? file : directory(),
+            newTreeRoot,
+          )
+        }
+        workingTreeRoot = newTreeRoot
+      } else {
+        workingTreeRoot[pathPart] = projectContentFile(pathString, file)
+      }
+    }
+
+    const innerValue = workingTreeRoot[pathPart]
+    if (innerValue == null) {
+      addNewFile(innerValue)
+    } else {
+      if (innerValue.type === 'DIRECTORY') {
+        addNewFile(innerValue)
+      } else {
+        if (isLastElement) {
+          if (isDirectory(file)) {
+            throw new Error(`Cannot replace directory with file at ${pathElements}.`)
+          } else {
+            innerValue.content = file
+          }
+        } else {
+          addNewFile(innerValue)
+        }
+      }
+    }
   }
-  return treeRoot
 }
 
 export function contentsToTree(projectContents: ProjectContents): ProjectContentTreeRoot {
   const contentKeys = Object.keys(projectContents)
-  return contentKeys.reduce((working, contentKey) => {
-    const tree = contentFileToTreeRoot(contentKey, projectContents[contentKey])
-    return mergeTrees(working, tree)
-  }, {})
+  let treeRoot: ProjectContentTreeRoot = {}
+  fastForEach(contentKeys, (contentKey) => {
+    const pathElements = getProjectContentKeyPathElements(contentKey)
+    const file = projectContents[contentKey]
+    addToProjectContentTreeRoot(treeRoot, pathElements, file)
+  })
+  return treeRoot
 }
 
 export function treeToContents(tree: ProjectContentTreeRoot): ProjectContents {
@@ -212,7 +204,7 @@ export function ensureDirectoriesExist(projectContents: ProjectContents): Projec
     // Determine what directories are used.
     const pathElements = getProjectContentKeyPathElements(contentKey)
     for (let pathLength = 1; pathLength < pathElements.length; pathLength++) {
-      const pathForDir = pathElementsToProjectContentKey(pathElements.slice(0, pathLength))
+      const pathForDir = pathElementsToProjectContentKey(pathElements, pathLength - 1)
       directoriesUsed.add(pathForDir)
     }
     // Determine which directories already exist.

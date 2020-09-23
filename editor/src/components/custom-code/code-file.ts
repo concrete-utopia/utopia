@@ -5,6 +5,7 @@ import {
   ExportsInfo,
   MultiFileBuildResult,
   BuildType,
+  EmitFileResult,
 } from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
@@ -19,6 +20,8 @@ import { EditorDispatch } from '../editor/action-types'
 import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import { updateNodeModulesContents } from '../editor/actions/actions'
 import { fastForEach } from '../../core/shared/utils'
+import { arrayToObject } from '../../core/shared/array-utils'
+import { objectMap } from '../../core/shared/object-utils'
 export interface CodeResult {
   exports: ModuleExportTypes
   transpiledCode: string | null
@@ -215,17 +218,14 @@ export function isJavascriptOrTypescript(filePath: string): boolean {
   return regex.test(filePath)
 }
 
-export const codeCacheToBuildResult = (cache: { [filename: string]: CodeResult }) => {
-  const multiFileBuildResult: MultiFileBuildResult = Object.keys(cache).reduce((acc, filename) => {
+export function codeCacheToBuildResult(cache: {
+  [filename: string]: CodeResult
+}): { [filename: string]: EmitFileResult } {
+  return objectMap((entry) => {
     return {
-      ...acc,
-      [filename]: {
-        transpiledCode: cache[filename].transpiledCode,
-        sourceMap: cache[filename].sourceMap,
-        errors: [], // TODO: this is ugly, these errors are the build errors which are not stored in CodeResultCache, but directly in EditorState.codeEditorErrors
-      },
+      transpiledCode: entry.transpiledCode,
+      sourceMap: entry.sourceMap,
+      errors: [], // TODO: this is ugly, these errors are the build errors which are not stored in CodeResultCache, but directly in EditorState.codeEditorErrors
     }
-  }, {})
-
-  return multiFileBuildResult
+  }, cache)
 }
