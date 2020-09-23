@@ -1,5 +1,4 @@
 import Utils from '../../utils/utils'
-import { RequireFn, NpmDependency } from '../../core/shared/npm-dependency-types'
 import {
   ExportType,
   ExportsInfo,

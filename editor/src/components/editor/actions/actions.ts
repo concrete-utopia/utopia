@@ -113,10 +113,9 @@ import {
 import type {
   RequireFn,
   TypeDefinitions,
-  npmDependency,
-  NpmDependency,
   PackageStatus,
   PackageStatusMap,
+  RequestedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import {
   InstancePath,
@@ -4049,13 +4048,13 @@ export const UPDATE_FNS = {
   },
   UPDATE_PACKAGE_JSON: (action: UpdatePackageJson, editor: EditorState): EditorState => {
     const dependencies = action.dependencies.reduce(
-      (acc: Array<NpmDependency>, curr: NpmDependency) => {
+      (acc: Array<RequestedNpmDependency>, curr: RequestedNpmDependency) => {
         return {
           ...acc,
           [curr.name]: curr.version,
         }
       },
-      {} as Array<NpmDependency>,
+      [] as Array<RequestedNpmDependency>,
     )
     return updateDependenciesInEditorState(editor, dependencies)
   },
@@ -5485,7 +5484,7 @@ export function updateNodeModulesContents(
   }
 }
 
-export function updatePackageJson(dependencies: Array<NpmDependency>): UpdatePackageJson {
+export function updatePackageJson(dependencies: Array<RequestedNpmDependency>): UpdatePackageJson {
   return {
     action: 'UPDATE_PACKAGE_JSON',
     dependencies: dependencies,

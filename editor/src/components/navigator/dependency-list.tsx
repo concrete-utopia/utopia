@@ -12,8 +12,8 @@ import {
   Title,
 } from 'uuiui'
 import {
-  npmDependency,
-  NpmDependency,
+  requestedNpmDependency,
+  RequestedNpmDependency,
   PackageStatusMap,
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
@@ -99,7 +99,7 @@ export const DefaultPackagesList: Array<PackageDetails> = [
 ]
 
 function packageDetailsFromDependencies(
-  npmDependencies: Array<NpmDependency>,
+  npmDependencies: Array<RequestedNpmDependency>,
   packageStatus: PackageStatusMap,
 ): Array<PackageDetails> {
   const userAddedPackages: Array<PackageDetails> = []
@@ -341,14 +341,14 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
               )
               const updatedNpmDeps = [
                 ...npmDepsWithoutCurrentDep,
-                npmDependency(editedPackageName, editedPackageVersion!),
+                requestedNpmDependency(editedPackageName, editedPackageVersion!),
               ]
 
               this.props.editorDispatch([
                 EditorActions.setPackageStatus(editedPackageName, loadingOrUpdating),
                 EditorActions.updatePackageJson(updatedNpmDeps),
               ])
-              fetchNodeModules([npmDependency(editedPackageName, editedPackageVersion!)])
+              fetchNodeModules([requestedNpmDependency(editedPackageName, editedPackageVersion!)])
                 .then((fetchNodeModulesResult) => {
                   if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
                     this.packagesUpdateFailed(

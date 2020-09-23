@@ -5,7 +5,11 @@ import { StaticServices } from 'monaco-editor/esm/vs/editor/standalone/browser/s
 import * as React from 'react'
 import { isDirectory } from '../../core/model/project-file-utils'
 import { ErrorMessage, ErrorMessageSeverity } from '../../core/shared/error-messages'
-import { TypeDefinitions, NpmDependency } from '../../core/shared/npm-dependency-types'
+import {
+  TypeDefinitions,
+  PossiblyUnversionedNpmDependency,
+  isResolvedNpmDependency,
+} from '../../core/shared/npm-dependency-types'
 import {
   HighlightBounds,
   ProjectContents,
@@ -23,7 +27,7 @@ import { CursorPosition, cursorPositionsEqual } from './code-editor-utils'
 import { liftOff } from './text-mate-utils'
 import { convertVSThemeToMonacoTheme } from './theme-converter'
 import { OPENING_TAG_REGEX } from './monaco-wrapper-helper'
-import { arrayEquals } from '../../core/shared/utils'
+import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import * as TP from '../../core/shared/template-path'
 import * as FontFaceObserver from 'fontfaceobserver'
 
@@ -41,7 +45,7 @@ interface MonacoWrapperProps {
   onHover: (line: number, column: number) => void
   onOpenFile: (path: string, cursorPosition: CursorPosition) => void
   npmTypeDefinitions: {
-    npmDependencies: Array<NpmDependency>
+    npmDependencies: Array<PossiblyUnversionedNpmDependency>
     typeDefinitions: TypeDefinitions
   }
   cursorPosition: CursorPosition
@@ -380,15 +384,18 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
             // importing from npm dependencies
             const dependencies = this.props.npmTypeDefinitions.npmDependencies
 
+            let suggestions: monaco.languages.CompletionItem[] = []
+            fastForEach(dependencies, (dependency) => {
+              if (isResolvedNpmDependency(dependency)) {
+                suggestions.push({
+                  label: dependency.name,
+                  insertText: dependency.name,
+                  kind: monaco.languages.CompletionItemKind.Module,
+                } as monaco.languages.CompletionItem)
+              }
+            })
             return {
-              suggestions: dependencies.map(
-                (dependency) =>
-                  ({
-                    label: dependency.name,
-                    insertText: dependency.name,
-                    kind: monaco.languages.CompletionItemKind.Module,
-                  } as monaco.languages.CompletionItem),
-              ),
+              suggestions: suggestions,
             }
           }
         }

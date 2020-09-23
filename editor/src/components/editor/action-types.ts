@@ -35,7 +35,7 @@ import { LeftMenuTab } from '../navigator/left-pane'
 import { RightMenuTab } from '../canvas/right-menu'
 import { Mode } from './editor-modes'
 import type {
-  NpmDependency,
+  RequestedNpmDependency,
   PackageStatusMap,
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
@@ -730,7 +730,7 @@ export interface UpdateNodeModulesContents {
 
 export interface UpdatePackageJson {
   action: 'UPDATE_PACKAGE_JSON'
-  dependencies: Array<NpmDependency>
+  dependencies: Array<RequestedNpmDependency>
 }
 
 export interface StartCheckpointTimer {

@@ -26,6 +26,7 @@ import { ExportsInfo } from '../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { objectKeyParser, parseAny, ParseResult } from '../utils/value-parser-utils'
 import { applicative3Either, forEachRight } from '../core/shared/either'
+import {resolvedDependencyVersions} from '../core/third-party/third-party-components'
 
 // Not a full parse, just checks the primary fields are there.
 function fastPropertyControlsParse(value: unknown): ParseResult<GetPropertyControlsInfoMessage> {
@@ -63,6 +64,7 @@ const initPropertyControls = () => {
     exportsInfo: ReadonlyArray<ExportsInfo>,
   ) => {
     const npmDependencies = dependenciesWithEditorRequirements(projectContents)
+    const resolvedNpmDependencies = resolvedDependencyVersions(npmDependencies, nodeModules)
     /**
      * please note that we are passing in an empty object instead of the .d.ts files
      * the reason for this is that we only use the bundler as a transpiler here
@@ -85,7 +87,7 @@ const initPropertyControls = () => {
     const exportValues = getExportValuesFromAllModules(bundledProjectFiles, requireFn)
 
     let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
-      npmDependencies,
+      resolvedNpmDependencies,
     )
     fastForEach(exportsInfo, (result) => {
       const codeResult = processExportsInfo(exportValues[result.filename], result.exportTypes)

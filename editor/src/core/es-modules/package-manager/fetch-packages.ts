@@ -6,10 +6,10 @@ import {
   ESCodeFile,
 } from '../../shared/project-file-types'
 import {
-  NpmDependency,
   PackagerServerResponse,
   JsdelivrResponse,
-  npmDependency,
+  RequestedNpmDependency,
+  resolvedNpmDependency
 } from '../../shared/npm-dependency-types'
 import { mapArrayToDictionary, pluck } from '../../shared/array-utils'
 import { objectMap } from '../../shared/object-utils'
@@ -19,8 +19,6 @@ import {
   Either,
   right,
   left,
-  sequenceEither,
-  mapEither,
   isLeft,
   isRight,
 } from '../../shared/either'
@@ -29,6 +27,9 @@ import {
   checkPackageVersionExists,
   isPackageNotFound,
 } from '../../../components/editor/npm-dependency/npm-dependency'
+import {
+  parseDependencyVersionFromNodeModules,
+} from '../../../utils/package-parser-utils'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 let jsDelivrCache: { [key: string]: JsdelivrResponse } = {}
@@ -58,13 +59,15 @@ export function resetDepPackagerCache() {
   depPackagerCache = {}
 }
 
-async function fetchPackagerResponseWithRetry(dep: NpmDependency): Promise<NodeModules | null> {
+async function fetchPackagerResponseWithRetry(
+  dep: RequestedNpmDependency,
+): Promise<NodeModules | null> {
   const wait = (ms: number) => {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   const fetchPackagerResponseWithRetryInner = async (
-    dependency: NpmDependency,
+    dependency: RequestedNpmDependency,
     nrRetries: number,
     retryFreqMs: number,
   ): Promise<NodeModules | null> => {
@@ -82,17 +85,14 @@ async function fetchPackagerResponseWithRetry(dep: NpmDependency): Promise<NodeM
   return await fetchPackagerResponseWithRetryInner(dep, NR_RETRIES, RETRY_FREQ_MS)
 }
 
-async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | null> {
+async function fetchPackagerResponse(dep: RequestedNpmDependency): Promise<NodeModules | null> {
   if (PACKAGES_TO_SKIP.indexOf(dep.name) > -1) {
     return null
   }
 
   const packagesUrl = getPackagerUrl(dep)
-  const jsdelivrUrl = getJsDelivrListUrl(dep)
   let result: NodeModules = {}
-  if (depPackagerCache[packagesUrl] != null) {
-    result = extractNodeModulesFromPackageResponse(depPackagerCache[packagesUrl])
-  } else {
+  if (depPackagerCache[packagesUrl] == null) {
     const packagerResponse = await fetch(packagesUrl)
     if (packagerResponse.ok) {
       const resp = (await packagerResponse.json()) as PackagerServerResponse
@@ -102,25 +102,36 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
     } else {
       throw new Error('Packager response error')
     }
-  }
-  if (jsDelivrCache[jsdelivrUrl] != null) {
-    result = {
-      ...extractNodeModulesFromJsdelivrResponse(dep.name, dep.version, jsDelivrCache[jsdelivrUrl]),
-      ...result,
-    }
   } else {
-    const jsdelivrResponse = await fetch(jsdelivrUrl)
-    if (jsdelivrResponse.ok) {
-      const resp = (await jsdelivrResponse.json()) as JsdelivrResponse
-      jsDelivrCache[jsdelivrUrl] = resp
-      const nodeModulesFromResp = extractNodeModulesFromJsdelivrResponse(
-        dep.name,
-        dep.version,
-        resp,
-      )
+    result = extractNodeModulesFromPackageResponse(depPackagerCache[packagesUrl])
+  }
+
+  const resolvedDependency = parseDependencyVersionFromNodeModules(result, dep.name)
+  if (resolvedDependency != null) {
+    const jsdelivrUrl = getJsDelivrListUrl(resolvedNpmDependency(dep.name, resolvedDependency))
+    if (jsDelivrCache[jsdelivrUrl] != null) {
       result = {
-        ...nodeModulesFromResp, // we are deliberately merging this as the lower priority
-        ...result, // because if there's a real .js or .d.ts, that should win
+        ...extractNodeModulesFromJsdelivrResponse(
+          dep.name,
+          dep.version,
+          jsDelivrCache[jsdelivrUrl],
+        ),
+        ...result,
+      }
+    } else {
+      const jsdelivrResponse = await fetch(jsdelivrUrl)
+      if (jsdelivrResponse.ok) {
+        const resp = (await jsdelivrResponse.json()) as JsdelivrResponse
+        jsDelivrCache[jsdelivrUrl] = resp
+        const nodeModulesFromResp = extractNodeModulesFromJsdelivrResponse(
+          dep.name,
+          dep.version,
+          resp,
+        )
+        result = {
+          ...nodeModulesFromResp, // we are deliberately merging this as the lower priority
+          ...result, // because if there's a real .js or .d.ts, that should win
+        }
       }
     }
   }
@@ -129,24 +140,24 @@ async function fetchPackagerResponse(dep: NpmDependency): Promise<NodeModules | 
 }
 
 export interface NodeFetchResult {
-  dependenciesWithError: Array<NpmDependency>
-  dependenciesNotFound: Array<NpmDependency>
+  dependenciesWithError: Array<RequestedNpmDependency>
+  dependenciesNotFound: Array<RequestedNpmDependency>
   nodeModules: NodeModules
 }
 
 interface DependencyFetchError {
   type: 'FAIL_ERROR' | 'FAIL_NOT_FOUND'
-  dependency: NpmDependency
+  dependency: RequestedNpmDependency
 }
 
-function failNotFound(dependency: NpmDependency): DependencyFetchError {
+function failNotFound(dependency: RequestedNpmDependency): DependencyFetchError {
   return {
     type: 'FAIL_NOT_FOUND',
     dependency: dependency,
   }
 }
 
-function failError(dependency: NpmDependency): DependencyFetchError {
+function failError(dependency: RequestedNpmDependency): DependencyFetchError {
   return {
     type: 'FAIL_ERROR',
     dependency: dependency,
@@ -154,7 +165,7 @@ function failError(dependency: NpmDependency): DependencyFetchError {
 }
 
 export async function fetchNodeModules(
-  newDeps: Array<NpmDependency>,
+  newDeps: Array<RequestedNpmDependency>,
   shouldRetry: boolean = true,
 ): Promise<NodeFetchResult> {
   const dependenciesToDownload = newDeps.filter((d) => !isBuiltinDependency(d.name))
@@ -228,7 +239,7 @@ export async function fetchMissingFileDependency(
 ): Promise<void> {
   const localFilePath = extractFilePath(dependency.packagename, filepath)
   const jsdelivrUrl = getJsDelivrFileUrl(
-    npmDependency(dependency.packagename, dependency.version),
+    resolvedNpmDependency(dependency.packagename, dependency.version),
     localFilePath,
   )
   const jsdelivrResponse = await fetch(jsdelivrUrl)

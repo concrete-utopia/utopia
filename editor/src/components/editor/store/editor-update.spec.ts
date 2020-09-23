@@ -59,8 +59,8 @@ import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
 } from '../../../core/model/test-ui-js-file'
-import { npmDependency } from '../../../core/shared/npm-dependency-types'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import {requestedNpmDependency} from '../../../core/shared/npm-dependency-types'
 
 const chaiExpect = Chai.expect
 
@@ -861,7 +861,7 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     const { editor, derivedState } = createEditorStates('/src/app.ui.js')
     const mockDispatch = jest.fn()
 
-    const deps = [npmDependency('mypackage', '1.0.0'), npmDependency('smart', '2.3.1')]
+    const deps = [requestedNpmDependency('mypackage', '1.0.0'), requestedNpmDependency('smart', '2.3.1')]
     const action = updatePackageJson(deps)
     const updatedEditor = runLocalEditorAction(
       editor,

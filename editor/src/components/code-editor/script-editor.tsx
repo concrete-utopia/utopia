@@ -30,7 +30,7 @@ import { runtimeErrorInfoToErrorMessage } from './monaco-wrapper'
 import { EditorPanel, setFocus } from '../common/actions'
 import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/actions'
-import { dependenciesFromPackageJson } from '../editor/npm-dependency/npm-dependency'
+import { dependenciesFromPackageJson, usePossiblyResolvedPackageDependencies } from '../editor/npm-dependency/npm-dependency'
 import {
   ConsoleLog,
   EditorStore,
@@ -348,8 +348,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
   const newErrorsForFile = errors.filter((error) => error.fileName === filePath)
   const errorsForFile = useKeepReferenceEqualityIfPossible(newErrorsForFile)
 
-  const newNpmDependencies = dependenciesFromPackageJson(packageJsonFile)
-  const npmDependencies = useKeepReferenceEqualityIfPossible(newNpmDependencies)
+  const npmDependencies = usePossiblyResolvedPackageDependencies()
 
   if (filePath == null || openFile == null) {
     return null

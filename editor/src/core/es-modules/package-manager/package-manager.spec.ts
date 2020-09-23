@@ -11,11 +11,10 @@ import { fetchNodeModules, resetDepPackagerCache } from './fetch-packages'
 import { ESCodeFile } from '../../shared/project-file-types'
 import { NO_OP } from '../../shared/utils'
 import { NodeModules } from '../../shared/project-file-types'
-import { npmDependency } from '../../shared/npm-dependency-types'
 import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
 import { InjectedCSSFilePrefix } from '../../shared/css-style-loader'
-import { isLeft } from '../../shared/either'
 import { VersionLookupResult } from '../../../components/editor/npm-dependency/npm-dependency'
+import {requestedNpmDependency, resolvedNpmDependency} from '../../shared/npm-dependency-types'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -83,16 +82,16 @@ describe('ES Dependency Manager — Real-life packages', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(npmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl(requestedNpmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
-          case getJsDelivrListUrl(npmDependency('react-spring', '8.0.27')):
+          case getJsDelivrListUrl(resolvedNpmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 404 }) // we don't care about the jsdelivr response now
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules([npmDependency('react-spring', '8.0.27')])
+    const fetchNodeModulesResult = await fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')])
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -107,18 +106,18 @@ describe('ES Dependency Manager — Real-life packages', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(npmDependency('antd', '4.2.5')):
+          case getPackagerUrl(requestedNpmDependency('antd', '4.2.5')):
             return Promise.resolve({ status: 200, body: JSON.stringify(antdPackagerResponse) })
-          case getJsDelivrListUrl(npmDependency('antd', '4.2.5')):
+          case getJsDelivrListUrl(resolvedNpmDependency('antd', '4.2.5')):
             return Promise.resolve({ status: 200, body: JSON.stringify(jsdelivrApiResponse) })
-          case getJsDelivrFileUrl(npmDependency('antd', '4.2.5'), '/dist/antd.css'):
+          case getJsDelivrFileUrl(resolvedNpmDependency('antd', '4.2.5'), '/dist/antd.css'):
             return Promise.resolve({ body: simpleCssContent })
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules([npmDependency('antd', '4.2.5')])
+    const fetchNodeModulesResult = await fetchNodeModules([requestedNpmDependency('antd', '4.2.5')])
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -149,9 +148,9 @@ describe('ES Dependency Manager — d.ts', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(npmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl(requestedNpmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
-          case getJsDelivrListUrl(npmDependency('react-spring', '8.0.27')):
+          case getJsDelivrListUrl(resolvedNpmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 404 }) // we don't care about the jsdelivr response now
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
@@ -159,7 +158,7 @@ describe('ES Dependency Manager — d.ts', () => {
       },
     )
 
-    const fetchNodeModulesResult = await fetchNodeModules([npmDependency('react-spring', '8.0.27')])
+    const fetchNodeModulesResult = await fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')])
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -182,18 +181,18 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(npmDependency('mypackage', '0.0.1')):
+          case getPackagerUrl(requestedNpmDependency('mypackage', '0.0.1')):
             return Promise.resolve({ status: 200, body: JSON.stringify(fileNoImports) })
-          case getJsDelivrListUrl(npmDependency('mypackage', '0.0.1')):
+          case getJsDelivrListUrl(resolvedNpmDependency('mypackage', '0.0.1')):
             return Promise.resolve({ status: 200, body: JSON.stringify(jsdelivrApiResponse) })
-          case getJsDelivrFileUrl(npmDependency('mypackage', '0.0.1'), '/dist/style.css'):
+          case getJsDelivrFileUrl(resolvedNpmDependency('mypackage', '0.0.1'), '/dist/style.css'):
             return Promise.resolve({ body: simpleCssContent })
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules([npmDependency('mypackage', '0.0.1')])
+    const fetchNodeModulesResult = await fetchNodeModules([requestedNpmDependency('mypackage', '0.0.1')])
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -225,13 +224,13 @@ describe('ES Dependency manager - retry behavior', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(npmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl(requestedNpmDependency('react-spring', '8.0.27')):
             if (requestCounter === 0) {
               requestCounter++
               throw new Error('First request fails')
             }
             return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
-          case getJsDelivrListUrl(npmDependency('react-spring', '8.0.27')):
+          case getJsDelivrListUrl(resolvedNpmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 404 }) // we don't care about the jsdelivr response now
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
@@ -239,7 +238,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([npmDependency('react-spring', '8.0.27')]).then((fetchNodeModulesResult) => {
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then((fetchNodeModulesResult) => {
       if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
         fail(`Expected successful nodeModule fetch`)
       }
@@ -258,7 +257,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([npmDependency('react-spring', '8.0.27')]).then((fetchNodeModulesResult) => {
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then((fetchNodeModulesResult) => {
       expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
       expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
       expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(0)
@@ -271,13 +270,13 @@ describe('ES Dependency manager - retry behavior', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(npmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl(requestedNpmDependency('react-spring', '8.0.27')):
             if (requestCounter === 0) {
               requestCounter++
               throw new Error('First request fails')
             }
             return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
-          case getJsDelivrListUrl(npmDependency('react-spring', '8.0.27')):
+          case getJsDelivrListUrl(resolvedNpmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 404 }) // we don't care about the jsdelivr response now
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
@@ -285,7 +284,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([npmDependency('react-spring', '8.0.27')], false).then(
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')], false).then(
       (fetchNodeModulesResult) => {
         expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
         expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
