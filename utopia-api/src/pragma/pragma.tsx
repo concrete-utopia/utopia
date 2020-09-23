@@ -121,7 +121,7 @@ export const jsx = (type: any, ...pragmaParams: any[]) => {
           }
 
           const updatedProps =
-            (child.type as any)?.theOriginalType?.toString() === 'Symbol(react.fragment)'
+            (child.type as any)?.theOriginalType == React.Fragment
               ? (child.props as any)
               : {
                   ...removeLayoutPropFromReactBuiltins,
