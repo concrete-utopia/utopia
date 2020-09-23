@@ -235,6 +235,7 @@
     "flow-bin": "0.38.0",
     "fork-ts-checker-async-overlay-webpack-plugin": "0.2.0",
     "fork-ts-checker-webpack-plugin": "4.1.2",
+    "framer-motion": "^2.7.0",
     "fse": "1.0.1",
     "glslCanvas": "0.1.7",
     "html-webpack-plugin": "4.0.4",

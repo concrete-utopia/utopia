@@ -1,5 +1,6 @@
 import * as React from 'react'
 import styled from '@emotion/styled'
+import { motion } from 'framer-motion'
 import { useEditorState } from '../editor/store/store-hook'
 import {
   appendToPath,
@@ -190,7 +191,7 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; inde
 ) => {
   const dispatch = useEditorState((store) => store.dispatch)
   return (
-    <div
+    <motion.div
       onMouseOver={() => {
         dispatch([setHighlightedView(props.item.templatePath)])
       }}
@@ -199,17 +200,26 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; inde
       }}
       style={{
         position: 'absolute',
-        left: 10 * props.item.indentation,
+        left: props.item.indentation === 0 ? -10 : 30,
+        opacity: 0,
         top: ItemHeight * props.index,
-        transition: 'left 1s, top 1s, background-color 0.3s, color 0.3s',
+        // transition: 'top 1s, background-color 0.3s, color 0.3s',
         backgroundColor: props.item.selected
           ? colorTheme.primary.value
           : props.item.highlighted
           ? colorTheme.primary.shade(50).value
           : 'white',
+        color: props.item.selected || props.item.highlighted ? colorTheme.white.value : 'black',
         borderRadius: 5,
         padding: 2,
-        color: props.item.selected || props.item.highlighted ? colorTheme.white.value : 'black',
+      }}
+      animate={{
+        left: 10 * props.item.indentation,
+        top: ItemHeight * props.index,
+        opacity: 1,
+      }}
+      transition={{
+        duration: 0.3,
       }}
     >
       <span>⚄ </span>
@@ -218,6 +228,6 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; inde
       {props.item.layoutType ? (
         <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
       ) : null}
-    </div>
+    </motion.div>
   )
 }
