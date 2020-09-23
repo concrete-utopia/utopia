@@ -23,9 +23,15 @@ import {
 import { InstancePath, TemplatePath } from '../../core/shared/project-file-types'
 import { last } from '../../core/shared/array-utils'
 import { colorTheme } from '../../uuiui'
+import {
+  clearHighlightedViews,
+  selectComponents,
+  setHighlightedView,
+} from '../editor/actions/actions'
 
 interface NavigatorItemData {
   id: string
+  templatePath: TemplatePath
   name: string
   indentation: number
   itemType: string
@@ -65,6 +71,7 @@ function getNavigatorItemDataFromJsxElement(
     selected,
     itemType: getElementType(element),
     highlighted,
+    templatePath: path,
   }
 }
 
@@ -132,9 +139,24 @@ const MiniNavigatorRoot = styled.div({
 
 export const MiniNavigator: React.FunctionComponent = () => {
   const items = useGetNavigatorItemsToShow()
+  const dispatch = useEditorState((store) => store.dispatch)
 
   return (
-    <MiniNavigatorRoot>
+    <MiniNavigatorRoot
+      // eslint-disable-next-line react/jsx-no-bind
+      onMouseOut={() => {
+        dispatch([clearHighlightedViews()])
+      }}
+      // eslint-disable-next-line react/jsx-no-bind
+      onMouseDown={(e) => {
+        e.stopPropagation()
+        e.preventDefault()
+      }}
+      style={{
+        height: ItemHeight * items.length,
+        width: 130,
+      }}
+    >
       {items.map((i, index) => (
         <MiniNavigatorItem key={i.id} item={i} index={index} />
       ))}
@@ -166,8 +188,15 @@ const ItemHeight = 24
 const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; index: number }> = (
   props,
 ) => {
+  const dispatch = useEditorState((store) => store.dispatch)
   return (
     <div
+      onMouseOver={() => {
+        dispatch([setHighlightedView(props.item.templatePath)])
+      }}
+      onMouseDown={() => {
+        dispatch([selectComponents([props.item.templatePath], false)])
+      }}
       style={{
         position: 'absolute',
         left: 10 * props.item.indentation,
