@@ -1,0 +1,108 @@
+diff --git a/node_modules/monaco-editor/esm/vs/basic-languages/typescript/typescript.js b/node_modules/monaco-editor/esm/vs/basic-languages/typescript/typescript.js
+index 7172170..9e6059f 100644
+--- a/node_modules/monaco-editor/esm/vs/basic-languages/typescript/typescript.js
++++ b/node_modules/monaco-editor/esm/vs/basic-languages/typescript/typescript.js
+@@ -2,7 +2,25 @@
+  *  Copyright (c) Microsoft Corporation. All rights reserved.
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+-import { languages } from '../fillers/monaco-editor-core.js';
++import { languages } from '../fillers/monaco-editor-core';
++var EMPTY_ELEMENTS = [
++    'area',
++    'base',
++    'br',
++    'col',
++    'embed',
++    'hr',
++    'img',
++    'input',
++    'keygen',
++    'link',
++    'menuitem',
++    'meta',
++    'param',
++    'source',
++    'track',
++    'wbr'
++];
+ export var conf = {
+     wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+     comments: {
+@@ -12,7 +30,8 @@ export var conf = {
+     brackets: [
+         ['{', '}'],
+         ['[', ']'],
+-        ['(', ')']
++        ['(', ')'],
++        ['<', '>']
+     ],
+     onEnterRules: [
+         {
+@@ -47,6 +66,27 @@ export var conf = {
+                 indentAction: languages.IndentAction.None,
+                 removeText: 1
+             }
++        },
++        {
++            beforeText: new RegExp("<(?!(?:" + EMPTY_ELEMENTS.join('|') + "))([_:\\w][_:\\w\\-.\\d]*)([^/>]*(?!/)>)[^<]*$", 'i'),
++            afterText: /^<\/([_:\w][_:\w-.\d]*)\s*>$/i,
++            action: { indentAction: languages.IndentAction.IndentOutdent }
++        },
++        {
++            beforeText: new RegExp("<(?!(?:" + EMPTY_ELEMENTS.join('|') + "))([_:\\w][_:\\w\\-.\\d]*)([^/>]*(?!/)>)[^<]*$", 'i'),
++            action: { indentAction: languages.IndentAction.Indent }
++        },
++        {
++            // `beforeText` only applies to tokens of a given language. Since we are dealing with jsx-tags,
++            // make sure we apply to the closing `>` of a tag so that mixed language spans
++            // such as `<div onclick={1}>` are handled properly.
++            beforeText: /^[^</]*>$/,
++            afterText: /^<\/([_:\w][_:\w-.\d]*)\s*>$/i,
++            action: { indentAction: languages.IndentAction.IndentOutdent }
++        },
++        {
++            beforeText: /^[^</]*>$/,
++            action: { indentAction: languages.IndentAction.Indent }
+         }
+     ],
+     autoClosingPairs: [
+@@ -287,10 +327,7 @@ export var language = {
+             [/[^\\\/]/, 'regexp'],
+             [/@regexpesc/, 'regexp.escape'],
+             [/\\\./, 'regexp.invalid'],
+-            [
+-                /(\/)([gimsuy]*)/,
+-                [{ token: 'regexp', bracket: '@close', next: '@pop' }, 'keyword.other']
+-            ]
++            [/(\/)([gimsuy]*)/, [{ token: 'regexp', bracket: '@close', next: '@pop' }, 'keyword.other']]
+         ],
+         regexrange: [
+             [/-/, 'regexp.escape.control'],
+diff --git a/node_modules/monaco-editor/esm/vs/editor/contrib/gotoSymbol/goToCommands.js b/node_modules/monaco-editor/esm/vs/editor/contrib/gotoSymbol/goToCommands.js
+index 7907b3d..6954a8b 100644
+--- a/node_modules/monaco-editor/esm/vs/editor/contrib/gotoSymbol/goToCommands.js
++++ b/node_modules/monaco-editor/esm/vs/editor/contrib/gotoSymbol/goToCommands.js
+@@ -145,16 +145,17 @@ class SymbolNavigationAction extends EditorAction {
+             if (!targetEditor) {
+                 return undefined;
+             }
++            const safeTargetEditor = targetEditor.hasOwnProperty('getModel') ? targetEditor : targetEditor.getControl()
+             if (highlight) {
+-                const modelNow = targetEditor.getModel();
+-                const ids = targetEditor.deltaDecorations([], [{ range, options: { className: 'symbolHighlight' } }]);
++                const modelNow = safeTargetEditor.getModel();
++                const ids = safeTargetEditor.deltaDecorations([], [{ range, options: { className: 'symbolHighlight' } }]);
+                 setTimeout(() => {
+-                    if (targetEditor.getModel() === modelNow) {
+-                        targetEditor.deltaDecorations(ids, []);
++                    if (safeTargetEditor.getModel() === modelNow) {
++                        safeTargetEditor.deltaDecorations(ids, []);
+                     }
+                 }, 350);
+             }
+-            return targetEditor;
++            return safeTargetEditor;
+         });
+     }
+     _openInPeek(target, model) {
