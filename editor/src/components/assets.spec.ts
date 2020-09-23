@@ -1,7 +1,13 @@
 import * as FastCheck from 'fast-check'
 import * as R from 'ramda'
 import { codeFile, directory, imageFile, isDirectory } from '../core/model/project-file-utils'
-import { CodeFile, Directory, ImageFile, ProjectContents } from '../core/shared/project-file-types'
+import {
+  CodeFile,
+  Directory,
+  ImageFile,
+  ProjectContents,
+  ProjectFile,
+} from '../core/shared/project-file-types'
 import {
   contentsToTree,
   projectContentDirectory,
@@ -43,7 +49,11 @@ function pathArbitrary(): FastCheck.Arbitrary<string> {
       1,
       30,
     ),
-  ).map((arr) => `/${arr.join('/')}`)
+    1,
+    5,
+  ).map((arr) => {
+    return `/${arr.join('/')}`
+  })
 }
 
 function projectContentsFilter(projectContents: ProjectContents): boolean {
@@ -62,11 +72,13 @@ function projectContentsFilter(projectContents: ProjectContents): boolean {
 }
 
 function projectContentsArbitrary(): FastCheck.Arbitrary<ProjectContents> {
-  return FastCheck.object({
-    key: pathArbitrary(),
-    values: [notDirectoryContentFileArbitrary(), directoryContentFileArbitrary()],
-    maxDepth: 1,
-  }).filter(projectContentsFilter)
+  return FastCheck.dictionary<ProjectFile>(
+    pathArbitrary(),
+    FastCheck.oneof<ProjectFile>(
+      notDirectoryContentFileArbitrary(),
+      directoryContentFileArbitrary(),
+    ),
+  ).filter(projectContentsFilter)
 }
 
 function checkContentsToTree(contents: ProjectContents): boolean {
