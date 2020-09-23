@@ -226,6 +226,7 @@ export class InsertModeControlContainer extends React.Component<
         imports={this.props.imports}
         testID={`insert-target-${TP.toComponentId(target)}`}
         showAdditionalControls={this.props.showAdditionalControls}
+        xrayMode={false}
       />
     )
   }
@@ -258,6 +259,7 @@ export class InsertModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
+        xrayMode={false}
       />
     )
   }

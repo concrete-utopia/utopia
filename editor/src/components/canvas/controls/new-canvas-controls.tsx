@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as TP from '../../../core/shared/template-path'
 import Utils from '../../../utils/utils'
-import { CanvasPoint } from '../../../core/shared/math-utils'
+import { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
   DerivedState,
@@ -10,7 +10,12 @@ import {
   getOpenImportsFromState,
   getMetadata,
 } from '../../editor/store/editor-state'
-import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
+import {
+  TemplatePath,
+  InstancePath,
+  Imports,
+  ScenePath,
+} from '../../../core/shared/project-file-types'
 import { CanvasPositions } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
@@ -37,6 +42,7 @@ import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
+import utils from '../../../utils/utils'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -98,6 +104,15 @@ export const NewCanvasControls = betterReactMemo(
       [drop],
     )
 
+    const selectedViews = useEditorState((store) => store.editor.selectedViews)
+    const componentMetadata = useEditorState((store) => store.editor.jsxMetadataKILLME)
+    const selectedScene = selectedViews.length > 0 ? TP.scenePathForPath(selectedViews[0]) : null
+    const sceneSize =
+      selectedScene == null
+        ? null
+        : MetadataUtils.getFrameInCanvasCoords(selectedScene, componentMetadata)
+    const showXrayView = useEditorState((store) => !store.editor.interfaceDesigner.codePaneVisible)
+
     if (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd) {
       return null
     } else {
@@ -135,9 +150,47 @@ export const NewCanvasControls = betterReactMemo(
           >
             <NewCanvasControlsClass
               windowToCanvasPosition={props.windowToCanvasPosition}
+              xrayView={false}
+              selectedScene={null}
               {...canvasControlProps}
             />
           </div>
+          {showXrayView && (
+            <div
+              key={'xrayview'}
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                // width: (sceneSize?.width ?? 0 ) / (canvasControlProps.scale * 2),
+                width: (sceneSize?.width ?? 0) / canvasControlProps.scale,
+                // height: (sceneSize?.height ?? 0 ) / (canvasControlProps.scale * 2),
+                height: (sceneSize?.height ?? 0) / canvasControlProps.scale,
+                border: '1px solid black',
+                transformOrigin: 'top left',
+                transform:
+                  canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+                // transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale * 2}) ` : '',
+              }}
+            >
+              <NewCanvasControlsClass
+                key={'xrayview-controls'}
+                // eslint-disable-next-line react/jsx-no-bind
+                windowToCanvasPosition={() => ({
+                  windowPosition: utils.zeroPoint as WindowPoint,
+                  canvasPositionRaw: utils.zeroPoint as CanvasPoint,
+                  canvasPositionRounded: utils.zeroPoint as CanvasPoint,
+                })}
+                {...canvasControlProps}
+                canvasOffset={{ x: 0, y: 0 } as CanvasVector}
+                xrayView={true}
+                selectedScene={selectedScene}
+                // scale={canvasControlProps.scale * 2}
+                scale={canvasControlProps.scale}
+              />
+            </div>
+          )}
+
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
         </div>
       )
@@ -153,6 +206,9 @@ interface NewCanvasControlsClassProps {
   canvasOffset: CanvasPoint
   animationEnabled: boolean
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
+  xrayView: boolean
+  selectedScene: ScenePath | null
+  scale: number
 }
 
 const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
@@ -259,7 +315,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       hiddenInstances: props.editor.hiddenInstances,
       highlightsEnabled: props.editor.canvas.highlightsEnabled,
       canvasOffset: props.canvasOffset,
-      scale: props.editor.canvas.scale,
+      scale: props.scale,
       dispatch: props.dispatch,
       resizeStatus: getResizeStatus(),
       elementAspectRatioLocked: elementAspectRatioLocked,
@@ -270,6 +326,25 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       elementsThatRespectLayout: elementsThatRespectLayout,
     }
     const dragState = props.editor.canvas.dragState
+    if (props.xrayView) {
+      return (
+        <SelectModeControlContainer
+          {...controlProps}
+          keysPressed={props.editor.keysPressed}
+          windowToCanvasPosition={props.windowToCanvasPosition}
+          isDragging={false}
+          isResizing={false}
+          selectionEnabled={selectionEnabled}
+          maybeHighlightOnHover={maybeHighlightOnHover}
+          maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+          duplicationState={null}
+          dragState={null}
+          showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+          xrayMode={true}
+          selectedScene={props.selectedScene}
+        />
+      )
+    }
     switch (props.editor.mode.type) {
       case 'select':
       case 'live': {
@@ -290,6 +365,8 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
                 : null
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+            xrayMode={false}
+            selectedScene={null}
           />
         )
       }

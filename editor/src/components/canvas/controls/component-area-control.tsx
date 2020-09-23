@@ -39,6 +39,7 @@ interface ComponentAreaControlProps {
   imports: Imports
   showAdditionalControls: boolean
   testID?: string
+  xrayMode: boolean
 }
 
 // SelectModeControl is a transparent react component sitting on top of a utopia component.
@@ -174,6 +175,28 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
       borderRadius,
     } = calculateExtraSizeForZeroSizedElement(this.props.frame)
     const showInvisibleIndicator = canShowInvisibleIndicator && showingInvisibleElement
+    const layoutType = TP.isInstancePath(this.props.target)
+      ? MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, this.props.target)
+          ?.specialSizeMeasurements.layoutSystemForChildren
+      : null
+
+    let colorForLayoutType: string = ''
+    switch (layoutType) {
+      case 'flow':
+        colorForLayoutType = 'rgba(51, 255, 130, 0.8)'
+        break
+      case 'flex':
+        colorForLayoutType = 'rgba(255, 100, 170, 0.8)'
+        break
+      case 'grid':
+        colorForLayoutType = 'rgba(255, 150, 50, 0.8)'
+        break
+      case 'nonfixed':
+        colorForLayoutType = 'rgba(50, 255, 255, 0.8)'
+        break
+      default:
+        break
+    }
 
     return (
       <React.Fragment>
@@ -195,6 +218,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             borderStyle: showInvisibleIndicator ? 'solid' : undefined,
             borderWidth: 0.5 / this.props.scale,
             borderRadius: showInvisibleIndicator ? borderRadius : 0,
+            outline: this.props.xrayMode ? `1px solid ${colorForLayoutType}` : undefined,
           }}
           data-testid={this.props.testID}
         />
@@ -203,7 +227,9 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
   }
 
   getComponentLabelControl = () => {
-    const label = MetadataUtils.getElementLabel(this.props.target, this.props.componentMetadata)
+    const label = this.props.xrayMode
+      ? 'X-RAY MODE'
+      : MetadataUtils.getElementLabel(this.props.target, this.props.componentMetadata)
     const scaledFontSize = ControlFontSize / this.props.scale
     const offsetY = -(scaledFontSize * 1.5)
     const offsetX = 3 / this.props.scale
