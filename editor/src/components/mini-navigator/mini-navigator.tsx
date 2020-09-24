@@ -23,7 +23,7 @@ import {
 } from '../../core/shared/element-template'
 import { InstancePath, TemplatePath } from '../../core/shared/project-file-types'
 import { last } from '../../core/shared/array-utils'
-import { colorTheme } from '../../uuiui'
+import { colorTheme, Icn } from '../../uuiui'
 import {
   clearHighlightedViews,
   selectComponents,
@@ -132,10 +132,15 @@ function useGetNavigatorItemsToShow(): Array<NavigatorItemData> {
 }
 
 const MiniNavigatorRoot = styled.div({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
   position: 'absolute',
   top: 25,
   left: 25,
   backgroundImage: 'transparent',
+  backgroundColor: 'white',
+  borderRadius: 5,
 })
 
 export const MiniNavigator: React.FunctionComponent = () => {
@@ -153,13 +158,9 @@ export const MiniNavigator: React.FunctionComponent = () => {
         e.stopPropagation()
         e.preventDefault()
       }}
-      style={{
-        height: ItemHeight * items.length,
-        width: 180,
-      }}
     >
       {items.map((i, index) => (
-        <MiniNavigatorItem key={i.id} item={i} index={index} />
+        <MiniNavigatorItem key={i.id} item={i} index={index} isParent={i.indentation === 0} />
       ))}
     </MiniNavigatorRoot>
   )
@@ -186,11 +187,12 @@ const ElementTypeCartouche = styled(Cartouche)({
 
 const ItemHeight = 24
 
-const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; index: number }> = (
-  props,
-) => {
+const MiniNavigatorItem: React.FunctionComponent<{
+  item: NavigatorItemData
+  index: number
+  isParent: boolean
+}> = (props) => {
   const dispatch = useEditorState((store) => store.dispatch)
-  const isParent = props.item.indentation === 0
   return (
     <motion.div
       onMouseOver={() => {
@@ -200,27 +202,34 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; inde
         dispatch([selectComponents([props.item.templatePath], false)])
       }}
       style={{
-        position: 'absolute',
-        left: 10 * props.item.indentation,
+        position: 'relative',
+        // left: 10 * props.item.indentation,
         opacity: 1,
-        top: ItemHeight * props.index,
+        minWidth: props.isParent ? 0 : 150,
+        // top: ItemHeight * props.index,
         // transition: 'top 1s, background-color 0.3s, color 0.3s',
-        backgroundColor: props.item.selected
-          ? colorTheme.primary.value
+        backgroundColor: props.isParent
+          ? '#ffe8d9'
+          : props.item.selected
+          ? '#e5e5e5'
           : props.item.highlighted
-          ? colorTheme.primary.shade(50).value
+          ? '#f2f2f2'
           : 'white',
-        color: props.item.selected || props.item.highlighted ? colorTheme.white.value : 'black',
+        color: '#a0a0a0',
         borderRadius: 5,
         padding: 2,
       }}
     >
-      <span>⚄ </span>
-      <ElementTypeCartouche>{props.item.itemType}</ElementTypeCartouche>
-      <span> {props.item.name} </span>
-      {props.item.layoutType && (isParent || props.item.selected) ? (
-        <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
-      ) : null}
+      <Icn
+        category='element'
+        type={`div`}
+        color={'darkgray'}
+        width={18}
+        height={18}
+        style={{ opacity: props.isParent ? 0.5 : 1 }}
+      />
+      <span style={{ paddingRight: 3 }}>{props.item.itemType}</span>
+      {props.isParent ? null : <span style={{ float: 'right' }}> {props.item.name} </span>}
     </motion.div>
   )
 }
