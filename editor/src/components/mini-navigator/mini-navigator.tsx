@@ -166,6 +166,19 @@ export const MiniNavigator: React.FunctionComponent = () => {
   )
 }
 
+const Cartouche = styled.span({
+  borderRadius: 2,
+  textTransform: 'uppercase',
+  fontSize: '80%',
+  padding: 1,
+  fontWeight: 800,
+})
+
+const LayoutTypeCartouche = styled(Cartouche)({
+  color: '#fa6400',
+  backgroundColor: '#ffe8d9',
+})
+
 const MiniNavigatorItem: React.FunctionComponent<{
   item: NavigatorItemData
   index: number
@@ -173,42 +186,49 @@ const MiniNavigatorItem: React.FunctionComponent<{
 }> = (props) => {
   const dispatch = useEditorState((store) => store.dispatch)
   return (
-    <motion.div
-      onMouseOver={() => {
-        dispatch([setHighlightedView(props.item.templatePath)])
-      }}
-      onMouseDown={() => {
-        dispatch([selectComponents([props.item.templatePath], false)])
-      }}
-      style={{
-        position: 'relative',
-        // left: 10 * props.item.indentation,
-        opacity: 1,
-        minWidth: props.isParent ? 0 : 150,
-        // top: ItemHeight * props.index,
-        // transition: 'top 1s, background-color 0.3s, color 0.3s',
-        backgroundColor: props.isParent
-          ? '#ffe8d9'
-          : props.item.selected
-          ? '#e5e5e5'
-          : props.item.highlighted
-          ? '#f2f2f2'
-          : 'white',
-        color: '#a0a0a0',
-        borderRadius: 5,
-        padding: 2,
-      }}
-    >
-      <Icn
-        category='element'
-        type={`div`}
-        color={'darkgray'}
-        width={18}
-        height={18}
-        style={{ opacity: props.isParent ? 0.5 : 1 }}
-      />
-      <span style={{ paddingRight: 3 }}>{props.item.itemType}</span>
-      {props.isParent ? null : <span style={{ float: 'right' }}> {props.item.name} </span>}
-    </motion.div>
+    <>
+      <div
+        onMouseOver={() => {
+          dispatch([setHighlightedView(props.item.templatePath)])
+        }}
+        onMouseDown={() => {
+          dispatch([selectComponents([props.item.templatePath], false)])
+        }}
+        style={{
+          position: 'relative',
+          // left: 10 * props.item.indentation,
+          opacity: 1,
+          minWidth: props.isParent ? 0 : 150,
+          // top: ItemHeight * props.index,
+          // transition: 'top 1s, background-color 0.3s, color 0.3s',
+          backgroundColor: props.isParent
+            ? '#ffe8d9'
+            : props.item.selected
+            ? '#e5e5e5'
+            : props.item.highlighted
+            ? '#f2f2f2'
+            : 'white',
+          color: '#a0a0a0',
+          borderRadius: 5,
+          padding: 2,
+        }}
+      >
+        <Icn
+          category='element'
+          type={`div`}
+          color={'darkgray'}
+          width={18}
+          height={18}
+          style={{ opacity: props.isParent ? 0.5 : 1 }}
+        />
+        <span style={{ paddingRight: 3 }}>{props.item.itemType}</span>
+        {props.isParent ? null : <span style={{ float: 'right' }}> {props.item.name} </span>}
+      </div>
+      {props.isParent ? (
+        <div>
+          <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
+        </div>
+      ) : null}
+    </>
   )
 }
