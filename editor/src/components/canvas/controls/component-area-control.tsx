@@ -227,9 +227,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
   }
 
   getComponentLabelControl = () => {
-    const label = this.props.xrayMode
-      ? 'X-RAY MODE'
-      : MetadataUtils.getElementLabel(this.props.target, this.props.componentMetadata)
+    const label = MetadataUtils.getElementLabel(this.props.target, this.props.componentMetadata)
     const scaledFontSize = ControlFontSize / this.props.scale
     const offsetY = -(scaledFontSize * 1.5)
     const offsetX = 3 / this.props.scale
@@ -303,7 +301,9 @@ export class ComponentAreaControl extends ComponentAreaControlInner {
     const isParentSelected = this.props.selectedComponents.some((tp: TemplatePath) =>
       TP.pathsEqual(TP.parentPath(this.props.target), tp),
     )
-    return this.getComponentAreaControl(isParentSelected || this.props.showAdditionalControls)
+    return this.getComponentAreaControl(
+      this.props.xrayMode || isParentSelected || this.props.showAdditionalControls,
+    )
   }
 }
 

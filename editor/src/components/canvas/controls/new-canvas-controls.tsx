@@ -43,6 +43,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import utils from '../../../utils/utils'
+import useSize from '@react-hook/size'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -104,6 +105,9 @@ export const NewCanvasControls = betterReactMemo(
       [drop],
     )
 
+    const containerRef = React.useRef(null)
+    const [width, height] = useSize(containerRef)
+
     const selectedViews = useEditorState((store) => store.editor.selectedViews)
     const componentMetadata = useEditorState((store) => store.editor.jsxMetadataKILLME)
     const selectedScene = selectedViews.length > 0 ? TP.scenePathForPath(selectedViews[0]) : null
@@ -138,6 +142,7 @@ export const NewCanvasControls = betterReactMemo(
           }}
         >
           <div
+            ref={containerRef}
             style={{
               position: 'absolute',
               top: 0,
@@ -162,14 +167,17 @@ export const NewCanvasControls = betterReactMemo(
                 position: 'absolute',
                 bottom: 0,
                 right: 0,
-                width: Math.min(300, (sceneSize?.width ?? 0) / canvasControlProps.scale),
-                height: Math.min(500, (sceneSize?.height ?? 0) / canvasControlProps.scale),
-                border: '1px solid black',
+                width: width / 2,
+                height: height,
+                backgroundColor: 'white',
                 transformOrigin: 'top left',
+                outline: '1px solid #e6e6e6',
                 transform:
                   canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+                overflow: 'hidden',
               }}
             >
+              ☠︎ X-RAY Mode ☠︎
               <NewCanvasControlsClass
                 key={'xrayview-controls'}
                 // eslint-disable-next-line react/jsx-no-bind
@@ -179,7 +187,7 @@ export const NewCanvasControls = betterReactMemo(
                   canvasPositionRounded: utils.zeroPoint as CanvasPoint,
                 })}
                 {...canvasControlProps}
-                canvasOffset={{ x: 0, y: 0 } as CanvasVector}
+                canvasOffset={canvasControlProps.canvasOffset}
                 xrayView={true}
                 selectedScene={selectedScene}
                 scale={canvasControlProps.scale}
