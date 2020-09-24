@@ -166,27 +166,6 @@ export const MiniNavigator: React.FunctionComponent = () => {
   )
 }
 
-const Cartouche = styled.span({
-  border: '1px solid black',
-  borderRadius: 5,
-  textTransform: 'uppercase',
-  fontSize: '70%',
-  padding: 1,
-  fontWeight: 800,
-})
-
-const LayoutTypeCartouche = styled(Cartouche)({
-  color: 'red',
-  borderColor: 'red',
-})
-
-const ElementTypeCartouche = styled(Cartouche)({
-  color: 'green',
-  borderColor: 'green',
-})
-
-const ItemHeight = 24
-
 const MiniNavigatorItem: React.FunctionComponent<{
   item: NavigatorItemData
   index: number
