@@ -30,7 +30,10 @@ import { runtimeErrorInfoToErrorMessage } from './monaco-wrapper'
 import { EditorPanel, setFocus } from '../common/actions'
 import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/actions'
-import { dependenciesFromPackageJson, usePossiblyResolvedPackageDependencies } from '../editor/npm-dependency/npm-dependency'
+import {
+  dependenciesFromPackageJson,
+  usePossiblyResolvedPackageDependencies,
+} from '../editor/npm-dependency/npm-dependency'
 import {
   ConsoleLog,
   EditorStore,
@@ -49,7 +52,6 @@ import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property
 import * as TP from '../../core/shared/template-path'
 import { CodeEditor } from './code-editor'
 import { CursorPosition } from './code-editor-utils'
-import { forceServerSave } from '../editor/persistence'
 import { Notice } from '../common/notices'
 import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
 
@@ -290,14 +292,15 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
           EditorActions.updateFile(filePath, updatedFile, false),
           EditorActions.setCodeEditorBuildErrors({}),
         ]
-        const actions =
+        const withToastAction =
           toast == null
             ? updateFileActions
             : updateFileActions.concat(EditorActions.pushToast(toast))
+
+        const actions = manualSave
+          ? withToastAction.concat(EditorActions.saveCurrentFile())
+          : withToastAction
         dispatch(actions, 'everyone')
-        if (manualSave) {
-          forceServerSave()
-        }
       }
     },
     [openFile, dispatch, filePath],
