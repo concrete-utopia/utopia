@@ -201,8 +201,8 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; inde
       }}
       style={{
         position: 'absolute',
-        left: props.item.indentation === 0 ? -10 : 30,
-        opacity: 0,
+        left: 10 * props.item.indentation,
+        opacity: 1,
         top: ItemHeight * props.index,
         // transition: 'top 1s, background-color 0.3s, color 0.3s',
         backgroundColor: props.item.selected
@@ -213,14 +213,6 @@ const MiniNavigatorItem: React.FunctionComponent<{ item: NavigatorItemData; inde
         color: props.item.selected || props.item.highlighted ? colorTheme.white.value : 'black',
         borderRadius: 5,
         padding: 2,
-      }}
-      animate={{
-        left: 10 * props.item.indentation,
-        top: ItemHeight * props.index,
-        opacity: 1,
-      }}
-      transition={{
-        duration: 0.3,
       }}
     >
       <span>⚄ </span>
