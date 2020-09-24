@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as R from 'ramda'
 import styled from '@emotion/styled'
 import { motion } from 'framer-motion'
 import { useEditorState } from '../editor/store/store-hook'
@@ -22,7 +23,7 @@ import {
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import { InstancePath, TemplatePath } from '../../core/shared/project-file-types'
-import { last } from '../../core/shared/array-utils'
+import { arrayToObject, last, mapArrayToDictionary } from '../../core/shared/array-utils'
 import { colorTheme, Icn } from '../../uuiui'
 import {
   clearHighlightedViews,
@@ -37,8 +38,14 @@ interface NavigatorItemData {
   indentation: number
   itemType: string
   layoutType: string
+  selfLayoutType: string
   selected: boolean
   highlighted: boolean
+}
+
+interface Section {
+  layoutType: string
+  navigatorItems: Array<NavigatorItemData>
 }
 
 function getElementType(element: JSXElementChild): string {
@@ -62,13 +69,15 @@ function getNavigatorItemDataFromJsxElement(
   selected: boolean,
   highlighted: boolean,
 ): NavigatorItemData {
+  const specialSizeMeasurements = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
+    ?.specialSizeMeasurements
+
   return {
     id: getUtopiaID(element),
     name: MetadataUtils.getElementLabel(path, metadata),
     indentation: indentation,
-    layoutType:
-      MetadataUtils.getElementByInstancePathMaybe(metadata, path)?.specialSizeMeasurements
-        .layoutSystemForChildren ?? '',
+    layoutType: specialSizeMeasurements?.layoutSystemForChildren ?? '',
+    selfLayoutType: specialSizeMeasurements?.position ?? '',
     selected,
     itemType: getElementType(element),
     highlighted,
@@ -80,7 +89,10 @@ function isHighlighted(highlightedViews: TemplatePath[], view: TemplatePath) {
   return highlightedViews.findIndex((h) => pathsEqual(h, view)) > -1
 }
 
-function useGetNavigatorItemsToShow(): Array<NavigatorItemData> {
+function useGetNavigatorItemsToShow(): {
+  parent: NavigatorItemData | undefined
+  sections: Array<Section>
+} {
   return useEditorState((store) => {
     const selectedView = instancePathForPath(store.editor.selectedViews[0])
     const highlightedViews = store.editor.highlightedViews
@@ -92,19 +104,17 @@ function useGetNavigatorItemsToShow(): Array<NavigatorItemData> {
 
       const parent = instancePathForPath(parentPath(selectedView))
       const parentElement = findJSXElementAtPath(parent, editedComponents, metadata)
-      const parentNavigatorEntry: Array<NavigatorItemData> =
+      const parentNavigatorEntry: NavigatorItemData | undefined =
         parentElement == null || parent == null
-          ? []
-          : [
-              getNavigatorItemDataFromJsxElement(
-                metadata,
-                parent,
-                parentElement,
-                0,
-                false,
-                isHighlighted(highlightedViews, parent),
-              ),
-            ]
+          ? undefined
+          : getNavigatorItemDataFromJsxElement(
+              metadata,
+              parent,
+              parentElement,
+              0,
+              false,
+              isHighlighted(highlightedViews, parent),
+            )
 
       const siblings = parentElement?.children ?? []
 
@@ -124,9 +134,21 @@ function useGetNavigatorItemsToShow(): Array<NavigatorItemData> {
               )
             })
 
-      return [...parentNavigatorEntry, ...siblingElements]
+      const elements = siblingElements
+
+      const elementsOrderedIntoSections = R.groupBy((e) => e.selfLayoutType, elements)
+      const sections: Array<Section> = Object.keys(elementsOrderedIntoSections).map(
+        (layoutType) => {
+          return { layoutType: layoutType, navigatorItems: elementsOrderedIntoSections[layoutType] }
+        },
+      )
+
+      return {
+        parent: parentNavigatorEntry,
+        sections: sections,
+      }
     } else {
-      return []
+      return { parent: undefined, sections: [] }
     }
   })
 }
@@ -159,8 +181,14 @@ export const MiniNavigator: React.FunctionComponent = () => {
         e.preventDefault()
       }}
     >
-      {items.map((i, index) => (
-        <MiniNavigatorItem key={i.id} item={i} index={index} isParent={i.indentation === 0} />
+      {items.parent ? <MiniNavigatorItem index={0} isParent={true} item={items.parent} /> : null}
+      {items.sections.map((section) => (
+        <React.Fragment key={section.layoutType}>
+          <LayoutTypeCartouche>{section.layoutType}</LayoutTypeCartouche>
+          {section.navigatorItems.map((i, index) => (
+            <MiniNavigatorItem key={i.id} item={i} index={index} isParent={i.indentation === 0} />
+          ))}
+        </React.Fragment>
       ))}
     </MiniNavigatorRoot>
   )
@@ -223,12 +251,8 @@ const MiniNavigatorItem: React.FunctionComponent<{
         />
         <span style={{ paddingRight: 3 }}>{props.item.itemType}</span>
         {props.isParent ? null : <span style={{ float: 'right' }}> {props.item.name} </span>}
+        {props.isParent ? <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche> : null}
       </div>
-      {props.isParent ? (
-        <div>
-          <LayoutTypeCartouche>{props.item.layoutType}</LayoutTypeCartouche>
-        </div>
-      ) : null}
     </>
   )
 }
