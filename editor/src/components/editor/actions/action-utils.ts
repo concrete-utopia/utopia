@@ -80,6 +80,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_SHORTCUT':
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
     case 'PROPERTY_CONTROLS_IFRAME_READY':
+    case 'SAVE_CURSOR_POSITION':
       return true
 
     case 'NEW':
@@ -131,7 +132,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UNWRAP_LAYOUTABLE':
     case 'UPDATE_JSX_ELEMENT_NAME':
     case 'SET_ASPECT_RATIO_LOCK':
-    case 'SAVE_CURSOR_POSITION':
     case 'SET_CODE_EDITOR_THEME':
     case 'INSERT_DROPPED_IMAGE':
     case 'RESET_PROP_TO_DEFAULT':
