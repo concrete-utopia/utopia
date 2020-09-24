@@ -18,19 +18,10 @@ import { DeviceInfo, deviceInfoList } from '../../common/devices'
 import { BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { useEditorState } from '../editor/store/store-hook'
 import { SelectOption } from '../inspector/controls/select-control'
-import { isCodeFile, CodeFile } from '../../core/shared/project-file-types'
-import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
-import { eitherToMaybe } from '../../core/shared/either'
 import { shareURLForProject } from '../../core/shared/utils'
+import { getMainJSFilename } from '../../core/shared/project-contents-utils'
 
 export const PreviewIframeId = 'preview-column-container'
-
-interface IntermediatePreviewColumnProps {
-  id: string | null
-  projectName: string
-  connected: boolean
-  packageJSONFile: CodeFile | null
-}
 
 export interface PreviewColumnProps {
   id: string | null
@@ -53,41 +44,22 @@ export interface PreviewColumnState {
 }
 
 export const PreviewColumn = betterReactMemo('PreviewColumn', () => {
-  const {
-    id,
-    projectName,
-    connected,
-    packageJSONFile,
-  }: IntermediatePreviewColumnProps = useEditorState((store) => {
-    const possiblePackageJSON = store.editor.projectContents['/package.json']
+  const { id, projectName, connected, mainJSFilename } = useEditorState((store) => {
     return {
       id: store.editor.id,
       projectName: store.editor.projectName,
       connected: store.editor.preview.connected,
-      packageJSONFile: isCodeFile(possiblePackageJSON) ? possiblePackageJSON : null,
+      mainJSFilename: getMainJSFilename(store.editor.projectContents),
     }
   })
-  const props = React.useMemo(() => {
-    let editedFilename: string | null = null
-    if (packageJSONFile != null) {
-      try {
-        // Get the `utopia` -> `js` value out of the package.json file contents.
-        const packageJSONContent = JSON.parse(packageJSONFile.fileContents)
-        const jsFieldParser = objectKeyParser(objectKeyParser(parseString, 'js'), 'utopia')
-        const parseResult = jsFieldParser(packageJSONContent)
-        editedFilename = eitherToMaybe(parseResult)
-      } catch (error) {
-        console.error('Invalid package.json contents.', error)
-      }
-    }
-    return {
-      id: id,
-      projectName: projectName,
-      connected: connected,
-      editedFilename: editedFilename,
-    }
-  }, [id, projectName, connected, packageJSONFile])
-  return <PreviewColumnContent {...props} />
+  return (
+    <PreviewColumnContent
+      id={id}
+      projectName={projectName}
+      connected={connected}
+      editedFilename={mainJSFilename}
+    />
+  )
 })
 PreviewColumn.displayName = 'PreviewColumn'
 
