@@ -26,6 +26,7 @@ import { OPENING_TAG_REGEX } from './monaco-wrapper-helper'
 import { arrayEquals } from '../../core/shared/utils'
 import * as TP from '../../core/shared/template-path'
 import * as FontFaceObserver from 'fontfaceobserver'
+import { splitIntoLines } from '../../core/shared/string-utils'
 
 const CodeEditorFont = 'utopian-inconsolata'
 
@@ -118,7 +119,7 @@ let hoverProviders: { js: monaco.IDisposable; ts: monaco.IDisposable } | null = 
 const MaxSupportedLineLength = 200
 
 function areAnyCodeLinesTooLong(code: string): boolean {
-  const lines = code.split('/n')
+  const lines = splitIntoLines(code)
   const offendingLine = lines.find((line) => line.length > MaxSupportedLineLength)
   return offendingLine != null
 }
