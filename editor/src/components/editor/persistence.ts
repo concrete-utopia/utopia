@@ -178,7 +178,7 @@ export function clearSaveState(): void {
 
 window.addEventListener('beforeunload', (e) => {
   if (!isSafeToClose()) {
-    forceServerSave()
+    forceQueuedSave()
     e.preventDefault()
     e.returnValue = ''
   }
@@ -593,7 +593,7 @@ export async function loadFromLocalStorage(
   }
 }
 
-export async function forceServerSave(): Promise<void> {
+async function forceQueuedSave(): Promise<void> {
   if ((_saveState.type === 'saved' || _saveState.type === 'save-error') && _saveState.remote) {
     serverSaveInner(
       _saveState.dispatch,
