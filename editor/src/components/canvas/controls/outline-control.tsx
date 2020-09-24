@@ -44,6 +44,7 @@ export function getSelectionColor(
 
 export interface OutlineControlsProps extends ControlProps {
   dragState: MoveDragState | ResizeDragState | null
+  xrayMode: boolean
 }
 
 function isDraggingToMove(
@@ -179,6 +180,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
           color={selectionColor}
           striped={createsYogaLayout}
           stripedColor={colorTheme.canvasSelectionAlternateOutlineYogaParent.shade(50).value}
+          zOffset={(TP.depth(selectedView) - 1) * 25}
         />,
       )
     })
@@ -186,7 +188,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
     if (
       targetPaths.length > 1 &&
       TP.areAllElementsInSameScene(targetPaths) &&
-      this.props.componentMetadata.length > 0
+      this.props.componentMetadata.length > 0 &&
+      !this.props.xrayMode
     ) {
       const globalFrames = targetPaths.map((selectedView) => this.getTargetFrame(selectedView))
       const boundingBox = Utils.boundingRectangleArray(globalFrames)

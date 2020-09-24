@@ -406,6 +406,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
           if (frame == null) {
             return null
           }
+          const zOffset = (TP.depth(path) - 1) * 25
           const color = TP.isScenePath(path)
             ? colorTheme.canvasSelectionSceneOutline.value
             : colorTheme.canvasSelectionPrimaryOutline.value
@@ -416,6 +417,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
               frame={frame}
               scale={props.editor.canvas.scale}
               canvasOffset={props.canvasOffset}
+              zOffset={zOffset}
             />
           )
         })
@@ -505,6 +507,8 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
         position: 'relative',
         width: '100%',
         height: '100%',
+        transform: props.xrayView ? 'rotateY(-25deg) rotateX(15deg) rotateZ(0deg)' : undefined,
+        transformStyle: 'preserve-3d',
       }}
     >
       {renderDeselectControl()}

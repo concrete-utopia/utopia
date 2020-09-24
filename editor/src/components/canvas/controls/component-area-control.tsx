@@ -180,6 +180,8 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
           ?.specialSizeMeasurements.layoutSystemForChildren
       : null
 
+    const depth = TP.depth(this.props.target) - 1 // scene should be zero
+
     let colorForLayoutType: string = ''
     switch (layoutType) {
       case 'flow':
@@ -219,6 +221,8 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             borderWidth: 0.5 / this.props.scale,
             borderRadius: showInvisibleIndicator ? borderRadius : 0,
             outline: this.props.xrayMode ? `1px solid ${colorForLayoutType}` : undefined,
+            transform: `translate3d(0, 0, ${depth * 25}px)`,
+            transformStyle: 'preserve-3d',
           }}
           data-testid={this.props.testID}
         />

@@ -8,6 +8,7 @@ interface HighlightControlProps {
   canvasOffset: CanvasPoint
   scale: number
   color?: string
+  zOffset?: number
 }
 
 export class HighlightControl extends React.Component<HighlightControlProps> {
@@ -33,6 +34,8 @@ export class HighlightControl extends React.Component<HighlightControlProps> {
             boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
             pointerEvents: 'none',
             borderRadius: borderRadius,
+            transform: `translate3d(0, 0, ${this.props.zOffset || 0}px)`,
+            transformStyle: 'preserve-3d',
           }}
         />
       </>
