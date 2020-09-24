@@ -17,11 +17,14 @@ import { ConsoleLog } from '../editor/store/editor-state'
 import { CursorPosition } from './code-editor-utils'
 import { clampValue } from '../../core/shared/math-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
+import { VariableSizeList as List } from 'react-window'
 
 interface ErrorMessageRowProps {
   errorMessage: ErrorMessage
   onOpenFile: (path: string, cursorPosition: CursorPosition | null) => void
 }
+
+const ErrorMessageRowHeight = 31
 
 const ErrorMessageRow = (props: ErrorMessageRowProps) => {
   const { onOpenFile } = props
@@ -43,6 +46,7 @@ const ErrorMessageRow = (props: ErrorMessageRowProps) => {
   return (
     <FlexRow
       css={{
+        height: ErrorMessageRowHeight,
         flexGrow: 1,
         color: colorTheme.neutralForeground.value,
         fontSize: 12,
@@ -158,7 +162,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
       })
     }, [heightWhenOpen])
 
-    const onResizeStop: ResizeCallback = React.useCallback((_, __, elementRef) => {
+    const onResize: ResizeCallback = React.useCallback((_, __, elementRef) => {
       if (elementRef.clientHeight > ProblemTabBarHeight) {
         setHeightWhenOpen(elementRef.clientHeight)
         setIsOpen(true)
@@ -166,30 +170,6 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
         setIsOpen(false)
       }
     }, [])
-
-    let outputRows: Array<React.ReactElement> = []
-    const groupErrors = R.groupBy((error: ErrorMessage) => error.fileName)
-    const errorsByFile = groupErrors(errorMessages)
-
-    Object.keys(errorsByFile).forEach(function (fileName) {
-      if (fileName != '') {
-        outputRows.push(
-          <FlexRow key={`error-row-${fileName}-filename`} style={{ padding: '4px 8px' }}>
-            <Icons.React />
-            <span style={{ marginLeft: 4 }}> {fileName}</span>
-          </FlexRow>,
-        )
-      }
-      errorsByFile[fileName].forEach(function (errormessage, index) {
-        outputRows.push(
-          <ErrorMessageRow
-            key={`error-row-${fileName}-${index}-${errormessage.startLine}-${errormessage.startColumn}`}
-            errorMessage={errormessage}
-            onOpenFile={onOpenFile}
-          />,
-        )
-      })
-    })
 
     const [selectedTab, setSelectedTab] = React.useState<OpenCodeEditorTab>('problems')
 
@@ -211,13 +191,11 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
       switch (selectedTab) {
         case 'problems':
           return (
-            <SimpleFlexColumn style={{ overflowY: 'scroll', overscrollBehavior: 'contain' }}>
-              {outputRows.length > 0 ? (
-                outputRows
-              ) : (
-                <div style={{ padding: 8 }}>There are no problems 😎</div>
-              )}
-            </SimpleFlexColumn>
+            <ProblemsTab
+              errorMessages={errorMessages}
+              height={heightWhenOpen}
+              onOpenFile={onOpenFile}
+            />
           )
         case 'console':
           return (
@@ -273,7 +251,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
         ref={resizableRef}
         defaultSize={{ height: ProblemTabBarHeight + (isOpen ? heightWhenOpen : 0), width: '100%' }}
         minHeight={ProblemTabBarHeight}
-        onResizeStop={onResizeStop}
+        onResize={onResize}
         enable={{
           top: true,
         }}
@@ -341,8 +319,142 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
             }
           />
         </FlexRow>
-        {getTabContents()}
+        {isOpen ? getTabContents() : null}
       </Resizable>
     )
   },
 )
+
+interface ProblemsTabProps {
+  errorMessages: Array<ErrorMessage>
+  height: number
+  onOpenFile: (path: string, cursorPosition: CursorPosition | null) => void
+}
+
+interface ProblemsHeaderRowData {
+  type: 'HEADER'
+  fileName: string
+}
+
+interface ProblemsErrorRowData {
+  type: 'ERROR_MESSAGE'
+  fileName: string
+  errorMessage: ErrorMessage
+}
+
+type ProblemRowData = ProblemsHeaderRowData | ProblemsErrorRowData
+
+interface ProblemsHeaderRowProps {
+  fileName: string
+}
+
+interface ProblemsErrorRowProps {
+  errorMessage: ErrorMessage
+  onOpenFile: (path: string, cursorPosition: CursorPosition | null) => void
+}
+
+const ProblemsHeaderRowHeight = 25
+
+const ProblemsHeaderRow = betterReactMemo(
+  'Problems Header Row',
+  (props: ProblemsHeaderRowProps) => {
+    const { fileName } = props
+    return (
+      <FlexRow style={{ height: ProblemsHeaderRowHeight, padding: '4px 8px' }}>
+        <Icons.React />
+        <span style={{ marginLeft: 4 }}> {fileName}</span>
+      </FlexRow>
+    )
+  },
+)
+
+const ProblemsErrorRow = betterReactMemo('Problems Error Row', (props: ProblemsErrorRowProps) => {
+  const { errorMessage, onOpenFile } = props
+  return <ErrorMessageRow errorMessage={errorMessage} onOpenFile={onOpenFile} />
+})
+
+function getRowHeight(index: number, data: Array<ProblemRowData>): number {
+  const row = data[index]
+  if (row == null) {
+    return 0
+  } else if (row.type === 'HEADER') {
+    return ProblemsHeaderRowHeight
+  } else {
+    return ErrorMessageRowHeight
+  }
+}
+
+const ProblemsTab = betterReactMemo('Problems Tab', (props: ProblemsTabProps) => {
+  const { errorMessages, height, onOpenFile } = props
+
+  const rowData: Array<ProblemRowData> = React.useMemo(() => {
+    const groupErrors = R.groupBy((error: ErrorMessage) => error.fileName)
+    const errorsByFile = groupErrors(errorMessages)
+
+    let rows: Array<ProblemRowData> = []
+    Object.keys(errorsByFile).forEach(function (fileName) {
+      if (fileName != '') {
+        rows.push({
+          type: 'HEADER',
+          fileName: fileName,
+        })
+      }
+      errorsByFile[fileName].forEach(function (errorMessage) {
+        rows.push({
+          type: 'ERROR_MESSAGE',
+          fileName: fileName,
+          errorMessage: errorMessage,
+        })
+      })
+    })
+
+    return rows
+  }, [errorMessages])
+
+  const getItemSize = React.useCallback(
+    (index: number) => {
+      const row = rowData[index]
+      if (row == null) {
+        return 0
+      } else if (row.type === 'HEADER') {
+        return ProblemsHeaderRowHeight
+      } else {
+        return ErrorMessageRowHeight
+      }
+    },
+    [rowData],
+  )
+
+  const Row = React.useCallback(
+    ({ index, style }: any) => {
+      const row = rowData[index]
+      if (row == null) {
+        return null
+      } else if (row.type === 'HEADER') {
+        return (
+          <div style={style} key={`error-row-${row.fileName}-filename`}>
+            <ProblemsHeaderRow fileName={row.fileName} />
+          </div>
+        )
+      } else {
+        return (
+          <div
+            style={style}
+            key={`error-row-${row.fileName}-${index}-${row.errorMessage.startLine}-${row.errorMessage.startColumn}`}
+          >
+            <ProblemsErrorRow errorMessage={row.errorMessage} onOpenFile={onOpenFile} />
+          </div>
+        )
+      }
+    },
+    [rowData, onOpenFile],
+  )
+
+  return (
+    <SimpleFlexColumn>
+      <List height={height} itemCount={rowData.length} itemSize={getItemSize} width={'100%'}>
+        {Row}
+      </List>
+    </SimpleFlexColumn>
+  )
+})

@@ -21,3 +21,7 @@ export function replaceAll(inString: string, searchFor: string, replaceWith: str
 export function camelCaseToDashed(s: string): string {
   return s.replace(/[A-Z]/g, (l) => `-${l.toLowerCase()}`)
 }
+
+export function splitIntoLines(s: string): Array<string> {
+  return s.split(/[\r\n]/)
+}
