@@ -364,6 +364,45 @@ export class Editor {
   }
 }
 
+import { Canvas, useFrame } from 'react-three-fiber'
+function Box(props: any) {
+  // This reference will give us direct access to the mesh
+  const mesh = React.useRef()
+  // Set up state for the hovered and active state
+  const [hovered, setHover] = React.useState(false)
+  const [active, setActive] = React.useState(false)
+  // Rotate mesh every frame, this is outside of React without overhead
+  useFrame(
+    () =>
+      (((mesh as any).current as any).rotation.x = ((mesh as any)
+        .current as any).rotation.y += 0.01),
+  )
+  return (
+    <mesh
+      {...props}
+      ref={mesh}
+      scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
+      onClick={(e) => setActive(!active)}
+      onPointerOver={(e) => setHover(true)}
+      onPointerOut={(e) => setHover(false)}
+    >
+      <boxBufferGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
+    </mesh>
+  )
+}
+function App() {
+  return (
+    <Canvas colorManagement>
+      <ambientLight intensity={0.2} />
+      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+      <pointLight position={[-10, -10, -10]} />
+      <Box position={[-1.2, 0, 0]} />
+      <Box position={[1.2, 0, 0]} />
+    </Canvas>
+  )
+}
+
 export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
@@ -373,6 +412,7 @@ export const HotRoot: React.FunctionComponent<{
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
       <UiJsxCanvasContext.Provider value={spyCollector}>
+        <App />
         <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
       </UiJsxCanvasContext.Provider>
     </EditorStateContext.Provider>
