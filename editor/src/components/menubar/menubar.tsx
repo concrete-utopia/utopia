@@ -1,35 +1,26 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import styled from '@emotion/styled'
-import { UtopiaStyles } from 'uuiui'
 import * as React from 'react'
-import { Avatar } from 'uuiui'
-import { IcnProps } from 'uuiui'
-import { LeftMenuTab } from '../navigator/left-pane'
-import { EditorState } from '../editor/store/editor-state'
-import { LoginState } from '../../common/user'
-import { EditorDispatch, EditorAction } from '../editor/action-types'
-import { FlexColumn } from 'uuiui'
-import { MenuIcons } from 'uuiui'
 import {
-  setLeftMenuTab,
-  setLeftMenuExpanded,
-  togglePanel,
-  setPanelVisibility,
-} from '../editor/actions/actions'
-
-import { useEditorState } from '../editor/store/store-hook'
-import { SquareButton } from 'uuiui'
+  Avatar,
+  FlexColumn,
+  IcnProps,
+  LargerIcons,
+  MenuIcons,
+  SquareButton,
+  Tooltip,
+  UtopiaStyles,
+} from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
+import { LoginState } from '../../common/user'
 import { shareURLForProject } from '../../core/shared/utils'
-
-interface MenuBarProps {
-  editorState: EditorState
-  loginState: LoginState
-  editorDispatch: EditorDispatch
-  expandedLeftPanel: boolean
-}
+import { EditorAction, EditorDispatch } from '../editor/action-types'
+import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/actions'
+import { EditorState } from '../editor/store/editor-state'
+import { useEditorState } from '../editor/store/store-hook'
+import { LeftMenuTab } from '../navigator/left-pane'
 
 const Tile = styled.div({
   display: 'flex',
@@ -93,6 +84,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
     leftMenuExpanded,
     projectId,
     projectName,
+    isPreviewPaneVisible,
   } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -101,10 +93,11 @@ export const Menubar = betterReactMemo('Menubar', () => {
       leftMenuExpanded: store.editor.leftMenu.expanded,
       projectId: store.editor.id,
       projectName: store.editor.projectName,
+      isPreviewPaneVisible: store.editor.preview.visible,
     }
   })
 
-  const onShow = React.useCallback(
+  const onClickTab = React.useCallback(
     (menuTab: LeftMenuTab) => {
       let actions: Array<EditorAction> = []
       if (selectedTab === menuTab) {
@@ -122,21 +115,18 @@ export const Menubar = betterReactMemo('Menubar', () => {
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
 
-  const onShowNavigateTab = React.useCallback(() => {
-    onShow(LeftMenuTab.UINavigate)
-  }, [onShow])
+  const onClickNavigateTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.UINavigate)
+  }, [onClickTab])
 
-  const onShowStructureTab = React.useCallback(() => {
-    onShow(LeftMenuTab.ProjectStructure)
-  }, [onShow])
+  const onClickStructureTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.ProjectStructure)
+  }, [onClickTab])
 
-  const onShowProjectTab = React.useCallback(() => {
-    onShow(LeftMenuTab.ProjectSettings)
-  }, [onShow])
-
-  const onToggleMenu = React.useCallback(() => {
-    dispatch([togglePanel('leftmenu')])
-  }, [dispatch])
+  const togglePreviewPaneVisible = React.useCallback(
+    () => dispatch([setPanelVisibility('preview', !isPreviewPaneVisible)]),
+    [dispatch, isPreviewPaneVisible],
+  )
 
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
@@ -151,22 +141,44 @@ export const Menubar = betterReactMemo('Menubar', () => {
       onDoubleClick={onDoubleClick}
     >
       <FlexColumn style={{ flexGrow: 1 }}>
-        <MenuTile
-          selected={selectedTab === LeftMenuTab.ProjectStructure}
-          menuExpanded={leftMenuExpanded}
-          icon={<MenuIcons.Menu />}
-          onClick={onShowStructureTab}
-        />
+        <Tooltip title={'Project Structure'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={selectedTab === LeftMenuTab.ProjectStructure}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.Menu />}
+              onClick={onClickStructureTab}
+            />
+          </span>
+        </Tooltip>
 
-        <MenuTile
-          selected={selectedTab === LeftMenuTab.UINavigate}
-          menuExpanded={leftMenuExpanded}
-          icon={<MenuIcons.Project />}
-          onClick={onShowNavigateTab}
-        />
+        <Tooltip title={'Navigator'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={selectedTab === LeftMenuTab.UINavigate}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.Project />}
+              onClick={onClickNavigateTab}
+            />
+          </span>
+        </Tooltip>
         <a target='_blank' rel='noopener noreferrer' href={previewURL}>
-          <MenuTile selected={false} menuExpanded={false} icon={<MenuIcons.ExternalLink />} />
+          <Tooltip title={'Launch External Preview'} placement={'right'}>
+            <span>
+              <MenuTile selected={false} menuExpanded={false} icon={<MenuIcons.ExternalLink />} />
+            </span>
+          </Tooltip>
         </a>
+        <Tooltip title={'Embedded Preview'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={isPreviewPaneVisible}
+              menuExpanded={false}
+              icon={<LargerIcons.PreviewPane />}
+              onClick={togglePreviewPaneVisible}
+            />
+          </span>
+        </Tooltip>
       </FlexColumn>
       <Tile style={{ marginTop: 12, marginBottom: 12 }}>
         <a href='/projects'>
