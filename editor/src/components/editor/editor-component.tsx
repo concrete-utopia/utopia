@@ -481,7 +481,7 @@ const HelpTriangle = () => (
       height: '39px',
     }}
   >
-    <a href='http://spectrum.chat/utopia' target='_blank' rel='noopener noreferrer'>
+    <a href='https://github.com/concrete-utopia/utopia' target='_blank' rel='noopener noreferrer'>
       <img
         src='/static/brand/triangle-question-brandpurple-50x39@2x.png'
         alt='help'
