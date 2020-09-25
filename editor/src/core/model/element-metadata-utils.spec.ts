@@ -224,7 +224,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
             ...testComponentRoot1,
             specialSizeMeasurements: {
               ...testComponentRoot1.specialSizeMeasurements,
-              parentLayoutSystem: 'nonfixed',
+              parentLayoutSystem: 'flow',
               position: 'static',
             },
           },
@@ -270,7 +270,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
             ...testComponentRoot1,
             specialSizeMeasurements: {
               ...testComponentRoot1.specialSizeMeasurements,
-              parentLayoutSystem: 'nonfixed',
+              parentLayoutSystem: 'flow',
               position: 'absolute',
             },
           },

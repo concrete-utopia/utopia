@@ -1440,7 +1440,7 @@ export const MetadataUtils = {
       const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, view)
       if (
         elementMetadata != null &&
-        elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'nonfixed' &&
+        elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flow' &&
         !MetadataUtils.isPositionAbsolute(elementMetadata)
       ) {
         return true

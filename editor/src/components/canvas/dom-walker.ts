@@ -47,10 +47,7 @@ function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): Detecte
       return 'grid'
     }
   }
-  if (isElementNonFixed(computedStyle)) {
-    return 'nonfixed'
-  }
-  return 'flow' // or fixed?
+  return 'flow'
 }
 
 function getPosition(computedStyle: CSSStyleDeclaration | null): CSSPosition | null {
@@ -58,11 +55,11 @@ function getPosition(computedStyle: CSSStyleDeclaration | null): CSSPosition | n
   return positionValues.includes(valueAsAny) ? valueAsAny : null
 }
 
-function isElementNonFixed(computedStyle: CSSStyleDeclaration | null) {
+function isElementNonStatic(computedStyle: CSSStyleDeclaration | null) {
   if (computedStyle == null) {
     return false
   }
-  if (computedStyle.position != null && computedStyle.position !== 'fixed') {
+  if (computedStyle.position != null && computedStyle.position !== 'static') {
     return true
   }
   if (computedStyle.display != null && computedStyle.display === 'flex') {
@@ -126,7 +123,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
         const parentElementStyle =
           element.parentElement == null ? null : window.getComputedStyle(element.parentElement)
-        const isParentNonFixed = isElementNonFixed(parentElementStyle)
+        const isParentNonStatic = isElementNonStatic(parentElementStyle)
+
+        const providesBoundsForChildren = isElementNonStatic(elementStyle)
 
         const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
         const parentProvidesLayout = element.parentElement === element.offsetParent
@@ -163,9 +162,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           coordinateSystemBounds,
           immediateParentBounds,
           parentProvidesLayout,
-          isParentNonFixed,
+          isParentNonStatic,
           parentLayoutSystem,
           layoutSystemForChildren,
+          providesBoundsForChildren,
           position,
           isRight(margin) ? margin.value : sides(undefined, undefined, undefined, undefined),
           isRight(padding) ? padding.value : sides(undefined, undefined, undefined, undefined),

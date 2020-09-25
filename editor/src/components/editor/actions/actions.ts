@@ -686,7 +686,7 @@ function switchAndUpdateFrames(
       case 'flex':
         return 'flex'
       case LayoutSystem.PinSystem:
-        return 'nonfixed'
+        return 'flow'
       case LayoutSystem.Group:
       default:
         return 'flow'

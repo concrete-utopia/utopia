@@ -101,19 +101,24 @@ function useLayoutSystemData() {
 
 interface LayoutSystemControlProps {
   layoutSystem: DetectedLayoutSystem | null
+  providesCoordinateSystemForChildren: boolean
 }
 
 export const LayoutSystemControl = betterReactMemo(
   'LayoutSystemControl',
   (props: LayoutSystemControlProps) => {
     const layoutSystemData = useLayoutSystemData()
-    const detectedLayoutSystem = props.layoutSystem
+    const isDetectedLayoutSystemPinSystem =
+      props.layoutSystem === 'flow' && props.providesCoordinateSystemForChildren
+    const detectedLayoutSystem = isDetectedLayoutSystemPinSystem
+      ? 'pinSystem'
+      : props.layoutSystem ?? layoutSystemData.value
     return (
       <OptionChainControl
         id={'layoutSystem'}
         key={'layoutSystem'}
         onSubmitValue={layoutSystemData.onSubmitValue}
-        value={props.layoutSystem != null ? props.layoutSystem : layoutSystemData.value}
+        value={detectedLayoutSystem}
         options={layoutSystemOptions}
         controlStatus={layoutSystemData.controlStatus}
         controlStyles={layoutSystemData.controlStyles}
