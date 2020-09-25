@@ -1,5 +1,14 @@
 /* actual editor */
 
+::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  margin: 0;
+  background-color: transparent;
+}
+
 #nodegraph-and-canvas-container {
   display: flex;
   flex-direction: column;
