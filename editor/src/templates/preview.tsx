@@ -217,17 +217,11 @@ const initPreview = () => {
         } catch (e) {
           // we don't care
         }
-        const linkTags = getGeneratedExternalLinkText(previewHTMLFile.fileContents)
-        if (isRight(linkTags)) {
-          const newHead = updateHTMLExternalResourcesLinks(document.head.innerHTML, linkTags.value)
-          if (isRight(newHead)) {
-            document.head.innerHTML = newHead.value
-          }
-        }
-
-        const bodyContent = previewHTMLFile.fileContents.split('<body>')[1].split('</body>')[0]
-        document.body.innerHTML = bodyContent
+        document.open()
+        document.write(previewHTMLFile.fileContents)
+        document.close()
         addOpenInUtopiaButton()
+        addWindowListeners()
         ReactErrorOverlay.startReportingRuntimeErrors({})
       } catch (e) {
         console.warn(`no body found in html`, e)
@@ -257,9 +251,13 @@ const initPreview = () => {
     }
   }
 
+  const addWindowListeners = () => {
+    window.addEventListener('message', handleModelUpdateEvent)
+  }
+
   const loadPreviewContent = () => {
     const projectId = getProjectID()
-    window.addEventListener('message', handleModelUpdateEvent)
+    addWindowListeners()
 
     if (PREVIEW_IS_EMBEDDED) {
       // Tell the editor we'd like to be sent the initial model.
