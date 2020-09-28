@@ -171,14 +171,14 @@ function processActions(
   }, working)
 }
 
-export function updateFloaterPreview(
+export function updateEmbeddedPreview(
   modelId: string | null,
   projectContents: ProjectContents,
 ): void {
-  const floaterElement = document.getElementById(PreviewIframeId)
-  if (floaterElement != null) {
-    const iFrameFloaterElement = (floaterElement as any) as HTMLIFrameElement
-    const contentWindow = iFrameFloaterElement.contentWindow
+  const embeddedPreviewElement = document.getElementById(PreviewIframeId)
+  if (embeddedPreviewElement != null) {
+    const embeddedPreviewIframe = (embeddedPreviewElement as any) as HTMLIFrameElement
+    const contentWindow = embeddedPreviewIframe.contentWindow
     if (contentWindow != null) {
       try {
         contentWindow.postMessage(projectContentsUpdateMessage(projectContents), '*')
@@ -416,7 +416,7 @@ export function editorDispatch(
   const shouldUpdatePreview =
     anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
   if (shouldUpdatePreview) {
-    updateFloaterPreview(frozenEditorState.id, frozenEditorState.projectContents)
+    updateEmbeddedPreview(frozenEditorState.id, frozenEditorState.projectContents)
   }
 
   if (frozenEditorState.id != null && frozenEditorState.id != storedState.editor.id) {
