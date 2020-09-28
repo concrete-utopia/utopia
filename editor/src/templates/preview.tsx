@@ -265,8 +265,6 @@ const initPreview = () => {
         `Error processing the project files: the preview path (${previewJSFilePath}) did not point to a valid file`,
       )
     }
-
-    handlePossiblyQueuedModel()
   }
 
   const addWindowListeners = () => {
