@@ -28,12 +28,12 @@ import {
   UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
   emptyUiJsxCanvasContextData,
-  CanvasErrorBoundary,
 } from './ui-jsx-canvas'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { AwkwardFragmentsCode } from '../../core/workers/parser-printer/parser-printer-fragments-test-utils'
+import { CanvasErrorBoundary } from './canvas-component-entry'
 
 interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -176,7 +176,12 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
   try {
     const flatFormat = ReactDOMServer.renderToStaticMarkup(
       <UiJsxCanvasContext.Provider value={spyCollector}>
-        <CanvasErrorBoundary fileCode={code} filePath={uiFilePath} reportError={reportError}>
+        <CanvasErrorBoundary
+          fileCode={code}
+          filePath={uiFilePath}
+          reportError={reportError}
+          requireFn={canvasProps.requireFn}
+        >
           <UiJsxCanvas {...canvasProps} />
         </CanvasErrorBoundary>
       </UiJsxCanvasContext.Provider>,
