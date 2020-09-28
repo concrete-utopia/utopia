@@ -35,7 +35,6 @@ export const SplitViewCanvasRoot = betterReactMemo(
   (props: SplitViewCanvasRootProps) => {
     const dispatch = useEditorState((store) => store.dispatch)
     const interfaceDesigner = useEditorState((store) => store.editor.interfaceDesigner)
-    const layoutReversed = interfaceDesigner.layoutReversed
 
     const isRightMenuExpanded = useEditorState((store) => store.editor.rightMenu.expanded)
 
@@ -75,7 +74,7 @@ export const SplitViewCanvasRoot = betterReactMemo(
           className='CanvasCodeRow'
           style={{
             position: 'relative',
-            flexDirection: layoutReversed ? 'row-reverse' : 'row',
+            flexDirection: 'row',
             alignItems: 'stretch',
             overflowX: 'hidden',
             flexGrow: 1,
@@ -83,16 +82,15 @@ export const SplitViewCanvasRoot = betterReactMemo(
             borderRight: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
           }}
         >
-          <CanvasWrapperComponent {...props} />
           {interfaceDesigner.codePaneVisible ? (
             <Resizable
               defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
               onResizeStop={onResizeStop}
               enable={{
                 top: false,
-                right: layoutReversed,
+                right: true,
                 bottom: false,
-                left: !layoutReversed,
+                left: false,
                 topRight: false,
                 bottomRight: false,
                 bottomLeft: false,
@@ -117,6 +115,10 @@ export const SplitViewCanvasRoot = betterReactMemo(
               />
             </Resizable>
           ) : null}
+          <SimpleFlexRow style={{ flexGrow: 1, alignItems: 'stretch' }}>
+            <CanvasWrapperComponent {...props} />
+            <div style={{ backgroundColor: 'red', flexGrow: 1 }}>Hello!</div>
+          </SimpleFlexRow>
         </SimpleFlexRow>
         <RightMenu visible={true} />
         {isRightMenuExpanded ? (
