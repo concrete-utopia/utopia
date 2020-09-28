@@ -23,6 +23,7 @@ import {
 } from '../printer-parsers/html/external-resources-parser'
 import Utils from '../utils/utils'
 import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
 
 interface PolledLoadParams {
   projectId: string
@@ -172,7 +173,7 @@ const initPreview = () => {
     }
   }
 
-  const previewRender = async (projectContents: ProjectContents) => {
+  const previewRender = async (projectContents: ProjectContentTreeRoot) => {
     const npmDependencies = dependenciesWithEditorRequirements(projectContents)
     const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
 
@@ -209,7 +210,10 @@ const initPreview = () => {
 
     // replacing the document body first
     const previewHTMLFileName = getMainHTMLFilename(projectContents)
-    const previewHTMLFile = projectContents[`/${previewHTMLFileName}`]
+    const previewHTMLFile = getContentsTreeFileFromString(
+      projectContents,
+      `/${previewHTMLFileName}`,
+    )
     if (previewHTMLFile != null && isCodeFile(previewHTMLFile)) {
       try {
         try {
@@ -230,7 +234,7 @@ const initPreview = () => {
 
     const previewJSFileName = getMainJSFilename(projectContents)
     const previewJSFilePath = `/${previewJSFileName}`
-    const previewJSFile = projectContents[previewJSFilePath]
+    const previewJSFile = getContentsTreeFileFromString(projectContents, previewJSFilePath)
     if (previewJSFile != null && isCodeFile(previewJSFile)) {
       if (bundledProjectFiles[previewJSFilePath] == null) {
         throw new Error(

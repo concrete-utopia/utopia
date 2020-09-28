@@ -14,12 +14,7 @@ import {
   JSXElementChild,
 } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import {
-  ProjectContents,
-  PropertyPath,
-  TemplatePath,
-  Imports,
-} from '../../../core/shared/project-file-types'
+import { PropertyPath, TemplatePath, Imports } from '../../../core/shared/project-file-types'
 import { Either, isLeft, right } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
@@ -56,6 +51,7 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { RightMenuTab } from '../right-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { getStoryboardTemplatePath } from '../../editor/store/editor-state'
+import { ProjectContentTreeRoot } from '../../assets'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -78,7 +74,6 @@ interface InsertModeControlContainerProps extends ControlProps {
   keysPressed: KeysPressed
   projectId: string | null
   dragState: InsertDragState | null
-  projectContents: ProjectContents
   canvasOffset: CanvasVector
   scale: number
 }

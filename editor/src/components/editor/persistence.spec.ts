@@ -13,6 +13,8 @@ import { UIJSFile } from '../../core/shared/project-file-types'
 import { SaveProjectResponse } from './server'
 import { localProjectKey } from '../../common/persistence'
 import { MockUtopiaTsWorkers } from '../../core/workers/workers'
+import { addFileToProjectContents, getContentsTreeFileFromString } from '../assets'
+import { forceNotNull } from '../../core/shared/optional-utils'
 
 let saveLog: { [key: string]: Array<PersistentModel> } = {}
 let projectsToError: Set<string> = new Set<string>()
@@ -89,15 +91,17 @@ const ProjectName = 'Project Name'
 const ModelChange = createPersistentModel()
 
 export function updateModel(model: PersistentModel): PersistentModel {
+  const oldFile = forceNotNull(
+    'Unexpectedly null.',
+    getContentsTreeFileFromString(model.projectContents, '/src/app.js'),
+  )
+  const updatedFile = {
+    ...oldFile,
+    lastRevisedTime: Date.now(),
+  }
   return {
     ...model,
-    projectContents: {
-      ...model.projectContents,
-      '/src/app.js': {
-        ...model.projectContents['/src/app.js'],
-        lastRevisedTime: Date.now(),
-      } as UIJSFile,
-    },
+    projectContents: addFileToProjectContents(model.projectContents, '/src/app.js', updatedFile),
   }
 }
 

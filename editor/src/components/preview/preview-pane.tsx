@@ -20,6 +20,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { SelectOption } from '../inspector/controls/select-control'
 import { shareURLForProject } from '../../core/shared/utils'
 import { getMainJSFilename } from '../../core/shared/project-contents-utils'
+import { getContentsTreeFileFromString } from '../assets'
 
 export const PreviewIframeId = 'preview-column-container'
 

@@ -1,5 +1,6 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { notice } from '../../components/common/notices'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { pushToast, updateFile } from '../../components/editor/actions/actions'
@@ -87,9 +88,9 @@ export function getGeneratedExternalLinkText(
 }
 
 function getPreviewHTMLFilePath(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): Either<DescriptionParseError, string> {
-  const packageJson = projectContents['/package.json']
+  const packageJson = getContentsTreeFileFromString(projectContents, '/package.json')
   if (packageJson != null && isCodeFile(packageJson)) {
     try {
       const parsedJSON = json5.parse(packageJson.fileContents)
@@ -115,9 +116,9 @@ function getPreviewHTMLFilePath(
 
 function getCodeFileContentsFromPath(
   filePath: string,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): Either<DescriptionParseError, CodeFile> {
-  const fileContents = projectContents[filePath]
+  const fileContents = getContentsTreeFileFromString(projectContents, filePath)
   if (fileContents != null && isCodeFile(fileContents)) {
     return right(fileContents)
   } else {

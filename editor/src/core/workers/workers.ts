@@ -16,6 +16,7 @@ import {
 } from './watchdog-worker'
 import { UtopiaTsWorkers, FileContent } from './common/worker-types'
 import { ExportsInfo, MultiFileBuildResult } from './ts/ts-worker'
+import { ProjectContentTreeRoot } from '../../components/assets'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   private bundlerWorker: NewBundlerWorker
@@ -29,7 +30,7 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
     this.bundlerWorker = new NewBundlerWorker(bundlerWorker)
   }
 
-  sendInitMessage(typeDefinitions: TypeDefinitions, projectContents: ProjectContents): void {
+  sendInitMessage(typeDefinitions: TypeDefinitions, projectContents: ProjectContentTreeRoot): void {
     this.bundlerWorker.sendInitMessage(typeDefinitions, projectContents, null)
   }
 
@@ -214,7 +215,10 @@ export class RealWatchdogWorker implements WatchdogWorker {
 }
 
 export class MockUtopiaTsWorkers implements UtopiaTsWorkers {
-  sendInitMessage(_typeDefinitions: TypeDefinitions, _projectContents: ProjectContents): void {
+  sendInitMessage(
+    _typeDefinitions: TypeDefinitions,
+    _projectContents: ProjectContentTreeRoot,
+  ): void {
     // empty
   }
 

@@ -304,7 +304,6 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
             dragState={
               dragState != null && dragState.type === 'INSERT_DRAG_STATE' ? dragState : null
             }
-            projectContents={props.editor.projectContents}
             canvasOffset={props.editor.canvas.realCanvasOffset /* maybe roundedCanvasOffset? */}
             scale={props.editor.canvas.scale}
           />

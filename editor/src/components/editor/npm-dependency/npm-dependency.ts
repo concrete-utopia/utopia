@@ -33,6 +33,7 @@ import * as React from 'react'
 import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import * as Semver from 'semver'
+import { ProjectContentTreeRoot } from '../../assets'
 
 interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
@@ -220,7 +221,7 @@ const EditorTypePackageDependencies: Array<RequestedNpmDependency> = [
 ]
 
 export function dependenciesWithEditorRequirements(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): Array<RequestedNpmDependency> {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const userDefinedDeps = dependenciesFromPackageJson(packageJsonFile)
@@ -228,7 +229,7 @@ export function dependenciesWithEditorRequirements(
 }
 
 export function immediatelyResolvableDependenciesWithEditorRequirements(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): Array<PossiblyUnversionedNpmDependency> {
   const requestedDependencies = dependenciesWithEditorRequirements(projectContents)
   return requestedDependencies.map((requestedDependency) => {

@@ -58,6 +58,7 @@ import { runLocalEditorAction } from './editor-update'
 import { arrayEquals, isBrowserEnvironment } from '../../../core/shared/utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import { getContentsTreeFileFromString, walkContentsTree } from '../../assets'
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -606,20 +607,19 @@ function notifyTsWorker(
   let shouldInitTsWorker = false
   let filesToUpdateInTsWorker: string[] = []
   // notify the ts worker if any file is new or has been changed compared to the previous state
-  Utils.fastForEach(Object.keys(newEditorState.projectContents), (filename) => {
-    const file = newEditorState.projectContents[filename]
-    const oldFile = oldEditorState.projectContents[filename]
+  walkContentsTree(newEditorState.projectContents, (filename, file) => {
+    const oldFile = getContentsTreeFileFromString(oldEditorState.projectContents, filename)
     if (oldFile == null) {
       shouldInitTsWorker = true
     } else {
-      if (isCodeOrUiJsFile(file) && oldFile != file) {
+      if (file != null && isCodeOrUiJsFile(file) && oldFile != file) {
         filesToUpdateInTsWorker.push(filename)
       }
     }
   })
   // notify the ts worker if any file has been removed compared to the previous state
-  Utils.fastForEach(Object.keys(oldEditorState.projectContents), (filename) => {
-    const file = newEditorState.projectContents[filename]
+  walkContentsTree(oldEditorState.projectContents, (filename, _) => {
+    const file = getContentsTreeFileFromString(newEditorState.projectContents, filename)
     if (file == null) {
       shouldInitTsWorker = true
     }
@@ -632,8 +632,12 @@ function notifyTsWorker(
     )
   } else {
     Utils.fastForEach(filesToUpdateInTsWorker, (filename) => {
-      const file = newEditorState.projectContents[filename]
-      if (isCodeOrUiJsFile(file) && (isJsOrTsFile(filename) || isCssFile(filename))) {
+      const file = getContentsTreeFileFromString(newEditorState.projectContents, filename)
+      if (
+        file != null &&
+        isCodeOrUiJsFile(file) &&
+        (isJsOrTsFile(filename) || isCssFile(filename))
+      ) {
         workers.sendUpdateFileMessage(filename, file, true)
       }
     })

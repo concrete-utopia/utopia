@@ -3,11 +3,12 @@ import type { MultiFileBuildResult, OutgoingWorkerMessage } from './ts/ts-worker
 import type { ProjectContents } from '../shared/project-file-types'
 import { NewBundlerWorker } from './bundler-bridge'
 import utils from '../../utils/utils'
+import { ProjectContentTreeRoot } from '../../components/assets'
 
 export function createBundle(
   worker: NewBundlerWorker,
   typeDefinitions: TypeDefinitions,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): Promise<{ buildResult: MultiFileBuildResult }> {
   return new Promise((resolve, reject) => {
     const jobID = utils.generateUUID()

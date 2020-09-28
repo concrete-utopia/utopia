@@ -38,17 +38,18 @@ import {
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
 import { ExportsInfo } from '../workers/ts/ts-worker'
+import { ProjectContentTreeRoot } from '../../components/assets'
 
 export interface GetPropertyControlsInfoMessage {
   exportsInfo: ReadonlyArray<ExportsInfo>
   nodeModules: NodeModules
-  projectContents: ProjectContents
+  projectContents: ProjectContentTreeRoot
 }
 
 export function createGetPropertyControlsInfoMessage(
   exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModules: NodeModules,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): GetPropertyControlsInfoMessage {
   return {
     exportsInfo: exportsInfo,
@@ -330,7 +331,7 @@ export function setPropertyControlsIFrameAvailable(value: boolean): void {
 export function sendPropertyControlsInfoRequest(
   exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModules: NodeModules,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): void {
   function scheduleSend(): void {
     if (propertyControlsIFrameAvailable) {

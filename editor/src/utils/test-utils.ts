@@ -60,6 +60,7 @@ import * as PP from '../core/shared/property-path'
 import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../core/shared/array-utils'
 import { MapLike } from 'typescript'
+import { contentsToTree } from '../components/assets'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -68,7 +69,7 @@ export function delay<T>(time: number): Promise<T> {
 export function createPersistentModel(): PersistentModel {
   const editor: EditorState = {
     ...createEditorState(NO_OP),
-    projectContents: {
+    projectContents: contentsToTree({
       '/src/app.js': uiJsFile(
         right(
           parseSuccess(
@@ -86,7 +87,7 @@ export function createPersistentModel(): PersistentModel {
         RevisionsState.BothMatch,
         0,
       ),
-    },
+    }),
     selectedFile: {
       tab: openFileTab('/src/app.js'),
       initialCursorPosition: null,
@@ -108,7 +109,7 @@ export function createEditorStates(
     typeof selectedFileOrTab === 'string' ? openFileTab(selectedFileOrTab) : selectedFileOrTab
   const editor: EditorState = {
     ...createEditorState(NO_OP),
-    projectContents: {
+    projectContents: contentsToTree({
       '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
       '/src/app.js': uiJsFile(
         right(
@@ -127,7 +128,7 @@ export function createEditorStates(
         RevisionsState.BothMatch,
         0,
       ),
-    },
+    }),
     selectedFile: {
       tab: selectedTab,
       initialCursorPosition: null,

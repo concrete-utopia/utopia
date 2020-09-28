@@ -73,7 +73,13 @@ import {
   LocalRectangle,
   WindowPoint,
 } from '../../../core/shared/math-utils'
-import { ensureDirectoriesExist } from '../../assets'
+import {
+  addFileToProjectContents,
+  ensureDirectoriesExist,
+  getContentsTreeFileFromElements,
+  getContentsTreeFileFromString,
+  ProjectContentTreeRoot,
+} from '../../assets'
 import {
   CanvasModel,
   CSSCursor,
@@ -122,7 +128,10 @@ import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { notLoggedIn } from '../../../common/user'
-import { dependenciesWithEditorRequirements, immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
+import {
+  dependenciesWithEditorRequirements,
+  immediatelyResolvableDependenciesWithEditorRequirements,
+} from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 
 export interface OriginalPath {
@@ -262,7 +271,7 @@ export interface EditorState {
   spyMetadataKILLME: ComponentMetadata[] // this is coming from the canvas spy report.
   domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
   jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
-  projectContents: ProjectContents
+  projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
   nodeModules: {
@@ -411,7 +420,7 @@ export function getOpenFile(model: EditorState): ProjectFile | null {
     return null
   } else {
     if (isOpenFileTab(openEditorTab)) {
-      return model.projectContents[openEditorTab.filename]
+      return getContentsTreeFileFromString(model.projectContents, openEditorTab.filename)
     } else {
       return null
     }
@@ -419,7 +428,7 @@ export function getOpenFile(model: EditorState): ProjectFile | null {
 }
 
 export function getFileForName(filePath: string, model: EditorState): ProjectFile | null {
-  return model.projectContents[filePath]
+  return getContentsTreeFileFromString(model.projectContents, filePath)
 }
 
 export function getOpenUIJSFileKey(model: EditorState): string | null {
@@ -450,7 +459,7 @@ export function getOpenUIJSFile(model: EditorState): UIJSFile | null {
   if (openUIJSFileKey == null) {
     return null
   } else {
-    const openUIJSFile = model.projectContents[openUIJSFileKey]
+    const openUIJSFile = getContentsTreeFileFromString(model.projectContents, openUIJSFileKey)
     if (openUIJSFile != null && isUIJSFile(openUIJSFile)) {
       return openUIJSFile
     } else {
@@ -540,17 +549,20 @@ export function applyParseAndEditorChanges<T>(
           openUIJSFile.fileContents,
         )
 
+        const updatedFile = saveUIJSFileContents(
+          openUIJSFile,
+          updatedContents,
+          false,
+          RevisionsState.ParsedAhead,
+        )
+
         const editorWithSuccessChanges = {
           ...editor,
-          projectContents: ensureDirectoriesExist({
-            ...editor.projectContents,
-            [openUIJSFileKey]: saveUIJSFileContents(
-              openUIJSFile,
-              updatedContents,
-              false,
-              RevisionsState.ParsedAhead,
-            ),
-          }),
+          projectContents: addFileToProjectContents(
+            editor.projectContents,
+            openUIJSFileKey,
+            updatedFile,
+          ),
         }
         return {
           editor: possibleChanges.editorStateTransform(editorWithSuccessChanges),
@@ -934,7 +946,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
 export interface PersistentModel {
   appID?: string | null
   projectVersion: number
-  projectContents: ProjectContents
+  projectContents: ProjectContentTreeRoot
   exportsInfo: ReadonlyArray<ExportsInfo>
   lastUsedFont: FontSettings | null
   hiddenInstances: Array<TemplatePath>
@@ -1283,7 +1295,9 @@ export function editorModelFromPersistentModel(
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
 ): EditorState {
-  const npmDependencies = immediatelyResolvableDependenciesWithEditorRequirements(persistentModel.projectContents)
+  const npmDependencies = immediatelyResolvableDependenciesWithEditorRequirements(
+    persistentModel.projectContents,
+  )
   const editor: EditorState = {
     id: null,
     appID: persistentModel.appID ?? null,
@@ -1441,7 +1455,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
 }
 
 export function persistentModelForProjectContents(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): PersistentModel {
   const selectedTab: EditorTab = releaseNotesTab()
 
@@ -1496,15 +1510,9 @@ export const DefaultPackageJson = {
 }
 
 export function packageJsonFileFromProjectContents(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): ProjectFile | null {
-  if ('package.json' in projectContents) {
-    return projectContents['package.json']
-  } else if ('/package.json' in projectContents) {
-    return projectContents['/package.json']
-  } else {
-    return null
-  }
+  return getContentsTreeFileFromString(projectContents, '/package.json')
 }
 
 export function getPackageJsonFromEditorState(editor: EditorState): Either<string, any> {
@@ -1540,7 +1548,7 @@ export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<str
     isRight(parsedFilePath) && typeof parsedFilePath.value === 'string'
       ? parsedFilePath.value
       : 'public/index.html'
-  const indexHtml = editor.projectContents[`/${filePath}`]
+  const indexHtml = getContentsTreeFileFromString(editor.projectContents, `/${filePath}`)
   if (indexHtml != null && isCodeFile(indexHtml)) {
     return right(indexHtml)
   } else {
@@ -1590,10 +1598,11 @@ export function updatePackageJsonInEditorState(
   }
   return {
     ...editor,
-    projectContents: {
-      ...editor.projectContents,
-      [correctProjectContentsPath('package.json')]: updatedPackageJsonFile,
-    },
+    projectContents: addFileToProjectContents(
+      editor.projectContents,
+      '/package.json',
+      updatedPackageJsonFile,
+    ),
   }
 }
 

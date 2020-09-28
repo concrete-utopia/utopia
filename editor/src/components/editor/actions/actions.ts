@@ -164,7 +164,15 @@ import {
   WindowPoint,
   canvasRectangle,
 } from '../../../core/shared/math-utils'
-import { ensureDirectoriesExist } from '../../assets'
+import {
+  addFileToProjectContents,
+  contentsToTree,
+  ensureDirectoriesExist,
+  getContentsTreeFileFromString,
+  ProjectContentTreeRoot,
+  removeFromProjectContents,
+  treeToContents,
+} from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import {
   CanvasFrameAndTarget,
@@ -1182,7 +1190,7 @@ function updateNavigatorCollapsedState(
 
 interface ReplaceFilePathSuccess {
   type: 'SUCCESS'
-  projectContents: ProjectContents
+  projectContents: ProjectContentTreeRoot
   updatedFiles: Array<{ oldPath: string; newPath: string }>
 }
 
@@ -1196,8 +1204,9 @@ type ReplaceFilePathResult = ReplaceFilePathFailure | ReplaceFilePathSuccess
 function replaceFilePath(
   oldPath: string,
   newPath: string,
-  projectContents: ProjectContents,
+  projectContentsTree: ProjectContentTreeRoot,
 ): ReplaceFilePathResult {
+  const projectContents = treeToContents(projectContentsTree)
   // if there is no file in projectContents it's probably a non-empty directory
   const oldFolderRegex = new RegExp('^' + oldPath)
   let error: string | null = null
@@ -1232,7 +1241,7 @@ function replaceFilePath(
   if (error == null) {
     return {
       type: 'SUCCESS',
-      projectContents: updatedProjectContents,
+      projectContents: contentsToTree(updatedProjectContents),
       updatedFiles: updatedFiles,
     }
   } else {
@@ -2860,10 +2869,11 @@ export const UPDATE_FNS = {
       ])
     }
 
-    const updatedProjectContents = ensureDirectoriesExist({
-      ...editor.projectContents,
-      [assetFilename]: projectFile,
-    })
+    const updatedProjectContents = addFileToProjectContents(
+      editor.projectContents,
+      assetFilename,
+      projectFile,
+    )
 
     let updatedBlobs: CanvasBase64Blobs = editor.canvas.base64Blobs
 
@@ -2983,7 +2993,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    const possiblyAnImage = editor.projectContents[action.imagePath]
+    const possiblyAnImage = getContentsTreeFileFromString(editor.projectContents, action.imagePath)
     if (possiblyAnImage != null && isImageFile(possiblyAnImage)) {
       const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
       const newUID = generateUidWithExistingComponents(utopiaComponents)
@@ -3165,8 +3175,8 @@ export const UPDATE_FNS = {
         ) {
           selectedFile = openFileTab(newPath)
         }
-        const oldContent = editor.projectContents[oldPath]
-        if (isImageFile(oldContent) || isAssetFile(oldContent)) {
+        const oldContent = getContentsTreeFileFromString(editor.projectContents, oldPath)
+        if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
           // Update assets.
           if (isLoggedIn(userState.loginState) && editor.id != null) {
             updateAssetFileName(editor.id, action.oldPath, action.newPath)
@@ -3225,7 +3235,7 @@ export const UPDATE_FNS = {
     const updatedOpenFiles = editor.openFiles.filter(
       (editorTab) => !R.equals(editorTab, action.editorTab),
     )
-    let revertedProjectContents: ProjectContents
+    let revertedProjectContents: ProjectContentTreeRoot
     if (isOpenFileTab(action.editorTab)) {
       revertedProjectContents = revertFileInProjectContents(
         editor.projectContents,
@@ -3276,17 +3286,18 @@ export const UPDATE_FNS = {
     const { file } = action
 
     if (isUIJSFile(file)) {
-      const existing = editor.projectContents[action.filePath]
+      const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
       const canUpdate = canUpdateFile(file, existing)
       if (!canUpdate) {
         return editor
       }
     }
 
-    const updatedProjectContents = ensureDirectoriesExist({
-      ...editor.projectContents,
-      [action.filePath]: file,
-    })
+    const updatedProjectContents = addFileToProjectContents(
+      editor.projectContents,
+      action.filePath,
+      file,
+    )
 
     let packageLoadingStatus: PackageStatusMap = {}
 
@@ -3337,7 +3348,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    const existing = editor.projectContents[action.filePath]
+    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
     if (existing == null || !isUIJSFile(existing)) {
       // The worker shouldn't be recreating deleted files or reformated files
       console.error(`Worker thread is trying to update an invalid file ${action.filePath}`)
@@ -3394,10 +3405,11 @@ export const UPDATE_FNS = {
       }
     }
 
-    const updatedProjectContents = ensureDirectoriesExist({
-      ...editor.projectContents,
-      [action.filePath]: updatedFile,
-    })
+    const updatedProjectContents = addFileToProjectContents(
+      editor.projectContents,
+      action.filePath,
+      updatedFile,
+    )
     return {
       ...editor,
       projectContents: updatedProjectContents,
@@ -3445,10 +3457,7 @@ export const UPDATE_FNS = {
     const newFolderKey = uniqueProjectContentID(pathPrefix + 'folder', editor.projectContents)
     return {
       ...editor,
-      projectContents: ensureDirectoriesExist({
-        ...editor.projectContents,
-        [newFolderKey]: directory(),
-      }),
+      projectContents: addFileToProjectContents(editor.projectContents, newFolderKey, directory()),
       fileBrowser: {
         ...editor.fileBrowser,
         renamingTarget: newFolderKey,
@@ -3460,10 +3469,11 @@ export const UPDATE_FNS = {
     const newFileKey = uniqueProjectContentID(pathPrefix + action.fileName, editor.projectContents)
     const newCodeFile = codeFile('', null)
 
-    const updatedProjectContents = ensureDirectoriesExist({
-      ...editor.projectContents,
-      [newFileKey]: newCodeFile,
-    })
+    const updatedProjectContents = addFileToProjectContents(
+      editor.projectContents,
+      newFileKey,
+      newCodeFile,
+    )
 
     // Update the model.
     const newTab = openFileTab(newFileKey)
@@ -3495,10 +3505,7 @@ export const UPDATE_FNS = {
         initialCursorPosition: null,
       },
       openFiles: [...editor.openFiles, newTab],
-      projectContents: ensureDirectoriesExist({
-        ...editor.projectContents,
-        [newFileKey]: newUiJsFile,
-      }),
+      projectContents: addFileToProjectContents(editor.projectContents, newFileKey, newUiJsFile),
       fileBrowser: {
         ...editor.fileBrowser,
         renamingTarget: newFileKey,
@@ -3512,11 +3519,11 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     userState: UserState,
   ): EditorModel => {
-    const file = editor.projectContents[action.filename]
-    const updatedProjectContents = {
-      ...editor.projectContents,
-    }
-    delete updatedProjectContents[action.filename]
+    const file = getContentsTreeFileFromString(editor.projectContents, action.filename)
+    const updatedProjectContents = removeFromProjectContents(
+      editor.projectContents,
+      action.filename,
+    )
     const updatedOpenFiles = editor.openFiles.filter(
       (tab) => !isOpenFileTab(tab) || tab.filename !== action.filename,
     )
@@ -3898,7 +3905,7 @@ export const UPDATE_FNS = {
     }
   },
   INSERT_DROPPED_IMAGE: (action: InsertDroppedImage, editor: EditorModel): EditorModel => {
-    const projectContent = editor.projectContents[action.imagePath]
+    const projectContent = getContentsTreeFileFromString(editor.projectContents, action.imagePath)
     const parent = arrayToMaybe(editor.highlightedViews)
     if (projectContent != null && isImageFile(projectContent)) {
       const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
@@ -4496,7 +4503,7 @@ function loadCodeResult(
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
   typeDefinitions: TypeDefinitions,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): Promise<CodeResultCache> {
   return new Promise((resolve, reject) => {
     const handleMessage = (e: MessageEvent) => {
@@ -5353,23 +5360,32 @@ export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
 }
 
 function revertFileInProjectContents(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
   filePath: string,
-): ProjectContents {
-  const file = projectContents[filePath]
-  let updatedProjectContents = { ...projectContents }
-  updatedProjectContents[filePath] = revertFile(file)
-  return updatedProjectContents
+): ProjectContentTreeRoot {
+  const file = getContentsTreeFileFromString(projectContents, filePath)
+  if (file == null) {
+    return projectContents
+  } else {
+    const updatedProjectContents = addFileToProjectContents(
+      projectContents,
+      filePath,
+      revertFile(file),
+    )
+    return updatedProjectContents
+  }
 }
 
 function saveFileInProjectContents(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
   filePath: string,
-): ProjectContents {
-  const file = projectContents[filePath]
-  let updatedProjectContents = { ...projectContents }
-  updatedProjectContents[filePath] = saveFile(file)
-  return updatedProjectContents
+): ProjectContentTreeRoot {
+  const file = getContentsTreeFileFromString(projectContents, filePath)
+  if (file == null) {
+    return projectContents
+  } else {
+    return addFileToProjectContents(projectContents, filePath, saveFile(file))
+  }
 }
 
 export function setSceneProp(
