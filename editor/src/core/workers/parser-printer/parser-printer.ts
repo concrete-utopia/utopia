@@ -885,7 +885,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
               'No contents',
             )
             let isFunction: boolean = false
-            let parsedFunctionParam: Either<string, WithParserMetadata<Param>> = left('No params')
+            let parsedFunctionParam: Either<string, WithParserMetadata<Param> | null> = right(null)
             let propsUsed: Array<string> = []
             if (isPossibleCanvasContentsFunction(canvasContents)) {
               const { parameters, body } = canvasContents
@@ -901,7 +901,9 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
               )
               parsedFunctionParam = flatMapEither((parsedParams) => {
                 const paramsValue = parsedParams.value
-                if (paramsValue.length === 1) {
+                if (paramsValue.length === 0) {
+                  return right(null)
+                } else if (paramsValue.length === 1) {
                   // Note: We're explicitly ignoring the `propsUsed` value as
                   // that should be handled by the call to `propNamesForParam` below.
                   return right(
@@ -912,10 +914,11 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
                 }
               }, parsedFunctionParams)
               forEachRight(parsedFunctionParam, (param) => {
-                const boundParam = param.value.boundParam
-                const propsObjectName = isRegularParam(boundParam) ? boundParam.paramName : null
+                const boundParam = param?.value.boundParam
+                const propsObjectName =
+                  boundParam != null && isRegularParam(boundParam) ? boundParam.paramName : null
 
-                propsUsed = propNamesForParam(param.value)
+                propsUsed = param == null ? [] : propNamesForParam(param.value)
 
                 parsedContents = parseOutFunctionContents(
                   sourceFile,
@@ -924,7 +927,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
                   topLevelNames,
                   propsObjectName,
                   body,
-                  param.highlightBounds,
+                  param?.highlightBounds ?? {},
                   alreadyExistingUIDs,
                 )
               })
@@ -958,7 +961,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
                   isFunction,
                   foldEither(
                     (_) => null,
-                    (param) => param.value,
+                    (param) => param?.value ?? null,
                     parsedFunctionParam,
                   ),
                   propsUsed,
