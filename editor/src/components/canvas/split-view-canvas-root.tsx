@@ -15,6 +15,7 @@ import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
 
 import { RightMenu, RightMenuTab } from './right-menu'
+import { Wireframe3d } from '../outline-view/wireframe-3d'
 
 interface SplitViewCanvasRootProps {
   runtimeErrors: Array<RuntimeErrorInfo>
@@ -117,7 +118,9 @@ export const SplitViewCanvasRoot = betterReactMemo(
           ) : null}
           <SimpleFlexRow style={{ flexGrow: 1, alignItems: 'stretch' }}>
             <CanvasWrapperComponent {...props} />
-            <div style={{ backgroundColor: 'red', flexGrow: 1 }}>Hello!</div>
+            <div style={{ backgroundColor: 'red', flexGrow: 1 }}>
+              <Wireframe3d />
+            </div>
           </SimpleFlexRow>
         </SimpleFlexRow>
         <RightMenu visible={true} />
