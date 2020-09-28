@@ -4,7 +4,7 @@ import { is } from './equality-utils'
 import { memoize } from './memoize'
 import { isCodeFile, ProjectContents, ProjectFile } from './project-file-types'
 
-function parsePackageJsonInner(packageJson: ProjectFile | null): Record<string, any> | null {
+function parsePackageJsonInner(packageJson: ProjectFile | undefined): Record<string, any> | null {
   if (packageJson != null && isCodeFile(packageJson)) {
     try {
       return JSON.parse(packageJson.fileContents)
@@ -17,12 +17,16 @@ function parsePackageJsonInner(packageJson: ProjectFile | null): Record<string, 
   }
 }
 
-function packageJsonEquals(l: ProjectFile | null, r: ProjectFile | null): boolean {
+function packageJsonEquals(l: ProjectFile | undefined, r: ProjectFile | undefined): boolean {
   if (is(l, r)) {
     return true
   } else {
     return (
-      l != null && isCodeFile(l) && r != null && isCodeFile(r) && l.fileContents === r.fileContents
+      l != undefined &&
+      isCodeFile(l) &&
+      r != undefined &&
+      isCodeFile(r) &&
+      l.fileContents === r.fileContents
     )
   }
 }
