@@ -22,6 +22,7 @@ import {
   updateHTMLExternalResourcesLinks,
 } from '../printer-parsers/html/external-resources-parser'
 import Utils from '../utils/utils'
+import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
 
 interface PolledLoadParams {
   projectId: string
@@ -207,70 +208,56 @@ const initPreview = () => {
     }, nodeModules)
 
     // replacing the document body first
-    const packageJson = projectContents['/package.json']
-    if (packageJson != null && isCodeFile(packageJson)) {
-      const parsedJSON = json5.parse(packageJson.fileContents)
-
-      const utopiaSettings = R.path<any>(['utopia'], parsedJSON)
-      const previewFileName = utopiaSettings['html']
-      if (previewFileName != null) {
-        const previewPath = `/${previewFileName}`
-        const file = projectContents[previewPath]
-        if (file != null && isCodeFile(file)) {
-          try {
-            try {
-              ReactErrorOverlay.stopReportingRuntimeErrors()
-            } catch (e) {
-              // we don't care
-            }
-            const linkTags = getGeneratedExternalLinkText(file.fileContents)
-            if (isRight(linkTags)) {
-              const newHead = updateHTMLExternalResourcesLinks(
-                document.head.innerHTML,
-                linkTags.value,
-              )
-              if (isRight(newHead)) {
-                document.head.innerHTML = newHead.value
-              }
-            }
-
-            const bodyContent = file.fileContents.split('<body>')[1].split('</body>')[0]
-            document.body.innerHTML = bodyContent
-            addOpenInUtopiaButton()
-            ReactErrorOverlay.startReportingRuntimeErrors({})
-          } catch (e) {
-            console.warn(`no body found in html`, e)
-          }
+    const previewHTMLFileName = getMainHTMLFilename(projectContents)
+    const previewHTMLFile = projectContents[`/${previewHTMLFileName}`]
+    if (previewHTMLFile != null && isCodeFile(previewHTMLFile)) {
+      try {
+        try {
+          ReactErrorOverlay.stopReportingRuntimeErrors()
+        } catch (e) {
+          // we don't care
         }
-      }
-
-      const previewJsFileName = utopiaSettings['js']
-      if (previewJsFileName != null) {
-        const previewJSPath = `/${previewJsFileName}`
-        const file = projectContents[previewJSPath]
-        if (file == null || !isCodeFile(file)) {
-          throw new Error(
-            `Error processing the project files: the preview path (${previewJSPath}) did not point to a valid file`,
-          )
-        } else if (bundledProjectFiles[previewJSPath] == null) {
-          throw new Error(
-            `Error processing the project files: the build result does not contain the preview file: ${previewJSPath}`,
-          )
-        } else {
-          /**
-           * require the js entry point file which will evaluate the module.
-           * the React entry point js file traditionally has a top level side effect,
-           * calling ReactDOM.render() which starts the Preview app.
-           */
-          require('/', previewJSPath)
-        }
+        document.open()
+        document.write(previewHTMLFile.fileContents)
+        document.close()
+        addOpenInUtopiaButton()
+        addWindowListeners()
+        ReactErrorOverlay.startReportingRuntimeErrors({})
+      } catch (e) {
+        console.warn(`no body found in html`, e)
       }
     }
+
+    const previewJSFileName = getMainJSFilename(projectContents)
+    const previewJSFilePath = `/${previewJSFileName}`
+    const previewJSFile = projectContents[previewJSFilePath]
+    if (previewJSFile != null && isCodeFile(previewJSFile)) {
+      if (bundledProjectFiles[previewJSFilePath] == null) {
+        throw new Error(
+          `Error processing the project files: the build result does not contain the preview file: ${previewJSFilePath}`,
+        )
+      } else {
+        /**
+         * require the js entry point file which will evaluate the module.
+         * the React entry point js file traditionally has a top level side effect,
+         * calling ReactDOM.render() which starts the Preview app.
+         */
+        require('/', previewJSFilePath)
+      }
+    } else {
+      throw new Error(
+        `Error processing the project files: the preview path (${previewJSFilePath}) did not point to a valid file`,
+      )
+    }
+  }
+
+  const addWindowListeners = () => {
+    window.addEventListener('message', handleModelUpdateEvent)
   }
 
   const loadPreviewContent = () => {
     const projectId = getProjectID()
-    window.addEventListener('message', handleModelUpdateEvent)
+    addWindowListeners()
 
     if (PREVIEW_IS_EMBEDDED) {
       // Tell the editor we'd like to be sent the initial model.

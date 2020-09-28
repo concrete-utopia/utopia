@@ -31,7 +31,6 @@ const editorCSS = [
   `${STATIC_BASE_URL}editor/slider.css`,
   `${STATIC_BASE_URL}editor/draft.css`,
   `${STATIC_BASE_URL}editor/utopia-light.css`,
-  `${STATIC_BASE_URL}editor/preview.css`,
 ]
 
 // Queue up further CSS downloads before going any further
