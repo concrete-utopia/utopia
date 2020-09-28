@@ -28,12 +28,11 @@ import {
 import { ErrorMessage } from '../../core/shared/error-messages'
 import {
   isParseSuccess,
-  ProjectContents,
   ProjectFileType,
   importDetails,
   importAlias,
 } from '../../core/shared/project-file-types'
-import { contentsToTree, ProjectContentTreeRoot, walkContentsTree } from '../assets'
+import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/actions'

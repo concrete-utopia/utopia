@@ -1206,6 +1206,7 @@ function replaceFilePath(
   newPath: string,
   projectContentsTree: ProjectContentTreeRoot,
 ): ReplaceFilePathResult {
+  // FIXME: Reimplement this in a way that doesn't require converting to and from `ProjectContents`.
   const projectContents = treeToContents(projectContentsTree)
   // if there is no file in projectContents it's probably a non-empty directory
   const oldFolderRegex = new RegExp('^' + oldPath)

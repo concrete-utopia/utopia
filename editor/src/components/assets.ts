@@ -9,10 +9,9 @@ import {
 } from '../core/shared/project-file-types'
 import { isDirectory, directory, isImageFile } from '../core/model/project-file-utils'
 import Utils from '../utils/utils'
-import * as R from 'ramda'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
 import { fastForEach } from '../core/shared/utils'
-import { mapValues } from 'xstate/lib/utils'
+import { mapValues } from '../core/shared/object-utils'
 
 interface ImageAsset {
   assetPath: string
@@ -51,9 +50,6 @@ export function projectContentDirectory(
   dir: Directory,
   children: ProjectContentTreeRoot,
 ): ProjectContentDirectory {
-  if (dir.type !== 'DIRECTORY') {
-    throw new Error(`Not a directory: ${JSON.stringify(dir)}`)
-  }
   return {
     type: 'PROJECT_CONTENT_DIRECTORY',
     fullPath: fullPath,
@@ -72,15 +68,6 @@ export function projectContentFile(
   fullPath: string,
   content: UIJSFile | CodeFile | ImageFile | AssetFile,
 ): ProjectContentFile {
-  switch (content.type) {
-    case 'CODE_FILE':
-    case 'ASSET_FILE':
-    case 'IMAGE_FILE':
-    case 'UI_JS_FILE':
-      break
-    default:
-      throw new Error(`Not a file: ${JSON.stringify(content)}`)
-  }
   return {
     type: 'PROJECT_CONTENT_FILE',
     fullPath: fullPath,
@@ -388,14 +375,14 @@ export function transformContentsTree(
   projectContents: ProjectContentTreeRoot,
   transform: (tree: ProjectContentsTree) => ProjectContentsTree,
 ): ProjectContentTreeRoot {
-  return mapValues(projectContents, (tree: ProjectContentsTree) => {
+  return mapValues((tree: ProjectContentsTree) => {
     if (tree.type === 'PROJECT_CONTENT_DIRECTORY') {
       const transformedChildren = transformContentsTree(tree.children, transform)
       return transform(projectContentDirectory(tree.fullPath, tree.directory, transformedChildren))
     } else {
       return transform(tree)
     }
-  })
+  }, projectContents)
 }
 
 export function ensureDirectoriesExist(projectContents: ProjectContents): ProjectContents {
