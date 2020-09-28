@@ -13,6 +13,7 @@ import {
   UIJSFile,
   isCodeOrUiJsFile,
   isParseSuccess,
+  ProjectContents,
 } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -28,7 +29,7 @@ import { bimapEither } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { CanvasAction } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
-import { PreviewIframeId } from '../../preview/preview-pane'
+import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import * as TP from '../../../core/shared/template-path'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
 import { isTransientAction, isUndoOrRedo, isParsedModelUpdate } from '../actions/action-utils'
@@ -170,18 +171,17 @@ function processActions(
   }, working)
 }
 
-export function updateFloaterPreview(modelId: string | null, model: PersistentModel): void {
+export function updateFloaterPreview(
+  modelId: string | null,
+  projectContents: ProjectContents,
+): void {
   const floaterElement = document.getElementById(PreviewIframeId)
   if (floaterElement != null) {
     const iFrameFloaterElement = (floaterElement as any) as HTMLIFrameElement
     const contentWindow = iFrameFloaterElement.contentWindow
     if (contentWindow != null) {
-      const modelWithId: PersistentModel = {
-        ...model,
-        appID: modelId,
-      }
       try {
-        contentWindow.postMessage(modelWithId, '*')
+        contentWindow.postMessage(projectContentsUpdateMessage(projectContents), '*')
       } catch (exception) {
         // Don't nuke the editor if there's an exception posting the message.
         // This can happen if a value can't be cloned when posted.
@@ -413,8 +413,10 @@ export function editorDispatch(
     )
   }
 
-  if (shouldSave || anySendPreviewModel) {
-    updateFloaterPreview(frozenEditorState.id, persistentModelFromEditorModel(frozenEditorState))
+  const shouldUpdatePreview =
+    anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
+  if (shouldUpdatePreview) {
+    updateFloaterPreview(frozenEditorState.id, frozenEditorState.projectContents)
   }
 
   if (frozenEditorState.id != null && frozenEditorState.id != storedState.editor.id) {

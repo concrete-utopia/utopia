@@ -23,11 +23,12 @@ import {
 } from '../printer-parsers/html/external-resources-parser'
 import Utils from '../utils/utils'
 import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
+import { isProjectContentsUpdateMessage } from '../components/preview/preview-pane'
 
 interface PolledLoadParams {
   projectId: string
   onStartLoad: () => void
-  onModelChanged: (model: PersistentModel | null) => void
+  onModelChanged: (model: ProjectContents) => void
   onModelUnchanged: () => void
   onError: (error: Error) => void
 }
@@ -54,7 +55,7 @@ export async function startPolledLoad({
       if (project.type === 'ProjectLoaded') {
         // eslint-disable-next-line require-atomic-updates
         lastSavedTS = project.modifiedAt
-        onModelChanged(project.content)
+        onModelChanged(project.content.projectContents)
       } else if (project.type === 'ProjectUnchanged') {
         onModelUnchanged()
       }
@@ -133,8 +134,12 @@ function addOpenInUtopiaButton(): void {
   }
 }
 
+let queuedModel: ProjectContents | null = null
+let loadingModel: boolean = false
+
 const initPreview = () => {
-  let shownModel: PersistentModel | null = null
+  loadingModel = false
+  queuedModel = null
   const bundlerWorker = new NewBundlerWorker(new RealBundlerWorker())
 
   const startPollingFromServer = (appID: string | null) => {
@@ -153,23 +158,34 @@ const initPreview = () => {
     }
   }
 
-  const modelUpdated = async (model: PersistentModel | null) => {
-    if (model != null && R.equals(shownModel, model)) {
-      // the returned model did not change, bail out
-      return
-    }
-    shownModel = model
-    if (model?.projectContents != null) {
-      previewRender(model.projectContents)
+  const modelUpdated = async (model: ProjectContents) => {
+    if (loadingModel) {
+      queuedModel = model
+    } else {
+      renderProject(model)
     }
   }
 
   const handleModelUpdateEvent = (event: MessageEvent) => {
     // Received a model from the containing page.
     const eventData = event.data
-    if (isPersistentModel(eventData)) {
-      modelUpdated(eventData)
+    if (isProjectContentsUpdateMessage(eventData)) {
+      modelUpdated(eventData.projectContents)
     }
+  }
+
+  const handlePossiblyQueuedModel = () => {
+    if (queuedModel == null) {
+      loadingModel = false
+    } else {
+      renderProject(queuedModel)
+    }
+  }
+
+  const renderProject = async (projectContents: ProjectContents) => {
+    loadingModel = true
+    queuedModel = null
+    previewRender(projectContents).finally(handlePossiblyQueuedModel)
   }
 
   const previewRender = async (projectContents: ProjectContents) => {
@@ -249,6 +265,8 @@ const initPreview = () => {
         `Error processing the project files: the preview path (${previewJSFilePath}) did not point to a valid file`,
       )
     }
+
+    handlePossiblyQueuedModel()
   }
 
   const addWindowListeners = () => {
