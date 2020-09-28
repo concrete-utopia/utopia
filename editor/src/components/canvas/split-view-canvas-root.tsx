@@ -116,9 +116,16 @@ export const SplitViewCanvasRoot = betterReactMemo(
               />
             </Resizable>
           ) : null}
-          <SimpleFlexRow style={{ flexGrow: 1, alignItems: 'stretch' }}>
+          <SimpleFlexRow style={{ flexGrow: 1, alignItems: 'stretch', position: 'relative' }}>
             <CanvasWrapperComponent {...props} />
-            <div style={{ backgroundColor: 'red', flexGrow: 1 }}>
+            <div
+              style={{
+                backgroundColor: 'red',
+                width: '50%',
+                maxWidth: '50%',
+                position: 'relative',
+              }}
+            >
               <Wireframe3d />
             </div>
           </SimpleFlexRow>
