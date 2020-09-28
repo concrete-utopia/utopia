@@ -491,8 +491,10 @@ export const UiJsxCanvas = betterReactMemo(
         dependencyOrdering,
       )
 
-      const customRequire = (importOrigin: string, toImport: string) =>
-        requireFn(importOrigin, toImport, false)
+      const customRequire = React.useCallback(
+        (importOrigin: string, toImport: string) => requireFn(importOrigin, toImport, false),
+        [requireFn],
+      )
 
       const requireResult: MapLike<any> = importResultFromImports(
         uiFilePath,
@@ -500,7 +502,11 @@ export const UiJsxCanvas = betterReactMemo(
         customRequire,
       )
 
-      let executionScope: MapLike<any> = { ...requireResult }
+      const userRequireFn = React.useCallback(
+        (toImport: string) => customRequire(uiFilePath, toImport),
+        [uiFilePath, customRequire],
+      )
+      let executionScope: MapLike<any> = { require: userRequireFn, ...requireResult }
       // TODO All of this is run on every interaction o_O
 
       let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
