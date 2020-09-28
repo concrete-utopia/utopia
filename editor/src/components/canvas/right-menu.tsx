@@ -178,7 +178,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
       }}
     >
       <SimpleFlexColumn data-title='group' style={{ marginBottom: 24 }}>
-        <Tooltip title={'Inspector'} placement='left-end'>
+        <Tooltip title={'Inspector'} placement='left'>
           <span>
             <RightMenuTile
               selected={isInspectorSelected}
@@ -188,7 +188,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
             />
           </span>
         </Tooltip>
-        <Tooltip title={'Insert'} placement='left-end'>
+        <Tooltip title={'Insert'} placement='left'>
           <span>
             <RightMenuTile
               selected={isInsertMenuSelected}
@@ -200,7 +200,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         </Tooltip>
       </SimpleFlexColumn>
       <SimpleFlexColumn data-title='group' style={{ marginBottom: 24 }}>
-        <Tooltip title={'Live Preview'} placement='left-end'>
+        <Tooltip title={'Live Preview'} placement='left'>
           <span>
             <RightMenuTile
               selected={isCanvasLive}
@@ -210,17 +210,19 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
             />
           </span>
         </Tooltip>
-        <Tooltip title='Reset canvas'>
-          <RightMenuTile
-            selected={false}
-            highlightSelected={false}
-            icon={<LargerIcons.Refresh />}
-          />
+        <Tooltip title='Reset canvas' placement='left'>
+          <span>
+            <RightMenuTile
+              selected={false}
+              highlightSelected={false}
+              icon={<LargerIcons.Refresh />}
+            />
+          </span>
         </Tooltip>
       </SimpleFlexColumn>
 
       <SimpleFlexColumn data-title='group' style={{ marginBottom: 24, flexGrow: 1 }}>
-        <Tooltip title='Zoom in' placement='left-end'>
+        <Tooltip title='Zoom in' placement='left'>
           <span>
             <RightMenuTile
               selected={false}
@@ -233,7 +235,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         <span style={{ fontSize: 9, width: '100%', textAlign: 'center' }} onClick={zoom100pct}>
           {zoomLevel}x
         </span>
-        <Tooltip title='Zoom out' placement='left-end'>
+        <Tooltip title='Zoom out' placement='left'>
           <span>
             <RightMenuTile
               selected={false}
