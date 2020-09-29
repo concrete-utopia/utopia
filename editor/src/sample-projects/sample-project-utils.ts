@@ -1,3 +1,4 @@
+import { contentsToTree } from '../components/assets'
 import {
   DefaultPackageJson,
   openFileTab,
@@ -26,7 +27,7 @@ export function defaultProject(): PersistentModel {
     '/public/index.html': getSamplePreviewHTMLFile(),
   }
 
-  let persistentModel = persistentModelForProjectContents(projectContents)
+  let persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
   persistentModel.openFiles = [openFileTab('/src/app.js'), ...persistentModel.openFiles]
   return persistentModel
 }
@@ -43,7 +44,7 @@ function uiBuilderProject(): PersistentModel {
     '/public/index.html': getSamplePreviewHTMLFile(),
   }
 
-  let persistentModel = persistentModelForProjectContents(projectContents)
+  let persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
   persistentModel.openFiles = [
     openFileTab('/src/app.js'),
     openFileTab('/src/components.js'),

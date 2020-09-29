@@ -12,6 +12,7 @@ import {
 } from './ts/ts-worker'
 import utils from '../../utils/utils'
 import { workerForFile } from './utils'
+import { ProjectContentTreeRoot } from '../../components/assets'
 
 export interface BundlerContext {
   queuedUpdateFiles: { [key: string]: FileContent }
@@ -47,13 +48,13 @@ interface InitializeEvent {
   type: 'INITIALIZE'
   payload: {
     typeDefinitions: TypeDefinitions
-    projectContents: ProjectContents
+    projectContents: ProjectContentTreeRoot
     jobID: string | null
   }
 }
 function initializeEvent(
   typeDefinitions: TypeDefinitions,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
   jobID: string | null,
 ): InitializeEvent {
   return {
@@ -375,7 +376,7 @@ export class NewBundlerWorker {
 
   sendInitMessage(
     typeDefinitions: TypeDefinitions,
-    projectContents: ProjectContents,
+    projectContents: ProjectContentTreeRoot,
     jobID: string | null,
   ) {
     this.stateMachine.send(initializeEvent(typeDefinitions, projectContents, jobID))
@@ -399,7 +400,7 @@ export class NewBundlerWorker {
 function sendIdGuardedinitializeWorkerPromise(
   worker: BundlerWorker,
   typeDefinitions: TypeDefinitions,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
   jobID: string | null,
 ): Promise<InitCompleteMessage> {
   const generatedJobID = jobID == null ? utils.generateUUID() : jobID

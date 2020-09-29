@@ -56,6 +56,7 @@ import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer-test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 import { setPropertyControlsIFrameAvailable } from '../../core/property-controls/property-controls-utils'
+import { getContentsTreeFileFromString } from '../assets'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   return {
@@ -205,15 +206,14 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
 }
 
 export function getPrintedUiJsCode(store: EditorStore): string {
-  return ((store.editor.projectContents['/src/app.js'] as UIJSFile).fileContents as Right<
-    ParseSuccess
-  >).value.code
+  return ((getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js') as UIJSFile)
+    .fileContents as Right<ParseSuccess>).value.code
 }
 
 const TestSceneUID = 'scene-aaa'
 export const TestScenePath = scenePath([BakedInStoryboardUID, TestSceneUID])
 
-export function makeTestProjectCodeWithSnippet(snippet: string) {
+export function makeTestProjectCodeWithSnippet(snippet: string): string {
   const code = `/** @jsx jsx */
   import * as React from 'react'
   import { Scene, Storyboard, View, jsx } from 'utopia-api'

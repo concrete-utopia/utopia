@@ -4,6 +4,7 @@ import { RevisionsState } from '../../shared/project-file-types'
 import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 
 import * as SampleTypeDefinitions from './sample-type-definitions.json'
+import { contentsToTree } from '../../../components/assets'
 
 describe('Typescript worker builds the project', () => {
   it('initializing a new project', (done) => {
@@ -29,7 +30,7 @@ describe('Typescript worker builds the project', () => {
 const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
   type: 'inittsworker',
   typeDefinitions: SampleTypeDefinitions,
-  projectContents: {
+  projectContents: contentsToTree({
     '/package.json': {
       type: 'CODE_FILE',
       fileContents:
@@ -264,7 +265,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
         '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>Utopia React App</title>\n</head>\n<body>\n<div id="root"></div>\n</body>\n</html>',
       lastSavedContents: null,
     },
-  },
+  }),
   buildOrParsePrint: 'build',
   jobID: '9897a53d_15b6_400d_be5f_ca5d66e47087',
 }

@@ -12,8 +12,9 @@ import {
 import { isRight, right } from '../../../../core/shared/either'
 import { convertScenesToUtopiaCanvasComponent } from '../../../../core/model/scene-utils'
 import { codeFile } from '../../../../core/model/project-file-utils'
+import { contentsToTree } from '../../../assets'
 
-export const CURRENT_PROJECT_VERSION = 4
+export const CURRENT_PROJECT_VERSION = 5
 
 export function applyMigrations(
   persistentModel: PersistentModel,
@@ -22,7 +23,8 @@ export function applyMigrations(
   const version2 = migrateFromVersion1(version1)
   const version3 = migrateFromVersion2(version2)
   const version4 = migrateFromVersion3(version3)
-  return version4
+  const version5 = migrateFromVersion4(version4)
+  return version5
 }
 
 function migrateFromVersion0(
@@ -95,10 +97,10 @@ function migrateFromVersion1(
       } else {
         return file
       }
-    }, persistentModel.projectContents)
+    }, persistentModel.projectContents as any)
     return {
       ...persistentModel,
-      projectContents: updatedFiles,
+      projectContents: updatedFiles as any,
       projectVersion: 2,
     }
   }
@@ -150,10 +152,10 @@ function migrateFromVersion2(
       } else {
         return file
       }
-    }, persistentModel.projectContents)
+    }, persistentModel.projectContents as any)
     return {
       ...persistentModel,
-      projectContents: updatedFiles,
+      projectContents: updatedFiles as any,
       projectVersion: 3,
     }
   }
@@ -167,7 +169,7 @@ function migrateFromVersion3(
   if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 3) {
     return persistentModel as any
   } else {
-    const packageJsonFile = persistentModel.projectContents[PackageJsonUrl]
+    const packageJsonFile = (persistentModel.projectContents as any)[PackageJsonUrl]
     if (packageJsonFile != null && isCodeFile(packageJsonFile)) {
       const parsedPackageJson = JSON.parse(packageJsonFile.fileContents)
       const updatedPackageJson = {
@@ -186,12 +188,26 @@ function migrateFromVersion3(
         projectVersion: 4,
         projectContents: {
           ...persistentModel.projectContents,
-          [PackageJsonUrl]: updatedPackageJsonFile,
+          [PackageJsonUrl]: updatedPackageJsonFile as any,
         },
       }
     } else {
       console.error('Error migrating project: package.json not found, skipping')
       return { ...persistentModel, projectVersion: 4 }
+    }
+  }
+}
+
+function migrateFromVersion4(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 5 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 4) {
+    return persistentModel as any
+  } else {
+    return {
+      ...persistentModel,
+      projectVersion: 5,
+      projectContents: contentsToTree(persistentModel.projectContents as any),
     }
   }
 }

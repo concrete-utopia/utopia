@@ -164,6 +164,7 @@ import { createSceneTemplatePath, PathForSceneStyle } from '../../core/model/sce
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import { addFileToProjectContents, contentsToTree } from '../assets'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -2450,10 +2451,11 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
 
   return {
     ...baseModel,
-    projectContents: {
-      ...baseModel.projectContents,
-      '/src/app.js': uiJsFile(parsedFile, null, RevisionsState.BothMatch, Date.now()),
-    },
+    projectContents: addFileToProjectContents(
+      baseModel.projectContents,
+      '/src/app.js',
+      uiJsFile(parsedFile, null, RevisionsState.BothMatch, Date.now()),
+    ),
     selectedFile: openFileTab('/src/app.js'),
   }
 }

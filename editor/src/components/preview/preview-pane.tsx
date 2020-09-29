@@ -23,16 +23,17 @@ import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
 import { eitherToMaybe } from '../../core/shared/either'
 import { shareURLForProject } from '../../core/shared/utils'
 import { getMainJSFilename } from '../../core/shared/project-contents-utils'
+import { ProjectContentTreeRoot } from '../assets'
 
 export const PreviewIframeId = 'preview-column-container'
 
 export interface ProjectContentsUpdateMessage {
   type: 'PROJECT_CONTENTS_UPDATE'
-  projectContents: ProjectContents
+  projectContents: ProjectContentTreeRoot
 }
 
 export function projectContentsUpdateMessage(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): ProjectContentsUpdateMessage {
   return {
     type: 'PROJECT_CONTENTS_UPDATE',

@@ -31,6 +31,7 @@ import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import * as TP from '../../core/shared/template-path'
 import * as FontFaceObserver from 'fontfaceobserver'
 import { splitIntoLines } from '../../core/shared/string-utils'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 
 const CodeEditorFont = 'utopian-inconsolata'
 
@@ -50,7 +51,7 @@ interface MonacoWrapperProps {
     typeDefinitions: TypeDefinitions
   }
   cursorPosition: CursorPosition
-  projectContents: ProjectContents
+  projectContents: ProjectContentTreeRoot
   errorMessages: Array<ErrorMessage> | null
   workers: UtopiaTsWorkers
   selectedViews: Array<TemplatePath>
@@ -60,26 +61,28 @@ interface MonacoWrapperProps {
 }
 
 export function runtimeErrorInfoToErrorMessage(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
   runtimeError: RuntimeErrorInfo,
 ): ErrorMessage {
   let filename: string = ''
   let lineNumber: number | null = null
   let columnNumber: number | null = null
   if (runtimeError.error.stackFrames != null) {
-    const projectContentsKeys = Object.keys(projectContents)
     for (const stackFrame of runtimeError.error.stackFrames) {
       const originalFilenameAbsolutePath =
         stackFrame._originalFileName != null ? toAbsolutePath(stackFrame._originalFileName) : null
       if (
         originalFilenameAbsolutePath != null &&
-        projectContentsKeys.includes(originalFilenameAbsolutePath)
+        getContentsTreeFileFromString(projectContents, originalFilenameAbsolutePath) != null
       ) {
         filename = originalFilenameAbsolutePath
         lineNumber = stackFrame._originalLineNumber
         columnNumber = stackFrame._originalColumnNumber
         break
-      } else if (stackFrame.fileName != null && projectContentsKeys.includes(stackFrame.fileName)) {
+      } else if (
+        stackFrame.fileName != null &&
+        getContentsTreeFileFromString(projectContents, stackFrame.fileName) != null
+      ) {
         filename = stackFrame.fileName
         lineNumber = stackFrame.lineNumber
         columnNumber = stackFrame.columnNumber
@@ -352,9 +355,10 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
 
             let suggestions: monaco.languages.CompletionItem[] = []
             utils.fastForEach(Object.keys(this.props.projectContents), (filename) => {
-              const file = this.props.projectContents[filename]
+              const file = getContentsTreeFileFromString(this.props.projectContents, filename)
               if (
                 filename !== this.props.filename &&
+                file != null &&
                 (isDirectory(file) ||
                   isUIJSFile(file) ||
                   (isCodeFile(file) && isJsOrTsFile(filename)))
@@ -485,7 +489,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
     // Loading all project files to monaco to allow intelliSense
     // it's used in combination with setEagerModelSync
     utils.fastForEach(Object.keys(this.props.projectContents), (key: string) => {
-      const file = this.props.projectContents[key]
+      const file = getContentsTreeFileFromString(this.props.projectContents, key)
       const filename = monaco.Uri.file(key)
 
       let code: string | null = null

@@ -45,6 +45,13 @@ import {
 } from './scene-utils'
 import { pluck } from '../shared/array-utils'
 import { mapValues } from '../shared/object-utils'
+import {
+  getContentsTreeFileFromString,
+  projectContentFile,
+  ProjectContentsTree,
+  ProjectContentTreeRoot,
+  transformContentsTree,
+} from '../../components/assets'
 
 export function emptyElementCanvasMetadata(): ElementCanvasMetadata {
   return {}
@@ -475,17 +482,17 @@ export function switchToFileType(from: ProjectFile, to: ProjectFileType): Projec
 
 export function uniqueProjectContentID(
   startingID: string,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): string {
   const startingIDCorrected = correctProjectContentsPath(startingID)
-  if (startingIDCorrected in projectContents) {
+  if (getContentsTreeFileFromString(projectContents, startingIDCorrected) != null) {
     const firstIndexOfFullStop = startingIDCorrected.indexOf('.')
     if (firstIndexOfFullStop === -1) {
       let counter = 2
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const possibleNewID = `${startingIDCorrected}_${counter}`
-        if (possibleNewID in projectContents) {
+        if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
           counter += 1
         } else {
           return correctProjectContentsPath(possibleNewID)
@@ -499,7 +506,7 @@ export function uniqueProjectContentID(
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const possibleNewID = `${prefix}_${counter}.${suffix}`
-        if (possibleNewID in projectContents) {
+        if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
           counter += 1
         } else {
           return correctProjectContentsPath(possibleNewID)
@@ -626,22 +633,27 @@ export function correctProjectContentsPath(path: string): string {
 }
 
 export function applyToAllUIJSFiles(
-  allFiles: ProjectContents,
+  allFiles: ProjectContentTreeRoot,
   fn: (filename: string, uiJSFile: UIJSFile) => UIJSFile,
-): ProjectContents {
-  return mapValues((v, k) => {
-    if (isUIJSFile(v)) {
-      return fn(k, v)
+): ProjectContentTreeRoot {
+  return transformContentsTree(allFiles, (tree: ProjectContentsTree) => {
+    if (tree.type === 'PROJECT_CONTENT_FILE') {
+      if (isUIJSFile(tree.content)) {
+        const updatedContent = fn(tree.fullPath, tree.content)
+        return projectContentFile(tree.fullPath, updatedContent)
+      } else {
+        return tree
+      }
     } else {
-      return v
+      return tree
     }
-  }, allFiles)
+  })
 }
 
 export function applyToAllUIJSFilesContents(
-  allFiles: ProjectContents,
+  allFiles: ProjectContentTreeRoot,
   fn: (filename: string, fileContents: ParseResult) => ParseResult,
-): ProjectContents {
+): ProjectContentTreeRoot {
   return applyToAllUIJSFiles(allFiles, (k, v) => {
     return {
       ...v,

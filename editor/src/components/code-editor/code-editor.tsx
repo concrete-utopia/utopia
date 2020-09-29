@@ -10,7 +10,11 @@ import {
   ProjectContents,
   TemplatePath,
 } from '../../core/shared/project-file-types'
-import { TypeDefinitions, ResolvedNpmDependency, PossiblyUnversionedNpmDependency } from '../../core/shared/npm-dependency-types'
+import {
+  TypeDefinitions,
+  ResolvedNpmDependency,
+  PossiblyUnversionedNpmDependency,
+} from '../../core/shared/npm-dependency-types'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { CodeEditorTheme } from './code-editor-themes'
 import {
@@ -21,6 +25,7 @@ import {
 import { CodeEditorTabPane } from './code-problems'
 import { MonacoWrapper } from './monaco-wrapper'
 import { Notice } from '../common/notices'
+import { ProjectContentTreeRoot } from '../assets'
 
 const AutoSaveDelay = 300
 export interface CodeEditorProps {
@@ -44,7 +49,7 @@ export interface CodeEditorProps {
   allErrors: Array<ErrorMessage> | null
   errorsForFile: Array<ErrorMessage> | null
   readOnly: boolean
-  projectContents: ProjectContents
+  projectContents: ProjectContentTreeRoot
   workers: UtopiaTsWorkers
   selectedViews: Array<TemplatePath>
   selectedViewsBounds: Array<HighlightBounds>

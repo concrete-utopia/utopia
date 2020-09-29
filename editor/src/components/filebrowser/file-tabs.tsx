@@ -17,6 +17,11 @@ import {
 import { useEditorState } from '../editor/store/store-hook'
 import { fileHasErrorMessages } from './filebrowser'
 import { getIconTypeForFileBrowserItem } from './fileitem'
+import {
+  getContentsTreeFileFromString,
+  ProjectContentsTree,
+  ProjectContentTreeRoot,
+} from '../assets'
 
 function getKeyForEditorTab(editorTab: EditorTab): string {
   switch (editorTab.type) {
@@ -46,10 +51,14 @@ function getLabelForEditorTab(editorTab: EditorTab): string {
   }
 }
 
-function isModifiedForEditorTab(projectContents: ProjectContents, editorTab: EditorTab): boolean {
+function isModifiedForEditorTab(
+  projectContents: ProjectContentTreeRoot,
+  editorTab: EditorTab,
+): boolean {
   switch (editorTab.type) {
     case 'OPEN_FILE_TAB':
-      return isModifiedFile(projectContents[editorTab.filename])
+      const file = getContentsTreeFileFromString(projectContents, editorTab.filename)
+      return file == null ? false : isModifiedFile(file)
     case 'RELEASE_NOTES_TAB':
       return false
     case 'USER_CONFIGURATION_TAB':
@@ -97,7 +106,10 @@ export const FileTabs = betterReactMemo('FileTabs', () => {
         return getIconTypeForFileBrowserItem(
           'file',
           filepath,
-          Utils.propOrNull('type', store.editor.projectContents[filepath]),
+          Utils.propOrNull(
+            'type',
+            getContentsTreeFileFromString(store.editor.projectContents, filepath),
+          ),
           false,
           false,
         )
