@@ -14,7 +14,6 @@ import { getRequireFn } from '../core/es-modules/package-manager/package-manager
 import { pluck } from '../core/shared/array-utils'
 import { isRight } from '../core/shared/either'
 import { isCodeFile, NodeModules } from '../core/shared/project-file-types'
-import type { ProjectContents } from '../core/shared/project-file-types'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { createBundle } from '../core/workers/bundler-promise'
 import {
@@ -23,12 +22,13 @@ import {
 } from '../printer-parsers/html/external-resources-parser'
 import Utils from '../utils/utils'
 import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
+import { isProjectContentsUpdateMessage } from '../components/preview/preview-pane'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
 
 interface PolledLoadParams {
   projectId: string
   onStartLoad: () => void
-  onModelChanged: (model: PersistentModel | null) => void
+  onModelChanged: (model: ProjectContentTreeRoot) => void
   onModelUnchanged: () => void
   onError: (error: Error) => void
 }
@@ -55,7 +55,7 @@ export async function startPolledLoad({
       if (project.type === 'ProjectLoaded') {
         // eslint-disable-next-line require-atomic-updates
         lastSavedTS = project.modifiedAt
-        onModelChanged(project.content)
+        onModelChanged(project.content.projectContents)
       } else if (project.type === 'ProjectUnchanged') {
         onModelUnchanged()
       }
@@ -134,8 +134,12 @@ function addOpenInUtopiaButton(): void {
   }
 }
 
+let queuedModel: ProjectContentTreeRoot | null = null
+let loadingModel: boolean = false
+
 const initPreview = () => {
-  let shownModel: PersistentModel | null = null
+  loadingModel = false
+  queuedModel = null
   const bundlerWorker = new NewBundlerWorker(new RealBundlerWorker())
 
   const startPollingFromServer = (appID: string | null) => {
@@ -154,23 +158,34 @@ const initPreview = () => {
     }
   }
 
-  const modelUpdated = async (model: PersistentModel | null) => {
-    if (model != null && R.equals(shownModel, model)) {
-      // the returned model did not change, bail out
-      return
-    }
-    shownModel = model
-    if (model?.projectContents != null) {
-      previewRender(model.projectContents)
+  const modelUpdated = async (model: ProjectContentTreeRoot) => {
+    if (loadingModel) {
+      queuedModel = model
+    } else {
+      renderProject(model)
     }
   }
 
   const handleModelUpdateEvent = (event: MessageEvent) => {
     // Received a model from the containing page.
     const eventData = event.data
-    if (isPersistentModel(eventData)) {
-      modelUpdated(eventData)
+    if (isProjectContentsUpdateMessage(eventData)) {
+      modelUpdated(eventData.projectContents)
     }
+  }
+
+  const handlePossiblyQueuedModel = () => {
+    if (queuedModel == null) {
+      loadingModel = false
+    } else {
+      renderProject(queuedModel)
+    }
+  }
+
+  const renderProject = async (projectContents: ProjectContentTreeRoot) => {
+    loadingModel = true
+    queuedModel = null
+    previewRender(projectContents).finally(handlePossiblyQueuedModel)
   }
 
   const previewRender = async (projectContents: ProjectContentTreeRoot) => {

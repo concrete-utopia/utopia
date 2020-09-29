@@ -18,10 +18,46 @@ import { DeviceInfo, deviceInfoList } from '../../common/devices'
 import { BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { useEditorState } from '../editor/store/store-hook'
 import { SelectOption } from '../inspector/controls/select-control'
+import { isCodeFile, CodeFile, ProjectContents } from '../../core/shared/project-file-types'
+import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
+import { eitherToMaybe } from '../../core/shared/either'
 import { shareURLForProject } from '../../core/shared/utils'
 import { getMainJSFilename } from '../../core/shared/project-contents-utils'
+import { ProjectContentTreeRoot } from '../assets'
 
 export const PreviewIframeId = 'preview-column-container'
+
+export interface ProjectContentsUpdateMessage {
+  type: 'PROJECT_CONTENTS_UPDATE'
+  projectContents: ProjectContentTreeRoot
+}
+
+export function projectContentsUpdateMessage(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentsUpdateMessage {
+  return {
+    type: 'PROJECT_CONTENTS_UPDATE',
+    projectContents: projectContents,
+  }
+}
+
+export function isProjectContentsUpdateMessage(
+  data: unknown,
+): data is ProjectContentsUpdateMessage {
+  return (
+    data != null &&
+    typeof data === 'object' &&
+    !Array.isArray(data) &&
+    (data as ProjectContentsUpdateMessage).type === 'PROJECT_CONTENTS_UPDATE'
+  )
+}
+
+interface IntermediatePreviewColumnProps {
+  id: string | null
+  projectName: string
+  connected: boolean
+  packageJSONFile: CodeFile | null
+}
 
 export interface PreviewColumnProps {
   id: string | null
