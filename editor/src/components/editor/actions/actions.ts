@@ -3280,7 +3280,10 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_FILE: (action: UpdateFile, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
-    if (!action.addIfNotInFiles && editor.projectContents[action.filePath] == null) {
+    if (
+      !action.addIfNotInFiles &&
+      getContentsTreeFileFromString(editor.projectContents, action.filePath) == null
+    ) {
       return editor
     }
 
