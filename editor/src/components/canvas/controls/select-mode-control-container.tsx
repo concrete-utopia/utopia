@@ -28,6 +28,7 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
+import { ParentControls } from './parent-controls'
 
 export const SnappingThreshold = 5
 
@@ -757,6 +758,7 @@ export class SelectModeControlContainer extends React.Component<
         {...this.getMoveGuidelines()}
         {this.getDistanceGuidelines()}
         {this.getBoundingMarks()}
+        {this.props.selectionEnabled && <ParentControls {...this.props} />}
       </div>
     )
   }
