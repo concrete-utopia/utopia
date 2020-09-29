@@ -25,6 +25,7 @@ import urljoin = require('url-join')
 import * as JSZip from 'jszip'
 import { isText } from 'istextorbinary'
 import { Either, left, right } from '../../core/shared/either'
+import { addFileToProjectContents, walkContentsTree } from '../assets'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -269,8 +270,7 @@ export async function saveImagesFromProject(
 ): Promise<PersistentModel> {
   let promises: Array<Promise<{ contentId: string; projectContent: ImageFile }>> = []
 
-  Utils.fastForEach(Object.keys(model.projectContents), (contentId) => {
-    const projectContent = model.projectContents[contentId]
+  walkContentsTree(model.projectContents, (fullPath, projectContent) => {
     if (
       isImageFile(projectContent) &&
       projectContent.base64 != null &&
@@ -282,9 +282,9 @@ export async function saveImagesFromProject(
             projectId,
             projectContent.imageType,
             projectContent.base64,
-            contentId,
+            fullPath,
           ).then(() => {
-            return { contentId: contentId, projectContent: projectContent }
+            return { contentId: fullPath, projectContent: projectContent }
           }),
         )
       } catch (e) {
@@ -295,21 +295,24 @@ export async function saveImagesFromProject(
   })
 
   return Promise.all(promises).then((updatedFiles) => {
-    const projectContents = { ...model.projectContents }
-    Utils.fastForEach(updatedFiles, ({ contentId, projectContent }) => {
-      // Scrub the image type and base64
-      projectContents[contentId] = imageFile(
-        undefined,
-        undefined,
-        projectContent.width,
-        projectContent.height,
-        projectContent.hash,
-      )
-    })
+    const updatedProjectContents = updatedFiles.reduce(
+      (workingProjectContents, { contentId, projectContent }) => {
+        // Scrub the image type and base64
+        const updatedFile = imageFile(
+          undefined,
+          undefined,
+          projectContent.width,
+          projectContent.height,
+          projectContent.hash,
+        )
+        return addFileToProjectContents(workingProjectContents, contentId, updatedFile)
+      },
+      model.projectContents,
+    )
 
     return {
       ...model,
-      projectContents: projectContents,
+      projectContents: updatedProjectContents,
     }
   })
 }

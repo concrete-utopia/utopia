@@ -26,7 +26,8 @@ import { ExportsInfo } from '../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { objectKeyParser, parseAny, ParseResult } from '../utils/value-parser-utils'
 import { applicative3Either, forEachRight } from '../core/shared/either'
-import {resolvedDependencyVersions} from '../core/third-party/third-party-components'
+import { resolvedDependencyVersions } from '../core/third-party/third-party-components'
+import { ProjectContentTreeRoot } from '../components/assets'
 
 // Not a full parse, just checks the primary fields are there.
 function fastPropertyControlsParse(value: unknown): ParseResult<GetPropertyControlsInfoMessage> {
@@ -59,7 +60,7 @@ const initPropertyControls = () => {
   }
 
   const processPropertyControls = async (
-    projectContents: ProjectContents,
+    projectContents: ProjectContentTreeRoot,
     nodeModules: NodeModules,
     exportsInfo: ReadonlyArray<ExportsInfo>,
   ) => {

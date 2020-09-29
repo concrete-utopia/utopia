@@ -34,6 +34,7 @@ import { ErrorMessage } from '../../shared/error-messages'
 import { fastForEach } from '../../shared/utils'
 import { getCodeFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
+import { ProjectContentTreeRoot, walkContentsTree } from '../../../components/assets'
 
 const TS_LIB_FILES: { [key: string]: string } = {
   'lib.d.ts': libfile,
@@ -80,7 +81,7 @@ interface UpdateFileMessage {
 interface InitTSWorkerMessage {
   type: 'inittsworker'
   typeDefinitions: TypeDefinitions
-  projectContents: ProjectContents
+  projectContents: ProjectContentTreeRoot
   buildOrParsePrint: 'build' | 'parse-print'
   jobID: string
 }
@@ -158,7 +159,7 @@ export function createUpdateFileMessage(
 
 export function createInitTSWorkerMessage(
   typeDefinitions: TypeDefinitions,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
   buildOrParsePrint: 'build' | 'parse-print',
   jobID: string,
 ): InitTSWorkerMessage {
@@ -273,20 +274,24 @@ export const DefaultLanguageServiceCompilerOptions: TS.CompilerOptions = {
 // exported for tests
 export function initTsIncrementalBuild(
   typeDefinitions: TypeDefinitions,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
   buildOrParsePrint: 'build' | 'parse-print',
   sendMessage: (content: OutgoingWorkerMessage) => void,
   jobID: string,
-) {
+): void {
   initBrowserFS(typeDefinitions, projectContents)
   // Initialize files constituting the program as all .ts files in the current directory
   // Start the watcher
-  const codeFiles = Object.keys(projectContents).filter(
-    (filename) => isCodeOrUiJsFile(projectContents[filename]) && isJsOrTsFile(filename),
-  )
-  const otherFilesToWatch = Object.keys(projectContents).filter(
-    (filename) => isCodeOrUiJsFile(projectContents[filename]) && isCssFile(filename),
-  )
+  let codeFiles: Array<string> = []
+  let otherFilesToWatch: Array<string> = []
+  walkContentsTree(projectContents, (filename, file) => {
+    if (isCodeOrUiJsFile(file) && isJsOrTsFile(filename)) {
+      codeFiles.push(filename)
+    }
+    if (isCodeOrUiJsFile(file) && isCssFile(filename)) {
+      otherFilesToWatch.push(filename)
+    }
+  })
   watch(
     codeFiles,
     otherFilesToWatch,
@@ -301,7 +306,7 @@ export function initTsIncrementalBuild(
 
 export function initBrowserFS(
   typeDefinitions: TypeDefinitions,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): FSModule {
   BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
     if (e) {
@@ -316,8 +321,7 @@ export function initBrowserFS(
     writeFile(fs, `/${lib}`, TS_LIB_FILES[lib])
   })
 
-  Object.keys(projectContents).forEach((filename) => {
-    const file = projectContents[filename]
+  walkContentsTree(projectContents, (filename, file) => {
     if (isCodeOrUiJsFile(file)) {
       const fileContents = getCodeFileContents(file, false, true)
       writeFile(fs, filename, fileContents)

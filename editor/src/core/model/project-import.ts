@@ -15,6 +15,7 @@ import { assetResultForBase64, getFileExtension, imageResultForBase64 } from '..
 import { Size } from '../shared/math-utils'
 import { left } from '../shared/either'
 import { parseFailure } from '../workers/common/project-file-utils'
+import { addFileToProjectContents, ProjectContentTreeRoot } from '../../components/assets'
 
 async function attemptedTextFileLoad(fileName: string, file: JSZipObject): Promise<string | null> {
   const fileBuffer = await file.async('nodebuffer')
@@ -36,7 +37,7 @@ export interface UnsavedAsset {
 export interface ProjectImportSuccess {
   type: 'SUCCESS'
   projectName: string
-  contents: ProjectContents
+  contents: ProjectContentTreeRoot
   assetsToUpload: Array<UnsavedAsset>
 }
 
@@ -47,7 +48,7 @@ export interface ProjectImportFailure {
 
 function projectImportSuccess(
   projectName: string,
-  contents: ProjectContents,
+  contents: ProjectContentTreeRoot,
   assetsToUpload: Array<UnsavedAsset>,
 ): ProjectImportSuccess {
   return {
@@ -83,7 +84,7 @@ export async function importZippedGitProject(
   projectName: string,
   zipped: JSZip,
 ): Promise<ProjectImportResult> {
-  let loadedProject: ProjectContents = {}
+  let loadedProject: ProjectContentTreeRoot = {}
   let promises: Array<Promise<void>> = []
   let assetsToUpload: Array<UnsavedAsset> = []
   let errors: Array<string> = []
@@ -95,7 +96,7 @@ export async function importZippedGitProject(
       return
     }
     if (file.dir) {
-      loadedProject[shiftedFileName] = directory()
+      loadedProject = addFileToProjectContents(loadedProject, shiftedFileName, directory())
     } else {
       const expectedFileType = fileTypeFromFileName(shiftedFileName)
       switch (expectedFileType) {
@@ -110,7 +111,7 @@ export async function importZippedGitProject(
             hash: assetResult.hash,
             size: null,
           })
-          loadedProject[shiftedFileName] = assetFile()
+          loadedProject = addFileToProjectContents(loadedProject, shiftedFileName, assetFile())
           break
         }
         case 'IMAGE_FILE': {
@@ -124,12 +125,10 @@ export async function importZippedGitProject(
             hash: imageResult.hash,
             size: imageResult.size,
           })
-          loadedProject[shiftedFileName] = imageFile(
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            imageResult.hash,
+          loadedProject = addFileToProjectContents(
+            loadedProject,
+            shiftedFileName,
+            imageFile(undefined, undefined, undefined, undefined, imageResult.hash),
           )
           break
         }
@@ -141,14 +140,22 @@ export async function importZippedGitProject(
           } else {
             if (expectedFileType === 'UI_JS_FILE') {
               // TODO We really need a way to represent unparsed files, or a way to separate the parsed file from the contents
-              loadedProject[shiftedFileName] = uiJsFile(
-                left(parseFailure(null, null, null, [], loadedFile)),
-                null,
-                RevisionsState.BothMatch,
-                Date.now(),
+              loadedProject = addFileToProjectContents(
+                loadedProject,
+                shiftedFileName,
+                uiJsFile(
+                  left(parseFailure(null, null, null, [], loadedFile)),
+                  null,
+                  RevisionsState.BothMatch,
+                  Date.now(),
+                ),
               )
             } else {
-              loadedProject[shiftedFileName] = codeFile(loadedFile, null)
+              loadedProject = addFileToProjectContents(
+                loadedProject,
+                shiftedFileName,
+                codeFile(loadedFile, null),
+              )
             }
           }
           break

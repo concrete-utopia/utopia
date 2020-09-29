@@ -60,7 +60,8 @@ import {
   ScenePath1ForTestUiJsFile,
 } from '../../../core/model/test-ui-js-file'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import {requestedNpmDependency} from '../../../core/shared/npm-dependency-types'
+import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
+import { getContentsTreeFileFromString } from '../../assets'
 
 const chaiExpect = Chai.expect
 
@@ -293,7 +294,7 @@ describe('action NAVIGATOR_REORDER', () => {
       [TP.instancePath(ScenePath1ForTestUiJsFile, ['jjj'])],
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
     )
-    const mainUIJSFile = editor.projectContents['/src/app.js']
+    const mainUIJSFile = getContentsTreeFileFromString(editor.projectContents, '/src/app.js')
     if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
       const topLevelElements = mainUIJSFile.fileContents.value.topLevelElements
       const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value)
@@ -311,7 +312,10 @@ describe('action NAVIGATOR_REORDER', () => {
           emptyUiJsxCanvasContextData(),
         )
 
-        const updatedMainUIJSFile = updatedEditor.projectContents['/src/app.js']
+        const updatedMainUIJSFile = getContentsTreeFileFromString(
+          updatedEditor.projectContents,
+          '/src/app.js',
+        )
         if (isUIJSFile(updatedMainUIJSFile) && isRight(updatedMainUIJSFile.fileContents)) {
           const updatedTopLevelElements = updatedMainUIJSFile.fileContents.value.topLevelElements
           const updatedUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
@@ -368,8 +372,8 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
-    const oldUIJSFile = editor.projectContents['/src/app.js']
+    const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
+    const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, '/src/app.js')
     if (
       isUIJSFile(oldUIJSFile) &&
       isRight(oldUIJSFile.fileContents) &&
@@ -409,8 +413,8 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
-    const oldUIJSFile = editor.projectContents['/src/app.js']
+    const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
+    const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, '/src/app.js')
     if (
       isUIJSFile(oldUIJSFile) &&
       isRight(oldUIJSFile.fileContents) &&
@@ -451,7 +455,8 @@ describe('action DELETE_VIEWS', () => {
       [],
       [0, 'rootElement', 'children'],
       getUtopiaJSXComponentsFromSuccess(
-        (editor.projectContents['/src/app.js'] as any).fileContents.value,
+        (getContentsTreeFileFromString(editor.projectContents, '/src/app.js') as any).fileContents
+          .value,
       ),
     ).length
 
@@ -473,7 +478,7 @@ describe('action DELETE_VIEWS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
+    const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
     if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
       expect(
         Utils.pathOr(
@@ -651,7 +656,7 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = updatedEditor.projectContents['/src/app.js']
+    const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
     if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
       const components = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value)
       const textElement = Utils.forceNotNull(
@@ -861,7 +866,10 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
     const { editor, derivedState } = createEditorStates('/src/app.ui.js')
     const mockDispatch = jest.fn()
 
-    const deps = [requestedNpmDependency('mypackage', '1.0.0'), requestedNpmDependency('smart', '2.3.1')]
+    const deps = [
+      requestedNpmDependency('mypackage', '1.0.0'),
+      requestedNpmDependency('smart', '2.3.1'),
+    ]
     const action = updatePackageJson(deps)
     const updatedEditor = runLocalEditorAction(
       editor,
@@ -874,7 +882,10 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       emptyUiJsxCanvasContextData(),
     )
 
-    const packageJsonFile = updatedEditor.projectContents['/package.json']
+    const packageJsonFile = getContentsTreeFileFromString(
+      updatedEditor.projectContents,
+      '/package.json',
+    )
     if (packageJsonFile == null || packageJsonFile.type != 'CODE_FILE') {
       fail('Package.json file should exist and should be a CodeFile')
     } else {

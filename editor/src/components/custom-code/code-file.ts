@@ -21,6 +21,7 @@ import { updateNodeModulesContents } from '../editor/actions/actions'
 import { fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
+import { ProjectContentTreeRoot } from '../assets'
 export interface CodeResult {
   exports: ModuleExportTypes
   transpiledCode: string | null
@@ -154,7 +155,7 @@ export function incorporateBuildResult(
 }
 
 export function generateCodeResultCache(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
   existingModules: MultiFileBuildResult,
   updatedModules: MultiFileBuildResult,
   exportsInfo: ReadonlyArray<ExportsInfo>,

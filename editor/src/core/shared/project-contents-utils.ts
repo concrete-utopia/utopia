@@ -1,10 +1,13 @@
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
 import { defaultEither, eitherToMaybe, isLeft } from './either'
 import { is } from './equality-utils'
 import { memoize } from './memoize'
 import { isCodeFile, ProjectContents, ProjectFile } from './project-file-types'
 
-function parsePackageJsonInner(packageJson: ProjectFile | undefined): Record<string, any> | null {
+function parsePackageJsonInner(
+  packageJson: ProjectFile | undefined | null,
+): Record<string, any> | null {
   if (packageJson != null && isCodeFile(packageJson)) {
     try {
       return JSON.parse(packageJson.fileContents)
@@ -33,13 +36,13 @@ function packageJsonEquals(l: ProjectFile | undefined, r: ProjectFile | undefine
 
 const parsePackageJson = memoize(parsePackageJsonInner, { maxSize: 1, equals: packageJsonEquals })
 
-function getParsedPackageJson(projectContents: ProjectContents): Record<string, any> | null {
-  return parsePackageJson(projectContents['/package.json'])
+function getParsedPackageJson(projectContents: ProjectContentTreeRoot): Record<string, any> | null {
+  return parsePackageJson(getContentsTreeFileFromString(projectContents, '/package.json'))
 }
 
 function getUtopiaSpecificStringSetting(
   prop: string,
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
 ): string | null {
   const packageJson = getParsedPackageJson(projectContents)
   const parseField = objectKeyParser(objectKeyParser(parseString, prop), 'utopia')
@@ -47,16 +50,16 @@ function getUtopiaSpecificStringSetting(
   return eitherToMaybe(parseResult)
 }
 
-export function getMainUIFilename(projectContents: ProjectContents): string | null {
+export function getMainUIFilename(projectContents: ProjectContentTreeRoot): string | null {
   return getUtopiaSpecificStringSetting('main-ui', projectContents)
 }
 
-export function getMainHTMLFilename(projectContents: ProjectContents): string {
+export function getMainHTMLFilename(projectContents: ProjectContentTreeRoot): string {
   const setValue = getUtopiaSpecificStringSetting('html', projectContents)
   return setValue ?? 'public/index.html'
 }
 
-export function getMainJSFilename(projectContents: ProjectContents): string {
+export function getMainJSFilename(projectContents: ProjectContentTreeRoot): string {
   const setValue = getUtopiaSpecificStringSetting('js', projectContents)
   return setValue ?? 'src/index.js'
 }

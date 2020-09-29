@@ -28,12 +28,11 @@ import {
 import { ErrorMessage } from '../../core/shared/error-messages'
 import {
   isParseSuccess,
-  ProjectContents,
   ProjectFileType,
   importDetails,
   importAlias,
 } from '../../core/shared/project-file-types'
-import { contentsToTree, walkContentsTree } from '../assets'
+import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/actions'
@@ -72,14 +71,13 @@ export function fileHasErrorMessages(path: string, errorMessages: ErrorMessage[]
 }
 
 function collectFileBrowserItems(
-  projectContents: ProjectContents,
+  projectContents: ProjectContentTreeRoot,
   collapsedPaths: string[],
   codeResultCache: CodeResultCache | null,
   errorMessages: ErrorMessage[] | null,
 ): FileBrowserItemInfo[] {
-  const tree = contentsToTree(projectContents)
   let fileBrowserItems: FileBrowserItemInfo[] = []
-  walkContentsTree(tree, (fullPath, element) => {
+  walkContentsTree(projectContents, (fullPath, element) => {
     const originatingPath = fullPath
 
     const hasErrorMessages = fileHasErrorMessages(fullPath, errorMessages)

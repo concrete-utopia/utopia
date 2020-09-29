@@ -14,12 +14,7 @@ import {
   JSXElementChild,
 } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import {
-  ProjectContents,
-  PropertyPath,
-  TemplatePath,
-  Imports,
-} from '../../../core/shared/project-file-types'
+import { PropertyPath, TemplatePath, Imports } from '../../../core/shared/project-file-types'
 import { Either, isLeft, right } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
@@ -78,7 +73,6 @@ interface InsertModeControlContainerProps extends ControlProps {
   keysPressed: KeysPressed
   projectId: string | null
   dragState: InsertDragState | null
-  projectContents: ProjectContents
   canvasOffset: CanvasVector
   scale: number
 }
