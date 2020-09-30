@@ -24,6 +24,7 @@ import {
   LayoutFlexElementProp,
   LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
+import { FlexAlignment } from 'utopia-api'
 
 export const enum CSSCursor {
   Select = "-webkit-image-set( url( '/editor/cursors/cursor-default.png ') 1x, url( '/editor/cursors/cursor-default@2x.png ') 2x ) 4 4, default",
@@ -215,6 +216,12 @@ export interface FlexMoveChange {
   newIndex: number
 }
 
+export interface FlexAlignChange {
+  type: 'FLEX_ALIGN'
+  target: TemplatePath
+  alignment: FlexAlignment
+}
+
 export interface FlexResizeChange {
   type: 'FLEX_RESIZE'
   target: TemplatePath
@@ -237,6 +244,7 @@ export type PinOrFlexFrameChange =
   | FlexResizeChange
   | SingleResizeChange
   | MoveTranslateChange
+  | FlexAlignChange
 
 export function pinFrameChange(
   target: TemplatePath,
@@ -288,6 +296,14 @@ export function flexMoveChange(target: TemplatePath, newIndex: number): FlexMove
     type: 'FLEX_MOVE',
     target: target,
     newIndex: newIndex,
+  }
+}
+
+export function flexAlignChange(target: TemplatePath, alignment: FlexAlignment): FlexAlignChange {
+  return {
+    type: 'FLEX_ALIGN',
+    target: target,
+    alignment: alignment,
   }
 }
 

@@ -1,16 +1,36 @@
 import * as R from 'ramda'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../../../../core/shared/element-template'
-import { TemplatePath } from '../../../../core/shared/project-file-types'
+import {
+  findJSXElementAtPath,
+  getSimpleAttributeAtPath,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
+import {
+  ComponentMetadata,
+  ElementInstanceMetadata,
+  isUtopiaJSXComponent,
+  jsxAttributeValue,
+} from '../../../../core/shared/element-template'
+import {
+  InstancePath,
+  ParseSuccess,
+  TemplatePath,
+} from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import * as EditorActions from '../../../editor/actions/actions'
 import { setCanvasFrames } from '../../../editor/actions/actions'
-import { EditorState } from '../../../editor/store/editor-state'
+import {
+  DerivedState,
+  EditorState,
+  getOpenFile,
+  getOpenUIJSFile,
+} from '../../../editor/store/editor-state'
 import * as TP from '../../../../core/shared/template-path'
 import {
   CanvasFrameAndTarget,
+  flexAlignChange,
+  FlexAlignChange,
   flexMoveChange,
   FlexMoveChange,
   flexResizeChange,
@@ -25,6 +45,10 @@ import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
 import { flatMapArray } from '../../../../core/shared/array-utils'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
+import { FlexAlignment } from 'utopia-api'
+import { getUtopiaJSXComponentsFromSuccess } from '../../../../core/model/project-file-utils'
+import { eitherToMaybe, isRight, right } from '../../../../core/shared/either'
+import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
 
 function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {
@@ -113,7 +137,11 @@ export function dragComponent(
   constrainDragAxis: boolean,
   scale: number,
   translateMode: boolean,
-): Array<PinMoveChange | FlexMoveChange | MoveTranslateChange> {
+  dragStart: CanvasPoint,
+  editor: EditorState,
+  dispatch: EditorDispatch | null,
+  derivedState: DerivedState | null,
+): Array<PinMoveChange | FlexMoveChange | MoveTranslateChange | FlexAlignChange> {
   const roundedDragDelta = Utils.roundPointTo(dragDelta, 0)
   // TODO: Probably makes more sense to pull this out.
   const viewsToOperateOn = determineElementsToOperateOnForDragging(
@@ -122,7 +150,9 @@ export function dragComponent(
     true,
     false,
   )
-  let dragChanges: Array<PinMoveChange | FlexMoveChange | MoveTranslateChange> = []
+  let dragChanges: Array<
+    PinMoveChange | FlexMoveChange | FlexAlignChange | MoveTranslateChange
+  > = []
   Utils.fastForEach(viewsToOperateOn, (view) => {
     const parentPath = TP.parentPath(view)
     const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -150,6 +180,156 @@ export function dragComponent(
         )
         if (newIndex != null) {
           dragChanges.push(flexMoveChange(view, newIndex))
+        } else {
+          if (parentPath != null) {
+            const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, componentsMetadata)
+            let currentAlignment: FlexAlignment | null = null
+            const openFile = getOpenUIJSFile(editor)
+            if (TP.isInstancePath(view) && openFile != null && isRight(openFile.fileContents)) {
+              const draggedJsxElements = derivedState?.canvas.transientState?.fileState?.topLevelElementsIncludingScenes?.filter(
+                isUtopiaJSXComponent,
+              )
+              const jsxElements =
+                draggedJsxElements != null
+                  ? draggedJsxElements
+                  : getUtopiaJSXComponentsFromSuccess(eitherToMaybe(openFile.fileContents)!)
+              const element = findJSXElementAtPath(view, jsxElements, componentsMetadata)
+              if (element != null) {
+                currentAlignment = eitherToMaybe(
+                  getSimpleAttributeAtPath(
+                    right(element.props),
+                    createLayoutPropertyPath('alignSelf'),
+                  ),
+                )
+              }
+            }
+            let childElements: ElementInstanceMetadata[] | null = []
+            if (TP.isInstancePath(parentPath)) {
+              childElements =
+                MetadataUtils.getElementByInstancePathMaybe(componentsMetadata, parentPath)
+                  ?.children ?? null
+            }
+            if (parentFrame != null) {
+              let newAlignment: FlexAlignment = FlexAlignment.Auto
+              const draggedPoint = Utils.offsetPoint(dragStart, roundedDragDelta)
+              switch (flexDirection) {
+                case 'column': {
+                  const draggedPointPlacedInParent =
+                    (draggedPoint.x - parentFrame.x) / parentFrame.width
+                  if (draggedPointPlacedInParent >= 0 && draggedPointPlacedInParent < 0.33) {
+                    newAlignment = FlexAlignment.FlexStart
+                  } else if (
+                    draggedPointPlacedInParent >= 0.33 &&
+                    draggedPointPlacedInParent < 0.66
+                  ) {
+                    newAlignment = FlexAlignment.Center
+                  } else if (draggedPointPlacedInParent >= 0.66 && draggedPointPlacedInParent < 1) {
+                    newAlignment = FlexAlignment.FlexEnd
+                  }
+                  break
+                }
+                case 'column-reverse': {
+                  const draggedPointPlacedInParent =
+                    (draggedPoint.x - parentFrame.x) / parentFrame.width
+                  if (draggedPointPlacedInParent >= 0 && draggedPointPlacedInParent < 0.33) {
+                    newAlignment = FlexAlignment.FlexEnd
+                  } else if (
+                    draggedPointPlacedInParent >= 0.33 &&
+                    draggedPointPlacedInParent < 0.66
+                  ) {
+                    newAlignment = FlexAlignment.Center
+                  } else if (draggedPointPlacedInParent >= 0.66 && draggedPointPlacedInParent < 1) {
+                    newAlignment = FlexAlignment.FlexStart
+                  }
+                  break
+                }
+                case 'row': {
+                  const draggedPointPlacedInParent =
+                    (draggedPoint.y - parentFrame.y) / parentFrame.height
+                  if (draggedPointPlacedInParent >= 0 && draggedPointPlacedInParent < 0.33) {
+                    newAlignment = FlexAlignment.FlexStart
+                  } else if (
+                    draggedPointPlacedInParent >= 0.33 &&
+                    draggedPointPlacedInParent < 0.66
+                  ) {
+                    newAlignment = FlexAlignment.Center
+                  } else if (draggedPointPlacedInParent >= 0.66 && draggedPointPlacedInParent < 1) {
+                    newAlignment = FlexAlignment.FlexEnd
+                  }
+                  break
+                }
+                case 'row-reverse': {
+                  const draggedPointPlacedInParent =
+                    (draggedPoint.y - parentFrame.y) / parentFrame.height
+                  if (draggedPointPlacedInParent >= 0 && draggedPointPlacedInParent < 0.33) {
+                    newAlignment = FlexAlignment.FlexEnd
+                  } else if (
+                    draggedPointPlacedInParent >= 0.33 &&
+                    draggedPointPlacedInParent < 0.66
+                  ) {
+                    newAlignment = FlexAlignment.Center
+                  } else if (draggedPointPlacedInParent >= 0.66 && draggedPointPlacedInParent < 1) {
+                    newAlignment = FlexAlignment.FlexStart
+                  }
+                  break
+                }
+              }
+              dragChanges.push(flexAlignChange(view, newAlignment))
+              if (currentAlignment != newAlignment) {
+                dragChanges.push(flexAlignChange(view, newAlignment))
+                clearTimeout((window as any)['flexParentTimer'])
+                clearTimeout((window as any)['flexParentHighlightTimer'])
+                ;(window as any)['flexParentTimer'] = null
+                ;(window as any)['flexParentHighlightTimer'] = null
+                if (dispatch != null) dispatch([EditorActions.clearHighlightedViews()], 'canvas')
+              } else {
+                if ((window as any)['flexParentTimer'] == null) {
+                  const flexParentTimer = setTimeout(() => {
+                    if (
+                      dispatch != null &&
+                      parentPath != null &&
+                      TP.isInstancePath(parentPath) &&
+                      (window as any)['flexAlignmentDrag'] === newAlignment
+                    ) {
+                      let actions: EditorAction[] = [
+                        EditorActions.setProp_UNSAFE(
+                          parentPath,
+                          createLayoutPropertyPath('alignItems'),
+                          jsxAttributeValue(newAlignment),
+                        ),
+                        EditorActions.clearHighlightedViews(),
+                      ]
+                      Utils.fastForEach(childElements ?? [], (element) => {
+                        actions.push(
+                          EditorActions.unsetProperty(
+                            element.templatePath,
+                            createLayoutPropertyPath('alignSelf'),
+                          ),
+                        )
+                      })
+                      dispatch(actions, 'canvas')
+                    } else if (dispatch != null) {
+                      dispatch([EditorActions.clearHighlightedViews()], 'canvas')
+                    }
+
+                    clearTimeout((window as any)['flexParentHighlightTimer'])
+                    ;(window as any)['flexParentTimer'] = null
+                    ;(window as any)['flexParentHighlightTimer'] = null
+                  }, 2000)
+
+                  const flexParentHighlightTimer = setTimeout(() => {
+                    if (dispatch != null && (window as any)['flexParentTimer'] != null) {
+                      dispatch([EditorActions.setHighlightedView(parentPath)], 'canvas')
+                    }
+                  }, 1500)
+
+                  ;(window as any)['flexParentTimer'] = flexParentTimer
+                  ;(window as any)['flexParentHighlightTimer'] = flexParentHighlightTimer
+                }
+              }
+              ;(window as any)['flexAlignmentDrag'] = newAlignment
+            }
+          }
         }
       }
     } else {
@@ -199,6 +379,8 @@ export function dragComponentForActions(
   constrainDragAxis: boolean,
   scale: number,
   translateMode: boolean,
+  start: CanvasPoint,
+  editor: EditorState,
 ): Array<EditorAction> {
   const frameAndTargets = dragComponent(
     componentsMetadata,
@@ -212,6 +394,10 @@ export function dragComponentForActions(
     constrainDragAxis,
     scale,
     translateMode,
+    start,
+    editor,
+    null,
+    null,
   )
   return [setCanvasFrames(frameAndTargets, false)]
 }
@@ -331,6 +517,8 @@ export function adjustAllSelectedFrames(
       false,
       editor.canvas.scale,
       false,
+      Utils.zeroPoint as CanvasPoint,
+      editor,
     )
   }
 

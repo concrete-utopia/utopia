@@ -182,6 +182,7 @@ import {
   printTransform,
 } from '../inspector/common/css-utils'
 import { immutablyUpdateArrayIndex } from '../../core/shared/array-utils'
+import { EditorDispatch } from '../editor/action-types'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -313,8 +314,13 @@ export function clearDragState(
   applyChanges: boolean,
 ): EditorState {
   let result: EditorState = model
+  clearTimeout((window as any)['flexParentTimer'])
+  clearTimeout((window as any)['flexParentHighlightTimer'])
+  ;(window as any)['flexAlignmentDrag'] = null
+  ;(window as any)['flexParentTimer'] = null
+  ;(window as any)['flexParentHighlightTimer'] = null
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
-    const producedTransientCanvasState = produceCanvasTransientState(result, false)
+    const producedTransientCanvasState = produceCanvasTransientState(result, false, null, derived)
     const producedTransientFileState = producedTransientCanvasState.fileState
     if (producedTransientFileState != null) {
       result = modifyOpenParseSuccess((success) => {
@@ -337,6 +343,7 @@ export function clearDragState(
     selectedViews: applyChanges
       ? derived.canvas.transientState.selectedViews
       : result.selectedViews,
+    highlightedViews: [],
   }
 }
 
@@ -476,6 +483,7 @@ export function updateFramesOfScenesAndComponents(
         case 'FLEX_MOVE':
         case 'FLEX_RESIZE':
         case 'MOVE_TRANSLATE_CHANGE':
+        case 'FLEX_ALIGN':
           throw new Error(
             `Attempted to change a scene with a flex change ${JSON.stringify(target)}.`,
           )
@@ -523,6 +531,15 @@ export function updateFramesOfScenesAndComponents(
                   staticParentPath,
                 )}.`,
               )
+            case 'FLEX_ALIGN': {
+              propsToSet.push({
+                path: createLayoutPropertyPath('alignSelf'),
+                value: jsxAttributeValue(frameAndTarget.alignment),
+              })
+              propsToSkip.push(createLayoutPropertyPath('FlexFlexBasis'))
+              propsToSkip.push(createLayoutPropertyPath('FlexCrossBasis'))
+              break
+            }
             case 'FLEX_MOVE':
               workingComponentsResult = reorderComponent(
                 workingComponentsResult,
@@ -815,6 +832,7 @@ export function updateFramesOfScenesAndComponents(
             break
           case 'FLEX_MOVE':
           case 'FLEX_RESIZE':
+          case 'FLEX_ALIGN':
             throw new Error(
               `Attempted to make a flex change against a pinned element ${JSON.stringify(
                 staticParentPath,
@@ -1659,6 +1677,8 @@ export function produceResizeSingleSelectCanvasTransientState(
 export function produceCanvasTransientState(
   editorState: EditorState,
   preventAnimations: boolean,
+  dispatch: EditorDispatch | null,
+  derivedState: DerivedState | null,
 ): TransientCanvasState {
   function noFileTransientCanvasState(): TransientCanvasState {
     return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
@@ -1735,6 +1755,8 @@ export function produceCanvasTransientState(
                       dragState,
                       parseSuccess,
                       preventAnimations,
+                      dispatch,
+                      derivedState,
                     )
                   } else {
                     return produceMoveTransientCanvasState(
@@ -1742,6 +1764,8 @@ export function produceCanvasTransientState(
                       dragState,
                       parseSuccess,
                       preventAnimations,
+                      dispatch,
+                      derivedState,
                     )
                   }
                 case 'RESIZE_DRAG_STATE':
@@ -2189,6 +2213,8 @@ function produceMoveTransientCanvasState(
   dragState: MoveDragState,
   parseSuccess: ParseSuccess,
   preventAnimations: boolean,
+  dispatch: EditorDispatch | null,
+  derivedState: DerivedState | null,
 ): TransientCanvasState {
   let selectedViews: Array<TemplatePath> = dragState.draggedElements
   let metadata: Array<ComponentMetadata> = editorState.jsxMetadataKILLME
@@ -2287,6 +2313,10 @@ function produceMoveTransientCanvasState(
     dragState.constrainDragAxis,
     editorState.canvas.scale,
     dragState.translate,
+    dragState.start,
+    editorState,
+    dispatch,
+    derivedState,
   )
 
   const componentsIncludingFakeUtopiaScene = utopiaComponentsIncludingScenes
