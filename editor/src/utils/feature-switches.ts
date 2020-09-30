@@ -7,12 +7,14 @@ export type FeatureName =
   | 'Invisible Element Controls'
   | 'Advanced Resize Box'
   | 'Layout Info Box'
+  | 'Nearby Reparent Target Highlight'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Invisible Element Controls',
   'Advanced Resize Box',
   'Layout Info Box',
+  'Nearby Reparent Target Highlight',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -21,6 +23,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
   'Layout Info Box': true,
+  'Nearby Reparent Target Highlight': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

@@ -165,6 +165,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -2112,7 +2113,9 @@ function produceMoveTransientCanvasState(
           highlightedViews,
           null,
         )
-        highlightedViews = reparentTarget.possibleTargets
+        highlightedViews = isFeatureEnabled('Nearby Reparent Target Highlight')
+          ? reparentTarget.possibleTargets
+          : reparentResult.highlightedViews
         selectedViews = reparentResult.selectedViews
         metadata = reparentResult.metadata
         utopiaComponentsIncludingScenes = reparentResult.utopiaComponentsIncludingScenes

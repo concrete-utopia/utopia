@@ -37,6 +37,7 @@ import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -328,7 +329,8 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
           let color = colorTheme.canvasSelectionPrimaryOutline.value
           if (
             props.editor.canvas.dragState?.type === 'MOVE_DRAG_STATE' &&
-            props.editor.canvas.dragState.reparent
+            props.editor.canvas.dragState.reparent &&
+            isFeatureEnabled('Nearby Reparent Target Highlight')
           ) {
             const isNewParent = props.derived.canvas.transientState.selectedViews.some((view) =>
               TP.pathsEqual(TP.parentPath(view), path),
