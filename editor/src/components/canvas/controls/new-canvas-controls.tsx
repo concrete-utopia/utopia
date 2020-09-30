@@ -163,8 +163,17 @@ interface NewCanvasControlsClassProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
 }
 
+export type SelectModeState =
+  | 'move'
+  | 'translate'
+  | 'resize'
+  | 'reparentMove'
+  | 'reparentGlobal'
+  | 'reparentLocal'
+
 const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
   const [layoutSectionHovered] = useRecoilState(layoutHoveredState)
+  const [selectModeState, setSelectModeState] = React.useState<SelectModeState>('move')
 
   const selectionEnabled =
     props.editor.canvas.selectionControlsVisible &&
@@ -301,6 +310,8 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
             layoutInspectorSectionHovered={layoutSectionHovered}
+            selectModeState={selectModeState}
+            setSelectModeState={setSelectModeState}
           />
         )
       }
@@ -441,6 +452,62 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     ) : null
   }
 
+  const buttonStyle = (active: boolean) => ({
+    borderRadius: 5,
+    border: `1px solid ${colorTheme.neutralBorder.value}`,
+    backgroundColor: active ? colorTheme.primary.value : '#fefefe',
+  })
+
+  const renderToolbar = () => {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: 110,
+        }}
+      >
+        <div
+          style={buttonStyle(selectModeState === 'move')}
+          onClick={() => setSelectModeState('move')}
+        >
+          → move
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'translate')}
+          onClick={() => setSelectModeState('translate')}
+        >
+          ↯ translate
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'resize')}
+          onClick={() => setSelectModeState('resize')}
+        >
+          ↕️ resize
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'reparentMove')}
+          onClick={() => setSelectModeState('reparentMove')}
+        >
+          ↲ reparent(move)
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'reparentGlobal')}
+          onClick={() => setSelectModeState('reparentGlobal')}
+        >
+          ↲ reparent(global)
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'reparentLocal')}
+          onClick={() => setSelectModeState('reparentLocal')}
+        >
+          ↲ reparent(local)
+        </div>
+      </div>
+    )
+  }
+
   const textEditor =
     props.editor.canvas.textEditor != null
       ? renderTextEditor(props.editor.canvas.textEditor.templatePath)
@@ -459,6 +526,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       {renderModeControlContainer()}
       {renderHighlightControls()}
       {textEditor}
+      {renderToolbar()}
     </div>
   )
 }

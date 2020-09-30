@@ -14,7 +14,7 @@ import { ConstraintsControls } from './constraints-control'
 import { DistanceGuideline } from './distance-guideline'
 import { GuidelineControl } from './guideline-control'
 import { collectParentAndSiblingGuidelines, getSnappedGuidelines } from './guideline-helpers'
-import { ControlProps } from './new-canvas-controls'
+import { ControlProps, SelectModeState } from './new-canvas-controls'
 import { ComponentAreaControl, ComponentLabelControl } from './component-area-control'
 import { YogaControls } from './yoga-control'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -56,6 +56,8 @@ interface SelectModeControlContainerProps extends ControlProps {
   duplicationState: DuplicationState | null
   dragState: MoveDragState | ResizeDragState | null
   layoutInspectorSectionHovered: boolean
+  selectModeState: SelectModeState
+  setSelectModeState: (newState: SelectModeState) => void
 }
 
 interface SelectModeControlContainerState {
@@ -138,6 +140,12 @@ export class SelectModeControlContainer extends React.Component<
           TP.isScenePath(view) ||
           this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
+
+      if (this.props.selectModeState === 'resize') {
+        // early exit
+        return
+      }
+
       // setting original frames
       if (moveTargets.length > 0) {
         let originalFrames = getOriginalCanvasFrames(moveTargets, this.props.componentMetadata)
@@ -168,11 +176,14 @@ export class SelectModeControlContainer extends React.Component<
               !originalEvent.metaKey,
               originalEvent.shiftKey,
               duplicate,
-              originalEvent.metaKey,
+              this.props.selectModeState === 'reparentGlobal',
+              this.props.selectModeState === 'reparentMove',
+              this.props.selectModeState === 'reparentLocal',
               duplicateNewUIDs,
               start,
               this.props.componentMetadata,
               moveTargets,
+              this.props.selectModeState === 'translate',
             ),
           ),
         ])
@@ -750,6 +761,10 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   canResizeElements(): boolean {
+    if (this.props.selectModeState !== 'resize') {
+      return false
+    }
+
     return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
         const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, target)

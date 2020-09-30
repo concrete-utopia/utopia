@@ -198,6 +198,12 @@ export interface PinMoveChange {
   delta: CanvasVector
 }
 
+export interface MoveTranslateChange {
+  type: 'MOVE_TRANSLATE_CHANGE'
+  target: TemplatePath
+  delta: CanvasVector
+}
+
 export interface FlexMoveChange {
   type: 'FLEX_MOVE'
   target: TemplatePath
@@ -225,6 +231,7 @@ export type PinOrFlexFrameChange =
   | FlexMoveChange
   | FlexResizeChange
   | SingleResizeChange
+  | MoveTranslateChange
 
 export function pinFrameChange(
   target: TemplatePath,
@@ -255,6 +262,17 @@ export function pinSizeChange(
 export function pinMoveChange(target: TemplatePath, delta: CanvasVector): PinMoveChange {
   return {
     type: 'PIN_MOVE_CHANGE',
+    target: target,
+    delta: delta,
+  }
+}
+
+export function moveTranslateChange(
+  target: TemplatePath,
+  delta: CanvasVector,
+): MoveTranslateChange {
+  return {
+    type: 'MOVE_TRANSLATE_CHANGE',
     target: target,
     delta: delta,
   }
@@ -330,10 +348,13 @@ export interface MoveDragState {
   constrainDragAxis: boolean
   duplicate: boolean
   reparent: boolean
+  reparentMove: boolean
+  localReparent: boolean
   duplicateNewUIDs: Array<DuplicateNewUID> | null
   canvasPosition: CanvasPoint
   metadata: Array<ComponentMetadata>
   draggedElements: TemplatePath[]
+  translate: boolean
 }
 
 export function moveDragState(
@@ -346,10 +367,13 @@ export function moveDragState(
   constrainDragAxis: boolean,
   duplicate: boolean,
   reparent: boolean,
+  reparentMove: boolean,
+  localReparent: boolean,
   duplicateNewUIDs: Array<DuplicateNewUID> | null,
   canvasPosition: CanvasPoint,
   metadata: Array<ComponentMetadata>,
   draggedElements: TemplatePath[],
+  translate: boolean,
 ): MoveDragState {
   if (duplicate === true && duplicateNewUIDs == null) {
     throw new Error('duplicateNewUIDs cannot be null when duplicate is true')
@@ -369,10 +393,13 @@ export function moveDragState(
     constrainDragAxis: constrainDragAxis,
     duplicate: duplicate,
     reparent: actuallyReparent,
+    reparentMove: reparentMove,
+    localReparent: localReparent,
     duplicateNewUIDs: duplicateNewUIDs,
     canvasPosition: canvasPosition,
     metadata: metadata,
     draggedElements: draggedElements,
+    translate: translate,
   }
 }
 
@@ -402,7 +429,7 @@ export function updateMoveDragState(
     constrainDragAxis:
       constrainDragAxis === undefined ? current.constrainDragAxis : constrainDragAxis,
     duplicate: duplicate === undefined ? current.duplicate : duplicate,
-    reparent: actuallyReparent,
+    reparent: current.reparent,
     duplicateNewUIDs: duplicateNewUIDs === undefined ? current.duplicateNewUIDs : duplicateNewUIDs,
     canvasPosition: canvasPosition === undefined ? current.canvasPosition : canvasPosition,
   })
