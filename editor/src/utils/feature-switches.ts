@@ -6,6 +6,7 @@ export type FeatureName =
   | 'Dragging Shows Overlay'
   | 'Invisible Element Controls'
   | 'Advanced Resize Box'
+  | 'Wrapper Element Controls'
   | 'Layout Info Box'
   | 'Nearby Reparent Target Highlight'
   | 'Toolbar For Controls'
@@ -18,6 +19,7 @@ export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Invisible Element Controls',
   'Advanced Resize Box',
+  'Wrapper Element Controls',
   'Layout Info Box',
   'Toolbar For Controls',
   'Nearby Reparent Target Highlight',
@@ -33,6 +35,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
   'Layout Info Box': true,
+  'Wrapper Element Controls': true,
   'Toolbar For Controls': true,
   'Nearby Reparent Target Highlight': true,
   'Flex Sibling Numbers': true,
