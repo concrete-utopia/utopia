@@ -8,6 +8,7 @@ export type FeatureName =
   | 'Advanced Resize Box'
   | 'Layout Info Box'
   | 'Nearby Reparent Target Highlight'
+  | 'Toolbar For Controls'
   | 'Flex Sibling Numbers'
   | 'Flex Container Tools'
   | 'Mini Navigator'
@@ -17,6 +18,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Invisible Element Controls',
   'Advanced Resize Box',
   'Layout Info Box',
+  'Toolbar For Controls',
   'Nearby Reparent Target Highlight',
   'Flex Sibling Numbers',
   'Flex Container Tools',
@@ -29,6 +31,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
   'Layout Info Box': true,
+  'Toolbar For Controls': true,
   'Nearby Reparent Target Highlight': true,
   'Flex Sibling Numbers': true,
   'Flex Container Tools': true,

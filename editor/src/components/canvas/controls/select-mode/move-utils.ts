@@ -24,6 +24,7 @@ import { ConstrainedDragAxis, Guideline, Guidelines } from '../../guideline'
 import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
 import { flatMapArray } from '../../../../core/shared/array-utils'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
 function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {
@@ -133,7 +134,8 @@ export function dragComponent(
       // found a target with no original frame
       return
     }
-    if (isFlexContainer && !translateMode) {
+    const isNotTranslateMode = isFeatureEnabled('Toolbar For Controls') ? !translateMode : true
+    if (isFlexContainer && isNotTranslateMode) {
       if (originalFrame.frame != null) {
         const flexDirection = MetadataUtils.getYogaDirection(
           MetadataUtils.getParent(componentsMetadata, view),

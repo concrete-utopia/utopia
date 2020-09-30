@@ -526,7 +526,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       {renderModeControlContainer()}
       {renderHighlightControls()}
       {textEditor}
-      {renderToolbar()}
+      {isFeatureEnabled('Toolbar For Controls') ? renderToolbar() : null}
     </div>
   )
 }

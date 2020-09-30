@@ -141,7 +141,7 @@ export class SelectModeControlContainer extends React.Component<
           this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
 
-      if (this.props.selectModeState === 'resize') {
+      if (isFeatureEnabled('Toolbar For Controls') && this.props.selectModeState === 'resize') {
         // early exit
         return
       }
@@ -176,14 +176,22 @@ export class SelectModeControlContainer extends React.Component<
               !originalEvent.metaKey,
               originalEvent.shiftKey,
               duplicate,
-              this.props.selectModeState === 'reparentGlobal',
-              this.props.selectModeState === 'reparentMove',
-              this.props.selectModeState === 'reparentLocal',
+              isFeatureEnabled('Toolbar For Controls')
+                ? this.props.selectModeState === 'reparentGlobal'
+                : false,
+              isFeatureEnabled('Toolbar For Controls')
+                ? this.props.selectModeState === 'reparentMove'
+                : originalEvent.metaKey,
+              isFeatureEnabled('Toolbar For Controls')
+                ? this.props.selectModeState === 'reparentLocal'
+                : false,
               duplicateNewUIDs,
               start,
               this.props.componentMetadata,
               moveTargets,
-              this.props.selectModeState === 'translate',
+              isFeatureEnabled('Toolbar For Controls')
+                ? this.props.selectModeState === 'translate'
+                : false,
             ),
           ),
         ])
@@ -761,7 +769,7 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   canResizeElements(): boolean {
-    if (this.props.selectModeState !== 'resize') {
+    if (isFeatureEnabled('Toolbar For Controls') && this.props.selectModeState !== 'resize') {
       return false
     }
 
