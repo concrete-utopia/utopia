@@ -98,8 +98,16 @@ export function isScenePath(path: TemplatePath): path is ScenePath {
   return (path as any).type === 'scenepath'
 }
 
-export function isInstancePath(path: TemplatePath): path is InstancePath {
-  return (path as any).scene != null && (path as any).element != null
+export function isInstancePath(path: TemplatePath | null): path is InstancePath {
+  return path != null && (path as any).scene != null && (path as any).element != null
+}
+
+export function instancePathForPath(path: TemplatePath | null): InstancePath | null {
+  if (isInstancePath(path)) {
+    return path
+  } else {
+    return null
+  }
 }
 
 export function isTopLevelInstancePath(path: TemplatePath): path is InstancePath {

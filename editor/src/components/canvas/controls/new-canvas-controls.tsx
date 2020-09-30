@@ -40,6 +40,7 @@ import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { useRecoilState } from 'recoil'
 import { layoutHoveredState } from '../../../core/shared/inspector-recoil'
+import { MiniNavigator } from '../../mini-navigator/mini-navigator'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -105,44 +106,48 @@ export const NewCanvasControls = betterReactMemo(
       return null
     } else {
       return (
-        <div
-          key='canvas-controls'
-          ref={forwardedRef}
-          className={
-            canvasControlProps.focusedPanel === 'canvas'
-              ? '  canvas-controls focused '
-              : ' canvas-controls '
-          }
-          id='canvas-controls'
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            transform: 'translate3d(0, 0, 0)',
-            width: `100%`,
-            height: `100%`,
-            zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
-            cursor: props.cursor,
-          }}
-        >
+        <>
           <div
+            key='canvas-controls'
+            ref={forwardedRef}
+            className={
+              canvasControlProps.focusedPanel === 'canvas'
+                ? '  canvas-controls focused '
+                : ' canvas-controls '
+            }
+            id='canvas-controls'
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
-              width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-              height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-              transformOrigin: 'top left',
-              transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+              transform: 'translate3d(0, 0, 0)',
+              width: `100%`,
+              height: `100%`,
+              zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
+              cursor: props.cursor,
             }}
           >
-            <NewCanvasControlsClass
-              windowToCanvasPosition={props.windowToCanvasPosition}
-              {...canvasControlProps}
-            />
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+                height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+                transformOrigin: 'top left',
+                transform:
+                  canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+              }}
+            >
+              <NewCanvasControlsClass
+                windowToCanvasPosition={props.windowToCanvasPosition}
+                {...canvasControlProps}
+              />
+            </div>
+            <ElementContextMenu contextMenuInstance='context-menu-canvas' />
           </div>
-          <ElementContextMenu contextMenuInstance='context-menu-canvas' />
-        </div>
+          <MiniNavigator />
+        </>
       )
     }
   },
