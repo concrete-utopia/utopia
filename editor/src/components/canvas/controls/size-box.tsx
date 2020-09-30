@@ -384,6 +384,7 @@ const DimensionableControlVertical = (props: DimensionableControlProps) => {
         top: props.centerY + scaledControlOffsetTop,
       }
     : {
+        position: 'absolute',
         backgroundColor: 'white',
         borderRadius: `${5 / props.scale}px`,
         // These just about work. I can clean them up afterwards
