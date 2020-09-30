@@ -11,6 +11,7 @@ export type FeatureName =
   | 'Toolbar For Controls'
   | 'Flex Sibling Numbers'
   | 'Flex Container Tools'
+  | 'Element Resize Menu'
   | 'Mini Navigator'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -22,6 +23,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Nearby Reparent Target Highlight',
   'Flex Sibling Numbers',
   'Flex Container Tools',
+  'Element Resize Menu',
   'Mini Navigator',
 ]
 
@@ -35,6 +37,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Nearby Reparent Target Highlight': true,
   'Flex Sibling Numbers': true,
   'Flex Container Tools': true,
+  'Element Resize Menu': true,
   'Mini Navigator': true,
 }
 

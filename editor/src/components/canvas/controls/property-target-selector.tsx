@@ -6,6 +6,7 @@ import {
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { bimapEither, eitherToMaybe, left, right } from '../../../core/shared/either'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { colorTheme } from '../../../uuiui'
 
 interface PropertyTargetSelector {
@@ -17,9 +18,12 @@ interface PropertyTargetSelector {
   setOptionsCallback: (options: Array<LayoutTargetableProp>) => void
 }
 
-export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Element => {
+export const PropertyTargetSelector = (props: PropertyTargetSelector): JSX.Element | null => {
   props.setOptionsCallback(props.options)
 
+  if (!isFeatureEnabled('Element Resize Menu')) {
+    return null
+  }
   return (
     <div
       style={{
