@@ -610,7 +610,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       <div
         style={{
           position: 'absolute',
-          top: 0,
+          bottom: 40,
           left: 0,
           width: 110,
         }}
