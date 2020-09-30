@@ -446,7 +446,8 @@ export class SelectModeControlContainer extends React.Component<
           )
         )
       }) && !cmdIsPressed
-    const showSiblingIndex = siblingIsSelected || parentIsSelectedAndFlex
+    const showSiblingIndex =
+      isFeatureEnabled('Flex Sibling Numbers') && (siblingIsSelected || parentIsSelectedAndFlex)
 
     const siblingIndex = showSiblingIndex
       ? MetadataUtils.getViewZIndexFromMetadata(this.props.componentMetadata, target) + 1

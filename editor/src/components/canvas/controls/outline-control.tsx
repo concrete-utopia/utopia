@@ -275,7 +275,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
 
     return (
       <>
-        {...parentHighlights}
+        {isFeatureEnabled('Flex Sibling Numbers') ? parentHighlights : null}
         {...selectionOutlines}
         {multiSelectOutline}
       </>

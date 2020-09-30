@@ -8,6 +8,8 @@ export type FeatureName =
   | 'Advanced Resize Box'
   | 'Layout Info Box'
   | 'Nearby Reparent Target Highlight'
+  | 'Flex Sibling Numbers'
+  | 'Flex Container Tools'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -15,6 +17,8 @@ export const AllFeatureNames: FeatureName[] = [
   'Advanced Resize Box',
   'Layout Info Box',
   'Nearby Reparent Target Highlight',
+  'Flex Sibling Numbers',
+  'Flex Container Tools',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -24,6 +28,8 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Advanced Resize Box': false,
   'Layout Info Box': true,
   'Nearby Reparent Target Highlight': true,
+  'Flex Sibling Numbers': true,
+  'Flex Container Tools': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

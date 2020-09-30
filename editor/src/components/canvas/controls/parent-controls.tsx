@@ -18,6 +18,7 @@ import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { SelectOption } from '../../../uuiui-deps'
 import { useRecoilState } from 'recoil'
 import { layoutHoveredState } from '../../../core/shared/inspector-recoil'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface FlexParentControlProps extends ControlProps {
   frame: CanvasRectangle
@@ -182,6 +183,10 @@ const FlexParentControl = (props: FlexParentControlProps): JSX.Element => {
 }
 
 export const ParentControls = (props: ControlProps): JSX.Element | null => {
+  if (!isFeatureEnabled('Flex Container Tools')) {
+    return null
+  }
+
   const everyThingIsYogaLayouted =
     props.selectedViews.length > 0 &&
     props.selectedViews.every((selectedView) => {
