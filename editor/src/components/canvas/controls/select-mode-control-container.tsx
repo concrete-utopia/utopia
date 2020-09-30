@@ -28,6 +28,7 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const SnappingThreshold = 5
 
@@ -762,7 +763,9 @@ export class SelectModeControlContainer extends React.Component<
         element != null && MetadataUtils.isAutoSizingText(this.props.imports, element)
     }
 
-    const selectedElementsLayoutInfo = this.layoutInfo()
+    const selectedElementsLayoutInfo = isFeatureEnabled('Layout Info Box')
+      ? this.layoutInfo()
+      : null
 
     return (
       <div
