@@ -10,6 +10,7 @@ export type FeatureName =
   | 'Nearby Reparent Target Highlight'
   | 'Flex Sibling Numbers'
   | 'Flex Container Tools'
+  | 'Mini Navigator'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -19,6 +20,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Nearby Reparent Target Highlight',
   'Flex Sibling Numbers',
   'Flex Container Tools',
+  'Mini Navigator',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -30,6 +32,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Nearby Reparent Target Highlight': true,
   'Flex Sibling Numbers': true,
   'Flex Container Tools': true,
+  'Mini Navigator': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

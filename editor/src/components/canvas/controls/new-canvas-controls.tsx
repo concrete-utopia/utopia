@@ -146,7 +146,7 @@ export const NewCanvasControls = betterReactMemo(
             </div>
             <ElementContextMenu contextMenuInstance='context-menu-canvas' />
           </div>
-          <MiniNavigator />
+          {isFeatureEnabled('Mini Navigator') ? <MiniNavigator /> : null}
         </>
       )
     }
