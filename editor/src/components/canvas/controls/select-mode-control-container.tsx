@@ -65,6 +65,8 @@ interface SelectModeControlContainerProps extends ControlProps {
   layoutInspectorSectionHovered: boolean
   selectModeState: SelectModeState
   setSelectModeState: (newState: SelectModeState) => void
+  xrayMode: boolean
+  selectedScene: ScenePath | null
 }
 
 interface SelectModeControlContainerState {
@@ -141,6 +143,9 @@ export class SelectModeControlContainer extends React.Component<
         selectedViews,
       )
     ) {
+      if (this.props.xrayMode) {
+        return
+      }
       const selection = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
       const moveTargets = selection.filter(
         (view) =>
@@ -258,7 +263,9 @@ export class SelectModeControlContainer extends React.Component<
   getSelectableViews(allElementsDirectlySelectable: boolean): TemplatePath[] {
     let candidateViews: Array<TemplatePath>
 
-    if (allElementsDirectlySelectable) {
+    if (this.props.xrayMode) {
+      candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
+    } else if (allElementsDirectlySelectable) {
       candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
     } else {
       const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
@@ -579,6 +586,7 @@ export class SelectModeControlContainer extends React.Component<
           imports={this.props.imports}
           showAdditionalControls={this.props.showAdditionalControls}
           siblingIndex={siblingIndex}
+          xrayMode={this.props.xrayMode}
         />
       )
     } else {
@@ -613,6 +621,7 @@ export class SelectModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
+        xrayMode={this.props.xrayMode}
       />
     )
   }
@@ -649,6 +658,7 @@ export class SelectModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
+        xrayMode={this.props.xrayMode}
       />
     )
   }
@@ -856,6 +866,9 @@ export class SelectModeControlContainer extends React.Component<
       return false
     }
 
+    if (this.props.xrayMode) {
+      return false
+    }
     return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
         const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, target)
@@ -905,6 +918,21 @@ export class SelectModeControlContainer extends React.Component<
       allElementsDirectlySelectable && isFeatureEnabled('Wrapper Element Controls')
         ? this.getOverlappingLabels(draggableViews)
         : null
+    if (this.props.xrayMode) {
+      return (
+        <div
+          style={{
+            pointerEvents: 'initial',
+          }}
+        >
+          {draggableViews.map((draggableView, index) => {
+            return this.renderControl(draggableView, index, false, false)
+          })}
+          <OutlineControls {...this.props} />
+        </div>
+      )
+    }
+
     return (
       <div
         style={{

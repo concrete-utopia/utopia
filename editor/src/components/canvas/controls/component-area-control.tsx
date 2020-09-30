@@ -40,6 +40,7 @@ interface ComponentAreaControlProps {
   showAdditionalControls: boolean
   testID?: string
   siblingIndex?: number | null
+  xrayMode: boolean
 }
 
 // SelectModeControl is a transparent react component sitting on top of a utopia component.
@@ -175,6 +176,30 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
       borderRadius,
     } = calculateExtraSizeForZeroSizedElement(this.props.frame)
     const showInvisibleIndicator = canShowInvisibleIndicator && showingInvisibleElement
+    const layoutType = TP.isInstancePath(this.props.target)
+      ? MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, this.props.target)
+          ?.specialSizeMeasurements.layoutSystemForChildren
+      : null
+
+    const depth = TP.depth(this.props.target) - 1 // scene should be zero
+
+    let colorForLayoutType: string = ''
+    switch (layoutType) {
+      case 'flow':
+        colorForLayoutType = 'rgba(51, 255, 130, 0.8)'
+        break
+      case 'flex':
+        colorForLayoutType = 'rgba(255, 100, 170, 0.8)'
+        break
+      case 'grid':
+        colorForLayoutType = 'rgba(255, 150, 50, 0.8)'
+        break
+      case 'nonfixed':
+        colorForLayoutType = 'rgba(50, 255, 255, 0.8)'
+        break
+      default:
+        break
+    }
 
     const fontSize = (Math.floor((this.props.frame.width + extraWidth) / 30) * 30) / 2
 
@@ -201,6 +226,9 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            outline: this.props.xrayMode ? `1px solid ${colorForLayoutType}` : undefined,
+            transform: `translate3d(0, 0, ${depth * 25}px)`,
+            transformStyle: 'preserve-3d',
           }}
           data-testid={this.props.testID}
         >
@@ -295,7 +323,9 @@ export class ComponentAreaControl extends ComponentAreaControlInner {
     const isParentSelected = this.props.selectedComponents.some((tp: TemplatePath) =>
       TP.pathsEqual(TP.parentPath(this.props.target), tp),
     )
-    return this.getComponentAreaControl(isParentSelected || this.props.showAdditionalControls)
+    return this.getComponentAreaControl(
+      this.props.xrayMode || isParentSelected || this.props.showAdditionalControls,
+    )
   }
 }
 
