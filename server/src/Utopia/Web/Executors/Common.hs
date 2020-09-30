@@ -223,11 +223,16 @@ lookupPackageJSON registryManager urlSuffix = do
     return (responseAsJSON ^? WR.responseBody)
   return resultFromLookup
 
-lookupSpecificPackageVersionJSON :: Text -> IO (Maybe Value)
-lookupSpecificPackageVersionJSON javascriptPackageName = do
+handleVersionsLookupError :: IOException -> IO (Maybe Value)
+handleVersionsLookupError _ = return Nothing
+
+lookupAllPackageVersions :: Text -> IO (Maybe Value)
+lookupAllPackageVersions javascriptPackageName = do
   let versionsProc = proc "npm" ["view", toS javascriptPackageName, "versions", "--json"]
-  versionsResult <- readCreateProcess versionsProc ""
-  return $ decode $ toS versionsResult
+  foundVersions <- (flip catch) handleVersionsLookupError $ do
+    versionsResult <- readCreateProcess versionsProc ""
+    return $ decode $ toS versionsResult
+  return foundVersions
 
 emptyAssetsCaches :: [PathAndBuilders] -> IO AssetsCaches
 emptyAssetsCaches _assetPathDetails = do
