@@ -13,6 +13,7 @@ export type FeatureName =
   | 'Flex Sibling Numbers'
   | 'Flex Container Tools'
   | 'Element Resize Menu'
+  | 'Flex Properties (Timer)'
   | 'Mini Navigator'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -26,6 +27,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Flex Sibling Numbers',
   'Flex Container Tools',
   'Element Resize Menu',
+  'Flex Properties (Timer)',
   'Mini Navigator',
 ]
 
@@ -41,6 +43,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Flex Sibling Numbers': true,
   'Flex Container Tools': true,
   'Element Resize Menu': true,
+  'Flex Properties (Timer)': true,
   'Mini Navigator': true,
 }
 

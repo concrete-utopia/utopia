@@ -181,7 +181,7 @@ export function dragComponent(
         if (newIndex != null) {
           dragChanges.push(flexMoveChange(view, newIndex))
         } else {
-          if (parentPath != null) {
+          if (parentPath != null && isFeatureEnabled('Flex Properties (Timer)')) {
             const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, componentsMetadata)
             let currentAlignment: FlexAlignment | null = null
             const openFile = getOpenUIJSFile(editor)
