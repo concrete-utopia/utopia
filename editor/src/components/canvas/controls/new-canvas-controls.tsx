@@ -166,7 +166,9 @@ export const NewCanvasControls = betterReactMemo(
       selectedScene == null
         ? null
         : MetadataUtils.getFrameInCanvasCoords(selectedScene, componentMetadata)
-    const showXrayView = useEditorState((store) => !store.editor.interfaceDesigner.codePaneVisible)
+    const showXrayView =
+      isFeatureEnabled('Hierarchy View') &&
+      useEditorState((store) => !store.editor.interfaceDesigner.codePaneVisible)
 
     if (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd) {
       return null
@@ -423,6 +425,9 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
           showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
           xrayMode={true}
           selectedScene={props.selectedScene}
+          layoutInspectorSectionHovered={false}
+          selectModeState={selectModeState}
+          setSelectModeState={setSelectModeState}
         />
       )
     }

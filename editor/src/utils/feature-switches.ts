@@ -15,6 +15,7 @@ export type FeatureName =
   | 'Element Resize Menu'
   | 'Flex Properties (Timer)'
   | 'Mini Navigator'
+  | 'Hierarchy View'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -29,6 +30,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Element Resize Menu',
   'Flex Properties (Timer)',
   'Mini Navigator',
+  'Hierarchy View',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -45,6 +47,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Element Resize Menu': true,
   'Flex Properties (Timer)': true,
   'Mini Navigator': true,
+  'Hierarchy View': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
