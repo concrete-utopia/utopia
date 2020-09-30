@@ -34,6 +34,7 @@ import           System.Directory
 import           System.Environment
 import           System.FilePath
 import           System.Metrics            hiding (Value)
+import           System.Process
 import qualified Text.Blaze.Html5          as H
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth           (getUserDetailsFromCode)
@@ -212,8 +213,8 @@ closeResources dbPool = do
 handleRegistryError :: HttpException -> IO (Maybe Value)
 handleRegistryError _ = return Nothing
 
-commonPackageRequest :: Manager -> Text -> IO (Maybe Value)
-commonPackageRequest registryManager urlSuffix = do
+lookupPackageJSON :: Manager -> Text -> IO (Maybe Value)
+lookupPackageJSON registryManager urlSuffix = do
   let options = WR.defaults & WR.manager .~ Right registryManager & WR.header "Accept" .~ ["application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*; q=0.7"]
   let registryUrl = "https://registry.npmjs.org/" <> urlSuffix
   resultFromLookup <- (flip catch) handleRegistryError $ do
@@ -222,11 +223,11 @@ commonPackageRequest registryManager urlSuffix = do
     return (responseAsJSON ^? WR.responseBody)
   return resultFromLookup
 
-lookupPackageJSON :: Manager -> Text -> IO (Maybe Value)
-lookupPackageJSON registryManager javascriptPackageName = commonPackageRequest registryManager javascriptPackageName
-
-lookupSpecificPackageVersionJSON :: Manager -> Text -> Text -> IO (Maybe Value)
-lookupSpecificPackageVersionJSON registryManager javascriptPackageName javascriptPackageVersion = commonPackageRequest registryManager (javascriptPackageName <> "/" <> javascriptPackageVersion)
+lookupSpecificPackageVersionJSON :: Text -> IO (Maybe Value)
+lookupSpecificPackageVersionJSON javascriptPackageName = do
+  let versionsProc = proc "npm" ["view", toS javascriptPackageName, "versions", "--json"]
+  versionsResult <- readCreateProcess versionsProc ""
+  return $ decode $ toS versionsResult
 
 emptyAssetsCaches :: [PathAndBuilders] -> IO AssetsCaches
 emptyAssetsCaches _assetPathDetails = do
