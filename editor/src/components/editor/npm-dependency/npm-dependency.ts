@@ -39,7 +39,7 @@ interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
 }
 
-const packageNotFound: PackageNotFound = deepFreeze({
+export const packageNotFound: PackageNotFound = deepFreeze({
   type: 'PACKAGE_NOT_FOUND',
 })
 
@@ -62,7 +62,7 @@ interface VersionLookupSuccess {
   version: string
 }
 
-function versionLookupSuccess(version: string): VersionLookupSuccess {
+export function versionLookupSuccess(version: string): VersionLookupSuccess {
   return {
     type: 'VERSION_LOOKUP_SUCCESS',
     version: version,
