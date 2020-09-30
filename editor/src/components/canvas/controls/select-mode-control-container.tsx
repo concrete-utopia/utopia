@@ -29,6 +29,7 @@ import { ComponentMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { ParentControls } from './parent-controls'
 
 export const SnappingThreshold = 5
 
@@ -54,6 +55,7 @@ interface SelectModeControlContainerProps extends ControlProps {
   maybeClearHighlightsOnHoverEnd: () => void
   duplicationState: DuplicationState | null
   dragState: MoveDragState | ResizeDragState | null
+  layoutInspectorSectionHovered: boolean
 }
 
 interface SelectModeControlContainerState {
@@ -423,8 +425,32 @@ export class SelectModeControlContainer extends React.Component<
     )
   }
 
-  renderControl = (target: TemplatePath, index: number, isChild: boolean): JSX.Element | null => {
+  renderControl = (
+    target: TemplatePath,
+    index: number,
+    isChild: boolean,
+    cmdIsPressed: boolean,
+  ): JSX.Element | null => {
     const frame = this.getClippedArea(target)
+    const siblingIsSelected =
+      this.props.selectedViews.some((view) =>
+        TP.pathsEqual(TP.parentPath(view), TP.parentPath(target)),
+      ) && cmdIsPressed
+    const parentIsSelectedAndFlex =
+      this.props.selectedViews.some((view) => {
+        return (
+          TP.pathsEqual(TP.parentPath(target), view) &&
+          TP.isInstancePath(view) &&
+          MetadataUtils.isFlexLayoutedContainer(
+            MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, view),
+          )
+        )
+      }) && !cmdIsPressed
+    const showSiblingIndex = siblingIsSelected || parentIsSelectedAndFlex
+
+    const siblingIndex = showSiblingIndex
+      ? MetadataUtils.getViewZIndexFromMetadata(this.props.componentMetadata, target) + 1
+      : null
     if (frame != null) {
       return (
         <ComponentAreaControl
@@ -449,6 +475,7 @@ export class SelectModeControlContainer extends React.Component<
           selectedViews={this.props.selectedViews}
           imports={this.props.imports}
           showAdditionalControls={this.props.showAdditionalControls}
+          siblingIndex={siblingIndex}
         />
       )
     } else {
@@ -792,10 +819,20 @@ export class SelectModeControlContainer extends React.Component<
                 )
               ) {
                 // only double clickable to select and drag
-                return this.renderControl(draggableView, index, true)
+                return this.renderControl(
+                  draggableView,
+                  index,
+                  true,
+                  cmdPressed || this.props.layoutInspectorSectionHovered,
+                )
               } else {
                 // directly draggable
-                return this.renderControl(draggableView, index, false)
+                return this.renderControl(
+                  draggableView,
+                  index,
+                  false,
+                  cmdPressed || this.props.layoutInspectorSectionHovered,
+                )
               }
             })
           : null}
@@ -825,6 +862,7 @@ export class SelectModeControlContainer extends React.Component<
         {...this.getMoveGuidelines()}
         {this.getDistanceGuidelines()}
         {this.getBoundingMarks()}
+        {this.props.selectionEnabled && <ParentControls {...this.props} />}
       </div>
     )
   }

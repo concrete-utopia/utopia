@@ -38,6 +38,8 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { useRecoilState } from 'recoil'
+import { layoutHoveredState } from '../../../core/shared/inspector-recoil'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -157,6 +159,8 @@ interface NewCanvasControlsClassProps {
 }
 
 const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
+  const [layoutSectionHovered] = useRecoilState(layoutHoveredState)
+
   const selectionEnabled =
     props.editor.canvas.selectionControlsVisible &&
     !props.editor.keysPressed['z'] &&
@@ -291,6 +295,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
                 : null
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+            layoutInspectorSectionHovered={layoutSectionHovered}
           />
         )
       }

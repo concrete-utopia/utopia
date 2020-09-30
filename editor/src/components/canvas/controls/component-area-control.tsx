@@ -39,6 +39,7 @@ interface ComponentAreaControlProps {
   imports: Imports
   showAdditionalControls: boolean
   testID?: string
+  siblingIndex?: number | null
 }
 
 // SelectModeControl is a transparent react component sitting on top of a utopia component.
@@ -175,6 +176,8 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     } = calculateExtraSizeForZeroSizedElement(this.props.frame)
     const showInvisibleIndicator = canShowInvisibleIndicator && showingInvisibleElement
 
+    const fontSize = (Math.floor((this.props.frame.width + extraWidth) / 30) * 30) / 2
+
     return (
       <React.Fragment>
         <div
@@ -195,9 +198,24 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             borderStyle: showInvisibleIndicator ? 'solid' : undefined,
             borderWidth: 0.5 / this.props.scale,
             borderRadius: showInvisibleIndicator ? borderRadius : 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           data-testid={this.props.testID}
-        />
+        >
+          <div
+            style={{
+              fontSize: fontSize + 'px',
+              textAlign: 'center',
+              color: this.isTargetSelected()
+                ? UtopiaTheme.color.secondaryBackground.o(70).value
+                : UtopiaTheme.color.secondaryBackground.o(30).value,
+            }}
+          >
+            {this.props.siblingIndex}
+          </div>
+        </div>
       </React.Fragment>
     )
   }

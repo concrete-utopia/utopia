@@ -14,6 +14,7 @@ import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
 import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { KeysPressed } from '../../../utils/keyboard'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -44,6 +45,8 @@ export function getSelectionColor(
 
 export interface OutlineControlsProps extends ControlProps {
   dragState: MoveDragState | ResizeDragState | null
+  keysPressed: KeysPressed
+  layoutInspectorSectionHovered: boolean
 }
 
 function isDraggingToMove(
@@ -202,8 +205,77 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         )
       }
     }
+    const parentHighlights = !(
+      this.props.keysPressed['cmd'] || this.props.layoutInspectorSectionHovered
+    )
+      ? []
+      : this.props.selectedViews.map((view) => {
+          const parentPath = TP.parentPath(view)
+          if (parentPath != null) {
+            const parentFrame = MetadataUtils.getFrameInCanvasCoords(
+              parentPath,
+              this.props.componentMetadata,
+            )
+            if (parentFrame != null) {
+              return (
+                <>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: parentFrame.x + this.props.canvasOffset.x - 4,
+                      top: parentFrame.y + this.props.canvasOffset.y - 11,
+                      color: colorTheme.red.value,
+                      fontSize: '13px',
+                    }}
+                  >
+                    ×
+                  </div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 5,
+                      top: parentFrame.y + this.props.canvasOffset.y - 11,
+                      color: colorTheme.red.value,
+                      fontSize: '13px',
+                    }}
+                  >
+                    ×
+                  </div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: parentFrame.x + this.props.canvasOffset.x - 4,
+                      top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 12,
+                      color: colorTheme.red.value,
+                      fontSize: '13px',
+                    }}
+                  >
+                    ×
+                  </div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 4,
+                      top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 12,
+                      color: colorTheme.red.value,
+                      fontSize: '13px',
+                    }}
+                  >
+                    ×
+                  </div>
+                </>
+              )
+            } else {
+              return null
+            }
+          } else {
+            return null
+          }
+        })
+
     return (
       <>
+        {...parentHighlights}
         {...selectionOutlines}
         {multiSelectOutline}
       </>
