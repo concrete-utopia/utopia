@@ -41,6 +41,10 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { useRecoilState } from 'recoil'
 import { layoutHoveredState } from '../../../core/shared/inspector-recoil'
 import { MiniNavigator } from '../../mini-navigator/mini-navigator'
+import { shallowEqual } from '../../../core/shared/equality-utils'
+import { usePrevious } from '../../editor/hook-utils'
+import { KeysPressed } from '../../../utils/keyboard'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -62,11 +66,49 @@ export interface ControlProps {
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
   elementsThatRespectLayout: Array<TemplatePath>
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 interface NewCanvasControlsProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cursor: CSSCursor
+}
+
+function useArrayAndIndex(defaultTargets: LayoutTargetableProp[]) {
+  const [targets, setTargets] = React.useState<LayoutTargetableProp[]>(defaultTargets)
+  const [targetIndex, setTargetIndex] = React.useState(0)
+
+  function incrementTargetIndex() {
+    if (targetIndex < targets.length - 1) {
+      setTargetIndex(targetIndex + 1)
+    } else {
+      setTargetIndex(0)
+    }
+  }
+
+  function setTargetsResetIndex(newTargets: LayoutTargetableProp[]) {
+    if (!shallowEqual(targets, newTargets)) {
+      setTargets(newTargets)
+      setTargetIndex(0)
+    }
+  }
+
+  return [targets, targetIndex, setTargetsResetIndex, incrementTargetIndex] as const
+}
+
+function useTargetSelector(defaultTargets: LayoutTargetableProp[], keysPressed: KeysPressed) {
+  const [targets, targetIndex, setTargets, incrementTargetIndex] = useArrayAndIndex(defaultTargets)
+
+  const shiftPressed = keysPressed.shift
+  const previousShiftPressed = usePrevious(shiftPressed)
+
+  if (shiftPressed && !previousShiftPressed) {
+    incrementTargetIndex()
+  }
+
+  return [targets, targetIndex, setTargets] as const
 }
 
 export const NewCanvasControls = betterReactMemo(
@@ -85,6 +127,11 @@ export const NewCanvasControls = betterReactMemo(
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,
     }))
+
+    const [targets, targetIndex, setTargetOptionsArray] = useTargetSelector(
+      ['Width', 'minWidth', 'maxWidth'],
+      canvasControlProps.editor.keysPressed,
+    )
 
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.
@@ -142,6 +189,9 @@ export const NewCanvasControls = betterReactMemo(
               <NewCanvasControlsClass
                 windowToCanvasPosition={props.windowToCanvasPosition}
                 {...canvasControlProps}
+                propertyTargetOptions={targets}
+                propertyTargetSelectedIndex={targetIndex}
+                setTargetOptionsArray={setTargetOptionsArray}
               />
             </div>
             <ElementContextMenu contextMenuInstance='context-menu-canvas' />
@@ -161,6 +211,9 @@ interface NewCanvasControlsClassProps {
   canvasOffset: CanvasPoint
   animationEnabled: boolean
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 export type SelectModeState =
@@ -287,6 +340,9 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
       elementsThatRespectLayout: elementsThatRespectLayout,
+      propertyTargetOptions: props.propertyTargetOptions,
+      propertyTargetSelectedIndex: props.propertyTargetSelectedIndex,
+      setTargetOptionsArray: props.setTargetOptionsArray,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {

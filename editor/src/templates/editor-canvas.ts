@@ -886,17 +886,38 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               const elementAspectRatioLocked = this.getElementAspectRatioLocked()
               const keepAspectRatio = pressed || elementAspectRatioLocked
               fireDragStateUpdate(
-                updateResizeDragState(dragState, undefined, undefined, undefined, keepAspectRatio),
+                updateResizeDragState(
+                  dragState,
+                  undefined,
+                  dragState.targetProperty,
+                  undefined,
+                  undefined,
+                  keepAspectRatio,
+                ),
               )
               break
             case 'alt':
               fireDragStateUpdate(
-                updateResizeDragState(dragState, undefined, undefined, pressed, undefined),
+                updateResizeDragState(
+                  dragState,
+                  undefined,
+                  dragState.targetProperty,
+                  undefined,
+                  pressed,
+                  undefined,
+                ),
               )
               break
             case 'cmd':
               fireDragStateUpdate(
-                updateResizeDragState(dragState, undefined, !pressed, undefined, undefined),
+                updateResizeDragState(
+                  dragState,
+                  undefined,
+                  dragState.targetProperty,
+                  !pressed,
+                  undefined,
+                  undefined,
+                ),
               )
               break
             default:
@@ -1024,6 +1045,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               newDragState = updateResizeDragState(
                 dragState,
                 exceededThreshold ? newDrag : undefined,
+                dragState.targetProperty,
                 enableSnapping,
                 centerBasedResize,
                 keepAspectRatio,

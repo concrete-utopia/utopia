@@ -12,6 +12,13 @@ export type LayoutFlexElementNumericProp = 'Width' | 'Height' | 'FlexFlexBasis' 
 
 export type LayoutFlexElementProp = LayoutFlexElementNumericProp
 
+export type LayoutTargetableProp =
+  | LayoutFlexElementProp
+  | 'minWidth'
+  | 'maxWidth'
+  | 'minHeight'
+  | 'maxHeight'
+
 export type LayoutPinnedProp =
   | LayoutDimension
   | 'PinnedLeft'
