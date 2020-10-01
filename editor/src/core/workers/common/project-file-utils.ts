@@ -160,7 +160,6 @@ export function parseSuccess(
   projectContainedOldSceneMetadata: boolean,
   code: string,
   highlightBounds: HighlightBoundsForUids,
-  dependencyOrdering: Array<string>,
   jsxFactoryFunction: string | null,
 ): ParseSuccess {
   return {
@@ -170,7 +169,6 @@ export function parseSuccess(
     projectContainedOldSceneMetadata: projectContainedOldSceneMetadata,
     code: code,
     highlightBounds: highlightBounds,
-    dependencyOrdering: dependencyOrdering,
     jsxFactoryFunction: jsxFactoryFunction,
   }
 }

@@ -90,10 +90,6 @@ export var whatever = (props) => {
   )
 }
 ",
-    "dependencyOrdering": Array [
-      "",
-      "whatever",
-    ],
     "highlightBounds": Object {
       "aaa": Object {
         "endCol": 11,
@@ -350,6 +346,200 @@ export var whatever = (props) => {
 }
 `;
 
+exports[`JSX parser parses fine with a circular dependency. 1`] = `
+Object {
+  "type": "RIGHT",
+  "value": Object {
+    "canvasMetadata": Object {
+      "type": "RIGHT",
+      "value": Object {},
+    },
+    "code": "import * as React from \\"react\\";
+import {
+  View
+} from \\"utopia-api\\";
+const a = (n) => n > 0 ? n : b(10)
+export var whatever = (props) => <View data-uid={'aaa'} />
+const b = (n) => n > 0 ? n : a(10)
+",
+    "highlightBounds": Object {
+      "aaa": Object {
+        "endCol": 58,
+        "endLine": 5,
+        "startCol": 33,
+        "startLine": 5,
+        "uid": "aaa",
+      },
+    },
+    "imports": Object {
+      "react": Object {
+        "importedAs": "React",
+        "importedFromWithin": Array [],
+        "importedWithName": null,
+      },
+      "utopia-api": Object {
+        "importedAs": null,
+        "importedFromWithin": Array [
+          Object {
+            "alias": "View",
+            "name": "View",
+          },
+        ],
+        "importedWithName": null,
+      },
+    },
+    "jsxFactoryFunction": null,
+    "projectContainedOldSceneMetadata": false,
+    "topLevelElements": Array [
+      Object {
+        "definedElsewhere": Array [
+          "b",
+        ],
+        "definedWithin": Array [
+          "a",
+        ],
+        "javascript": "const a = n => n > 0 ? n : b(10);",
+        "sourceMap": Object {
+          "file": "code.tsx",
+          "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+          "names": Array [
+            "const",
+            "a",
+            " ",
+            "(",
+            "n",
+            "0",
+            "b",
+            "10",
+          ],
+          "sources": Array [
+            "code.tsx",
+          ],
+          "sourcesContent": Array [
+            "import * as React from \\"react\\";
+import {
+  View
+} from \\"utopia-api\\";
+const a = (n) => n > 0 ? n : b(10)
+export var whatever = (props) => <View data-uid={'aaa'} />
+const b = (n) => n > 0 ? n : a(10)
+",
+          ],
+          "version": 3,
+        },
+        "transpiledJavascript": "var a = function a(n) {
+  return n > 0 ? n : b(10);
+};
+return { a: a };",
+        "type": "ARBITRARY_JS_BLOCK",
+        "uniqueID": "",
+      },
+      Object {
+        "arbitraryJSBlock": null,
+        "isFunction": true,
+        "name": "whatever",
+        "param": Object {
+          "boundParam": Object {
+            "defaultExpression": null,
+            "paramName": "props",
+            "type": "REGULAR_PARAM",
+          },
+          "dotDotDotToken": false,
+          "type": "PARAM",
+        },
+        "propsUsed": Array [],
+        "rootElement": Object {
+          "children": Array [],
+          "metadata": null,
+          "name": Object {
+            "baseVariable": "View",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Object {
+            "data-uid": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
+            },
+          },
+          "type": "JSX_ELEMENT",
+        },
+        "type": "UTOPIA_JSX_COMPONENT",
+      },
+      Object {
+        "definedElsewhere": Array [
+          "a",
+        ],
+        "definedWithin": Array [
+          "b",
+        ],
+        "javascript": "const b = n => n > 0 ? n : a(10);",
+        "sourceMap": Object {
+          "file": "code.tsx",
+          "mappings": "AAMCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+          "names": Array [
+            "const",
+            "b",
+            " ",
+            "(",
+            "n",
+            "0",
+            "a",
+            "10",
+          ],
+          "sources": Array [
+            "code.tsx",
+          ],
+          "sourcesContent": Array [
+            "import * as React from \\"react\\";
+import {
+  View
+} from \\"utopia-api\\";
+const a = (n) => n > 0 ? n : b(10)
+export var whatever = (props) => <View data-uid={'aaa'} />
+const b = (n) => n > 0 ? n : a(10)
+",
+          ],
+          "version": 3,
+        },
+        "transpiledJavascript": "var b = function b(n) {
+  return n > 0 ? n : a(10);
+};
+return { b: b };",
+        "type": "ARBITRARY_JS_BLOCK",
+        "uniqueID": "",
+      },
+      Object {
+        "arbitraryJSBlock": null,
+        "isFunction": false,
+        "name": "storyboard",
+        "param": null,
+        "propsUsed": Array [],
+        "rootElement": Object {
+          "children": Array [],
+          "metadata": null,
+          "name": Object {
+            "baseVariable": "Storyboard",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Object {
+            "data-uid": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": "utopia-storyboard-uid",
+            },
+          },
+          "type": "JSX_ELEMENT",
+        },
+        "type": "UTOPIA_JSX_COMPONENT",
+      },
+    ],
+  },
+}
+`;
+
 exports[`JSX parser parses the code when it has a JSX block with an object defined inside 1`] = `
 Object {
   "type": "RIGHT",
@@ -373,10 +563,6 @@ export var App = (props) => <View data-uid={'bbb'}>
   {{a: a}}
 </View>
 ",
-    "dependencyOrdering": Array [
-      "",
-      "App",
-    ],
     "highlightBounds": Object {
       "bbb": Object {
         "endCol": 7,
@@ -569,43 +755,6 @@ export var App = (props) => <View data-uid={'bbb'}>
         "type": "UTOPIA_JSX_COMPONENT",
       },
     ],
-  },
-}
-`;
-
-exports[`JSX parser returns a circular reference error where there is one. 1`] = `
-Object {
-  "type": "LEFT",
-  "value": Object {
-    "code": "import * as React from \\"react\\";
-import {
-  View
-} from \\"utopia-api\\";
-const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid={'aaa'} />
-const b = (n) => n > 0 ? n : a(10)
-",
-    "diagnostics": null,
-    "errorMessage": null,
-    "errorMessages": Array [
-      Object {
-        "codeSnippet": "   7 | const b = (n) => n > 0 ? n : a(10)
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-",
-        "endColumn": 34,
-        "endLine": 6,
-        "errorCode": "",
-        "fileName": "code.tsx",
-        "message": "Circular dependency detected. While this is valid javascript, the Utopia editor cannot currently handle circular dependencies.",
-        "passTime": null,
-        "severity": "fatal",
-        "source": "utopia-parser",
-        "startColumn": 0,
-        "startLine": 6,
-        "type": "",
-      },
-    ],
-    "parsedJSONFailure": null,
   },
 }
 `;

@@ -9406,6 +9406,120 @@ Object {
 }
 `;
 
+exports[`UiJsxCanvas render renders fine with two components that reference each other 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
+>
+  <div
+    data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene:BBB\\"
+    style=\\"
+      position: absolute;
+      width: 375px;
+      height: 812px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
+    data-uid=\\"utopia-storyboard-uid\\"
+  >
+    <div data-uid=\\"BBB\\">great</div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renders fine with two components that reference each other 2`] = `
+Object {
+  "utopia-storyboard-uid/scene:BBB": Object {
+    "childrenTemplatePaths": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "metadata": null,
+        "name": Object {
+          "baseVariable": "B",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Object {
+          "data-uid": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "BBB",
+          },
+          "x": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": 5,
+          },
+        },
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "BBB",
+      "data-utopia-original-uid": undefined,
+      "skipDeepFreeze": true,
+      "x": 5,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "nonfixed",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "nonfixed",
+      "position": "static",
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "BBB",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [
+          "utopia-storyboard-uid",
+          "scene",
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
+
 exports[`UiJsxCanvas render renders fragments correctly 1`] = `
 "<div
   id=\\"canvas-container\\"

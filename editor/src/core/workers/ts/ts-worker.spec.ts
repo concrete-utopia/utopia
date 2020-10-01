@@ -230,7 +230,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               uid: 'aaa',
             },
           },
-          dependencyOrdering: ['App'],
           jsxFactoryFunction: 'jsx',
         },
       },

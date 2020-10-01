@@ -157,7 +157,6 @@ export interface ParseSuccess {
   projectContainedOldSceneMetadata: boolean
   code: string
   highlightBounds: HighlightBoundsForUids
-  dependencyOrdering: Array<string>
   jsxFactoryFunction: string | null
 }
 

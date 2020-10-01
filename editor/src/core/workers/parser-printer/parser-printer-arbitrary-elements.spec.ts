@@ -205,7 +205,6 @@ export var whatever = props => (
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
       ),
     )
@@ -303,7 +302,6 @@ return { arr: arr };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
       ),
     )
@@ -403,7 +401,6 @@ return { arr: arr };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
       ),
     )
@@ -504,7 +501,6 @@ return { arr: arr };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
       ),
     )
@@ -588,7 +584,6 @@ export var whatever = (props) => {
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
       ),
     )
@@ -689,7 +684,6 @@ return { arr: arr };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
       ),
     )

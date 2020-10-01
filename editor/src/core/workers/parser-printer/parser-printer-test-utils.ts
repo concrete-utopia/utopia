@@ -175,21 +175,8 @@ export function testParseModifyPrint(
 export function clearParseResultUniqueIDs(parseResult: ParseResult): ParseResult {
   return mapEither((success) => {
     const updatedTopLevelElements = success.topLevelElements.map(clearTopLevelElementUniqueIDs)
-    const updatedDependencyOrdering = Array.isArray(success.dependencyOrdering)
-      ? success.dependencyOrdering.map((dep) => {
-          const existsInTopLevelElements = updatedTopLevelElements.some((element) => {
-            if (isUtopiaJSXComponent(element)) {
-              return element.name === dep
-            } else {
-              return element.uniqueID === dep
-            }
-          })
-          return existsInTopLevelElements ? dep : ''
-        })
-      : success.dependencyOrdering
     return {
       ...success,
-      dependencyOrdering: updatedDependencyOrdering,
       topLevelElements: updatedTopLevelElements,
     }
   }, parseResult)

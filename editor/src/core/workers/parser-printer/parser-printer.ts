@@ -97,7 +97,6 @@ import {
 } from './parser-printer-parsing'
 import {
   attachMetadataToElements,
-  elementDependencyOrdering,
   getBoundsOfNodes,
   guaranteeUniqueUidsFromTopLevel,
   TopLevelElementAndCodeContext,
@@ -106,7 +105,6 @@ import { ParserPrinterResultMessage } from './parser-printer-worker'
 import creator from './ts-creator'
 import { applyPrettier } from './prettier-utils'
 import { convertPrintedMetadataToCanvasMetadata, jsonToExpression } from './canvas-metadata-parser'
-import { omit } from '../../shared/object-utils'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1008,12 +1006,6 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
       utopiaComponentFromSceneMetadata,
     } = convertPrintedMetadataToCanvasMetadata(canvasMetadata)
 
-    const orderResult = elementDependencyOrdering(
-      filename,
-      code,
-      topLevelElementsWithMetadataAttached,
-    )
-
     const topLevelElementsIncludingScenes = addUtopiaCanvasComponentOrDefault(
       topLevelElementsWithMetadataAttached.map((e) => e.element),
       utopiaComponentFromSceneMetadata,
@@ -1021,18 +1013,17 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
 
     const projectContainedOldSceneMetadata = utopiaComponentFromSceneMetadata != null
 
-    return mapEither((ordering) => {
-      return parseSuccess(
+    return right(
+      parseSuccess(
         imports,
         topLevelElementsIncludingScenes,
         sanitizedCanvasMetadata,
         projectContainedOldSceneMetadata,
         code,
         highlightBounds,
-        ordering,
         jsxFactoryFunction,
-      )
-    }, orderResult)
+      ),
+    )
   }
 }
 
