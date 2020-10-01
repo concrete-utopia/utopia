@@ -14,7 +14,7 @@ import { NodeModules } from '../../shared/project-file-types'
 import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
 import { InjectedCSSFilePrefix } from '../../shared/css-style-loader'
 import { VersionLookupResult } from '../../../components/editor/npm-dependency/npm-dependency'
-import {requestedNpmDependency, resolvedNpmDependency} from '../../shared/npm-dependency-types'
+import { requestedNpmDependency, resolvedNpmDependency } from '../../shared/npm-dependency-types'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -26,6 +26,15 @@ beforeEach(() => {
 
 jest.mock('../../../components/editor/npm-dependency/npm-dependency', () => ({
   ...(jest.requireActual('../../../components/editor/npm-dependency/npm-dependency') as any),
+  findMatchingVersion: async (
+    packageName: string,
+    versionRange: string,
+  ): Promise<VersionLookupResult> => {
+    return Promise.resolve({
+      type: 'VERSION_LOOKUP_SUCCESS',
+      version: versionRange,
+    })
+  },
   checkPackageVersionExists: async (
     packageName: string,
     version: string,
@@ -82,7 +91,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(requestedNpmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl(resolvedNpmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
           case getJsDelivrListUrl(resolvedNpmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 404 }) // we don't care about the jsdelivr response now
@@ -91,7 +100,9 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')])
+    const fetchNodeModulesResult = await fetchNodeModules([
+      requestedNpmDependency('react-spring', '8.0.27'),
+    ])
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -106,7 +117,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(requestedNpmDependency('antd', '4.2.5')):
+          case getPackagerUrl(resolvedNpmDependency('antd', '4.2.5')):
             return Promise.resolve({ status: 200, body: JSON.stringify(antdPackagerResponse) })
           case getJsDelivrListUrl(resolvedNpmDependency('antd', '4.2.5')):
             return Promise.resolve({ status: 200, body: JSON.stringify(jsdelivrApiResponse) })
@@ -148,7 +159,7 @@ describe('ES Dependency Manager — d.ts', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(requestedNpmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl(resolvedNpmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
           case getJsDelivrListUrl(resolvedNpmDependency('react-spring', '8.0.27')):
             return Promise.resolve({ status: 404 }) // we don't care about the jsdelivr response now
@@ -158,7 +169,9 @@ describe('ES Dependency Manager — d.ts', () => {
       },
     )
 
-    const fetchNodeModulesResult = await fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')])
+    const fetchNodeModulesResult = await fetchNodeModules([
+      requestedNpmDependency('react-spring', '8.0.27'),
+    ])
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -181,7 +194,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(requestedNpmDependency('mypackage', '0.0.1')):
+          case getPackagerUrl(resolvedNpmDependency('mypackage', '0.0.1')):
             return Promise.resolve({ status: 200, body: JSON.stringify(fileNoImports) })
           case getJsDelivrListUrl(resolvedNpmDependency('mypackage', '0.0.1')):
             return Promise.resolve({ status: 200, body: JSON.stringify(jsdelivrApiResponse) })
@@ -192,7 +205,9 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules([requestedNpmDependency('mypackage', '0.0.1')])
+    const fetchNodeModulesResult = await fetchNodeModules([
+      requestedNpmDependency('mypackage', '0.0.1'),
+    ])
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -224,7 +239,7 @@ describe('ES Dependency manager - retry behavior', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(requestedNpmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl(resolvedNpmDependency('react-spring', '8.0.27')):
             if (requestCounter === 0) {
               requestCounter++
               throw new Error('First request fails')
@@ -238,16 +253,18 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then((fetchNodeModulesResult) => {
-      if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-        fail(`Expected successful nodeModule fetch`)
-      }
-      expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(228)
-      expect(
-        fetchNodeModulesResult.nodeModules['/node_modules/react-spring/index.d.ts'],
-      ).toBeDefined()
-      done()
-    })
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then(
+      (fetchNodeModulesResult) => {
+        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+          fail(`Expected successful nodeModule fetch`)
+        }
+        expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(228)
+        expect(
+          fetchNodeModulesResult.nodeModules['/node_modules/react-spring/index.d.ts'],
+        ).toBeDefined()
+        done()
+      },
+    )
   })
 
   it('stops retrying after retry limit reached', async (done) => {
@@ -257,12 +274,14 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then((fetchNodeModulesResult) => {
-      expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
-      expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
-      expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(0)
-      done()
-    })
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then(
+      (fetchNodeModulesResult) => {
+        expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
+        expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
+        expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(0)
+        done()
+      },
+    )
   })
 
   it('does not retry if set to', async (done) => {
@@ -270,7 +289,7 @@ describe('ES Dependency manager - retry behavior', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(requestedNpmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl(resolvedNpmDependency('react-spring', '8.0.27')):
             if (requestCounter === 0) {
               requestCounter++
               throw new Error('First request fails')

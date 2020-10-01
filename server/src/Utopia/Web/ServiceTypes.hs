@@ -107,8 +107,8 @@ data ServiceCallsF a = NotFound
                      | SetShowcaseProjects [Text] a
                      | GetGithubProject Text Text (Maybe BL.ByteString -> a)
                      | GetMetrics (Value -> a)
-                     | GetPackageJSON Text (Maybe Value -> a)
-                     | GetPackageVersionJSON Text Text (Maybe Value -> a)
+                     | GetPackageJSON Text (Maybe Text) (Maybe Value -> a)
+                     | GetPackageVersionJSON Text (Maybe Value -> a)
                      | GetCommitHash (Text -> a)
                      | GetEditorTextContent (Maybe Text) Text (Text -> a)
                      | GetHashedAssetPaths (Value -> a)

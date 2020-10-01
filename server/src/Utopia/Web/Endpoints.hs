@@ -375,12 +375,17 @@ serveWebAppEndpoint notProxiedPath = do
 
 getPackageJSONEndpoint :: Text -> ServerMonad Value
 getPackageJSONEndpoint javascriptPackageName = do
-  packageMetadata <- getPackageJSON javascriptPackageName
+  packageMetadata <- getPackageJSON javascriptPackageName Nothing
   maybe notFound return packageMetadata
 
 getPackageVersionJSONEndpoint :: Text -> Text -> ServerMonad Value
 getPackageVersionJSONEndpoint javascriptPackageName javascriptPackageVersion = do
-  packageMetadata <- getPackageVersionJSON javascriptPackageName javascriptPackageVersion
+  packageMetadata <- getPackageJSON javascriptPackageName (Just javascriptPackageVersion)
+  maybe notFound return packageMetadata
+
+getPackageVersionsEndpoint :: Text -> ServerMonad Value
+getPackageVersionsEndpoint javascriptPackageName = do
+  packageMetadata <- getPackageVersionJSON javascriptPackageName
   maybe notFound return packageMetadata
 
 hashedAssetPathsEndpoint :: ServerMonad Value
@@ -455,6 +460,7 @@ unprotected = authenticate
          :<|> packagePackagerEndpoint
          :<|> getPackageJSONEndpoint
          :<|> getPackageVersionJSONEndpoint
+         :<|> getPackageVersionsEndpoint
          :<|> hashedAssetPathsEndpoint
          :<|> editorAssetsEndpoint "./editor"
          :<|> editorAssetsEndpoint "./sockjs-node" Nothing
