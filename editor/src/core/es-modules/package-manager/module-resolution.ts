@@ -4,7 +4,6 @@ import {
   ESRemoteDependencyPlaceholder,
   isEsCodeFile,
 } from '../../shared/project-file-types'
-import { createEsModuleError } from './package-manager'
 import {
   optionalObjectKeyParser,
   parseString,
@@ -25,18 +24,6 @@ function resolveSuccess<T>(success: T): ResolveSuccess<T> {
   }
 }
 
-interface ResolveESModuleFailure {
-  type: 'RESOLVE_ES_MODULE_FAILURE'
-  moduleName: string
-}
-
-function resolveESModuleFailure(moduleName: string): ResolveESModuleFailure {
-  return {
-    type: 'RESOLVE_ES_MODULE_FAILURE',
-    moduleName: moduleName,
-  }
-}
-
 interface ResolveNotPresent {
   type: 'RESOLVE_NOT_PRESENT'
 }
@@ -45,16 +32,10 @@ const resolveNotPresent: ResolveNotPresent = {
   type: 'RESOLVE_NOT_PRESENT',
 }
 
-type ResolveResult<T> = ResolveNotPresent | ResolveESModuleFailure | ResolveSuccess<T>
+type ResolveResult<T> = ResolveNotPresent | ResolveSuccess<T>
 
 function isResolveSuccess<T>(resolveResult: ResolveResult<T>): resolveResult is ResolveSuccess<T> {
   return resolveResult.type === 'RESOLVE_SUCCESS'
-}
-
-function isResolveESModuleFailure<T>(
-  resolveResult: ResolveResult<T>,
-): resolveResult is ResolveESModuleFailure {
-  return resolveResult.type === 'RESOLVE_ES_MODULE_FAILURE'
 }
 
 function isResolveNotPresent<T>(
@@ -65,11 +46,7 @@ function isResolveNotPresent<T>(
 
 type ResolveResultType = ResolveResult<any>['type']
 
-const resolveResultTypes: Array<ResolveResultType> = [
-  'RESOLVE_NOT_PRESENT',
-  'RESOLVE_ES_MODULE_FAILURE',
-  'RESOLVE_SUCCESS',
-]
+const resolveResultTypes: Array<ResolveResultType> = ['RESOLVE_NOT_PRESENT', 'RESOLVE_SUCCESS']
 
 export function failoverResolveResults<T>(
   resolveResultCalls: Array<() => ResolveResult<T>>,
@@ -177,7 +154,8 @@ function processPackageJson(
       const mainEntry: string | null = packageJson.main ?? null
       const moduleEntry: string | null = packageJson.module ?? null
       if (moduleEntry != null && mainEntry == null) {
-        return resolveESModuleFailure(moduleName)
+        return resolveSuccess(normalizePath([...containerFolder, ...pathToElements(moduleName)]))
+        //return resolveESModuleFailure(moduleName)
       }
       if (mainEntry != null) {
         return resolveSuccess(normalizePath([...containerFolder, ...pathToElements(mainEntry)]))
@@ -293,11 +271,6 @@ export function resolveModule(
       return resolveResult.success
     case 'RESOLVE_NOT_PRESENT':
       return null
-    case 'RESOLVE_ES_MODULE_FAILURE':
-      throw createEsModuleError(
-        resolveResult.moduleName,
-        'Module error: package.json has a missing `main` entry',
-      )
     default:
       const _exhaustiveCheck: never = resolveResult
       throw new Error(`Unhandled case ${JSON.stringify(resolveResult)}`)

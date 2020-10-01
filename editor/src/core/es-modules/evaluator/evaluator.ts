@@ -1,6 +1,7 @@
 import { SafeFunction } from '../../shared/code-exec-utils'
 import { transformCssNodeModule } from '../../shared/css-style-loader'
-import { createEsModuleError } from '../package-manager/package-manager'
+import * as Babel from '@babel/standalone'
+import * as BabelTransformCommonJS from '@babel/plugin-transform-modules-commonjs'
 
 function getFileExtension(filepath: string) {
   const lastDot = filepath.lastIndexOf('.')
@@ -18,38 +19,62 @@ function isEsModuleError(error: Error) {
   )
 }
 
+function transformToCommonJS(filePath: string, moduleCode: string): string {
+  const plugins = [BabelTransformCommonJS]
+  const result = Babel.transform(moduleCode, {
+    presets: ['es2015'],
+    plugins: plugins,
+    sourceType: 'module',
+    sourceFileName: filePath,
+  }).code
+  return result
+}
+
 function evaluateJs(
   filePath: string,
   moduleCode: string,
   partialModule: { exports: unknown },
   requireFn: (toImport: string) => unknown,
 ) {
-  // https://nodejs.org/api/modules.html#modules_module_exports
   let module = partialModule
-  let exports = module.exports
 
-  // https://nodejs.org/api/process.html#process_process_env
-  // This is a hacky solution, ideally we'd want a transpiler / loader that replaces process.env.NODE_ENV with a user-defined value
-  let process = {
-    env: {
-      NODE_ENV: 'production',
-    },
+  function firstErrorHandler(error: Error): void {
+    if (isEsModuleError(error)) {
+      const transpiledCode = transformToCommonJS(filePath, moduleCode)
+      evaluateWithHandler(transpiledCode, secondErrorHandler)
+    } else {
+      throw error
+    }
   }
 
-  // evaluating the module code https://nodejs.org/api/modules.html#modules_the_module_wrapper
-  SafeFunction(
-    false,
-    { require: requireFn, exports: exports, module: module, process: process },
-    moduleCode,
-    [],
-    (error) => {
-      // we throw the error here, the require fn will catch it
-      if (isEsModuleError(error)) {
-        error.message = createEsModuleError(filePath, error.message)
-      }
-      throw error
-    },
-  )()
+  function secondErrorHandler(error: Error): void {
+    throw error
+  }
+
+  function evaluateWithHandler(code: string, errorHandler: (error: Error) => void): unknown {
+    // https://nodejs.org/api/modules.html#modules_module_exports
+    let exports = module.exports
+
+    // https://nodejs.org/api/process.html#process_process_env
+    // This is a hacky solution, ideally we'd want a transpiler / loader that replaces process.env.NODE_ENV with a user-defined value
+    let process = {
+      env: {
+        NODE_ENV: 'production',
+      },
+    }
+
+    // evaluating the module code https://nodejs.org/api/modules.html#modules_the_module_wrapper
+    SafeFunction(
+      false,
+      { require: requireFn, exports: exports, module: module, process: process },
+      code,
+      [],
+      errorHandler,
+    )()
+    return module
+  }
+
+  evaluateWithHandler(moduleCode, firstErrorHandler)
 
   return module
 }

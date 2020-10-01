@@ -9,27 +9,19 @@ import {
   PackagerServerResponse,
   JsdelivrResponse,
   RequestedNpmDependency,
-  resolvedNpmDependency
+  resolvedNpmDependency,
 } from '../../shared/npm-dependency-types'
 import { mapArrayToDictionary, pluck } from '../../shared/array-utils'
 import { objectMap } from '../../shared/object-utils'
 import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
 import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
-import {
-  Either,
-  right,
-  left,
-  isLeft,
-  isRight,
-} from '../../shared/either'
+import { Either, right, left, isLeft, isRight } from '../../shared/either'
 import { isBuiltinDependency } from './package-manager'
 import {
   checkPackageVersionExists,
   isPackageNotFound,
 } from '../../../components/editor/npm-dependency/npm-dependency'
-import {
-  parseDependencyVersionFromNodeModules,
-} from '../../../utils/package-parser-utils'
+import { parseDependencyVersionFromNodeModules } from '../../../utils/package-parser-utils'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 let jsDelivrCache: { [key: string]: JsdelivrResponse } = {}
@@ -39,7 +31,9 @@ const NR_RETRIES = 3
 const RETRY_FREQ_MS = process.env.JEST_WORKER_ID == undefined ? 10000 : 0
 
 function extractNodeModulesFromPackageResponse(response: PackagerServerResponse): NodeModules {
-  return objectMap((file) => esCodeFile(file.content, null), response.contents)
+  return objectMap((file) => {
+    return esCodeFile(file.content, null)
+  }, response.contents)
 }
 
 function extractNodeModulesFromJsdelivrResponse(
