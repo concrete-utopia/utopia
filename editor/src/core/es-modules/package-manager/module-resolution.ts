@@ -155,7 +155,6 @@ function processPackageJson(
       const moduleEntry: string | null = packageJson.module ?? null
       if (moduleEntry != null && mainEntry == null) {
         return resolveSuccess(normalizePath([...containerFolder, ...pathToElements(moduleName)]))
-        //return resolveESModuleFailure(moduleName)
       }
       if (mainEntry != null) {
         return resolveSuccess(normalizePath([...containerFolder, ...pathToElements(mainEntry)]))
