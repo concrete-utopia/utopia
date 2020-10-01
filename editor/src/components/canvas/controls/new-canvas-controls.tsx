@@ -667,7 +667,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
         position: 'relative',
         width: '100%',
         height: '100%',
-        transform: props.xrayView ? 'rotateY(-25deg) rotateX(15deg) rotateZ(0deg)' : undefined,
+        transform: props.xrayView ? 'rotateY(35deg) rotateX(15deg) rotateZ(0deg)' : undefined,
         transformStyle: 'preserve-3d',
       }}
     >
