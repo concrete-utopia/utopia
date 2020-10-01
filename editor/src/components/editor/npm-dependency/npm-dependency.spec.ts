@@ -2,7 +2,7 @@ import {
   findMatchingVersion,
   getVersionType,
   packageNotFound,
-  versionLookupSuccess,
+  npmVersionLookupSuccess,
 } from './npm-dependency'
 
 require('jest-fetch-mock').enableMocks()
@@ -16,7 +16,7 @@ describe('Attempting to match a version for a valid package', () => {
     )
     const version = '1.0.0'
     const result = await findMatchingVersion('', version)
-    expect(result).toEqual(versionLookupSuccess(version))
+    expect(result).toEqual(npmVersionLookupSuccess(version))
   })
   it('Matches a ranged version if that range can be satisfied by the list', async () => {
     ;(fetch as any).mockResponse(
@@ -26,7 +26,7 @@ describe('Attempting to match a version for a valid package', () => {
     )
     const version = '^1.0.0'
     const result = await findMatchingVersion('', version)
-    expect(result).toEqual(versionLookupSuccess('1.1.0'))
+    expect(result).toEqual(npmVersionLookupSuccess('1.1.0'))
   })
   it('Fails a version if that version is not in the list', async () => {
     ;(fetch as any).mockResponse(

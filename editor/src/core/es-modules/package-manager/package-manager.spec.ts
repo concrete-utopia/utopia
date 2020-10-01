@@ -13,7 +13,10 @@ import { NO_OP } from '../../shared/utils'
 import { NodeModules } from '../../shared/project-file-types'
 import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packager-url'
 import { InjectedCSSFilePrefix } from '../../shared/css-style-loader'
-import { VersionLookupResult } from '../../../components/editor/npm-dependency/npm-dependency'
+import {
+  npmVersionLookupSuccess,
+  VersionLookupResult,
+} from '../../../components/editor/npm-dependency/npm-dependency'
 import { requestedNpmDependency, resolvedNpmDependency } from '../../shared/npm-dependency-types'
 
 require('jest-fetch-mock').enableMocks()
@@ -30,19 +33,10 @@ jest.mock('../../../components/editor/npm-dependency/npm-dependency', () => ({
     packageName: string,
     versionRange: string,
   ): Promise<VersionLookupResult> => {
-    return Promise.resolve({
-      type: 'VERSION_LOOKUP_SUCCESS',
-      version: versionRange,
-    })
+    return Promise.resolve(npmVersionLookupSuccess(versionRange))
   },
-  checkPackageVersionExists: async (
-    packageName: string,
-    version: string,
-  ): Promise<VersionLookupResult> => {
-    return Promise.resolve({
-      type: 'VERSION_LOOKUP_SUCCESS',
-      version: version,
-    })
+  checkPackageVersionExists: async (packageName: string, version: string): Promise<boolean> => {
+    return Promise.resolve(true)
   },
 }))
 

@@ -21,8 +21,8 @@ import { isBuiltinDependency } from './package-manager'
 import {
   findMatchingVersion,
   isPackageNotFound,
+  DependencyVersion,
 } from '../../../components/editor/npm-dependency/npm-dependency'
-import { parseDependencyVersionFromNodeModules } from '../../../utils/package-parser-utils'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 let jsDelivrCache: { [key: string]: JsdelivrResponse } = {}
@@ -150,6 +150,25 @@ function failError(dependency: RequestedNpmDependency): DependencyFetchError {
   }
 }
 
+async function fetchResolvedDependency(
+  dependency: RequestedNpmDependency,
+  resolvedVersion: DependencyVersion,
+  shouldRetry: boolean,
+): Promise<NodeModules | null> {
+  switch (resolvedVersion.type) {
+    case 'NPM_VERSION':
+      const resolvedDependency = resolvedNpmDependency(dependency.name, resolvedVersion.version)
+      return shouldRetry
+        ? fetchPackagerResponseWithRetry(resolvedDependency)
+        : fetchPackagerResponse(resolvedDependency)
+    case 'URL':
+      return Promise.resolve(null)
+    default:
+      const _exhaustiveCheck: never = resolvedVersion.type
+      throw new Error(`Unhandled package version type ${JSON.stringify(resolvedVersion)}`)
+  }
+}
+
 export async function fetchNodeModules(
   newDeps: Array<RequestedNpmDependency>,
   shouldRetry: boolean = true,
@@ -164,14 +183,11 @@ export async function fetchNodeModules(
             return left(failNotFound(newDep))
           }
 
-          const resolvedDependency = resolvedNpmDependency(
-            newDep.name,
+          const packagerResponse = await fetchResolvedDependency(
+            newDep,
             matchingVersionResponse.version,
+            shouldRetry,
           )
-
-          const packagerResponse = shouldRetry
-            ? await fetchPackagerResponseWithRetry(resolvedDependency)
-            : await fetchPackagerResponse(resolvedDependency)
           if (packagerResponse != null) {
             /**
              * to avoid clashing transitive dependencies,
@@ -189,7 +205,7 @@ export async function fetchNodeModules(
              * the real nice solution would be to apply npm's module resolution logic that
              * pulls up shared transitive dependencies to the main /node_modules/ folder.
              */
-            return right(mangleNodeModulePaths(resolvedDependency.name, packagerResponse))
+            return right(mangleNodeModulePaths(newDep.name, packagerResponse))
           } else {
             return left(failError(newDep))
           }
