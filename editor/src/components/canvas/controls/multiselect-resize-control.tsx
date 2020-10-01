@@ -221,6 +221,10 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
         this.props.componentMetadata,
         TP.toInstancePathMaybe(view),
       )
+      const isFlowLayouted =
+        MetadataUtils.getElementByTemplatePathMaybe(this.props.componentMetadata, view)
+          ?.specialSizeMeasurements.immediateParentProvidesLayout === false
+
       if (frame != null) {
         return (
           <ResizeRectangle
@@ -235,7 +239,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
             selectedViews={[view]}
             elementAspectRatioLocked={this.props.elementAspectRatioLocked}
             imageMultiplier={this.props.imageMultiplier}
-            sideResizer={false}
+            sideResizer={isFlowLayouted}
             dragState={
               this.props.dragState != null && this.props.dragState.type === 'RESIZE_DRAG_STATE'
                 ? this.props.dragState

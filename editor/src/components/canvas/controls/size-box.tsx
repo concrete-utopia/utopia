@@ -740,7 +740,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
 
       let resizeLines = null
       if (this.props.sideResizer) {
-        if (isFeatureEnabled('Element Resize Menu')) {
+        if (isFeatureEnabled('Element Resize Menu') || isFeatureEnabled('Flow Resize')) {
           resizeLines = (
             <React.Fragment>
               <ResizeControl

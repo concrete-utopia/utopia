@@ -17,6 +17,7 @@ export type FeatureName =
   | 'Mini Navigator'
   | 'Hierarchy View'
   | 'Reorder Shows Placeholder Line'
+  | 'Flow Resize'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -33,6 +34,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Mini Navigator',
   'Hierarchy View',
   'Reorder Shows Placeholder Line',
+  'Flow Resize',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -51,6 +53,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Mini Navigator': true,
   'Hierarchy View': true,
   'Reorder Shows Placeholder Line': true,
+  'Flow Resize': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
