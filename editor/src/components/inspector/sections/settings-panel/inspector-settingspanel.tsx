@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as EditorActions from '../../../editor/actions/actions'
-import { colorTheme, UtopiaTheme } from 'uuiui'
+import { Button, colorTheme, UtopiaTheme } from 'uuiui'
 import { FlexRow } from 'uuiui'
 import { H2 } from 'uuiui'
 import { FlexColumn } from 'uuiui'
@@ -14,6 +14,7 @@ import {
   isFeatureEnabled,
   AllFeatureNames,
 } from '../../../../utils/feature-switches'
+import { getOpenUIJSFile } from '../../../editor/store/editor-state'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.medium,
@@ -64,6 +65,10 @@ export const SettingsPanel = (props: any) => {
   const dispatch = useEditorState((store) => store.dispatch)
   const interfaceDesigner = useEditorState((store) => store.editor.interfaceDesigner)
 
+  const openUiJsFile = useEditorState((store) => {
+    return getOpenUIJSFile(store.editor)
+  })
+
   const toggleCodeEditorVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
   }, [dispatch])
@@ -75,6 +80,10 @@ export const SettingsPanel = (props: any) => {
   const toggleAdditionalControls = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerAdditionalControls()])
   }, [dispatch])
+
+  const printOpenUiJsFileModel = React.useCallback(() => {
+    console.info('Open UIJSFile:', openUiJsFile)
+  }, [openUiJsFile])
 
   return (
     <FlexColumn
@@ -113,6 +122,10 @@ export const SettingsPanel = (props: any) => {
         />
         <label htmlFor='toggleInterfaceDesignerAdditionalCanvasControls'>Additional controls</label>
       </StyledFlexRow>
+      <br />
+      <Button outline spotlight onClick={printOpenUiJsFileModel}>
+        Print Current Model to Console
+      </Button>
       <FeatureSwitchesSection />
     </FlexColumn>
   )
