@@ -4041,6 +4041,14 @@ export const UPDATE_FNS = {
       })
     }
 
+    let onlyProjectFiles: boolean = true
+    for (const key of Object.keys(action.contentsToAdd)) {
+      if (key.startsWith('/node_modules')) {
+        onlyProjectFiles = false
+        break
+      }
+    }
+
     result = {
       ...result,
       codeResultCache: generateCodeResultCache(
@@ -4052,6 +4060,7 @@ export const UPDATE_FNS = {
         dispatch,
         action.buildType,
         getMainUIFromModel(result),
+        onlyProjectFiles,
       ),
     }
 
@@ -4399,6 +4408,7 @@ export async function newProject(
     dispatch,
     'full-build',
     null,
+    false,
   )
 
   renderEditorRoot()
@@ -4466,6 +4476,7 @@ export async function load(
       dispatch,
       'full-build',
       null,
+      false,
     )
   } else {
     codeResultCache = await loadCodeResult(
@@ -4523,6 +4534,7 @@ function loadCodeResult(
             dispatch,
             'full-build',
             null,
+            false,
           )
           resolve(codeResultCache)
           workers.removeBundleResultEventListener(handleMessage)

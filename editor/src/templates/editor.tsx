@@ -155,6 +155,7 @@ export class Editor {
               this.boundDispatch,
               msg.buildType,
               getMainUIFromModel(this.storedState.editor),
+              true,
             )
 
             if (codeResultCache != null) {

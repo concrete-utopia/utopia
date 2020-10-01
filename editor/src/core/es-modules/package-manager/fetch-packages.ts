@@ -32,7 +32,9 @@ const NR_RETRIES = 3
 const RETRY_FREQ_MS = process.env.JEST_WORKER_ID == undefined ? 10000 : 0
 
 function extractNodeModulesFromPackageResponse(response: PackagerServerResponse): NodeModules {
-  return objectMap((file) => esCodeFile(file.content, null), response.contents)
+  return objectMap((file) => {
+    return esCodeFile(file.content, null)
+  }, response.contents)
 }
 
 function extractNodeModulesFromJsdelivrResponse(
