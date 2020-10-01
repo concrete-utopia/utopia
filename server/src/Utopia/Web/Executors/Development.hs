@@ -235,13 +235,13 @@ innerServerExecutor (GetMetrics action) = do
   store <- fmap _storeForMetrics ask
   sample <- liftIO $ sampleAll store
   return $ action $ sampleToJson sample
-innerServerExecutor (GetPackageJSON javascriptPackageName action) = do
+innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackageName action) = do
   manager <- fmap _registryManager ask
-  packageMetadata <- liftIO $ lookupPackageJSON manager javascriptPackageName
+  let qualifiedPackageName = maybe javascriptPackageName (\v -> javascriptPackageName <> "/" <> v) maybeJavascriptPackageName
+  packageMetadata <- liftIO $ lookupPackageJSON manager qualifiedPackageName
   return $ action packageMetadata
-innerServerExecutor (GetPackageVersionJSON javascriptPackageName javascriptPackageVersion action) = do
-  manager <- fmap _registryManager ask
-  packageMetadata <- liftIO $ lookupSpecificPackageVersionJSON manager javascriptPackageName javascriptPackageVersion
+innerServerExecutor (GetPackageVersionJSON javascriptPackageName action) = do
+  packageMetadata <- liftIO $ lookupAllPackageVersions javascriptPackageName
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask

@@ -9,6 +9,7 @@ import {
   PackagerServerResponse,
   JsdelivrResponse,
   RequestedNpmDependency,
+  ResolvedNpmDependency,
   resolvedNpmDependency,
 } from '../../shared/npm-dependency-types'
 import { mapArrayToDictionary, pluck } from '../../shared/array-utils'
@@ -18,7 +19,7 @@ import { getPackagerUrl, getJsDelivrListUrl, getJsDelivrFileUrl } from './packag
 import { Either, right, left, isLeft, isRight } from '../../shared/either'
 import { isBuiltinDependency } from './package-manager'
 import {
-  checkPackageVersionExists,
+  findMatchingVersion,
   isPackageNotFound,
 } from '../../../components/editor/npm-dependency/npm-dependency'
 import { parseDependencyVersionFromNodeModules } from '../../../utils/package-parser-utils'
@@ -54,14 +55,14 @@ export function resetDepPackagerCache() {
 }
 
 async function fetchPackagerResponseWithRetry(
-  dep: RequestedNpmDependency,
+  dep: ResolvedNpmDependency,
 ): Promise<NodeModules | null> {
   const wait = (ms: number) => {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   const fetchPackagerResponseWithRetryInner = async (
-    dependency: RequestedNpmDependency,
+    dependency: ResolvedNpmDependency,
     nrRetries: number,
     retryFreqMs: number,
   ): Promise<NodeModules | null> => {
@@ -79,7 +80,7 @@ async function fetchPackagerResponseWithRetry(
   return await fetchPackagerResponseWithRetryInner(dep, NR_RETRIES, RETRY_FREQ_MS)
 }
 
-async function fetchPackagerResponse(dep: RequestedNpmDependency): Promise<NodeModules | null> {
+async function fetchPackagerResponse(dep: ResolvedNpmDependency): Promise<NodeModules | null> {
   if (PACKAGES_TO_SKIP.indexOf(dep.name) > -1) {
     return null
   }
@@ -100,32 +101,25 @@ async function fetchPackagerResponse(dep: RequestedNpmDependency): Promise<NodeM
     result = extractNodeModulesFromPackageResponse(depPackagerCache[packagesUrl])
   }
 
-  const resolvedDependency = parseDependencyVersionFromNodeModules(result, dep.name)
-  if (resolvedDependency != null) {
-    const jsdelivrUrl = getJsDelivrListUrl(resolvedNpmDependency(dep.name, resolvedDependency))
-    if (jsDelivrCache[jsdelivrUrl] != null) {
+  const jsdelivrUrl = getJsDelivrListUrl(dep)
+  if (jsDelivrCache[jsdelivrUrl] != null) {
+    result = {
+      ...extractNodeModulesFromJsdelivrResponse(dep.name, dep.version, jsDelivrCache[jsdelivrUrl]),
+      ...result,
+    }
+  } else {
+    const jsdelivrResponse = await fetch(jsdelivrUrl)
+    if (jsdelivrResponse.ok) {
+      const resp = (await jsdelivrResponse.json()) as JsdelivrResponse
+      jsDelivrCache[jsdelivrUrl] = resp
+      const nodeModulesFromResp = extractNodeModulesFromJsdelivrResponse(
+        dep.name,
+        dep.version,
+        resp,
+      )
       result = {
-        ...extractNodeModulesFromJsdelivrResponse(
-          dep.name,
-          dep.version,
-          jsDelivrCache[jsdelivrUrl],
-        ),
-        ...result,
-      }
-    } else {
-      const jsdelivrResponse = await fetch(jsdelivrUrl)
-      if (jsdelivrResponse.ok) {
-        const resp = (await jsdelivrResponse.json()) as JsdelivrResponse
-        jsDelivrCache[jsdelivrUrl] = resp
-        const nodeModulesFromResp = extractNodeModulesFromJsdelivrResponse(
-          dep.name,
-          dep.version,
-          resp,
-        )
-        result = {
-          ...nodeModulesFromResp, // we are deliberately merging this as the lower priority
-          ...result, // because if there's a real .js or .d.ts, that should win
-        }
+        ...nodeModulesFromResp, // we are deliberately merging this as the lower priority
+        ...result, // because if there's a real .js or .d.ts, that should win
       }
     }
   }
@@ -167,14 +161,19 @@ export async function fetchNodeModules(
     dependenciesToDownload.map(
       async (newDep): Promise<Either<DependencyFetchError, NodeModules>> => {
         try {
-          const packageExistsResponse = await checkPackageVersionExists(newDep.name, newDep.version)
-          if (isPackageNotFound(packageExistsResponse)) {
+          const matchingVersionResponse = await findMatchingVersion(newDep.name, newDep.version)
+          if (isPackageNotFound(matchingVersionResponse)) {
             return left(failNotFound(newDep))
           }
 
+          const resolvedDependency = resolvedNpmDependency(
+            newDep.name,
+            matchingVersionResponse.version,
+          )
+
           const packagerResponse = shouldRetry
-            ? await fetchPackagerResponseWithRetry(newDep)
-            : await fetchPackagerResponse(newDep)
+            ? await fetchPackagerResponseWithRetry(resolvedDependency)
+            : await fetchPackagerResponse(resolvedDependency)
           if (packagerResponse != null) {
             /**
              * to avoid clashing transitive dependencies,
@@ -192,7 +191,7 @@ export async function fetchNodeModules(
              * the real nice solution would be to apply npm's module resolution logic that
              * pulls up shared transitive dependencies to the main /node_modules/ folder.
              */
-            return right(mangleNodeModulePaths(newDep.name, packagerResponse))
+            return right(mangleNodeModulePaths(resolvedDependency.name, packagerResponse))
           } else {
             return left(failError(newDep))
           }
