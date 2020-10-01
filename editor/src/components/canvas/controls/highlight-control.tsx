@@ -42,7 +42,7 @@ export class HighlightControl extends React.Component<HighlightControlProps> {
             transform: this.props.zOffset
               ? `translate3d(0, 0, ${this.props.zOffset || 0}px)`
               : 'none',
-            transformStyle: 'preserve-3d',
+            transformStyle: this.props.zOffset ? 'preserve-3d' : undefined,
           }}
         />
       </>
