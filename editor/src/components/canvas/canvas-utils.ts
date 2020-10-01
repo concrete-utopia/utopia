@@ -141,6 +141,7 @@ import {
   oppositeEdgePositionPart,
   pinFrameChange,
   PinOrFlexFrameChange,
+  ReparentTargetIndicatorPosition,
   ResizeDragState,
   singleResizeChange,
 } from './canvas-types'
@@ -364,8 +365,12 @@ export function updateFramesOfScenesAndComponents(
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
   areWeInTemporaryDragState: boolean,
-): Array<UtopiaJSXComponent> {
+): {
+  components: Array<UtopiaJSXComponent>
+  reparentTargetPositions: Array<ReparentTargetIndicatorPosition>
+} {
   let workingComponentsResult = [...components]
+  let reparentTargetPositions: Array<ReparentTargetIndicatorPosition> = []
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
     const { target } = frameAndTarget
     if (TP.isScenePath(target)) {
@@ -549,6 +554,10 @@ export function updateFramesOfScenesAndComponents(
             }
             case 'FLEX_MOVE':
               if (areWeInTemporaryDragState && isFeatureEnabled('Reorder Shows Placeholder Line')) {
+                reparentTargetPositions.push({
+                  drawBeforeChildIndex: frameAndTarget.newIndex,
+                  parent: TP.parentPath(frameAndTarget.target),
+                })
                 break
               }
               workingComponentsResult = reorderComponent(
@@ -911,7 +920,7 @@ export function updateFramesOfScenesAndComponents(
       // doesn't work. Once that is fixed we can re-implement keeping the children in place
     }
   })
-  return workingComponentsResult
+  return { components: workingComponentsResult, reparentTargetPositions: reparentTargetPositions }
 }
 
 function updateFrameValueForProp(
@@ -1535,7 +1544,7 @@ export function produceResizeCanvasTransientState(
   })
   const boundingBox = Utils.boundingRectangleArray(globalFrames)
   if (boundingBox == null) {
-    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null)
+    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null, [])
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
       const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, target)
@@ -1578,7 +1587,10 @@ export function produceResizeCanvasTransientState(
 
     const componentsIncludingFakeUtopiaScene = openComponents
 
-    const updatedScenesAndComponents = updateFramesOfScenesAndComponents(
+    const {
+      components: updatedScenesAndComponents,
+      reparentTargetPositions,
+    } = updateFramesOfScenesAndComponents(
       componentsIncludingFakeUtopiaScene,
       editorState.jsxMetadataKILLME,
       framesAndTargets,
@@ -1596,6 +1608,7 @@ export function produceResizeCanvasTransientState(
       editorState.selectedViews,
       editorState.highlightedViews,
       transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+      reparentTargetPositions,
     )
   }
 }
@@ -1618,7 +1631,7 @@ export function produceResizeSingleSelectCanvasTransientState(
     true,
   )
   if (elementsToTarget.length !== 1) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
   }
   const elementToTarget = elementsToTarget[0]
 
@@ -1667,7 +1680,10 @@ export function produceResizeSingleSelectCanvasTransientState(
 
   const componentsIncludingFakeUtopiaScene = openComponents
 
-  const updatedScenesAndComponents = updateFramesOfScenesAndComponents(
+  const {
+    components: updatedScenesAndComponents,
+    reparentTargetPositions,
+  } = updateFramesOfScenesAndComponents(
     componentsIncludingFakeUtopiaScene,
     editorState.jsxMetadataKILLME,
     framesAndTargets,
@@ -1685,6 +1701,7 @@ export function produceResizeSingleSelectCanvasTransientState(
     editorState.selectedViews,
     editorState.highlightedViews,
     transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+    reparentTargetPositions,
   )
 }
 
@@ -1696,7 +1713,7 @@ export function produceCanvasTransientState(
   applyChanges: boolean,
 ): TransientCanvasState {
   function noFileTransientCanvasState(): TransientCanvasState {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
   }
   function parseSuccessTransientCanvasState(parseSuccess: ParseSuccess): TransientCanvasState {
     const topLevelElementsIncludingScenes = parseSuccess.topLevelElements
@@ -1704,6 +1721,7 @@ export function produceCanvasTransientState(
       selectedViews: editorState.selectedViews,
       highlightedViews: editorState.highlightedViews,
       fileState: transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+      reparentTargetPositions: [],
     }
   }
   const openUIFile = getOpenUIJSFile(editorState)
@@ -1749,6 +1767,7 @@ export function produceCanvasTransientState(
                 editorState.selectedViews,
                 editorState.highlightedViews,
                 transientFileState(topLevelElementsIncludingScenes, updatedImports),
+                [], // TODO interesting idea: for insertion we could show a similar indicator
               )
             } else {
               return parseSuccessTransientCanvasState(parseSuccess)
@@ -1961,6 +1980,7 @@ export interface MoveTemplateResult {
   metadata: Array<ComponentMetadata>
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
+  reparentTargetPositions: Array<ReparentTargetIndicatorPosition>
 }
 
 export function getFrameChange(
@@ -1996,6 +2016,7 @@ export function moveTemplate(
       metadata: componentMetadata,
       selectedViews: selectedViews,
       highlightedViews: highlightedViews,
+      reparentTargetPositions: [],
     }
   }
   if (TP.isScenePath(target)) {
@@ -2025,6 +2046,7 @@ export function moveTemplate(
         metadata: componentMetadata,
         selectedViews: selectedViews,
         highlightedViews: highlightedViews,
+        reparentTargetPositions: [],
       }
     }
   } else {
@@ -2062,6 +2084,7 @@ export function moveTemplate(
         return noChanges()
       } else {
         let updatedUtopiaComponents: Array<UtopiaJSXComponent> = utopiaComponentsIncludingScenes
+        let reparentTargetPositions: Array<ReparentTargetIndicatorPosition> = []
         let newPath: TemplatePath | null = null
         let updatedComponentMetadata: Array<ComponentMetadata> = withMetadataUpdatedForNewContext
 
@@ -2163,7 +2186,8 @@ export function moveTemplate(
             areWeInTemporaryDragState,
           )
 
-          updatedUtopiaComponents = frameChangeResult
+          updatedUtopiaComponents = frameChangeResult.components
+          reparentTargetPositions = frameChangeResult.reparentTargetPositions
         }
 
         const newSelectedViews = selectedViews.map((v) => {
@@ -2185,6 +2209,7 @@ export function moveTemplate(
           metadata: updatedComponentMetadata,
           selectedViews: filterMultiSelectScenes(Utils.stripNulls(newSelectedViews)),
           highlightedViews: Utils.stripNulls(newHighlightedViews),
+          reparentTargetPositions,
         }
       }
     }
@@ -2344,7 +2369,10 @@ function produceMoveTransientCanvasState(
 
   const componentsIncludingFakeUtopiaScene = utopiaComponentsIncludingScenes
 
-  const updatedScenesAndComponents = updateFramesOfScenesAndComponents(
+  const {
+    components: updatedScenesAndComponents,
+    reparentTargetPositions,
+  } = updateFramesOfScenesAndComponents(
     componentsIncludingFakeUtopiaScene,
     metadata,
     framesAndTargets,
@@ -2361,6 +2389,7 @@ function produceMoveTransientCanvasState(
     selectedViews,
     highlightedViews,
     transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+    reparentTargetPositions,
   )
 }
 

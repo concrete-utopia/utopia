@@ -4333,7 +4333,7 @@ function setCanvasFramesInnerNew(
       framesAndTargets,
       optionalParentFrame,
       false,
-    )
+    ).components
   }, editor)
 }
 

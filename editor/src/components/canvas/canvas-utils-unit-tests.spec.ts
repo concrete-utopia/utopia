@@ -42,7 +42,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -86,7 +86,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -130,7 +130,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -183,7 +183,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -227,7 +227,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -272,7 +272,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -306,7 +306,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       { x: 40, y: 30 } as CanvasVector,
     )
 
-    const transformedComponents = updateFramesOfScenesAndComponents(
+    const { components: transformedComponents } = updateFramesOfScenesAndComponents(
       getComponentsFromTopLevelElements(testProject.topLevelElements),
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],

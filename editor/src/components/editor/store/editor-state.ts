@@ -86,6 +86,7 @@ import {
   DragState,
   FrameAndTarget,
   HigherOrderControl,
+  ReparentTargetIndicatorPosition,
 } from '../../canvas/canvas-types'
 import { produceCanvasTransientState } from '../../canvas/canvas-utils'
 import { CodeEditorTheme, DefaultTheme } from '../../code-editor/code-editor-themes'
@@ -887,17 +888,21 @@ export interface TransientCanvasState {
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
   fileState: TransientFileState | null
+
+  reparentTargetPositions: Array<ReparentTargetIndicatorPosition>
 }
 
 export function transientCanvasState(
   selectedViews: Array<TemplatePath>,
   highlightedViews: Array<TemplatePath>,
   fileState: TransientFileState | null,
+  reparentTargetPositions: Array<ReparentTargetIndicatorPosition>,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
     fileState: fileState,
+    reparentTargetPositions: reparentTargetPositions,
   }
 }
 

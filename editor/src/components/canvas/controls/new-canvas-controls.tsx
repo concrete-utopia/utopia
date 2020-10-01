@@ -16,7 +16,7 @@ import {
   Imports,
   ScenePath,
 } from '../../../core/shared/project-file-types'
-import { CanvasPositions } from '../canvas-types'
+import { CanvasPositions, ReparentTargetIndicatorPosition } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
@@ -409,6 +409,9 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       setTargetOptionsArray: props.setTargetOptionsArray,
     }
     const dragState = props.editor.canvas.dragState
+    const reparentTargetPositions: Array<ReparentTargetIndicatorPosition> =
+      props.derived.canvas.transientState.reparentTargetPositions
+
     if (props.xrayView) {
       return (
         <SelectModeControlContainer
@@ -428,6 +431,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
           layoutInspectorSectionHovered={false}
           selectModeState={selectModeState}
           setSelectModeState={setSelectModeState}
+          reparentTargetPositions={reparentTargetPositions}
         />
       )
     }
@@ -456,6 +460,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
             setSelectModeState={setSelectModeState}
             xrayMode={false}
             selectedScene={null}
+            reparentTargetPositions={reparentTargetPositions}
           />
         )
       }
