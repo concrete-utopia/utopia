@@ -9,7 +9,7 @@ interface OutlineProps {
   color: string
   striped?: boolean
   stripedColor?: string
-  zOffset?: number
+  zOffset?: number | null
 }
 
 export class Outline extends React.Component<OutlineProps> {
@@ -43,7 +43,9 @@ export class Outline extends React.Component<OutlineProps> {
           backgroundSize: `${20 / this.props.scale}px ${20 / this.props.scale}px`,
           borderRadius: borderRadius,
           pointerEvents: 'none',
-          transform: `translate3d(0, 0, ${this.props.zOffset || 0}px)`,
+          transform: this.props.zOffset
+            ? `translate3d(0, 0, ${this.props.zOffset || 0}px)`
+            : 'none',
           transformStyle: 'preserve-3d',
         }}
       />

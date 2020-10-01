@@ -9,7 +9,7 @@ interface HighlightControlProps {
   scale: number
   color?: string
   striped?: boolean
-  zOffset?: number
+  zOffset?: number | null
 }
 
 export class HighlightControl extends React.Component<HighlightControlProps> {
@@ -39,7 +39,9 @@ export class HighlightControl extends React.Component<HighlightControlProps> {
             backgroundSize: `${20 / this.props.scale}px ${20 / this.props.scale}px`,
             pointerEvents: 'none',
             borderRadius: borderRadius,
-            transform: `translate3d(0, 0, ${this.props.zOffset || 0}px)`,
+            transform: this.props.zOffset
+              ? `translate3d(0, 0, ${this.props.zOffset || 0}px)`
+              : 'none',
             transformStyle: 'preserve-3d',
           }}
         />

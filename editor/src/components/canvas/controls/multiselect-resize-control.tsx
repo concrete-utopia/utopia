@@ -223,35 +223,34 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
       )
       if (frame != null) {
         return (
-          <>
-            <ResizeRectangle
-              targetComponentMetadata={target}
-              dispatch={this.props.dispatch}
-              scale={this.props.scale}
-              canvasOffset={this.props.canvasOffset}
-              measureSize={frame}
-              visualSize={frame}
-              resizeStatus={this.props.resizeStatus}
-              selectedViews={[view]}
-              elementAspectRatioLocked={this.props.elementAspectRatioLocked}
-              imageMultiplier={this.props.imageMultiplier}
-              sideResizer={false}
-              dragState={
-                this.props.dragState != null && this.props.dragState.type === 'RESIZE_DRAG_STATE'
-                  ? this.props.dragState
-                  : null
-              }
-              windowToCanvasPosition={this.props.windowToCanvasPosition}
-              getOriginalFrames={this.props.obtainOriginalFrames}
-              metadata={this.props.componentMetadata}
-              onResizeStart={this.props.onResizeStart}
-              testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
-              labels={labels}
-              propertyTargetOptions={this.props.propertyTargetOptions}
-              propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
-              setTargetOptionsArray={this.props.setTargetOptionsArray}
-            />
-          </>
+          <ResizeRectangle
+            key={TP.toString(view)}
+            targetComponentMetadata={target}
+            dispatch={this.props.dispatch}
+            scale={this.props.scale}
+            canvasOffset={this.props.canvasOffset}
+            measureSize={frame}
+            visualSize={frame}
+            resizeStatus={this.props.resizeStatus}
+            selectedViews={[view]}
+            elementAspectRatioLocked={this.props.elementAspectRatioLocked}
+            imageMultiplier={this.props.imageMultiplier}
+            sideResizer={false}
+            dragState={
+              this.props.dragState != null && this.props.dragState.type === 'RESIZE_DRAG_STATE'
+                ? this.props.dragState
+                : null
+            }
+            windowToCanvasPosition={this.props.windowToCanvasPosition}
+            getOriginalFrames={this.props.obtainOriginalFrames}
+            metadata={this.props.componentMetadata}
+            onResizeStart={this.props.onResizeStart}
+            testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
+            labels={labels}
+            propertyTargetOptions={this.props.propertyTargetOptions}
+            propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
+            setTargetOptionsArray={this.props.setTargetOptionsArray}
+          />
         )
       } else {
         return <></>

@@ -1625,7 +1625,7 @@ export function produceResizeSingleSelectCanvasTransientState(
       elementToTarget,
       editorState.jsxMetadataKILLME,
     )
-    if (isFlexContainer || dragState.edgePosition.x === 0.5 || dragState.edgePosition.y === 0.5) {
+    if (isFlexContainer && (dragState.edgePosition.x === 0.5 || dragState.edgePosition.y === 0.5)) {
       const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
         ? dragState.drag?.x ?? 0
         : dragState.drag?.y ?? 0

@@ -511,7 +511,10 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
               ? colorTheme.canvasSelectionSceneOutline.value
               : colorTheme.canvasSelectionPrimaryOutline.value
           }
-          const zOffset = (TP.depth(path) - 1) * 25
+          const zOffset =
+            isFeatureEnabled('Hierarchy View') && !props.editor.interfaceDesigner.codePaneVisible
+              ? (TP.depth(path) - 1) * 25
+              : null
 
           return (
             <HighlightControl

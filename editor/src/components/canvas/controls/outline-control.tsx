@@ -183,7 +183,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
           color={selectionColor}
           striped={createsYogaLayout}
           stripedColor={colorTheme.canvasSelectionAlternateOutlineYogaParent.shade(50).value}
-          zOffset={(TP.depth(selectedView) - 1) * 25}
+          zOffset={this.props.xrayMode ? (TP.depth(selectedView) - 1) * 25 : null}
         />,
       )
     })
