@@ -839,6 +839,7 @@ export function editorMoveTemplate(
       editorForChanges.selectedViews,
       editorForChanges.highlightedViews,
       newParentLayoutSystem,
+      false,
     )
     return {
       parseSuccessTransform: (success: ParseSuccess) => {
@@ -1004,7 +1005,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
-      transientState: produceCanvasTransientState(history.current.editor, true, null, null),
+      transientState: produceCanvasTransientState(history.current.editor, true, null, null, false),
     },
     elementWarnings: poppedDerived.elementWarnings,
   }
@@ -4331,6 +4332,7 @@ function setCanvasFramesInnerNew(
       editor.jsxMetadataKILLME,
       framesAndTargets,
       optionalParentFrame,
+      false,
     )
   }, editor)
 }

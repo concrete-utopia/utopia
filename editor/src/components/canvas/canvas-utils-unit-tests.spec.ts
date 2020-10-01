@@ -37,6 +37,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
@@ -80,6 +81,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
@@ -123,6 +125,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
@@ -175,6 +178,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
@@ -218,6 +222,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
@@ -262,6 +267,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
@@ -305,6 +311,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {

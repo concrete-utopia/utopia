@@ -320,7 +320,13 @@ export function clearDragState(
   ;(window as any)['flexParentTimer'] = null
   ;(window as any)['flexParentHighlightTimer'] = null
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
-    const producedTransientCanvasState = produceCanvasTransientState(result, false, null, derived)
+    const producedTransientCanvasState = produceCanvasTransientState(
+      result,
+      false,
+      null,
+      derived,
+      applyChanges,
+    )
     const producedTransientFileState = producedTransientCanvasState.fileState
     if (producedTransientFileState != null) {
       result = modifyOpenParseSuccess((success) => {
@@ -357,6 +363,7 @@ export function updateFramesOfScenesAndComponents(
   metadata: Array<ComponentMetadata>,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
+  areWeInTemporaryDragState: boolean,
 ): Array<UtopiaJSXComponent> {
   let workingComponentsResult = [...components]
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
@@ -541,6 +548,9 @@ export function updateFramesOfScenesAndComponents(
               break
             }
             case 'FLEX_MOVE':
+              if (areWeInTemporaryDragState && isFeatureEnabled('Reorder Shows Placeholder Line')) {
+                break
+              }
               workingComponentsResult = reorderComponent(
                 workingComponentsResult,
                 metadata,
@@ -1505,6 +1515,7 @@ export function produceResizeCanvasTransientState(
   parseSuccess: ParseSuccess,
   dragState: ResizeDragState,
   preventAnimations: boolean,
+  applyChanges: boolean,
 ): TransientCanvasState {
   const elementsToTarget = determineElementsToOperateOnForDragging(
     dragState.draggedElements,
@@ -1572,6 +1583,7 @@ export function produceResizeCanvasTransientState(
       editorState.jsxMetadataKILLME,
       framesAndTargets,
       null,
+      !applyChanges,
     )
 
     // Sync these back up.
@@ -1597,6 +1609,7 @@ export function produceResizeSingleSelectCanvasTransientState(
   parseSuccess: ParseSuccess,
   dragState: ResizeDragState,
   preventAnimations: boolean,
+  applyChanges: boolean,
 ): TransientCanvasState {
   const elementsToTarget = determineElementsToOperateOnForDragging(
     dragState.draggedElements,
@@ -1659,6 +1672,7 @@ export function produceResizeSingleSelectCanvasTransientState(
     editorState.jsxMetadataKILLME,
     framesAndTargets,
     null,
+    !applyChanges,
   )
 
   // Sync these back up.
@@ -1679,6 +1693,7 @@ export function produceCanvasTransientState(
   preventAnimations: boolean,
   dispatch: EditorDispatch | null,
   derivedState: DerivedState | null,
+  applyChanges: boolean,
 ): TransientCanvasState {
   function noFileTransientCanvasState(): TransientCanvasState {
     return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
@@ -1757,6 +1772,7 @@ export function produceCanvasTransientState(
                       preventAnimations,
                       dispatch,
                       derivedState,
+                      applyChanges,
                     )
                   } else {
                     return produceMoveTransientCanvasState(
@@ -1766,6 +1782,7 @@ export function produceCanvasTransientState(
                       preventAnimations,
                       dispatch,
                       derivedState,
+                      applyChanges,
                     )
                   }
                 case 'RESIZE_DRAG_STATE':
@@ -1775,6 +1792,7 @@ export function produceCanvasTransientState(
                       parseSuccess,
                       dragState,
                       preventAnimations,
+                      applyChanges,
                     )
                   } else {
                     return produceResizeSingleSelectCanvasTransientState(
@@ -1782,6 +1800,7 @@ export function produceCanvasTransientState(
                       parseSuccess,
                       dragState,
                       preventAnimations,
+                      applyChanges,
                     )
                   }
 
@@ -1968,6 +1987,7 @@ export function moveTemplate(
   selectedViews: Array<TemplatePath>,
   highlightedViews: Array<TemplatePath>,
   newParentLayoutSystem: LayoutSystem | null,
+  areWeInTemporaryDragState: boolean,
 ): MoveTemplateResult {
   function noChanges(): MoveTemplateResult {
     return {
@@ -2140,6 +2160,7 @@ export function moveTemplate(
             updatedComponentMetadata,
             frameChanges,
             parentFrame,
+            areWeInTemporaryDragState,
           )
 
           updatedUtopiaComponents = frameChangeResult
@@ -2215,6 +2236,7 @@ function produceMoveTransientCanvasState(
   preventAnimations: boolean,
   dispatch: EditorDispatch | null,
   derivedState: DerivedState | null,
+  applyChanges: boolean,
 ): TransientCanvasState {
   let selectedViews: Array<TemplatePath> = dragState.draggedElements
   let metadata: Array<ComponentMetadata> = editorState.jsxMetadataKILLME
@@ -2263,6 +2285,7 @@ function produceMoveTransientCanvasState(
           selectedViews,
           highlightedViews,
           null,
+          !applyChanges,
         )
         highlightedViews = isFeatureEnabled('Nearby Reparent Target Highlight')
           ? reparentTarget.possibleTargets
@@ -2326,6 +2349,7 @@ function produceMoveTransientCanvasState(
     metadata,
     framesAndTargets,
     null,
+    !applyChanges,
   )
 
   // Sync these back up.
