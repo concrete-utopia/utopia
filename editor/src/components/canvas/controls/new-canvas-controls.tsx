@@ -166,9 +166,9 @@ export const NewCanvasControls = betterReactMemo(
       selectedScene == null
         ? null
         : MetadataUtils.getFrameInCanvasCoords(selectedScene, componentMetadata)
-    const showXrayView =
-      isFeatureEnabled('Hierarchy View') &&
-      useEditorState((store) => !store.editor.interfaceDesigner.codePaneVisible)
+    const codePaneVisible = useEditorState(
+      (store) => !store.editor.interfaceDesigner.codePaneVisible,
+    )
 
     if (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd) {
       return null
@@ -221,7 +221,7 @@ export const NewCanvasControls = betterReactMemo(
             <ElementContextMenu contextMenuInstance='context-menu-canvas' />
           </div>
           {isFeatureEnabled('Mini Navigator') ? <MiniNavigator /> : null}
-          {showXrayView && (
+          {isFeatureEnabled('Hierarchy View') && codePaneVisible && (
             <div
               key={'xrayview'}
               style={{
