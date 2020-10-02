@@ -37,11 +37,12 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -80,11 +81,12 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -123,11 +125,12 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -175,11 +178,12 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -218,11 +222,12 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -262,11 +267,12 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {
       ...testProject,
-      topLevelElements: transformedComponents,
+      topLevelElements: transformedComponents.components,
     }
 
     expect(testPrintCode(updatedProject)).toEqual(
@@ -300,11 +306,12 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       { x: 40, y: 30 } as CanvasVector,
     )
 
-    const transformedComponents = updateFramesOfScenesAndComponents(
+    const { components: transformedComponents } = updateFramesOfScenesAndComponents(
       getComponentsFromTopLevelElements(testProject.topLevelElements),
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      false,
     )
 
     const updatedProject: ParseSuccess = {

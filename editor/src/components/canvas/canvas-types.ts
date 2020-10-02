@@ -181,6 +181,11 @@ export type HigherOrderControl = SvgControl | DivControl
 
 export type ControlOrHigherOrderControl = SvgFragmentControl | HigherOrderControl
 
+export type ReparentTargetIndicatorPosition = {
+  parent: TemplatePath | null
+  drawBeforeChildIndex: number
+}
+
 export interface FrameAndTarget<C extends CoordinateMarker> {
   target: TemplatePath
   frame: Rectangle<C> | null

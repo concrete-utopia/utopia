@@ -16,6 +16,7 @@ export type FeatureName =
   | 'Flex Properties (Timer)'
   | 'Mini Navigator'
   | 'Hierarchy View'
+  | 'Reorder Shows Placeholder Line'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -31,6 +32,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Flex Properties (Timer)',
   'Mini Navigator',
   'Hierarchy View',
+  'Reorder Shows Placeholder Line',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -48,6 +50,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Flex Properties (Timer)': true,
   'Mini Navigator': true,
   'Hierarchy View': true,
+  'Reorder Shows Placeholder Line': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

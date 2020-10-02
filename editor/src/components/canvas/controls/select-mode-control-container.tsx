@@ -13,7 +13,13 @@ import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
 import { DuplicationState } from '../../editor/store/editor-state'
 import * as TP from '../../../core/shared/template-path'
-import { CanvasPositions, MoveDragState, ResizeDragState, moveDragState } from '../canvas-types'
+import {
+  CanvasPositions,
+  MoveDragState,
+  ResizeDragState,
+  moveDragState,
+  ReparentTargetIndicatorPosition,
+} from '../canvas-types'
 import { Guidelines, Guideline } from '../guideline'
 import { ConstraintsControls } from './constraints-control'
 import { DistanceGuideline } from './distance-guideline'
@@ -37,6 +43,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { ParentControls } from './parent-controls'
 import { fastForEach } from '../../../core/shared/utils'
 import { flatMapArray, uniqBy } from '../../../core/shared/array-utils'
+import { ReorderInsertIndicator } from './reorder-insert-indicator'
 
 export const SnappingThreshold = 5
 
@@ -67,6 +74,7 @@ interface SelectModeControlContainerProps extends ControlProps {
   setSelectModeState: (newState: SelectModeState) => void
   xrayMode: boolean
   selectedScene: ScenePath | null
+  reparentTargetPositions: Array<ReparentTargetIndicatorPosition>
 }
 
 interface SelectModeControlContainerState {
@@ -1003,6 +1011,15 @@ export class SelectModeControlContainer extends React.Component<
         {this.getDistanceGuidelines()}
         {this.getBoundingMarks()}
         {this.props.selectionEnabled && <ParentControls {...this.props} />}
+        {this.props.reparentTargetPositions.map((reparentTarget) => {
+          return (
+            <ReorderInsertIndicator
+              key={`${TP.toString(reparentTarget.parent!)}-${reparentTarget.drawBeforeChildIndex}`}
+              target={reparentTarget.parent}
+              showBeforeChildIndex={reparentTarget.drawBeforeChildIndex}
+            />
+          )
+        })}
       </div>
     )
   }
