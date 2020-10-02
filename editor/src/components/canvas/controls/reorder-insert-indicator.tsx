@@ -10,7 +10,7 @@ export const ReorderInsertIndicator: React.FunctionComponent<{
   beforeOrAfter: 'before' | 'after'
 }> = (props) => {
   const after = props.beforeOrAfter === 'after'
-  const { x, y } = useEditorState((store) => {
+  const { x, y, horizontal, flow } = useEditorState((store) => {
     const canvasOffset = store.editor.canvas.roundedCanvasOffset
     const targetParent = MetadataUtils.getElementByTemplatePathMaybe(
       store.editor.jsxMetadataKILLME,
@@ -19,44 +19,64 @@ export const ReorderInsertIndicator: React.FunctionComponent<{
     if (targetParent != null) {
       const childToPutIndexBefore = targetParent.children[props.showAtChildIndex]
       if (childToPutIndexBefore != null && childToPutIndexBefore.globalFrame != null) {
+        const isHorizontal =
+          childToPutIndexBefore.specialSizeMeasurements?.parentFlexDirection === 'row'
         return {
           x:
             childToPutIndexBefore.globalFrame.x +
             canvasOffset.x +
-            (after ? childToPutIndexBefore.globalFrame.width : 0),
+            (after && isHorizontal ? childToPutIndexBefore.globalFrame.width : 0),
           y:
             childToPutIndexBefore.globalFrame.y +
             canvasOffset.y +
-            (after ? childToPutIndexBefore.globalFrame.height : 0),
+            (after && !isHorizontal ? childToPutIndexBefore.globalFrame.height : 0),
+          horizontal: isHorizontal,
+          flow:
+            childToPutIndexBefore.specialSizeMeasurements?.immediateParentProvidesLayout === false,
         }
       }
     }
 
-    return { x: 0, y: 0, width: 0, height: 0 }
+    return { x: 0, y: 0, horizontal: false, flow: false }
   })
 
-  return (
-    <>
+  if (flow) {
+    return (
+      <>
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: UtopiaTheme.color.brandNeonPink.value,
+            height: 15,
+            width: 2,
+            left: x,
+            top: y,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: UtopiaTheme.color.brandNeonPink.value,
+            height: 2,
+            width: 15,
+            left: x,
+            top: y,
+          }}
+        />
+      </>
+    )
+  } else {
+    return (
       <div
         style={{
           position: 'absolute',
           backgroundColor: UtopiaTheme.color.brandNeonPink.value,
-          height: 15,
-          width: 2,
-          left: after ? x - 2 : x,
-          top: after ? y - 15 : y,
+          height: horizontal ? 50 : 2,
+          width: horizontal ? 2 : 50,
+          left: x,
+          top: y,
         }}
       />
-      <div
-        style={{
-          position: 'absolute',
-          backgroundColor: UtopiaTheme.color.brandNeonPink.value,
-          height: 2,
-          width: 15,
-          left: after ? x - 15 : x,
-          top: after ? y - 2 : y,
-        }}
-      />
-    </>
-  )
+    )
+  }
 }
