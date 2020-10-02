@@ -553,7 +553,7 @@ Array [
               "parentFlexDirection": "row",
               "parentLayoutSystem": "flow",
               "position": "static",
-              "providesBoundsForChildren": true,
+              "providesBoundsForChildren": false,
               "usesParentBounds": true,
             },
             "templatePath": Object {
@@ -974,7 +974,7 @@ Array [
               "parentFlexDirection": "row",
               "parentLayoutSystem": "flow",
               "position": "static",
-              "providesBoundsForChildren": true,
+              "providesBoundsForChildren": false,
               "usesParentBounds": true,
             },
             "templatePath": Object {
@@ -1395,7 +1395,7 @@ Array [
               "parentFlexDirection": "row",
               "parentLayoutSystem": "flow",
               "position": "static",
-              "providesBoundsForChildren": true,
+              "providesBoundsForChildren": false,
               "usesParentBounds": true,
             },
             "templatePath": Object {
@@ -3092,7 +3092,7 @@ Array [
                   "parentLayoutSystem": "flow",
                   "position": "absolute",
                   "providesBoundsForChildren": true,
-                  "usesParentBounds": false,
+                  "usesParentBounds": true,
                 },
                 "templatePath": Object {
                   "element": Array [
@@ -3535,7 +3535,7 @@ Array [
               "parentFlexDirection": "row",
               "parentLayoutSystem": "flow",
               "position": "fixed",
-              "providesBoundsForChildren": false,
+              "providesBoundsForChildren": true,
               "usesParentBounds": true,
             },
             "templatePath": Object {
@@ -4610,7 +4610,7 @@ Array [
                   "parentLayoutSystem": "flow",
                   "position": "absolute",
                   "providesBoundsForChildren": true,
-                  "usesParentBounds": false,
+                  "usesParentBounds": true,
                 },
                 "templatePath": Object {
                   "element": Array [
@@ -5053,7 +5053,7 @@ Array [
               "parentFlexDirection": "row",
               "parentLayoutSystem": "flex",
               "position": "fixed",
-              "providesBoundsForChildren": false,
+              "providesBoundsForChildren": true,
               "usesParentBounds": true,
             },
             "templatePath": Object {
