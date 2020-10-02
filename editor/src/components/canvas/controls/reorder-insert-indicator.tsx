@@ -7,7 +7,8 @@ export const ReorderInsertIndicator = (props: {
   target: TemplatePath | null
   showBeforeChildIndex: number
 }) => {
-  const { x, y } = useEditorState((store) => {
+  const { x, y, horizontal } = useEditorState((store) => {
+    const canvasOffset = store.editor.canvas.roundedCanvasOffset
     const targetParent = MetadataUtils.getElementByTemplatePathMaybe(
       store.editor.jsxMetadataKILLME,
       props.target,
@@ -15,11 +16,15 @@ export const ReorderInsertIndicator = (props: {
     if (targetParent != null) {
       const childToPutIndexBefore = targetParent.children[props.showBeforeChildIndex]
       if (childToPutIndexBefore != null && childToPutIndexBefore.globalFrame != null) {
-        return { x: childToPutIndexBefore.globalFrame.x, y: childToPutIndexBefore.globalFrame.y }
+        return {
+          x: childToPutIndexBefore.globalFrame.x + canvasOffset.x,
+          y: childToPutIndexBefore.globalFrame.y + canvasOffset.y,
+          horizontal: childToPutIndexBefore.specialSizeMeasurements?.parentFlexDirection === 'row',
+        }
       }
     }
 
-    return { x: 0, y: 0 }
+    return { x: 0, y: 0, horizontal: false }
   })
 
   return (
@@ -27,8 +32,8 @@ export const ReorderInsertIndicator = (props: {
       style={{
         position: 'absolute',
         backgroundColor: 'red',
-        height: 150,
-        width: 2,
+        height: horizontal ? 150 : 2,
+        width: horizontal ? 2 : 150,
         left: x,
         top: y,
       }}
