@@ -220,6 +220,11 @@ export interface FlexMoveChange {
   target: TemplatePath
   newIndex: number
 }
+export interface ReorderChange {
+  type: 'REORDER_CHANGE'
+  target: TemplatePath
+  newIndex: number
+}
 
 export interface FlexAlignChange {
   type: 'FLEX_ALIGN'
@@ -250,6 +255,7 @@ export type PinOrFlexFrameChange =
   | SingleResizeChange
   | MoveTranslateChange
   | FlexAlignChange
+  | ReorderChange
 
 export function pinFrameChange(
   target: TemplatePath,
@@ -282,6 +288,14 @@ export function pinMoveChange(target: TemplatePath, delta: CanvasVector): PinMov
     type: 'PIN_MOVE_CHANGE',
     target: target,
     delta: delta,
+  }
+}
+
+export function reorderChange(target: TemplatePath, newIndex: number): ReorderChange {
+  return {
+    type: 'REORDER_CHANGE',
+    target: target,
+    newIndex: newIndex,
   }
 }
 
