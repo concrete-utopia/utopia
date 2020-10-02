@@ -853,6 +853,13 @@ export function updateFramesOfScenesAndComponents(
             )
             break
           case 'REORDER_CHANGE':
+            if (areWeInTemporaryDragState) {
+              reparentTargetPositions.push({
+                drawBeforeChildIndex: frameAndTarget.newIndex,
+                parent: TP.parentPath(frameAndTarget.target),
+              })
+              break
+            }
             workingComponentsResult = reorderComponent(
               workingComponentsResult,
               metadata,
