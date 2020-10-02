@@ -4,77 +4,59 @@ import { TemplatePath } from '../../../core/shared/project-file-types'
 import { UtopiaTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 
-export const ReorderInsertIndicator = (props: {
+export const ReorderInsertIndicator: React.FunctionComponent<{
   target: TemplatePath | null
-  showBeforeChildIndex: number
-}) => {
-  const { x, y, horizontal, flow, size } = useEditorState((store) => {
+  showAtChildIndex: number
+  beforeOrAfter: 'before' | 'after'
+}> = (props) => {
+  const after = props.beforeOrAfter === 'after'
+  const { x, y } = useEditorState((store) => {
     const canvasOffset = store.editor.canvas.roundedCanvasOffset
     const targetParent = MetadataUtils.getElementByTemplatePathMaybe(
       store.editor.jsxMetadataKILLME,
       props.target,
     )
     if (targetParent != null) {
-      const parentFrame = MetadataUtils.getFrameInCanvasCoords(
-        targetParent.templatePath,
-        store.editor.jsxMetadataKILLME,
-      )
-      const childToPutIndexBefore = targetParent.children[props.showBeforeChildIndex]
+      const childToPutIndexBefore = targetParent.children[props.showAtChildIndex]
       if (childToPutIndexBefore != null && childToPutIndexBefore.globalFrame != null) {
         return {
-          x: childToPutIndexBefore.globalFrame.x + canvasOffset.x,
-          y: childToPutIndexBefore.globalFrame.y + canvasOffset.y,
-          horizontal: childToPutIndexBefore.specialSizeMeasurements?.parentFlexDirection === 'row',
-          size:
-            childToPutIndexBefore.specialSizeMeasurements?.parentFlexDirection === 'row'
-              ? (parentFrame?.height ?? 0) / 2
-              : (parentFrame?.width ?? 0) / 2,
-          flow:
-            childToPutIndexBefore.specialSizeMeasurements?.immediateParentProvidesLayout === false,
+          x:
+            childToPutIndexBefore.globalFrame.x +
+            canvasOffset.x +
+            (after ? childToPutIndexBefore.globalFrame.width : 0),
+          y:
+            childToPutIndexBefore.globalFrame.y +
+            canvasOffset.y +
+            (after ? childToPutIndexBefore.globalFrame.height : 0),
         }
       }
     }
 
-    return { x: 0, y: 0, horizontal: false }
+    return { x: 0, y: 0, width: 0, height: 0 }
   })
 
-  if (flow) {
-    return (
-      <>
-        <div
-          style={{
-            position: 'absolute',
-            backgroundColor: UtopiaTheme.color.brandNeonPink.value,
-            height: 15,
-            width: 2,
-            left: x,
-            top: y,
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            backgroundColor: UtopiaTheme.color.brandNeonPink.value,
-            height: 2,
-            width: 15,
-            left: x,
-            top: y,
-          }}
-        />
-      </>
-    )
-  } else {
-    return (
+  return (
+    <>
       <div
         style={{
           position: 'absolute',
           backgroundColor: UtopiaTheme.color.brandNeonPink.value,
-          height: horizontal ? size : 2,
-          width: horizontal ? 2 : size,
-          left: x,
-          top: y,
+          height: 15,
+          width: 2,
+          left: after ? x - 2 : x,
+          top: after ? y - 15 : y,
         }}
       />
-    )
-  }
+      <div
+        style={{
+          position: 'absolute',
+          backgroundColor: UtopiaTheme.color.brandNeonPink.value,
+          height: 2,
+          width: 15,
+          left: after ? x - 15 : x,
+          top: after ? y - 2 : y,
+        }}
+      />
+    </>
+  )
 }

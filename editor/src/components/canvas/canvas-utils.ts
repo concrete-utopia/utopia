@@ -558,8 +558,9 @@ export function updateFramesOfScenesAndComponents(
             case 'FLEX_MOVE':
               if (areWeInTemporaryDragState && isFeatureEnabled('Reorder Shows Placeholder Line')) {
                 reparentTargetPositions.push({
-                  drawBeforeChildIndex: frameAndTarget.newIndex,
+                  drawAtChildIndex: frameAndTarget.newIndex,
                   parent: TP.parentPath(frameAndTarget.target),
+                  beforeOrAfter: frameAndTarget.beforeOrAfter,
                 })
                 break
               }
@@ -855,8 +856,9 @@ export function updateFramesOfScenesAndComponents(
           case 'REORDER_CHANGE':
             if (areWeInTemporaryDragState) {
               reparentTargetPositions.push({
-                drawBeforeChildIndex: frameAndTarget.newIndex,
+                drawAtChildIndex: frameAndTarget.newIndex,
                 parent: TP.parentPath(frameAndTarget.target),
+                beforeOrAfter: frameAndTarget.beforeOrAfter,
               })
               break
             }

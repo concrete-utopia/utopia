@@ -182,7 +182,9 @@ export function dragComponent(
           draggedFrame,
         )
         if (newIndex != null) {
-          dragChanges.push(flexMoveChange(view, newIndex))
+          const currentIndex = MetadataUtils.getViewZIndexFromMetadata(componentsMetadata, view)
+          const beforeOrAfter = currentIndex < newIndex ? 'after' : 'before'
+          dragChanges.push(flexMoveChange(view, newIndex, beforeOrAfter))
         } else {
           if (parentPath != null && isFeatureEnabled('Flex Properties (Timer)')) {
             const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, componentsMetadata)
@@ -381,7 +383,9 @@ export function dragComponent(
           )
           if (flowTarget != null) {
             const newIndex = MetadataUtils.getViewZIndexFromMetadata(componentsMetadata, flowTarget)
-            dragChanges.push(reorderChange(view, newIndex))
+            const currentIndex = MetadataUtils.getViewZIndexFromMetadata(componentsMetadata, view)
+            const beforeOrAfter = currentIndex < newIndex ? 'after' : 'before'
+            dragChanges.push(reorderChange(view, newIndex, beforeOrAfter))
           }
         } else {
           dragChanges.push(pinMoveChange(view, dragDeltaToApply))
