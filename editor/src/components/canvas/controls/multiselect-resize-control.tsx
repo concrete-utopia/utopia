@@ -18,6 +18,7 @@ import { ControlProps } from './new-canvas-controls'
 import { ResizeRectangle } from './size-box'
 import { FlexLayoutHelpers } from '../../../core/layout/layout-helpers'
 import { eitherToMaybe, right } from '../../../core/shared/either'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface MultiselectResizeProps extends ControlProps {
   dragState: ResizeDragState | null
@@ -239,7 +240,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
             selectedViews={[view]}
             elementAspectRatioLocked={this.props.elementAspectRatioLocked}
             imageMultiplier={this.props.imageMultiplier}
-            sideResizer={isFlowLayouted}
+            sideResizer={isFlowLayouted && isFeatureEnabled('Flow Resize')}
             dragState={
               this.props.dragState != null && this.props.dragState.type === 'RESIZE_DRAG_STATE'
                 ? this.props.dragState

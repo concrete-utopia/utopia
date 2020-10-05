@@ -367,7 +367,7 @@ export function dragComponent(
       if (originalFrame.frame != null) {
         if (translateMode) {
           dragChanges.push(moveTranslateChange(view, dragDeltaToApply))
-        } else if (isFlow) {
+        } else if (isFlow && isFeatureEnabled('Flow Resize')) {
           const cursorPoint = Utils.offsetPoint(dragStart, dragDelta)
           const targetsUnderCursor = Canvas.getAllTargetsAtPoint(
             editor,
