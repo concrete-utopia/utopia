@@ -183,7 +183,8 @@ export type ControlOrHigherOrderControl = SvgFragmentControl | HigherOrderContro
 
 export type ReparentTargetIndicatorPosition = {
   parent: TemplatePath | null
-  drawBeforeChildIndex: number
+  drawAtChildIndex: number
+  beforeOrAfter: 'before' | 'after'
 }
 
 export interface FrameAndTarget<C extends CoordinateMarker> {
@@ -219,6 +220,13 @@ export interface FlexMoveChange {
   type: 'FLEX_MOVE'
   target: TemplatePath
   newIndex: number
+  beforeOrAfter: 'before' | 'after'
+}
+export interface ReorderChange {
+  type: 'REORDER_CHANGE'
+  target: TemplatePath
+  newIndex: number
+  beforeOrAfter: 'before' | 'after'
 }
 
 export interface FlexAlignChange {
@@ -250,6 +258,7 @@ export type PinOrFlexFrameChange =
   | SingleResizeChange
   | MoveTranslateChange
   | FlexAlignChange
+  | ReorderChange
 
 export function pinFrameChange(
   target: TemplatePath,
@@ -285,6 +294,19 @@ export function pinMoveChange(target: TemplatePath, delta: CanvasVector): PinMov
   }
 }
 
+export function reorderChange(
+  target: TemplatePath,
+  newIndex: number,
+  beforeOrAfter: 'before' | 'after',
+): ReorderChange {
+  return {
+    type: 'REORDER_CHANGE',
+    target: target,
+    newIndex: newIndex,
+    beforeOrAfter: beforeOrAfter,
+  }
+}
+
 export function moveTranslateChange(
   target: TemplatePath,
   delta: CanvasVector,
@@ -296,11 +318,16 @@ export function moveTranslateChange(
   }
 }
 
-export function flexMoveChange(target: TemplatePath, newIndex: number): FlexMoveChange {
+export function flexMoveChange(
+  target: TemplatePath,
+  newIndex: number,
+  beforeOrAfter: 'before' | 'after',
+): FlexMoveChange {
   return {
     type: 'FLEX_MOVE',
     target: target,
     newIndex: newIndex,
+    beforeOrAfter: beforeOrAfter,
   }
 }
 

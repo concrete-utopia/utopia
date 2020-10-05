@@ -496,6 +496,7 @@ export function updateFramesOfScenesAndComponents(
         case 'FLEX_RESIZE':
         case 'MOVE_TRANSLATE_CHANGE':
         case 'FLEX_ALIGN':
+        case 'REORDER_CHANGE':
           throw new Error(
             `Attempted to change a scene with a flex change ${JSON.stringify(target)}.`,
           )
@@ -527,6 +528,7 @@ export function updateFramesOfScenesAndComponents(
         frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
         frameAndTarget.type !== 'PIN_MOVE_CHANGE' &&
         frameAndTarget.type !== 'PIN_SIZE_CHANGE' &&
+        frameAndTarget.type !== 'REORDER_CHANGE' &&
         frameAndTarget.type !== 'SINGLE_RESIZE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
 
       let propsToSet: Array<ValueAtPath> = []
@@ -537,6 +539,7 @@ export function updateFramesOfScenesAndComponents(
             case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
             case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
             case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+            case 'REORDER_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
             case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
               throw new Error(
                 `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
@@ -555,8 +558,9 @@ export function updateFramesOfScenesAndComponents(
             case 'FLEX_MOVE':
               if (areWeInTemporaryDragState && isFeatureEnabled('Reorder Shows Placeholder Line')) {
                 reparentTargetPositions.push({
-                  drawBeforeChildIndex: frameAndTarget.newIndex,
+                  drawAtChildIndex: frameAndTarget.newIndex,
                   parent: TP.parentPath(frameAndTarget.target),
+                  beforeOrAfter: frameAndTarget.beforeOrAfter,
                 })
                 break
               }
@@ -847,6 +851,22 @@ export function updateFramesOfScenesAndComponents(
                 frameProps,
                 parentFrame,
               ),
+            )
+            break
+          case 'REORDER_CHANGE':
+            if (areWeInTemporaryDragState) {
+              reparentTargetPositions.push({
+                drawAtChildIndex: frameAndTarget.newIndex,
+                parent: TP.parentPath(frameAndTarget.target),
+                beforeOrAfter: frameAndTarget.beforeOrAfter,
+              })
+              break
+            }
+            workingComponentsResult = reorderComponent(
+              workingComponentsResult,
+              metadata,
+              originalTarget,
+              frameAndTarget.newIndex,
             )
             break
           case 'FLEX_MOVE':

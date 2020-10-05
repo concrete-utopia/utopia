@@ -39,7 +39,10 @@ import {
   pinFrameChange,
   PinMoveChange,
   pinMoveChange,
+  ReorderChange,
+  reorderChange,
 } from '../../canvas-types'
+import Canvas, { TargetSearchType } from '../../canvas'
 import { ConstrainedDragAxis, Guideline, Guidelines } from '../../guideline'
 import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
@@ -141,7 +144,7 @@ export function dragComponent(
   editor: EditorState,
   dispatch: EditorDispatch | null,
   derivedState: DerivedState | null,
-): Array<PinMoveChange | FlexMoveChange | MoveTranslateChange | FlexAlignChange> {
+): Array<PinMoveChange | FlexMoveChange | MoveTranslateChange | FlexAlignChange | ReorderChange> {
   const roundedDragDelta = Utils.roundPointTo(dragDelta, 0)
   // TODO: Probably makes more sense to pull this out.
   const viewsToOperateOn = determineElementsToOperateOnForDragging(
@@ -151,7 +154,7 @@ export function dragComponent(
     false,
   )
   let dragChanges: Array<
-    PinMoveChange | FlexMoveChange | FlexAlignChange | MoveTranslateChange
+    PinMoveChange | FlexMoveChange | FlexAlignChange | MoveTranslateChange | ReorderChange
   > = []
   Utils.fastForEach(viewsToOperateOn, (view) => {
     const parentPath = TP.parentPath(view)
@@ -179,7 +182,9 @@ export function dragComponent(
           draggedFrame,
         )
         if (newIndex != null) {
-          dragChanges.push(flexMoveChange(view, newIndex))
+          const currentIndex = MetadataUtils.getViewZIndexFromMetadata(componentsMetadata, view)
+          const beforeOrAfter = currentIndex < newIndex ? 'after' : 'before'
+          dragChanges.push(flexMoveChange(view, newIndex, beforeOrAfter))
         } else {
           if (parentPath != null && isFeatureEnabled('Flex Properties (Timer)')) {
             const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, componentsMetadata)
@@ -334,6 +339,10 @@ export function dragComponent(
       }
     } else {
       // TODO determine if node graph affects the drag
+      const element = MetadataUtils.getElementByTemplatePathMaybe(componentsMetadata, view)
+      const isFlow =
+        TP.isInstancePath(view) &&
+        element?.specialSizeMeasurements.immediateParentProvidesLayout === false
 
       const constrainedDragAxis: ConstrainedDragAxis | null =
         constrainDragAxis && furthestDragDelta != null
@@ -358,6 +367,26 @@ export function dragComponent(
       if (originalFrame.frame != null) {
         if (translateMode) {
           dragChanges.push(moveTranslateChange(view, dragDeltaToApply))
+        } else if (isFlow && isFeatureEnabled('Flow Resize')) {
+          const cursorPoint = Utils.offsetPoint(dragStart, dragDelta)
+          const targetsUnderCursor = Canvas.getAllTargetsAtPoint(
+            editor,
+            cursorPoint,
+            [TargetSearchType.SiblingsOfSelected],
+            false,
+            'strict',
+          )
+          const flowTarget = targetsUnderCursor.find(
+            (target) =>
+              MetadataUtils.getElementByTemplatePathMaybe(componentsMetadata, target)
+                ?.specialSizeMeasurements.immediateParentProvidesLayout === false,
+          )
+          if (flowTarget != null) {
+            const newIndex = MetadataUtils.getViewZIndexFromMetadata(componentsMetadata, flowTarget)
+            const currentIndex = MetadataUtils.getViewZIndexFromMetadata(componentsMetadata, view)
+            const beforeOrAfter = currentIndex < newIndex ? 'after' : 'before'
+            dragChanges.push(reorderChange(view, newIndex, beforeOrAfter))
+          }
         } else {
           dragChanges.push(pinMoveChange(view, dragDeltaToApply))
         }

@@ -1014,9 +1014,10 @@ export class SelectModeControlContainer extends React.Component<
         {this.props.reparentTargetPositions.map((reparentTarget) => {
           return (
             <ReorderInsertIndicator
-              key={`${TP.toString(reparentTarget.parent!)}-${reparentTarget.drawBeforeChildIndex}`}
+              key={`${TP.toString(reparentTarget.parent!)}-${reparentTarget.drawAtChildIndex}`}
               target={reparentTarget.parent}
-              showBeforeChildIndex={reparentTarget.drawBeforeChildIndex}
+              showAtChildIndex={reparentTarget.drawAtChildIndex}
+              beforeOrAfter={reparentTarget.beforeOrAfter}
             />
           )
         })}
