@@ -14,19 +14,13 @@ To try the latest deployed version of the editor, go to https://utopia.app/proje
 Utopia runs in the browser! To run it, you'll need to run the server (locally) and webpack.
 
 ## Prerequisites
-
-- [NIX](http://nixos.org/nix)
-- [nix-shell](https://nixos.org/download.html). Scroll down if you're on Catalina.
-- Optionally: [direnv](https://direnv.net/docs/installation.html). Scroll down for setup instructions. If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands.
+- [nix-shell](https://nixos.org/download.html). If you are on macOS Catalina or later, you will be prompted to include an extra flag in the install script. If you don't want to use nix, we have instructions [here](https://github.com/concrete-utopia/utopia#running-this-without-nix)
+- Recommended: [direnv](https://github.com/concrete-utopia/utopia#using-direnv-to-make-your-life-easier). If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands, and switching to nix will be a bit slower.
 
 ## Contributing and Bug Reporting
-
-We welcome contributions. Utopia is a big project with a learning curve, but we're here to help. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/pD8SrEJ). Please read our [contributing](contributing.md) doc to get started
+We welcome contributions. Utopia is a big project, but we're here to help, and are happy to pair up with you. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/pD8SrEJ). Please read our [contributing](contributing.md) doc to get started
 
 # Run the Editor
-
-You can use a handful of commands to run the editor and server. Scroll down for more advanced options.
-
 ## Dev Mode: slower performance, full error messages, easier to debug
 
 ```
@@ -139,33 +133,10 @@ Limitations:
 
 # Troubleshooting
 
-- If you have fsevents trouble, first nuke your node_modules
+## fsevents
+If you have fsevents trouble, try nuking your node_modules and reinstalling with `npm install`
 
-## Running on Catalina with Nix
-
-Things seem to be changing every day but for now, our solution is taken from here:
-https://github.com/NixOS/nix/issues/2925#issuecomment-539490866
-
-```
-sudo mkdir /System/Volumes/Data/opt/nix
-sudo chown {your_user} /System/Volumes/Data/opt/nix
-# Be careful as the space needs to be a tab, otherwise changes won't be picked up from synthetic.conf
-sudo sh -c "echo 'nix	System/Volumes/Data/opt/nix' >> /System/Volumes/Data/private/etc/synthetic.conf"
-```
-
-^ make sure you replace the spaces with a tab character as directed above **or this will NOT work**.
-
-Reboot, and then:
-
-```
-curl -L https://nixos.org/nix/install | sh
-```
-
-Add the `. /Users/{{USERNAME}}/.nix-profile/etc/profile.d/nix.sh` line to your shell's config file (e.g. ~/.zshrc, ~/.bashrc) as directed by the end of the nix install.
-
-And while you're at it, this as well, which will supress the error that you're using a symlink instead of a real directory: `export NIX_IGNORE_SYMLINK_STORE=1`
-
-### Running this without Nix
+## Running this without Nix
 
 You'll need four things running concurrently:
 
@@ -297,7 +268,6 @@ To enable format-on-save, you should install the VSCode plugin `esbenp.prettier-
 ```
   "eslint.workingDirectories": ["./editor", "./utopia-api"],
   "editor.formatOnSave": true,
-  "prettier.eslintIntegration": true,
   "prettier.useEditorConfig": false,
   "prettier.requireConfig": true,
   "[typescript]": {
