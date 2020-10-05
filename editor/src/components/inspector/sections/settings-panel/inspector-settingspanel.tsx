@@ -69,6 +69,10 @@ export const SettingsPanel = (props: any) => {
     return getOpenUIJSFile(store.editor)
   })
 
+  const jsxMetadata = useEditorState((store) => {
+    return store.editor.jsxMetadataKILLME
+  })
+
   const toggleCodeEditorVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
   }, [dispatch])
@@ -84,6 +88,10 @@ export const SettingsPanel = (props: any) => {
   const printOpenUiJsFileModel = React.useCallback(() => {
     console.info('Open UIJSFile:', openUiJsFile)
   }, [openUiJsFile])
+
+  const printCanvasMetadata = React.useCallback(() => {
+    console.info('Latest metadata:', jsxMetadata)
+  }, [jsxMetadata])
 
   return (
     <FlexColumn
@@ -125,6 +133,9 @@ export const SettingsPanel = (props: any) => {
       <br />
       <Button outline spotlight onClick={printOpenUiJsFileModel}>
         Print Current Model to Console
+      </Button>
+      <Button outline spotlight onClick={printCanvasMetadata}>
+        Print Latest Metadata / Measurements
       </Button>
       <FeatureSwitchesSection />
     </FlexColumn>
