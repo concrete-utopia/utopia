@@ -4142,7 +4142,10 @@ export const UPDATE_FNS = {
   ): EditorState => {
     return {
       ...editor,
-      propertyControlsInfo: action.propertyControlsInfo,
+      propertyControlsInfo: {
+        ...editor.propertyControlsInfo,
+        ...action.propertyControlsInfo,
+      },
     }
   },
   PROPERTY_CONTROLS_IFRAME_READY: (
