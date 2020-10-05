@@ -39,7 +39,7 @@ interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
 }
 
-const packageNotFound: PackageNotFound = deepFreeze({
+export const packageNotFound: PackageNotFound = deepFreeze({
   type: 'PACKAGE_NOT_FOUND',
 })
 
@@ -62,7 +62,7 @@ interface VersionLookupSuccess {
   version: string
 }
 
-function versionLookupSuccess(version: string): VersionLookupSuccess {
+export function versionLookupSuccess(version: string): VersionLookupSuccess {
   return {
     type: 'VERSION_LOOKUP_SUCCESS',
     version: version,
@@ -132,19 +132,37 @@ export async function findLatestVersion(packageName: string): Promise<VersionLoo
   }
 }
 
+export async function findMatchingVersion(
+  packageName: string,
+  versionRange: string,
+): Promise<VersionLookupResult> {
+  const encodedName = encodeURIComponent(packageName).replace(/^%40/, '@')
+  const response = await fetch(`${UTOPIA_BACKEND}javascript/package/versions/${encodedName}`)
+
+  if (response.ok) {
+    const versionsArray: Array<string> = await response.json()
+    const satisfyingVersion = Semver.maxSatisfying(versionsArray, versionRange)
+    return satisfyingVersion == null ? packageNotFound : versionLookupSuccess(satisfyingVersion)
+  } else if (response.status === 404) {
+    return packageNotFound
+  } else {
+    return Promise.reject(`Received an error for package ${packageName}@${versionRange}`)
+  }
+}
+
 export async function checkPackageVersionExists(
   packageName: string,
   version: string,
 ): Promise<VersionLookupResult> {
-  const metadata = await packageLookupCall(packageName, version)
-  switch (metadata.type) {
-    case 'PACKAGE_LOOKUP_SUCCESS':
+  const matchingVersion = await findMatchingVersion(packageName, version)
+  switch (matchingVersion.type) {
+    case 'VERSION_LOOKUP_SUCCESS':
       return versionLookupSuccess(version)
     case 'PACKAGE_NOT_FOUND':
       return packageNotFound
     default:
-      const _exhaustiveCheck: never = metadata
-      throw new Error(`Unhandled package lookup type ${JSON.stringify(metadata)}`)
+      const _exhaustiveCheck: never = matchingVersion
+      throw new Error(`Unhandled version lookup type ${JSON.stringify(matchingVersion)}`)
   }
 }
 

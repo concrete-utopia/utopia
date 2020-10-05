@@ -30,7 +30,12 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
           <DeleteAllLayoutSystemConfigButton />
         </InspectorSubsectionHeader>
         <GridRow padded={true} type='<-------------1fr------------->'>
-          <LayoutSystemControl layoutSystem={layoutSystem} />
+          <LayoutSystemControl
+            layoutSystem={layoutSystem}
+            providesCoordinateSystemForChildren={
+              props.specialSizeMeasurements.providesBoundsForChildren
+            }
+          />
         </GridRow>
         {layoutSystem === 'flex' ? <FlexContainerControls seeMoreVisible={true} /> : null}
         <GridRow tall padded={true} type='<---1fr--->|------172px-------|'>

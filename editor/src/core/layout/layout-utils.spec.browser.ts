@@ -99,6 +99,7 @@ describe('maybeSwitchLayoutProps', () => {
               true,
               'none',
               'none',
+              false,
               'absolute',
               sides(undefined, undefined, undefined, undefined),
               sides(undefined, undefined, undefined, undefined),
