@@ -27,6 +27,7 @@ import {
   utopiaJSXComponent,
   UtopiaJSXComponent,
   defaultPropsParam,
+  clearArbitraryJSBlockUniqueIDs,
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import {
@@ -61,7 +62,7 @@ import {
   printableProjectContentArbitrary,
   testParseCode,
 } from './parser-printer-test-utils'
-import { elementDependencyOrdering, NodesBounds } from './parser-printer-utils'
+import { NodesBounds } from './parser-printer-utils'
 import { InfiniteLoopError, InfiniteLoopMaxIterations } from './transform-prevent-infinite-loops'
 import {
   EmptyUtopiaCanvasComponent,
@@ -119,7 +120,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -163,7 +164,7 @@ export var whatever = () => <View data-uid={'aaa'}>
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -223,7 +224,7 @@ export function whatever(props) {
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -271,7 +272,7 @@ export function whatever() {
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -331,7 +332,7 @@ export default function whatever(props) {
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -379,7 +380,7 @@ export default function whatever() {
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -437,7 +438,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -507,7 +508,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -569,7 +570,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
             false,
             code,
             expect.objectContaining({}),
-            expect.arrayContaining([]),
+            null,
             null,
           ),
         ),
@@ -646,7 +647,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
             false,
             code,
             expect.objectContaining({}),
-            expect.arrayContaining([]),
+            null,
             null,
           ),
         ),
@@ -708,7 +709,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -798,8 +799,8 @@ return { getSizing: getSizing, spacing: spacing };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -874,8 +875,8 @@ return { getSizing: getSizing };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -966,8 +967,8 @@ return { getSizing: getSizing };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1042,8 +1043,8 @@ return {  };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1108,8 +1109,8 @@ return { spacing: spacing };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(jsVariable),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1177,7 +1178,7 @@ return { bgs: bgs, bg: bg };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -1246,7 +1247,7 @@ return { greys: greys };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -1313,7 +1314,7 @@ return { a: a, b: b };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -1383,7 +1384,7 @@ return { a: a, b: b, c: c };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -1457,7 +1458,7 @@ return { a: a };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -1526,7 +1527,7 @@ return { a: a, b: b };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -1596,7 +1597,7 @@ return { bg: bg };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -1662,8 +1663,8 @@ return { count: count };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(jsVariable),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1729,8 +1730,8 @@ return { use20: use20 };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(jsVariable),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1776,8 +1777,8 @@ return { mySet: mySet };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(jsVariable),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1843,8 +1844,8 @@ return { spacing: spacing };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(jsVariable),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1930,8 +1931,8 @@ return { MyComp: MyComp };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(MyComp),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -2020,7 +2021,7 @@ export var whatever = props => (
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -2145,7 +2146,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -2189,7 +2190,7 @@ export var whatever = <View data-uid={'aaa'}>
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -2232,7 +2233,7 @@ export var whatever = <View data-uid={'aaa'}>
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -2268,7 +2269,7 @@ export var App = (props) => <View data-uid={'bbb'}>
         false,
         code,
         expect.objectContaining({}),
-        ['App'],
+        null,
         null,
       ),
     )
@@ -2323,7 +2324,7 @@ export var App = (props) => <View data-uid={'bbb'}>
         false,
         printedCode,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -2387,8 +2388,8 @@ return { getSizing: getSizing, spacing: spacing };`
         false,
         printedCode,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
         null,
+        clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -2421,7 +2422,7 @@ return { getSizing: getSizing, spacing: spacing };`
         false,
         printedCode,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -2526,7 +2527,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
         false,
         printedCode,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -2583,7 +2584,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
           false,
           printedCode,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -2655,7 +2656,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
           false,
           printedCode,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -2721,6 +2722,17 @@ export var whatever = props => {
 return { test: test };`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const arbitraryBlock = arbitraryJSBlock(
+      jsCode,
+      transpiledJSCode,
+      ['test'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+    )
     const expectedResult = clearParseResultUniqueIDs(
       right(
         parseSuccess(
@@ -2758,17 +2770,7 @@ return { test: test };`
                 ],
                 null,
               ),
-              arbitraryJSBlock(
-                jsCode,
-                transpiledJSCode,
-                ['test'],
-                [],
-                expect.objectContaining({
-                  sources: ['code.tsx'],
-                  version: 3,
-                  file: 'code.tsx',
-                }),
-              ),
+              clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
             ),
             EmptyUtopiaCanvasComponent,
           ],
@@ -2776,7 +2778,7 @@ return { test: test };`
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -2879,7 +2881,7 @@ return { test: test };`
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -2944,7 +2946,7 @@ export var App = props => {
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -2993,7 +2995,7 @@ export var App = props => {
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -3063,7 +3065,7 @@ export var App = props => {
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -3157,7 +3159,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -3321,7 +3323,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -3372,7 +3374,7 @@ export var App = props => {
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -3513,7 +3515,7 @@ return {  };`
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -3595,7 +3597,7 @@ return { result: result };`
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -3674,7 +3676,7 @@ export var whatever = props => {
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -3776,7 +3778,7 @@ return { a: a };`,
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
@@ -3800,14 +3802,14 @@ export var whatever = props => {
           false,
           code,
           expect.objectContaining({}),
-          expect.arrayContaining([]),
+          null,
           null,
         ),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  it('returns a circular reference error where there is one.', () => {
+  it('parses fine with a circular dependency.', () => {
     const code = `import * as React from "react";
 import {
   View
@@ -3816,7 +3818,7 @@ const a = (n) => n > 0 ? n : b(10)
 export var whatever = (props) => <View data-uid={'aaa'} />
 const b = (n) => n > 0 ? n : a(10)
 `
-    const actualResult = testParseCode(code)
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     expect(clearParseResultPassTimes(actualResult)).toMatchSnapshot()
   })
   it('corrects duplicated data-uid entries', () => {
@@ -3874,207 +3876,6 @@ export var whatever2 = (props) => <View data-uid={'aaa'}>
     const printableArbitrary = printableProjectContentArbitrary()
     const dataUIDProperty = FastCheck.property(printableArbitrary, checkDataUIDsPopulated)
     FastCheck.assert(dataUIDProperty, { verbose: true })
-  })
-})
-
-const testNodeBounds: NodesBounds = {
-  start: {
-    line: 20,
-    character: 25,
-  },
-  end: {
-    line: 30,
-    character: 35,
-  },
-}
-
-describe('reorderElementDependencies', () => {
-  it('identifies circular dependencies', () => {
-    const component1 = {
-      element: utopiaJSXComponent(
-        'Component1',
-        true,
-        defaultPropsParam,
-        [],
-        jsxElement('Component2', {}, [], null),
-        null,
-      ),
-      bounds: testNodeBounds,
-    }
-    const component2 = {
-      element: utopiaJSXComponent(
-        'Component2',
-        true,
-        defaultPropsParam,
-        [],
-        jsxElement('Component3', {}, [], null),
-        null,
-      ),
-      bounds: testNodeBounds,
-    }
-    const component3 = {
-      element: utopiaJSXComponent(
-        'Component3',
-        true,
-        defaultPropsParam,
-        [],
-        jsxElement('Component1', {}, [], null),
-        null,
-      ),
-      bounds: testNodeBounds,
-    }
-    const actualResult = elementDependencyOrdering('test.js', 'test', [
-      component1,
-      component2,
-      component3,
-    ])
-    const expectedResult = left(
-      parseFailure(
-        null,
-        null,
-        null,
-        [
-          {
-            codeSnippet: '',
-            errorCode: '',
-            startLine: 20,
-            startColumn: 25,
-            endLine: 30,
-            endColumn: 35,
-            fileName: 'test.js',
-            message:
-              'Circular dependency detected. While this is valid javascript, the Utopia editor cannot currently handle circular dependencies.',
-            passTime: null,
-            severity: 'fatal',
-            source: 'utopia-parser',
-            type: '',
-          },
-        ],
-        'test',
-      ),
-    )
-    expect(actualResult).toEqual(expectedResult)
-  })
-  it('should return an order that makes sense between components', () => {
-    const component1 = {
-      element: utopiaJSXComponent(
-        'Component1',
-        true,
-        defaultPropsParam,
-        [],
-        jsxElement('Component2', {}, [], null),
-        null,
-      ),
-      bounds: testNodeBounds,
-    }
-    const component2 = {
-      element: utopiaJSXComponent(
-        'Component2',
-        true,
-        defaultPropsParam,
-        [],
-        jsxElement('Component3', {}, [], null),
-        null,
-      ),
-      bounds: testNodeBounds,
-    }
-    const component3 = {
-      element: utopiaJSXComponent(
-        'Component3',
-        true,
-        defaultPropsParam,
-        [],
-        jsxElement('Component4', {}, [], null),
-        null,
-      ),
-      bounds: testNodeBounds,
-    }
-    const actualResult = elementDependencyOrdering('test.js', 'test', [
-      component1,
-      component3,
-      component2,
-    ])
-    const expectedResult = right(['Component3', 'Component2', 'Component1'])
-    expect(actualResult).toEqual(expectedResult)
-  })
-  it('should return an order that makes sense between components and some code', () => {
-    const component1 = {
-      element: utopiaJSXComponent(
-        'Component1',
-        true,
-        defaultPropsParam,
-        [],
-        jsxElement(
-          'View',
-          {
-            someProp: jsxAttributeOtherJavaScript(
-              '',
-              '',
-              ['testFn'],
-              expect.objectContaining({
-                sources: ['code.tsx'],
-                version: 3,
-                file: 'code.tsx',
-              }),
-            ),
-          },
-          [],
-          null,
-        ),
-        null,
-      ),
-      bounds: testNodeBounds,
-    }
-    const component2 = {
-      element: utopiaJSXComponent(
-        'Component2',
-        true,
-        defaultPropsParam,
-        [],
-        jsxElement(
-          'View',
-          {
-            nestedProp: jsxAttributeNestedObjectSimple({
-              someProp: jsxAttributeOtherJavaScript(
-                '',
-                '',
-                ['testFn'],
-                expect.objectContaining({
-                  sources: ['code.tsx'],
-                  version: 3,
-                  file: 'code.tsx',
-                }),
-              ),
-            }),
-          },
-          [],
-          null,
-        ),
-        null,
-      ),
-      bounds: testNodeBounds,
-    }
-    const jsBlock = {
-      element: arbitraryJSBlock(
-        '',
-        '',
-        ['testFn'],
-        [],
-        expect.objectContaining({
-          sources: ['code.tsx'],
-          version: 3,
-          file: 'code.tsx',
-        }),
-      ),
-      bounds: testNodeBounds,
-    }
-    const actualResult = elementDependencyOrdering('test.js', 'test', [
-      component1,
-      component2,
-      jsBlock,
-    ])
-    const expectedResult = right(expect.arrayContaining(['Component1', 'Component2']))
-    expect(actualResult).toEqual(expectedResult)
   })
 })
 

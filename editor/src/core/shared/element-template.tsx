@@ -765,7 +765,7 @@ export interface ArbitraryJSBlock {
 
 export type TopLevelElement = UtopiaJSXComponent | ArbitraryJSBlock
 
-function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
+export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
   return {
     ...block,
     uniqueID: '',

@@ -160,7 +160,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithBasicPropsObject,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -203,7 +203,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithBasicPropsObjectWithDefault,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -231,7 +231,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithRenamedBasicPropsObject,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -263,7 +263,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithDestructuredPropsObject,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -303,7 +303,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithDestructuredPropsObjectWithDefault,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -338,7 +338,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithDestructuredPropsObjectWithRenamedParam,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -378,7 +378,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithDestructuredPropsObjectWithRenamedParamAndDefault,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -414,7 +414,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithDestructuredPropsObjectWithRestParam,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -443,7 +443,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithDestructuredArray,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -480,7 +480,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithDestructuredArrayWithDefault,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -515,7 +515,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithDestructuredArrayWithOmittedParam,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -570,7 +570,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithNestedDestructuredPropsMess,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -644,7 +644,7 @@ describe('Parsing a function component with props', () => {
         false,
         codeWithNestedDestructuredPropsMessWithDefaults,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )

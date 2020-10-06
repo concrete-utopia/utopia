@@ -1,7 +1,7 @@
 import * as TS from 'typescript'
 import { FlexParentProps, LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { Either, Left, Right, isRight, isLeft } from './either'
-import { TopLevelElement, UtopiaJSXComponent } from './element-template'
+import { ArbitraryJSBlock, TopLevelElement, UtopiaJSXComponent } from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
@@ -157,8 +157,8 @@ export interface ParseSuccess {
   projectContainedOldSceneMetadata: boolean
   code: string
   highlightBounds: HighlightBoundsForUids
-  dependencyOrdering: Array<string>
   jsxFactoryFunction: string | null
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
 }
 
 export function isParseSuccess(result: ParseResult): result is Right<ParseSuccess> {
