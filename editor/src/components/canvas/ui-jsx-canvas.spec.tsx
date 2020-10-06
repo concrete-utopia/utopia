@@ -8,6 +8,7 @@ import * as UtopiaAPI from 'utopia-api'
 import * as UUIUI from 'uuiui'
 import * as ANTD from 'antd'
 import {
+  ArbitraryJSBlock,
   clearJSXElementUniqueIDs,
   MetadataWithoutChildren,
   TopLevelElement,
@@ -109,6 +110,13 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
   )
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
   let consoleLogs: Array<ConsoleLog> = []
+
+  const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = foldEither(
+    (_) => null,
+    (success) => success.combinedTopLevelArbitraryBlock,
+    parsedCode,
+  )
+
   function clearConsoleLogs(): void {
     consoleLogs = []
   }
@@ -137,6 +145,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   } else {
     canvasProps = {
@@ -156,6 +165,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   }
 
@@ -1853,6 +1863,52 @@ export var storyboard = (
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
       data-uid={'scene'}
+    />
+  </Storyboard>
+)`,
+    )
+  })
+
+  it('renders fine with two circularly referencing arbitrary blocks', () => {
+    testCanvasRender(
+      null,
+      `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+function a(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return b(n - 1)
+  }
+}
+
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >{b(5)} - {a(5)}</div>
+  )
+}
+
+function b(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return a(n - 1)
+  }
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'${BakedInStoryboardUID}'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      data-uid={'scene'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
     />
   </Storyboard>
 )`,

@@ -512,6 +512,7 @@ export function modifyParseSuccessWithSimple(
     code: success.code,
     highlightBounds: {},
     jsxFactoryFunction: success.jsxFactoryFunction,
+    combinedTopLevelArbitraryBlock: success.combinedTopLevelArbitraryBlock,
   }
 }
 

@@ -154,6 +154,7 @@ export interface UiJsxCanvasProps {
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -194,6 +195,7 @@ export function pickUiJsxCanvasProps(
     let imports: Imports = emptyImports
     let topLevelElementsIncludingScenes: Array<TopLevelElement> = emptyTopLevelElements
     let jsxFactoryFunction: string | null = null
+    let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
 
     if (uiFile != null && isParseSuccess(uiFile.fileContents)) {
       const success = uiFile.fileContents.value
@@ -201,6 +203,7 @@ export function pickUiJsxCanvasProps(
       imports = uiFile.fileContents.value.imports
       topLevelElementsIncludingScenes = success.topLevelElements
       jsxFactoryFunction = success.jsxFactoryFunction
+      combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
       const transientFileState = transientCanvasState.fileState
       if (transientFileState != null) {
         imports = transientFileState.imports
@@ -247,6 +250,7 @@ export function pickUiJsxCanvasProps(
       canvasIsLive: isLiveMode(editor.mode),
       shouldIncludeCanvasRootInTheSpy: true,
       linkTags: linkTags,
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   }
 }
@@ -416,6 +420,7 @@ export const UiJsxCanvas = betterReactMemo(
       addToConsoleLogs,
       canvasIsLive,
       linkTags,
+      combinedTopLevelArbitraryBlock,
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
@@ -491,11 +496,9 @@ export const UiJsxCanvas = betterReactMemo(
       }
 
       // First make sure everything is in scope
-      Utils.fastForEach(topLevelElementsIncludingScenes, (topLevelElement) => {
-        if (isArbitraryJSBlock(topLevelElement)) {
-          runBlockUpdatingScope(requireResult, topLevelElement, executionScope)
-        }
-      })
+      if (combinedTopLevelArbitraryBlock != null) {
+        runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
+      }
 
       updateMutableUtopiaContextWithNewProps(mutableContextRef, {
         requireResult: requireResult,

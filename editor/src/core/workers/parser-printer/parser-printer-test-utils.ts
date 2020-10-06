@@ -48,6 +48,7 @@ import {
   UtopiaJSXComponent,
   utopiaJSXComponent,
   defaultPropsParam,
+  clearArbitraryJSBlockUniqueIDs,
 } from '../../shared/element-template'
 import { addImport, defaultCanvasMetadata } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -63,6 +64,7 @@ import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
 import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
+import { optionalMap } from '../../shared/optional-utils'
 
 const JavaScriptReservedKeywords: Array<string> = [
   'break',
@@ -178,6 +180,10 @@ export function clearParseResultUniqueIDs(parseResult: ParseResult): ParseResult
     return {
       ...success,
       topLevelElements: updatedTopLevelElements,
+      combinedTopLevelArbitraryBlock: optionalMap(
+        clearArbitraryJSBlockUniqueIDs,
+        success.combinedTopLevelArbitraryBlock,
+      ),
     }
   }, parseResult)
 }

@@ -90,6 +90,67 @@ export var whatever = (props) => {
   )
 }
 ",
+    "combinedTopLevelArbitraryBlock": Object {
+      "definedElsewhere": Array [],
+      "definedWithin": Array [
+        "cakeFn",
+        "otherFn",
+      ],
+      "javascript": "function cakeFn(n) {
+  return n;
+}
+function otherFn(n) {
+  return n;
+}",
+      "sourceMap": Object {
+        "file": "code.tsx",
+        "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
+        "names": Array [
+          "function",
+          "cakeFn",
+          "n",
+          "{",
+          "return",
+          "
+",
+          "otherFn",
+          "}",
+        ],
+        "sources": Array [
+          "code.tsx",
+        ],
+        "sourcesContent": Array [
+          "import { cake } from 'cake'
+import * as React from 'react'
+import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+function cakeFn(n) {
+  return n
+}
+function otherFn(n) {
+  return n
+}
+export var whatever = (props) => {
+  return (
+    <View data-uid={'aaa'}>
+      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    </View>
+  )
+}
+",
+        ],
+        "version": 3,
+      },
+      "transpiledJavascript": "function cakeFn(n) {
+  return n;
+}
+
+function otherFn(n) {
+  return n;
+}
+return { cakeFn: cakeFn, otherFn: otherFn };",
+      "type": "ARBITRARY_JS_BLOCK",
+      "uniqueID": "",
+    },
     "highlightBounds": Object {
       "aaa": Object {
         "endCol": 11,
@@ -362,6 +423,53 @@ const a = (n) => n > 0 ? n : b(10)
 export var whatever = (props) => <View data-uid={'aaa'} />
 const b = (n) => n > 0 ? n : a(10)
 ",
+    "combinedTopLevelArbitraryBlock": Object {
+      "definedElsewhere": Array [],
+      "definedWithin": Array [
+        "a",
+        "b",
+      ],
+      "javascript": "const a = n => n > 0 ? n : b(10);
+const b = n => n > 0 ? n : a(10);",
+      "sourceMap": Object {
+        "file": "code.tsx",
+        "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+        "names": Array [
+          "const",
+          "a",
+          " ",
+          "(",
+          "n",
+          "0",
+          "b",
+          "10",
+        ],
+        "sources": Array [
+          "code.tsx",
+        ],
+        "sourcesContent": Array [
+          "import * as React from \\"react\\";
+import {
+  View
+} from \\"utopia-api\\";
+const a = (n) => n > 0 ? n : b(10)
+export var whatever = (props) => <View data-uid={'aaa'} />
+const b = (n) => n > 0 ? n : a(10)
+",
+        ],
+        "version": 3,
+      },
+      "transpiledJavascript": "var a = function a(n) {
+  return n > 0 ? n : b(10);
+};
+
+var b = function b(n) {
+  return n > 0 ? n : a(10);
+};
+return { a: a, b: b };",
+      "type": "ARBITRARY_JS_BLOCK",
+      "uniqueID": "",
+    },
     "highlightBounds": Object {
       "aaa": Object {
         "endCol": 58,
@@ -563,6 +671,48 @@ export var App = (props) => <View data-uid={'bbb'}>
   {{a: a}}
 </View>
 ",
+    "combinedTopLevelArbitraryBlock": Object {
+      "definedElsewhere": Array [],
+      "definedWithin": Array [
+        "a",
+      ],
+      "javascript": "const a = \\"cake\\";",
+      "sourceMap": Object {
+        "file": "code.tsx",
+        "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
+        "names": Array [
+          "const",
+          "a",
+          " ",
+          "\\"",
+        ],
+        "sources": Array [
+          "code.tsx",
+        ],
+        "sourcesContent": Array [
+          "import * as React from \\"react\\";
+import {
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  UtopiaUtils,
+  View
+} from \\"utopia-api\\";
+const a = \\"cake\\"
+export var App = (props) => <View data-uid={'bbb'}>
+  {{a: a}}
+</View>
+",
+        ],
+        "version": 3,
+      },
+      "transpiledJavascript": "var a = \\"cake\\";
+return { a: a };",
+      "type": "ARBITRARY_JS_BLOCK",
+      "uniqueID": "",
+    },
     "highlightBounds": Object {
       "bbb": Object {
         "endCol": 7,

@@ -231,6 +231,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
             },
           },
           jsxFactoryFunction: 'jsx',
+          combinedTopLevelArbitraryBlock: null,
         },
       },
       lastSavedContents: null,

@@ -113,6 +113,7 @@ describe('SET_PROP', () => {
       '',
       {},
       null,
+      null,
     ),
   )
   const testEditor: EditorState = deepFreeze({
@@ -199,7 +200,16 @@ describe('SET_CANVAS_FRAMES', () => {
   ]
 
   const originalModel = deepFreeze(
-    parseSuccess(emptyImports(), components, right(defaultCanvasMetadata()), false, '', {}, null),
+    parseSuccess(
+      emptyImports(),
+      components,
+      right(defaultCanvasMetadata()),
+      false,
+      '',
+      {},
+      null,
+      null,
+    ),
   )
   const testEditor: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
@@ -263,6 +273,7 @@ describe('moveTemplate', () => {
         false,
         '',
         {},
+        null,
         null,
       ),
     )
@@ -767,7 +778,16 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   const firstTopLevelElement = utopiaJSXComponent('App', true, null, [], rootElement, null)
   const fileForUI = uiJsFile(
     right(
-      parseSuccess(sampleDefaultImports, [firstTopLevelElement], left({}), false, '', {}, null),
+      parseSuccess(
+        sampleDefaultImports,
+        [firstTopLevelElement],
+        left({}),
+        false,
+        '',
+        {},
+        null,
+        null,
+      ),
     ),
     null,
     RevisionsState.BothMatch,

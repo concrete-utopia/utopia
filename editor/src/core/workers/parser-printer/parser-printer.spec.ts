@@ -27,6 +27,7 @@ import {
   utopiaJSXComponent,
   UtopiaJSXComponent,
   defaultPropsParam,
+  clearArbitraryJSBlockUniqueIDs,
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import {
@@ -120,6 +121,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -162,6 +164,7 @@ export var whatever = () => <View data-uid={'aaa'}>
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -222,6 +225,7 @@ export function whatever(props) {
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -268,6 +272,7 @@ export function whatever() {
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -328,6 +333,7 @@ export default function whatever(props) {
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -374,6 +380,7 @@ export default function whatever() {
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -431,6 +438,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -501,6 +509,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -561,6 +570,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
             false,
             code,
             expect.objectContaining({}),
+            null,
             null,
           ),
         ),
@@ -638,6 +648,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
             code,
             expect.objectContaining({}),
             null,
+            null,
           ),
         ),
       )
@@ -698,6 +709,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -788,6 +800,7 @@ return { getSizing: getSizing, spacing: spacing };`
         code,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -863,6 +876,7 @@ return { getSizing: getSizing };`
         code,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -954,6 +968,7 @@ return { getSizing: getSizing };`
         code,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1029,6 +1044,7 @@ return {  };`
         code,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1094,6 +1110,7 @@ return { spacing: spacing };`
         code,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(jsVariable),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1161,6 +1178,7 @@ return { bgs: bgs, bg: bg };`
         false,
         code,
         expect.objectContaining({}),
+        null,
         null,
       ),
     )
@@ -1230,6 +1248,7 @@ return { greys: greys };`
         code,
         expect.objectContaining({}),
         null,
+        null,
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1295,6 +1314,7 @@ return { a: a, b: b };`
         false,
         code,
         expect.objectContaining({}),
+        null,
         null,
       ),
     )
@@ -1364,6 +1384,7 @@ return { a: a, b: b, c: c };`
         false,
         code,
         expect.objectContaining({}),
+        null,
         null,
       ),
     )
@@ -1438,6 +1459,7 @@ return { a: a };`
         code,
         expect.objectContaining({}),
         null,
+        null,
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1505,6 +1527,7 @@ return { a: a, b: b };`
         false,
         code,
         expect.objectContaining({}),
+        null,
         null,
       ),
     )
@@ -1575,6 +1598,7 @@ return { bg: bg };`
         code,
         expect.objectContaining({}),
         null,
+        null,
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1640,6 +1664,7 @@ return { count: count };`
         code,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(jsVariable),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1706,6 +1731,7 @@ return { use20: use20 };`
         code,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(jsVariable),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1752,6 +1778,7 @@ return { mySet: mySet };`
         code,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(jsVariable),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1818,6 +1845,7 @@ return { spacing: spacing };`
         code,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(jsVariable),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1904,6 +1932,7 @@ return { MyComp: MyComp };`
         code,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(MyComp),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1992,6 +2021,7 @@ export var whatever = props => (
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -2117,6 +2147,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -2160,6 +2191,7 @@ export var whatever = <View data-uid={'aaa'}>
         code,
         expect.objectContaining({}),
         null,
+        null,
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -2202,6 +2234,7 @@ export var whatever = <View data-uid={'aaa'}>
         code,
         expect.objectContaining({}),
         null,
+        null,
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -2236,6 +2269,7 @@ export var App = (props) => <View data-uid={'bbb'}>
         false,
         code,
         expect.objectContaining({}),
+        null,
         null,
       ),
     )
@@ -2290,6 +2324,7 @@ export var App = (props) => <View data-uid={'bbb'}>
         false,
         printedCode,
         expect.objectContaining({}),
+        null,
         null,
       ),
     )
@@ -2354,6 +2389,7 @@ return { getSizing: getSizing, spacing: spacing };`
         printedCode,
         expect.objectContaining({}),
         null,
+        clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -2386,6 +2422,7 @@ return { getSizing: getSizing, spacing: spacing };`
         false,
         printedCode,
         expect.objectContaining({}),
+        null,
         null,
       ),
     )
@@ -2491,6 +2528,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
         printedCode,
         expect.objectContaining({}),
         null,
+        null,
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -2546,6 +2584,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
           false,
           printedCode,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -2618,6 +2657,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
           printedCode,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -2682,6 +2722,17 @@ export var whatever = props => {
 return { test: test };`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const arbitraryBlock = arbitraryJSBlock(
+      jsCode,
+      transpiledJSCode,
+      ['test'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+    )
     const expectedResult = clearParseResultUniqueIDs(
       right(
         parseSuccess(
@@ -2719,17 +2770,7 @@ return { test: test };`
                 ],
                 null,
               ),
-              arbitraryJSBlock(
-                jsCode,
-                transpiledJSCode,
-                ['test'],
-                [],
-                expect.objectContaining({
-                  sources: ['code.tsx'],
-                  version: 3,
-                  file: 'code.tsx',
-                }),
-              ),
+              clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
             ),
             EmptyUtopiaCanvasComponent,
           ],
@@ -2737,6 +2778,7 @@ return { test: test };`
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -2840,6 +2882,7 @@ return { test: test };`
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -2904,6 +2947,7 @@ export var App = props => {
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -2951,6 +2995,7 @@ export var App = props => {
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -3020,6 +3065,7 @@ export var App = props => {
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -3113,6 +3159,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -3277,6 +3324,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -3326,6 +3374,7 @@ export var App = props => {
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -3467,6 +3516,7 @@ return {  };`
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -3548,6 +3598,7 @@ return { result: result };`
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -3625,6 +3676,7 @@ export var whatever = props => {
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),
@@ -3727,6 +3779,7 @@ return { a: a };`,
           code,
           expect.objectContaining({}),
           null,
+          null,
         ),
       ),
     )
@@ -3749,6 +3802,7 @@ export var whatever = props => {
           false,
           code,
           expect.objectContaining({}),
+          null,
           null,
         ),
       ),

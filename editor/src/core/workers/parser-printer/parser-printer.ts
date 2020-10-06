@@ -766,6 +766,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
     // As we hit chunks of arbitrary code, shove them here so we can
     // handle them as a block of code.
     let arbitraryNodes: Array<TS.Node> = []
+    let allArbitraryNodes: Array<TS.Node> = []
 
     function applyAndResetArbitraryNodes(): void {
       const filteredArbitraryNodes = arbitraryNodes.filter(
@@ -793,6 +794,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
             }
           }, nodeParseResult),
         )
+        allArbitraryNodes = [...allArbitraryNodes, ...filteredArbitraryNodes]
       }
       arbitraryNodes = []
     }
@@ -1013,6 +1015,24 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
 
     const projectContainedOldSceneMetadata = utopiaComponentFromSceneMetadata != null
 
+    let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
+    if (allArbitraryNodes.length > 0) {
+      const nodeParseResult = parseArbitraryNodes(
+        sourceFile,
+        filename,
+        allArbitraryNodes,
+        imports,
+        topLevelNames,
+        null,
+        highlightBounds,
+        alreadyExistingUIDs,
+        true,
+      )
+      forEachRight(nodeParseResult, (nodeParseSuccess) => {
+        combinedTopLevelArbitraryBlock = nodeParseSuccess.value
+      })
+    }
+
     return right(
       parseSuccess(
         imports,
@@ -1022,6 +1042,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
         code,
         highlightBounds,
         jsxFactoryFunction,
+        combinedTopLevelArbitraryBlock,
       ),
     )
   }
