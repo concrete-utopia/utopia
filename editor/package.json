@@ -72,6 +72,7 @@
   "dependencies": {
     "@babel/code-frame": "7.5.5",
     "@babel/plugin-external-helpers": "7.8.3",
+    "@babel/plugin-transform-modules-commonjs": "7.10.4",
     "@babel/plugin-transform-react-jsx": "7.10.4",
     "@babel/plugin-transform-typescript": "7.11.0",
     "@babel/standalone": "7.9.5",

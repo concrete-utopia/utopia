@@ -5,6 +5,7 @@
 module Utopia.Web.Packager.NPM where
 
 import           Control.Monad
+import           Data.Aeson
 import           Data.List                 (isSuffixOf, stripPrefix)
 import qualified Data.Text.IO              as T
 import           Protolude
@@ -36,27 +37,21 @@ withInstalledProject semaphore jsPackageName jsPackageVersion withInstalledPath 
 isRelevantFilename :: FilePath -> Bool
 isRelevantFilename path = isSuffixOf "package.json" path || isSuffixOf ".d.ts" path || isSuffixOf ".js" path
 
-type FilesAndContents = Map.HashMap Text Text
+data FileContentOrPlaceholder = FileContent Text | Placeholder 
+                              deriving (Eq)
+type FilesAndContents = Map.HashMap Text FileContentOrPlaceholder
 
-getRelevantFiles :: FilePath -> IO FilesAndContents
-getRelevantFiles projectPath = do
+instance ToJSON FileContentOrPlaceholder where
+  toJSON Placeholder        = toJSON ("PLACEHOLDER_FILE" :: Text)
+  toJSON (FileContent text) = object ["content" .= text]
+
+getModuleAndDependenciesFiles :: FilePath -> IO FilesAndContents
+getModuleAndDependenciesFiles projectPath = do
   pathWalkAccumulate projectPath $ \dir _ files -> do
     let strippedDir = fromMaybe dir $ stripPrefix projectPath dir
     (flip foldMap) files $ \file -> do
       let relevant = isRelevantFilename file
       let entryFilename = strippedDir </> file
       let fullFilename = projectPath </> dir </> file
-      let fileWithContent = fmap (Map.singleton (toS entryFilename)) $ T.readFile fullFilename
-      if relevant then fileWithContent else mempty
-
-readFileAddToMap :: FilePath -> FilesAndContents -> FilePath -> IO FilesAndContents
-readFileAddToMap projectPath currentMap filename = do
-  let strippedPath = fromMaybe filename $ stripPrefix projectPath filename
-  fileContents <- T.readFile filename
-  return $ Map.insert (toS strippedPath) fileContents currentMap
-
-getModuleAndDependenciesFiles :: Text -> FilePath -> IO FilesAndContents
-getModuleAndDependenciesFiles _ projectPath = do
-  relevantFiles <- getRelevantFiles projectPath
-  let combinedResult = relevantFiles
-  return combinedResult
+      fileContent <- if relevant then fmap FileContent $ T.readFile fullFilename else pure Placeholder
+      return $ Map.singleton (toS entryFilename) fileContent

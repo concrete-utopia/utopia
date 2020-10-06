@@ -424,7 +424,7 @@ export function switchFlexChildToPinned(
   const updatedMetadata = switchLayoutMetadata(
     currentContextMetadata,
     target,
-    'nonfixed',
+    'flow',
     undefined,
     'absolute',
   )
@@ -479,7 +479,7 @@ export function switchFlexChildToGroup(
   const updatedMetadata = switchLayoutMetadata(
     currentContextMetadata,
     target,
-    'nonfixed',
+    'flow',
     undefined,
     'absolute',
   )
@@ -532,7 +532,7 @@ export function switchChildToGroupWithParentFrame(
     const updatedMetadata = switchLayoutMetadata(
       componentMetadata,
       target,
-      'nonfixed',
+      'flow',
       undefined,
       'absolute',
     )
@@ -558,7 +558,7 @@ export function switchChildToGroupWithParentFrame(
     const updatedMetadata = switchLayoutMetadata(
       componentMetadata,
       target,
-      'nonfixed',
+      'flow',
       undefined,
       'absolute',
     )
@@ -603,7 +603,7 @@ export function switchPinnedChildToGroup(
   const updatedMetadata = switchLayoutMetadata(
     currentContextMetadata,
     target,
-    'nonfixed',
+    'flow',
     undefined,
     'absolute',
   )
@@ -650,7 +650,7 @@ export function switchChildToPinnedWithParentFrame(
   const updatedMetadata = switchLayoutMetadata(
     componentMetadata,
     target,
-    'nonfixed',
+    'flow',
     undefined,
     'absolute',
   )

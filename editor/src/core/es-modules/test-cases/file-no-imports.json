@@ -9,7 +9,9 @@
       "content": "{\"name\": \"mypackage\", \"version\": \"0.0.1\", \"main\": \"web.cjs.js\"}",
       "isModule": false,
       "requires": []
-    }
+    },
+    "/node_modules/mypackage/dist/style.css": "PLACEHOLDER_FILE",
+    "/node_modules/mypackage/dist/antd.css": "PLACEHOLDER_FILE"
   },
   "dependency": {
     "name": "mypackage",

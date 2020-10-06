@@ -277,10 +277,8 @@ cachePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSi
 getPackagerContent :: QSem -> Text -> Text -> Maybe UTCTime -> IO (Maybe (BL.ByteString, UTCTime))
 getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifModifiedSince = do
   cachePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSince $ do
-    filesAndContent <- withInstalledProject semaphore javascriptPackageName javascriptPackageVersion $ do
-      getModuleAndDependenciesFiles javascriptPackageName
-    let contents = fmap (\fileContent -> (M.singleton contentText fileContent)) filesAndContent
-    let encodingResult = toEncoding $ M.singleton contentsText contents
+    filesAndContent <- withInstalledProject semaphore javascriptPackageName javascriptPackageVersion getModuleAndDependenciesFiles
+    let encodingResult = toEncoding $ M.singleton contentsText filesAndContent
     return $ toLazyByteString $ fromEncoding encodingResult
 
 getUserConfigurationWithPool :: (MonadIO m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> (Maybe DecodedUserConfiguration -> a) -> m a
