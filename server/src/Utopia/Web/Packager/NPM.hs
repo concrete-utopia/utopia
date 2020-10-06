@@ -5,6 +5,7 @@
 module Utopia.Web.Packager.NPM where
 
 import           Control.Monad
+import           Data.Aeson
 import           Data.List                 (isSuffixOf, stripPrefix)
 import qualified Data.Text.IO              as T
 import           Protolude
@@ -36,7 +37,12 @@ withInstalledProject semaphore jsPackageName jsPackageVersion withInstalledPath 
 isRelevantFilename :: FilePath -> Bool
 isRelevantFilename path = isSuffixOf "package.json" path || isSuffixOf ".d.ts" path || isSuffixOf ".js" path
 
-type FilesAndContents = Map.HashMap Text Text
+data FileContentOrPlaceholder = FileContent Text | Placeholder
+type FilesAndContents = Map.HashMap Text FileContentOrPlaceholder
+
+instance ToJSON FileContentOrPlaceholder where
+  toJSON Placeholder        = toJSON ("PLACEHOLDER_FILE" :: Text)
+  toJSON (FileContent text) = object ["content" .= text]
 
 getRelevantFiles :: FilePath -> IO FilesAndContents
 getRelevantFiles projectPath = do
@@ -46,14 +52,8 @@ getRelevantFiles projectPath = do
       let relevant = isRelevantFilename file
       let entryFilename = strippedDir </> file
       let fullFilename = projectPath </> dir </> file
-      let fileWithContent = fmap (Map.singleton (toS entryFilename)) $ T.readFile fullFilename
-      if relevant then fileWithContent else mempty
-
-readFileAddToMap :: FilePath -> FilesAndContents -> FilePath -> IO FilesAndContents
-readFileAddToMap projectPath currentMap filename = do
-  let strippedPath = fromMaybe filename $ stripPrefix projectPath filename
-  fileContents <- T.readFile filename
-  return $ Map.insert (toS strippedPath) fileContents currentMap
+      fileContent <- if relevant then fmap FileContent $ T.readFile fullFilename else pure Placeholder
+      return $ Map.singleton (toS entryFilename) fileContent
 
 getModuleAndDependenciesFiles :: Text -> FilePath -> IO FilesAndContents
 getModuleAndDependenciesFiles _ projectPath = do

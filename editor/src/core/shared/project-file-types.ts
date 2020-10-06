@@ -312,8 +312,10 @@ export type ProjectFile = UIJSFile | CodeFile | ImageFile | Directory | AssetFil
 
 export type ProjectFileType = ProjectFile['type']
 
+export type NodeModuleFile = ESCodeFile | ESRemoteDependencyPlaceholder // TODO maybe ESCodeFile is too strict, eventually we want to have ProjectFile here
+
 export type NodeModules = {
-  [filepath: string]: ESCodeFile | ESRemoteDependencyPlaceholder // TODO maybe ESCodeFile is too strict, eventually we want to have ProjectFile here
+  [filepath: string]: NodeModuleFile
 }
 
 // Key here is the full filename.

@@ -279,8 +279,7 @@ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifMo
   cachePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSince $ do
     filesAndContent <- withInstalledProject semaphore javascriptPackageName javascriptPackageVersion $ do
       getModuleAndDependenciesFiles javascriptPackageName
-    let contents = fmap (\fileContent -> (M.singleton contentText fileContent)) filesAndContent
-    let encodingResult = toEncoding $ M.singleton contentsText contents
+    let encodingResult = toEncoding $ M.singleton contentsText filesAndContent
     return $ toLazyByteString $ fromEncoding encodingResult
 
 getUserConfigurationWithPool :: (MonadIO m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> (Maybe DecodedUserConfiguration -> a) -> m a
