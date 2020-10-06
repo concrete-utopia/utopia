@@ -7,10 +7,6 @@ export function getPackagerUrl(dep: ResolvedNpmDependency): string {
   }.json`
 }
 
-export function getJsDelivrListUrl(dep: ResolvedNpmDependency): string {
-  return `https://data.jsdelivr.com/v1/package/npm/${dep.name}@${dep.version}/flat`
-}
-
 export function getJsDelivrFileUrl(dep: ResolvedNpmDependency, localFilePath: string): string {
   return `https://cdn.jsdelivr.net/npm/${dep.name}@${dep.version}${localFilePath}`
 }
