@@ -134,7 +134,7 @@ Limitations:
 # Troubleshooting
 
 ## fsevents
-If you have fsevents trouble, try nuking your node_modules and reinstalling with `npm install`
+If you notice that 1 or more CPU cores are running 100% because of `node` processes, it is probably webpack-dev-server having trouble with `fsevents` on MacOS. To fix it, run `npm install fsevents` in the `utopia/editor` directory. see https://github.com/webpack/webpack/issues/701#issuecomment-216082726
 
 ## Running this without Nix
 
