@@ -248,6 +248,7 @@ describe('Generating codeResultCache', () => {
       NO_OP,
       'incremental',
       null,
+      false,
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -262,6 +263,7 @@ describe('Generating codeResultCache', () => {
       NO_OP,
       'incremental',
       null,
+      false,
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -276,6 +278,7 @@ describe('Generating codeResultCache', () => {
       NO_OP,
       'incremental',
       null,
+      false,
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -292,6 +295,7 @@ describe('Creating require function', () => {
       NO_OP,
       'incremental',
       null,
+      false,
     )
 
     expect(codeResultCache.requireFn('/', './app', false)).toMatchSnapshot()
@@ -306,6 +310,7 @@ describe('Creating require function', () => {
       NO_OP,
       'incremental',
       null,
+      false,
     )
 
     expect(codeResultCache.requireFn('/', './app', false)).toMatchSnapshot()
@@ -321,6 +326,7 @@ describe('Creating require function', () => {
       NO_OP,
       'incremental',
       null,
+      false,
     )
 
     expect(() => codeResultCache.requireFn('/', './src/code', false)).toThrowErrorMatchingSnapshot()
@@ -335,6 +341,7 @@ describe('Creating require function', () => {
       NO_OP,
       'incremental',
       null,
+      false,
     )
 
     expect(() => codeResultCache.requireFn('/', 'foo', false)).toThrowErrorMatchingSnapshot()

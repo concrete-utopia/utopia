@@ -765,7 +765,7 @@ export interface ArbitraryJSBlock {
 
 export type TopLevelElement = UtopiaJSXComponent | ArbitraryJSBlock
 
-function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
+export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
   return {
     ...block,
     uniqueID: '',
@@ -896,7 +896,7 @@ export function elementInstanceMetadata(
   }
 }
 
-export type DetectedLayoutSystem = 'flex' | 'grid' | 'nonfixed' | 'flow' | 'none'
+export type DetectedLayoutSystem = 'flex' | 'grid' | 'flow' | 'none'
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
 
 export interface SpecialSizeMeasurements {
@@ -907,6 +907,7 @@ export interface SpecialSizeMeasurements {
   usesParentBounds: boolean
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
   layoutSystemForChildren: DetectedLayoutSystem
+  providesBoundsForChildren: boolean
   position: CSSPosition | null
   margin: Sides
   padding: Sides
@@ -925,6 +926,7 @@ export function specialSizeMeasurements(
   usesParentBounds: boolean,
   parentLayoutSystem: DetectedLayoutSystem,
   layoutSystemForChildren: DetectedLayoutSystem,
+  providesBoundsForChildren: boolean,
   position: CSSPosition | null,
   margin: Sides,
   padding: Sides,
@@ -942,6 +944,7 @@ export function specialSizeMeasurements(
     usesParentBounds,
     parentLayoutSystem,
     layoutSystemForChildren,
+    providesBoundsForChildren,
     position,
     margin,
     padding,
@@ -962,8 +965,9 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   zeroCanvasRect,
   true,
   false,
-  'nonfixed',
-  'nonfixed',
+  'flow',
+  'flow',
+  false,
   'static',
   sides(undefined, undefined, undefined, undefined),
   sides(undefined, undefined, undefined, undefined),

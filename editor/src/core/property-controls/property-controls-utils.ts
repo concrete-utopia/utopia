@@ -1,4 +1,5 @@
 import {
+  clearNodeModules,
   CodeResultCache,
   PropertyControlsInfo,
   UtopiaRequireFn,
@@ -40,20 +41,93 @@ import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-eleme
 import { ExportsInfo } from '../workers/ts/ts-worker'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
+export interface FullNodeModulesUpdate {
+  type: 'FULL_NODE_MODULES_UPDATE'
+  nodeModules: NodeModules
+}
+
+export function fullNodeModulesUpdate(nodeModules: NodeModules): FullNodeModulesUpdate {
+  return {
+    type: 'FULL_NODE_MODULES_UPDATE',
+    nodeModules: nodeModules,
+  }
+}
+
+export interface PartialNodeModulesUpdate {
+  type: 'PARTIAL_NODE_MODULES_UPDATE'
+  nodeModules: NodeModules
+}
+
+export function partialNodeModulesUpdate(nodeModules: NodeModules): PartialNodeModulesUpdate {
+  return {
+    type: 'PARTIAL_NODE_MODULES_UPDATE',
+    nodeModules: nodeModules,
+  }
+}
+
+export type NodeModulesUpdate = FullNodeModulesUpdate | PartialNodeModulesUpdate
+
+export function applyNodeModulesUpdate(
+  currentNodeModules: NodeModules,
+  update: NodeModulesUpdate,
+): NodeModules {
+  switch (update.type) {
+    case 'FULL_NODE_MODULES_UPDATE':
+      return update.nodeModules
+    case 'PARTIAL_NODE_MODULES_UPDATE':
+      return {
+        ...currentNodeModules,
+        ...update.nodeModules,
+      }
+    default:
+      const _exhaustiveCheck: never = update
+      throw new Error(`Unhandled type ${JSON.stringify(update)}`)
+  }
+}
+
+export function combineUpdates(
+  first: NodeModulesUpdate,
+  second: NodeModulesUpdate,
+): NodeModulesUpdate {
+  switch (second.type) {
+    case 'FULL_NODE_MODULES_UPDATE':
+      return second
+    case 'PARTIAL_NODE_MODULES_UPDATE':
+      switch (first.type) {
+        case 'FULL_NODE_MODULES_UPDATE':
+          return fullNodeModulesUpdate({
+            ...first.nodeModules,
+            ...second.nodeModules,
+          })
+        case 'PARTIAL_NODE_MODULES_UPDATE':
+          return partialNodeModulesUpdate({
+            ...first.nodeModules,
+            ...second.nodeModules,
+          })
+        default:
+          const _exhaustiveCheck: never = first
+          throw new Error(`Unhandled type ${JSON.stringify(first)}`)
+      }
+    default:
+      const _exhaustiveCheck: never = second
+      throw new Error(`Unhandled type ${JSON.stringify(second)}`)
+  }
+}
+
 export interface GetPropertyControlsInfoMessage {
   exportsInfo: ReadonlyArray<ExportsInfo>
-  nodeModules: NodeModules
+  nodeModulesUpdate: NodeModulesUpdate
   projectContents: ProjectContentTreeRoot
 }
 
 export function createGetPropertyControlsInfoMessage(
   exportsInfo: ReadonlyArray<ExportsInfo>,
-  nodeModules: NodeModules,
+  nodeModulesUpdate: NodeModulesUpdate,
   projectContents: ProjectContentTreeRoot,
 ): GetPropertyControlsInfoMessage {
   return {
     exportsInfo: exportsInfo,
-    nodeModules: nodeModules,
+    nodeModulesUpdate: nodeModulesUpdate,
     projectContents: projectContents,
   }
 }
@@ -319,6 +393,7 @@ export const PropertyControlsInfoIFrameID = 'property-controls-info-frame'
 let propertyControlsIFrameReady: boolean = false
 let propertyControlsIFrameAvailable: boolean = false
 let lastPropertyControlsInfoSendID: number | undefined = undefined
+let queuedNodeModulesUpdate: NodeModulesUpdate | null = null
 
 export function setPropertyControlsIFrameReady(value: boolean): void {
   propertyControlsIFrameReady = value
@@ -332,7 +407,28 @@ export function sendPropertyControlsInfoRequest(
   exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModules: NodeModules,
   projectContents: ProjectContentTreeRoot,
+  onlyProjectFiles: boolean,
 ): void {
+  let nodeModulesUpdate: NodeModulesUpdate
+  if (onlyProjectFiles) {
+    let notNodeModulesFiles: NodeModules = {}
+    forEachValue<NodeModules>((value, key) => {
+      if (typeof key === 'string' && !key.startsWith('/node_modules')) {
+        notNodeModulesFiles[key] = value
+      }
+    }, nodeModules)
+    nodeModulesUpdate = partialNodeModulesUpdate(clearNodeModules(notNodeModulesFiles))
+  } else {
+    nodeModulesUpdate = fullNodeModulesUpdate(clearNodeModules(nodeModules))
+  }
+
+  // Include any potentially not yet sent updates ahead of any potential scheduling so that
+  // later updates are applied in the correct order.
+  queuedNodeModulesUpdate =
+    queuedNodeModulesUpdate == null
+      ? nodeModulesUpdate
+      : combineUpdates(queuedNodeModulesUpdate, nodeModulesUpdate)
+
   function scheduleSend(): void {
     if (propertyControlsIFrameAvailable) {
       window.clearTimeout(lastPropertyControlsInfoSendID)
@@ -355,22 +451,17 @@ export function sendPropertyControlsInfoRequest(
           scheduleSend()
         } else {
           try {
-            // Need to clear evalResultCache because it may contain things which are not serializable.
-            const clearedNodeModules: NodeModules = objectMap((nodeModule) => {
-              if (isEsCodeFile(nodeModule)) {
-                return esCodeFile(nodeModule.fileContents, null)
-              } else {
-                return nodeModule
-              }
-            }, nodeModules)
-            contentWindow.postMessage(
-              createGetPropertyControlsInfoMessage(
-                exportsInfo,
-                clearedNodeModules,
-                projectContents,
-              ),
-              '*',
-            )
+            if (queuedNodeModulesUpdate != null) {
+              contentWindow.postMessage(
+                createGetPropertyControlsInfoMessage(
+                  exportsInfo,
+                  queuedNodeModulesUpdate,
+                  projectContents,
+                ),
+                '*',
+              )
+              queuedNodeModulesUpdate = null
+            }
           } catch (exception) {
             // Don't nuke the editor if there's an exception posting the message.
             // This can happen if a value can't be cloned when posted.

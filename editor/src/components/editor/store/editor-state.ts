@@ -512,8 +512,8 @@ export function modifyParseSuccessWithSimple(
     projectContainedOldSceneMetadata: success.projectContainedOldSceneMetadata,
     code: success.code,
     highlightBounds: {},
-    dependencyOrdering: success.dependencyOrdering,
     jsxFactoryFunction: success.jsxFactoryFunction,
+    combinedTopLevelArbitraryBlock: success.combinedTopLevelArbitraryBlock,
   }
 }
 
@@ -1039,7 +1039,17 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
     projectContents: {},
-    codeResultCache: generateCodeResultCache({}, {}, {}, [], {}, dispatch, 'full-build', null),
+    codeResultCache: generateCodeResultCache(
+      {},
+      {},
+      {},
+      [],
+      {},
+      dispatch,
+      'full-build',
+      null,
+      true,
+    ),
     propertyControlsInfo: {},
     nodeModules: {
       skipDeepFreeze: true,
@@ -1324,6 +1334,7 @@ export function editorModelFromPersistentModel(
       dispatch,
       'full-build',
       null,
+      true,
     ),
     projectContents: persistentModel.projectContents,
     propertyControlsInfo: getControlsForExternalDependencies(npmDependencies),

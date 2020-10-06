@@ -148,13 +148,13 @@ export interface UiJsxCanvasProps {
   walkDOM: boolean
   imports: Imports
   topLevelElementsIncludingScenes: Array<TopLevelElement>
-  dependencyOrdering: Array<string>
   jsxFactoryFunction: string | null
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean // FOR ui-jsx-canvas.spec TESTS ONLY!!!! this prevents us from having to update the legacy test snapshots
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -172,7 +172,6 @@ export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactCl
 
 const emptyImports: Imports = {}
 const emptyTopLevelElements: Array<TopLevelElement> = []
-const emptyDependencyOrdering: Array<string> = []
 
 export function pickUiJsxCanvasProps(
   editor: EditorState,
@@ -195,16 +194,16 @@ export function pickUiJsxCanvasProps(
 
     let imports: Imports = emptyImports
     let topLevelElementsIncludingScenes: Array<TopLevelElement> = emptyTopLevelElements
-    let dependencyOrdering: Array<string> = emptyDependencyOrdering
     let jsxFactoryFunction: string | null = null
+    let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
 
     if (uiFile != null && isParseSuccess(uiFile.fileContents)) {
       const success = uiFile.fileContents.value
       const transientCanvasState = derived.canvas.transientState
-      dependencyOrdering = success.dependencyOrdering
       imports = uiFile.fileContents.value.imports
       topLevelElementsIncludingScenes = success.topLevelElements
       jsxFactoryFunction = success.jsxFactoryFunction
+      combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
       const transientFileState = transientCanvasState.fileState
       if (transientFileState != null) {
         imports = transientFileState.imports
@@ -245,13 +244,13 @@ export function pickUiJsxCanvasProps(
       walkDOM: walkDOM,
       imports: imports,
       topLevelElementsIncludingScenes: topLevelElementsIncludingScenes,
-      dependencyOrdering: dependencyOrdering,
       jsxFactoryFunction: jsxFactoryFunction,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       canvasIsLive: isLiveMode(editor.mode),
       shouldIncludeCanvasRootInTheSpy: true,
       linkTags: linkTags,
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   }
 }
@@ -389,33 +388,6 @@ function updateMutableUtopiaContextWithNewProps(
   ref.current = newProps
 }
 
-export function reorderTopLevelElements(
-  elements: Array<TopLevelElement>,
-  ordering: Array<string>,
-): Array<TopLevelElement> {
-  let elementsByKey = Utils.arrayToObject(elements, (element) => {
-    if (isUtopiaJSXComponent(element)) {
-      return element.name
-    } else {
-      return element.uniqueID
-    }
-  })
-  let result: Array<TopLevelElement> = []
-  // Add elements as they appear in the ordering.
-  Utils.fastForEach(ordering, (orderingKey) => {
-    if (orderingKey in elementsByKey) {
-      const element = elementsByKey[orderingKey]
-      result.push(element)
-      delete elementsByKey[orderingKey]
-    }
-  })
-  // Cleanup any remaining elements.
-  Utils.fastForEach(Object.values(elementsByKey), (element) => {
-    result.push(element)
-  })
-  return result
-}
-
 function cssImportsFromImports(imports: Imports): Array<string> {
   let result: Array<string> = []
   Utils.fastForEach(Object.keys(imports), (importSource) => {
@@ -442,13 +414,13 @@ export const UiJsxCanvas = betterReactMemo(
       onDomReport,
       topLevelElementsIncludingScenes,
       imports,
-      dependencyOrdering,
       jsxFactoryFunction,
       clearErrors,
       clearConsoleLogs,
       addToConsoleLogs,
       canvasIsLive,
       linkTags,
+      combinedTopLevelArbitraryBlock,
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
@@ -486,11 +458,6 @@ export const UiJsxCanvas = betterReactMemo(
     }
 
     if (requireFn != null) {
-      const orderedTopLevelElements = reorderTopLevelElements(
-        topLevelElementsIncludingScenes,
-        dependencyOrdering,
-      )
-
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => requireFn(importOrigin, toImport, false),
         [requireFn],
@@ -512,7 +479,7 @@ export const UiJsxCanvas = betterReactMemo(
       let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
 
       // Make sure there is something in scope for all of the top level components
-      Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+      Utils.fastForEach(topLevelElementsIncludingScenes, (topLevelElement) => {
         if (isUtopiaJSXComponent(topLevelElement)) {
           topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
           if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
@@ -529,11 +496,9 @@ export const UiJsxCanvas = betterReactMemo(
       }
 
       // First make sure everything is in scope
-      Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-        if (isArbitraryJSBlock(topLevelElement)) {
-          runBlockUpdatingScope(requireResult, topLevelElement, executionScope)
-        }
-      })
+      if (combinedTopLevelArbitraryBlock != null) {
+        runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
+      }
 
       updateMutableUtopiaContextWithNewProps(mutableContextRef, {
         requireResult: requireResult,

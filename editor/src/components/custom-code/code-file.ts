@@ -11,9 +11,15 @@ import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
 import {
   getControlsForExternalDependencies,
+  NodeModulesUpdate,
   sendPropertyControlsInfoRequest,
 } from '../../core/property-controls/property-controls-utils'
-import { NodeModules, esCodeFile, ProjectContents } from '../../core/shared/project-file-types'
+import {
+  NodeModules,
+  esCodeFile,
+  ProjectContents,
+  isEsCodeFile,
+} from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
 import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
@@ -154,6 +160,16 @@ export function incorporateBuildResult(
   })
 }
 
+export function clearNodeModules(nodeModules: NodeModules): NodeModules {
+  return objectMap((nodeModule) => {
+    if (isEsCodeFile(nodeModule)) {
+      return esCodeFile(nodeModule.fileContents, null)
+    } else {
+      return nodeModule
+    }
+  }, nodeModules)
+}
+
 export function generateCodeResultCache(
   projectContents: ProjectContentTreeRoot,
   existingModules: MultiFileBuildResult,
@@ -163,16 +179,25 @@ export function generateCodeResultCache(
   dispatch: EditorDispatch,
   buildType: BuildType,
   mainUiFileName: string | null,
+  onlyProjectFiles: boolean,
 ): CodeResultCache {
   // Makes the assumption that `fullBuild` and `updatedModules` are in line
   // with each other.
-  let modules: MultiFileBuildResult =
-    buildType === 'full-build'
-      ? { ...updatedModules }
-      : {
-          ...existingModules,
-          ...updatedModules,
-        }
+  let projectModules: MultiFileBuildResult
+  switch (buildType) {
+    case 'full-build':
+      projectModules = { ...updatedModules }
+      break
+    case 'incremental':
+      projectModules = {
+        ...existingModules,
+        ...updatedModules,
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = buildType
+      throw new Error(`Unhandled type ${JSON.stringify(buildType)}`)
+  }
 
   // FIXME Rip this awful hack out after we tackle the dependency graph work!
   // Sneaky hack - if the currently edited file is a canvas file, we don't re-evaluate any other files
@@ -187,11 +212,11 @@ export function generateCodeResultCache(
     // MUTATION ALERT! This function is mutating editorState.nodeModules.files by inserting the project files into it
     // FIXME Remove this mutation with the dependency graph work and store the eval cache for project files elsewhere
     // (maybe even in the graph itself)
-    incorporateBuildResult(nodeModules, modules)
+    incorporateBuildResult(nodeModules, projectModules)
   }
 
   // Trigger async call to build the property controls info.
-  sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents)
+  sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents, onlyProjectFiles)
 
   const requireFn = getMemoizedRequireFn(nodeModules, dispatch)
 
@@ -199,7 +224,7 @@ export function generateCodeResultCache(
   Utils.fastForEach(exportsInfo, (result) => {
     cache[result.filename] = {
       exports: result.exportTypes,
-      ...modules[result.filename],
+      ...projectModules[result.filename],
     }
   })
 
@@ -209,7 +234,7 @@ export function generateCodeResultCache(
     cache: cache,
     error: null,
     requireFn: requireFn,
-    projectModules: modules,
+    projectModules: projectModules,
   }
 }
 
