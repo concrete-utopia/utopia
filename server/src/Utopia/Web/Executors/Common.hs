@@ -277,8 +277,7 @@ cachePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSi
 getPackagerContent :: QSem -> Text -> Text -> Maybe UTCTime -> IO (Maybe (BL.ByteString, UTCTime))
 getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifModifiedSince = do
   cachePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSince $ do
-    filesAndContent <- withInstalledProject semaphore javascriptPackageName javascriptPackageVersion $ do
-      getModuleAndDependenciesFiles javascriptPackageName
+    filesAndContent <- withInstalledProject semaphore javascriptPackageName javascriptPackageVersion getModuleAndDependenciesFiles
     let encodingResult = toEncoding $ M.singleton contentsText filesAndContent
     return $ toLazyByteString $ fromEncoding encodingResult
 

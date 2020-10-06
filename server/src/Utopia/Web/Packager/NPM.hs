@@ -37,15 +37,16 @@ withInstalledProject semaphore jsPackageName jsPackageVersion withInstalledPath 
 isRelevantFilename :: FilePath -> Bool
 isRelevantFilename path = isSuffixOf "package.json" path || isSuffixOf ".d.ts" path || isSuffixOf ".js" path
 
-data FileContentOrPlaceholder = FileContent Text | Placeholder
+data FileContentOrPlaceholder = FileContent Text | Placeholder 
+                              deriving (Eq)
 type FilesAndContents = Map.HashMap Text FileContentOrPlaceholder
 
 instance ToJSON FileContentOrPlaceholder where
   toJSON Placeholder        = toJSON ("PLACEHOLDER_FILE" :: Text)
   toJSON (FileContent text) = object ["content" .= text]
 
-getRelevantFiles :: FilePath -> IO FilesAndContents
-getRelevantFiles projectPath = do
+getModuleAndDependenciesFiles :: FilePath -> IO FilesAndContents
+getModuleAndDependenciesFiles projectPath = do
   pathWalkAccumulate projectPath $ \dir _ files -> do
     let strippedDir = fromMaybe dir $ stripPrefix projectPath dir
     (flip foldMap) files $ \file -> do
@@ -54,9 +55,3 @@ getRelevantFiles projectPath = do
       let fullFilename = projectPath </> dir </> file
       fileContent <- if relevant then fmap FileContent $ T.readFile fullFilename else pure Placeholder
       return $ Map.singleton (toS entryFilename) fileContent
-
-getModuleAndDependenciesFiles :: Text -> FilePath -> IO FilesAndContents
-getModuleAndDependenciesFiles _ projectPath = do
-  relevantFiles <- getRelevantFiles projectPath
-  let combinedResult = relevantFiles
-  return combinedResult
