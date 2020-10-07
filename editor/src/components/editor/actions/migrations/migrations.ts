@@ -1,4 +1,9 @@
-import { PersistentModel, EditorTab } from '../../store/editor-state'
+import {
+  PersistentModel,
+  EditorTab,
+  modifyParseSuccessWithSimple,
+  modifyOpenJSXElements,
+} from '../../store/editor-state'
 import { objectMap } from '../../../../core/shared/object-utils'
 import {
   isUIJSFile,
@@ -9,12 +14,14 @@ import {
   CanvasMetadataParseResult,
   isCodeFile,
 } from '../../../../core/shared/project-file-types'
-import { isRight, right } from '../../../../core/shared/either'
+import { eitherToMaybe, isRight, right } from '../../../../core/shared/either'
 import { convertScenesToUtopiaCanvasComponent } from '../../../../core/model/scene-utils'
 import { codeFile } from '../../../../core/model/project-file-utils'
-import { contentsToTree } from '../../../assets'
+import { contentsToTree, treeToContents } from '../../../assets'
+import { isJSXElement, transformAllElements } from '../../../../core/shared/element-template'
+import { jsxSimpleAttributeToValue } from '../../../../core/shared/jsx-attributes'
 
-export const CURRENT_PROJECT_VERSION = 5
+export const CURRENT_PROJECT_VERSION = 6
 
 export function applyMigrations(
   persistentModel: PersistentModel,
@@ -24,7 +31,8 @@ export function applyMigrations(
   const version3 = migrateFromVersion2(version2)
   const version4 = migrateFromVersion3(version3)
   const version5 = migrateFromVersion4(version4)
-  return version5
+  const version6 = migrateFromVersion5(version5)
+  return version6
 }
 
 function migrateFromVersion0(
@@ -208,6 +216,58 @@ function migrateFromVersion4(
       ...persistentModel,
       projectVersion: 5,
       projectContents: contentsToTree(persistentModel.projectContents as any),
+    }
+  }
+}
+
+function migrateFromVersion5(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 6 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 5) {
+    return persistentModel as any
+  } else {
+    const updatedFiles = objectMap((file: ProjectFile, fileName) => {
+      if (isUIJSFile(file) && isParseSuccess(file.fileContents)) {
+        const updatedParseSuccess = modifyParseSuccessWithSimple((s) => {
+          const components = transformAllElements(s.utopiaComponents, (element) => {
+            if (isJSXElement(element) && element.props['layout'] != null) {
+              const hasPinnedSystem =
+                eitherToMaybe(jsxSimpleAttributeToValue(element.props['layout']))?.layoutSystem ===
+                'pinSystem'
+              if (hasPinnedSystem) {
+                const updatedProps = { ...element.props }
+                delete updatedProps['layout']
+                return {
+                  ...element,
+                  props: updatedProps,
+                }
+              } else {
+                return element
+              }
+            } else {
+              return element
+            }
+          })
+          return {
+            ...s,
+            utopiaComponents: components,
+          }
+        }, file.fileContents.value)
+        return {
+          ...file,
+          fileContents: {
+            ...file.fileContents,
+            value: updatedParseSuccess,
+          },
+        }
+      } else {
+        return file
+      }
+    }, treeToContents(persistentModel.projectContents))
+    return {
+      ...persistentModel,
+      projectVersion: 6,
+      projectContents: contentsToTree(updatedFiles),
     }
   }
 }

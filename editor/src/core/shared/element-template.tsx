@@ -549,6 +549,29 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
   }
 }
 
+export function transformAllElements(
+  components: Array<UtopiaJSXComponent>,
+  transform: (element: JSXElementChild) => JSXElementChild,
+): Array<UtopiaJSXComponent> {
+  function innerTransform(element: JSXElementChild): JSXElementChild {
+    if (isJSXElement(element) || isJSXFragment(element)) {
+      const updatedChildren = element.children.map(innerTransform)
+      return transform({
+        ...element,
+        children: updatedChildren,
+      })
+    } else {
+      return transform(element)
+    }
+  }
+  return components.map((component) => {
+    return {
+      ...component,
+      rootElement: innerTransform(component.rootElement),
+    }
+  })
+}
+
 export function jsxElement(
   name: JSXElementName | string,
   props: JSXAttributes,
