@@ -35,12 +35,10 @@ export function defaultViewElement(uid: string): JSXElement {
     jsxElementName('View', []),
     {
       style: jsxAttributeValue({
+        position: 'absolute',
         backgroundColor: '#0091FFAA',
       }),
       'data-uid': jsxAttributeValue(uid),
-      layout: jsxAttributeValue({
-        layoutSystem: 'pinSystem',
-      }),
     },
     [],
     null,
@@ -61,19 +59,36 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
   )
 }
 
-export function defaultTransparentViewElement(uid: string, layoutSystem: LayoutSystem): JSXElement {
-  return jsxElement(
-    jsxElementName('View', []),
-    {
-      layout: jsxAttributeValue({
-        layoutSystem: layoutSystem,
-      }),
-      style: jsxAttributeValue({}),
-      'data-uid': jsxAttributeValue(uid),
-    },
-    [],
-    null,
-  )
+export function defaultTransparentViewElement(
+  uid: string,
+  layoutSystem: LayoutSystem | null,
+): JSXElement {
+  if (layoutSystem != null) {
+    return jsxElement(
+      jsxElementName('View', []),
+      {
+        layout: jsxAttributeValue({
+          layoutSystem: layoutSystem,
+        }),
+        style: jsxAttributeValue({}),
+        'data-uid': jsxAttributeValue(uid),
+      },
+      [],
+      null,
+    )
+  } else {
+    return jsxElement(
+      jsxElementName('View', []),
+      {
+        style: jsxAttributeValue({
+          position: 'absolute',
+        }),
+        'data-uid': jsxAttributeValue(uid),
+      },
+      [],
+      null,
+    )
+  }
 }
 
 export function defaultTextElement(uid: string): JSXElement {
@@ -124,12 +139,10 @@ export function defaultDivElement(uid: string): JSXElement {
     jsxElementName('div', []),
     {
       style: jsxAttributeValue({
+        position: 'absolute',
         backgroundColor: '#0091FFAA',
       }),
       'data-uid': jsxAttributeValue(uid),
-      layout: jsxAttributeValue({
-        layoutSystem: 'pinSystem',
-      }),
     },
     [],
     null,

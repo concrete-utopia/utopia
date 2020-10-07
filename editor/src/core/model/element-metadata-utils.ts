@@ -1576,7 +1576,7 @@ export function getScenePropsOrElementAttributes(
     return null
   } else {
     return foldEither(
-      (sceneMetadata) => left(sceneMetadata.container),
+      (sceneMetadata) => left(sceneMetadata.style),
       (elementMetadata) =>
         foldEither(
           () => null,

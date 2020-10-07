@@ -254,9 +254,9 @@ export const LayoutHelpers = {
   getLayoutSystemFromAttributes(props: PropsOrJSXAttributes): Either<string, LayoutSystem> {
     return getSimpleAttributeAtPath(props, createLayoutPropertyPath('LayoutSystem')) // TODO LAYOUT investigate if we should use the DOM walker results here
   },
-  getLayoutSystemFromProps(props: PropsOrJSXAttributes): LayoutSystem {
+  getLayoutSystemFromProps(props: PropsOrJSXAttributes): LayoutSystem | null {
     const parsedLayoutSystem = this.getLayoutSystemFromAttributes(props)
-    return isRight(parsedLayoutSystem) ? parsedLayoutSystem.value : LayoutSystem.PinSystem
+    return isRight(parsedLayoutSystem) ? parsedLayoutSystem.value : null
   },
   setLayoutAttribute: (newValue: LayoutSystem) => (
     props: JSXAttributes,

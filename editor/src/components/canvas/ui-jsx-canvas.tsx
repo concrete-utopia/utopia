@@ -48,7 +48,6 @@ import { getOrDefaultScenes } from '../../core/model/project-file-utils'
 import {
   Imports,
   InstancePath,
-  SceneContainer,
   SceneMetadata,
   ScenePath,
   TemplatePath,
@@ -583,7 +582,6 @@ function getStoryboardRoot(
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements = {
     component: BakedInStoryboardVariableName,
     sceneResizesContent: false,
-    container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
     scenePath: EmptyScenePathForStoryboard,
     templatePath: TP.instancePath([], []),
     globalFrame: null,
@@ -793,7 +791,6 @@ interface SceneRootProps {
   componentProps: MapLike<any>
   style: React.CSSProperties
   jsxFactoryFunctionName: string | null
-  container: SceneContainer
   component: string | null
   sceneResizesContent: boolean
 
@@ -818,7 +815,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
     fileBlobs,
     componentProps,
     style,
-    container,
     jsxFactoryFunctionName,
     component,
     sceneResizesContent,
@@ -835,7 +831,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
   metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
     scenePath: scenePath,
     templatePath: templatePath,
-    container: container,
     component: component,
     sceneResizesContent: sceneResizesContent,
     globalFrame: null, // the real frame comes from the DOM walker
@@ -895,9 +890,6 @@ const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
         data-utopia-scene-id={TP.toString(scenePath)}
         data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
         style={sceneStyle}
-        layout={{
-          ...container,
-        }}
       >
         {rootElement}
       </View>
@@ -992,7 +984,6 @@ function renderCoreElement(
       <SceneRoot
         content={rootComponent} // this is the child component
         componentProps={sceneProps.props}
-        container={sceneProps.layout}
         hiddenInstances={hiddenInstances}
         jsxFactoryFunctionName={jsxFactoryFunctionName}
         fileBlobs={fileBlobs}

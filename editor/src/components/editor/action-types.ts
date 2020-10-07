@@ -434,7 +434,7 @@ export type ResetPins = {
 export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: TemplatePath[]
-  layoutSystem: LayoutSystem
+  layoutSystem: LayoutSystem | null
 }
 
 export interface UnwrapGroupOrView {
