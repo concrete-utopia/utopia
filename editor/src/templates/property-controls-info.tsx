@@ -17,9 +17,11 @@ import type { ProjectContents } from '../core/shared/project-file-types'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { createBundle } from '../core/workers/bundler-promise'
 import {
+  applyNodeModulesUpdate,
   createGetPropertyControlsInfoMessage,
   getControlsForExternalDependencies,
   GetPropertyControlsInfoMessage,
+  NodeModulesUpdate,
 } from '../core/property-controls/property-controls-utils'
 import { fastForEach } from '../core/shared/utils'
 import { ExportsInfo } from '../core/workers/ts/ts-worker'
@@ -34,7 +36,7 @@ function fastPropertyControlsParse(value: unknown): ParseResult<GetPropertyContr
   return applicative3Either(
     createGetPropertyControlsInfoMessage,
     objectKeyParser(parseAny, 'exportsInfo')(value),
-    objectKeyParser(parseAny, 'nodeModules')(value),
+    objectKeyParser(parseAny, 'nodeModulesUpdate')(value),
     objectKeyParser(parseAny, 'projectContents')(value),
   )
 }
@@ -43,10 +45,11 @@ const initPropertyControls = () => {
   const bundlerWorker = new NewBundlerWorker(new RealBundlerWorker())
 
   let lastMessage: GetPropertyControlsInfoMessage | null = null
+  let currentNodeModules: NodeModules = {}
 
   const modelUpdated = async (model: GetPropertyControlsInfoMessage) => {
     if (!R.equals(lastMessage, model)) {
-      processPropertyControls(model.projectContents, model.nodeModules, model.exportsInfo)
+      processPropertyControls(model.projectContents, model.nodeModulesUpdate, model.exportsInfo)
     }
   }
 
@@ -61,11 +64,12 @@ const initPropertyControls = () => {
 
   const processPropertyControls = async (
     projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
+    nodeModulesUpdate: NodeModulesUpdate,
     exportsInfo: ReadonlyArray<ExportsInfo>,
   ) => {
+    currentNodeModules = applyNodeModulesUpdate(currentNodeModules, nodeModulesUpdate)
     const npmDependencies = dependenciesWithEditorRequirements(projectContents)
-    const resolvedNpmDependencies = resolvedDependencyVersions(npmDependencies, nodeModules)
+    const resolvedNpmDependencies = resolvedDependencyVersions(npmDependencies, currentNodeModules)
     /**
      * please note that we are passing in an empty object instead of the .d.ts files
      * the reason for this is that we only use the bundler as a transpiler here
@@ -79,11 +83,11 @@ const initPropertyControls = () => {
       await createBundle(bundlerWorker, emptyTypeDefinitions, projectContents)
     ).buildResult
 
-    incorporateBuildResult(nodeModules, bundledProjectFiles)
+    incorporateBuildResult(currentNodeModules, bundledProjectFiles)
     const requireFn = getRequireFn((modulesToAdd: NodeModules) => {
       // MUTATION
-      Object.assign(nodeModules, modulesToAdd)
-    }, nodeModules)
+      Object.assign(currentNodeModules, modulesToAdd)
+    }, currentNodeModules)
 
     const exportValues = getExportValuesFromAllModules(bundledProjectFiles, requireFn)
 

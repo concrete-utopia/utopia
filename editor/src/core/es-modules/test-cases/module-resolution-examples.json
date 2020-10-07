@@ -155,6 +155,16 @@
       "isModule": false,
       "requires": []
     },
+    "/node_modules/es-module-only-package/index.js": {
+      "content": "import { other } from './module.js';\nexport const hello = 'hello!';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/es-module-only-package/module.js": {
+      "content": "export const other = 'Other';",
+      "isModule": false,
+      "requires": []
+    },
     "my-package-with-package-root/src/deep-folder/moduleA.js": {
       "content": "exports.cica = 'kitten';",
       "isModule": false,

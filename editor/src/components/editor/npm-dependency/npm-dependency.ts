@@ -39,7 +39,7 @@ interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
 }
 
-const packageNotFound: PackageNotFound = deepFreeze({
+export const packageNotFound: PackageNotFound = deepFreeze({
   type: 'PACKAGE_NOT_FOUND',
 })
 
@@ -62,7 +62,7 @@ interface VersionLookupSuccess {
   version: string
 }
 
-function versionLookupSuccess(version: string): VersionLookupSuccess {
+export function versionLookupSuccess(version: string): VersionLookupSuccess {
   return {
     type: 'VERSION_LOOKUP_SUCCESS',
     version: version,
@@ -114,15 +114,15 @@ async function packageLookupCall(
   }
 }
 
-export async function findLatestVersion(packageName: string): Promise<VersionLookupResult> {
+async function findTaggedVersion(packageName: string, tag: string): Promise<VersionLookupResult> {
   const metadata = await packageLookupCall(packageName, null)
   switch (metadata.type) {
     case 'PACKAGE_LOOKUP_SUCCESS':
-      const latestVersion = Utils.path(['json', 'dist-tags', 'latest'], metadata)
-      if (latestVersion == null || typeof latestVersion != 'string') {
+      const taggedVersion = Utils.path(['json', 'dist-tags', tag], metadata)
+      if (taggedVersion == null || typeof taggedVersion != 'string') {
         return Promise.reject(`Received invalid content for package ${packageName}`)
       } else {
-        return Promise.resolve(versionLookupSuccess(latestVersion))
+        return Promise.resolve(versionLookupSuccess(taggedVersion))
       }
     case 'PACKAGE_NOT_FOUND':
       return packageNotFound
@@ -132,19 +132,110 @@ export async function findLatestVersion(packageName: string): Promise<VersionLoo
   }
 }
 
+export const findLatestVersion = (packageName: string): Promise<VersionLookupResult> =>
+  findTaggedVersion(packageName, 'latest')
+
+type DependencyVersionType = 'GITHUB' | 'LOCAL' | 'SEMVER' | 'TAG' | 'URL'
+
+function versionIsGitHubRepo(v: string): boolean {
+  // To satisfy https://docs.npmjs.com/files/package.json#github-urls
+  const parts = v.split('/')
+  if (parts.length === 1) {
+    return false
+  } else if (parts.length === 2) {
+    return true
+  } else {
+    // If there is more than one forward slash, there must be a '#' immediately after the <user>/<repo> to indicate a commit-ish suffix
+    return parts[1].includes('#')
+  }
+}
+
+function versionIsLocal(v: string): boolean {
+  return (
+    v.startsWith('/') ||
+    v.startsWith('./') ||
+    v.startsWith('~/') ||
+    v.startsWith('../') ||
+    v.startsWith('file:')
+  )
+}
+
+function versionIsSemver(v: string): boolean {
+  return Semver.validRange(v) != null // Don't. Just don't.
+}
+
+function versionIsUrl(v: string): boolean {
+  return v.split('://').length === 2
+}
+
+export function getVersionType(version: string): DependencyVersionType {
+  if (versionIsUrl(version)) {
+    return 'URL'
+  } else if (versionIsGitHubRepo(version)) {
+    return 'GITHUB'
+  } else if (versionIsSemver(version)) {
+    return 'SEMVER'
+  } else if (versionIsLocal(version)) {
+    return 'LOCAL'
+  } else {
+    // If all else fails, assume it is a tagged version
+    return 'TAG'
+  }
+}
+
+async function findMatchingSemverVersion(
+  packageName: string,
+  versionRange: string,
+): Promise<VersionLookupResult> {
+  const encodedName = encodeURIComponent(packageName).replace(/^%40/, '@')
+  const response = await fetch(`${UTOPIA_BACKEND}javascript/package/versions/${encodedName}`)
+
+  if (response.ok) {
+    const versionsArray: Array<string> = await response.json()
+    const satisfyingVersion = Semver.maxSatisfying(versionsArray, versionRange)
+    return satisfyingVersion == null ? packageNotFound : versionLookupSuccess(satisfyingVersion)
+  } else if (response.status === 404) {
+    return packageNotFound
+  } else {
+    return Promise.reject(`Received an error for package ${packageName}@${versionRange}`)
+  }
+}
+
+export async function findMatchingVersion(
+  packageName: string,
+  version: string,
+): Promise<VersionLookupResult> {
+  const versionType = getVersionType(version)
+  switch (versionType) {
+    case 'GITHUB':
+      return Promise.resolve(packageNotFound)
+    case 'LOCAL':
+      return Promise.resolve(packageNotFound)
+    case 'SEMVER':
+      return findMatchingSemverVersion(packageName, version)
+    case 'TAG':
+      return findTaggedVersion(packageName, version)
+    case 'URL':
+      return Promise.resolve(packageNotFound)
+    default:
+      const _exhaustiveCheck: never = versionType
+      throw new Error(`Unhandled version type ${versionType}`)
+  }
+}
+
 export async function checkPackageVersionExists(
   packageName: string,
   version: string,
 ): Promise<VersionLookupResult> {
-  const metadata = await packageLookupCall(packageName, version)
-  switch (metadata.type) {
-    case 'PACKAGE_LOOKUP_SUCCESS':
+  const matchingVersion = await findMatchingVersion(packageName, version)
+  switch (matchingVersion.type) {
+    case 'VERSION_LOOKUP_SUCCESS':
       return versionLookupSuccess(version)
     case 'PACKAGE_NOT_FOUND':
       return packageNotFound
     default:
-      const _exhaustiveCheck: never = metadata
-      throw new Error(`Unhandled package lookup type ${JSON.stringify(metadata)}`)
+      const _exhaustiveCheck: never = matchingVersion
+      throw new Error(`Unhandled version lookup type ${JSON.stringify(matchingVersion)}`)
   }
 }
 

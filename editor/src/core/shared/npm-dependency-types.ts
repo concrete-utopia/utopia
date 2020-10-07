@@ -79,9 +79,11 @@ export interface PackagerServerFileDescriptor {
   content: string
 }
 
+export type PackagerServerFile = PackagerServerFileDescriptor | 'PLACEHOLDER_FILE'
+
 export interface PackagerServerResponse {
   contents: {
-    [filepath: string]: PackagerServerFileDescriptor
+    [filepath: string]: PackagerServerFile
   }
 }
 

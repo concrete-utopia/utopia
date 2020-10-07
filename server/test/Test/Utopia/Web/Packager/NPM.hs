@@ -63,13 +63,7 @@ npmSpec = do
   describe "getModuleAndDependenciesFiles" $ do
     it "should get a bunch of .js, .d.ts and package.json files" $ do
       semaphore <- newQSem 1
-      result <- withInstalledProject semaphore "react" "16.13.1" $ getModuleAndDependenciesFiles "react"
-      let sortedFilenames = sort $ Map.keys result
+      result <- withInstalledProject semaphore "react" "16.13.1" getModuleAndDependenciesFiles
+      let filteredResult = Map.filter (\v -> v /= Placeholder) result
+      let sortedFilenames = sort $ Map.keys filteredResult
       sortedFilenames `shouldBe` expectedFilenames
-  describe "getRelevantFiles" $ do
-    it "should get a bunch of .d.ts and package.json files" $ do
-      semaphore <- newQSem 1
-      result <- withInstalledProject semaphore "react" "16.13.1" getRelevantFiles
-      let sortedFilenames = sort $ Map.keys result
-      sortedFilenames `shouldBe` expectedFilenames
-

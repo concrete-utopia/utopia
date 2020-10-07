@@ -194,9 +194,6 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
       case 'grid':
         colorForLayoutType = 'rgba(255, 150, 50, 0.8)'
         break
-      case 'nonfixed':
-        colorForLayoutType = 'rgba(50, 255, 255, 0.8)'
-        break
       default:
         break
     }

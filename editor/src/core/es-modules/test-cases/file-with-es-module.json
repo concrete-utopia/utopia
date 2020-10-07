@@ -1,7 +1,7 @@
 {
   "contents": {
     "/node_modules/mypackage/index.js": {
-      "content": "export const cica = 'hello';",
+      "content": "export const hello = 'hello!';",
       "isModule": false,
       "requires": []
     },

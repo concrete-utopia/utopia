@@ -8,6 +8,7 @@ import * as UtopiaAPI from 'utopia-api'
 import * as UUIUI from 'uuiui'
 import * as ANTD from 'antd'
 import {
+  ArbitraryJSBlock,
   clearJSXElementUniqueIDs,
   MetadataWithoutChildren,
   TopLevelElement,
@@ -102,11 +103,6 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
     (success) => success.topLevelElements,
     parsedCode,
   )
-  const dependencyOrdering = foldEither(
-    (_) => [],
-    (success) => success.dependencyOrdering,
-    parsedCode,
-  )
   const jsxFactoryFunction = foldEither(
     (_) => null,
     (success) => success.jsxFactoryFunction,
@@ -114,6 +110,13 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
   )
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
   let consoleLogs: Array<ConsoleLog> = []
+
+  const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = foldEither(
+    (_) => null,
+    (success) => success.combinedTopLevelArbitraryBlock,
+    parsedCode,
+  )
+
   function clearConsoleLogs(): void {
     consoleLogs = []
   }
@@ -136,13 +139,13 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       walkDOM: false,
       imports: imports,
       topLevelElementsIncludingScenes: topLevelElements,
-      dependencyOrdering: dependencyOrdering,
       jsxFactoryFunction: jsxFactoryFunction,
       canvasIsLive: false,
       shouldIncludeCanvasRootInTheSpy: false,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   } else {
     canvasProps = {
@@ -156,13 +159,13 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       walkDOM: false,
       imports: imports,
       topLevelElementsIncludingScenes: topLevelElements,
-      dependencyOrdering: dependencyOrdering,
       jsxFactoryFunction: jsxFactoryFunction,
       canvasIsLive: false,
       shouldIncludeCanvasRootInTheSpy: false,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   }
 
@@ -1819,6 +1822,93 @@ export var storyboard = (
       static
       style={{ position: 'absolute', left: 406, top: 62, width: 212, height: 188 }}
       data-uid={'scene-aaa'}
+    />
+  </Storyboard>
+)`,
+    )
+  })
+
+  it('renders fine with two components that reference each other', () => {
+    testCanvasRender(
+      null,
+      `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+export var A = (props) => {
+  if (props.x === 0) {
+    return <div>great</div>
+  } else {
+    return <B data-uid={'bbb'} x={props.x - 1} />
+  }
+}
+
+export var B = (props) => {
+  if (props.x === 0) {
+    return <div>great</div>
+  } else {
+    return <A data-uid={'aaa'} x={props.x - 1} />
+  }
+}
+
+export var App = (props) => {
+  return (
+    <B data-uid={'BBB'} x={5} />
+  )
+}
+export var storyboard = (
+  <Storyboard data-uid={'${BakedInStoryboardUID}'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      data-uid={'scene'}
+    />
+  </Storyboard>
+)`,
+    )
+  })
+
+  it('renders fine with two circularly referencing arbitrary blocks', () => {
+    testCanvasRender(
+      null,
+      `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+function a(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return b(n - 1)
+  }
+}
+
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >{b(5)} - {a(5)}</div>
+  )
+}
+
+function b(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return a(n - 1)
+  }
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'${BakedInStoryboardUID}'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      data-uid={'scene'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
     />
   </Storyboard>
 )`,

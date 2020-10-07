@@ -1,7 +1,7 @@
 import * as TS from 'typescript'
 import { FlexParentProps, LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { Either, Left, Right, isRight, isLeft } from './either'
-import { TopLevelElement, UtopiaJSXComponent } from './element-template'
+import { ArbitraryJSBlock, TopLevelElement, UtopiaJSXComponent } from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
@@ -157,8 +157,8 @@ export interface ParseSuccess {
   projectContainedOldSceneMetadata: boolean
   code: string
   highlightBounds: HighlightBoundsForUids
-  dependencyOrdering: Array<string>
   jsxFactoryFunction: string | null
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
 }
 
 export function isParseSuccess(result: ParseResult): result is Right<ParseSuccess> {
@@ -312,8 +312,10 @@ export type ProjectFile = UIJSFile | CodeFile | ImageFile | Directory | AssetFil
 
 export type ProjectFileType = ProjectFile['type']
 
+export type NodeModuleFile = ESCodeFile | ESRemoteDependencyPlaceholder // TODO maybe ESCodeFile is too strict, eventually we want to have ProjectFile here
+
 export type NodeModules = {
-  [filepath: string]: ESCodeFile | ESRemoteDependencyPlaceholder // TODO maybe ESCodeFile is too strict, eventually we want to have ProjectFile here
+  [filepath: string]: NodeModuleFile
 }
 
 // Key here is the full filename.

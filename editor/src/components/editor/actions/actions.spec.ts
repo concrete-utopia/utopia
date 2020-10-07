@@ -112,7 +112,7 @@ describe('SET_PROP', () => {
       false,
       '',
       {},
-      [],
+      null,
       null,
     ),
   )
@@ -207,7 +207,7 @@ describe('SET_CANVAS_FRAMES', () => {
       false,
       '',
       {},
-      [],
+      null,
       null,
     ),
   )
@@ -273,7 +273,7 @@ describe('moveTemplate', () => {
         false,
         '',
         {},
-        [],
+        null,
         null,
       ),
     )
@@ -778,7 +778,16 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   const firstTopLevelElement = utopiaJSXComponent('App', true, null, [], rootElement, null)
   const fileForUI = uiJsFile(
     right(
-      parseSuccess(sampleDefaultImports, [firstTopLevelElement], left({}), false, '', {}, [], null),
+      parseSuccess(
+        sampleDefaultImports,
+        [firstTopLevelElement],
+        left({}),
+        false,
+        '',
+        {},
+        null,
+        null,
+      ),
     ),
     null,
     RevisionsState.BothMatch,
@@ -906,7 +915,17 @@ describe('LOAD', () => {
       model: loadedModel,
       nodeModules: {},
       packageResult: {},
-      codeResultCache: generateCodeResultCache({}, {}, {}, [], {}, NO_OP, 'full-build', null),
+      codeResultCache: generateCodeResultCache(
+        {},
+        {},
+        {},
+        [],
+        {},
+        NO_OP,
+        'full-build',
+        null,
+        false,
+      ),
       title: '',
       projectId: '',
       storedState: null,
