@@ -251,8 +251,11 @@ export const MetadataUtils = {
   },
   findSceneByTemplatePath(
     scenes: ComponentMetadata[],
-    path: TemplatePath,
+    path: TemplatePath | null,
   ): ComponentMetadata | null {
+    if (path == null) {
+      return null
+    }
     const scenePath = TP.scenePathForPath(path)
     return scenes.find((s) => TP.pathsEqual(s.scenePath, scenePath)) ?? null
   },
@@ -1482,6 +1485,19 @@ export const MetadataUtils = {
       for (const rootElement of componentMetadata.rootElements) {
         this.walkElementMetadata(rootElement, null, withEachElement)
       }
+    }
+  },
+  findContainingBlock(metadata: Array<ComponentMetadata>, view: TemplatePath): TemplatePath | null {
+    const specialSizeMeasurements = this.getElementByTemplatePathMaybe(metadata, view)
+      ?.specialSizeMeasurements
+    const parentPath = TP.parentPath(view)
+    if (parentPath == null || specialSizeMeasurements == null) {
+      return null
+    }
+    if (specialSizeMeasurements.immediateParentProvidesLayout) {
+      return parentPath
+    } else {
+      return this.findContainingBlock(metadata, parentPath)
     }
   },
 }

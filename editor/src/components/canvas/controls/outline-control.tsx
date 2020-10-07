@@ -11,7 +11,7 @@ import { anyInstanceYogaLayouted } from './select-mode/yoga-utils'
 import { MarginControls } from './margin-controls'
 import { PaddingControls } from './padding-controls'
 import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
-import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
+import { canvasRectangle, CanvasRectangle, offsetRect, rect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { KeysPressed } from '../../../utils/keyboard'
@@ -276,9 +276,34 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
           }
         })
 
+    const containingBlockHighlights = this.props.selectedViews.map((view) => {
+      const containingBlockParent = MetadataUtils.findContainingBlock(
+        this.props.componentMetadata,
+        view,
+      )
+      const containingRectangle = MetadataUtils.getElementByTemplatePathMaybe(
+        this.props.componentMetadata,
+        containingBlockParent,
+      )?.globalFrame
+      if (containingRectangle == null) {
+        return null
+      } else {
+        return (
+          <Outline
+            key={`containing-block`}
+            rect={containingRectangle}
+            offset={this.props.canvasOffset}
+            scale={this.props.scale}
+            color={colorTheme.brandPurple.value}
+          />
+        )
+      }
+    })
+
     return (
       <>
         {isFeatureEnabled('Flex Sibling Numbers') ? parentHighlights : null}
+        {isFeatureEnabled('Highlight Containing Block') ? containingBlockHighlights : null}
         {...selectionOutlines}
         {multiSelectOutline}
       </>
