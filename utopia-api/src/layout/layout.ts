@@ -12,7 +12,6 @@ import {
 import { Frame, FramePin } from './frame'
 
 export enum LayoutSystem {
-  PinSystem = 'pinSystem',
   Group = 'group',
 }
 

@@ -57,21 +57,6 @@ describe('Self TLWH', () => {
     `)
   })
 
-  it('a single View positions itself when the layoutSystem is set to pinSystem', () => {
-    const TestScene = () => (
-      <View
-        layout={{ layoutSystem: LayoutSystem.PinSystem }}
-        style={{ width: 123, height: 15, top: 10, left: 5 }}
-      />
-    )
-    expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div
-        style=\\"position: relative; width: 123px; height: 15px; left: 5px; top: 10px;\\"
-      ></div>
-      "
-    `)
-  })
-
   it('a single Rectangle positions itself', () => {
     const TestScene = () => <Rectangle style={{ width: 123, height: 15, top: 10, left: 5 }} />
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
@@ -103,9 +88,13 @@ describe('Default Parent', () => {
       </div>
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-                              "<div><div>Neither divs should have position: absolute</div></div>
-                              "
-                    `)
+      "<div layout=\\"[object Object]\\">
+        <div layout=\\"[object Object]\\">
+          Neither divs should have position: absolute
+        </div>
+      </div>
+      "
+    `)
   })
 
   it('Default View Child works', () => {
@@ -115,9 +104,11 @@ describe('Default Parent', () => {
       </div>
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-                                    "<div><div>Neither divs should have position: absolute</div></div>
-                                    "
-                        `)
+      "<div layout=\\"[object Object]\\">
+        <div>Neither divs should have position: absolute</div>
+      </div>
+      "
+    `)
   })
 
   it('View Parent View Child works', () => {
@@ -191,9 +182,6 @@ describe('Pin Parent', () => {
   it('TLWH pins work', () => {
     const TestScene = () => (
       <View
-        layout={{
-          layoutSystem: LayoutSystem.PinSystem,
-        }}
         style={{
           width: 100,
           height: 100,
@@ -238,29 +226,14 @@ describe('Pin Parent', () => {
       </View>
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div
-        style=\\"
-          position: relative;
-          width: 100px;
-          height: 100px;
-          left: 10px;
-          top: 10px;
-        \\"
-      >
+      "<div style=\\"width: 100px; height: 100px; top: 10px; left: 10px;\\">
         <div
-          style=\\"
-            position: absolute;
-            width: 99px;
-            height: 101px;
-            left: 13px;
-            top: 9px;
-          \\"
+          style=\\"width: 99px; height: 101px; left: 13px; top: 9px;\\"
           data-utopia-do-not-traverse=\\"true\\"
         ></div>
         <div
           style=\\"
             border-radius: 50%;
-            position: absolute;
             width: 99px;
             height: 101px;
             left: 13px;
@@ -270,24 +243,9 @@ describe('Pin Parent', () => {
         ></div>
         <img
           src=\\"test-url.jpg\\"
-          style=\\"
-            position: absolute;
-            width: 99px;
-            height: 101px;
-            left: 13px;
-            top: 9px;
-            object-fit: cover;
-          \\"
+          style=\\"width: 99px; height: 101px; left: 13px; top: 9px; object-fit: cover;\\"
         />
-        <div
-          style=\\"
-            position: absolute;
-            width: 99px;
-            height: 101px;
-            left: 13px;
-            top: 9px;
-          \\"
-        ></div>
+        <div style=\\"width: 99px; height: 101px; left: 13px; top: 9px;\\"></div>
       </div>
       "
     `)
@@ -296,8 +254,10 @@ describe('Pin Parent', () => {
   it("respects the user's style prop", () => {
     const TestScene = () => (
       <View
+        style={{
+          position: 'relative',
+        }}
         layout={{
-          layoutSystem: LayoutSystem.PinSystem,
           width: 100,
           height: 100,
           top: 10,
@@ -306,6 +266,7 @@ describe('Pin Parent', () => {
       >
         <View
           layout={{
+            position: 'absolute',
             top: 9,
             left: 13,
             width: 99,
@@ -318,6 +279,7 @@ describe('Pin Parent', () => {
         <div
           // @ts-ignore :(
           layout={{
+            position: 'absolute',
             top: 9,
             left: 13,
             width: 99,
@@ -349,6 +311,7 @@ describe('Pin Parent', () => {
           \\"
         ></div>
         <div
+          layout=\\"[object Object]\\"
           style=\\"
             position: absolute;
             width: 99px;
@@ -365,8 +328,10 @@ describe('Pin Parent', () => {
   it('TLWH pins work with generated children', () => {
     const TestScene = () => (
       <View
+        style={{
+          position: 'relative',
+        }}
         layout={{
-          layoutSystem: LayoutSystem.PinSystem,
           width: 100,
           height: 100,
           top: 10,
@@ -377,6 +342,7 @@ describe('Pin Parent', () => {
           <div
             key={i}
             style={{
+              position: 'absolute',
               top: i * 9,
               left: i * 13,
               width: 99,
@@ -431,8 +397,10 @@ describe('Pin Parent', () => {
   it('TLRB pins work', () => {
     const TestScene = () => (
       <View
+        style={{
+          position: 'relative',
+        }}
         layout={{
-          layoutSystem: LayoutSystem.PinSystem,
           width: 100,
           height: 100,
           top: 10,
@@ -441,6 +409,7 @@ describe('Pin Parent', () => {
       >
         <View
           style={{
+            position: 'absolute',
             top: 9,
             left: 13,
             right: 15,
@@ -449,6 +418,7 @@ describe('Pin Parent', () => {
         />
         <Rectangle
           style={{
+            position: 'absolute',
             top: 9,
             left: 13,
             right: 99,
@@ -457,6 +427,7 @@ describe('Pin Parent', () => {
         />
         <Ellipse
           style={{
+            position: 'absolute',
             top: 9,
             left: 13,
             right: 99,
@@ -466,6 +437,7 @@ describe('Pin Parent', () => {
         <img
           src='test-url.jpg'
           style={{
+            position: 'absolute',
             right: 9,
             bottom: 13,
             width: 99,
@@ -475,6 +447,7 @@ describe('Pin Parent', () => {
         />
         <div
           style={{
+            position: 'absolute',
             top: 9,
             left: 13,
             right: 15,
@@ -539,8 +512,10 @@ describe('Pin Parent', () => {
   it('centerX, centerY, width, height pins work', () => {
     const TestScene = () => (
       <View
+        style={{
+          position: 'relative',
+        }}
         layout={{
-          layoutSystem: LayoutSystem.PinSystem,
           width: 100,
           height: 100,
           top: 10,
@@ -553,6 +528,7 @@ describe('Pin Parent', () => {
             centerY: 33,
           }}
           style={{
+            position: 'absolute',
             width: 50,
             height: 50,
           }}
@@ -563,6 +539,7 @@ describe('Pin Parent', () => {
             centerY: 33,
           }}
           style={{
+            position: 'absolute',
             width: 50,
             height: 50,
           }}
@@ -589,6 +566,7 @@ describe('Pin Parent', () => {
           \\"
         ></div>
         <div
+          layout=\\"[object Object]\\"
           style=\\"
             position: absolute;
             width: 50px;
@@ -605,9 +583,6 @@ describe('Pin Parent', () => {
   it('Flex Child works', () => {
     const TestScene = () => (
       <View
-        layout={{
-          layoutSystem: LayoutSystem.PinSystem,
-        }}
         style={{
           width: 100,
           height: 100,
@@ -635,24 +610,9 @@ describe('Pin Parent', () => {
       </View>
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div
-        style=\\"
-          position: relative;
-          width: 100px;
-          height: 100px;
-          left: 10px;
-          top: 10px;
-        \\"
-      >
+      "<div style=\\"width: 100px; height: 100px; top: 10px; left: 10px;\\">
         <div
-          style=\\"
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            left: 13px;
-            top: 5px;
-            display: flex;
-          \\"
+          style=\\"width: 100px; height: 100px; left: 13px; top: 5px; display: flex;\\"
         >
           <div style=\\"width: 10px; height: 10px;\\"></div>
           <div></div>
@@ -665,9 +625,6 @@ describe('Pin Parent', () => {
   it('Group Child works', () => {
     const TestScene = () => (
       <View
-        layout={{
-          layoutSystem: LayoutSystem.PinSystem,
-        }}
         style={{
           width: 100,
           height: 100,
@@ -706,26 +663,10 @@ describe('Pin Parent', () => {
       </View>
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div
-        style=\\"
-          position: relative;
-          width: 100px;
-          height: 100px;
-          left: 10px;
-          top: 10px;
-        \\"
-      >
-        <div
-          style=\\"
-            position: absolute;
-            left: 20px;
-            top: 20px;
-            width: 40px;
-            height: 60px;
-          \\"
-        >
+      "<div style=\\"width: 100px; height: 100px; top: 10px; left: 10px;\\">
+        <div style=\\"position: absolute; left: 0; top: 0; width: 40px; height: 60px;\\">
           <div
-            style=\\"position: absolute; width: 10px; height: 10px; left: 0; top: 0;\\"
+            style=\\"width: 10px; height: 10px; top: 0; left: 0; position: absolute;\\"
           ></div>
           <div
             style=\\"
@@ -777,7 +718,6 @@ describe('Flex Parent', () => {
       >
         <View
           layout={{
-            layoutSystem: LayoutSystem.PinSystem,
             width: 100,
             height: 100,
           }}
@@ -803,25 +743,9 @@ describe('Flex Parent', () => {
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div style=\\"width: 100px; height: 100px; top: 10px; left: 10px; display: flex;\\">
-        <div style=\\"position: relative; width: 100px; height: 100px;\\">
-          <div
-            style=\\"
-              position: absolute;
-              width: 10px;
-              height: 10px;
-              left: 15px;
-              top: 15px;
-            \\"
-          ></div>
-          <div
-            style=\\"
-              position: absolute;
-              width: 10px;
-              height: 10px;
-              right: 15px;
-              bottom: 15px;
-            \\"
-          ></div>
+        <div style=\\"width: 100px; height: 100px;\\">
+          <div style=\\"width: 10px; height: 10px; left: 15px; top: 15px;\\"></div>
+          <div style=\\"width: 10px; height: 10px; right: 15px; bottom: 15px;\\"></div>
         </div>
       </div>
       "
@@ -841,7 +765,6 @@ describe('Flex Parent', () => {
       >
         <View
           layout={{
-            layoutSystem: LayoutSystem.PinSystem,
             width: 100,
             height: 100,
           }}
@@ -862,8 +785,8 @@ describe('Flex Parent', () => {
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div style=\\"width: 100px; height: 100px; top: 10px; left: 10px; display: flex;\\">
-        <div style=\\"position: relative; width: 100px; height: 100px;\\"></div>
-        <div style=\\"width: 10px; height: 10px;\\"></div>
+        <div style=\\"width: 100px; height: 100px;\\"></div>
+        <div layout=\\"[object Object]\\" style=\\"width: 10px; height: 10px;\\"></div>
         <div style=\\"width: 10px; height: 10px;\\"></div>
       </div>
       "
@@ -883,7 +806,6 @@ describe('Flex Parent', () => {
       >
         <View
           layout={{
-            layoutSystem: LayoutSystem.PinSystem,
             width: 100,
             height: 100,
             top: 5, // we expect this to be ignored
@@ -922,16 +844,11 @@ describe('Flex Parent', () => {
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div style=\\"width: 100px; height: 100px; top: 10px; left: 10px; display: flex;\\">
+        <div style=\\"width: 100px; height: 100px; left: 15px; top: 15px;\\"></div>
         <div
-          style=\\"
-            position: relative;
-            width: 100px;
-            height: 100px;
-            left: 15px;
-            top: 15px;
-          \\"
+          layout=\\"[object Object]\\"
+          style=\\"width: 10px; height: 10px; left: 15px; top: 15px;\\"
         ></div>
-        <div style=\\"width: 10px; height: 10px; left: 15px; top: 15px;\\"></div>
         <div style=\\"width: 10px; height: 10px; right: 15px; bottom: 15px;\\"></div>
       </div>
       "
@@ -956,9 +873,6 @@ describe('Flex Parent', () => {
             left: 13,
             width: 100,
             height: 100,
-          }}
-          layout={{
-            layoutSystem: LayoutSystem.PinSystem,
           }}
         />
       </View>
@@ -1022,25 +936,17 @@ describe('Flex Parent', () => {
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div style=\\"width: 100px; height: 100px; top: 10px; left: 10px; display: flex;\\">
-        <div
-          style=\\"
-            position: absolute;
-            left: 15px;
-            top: 15px;
-            width: 45px;
-            height: 45px;
-          \\"
-        >
+        <div style=\\"position: absolute; left: 0; top: 0; width: 45px; height: 45px;\\">
           <div
-            style=\\"position: absolute; width: 10px; height: 10px; left: 0; top: 0;\\"
+            style=\\"top: 0; left: 0; width: 10px; height: 10px; position: absolute;\\"
           ></div>
           <div
             style=\\"
-              position: absolute;
-              width: 10px;
-              height: 10px;
               left: 35px;
               top: 35px;
+              width: 10px;
+              height: 10px;
+              position: absolute;
             \\"
           ></div>
         </div>
@@ -1171,7 +1077,6 @@ describe('Flex Parent', () => {
         <View
           style={{ position: 'relative', top: 5, left: 13 }}
           layout={{
-            layoutSystem: LayoutSystem.PinSystem,
             crossBasis: 100, // We expect this to be ignored
             flexBasis: 100,
           }}
@@ -1213,12 +1118,11 @@ describe('Flex Parent', () => {
       >
         <View
           style={{
-            position: 'relative',
+            position: 'absolute',
             top: 5,
             left: 13,
           }}
           layout={{
-            layoutSystem: LayoutSystem.PinSystem,
             crossBasis: 100, // We expect this to be ignored
             flexBasis: 100,
           }}
@@ -1238,7 +1142,7 @@ describe('Flex Parent', () => {
         \\"
       >
         <div
-          style=\\"position: relative; flex-basis: 100px; left: 13px; top: 5px;\\"
+          style=\\"position: absolute; flex-basis: 100px; left: 13px; top: 5px;\\"
         ></div>
       </div>
       "
@@ -1428,9 +1332,11 @@ describe('divs work', () => {
       </div>
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-                              "<div id=\\"flex-row\\"><div id=\\"child\\"></div></div>
-                              "
-                    `)
+      "<div id=\\"flex-row\\" layout=\\"[object Object]\\">
+        <div id=\\"child\\" layout=\\"[object Object]\\"></div>
+      </div>
+      "
+    `)
   })
 })
 
@@ -1438,7 +1344,7 @@ describe('Pragma works', () => {
   it('Style from layout added as emotion css prop adds css-class to the div', () => {
     const TestScene = () => (
       <View
-        layout={{ layoutSystem: LayoutSystem.PinSystem, width: 123, height: 15, top: 10, left: 5 }}
+        layout={{ width: 123, height: 15, top: 10, left: 5 }}
         css={{
           border: '1px solid hotpink',
         }}
@@ -1447,7 +1353,7 @@ describe('Pragma works', () => {
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div
         class=\\"css-x47szw\\"
-        style=\\"position: relative; width: 123px; height: 15px; left: 5px; top: 10px;\\"
+        style=\\"width: 123px; height: 15px; left: 5px; top: 10px;\\"
       ></div>
       "
     `)
@@ -1455,7 +1361,6 @@ describe('Pragma works', () => {
   it('Style style added as emotion css prop adds css-class to the div', () => {
     const TestScene = () => (
       <View
-        layout={{ layoutSystem: LayoutSystem.PinSystem }}
         style={{ width: 123, height: 15, top: 10, left: 5 }}
         css={{
           border: '1px solid hotpink',
@@ -1464,7 +1369,7 @@ describe('Pragma works', () => {
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div
-        style=\\"position: relative; width: 123px; height: 15px; left: 5px; top: 10px;\\"
+        style=\\"width: 123px; height: 15px; top: 10px; left: 5px;\\"
         class=\\"css-x47szw\\"
       ></div>
       "
@@ -1534,7 +1439,11 @@ describe('FlexRow works', () => {
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div>
         <div id=\\"flex-row\\" class=\\"css-1pyjm1n\\">
-          <div id=\\"child\\" style=\\"flex-basis: 100px; height: 100px;\\"></div>
+          <div
+            id=\\"child\\"
+            layout=\\"[object Object]\\"
+            style=\\"flex-basis: 100px; height: 100px;\\"
+          ></div>
         </div>
       </div>
       "
@@ -1610,33 +1519,6 @@ describe('Layout props are copied to style', () => {
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div style=\\"top: 50px; bottom: 40px;\\"></div>
-      "
-    `)
-  })
-  it('View with pinSystem layout', () => {
-    const TestScene = () => (
-      <View
-        layout={{
-          layoutSystem: LayoutSystem.PinSystem,
-          centerY: 40,
-          centerX: 35,
-        }}
-        style={{
-          bottom: 50,
-          right: 20,
-        }}
-      />
-    )
-    expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div
-        style=\\"
-          position: relative;
-          left: calc(20px - calc(50% - 35px - 20px) * 2);
-          top: calc(50px - calc(50% - 40px - 50px) * 2);
-          right: 20px;
-          bottom: 50px;
-        \\"
-      ></div>
       "
     `)
   })
@@ -1854,143 +1736,12 @@ describe('Layout props are copied to style', () => {
       "
     `)
   })
-
-  it('PinSystem parent: Position non-magic prop works even if there is no layoutSystem', () => {
-    const TestScene = () => (
-      <View layout={{ layoutSystem: LayoutSystem.PinSystem }}>
-        <View
-          style={{
-            position: 'relative', // this should override the position: absolute coming from the parent
-            left: 116,
-            top: 375,
-            right: 19,
-            bottom: 29,
-            width: 155,
-            height: 133,
-          }}
-        />
-      </View>
-    )
-    expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div style=\\"position: relative;\\">
-        <div
-          style=\\"
-            position: relative;
-            width: 155px;
-            height: 133px;
-            left: 116px;
-            top: 375px;
-            right: 19px;
-            bottom: 29px;
-          \\"
-        ></div>
-      </div>
-      "
-    `)
-  })
-  it('PinSystem parent: Every non-magic prop works even if there is no layoutSystem', () => {
-    const TestScene = () => (
-      <View layout={{ layoutSystem: LayoutSystem.PinSystem }}>
-        <View
-          style={{
-            position: 'relative', // this should override the position: absolute coming from the parent
-            alignSelf: FlexAlignment.FlexEnd,
-          }}
-          layout={{
-            flexBasis: 48,
-          }}
-        />
-      </View>
-    )
-    expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div style=\\"position: relative;\\">
-        <div
-          style=\\"position: relative; align-self: flex-end; flex-basis: 48px;\\"
-        ></div>
-      </div>
-      "
-    `)
-  })
-  it('PinSystem parent: Margin/Padding non-magic prop works even if there is no layoutSystem', () => {
-    const TestScene = () => (
-      <View layout={{ layoutSystem: LayoutSystem.PinSystem }}>
-        <View
-          style={{
-            position: 'relative', // this should override the position: absolute coming from the parent
-            marginLeft: 9,
-            marginTop: 3,
-            marginRight: 20,
-            marginBottom: 20,
-            paddingLeft: 1,
-            paddingTop: 1,
-            paddingRight: 1,
-            paddingBottom: 1,
-          }}
-        />
-      </View>
-    )
-    expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div style=\\"position: relative;\\">
-        <div
-          style=\\"
-            position: relative;
-            margin-left: 9px;
-            margin-top: 3px;
-            margin-right: 20px;
-            margin-bottom: 20px;
-            padding-left: 1px;
-            padding-top: 1px;
-            padding-right: 1px;
-            padding-bottom: 1px;
-          \\"
-        ></div>
-      </div>
-      "
-    `)
-  })
-  it('PinSystem parent: Min/Max Height/Width and other non-magic prop works even if there is no layoutSystem', () => {
-    const TestScene = () => (
-      <View layout={{ layoutSystem: LayoutSystem.PinSystem }}>
-        <View
-          style={{
-            maxHeight: 100,
-            minWidth: 10,
-            maxWidth: 100,
-            minHeight: 5,
-            flexDirection: FlexDirection.Column,
-            alignItems: FlexAlignment.Center,
-            justifyContent: FlexJustifyContent.Center,
-          }}
-        />
-      </View>
-    )
-    expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div style=\\"position: relative;\\">
-        <div
-          style=\\"
-            position: absolute;
-            min-width: 10px;
-            max-width: 100px;
-            min-height: 5px;
-            max-height: 100px;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-          \\"
-        ></div>
-      </div>
-      "
-    `)
-  })
 })
 
 function wrapInTestParents(element: React.ReactElement) {
   return () => (
     <React.Fragment>
       <div id='parent-nolayout' layout={{}}>
-        {element}
-      </div>
-      <div id='parent-pinSystem' layout={{ layoutSystem: LayoutSystem.PinSystem }}>
         {element}
       </div>
       <div id='parent-flex' style={{ display: 'flex' }}>
@@ -2004,10 +1755,7 @@ describe('Non-magic props are blindly copied over to style, regardless of the pa
   it('position', () => {
     const TestScene = wrapInTestParents(<View id='child' style={{ position: 'relative' }} />)
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"parent-nolayout\\">
-        <div id=\\"child\\" style=\\"position: relative;\\"></div>
-      </div>
-      <div id=\\"parent-pinSystem\\" style=\\"position: relative;\\">
+      "<div id=\\"parent-nolayout\\" layout=\\"[object Object]\\">
         <div id=\\"child\\" style=\\"position: relative;\\"></div>
       </div>
       <div id=\\"parent-flex\\" style=\\"display: flex;\\">
@@ -2032,24 +1780,10 @@ describe('Non-magic props are blindly copied over to style, regardless of the pa
       />,
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"parent-nolayout\\">
+      "<div id=\\"parent-nolayout\\" layout=\\"[object Object]\\">
         <div
           id=\\"child\\"
           style=\\"
-            width: 155px;
-            height: 133px;
-            left: 116px;
-            top: 375px;
-            right: 19px;
-            bottom: 29px;
-          \\"
-        ></div>
-      </div>
-      <div id=\\"parent-pinSystem\\" style=\\"position: relative;\\">
-        <div
-          id=\\"child\\"
-          style=\\"
-            position: absolute;
             width: 155px;
             height: 133px;
             left: 116px;
@@ -2091,24 +1825,10 @@ describe('Non-magic props are blindly copied over to style, regardless of the pa
       />,
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"parent-nolayout\\">
+      "<div id=\\"parent-nolayout\\" layout=\\"[object Object]\\">
         <div
           id=\\"child\\"
           style=\\"
-            width: 155px;
-            height: 133px;
-            left: 116px;
-            top: 375px;
-            right: 19px;
-            bottom: 29px;
-          \\"
-        ></div>
-      </div>
-      <div id=\\"parent-pinSystem\\" style=\\"position: relative;\\">
-        <div
-          id=\\"child\\"
-          style=\\"
-            position: absolute;
             width: 155px;
             height: 133px;
             left: 116px;
@@ -2149,19 +1869,7 @@ describe('Non-magic props are blindly copied over to style, regardless of the pa
       />,
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"parent-nolayout\\">
-        <div
-          id=\\"child\\"
-          style=\\"
-            position: relative;
-            left: 12px;
-            top: 13px;
-            right: 25px;
-            bottom: 43px;
-          \\"
-        ></div>
-      </div>
-      <div id=\\"parent-pinSystem\\" style=\\"position: relative;\\">
+      "<div id=\\"parent-nolayout\\" layout=\\"[object Object]\\">
         <div
           id=\\"child\\"
           style=\\"
@@ -2201,22 +1909,10 @@ describe('Non-magic props are blindly copied over to style, regardless of the pa
       />,
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"parent-nolayout\\">
+      "<div id=\\"parent-nolayout\\" layout=\\"[object Object]\\">
         <div
           id=\\"child\\"
           style=\\"
-            min-width: 16px;
-            max-width: 99px;
-            min-height: 17px;
-            max-height: 98px;
-          \\"
-        ></div>
-      </div>
-      <div id=\\"parent-pinSystem\\" style=\\"position: relative;\\">
-        <div
-          id=\\"child\\"
-          style=\\"
-            position: absolute;
             min-width: 16px;
             max-width: 99px;
             min-height: 17px;
@@ -2251,22 +1947,10 @@ describe('Non-magic props are blindly copied over to style, regardless of the pa
       />,
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"parent-nolayout\\">
+      "<div id=\\"parent-nolayout\\" layout=\\"[object Object]\\">
         <div
           id=\\"child\\"
           style=\\"
-            margin-left: 9px;
-            margin-top: 3px;
-            margin-right: 20px;
-            margin-bottom: 20px;
-          \\"
-        ></div>
-      </div>
-      <div id=\\"parent-pinSystem\\" style=\\"position: relative;\\">
-        <div
-          id=\\"child\\"
-          style=\\"
-            position: absolute;
             margin-left: 9px;
             margin-top: 3px;
             margin-right: 20px;
@@ -2302,24 +1986,10 @@ describe('Non-magic props are blindly copied over to style, regardless of the pa
       />,
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"parent-nolayout\\">
+      "<div id=\\"parent-nolayout\\" layout=\\"[object Object]\\">
         <div
           id=\\"child\\"
           style=\\"
-            flex-grow: 1;
-            flex-shrink: 2;
-            align-self: flex-end;
-            width: 50px;
-            height: 50px;
-            flex: 10;
-          \\"
-        ></div>
-      </div>
-      <div id=\\"parent-pinSystem\\" style=\\"position: relative;\\">
-        <div
-          id=\\"child\\"
-          style=\\"
-            position: absolute;
             flex-grow: 1;
             flex-shrink: 2;
             align-self: flex-end;
@@ -2357,20 +2027,10 @@ describe('Non-magic props are blindly copied over to style, regardless of the pa
       />,
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"parent-nolayout\\">
+      "<div id=\\"parent-nolayout\\" layout=\\"[object Object]\\">
         <div
           id=\\"child\\"
           style=\\"flex-direction: column-reverse; align-content: flex-end;\\"
-        ></div>
-      </div>
-      <div id=\\"parent-pinSystem\\" style=\\"position: relative;\\">
-        <div
-          id=\\"child\\"
-          style=\\"
-            position: absolute;
-            flex-direction: column-reverse;
-            align-content: flex-end;
-          \\"
         ></div>
       </div>
       <div id=\\"parent-flex\\" style=\\"display: flex;\\">
@@ -2393,20 +2053,10 @@ describe('Non-magic props are blindly copied over to style, regardless of the pa
       />,
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"parent-nolayout\\">
+      "<div id=\\"parent-nolayout\\" layout=\\"[object Object]\\">
         <div
           id=\\"child\\"
           style=\\"align-items: flex-start; justify-content: space-between;\\"
-        ></div>
-      </div>
-      <div id=\\"parent-pinSystem\\" style=\\"position: relative;\\">
-        <div
-          id=\\"child\\"
-          style=\\"
-            position: absolute;
-            align-items: flex-start;
-            justify-content: space-between;
-          \\"
         ></div>
       </div>
       <div id=\\"parent-flex\\" style=\\"display: flex;\\">
@@ -2432,23 +2082,10 @@ describe('Non-magic props are blindly copied over to style, regardless of the pa
       />,
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"parent-nolayout\\">
+      "<div id=\\"parent-nolayout\\" layout=\\"[object Object]\\">
         <div
           id=\\"child\\"
           style=\\"
-            flex-wrap: wrap;
-            padding-left: 1px;
-            padding-top: 1px;
-            padding-right: 1px;
-            padding-bottom: 1px;
-          \\"
-        ></div>
-      </div>
-      <div id=\\"parent-pinSystem\\" style=\\"position: relative;\\">
-        <div
-          id=\\"child\\"
-          style=\\"
-            position: absolute;
             flex-wrap: wrap;
             padding-left: 1px;
             padding-top: 1px;
