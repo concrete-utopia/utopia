@@ -281,7 +281,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         this.props.componentMetadata,
         view,
       )
-      const containingRectangle = MetadataUtils.findSceneByTemplatePath(
+      const containingRectangle = MetadataUtils.getElementByTemplatePathMaybe(
         this.props.componentMetadata,
         containingBlockParent,
       )?.globalFrame
