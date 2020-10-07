@@ -501,32 +501,6 @@ describe('UiJsxCanvas render', () => {
     `,
     )
   })
-  it('handles an undefined component gracefully', () => {
-    testCanvasRender(
-      null,
-      `/** @jsx jsx */
-      import * as React from "react"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
-
-      const MyCard = undefined
-      export var App = props => <MyCard data-uid={'bbb'} />
-      export var ${BakedInStoryboardVariableName} = (props) => {
-        return (
-          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
-            <Scene
-              static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
-          </Storyboard>
-        )
-      }
-      `,
-    )
-  })
   it('renders a component used in an arbitrary block correctly', () => {
     testCanvasRender(
       null,
@@ -2168,6 +2142,59 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   )
 }
 `,
+    )
+  })
+
+  it('handles an undefined component gracefully', () => {
+    testCanvasError(
+      null,
+      `/** @jsx jsx */
+      import * as React from "react"
+      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+
+      const MyCard = undefined
+      export var App = props => <MyCard data-uid={'bbb'} />
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              static
+              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              layout={{ layoutSystem: 'pinSystem' }}
+              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              data-uid={'scene-aaa'}
+            />
+          </Storyboard>
+        )
+      }
+      `,
+    )
+  })
+
+  it('handles an non-existent component gracefully', () => {
+    testCanvasError(
+      null,
+      `/** @jsx jsx */
+      import * as React from "react"
+      import { View, jsx, Storyboard, Scene, MyCard } from 'utopia-api'
+
+      export var App = props => <MyCard data-uid={'bbb'} />
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              static
+              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              layout={{ layoutSystem: 'pinSystem' }}
+              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              data-uid={'scene-aaa'}
+            />
+          </Storyboard>
+        )
+      }
+      `,
     )
   })
 })

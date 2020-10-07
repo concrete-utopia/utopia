@@ -765,6 +765,18 @@ export interface ArbitraryJSBlock {
 
 export type TopLevelElement = UtopiaJSXComponent | ArbitraryJSBlock
 
+export function getDefinedWithin(element: TopLevelElement): Array<string> {
+  switch (element.type) {
+    case 'UTOPIA_JSX_COMPONENT':
+      return [element.name]
+    case 'ARBITRARY_JS_BLOCK':
+      return element.definedWithin
+    default:
+      const _exhaustiveCheck: never = element
+      throw new Error(`Unhandled element ${JSON.stringify(element)}`)
+  }
+}
+
 export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
   return {
     ...block,

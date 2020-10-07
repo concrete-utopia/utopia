@@ -56,7 +56,7 @@ describe('maybeSwitchLayoutProps', () => {
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
     const elementToPaste = jsxElement(
-      'Button',
+      'View',
       {
         style: jsxAttributeNestedObjectSimple({
           bottom: jsxAttributeValue(50),
@@ -132,7 +132,7 @@ describe('maybeSwitchLayoutProps', () => {
             style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
             data-uid={'bbb'}
           >
-            <Button style={{}} data-uid={'catdog'} />
+            <View style={{}} data-uid={'catdog'} />
           </View>
         </View>`,
       ),
