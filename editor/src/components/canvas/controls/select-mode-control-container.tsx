@@ -400,6 +400,11 @@ export class SelectModeControlContainer extends React.Component<
         )
         if (element?.specialSizeMeasurements.immediateParentProvidesLayout === false) {
           return 'flow'
+        } else if (
+          element?.specialSizeMeasurements.parentLayoutSystem === 'flow' &&
+          element?.specialSizeMeasurements.usesParentBounds
+        ) {
+          return 'nonstatic'
         } else {
           return element?.specialSizeMeasurements.parentLayoutSystem
         }
@@ -407,7 +412,7 @@ export class SelectModeControlContainer extends React.Component<
     })
 
     const flow = elementLayouts.filter((layout) => layout === 'flow' || layout === 'none').length
-    const block = elementLayouts.filter((layout) => layout === 'nonfixed').length
+    const block = elementLayouts.filter((layout) => layout === 'nonstatic').length
     const flex = elementLayouts.filter((layout) => layout === 'flex').length
     const grid = elementLayouts.filter((layout) => layout === 'grid').length
     return (
