@@ -412,7 +412,7 @@ export const MetadataUtils = {
   },
   isFlowElement(instance: ElementInstanceMetadata | null): boolean {
     return (
-      instance?.specialSizeMeasurements.immediateParentProvidesLayout === false &&
+      instance?.specialSizeMeasurements.parentLayoutSystem === 'flow' &&
       !MetadataUtils.isPositionAbsolute(instance)
     )
   },
