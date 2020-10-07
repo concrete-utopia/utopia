@@ -31,8 +31,7 @@ export const ReorderInsertIndicator: React.FunctionComponent<{
             canvasOffset.y +
             (after && !isHorizontal ? childToPutIndexBefore.globalFrame.height : 0),
           horizontal: isHorizontal,
-          flow:
-            childToPutIndexBefore.specialSizeMeasurements?.immediateParentProvidesLayout === false,
+          flow: MetadataUtils.isFlowElement(childToPutIndexBefore),
         }
       }
     }

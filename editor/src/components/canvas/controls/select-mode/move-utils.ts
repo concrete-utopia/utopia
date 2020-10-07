@@ -340,9 +340,7 @@ export function dragComponent(
     } else {
       // TODO determine if node graph affects the drag
       const element = MetadataUtils.getElementByTemplatePathMaybe(componentsMetadata, view)
-      const isFlow =
-        TP.isInstancePath(view) &&
-        element?.specialSizeMeasurements.immediateParentProvidesLayout === false
+      const isFlow = TP.isInstancePath(view) && MetadataUtils.isFlowElement(element)
 
       const constrainedDragAxis: ConstrainedDragAxis | null =
         constrainDragAxis && furthestDragDelta != null
@@ -376,10 +374,10 @@ export function dragComponent(
             false,
             'strict',
           )
-          const flowTarget = targetsUnderCursor.find(
-            (target) =>
-              MetadataUtils.getElementByTemplatePathMaybe(componentsMetadata, target)
-                ?.specialSizeMeasurements.immediateParentProvidesLayout === false,
+          const flowTarget = targetsUnderCursor.find((target) =>
+            MetadataUtils.isFlowElement(
+              MetadataUtils.getElementByTemplatePathMaybe(componentsMetadata, target),
+            ),
           )
           if (flowTarget != null) {
             const newIndex = MetadataUtils.getViewZIndexFromMetadata(componentsMetadata, flowTarget)

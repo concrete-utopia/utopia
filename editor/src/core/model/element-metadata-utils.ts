@@ -410,6 +410,12 @@ export const MetadataUtils = {
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
+  isFlowElement(instance: ElementInstanceMetadata | null): boolean {
+    return (
+      instance?.specialSizeMeasurements.immediateParentProvidesLayout === false &&
+      !MetadataUtils.isPositionAbsolute(instance)
+    )
+  },
   getYogaSizeProps(
     target: TemplatePath,
     scenes: Array<ComponentMetadata>,

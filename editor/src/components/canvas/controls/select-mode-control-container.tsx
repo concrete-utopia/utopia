@@ -398,7 +398,7 @@ export class SelectModeControlContainer extends React.Component<
           this.props.componentMetadata,
           view,
         )
-        if (element?.specialSizeMeasurements.immediateParentProvidesLayout === false) {
+        if (MetadataUtils.isFlowElement(element)) {
           return 'flow'
         } else if (
           element?.specialSizeMeasurements.parentLayoutSystem === 'flow' &&
