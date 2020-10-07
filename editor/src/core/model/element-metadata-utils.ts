@@ -1494,7 +1494,7 @@ export const MetadataUtils = {
     if (parentPath == null || specialSizeMeasurements == null) {
       return null
     }
-    if (specialSizeMeasurements.usesParentBounds) {
+    if (specialSizeMeasurements.immediateParentProvidesLayout) {
       return parentPath
     } else {
       return this.findContainingBlock(metadata, parentPath)
