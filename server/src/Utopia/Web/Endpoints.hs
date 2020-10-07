@@ -383,10 +383,16 @@ getPackageVersionJSONEndpoint javascriptPackageName javascriptPackageVersion = d
   packageMetadata <- getPackageJSON javascriptPackageName (Just javascriptPackageVersion)
   maybe notFound return packageMetadata
 
-getPackageVersionsEndpoint :: Text -> ServerMonad Value
-getPackageVersionsEndpoint javascriptPackageName = do
-  packageMetadata <- getPackageVersionJSON javascriptPackageName
+getPackageVersionsEndpoint :: Text -> Maybe Text -> ServerMonad Value
+getPackageVersionsEndpoint javascriptPackageName maybeJavascriptPackageVersion = do
+  packageMetadata <- getPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion
   maybe notFound return packageMetadata
+
+getPackageLatestVersionEndpoint :: Text -> ServerMonad Value
+getPackageLatestVersionEndpoint javascriptPackageName = getPackageVersionsEndpoint javascriptPackageName Nothing
+
+getMatchingPackageVersionsEndpoint :: Text -> Text -> ServerMonad Value
+getMatchingPackageVersionsEndpoint javascriptPackageName javascriptPackageVersion = getPackageVersionsEndpoint javascriptPackageName (Just javascriptPackageVersion)
 
 hashedAssetPathsEndpoint :: ServerMonad Value
 hashedAssetPathsEndpoint = getHashedAssetPaths
@@ -394,10 +400,9 @@ hashedAssetPathsEndpoint = getHashedAssetPaths
 packagerCacheControl :: Text
 packagerCacheControl = "public, immutable, max-age=2592000"
 
-packagePackagerEndpoint :: Text -> Text -> Maybe LastModifiedTime -> Maybe Text -> ServerMonad PackagePackagerResponse
-packagePackagerEndpoint javascriptPackageName javascriptPackageVersionAndSuffix ifModifiedSince possibleOrigin = do
-  let javascriptPackageVersion = fromMaybe javascriptPackageVersionAndSuffix $ T.stripSuffix ".json" javascriptPackageVersionAndSuffix
-  possiblePackagerContent <- getPackagePackagerContent javascriptPackageName javascriptPackageVersion (fmap getLastModifiedTime ifModifiedSince)
+packagePackagerEndpoint :: Text -> Maybe LastModifiedTime -> Maybe Text -> ServerMonad PackagePackagerResponse
+packagePackagerEndpoint versionedPackageName ifModifiedSince possibleOrigin = do
+  possiblePackagerContent <- getPackagePackagerContent versionedPackageName (fmap getLastModifiedTime ifModifiedSince)
   allowOriginHeader <- accessControlAllowOrigin possibleOrigin
   let applyOriginHeader = maybe noHeader addHeader allowOriginHeader
   case possiblePackagerContent of
@@ -460,7 +465,8 @@ unprotected = authenticate
          :<|> packagePackagerEndpoint
          :<|> getPackageJSONEndpoint
          :<|> getPackageVersionJSONEndpoint
-         :<|> getPackageVersionsEndpoint
+         :<|> getPackageLatestVersionEndpoint
+         :<|> getMatchingPackageVersionsEndpoint
          :<|> hashedAssetPathsEndpoint
          :<|> editorAssetsEndpoint "./editor"
          :<|> editorAssetsEndpoint "./sockjs-node" Nothing

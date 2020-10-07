@@ -16,17 +16,31 @@ import           System.Process
 
 import qualified Data.HashMap.Strict       as Map
 
+handleVersionsLookupError :: IOException -> IO (Maybe Value)
+handleVersionsLookupError _ = return Nothing
+
+-- Find Applicable Versions using `npm view packageName@version version --json
+findMatchingVersions :: Text -> Maybe Text -> IO (Maybe Value)
+findMatchingVersions jsPackageName maybePackageVersion = do
+  let atPackageVersion = maybe "" (\v -> "@" <> toS v) maybePackageVersion
+  let packageNameAtPackageVersion = jsPackageName <> atPackageVersion
+  let versionsProc = proc "npm" ["view", toS packageNameAtPackageVersion, "version", "--json"]
+  foundVersions <- (flip catch) handleVersionsLookupError $ do
+    versionsResult <- readCreateProcess versionsProc ""
+    return $ decode $ toS versionsResult
+  return foundVersions
+
 withSemaphore :: QSem -> IO a -> IO a
 withSemaphore semaphore action = (flip finally) (signalQSem semaphore) $ do
   waitQSem semaphore
   action
 
-withInstalledProject :: QSem -> Text -> Text -> (FilePath -> IO a) -> IO a
-withInstalledProject semaphore jsPackageName jsPackageVersion withInstalledPath = do
+withInstalledProject :: QSem -> Text -> (FilePath -> IO a) -> IO a
+withInstalledProject semaphore versionedPackageName withInstalledPath = do
   -- Create temporary folder.
   withSystemTempDirectory "packager" $ \tempDir -> do
     -- Run `npm install "packageName@packageVersion"`.
-    let baseProc = proc "yarn" ["add", "--prefer-offline", "--silent", toS jsPackageName <> "@" <> toS jsPackageVersion]
+    let baseProc = proc "yarn" ["add", "--prefer-offline", "--silent", toS versionedPackageName]
     let procWithCwd = baseProc { cwd = Just tempDir }
     putText "Starting NPM Install."
     _ <- withSemaphore semaphore $ readCreateProcess procWithCwd ""

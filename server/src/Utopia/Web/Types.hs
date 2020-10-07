@@ -120,8 +120,7 @@ type DownloadGithubProjectAPI = "v1" :> "github" :> Capture "owner" Text :> Capt
 type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] BL.ByteString
 
 type PackagePackagerAPI = "v1" :> "javascript" :> "packager"
-                       :> Capture "package_name" Text
-                       :> Capture "package_version" Text
+                       :> Capture "versioned_package_name" Text
                        :> Header "If-Modified-Since" LastModifiedTime
                        :> Header "Origin" Text
                        :> Get '[ForcedJSON] PackagePackagerResponse
@@ -130,7 +129,9 @@ type GetPackageJSONAPI = "v1" :> "javascript" :> "package" :> "metadata" :> Capt
 
 type GetPackageVersionJSONAPI = "v1" :> "javascript" :> "package" :> "metadata" :> Capture "package_name" Text :> Capture "package_version" Text :> Get '[JSON] Value
 
-type GetPackageVersionsAPI = "v1" :> "javascript" :> "package" :> "versions" :> Capture "package_name" Text :> Get '[JSON] Value
+type GetLatestPackageAPI = "v1" :> "javascript" :> "package" :> "versions" :> Capture "package_name" Text :> Get '[JSON] Value
+
+type GetPackageVersionsAPI = "v1" :> "javascript" :> "package" :> "versions" :> Capture "package_name" Text :> Capture "package_version" Text :> Get '[JSON] Value
 
 type MonitoringAPI = "monitoring" :> "secret" :> "location" :> Get '[JSON] Value
 
@@ -182,6 +183,7 @@ type Unprotected = AuthenticateAPI
               :<|> PackagePackagerAPI
               :<|> GetPackageJSONAPI
               :<|> GetPackageVersionJSONAPI
+              :<|> GetLatestPackageAPI
               :<|> GetPackageVersionsAPI
               :<|> HashedAssetPathsAPI
               :<|> EditorAssetsAPI

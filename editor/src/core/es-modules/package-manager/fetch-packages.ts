@@ -22,8 +22,9 @@ import { Either, right, left, isLeft, isRight } from '../../shared/either'
 import { isBuiltinDependency } from './package-manager'
 import {
   findMatchingVersion,
+  isNpmVersion,
   isPackageNotFound,
-  DependencyVersion,
+  ResolvedDependencyVersion,
 } from '../../../components/editor/npm-dependency/npm-dependency'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
@@ -32,13 +33,35 @@ const PACKAGES_TO_SKIP = ['utopia-api', 'react', 'react-dom', 'uuiui', 'uuiui-de
 const NR_RETRIES = 3
 const RETRY_FREQ_MS = process.env.JEST_WORKER_ID == undefined ? 10000 : 0
 
+function extractFilePath(packagename: string, filepath: string): string {
+  const packagenameIndex = filepath.indexOf(packagename)
+  const restOfFileUrl = filepath.slice(packagenameIndex + packagename.length)
+  return restOfFileUrl
+}
+
+function getFileURLForPackageVersion(
+  packageName: string,
+  packageVersion: ResolvedDependencyVersion,
+  filePath: string,
+): string {
+  if (isNpmVersion(packageVersion)) {
+    const version = packageVersion.version
+    const localFilePath = extractFilePath(packageName, filePath)
+    return getJsDelivrFileUrl(`${packageName}@${version}`, localFilePath)
+  } else {
+    return packageVersion.gitHost.file(filePath)
+  }
+}
+
 function packagerResponseFileToNodeModule(
   packageName: string,
-  packageVersion: string,
+  packageVersion: ResolvedDependencyVersion,
+  filePath: string,
   fileContentsOrPlaceholder: PackagerServerFile,
 ): NodeModuleFile {
   if (fileContentsOrPlaceholder === 'PLACEHOLDER_FILE') {
-    return esRemoteDependencyPlaceholder(packageName, packageVersion, false)
+    const fileUrl = getFileURLForPackageVersion(packageName, packageVersion, filePath)
+    return esRemoteDependencyPlaceholder(fileUrl, false)
   } else {
     return esCodeFile(fileContentsOrPlaceholder.content, null)
   }
@@ -46,11 +69,16 @@ function packagerResponseFileToNodeModule(
 
 export function extractNodeModulesFromPackageResponse(
   packageName: string,
-  packageVersion: string,
+  packageVersion: ResolvedDependencyVersion,
   response: PackagerServerResponse,
 ): NodeModules {
-  const extractFile = (fileContentsOrPlaceholder: PackagerServerFile) =>
-    packagerResponseFileToNodeModule(packageName, packageVersion, fileContentsOrPlaceholder)
+  const extractFile = (fileContentsOrPlaceholder: PackagerServerFile, filePath: string) =>
+    packagerResponseFileToNodeModule(
+      packageName,
+      packageVersion,
+      filePath,
+      fileContentsOrPlaceholder,
+    )
   return objectMap(extractFile, response.contents)
 }
 
@@ -58,45 +86,69 @@ export function resetDepPackagerCache() {
   depPackagerCache = {}
 }
 
+function toVersionedDependencyString(
+  dependency: RequestedNpmDependency,
+  resolvedVersion: ResolvedDependencyVersion,
+): string {
+  switch (resolvedVersion.type) {
+    case 'NPM_VERSION':
+      return `${dependency.name}@${resolvedVersion.version}`
+    case 'HOSTED_VERSION':
+      return resolvedVersion.version
+    default:
+      const _exhaustiveCheck: never = resolvedVersion
+      throw new Error(`Unhandled package version type ${JSON.stringify(resolvedVersion)}`)
+  }
+}
+
 async function fetchPackagerResponseWithRetry(
-  dep: ResolvedNpmDependency,
+  dependency: RequestedNpmDependency,
+  resolvedVersion: ResolvedDependencyVersion,
 ): Promise<NodeModules | null> {
   const wait = (ms: number) => {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   const fetchPackagerResponseWithRetryInner = async (
-    dependency: ResolvedNpmDependency,
     nrRetries: number,
     retryFreqMs: number,
   ): Promise<NodeModules | null> => {
     try {
-      return await fetchPackagerResponse(dependency)
+      return await fetchPackagerResponse(dependency, resolvedVersion)
     } catch (e) {
       if (nrRetries < 1) {
         throw e
       }
       await wait(retryFreqMs)
-      return await fetchPackagerResponseWithRetryInner(dependency, nrRetries - 1, retryFreqMs)
+      return await fetchPackagerResponseWithRetryInner(nrRetries - 1, retryFreqMs)
     }
   }
 
-  return await fetchPackagerResponseWithRetryInner(dep, NR_RETRIES, RETRY_FREQ_MS)
+  return await fetchPackagerResponseWithRetryInner(NR_RETRIES, RETRY_FREQ_MS)
 }
 
-async function fetchPackagerResponse(dep: ResolvedNpmDependency): Promise<NodeModules | null> {
-  if (PACKAGES_TO_SKIP.indexOf(dep.name) > -1) {
+async function fetchPackagerResponse(
+  dependency: RequestedNpmDependency,
+  resolvedVersion: ResolvedDependencyVersion,
+): Promise<NodeModules | null> {
+  if (PACKAGES_TO_SKIP.indexOf(dependency.name) > -1) {
     return null
   }
 
-  const packagesUrl = getPackagerUrl(dep)
+  const versionedDependency = toVersionedDependencyString(dependency, resolvedVersion)
+
+  const packagesUrl = getPackagerUrl(versionedDependency)
   let result: NodeModules = {}
   if (depPackagerCache[packagesUrl] == null) {
     const packagerResponse = await fetch(packagesUrl)
     if (packagerResponse.ok) {
       const resp = (await packagerResponse.json()) as PackagerServerResponse
       depPackagerCache[packagesUrl] = resp
-      const convertedResult = extractNodeModulesFromPackageResponse(dep.name, dep.version, resp)
+      const convertedResult = extractNodeModulesFromPackageResponse(
+        dependency.name,
+        resolvedVersion,
+        resp,
+      )
       result = convertedResult
       // This result includes transitive dependencies too, but for all modules it only includes package.json, .js and .d.ts files.
       // All other file types are replaced with placeholders to save on downloading unnecessary files. Placeholders are then
@@ -106,8 +158,8 @@ async function fetchPackagerResponse(dep: ResolvedNpmDependency): Promise<NodeMo
     }
   } else {
     result = extractNodeModulesFromPackageResponse(
-      dep.name,
-      dep.version,
+      dependency.name,
+      resolvedVersion,
       depPackagerCache[packagesUrl],
     )
   }
@@ -141,25 +193,6 @@ function failError(dependency: RequestedNpmDependency): DependencyFetchError {
   }
 }
 
-async function fetchResolvedDependency(
-  dependency: RequestedNpmDependency,
-  resolvedVersion: DependencyVersion,
-  shouldRetry: boolean,
-): Promise<NodeModules | null> {
-  switch (resolvedVersion.type) {
-    case 'NPM_VERSION':
-      const resolvedDependency = resolvedNpmDependency(dependency.name, resolvedVersion.version)
-      return shouldRetry
-        ? fetchPackagerResponseWithRetry(resolvedDependency)
-        : fetchPackagerResponse(resolvedDependency)
-    case 'URL':
-      return Promise.resolve(null)
-    default:
-      const _exhaustiveCheck: never = resolvedVersion.type
-      throw new Error(`Unhandled package version type ${JSON.stringify(resolvedVersion)}`)
-  }
-}
-
 export async function fetchNodeModules(
   newDeps: Array<RequestedNpmDependency>,
   shouldRetry: boolean = true,
@@ -174,11 +207,15 @@ export async function fetchNodeModules(
             return left(failNotFound(newDep))
           }
 
+          const fetchResolvedDependency = shouldRetry
+            ? fetchPackagerResponseWithRetry
+            : fetchPackagerResponse
+
           const packagerResponse = await fetchResolvedDependency(
             newDep,
             matchingVersionResponse.version,
-            shouldRetry,
           )
+
           if (packagerResponse != null) {
             /**
              * to avoid clashing transitive dependencies,
@@ -224,23 +261,12 @@ export async function fetchNodeModules(
   }
 }
 
-function extractFilePath(packagename: string, filepath: string): string {
-  const packagenameIndex = filepath.indexOf(packagename)
-  const restOfFileUrl = filepath.slice(packagenameIndex + packagename.length)
-  return restOfFileUrl
-}
-
 export async function fetchMissingFileDependency(
   updateNodeModules: (modulesToAdd: NodeModules) => void,
   dependency: ESRemoteDependencyPlaceholder,
   filepath: string,
 ): Promise<void> {
-  const localFilePath = extractFilePath(dependency.packagename, filepath)
-  const jsdelivrUrl = getJsDelivrFileUrl(
-    resolvedNpmDependency(dependency.packagename, dependency.version),
-    localFilePath,
-  )
-  const jsdelivrResponse = await fetch(jsdelivrUrl)
+  const jsdelivrResponse = await fetch(dependency.url)
   const responseAsString = await jsdelivrResponse.text()
   const newFile: ESCodeFile = esCodeFile(responseAsString, null)
   const nodeModulesNewEntry: NodeModules = {
