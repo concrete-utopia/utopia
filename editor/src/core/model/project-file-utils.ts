@@ -24,7 +24,6 @@ import {
   ProjectFile,
   ProjectFileType,
   RevisionsState,
-  SceneContainer,
   SceneMetadata,
   UIJSFile,
   AssetFile,

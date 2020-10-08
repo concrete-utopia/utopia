@@ -62,19 +62,11 @@ export interface ElementCanvasMetadata {}
 
 export type CanvasElementMetadataMap = { [utopiaID: string]: ElementCanvasMetadata }
 
-// KILLME CanvasMetadata is dead
-export interface ScenePinnedContainer {
-  layoutSystem: LayoutSystem.PinSystem
-}
-
-export type SceneContainer = ScenePinnedContainer
-
 export interface SceneMetadata {
   uid: string
   component: string | null
   props: { [key: string]: any }
   frame: NormalisedFrame
-  container: SceneContainer
   label?: string
 }
 

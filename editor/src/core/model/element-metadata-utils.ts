@@ -413,6 +413,12 @@ export const MetadataUtils = {
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
+  isFlowElement(instance: ElementInstanceMetadata | null): boolean {
+    return (
+      instance?.specialSizeMeasurements.parentLayoutSystem === 'flow' &&
+      !MetadataUtils.isPositionAbsolute(instance)
+    )
+  },
   getYogaSizeProps(
     target: TemplatePath,
     scenes: Array<ComponentMetadata>,
@@ -1592,7 +1598,7 @@ export function getScenePropsOrElementAttributes(
     return null
   } else {
     return foldEither(
-      (sceneMetadata) => left(sceneMetadata.container),
+      (sceneMetadata) => left(sceneMetadata.style),
       (elementMetadata) =>
         foldEither(
           () => null,

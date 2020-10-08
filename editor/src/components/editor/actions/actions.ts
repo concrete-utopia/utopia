@@ -129,7 +129,6 @@ import {
   ProjectFile,
   PropertyPath,
   RevisionsState,
-  SceneContainer,
   ScenePath,
   StaticElementPath,
   TemplatePath,
@@ -427,7 +426,6 @@ import { getProjectLockedKey } from '../../../core/shared/utils'
 import {
   createNewSceneElement,
   PathForSceneDataLabel,
-  PathForSceneContainer,
   createSceneTemplatePath,
   PathForSceneComponent,
   PathForSceneProps,
@@ -503,53 +501,6 @@ function setPropertyOnTargetAtElementPath(
   }, editor)
 }
 
-function setSceneContainerValueAtPath(
-  editor: EditorModel,
-  target: ScenePath,
-  updateFn: (attributes: JSXAttributes) => Either<string, JSXAttributes>,
-): EditorModel {
-  return modifyOpenSceneAtPath(
-    target,
-    (scene): JSXElement => {
-      let attributes: JSXAttributes = {}
-      const layoutProps = Utils.defaultIfNull(
-        {},
-        eitherToMaybe(jsxSimpleAttributeToValue(scene.props.layout)),
-      )
-      const keys = Object.keys(layoutProps) as Array<keyof SceneContainer>
-      Utils.fastForEach(keys, (key) => {
-        attributes[key] = jsxAttributeValue(layoutProps[key])
-      })
-
-      const updatedAttributes = updateFn(attributes)
-      if (isRight(updatedAttributes)) {
-        const updatedContainer: SceneContainer = Utils.objectMap(
-          (attr) => jsxSimpleAttributeToValue(attr).value,
-          updatedAttributes.value,
-        ) as SceneContainer
-        const updatedSceneProps = setJSXValueAtPath(
-          scene.props,
-          PathForSceneContainer,
-          jsxAttributeValue(updatedContainer),
-        )
-        return foldEither(
-          () => scene,
-          (sceneProps) => {
-            return {
-              ...scene,
-              props: sceneProps,
-            }
-          },
-          updatedSceneProps,
-        )
-      } else {
-        return scene
-      }
-    },
-    editor,
-  )
-}
-
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
   scenes: Array<ComponentMetadata>,
   parentPath: InstancePath,
@@ -618,7 +569,6 @@ function switchAndUpdateFrames(
         },
       )
       break
-    case LayoutSystem.PinSystem:
     case LayoutSystem.Group:
     default:
       withUpdatedLayoutSystem = setPropertyOnTarget(
@@ -667,7 +617,6 @@ function switchAndUpdateFrames(
         ),
       }
       break
-    case LayoutSystem.PinSystem:
     case LayoutSystem.Group:
     default:
       withUpdatedLayoutSystem = {
@@ -693,8 +642,6 @@ function switchAndUpdateFrames(
     switch (layoutSystem) {
       case 'flex':
         return 'flex'
-      case LayoutSystem.PinSystem:
-        return 'flow'
       case LayoutSystem.Group:
       default:
         return 'flow'
@@ -4943,7 +4890,7 @@ export function wrapInView(targets: Array<TemplatePath>): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',
     targets: targets,
-    layoutSystem: LayoutSystem.PinSystem,
+    layoutSystem: null,
   }
 }
 

@@ -3806,10 +3806,7 @@ function isOneOfTheseParser<T extends PrimitiveType>(values: Array<T>): Parser<T
   }
 }
 
-const layoutSystemParser: Parser<LayoutSystem> = isOneOfTheseParser([
-  LayoutSystem.PinSystem,
-  LayoutSystem.Group,
-])
+const layoutSystemParser: Parser<LayoutSystem> = isOneOfTheseParser([LayoutSystem.Group])
 
 const flexWrapParser: Parser<FlexWrap> = isOneOfTheseParser([
   FlexWrap.NoWrap,

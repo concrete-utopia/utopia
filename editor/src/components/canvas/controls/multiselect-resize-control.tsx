@@ -222,9 +222,9 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
         this.props.componentMetadata,
         TP.toInstancePathMaybe(view),
       )
-      const isFlowLayouted =
-        MetadataUtils.getElementByTemplatePathMaybe(this.props.componentMetadata, view)
-          ?.specialSizeMeasurements.immediateParentProvidesLayout === false
+      const isFlowLayouted = MetadataUtils.isFlowElement(
+        MetadataUtils.getElementByTemplatePathMaybe(this.props.componentMetadata, view),
+      )
 
       if (frame != null) {
         return (
