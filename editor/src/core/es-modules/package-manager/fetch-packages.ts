@@ -44,12 +44,12 @@ function getFileURLForPackageVersion(
   packageVersion: ResolvedDependencyVersion,
   filePath: string,
 ): string {
+  const version = packageVersion.version
+  const localFilePath = extractFilePath(packageName, filePath)
   if (isNpmVersion(packageVersion)) {
-    const version = packageVersion.version
-    const localFilePath = extractFilePath(packageName, filePath)
     return getJsDelivrFileUrl(`${packageName}@${version}`, localFilePath)
   } else {
-    return packageVersion.gitHost.file(filePath)
+    return packageVersion.gitHost.file(localFilePath)
   }
 }
 
