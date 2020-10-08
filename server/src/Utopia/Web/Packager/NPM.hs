@@ -40,7 +40,7 @@ withInstalledProject semaphore versionedPackageName withInstalledPath = do
   -- Create temporary folder.
   withSystemTempDirectory "packager" $ \tempDir -> do
     -- Run `npm install "packageName@packageVersion"`.
-    let baseProc = proc "yarn" ["add", "--prefer-offline", "--silent", toS versionedPackageName]
+    let baseProc = proc "npm" ["install", "--silent", toS versionedPackageName]
     let procWithCwd = baseProc { cwd = Just tempDir }
     putText "Starting NPM Install."
     _ <- withSemaphore semaphore $ readCreateProcess procWithCwd ""
