@@ -218,7 +218,7 @@ export async function fetchMissingFileDependency(
   updateNodeModules: (modulesToAdd: NodeModules) => void,
   dependency: ESRemoteDependencyPlaceholder,
   filepath: string,
-): Promise<void> {
+): Promise<string> {
   const localFilePath = extractFilePath(dependency.packagename, filepath)
   const jsdelivrUrl = getJsDelivrFileUrl(
     resolvedNpmDependency(dependency.packagename, dependency.version),
@@ -239,4 +239,5 @@ export async function fetchMissingFileDependency(
   // MUTATION
   dependency.downloadStarted = false
   updateNodeModules(nodeModulesNewEntry)
+  return responseAsString
 }
