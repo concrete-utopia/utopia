@@ -26,7 +26,6 @@ import * as EditorActions from '../editor/actions/actions'
 import { openFileTab } from '../editor/store/editor-state'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { FileBrowserItemInfo, FileBrowserItemType } from './filebrowser'
-import { dropLeadingSlash } from './filepath-utils'
 import { PasteResult } from '../../utils/clipboard-utils'
 import { codeFile } from '../../core/model/project-file-utils'
 import { dragAndDropInsertionSubject, EditorModes } from '../editor/editor-modes'
@@ -231,8 +230,7 @@ class FileBrowserItemInner extends React.PureComponent<
         isRenaming: props.renamingTarget === props.path,
       }
     }
-    // todo this is not very safe. should it be not allowed to use . in folder names?
-    const pathParts = dropLeadingSlash(props.path).split('/')
+    const pathParts = props.path.split('/').filter((s) => s !== '')
     const filename = Utils.last(pathParts)
     return {
       filename: filename,
