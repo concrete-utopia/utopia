@@ -300,20 +300,17 @@ export function isEsCodeFile(projectFile: any): projectFile is ESCodeFile {
 
 export interface ESRemoteDependencyPlaceholder {
   type: 'ES_REMOTE_DEPENDENCY_PLACEHOLDER'
-  packagename: string
-  version: string
+  url: string
   downloadStarted: boolean
 }
 
 export function esRemoteDependencyPlaceholder(
-  packageName: string,
-  version: string,
+  url: string,
   downloadStarted: boolean,
 ): ESRemoteDependencyPlaceholder {
   return {
     type: 'ES_REMOTE_DEPENDENCY_PLACEHOLDER',
-    packagename: packageName,
-    version: version,
+    url: url,
     downloadStarted: downloadStarted,
   }
 }

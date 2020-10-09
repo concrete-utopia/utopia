@@ -34,6 +34,8 @@ import { resolvedDependencyVersions } from '../../../core/third-party/third-part
 import { deepFreeze } from '../../../utils/deep-freeze'
 import * as Semver from 'semver'
 import { ProjectContentTreeRoot } from '../../assets'
+import * as npa from 'npm-package-arg'
+import * as GitHost from 'hosted-git-info'
 
 interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
@@ -57,19 +59,67 @@ function packageLookupSuccess(json: unknown): PackageLookupSuccess {
 
 type PackageLookupResult = PackageNotFound | PackageLookupSuccess
 
-interface VersionLookupSuccess {
-  type: 'VERSION_LOOKUP_SUCCESS'
+type RequestedDependencyVersionType = 'GITHUB' | 'LOCAL' | 'SEMVER' | 'TAG' | 'URL'
+
+interface NpmVersion {
+  type: 'NPM_VERSION'
   version: string
 }
 
-export function versionLookupSuccess(version: string): VersionLookupSuccess {
+interface HostedVersion {
+  type: 'HOSTED_VERSION'
+  gitHost: GitHost
+  version: string
+}
+
+export function npmVersion(version: string): NpmVersion {
   return {
-    type: 'VERSION_LOOKUP_SUCCESS',
+    type: 'NPM_VERSION',
     version: version,
   }
 }
 
+export function hostedVersion(gitHost: GitHost, version: string): HostedVersion {
+  return {
+    type: 'HOSTED_VERSION',
+    gitHost: gitHost,
+    version: version,
+  }
+}
+
+export type ResolvedDependencyVersion = NpmVersion | HostedVersion
+
+export function isNpmVersion(version: ResolvedDependencyVersion): version is NpmVersion {
+  return version.type === 'NPM_VERSION'
+}
+
+export function isHostedVersion(version: ResolvedDependencyVersion): version is HostedVersion {
+  return version.type === 'HOSTED_VERSION'
+}
+
+interface VersionLookupSuccess {
+  type: 'VERSION_LOOKUP_SUCCESS'
+  version: ResolvedDependencyVersion
+}
+
 export type VersionLookupResult = PackageNotFound | VersionLookupSuccess
+
+export function npmVersionLookupSuccess(version: string): VersionLookupSuccess {
+  return {
+    type: 'VERSION_LOOKUP_SUCCESS',
+    version: npmVersion(version),
+  }
+}
+
+export function hostedVersionLookupSuccess(
+  gitHost: GitHost,
+  version: string,
+): VersionLookupSuccess {
+  return {
+    type: 'VERSION_LOOKUP_SUCCESS',
+    version: hostedVersion(gitHost, version),
+  }
+}
 
 export function isPackageNotFound(
   lookupResult: PackageLookupResult | VersionLookupResult,
@@ -83,121 +133,78 @@ function isPackageLookupSuccess(
   return lookupResult.type === 'PACKAGE_LOOKUP_SUCCESS'
 }
 
-async function packageLookupCall(
-  packageName: string,
-  packageVersion: string | null,
-): Promise<PackageLookupResult> {
-  const requestInit: RequestInit = {
-    headers: {
-      accept: 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*',
-    },
-  }
-
-  const encodedName = encodeURIComponent(packageName).replace(/^%40/, '@')
-  const URLSuffix = packageVersion == null ? encodedName : `${encodedName}/${packageVersion}`
-
-  // Calls out to our services because of the wonder of CORS.
-  const response = await fetch(
-    `${UTOPIA_BACKEND}javascript/package/metadata/${URLSuffix}`,
-    requestInit,
-  )
-  if (response.ok) {
-    const json = await response.json()
-    return packageLookupSuccess(json)
-  } else if (response.status === 404) {
-    return packageNotFound
-  } else {
-    const packageNameAndVersion =
-      packageVersion == null ? packageName : `${packageName}@${packageVersion}`
-
-    return Promise.reject(`Received an error for package ${packageNameAndVersion}`)
-  }
-}
-
-async function findTaggedVersion(packageName: string, tag: string): Promise<VersionLookupResult> {
-  const metadata = await packageLookupCall(packageName, null)
-  switch (metadata.type) {
-    case 'PACKAGE_LOOKUP_SUCCESS':
-      const taggedVersion = Utils.path(['json', 'dist-tags', tag], metadata)
-      if (taggedVersion == null || typeof taggedVersion != 'string') {
-        return Promise.reject(`Received invalid content for package ${packageName}`)
-      } else {
-        return Promise.resolve(versionLookupSuccess(taggedVersion))
-      }
-    case 'PACKAGE_NOT_FOUND':
-      return packageNotFound
-    default:
-      const _exhaustiveCheck: never = metadata
-      throw new Error(`Unhandled package lookup type ${JSON.stringify(metadata)}`)
-  }
-}
-
 export const findLatestVersion = (packageName: string): Promise<VersionLookupResult> =>
-  findTaggedVersion(packageName, 'latest')
-
-type DependencyVersionType = 'GITHUB' | 'LOCAL' | 'SEMVER' | 'TAG' | 'URL'
-
-function versionIsGitHubRepo(v: string): boolean {
-  // To satisfy https://docs.npmjs.com/files/package.json#github-urls
-  const parts = v.split('/')
-  if (parts.length === 1) {
-    return false
-  } else if (parts.length === 2) {
-    return true
-  } else {
-    // If there is more than one forward slash, there must be a '#' immediately after the <user>/<repo> to indicate a commit-ish suffix
-    return parts[1].includes('#')
-  }
-}
-
-function versionIsLocal(v: string): boolean {
-  return (
-    v.startsWith('/') ||
-    v.startsWith('./') ||
-    v.startsWith('~/') ||
-    v.startsWith('../') ||
-    v.startsWith('file:')
-  )
-}
+  fetchNpmMatchingVersion(packageName, 'latest')
 
 function versionIsSemver(v: string): boolean {
   return Semver.validRange(v) != null // Don't. Just don't.
 }
 
-function versionIsUrl(v: string): boolean {
-  return v.split('://').length === 2
-}
-
-export function getVersionType(version: string): DependencyVersionType {
-  if (versionIsUrl(version)) {
-    return 'URL'
-  } else if (versionIsGitHubRepo(version)) {
-    return 'GITHUB'
-  } else if (versionIsSemver(version)) {
-    return 'SEMVER'
-  } else if (versionIsLocal(version)) {
-    return 'LOCAL'
-  } else {
-    // If all else fails, assume it is a tagged version
-    return 'TAG'
-  }
-}
-
-async function findMatchingSemverVersion(
+export function getVersionType(
   packageName: string,
-  versionRange: string,
+  version: string,
+): RequestedDependencyVersionType {
+  try {
+    const npaResolveResult = npa.resolve(packageName, version)
+    switch (npaResolveResult.type) {
+      case 'git':
+        return 'GITHUB'
+      case 'tag':
+        return 'TAG'
+      case 'version':
+        return 'SEMVER'
+      case 'range':
+        return 'SEMVER'
+      case 'file':
+        return 'LOCAL'
+      case 'directory':
+        return 'LOCAL'
+      case 'remote':
+        return 'URL'
+    }
+  } catch (e) {
+    /* Probably a typo or mid-typing; no need to throw here */
+  }
+
+  // If all else fails, assume it is a tagged version
+  return 'TAG'
+}
+
+async function fetchNpmMatchingVersion(
+  packageName: string,
+  version: string,
 ): Promise<VersionLookupResult> {
   const encodedName = encodeURIComponent(packageName).replace(/^%40/, '@')
-  const response = await fetch(`${UTOPIA_BACKEND}javascript/package/versions/${encodedName}`)
+  const encodedVersion = encodeURIComponent(version)
+  const response = await fetch(
+    `${UTOPIA_BACKEND}javascript/package/versions/${encodedName}/${encodedVersion}`,
+  )
 
   if (response.ok) {
-    const versionsArray: Array<string> = await response.json()
-    const satisfyingVersion = Semver.maxSatisfying(versionsArray, versionRange)
-    return satisfyingVersion == null ? packageNotFound : versionLookupSuccess(satisfyingVersion)
+    const matchingVersionsResult = await response.json()
+
+    if (typeof matchingVersionsResult === 'string') {
+      // Return result is a single concrete version
+      return npmVersionLookupSuccess(matchingVersionsResult)
+    } else if (
+      typeof matchingVersionsResult === 'object' &&
+      Array.isArray(matchingVersionsResult) &&
+      versionIsSemver(version)
+    ) {
+      // Return result is an array of concrete versions, so we attempt to match the highest satsifying version
+      const satisfyingVersion = Semver.maxSatisfying(matchingVersionsResult, version)
+      return satisfyingVersion == null
+        ? packageNotFound
+        : npmVersionLookupSuccess(satisfyingVersion)
+    } else {
+      return Promise.reject(
+        `Invalid matching versions result for ${packageName}@${version}: ${matchingVersionsResult}`,
+      )
+    }
   } else if (response.status === 404) {
     return packageNotFound
   } else {
-    return Promise.reject(`Received an error for package ${packageName}@${versionRange}`)
+    return Promise.reject(`Received an error for package ${packageName}@${version}`)
   }
 }
 
@@ -205,16 +212,23 @@ export async function findMatchingVersion(
   packageName: string,
   version: string,
 ): Promise<VersionLookupResult> {
-  const versionType = getVersionType(version)
+  const versionType = getVersionType(packageName, version)
   switch (versionType) {
     case 'GITHUB':
-      return Promise.resolve(packageNotFound)
+      const npaResolveResult = npa.resolve(packageName, version)
+      if (npaResolveResult.hosted != null && npaResolveResult.gitRange == null) {
+        // TODO Support semver ranges on hosted repos
+        // npa appears to be using a buggy version of hosted-git-info
+        const gitHost = GitHost.fromUrl(version)
+        return Promise.resolve(hostedVersionLookupSuccess(gitHost, version))
+      } else {
+        throw new Error(`Unable to resolve host information for git hosted repo ${version}`)
+      }
     case 'LOCAL':
       return Promise.resolve(packageNotFound)
     case 'SEMVER':
-      return findMatchingSemverVersion(packageName, version)
     case 'TAG':
-      return findTaggedVersion(packageName, version)
+      return fetchNpmMatchingVersion(packageName, version)
     case 'URL':
       return Promise.resolve(packageNotFound)
     default:
@@ -226,13 +240,13 @@ export async function findMatchingVersion(
 export async function checkPackageVersionExists(
   packageName: string,
   version: string,
-): Promise<VersionLookupResult> {
+): Promise<boolean> {
   const matchingVersion = await findMatchingVersion(packageName, version)
   switch (matchingVersion.type) {
     case 'VERSION_LOOKUP_SUCCESS':
-      return versionLookupSuccess(version)
+      return true
     case 'PACKAGE_NOT_FOUND':
-      return packageNotFound
+      return false
     default:
       const _exhaustiveCheck: never = matchingVersion
       throw new Error(`Unhandled version lookup type ${JSON.stringify(matchingVersion)}`)

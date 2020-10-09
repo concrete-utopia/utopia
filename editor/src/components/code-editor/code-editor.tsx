@@ -12,7 +12,6 @@ import {
 } from '../../core/shared/project-file-types'
 import {
   TypeDefinitions,
-  ResolvedNpmDependency,
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
 import { ConsoleLog } from '../editor/store/editor-state'

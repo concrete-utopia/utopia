@@ -19,7 +19,6 @@ import { fastForEach } from '../shared/utils'
 import {
   isResolvedNpmDependency,
   PossiblyUnversionedNpmDependency,
-  ResolvedNpmDependency,
 } from '../shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../third-party/third-party-components'
 import { getJSXElementNameAsString, isIntrinsicHTMLElement } from '../shared/element-template'

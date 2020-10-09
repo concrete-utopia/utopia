@@ -42,8 +42,7 @@ expectedFilenames = [
   "/node_modules/react/package.json",
   "/node_modules/react/umd/react.development.js",
   "/node_modules/react/umd/react.production.min.js",
-  "/node_modules/react/umd/react.profiling.min.js",
-  "package.json"]
+  "/node_modules/react/umd/react.profiling.min.js"]
 
 getNodeModulesSubDirectories :: FilePath -> IO [FilePath]
 getNodeModulesSubDirectories projectFolder = do
@@ -55,15 +54,15 @@ npmSpec = do
   describe "withInstalledProject" $ do
     it "should have the various dependencies in node_modules for react" $ do
       semaphore <- newQSem 1
-      result <- withInstalledProject semaphore "react" "16.13.1" getNodeModulesSubDirectories
-      result `shouldBe` [".bin", ".yarn-integrity", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
+      result <- withInstalledProject semaphore "react@16.13.1" getNodeModulesSubDirectories
+      result `shouldBe` [".bin", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
     it "should fail for a non-existent project" $ do
       semaphore <- newQSem 1
-      withInstalledProject semaphore "non-existent-project-that-will-never-exist" "9.9.9.9.9.9" getNodeModulesSubDirectories `shouldThrow` anyIOException
+      withInstalledProject semaphore "non-existent-project-that-will-never-exist@9.9.9.9.9.9" getNodeModulesSubDirectories `shouldThrow` anyIOException
   describe "getModuleAndDependenciesFiles" $ do
     it "should get a bunch of .js, .d.ts and package.json files" $ do
       semaphore <- newQSem 1
-      result <- withInstalledProject semaphore "react" "16.13.1" getModuleAndDependenciesFiles
+      result <- withInstalledProject semaphore "react@16.13.1" getModuleAndDependenciesFiles
       let filteredResult = Map.filter (\v -> v /= Placeholder) result
       let sortedFilenames = sort $ Map.keys filteredResult
       sortedFilenames `shouldBe` expectedFilenames

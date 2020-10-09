@@ -16,7 +16,11 @@ import { NO_OP } from '../../shared/utils'
 import { NodeModules } from '../../shared/project-file-types'
 import { getPackagerUrl, getJsDelivrFileUrl } from './packager-url'
 import { InjectedCSSFilePrefix } from '../../shared/css-style-loader'
-import { VersionLookupResult } from '../../../components/editor/npm-dependency/npm-dependency'
+import {
+  npmVersion,
+  npmVersionLookupSuccess,
+  VersionLookupResult,
+} from '../../../components/editor/npm-dependency/npm-dependency'
 import {
   PackagerServerResponse,
   requestedNpmDependency,
@@ -38,19 +42,10 @@ jest.mock('../../../components/editor/npm-dependency/npm-dependency', () => ({
     packageName: string,
     versionRange: string,
   ): Promise<VersionLookupResult> => {
-    return Promise.resolve({
-      type: 'VERSION_LOOKUP_SUCCESS',
-      version: versionRange,
-    })
+    return Promise.resolve(npmVersionLookupSuccess(versionRange))
   },
-  checkPackageVersionExists: async (
-    packageName: string,
-    version: string,
-  ): Promise<VersionLookupResult> => {
-    return Promise.resolve({
-      type: 'VERSION_LOOKUP_SUCCESS',
-      version: version,
-    })
+  checkPackageVersionExists: async (packageName: string, version: string): Promise<boolean> => {
+    return Promise.resolve(true)
   },
 }))
 
@@ -60,7 +55,7 @@ describe('ES Dependency Package Manager', () => {
       NO_OP,
       extractNodeModulesFromPackageResponse(
         'mypackage',
-        '0.0.1',
+        npmVersion('0.0.1'),
         fileNoImports as PackagerServerResponse,
       ),
     )
@@ -72,7 +67,7 @@ describe('ES Dependency Package Manager', () => {
   it('resolves a file with one simple import', () => {
     const reqFn = getRequireFn(
       NO_OP,
-      extractNodeModulesFromPackageResponse('mypackage', '0.0.1', fileWithImports),
+      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -82,7 +77,7 @@ describe('ES Dependency Package Manager', () => {
   it('resolves a file with one local import', () => {
     const reqFn = getRequireFn(
       NO_OP,
-      extractNodeModulesFromPackageResponse('mypackage', '0.0.1', fileWithLocalImport),
+      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithLocalImport),
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -92,7 +87,7 @@ describe('ES Dependency Package Manager', () => {
   it('throws exception on not found dependency', () => {
     const reqFn = getRequireFn(
       NO_OP,
-      extractNodeModulesFromPackageResponse('mypackage', '0.0.1', fileWithImports),
+      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
     )
     const test = () => reqFn('/src/index.js', 'mypackage2')
     expect(test).toThrowError(`Could not find dependency: 'mypackage2' relative to '/src/index.js`)
@@ -104,7 +99,7 @@ describe('ES Dependency Manager — Cycles', () => {
     const spyEvaluator = jest.fn(evaluator)
     const reqFn = getRequireFn(
       NO_OP,
-      extractNodeModulesFromPackageResponse('mypackage', '0.0.1', fileWithImports),
+      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
       spyEvaluator,
     )
     const requireResult = reqFn('/src/index.js', 'mypackage/moduleA')
@@ -125,7 +120,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(resolvedNpmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl('react-spring@8.0.27'):
             return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
@@ -150,9 +145,9 @@ describe('ES Dependency Manager — Real-life packages', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(resolvedNpmDependency('antd', '4.2.5')):
+          case getPackagerUrl('antd@4.2.5'):
             return Promise.resolve({ status: 200, body: JSON.stringify(antdPackagerResponse) })
-          case getJsDelivrFileUrl(resolvedNpmDependency('antd', '4.2.5'), '/dist/antd.css'):
+          case getJsDelivrFileUrl('antd@4.2.5', '/dist/antd.css'):
             return Promise.resolve({ body: simpleCssContent })
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
@@ -182,7 +177,7 @@ describe('ES Dependency Manager — d.ts', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(resolvedNpmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl('react-spring@8.0.27'):
             return Promise.resolve({ status: 200, body: JSON.stringify(reactSpringServerResponse) })
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
@@ -215,9 +210,9 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(resolvedNpmDependency('mypackage', '0.0.1')):
+          case getPackagerUrl('mypackage@0.0.1'):
             return Promise.resolve({ status: 200, body: JSON.stringify(fileNoImports) })
-          case getJsDelivrFileUrl(resolvedNpmDependency('mypackage', '0.0.1'), '/dist/style.css'):
+          case getJsDelivrFileUrl('mypackage@0.0.1', '/dist/style.css'):
             return Promise.resolve({ body: simpleCssContent })
           default:
             throw new Error(`unexpected fetch called: ${request.url}`)
@@ -250,7 +245,7 @@ describe('ES Dependency manager - retry behavior', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(resolvedNpmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl('react-spring@8.0.27'):
             if (requestCounter === 0) {
               requestCounter++
               throw new Error('First request fails')
@@ -298,7 +293,7 @@ describe('ES Dependency manager - retry behavior', () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
-          case getPackagerUrl(resolvedNpmDependency('react-spring', '8.0.27')):
+          case getPackagerUrl('react-spring@8.0.27'):
             if (requestCounter === 0) {
               requestCounter++
               throw new Error('First request fails')
