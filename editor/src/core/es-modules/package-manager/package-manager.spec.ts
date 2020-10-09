@@ -112,7 +112,7 @@ describe('ES Dependency Manager — Cycles', () => {
   })
 })
 
-describe('ES Dependency Manager — Real-life packages', () => {
+xdescribe('ES Dependency Manager — Real-life packages', () => {
   it('react-spring@8.0.27', async () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
@@ -209,7 +209,7 @@ describe('ES Dependency Manager — d.ts', () => {
   })
 })
 
-describe('ES Dependency Manager — Downloads extra files as-needed', () => {
+xdescribe('ES Dependency Manager — Downloads extra files as-needed', () => {
   it('downloads a css file from jsdelivr, if needed', async (done) => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
