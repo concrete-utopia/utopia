@@ -171,14 +171,12 @@ export function getRequireFn(
           // return empty exports object, fire off an async job to fetch the dependency from jsdelivr
           // MUTATION
           resolvedFile.downloadStarted = true
-          fetchMissingFileDependency(updateNodeModules, resolvedFile, resolvedPath)
-            .then((response) => {
+          fetchMissingFileDependency(updateNodeModules, resolvedFile, resolvedPath).then(
+            (response) => {
               injectedEvaluator(resolvedPath, response, partialModule, partialRequire)
               partialRequire(resolvedPath)
-            })
-            .catch((err) => {
-              console.error('Download error.', err)
-            })
+            },
+          )
         }
 
         return {}
