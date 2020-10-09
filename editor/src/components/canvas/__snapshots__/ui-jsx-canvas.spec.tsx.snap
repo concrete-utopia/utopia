@@ -4760,56 +4760,6 @@ Object {
 }
 `;
 
-exports[`UiJsxCanvas render handles an undefined component gracefully 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"
-    all: initial;
-    position: absolute;
-    zoom: 100%;
-    transform: translate3d(0px, 0px, 0);
-  \\"
->
-  <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:bbb\\"
-    style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-    \\"
-    data-uid=\\"utopia-storyboard-uid\\"
-  >
-    <div
-      style=\\"
-        padding: 2px 4px;
-        border: 1px solid [object Object];
-        border-radius: 1px;
-        background-color: white;
-        color: rgba(77, 77, 77, 1);
-        flex-shrink: 0;
-      \\"
-      class=\\"css-1pyjm1n\\"
-    >
-      <img
-        style=\\"user-select: none;\\"
-        width=\\"16\\"
-        height=\\"16\\"
-        src=\\"http://localhost/editor/icons/light/semantic/warningtriangle-gray-16x16@2x.png\\"
-        draggable=\\"false\\"
-      /><span style=\\"margin-left: 4px;\\">Can&#x27;t find MyCard</span>
-    </div>
-  </div>
-</div>
-"
-`;
-
-exports[`UiJsxCanvas render handles an undefined component gracefully 2`] = `Object {}`;
-
 exports[`UiJsxCanvas render handles chaining dependencies into the appropriate order 1`] = `
 "<div
   id=\\"canvas-container\\"
@@ -9447,6 +9397,416 @@ Object {
 }
 `;
 
+exports[`UiJsxCanvas render renders fine with two circularly referencing arbitrary blocks 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
+>
+  <div
+    data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene:aaa\\"
+    style=\\"
+      position: absolute;
+      width: 375px;
+      height: 812px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
+    data-uid=\\"utopia-storyboard-uid\\"
+  >
+    <div
+      data-uid=\\"aaa\\"
+      style=\\"
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background-color: #ffffff;
+      \\"
+    >
+      0 - 0
+    </div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renders fine with two circularly referencing arbitrary blocks 2`] = `
+Object {
+  "utopia-storyboard-uid/scene:aaa": Object {
+    "childrenTemplatePaths": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "definedElsewhere": Array [
+              "b",
+            ],
+            "elementsWithin": Object {},
+            "javascript": "b(5);",
+            "originalJavascript": "b(5)",
+            "sourceMap": Object {
+              "file": "code.tsx",
+              "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
+              "names": Array [
+                "b",
+              ],
+              "sources": Array [
+                "code.tsx",
+              ],
+              "sourcesContent": Array [
+                "/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+function a(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return b(n - 1)
+  }
+}
+
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >{b(5)} - {a(5)}</div>
+  )
+}
+
+function b(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return a(n - 1)
+  }
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'utopia-storyboard-uid'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      data-uid={'scene'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)",
+              ],
+              "version": 3,
+            },
+            "transpiledJavascript": "return b(5);",
+            "type": "JSX_ARBITRARY_BLOCK",
+            "uniqueID": "",
+          },
+          Object {
+            "text": " - ",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+          Object {
+            "definedElsewhere": Array [
+              "a",
+            ],
+            "elementsWithin": Object {},
+            "javascript": "a(5);",
+            "originalJavascript": "a(5)",
+            "sourceMap": Object {
+              "file": "code.tsx",
+              "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
+              "names": Array [
+                "a",
+              ],
+              "sources": Array [
+                "code.tsx",
+              ],
+              "sourcesContent": Array [
+                "/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+function a(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return b(n - 1)
+  }
+}
+
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >{b(5)} - {a(5)}</div>
+  )
+}
+
+function b(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return a(n - 1)
+  }
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'utopia-storyboard-uid'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      data-uid={'scene'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)",
+              ],
+              "version": 3,
+            },
+            "transpiledJavascript": "return a(5);",
+            "type": "JSX_ARBITRARY_BLOCK",
+            "uniqueID": "",
+          },
+        ],
+        "metadata": null,
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Object {
+          "data-uid": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "aaa",
+          },
+          "layout": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {
+              "layoutSystem": "pinSystem",
+            },
+          },
+          "style": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {
+              "backgroundColor": "#FFFFFF",
+              "height": "100%",
+              "width": "100%",
+            },
+          },
+        },
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "aaa",
+      "data-utopia-original-uid": undefined,
+      "skipDeepFreeze": true,
+      "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
+        "alignSelf": undefined,
+        "backgroundColor": "#FFFFFF",
+        "bottom": undefined,
+        "flexBasis": undefined,
+        "flexDirection": undefined,
+        "flexGrow": undefined,
+        "flexShrink": undefined,
+        "flexWrap": undefined,
+        "height": "100%",
+        "justifyContent": undefined,
+        "left": undefined,
+        "marginBottom": undefined,
+        "marginLeft": undefined,
+        "marginRight": undefined,
+        "marginTop": undefined,
+        "maxHeight": undefined,
+        "maxWidth": undefined,
+        "minHeight": undefined,
+        "minWidth": undefined,
+        "position": "relative",
+        "right": undefined,
+        "top": undefined,
+        "width": "100%",
+      },
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "aaa",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [
+          "utopia-storyboard-uid",
+          "scene",
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
+
+exports[`UiJsxCanvas render renders fine with two components that reference each other 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
+>
+  <div
+    data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene:BBB\\"
+    style=\\"
+      position: absolute;
+      width: 375px;
+      height: 812px;
+      left: 0;
+      top: 0;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+    \\"
+    data-uid=\\"utopia-storyboard-uid\\"
+  >
+    <div data-uid=\\"BBB\\">great</div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renders fine with two components that reference each other 2`] = `
+Object {
+  "utopia-storyboard-uid/scene:BBB": Object {
+    "childrenTemplatePaths": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "metadata": null,
+        "name": Object {
+          "baseVariable": "B",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Object {
+          "data-uid": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "BBB",
+          },
+          "x": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": 5,
+          },
+        },
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "BBB",
+      "data-utopia-original-uid": undefined,
+      "skipDeepFreeze": true,
+      "x": 5,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "BBB",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [
+          "utopia-storyboard-uid",
+          "scene",
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
+
 exports[`UiJsxCanvas render renders fragments correctly 1`] = `
 "<div
   id=\\"canvas-container\\"
@@ -11450,6 +11810,30 @@ Array [
         "lineNumber": 10,
       },
     ],
+  },
+]
+`;
+
+exports[`UiJsxCanvas runtime errors handles an non-existent component gracefully 1`] = `
+Array [
+  Object {
+    "columnNumber": undefined,
+    "lineNumber": undefined,
+    "message": "MyCard imported from utopia-api is undefined.",
+    "name": "Error",
+    "originalCode": undefined,
+  },
+]
+`;
+
+exports[`UiJsxCanvas runtime errors handles an undefined component gracefully 1`] = `
+Array [
+  Object {
+    "columnNumber": undefined,
+    "lineNumber": undefined,
+    "message": "MyCard from this file is undefined.",
+    "name": "Error",
+    "originalCode": undefined,
   },
 ]
 `;

@@ -13,8 +13,6 @@ import {
   ElementsWithin,
   emptySpecialSizeMeasurements,
   getJSXElementNameAsString,
-  isArbitraryJSBlock,
-  isJSXArbitraryBlock,
   isJSXElement,
   isUtopiaJSXComponent,
   JSXArbitraryBlock,
@@ -25,7 +23,6 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   ComponentMetadataWithoutRootElements,
-  jsxElement,
   Param,
   isRegularParam,
   BoundParam,
@@ -36,6 +33,7 @@ import {
   isIntrinsicElement,
   isIntrinsicHTMLElement,
   isJSXFragment,
+  getDefinedWithin,
 } from '../../core/shared/element-template'
 import { getUtopiaID, getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
@@ -44,17 +42,16 @@ import {
   jsxAttributeToValue,
   AnyMap,
 } from '../../core/shared/jsx-attributes'
-import { getOrDefaultScenes } from '../../core/model/project-file-utils'
 import {
   Imports,
   InstancePath,
   SceneContainer,
-  SceneMetadata,
   ScenePath,
   TemplatePath,
   isParseSuccess,
   StaticInstancePath,
-  NodeModules,
+  importedNamesFromImports,
+  findPossibleImport,
 } from '../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
 import {
@@ -81,7 +78,6 @@ import { useDomWalker } from './dom-walker'
 import { resolveParamsAndRunJsCode } from '../../core/shared/javascript-cache'
 import { isLiveMode } from '../editor/editor-modes'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { defaultPropertiesForComponent } from '../../core/property-controls/property-controls-utils'
 import {
   isSceneElement,
   BakedInStoryboardVariableName,
@@ -89,16 +85,17 @@ import {
   PathForResizeContent,
 } from '../../core/model/scene-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
-import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import { EditorDispatch } from '../editor/action-types'
-import { resolveModule } from '../../core/es-modules/package-manager/module-resolution'
-import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
+import {
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from '../inspector/common/property-path-hooks'
 import { usePrevious } from '../editor/hook-utils'
 import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import { unimportCSSFile } from '../../core/shared/css-style-loader'
-import { removeAll, flatMapArray } from '../../core/shared/array-utils'
+import { flatMapArray, removeAll } from '../../core/shared/array-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
-import { omitWithPredicate, objectMap } from '../../core/shared/object-utils'
+import { objectMap } from '../../core/shared/object-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
@@ -148,13 +145,13 @@ export interface UiJsxCanvasProps {
   walkDOM: boolean
   imports: Imports
   topLevelElementsIncludingScenes: Array<TopLevelElement>
-  dependencyOrdering: Array<string>
   jsxFactoryFunction: string | null
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean // FOR ui-jsx-canvas.spec TESTS ONLY!!!! this prevents us from having to update the legacy test snapshots
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -172,7 +169,6 @@ export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactCl
 
 const emptyImports: Imports = {}
 const emptyTopLevelElements: Array<TopLevelElement> = []
-const emptyDependencyOrdering: Array<string> = []
 
 export function pickUiJsxCanvasProps(
   editor: EditorState,
@@ -195,16 +191,16 @@ export function pickUiJsxCanvasProps(
 
     let imports: Imports = emptyImports
     let topLevelElementsIncludingScenes: Array<TopLevelElement> = emptyTopLevelElements
-    let dependencyOrdering: Array<string> = emptyDependencyOrdering
     let jsxFactoryFunction: string | null = null
+    let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
 
     if (uiFile != null && isParseSuccess(uiFile.fileContents)) {
       const success = uiFile.fileContents.value
       const transientCanvasState = derived.canvas.transientState
-      dependencyOrdering = success.dependencyOrdering
       imports = uiFile.fileContents.value.imports
       topLevelElementsIncludingScenes = success.topLevelElements
       jsxFactoryFunction = success.jsxFactoryFunction
+      combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
       const transientFileState = transientCanvasState.fileState
       if (transientFileState != null) {
         imports = transientFileState.imports
@@ -245,13 +241,13 @@ export function pickUiJsxCanvasProps(
       walkDOM: walkDOM,
       imports: imports,
       topLevelElementsIncludingScenes: topLevelElementsIncludingScenes,
-      dependencyOrdering: dependencyOrdering,
       jsxFactoryFunction: jsxFactoryFunction,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       canvasIsLive: isLiveMode(editor.mode),
       shouldIncludeCanvasRootInTheSpy: true,
       linkTags: linkTags,
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   }
 }
@@ -361,6 +357,8 @@ interface RerenderUtopiaContextProps {
   hiddenInstances: Array<TemplatePath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
+  imports: Imports
+  topLevelElementNames: Array<string>
 }
 
 const RerenderUtopiaContext = React.createContext<RerenderUtopiaContextProps>({
@@ -368,6 +366,8 @@ const RerenderUtopiaContext = React.createContext<RerenderUtopiaContextProps>({
   hiddenInstances: [],
   canvasIsLive: false,
   shouldIncludeCanvasRootInTheSpy: false,
+  imports: {},
+  topLevelElementNames: [],
 })
 RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 
@@ -387,33 +387,6 @@ function updateMutableUtopiaContextWithNewProps(
   newProps: MutableUtopiaContextProps,
 ): void {
   ref.current = newProps
-}
-
-export function reorderTopLevelElements(
-  elements: Array<TopLevelElement>,
-  ordering: Array<string>,
-): Array<TopLevelElement> {
-  let elementsByKey = Utils.arrayToObject(elements, (element) => {
-    if (isUtopiaJSXComponent(element)) {
-      return element.name
-    } else {
-      return element.uniqueID
-    }
-  })
-  let result: Array<TopLevelElement> = []
-  // Add elements as they appear in the ordering.
-  Utils.fastForEach(ordering, (orderingKey) => {
-    if (orderingKey in elementsByKey) {
-      const element = elementsByKey[orderingKey]
-      result.push(element)
-      delete elementsByKey[orderingKey]
-    }
-  })
-  // Cleanup any remaining elements.
-  Utils.fastForEach(Object.values(elementsByKey), (element) => {
-    result.push(element)
-  })
-  return result
 }
 
 function cssImportsFromImports(imports: Imports): Array<string> {
@@ -442,13 +415,13 @@ export const UiJsxCanvas = betterReactMemo(
       onDomReport,
       topLevelElementsIncludingScenes,
       imports,
-      dependencyOrdering,
       jsxFactoryFunction,
       clearErrors,
       clearConsoleLogs,
       addToConsoleLogs,
       canvasIsLive,
       linkTags,
+      combinedTopLevelArbitraryBlock,
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
@@ -486,11 +459,6 @@ export const UiJsxCanvas = betterReactMemo(
     }
 
     if (requireFn != null) {
-      const orderedTopLevelElements = reorderTopLevelElements(
-        topLevelElementsIncludingScenes,
-        dependencyOrdering,
-      )
-
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => requireFn(importOrigin, toImport, false),
         [requireFn],
@@ -511,8 +479,12 @@ export const UiJsxCanvas = betterReactMemo(
 
       let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
 
+      let topLevelElementNames: Array<string> = []
+
       // Make sure there is something in scope for all of the top level components
-      Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
+      Utils.fastForEach(topLevelElementsIncludingScenes, (topLevelElement) => {
+        // Add the names of everything defined within for later use.
+        topLevelElementNames.push(...getDefinedWithin(topLevelElement))
         if (isUtopiaJSXComponent(topLevelElement)) {
           topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
           if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
@@ -523,17 +495,17 @@ export const UiJsxCanvas = betterReactMemo(
         }
       })
 
+      const memoizedTopLevelElementNames = useKeepShallowReferenceEquality(topLevelElementNames)
+
       executionScope = {
         ...executionScope,
         ...topLevelComponentRendererComponents.current,
       }
 
       // First make sure everything is in scope
-      Utils.fastForEach(orderedTopLevelElements, (topLevelElement) => {
-        if (isArbitraryJSBlock(topLevelElement)) {
-          runBlockUpdatingScope(requireResult, topLevelElement, executionScope)
-        }
-      })
+      if (combinedTopLevelArbitraryBlock != null) {
+        runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
+      }
 
       updateMutableUtopiaContextWithNewProps(mutableContextRef, {
         requireResult: requireResult,
@@ -568,6 +540,8 @@ export const UiJsxCanvas = betterReactMemo(
                 topLevelElements: topLevelElementsMap,
                 canvasIsLive: canvasIsLive,
                 shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+                imports: imports,
+                topLevelElementNames: memoizedTopLevelElementNames,
               }}
             >
               <CanvasContainer
@@ -803,6 +777,8 @@ function createComponentRendererComponent(params: {
           mutableContext.jsxFactoryFunctionName,
           codeError,
           rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy,
+          rerenderUtopiaContext.imports,
+          rerenderUtopiaContext.topLevelElementNames,
         )
       }
     }
@@ -1004,6 +980,8 @@ function renderCoreElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  imports: Imports,
+  topLevelNames: Array<string>,
 ): React.ReactElement {
   if (codeError != null) {
     throw codeError
@@ -1075,6 +1053,8 @@ function renderCoreElement(
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
+        imports,
+        topLevelNames,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -1122,6 +1102,8 @@ function renderCoreElement(
           jsxFactoryFunctionName,
           null,
           shouldIncludeCanvasRootInTheSpy,
+          imports,
+          topLevelNames,
         )
       }
       const blockScope = {
@@ -1153,6 +1135,8 @@ function renderCoreElement(
           jsxFactoryFunctionName,
           codeError,
           shouldIncludeCanvasRootInTheSpy,
+          imports,
+          topLevelNames,
         )
         renderedChildren.push(renderResult)
       })
@@ -1174,22 +1158,22 @@ function renderCoreElement(
   }
 }
 
-function createMissingElement(jsx: JSXElement): React.ReactElement {
-  return (
-    <FlexRow
-      style={{
-        padding: '2px 4px',
-        border: `1px solid ${UtopiaTheme.color.subduedBorder}`,
-        borderRadius: 1,
-        backgroundColor: 'white',
-        color: UtopiaTheme.color.secondaryForeground.value,
-        flexShrink: 0,
-      }}
-    >
-      <WarningIcon color='gray' tooltipText='Missing element' />
-      <span style={{ marginLeft: 4 }}>Can't find {getJSXElementNameAsString(jsx.name)}</span>
-    </FlexRow>
-  )
+function throwForMissingElement(
+  jsx: JSXElement,
+  imports: Imports,
+  topLevelNames: Array<string>,
+): React.ReactElement {
+  const prettyName = getJSXElementNameAsString(jsx.name)
+  if (topLevelNames.includes(jsx.name.baseVariable)) {
+    throw new Error(`${prettyName} from this file is undefined.`)
+  } else {
+    const possibleImport = findPossibleImport(jsx.name.baseVariable, imports)
+    if (possibleImport == null) {
+      throw new Error(`Could not find component ${prettyName}.`)
+    } else {
+      throw new Error(`${prettyName} imported from ${possibleImport} is undefined.`)
+    }
+  }
 }
 
 function buildSpyWrappedElement(
@@ -1285,6 +1269,8 @@ function renderJSXElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  imports: Imports,
+  topLevelNames: Array<string>,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, templatePath)) {
@@ -1312,6 +1298,8 @@ function renderJSXElement(
       jsxFactoryFunctionName,
       codeError,
       shouldIncludeCanvasRootInTheSpy,
+      imports,
+      topLevelNames,
     )
   }
 
@@ -1326,7 +1314,7 @@ function renderJSXElement(
     elementIsIntrinsic && !elementIsBaseHTML ? filterDataProps(elementProps) : elementProps
 
   if (FinalElement == null) {
-    return createMissingElement(jsx)
+    return throwForMissingElement(jsx, imports, topLevelNames)
   } else if (TP.containsPath(templatePath, validPaths)) {
     let childrenTemplatePaths: InstancePath[] = []
 

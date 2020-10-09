@@ -23,7 +23,7 @@ import { defaultIfNull } from '../../shared/optional-utils'
 import { ErrorMessage } from '../../shared/error-messages'
 
 import { printCode, printCodeOptions } from '../parser-printer/parser-printer'
-import { TopLevelElement } from '../../shared/element-template'
+import { ArbitraryJSBlock, TopLevelElement } from '../../shared/element-template'
 import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 
 export function codeNeedsPrinting(revisionsState: RevisionsState): boolean {
@@ -160,8 +160,8 @@ export function parseSuccess(
   projectContainedOldSceneMetadata: boolean,
   code: string,
   highlightBounds: HighlightBoundsForUids,
-  dependencyOrdering: Array<string>,
   jsxFactoryFunction: string | null,
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null,
 ): ParseSuccess {
   return {
     imports: imports,
@@ -170,8 +170,8 @@ export function parseSuccess(
     projectContainedOldSceneMetadata: projectContainedOldSceneMetadata,
     code: code,
     highlightBounds: highlightBounds,
-    dependencyOrdering: dependencyOrdering,
     jsxFactoryFunction: jsxFactoryFunction,
+    combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
   }
 }
 

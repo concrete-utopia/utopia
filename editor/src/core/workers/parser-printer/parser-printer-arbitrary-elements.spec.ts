@@ -205,7 +205,7 @@ export var whatever = props => (
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -303,7 +303,7 @@ return { arr: arr };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -403,7 +403,7 @@ return { arr: arr };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -504,7 +504,7 @@ return { arr: arr };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -588,7 +588,7 @@ export var whatever = (props) => {
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
@@ -689,10 +689,240 @@ return { arr: arr };`
         false,
         code,
         expect.objectContaining({}),
-        expect.arrayContaining([]),
+        null,
         null,
       ),
     )
     expect(actualResult).toEqual(expectedResult)
+  })
+  it('supports passing down the scope to children of components', () => {
+    const code = `import React from "react";
+import { View } from "utopia-api";
+export var whatever = (props) => {
+  return (
+    <View data-uid={'aaa'}>
+      { [1].map((n) => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div> ) }
+    </View>
+  )
+}
+`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const view = jsxElement(
+      'View',
+      {
+        'data-uid': jsxAttributeValue('aaa'),
+      },
+      [
+        jsxArbitraryBlock(
+          `[1].map((n) => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div> )`,
+          `[1].map(n => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div>);`,
+          `return [1].map(function (n) {
+  return utopiaCanvasJSXLookup("aab", {
+    n: n
+  });
+});`,
+          ['React', 'utopiaCanvasJSXLookup'],
+          expect.objectContaining({
+            sources: ['code.tsx'],
+            version: 3,
+            file: 'code.tsx',
+          }),
+          {
+            aab: jsxElement(
+              'div',
+              {
+                'data-uid': jsxAttributeValue('aab'),
+              },
+              [
+                jsxElement(
+                  'div',
+                  {
+                    'data-uid': jsxAttributeValue('aac'),
+                  },
+                  [
+                    jsxArbitraryBlock(
+                      `n`,
+                      `n;`,
+                      `return n;`,
+                      ['n'],
+                      expect.objectContaining({
+                        sources: ['code.tsx'],
+                        version: 3,
+                        file: 'code.tsx',
+                      }),
+                      {},
+                    ),
+                  ],
+                  null,
+                ),
+              ],
+              null,
+            ),
+          },
+        ),
+      ],
+      null,
+    )
+    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
+    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
+    const expectedResult = right(
+      parseSuccess(
+        JustImportViewAndReact,
+        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        right(defaultCanvasMetadata()),
+        false,
+        code,
+        expect.objectContaining({}),
+        null,
+        null,
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  xit('supports nested array destructuring in a function param', () => {
+    // FIXME Nested array destructuring doesn't work
+    const code = `import React from "react";
+import { View } from "utopia-api";
+export var whatever = (props) => {
+  const arr = [ [ [ 1 ] ] ]
+  return (
+    <View data-uid={'aaa'}>
+      { arr.map(([[ n ]]) => <View data-uid={'aab'} thing={n} /> ) }
+    </View>
+  )
+}
+`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const mapJsCode = `arr.map(([[ n ]]) => <View data-uid={'aab'} thing={n} /> )`
+    const transpiledMapJsCode = `return arr.map(function (_ref) {
+  var _ref2 = babelHelpers.slicedToArray(_ref, 1),
+      _ref2$ = babelHelpers.slicedToArray(_ref2[0], 1),
+      n = _ref2$[0];
+
+  return utopiaCanvasJSXLookup(\"aab\", {
+    n: n
+  });
+});`
+    const view = jsxElement(
+      'View',
+      {
+        'data-uid': jsxAttributeValue('aaa'),
+      },
+      [
+        jsxArbitraryBlock(
+          mapJsCode,
+          mapJsCode,
+          transpiledMapJsCode,
+          ['arr', 'React', 'View', 'utopiaCanvasJSXLookup'],
+          expect.objectContaining({
+            sources: ['code.tsx'],
+            version: 3,
+            file: 'code.tsx',
+          }),
+          {
+            aab: jsxElement(
+              'View',
+              {
+                'data-uid': jsxAttributeValue('aab'),
+                thing: jsxAttributeOtherJavaScript(
+                  'n',
+                  'return n;',
+                  ['n'],
+                  expect.objectContaining({
+                    sources: ['code.tsx'],
+                    version: 3,
+                    file: 'code.tsx',
+                  }),
+                ),
+              },
+              [],
+              null,
+            ),
+          },
+        ),
+      ],
+      null,
+    )
+    const jsCode = `const arr = [ [ [ 1 ] ] ]`
+    const transpiledJsCode = `var arr = [[[1]]];
+return { arr: arr };`
+    const arbitraryBlock = arbitraryJSBlock(
+      jsCode,
+      transpiledJsCode,
+      ['arr'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+    )
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      arbitraryBlock,
+    )
+    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
+    const expectedResult = right(
+      parseSuccess(
+        JustImportViewAndReact,
+        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        right(defaultCanvasMetadata()),
+        false,
+        code,
+        expect.objectContaining({}),
+        null,
+        null,
+      ),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+
+  it('circularly referenced arbitrary blocks parse and produce a combined block', () => {
+    const code = `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+function a(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return b(n - 1)
+  }
+}
+
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >{b(5)} - {a(5)}</div>
+  )
+}
+
+function b(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return a(n - 1)
+  }
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      data-uid={'ccc'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)`
+    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    expect(actualResult).toMatchSnapshot()
   })
 })

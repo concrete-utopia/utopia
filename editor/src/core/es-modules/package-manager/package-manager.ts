@@ -120,31 +120,31 @@ export function getRequireFn(
     if (resolvedPath != null) {
       const notNullResolvedPath: string = resolvedPath
       const resolvedFile = nodeModules[resolvedPath]
+
+      /**
+       * we create a result cache with an empty exports object here.
+       * the `injectedEvaluator` function is going to mutate this exports object.
+       * the reason is that if we have cyclic dependencies, we want to be able to
+       * return a partial exports object for a module which is under evaluation,
+       * to avoid infinite loops
+       *
+       * https://nodejs.org/api/modules.html#modules_cycles
+       *
+       */
+      let partialModule = {
+        exports: {},
+      }
+      function partialRequire(name: string): unknown {
+        return require(notNullResolvedPath, name)
+      }
       if (resolvedFile != null && isEsCodeFile(resolvedFile)) {
         if (resolvedFile.evalResultCache == null) {
           try {
-            /**
-             * we create a result cache with an empty exports object here.
-             * the `injectedEvaluator` function is going to mutate this exports object.
-             * the reason is that if we have cyclic dependencies, we want to be able to
-             * return a partial exports object for a module which is under evaluation,
-             * to avoid infinite loops
-             *
-             * https://nodejs.org/api/modules.html#modules_cycles
-             *
-             */
-
             // TODO this is the node.js `module` object we pass in to the evaluation scope.
             // we should extend the module objects so it not only contains the exports,
             // to have feature parity with the popular bundlers (Parcel / webpack)
-            let partialModule = {
-              exports: {},
-            }
             // MUTATION
             resolvedFile.evalResultCache = { module: partialModule }
-            function partialRequire(name: string): unknown {
-              return require(notNullResolvedPath, name)
-            }
             injectedEvaluator(
               resolvedPath,
               resolvedFile.fileContents,
@@ -171,7 +171,12 @@ export function getRequireFn(
           // return empty exports object, fire off an async job to fetch the dependency from jsdelivr
           // MUTATION
           resolvedFile.downloadStarted = true
-          fetchMissingFileDependency(updateNodeModules, resolvedFile, resolvedPath)
+          fetchMissingFileDependency(updateNodeModules, resolvedFile, resolvedPath).then(
+            (response) => {
+              injectedEvaluator(resolvedPath, response, partialModule, partialRequire)
+              partialRequire(resolvedPath)
+            },
+          )
         }
 
         return {}

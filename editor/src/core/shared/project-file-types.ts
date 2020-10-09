@@ -1,9 +1,10 @@
 import * as TS from 'typescript'
 import { FlexParentProps, LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { Either, Left, Right, isRight, isLeft } from './either'
-import { TopLevelElement, UtopiaJSXComponent } from './element-template'
+import { ArbitraryJSBlock, TopLevelElement, UtopiaJSXComponent } from './element-template'
 import { ErrorMessage } from './error-messages'
-import { arrayEquals, objectEquals } from './utils'
+import { forEachValue } from './object-utils'
+import { arrayEquals, fastForEach, objectEquals } from './utils'
 
 export type id = string
 
@@ -132,7 +133,43 @@ export function importDetailsEquals(first: ImportDetails, second: ImportDetails)
   )
 }
 
+export function importedNamesFromImportDetails(details: ImportDetails): Array<string> {
+  let result: Array<string> = []
+  fastForEach(details.importedFromWithin, (fromWithin) => {
+    result.push(fromWithin.alias)
+  })
+  if (details.importedAs != null) {
+    result.push(details.importedAs)
+  }
+  if (details.importedWithName != null) {
+    result.push(details.importedWithName)
+  }
+  return result
+}
+
 export type Imports = { [importSource: string]: ImportDetails }
+
+export function importedNamesFromImports(imports: Imports): Array<string> {
+  let result: Array<string> = []
+  forEachValue((details) => {
+    result.push(...importedNamesFromImportDetails(details))
+  }, imports)
+  return result
+}
+
+export function findPossibleImport(toCheck: string, imports: Imports): string | null {
+  for (const importSource of Object.keys(imports)) {
+    const details = imports[importSource]
+    if (details.importedFromWithin.some((fromWithin) => fromWithin.alias === toCheck)) {
+      return importSource
+    } else if (details.importedWithName === toCheck) {
+      return importSource
+    } else if (details.importedAs === toCheck) {
+      return importSource
+    }
+  }
+  return null
+}
 
 export function importsEquals(first: Imports, second: Imports): boolean {
   return objectEquals(first, second, importDetailsEquals)
@@ -157,8 +194,8 @@ export interface ParseSuccess {
   projectContainedOldSceneMetadata: boolean
   code: string
   highlightBounds: HighlightBoundsForUids
-  dependencyOrdering: Array<string>
   jsxFactoryFunction: string | null
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
 }
 
 export function isParseSuccess(result: ParseResult): result is Right<ParseSuccess> {
