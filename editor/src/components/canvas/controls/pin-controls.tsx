@@ -6,6 +6,7 @@ import { colorTheme } from '../../../uuiui'
 import { isJSXElement } from '../../../core/shared/element-template'
 import { eitherToMaybe, isRight, right } from '../../../core/shared/either'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { isPercentPin } from 'utopia-api'
 
 interface PinOutlineProps {
   key: string
@@ -17,31 +18,24 @@ interface PinOutlineProps {
 }
 
 const PinOutline = (props: PinOutlineProps): JSX.Element => {
+  const borderStyle = isPercentPin(props.value) ? 'dotted' : 'solid'
   return (
     <>
       <div
-        key={props.key}
         style={{
           position: 'absolute',
-          backgroundColor: colorTheme.brandPurple.value,
           top: props.top,
           left: props.left,
-          width: props.isHorizontalLine ? props.size : 1,
-          height: props.isHorizontalLine ? 1 : props.size,
-          display: 'flex',
-          justifyContent: 'center',
-          flexDirection: props.isHorizontalLine ? 'row' : 'column',
+          width: props.isHorizontalLine ? props.size : 0,
+          height: props.isHorizontalLine ? 0 : props.size,
+          borderTop: props.isHorizontalLine
+            ? `1px ${borderStyle} ${colorTheme.brandPurple.value}`
+            : 'none',
+          borderLeft: props.isHorizontalLine
+            ? 'none'
+            : `1px ${borderStyle} ${colorTheme.brandPurple.value}`,
         }}
-      >
-        <div
-          style={{
-            color: colorTheme.brandPurple.value,
-            padding: 2,
-          }}
-        >
-          {props.value}
-        </div>
-      </div>
+      />
       <div
         style={{
           position: 'absolute',
@@ -62,6 +56,21 @@ const PinOutline = (props: PinOutlineProps): JSX.Element => {
           height: props.isHorizontalLine ? 10 : 1,
         }}
       />
+      <div
+        style={{
+          color: colorTheme.brandPurple.value,
+          position: 'absolute',
+          top: props.top,
+          left: props.left,
+          width: props.isHorizontalLine ? props.size : 0,
+          height: props.isHorizontalLine ? 0 : props.size,
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: props.isHorizontalLine ? 'row' : 'column',
+        }}
+      >
+        <div style={{ padding: 2 }}>{props.value}</div>
+      </div>
     </>
   )
 }
