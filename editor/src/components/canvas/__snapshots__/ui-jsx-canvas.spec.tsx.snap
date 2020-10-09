@@ -4760,56 +4760,6 @@ Object {
 }
 `;
 
-exports[`UiJsxCanvas render handles an undefined component gracefully 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"
-    all: initial;
-    position: absolute;
-    zoom: 100%;
-    transform: translate3d(0px, 0px, 0);
-  \\"
->
-  <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:bbb\\"
-    style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-    \\"
-    data-uid=\\"utopia-storyboard-uid\\"
-  >
-    <div
-      style=\\"
-        padding: 2px 4px;
-        border: 1px solid [object Object];
-        border-radius: 1px;
-        background-color: white;
-        color: rgba(77, 77, 77, 1);
-        flex-shrink: 0;
-      \\"
-      class=\\"css-1pyjm1n\\"
-    >
-      <img
-        style=\\"user-select: none;\\"
-        width=\\"16\\"
-        height=\\"16\\"
-        src=\\"http://localhost/editor/icons/light/semantic/warningtriangle-gray-16x16@2x.png\\"
-        draggable=\\"false\\"
-      /><span style=\\"margin-left: 4px;\\">Can&#x27;t find MyCard</span>
-    </div>
-  </div>
-</div>
-"
-`;
-
-exports[`UiJsxCanvas render handles an undefined component gracefully 2`] = `Object {}`;
-
 exports[`UiJsxCanvas render handles chaining dependencies into the appropriate order 1`] = `
 "<div
   id=\\"canvas-container\\"
@@ -11860,6 +11810,30 @@ Array [
         "lineNumber": 10,
       },
     ],
+  },
+]
+`;
+
+exports[`UiJsxCanvas runtime errors handles an non-existent component gracefully 1`] = `
+Array [
+  Object {
+    "columnNumber": undefined,
+    "lineNumber": undefined,
+    "message": "MyCard imported from utopia-api is undefined.",
+    "name": "Error",
+    "originalCode": undefined,
+  },
+]
+`;
+
+exports[`UiJsxCanvas runtime errors handles an undefined component gracefully 1`] = `
+Array [
+  Object {
+    "columnNumber": undefined,
+    "lineNumber": undefined,
+    "message": "MyCard from this file is undefined.",
+    "name": "Error",
+    "originalCode": undefined,
   },
 ]
 `;
