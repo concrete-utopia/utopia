@@ -805,6 +805,11 @@ export const InspectorContextProvider = betterReactMemo<{
     } else {
       const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
       if (elementMetadata != null) {
+        if (elementMetadata.computedStyle == null) {
+          // preventing a silent error by entirely skipping an element which has no computedStyle
+          return
+        }
+
         const jsxElement = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
         const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
         newEditedMultiSelectedProps.push(jsxAttributes)

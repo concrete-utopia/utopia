@@ -93,7 +93,7 @@ export interface InspectorPropsContextData {
   editedMultiSelectedProps: readonly JSXAttributes[]
   targetPath: readonly string[]
   realValues: ReadonlyArray<{ [key: string]: any }>
-  computedStyles: readonly ComputedStyle[]
+  computedStyles: ReadonlyArray<ComputedStyle>
 }
 
 export interface InspectorCallbackContextData {
