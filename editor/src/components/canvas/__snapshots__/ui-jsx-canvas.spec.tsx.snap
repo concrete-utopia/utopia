@@ -11819,7 +11819,7 @@ Array [
   Object {
     "columnNumber": undefined,
     "lineNumber": undefined,
-    "message": "MyCard imported from utopia-api is undefined.",
+    "message": "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.",
     "name": "Error",
     "originalCode": undefined,
   },
@@ -11831,7 +11831,7 @@ Array [
   Object {
     "columnNumber": undefined,
     "lineNumber": undefined,
-    "message": "MyCard from this file is undefined.",
+    "message": "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.",
     "name": "Error",
     "originalCode": undefined,
   },
