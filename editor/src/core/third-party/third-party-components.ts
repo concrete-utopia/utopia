@@ -13,9 +13,10 @@ import {
 } from '../shared/npm-dependency-types'
 import { NodeModules, isEsCodeFile } from '../shared/project-file-types'
 import { fastForEach } from '../shared/utils'
-import { parseDependencyVersionFromNodeModules, parseVersionPackageJsonFile } from '../../utils/package-parser-utils'
+import { parseVersionPackageJsonFile } from '../../utils/package-parser-utils'
 import { forEachRight } from '../shared/either'
 import { UtopiaApiComponents } from './utopia-api-components'
+import { versionForBuiltInDependency } from '../es-modules/package-manager/built-in-dependencies'
 
 const ThirdPartyComponents: DependenciesDescriptors = {
   antd: AntdComponents,
@@ -40,13 +41,29 @@ export function getThirdPartyComponents(
   }
 }
 
+export function parseDependencyVersionFromNodeModules(
+  nodeModules: NodeModules,
+  dependencyName: string,
+): string | null {
+  let version: string | null = null
+  const packageJsonFile = nodeModules[`/node_modules/${dependencyName}/package.json`]
+  if (packageJsonFile != null && isEsCodeFile(packageJsonFile)) {
+    const parseResult = parseVersionPackageJsonFile(packageJsonFile.fileContents)
+    forEachRight(parseResult, (resolvedVersion) => {
+      version = resolvedVersion
+    })
+  }
+  return version
+}
+
 export function resolvedDependencyVersions(
   dependencies: Array<RequestedNpmDependency>,
   files: NodeModules,
 ): Array<PossiblyUnversionedNpmDependency> {
   let result: Array<PossiblyUnversionedNpmDependency> = []
   fastForEach(dependencies, (dependency) => {
-    const version = parseDependencyVersionFromNodeModules(files, dependency.name)
+    const builtInVersion = versionForBuiltInDependency(dependency.name)
+    const version = builtInVersion ?? parseDependencyVersionFromNodeModules(files, dependency.name)
     if (version == null) {
       result.push(unversionedNpmDependency(dependency.name))
     } else {

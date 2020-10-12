@@ -1,8 +1,3 @@
-import * as UtopiaAPI from 'utopia-api'
-import * as UUIUI from 'uuiui'
-import * as UUIUIDeps from 'uuiui-deps'
-import * as ImportedReact from 'react'
-import * as ImportedReactDOM from 'react-dom'
 import {
   NodeModules,
   isEsCodeFile,
@@ -18,6 +13,7 @@ import { memoize } from '../../shared/memoize'
 import { mapArrayToDictionary } from '../../shared/array-utils'
 import { updateNodeModulesContents } from '../../../components/editor/actions/actions'
 import { utopiaApiTypings } from './utopia-api-typings'
+import { resolveBuiltInDependency } from './built-in-dependencies'
 
 export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
 
@@ -25,72 +21,6 @@ export function createDependencyNotFoundError(importOrigin: string, toImport: st
   let error = new Error(`Could not find dependency: '${toImport}' relative to '${importOrigin}'`)
   error.name = DependencyNotFoundErrorName
   return error
-}
-
-// Ensure this and `resolveBuiltinDependency` are kept in sync.
-export function isBuiltinDependency(toImport: string): boolean {
-  switch (toImport) {
-    case 'utopia-api':
-    case 'uuiui':
-    case 'uuiui-deps':
-    case 'react':
-    case 'react-dom':
-      return true
-    default:
-      return false
-  }
-}
-
-// Ensure this and `isBuiltinDependency` are kept in sync.
-function resolveBuiltinDependency(toImport: string): any | undefined {
-  const React = ImportedReact
-  const ReactDOM = ImportedReactDOM
-  /**
-   * DO NOT RELEASE THE SOFTWARE WITH THIS ENABLED
-   * OR AT LEAST WITHOUT REVISITING THIS TOPIC
-   * THIS IS FOR MAKING LOCAL DEVELOPMENT EASIER
-   *
-   * we are returning UtopiaAPI from the editor bundle, instead of the npm package bundle returned from the server here.
-   * why? because this enables us to skip the bundler server and the bumping procedure while iterating on the utopia-api
-   *
-   * once the API is stable, we need to start versioning it, and then this hack will need to be removed
-   * and importResultFromImports should be updated too
-   */
-  if (toImport === 'utopia-api') {
-    return {
-      ...UtopiaAPI,
-      default: UtopiaAPI,
-    }
-  }
-
-  if (toImport === 'uuiui') {
-    return {
-      ...UUIUI,
-      default: UUIUI,
-    }
-  }
-
-  if (toImport === 'uuiui-deps') {
-    return {
-      ...UUIUIDeps,
-      default: UUIUIDeps,
-    }
-  }
-
-  if (toImport === 'react') {
-    return {
-      ...React,
-      default: React,
-    }
-  }
-
-  if (toImport === 'react-dom') {
-    return {
-      ...ReactDOM,
-      default: ReactDOM,
-    }
-  }
-  return undefined
 }
 
 export const getMemoizedRequireFn = memoize(
@@ -111,9 +41,9 @@ export function getRequireFn(
   injectedEvaluator = evaluator,
 ): RequireFn {
   return function require(importOrigin, toImport): unknown {
-    const builtinDependency = resolveBuiltinDependency(toImport)
-    if (builtinDependency != null) {
-      return builtinDependency
+    const builtInDependency = resolveBuiltInDependency(toImport)
+    if (builtInDependency != null) {
+      return builtInDependency
     }
 
     const resolvedPath = resolveModule(nodeModules, importOrigin, toImport)
