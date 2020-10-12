@@ -183,10 +183,7 @@ const divComponentBeingInserted = componentBeingInserted({}, jsxElementName('div
 
 const imageComponentBeingInserted = componentBeingInserted({}, jsxElementName('img', []))
 
-const textComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
-  jsxElementName('Text', []),
-)
+const textComponentBeingInserted = componentBeingInserted({}, jsxElementName('div', []))
 
 const ellipseComponentBeingInserted = componentBeingInserted(
   { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
@@ -228,7 +225,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
   divInsertMode = () => {
     const newUID = generateUID(this.props.existingUIDs)
     this.props.editorDispatch(
-      [enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null)],
+      [enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null, null)],
       'everyone',
     )
   }
@@ -240,14 +237,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
   textInsertMode = () => {
     const newUID = generateUID(this.props.existingUIDs)
     this.props.editorDispatch(
-      [
-        enableInsertModeForJSXElement(
-          defaultTextElement(newUID),
-          newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
-          null,
-        ),
-      ],
+      [enableInsertModeForJSXElement(defaultTextElement(newUID), newUID, {}, null, 'text')],
       'everyone',
     )
   }
@@ -260,6 +250,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
           defaultAnimatedDivElement(newUID),
           newUID,
           { 'react-spring': importDetails(null, [importAlias('animated')], null) },
+          null,
           null,
         ),
       ],
@@ -276,6 +267,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
           newUID,
           { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
           null,
+          null,
         ),
       ],
       'everyone',
@@ -290,6 +282,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
           defaultRectangleElement(newUID),
           newUID,
           { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
+          null,
           null,
         ),
       ],
@@ -410,7 +403,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                 props['data-uid'] = jsxAttributeValue(newUID)
                 const newElement = jsxElement(jsxElementName(componentName, []), props, [], null)
                 this.props.editorDispatch(
-                  [enableInsertModeForJSXElement(newElement, newUID, {}, null)],
+                  [enableInsertModeForJSXElement(newElement, newUID, {}, null, null)],
                   'everyone',
                 )
               }
@@ -465,6 +458,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                             newElement,
                             newUID,
                             component.importsToAdd,
+                            null,
                             null,
                           ),
                         ],
@@ -576,7 +570,7 @@ export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => 
           border: `1px solid ${colorTheme.primary.value}`,
         },
       }}
-      onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
+      onMouseDown={props.disabled ? undefined : props.onMouseDown}
     >
       {resultingIcon}
       <span className='pl8 '>{props.label}</span>

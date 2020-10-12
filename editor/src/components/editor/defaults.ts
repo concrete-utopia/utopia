@@ -4,6 +4,7 @@ import {
   jsxAttributeValue,
   jsxElementName,
   jsxAttributeOtherJavaScript,
+  jsxTextBlock,
 } from '../../core/shared/element-template'
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { PathForResizeContent } from '../../core/model/scene-utils'
@@ -78,15 +79,11 @@ export function defaultTransparentViewElement(uid: string, layoutSystem: LayoutS
 
 export function defaultTextElement(uid: string): JSXElement {
   return jsxElement(
-    jsxElementName('Text', []),
+    jsxElementName('div', []),
     {
-      style: jsxAttributeValue({
-        fontSize: 16,
-      }),
-      text: jsxAttributeValue('Text'),
       'data-uid': jsxAttributeValue(uid),
     },
-    [],
+    [jsxTextBlock('Insert some text…')],
     null,
   )
 }

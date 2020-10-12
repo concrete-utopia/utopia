@@ -106,16 +106,15 @@ import { Text, View } from 'utopia-api'
 
 export default (props) => (
   <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>
-    <Text
-      style={{ fontSize: 16, textAlign: 'center' }}
-      text={props.text}
+    <div
+      style={{ textAlign: 'center' }}
+      children={props.text}
       layout={{
         left: 0,
         top: 10,
         width: '100%',
         height: '100%',
       }}
-      textSizing={'fixed'}
     />
   </View>
 )

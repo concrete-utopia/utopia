@@ -254,6 +254,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
                       ),
                     },
                 null,
+                null,
               ),
             ],
             'everyone',

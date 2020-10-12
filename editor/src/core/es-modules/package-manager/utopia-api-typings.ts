@@ -51,7 +51,6 @@ declare module 'utopia-api/index' {
   export * from 'utopia-api/layout/flex';
   export * from 'utopia-api/primitives/common';
   export * from 'utopia-api/primitives/view';
-  export * from 'utopia-api/primitives/text';
   export * from 'utopia-api/primitives/rectangle';
   export * from 'utopia-api/primitives/ellipse';
   export * from 'utopia-api/primitives/layoutable';
@@ -369,25 +368,6 @@ declare module 'utopia-api/primitives/resizeable' {
 declare module 'utopia-api/primitives/storyboard' {
   import * as React from 'react';
   export const Storyboard: (props: React.PropsWithChildren<any>) => JSX.Element;
-
-}
-declare module 'utopia-api/primitives/text' {
-  import * as React from 'react';
-  import { EditorState as DraftEditorState, RawDraftContentState } from 'draft-js';
-  import { UtopiaComponentProps } from 'utopia-api/primitives/common';
-  export type TextSizing = 'auto' | 'fixed';
-  export interface TextProps extends React.DOMAttributes<Text>, UtopiaComponentProps {
-      text: string | RawDraftContentState;
-      css?: any;
-      actionHandlers?: any;
-      textSizing?: TextSizing;
-      scale?: number;
-      componentSizeResult?: ((width: number | null, height: number | null) => void) | null;
-  }
-  export interface TextState {
-      editorState: DraftEditorState;
-  }
-  export const Text: React.FunctionComponent<TextProps>;
 
 }
 declare module 'utopia-api/primitives/view' {

@@ -1,35 +1,37 @@
 import * as React from 'react'
 import { sides } from 'utopia-api'
-import * as TP from '../../core/shared/template-path'
-import {
-  DetectedLayoutSystem,
-  ElementInstanceMetadata,
-  ComputedStyle,
-  elementInstanceMetadata,
-  SpecialSizeMeasurements,
-  specialSizeMeasurements,
-  emptySpecialSizeMeasurements,
-  emptyComputedStyle,
-} from '../../core/shared/element-template'
-import { id, TemplatePath, InstancePath } from '../../core/shared/project-file-types'
+import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/utopia-constants'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
 import { applicative4Either, isRight, left } from '../../core/shared/either'
-import Utils from '../../utils/utils'
+import {
+  ComputedStyle,
+  DetectedLayoutSystem,
+  ElementInstanceMetadata,
+  elementInstanceMetadata,
+  emptyComputedStyle,
+  emptySpecialSizeMeasurements,
+  SpecialSizeMeasurements,
+  specialSizeMeasurements,
+  textNodeInstanceMetadata,
+  TextNodeInstanceMetadata,
+} from '../../core/shared/element-template'
 import {
   CanvasPoint,
   CanvasRectangle,
   LocalPoint,
   localRectangle,
 } from '../../core/shared/math-utils'
+import { id, InstancePath, TemplatePath } from '../../core/shared/project-file-types'
+import { camelCaseToDashed } from '../../core/shared/string-utils'
+import * as TP from '../../core/shared/template-path'
+import Utils from '../../utils/utils'
 import {
   CSSNumber,
-  parseCSSLength,
   CSSPosition,
+  parseCSSLength,
   positionValues,
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
-import { camelCaseToDashed } from '../../core/shared/string-utils'
-import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/utopia-constants'
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1
@@ -214,7 +216,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           if (sceneIndexAttr != null && validPathsAttr != null) {
             const scenePath = TP.fromString(sceneIndexAttr.value)
             const validPaths = validPathsAttr.value.split(' ')
-            const metadata = walkSceneInner(scene, index, scenePath, validPaths)
+            const metadata: Array<
+              ElementInstanceMetadata | TextNodeInstanceMetadata
+            > = walkSceneInner(scene, index, scenePath, validPaths)
             rootMetadata.push(...metadata)
 
             const sceneMetadata = collectMetadata(
@@ -234,7 +238,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         canvasRootPath: TemplatePath,
         validPaths: Array<string>,
       ) {
-        const childMetadata = walkSceneInner(canvasRoot, index, canvasRootPath, validPaths)
+        const childMetadata: Array<
+          ElementInstanceMetadata | TextNodeInstanceMetadata
+        > = walkSceneInner(canvasRoot, index, canvasRootPath, validPaths)
         // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
         // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
         // to provide a home for the the (really existing) childMetadata
@@ -252,16 +258,16 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         rootMetadata.push(metadata)
       }
 
+      // What the heck does this do?
       function walkSceneInner(
         scene: HTMLElement,
         index: number,
         scenePath: TemplatePath,
         validPaths: Array<string>,
-      ): Array<ElementInstanceMetadata> {
+      ): Array<ElementInstanceMetadata | TextNodeInstanceMetadata> {
         const globalFrame: CanvasRectangle = globalFrameForElement(scene)
 
-        let metadatas: Array<ElementInstanceMetadata> = []
-
+        let metadatas: Array<ElementInstanceMetadata | TextNodeInstanceMetadata> = []
         scene.childNodes.forEach((childNode) => {
           const metadata = walkElements(
             childNode,
@@ -288,7 +294,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         originalParentPath: TemplatePath | null,
         uniqueParentPath: TemplatePath,
         validPaths: Array<string>,
-      ): Array<ElementInstanceMetadata> {
+      ): Array<ElementInstanceMetadata | TextNodeInstanceMetadata> {
         if (isScene(element)) {
           // we found a nested scene, restart the walk
           walkScene(element, index)
@@ -300,9 +306,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           // Determine the uid of this element if it has one.
           const uidAttribute = getDOMAttribute(element, 'data-uid')
           const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
-          const doNotTraverseAttribute = getDOMAttribute(element, 'data-utopia-do-not-traverse')
-
-          const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
 
           // Build the path for this element, substituting an index in if there is no uid attribute.
           function makeIndexElement(): id {
@@ -322,8 +325,13 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           const pathForChildren = pathIsValid ? uniquePath : uniqueParentPath
 
           // Build the metadata for the children of this DOM node.
-          let metadataOfChildren: Array<ElementInstanceMetadata> = []
-          if (traverseChildren) {
+          let metadataOfChildren: Array<ElementInstanceMetadata | TextNodeInstanceMetadata> = []
+
+          // Node is a text node
+          if (element.nodeType === 3 && element.nodeValue != null) {
+            // TODO: confirm what actual node property should be passed here
+            metadataOfChildren.push(textNodeInstanceMetadata(element.nodeValue))
+          } else {
             element.childNodes.forEach((child, childIndex) => {
               const childMetadata = walkElements(
                 child,
@@ -339,7 +347,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
               }
             })
           }
-
           if (pathIsValid) {
             return [collectMetadata(element, uniquePath, parentPoint, metadataOfChildren)]
           } else {
@@ -354,7 +361,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         element: HTMLElement,
         instancePath: InstancePath,
         parentPoint: CanvasPoint | null,
-        childrenMetadata: ElementInstanceMetadata[],
+        childrenMetadata: Array<ElementInstanceMetadata | TextNodeInstanceMetadata>,
       ): ElementInstanceMetadata {
         const globalFrame = globalFrameForElement(element)
         const localFrame =

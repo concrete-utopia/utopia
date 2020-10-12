@@ -22,7 +22,6 @@ import { defaultSceneElement } from '../../components/editor/defaults'
 
 const sampleIncludedElementTypes: Array<string> = [
   'Ellipse',
-  'Text',
   'Rectangle',
   'Storyboard',
   'View',
@@ -207,7 +206,7 @@ const mainComponentForTests = utopiaJSXComponent(
         null,
       ),
       jsxElement(
-        'Text',
+        'div',
         {
           layout: jsxAttributeValue({
             left: 200,
@@ -215,11 +214,7 @@ const mainComponentForTests = utopiaJSXComponent(
             width: 200,
             height: 100,
           }),
-          text: jsxAttributeValue('TEST'),
-          style: jsxAttributeValue({
-            fontSize: 16,
-          }),
-          textSizing: jsxAttributeValue('auto'),
+          children: jsxAttributeValue('TEST'),
           'data-uid': jsxAttributeValue('hhh'),
         },
         [],

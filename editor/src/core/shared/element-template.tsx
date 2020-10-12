@@ -866,7 +866,7 @@ export interface ElementInstanceMetadata {
   props: { [key: string]: any } // the final, resolved, static props value
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
-  children: Array<ElementInstanceMetadata>
+  children: Array<ElementInstanceMetadata | TextNodeInstance>
   componentInstance: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle
@@ -878,7 +878,7 @@ export function elementInstanceMetadata(
   props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
-  children: Array<ElementInstanceMetadata>,
+  children: Array<ElementInstanceMetadata | TextNodeInstance>,
   componentInstance: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle,
@@ -894,6 +894,15 @@ export function elementInstanceMetadata(
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
   }
+}
+
+export interface TextNodeInstanceMetadata {
+  type: 'TEXT_NODE_INSTANCE_METADATA'
+  value: string
+}
+
+export function textNodeInstanceMetadata(value: string): TextNodeInstanceMetadata {
+  return { type: 'TEXT_NODE_INSTANCE_METADATA', value }
 }
 
 export type DetectedLayoutSystem = 'flex' | 'grid' | 'flow' | 'none'

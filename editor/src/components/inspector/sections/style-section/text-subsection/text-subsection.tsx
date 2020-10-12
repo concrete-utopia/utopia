@@ -1,4 +1,3 @@
-import * as OPI from 'object-path-immutable'
 import * as React from 'react'
 import {
   Icons,
@@ -7,40 +6,17 @@ import {
   useWrappedEmptyOrUnknownOnSubmitValue,
 } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
-import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import {
-  isJSXAttributeValue,
-  JSXAttribute,
-  jsxAttributeValue,
-} from '../../../../../core/shared/element-template'
-import { PropertyPath } from '../../../../../core/shared/project-file-types'
-import * as PP from '../../../../../core/shared/property-path'
-import { filterScenes } from '../../../../../core/shared/template-path'
 import utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { EditorAction } from '../../../../editor/action-types'
-import * as EditorActions from '../../../../editor/actions/actions'
-import { useRefEditorState } from '../../../../editor/store/store-hook'
-import { measureTextFieldNew } from '../../../../text-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import { CSSFontStyle, cssNumber, CSSTextDecorationLine } from '../../../common/css-utils'
-import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
-import {
-  InspectorCallbackContext,
-  useInspectorElementInfo,
-  useInspectorStyleInfo,
-  useIsSubSectionVisible,
-  useKeepShallowReferenceEquality,
-  useSelectedViews,
-} from '../../../common/property-path-hooks'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { ColorControl } from '../../../controls/color-control'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl } from '../../../controls/option-chain-control'
 import { OptionControl } from '../../../controls/option-control'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
-
-const ObjectPathImmutable: any = OPI
 
 function updateItalicFontStyle(newValue: boolean, oldValue: CSSFontStyle): CSSFontStyle {
   return newValue ? 'italic' : 'normal'
@@ -68,8 +44,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
 
   const textAlignMetadata = useInspectorStyleInfo('textAlign')
 
-  const textSizingMetadata = useInspectorElementInfo('textSizing')
-
   const textDecorationLineMetadata = useInspectorStyleInfo('textDecorationLine')
   const [onUnderlinedSubmitValue] = textDecorationLineMetadata.useSubmitValueFactory(
     updateUnderlinedTextDecoration,
@@ -87,7 +61,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
     fontStyleMetadata.controlStyles.unsettable ||
     fontSizeMetadata.controlStyles.unsettable ||
     textAlignMetadata.controlStyles.unsettable ||
-    textSizingMetadata.controlStyles.unsettable ||
     textDecorationLineMetadata.controlStyles.unsettable ||
     letterSpacingMetadata.controlStyles.unsettable ||
     lineHeightMetadata.controlStyles.unsettable
@@ -98,7 +71,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
     fontStyleMetadata.onUnsetValues()
     fontSizeMetadata.onUnsetValues()
     textAlignMetadata.onUnsetValues()
-    textSizingMetadata.onUnsetValues()
     textDecorationLineMetadata.onUnsetValues()
     letterSpacingMetadata.onUnsetValues()
     lineHeightMetadata.onUnsetValues()
@@ -119,12 +91,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
   const colorContextMenuItems = utils.stripNulls([
     colorMetadata.controlStyles.unsettable
       ? addOnUnsetValues(['color'], colorMetadata.onUnsetValues)
-      : null,
-  ])
-
-  const textSizingContextMenuItems = utils.stripNulls([
-    textSizingMetadata.controlStyles.unsettable
-      ? addOnUnsetValues(['textSizing'], textSizingMetadata.onUnsetValues)
       : null,
   ])
 
@@ -251,51 +217,10 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
       </PropertyRow>
       <PropertyRow style={{ gridColumnGap: 8 }}>
         <InspectorContextMenuWrapper
-          id='textSizing-context-menu'
-          items={textSizingContextMenuItems}
-          data={null}
-          style={{ gridColumn: '1 / span 2' }}
-        >
-          <OptionChainControl
-            id='textAutoSizing'
-            key='textAutoSizing'
-            controlStatus={textSizingMetadata.controlStatus}
-            controlStyles={textSizingMetadata.controlStyles}
-            onSubmitValue={textSizingMetadata.onSubmitValue}
-            value={textSizingMetadata.value}
-            options={
-              [
-                {
-                  value: 'auto',
-                  tooltip: 'Auto',
-                  icon: {
-                    category: 'typography',
-                    type: 'auto',
-                    color: 'darkgray',
-                    width: 16,
-                    height: 16,
-                  },
-                },
-                {
-                  value: 'fixed',
-                  tooltip: 'Fixed',
-                  icon: {
-                    category: 'typography',
-                    type: 'fixed',
-                    color: 'darkgray',
-                    width: 16,
-                    height: 16,
-                  },
-                },
-              ] as Array<OptionChainOption<string | number>>
-            }
-          />
-        </InspectorContextMenuWrapper>
-        <InspectorContextMenuWrapper
           id='textAlign-context-menu'
           items={textAlignContextMenuItems}
           data={null}
-          style={{ gridColumn: '3 / span 4' }}
+          style={{ gridColumn: '1 / span 4' }}
         >
           <OptionChainControl
             id='textAlign'
@@ -452,82 +377,3 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
   )
 })
 TextSubsection.displayName = 'TextSubsection'
-
-export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsection', () => {
-  const selectedViewsRef = usePropControlledRef_DANGEROUS(filterScenes(useSelectedViews()))
-
-  const stateRef = useRefEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      componentMetadata: store.editor.jsxMetadataKILLME,
-    }
-  })
-
-  const inspectorContext = React.useContext(InspectorCallbackContext)
-
-  const onSubmitValue = React.useCallback(
-    async (newValue: JSXAttribute, propertyPath: PropertyPath, transient: boolean) => {
-      const selectedPaths = selectedViewsRef.current
-
-      let actions: Array<EditorAction> = []
-      for (let path of selectedPaths) {
-        const element = MetadataUtils.getElementByInstancePathMaybe(
-          stateRef.current.componentMetadata,
-          path,
-        )
-
-        // if this is a value attribute update, let's resize autosizing text, because property change can
-        // affect size
-        if (isJSXAttributeValue(newValue)) {
-          const rawNewValue = newValue.value
-
-          const settingTextSizingToAuto =
-            PP.pathsEqual(propertyPath, PP.create(['textSizing'])) && rawNewValue == 'auto'
-
-          if (element != null && (element.props.textSizing == 'auto' || settingTextSizingToAuto)) {
-            // apply the current change to the prop for proper size measurement
-            const updatedProps = ObjectPathImmutable.set(
-              element.props,
-              propertyPath.propertyElements as any,
-              rawNewValue,
-            )
-            const updatedElement = {
-              ...element,
-              props: updatedProps,
-            }
-            const size = await measureTextFieldNew(updatedElement)
-            if (size.width != null && size.height != null) {
-              actions.push(EditorActions.updateFrameDimensions(path, size.width, size.height))
-            }
-          }
-          // if this is not a value attribute, set the text to fixed sizing, because we can not measure it anyway
-        } else if (element != null && element.props.textSizing == 'auto') {
-          actions.push(
-            EditorActions.setProp_UNSAFE(
-              path,
-              PP.create(['textSizing']),
-              jsxAttributeValue('fixed'),
-            ),
-          )
-        }
-      }
-      stateRef.current.dispatch(actions, 'inspector')
-      inspectorContext.onSubmitValue(newValue, propertyPath, transient)
-    },
-    [stateRef, inspectorContext, selectedViewsRef],
-  )
-
-  const updatedContext = useKeepShallowReferenceEquality({
-    ...inspectorContext,
-    onSubmitValue: onSubmitValue,
-  })
-
-  return (
-    <>
-      <InspectorCallbackContext.Provider value={updatedContext}>
-        <TextSubsection />
-      </InspectorCallbackContext.Provider>
-    </>
-  )
-})
-AutosizingTextSubsection.displayName = 'AutosizingTextSubsection'

@@ -14,7 +14,6 @@ export const Ellipse: React.FunctionComponent<EllipseProps> = (props: EllipsePro
       {...propsWithEventHandlers}
       data-uid={dataUid}
       data-label={dataLabel}
-      data-utopia-do-not-traverse={true}
       style={{
         borderRadius: '50%',
         ...divProps.style,

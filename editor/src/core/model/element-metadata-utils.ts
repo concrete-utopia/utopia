@@ -96,15 +96,11 @@ function produceMetadataFromMergeCandidate(
   mergeCandidate: MergeCandidate,
 ): ElementInstanceMetadata {
   const mergedMetadata = mergeThese((fromSpy, fromDOM) => {
-    // Checking if our elements support children should prevent us from ending up with the
-    // internals of draft-js showing up underneath Text elements.
-    const shouldNotTraverse = Utils.path(['props', 'data-utopia-do-not-traverse'], fromDOM)
-    let children: Array<ElementInstanceMetadata>
-    if (shouldNotTraverse) {
-      children = []
-    } else {
-      children = mergeElementMetadata(elementsByUID, fromSpy.children, fromDOM.children)
-    }
+    const children: Array<ElementInstanceMetadata> = mergeElementMetadata(
+      elementsByUID,
+      fromSpy.children,
+      fromDOM.children,
+    )
 
     // The actual merge case.
     return {
@@ -527,9 +523,6 @@ export const MetadataUtils = {
     }
     const instance = this.getElementByInstancePathMaybe(components, target)
     return this.isAutoSizingView(instance)
-  },
-  isAutoSizingText(imports: Imports, instance: ElementInstanceMetadata): boolean {
-    return this.isTextAgainstImports(imports, instance) && instance.props.textSizing === 'auto'
   },
   findNonGroupParent(
     componentsMetadata: Array<ComponentMetadata>,

@@ -31,6 +31,7 @@ import {
   insertionSubjectIsScene,
   InsertMode,
   insertionSubjectIsDragAndDrop,
+  SpecialElementType,
 } from '../../editor/editor-modes'
 import { LeftMenuTab } from '../../navigator/left-pane'
 import * as PP from '../../../core/shared/property-path'
@@ -179,8 +180,8 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  isTextInsertion(element: JSXElementChild, importsToAdd: Imports): boolean {
-    return this.isUtopiaAPIInsertion(element, importsToAdd, 'Text')
+  isTextInsertion(specialElementType: SpecialElementType): boolean {
+    return specialElementType === 'text'
   }
 
   isImageInsertion(element: JSXElementChild, importsToAdd: Imports): boolean {
@@ -357,24 +358,7 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  setTextElementFixedSize = (element: JSXElement): JSXElement => {
-    const attributes = element.props
-    const updatedAttributes = forceSetValueAtPath(
-      attributes,
-      PP.create(['textSizing']),
-      jsxAttributeValue('fixed'),
-    )
-
-    return {
-      ...element,
-      props: updatedAttributes,
-    }
-  }
-
-  getTextElementAutoSizeWithPosition(
-    insertionSubject: JSXElement,
-    mousePosition: CanvasPoint,
-  ): JSXElement {
+  getTextDivWithPosition(insertionSubject: JSXElement, mousePosition: CanvasPoint): JSXElement {
     const attributes = insertionSubject.props
     const globalFrameAsRectangle = {
       x: mousePosition.x,
@@ -399,15 +383,9 @@ export class InsertModeControlContainer extends React.Component<
       throw new Error(`Problem setting frame on an element we just created.`)
     }
 
-    const updatedAttributes2 = forceSetValueAtPath(
-      updatedAttributes.value,
-      PP.create(['textSizing']),
-      jsxAttributeValue('auto'),
-    )
-
     return {
       ...insertionSubject,
-      props: updatedAttributes2,
+      props: updatedAttributes.value,
     }
   }
 
@@ -435,8 +413,8 @@ export class InsertModeControlContainer extends React.Component<
       )
 
       let { element } = this.props.mode.subject
-      if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
-        element = this.getTextElementAutoSizeWithPosition(element, snappedMousePoint)
+      if (this.isTextInsertion(insertionSubject.specialElementType)) {
+        element = this.getTextDivWithPosition(element, snappedMousePoint)
       }
       this.props.dispatch(
         [
@@ -449,6 +427,7 @@ export class InsertModeControlContainer extends React.Component<
                 insertionSubject.size,
                 insertionSubject.importsToAdd,
                 insertionParent(parent, staticParent),
+                insertionSubject.specialElementType,
               ),
             ),
           ),
@@ -505,7 +484,7 @@ export class InsertModeControlContainer extends React.Component<
           this.state.dragFrame != null
         ) {
           element = this.getImageElementWithSize()
-        } else if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
+        } else if (this.isTextInsertion(insertionSubject.specialElementType)) {
           element = insertionElement
         }
       } else {
@@ -513,7 +492,7 @@ export class InsertModeControlContainer extends React.Component<
         element = this.elementWithDragFrame(insertionElement)
       }
 
-      if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
+      if (this.isTextInsertion(insertionSubject.specialElementType)) {
         if (parentPath != null) {
           const path = TP.appendToPath(parentPath, insertionSubject.uid)
           extraActions.push(EditorActions.openTextEditor(path, null))
@@ -577,9 +556,6 @@ export class InsertModeControlContainer extends React.Component<
           parent,
         )
         let element = this.elementWithDragFrame(insertionSubject.element)
-        if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
-          element = this.setTextElementFixedSize(element)
-        }
 
         const aspectRatioCorrectedMousePoint = this.state.aspectRatio
           ? correctToAspectRatio(this.props.dragState.start, mousePoint, this.state.aspectRatio)
@@ -601,6 +577,7 @@ export class InsertModeControlContainer extends React.Component<
                   insertionSubject.size,
                   insertionSubject.importsToAdd,
                   insertionParent(parent, staticParent),
+                  insertionSubject.specialElementType,
                 ),
               ),
             ),

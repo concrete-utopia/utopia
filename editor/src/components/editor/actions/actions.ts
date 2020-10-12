@@ -356,6 +356,7 @@ import {
   SceneInsertionSubject,
   isSelectMode,
   isLiveMode,
+  SpecialElementType,
 } from '../editor-modes'
 import * as History from '../history'
 import { StateHistory } from '../history'
@@ -2712,26 +2713,6 @@ export const UPDATE_FNS = {
       height: action.height,
     } as LocalRectangle
 
-    if (TP.isInstancePath(action.element)) {
-      const element = MetadataUtils.getElementByInstancePathMaybe(
-        editor.jsxMetadataKILLME,
-        action.element,
-      )
-      const imports = getOpenImportsFromState(editor)
-      if (
-        element != null &&
-        MetadataUtils.isTextAgainstImports(imports, element) &&
-        element.props.textSizing == 'auto'
-      ) {
-        const alignment = element.props.style.textAlign
-        if (alignment === 'center') {
-          frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
-        } else if (alignment === 'right') {
-          frame = Utils.setRectRightX(frame, initialFrame.x + initialFrame.width)
-        }
-      }
-    }
-
     const parentPath = TP.parentPath(action.element)
     let offset = { x: 0, y: 0 } as CanvasPoint
     if (parentPath != null) {
@@ -2915,7 +2896,7 @@ export const UPDATE_FNS = {
             null,
           )
           const size = width != null && height != null ? { width: width, height: height } : null
-          const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
+          const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size, null)
           const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
           return {
             ...editorInsertEnabled,
@@ -3019,7 +3000,7 @@ export const UPDATE_FNS = {
         {},
       )
       const size = width != null && height != null ? { width: width, height: height } : null
-      const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
+      const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size, null)
       return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
     } else {
       return editor
@@ -4709,9 +4690,13 @@ export function enableInsertModeForJSXElement(
   uid: string,
   importsToAdd: Imports,
   size: Size | null,
+  specialElementType: SpecialElementType,
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode(false, elementInsertionSubject(uid, element, size, importsToAdd, null)),
+    EditorModes.insertMode(
+      false,
+      elementInsertionSubject(uid, element, size, importsToAdd, null, specialElementType),
+    ),
   )
 }
 

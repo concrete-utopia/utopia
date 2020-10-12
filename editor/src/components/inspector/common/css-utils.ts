@@ -9,7 +9,6 @@ import {
   FramePin,
   isPercentPin,
   LayoutSystem,
-  TextSizing,
   UtopiaUtils,
 } from 'utopia-api'
 import { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
@@ -3466,12 +3465,6 @@ function printTextAlign(cssTextAlign: CSSTextAlign): JSXAttributeValue<Property.
   return jsxAttributeValue(cssTextAlign)
 }
 
-const parseTextSizing = isOneOfTheseParser<TextSizing>(['auto', 'fixed'])
-
-function printTextSizing(textSizing: TextSizing): JSXAttributeValue<TextSizing> {
-  return jsxAttributeValue(textSizing)
-}
-
 const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
   'underline',
   'overline',
@@ -4183,7 +4176,6 @@ const cssPrinters: CSSPrinters = {
 }
 
 export interface UtopianElementProperties {
-  textSizing: TextSizing
   className: string
 }
 
@@ -4376,7 +4368,6 @@ const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, item) =
 const elementPropertiesEmptyValues: ParsedElementProperties = {
   alt: '',
   src: '/',
-  textSizing: 'fixed',
   ...DOMEventHandlerEmptyValues,
   className: '',
 }
@@ -4393,7 +4384,6 @@ const DOMEventHandlerParsers = DOMEventHandlerNames.reduce((current, item) => {
 const elementPropertiesParsers: MetadataParsers = {
   alt: parseString,
   src: parseString,
-  textSizing: parseTextSizing,
   ...DOMEventHandlerParsers,
   className: parseString,
 }
@@ -4410,7 +4400,6 @@ const DOMEventHandlerPrinters = DOMEventHandlerNames.reduce((current, item) => {
 const elementPropertiesPrinters: MetadataPrinters = {
   alt: printStringAsAttributeValue,
   src: printStringAsAttributeValue,
-  textSizing: printTextSizing,
   ...DOMEventHandlerPrinters,
   className: printStringAsAttributeValue,
 }

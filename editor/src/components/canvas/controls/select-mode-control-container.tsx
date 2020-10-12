@@ -654,15 +654,6 @@ export class SelectModeControlContainer extends React.Component<
 
     // TODO future span element should be included here
     let repositionOnly = false
-    if (this.props.selectedViews.length === 1 && !TP.isScenePath(this.props.selectedViews[0])) {
-      const path = this.props.selectedViews[0]
-      const element = MetadataUtils.getElementByInstancePathMaybe(
-        this.props.componentMetadata,
-        path,
-      )
-      repositionOnly =
-        element != null && MetadataUtils.isAutoSizingText(this.props.imports, element)
-    }
 
     return (
       <div

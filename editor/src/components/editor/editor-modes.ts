@@ -2,8 +2,11 @@ import { TemplatePath, id, StaticTemplatePath, Imports } from '../../core/shared
 import { JSXElement, JSXElementName } from '../../core/shared/element-template'
 import { Size } from '../../core/shared/math-utils'
 
+export type SpecialElementType = 'text' | null
+
 export interface ElementInsertionSubject {
   type: 'Element'
+  specialElementType: SpecialElementType
   uid: string
   element: JSXElement
   size: Size | null
@@ -26,6 +29,7 @@ export function elementInsertionSubject(
   size: Size | null,
   importsToAdd: Imports,
   parent: InsertionParent,
+  specialElementType: SpecialElementType,
 ): ElementInsertionSubject {
   return {
     type: 'Element',
@@ -34,6 +38,7 @@ export function elementInsertionSubject(
     size: size,
     importsToAdd: importsToAdd,
     parent: parent,
+    specialElementType,
   }
 }
 

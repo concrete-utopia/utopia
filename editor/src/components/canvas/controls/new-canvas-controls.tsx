@@ -340,81 +340,11 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       : []
   }
 
-  const renderTextEditor = (target: InstancePath) => {
-    const dragState = props.editor.canvas.dragState
-    const selectedViews = props.derived.canvas.transientState.selectedViews
-    if (dragState != null || selectedViews.length !== 1) {
-      return null
-    } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
-      const canAnimate =
-        MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-          target,
-          componentMetadata,
-        ) && props.animationEnabled
-      const frame = MetadataUtils.getFrameInCanvasCoords(target, componentMetadata)
-
-      if (frame == null || element == null) {
-        // If we have no frame at all we can't do anything, so fail to open the text editor
-        return null
-      }
-
-      const offset = Utils.scaleVector(
-        Utils.offsetPoint(props.editor.canvas.roundedCanvasOffset, frame),
-        props.editor.canvas.scale,
-      )
-
-      const textStyle =
-        element.computedStyle.textSizing == 'auto'
-          ? {
-              ...element.computedStyle,
-              top: 0,
-              left: 0,
-              visibility: 'visible',
-            }
-          : {
-              ...element.computedStyle,
-              top: 0,
-              left: 0,
-              width: frame.width,
-              height: frame.height,
-              visibility: 'visible',
-            }
-
-      return (
-        <TextEditor
-          key={'text-editor'}
-          target={target}
-          triggerMousePosition={
-            props.editor.canvas.textEditor != null
-              ? props.editor.canvas.textEditor.triggerMousePosition
-              : null
-          }
-          dispatch={props.dispatch}
-          text={element.props.text}
-          style={textStyle}
-          css={element.props.css}
-          className={canAnimate ? 'yoga-element-transition' : ''}
-          rawTextStyle={element.props.textstyle}
-          textSizing={element.props.textSizing}
-          scale={props.editor.canvas.scale}
-          deleteWhenEmpty={true}
-          offset={offset}
-        />
-      )
-    }
-  }
-
   const renderDeselectControl = () => {
     return selectionEnabled ? (
       <DeselectControl mode={props.editor.mode} dispatch={props.dispatch} />
     ) : null
   }
-
-  const textEditor =
-    props.editor.canvas.textEditor != null
-      ? renderTextEditor(props.editor.canvas.textEditor.templatePath)
-      : null
 
   return (
     <div
@@ -428,7 +358,6 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       {renderDeselectControl()}
       {renderModeControlContainer()}
       {renderHighlightControls()}
-      {textEditor}
     </div>
   )
 }

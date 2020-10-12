@@ -30,7 +30,6 @@ import {
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
 import { LeftMenuTab } from '../navigator/left-pane'
-import { toggleTextFormatting } from '../text-utils'
 import { EditorAction, EditorDispatch } from './action-types'
 import * as EditorActions from './actions/actions'
 import {
@@ -535,9 +534,6 @@ export function handleKeyDown(
       [SELECT_ALL_SIBLINGS_SHORTCUT]: () => {
         return [EditorActions.selectAllSiblings()]
       },
-      [TOGGLE_TEXT_BOLD_SHORTCUT]: () => {
-        return toggleTextFormatting(editor, dispatch, 'bold')
-      },
       [TOGGLE_BORDER_SHORTCUT]: () => {
         return TP.filterScenes(editor.selectedViews).map((target) =>
           EditorActions.toggleProperty(
@@ -565,9 +561,6 @@ export function handleKeyDown(
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
         return [EditorActions.toggleHidden()]
-      },
-      [TOGGLE_TEXT_ITALIC_SHORTCUT]: () => {
-        return toggleTextFormatting(editor, dispatch, 'italic')
       },
       [INSERT_IMAGE_SHORTCUT]: () => {
         if (modeType === 'select' || modeType === 'insert') {
@@ -606,6 +599,7 @@ export function handleKeyDown(
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
               null,
+              null,
             ),
           ]
         } else {
@@ -621,6 +615,7 @@ export function handleKeyDown(
               defaultEllipseElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
+              null,
               null,
             ),
           ]
@@ -649,6 +644,7 @@ export function handleKeyDown(
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
               null,
+              'text',
             ),
           ]
         } else {
@@ -664,6 +660,7 @@ export function handleKeyDown(
               defaultViewElement(newUID),
               newUID,
               { 'utopia-api': importDetails(null, [importAlias('View')], null) },
+              null,
               null,
             ),
           ]
@@ -694,9 +691,6 @@ export function handleKeyDown(
       },
       [MOVE_ELEMENT_TO_FRONT_SHORTCUT]: () => {
         return [EditorActions.moveSelectedToFront()]
-      },
-      [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: () => {
-        return toggleTextFormatting(editor, dispatch, 'underline')
       },
       [TOGGLE_LEFT_MENU_SHORTCUT]: () => {
         return [EditorActions.togglePanel('leftmenu')]

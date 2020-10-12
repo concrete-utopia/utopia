@@ -77,7 +77,6 @@ describe('Self TLWH', () => {
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div
         style=\\"width: 123px; height: 15px; top: 10px; left: 5px;\\"
-        data-utopia-do-not-traverse=\\"true\\"
       ></div>
       "
     `)
@@ -88,7 +87,6 @@ describe('Self TLWH', () => {
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div
         style=\\"border-radius: 50%; width: 123px; height: 15px; top: 10px; left: 5px;\\"
-        data-utopia-do-not-traverse=\\"true\\"
       ></div>
       "
     `)
@@ -255,7 +253,6 @@ describe('Pin Parent', () => {
             left: 13px;
             top: 9px;
           \\"
-          data-utopia-do-not-traverse=\\"true\\"
         ></div>
         <div
           style=\\"
@@ -266,7 +263,6 @@ describe('Pin Parent', () => {
             left: 13px;
             top: 9px;
           \\"
-          data-utopia-do-not-traverse=\\"true\\"
         ></div>
         <img
           src=\\"test-url.jpg\\"
@@ -504,7 +500,6 @@ describe('Pin Parent', () => {
             top: 9px;
             right: 99px;
           \\"
-          data-utopia-do-not-traverse=\\"true\\"
         ></div>
         <div
           style=\\"
@@ -515,7 +510,6 @@ describe('Pin Parent', () => {
             right: 99px;
             bottom: 101px;
           \\"
-          data-utopia-do-not-traverse=\\"true\\"
         ></div>
         <img
           src=\\"test-url.jpg\\"
@@ -1100,11 +1094,9 @@ describe('Flex Parent', () => {
         />
         <div
           style=\\"width: 10px; height: 10px;\\"
-          data-utopia-do-not-traverse=\\"true\\"
         ></div>
         <div
           style=\\"border-radius: 50%; width: 10px; height: 10px;\\"
-          data-utopia-do-not-traverse=\\"true\\"
         ></div>
       </div>
       "

@@ -6,7 +6,7 @@ import { BorderSubsection } from './border-subsection/border-subsection'
 import { ContainerSubsection } from './containter-subsection/container-subsection'
 import { ShadowSubsection } from './shadow-subsection/shadow-subsection'
 import { TextShadowSubsection } from './text-subsection/text-shadow-subsection'
-import { AutosizingTextSubsection } from './text-subsection/text-subsection'
+import { TextSubsection } from './text-subsection/text-subsection'
 import { TransformSubsection } from './transform-subsection/transform-subsection'
 
 export enum StyleSubsection {
@@ -27,7 +27,7 @@ export const StyleSection = betterReactMemo('StyleSection', () => {
   return (
     <>
       <ContainerSubsection />
-      <AutosizingTextSubsection />
+      <TextSubsection />
       <TransformSubsection />
       <BackgroundSubsection />
       <BorderSubsection />
