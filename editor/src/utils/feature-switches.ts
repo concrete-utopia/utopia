@@ -19,6 +19,7 @@ export type FeatureName =
   | 'Reorder Shows Placeholder Line'
   | 'Flow Resize'
   | 'Highlight Containing Block'
+  | 'Floating Menu Warning'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -38,6 +39,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Reorder Shows Placeholder Line',
   'Flow Resize',
   'Highlight Containing Block',
+  'Floating Menu Warning',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -58,6 +60,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Reorder Shows Placeholder Line': true,
   'Flow Resize': true,
   'Highlight Containing Block': true,
+  'Floating Menu Warning': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

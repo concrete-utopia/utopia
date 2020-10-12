@@ -44,6 +44,7 @@ import { ParentControls } from './parent-controls'
 import { fastForEach } from '../../../core/shared/utils'
 import { flatMapArray, uniqBy } from '../../../core/shared/array-utils'
 import { ReorderInsertIndicator } from './reorder-insert-indicator'
+import { FloatingMenu } from './floating-menu'
 
 export const SnappingThreshold = 5
 
@@ -1016,6 +1017,7 @@ export class SelectModeControlContainer extends React.Component<
         {this.getDistanceGuidelines()}
         {this.getBoundingMarks()}
         {this.props.selectionEnabled && <ParentControls {...this.props} />}
+        {this.props.selectionEnabled && <FloatingMenu {...this.props} />}
         {this.props.reparentTargetPositions.map((reparentTarget) => {
           return (
             <ReorderInsertIndicator
