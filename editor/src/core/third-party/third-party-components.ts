@@ -41,7 +41,7 @@ export function getThirdPartyComponents(
   }
 }
 
-export function parseDependencyVersionFromNodeModules(
+function parseDependencyVersionFromNodeModules(
   nodeModules: NodeModules,
   dependencyName: string,
 ): string | null {

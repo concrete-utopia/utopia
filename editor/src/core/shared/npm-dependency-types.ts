@@ -36,10 +36,6 @@ export function requestedNpmDependency(name: string, version: string): Requested
   }
 }
 
-export interface BuiltInDependency {
-  type: 'BUILT_IN_DEPENDENCY'
-}
-
 export interface ResolvedNpmDependency {
   type: 'RESOLVED_NPM_DEPENDENCY'
   name: string

@@ -4,6 +4,9 @@ import * as UUIUIDeps from 'uuiui-deps'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
+import * as editorPackageJSON from '../../../../package.json'
+import * as utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
+
 interface BuiltInDependency {
   moduleName: string
   nodeModule: any
@@ -25,13 +28,12 @@ function builtInDependency(
   }
 }
 
-// TODO Figure out how to sync this with our package.json
 const BuiltInDependencies: Array<BuiltInDependency> = [
-  builtInDependency('utopia-api', UtopiaAPI, '0.4.2'),
-  builtInDependency('uuiui', UUIUI, '0.1.0'),
-  builtInDependency('uuiui-deps', UUIUIDeps, '0.1.0'),
-  builtInDependency('react', React, '17.0.0-rc.1'),
-  builtInDependency('react-dom', ReactDOM, '17.0.0-rc.1'),
+  builtInDependency('utopia-api', UtopiaAPI, utopiaAPIPackageJSON.version),
+  builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
+  builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
+  builtInDependency('react', React, editorPackageJSON.dependencies.react),
+  builtInDependency('react-dom', ReactDOM, editorPackageJSON.dependencies['react-dom']),
 ]
 
 function findBuiltInForName(moduleName: string): BuiltInDependency | undefined {
