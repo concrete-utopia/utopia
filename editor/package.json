@@ -17,7 +17,7 @@
     "lint": "npx eslint \"src/**/*.{js,ts,tsx}\" --quiet",
     "lint-loud": "npx eslint \"src/**/*.{js,ts,tsx}\"",
     "test": "jest --config ./jest.config.js",
-    "test-ci": "NODE_OPTIONS=--max_old_space_size=6656 xvfb-run -a npm run test -- --maxWorkers=1 performance-regression-tests",
+    "test-ci": "NODE_OPTIONS=--max_old_space_size=6656 xvfb-run -a npm run test -- --maxWorkers=1",
     "test-debug": "node --inspect-brk node_modules/.bin/jest --config ./jest.config.js --runInBand",
     "test-watch": "npm run test -- --watch",
     "test-update-snapshot": "npm run test -- --updateSnapshot",
