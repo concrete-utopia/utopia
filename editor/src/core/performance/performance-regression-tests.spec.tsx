@@ -63,7 +63,7 @@ describe('React Render Count Tests - ', () => {
     expect(renderCountAfter - renderCountBefore).toBeLessThan(690)
   })
 
-  xit('Changing the selected view', async () => {
+  it('Changing the selected view', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
