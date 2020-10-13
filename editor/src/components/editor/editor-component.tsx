@@ -425,23 +425,11 @@ const HelpTriangle = () => (
   </div>
 )
 
-const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
-  const {
-    noFileOpen,
-    isUiJsFileOpen,
-    areReleaseNotesOpen,
-    isUserConfigurationOpen,
-  } = useEditorState((store) => {
-    const selectedFile = getOpenFile(store.editor)
-    const openEditorTab = getOpenEditorTab(store.editor)
-    return {
-      noFileOpen: openEditorTab == null,
-      isUiJsFileOpen: selectedFile != null && isUIJSFile(selectedFile),
-      areReleaseNotesOpen: openEditorTab != null && isReleaseNotesTab(openEditorTab),
-      isUserConfigurationOpen: openEditorTab != null && isUserConfigurationTab(openEditorTab),
-    }
-  })
-
+function useRuntimeErrors(): {
+  runtimeErrors: Array<RuntimeErrorInfo>
+  onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
+  clearRuntimeErrors: () => void
+} {
   const [runtimeErrors, setRuntimeErrors] = React.useState<Array<RuntimeErrorInfo>>(EmptyArray)
 
   const onRuntimeError = React.useCallback(
@@ -461,13 +449,25 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     setRuntimeErrors(EmptyArray)
   }, [])
 
-  const [canvasConsoleLogs, setCanvasConsoleLogs] = React.useState<Array<ConsoleLog>>([])
+  return {
+    runtimeErrors: runtimeErrors,
+    onRuntimeError: onRuntimeError,
+    clearRuntimeErrors: clearRuntimeErrors,
+  }
+}
+
+function useConsoleLogs(): {
+  consoleLogs: Array<ConsoleLog>
+  addToConsoleLogs: (log: ConsoleLog) => void
+  clearConsoleLogs: () => void
+} {
+  const [consoleLogs, setConsoleLogs] = React.useState<Array<ConsoleLog>>(EmptyConsoleLogs)
 
   const modifyLogs = React.useCallback(
     (updateLogs: (logs: Array<ConsoleLog>) => Array<ConsoleLog>) => {
-      setCanvasConsoleLogs(updateLogs)
+      setConsoleLogs(updateLogs)
     },
-    [setCanvasConsoleLogs],
+    [setConsoleLogs],
   )
 
   const clearConsoleLogs = React.useCallback(() => {
@@ -487,6 +487,33 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     [modifyLogs],
   )
 
+  return {
+    consoleLogs: consoleLogs,
+    addToConsoleLogs: addToConsoleLogs,
+    clearConsoleLogs: clearConsoleLogs,
+  }
+}
+
+const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
+  const {
+    noFileOpen,
+    isUiJsFileOpen,
+    areReleaseNotesOpen,
+    isUserConfigurationOpen,
+  } = useEditorState((store) => {
+    const selectedFile = getOpenFile(store.editor)
+    const openEditorTab = getOpenEditorTab(store.editor)
+    return {
+      noFileOpen: openEditorTab == null,
+      isUiJsFileOpen: selectedFile != null && isUIJSFile(selectedFile),
+      areReleaseNotesOpen: openEditorTab != null && isReleaseNotesTab(openEditorTab),
+      isUserConfigurationOpen: openEditorTab != null && isUserConfigurationTab(openEditorTab),
+    }
+  })
+
+  const { runtimeErrors, onRuntimeError, clearRuntimeErrors } = useRuntimeErrors()
+  const { consoleLogs, addToConsoleLogs, clearConsoleLogs } = useConsoleLogs()
+
   if (noFileOpen) {
     return <Subdued>No file open</Subdued>
   } else if (areReleaseNotesOpen) {
@@ -497,7 +524,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
         runtimeErrors={runtimeErrors}
         onRuntimeError={onRuntimeError}
         clearRuntimeErrors={clearRuntimeErrors}
-        canvasConsoleLogs={canvasConsoleLogs}
+        canvasConsoleLogs={consoleLogs}
         clearConsoleLogs={clearConsoleLogs}
         addToConsoleLogs={addToConsoleLogs}
       />
@@ -509,7 +536,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
       <ScriptEditor
         relevantPanel={'misccodeeditor'}
         runtimeErrors={runtimeErrors}
-        canvasConsoleLogs={canvasConsoleLogs}
+        canvasConsoleLogs={consoleLogs}
       />
     )
   }
