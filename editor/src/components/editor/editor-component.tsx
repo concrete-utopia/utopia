@@ -194,63 +194,6 @@ export const EditorComponentInner = betterReactMemo(
       [updateDeltaWidth],
     )
 
-    const [runtimeErrors, setRuntimeErrors] = React.useState<Array<RuntimeErrorInfo>>(EmptyArray)
-
-    const onRuntimeError = React.useCallback(
-      (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
-        setRuntimeErrors([
-          {
-            editedFile: editedFile,
-            error: error,
-            errorInfo: Utils.defaultIfNull(null, errorInfo),
-          },
-        ])
-      },
-      [],
-    )
-
-    const clearRuntimeErrors = React.useCallback(() => {
-      setRuntimeErrors(EmptyArray)
-    }, [])
-
-    const [canvasConsoleLogsState, setCanvasConsoleLogsState] = React.useState<Array<ConsoleLog>>(
-      [],
-    )
-
-    const modifyLogs = React.useCallback(
-      (updateLogs: (logs: Array<ConsoleLog>) => Array<ConsoleLog>) => {
-        const updatedLogs = updateLogs(canvasConsoleLogsVariable)
-        if (updatedLogs !== canvasConsoleLogsVariable) {
-          canvasConsoleLogsVariable = updateLogs(canvasConsoleLogsVariable)
-          if (consoleLogTimeoutID != null) {
-            clearTimeout(consoleLogTimeoutID)
-          }
-          consoleLogTimeoutID = setTimeout(() => {
-            setCanvasConsoleLogsState(canvasConsoleLogsVariable)
-            consoleLogTimeoutID = null
-          })
-        }
-      },
-      [setCanvasConsoleLogsState],
-    )
-
-    const clearConsoleLogs = React.useCallback(() => {
-      modifyLogs((_) => EmptyConsoleLogs)
-    }, [modifyLogs])
-
-    const addToConsoleLogs = React.useCallback(
-      (log: ConsoleLog) => {
-        modifyLogs((logs) => {
-          let result = [...logs, log]
-          while (result.length > ConsoleLogSizeLimit) {
-            result.shift()
-          }
-          return result
-        })
-      },
-      [modifyLogs],
-    )
-
     const canvasIsLive = useEditorState((store) => isLiveMode(store.editor.mode))
 
     const toggleLiveCanvas = React.useCallback(
@@ -392,14 +335,7 @@ export const EditorComponentInner = betterReactMemo(
                     overflowX: 'hidden',
                   }}
                 >
-                  <OpenFileEditor
-                    runtimeErrors={runtimeErrors}
-                    onRuntimeError={onRuntimeError}
-                    clearRuntimeErrors={clearRuntimeErrors}
-                    canvasConsoleLogs={canvasConsoleLogsState}
-                    clearConsoleLogs={clearConsoleLogs}
-                    addToConsoleLogs={addToConsoleLogs}
-                  />
+                  <OpenFileEditor />
                 </SimpleFlexRow>
               </SimpleFlexColumn>
               {/* insert more columns here */}
@@ -491,16 +427,7 @@ const HelpTriangle = () => (
   </div>
 )
 
-interface OpenFileEditorProps {
-  runtimeErrors: Array<RuntimeErrorInfo>
-  onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
-  clearRuntimeErrors: () => void
-  canvasConsoleLogs: Array<ConsoleLog>
-  clearConsoleLogs: () => void
-  addToConsoleLogs: (log: ConsoleLog) => void
-}
-
-const OpenFileEditor = betterReactMemo('OpenFileEditor', (props: OpenFileEditorProps) => {
+const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
   const {
     noFileOpen,
     isUiJsFileOpen,
@@ -517,20 +444,84 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', (props: OpenFileEditorP
     }
   })
 
+  const [runtimeErrors, setRuntimeErrors] = React.useState<Array<RuntimeErrorInfo>>(EmptyArray)
+
+  const onRuntimeError = React.useCallback(
+    (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
+      setRuntimeErrors([
+        {
+          editedFile: editedFile,
+          error: error,
+          errorInfo: Utils.defaultIfNull(null, errorInfo),
+        },
+      ])
+    },
+    [],
+  )
+
+  const clearRuntimeErrors = React.useCallback(() => {
+    setRuntimeErrors(EmptyArray)
+  }, [])
+
+  const [canvasConsoleLogs, setCanvasConsoleLogs] = React.useState<Array<ConsoleLog>>([])
+
+  const modifyLogs = React.useCallback(
+    (updateLogs: (logs: Array<ConsoleLog>) => Array<ConsoleLog>) => {
+      const updatedLogs = updateLogs(canvasConsoleLogsVariable)
+      if (updatedLogs !== canvasConsoleLogsVariable) {
+        canvasConsoleLogsVariable = updateLogs(canvasConsoleLogsVariable)
+        if (consoleLogTimeoutID != null) {
+          clearTimeout(consoleLogTimeoutID)
+        }
+        consoleLogTimeoutID = setTimeout(() => {
+          setCanvasConsoleLogs(canvasConsoleLogsVariable)
+          consoleLogTimeoutID = null
+        })
+      }
+    },
+    [setCanvasConsoleLogs],
+  )
+
+  const clearConsoleLogs = React.useCallback(() => {
+    modifyLogs((_) => EmptyConsoleLogs)
+  }, [modifyLogs])
+
+  const addToConsoleLogs = React.useCallback(
+    (log: ConsoleLog) => {
+      modifyLogs((logs) => {
+        let result = [...logs, log]
+        while (result.length > ConsoleLogSizeLimit) {
+          result.shift()
+        }
+        return result
+      })
+    },
+    [modifyLogs],
+  )
+
   if (noFileOpen) {
     return <Subdued>No file open</Subdued>
   } else if (areReleaseNotesOpen) {
     return <ReleaseNotesContent />
   } else if (isUiJsFileOpen) {
-    return <SplitViewCanvasRoot {...props} />
+    return (
+      <SplitViewCanvasRoot
+        runtimeErrors={runtimeErrors}
+        onRuntimeError={onRuntimeError}
+        clearRuntimeErrors={clearRuntimeErrors}
+        canvasConsoleLogs={canvasConsoleLogs}
+        clearConsoleLogs={clearConsoleLogs}
+        addToConsoleLogs={addToConsoleLogs}
+      />
+    )
   } else if (isUserConfigurationOpen) {
     return <UserConfiguration />
   } else {
     return (
       <ScriptEditor
         relevantPanel={'misccodeeditor'}
-        runtimeErrors={props.runtimeErrors}
-        canvasConsoleLogs={props.canvasConsoleLogs}
+        runtimeErrors={runtimeErrors}
+        canvasConsoleLogs={canvasConsoleLogs}
       />
     )
   }
