@@ -805,6 +805,15 @@ export const InspectorContextProvider = betterReactMemo<{
     } else {
       const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
       if (elementMetadata != null) {
+        if (elementMetadata.computedStyle == null) {
+          /**
+           * This early return will cause the inspector to render with empty fields.
+           * Because the computedStyle is only used in some cases for some controls,
+           * the empty inspector helps us catch an otherwise silent regression
+           */
+          return
+        }
+
         const jsxElement = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
         const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
         newEditedMultiSelectedProps.push(jsxAttributes)

@@ -869,7 +869,7 @@ export interface ElementInstanceMetadata {
   children: Array<ElementInstanceMetadata>
   componentInstance: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
-  computedStyle: ComputedStyle
+  computedStyle: ComputedStyle | null
 }
 
 export function elementInstanceMetadata(
@@ -881,7 +881,7 @@ export function elementInstanceMetadata(
   children: Array<ElementInstanceMetadata>,
   componentInstance: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
-  computedStyle: ComputedStyle,
+  computedStyle: ComputedStyle | null,
 ): ElementInstanceMetadata {
   return {
     templatePath: templatePath,

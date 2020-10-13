@@ -30,6 +30,7 @@ import {
 import { CanvasContainerProps } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/utopia-constants'
+import { useEditorState } from '../editor/store/store-hook'
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1
@@ -87,6 +88,7 @@ function isScene(node: Node): node is HTMLElement {
 
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
+  const selectedViews = useEditorState((store) => store.editor.selectedViews)
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
@@ -177,7 +179,12 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         )
       }
 
-      function getComputedStyle(element: HTMLElement): ComputedStyle {
+      function getComputedStyle(element: HTMLElement, path: TemplatePath): ComputedStyle | null {
+        const isSelected = selectedViews.some((sv) => TP.pathsEqual(sv, path))
+        if (!isSelected) {
+          // the element is not among the selected views, skip computing the style
+          return null
+        }
         const elementStyle = window.getComputedStyle(element)
         let computedStyle: ComputedStyle = {}
         if (elementStyle != null) {
@@ -384,7 +391,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           childrenMetadata,
           false,
           getSpecialMeasurements(element),
-          getComputedStyle(element),
+          getComputedStyle(element, instancePath),
         )
       }
 
