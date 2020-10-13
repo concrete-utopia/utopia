@@ -806,7 +806,11 @@ export const InspectorContextProvider = betterReactMemo<{
       const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
       if (elementMetadata != null) {
         if (elementMetadata.computedStyle == null) {
-          // preventing a silent error by entirely skipping an element which has no computedStyle
+          /**
+           * This early return will cause the inspector to render with empty fields.
+           * Because the computedStyle is only used in some cases for some controls,
+           * the empty inspector helps us catch an otherwise silent regression
+           */
           return
         }
 
