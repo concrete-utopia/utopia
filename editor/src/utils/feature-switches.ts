@@ -20,6 +20,7 @@ export type FeatureName =
   | 'Flow Resize'
   | 'Highlight Containing Block'
   | 'Show Pins'
+  | 'Drag Pin Controls'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -40,6 +41,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Flow Resize',
   'Highlight Containing Block',
   'Show Pins',
+  'Drag Pin Controls',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -61,6 +63,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Flow Resize': true,
   'Highlight Containing Block': true,
   'Show Pins': true,
+  'Drag Pin Controls': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

@@ -15,6 +15,7 @@ import {
 import { useEditorState } from '../../editor/store/store-hook'
 import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/actions'
 import { InstancePath } from '../../../core/shared/project-file-types'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface PinOutlineProps {
   key: string
@@ -98,7 +99,7 @@ const PinOutline = (props: PinOutlineProps): JSX.Element => {
           left: props.left,
           width: props.isHorizontalLine ? props.size : 5,
           height: props.isHorizontalLine ? 5 : props.size,
-          cursor: canBeDragged ? 'pointer' : undefined,
+          cursor: isFeatureEnabled('Drag Pin Controls') && canBeDragged ? 'pointer' : undefined,
         }}
       />
     </>
@@ -106,6 +107,7 @@ const PinOutline = (props: PinOutlineProps): JSX.Element => {
 }
 
 const PinControls = (props: OutlineControlsProps): JSX.Element | null => {
+  const isDraggable = isFeatureEnabled('Drag Pin Controls')
   const target = props.selectedViews[0] as InstancePath
   const dispatch = useEditorState((state) => state.dispatch)
   const containingBlockParent = MetadataUtils.findContainingBlock(props.componentMetadata, target)
@@ -126,6 +128,7 @@ const PinControls = (props: OutlineControlsProps): JSX.Element | null => {
   const onMouseMove = React.useCallback(
     (event: MouseEvent) => {
       if (
+        isDraggable &&
         draggedProp != null &&
         frame != null &&
         containingRectangle != null &&
@@ -197,7 +200,7 @@ const PinControls = (props: OutlineControlsProps): JSX.Element | null => {
         }
       }
     },
-    [draggedProp, props, frame, dispatch, target, containingRectangle, jsxAttributes],
+    [draggedProp, props, frame, dispatch, target, containingRectangle, jsxAttributes, isDraggable],
   )
 
   const onMouseUp = React.useCallback(() => {
@@ -219,9 +222,11 @@ const PinControls = (props: OutlineControlsProps): JSX.Element | null => {
 
   const onMouseDown = React.useCallback(
     (propName: LayoutProp | StyleLayoutProp, event: React.MouseEvent<HTMLDivElement>) => {
-      setDraggedProp(propName)
+      if (isDraggable) {
+        setDraggedProp(propName)
+      }
     },
-    [setDraggedProp],
+    [setDraggedProp, isDraggable],
   )
 
   if (
