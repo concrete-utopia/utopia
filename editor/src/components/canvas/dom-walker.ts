@@ -180,8 +180,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       }
 
       function getComputedStyle(element: HTMLElement, path: TemplatePath): ComputedStyle | null {
-        if (selectedViews.find((sv) => TP.pathsEqual(sv, path)) == null) {
-          // the element is not among the selected views, skip computing the stype
+        const isSelected = selectedViews.some((sv) => TP.pathsEqual(sv, path))
+        if (!isSelected) {
+          // the element is not among the selected views, skip computing the style
           return null
         }
         const elementStyle = window.getComputedStyle(element)
