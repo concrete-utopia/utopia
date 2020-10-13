@@ -18,6 +18,19 @@ export function applyUIDMonkeyPatch(): void {
   }
 }
 
+function getDisplayName(type: any) {
+  // taken from https://github.com/facebook/react/blob/7e405d458d6481fb1c04dfca6afab0651e6f67cd/packages/react/src/ReactElement.js#L415
+  if (typeof type === 'function') {
+    return type.displayName || type.name || 'Unknown'
+  } else if (typeof type === 'symbol') {
+    return type.toString()
+  } else if (typeof type === 'string') {
+    return type
+  } else {
+    return 'Unknown'
+  }
+}
+
 function keyShouldBeExcluded(key: string): boolean {
   return UtopiaKeys.includes(key)
 }
@@ -123,6 +136,7 @@ const mangleFunctionType = Utils.memoize(
     ;(mangledFunction as any).theOriginalType = type
     ;(mangledFunction as any).contextTypes = (type as any).contextTypes
     ;(mangledFunction as any).childContextTypes = (type as any).childContextTypes
+    ;(mangledFunction as any).displayName = `UtopiaSpiedExoticType(${getDisplayName(type)})`
     return mangledFunction
   },
   {
@@ -139,6 +153,7 @@ const mangleClassType = Utils.memoize(
       return attachDataUidToRoot(originalTypeResponse, (this.props as any)?.['data-uid'])
     }
     ;(type as any).theOriginalType = type
+    ;(type as any).displayName = `UtopiaSpiedClass(${getDisplayName(type)})`
     return type
   },
   {
@@ -201,6 +216,7 @@ const mangleExoticType = Utils.memoize(
     ;(wrapperComponent as any).theOriginalType = type
     ;(wrapperComponent as any).contextTypes = (type as any).contextTypes
     ;(wrapperComponent as any).childContextTypes = (type as any).childContextTypes
+    ;(wrapperComponent as any).displayName = `UtopiaSpiedExoticType(${getDisplayName(type)})`
     return wrapperComponent
   },
   {
