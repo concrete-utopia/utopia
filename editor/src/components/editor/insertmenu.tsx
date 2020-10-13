@@ -68,7 +68,7 @@ import {
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
-import { isBuiltinDependency } from '../../core/es-modules/package-manager/package-manager'
+import { isBuiltInDependency } from '../../core/es-modules/package-manager/built-in-dependencies'
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
 import { PropertyControlsInfo } from '../custom-code/code-file'
 
@@ -488,7 +488,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
               )
             }
           } else {
-            if (isBuiltinDependency(dependency.name)) {
+            if (isBuiltInDependency(dependency.name)) {
               return null
             } else {
               return (

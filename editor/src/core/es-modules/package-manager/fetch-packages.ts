@@ -19,7 +19,7 @@ import { objectMap } from '../../shared/object-utils'
 import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
 import { getPackagerUrl, getJsDelivrFileUrl } from './packager-url'
 import { Either, right, left, isLeft, isRight } from '../../shared/either'
-import { isBuiltinDependency } from './package-manager'
+import { isBuiltInDependency } from './built-in-dependencies'
 import {
   findMatchingVersion,
   isNpmVersion,
@@ -197,7 +197,7 @@ export async function fetchNodeModules(
   newDeps: Array<RequestedNpmDependency>,
   shouldRetry: boolean = true,
 ): Promise<NodeFetchResult> {
-  const dependenciesToDownload = newDeps.filter((d) => !isBuiltinDependency(d.name))
+  const dependenciesToDownload = newDeps.filter((d) => !isBuiltInDependency(d.name))
   const nodeModulesArr = await Promise.all(
     dependenciesToDownload.map(
       async (newDep): Promise<Either<DependencyFetchError, NodeModules>> => {
