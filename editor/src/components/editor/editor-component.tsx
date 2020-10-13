@@ -74,8 +74,6 @@ const EmptyArray: Array<RuntimeErrorInfo> = []
 
 const ConsoleLogSizeLimit = 100
 const EmptyConsoleLogs: Array<ConsoleLog> = []
-let consoleLogTimeoutID: number | null = null
-let canvasConsoleLogsVariable: Array<ConsoleLog> = EmptyConsoleLogs
 
 export const EditorComponentInner = betterReactMemo(
   'EditorComponentInner',
@@ -467,17 +465,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
 
   const modifyLogs = React.useCallback(
     (updateLogs: (logs: Array<ConsoleLog>) => Array<ConsoleLog>) => {
-      const updatedLogs = updateLogs(canvasConsoleLogsVariable)
-      if (updatedLogs !== canvasConsoleLogsVariable) {
-        canvasConsoleLogsVariable = updateLogs(canvasConsoleLogsVariable)
-        if (consoleLogTimeoutID != null) {
-          clearTimeout(consoleLogTimeoutID)
-        }
-        consoleLogTimeoutID = setTimeout(() => {
-          setCanvasConsoleLogs(canvasConsoleLogsVariable)
-          consoleLogTimeoutID = null
-        })
-      }
+      setCanvasConsoleLogs(updateLogs)
     },
     [setCanvasConsoleLogs],
   )
