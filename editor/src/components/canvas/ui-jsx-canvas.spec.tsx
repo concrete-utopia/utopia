@@ -1888,6 +1888,41 @@ export var storyboard = (
 )`,
     )
   })
+  it('renders correctly with a context', () => {
+    testCanvasRender(
+      null,
+      `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+const AppContext = React.createContext({})
+const useStoreRef = () => useContext(AppContext)
+
+export var App = (props) => {
+  const storeRef = React.useRef({})
+  return (
+    <AppContext.Provider value={storeRef} data-uid={'aaa'}>
+      <div
+        data-uid={'bbb'}
+        style={{ width: '100%', height: '100%', backgroundColor: '#EB1010' }}
+        layout={{ layoutSystem: 'pinSystem' }}
+      />
+    </AppContext.Provider>
+  )
+}
+
+export var storyboard = (
+  <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid={'ccc'}>
+    <Scene
+      data-uid={'ddd'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)`,
+    )
+  })
 })
 
 describe('UiJsxCanvas runtime errors', () => {

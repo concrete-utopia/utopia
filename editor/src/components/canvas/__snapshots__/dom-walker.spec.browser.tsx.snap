@@ -75,7 +75,6 @@ Array [
         "localFrame": null,
         "props": Object {
           "data-uid": "utopia-storyboard-uid",
-          "data-utopia-original-uid": undefined,
           "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
@@ -410,7 +409,6 @@ Array [
         },
         "props": Object {
           "data-uid": "aaa",
-          "data-utopia-original-uid": undefined,
           "skipDeepFreeze": true,
           "style": Object {
             "alignContent": undefined,
@@ -597,7 +595,6 @@ Array [
         "localFrame": null,
         "props": Object {
           "data-uid": "utopia-storyboard-uid",
-          "data-utopia-original-uid": undefined,
           "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
@@ -692,7 +689,6 @@ Array [
         "props": Object {
           "data-label": "Hat",
           "data-uid": "aaa",
-          "data-utopia-original-uid": undefined,
           "skipDeepFreeze": true,
           "style": Object {
             "alignContent": undefined,
@@ -879,7 +875,6 @@ Array [
         "localFrame": null,
         "props": Object {
           "data-uid": "utopia-storyboard-uid",
-          "data-utopia-original-uid": undefined,
           "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
@@ -977,7 +972,6 @@ Array [
                 },
                 "props": Object {
                   "data-uid": "488",
-                  "data-utopia-original-uid": undefined,
                   "skipDeepFreeze": true,
                   "style": Object {
                     "alignContent": undefined,
@@ -1084,7 +1078,6 @@ Array [
             },
             "props": Object {
               "data-uid": "ef0",
-              "data-utopia-original-uid": undefined,
               "skipDeepFreeze": true,
               "style": Object {
                 "alignContent": undefined,
@@ -1186,7 +1179,6 @@ Array [
         },
         "props": Object {
           "data-uid": "05c",
-          "data-utopia-original-uid": undefined,
           "skipDeepFreeze": true,
           "style": Object {
             "alignContent": undefined,
@@ -1374,7 +1366,6 @@ Array [
         "localFrame": null,
         "props": Object {
           "data-uid": "utopia-storyboard-uid",
-          "data-utopia-original-uid": undefined,
           "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
@@ -1472,7 +1463,6 @@ Array [
                 },
                 "props": Object {
                   "data-uid": "488",
-                  "data-utopia-original-uid": undefined,
                   "skipDeepFreeze": true,
                   "style": Object {
                     "alignContent": undefined,
@@ -1579,7 +1569,6 @@ Array [
             },
             "props": Object {
               "data-uid": "ef0",
-              "data-utopia-original-uid": undefined,
               "skipDeepFreeze": true,
               "style": Object {
                 "alignContent": undefined,
@@ -1681,7 +1670,6 @@ Array [
         },
         "props": Object {
           "data-uid": "05c",
-          "data-utopia-original-uid": undefined,
           "skipDeepFreeze": true,
           "style": Object {
             "alignContent": undefined,
@@ -1870,7 +1858,6 @@ Array [
         "localFrame": null,
         "props": Object {
           "data-uid": "utopia-storyboard-uid",
-          "data-utopia-original-uid": undefined,
           "skipDeepFreeze": true,
         },
         "specialSizeMeasurements": Object {
@@ -1968,7 +1955,6 @@ Array [
                 },
                 "props": Object {
                   "data-uid": "488",
-                  "data-utopia-original-uid": undefined,
                   "skipDeepFreeze": true,
                   "style": Object {
                     "alignContent": undefined,
@@ -2075,7 +2061,6 @@ Array [
             },
             "props": Object {
               "data-uid": "ef0",
-              "data-utopia-original-uid": undefined,
               "skipDeepFreeze": true,
               "style": Object {
                 "alignContent": undefined,
@@ -2181,7 +2166,6 @@ Array [
         },
         "props": Object {
           "data-uid": "05c",
-          "data-utopia-original-uid": undefined,
           "skipDeepFreeze": true,
           "style": Object {
             "alignContent": undefined,
