@@ -29,8 +29,15 @@ import {
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/utopia-constants'
 import { useEditorState } from '../editor/store/store-hook'
+import {
+  UTOPIA_DO_NOT_TRAVERSE_KEY,
+  UTOPIA_LABEL_KEY,
+  UTOPIA_ORIGINAL_ID_KEY,
+  UTOPIA_UID_KEY,
+  UTOPIA_UID_ORIGINAL_PARENTS_KEY,
+  UTOPIA_UID_PARENTS_KEY,
+} from '../../core/model/utopia-constants'
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1
@@ -305,9 +312,14 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           const globalFrame = globalFrameForElement(element)
 
           // Determine the uid of this element if it has one.
-          const uidAttribute = getDOMAttribute(element, 'data-uid')
+          const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
+          const parentUIDsAttribute = getDOMAttribute(element, UTOPIA_UID_PARENTS_KEY)
           const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
-          const doNotTraverseAttribute = getDOMAttribute(element, 'data-utopia-do-not-traverse')
+          const originalParentUIDsAttribute = getDOMAttribute(
+            element,
+            UTOPIA_UID_ORIGINAL_PARENTS_KEY,
+          )
+          const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
 
           const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
 
@@ -316,12 +328,28 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             return `index-${index}`
           }
           const pathElement = Utils.defaultIfNullLazy<id>(uidAttribute, makeIndexElement)
-          const uniquePath: TemplatePath = TP.appendToPath(uniqueParentPath, pathElement)
-
-          let originalPath: TemplatePath | null = null
           const originalPathElement = Utils.defaultIfNull(uidAttribute, originalUIDAttribute)
-          if (originalPathElement != null && originalParentPath != null) {
-            originalPath = TP.appendToPath(originalParentPath, originalPathElement)
+          const parentAttribute = Utils.defaultIfNull(
+            parentUIDsAttribute,
+            originalParentUIDsAttribute,
+          )
+
+          // Build the unique path for this element.
+          let uniquePath: TemplatePath = uniqueParentPath
+          if (parentUIDsAttribute != null) {
+            uniquePath = TP.appendToPath(uniquePath, parentUIDsAttribute.split('/'))
+          }
+          uniquePath = TP.appendToPath(uniquePath, pathElement)
+
+          // Build the original path for this element.
+          let originalPath: TemplatePath | null = originalParentPath
+          if (originalPath != null) {
+            if (parentAttribute != null) {
+              originalPath = TP.appendToPath(originalPath, parentAttribute.split('/'))
+            }
+            if (originalPathElement != null) {
+              originalPath = TP.appendToPath(originalPath, originalPathElement)
+            }
           }
 
           // Check this is a path we're interested in, otherwise skip straight to the children
@@ -369,18 +397,18 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             ? localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
             : null
 
-        const uidAttribute = getDOMAttribute(element, 'data-uid')
+        const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
         const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
-        const labelAttribute = getDOMAttribute(element, 'data-label')
+        const labelAttribute = getDOMAttribute(element, UTOPIA_LABEL_KEY)
         let elementProps: any = {}
         if (uidAttribute != null) {
-          elementProps['data-uid'] = uidAttribute
+          elementProps[UTOPIA_UID_KEY] = uidAttribute
         }
         if (originalUIDAttribute != null) {
           elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
         }
         if (labelAttribute != null) {
-          elementProps['data-label'] = labelAttribute
+          elementProps[UTOPIA_LABEL_KEY] = labelAttribute
         }
         return elementInstanceMetadata(
           instancePath,
