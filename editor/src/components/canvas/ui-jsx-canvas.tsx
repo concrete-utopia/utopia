@@ -1335,6 +1335,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
     </div>
   )
 }
+CanvasContainer.displayName = 'CanvasContainer'
 
 interface SpyWrapperProps {
   spyCallback: (finalProps: any) => void
@@ -1358,3 +1359,4 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     passThroughProps,
   )
 }
+SpyWrapper.displayName = 'SpyWapper'

@@ -65,7 +65,7 @@ export const jsx = (type: any, ...pragmaParams: any[]) => {
   if (foundHocForType != null) {
     return EmotionJsx(foundHocForType, ...pragmaParams)
   } else {
-    const HOC = React.forwardRef((propsWithoutRef: any, ref: any) => {
+    const HOC = (propsWithoutRef: any, ref: any) => {
       const props = applyRefToProps(type, propsWithoutRef, ref)
       if (props == null || props.layout == null) {
         return EmotionJsx(type, props)
@@ -134,9 +134,14 @@ export const jsx = (type: any, ...pragmaParams: any[]) => {
       })
 
       return EmotionJsx(type, finalOwnProps, mappedChildren)
+    }
+    HOC.displayName = `UtopiaPragma(${getDisplayName(type)})`
+    const HOCWithForwardRef = React.forwardRef(HOC)
+    pushToHocCache(hocForTypeCache, {
+      componentToCreateHOCFor: type,
+      createdHOC: HOCWithForwardRef,
     })
-    pushToHocCache(hocForTypeCache, { componentToCreateHOCFor: type, createdHOC: HOC })
-    return EmotionJsx(HOC, ...pragmaParams)
+    return EmotionJsx(HOCWithForwardRef, ...pragmaParams)
   }
 }
 
@@ -146,5 +151,18 @@ function filterFrameFromStyle(style: React.CSSProperties | undefined): React.CSS
   } else {
     const { top, left, width, height, ...styleWithoutFrame } = style
     return styleWithoutFrame
+  }
+}
+
+function getDisplayName(type: any) {
+  // taken from https://github.com/facebook/react/blob/7e405d458d6481fb1c04dfca6afab0651e6f67cd/packages/react/src/ReactElement.js#L415
+  if (typeof type === 'function') {
+    return type.displayName || type.name || 'Unknown'
+  } else if (typeof type === 'symbol') {
+    return type.toString()
+  } else if (typeof type === 'string') {
+    return type
+  } else {
+    return 'Unknown'
   }
 }
