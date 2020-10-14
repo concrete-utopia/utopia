@@ -6,15 +6,15 @@
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Utopia.Web.Database where
 
 import           Control.Lens
 import           Control.Monad.Catch
-import Control.Monad.Fail
+import           Control.Monad.Fail
 import           Control.Monad.Logger
 import           Control.Monad.Trans.Identity
 import           Data.Aeson
@@ -54,8 +54,8 @@ data DatabaseMetrics = DatabaseMetrics
                      , _setShowcaseProjectsMetrics    :: InvocationMetric
                      , _updateUserDetailsMetrics      :: InvocationMetric
                      , _getUserDetailsMetrics         :: InvocationMetric
-                     , _getUserConfigurationMetrics        :: InvocationMetric
-                     , _saveUserConfigurationMetrics       :: InvocationMetric
+                     , _getUserConfigurationMetrics   :: InvocationMetric
+                     , _saveUserConfigurationMetrics  :: InvocationMetric
                      }
 
 createDatabaseMetrics :: Store -> IO DatabaseMetrics
