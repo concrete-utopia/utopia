@@ -97,7 +97,11 @@ import { getGeneratedExternalLinkText } from '../../printer-parsers/html/externa
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
 import { cssValueOnlyContainsComments } from '../../printer-parsers/css/css-parser-utils'
-import { UTOPIA_ORIGINAL_ID_KEY } from '../../core/model/utopia-constants'
+import {
+  UTOPIA_ORIGINAL_ID_KEY,
+  UTOPIA_UID_KEY,
+  UTOPIA_UID_ORIGINAL_PARENTS_KEY,
+} from '../../core/model/utopia-constants'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -1010,13 +1014,27 @@ function renderCoreElement(
         requireResult,
       )
 
-      const passthroughProps: MapLike<any> = {
+      let passthroughProps: MapLike<any> = {
         ...assembledProps,
-        'data-uid': Utils.defaultIfNull(assembledProps['data-uid'], uid),
-        [UTOPIA_ORIGINAL_ID_KEY]: Utils.defaultIfNull(
-          assembledProps[UTOPIA_ORIGINAL_ID_KEY],
-          parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
-        ),
+      }
+      const uidForProps = Utils.defaultIfNull(assembledProps[UTOPIA_UID_KEY], uid)
+      if (uidForProps != null) {
+        passthroughProps[UTOPIA_UID_KEY] = uidForProps
+      }
+
+      const originalIDForProps = Utils.defaultIfNull(
+        assembledProps[UTOPIA_ORIGINAL_ID_KEY],
+        parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
+      )
+      if (originalIDForProps != null) {
+        passthroughProps[UTOPIA_ORIGINAL_ID_KEY] = originalIDForProps
+      }
+      const originalParentIDForProps = Utils.defaultIfNull(
+        assembledProps[UTOPIA_UID_ORIGINAL_PARENTS_KEY],
+        parentComponentInputProps[UTOPIA_UID_ORIGINAL_PARENTS_KEY],
+      )
+      if (originalParentIDForProps != null) {
+        originalParentIDForProps[UTOPIA_UID_ORIGINAL_PARENTS_KEY] = originalParentIDForProps
       }
       return renderJSXElement(
         TP.toString(templatePath),
