@@ -24,7 +24,7 @@ import {
   NodeModulesUpdate,
 } from '../core/property-controls/property-controls-utils'
 import { fastForEach } from '../core/shared/utils'
-import { ExportsInfo } from '../core/workers/ts/ts-worker'
+import { ExportsInfo, MultiFileBuildResult } from '../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { objectKeyParser, parseAny, ParseResult } from '../utils/value-parser-utils'
 import { applicative3Either, forEachRight } from '../core/shared/either'
@@ -84,16 +84,34 @@ const initPropertyControls = () => {
     ).buildResult
 
     incorporateBuildResult(currentNodeModules, bundledProjectFiles)
-    const requireFn = getRequireFn((modulesToAdd: NodeModules) => {
-      // MUTATION
-      Object.assign(currentNodeModules, modulesToAdd)
-    }, currentNodeModules)
-
-    const exportValues = getExportValuesFromAllModules(bundledProjectFiles, requireFn)
 
     let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
       resolvedNpmDependencies,
     )
+
+    processPropertyControlsWithBuildResult(propertyControlsInfo, bundledProjectFiles, exportsInfo)
+  }
+
+  const processPropertyControlsWithBuildResult = async (
+    propertyControlsInfo: PropertyControlsInfo,
+    bundledProjectFiles: MultiFileBuildResult,
+    exportsInfo: ReadonlyArray<ExportsInfo>,
+  ) => {
+    const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
+      moduleDownload.then((downloadedModules: NodeModules) => {
+        // MUTATION
+        Object.assign(currentNodeModules, downloadedModules)
+        processPropertyControlsWithBuildResult(
+          propertyControlsInfo,
+          bundledProjectFiles,
+          exportsInfo,
+        )
+      })
+    }
+
+    const requireFn = getRequireFn(onRemoteModuleDownload, currentNodeModules)
+
+    const exportValues = getExportValuesFromAllModules(bundledProjectFiles, requireFn)
     fastForEach(exportsInfo, (result) => {
       const codeResult = processExportsInfo(exportValues[result.filename], result.exportTypes)
       let propertyControls: { [name: string]: PropertyControls } = {}

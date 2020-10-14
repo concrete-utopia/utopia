@@ -22,7 +22,7 @@ import {
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
-import { getMemoizedRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import { getEditorRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import { updateNodeModulesContents } from '../editor/actions/actions'
 import { fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
@@ -218,7 +218,7 @@ export function generateCodeResultCache(
   // Trigger async call to build the property controls info.
   sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents, onlyProjectFiles)
 
-  const requireFn = getMemoizedRequireFn(nodeModules, dispatch)
+  const requireFn = getEditorRequireFn(nodeModules, dispatch)
 
   let cache: { [code: string]: CodeResult } = {}
   Utils.fastForEach(exportsInfo, (result) => {

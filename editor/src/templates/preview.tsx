@@ -5,7 +5,10 @@ import { BASE_URL, getProjectID, getQueryParam, PREVIEW_IS_EMBEDDED } from '../c
 import { fetchLocalProject } from '../common/persistence'
 import { incorporateBuildResult } from '../components/custom-code/code-file'
 import { sendPreviewModel } from '../components/editor/actions/actions'
-import { dependenciesWithEditorRequirements } from '../components/editor/npm-dependency/npm-dependency'
+import {
+  dependenciesWithEditorRequirements,
+  orderedDependenciesEqual,
+} from '../components/editor/npm-dependency/npm-dependency'
 import { projectIsStoredLocally } from '../components/editor/persistence'
 import { loadProject } from '../components/editor/server'
 import { isPersistentModel, PersistentModel } from '../components/editor/store/editor-state'
@@ -24,6 +27,7 @@ import Utils from '../utils/utils'
 import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
 import { isProjectContentsUpdateMessage } from '../components/preview/preview-pane'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
+import { pathForMainPackage } from '../core/es-modules/package-manager/merge-modules'
 
 interface PolledLoadParams {
   projectId: string
@@ -134,12 +138,15 @@ function addOpenInUtopiaButton(): void {
   }
 }
 
+let lastRenderedModel: ProjectContentTreeRoot | null = null
 let queuedModel: ProjectContentTreeRoot | null = null
 let loadingModel: boolean = false
+let cachedDependencies: NodeModules = {}
 
 const initPreview = () => {
   loadingModel = false
   queuedModel = null
+  cachedDependencies = {}
   const bundlerWorker = new NewBundlerWorker(new RealBundlerWorker())
 
   const startPollingFromServer = (appID: string | null) => {
@@ -182,27 +189,60 @@ const initPreview = () => {
     }
   }
 
-  const renderProject = async (projectContents: ProjectContentTreeRoot) => {
+  const renderProject = (projectContents: ProjectContentTreeRoot) => {
     loadingModel = true
     queuedModel = null
     previewRender(projectContents).finally(handlePossiblyQueuedModel)
   }
 
-  const previewRender = async (projectContents: ProjectContentTreeRoot) => {
-    const npmDependencies = dependenciesWithEditorRequirements(projectContents)
-    const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
+  const rerenderPreview = () => {
+    if (lastRenderedModel != null) {
+      previewRender(lastRenderedModel)
+    }
+  }
 
-    if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-      const errorToThrow = Error(
-        `Could not load the following npm dependencies: ${JSON.stringify(
-          pluck(fetchNodeModulesResult.dependenciesWithError, 'name'),
-        )}`,
-      )
-      ReactErrorOverlay.reportRuntimeError(errorToThrow)
-      throw errorToThrow
+  const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
+    moduleDownload.then((downloadedModules: NodeModules) => {
+      // MUTATION
+      Object.assign(cachedDependencies, downloadedModules)
+      rerenderPreview()
+    })
+  }
+
+  const previewRender = async (projectContents: ProjectContentTreeRoot) => {
+    const isRerender = projectContents === lastRenderedModel
+    let nodeModules: NodeModules = {}
+
+    if (isRerender) {
+      nodeModules = { ...cachedDependencies }
+    } else {
+      const lastDependencies =
+        lastRenderedModel == null ? [] : dependenciesWithEditorRequirements(lastRenderedModel)
+      const npmDependencies = dependenciesWithEditorRequirements(projectContents)
+      if (orderedDependenciesEqual(lastDependencies, npmDependencies)) {
+        nodeModules = { ...cachedDependencies }
+      } else {
+        const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
+
+        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+          const errorToThrow = Error(
+            `Could not load the following npm dependencies: ${JSON.stringify(
+              pluck(fetchNodeModulesResult.dependenciesWithError, 'name'),
+            )}`,
+          )
+          ReactErrorOverlay.reportRuntimeError(errorToThrow)
+          throw errorToThrow
+        }
+
+        cachedDependencies = {
+          ...cachedDependencies,
+          ...fetchNodeModulesResult.nodeModules,
+        }
+        nodeModules = { ...cachedDependencies }
+      }
     }
 
-    let nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
+    lastRenderedModel = projectContents
 
     /**
      * please note that we are passing in an empty object instead of the .d.ts files
@@ -218,10 +258,8 @@ const initPreview = () => {
     ).buildResult
 
     incorporateBuildResult(nodeModules, bundledProjectFiles)
-    const require = getRequireFn((modulesToAdd: NodeModules) => {
-      // MUTATION
-      Object.assign(nodeModules, modulesToAdd)
-    }, nodeModules)
+
+    const require = getRequireFn(onRemoteModuleDownload, nodeModules)
 
     // replacing the document body first
     const previewHTMLFileName = getMainHTMLFilename(projectContents)

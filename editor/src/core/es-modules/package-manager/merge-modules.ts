@@ -5,11 +5,15 @@ function movePathInsidePackage(mainPackage: string, filePath: string): string {
   return `/node_modules/${mainPackage}${filePath}`
 }
 
+export function pathForMainPackage(mainPackage: string): string {
+  return `/node_modules/${mainPackage}/`
+}
+
 export function mangleNodeModulePaths(
   mainPackage: string,
   nodeModulesContents: NodeModules,
 ): NodeModules {
-  const mainPackagePath = `/node_modules/${mainPackage}/`
+  const mainPackagePath = pathForMainPackage(mainPackage)
   return Object.keys(nodeModulesContents).reduce((newContents, packagePath: string) => {
     if (packagePath.startsWith(`/node_modules/`)) {
       if (packagePath.startsWith(mainPackagePath)) {

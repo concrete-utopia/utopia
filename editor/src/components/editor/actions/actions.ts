@@ -444,10 +444,7 @@ import {
 
 import { Notice } from '../../common/notices'
 import { objectMap } from '../../../core/shared/object-utils'
-import {
-  getMemoizedRequireFn,
-  getDependencyTypeDefinitions,
-} from '../../../core/es-modules/package-manager/package-manager'
+import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import {
   getPropertyControlsForTarget,
