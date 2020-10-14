@@ -13,6 +13,7 @@ import {
 import {
   InstancePath,
   ParseSuccess,
+  PropertyPath,
   TemplatePath,
 } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
@@ -385,6 +386,144 @@ export function dragComponent(
             const beforeOrAfter = currentIndex < newIndex ? 'after' : 'before'
             dragChanges.push(reorderChange(view, newIndex, beforeOrAfter))
           }
+        } else if (isFeatureEnabled('Dragging Changes Pins(Timer)')) {
+          const containingBlockParent = MetadataUtils.findContainingBlock(componentsMetadata, view)
+          const containingRectangle = MetadataUtils.getElementByTemplatePathMaybe(
+            componentsMetadata,
+            containingBlockParent,
+          )?.globalFrame
+          const openFile = getOpenUIJSFile(editor)
+          if (
+            TP.isInstancePath(view) &&
+            openFile != null &&
+            isRight(openFile.fileContents) &&
+            containingBlockParent != null &&
+            containingRectangle != null
+          ) {
+            const draggedJsxElements = derivedState?.canvas.transientState?.fileState?.topLevelElementsIncludingScenes?.filter(
+              isUtopiaJSXComponent,
+            )
+            const jsxElements =
+              draggedJsxElements != null
+                ? draggedJsxElements
+                : getUtopiaJSXComponentsFromSuccess(eitherToMaybe(openFile.fileContents)!)
+            const jsxElement = findJSXElementAtPath(view, jsxElements, componentsMetadata)
+
+            if (jsxElement != null) {
+              const isOnRightEdge =
+                Math.abs(
+                  containingRectangle.x +
+                    containingRectangle.width -
+                    originalFrame.frame.x -
+                    originalFrame.frame.width -
+                    dragDelta.x,
+                ) < 10
+              const isOnLeftEdge =
+                Math.abs(containingRectangle.x - originalFrame.frame.x - dragDelta.x) < 10
+              const isOnBottomEdge =
+                Math.abs(
+                  containingRectangle.y +
+                    containingRectangle.height -
+                    originalFrame.frame.y -
+                    originalFrame.frame.height -
+                    dragDelta.y,
+                ) < 10
+              const isOnTopEdge =
+                Math.abs(containingRectangle.y - originalFrame.frame.y - dragDelta.y) < 10
+
+              if ((window as any)['elementPinTimer'] == null) {
+                const styleLeft = eitherToMaybe(
+                  getSimpleAttributeAtPath(
+                    right(jsxElement.props),
+                    createLayoutPropertyPath('PinnedLeft'),
+                  ),
+                )
+                const styleRight = eitherToMaybe(
+                  getSimpleAttributeAtPath(
+                    right(jsxElement.props),
+                    createLayoutPropertyPath('PinnedRight'),
+                  ),
+                )
+                const styleTop = eitherToMaybe(
+                  getSimpleAttributeAtPath(
+                    right(jsxElement.props),
+                    createLayoutPropertyPath('PinnedTop'),
+                  ),
+                )
+                const styleBottom = eitherToMaybe(
+                  getSimpleAttributeAtPath(
+                    right(jsxElement.props),
+                    createLayoutPropertyPath('PinnedBottom'),
+                  ),
+                )
+                let propToUnset: PropertyPath | null = null
+                let propToSet: PropertyPath | null = null
+                let newValue: number | null = null
+                if (isOnRightEdge && styleLeft != null) {
+                  propToSet = createLayoutPropertyPath('PinnedRight')
+                  propToUnset = createLayoutPropertyPath('PinnedLeft')
+                  newValue =
+                    containingRectangle.x +
+                    containingRectangle.width -
+                    originalFrame.frame!.x -
+                    originalFrame.frame!.width
+                } else if (isOnLeftEdge && styleRight != null) {
+                  propToSet = createLayoutPropertyPath('PinnedLeft')
+                  propToUnset = createLayoutPropertyPath('PinnedRight')
+                  newValue = containingRectangle.x + originalFrame.frame!.x
+                }
+                if (isOnBottomEdge && styleTop != null) {
+                  propToSet = createLayoutPropertyPath('PinnedBottom')
+                  propToUnset = createLayoutPropertyPath('PinnedTop')
+                  newValue =
+                    containingRectangle.y +
+                    containingRectangle.height -
+                    originalFrame.frame!.y -
+                    originalFrame.frame!.height
+                } else if (isOnTopEdge && styleBottom != null) {
+                  propToSet = createLayoutPropertyPath('PinnedTop')
+                  propToUnset = createLayoutPropertyPath('PinnedBottom')
+                  newValue = containingRectangle.y + originalFrame.frame!.y
+                }
+                if (propToSet != null && propToUnset != null) {
+                  const elementPinTimer = setTimeout(() => {
+                    if (dispatch != null) {
+                      let actions: EditorAction[] = [
+                        EditorActions.setProp_UNSAFE(view, propToSet!, jsxAttributeValue(newValue)),
+                        EditorActions.unsetProperty(view, propToUnset!),
+                        EditorActions.clearHighlightedViews(),
+                      ]
+                      dispatch(actions, 'canvas')
+                    }
+                    clearTimeout((window as any)['elementParentHighlightTimer'])
+                    ;(window as any)['elementPinTimer'] = null
+                    ;(window as any)['elementParentHighlightTimer'] = null
+                  }, 1500)
+
+                  const elementContainerHighlightTimer = setTimeout(() => {
+                    if (
+                      dispatch != null &&
+                      (window as any)['elementContainerHighlightTimer'] != null
+                    ) {
+                      dispatch([EditorActions.setHighlightedView(containingBlockParent)], 'canvas')
+                    }
+                  }, 1000)
+
+                  ;(window as any)[
+                    'elementContainerHighlightTimer'
+                  ] = elementContainerHighlightTimer
+                  ;(window as any)['elementPinTimer'] = elementPinTimer
+                }
+              }
+              if (!isOnRightEdge && !isOnLeftEdge && !isOnBottomEdge && !isOnTopEdge) {
+                clearTimeout((window as any)['elementParentHighlightTimer'])
+                clearTimeout((window as any)['elementPinTimer'])
+                ;(window as any)['elementPinTimer'] = null
+                ;(window as any)['elementContainerHighlightTimer'] = null
+              }
+            }
+          }
+          dragChanges.push(pinMoveChange(view, dragDeltaToApply))
         } else {
           dragChanges.push(pinMoveChange(view, dragDeltaToApply))
         }
