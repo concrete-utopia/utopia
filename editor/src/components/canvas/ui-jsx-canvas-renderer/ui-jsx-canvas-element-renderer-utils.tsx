@@ -100,11 +100,6 @@ export function renderCoreElement(
 
       let passthroughProps: MapLike<any> = {
         ...assembledProps,
-        'data-uid': Utils.defaultIfNull(assembledProps['data-uid'], uid),
-        [UTOPIA_ORIGINAL_ID_KEY]: Utils.defaultIfNull(
-          assembledProps[UTOPIA_ORIGINAL_ID_KEY],
-          parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
-        ),
       }
 
       const uidForProps = Utils.defaultIfNull(assembledProps[UTOPIA_UID_KEY], uid)
