@@ -136,7 +136,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
     const nodeModules = fetchNodeModulesResult.nodeModules
     const req = getRequireFn(moduleUpdater(nodeModules), nodeModules)
     const reactSpring = req('/src/index.js', 'react-spring')
-    await wait(10)
+    await wait(15)
     expect(Object.keys(reactSpring)).not.toHaveLength(0)
   })
 
@@ -161,11 +161,11 @@ describe('ES Dependency Manager — Real-life packages', () => {
     const nodeModules = fetchNodeModulesResult.nodeModules
     const req = getRequireFn(moduleUpdater(nodeModules), nodeModules, spyEvaluator)
     const antd = req('/src/index.js', 'antd')
-    await wait(10)
+    await wait(15)
     expect(Object.keys(antd)).not.toHaveLength(0)
     expect(antd).toHaveProperty('Button')
     req('/src/index.js', 'antd/dist/antd.css')
-    await wait(10)
+    await wait(15)
     const styleTag = document.getElementById('/node_modules/antd/dist/antd.css')
     expect(styleTag).toBeDefined()
     expect(spyEvaluator).toHaveBeenCalledTimes(941)
@@ -230,7 +230,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
     const styleCss = req('/src/index.js', 'mypackage/dist/style.css')
     expect(Object.keys(styleCss)).toHaveLength(0)
 
-    await wait(10)
+    await wait(15)
     // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
     const styleTag = document.getElementById(
       `${InjectedCSSFilePrefix}/node_modules/mypackage/dist/style.css`,
