@@ -370,7 +370,6 @@ function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any>
   }
 }
 
-// TODO BEFORE MERGE should this be here?
 export function renderComponentUsingJsxFactoryFunction(
   inScope: MapLike<any>,
   factoryFunctionName: string | null,
@@ -397,7 +396,6 @@ export function renderComponentUsingJsxFactoryFunction(
   return factoryFunction.call(null, type, fixedProps, ...childrenToRender)
 }
 
-// TODO BEFORE MERGE POSSIBLY DIFFERENT FILE
 function fixStyleObjectRemoveCommentOnlyValues(props: Readonly<unknown>): any {
   if (typeof props === 'object' && 'style' in props) {
     const propsAsAny = props as any
