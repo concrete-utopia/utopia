@@ -11,7 +11,6 @@ import { AnyMap, jsxAttributeToValue } from '../../../core/shared/jsx-attributes
 
 export function applyPropsParamToPassedProps(
   inScope: MapLike<any>,
-  parentComponentProps: AnyMap,
   requireResult: MapLike<any>,
   passedProps: MapLike<unknown>,
   propsParam: Param,
@@ -23,7 +22,7 @@ export function applyPropsParamToPassedProps(
     defaultExpression: JSXAttributeOtherJavaScript | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
-      return jsxAttributeToValue(inScope, parentComponentProps, requireResult)(defaultExpression)
+      return jsxAttributeToValue(inScope, requireResult)(defaultExpression)
     } else {
       return value
     }
