@@ -10,8 +10,7 @@ import {
   fetchNodeModules,
   resetDepPackagerCache,
 } from './fetch-packages'
-import { objectValues } from '../../shared/object-utils'
-import { ESCodeFile, isEsRemoteDependencyPlaceholder } from '../../shared/project-file-types'
+import { ESCodeFile } from '../../shared/project-file-types'
 import { NO_OP } from '../../shared/utils'
 import { NodeModules } from '../../shared/project-file-types'
 import { getPackagerUrl, getJsDelivrFileUrl } from './packager-url'
@@ -21,12 +20,7 @@ import {
   npmVersionLookupSuccess,
   VersionLookupResult,
 } from '../../../components/editor/npm-dependency/npm-dependency'
-import {
-  PackagerServerResponse,
-  requestedNpmDependency,
-  resolvedNpmDependency,
-} from '../../shared/npm-dependency-types'
-import { wait } from '../../../utils/test-utils'
+import { PackagerServerResponse, requestedNpmDependency } from '../../shared/npm-dependency-types'
 
 require('jest-fetch-mock').enableMocks()
 

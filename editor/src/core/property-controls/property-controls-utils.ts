@@ -309,23 +309,36 @@ export function removeIgnored(
   return result
 }
 
+export function getThirdPartyPropertyControls(
+  packageName: string,
+  packageVersion: string,
+): PropertyControlsInfo {
+  let propertyControlsInfo: PropertyControlsInfo = {}
+  const componentDescriptor = getThirdPartyComponents(packageName, packageVersion)
+  if (componentDescriptor != null) {
+    fastForEach(componentDescriptor.components, (descriptor) => {
+      if (descriptor.propertyControls != null) {
+        const jsxElementName = getJSXElementNameAsString(descriptor.element.name)
+        propertyControlsInfo[packageName] = {
+          ...propertyControlsInfo[packageName],
+          [jsxElementName]: descriptor.propertyControls,
+        }
+      }
+    })
+  }
+
+  return propertyControlsInfo
+}
+
 export function getControlsForExternalDependencies(
   npmDependencies: ReadonlyArray<PossiblyUnversionedNpmDependency>,
 ): PropertyControlsInfo {
   let propertyControlsInfo: PropertyControlsInfo = {}
   fastForEach(npmDependencies, (dependency) => {
     if (isResolvedNpmDependency(dependency)) {
-      const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
-      if (componentDescriptor != null) {
-        fastForEach(componentDescriptor.components, (descriptor) => {
-          if (descriptor.propertyControls != null) {
-            const jsxElementName = getJSXElementNameAsString(descriptor.element.name)
-            propertyControlsInfo[dependency.name] = {
-              ...propertyControlsInfo[dependency.name],
-              [jsxElementName]: descriptor.propertyControls,
-            }
-          }
-        })
+      propertyControlsInfo = {
+        ...propertyControlsInfo,
+        ...getThirdPartyPropertyControls(dependency.name, dependency.version),
       }
     }
   })
