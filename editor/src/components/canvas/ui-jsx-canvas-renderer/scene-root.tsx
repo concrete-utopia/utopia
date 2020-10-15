@@ -1,80 +1,74 @@
 import * as React from 'react'
-import { MapLike } from 'typescript'
-import { NormalisedFrame, View } from 'utopia-api'
+import { View } from 'utopia-api'
+import { useContextSelector } from 'use-context-selector'
+import * as fastDeepEquals from 'fast-deep-equal'
 import { getValidTemplatePaths } from '../../../core/model/element-template-utils'
 import { left } from '../../../core/shared/either'
 import {
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
+  JSXElement,
 } from '../../../core/shared/element-template'
-import { InstancePath, TemplatePath, SceneContainer } from '../../../core/shared/project-file-types'
+import {
+  InstancePath,
+  ScenePath,
+  ScenePinnedContainer,
+} from '../../../core/shared/project-file-types'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
-import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { UiJsxCanvasContextData, UiJsxCanvasContext } from '../ui-jsx-canvas'
-import { ComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
-import { RerenderUtopiaContext, SceneLevelUtopiaContext } from './ui-jsx-canvas-contexts'
+import {
+  ComponentRendererComponent,
+  isComponentRendererComponent,
+} from './ui-jsx-canvas-component-renderer'
+import {
+  MutableUtopiaContext,
+  ParentLevelUtopiaContext,
+  RerenderUtopiaContext,
+  SceneLevelUtopiaContext,
+} from './ui-jsx-canvas-contexts'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import * as TP from '../../../core/shared/template-path'
+import * as PP from '../../../core/shared/property-path'
+import { betterReactMemo } from '../../../uuiui-deps'
+import { jsxAttributesToProps } from '../../../core/shared/jsx-attributes'
+import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
+import utils from '../../../utils/utils'
+import { PathForResizeContent } from '../../../core/model/scene-utils'
 
-interface SceneRootProps {
-  content: ComponentRendererComponent | undefined
-  templatePath: InstancePath
-  requireResult: MapLike<any>
-  inScope: MapLike<any>
-  hiddenInstances: Array<TemplatePath>
-  componentProps: MapLike<any>
+interface SceneProps {
+  component: React.ComponentType | null
+  props: any
   style: React.CSSProperties
-  jsxFactoryFunctionName: string | null
-  container: SceneContainer
-  component: string | null
-  sceneResizesContent: boolean
-
-  // this is even worse: this is secret props that are passed down from a utopia parent View
-  // we put this here in case the Scene is inside another View
-  parentAbsoluteFrame?: NormalisedFrame
-  fileBlobs: UIFileBase64Blobs
-
-  sceneUID: string
-  sceneLabel: string | undefined
-
-  'data-uid'?: string // the data uid
+  layout: ScenePinnedContainer
+  'data-uid': string
+  'data-label': string | undefined
 }
 
-export const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
-  const {
-    content,
-    templatePath,
-    requireResult,
-    inScope,
-    hiddenInstances,
-    fileBlobs,
-    componentProps,
-    style,
-    container,
-    jsxFactoryFunctionName,
-    component,
-    sceneResizesContent,
-    sceneUID,
-    'data-uid': dataUidIgnore,
-    ...inputProps
-  } = props
-
-  const scenePath = TP.scenePath(TP.elementPathForPath(templatePath))
-
-  const rerenderUtopiaContext = React.useContext(RerenderUtopiaContext)
+function useRunSpy(
+  scenePath: ScenePath,
+  templatePath: InstancePath,
+  componentName: string | null,
+  props: SceneProps,
+): void {
+  const shouldIncludeCanvasRootInTheSpy = useContextSelector(
+    RerenderUtopiaContext,
+    (c) => c.shouldIncludeCanvasRootInTheSpy,
+  )
   let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
+
+  const resizesContent = Boolean(utils.path(PP.getElements(PathForResizeContent), props) ?? false)
 
   metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
     scenePath: scenePath,
     templatePath: templatePath,
-    container: container,
-    component: component,
-    sceneResizesContent: sceneResizesContent,
-    globalFrame: null, // the real frame comes from the DOM walker
-    label: props.sceneLabel,
-    style: style,
+    container: props.layout,
+    component: componentName,
+    sceneResizesContent: resizesContent,
+    globalFrame: null,
+    label: props['data-label'],
+    style: props.style,
   }
-  if (rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy) {
+  if (shouldIncludeCanvasRootInTheSpy) {
     metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
       element: left('Scene'),
       templatePath: templatePath,
@@ -83,57 +77,107 @@ export const SceneRoot: React.FunctionComponent<SceneRootProps> = (props) => {
       localFrame: null,
       childrenTemplatePaths: [],
       componentInstance: false,
-      specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
+      specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
     }
   }
-
-  let rootElement = null
-  let validPaths: Array<InstancePath> = []
-  if (content != null) {
-    const passthroughProps = {
-      ...inputProps,
-      ...componentProps,
-    }
-
-    rootElement = renderComponentUsingJsxFactoryFunction(
-      inScope,
-      jsxFactoryFunctionName,
-      content,
-      passthroughProps,
-      undefined,
-    )
-
-    const utopiaJsxComponent = rerenderUtopiaContext.topLevelElements.get(
-      content.topLevelElementName,
-    )
-    if (utopiaJsxComponent != null) {
-      validPaths = getValidTemplatePaths(utopiaJsxComponent, scenePath)
-    }
-  }
-
-  const sceneStyle: React.CSSProperties = {
-    position: 'relative',
-    backgroundColor: colorTheme.emphasizedBackground.value,
-    boxShadow: rerenderUtopiaContext.canvasIsLive
-      ? UtopiaStyles.scene.live.boxShadow
-      : UtopiaStyles.scene.editing.boxShadow,
-    ...style,
-  }
-
-  return (
-    <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths, scenePath: scenePath }}>
-      <View
-        data-utopia-scene-id={TP.toString(scenePath)}
-        data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
-        style={sceneStyle}
-        layout={{
-          ...container,
-        }}
-      >
-        {rootElement}
-      </View>
-    </SceneLevelUtopiaContext.Provider>
-  )
 }
-SceneRoot.displayName = 'SceneRoot'
+
+function getTopLevelElementName(
+  componentRenderer: ComponentRendererComponent | React.ComponentType | null,
+): string | null {
+  if (isComponentRendererComponent(componentRenderer)) {
+    return componentRenderer.topLevelElementName
+  } else {
+    return null
+  }
+}
+
+function useGetValidTemplatePaths(
+  topLevelElementName: string | null,
+  scenePath: ScenePath,
+): Array<InstancePath> {
+  const utopiaJsxComponent = useContextSelector(RerenderUtopiaContext, (c) =>
+    c.topLevelElements.get(topLevelElementName ?? ''),
+  )
+  if (utopiaJsxComponent != null) {
+    return getValidTemplatePaths(utopiaJsxComponent, scenePath)
+  }
+  return []
+}
+
+interface SceneRootRendererProps {
+  sceneElement: JSXElement
+  style?: React.CSSProperties
+}
+
+export const SceneRootRenderer = betterReactMemo(
+  'SceneRootRenderer',
+  (props: SceneRootRendererProps) => {
+    const mutableUtopiaContext = React.useContext(MutableUtopiaContext).current
+    const inScope = mutableUtopiaContext.rootScope
+    const requireResult = mutableUtopiaContext.requireResult
+    const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
+    const parentPath = useContextSelector(ParentLevelUtopiaContext, (c) => c.templatePath)
+    const uid = getUtopiaIDFromJSXElement(props.sceneElement)
+
+    if (parentPath == null) {
+      throw new Error(`Utopia Error: no parent template path provided for Scene (uid: ${uid})`)
+    }
+
+    const sceneProps: SceneProps = React.useMemo(
+      () => jsxAttributesToProps(inScope, props.sceneElement.props, requireResult),
+      [inScope, props.sceneElement.props, requireResult],
+    )
+    const templatePath = React.useMemo(() => TP.appendToPath(parentPath, uid), [parentPath, uid])
+    const scenePath = TP.scenePath(TP.elementPathForPath(templatePath))
+
+    const topLevelElementName = getTopLevelElementName(sceneProps.component)
+
+    const validPaths = useGetValidTemplatePaths(topLevelElementName, scenePath)
+
+    useRunSpy(scenePath, templatePath, topLevelElementName, sceneProps)
+
+    const rootElement =
+      sceneProps.component == null
+        ? null
+        : renderComponentUsingJsxFactoryFunction(
+            inScope,
+            mutableUtopiaContext.jsxFactoryFunctionName,
+            sceneProps.component,
+            sceneProps.props,
+            undefined,
+          )
+
+    const sceneStyle: React.CSSProperties = {
+      position: 'relative',
+      backgroundColor: colorTheme.emphasizedBackground.value,
+      boxShadow: canvasIsLive
+        ? UtopiaStyles.scene.live.boxShadow
+        : UtopiaStyles.scene.editing.boxShadow,
+      ...props.style,
+      ...sceneProps.style,
+    }
+
+    return (
+      <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths, scenePath: scenePath }}>
+        <View
+          data-utopia-scene-id={TP.toString(scenePath)}
+          data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
+          style={sceneStyle}
+          layout={sceneProps.layout}
+        >
+          {rootElement}
+        </View>
+      </SceneLevelUtopiaContext.Provider>
+    )
+  },
+  (prevProps, nextProps) => {
+    // TODO BEFORE MERGE remove me, this is only needed until I fix the pragma
+    return (
+      prevProps.sceneElement === nextProps.sceneElement &&
+      fastDeepEquals(prevProps.style, nextProps.style)
+    )
+  },
+  true,
+)

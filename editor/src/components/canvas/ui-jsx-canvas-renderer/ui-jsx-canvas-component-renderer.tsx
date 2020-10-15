@@ -20,6 +20,16 @@ export type ComponentRendererComponent = React.ComponentType<any> & {
   propertyControls?: PropertyControls
 }
 
+export function isComponentRendererComponent(
+  component: ComponentRendererComponent | React.ComponentType | null,
+): component is ComponentRendererComponent {
+  return (
+    component != null &&
+    typeof component === 'function' &&
+    (component as ComponentRendererComponent).topLevelElementName != null
+  )
+}
+
 export function createComponentRendererComponent(params: {
   topLevelElementName: string
 }): ComponentRendererComponent {

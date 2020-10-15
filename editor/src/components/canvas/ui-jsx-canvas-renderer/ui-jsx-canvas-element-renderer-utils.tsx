@@ -25,7 +25,7 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-pr
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import { SceneRoot } from './scene-root'
+import { SceneRootRenderer } from './scene-root'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { Storyboard } from 'utopia-api'
@@ -56,33 +56,7 @@ export function renderCoreElement(
     throw codeError
   }
   if (isJSXElement(element) && isSceneElement(element)) {
-    const sceneProps = jsxAttributesToProps(inScope, element.props, requireResult)
-
-    const rootComponent = sceneProps.component
-    const rootComponentName = sceneProps.component?.topLevelElementName
-    const resizesContent = Boolean(
-      Utils.path(PP.getElements(PathForResizeContent), sceneProps) ?? false,
-    )
-
-    const sceneId: string = sceneProps['data-uid'] || ''
-    return (
-      <SceneRoot
-        content={rootComponent} // this is the child component
-        componentProps={sceneProps.props}
-        container={sceneProps.layout}
-        hiddenInstances={hiddenInstances}
-        jsxFactoryFunctionName={jsxFactoryFunctionName}
-        fileBlobs={fileBlobs}
-        style={sceneProps.style}
-        inScope={inScope}
-        requireResult={requireResult}
-        templatePath={templatePath}
-        component={rootComponentName}
-        sceneResizesContent={resizesContent}
-        sceneUID={sceneId}
-        sceneLabel={sceneProps['data-label']}
-      />
-    )
+    return <SceneRootRenderer sceneElement={element} />
   }
   switch (element.type) {
     case 'JSX_ELEMENT': {
