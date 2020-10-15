@@ -1,33 +1,22 @@
-import * as json5 from 'json5'
-import * as R from 'ramda'
+import * as fastDeepEquals from 'fast-deep-equal'
 import * as ReactErrorOverlay from 'react-error-overlay'
 import { BASE_URL, getProjectID, getQueryParam, PREVIEW_IS_EMBEDDED } from '../common/env-vars'
 import { fetchLocalProject } from '../common/persistence'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
 import { incorporateBuildResult } from '../components/custom-code/code-file'
 import { sendPreviewModel } from '../components/editor/actions/actions'
-import {
-  dependenciesWithEditorRequirements,
-  orderedDependenciesEqual,
-} from '../components/editor/npm-dependency/npm-dependency'
+import { dependenciesWithEditorRequirements } from '../components/editor/npm-dependency/npm-dependency'
 import { projectIsStoredLocally } from '../components/editor/persistence'
 import { loadProject } from '../components/editor/server'
-import { isPersistentModel, PersistentModel } from '../components/editor/store/editor-state'
+import { isProjectContentsUpdateMessage } from '../components/preview/preview-pane'
 import { fetchNodeModules } from '../core/es-modules/package-manager/fetch-packages'
 import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
 import { pluck } from '../core/shared/array-utils'
-import { isRight } from '../core/shared/either'
+import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
 import { isCodeFile, NodeModules } from '../core/shared/project-file-types'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { createBundle } from '../core/workers/bundler-promise'
-import {
-  getGeneratedExternalLinkText,
-  updateHTMLExternalResourcesLinks,
-} from '../printer-parsers/html/external-resources-parser'
 import Utils from '../utils/utils'
-import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
-import { isProjectContentsUpdateMessage } from '../components/preview/preview-pane'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
-import { pathForMainPackage } from '../core/es-modules/package-manager/merge-modules'
 
 interface PolledLoadParams {
   projectId: string
@@ -219,7 +208,7 @@ const initPreview = () => {
       const lastDependencies =
         lastRenderedModel == null ? [] : dependenciesWithEditorRequirements(lastRenderedModel)
       const npmDependencies = dependenciesWithEditorRequirements(projectContents)
-      if (orderedDependenciesEqual(lastDependencies, npmDependencies)) {
+      if (fastDeepEquals(lastDependencies, npmDependencies)) {
         nodeModules = { ...cachedDependencies }
       } else {
         const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)

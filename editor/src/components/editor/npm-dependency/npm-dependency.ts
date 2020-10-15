@@ -333,20 +333,6 @@ export function dependenciesWithEditorRequirements(
   return [...userDefinedDeps, ...EditorTypePackageDependencies]
 }
 
-export function orderedDependenciesEqual(
-  l: Array<RequestedNpmDependency>,
-  r: Array<RequestedNpmDependency>,
-): boolean {
-  return (
-    l.length === r.length &&
-    l.reduce(
-      (matches: boolean, next: RequestedNpmDependency, index: number) =>
-        matches && shallowEqual(next, r[index]),
-      true,
-    )
-  )
-}
-
 export function immediatelyResolvableDependenciesWithEditorRequirements(
   projectContents: ProjectContentTreeRoot,
 ): Array<PossiblyUnversionedNpmDependency> {
