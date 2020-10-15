@@ -56,12 +56,7 @@ export function renderCoreElement(
     throw codeError
   }
   if (isJSXElement(element) && isSceneElement(element)) {
-    const sceneProps = jsxAttributesToProps(
-      inScope,
-      element.props,
-      parentComponentInputProps,
-      requireResult,
-    )
+    const sceneProps = jsxAttributesToProps(inScope, element.props, requireResult)
 
     const rootComponent = sceneProps.component
     const rootComponentName = sceneProps.component?.topLevelElementName
@@ -91,12 +86,7 @@ export function renderCoreElement(
   }
   switch (element.type) {
     case 'JSX_ELEMENT': {
-      const assembledProps = jsxAttributesToProps(
-        inScope,
-        element.props,
-        parentComponentInputProps,
-        requireResult,
-      )
+      const assembledProps = jsxAttributesToProps(inScope, element.props, requireResult)
 
       let passthroughProps: MapLike<any> = {
         ...assembledProps,

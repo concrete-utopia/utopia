@@ -43,7 +43,6 @@ export function createComponentRendererComponent(params: {
       (param) =>
         applyPropsParamToPassedProps(
           mutableContext.rootScope,
-          realPassedProps,
           mutableContext.requireResult,
           realPassedProps,
           param,
