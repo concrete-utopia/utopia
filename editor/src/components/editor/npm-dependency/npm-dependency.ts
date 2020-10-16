@@ -26,8 +26,8 @@ import {
   packageJsonFileFromProjectContents,
   updatePackageJsonInEditorState,
 } from '../store/editor-state'
-import { objectMap } from '../../../core/shared/object-utils'
-import { mapArrayToDictionary, pluck } from '../../../core/shared/array-utils'
+import { pluck } from '../../../core/shared/array-utils'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 import { useEditorState } from '../store/store-hook'
 import * as React from 'react'
 import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'

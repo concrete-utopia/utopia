@@ -22,10 +22,9 @@ describe('Fetch missing file dependency', () => {
     )
     const updateNodeModules = jest.fn()
     await fetchMissingFileDependency(
-      updateNodeModules,
       esRemoteDependencyPlaceholder(fetchUrl, false),
       'mypackage/dist/style.css',
-    )
+    ).then(updateNodeModules)
     expect(updateNodeModules).toBeCalledWith({
       ['mypackage/dist/style.css']: {
         evalResultCache: null,

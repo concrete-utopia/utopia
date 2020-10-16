@@ -23,12 +23,15 @@ export function createDependencyNotFoundError(importOrigin: string, toImport: st
   return error
 }
 
-export const getMemoizedRequireFn = memoize(
+export const getEditorRequireFn = memoize(
   (nodeModules: NodeModules, dispatch: EditorDispatch) => {
-    return getRequireFn(
-      (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
-      nodeModules,
-    )
+    const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
+      // FIXME Update something in the state to show that we're downloading remote files
+      moduleDownload.then((modulesToAdd: NodeModules) =>
+        dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
+      )
+    }
+    return getRequireFn(onRemoteModuleDownload, nodeModules)
   },
   {
     maxSize: 1,
@@ -36,7 +39,7 @@ export const getMemoizedRequireFn = memoize(
 )
 
 export function getRequireFn(
-  updateNodeModules: (modulesToAdd: NodeModules) => void,
+  onRemoteModuleDownload: (moduleDownload: Promise<NodeModules>) => void,
   nodeModules: NodeModules,
   injectedEvaluator = evaluator,
 ): RequireFn {
@@ -99,17 +102,12 @@ export function getRequireFn(
       } else if (isEsRemoteDependencyPlaceholder(resolvedFile)) {
         if (!resolvedFile.downloadStarted) {
           // return empty exports object, fire off an async job to fetch the dependency from jsdelivr
-          // MUTATION
           resolvedFile.downloadStarted = true
-          fetchMissingFileDependency(updateNodeModules, resolvedFile, resolvedPath).then(
-            (response) => {
-              injectedEvaluator(resolvedPath, response, partialModule, partialRequire)
-              partialRequire(resolvedPath)
-            },
-          )
+          const moduleDownload = fetchMissingFileDependency(resolvedFile, resolvedPath)
+          onRemoteModuleDownload(moduleDownload)
         }
 
-        return {}
+        return {} // FIXME Throw or otherwise block further evaluation here
       }
     }
     throw createDependencyNotFoundError(importOrigin, toImport)
