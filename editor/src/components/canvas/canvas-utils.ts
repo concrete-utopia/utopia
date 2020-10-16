@@ -317,9 +317,13 @@ export function clearDragState(
   let result: EditorState = model
   clearTimeout((window as any)['flexParentTimer'])
   clearTimeout((window as any)['flexParentHighlightTimer'])
+  clearTimeout((window as any)['elementPinTimer'])
+  clearTimeout((window as any)['elementContainerHighlightTimer'])
   ;(window as any)['flexAlignmentDrag'] = null
   ;(window as any)['flexParentTimer'] = null
   ;(window as any)['flexParentHighlightTimer'] = null
+  ;(window as any)['elementPinTimer'] = null
+  ;(window as any)['elementContainerHighlightTimer'] = null
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
     const producedTransientCanvasState = produceCanvasTransientState(
       result,

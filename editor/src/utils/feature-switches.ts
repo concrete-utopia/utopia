@@ -21,6 +21,7 @@ export type FeatureName =
   | 'Highlight Containing Block'
   | 'Show Pins'
   | 'Drag Pin Controls'
+  | 'Dragging Changes Pins(Timer)'
   | 'Layouttype Outline'
   | 'Floating Menu Warning'
 
@@ -44,6 +45,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Highlight Containing Block',
   'Show Pins',
   'Drag Pin Controls',
+  'Dragging Changes Pins(Timer)',
   'Layouttype Outline',
   'Floating Menu Warning',
 ]
@@ -68,6 +70,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Highlight Containing Block': true,
   'Show Pins': true,
   'Drag Pin Controls': true,
+  'Dragging Changes Pins(Timer)': true,
   'Layouttype Outline': true,
   'Floating Menu Warning': true,
 }
