@@ -20,6 +20,8 @@ export type FeatureName =
   | 'Flow Resize'
   | 'Highlight Containing Block'
   | 'Layouttype Outline'
+  | 'Floating Menu Warning'
+  | 'Show Pins'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -40,6 +42,8 @@ export const AllFeatureNames: FeatureName[] = [
   'Flow Resize',
   'Highlight Containing Block',
   'Layouttype Outline',
+  'Floating Menu Warning',
+  'Show Pins',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -61,6 +65,8 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Flow Resize': true,
   'Highlight Containing Block': true,
   'Layouttype Outline': true,
+  'Floating Menu Warning': true,
+  'Show Pins': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
