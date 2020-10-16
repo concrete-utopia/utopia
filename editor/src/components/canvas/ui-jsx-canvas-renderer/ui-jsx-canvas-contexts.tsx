@@ -1,5 +1,6 @@
 import * as React from 'react'
 import type { MapLike } from 'typescript'
+import { createContext } from 'use-context-selector'
 import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
 import type { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
@@ -36,7 +37,7 @@ interface RerenderUtopiaContextProps {
   shouldIncludeCanvasRootInTheSpy: boolean
 }
 
-export const RerenderUtopiaContext = React.createContext<RerenderUtopiaContextProps>({
+export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
   topLevelElements: new Map(),
   hiddenInstances: [],
   canvasIsLive: false,
@@ -54,3 +55,11 @@ export const SceneLevelUtopiaContext = React.createContext<SceneLevelContextProp
   scenePath: EmptyScenePathForStoryboard,
 })
 SceneLevelUtopiaContext.displayName = 'SceneLevelUtopiaContext'
+
+interface ParentLevelUtopiaContextProps {
+  templatePath: TemplatePath | null
+}
+
+export const ParentLevelUtopiaContext = createContext<ParentLevelUtopiaContextProps>({
+  templatePath: null,
+})

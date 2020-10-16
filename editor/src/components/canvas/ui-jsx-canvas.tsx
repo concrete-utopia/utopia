@@ -61,6 +61,7 @@ import {
 import {
   MutableUtopiaContext,
   MutableUtopiaContextProps,
+  ParentLevelUtopiaContext,
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
   updateMutableUtopiaContextWithNewProps,
@@ -344,7 +345,7 @@ export const UiJsxCanvas = betterReactMemo(
         storyboardRootElementPath,
         storyboardRootSceneMetadata,
         rootScenePath,
-      } = getStoryboardRoot(topLevelElementsMap, executionScope)
+      } = useGetStoryboardRoot(topLevelElementsMap, executionScope)
 
       if (props.shouldIncludeCanvasRootInTheSpy) {
         metadataContext.current.spyValues.scenes[
@@ -375,7 +376,13 @@ export const UiJsxCanvas = betterReactMemo(
                 <SceneLevelUtopiaContext.Provider
                   value={{ validPaths: rootValidPaths, scenePath: rootScenePath }}
                 >
-                  {StoryboardRootComponent == null ? null : <StoryboardRootComponent />}
+                  <ParentLevelUtopiaContext.Provider
+                    value={{
+                      templatePath: storyboardRootElementPath,
+                    }}
+                  >
+                    {StoryboardRootComponent == null ? null : <StoryboardRootComponent />}
+                  </ParentLevelUtopiaContext.Provider>
                 </SceneLevelUtopiaContext.Provider>
               </CanvasContainer>
             </RerenderUtopiaContext.Provider>
@@ -388,7 +395,7 @@ export const UiJsxCanvas = betterReactMemo(
   },
 )
 
-function getStoryboardRoot(
+function useGetStoryboardRoot(
   topLevelElementsMap: Map<string, UtopiaJSXComponent>,
   executionScope: MapLike<any>,
 ): {
@@ -407,7 +414,7 @@ function getStoryboardRoot(
     storyboardRootJsxComponent == null
       ? []
       : getValidTemplatePaths(storyboardRootJsxComponent, EmptyScenePathForStoryboard)
-  const storyboardRootElementPath = validPaths[0] // >:D
+  const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
 
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements = {
     component: BakedInStoryboardVariableName,

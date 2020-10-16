@@ -218,7 +218,7 @@
     "@types/uuid": "2.0.29",
     "@typescript-eslint/eslint-plugin": "4.1.1",
     "@typescript-eslint/parser": "4.1.1",
-    "@welldone-software/why-did-you-render": "3.3.3",
+    "@welldone-software/why-did-you-render": "5.0.0-rc.1",
     "antd": "4.3.5",
     "babel-loader": "8.1.0",
     "babel-plugin-syntax-jsx": "6.18.0",

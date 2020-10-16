@@ -3,7 +3,7 @@ import { UpdateInfo } from '@welldone-software/why-did-you-render'
 import * as WDYRTypes from '@welldone-software/why-did-you-render'
 // another sad case where the typescript typing is erroneous.
 // unfortunately it claims that whyDidYouRender is a default export whereas it's a module export
-export const whyDidYouRender = require('@welldone-software/why-did-you-render/dist/no-classes-transpile/umd/whyDidYouRender.min.js') as typeof WDYRTypes.default
+export const whyDidYouRender = require('@welldone-software/why-did-you-render') as typeof WDYRTypes.default
 
 /**
  * sets up why-did-you-render and

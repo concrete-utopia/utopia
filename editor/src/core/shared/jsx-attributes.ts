@@ -210,7 +210,7 @@ export function jsxAttributesToProps(
   inScope: MapLike<any>,
   attributes: JSXAttributes,
   requireResult: MapLike<any>,
-): MapLike<any> {
+): any {
   return objectMap(jsxAttributeToValue(inScope, requireResult), attributes)
 }
 

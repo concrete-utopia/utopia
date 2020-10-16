@@ -14,10 +14,21 @@ import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as TP from '../../../core/shared/template-path'
 import { renderCoreElement } from './ui-jsx-canvas-element-renderer-utils'
+import { useContextSelector } from 'use-context-selector'
 
 export type ComponentRendererComponent = React.ComponentType<any> & {
   topLevelElementName: string
   propertyControls?: PropertyControls
+}
+
+export function isComponentRendererComponent(
+  component: ComponentRendererComponent | React.ComponentType | null,
+): component is ComponentRendererComponent {
+  return (
+    component != null &&
+    typeof component === 'function' &&
+    (component as ComponentRendererComponent).topLevelElementName != null
+  )
 }
 
 export function createComponentRendererComponent(params: {
@@ -25,14 +36,17 @@ export function createComponentRendererComponent(params: {
 }): ComponentRendererComponent {
   const Component = (realPassedProps: any) => {
     const { current: mutableContext } = React.useContext(MutableUtopiaContext)
-    const rerenderUtopiaContext = React.useContext(RerenderUtopiaContext)
+    const utopiaJsxComponent = useContextSelector(RerenderUtopiaContext, (c) =>
+      c.topLevelElements.get(params.topLevelElementName),
+    )
+    const shouldIncludeCanvasRootInTheSpy = useContextSelector(
+      RerenderUtopiaContext,
+      (c) => c.shouldIncludeCanvasRootInTheSpy,
+    )
+    const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
     const sceneContext = React.useContext(SceneLevelUtopiaContext)
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
-
-    const utopiaJsxComponent = rerenderUtopiaContext.topLevelElements.get(
-      params.topLevelElementName,
-    )
 
     if (utopiaJsxComponent == null) {
       // If this element cannot be found, we want to purposefully cause a 'ReferenceError' to notify the user.
@@ -83,7 +97,7 @@ export function createComponentRendererComponent(params: {
           scope,
           realPassedProps,
           mutableContext.requireResult,
-          rerenderUtopiaContext.hiddenInstances,
+          hiddenInstances,
           mutableContext.fileBlobs,
           sceneContext.validPaths,
           realPassedProps['data-uid'],
@@ -91,7 +105,7 @@ export function createComponentRendererComponent(params: {
           metadataContext,
           mutableContext.jsxFactoryFunctionName,
           codeError,
-          rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy,
+          shouldIncludeCanvasRootInTheSpy,
         )
       }
     }
