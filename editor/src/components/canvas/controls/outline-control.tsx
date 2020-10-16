@@ -15,6 +15,7 @@ import { canvasRectangle, CanvasRectangle, offsetRect, rect } from '../../../cor
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { KeysPressed } from '../../../utils/keyboard'
+import { PinControls } from './pin-controls'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -304,6 +305,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
       <>
         {isFeatureEnabled('Flex Sibling Numbers') ? parentHighlights : null}
         {isFeatureEnabled('Highlight Containing Block') ? containingBlockHighlights : null}
+        {isFeatureEnabled('Show Pins') ? <PinControls {...this.props} /> : null}
         {...selectionOutlines}
         {multiSelectOutline}
       </>
