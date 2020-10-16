@@ -123,7 +123,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
     }
     const nodeModules = fetchNodeModulesResult.nodeModules
     const onRemoteModuleDownload = jest.fn()
-    const req = getRequireFn(NO_OP, nodeModules)
+    const req = getRequireFn(onRemoteModuleDownload, nodeModules)
     const reactSpring = req('/src/index.js', 'react-spring')
     expect(Object.keys(reactSpring)).not.toHaveLength(0)
     expect(onRemoteModuleDownload).toBeCalledTimes(0)
