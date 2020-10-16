@@ -19,6 +19,7 @@ export type FeatureName =
   | 'Reorder Shows Placeholder Line'
   | 'Flow Resize'
   | 'Highlight Containing Block'
+  | 'Layouttype Outline'
   | 'Floating Menu Warning'
   | 'Show Pins'
 
@@ -40,6 +41,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Reorder Shows Placeholder Line',
   'Flow Resize',
   'Highlight Containing Block',
+  'Layouttype Outline',
   'Floating Menu Warning',
   'Show Pins',
 ]
@@ -62,6 +64,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Reorder Shows Placeholder Line': true,
   'Flow Resize': true,
   'Highlight Containing Block': true,
+  'Layouttype Outline': true,
   'Floating Menu Warning': true,
   'Show Pins': true,
 }

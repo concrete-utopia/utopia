@@ -163,6 +163,7 @@ export class YogaControls extends React.Component<YogaControlsProps> {
         ? null
         : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
+      const isPositionRelative = instance?.specialSizeMeasurements.position === 'relative'
       color = getSelectionColor(
         selectedView,
         this.props.rootComponents,
@@ -170,6 +171,8 @@ export class YogaControls extends React.Component<YogaControlsProps> {
         this.props.imports,
         createsYogaLayout,
         true,
+        isPositionRelative,
+        false,
       )
     }
 
