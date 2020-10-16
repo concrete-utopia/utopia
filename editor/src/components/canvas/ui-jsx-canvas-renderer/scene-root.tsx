@@ -173,7 +173,7 @@ export const SceneRootRenderer = betterReactMemo(
     )
   },
   (prevProps, nextProps) => {
-    // TODO BEFORE MERGE remove me, this is only needed until I fix the pragma
+    // TODO BALAZS remove me, this is only needed until I fix the pragma
     return (
       prevProps.sceneElement === nextProps.sceneElement &&
       fastDeepEquals(prevProps.style, nextProps.style)
