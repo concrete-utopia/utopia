@@ -19,8 +19,11 @@ export type FeatureName =
   | 'Reorder Shows Placeholder Line'
   | 'Flow Resize'
   | 'Highlight Containing Block'
-  | 'Dragging Changes Pins(Timer)'
   | 'Show Pins'
+  | 'Drag Pin Controls'
+  | 'Dragging Changes Pins(Timer)'
+  | 'Layouttype Outline'
+  | 'Floating Menu Warning'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -40,8 +43,11 @@ export const AllFeatureNames: FeatureName[] = [
   'Reorder Shows Placeholder Line',
   'Flow Resize',
   'Highlight Containing Block',
-  'Dragging Changes Pins(Timer)',
   'Show Pins',
+  'Drag Pin Controls',
+  'Dragging Changes Pins(Timer)',
+  'Layouttype Outline',
+  'Floating Menu Warning',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -62,8 +68,11 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Reorder Shows Placeholder Line': true,
   'Flow Resize': true,
   'Highlight Containing Block': true,
-  'Dragging Changes Pins(Timer)': true,
   'Show Pins': true,
+  'Drag Pin Controls': true,
+  'Dragging Changes Pins(Timer)': true,
+  'Layouttype Outline': true,
+  'Floating Menu Warning': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

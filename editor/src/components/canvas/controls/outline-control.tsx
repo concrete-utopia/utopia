@@ -15,7 +15,7 @@ import { canvasRectangle, CanvasRectangle, offsetRect, rect } from '../../../cor
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { KeysPressed } from '../../../utils/keyboard'
-import { PinControls } from './pin-controls'
+import { CanvasPinControls } from './pin-controls'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -24,6 +24,8 @@ export function getSelectionColor(
   imports: Imports,
   createsYogaLayout: boolean,
   anySelectedElementIsYogaLayouted: boolean,
+  isPositionRelative: boolean,
+  isFlow: boolean,
 ): string {
   if (TP.isScenePath(path)) {
     return colorTheme.canvasSelectionSceneOutline.value
@@ -38,6 +40,10 @@ export function getSelectionColor(
       return colorTheme.canvasSelectionAlternateOutlineYogaParent.value
     } else if (anySelectedElementIsYogaLayouted) {
       return colorTheme.canvasSelectionAlternateOutlineYogaChild.value
+    } else if (isPositionRelative && isFeatureEnabled('Layouttype Outline')) {
+      return '#0DDCAA'
+    } else if (isFlow && isFeatureEnabled('Layouttype Outline')) {
+      return '#F9C659'
     } else {
       return colorTheme.canvasSelectionPrimaryOutline.value
     }
@@ -142,6 +148,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         ? null
         : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
+      const isPositionRelative = instance?.specialSizeMeasurements.position === 'relative'
+      const isFlow = MetadataUtils.isFlowElement(instance)
       const selectionColor = getSelectionColor(
         selectedView,
         this.props.rootComponents,
@@ -149,6 +157,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         this.props.imports,
         createsYogaLayout,
         anySelectedElementIsYogaLayouted,
+        isPositionRelative,
+        isFlow,
       )
 
       if (this.props.dragState == null) {
@@ -305,7 +315,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
       <>
         {isFeatureEnabled('Flex Sibling Numbers') ? parentHighlights : null}
         {isFeatureEnabled('Highlight Containing Block') ? containingBlockHighlights : null}
-        {isFeatureEnabled('Show Pins') ? <PinControls {...this.props} /> : null}
+        {isFeatureEnabled('Show Pins') ? <CanvasPinControls {...this.props} /> : null}
         {...selectionOutlines}
         {multiSelectOutline}
       </>
