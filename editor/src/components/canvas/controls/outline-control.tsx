@@ -24,6 +24,8 @@ export function getSelectionColor(
   imports: Imports,
   createsYogaLayout: boolean,
   anySelectedElementIsYogaLayouted: boolean,
+  isPositionRelative: boolean,
+  isFlow: boolean,
 ): string {
   if (TP.isScenePath(path)) {
     return colorTheme.canvasSelectionSceneOutline.value
@@ -38,6 +40,10 @@ export function getSelectionColor(
       return colorTheme.canvasSelectionAlternateOutlineYogaParent.value
     } else if (anySelectedElementIsYogaLayouted) {
       return colorTheme.canvasSelectionAlternateOutlineYogaChild.value
+    } else if (isPositionRelative && isFeatureEnabled('Layouttype Outline')) {
+      return '#0DDCAA'
+    } else if (isFlow && isFeatureEnabled('Layouttype Outline')) {
+      return '#F9C659'
     } else {
       return colorTheme.canvasSelectionPrimaryOutline.value
     }
@@ -142,6 +148,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         ? null
         : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
+      const isPositionRelative = instance?.specialSizeMeasurements.position === 'relative'
+      const isFlow = MetadataUtils.isFlowElement(instance)
       const selectionColor = getSelectionColor(
         selectedView,
         this.props.rootComponents,
@@ -149,6 +157,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         this.props.imports,
         createsYogaLayout,
         anySelectedElementIsYogaLayouted,
+        isPositionRelative,
+        isFlow,
       )
 
       if (this.props.dragState == null) {

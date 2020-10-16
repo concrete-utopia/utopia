@@ -21,6 +21,8 @@ export type FeatureName =
   | 'Highlight Containing Block'
   | 'Show Pins'
   | 'Drag Pin Controls'
+  | 'Layouttype Outline'
+  | 'Floating Menu Warning'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -42,6 +44,8 @@ export const AllFeatureNames: FeatureName[] = [
   'Highlight Containing Block',
   'Show Pins',
   'Drag Pin Controls',
+  'Layouttype Outline',
+  'Floating Menu Warning',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -64,6 +68,8 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Highlight Containing Block': true,
   'Show Pins': true,
   'Drag Pin Controls': true,
+  'Layouttype Outline': true,
+  'Floating Menu Warning': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
