@@ -48,6 +48,7 @@ export const CanvasComponentEntry = betterReactMemo(
           filePath={canvasProps.uiFilePath}
           reportError={props.reportError}
           requireFn={canvasProps.requireFn}
+          key={`canvas-error-boundary-${canvasProps.mountCount}`}
         >
           <UiJsxCanvas {...canvasProps} clearErrors={props.clearErrors} />
         </CanvasErrorBoundary>

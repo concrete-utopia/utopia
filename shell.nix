@@ -280,7 +280,6 @@ let
   ];
 
   serverRunPackages = [
-    pkgs.yarn
     pkgs.python
   ];
 

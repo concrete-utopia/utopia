@@ -1,8 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
-import * as R from 'ramda'
 import * as React from 'react'
-import * as Semver from 'semver'
 import {
   FlexRow,
   FunctionIcons,
@@ -29,13 +27,11 @@ import {
   findLatestVersion,
   checkPackageVersionExists,
   VersionLookupResult,
-  isPackageNotFound,
 } from '../editor/npm-dependency/npm-dependency'
 import { packageJsonFileFromProjectContents } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
-import { isLeft } from '../../core/shared/either'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -136,6 +132,18 @@ export const DependencyList = betterReactMemo('DependencyList', () => {
 
   return <DependencyListInner {...dependencyProps} />
 })
+
+function unwrapLookupResult(lookupResult: VersionLookupResult): string | null {
+  switch (lookupResult.type) {
+    case 'PACKAGE_NOT_FOUND':
+      return null
+    case 'VERSION_LOOKUP_SUCCESS':
+      return lookupResult.version.version
+    default:
+      const _exhaustiveCheck: never = lookupResult
+      throw new Error(`Unhandled version lookup type ${JSON.stringify(lookupResult)}`)
+  }
+}
 
 class DependencyListInner extends React.PureComponent<DependencyListProps, DependencyListState> {
   DependencyListContainerId = 'dependencyList'
@@ -255,17 +263,20 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     })
   }
 
-  ensurePackageVersionExists = (
+  packageVersionLookup = (
     packageName: string,
-    version: string,
-  ): Promise<VersionLookupResult> => {
-    return checkPackageVersionExists(packageName, version)
+    version: string | undefined,
+  ): Promise<string | null> => {
+    if (version == null || version === '') {
+      return this.latestPackageVersionLookup(packageName).then(unwrapLookupResult)
+    } else {
+      return checkPackageVersionExists(packageName, version).then((exists) => {
+        return exists ? version : null
+      })
+    }
   }
 
-  latestPackageVersionLookup = (
-    packageName: string,
-    oldName: string | null,
-  ): Promise<VersionLookupResult> => {
+  latestPackageVersionLookup = (packageName: string): Promise<VersionLookupResult> => {
     this.props.editorDispatch(
       [EditorActions.setPackageStatus(packageName, 'version-lookup')],
       'leftpane',
@@ -314,13 +325,13 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
           ? lowerCasePackageName
           : `${lowerCasePackageName}@${trimmedPackageVersion}`
 
-      const editedPackageVersionPromise =
-        trimmedPackageVersion == null || trimmedPackageVersion === ''
-          ? this.latestPackageVersionLookup(lowerCasePackageName, dependencyBeingEdited)
-          : this.ensurePackageVersionExists(lowerCasePackageName, trimmedPackageVersion)
+      const editedPackageVersionPromise = this.packageVersionLookup(
+        lowerCasePackageName,
+        trimmedPackageVersion,
+      )
       editedPackageVersionPromise
-        .then((versionLookupResult) => {
-          if (isPackageNotFound(versionLookupResult)) {
+        .then((editedPackageVersion) => {
+          if (editedPackageVersion == null) {
             this.props.editorDispatch(
               [
                 pushToast({
@@ -333,7 +344,6 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
 
             this.packagesUpdateNotFound(editedPackageName)
           } else {
-            const editedPackageVersion = versionLookupResult.version
             this.setState((prevState) => {
               const currentNpmDeps = dependenciesFromPackageJson(this.props.packageJsonFile)
               const npmDepsWithoutCurrentDep = currentNpmDeps.filter(

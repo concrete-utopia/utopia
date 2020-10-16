@@ -247,7 +247,7 @@ function createFakeMetadataForJSXElement(
   if (isJSXElement(element)) {
     const elementID = getUtopiaID(element)
     const templatePath = TP.appendToPath(rootPath, elementID)
-    const props = jsxAttributesToProps(inScope, element.props, parentProps, Utils.NO_OP)
+    const props = jsxAttributesToProps(inScope, element.props, Utils.NO_OP)
     return {
       templatePath: templatePath,
       element: right(element),

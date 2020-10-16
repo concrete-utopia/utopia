@@ -107,15 +107,15 @@ export function mapValues<U, V>(
 }
 
 type ValueOf<T> = T[keyof T]
-export function objectMap<T, U>(
-  transform: (t: ValueOf<T>, key: keyof T) => U,
+export function objectMap<T, K extends keyof T, U>(
+  transform: (t: ValueOf<T>, key: K) => U,
   obj: T,
 ): {
-  [key in keyof T]: U
+  [key in K]: U
 } {
-  const keys = Object.keys(obj) as Array<keyof T>
+  const keys = Object.keys(obj) as Array<K>
   const mappedObj = {} as {
-    [key in keyof T]: U
+    [key in K]: U
   }
   fastForEach(keys, (key) => {
     const value = obj[key]

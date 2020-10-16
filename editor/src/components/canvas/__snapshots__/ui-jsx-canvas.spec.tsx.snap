@@ -214,7 +214,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -412,7 +411,6 @@ Object {
     "props": Object {
       "data-label": "Hat",
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -548,7 +546,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "567",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -787,7 +784,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -1141,7 +1137,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -1316,7 +1311,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -1391,7 +1385,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -1467,7 +1460,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -1636,7 +1628,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -1903,7 +1894,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -2144,7 +2134,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -2319,7 +2308,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -2394,7 +2382,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -2470,7 +2457,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -2659,7 +2645,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -2952,7 +2937,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -3114,7 +3098,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -3443,7 +3426,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -3605,7 +3587,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -3951,7 +3932,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -4137,7 +4117,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -4489,7 +4468,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -4675,7 +4653,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -4760,56 +4737,6 @@ Object {
 }
 `;
 
-exports[`UiJsxCanvas render handles an undefined component gracefully 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"
-    all: initial;
-    position: absolute;
-    zoom: 100%;
-    transform: translate3d(0px, 0px, 0);
-  \\"
->
-  <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:bbb\\"
-    style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-    \\"
-    data-uid=\\"utopia-storyboard-uid\\"
-  >
-    <div
-      style=\\"
-        padding: 2px 4px;
-        border: 1px solid [object Object];
-        border-radius: 1px;
-        background-color: white;
-        color: rgba(77, 77, 77, 1);
-        flex-shrink: 0;
-      \\"
-      class=\\"css-1pyjm1n\\"
-    >
-      <img
-        style=\\"user-select: none;\\"
-        width=\\"16\\"
-        height=\\"16\\"
-        src=\\"http://localhost/editor/icons/light/semantic/warningtriangle-gray-16x16@2x.png\\"
-        draggable=\\"false\\"
-      /><span style=\\"margin-left: 4px;\\">Can&#x27;t find MyCard</span>
-    </div>
-  </div>
-</div>
-"
-`;
-
-exports[`UiJsxCanvas render handles an undefined component gracefully 2`] = `Object {}`;
-
 exports[`UiJsxCanvas render handles chaining dependencies into the appropriate order 1`] = `
 "<div
   id=\\"canvas-container\\"
@@ -4870,7 +4797,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -5972,7 +5898,6 @@ export var storyboard = (props) => {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -6748,7 +6673,6 @@ export var storyboard = (props) => {
     "localFrame": null,
     "props": Object {
       "data-uid": "03a",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -6974,7 +6898,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -7053,7 +6976,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "name": "World!",
       "skipDeepFreeze": true,
     },
@@ -7134,7 +7056,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "name": "Dolly!",
       "skipDeepFreeze": true,
     },
@@ -7301,7 +7222,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -7517,7 +7437,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -7795,7 +7714,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -7954,7 +7872,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "d59",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -8071,7 +7988,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "dd5",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -8333,7 +8249,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -8441,7 +8356,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -8709,7 +8623,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -8951,7 +8864,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -9199,7 +9111,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -9264,12 +9175,12 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:bbb\\"
     style=\\"
       position: absolute;
-      width: 212px;
-      height: 188px;
-      left: 406px;
-      top: 62px;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 406px;
+      top: 62px;
+      width: 212px;
+      height: 188px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -9316,7 +9227,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -9397,7 +9307,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -9447,6 +9356,344 @@ Object {
 }
 `;
 
+exports[`UiJsxCanvas render renders correctly with a context 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
+>
+  <div
+    data-utopia-scene-id=\\"ccc/ddd\\"
+    data-utopia-valid-paths=\\"ccc/ddd:aaa ccc/ddd:aaa/bbb\\"
+    style=\\"
+      position: absolute;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      width: 375px;
+      height: 812px;
+      left: 0;
+      top: 0;
+    \\"
+    data-uid=\\"ccc\\"
+  >
+    <div
+      data-uid=\\"bbb\\"
+      style=\\"
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background-color: #eb1010;
+      \\"
+      data-utopia-parents=\\"aaa\\"
+    ></div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renders correctly with a context 2`] = `
+Object {
+  "ccc/ddd:aaa": Object {
+    "childrenTemplatePaths": Array [
+      Object {
+        "element": Array [
+          "aaa",
+          "bbb",
+        ],
+        "scene": Object {
+          "sceneElementPath": Array [
+            "ccc",
+            "ddd",
+          ],
+          "type": "scenepath",
+        },
+      },
+    ],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [],
+            "metadata": null,
+            "name": Object {
+              "baseVariable": "div",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Object {
+              "data-uid": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": "bbb",
+              },
+              "layout": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": Object {
+                  "layoutSystem": "pinSystem",
+                },
+              },
+              "style": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": Object {
+                  "backgroundColor": "#EB1010",
+                  "height": "100%",
+                  "width": "100%",
+                },
+              },
+            },
+            "type": "JSX_ELEMENT",
+          },
+        ],
+        "metadata": null,
+        "name": Object {
+          "baseVariable": "AppContext",
+          "propertyPath": Object {
+            "propertyElements": Array [
+              "Provider",
+            ],
+          },
+        },
+        "props": Object {
+          "data-uid": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "aaa",
+          },
+          "value": Object {
+            "definedElsewhere": Array [
+              "storeRef",
+            ],
+            "javascript": "storeRef",
+            "sourceMap": Object {
+              "file": "code.tsx",
+              "mappings": "OAUiCA",
+              "names": Array [
+                "storeRef",
+              ],
+              "sources": Array [
+                "code.tsx",
+              ],
+              "sourcesContent": Array [
+                "/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+const AppContext = React.createContext({})
+const useStoreRef = () => useContext(AppContext)
+
+export var App = (props) => {
+  const storeRef = React.useRef({})
+  return (
+    <AppContext.Provider value={storeRef} data-uid={'aaa'}>
+      <div
+        data-uid={'bbb'}
+        style={{ width: '100%', height: '100%', backgroundColor: '#EB1010' }}
+        layout={{ layoutSystem: 'pinSystem' }}
+      />
+    </AppContext.Provider>
+  )
+}
+
+export var storyboard = (
+  <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid={'ccc'}>
+    <Scene
+      data-uid={'ddd'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)",
+              ],
+              "version": 3,
+            },
+            "transpiledJavascript": "return storeRef;",
+            "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+            "uniqueID": "",
+          },
+        },
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "aaa",
+      "skipDeepFreeze": true,
+      "value": Object {
+        "current": Object {},
+      },
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "aaa",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [
+          "ccc",
+          "ddd",
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+  "ccc/ddd:aaa/bbb": Object {
+    "childrenTemplatePaths": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "metadata": null,
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Object {
+          "data-uid": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "bbb",
+          },
+          "layout": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {
+              "layoutSystem": "pinSystem",
+            },
+          },
+          "style": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {
+              "backgroundColor": "#EB1010",
+              "height": "100%",
+              "width": "100%",
+            },
+          },
+        },
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "bbb",
+      "data-utopia-parents": "aaa",
+      "skipDeepFreeze": true,
+      "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
+        "alignSelf": undefined,
+        "backgroundColor": "#EB1010",
+        "bottom": undefined,
+        "flexBasis": undefined,
+        "flexDirection": undefined,
+        "flexGrow": undefined,
+        "flexShrink": undefined,
+        "flexWrap": undefined,
+        "height": "100%",
+        "justifyContent": undefined,
+        "left": undefined,
+        "marginBottom": undefined,
+        "marginLeft": undefined,
+        "marginRight": undefined,
+        "marginTop": undefined,
+        "maxHeight": undefined,
+        "maxWidth": undefined,
+        "minHeight": undefined,
+        "minWidth": undefined,
+        "position": "relative",
+        "right": undefined,
+        "top": undefined,
+        "width": "100%",
+      },
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "aaa",
+        "bbb",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [
+          "ccc",
+          "ddd",
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
+
 exports[`UiJsxCanvas render renders fine with two circularly referencing arbitrary blocks 1`] = `
 "<div
   id=\\"canvas-container\\"
@@ -9462,12 +9709,12 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene:aaa\\"
     style=\\"
       position: absolute;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
       width: 375px;
       height: 812px;
       left: 0;
       top: 0;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -9665,7 +9912,6 @@ export var storyboard = (
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -9757,12 +10003,12 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene:BBB\\"
     style=\\"
       position: absolute;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
       width: 375px;
       height: 812px;
       left: 0;
       top: 0;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -9806,7 +10052,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "BBB",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "x": 5,
     },
@@ -10144,7 +10389,6 @@ export var storyboard = (
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -10252,7 +10496,6 @@ export var storyboard = (
     "localFrame": null,
     "props": Object {
       "data-uid": "ddd",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -10430,7 +10673,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -10509,7 +10751,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "src": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
       "style": Object {
@@ -10648,7 +10889,6 @@ Object {
     "props": Object {
       "data-factory-function-works": "true",
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -10921,7 +11161,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -11091,7 +11330,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -11205,7 +11443,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "cloner",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -11287,7 +11524,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "cloned",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
       "style": Object {
         "color": "red",
@@ -11408,7 +11644,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -11524,7 +11759,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
-      "data-utopia-original-uid": undefined,
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -11860,6 +12094,30 @@ Array [
         "lineNumber": 10,
       },
     ],
+  },
+]
+`;
+
+exports[`UiJsxCanvas runtime errors handles an non-existent component gracefully 1`] = `
+Array [
+  Object {
+    "columnNumber": undefined,
+    "lineNumber": undefined,
+    "message": "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.",
+    "name": "Error",
+    "originalCode": undefined,
+  },
+]
+`;
+
+exports[`UiJsxCanvas runtime errors handles an undefined component gracefully 1`] = `
+Array [
+  Object {
+    "columnNumber": undefined,
+    "lineNumber": undefined,
+    "message": "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.",
+    "name": "Error",
+    "originalCode": undefined,
   },
 ]
 `;

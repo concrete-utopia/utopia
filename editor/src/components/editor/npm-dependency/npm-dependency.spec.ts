@@ -2,21 +2,31 @@ import {
   findMatchingVersion,
   getVersionType,
   packageNotFound,
-  versionLookupSuccess,
+  npmVersionLookupSuccess,
 } from './npm-dependency'
 
 require('jest-fetch-mock').enableMocks()
 
 describe('Attempting to match a version for a valid package', () => {
-  it('Matches a standard version if that version is in the list', async () => {
+  it('Matches a standard version if that version is the only one returned', async () => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
-        return Promise.resolve({ status: 200, body: JSON.stringify(['1.0.0', '1.1.0']) })
+        return Promise.resolve({ status: 200, body: JSON.stringify('1.0.0') })
       },
     )
     const version = '1.0.0'
-    const result = await findMatchingVersion('', version)
-    expect(result).toEqual(versionLookupSuccess(version))
+    const result = await findMatchingVersion('foo', version)
+    expect(result).toEqual(npmVersionLookupSuccess(version))
+  })
+  it('Fails to match a standard version if multiple versions are returned', async () => {
+    ;(fetch as any).mockResponse(
+      (request: Request): Promise<{ body?: string; status?: number }> => {
+        return Promise.resolve({ status: 200, body: JSON.stringify(['1.0.0', '1.0.1']) })
+      },
+    )
+    const version = '1.0.0'
+    const result = await findMatchingVersion('foo', version)
+    expect(result).toEqual(npmVersionLookupSuccess(version))
   })
   it('Matches a ranged version if that range can be satisfied by the list', async () => {
     ;(fetch as any).mockResponse(
@@ -25,8 +35,8 @@ describe('Attempting to match a version for a valid package', () => {
       },
     )
     const version = '^1.0.0'
-    const result = await findMatchingVersion('', version)
-    expect(result).toEqual(versionLookupSuccess('1.1.0'))
+    const result = await findMatchingVersion('foo', version)
+    expect(result).toEqual(npmVersionLookupSuccess('1.1.0'))
   })
   it('Fails a version if that version is not in the list', async () => {
     ;(fetch as any).mockResponse(
@@ -35,8 +45,19 @@ describe('Attempting to match a version for a valid package', () => {
       },
     )
     const version = '2.0.0'
-    const result = await findMatchingVersion('', version)
+    const result = await findMatchingVersion('foo', version)
     expect(result).toEqual(packageNotFound)
+  })
+  it('Matches a version tag if only one result is returned', async () => {
+    const matchingResult = '1.0.0'
+    ;(fetch as any).mockResponse(
+      (request: Request): Promise<{ body?: string; status?: number }> => {
+        return Promise.resolve({ status: 200, body: JSON.stringify(matchingResult) })
+      },
+    )
+    const version = 'latest'
+    const result = await findMatchingVersion('foo', version)
+    expect(result).toEqual(npmVersionLookupSuccess(matchingResult))
   })
 })
 
@@ -48,7 +69,7 @@ describe('Attempting to match a version for an invalid package', () => {
       },
     )
     const version = '1.0.0'
-    const result = await findMatchingVersion('', version)
+    const result = await findMatchingVersion('foo', version)
     expect(result).toEqual(packageNotFound)
   })
 })
@@ -57,44 +78,47 @@ describe('Checking the version type of a dependency', () => {
   // The below examples are (mostly) taken from https://docs.npmjs.com/files/package.json#dependencies
 
   it('Returns GITHUB for github repos', () => {
-    expect(getVersionType('expressjs/express')).toEqual('GITHUB')
-    expect(getVersionType('mochajs/mocha#4727d357ea')).toEqual('GITHUB')
-    expect(getVersionType('user/repo#feature/branch')).toEqual('GITHUB')
+    expect(getVersionType('expressjs', 'expressjs/express')).toEqual('GITHUB')
+    expect(getVersionType('mochajs', 'mochajs/mocha#4727d357ea')).toEqual('GITHUB')
+    expect(getVersionType('user', 'user/repo#feature/branch')).toEqual('GITHUB')
+    expect(getVersionType('npm', 'git+ssh://git@github.com:npm/cli.git#v1.0.27')).toEqual('GITHUB')
+    expect(getVersionType('npm', 'git+ssh://git@github.com:npm/cli#semver:^5.0')).toEqual('GITHUB')
+    expect(getVersionType('npm', 'git+https://isaacs@github.com/npm/cli.git')).toEqual('GITHUB')
+    expect(getVersionType('npm', 'git://github.com/npm/cli.git#v1.0.27')).toEqual('GITHUB')
   })
 
   it('Returns LOCAL for local files', () => {
-    expect(getVersionType('../foo/bar')).toEqual('LOCAL')
-    expect(getVersionType('~/foo/bar')).toEqual('LOCAL')
-    expect(getVersionType('./foo/bar')).toEqual('LOCAL')
-    expect(getVersionType('/foo/bar')).toEqual('LOCAL')
-    expect(getVersionType('file:../foo/bar')).toEqual('LOCAL')
+    expect(getVersionType('bar', '../foo/bar')).toEqual('LOCAL')
+    expect(getVersionType('bar', '~/foo/bar')).toEqual('LOCAL')
+    expect(getVersionType('bar', './foo/bar')).toEqual('LOCAL')
+    expect(getVersionType('bar', '/foo/bar')).toEqual('LOCAL')
+    expect(getVersionType('bar', 'file:../foo/bar')).toEqual('LOCAL')
   })
 
   it('Returns SEMVER for semver versions', () => {
-    expect(getVersionType('1.0.0 - 2.9999.9999')).toEqual('SEMVER')
-    expect(getVersionType('>=1.0.2 <2.1.2')).toEqual('SEMVER')
-    expect(getVersionType('>1.0.2 <=2.3.4')).toEqual('SEMVER')
-    expect(getVersionType('2.0.1')).toEqual('SEMVER')
-    expect(getVersionType('<1.0.0 || >=2.3.1 <2.4.5 || >=2.5.2 <3.0.0')).toEqual('SEMVER')
-    expect(getVersionType('~1.2')).toEqual('SEMVER')
-    expect(getVersionType('~1.2.3')).toEqual('SEMVER')
-    expect(getVersionType('2.x')).toEqual('SEMVER')
-    expect(getVersionType('3.3.x')).toEqual('SEMVER')
+    expect(getVersionType('foo', '1.0.0 - 2.9999.9999')).toEqual('SEMVER')
+    expect(getVersionType('foo', '>=1.0.2 <2.1.2')).toEqual('SEMVER')
+    expect(getVersionType('foo', '>1.0.2 <=2.3.4')).toEqual('SEMVER')
+    expect(getVersionType('foo', '2.0.1')).toEqual('SEMVER')
+    expect(getVersionType('foo', '<1.0.0 || >=2.3.1 <2.4.5 || >=2.5.2 <3.0.0')).toEqual('SEMVER')
+    expect(getVersionType('foo', '~1.2')).toEqual('SEMVER')
+    expect(getVersionType('foo', '~1.2.3')).toEqual('SEMVER')
+    expect(getVersionType('foo', '2.x')).toEqual('SEMVER')
+    expect(getVersionType('foo', '3.3.x')).toEqual('SEMVER')
   })
 
   it('Returns TAG for tagged versions', () => {
-    expect(getVersionType('beta')).toEqual('TAG')
-    expect(getVersionType('experimental')).toEqual('TAG')
-    expect(getVersionType('latest')).toEqual('TAG')
-    expect(getVersionType('next')).toEqual('TAG')
-    expect(getVersionType('unstable')).toEqual('TAG')
+    expect(getVersionType('foo', 'beta')).toEqual('TAG')
+    expect(getVersionType('foo', 'experimental')).toEqual('TAG')
+    expect(getVersionType('foo', 'latest')).toEqual('TAG')
+    expect(getVersionType('foo', 'next')).toEqual('TAG')
+    expect(getVersionType('foo', 'unstable')).toEqual('TAG')
   })
 
   it('Returns URL for URLs', () => {
-    expect(getVersionType('http://asdf.com/asdf.tar.gz')).toEqual('URL')
-    expect(getVersionType('git+ssh://git@github.com:npm/cli.git#v1.0.27')).toEqual('URL')
-    expect(getVersionType('git+ssh://git@github.com:npm/cli#semver:^5.0')).toEqual('URL')
-    expect(getVersionType('git+https://isaacs@github.com/npm/cli.git')).toEqual('URL')
-    expect(getVersionType('git://github.com/npm/cli.git#v1.0.27')).toEqual('URL')
+    expect(getVersionType('asdf', 'http://asdf.com/asdf.tar.gz')).toEqual('URL')
+    expect(
+      getVersionType('forever', 'https://github.com/indexzero/forever/tarball/v0.5.6'),
+    ).toEqual('URL')
   })
 })

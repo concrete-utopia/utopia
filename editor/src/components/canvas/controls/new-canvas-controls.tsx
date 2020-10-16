@@ -561,7 +561,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       )
 
       const textStyle =
-        element.computedStyle.textSizing == 'auto'
+        element.computedStyle?.textSizing == 'auto'
           ? {
               ...element.computedStyle,
               top: 0,

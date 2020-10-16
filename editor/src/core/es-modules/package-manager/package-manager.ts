@@ -1,8 +1,3 @@
-import * as UtopiaAPI from 'utopia-api'
-import * as UUIUI from 'uuiui'
-import * as UUIUIDeps from 'uuiui-deps'
-import * as ImportedReact from 'react'
-import * as ImportedReactDOM from 'react-dom'
 import {
   NodeModules,
   isEsCodeFile,
@@ -18,6 +13,7 @@ import { memoize } from '../../shared/memoize'
 import { mapArrayToDictionary } from '../../shared/array-utils'
 import { updateNodeModulesContents } from '../../../components/editor/actions/actions'
 import { utopiaApiTypings } from './utopia-api-typings'
+import { resolveBuiltInDependency } from './built-in-dependencies'
 
 export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
 
@@ -27,78 +23,15 @@ export function createDependencyNotFoundError(importOrigin: string, toImport: st
   return error
 }
 
-// Ensure this and `resolveBuiltinDependency` are kept in sync.
-export function isBuiltinDependency(toImport: string): boolean {
-  switch (toImport) {
-    case 'utopia-api':
-    case 'uuiui':
-    case 'uuiui-deps':
-    case 'react':
-    case 'react-dom':
-      return true
-    default:
-      return false
-  }
-}
-
-// Ensure this and `isBuiltinDependency` are kept in sync.
-function resolveBuiltinDependency(toImport: string): any | undefined {
-  const React = ImportedReact
-  const ReactDOM = ImportedReactDOM
-  /**
-   * DO NOT RELEASE THE SOFTWARE WITH THIS ENABLED
-   * OR AT LEAST WITHOUT REVISITING THIS TOPIC
-   * THIS IS FOR MAKING LOCAL DEVELOPMENT EASIER
-   *
-   * we are returning UtopiaAPI from the editor bundle, instead of the npm package bundle returned from the server here.
-   * why? because this enables us to skip the bundler server and the bumping procedure while iterating on the utopia-api
-   *
-   * once the API is stable, we need to start versioning it, and then this hack will need to be removed
-   * and importResultFromImports should be updated too
-   */
-  if (toImport === 'utopia-api') {
-    return {
-      ...UtopiaAPI,
-      default: UtopiaAPI,
-    }
-  }
-
-  if (toImport === 'uuiui') {
-    return {
-      ...UUIUI,
-      default: UUIUI,
-    }
-  }
-
-  if (toImport === 'uuiui-deps') {
-    return {
-      ...UUIUIDeps,
-      default: UUIUIDeps,
-    }
-  }
-
-  if (toImport === 'react') {
-    return {
-      ...React,
-      default: React,
-    }
-  }
-
-  if (toImport === 'react-dom') {
-    return {
-      ...ReactDOM,
-      default: ReactDOM,
-    }
-  }
-  return undefined
-}
-
-export const getMemoizedRequireFn = memoize(
+export const getEditorRequireFn = memoize(
   (nodeModules: NodeModules, dispatch: EditorDispatch) => {
-    return getRequireFn(
-      (modulesToAdd) => dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
-      nodeModules,
-    )
+    const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
+      // FIXME Update something in the state to show that we're downloading remote files
+      moduleDownload.then((modulesToAdd: NodeModules) =>
+        dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
+      )
+    }
+    return getRequireFn(onRemoteModuleDownload, nodeModules)
   },
   {
     maxSize: 1,
@@ -106,45 +39,45 @@ export const getMemoizedRequireFn = memoize(
 )
 
 export function getRequireFn(
-  updateNodeModules: (modulesToAdd: NodeModules) => void,
+  onRemoteModuleDownload: (moduleDownload: Promise<NodeModules>) => void,
   nodeModules: NodeModules,
   injectedEvaluator = evaluator,
 ): RequireFn {
   return function require(importOrigin, toImport): unknown {
-    const builtinDependency = resolveBuiltinDependency(toImport)
-    if (builtinDependency != null) {
-      return builtinDependency
+    const builtInDependency = resolveBuiltInDependency(toImport)
+    if (builtInDependency != null) {
+      return builtInDependency
     }
 
     const resolvedPath = resolveModule(nodeModules, importOrigin, toImport)
     if (resolvedPath != null) {
       const notNullResolvedPath: string = resolvedPath
       const resolvedFile = nodeModules[resolvedPath]
+
+      /**
+       * we create a result cache with an empty exports object here.
+       * the `injectedEvaluator` function is going to mutate this exports object.
+       * the reason is that if we have cyclic dependencies, we want to be able to
+       * return a partial exports object for a module which is under evaluation,
+       * to avoid infinite loops
+       *
+       * https://nodejs.org/api/modules.html#modules_cycles
+       *
+       */
+      let partialModule = {
+        exports: {},
+      }
+      function partialRequire(name: string): unknown {
+        return require(notNullResolvedPath, name)
+      }
       if (resolvedFile != null && isEsCodeFile(resolvedFile)) {
         if (resolvedFile.evalResultCache == null) {
           try {
-            /**
-             * we create a result cache with an empty exports object here.
-             * the `injectedEvaluator` function is going to mutate this exports object.
-             * the reason is that if we have cyclic dependencies, we want to be able to
-             * return a partial exports object for a module which is under evaluation,
-             * to avoid infinite loops
-             *
-             * https://nodejs.org/api/modules.html#modules_cycles
-             *
-             */
-
             // TODO this is the node.js `module` object we pass in to the evaluation scope.
             // we should extend the module objects so it not only contains the exports,
             // to have feature parity with the popular bundlers (Parcel / webpack)
-            let partialModule = {
-              exports: {},
-            }
             // MUTATION
             resolvedFile.evalResultCache = { module: partialModule }
-            function partialRequire(name: string): unknown {
-              return require(notNullResolvedPath, name)
-            }
             injectedEvaluator(
               resolvedPath,
               resolvedFile.fileContents,
@@ -169,12 +102,12 @@ export function getRequireFn(
       } else if (isEsRemoteDependencyPlaceholder(resolvedFile)) {
         if (!resolvedFile.downloadStarted) {
           // return empty exports object, fire off an async job to fetch the dependency from jsdelivr
-          // MUTATION
           resolvedFile.downloadStarted = true
-          fetchMissingFileDependency(updateNodeModules, resolvedFile, resolvedPath)
+          const moduleDownload = fetchMissingFileDependency(resolvedFile, resolvedPath)
+          onRemoteModuleDownload(moduleDownload)
         }
 
-        return {}
+        return {} // FIXME Throw or otherwise block further evaluation here
       }
     }
     throw createDependencyNotFoundError(importOrigin, toImport)

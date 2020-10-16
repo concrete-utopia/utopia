@@ -37,6 +37,7 @@ import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github
+import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
@@ -171,13 +172,13 @@ innerServerExecutor (GetMetrics action) = do
   store <- fmap _storeForMetrics ask
   sample <- liftIO $ sampleAll store
   return $ action $ sampleToJson sample
-innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackageName action) = do
+innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   manager <- fmap _registryManager ask
-  let qualifiedPackageName = maybe javascriptPackageName (\v -> javascriptPackageName <> "/" <> v) maybeJavascriptPackageName
+  let qualifiedPackageName = maybe javascriptPackageName (\v -> javascriptPackageName <> "/" <> v) maybeJavascriptPackageVersion
   packageMetadata <- liftIO $ lookupPackageJSON manager qualifiedPackageName
   return $ action packageMetadata
-innerServerExecutor (GetPackageVersionJSON javascriptPackageName action) = do
-  packageMetadata <- liftIO $ lookupAllPackageVersions javascriptPackageName
+innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
+  packageMetadata <- liftIO $ findMatchingVersions javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -190,9 +191,9 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask
   AssetResultCache{..} <- liftIO $ readIORef _assetResultCache
   return $ action _editorMappings
-innerServerExecutor (GetPackagePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSince action) = do
+innerServerExecutor (GetPackagePackagerContent versionedPackageName ifModifiedSince action) = do
   semaphore <- fmap _nodeSemaphore ask
-  packagerContent <- liftIO $ getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifModifiedSince
+  packagerContent <- liftIO $ getPackagerContent semaphore versionedPackageName ifModifiedSince
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"

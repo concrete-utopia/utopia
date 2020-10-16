@@ -1,7 +1,7 @@
 import * as TS from 'typescript'
-import { FlexParentProps, LayoutSystem, NormalisedFrame } from 'utopia-api'
+import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { Either, Left, Right, isRight, isLeft } from './either'
-import { ArbitraryJSBlock, TopLevelElement, UtopiaJSXComponent } from './element-template'
+import { ArbitraryJSBlock, TopLevelElement } from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
@@ -255,20 +255,17 @@ export function isEsCodeFile(projectFile: any): projectFile is ESCodeFile {
 
 export interface ESRemoteDependencyPlaceholder {
   type: 'ES_REMOTE_DEPENDENCY_PLACEHOLDER'
-  packagename: string
-  version: string
+  url: string
   downloadStarted: boolean
 }
 
 export function esRemoteDependencyPlaceholder(
-  packageName: string,
-  version: string,
+  url: string,
   downloadStarted: boolean,
 ): ESRemoteDependencyPlaceholder {
   return {
     type: 'ES_REMOTE_DEPENDENCY_PLACEHOLDER',
-    packagename: packageName,
-    version: version,
+    url: url,
     downloadStarted: downloadStarted,
   }
 }

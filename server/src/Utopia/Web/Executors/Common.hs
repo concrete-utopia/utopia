@@ -34,7 +34,6 @@ import           System.Directory
 import           System.Environment
 import           System.FilePath
 import           System.Metrics            hiding (Value)
-import           System.Process
 import qualified Text.Blaze.Html5          as H
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth           (getUserDetailsFromCode)
@@ -223,17 +222,6 @@ lookupPackageJSON registryManager urlSuffix = do
     return (responseAsJSON ^? WR.responseBody)
   return resultFromLookup
 
-handleVersionsLookupError :: IOException -> IO (Maybe Value)
-handleVersionsLookupError _ = return Nothing
-
-lookupAllPackageVersions :: Text -> IO (Maybe Value)
-lookupAllPackageVersions javascriptPackageName = do
-  let versionsProc = proc "npm" ["view", toS javascriptPackageName, "versions", "--json"]
-  foundVersions <- (flip catch) handleVersionsLookupError $ do
-    versionsResult <- readCreateProcess versionsProc ""
-    return $ decode $ toS versionsResult
-  return foundVersions
-
 emptyAssetsCaches :: [PathAndBuilders] -> IO AssetsCaches
 emptyAssetsCaches _assetPathDetails = do
   _hashCache <- newIORef mempty
@@ -252,10 +240,10 @@ getRoundedAccessTime filePath = do
   let roundedDiffTime = fromInteger $ round $ utctDayTime time
   return $ time { utctDayTime = roundedDiffTime }
 
-cachePackagerContent :: Text -> Text -> Maybe UTCTime -> IO BL.ByteString -> IO (Maybe (BL.ByteString, UTCTime))
-cachePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSince fallback = do
-  let cacheFileParentPath = ".utopia-cache" </> "packager" </> toS javascriptPackageName
-  let cacheFilePath = cacheFileParentPath </> toS javascriptPackageVersion <.> "json"
+cachePackagerContent :: Text -> Maybe UTCTime -> IO BL.ByteString -> IO (Maybe (BL.ByteString, UTCTime))
+cachePackagerContent versionedPackageName ifModifiedSince fallback = do
+  let cacheFileParentPath = ".utopia-cache" </> "packager" </> toS versionedPackageName
+  let cacheFilePath = cacheFileParentPath </> "cache.json"
   fileExists <- doesFileExist cacheFilePath
   let getLastModified = getRoundedAccessTime cacheFilePath
   let whenFileExists = do
@@ -274,10 +262,10 @@ cachePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSi
             return $ Just (result, lastModified)
   if fileExists then whenFileExists else whenFileDoesNotExist
 
-getPackagerContent :: QSem -> Text -> Text -> Maybe UTCTime -> IO (Maybe (BL.ByteString, UTCTime))
-getPackagerContent semaphore javascriptPackageName javascriptPackageVersion ifModifiedSince = do
-  cachePackagerContent javascriptPackageName javascriptPackageVersion ifModifiedSince $ do
-    filesAndContent <- withInstalledProject semaphore javascriptPackageName javascriptPackageVersion getModuleAndDependenciesFiles
+getPackagerContent :: QSem -> Text -> Maybe UTCTime -> IO (Maybe (BL.ByteString, UTCTime))
+getPackagerContent semaphore versionedPackageName ifModifiedSince = do
+  cachePackagerContent versionedPackageName ifModifiedSince $ do
+    filesAndContent <- withInstalledProject semaphore versionedPackageName getModuleAndDependenciesFiles
     let encodingResult = toEncoding $ M.singleton contentsText filesAndContent
     return $ toLazyByteString $ fromEncoding encodingResult
 

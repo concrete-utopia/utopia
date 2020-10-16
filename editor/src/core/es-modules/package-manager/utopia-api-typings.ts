@@ -367,7 +367,7 @@ declare module 'utopia-api/primitives/resizeable' {
 }
 declare module 'utopia-api/primitives/storyboard' {
   import * as React from 'react';
-  export const Storyboard: (props: React.PropsWithChildren<any>) => JSX.Element;
+  export const Storyboard: React.MemoExoticComponent<(props: React.PropsWithChildren<any>) => JSX.Element>;
 
 }
 declare module 'utopia-api/primitives/text' {

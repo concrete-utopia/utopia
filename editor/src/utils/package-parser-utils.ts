@@ -26,18 +26,3 @@ export function parseVersionPackageJsonObject(value: unknown): ParseResult<strin
 export function parseVersionPackageJsonFile(value: unknown): ParseResult<string> {
   return flatMapEither(parseVersionPackageJsonObject, parseStringToJSON(value))
 }
-
-export function parseDependencyVersionFromNodeModules(
-  nodeModules: NodeModules,
-  dependencyName: string,
-): string | null {
-  let version: string | null = null
-  const packageJsonFile = nodeModules[`/node_modules/${dependencyName}/package.json`]
-  if (packageJsonFile != null && isEsCodeFile(packageJsonFile)) {
-    const parseResult = parseVersionPackageJsonFile(packageJsonFile.fileContents)
-    forEachRight(parseResult, (resolvedVersion) => {
-      version = resolvedVersion
-    })
-  }
-  return version
-}
