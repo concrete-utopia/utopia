@@ -167,3 +167,8 @@ export function getFileExtension(filename: string): string {
     return '' // TODO How do we handle files with no extension?
   }
 }
+
+export function directoryForFilePath(path: string): string {
+  const finalSlashIndex = path.lastIndexOf('/')
+  return finalSlashIndex > 0 ? path.slice(0, finalSlashIndex) : path
+}

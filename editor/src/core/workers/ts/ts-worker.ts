@@ -1,4 +1,5 @@
 import * as Babel from '@babel/standalone'
+import * as ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import * as TS from 'typescript'
 import * as BrowserFS from 'browserfs'
 import { TypeDefinitions } from '../../shared/npm-dependency-types'
@@ -35,6 +36,7 @@ import { fastForEach } from '../../shared/utils'
 import { getCodeFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
 import { ProjectContentTreeRoot, walkContentsTree } from '../../../components/assets'
+import { FileLoaderPlugin } from '../../webpack-loaders/file-loader'
 
 const TS_LIB_FILES: { [key: string]: string } = {
   'lib.d.ts': libfile,
@@ -218,6 +220,18 @@ type DetailedTypeInfo = {
   memberInfo: { type: string; members: { [member: string]: string } }
 }
 
+function applyWebpackLoadersToImports(filename: string, code: string): string {
+  if (filename.endsWith('.js')) {
+    const transformed = Babel.transform(code, {
+      plugins: [ReactSyntaxPlugin, FileLoaderPlugin(filename)],
+    })
+
+    return transformed.code
+  } else {
+    return code
+  }
+}
+
 export function handleMessage(
   workerMessage: IncomingWorkerMessage,
   sendMessage: (content: OutgoingWorkerMessage) => void,
@@ -247,7 +261,8 @@ export function handleMessage(
         } else {
           content = getCodeFileContents(workerMessage.content, false, true)
         }
-        fileChanged(workerMessage.filename, content, workerMessage.jobID)
+        const transformedCode = applyWebpackLoadersToImports(workerMessage.filename, content)
+        fileChanged(workerMessage.filename, transformedCode, workerMessage.jobID)
       } finally {
         sendMessage(createUpdateProcessedMessage(workerMessage.jobID))
       }
@@ -324,7 +339,8 @@ export function initBrowserFS(
   walkContentsTree(projectContents, (filename, file) => {
     if (isCodeOrUiJsFile(file)) {
       const fileContents = getCodeFileContents(file, false, true)
-      writeFile(fs, filename, fileContents)
+      const transformedCode = applyWebpackLoadersToImports(filename, fileContents)
+      writeFile(fs, filename, transformedCode)
     }
   })
 
