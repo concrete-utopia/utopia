@@ -196,6 +196,23 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
       this.props.dragState.edgePosition.x === this.props.position.x &&
       this.props.dragState.edgePosition.y === this.props.position.y
 
+    const options: LayoutTargetableProp[] =
+      this.props.direction === 'horizontal'
+        ? [
+            'Height',
+            edge === 'before' ? 'paddingTop' : 'paddingBottom',
+            edge === 'before' ? 'marginTop' : 'marginBottom',
+            'minHeight',
+            'maxHeight',
+          ]
+        : [
+            'Width',
+            edge === 'before' ? 'paddingLeft' : 'paddingRight',
+            edge === 'before' ? 'marginLeft' : 'marginRight',
+            'minWidth',
+            'maxWidth',
+          ]
+
     return (
       <React.Fragment>
         <div
@@ -219,7 +236,7 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
               top +
               (this.props.direction === 'horizontal'
                 ? edge === 'before' && this.props.direction === 'horizontal'
-                  ? -25
+                  ? -105
                   : 10
                 : -10)
             }
@@ -227,15 +244,11 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
               left +
               (this.props.direction === 'vertical'
                 ? edge === 'before' && this.props.direction === 'vertical'
-                  ? -25
+                  ? -95
                   : 10
                 : -10)
             }
-            options={
-              this.props.direction === 'horizontal'
-                ? ['Height', 'minHeight', 'maxHeight']
-                : ['Width', 'minWidth', 'maxWidth']
-            }
+            options={options}
             selected={this.props.propertyTargetSelectedIndex}
             setOptionsCallback={this.props.setTargetOptionsArray}
             targetComponentMetadata={this.props.targetComponentMetadata}

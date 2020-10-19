@@ -18,6 +18,14 @@ export type LayoutTargetableProp =
   | 'maxWidth'
   | 'minHeight'
   | 'maxHeight'
+  | 'marginTop'
+  | 'marginRight'
+  | 'marginBottom'
+  | 'marginLeft'
+  | 'paddingTop'
+  | 'paddingRight'
+  | 'paddingBottom'
+  | 'paddingLeft'
 
 export type LayoutPinnedProp =
   | LayoutDimension
