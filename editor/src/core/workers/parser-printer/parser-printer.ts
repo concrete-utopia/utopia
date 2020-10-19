@@ -1008,7 +1008,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
       utopiaComponentFromSceneMetadata,
     } = convertPrintedMetadataToCanvasMetadata(canvasMetadata)
 
-    const topLevelElementsIncludingScenes = addUtopiaCanvasComponentOrDefault(
+    const topLevelElementsIncludingScenes = addUtopiaCanvasComponent(
       topLevelElementsWithMetadataAttached.map((e) => e.element),
       utopiaComponentFromSceneMetadata,
     )
@@ -1237,7 +1237,7 @@ function parseBindingName(
   }
 }
 
-function addUtopiaCanvasComponentOrDefault(
+function addUtopiaCanvasComponent(
   topLevelElements: Array<TopLevelElement>,
   maybeUtopiaComponent: UtopiaJSXComponent | null,
 ): Array<TopLevelElement> {
@@ -1245,11 +1245,11 @@ function addUtopiaCanvasComponentOrDefault(
     (tle) => isUtopiaJSXComponent(tle) && tle.name === BakedInStoryboardVariableName,
   )
   if (existingUtopiaCanvasTopLevelElements.length === 0) {
-    const utopiaCanvasComponentToAppend = defaultIfNull(
-      EmptyUtopiaCanvasComponent,
-      maybeUtopiaComponent,
-    )
-    return [...topLevelElements, utopiaCanvasComponentToAppend]
+    if (maybeUtopiaComponent == null) {
+      return topLevelElements
+    } else {
+      return [...topLevelElements, maybeUtopiaComponent]
+    }
   } else if (existingUtopiaCanvasTopLevelElements.length === 1) {
     // there is already an UtopiaCanvas, nothing to do here
     return topLevelElements
