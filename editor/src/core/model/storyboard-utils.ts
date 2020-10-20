@@ -16,6 +16,7 @@ import { generateUID } from '../shared/uid-utils'
 import { addImport, parseSuccess } from '../workers/common/project-file-utils'
 import { uiJsFile } from './project-file-utils'
 import {
+  BakedInStoryboardUID,
   BakedInStoryboardVariableName,
   createSceneFromComponent,
   createStoryboardElement,
@@ -92,15 +93,12 @@ function addStoryboardFileForComponent(
     null,
     {},
   )
-  // Generate these IDs upfront, ensuring their uniqueness.
-  const sceneUID = generateUID([])
-  const storyboardUID = generateUID([sceneUID])
   // Create the storyboard variable.
-  const sceneElement = createSceneFromComponent(createFileWithComponent.component, sceneUID)
-  const storyboardElement = createStoryboardElement([sceneElement], storyboardUID)
+  const sceneElement = createSceneFromComponent(createFileWithComponent.component, 'scene-1')
+  const storyboardElement = createStoryboardElement([sceneElement], BakedInStoryboardUID)
   const storyboardComponent = utopiaJSXComponent(
     BakedInStoryboardVariableName,
-    true,
+    false,
     null,
     [],
     storyboardElement,
