@@ -377,31 +377,6 @@ export var whatever = (props) => {
         },
         "type": "UTOPIA_JSX_COMPONENT",
       },
-      Object {
-        "arbitraryJSBlock": null,
-        "isFunction": false,
-        "name": "storyboard",
-        "param": null,
-        "propsUsed": Array [],
-        "rootElement": Object {
-          "children": Array [],
-          "metadata": null,
-          "name": Object {
-            "baseVariable": "Storyboard",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Object {
-            "data-uid": Object {
-              "type": "ATTRIBUTE_VALUE",
-              "value": "utopia-storyboard-uid",
-            },
-          },
-          "type": "JSX_ELEMENT",
-        },
-        "type": "UTOPIA_JSX_COMPONENT",
-      },
     ],
   },
 }
@@ -617,31 +592,6 @@ const b = (n) => n > 0 ? n : a(10)
 return { b: b };",
         "type": "ARBITRARY_JS_BLOCK",
         "uniqueID": "",
-      },
-      Object {
-        "arbitraryJSBlock": null,
-        "isFunction": false,
-        "name": "storyboard",
-        "param": null,
-        "propsUsed": Array [],
-        "rootElement": Object {
-          "children": Array [],
-          "metadata": null,
-          "name": Object {
-            "baseVariable": "Storyboard",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Object {
-            "data-uid": Object {
-              "type": "ATTRIBUTE_VALUE",
-              "value": "utopia-storyboard-uid",
-            },
-          },
-          "type": "JSX_ELEMENT",
-        },
-        "type": "UTOPIA_JSX_COMPONENT",
       },
     ],
   },
@@ -873,31 +823,6 @@ export var App = (props) => <View data-uid={'bbb'}>
             "data-uid": Object {
               "type": "ATTRIBUTE_VALUE",
               "value": "bbb",
-            },
-          },
-          "type": "JSX_ELEMENT",
-        },
-        "type": "UTOPIA_JSX_COMPONENT",
-      },
-      Object {
-        "arbitraryJSBlock": null,
-        "isFunction": false,
-        "name": "storyboard",
-        "param": null,
-        "propsUsed": Array [],
-        "rootElement": Object {
-          "children": Array [],
-          "metadata": null,
-          "name": Object {
-            "baseVariable": "Storyboard",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Object {
-            "data-uid": Object {
-              "type": "ATTRIBUTE_VALUE",
-              "value": "utopia-storyboard-uid",
             },
           },
           "type": "JSX_ELEMENT",

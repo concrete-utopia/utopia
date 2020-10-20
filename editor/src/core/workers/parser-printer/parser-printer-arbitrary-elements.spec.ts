@@ -23,11 +23,7 @@ import {
   testParseCode,
   testParseModifyPrint,
 } from './parser-printer-test-utils'
-import {
-  EmptyUtopiaCanvasComponent,
-  BakedInStoryboardUID,
-  BakedInStoryboardVariableName,
-} from '../../model/scene-utils'
+import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 
 describe('JSX parser', () => {
   it('should add in uid attributes for elements', () => {
@@ -200,7 +196,7 @@ export var whatever = props => (
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -298,7 +294,7 @@ return { arr: arr };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -398,7 +394,7 @@ return { arr: arr };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -499,7 +495,7 @@ return { arr: arr };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -583,7 +579,7 @@ export var whatever = (props) => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -684,7 +680,7 @@ return { arr: arr };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -768,7 +764,7 @@ export var whatever = (props) => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -869,7 +865,7 @@ return { arr: arr };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
