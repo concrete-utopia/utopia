@@ -105,6 +105,7 @@ import { ParserPrinterResultMessage } from './parser-printer-worker'
 import creator from './ts-creator'
 import { applyPrettier } from './prettier-utils'
 import { convertPrintedMetadataToCanvasMetadata, jsonToExpression } from './canvas-metadata-parser'
+import { fileLoaderTransform } from '../../webpack-loaders/file-loader-transform'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -747,6 +748,9 @@ export function looksLikeCanvasMetadata(
 
 export function parseCode(filename: string, sourceText: string): ParseResult {
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
+  const toTransform = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
+  const transformed = TS.transform(sourceFile, [fileLoaderTransform])
+
   const jsxFactoryFunction = getJsxFactoryFunction(sourceFile)
 
   if (sourceFile == null) {

@@ -36,7 +36,7 @@ import { fastForEach } from '../../shared/utils'
 import { getCodeFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
 import { ProjectContentTreeRoot, walkContentsTree } from '../../../components/assets'
-import { FileLoaderPlugin } from '../../webpack-loaders/file-loader'
+import { fileLoaderTransform } from '../../webpack-loaders/file-loader-transform'
 
 const TS_LIB_FILES: { [key: string]: string } = {
   'lib.d.ts': libfile,
@@ -220,18 +220,6 @@ type DetailedTypeInfo = {
   memberInfo: { type: string; members: { [member: string]: string } }
 }
 
-function applyWebpackLoadersToImports(filename: string, code: string): string {
-  if (filename.endsWith('.js')) {
-    const transformed = Babel.transform(code, {
-      plugins: [ReactSyntaxPlugin, FileLoaderPlugin(filename)],
-    })
-
-    return transformed.code
-  } else {
-    return code
-  }
-}
-
 export function handleMessage(
   workerMessage: IncomingWorkerMessage,
   sendMessage: (content: OutgoingWorkerMessage) => void,
@@ -261,8 +249,7 @@ export function handleMessage(
         } else {
           content = getCodeFileContents(workerMessage.content, false, true)
         }
-        const transformedCode = applyWebpackLoadersToImports(workerMessage.filename, content)
-        fileChanged(workerMessage.filename, transformedCode, workerMessage.jobID)
+        fileChanged(workerMessage.filename, content, workerMessage.jobID)
       } finally {
         sendMessage(createUpdateProcessedMessage(workerMessage.jobID))
       }
@@ -339,8 +326,7 @@ export function initBrowserFS(
   walkContentsTree(projectContents, (filename, file) => {
     if (isCodeOrUiJsFile(file)) {
       const fileContents = getCodeFileContents(file, false, true)
-      const transformedCode = applyWebpackLoadersToImports(filename, fileContents)
-      writeFile(fs, filename, transformedCode)
+      writeFile(fs, filename, fileContents)
     }
   })
 
@@ -521,6 +507,11 @@ export function configureLanguageService(
 ): TS.LanguageService {
   // Create the language service host to allow the LS to communicate with the host
   const servicesHost: TS.LanguageServiceHost = {
+    getCustomTransformers(): TS.CustomTransformers {
+      return {
+        before: [fileLoaderTransform],
+      }
+    },
     getProjectVersion(): string {
       let version: string = ''
       for (const fileKey of Object.keys(fileVersions)) {
