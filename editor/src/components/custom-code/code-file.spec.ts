@@ -226,6 +226,12 @@ const SampleExportsInfoWithException = [
   },
 ]
 
+const ImportTestCode = `/** @jsx jsx */
+  import * as React from 'react'
+  import { Text, View, jsx } from 'utopia-api'
+  export var App = (props) => <Text data-uid={'aaa'} />
+  `
+
 const SampleNodeModules: NodeModules = {
   '/node_modules/utopia-api/index.js': esCodeFile(`export {}`, null),
   '/node_modules/utopia-api/package.json': esCodeFile(JSON.stringify({ main: './index.js' }), null),
@@ -236,6 +242,52 @@ const SampleNodeModules: NodeModules = {
   '/node_modules/react-dom/index.js': esCodeFile(`export {}`, null),
   '/node_modules/react-dom/package.json': esCodeFile(JSON.stringify({ main: './index.js' }), null),
 }
+
+describe('transpileCode', () => {
+  it('transpiles imports with the file loader', () => {
+    const importTestFileBuildResult = transpileCode(['/app.js'], {
+      '/app.js': ImportTestCode,
+    })
+    expect(importTestFileBuildResult).toMatchInlineSnapshot(`
+      Object {
+        "/app.js": Object {
+          "errors": Array [],
+          "sourceMap": Object {
+            "file": "app.js",
+            "mappings": ";;;;;;;AAEE,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AACW,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD;AAAA,SAAW,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AAAA,gBAAW;AAAX,GAAL,CAAX;AAAA,CAAN,C",
+            "names": Array [],
+            "sourceRoot": "",
+            "sources": Array [
+              "../app.js",
+            ],
+            "sourcesContent": Array [
+              "/** @jsx jsx */
+        import * as React from 'react'
+        import { Text, View, jsx } from 'utopia-api'
+        export var App = (props) => <Text data-uid={'aaa'} />
+        ",
+            ],
+            "version": 3,
+          },
+          "transpiledCode": "\\"use strict\\";
+
+      Object.defineProperty(exports, \\"__esModule\\", {
+        value: true
+      });
+      exports.App = void 0;
+
+      var utopia_api_1 = require(\\"utopia-api\\");
+
+      exports.App = function (props) {
+        return utopia_api_1.jsx(utopia_api_1.Text, {
+          \\"data-uid\\": 'aaa'
+        });
+      }; //# sourceMappingURL=app.js.map",
+        },
+      }
+    `)
+  })
+})
 
 describe('Generating codeResultCache', () => {
   it('Generates codeResultCache for single file build result', () => {
@@ -253,6 +305,7 @@ describe('Generating codeResultCache', () => {
 
     expect(codeResultCache).toMatchSnapshot()
   })
+
   it('Generates codeResultCache for multi file build result', () => {
     const codeResultCache = generateCodeResultCache(
       {},
@@ -284,6 +337,7 @@ describe('Generating codeResultCache', () => {
     expect(codeResultCache).toMatchSnapshot()
   })
 })
+
 describe('Creating require function', () => {
   it('Creates require function for single file build result', () => {
     const codeResultCache = generateCodeResultCache(
