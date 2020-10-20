@@ -124,18 +124,30 @@ assetPathToObjectKey assetPath = ObjectKey $ assetPathToS3Path assetPath
 projectIDToThumbnailObjectKey :: Text -> ObjectKey
 projectIDToThumbnailObjectKey projectID = ObjectKey ("thumbnails/" <> projectID)
 
-loadProjectFileFromS3 :: GetObject -> AWST (ResourceT IO) (Maybe BL.ByteString)
-loadProjectFileFromS3 getObjectRequest = do
+loadFileFromS3 :: BucketName -> ObjectKey -> AWST (ResourceT IO) BL.ByteString
+loadFileFromS3 bucketName objectKey = do
+  let getObjectRequest = getObject bucketName objectKey
   getResponse <- send getObjectRequest
-  let responseStatus = view gorsResponseStatus getResponse
-  if responseStatus == 200
-    then fmap Just $ sinkBody (view gorsBody getResponse) sinkLazy
-    else return $ Nothing
+  sinkBody (view gorsBody getResponse) sinkLazy
+
+checkFileExistsInS3 :: BucketName -> ObjectKey -> AWST (ResourceT IO) Bool
+checkFileExistsInS3 bucketName objectKey = do
+  let prefix = Just $ view _ObjectKey objectKey
+  let listObjectRequest = set lovPrefix prefix $ listObjectsV2 bucketName
+  listObjectResponse <- send listObjectRequest
+  let objectWithKey object = view oKey object == objectKey
+  return $ has (lovrsContents . folded . filtered objectWithKey) listObjectResponse
+
+loadPossibleFileFromS3 :: BucketName -> ObjectKey -> AWST (ResourceT IO) (Maybe BL.ByteString)
+loadPossibleFileFromS3 bucketName objectKey = do
+  exists <- checkFileExistsInS3 bucketName objectKey
+  if exists then fmap Just (loadFileFromS3 bucketName objectKey) else return Nothing
 
 loadProjectAssetFromS3 :: AWSResources -> LoadAsset
 loadProjectAssetFromS3 resources assetPath = runInAWS resources $ do
-  let getObjectRequest = getObject (_bucket resources) (assetPathToObjectKey assetPath)
-  loadProjectFileFromS3 getObjectRequest
+  let bucketName = _bucket resources
+  let objectKey = assetPathToObjectKey assetPath
+  loadPossibleFileFromS3 bucketName objectKey
 
 saveProjectAssetToS3 :: AWSResources -> [Text] -> BL.ByteString -> IO ()
 saveProjectAssetToS3 resources assetPath contents = runInAWS resources $ do
@@ -157,8 +169,8 @@ deleteProjectAssetOnS3 resources path = runInAWS resources $ do
 
 loadProjectThumbnailFromS3 :: AWSResources -> Text -> IO (Maybe BL.ByteString)
 loadProjectThumbnailFromS3 resources projectID = runInAWS resources $ do
-  let getObjectRequest = getObject (_bucket resources) (projectIDToThumbnailObjectKey projectID)
-  loadProjectFileFromS3 getObjectRequest
+  let bucketName = _bucket resources
+  loadPossibleFileFromS3 bucketName (projectIDToThumbnailObjectKey projectID)
 
 saveProjectThumbnailToS3 :: AWSResources -> Text -> BL.ByteString -> IO ()
 saveProjectThumbnailToS3 resources projectID contents = runInAWS resources $ do

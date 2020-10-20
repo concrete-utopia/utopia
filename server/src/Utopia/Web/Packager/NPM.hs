@@ -51,7 +51,7 @@ withInstalledProject semaphore versionedPackageName withInstalledPath = do
 isRelevantFilename :: FilePath -> Bool
 isRelevantFilename path = isSuffixOf "package.json" path || isSuffixOf ".d.ts" path || isSuffixOf ".js" path
 
-data FileContentOrPlaceholder = FileContent Text | Placeholder 
+data FileContentOrPlaceholder = FileContent Text | Placeholder
                               deriving (Eq)
 type FilesAndContents = Map.HashMap Text FileContentOrPlaceholder
 
