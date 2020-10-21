@@ -8,6 +8,7 @@ import {
   CodeFile,
   UIJSFile,
   isCodeOrUiJsFile,
+  ProjectFile,
 } from '../../shared/project-file-types'
 import { RawSourceMap } from './ts-typings/RawSourceMap'
 import { libfile } from './libfile'
@@ -36,7 +37,8 @@ import { fastForEach } from '../../shared/utils'
 import { getCodeFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
 import { ProjectContentTreeRoot, walkContentsTree } from '../../../components/assets'
-import { fileLoaderTransform } from '../../webpack-loaders/file-loader-transform'
+import { FileLoader } from '../../webpack-loaders/file-loader'
+import { ModuleLoader } from '../../webpack-loaders/loader-types'
 
 const TS_LIB_FILES: { [key: string]: string } = {
   'lib.d.ts': libfile,
@@ -76,7 +78,7 @@ export type OutgoingWorkerMessage =
 interface UpdateFileMessage {
   type: 'updatefile'
   filename: string
-  content: string | UIJSFile | CodeFile
+  content: string | ProjectFile
   jobID: string
 }
 
@@ -220,6 +222,39 @@ type DetailedTypeInfo = {
   memberInfo: { type: string; members: { [member: string]: string } }
 }
 
+const moduleLoaders = [FileLoader]
+function mangleCustomLoadedFilename(filename: string): string {
+  return `${filename}.js`
+}
+
+interface LoadedFile {
+  filename: string
+  contents: string
+}
+
+function loaderForFile(filename: string): ModuleLoader | undefined {
+  return moduleLoaders.find((loader) => loader.match(filename))
+}
+
+function applyLoader(filename: string, file: ProjectFile): LoadedFile | undefined {
+  const moduleLoader = loaderForFile(filename)
+  if (moduleLoader != null) {
+    const moduleCode = moduleLoader.load(filename, file)
+    return {
+      filename: mangleCustomLoadedFilename(filename),
+      contents: moduleCode,
+    }
+  } else if (isCodeOrUiJsFile(file)) {
+    const fileContents = getCodeFileContents(file, false, true)
+    return {
+      filename: filename,
+      contents: fileContents,
+    }
+  } else {
+    return undefined
+  }
+}
+
 export function handleMessage(
   workerMessage: IncomingWorkerMessage,
   sendMessage: (content: OutgoingWorkerMessage) => void,
@@ -243,13 +278,21 @@ export function handleMessage(
     }
     case 'updatefile': {
       try {
+        let filename: string
         let content: string
         if (typeof workerMessage.content === 'string') {
+          filename = workerMessage.filename
           content = workerMessage.content
         } else {
-          content = getCodeFileContents(workerMessage.content, false, true)
+          const loadedFile = applyLoader(workerMessage.filename, workerMessage.content)
+          if (loadedFile == null) {
+            return // TODO make sure this still triggers the finally block
+          }
+          filename = loadedFile.filename
+          content = loadedFile.contents
         }
-        fileChanged(workerMessage.filename, content, workerMessage.jobID)
+
+        fileChanged(filename, content, workerMessage.jobID)
       } finally {
         sendMessage(createUpdateProcessedMessage(workerMessage.jobID))
       }
@@ -287,10 +330,12 @@ export function initTsIncrementalBuild(
   let codeFiles: Array<string> = []
   let otherFilesToWatch: Array<string> = []
   walkContentsTree(projectContents, (filename, file) => {
-    if (isCodeOrUiJsFile(file) && isJsOrTsFile(filename)) {
+    const moduleLoader = loaderForFile(filename)
+    if (moduleLoader != null) {
+      codeFiles.push(mangleCustomLoadedFilename(filename))
+    } else if (isCodeOrUiJsFile(file) && isJsOrTsFile(filename)) {
       codeFiles.push(filename)
-    }
-    if (isCodeOrUiJsFile(file) && isCssFile(filename)) {
+    } else if (isCodeOrUiJsFile(file) && isCssFile(filename)) {
       otherFilesToWatch.push(filename)
     }
   })
@@ -324,9 +369,9 @@ export function initBrowserFS(
   })
 
   walkContentsTree(projectContents, (filename, file) => {
-    if (isCodeOrUiJsFile(file)) {
-      const fileContents = getCodeFileContents(file, false, true)
-      writeFile(fs, filename, fileContents)
+    const loadedFile = applyLoader(filename, file)
+    if (loadedFile != null) {
+      writeFile(fs, loadedFile.filename, loadedFile.contents)
     }
   })
 
@@ -500,6 +545,12 @@ function isNodeExported(node: TS.Node): boolean {
   )
 }
 
+const matcher = (importPath: string) => {
+  return [/\.avif$/, /\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/].some((regxp) =>
+    regxp.test(importPath),
+  )
+}
+
 export function configureLanguageService(
   rootFilenames: string[],
   fileVersions: TS.MapLike<FileVersion>,
@@ -507,11 +558,6 @@ export function configureLanguageService(
 ): TS.LanguageService {
   // Create the language service host to allow the LS to communicate with the host
   const servicesHost: TS.LanguageServiceHost = {
-    getCustomTransformers(): TS.CustomTransformers {
-      return {
-        before: [fileLoaderTransform],
-      }
-    },
     getProjectVersion(): string {
       let version: string = ''
       for (const fileKey of Object.keys(fileVersions)) {
