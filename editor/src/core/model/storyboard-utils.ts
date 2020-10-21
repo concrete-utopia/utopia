@@ -38,7 +38,7 @@ function componentToImport(path: string, component: UtopiaJSXComponent): Compone
   }
 }
 
-export function addStoryboardFileToProject(editorModel: EditorModel): EditorModel {
+export function addStoryboardFileToProject(editorModel: EditorModel): EditorModel | null {
   const storyboardFile = getContentsTreeFileFromString(
     editorModel.projectContents,
     StoryboardFilePath,
@@ -72,12 +72,12 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
     const createFileWithComponent: ComponentToImport | null =
       firstComponentToImport ?? namedComponentToImport
     if (createFileWithComponent == null) {
-      return editorModel
+      return null
     } else {
       return addStoryboardFileForComponent(createFileWithComponent, editorModel)
     }
   } else {
-    return editorModel
+    return null
   }
 }
 

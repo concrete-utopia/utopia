@@ -25,24 +25,28 @@ export var App = (props) => {
 describe('addStoryboardFileToProject', () => {
   it('adds storyboard file to project that does not have one', () => {
     const actualResult = addStoryboardFileToProject(createTestProjectLackingStoryboardFile())
-    const storyboardFile = getContentsTreeFileFromString(
-      actualResult.projectContents,
-      StoryboardFilePath,
-    )
-    if (storyboardFile == null) {
-      fail('No storyboard file was created.')
+    if (actualResult == null) {
+      fail('Editor state was not updated.')
     } else {
-      if (isUIJSFile(storyboardFile)) {
-        const topLevelElements = foldEither(
-          (_) => [],
-          (success) => {
-            return success.topLevelElements.map(clearTopLevelElementUniqueIDs)
-          },
-          storyboardFile.fileContents,
-        )
-        expect(topLevelElements).toMatchSnapshot()
+      const storyboardFile = getContentsTreeFileFromString(
+        actualResult.projectContents,
+        StoryboardFilePath,
+      )
+      if (storyboardFile == null) {
+        fail('No storyboard file was created.')
       } else {
-        fail('Storyboard file is not a UI JS file.')
+        if (isUIJSFile(storyboardFile)) {
+          const topLevelElements = foldEither(
+            (_) => [],
+            (success) => {
+              return success.topLevelElements.map(clearTopLevelElementUniqueIDs)
+            },
+            storyboardFile.fileContents,
+          )
+          expect(topLevelElements).toMatchSnapshot()
+        } else {
+          fail('Storyboard file is not a UI JS file.')
+        }
       }
     }
   })
@@ -58,10 +62,6 @@ describe('addStoryboardFileToProject', () => {
       ),
     }
     const actualResult = addStoryboardFileToProject(editorModel)
-    const storyboardFile = getContentsTreeFileFromString(
-      actualResult.projectContents,
-      StoryboardFilePath,
-    )
-    expect(storyboardFile).toEqual(expectedFile)
+    expect(actualResult).toBeNull()
   })
 })

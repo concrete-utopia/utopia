@@ -4114,8 +4114,12 @@ export const UPDATE_FNS = {
   },
   ADD_STORYBOARD_FILE: (_action: AddStoryboardFile, editor: EditorModel): EditorModel => {
     const updatedEditor = addStoryboardFileToProject(editor)
-    const openTab = openEditorTab(openFileTab(StoryboardFilePath), null)
-    return UPDATE_FNS.OPEN_EDITOR_TAB(openTab, updatedEditor)
+    if (updatedEditor == null) {
+      return editor
+    } else {
+      const openTab = openEditorTab(openFileTab(StoryboardFilePath), null)
+      return UPDATE_FNS.OPEN_EDITOR_TAB(openTab, updatedEditor)
+    }
   },
 }
 
