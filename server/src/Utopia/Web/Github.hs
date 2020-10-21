@@ -1,11 +1,11 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Utopia.Web.Github where
 
-import qualified Data.ByteString.Lazy      as BL
-import           Control.Lens              hiding ((.=), (<.>))
-import qualified Network.Wreq              as WR
+import           Control.Lens         hiding ((.=), (<.>))
+import qualified Data.ByteString.Lazy as BL
+import qualified Network.Wreq         as WR
 import           Protolude
 
 fetchRepoArchive :: Text -> Text -> IO (Maybe BL.ByteString)

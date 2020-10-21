@@ -40,7 +40,7 @@ withInstalledProject semaphore versionedPackageName withInstalledPath = do
   -- Create temporary folder.
   withSystemTempDirectory "packager" $ \tempDir -> do
     -- Run `npm install "packageName@packageVersion"`.
-    let baseProc = proc "npm" ["install", "--silent", toS versionedPackageName]
+    let baseProc = proc "npm" ["install", "--silent", "--ignore-scripts", toS versionedPackageName]
     let procWithCwd = baseProc { cwd = Just tempDir }
     putText "Starting NPM Install."
     _ <- withSemaphore semaphore $ readCreateProcess procWithCwd ""
@@ -51,7 +51,7 @@ withInstalledProject semaphore versionedPackageName withInstalledPath = do
 isRelevantFilename :: FilePath -> Bool
 isRelevantFilename path = isSuffixOf "package.json" path || isSuffixOf ".d.ts" path || isSuffixOf ".js" path
 
-data FileContentOrPlaceholder = FileContent Text | Placeholder 
+data FileContentOrPlaceholder = FileContent Text | Placeholder
                               deriving (Eq)
 type FilesAndContents = Map.HashMap Text FileContentOrPlaceholder
 
