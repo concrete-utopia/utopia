@@ -228,8 +228,8 @@ const SampleExportsInfoWithException = [
 
 const ImportTestCode = `/** @jsx jsx */
   import * as React from 'react'
-  import { Text, View, jsx } from 'utopia-api'
-  export var App = (props) => <Text data-uid={'aaa'} />
+  import icon from './icon.jpg'
+  export var App = (props) => <div data-uid={'aaa'}>{icon}</div>
   `
 
 const SampleNodeModules: NodeModules = {
@@ -244,7 +244,7 @@ const SampleNodeModules: NodeModules = {
 }
 
 describe('transpileCode', () => {
-  it('transpiles imports with the file loader', () => {
+  it('transpiles imports with the file loader when doing a standard import of a jpg', () => {
     const importTestFileBuildResult = transpileCode(['/app.js'], {
       '/app.js': ImportTestCode,
     })
@@ -254,7 +254,7 @@ describe('transpileCode', () => {
           "errors": Array [],
           "sourceMap": Object {
             "file": "app.js",
-            "mappings": ";;;;;;;AAEE,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AACW,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD;AAAA,SAAW,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AAAA,gBAAW;AAAX,GAAL,CAAX;AAAA,CAAN,C",
+            "mappings": ";;;;;;;;;;;AAGa,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD;AAAA,SAAW,GAAA,CAAA,KAAA,EAAA;AAAA,gBAAe;AAAf,GAAA,EAAuB,UAAA,CAAA,OAAvB,CAAX;AAAA,CAAN,C",
             "names": Array [],
             "sourceRoot": "",
             "sources": Array [
@@ -263,8 +263,8 @@ describe('transpileCode', () => {
             "sourcesContent": Array [
               "/** @jsx jsx */
         import * as React from 'react'
-        import { Text, View, jsx } from 'utopia-api'
-        export var App = (props) => <Text data-uid={'aaa'} />
+        import icon from './icon.jpg'
+        export var App = (props) => <div data-uid={'aaa'}>{icon}</div>
         ",
             ],
             "version": 3,
@@ -275,13 +275,15 @@ describe('transpileCode', () => {
         value: true
       });
       exports.App = void 0;
-
-      var utopia_api_1 = require(\\"utopia-api\\");
+      var _default = {
+        default: \\"./app.js/./icon.jpg\\"
+      },
+          icon = _default.default;
 
       exports.App = function (props) {
-        return utopia_api_1.jsx(utopia_api_1.Text, {
+        return jsx(\\"div\\", {
           \\"data-uid\\": 'aaa'
-        });
+        }, icon_jpg_1.default);
       }; //# sourceMappingURL=app.js.map",
         },
       }
