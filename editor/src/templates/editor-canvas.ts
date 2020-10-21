@@ -547,6 +547,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     if (this.canvasWrapperRef != null) {
       this.canvasWrapperRef.removeEventListener('wheel', this.suppressBrowserNavigation)
     }
+    this.removeEventListeners()
   }
 
   getPositionFromCoordinates = (x: number, y: number): CanvasPositions => {
@@ -928,228 +929,248 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     }
   }
 
-  setupWindowListeners() {
-    window.addEventListener('keydown', (event) => {
-      if (!event.repeat) {
-        this.applyDragStateKeyboardEvent(Keyboard.keyCharacterForCode(event.keyCode), true)
-      }
-    })
-    window.addEventListener('keyup', (event) => {
-      if (!event.repeat) {
-        this.applyDragStateKeyboardEvent(Keyboard.keyCharacterForCode(event.keyCode), false)
-      }
-    })
-    window.addEventListener('mousedown', (event) => {
-      // TODO RJB 2018 Create new events for right mouse button events
-      if (this.canvasSelected() && this.isInsideCanvas(event)) {
-        const canvasPositions = this.getPosition(event)
+  handleKeyDown = (event: KeyboardEvent) => {
+    if (!event.repeat) {
+      this.applyDragStateKeyboardEvent(Keyboard.keyCharacterForCode(event.keyCode), true)
+    }
+  }
+  handleKeyUp = (event: KeyboardEvent) => {
+    if (!event.repeat) {
+      this.applyDragStateKeyboardEvent(Keyboard.keyCharacterForCode(event.keyCode), false)
+    }
+  }
 
-        if (this.props.model.focusedPanel !== 'canvas') {
-          this.props.dispatch([setFocus('canvas')], 'everyone')
-        }
+  handleMouseDown = (event: MouseEvent) => {
+    // TODO RJB 2018 Create new events for right mouse button events
+    if (this.canvasSelected() && this.isInsideCanvas(event)) {
+      const canvasPositions = this.getPosition(event)
 
-        if (event.button === 0) {
-          if (!this.props.model.keysPressed['z']) {
-            this.handleEvent({
-              ...canvasPositions,
-              event: 'MOUSE_DOWN',
-              modifiers: Modifier.modifiersForEvent(event),
-              cursor: null,
-              nativeEvent: event,
-            })
-          }
-        }
+      if (this.props.model.focusedPanel !== 'canvas') {
+        this.props.dispatch([setFocus('canvas')], 'everyone')
       }
-    })
 
-    window.addEventListener('mouseup', (event) => {
-      if (this.canvasSelected()) {
-        const canvasPositions = this.getPosition(event)
-        if (isDragging(this.props.model)) {
+      if (event.button === 0) {
+        if (!this.props.model.keysPressed['z']) {
           this.handleEvent({
             ...canvasPositions,
-            event: 'DRAG_END',
-            modifiers: Modifier.modifiersForEvent(event),
-            dragState: this.props.model.dragState,
-            cursor: null, // FIXME: this.props.model.dragState.cursor,
-            nativeEvent: event,
-          })
-        }
-
-        this.handleEvent({
-          ...canvasPositions,
-          event: 'MOUSE_UP',
-          modifiers: Modifier.modifiersForEvent(event),
-          dragState: this.props.model.dragState,
-          cursor: null,
-          nativeEvent: event,
-        })
-      }
-    })
-
-    window.addEventListener('mousemove', (event) => {
-      if (this.canvasSelected()) {
-        const canvasPositions = this.getPosition(event)
-
-        const dragState = this.props.model.dragState
-        if (didWeHandleMouseMoveForThisFrame) {
-          return
-        }
-        mouseMoveHandled()
-        if (dragState == null || dragState.start == null) {
-          this.handleEvent({
-            ...canvasPositions,
-            event: 'MOVE',
+            event: 'MOUSE_DOWN',
             modifiers: Modifier.modifiersForEvent(event),
             cursor: null,
             nativeEvent: event,
           })
-        } else {
-          const newDrag = roundPointForScale(
-            Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragState.start)),
-            this.props.model.scale,
-          )
-          let exceededThreshold: boolean = dragState.drag != null
-          if (!exceededThreshold) {
-            const xDiff = Math.abs(canvasPositions.canvasPositionRounded.x - dragState.start.x)
-            const yDiff = Math.abs(canvasPositions.canvasPositionRounded.y - dragState.start.y)
-            exceededThreshold = xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
-          }
-
-          let newDragState: DragState | null = null
-          switch (dragState.type) {
-            case 'MOVE_DRAG_STATE': {
-              const enableSnapping = !event.metaKey
-              const constrainAxis = event.shiftKey
-              const duplicate = event.altKey
-              const reparent = event.metaKey
-              newDragState = updateMoveDragState(
-                dragState,
-                exceededThreshold ? newDrag : undefined,
-                exceededThreshold ? dragState.drag : undefined,
-                enableSnapping,
-                constrainAxis,
-                duplicate,
-                reparent,
-                undefined,
-                canvasPositions.canvasPositionRounded,
-              )
-              break
-            }
-            case 'RESIZE_DRAG_STATE': {
-              const elementAspectRatioLocked = this.getElementAspectRatioLocked()
-              const keepAspectRatio = event.shiftKey || elementAspectRatioLocked
-              const centerBasedResize = event.altKey
-              const enableSnapping = !event.metaKey
-
-              newDragState = updateResizeDragState(
-                dragState,
-                exceededThreshold ? newDrag : undefined,
-                dragState.targetProperty,
-                enableSnapping,
-                centerBasedResize,
-                keepAspectRatio,
-              )
-              break
-            }
-            case 'INSERT_DRAG_STATE':
-              break
-            default:
-              const _exhaustiveCheck: never = dragState
-              break
-          }
-          this.handleEvent({
-            ...canvasPositions,
-            event: 'DRAG',
-            modifiers: Modifier.modifiersForEvent(event),
-            cursor: null, // FIXME: newDragState.cursor,
-            dragState: newDragState,
-            nativeEvent: event,
-          })
         }
       }
-    })
+    }
+  }
 
-    window.addEventListener('mouseleave', (event) => {
-      if (this.canvasSelected()) {
-        const canvasPositions = this.getPosition(event)
+  handleMouseUp = (event: MouseEvent) => {
+    if (this.canvasSelected()) {
+      const canvasPositions = this.getPosition(event)
+      if (isDragging(this.props.model)) {
         this.handleEvent({
           ...canvasPositions,
-          event: 'MOUSE_LEFT_WINDOW',
+          event: 'DRAG_END',
+          modifiers: Modifier.modifiersForEvent(event),
+          dragState: this.props.model.dragState,
+          cursor: null, // FIXME: this.props.model.dragState.cursor,
+          nativeEvent: event,
+        })
+      }
+
+      this.handleEvent({
+        ...canvasPositions,
+        event: 'MOUSE_UP',
+        modifiers: Modifier.modifiersForEvent(event),
+        dragState: this.props.model.dragState,
+        cursor: null,
+        nativeEvent: event,
+      })
+    }
+  }
+
+  handleMouseMove = (event: MouseEvent) => {
+    if (this.canvasSelected()) {
+      const canvasPositions = this.getPosition(event)
+
+      const dragState = this.props.model.dragState
+      if (didWeHandleMouseMoveForThisFrame) {
+        return
+      }
+      mouseMoveHandled()
+      if (dragState == null || dragState.start == null) {
+        this.handleEvent({
+          ...canvasPositions,
+          event: 'MOVE',
           modifiers: Modifier.modifiersForEvent(event),
           cursor: null,
           nativeEvent: event,
         })
-      }
-    })
+      } else {
+        const newDrag = roundPointForScale(
+          Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragState.start)),
+          this.props.model.scale,
+        )
+        let exceededThreshold: boolean = dragState.drag != null
+        if (!exceededThreshold) {
+          const xDiff = Math.abs(canvasPositions.canvasPositionRounded.x - dragState.start.x)
+          const yDiff = Math.abs(canvasPositions.canvasPositionRounded.y - dragState.start.y)
+          exceededThreshold = xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
+        }
 
-    window.addEventListener('click', (event) => {
-      if (event.button === 0 && this.canvasSelected() && this.isInsideCanvas(event)) {
-        const canvasPositions = this.getPosition(event)
-
-        this.handleEvent({
-          ...canvasPositions,
-          event: 'CLICK',
-          modifiers: Modifier.modifiersForEvent(event),
-          cursor: null,
-          nativeEvent: event,
-        })
-      }
-    })
-
-    window.addEventListener('dblclick', (event) => {
-      if (event.button === 0 && this.canvasSelected() && this.isInsideCanvas(event)) {
-        const canvasPositions = this.getPosition(event)
-
-        this.handleEvent({
-          ...canvasPositions,
-          event: 'DOUBLE_CLICK',
-          modifiers: Modifier.modifiersForEvent(event),
-          cursor: null,
-          nativeEvent: event,
-        })
-      }
-    })
-    ;(window as any).addEventListener('paste', (event: ClipboardEvent) => {
-      const editor = this.props.editor
-      const selectedViews = editor.selectedViews
-
-      // Utopia handles all paste events for these panes first
-      const paneFocusedWhereUtopiaHandlesPasteEvents =
-        this.props.model.focusedPanel === 'canvas' ||
-        this.props.model.focusedPanel === 'filebrowser' ||
-        this.props.model.focusedPanel === 'navigator'
-
-      // inputs in those panes won't accept paste events unless they are allowed here
-      const editingNavigator = this.props.model.editorState.navigator.renamingTarget != null
-      if (
-        paneFocusedWhereUtopiaHandlesPasteEvents &&
-        this.props.model.editorState.canvas.textEditor == null &&
-        this.canvasSelected() &&
-        !editingNavigator
-      ) {
-        event.stopPropagation()
-        event.preventDefault()
-        if (this.props.editor.keysPressed.alt) {
-          // I'm leaving the below comment so that weird behaviour this doesn't get forgotten, but paste style is dead anyway
-          // on macOS it seems like alt prevents the 'paste' event from being ever fired, so this is dead code here
-          // needs testing if it's any help for other platforms
-        } else {
-          const imports = getOpenImportsFromState(editor)
-          parseClipboardData(event.clipboardData).then((result) => {
-            const actions = getActionsForClipboardItems(
-              imports,
-              result.utopiaData,
-              result.files,
-              selectedViews,
-              editor.pasteTargetsToIgnore,
-              editor.jsxMetadataKILLME,
+        let newDragState: DragState | null = null
+        switch (dragState.type) {
+          case 'MOVE_DRAG_STATE': {
+            const enableSnapping = !event.metaKey
+            const constrainAxis = event.shiftKey
+            const duplicate = event.altKey
+            const reparent = event.metaKey
+            newDragState = updateMoveDragState(
+              dragState,
+              exceededThreshold ? newDrag : undefined,
+              exceededThreshold ? dragState.drag : undefined,
+              enableSnapping,
+              constrainAxis,
+              duplicate,
+              reparent,
+              undefined,
+              canvasPositions.canvasPositionRounded,
             )
-            this.props.dispatch(actions, 'everyone')
-          })
+            break
+          }
+          case 'RESIZE_DRAG_STATE': {
+            const elementAspectRatioLocked = this.getElementAspectRatioLocked()
+            const keepAspectRatio = event.shiftKey || elementAspectRatioLocked
+            const centerBasedResize = event.altKey
+            const enableSnapping = !event.metaKey
+
+            newDragState = updateResizeDragState(
+              dragState,
+              exceededThreshold ? newDrag : undefined,
+              dragState.targetProperty,
+              enableSnapping,
+              centerBasedResize,
+              keepAspectRatio,
+            )
+            break
+          }
+          case 'INSERT_DRAG_STATE':
+            break
+          default:
+            const _exhaustiveCheck: never = dragState
+            break
         }
+        this.handleEvent({
+          ...canvasPositions,
+          event: 'DRAG',
+          modifiers: Modifier.modifiersForEvent(event),
+          cursor: null, // FIXME: newDragState.cursor,
+          dragState: newDragState,
+          nativeEvent: event,
+        })
       }
-    })
+    }
+  }
+  handleMouseLeave = (event: MouseEvent) => {
+    if (this.canvasSelected()) {
+      const canvasPositions = this.getPosition(event)
+      this.handleEvent({
+        ...canvasPositions,
+        event: 'MOUSE_LEFT_WINDOW',
+        modifiers: Modifier.modifiersForEvent(event),
+        cursor: null,
+        nativeEvent: event,
+      })
+    }
+  }
+  handleClick = (event: MouseEvent) => {
+    if (event.button === 0 && this.canvasSelected() && this.isInsideCanvas(event)) {
+      const canvasPositions = this.getPosition(event)
+
+      this.handleEvent({
+        ...canvasPositions,
+        event: 'CLICK',
+        modifiers: Modifier.modifiersForEvent(event),
+        cursor: null,
+        nativeEvent: event,
+      })
+    }
+  }
+  handleDoubleClick = (event: MouseEvent) => {
+    if (event.button === 0 && this.canvasSelected() && this.isInsideCanvas(event)) {
+      const canvasPositions = this.getPosition(event)
+
+      this.handleEvent({
+        ...canvasPositions,
+        event: 'DOUBLE_CLICK',
+        modifiers: Modifier.modifiersForEvent(event),
+        cursor: null,
+        nativeEvent: event,
+      })
+    }
+  }
+  handlePaste = (event: ClipboardEvent) => {
+    const editor = this.props.editor
+    const selectedViews = editor.selectedViews
+
+    // Utopia handles all paste events for these panes first
+    const paneFocusedWhereUtopiaHandlesPasteEvents =
+      this.props.model.focusedPanel === 'canvas' ||
+      this.props.model.focusedPanel === 'filebrowser' ||
+      this.props.model.focusedPanel === 'navigator'
+
+    // inputs in those panes won't accept paste events unless they are allowed here
+    const editingNavigator = this.props.model.editorState.navigator.renamingTarget != null
+    if (
+      paneFocusedWhereUtopiaHandlesPasteEvents &&
+      this.props.model.editorState.canvas.textEditor == null &&
+      this.canvasSelected() &&
+      !editingNavigator
+    ) {
+      event.stopPropagation()
+      event.preventDefault()
+      if (this.props.editor.keysPressed.alt) {
+        // I'm leaving the below comment so that weird behaviour this doesn't get forgotten, but paste style is dead anyway
+        // on macOS it seems like alt prevents the 'paste' event from being ever fired, so this is dead code here
+        // needs testing if it's any help for other platforms
+      } else {
+        const imports = getOpenImportsFromState(editor)
+        parseClipboardData(event.clipboardData).then((result) => {
+          const actions = getActionsForClipboardItems(
+            imports,
+            result.utopiaData,
+            result.files,
+            selectedViews,
+            editor.pasteTargetsToIgnore,
+            editor.jsxMetadataKILLME,
+          )
+          this.props.dispatch(actions, 'everyone')
+        })
+      }
+    }
+  }
+
+  setupWindowListeners() {
+    window.addEventListener('keydown', this.handleKeyDown)
+    window.addEventListener('keyup', this.handleKeyUp)
+    window.addEventListener('mousedown', this.handleMouseDown)
+    window.addEventListener('mouseup', this.handleMouseUp)
+    window.addEventListener('mousemove', this.handleMouseMove)
+    window.addEventListener('mouseleave', this.handleMouseLeave)
+    window.addEventListener('click', this.handleClick)
+    window.addEventListener('dblclick', this.handleDoubleClick)
+    ;(window as any).addEventListener('paste', this.handlePaste)
+  }
+
+  removeEventListeners() {
+    window.removeEventListener('keydown', this.handleKeyDown)
+    window.removeEventListener('keyup', this.handleKeyUp)
+    window.removeEventListener('mousedown', this.handleMouseDown)
+    window.removeEventListener('mouseup', this.handleMouseUp)
+    window.removeEventListener('mousemove', this.handleMouseMove)
+    window.removeEventListener('mouseleave', this.handleMouseLeave)
+    window.removeEventListener('click', this.handleClick)
+    window.removeEventListener('dblclick', this.handleDoubleClick)
+    ;(window as any).removeEventListener('paste', this.handlePaste)
   }
 }
 
