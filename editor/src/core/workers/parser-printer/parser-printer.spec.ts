@@ -1,7 +1,6 @@
 import * as FastCheck from 'fast-check'
-import * as PP from '../../shared/property-path'
 import { getSourceMapConsumer } from '../../../third-party/react-error-overlay/utils/getSourceMap'
-import { foldEither, isRight, left, right } from '../../shared/either'
+import { foldEither, isRight, right } from '../../shared/either'
 import {
   arbitraryJSBlock,
   clearTopLevelElementUniqueIDs,
@@ -34,7 +33,6 @@ import {
   addImport,
   defaultCanvasMetadata,
   emptyImports,
-  parseFailure,
   parseSuccess,
 } from '../common/project-file-utils'
 import { sampleImportsForTests } from '../../model/test-ui-js-file'
@@ -51,7 +49,6 @@ import {
   getHighlightBoundsWithoutUID,
 } from './parser-printer'
 import { applyPrettier } from './prettier-utils'
-import { CanvasMetadataName } from './parser-printer-parsing'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
 import {
   clearParseResultPassTimes,
@@ -62,13 +59,8 @@ import {
   printableProjectContentArbitrary,
   testParseCode,
 } from './parser-printer-test-utils'
-import { NodesBounds } from './parser-printer-utils'
 import { InfiniteLoopError, InfiniteLoopMaxIterations } from './transform-prevent-infinite-loops'
-import {
-  EmptyUtopiaCanvasComponent,
-  BakedInStoryboardUID,
-  BakedInStoryboardVariableName,
-} from '../../model/scene-utils'
+import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 
 describe('JSX parser', () => {
   it('parses the code when it is a const', () => {
@@ -115,7 +107,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       right(
         parseSuccess(
           imports,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -159,7 +151,7 @@ export var whatever = () => <View data-uid={'aaa'}>
       right(
         parseSuccess(
           imports,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -219,7 +211,7 @@ export function whatever(props) {
       right(
         parseSuccess(
           imports,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -267,7 +259,7 @@ export function whatever() {
       right(
         parseSuccess(
           imports,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -327,7 +319,7 @@ export default function whatever(props) {
       right(
         parseSuccess(
           imports,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -375,7 +367,7 @@ export default function whatever() {
       right(
         parseSuccess(
           imports,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -433,7 +425,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       right(
         parseSuccess(
           importsWithStylecss,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -503,7 +495,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       right(
         parseSuccess(
           imports,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -565,7 +557,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         right(
           parseSuccess(
             imports,
-            [exported, EmptyUtopiaCanvasComponent],
+            [exported],
             right(defaultCanvasMetadata()),
             false,
             code,
@@ -642,7 +634,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         right(
           parseSuccess(
             imports,
-            [exported, EmptyUtopiaCanvasComponent],
+            [exported],
             right(defaultCanvasMetadata()),
             false,
             code,
@@ -704,7 +696,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       right(
         parseSuccess(
           imports,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -794,7 +786,7 @@ return { getSizing: getSizing, spacing: spacing };`
     const expectedResult = right(
       parseSuccess(
         imports,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -870,7 +862,7 @@ return { getSizing: getSizing };`
     const expectedResult = right(
       parseSuccess(
         imports,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -962,7 +954,7 @@ return { getSizing: getSizing };`
     const expectedResult = right(
       parseSuccess(
         imports,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1038,7 +1030,7 @@ return {  };`
     const expectedResult = right(
       parseSuccess(
         imports,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1104,7 +1096,7 @@ return { spacing: spacing };`
     const expectedResult = right(
       parseSuccess(
         imports,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1173,7 +1165,7 @@ return { bgs: bgs, bg: bg };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1242,7 +1234,7 @@ return { greys: greys };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1309,7 +1301,7 @@ return { a: a, b: b };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1379,7 +1371,7 @@ return { a: a, b: b, c: c };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1453,7 +1445,7 @@ return { a: a };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1522,7 +1514,7 @@ return { a: a, b: b };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1592,7 +1584,7 @@ return { bg: bg };`
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1658,7 +1650,7 @@ return { count: count };`
     const expectedResult = right(
       parseSuccess(
         imports,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1725,7 +1717,7 @@ return { use20: use20 };`
     const expectedResult = right(
       parseSuccess(
         imports,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1772,7 +1764,7 @@ return { mySet: mySet };`
     const expectedResult = right(
       parseSuccess(
         sampleImportsForTests,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1839,7 +1831,7 @@ return { spacing: spacing };`
     const expectedResult = right(
       parseSuccess(
         imports,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -1926,7 +1918,7 @@ return { MyComp: MyComp };`
     const expectedResult = right(
       parseSuccess(
         sampleImportsForTests,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -2016,7 +2008,7 @@ export var whatever = props => (
       right(
         parseSuccess(
           sampleImportsForTests,
-          [...topLevelElements, EmptyUtopiaCanvasComponent],
+          [...topLevelElements],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -2046,7 +2038,7 @@ export var Whatever = (props) => <View>
 `
     const actualResult = parseCode('code.tsx', code)
     if (isParseSuccess(actualResult)) {
-      if (actualResult.value.topLevelElements.length === 2) {
+      if (actualResult.value.topLevelElements.length === 1) {
         const result = actualResult.value.topLevelElements[0]
         expect(isArbitraryJSBlock(result)).toBeTruthy()
       } else {
@@ -2067,7 +2059,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
 `
     const actualResult = testParseCode(code)
     if (isParseSuccess(actualResult)) {
-      if (actualResult.value.topLevelElements.length === 2) {
+      if (actualResult.value.topLevelElements.length === 1) {
         const result = actualResult.value.topLevelElements[0]
         if (isUtopiaJSXComponent(result)) {
           if (isJSXElement(result.rootElement)) {
@@ -2141,7 +2133,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       right(
         parseSuccess(
           imports,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -2185,7 +2177,7 @@ export var whatever = <View data-uid={'aaa'}>
     const expectedResult = right(
       parseSuccess(
         imports,
-        [exported, EmptyUtopiaCanvasComponent],
+        [exported],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -2228,7 +2220,7 @@ export var whatever = <View data-uid={'aaa'}>
     const expectedResult = right(
       parseSuccess(
         imports,
-        [exported, EmptyUtopiaCanvasComponent],
+        [exported],
         right({}),
         false,
         code,
@@ -2264,7 +2256,7 @@ export var App = (props) => <View data-uid={'bbb'}>
     const expectedResult = right(
       parseSuccess(
         sampleImportsForTests,
-        [exported, EmptyUtopiaCanvasComponent],
+        [exported],
         right(defaultCanvasMetadata()),
         false,
         code,
@@ -2309,17 +2301,12 @@ export var App = (props) => <View data-uid={'bbb'}>
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake], null)
     const exported = utopiaJSXComponent('whatever', false, null, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const printedCode = printCode(
-      printCodeOptions(false, true, true),
-      imports,
-      [exported, EmptyUtopiaCanvasComponent],
-      null,
-    )
+    const printedCode = printCode(printCodeOptions(false, true, true), imports, [exported], null)
     const actualResult = testParseCode(printedCode)
     const expectedResult = right(
       parseSuccess(
         imports,
-        [exported, EmptyUtopiaCanvasComponent],
+        [exported],
         right(defaultCanvasMetadata()),
         false,
         printedCode,
@@ -2376,14 +2363,14 @@ return { getSizing: getSizing, spacing: spacing };`
     const printedCode = printCode(
       printCodeOptions(false, true, true),
       imports,
-      [...topLevelElements, EmptyUtopiaCanvasComponent],
+      [...topLevelElements],
       null,
     )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
     const expectedResult = right(
       parseSuccess(
         imports,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         printedCode,
@@ -2407,17 +2394,12 @@ return { getSizing: getSizing, spacing: spacing };`
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake], null)
     const exported = utopiaJSXComponent('whatever', false, null, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const printedCode = printCode(
-      printCodeOptions(false, true, true),
-      imports,
-      [exported, EmptyUtopiaCanvasComponent],
-      null,
-    )
+    const printedCode = printCode(printCodeOptions(false, true, true), imports, [exported], null)
     const actualResult = testParseCode(printedCode)
     const expectedResult = right(
       parseSuccess(
         imports,
-        [exported, EmptyUtopiaCanvasComponent],
+        [exported],
         right(defaultCanvasMetadata()),
         false,
         printedCode,
@@ -2482,7 +2464,6 @@ export var whatever = props => {
     </View>
   );
 };
-export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
 `,
       false,
     ).formatted
@@ -2512,17 +2493,12 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, [cake], null)
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const printedCode = printCode(
-      printCodeOptions(false, true, true),
-      imports,
-      [exported, EmptyUtopiaCanvasComponent],
-      null,
-    )
+    const printedCode = printCode(printCodeOptions(false, true, true), imports, [exported], null)
     const actualResult = testParseCode(printedCode)
     const expectedResult = right(
       parseSuccess(
         imports,
-        [exported, EmptyUtopiaCanvasComponent],
+        [exported],
         canvasMetadata,
         false,
         printedCode,
@@ -2550,12 +2526,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, [cake], null)
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const printedCode = printCode(
-      printCodeOptions(false, true, true),
-      imports,
-      [exported, EmptyUtopiaCanvasComponent],
-      null,
-    )
+    const printedCode = printCode(printCodeOptions(false, true, true), imports, [exported], null)
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
     // As false properties are eliminated from the output,
     // create a copy of the original and snip that value out.
@@ -2579,7 +2550,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
       right(
         parseSuccess(
           imports,
-          [withoutFalseProp, EmptyUtopiaCanvasComponent],
+          [withoutFalseProp],
           canvasMetadata,
           false,
           printedCode,
@@ -2640,18 +2611,13 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
       null,
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const printedCode = printCode(
-      printCodeOptions(false, true, true),
-      imports,
-      [exported, EmptyUtopiaCanvasComponent],
-      null,
-    )
+    const printedCode = printCode(printCodeOptions(false, true, true), imports, [exported], null)
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
     const expectedResult = clearParseResultUniqueIDs(
       right(
         parseSuccess(
           imports,
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           printedCode,
@@ -2666,7 +2632,9 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
   it('preserves modifiers on variables', () => {
     const code = applyPrettier(
       `const first = 100
-let second = 'cake'`,
+let second = 'cake'
+export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInStoryboardUID}'} />
+`,
       false,
     ).formatted
     const expectedCode = applyPrettier(
@@ -2772,7 +2740,6 @@ return { test: test };`
               ),
               clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
             ),
-            EmptyUtopiaCanvasComponent,
           ],
           right(defaultCanvasMetadata()),
           false,
@@ -2868,7 +2835,23 @@ return { test: test };`
           ),
         ),
       ),
-      EmptyUtopiaCanvasComponent,
+      clearTopLevelElementUniqueIDs(
+        utopiaJSXComponent(
+          BakedInStoryboardVariableName,
+          false,
+          null,
+          [],
+          jsxElement(
+            'Storyboard',
+            {
+              'data-uid': jsxAttributeValue(BakedInStoryboardUID),
+            },
+            [],
+            null,
+          ),
+          null,
+        ),
+      ),
     ]
     const printedCode = printCode(printCodeOptions(false, true, true), imports, components, null)
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
@@ -2941,7 +2924,7 @@ export var App = props => {
       right(
         parseSuccess(
           sampleImportsForTests,
-          [component, EmptyUtopiaCanvasComponent],
+          [component],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -2990,7 +2973,7 @@ export var App = props => {
       right(
         parseSuccess(
           sampleImportsForTests,
-          [component, EmptyUtopiaCanvasComponent],
+          [component],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -3060,7 +3043,7 @@ export var App = props => {
       right(
         parseSuccess(
           sampleImportsForTests,
-          [component, EmptyUtopiaCanvasComponent],
+          [component],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -3097,7 +3080,6 @@ export var App = props => {
     </View>
   );
 };
-export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
 `,
       false,
     ).formatted
@@ -3146,7 +3128,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
     const printedCode = printCode(
       printCodeOptions(false, true, true),
       sampleImportsForTests,
-      [component, EmptyUtopiaCanvasComponent],
+      [component],
       null,
     )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
@@ -3154,7 +3136,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
       right(
         parseSuccess(
           sampleImportsForTests,
-          [component, EmptyUtopiaCanvasComponent],
+          [component],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -3318,7 +3300,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
       right(
         parseSuccess(
           sampleImportsForTests,
-          [component, EmptyUtopiaCanvasComponent],
+          [component],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -3369,7 +3351,7 @@ export var App = props => {
       right(
         parseSuccess(
           sampleImportsForTests,
-          [component, EmptyUtopiaCanvasComponent],
+          [component],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -3396,7 +3378,6 @@ import {
 export var whatever = props => {
   return <View data-uid={"aaa"} booleanProperty />;
 };
-export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
 `,
       false,
     ).formatted
@@ -3410,7 +3391,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
     const actualResult = printCode(
       printCodeOptions(false, true, true),
       sampleImportsForTests,
-      [exported, EmptyUtopiaCanvasComponent],
+      [exported],
       null,
     )
     expect(actualResult).toEqual(expectedResult)
@@ -3430,7 +3411,6 @@ import {
 export var whatever = props => {
   return <View data-uid={"aaa"} />;
 };
-export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
 `,
       false,
     ).formatted
@@ -3444,7 +3424,7 @@ export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
     const actualResult = printCode(
       printCodeOptions(false, true, true),
       sampleImportsForTests,
-      [exported, EmptyUtopiaCanvasComponent],
+      [exported],
       null,
     )
     expect(actualResult).toEqual(expectedResult)
@@ -3510,7 +3490,7 @@ return {  };`
       right(
         parseSuccess(
           { react: sampleImportsForTests['react'] },
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -3592,7 +3572,7 @@ return { result: result };`
       right(
         parseSuccess(
           { react: sampleImportsForTests['react'] },
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -3671,7 +3651,7 @@ export var whatever = props => {
       right(
         parseSuccess(
           { react: sampleImportsForTests['react'] },
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -3773,7 +3753,7 @@ return { a: a };`,
       right(
         parseSuccess(
           { react: sampleImportsForTests['react'] },
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,
@@ -3797,7 +3777,7 @@ export var whatever = props => {
       right(
         parseSuccess(
           { react: sampleImportsForTests['react'] },
-          [exported, EmptyUtopiaCanvasComponent],
+          [exported],
           right(defaultCanvasMetadata()),
           false,
           code,

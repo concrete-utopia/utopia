@@ -19,7 +19,6 @@ import {
 } from '../../shared/element-template'
 import { right, isRight } from '../../shared/either'
 import { parseSuccess, defaultCanvasMetadata } from '../common/project-file-utils'
-import { EmptyUtopiaCanvasComponent } from '../../model/scene-utils'
 import { printCode, printCodeOptions } from './parser-printer'
 import { ParseSuccess } from '../../shared/project-file-types'
 
@@ -155,7 +154,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithBasicPropsObject,
@@ -198,7 +197,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithBasicPropsObjectWithDefault,
@@ -226,7 +225,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithRenamedBasicPropsObject,
@@ -258,7 +257,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithDestructuredPropsObject,
@@ -298,7 +297,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithDestructuredPropsObjectWithDefault,
@@ -333,7 +332,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithDestructuredPropsObjectWithRenamedParam,
@@ -373,7 +372,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithDestructuredPropsObjectWithRenamedParamAndDefault,
@@ -409,7 +408,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithDestructuredPropsObjectWithRestParam,
@@ -438,7 +437,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithDestructuredArray,
@@ -475,7 +474,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithDestructuredArrayWithDefault,
@@ -510,7 +509,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithDestructuredArrayWithOmittedParam,
@@ -565,7 +564,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithNestedDestructuredPropsMess,
@@ -639,7 +638,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
+        [...topLevelElements],
         right(defaultCanvasMetadata()),
         false,
         codeWithNestedDestructuredPropsMessWithDefaults,

@@ -60,6 +60,8 @@ import {
   isJSXAttributeOtherJavaScript,
   SettableLayoutSystem,
   walkElements,
+  isUtopiaJSXComponent,
+  utopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -347,6 +349,7 @@ import {
   SetShortcut,
   UpdatePropertyControlsInfo,
   PropertyControlsIFrameReady,
+  AddStoryboardFile,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -423,18 +426,20 @@ import {
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
-import { getProjectLockedKey } from '../../../core/shared/utils'
+import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import {
-  createNewSceneElement,
   PathForSceneDataLabel,
   PathForSceneContainer,
   createSceneTemplatePath,
   PathForSceneComponent,
   PathForSceneProps,
+  fishOutUtopiaCanvasFromTopLevelElements,
+  createSceneFromComponent,
+  BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
 import { addUtopiaUtilsImportIfUsed } from '../import-utils'
 import { getFrameAndMultiplier } from '../../images'
-import { arrayToMaybe } from '../../../core/shared/optional-utils'
+import { arrayToMaybe, forceNotNull } from '../../../core/shared/optional-utils'
 
 import {
   updateRightMenuExpanded,
@@ -454,6 +459,10 @@ import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
+import {
+  addStoryboardFileToProject,
+  StoryboardFilePath,
+} from '../../../core/model/storyboard-utils'
 
 export function clearSelection(): EditorAction {
   return {
@@ -498,53 +507,6 @@ function setPropertyOnTargetAtElementPath(
       applyUpdateToJSXElement(e, updateFn),
     )
   }, editor)
-}
-
-function setSceneContainerValueAtPath(
-  editor: EditorModel,
-  target: ScenePath,
-  updateFn: (attributes: JSXAttributes) => Either<string, JSXAttributes>,
-): EditorModel {
-  return modifyOpenSceneAtPath(
-    target,
-    (scene): JSXElement => {
-      let attributes: JSXAttributes = {}
-      const layoutProps = Utils.defaultIfNull(
-        {},
-        eitherToMaybe(jsxSimpleAttributeToValue(scene.props.layout)),
-      )
-      const keys = Object.keys(layoutProps) as Array<keyof SceneContainer>
-      Utils.fastForEach(keys, (key) => {
-        attributes[key] = jsxAttributeValue(layoutProps[key])
-      })
-
-      const updatedAttributes = updateFn(attributes)
-      if (isRight(updatedAttributes)) {
-        const updatedContainer: SceneContainer = Utils.objectMap(
-          (attr) => jsxSimpleAttributeToValue(attr).value,
-          updatedAttributes.value,
-        ) as SceneContainer
-        const updatedSceneProps = setJSXValueAtPath(
-          scene.props,
-          PathForSceneContainer,
-          jsxAttributeValue(updatedContainer),
-        )
-        return foldEither(
-          () => scene,
-          (sceneProps) => {
-            return {
-              ...scene,
-              props: sceneProps,
-            }
-          },
-          updatedSceneProps,
-        )
-      } else {
-        return scene
-      }
-    },
-    editor,
-  )
 }
 
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
@@ -4150,6 +4112,15 @@ export const UPDATE_FNS = {
     setPropertyControlsIFrameReady(true)
     return editor
   },
+  ADD_STORYBOARD_FILE: (_action: AddStoryboardFile, editor: EditorModel): EditorModel => {
+    const updatedEditor = addStoryboardFileToProject(editor)
+    if (updatedEditor == null) {
+      return editor
+    } else {
+      const openTab = openEditorTab(openFileTab(StoryboardFilePath), null)
+      return UPDATE_FNS.OPEN_EDITOR_TAB(openTab, updatedEditor)
+    }
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -5571,5 +5542,11 @@ export function updatePropertyControlsInfo(
 export function propertyControlsIFrameReady(): PropertyControlsIFrameReady {
   return {
     action: 'PROPERTY_CONTROLS_IFRAME_READY',
+  }
+}
+
+export function addStoryboardFile(): AddStoryboardFile {
+  return {
+    action: 'ADD_STORYBOARD_FILE',
   }
 }
