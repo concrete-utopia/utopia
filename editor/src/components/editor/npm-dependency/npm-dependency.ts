@@ -36,6 +36,7 @@ import * as Semver from 'semver'
 import { ProjectContentTreeRoot } from '../../assets'
 import * as npa from 'npm-package-arg'
 import * as GitHost from 'hosted-git-info'
+import { importDefault, importStar } from '../../../core/es-modules/commonjs-interop'
 
 interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
@@ -415,10 +416,12 @@ export function importResultFromImports(
       console.warn(`Could not find ${importSource} with a require call.`)
     } else {
       if (importContent.importedWithName !== null) {
-        result[importContent.importedWithName] = requireResult.default
+        // import name from './place'
+        result[importContent.importedWithName] = importDefault(requireResult)
       }
       if (importContent.importedAs !== null) {
-        result[importContent.importedAs] = requireResult
+        // import * as name from './place'
+        result[importContent.importedAs] = importStar(requireResult)
       }
       Utils.fastForEach(importContent.importedFromWithin, (fromWithin) => {
         result[fromWithin.alias] = requireResult[fromWithin.name]
