@@ -226,12 +226,6 @@ const SampleExportsInfoWithException = [
   },
 ]
 
-const ImportJPGTestCode = `/** @jsx jsx */
-  import * as React from 'react'
-  import icon from './icon.jpg'
-  export var App = (props) => <div data-uid={'aaa'}>{icon}</div>
-  `
-
 const ImportCSSTestCode = `/** @jsx jsx */
   import * as React from 'react'
   import icon from './icon.css'
@@ -294,51 +288,6 @@ describe('transpileCode', () => {
         return jsx(\\"div\\", {
           \\"data-uid\\": 'aaa'
         }, icon_css_1.default);
-      }; //# sourceMappingURL=app.js.map",
-        },
-      }
-    `)
-  })
-  it('transpiles imports with the file loader when doing a standard import of a jpg', () => {
-    const importTestFileBuildResult = transpileCode(['/app.js'], {
-      '/app.js': ImportJPGTestCode,
-    })
-    expect(importTestFileBuildResult).toMatchInlineSnapshot(`
-      Object {
-        "/app.js": Object {
-          "errors": Array [],
-          "sourceMap": Object {
-            "file": "app.js",
-            "mappings": ";;;;;;;;;;;AAGa,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD;AAAA,SAAW,GAAA,CAAA,KAAA,EAAA;AAAA,gBAAe;AAAf,GAAA,EAAuB,UAAA,CAAA,OAAvB,CAAX;AAAA,CAAN,C",
-            "names": Array [],
-            "sourceRoot": "",
-            "sources": Array [
-              "../app.js",
-            ],
-            "sourcesContent": Array [
-              "/** @jsx jsx */
-        import * as React from 'react'
-        import icon from './icon.jpg'
-        export var App = (props) => <div data-uid={'aaa'}>{icon}</div>
-        ",
-            ],
-            "version": 3,
-          },
-          "transpiledCode": "\\"use strict\\";
-
-      Object.defineProperty(exports, \\"__esModule\\", {
-        value: true
-      });
-      exports.App = void 0;
-      var _default = {
-        default: \\"./app.js/./icon.jpg\\"
-      },
-          icon = _default.default;
-
-      exports.App = function (props) {
-        return jsx(\\"div\\", {
-          \\"data-uid\\": 'aaa'
-        }, icon_jpg_1.default);
       }; //# sourceMappingURL=app.js.map",
         },
       }
