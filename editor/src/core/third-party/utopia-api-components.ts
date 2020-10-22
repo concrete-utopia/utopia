@@ -16,7 +16,7 @@ function createBasicUtopiaComponent(
     {
       'utopia-api': importDetails(null, [importAlias(baseVariable)], null),
     },
-    jsxElement(jsxElementName(baseVariable, []), {}, [], null),
+    jsxElement(jsxElementName(baseVariable, []), {}, []),
     name,
     propertyControls,
   )

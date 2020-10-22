@@ -27,7 +27,6 @@ import {
   ParseResult,
 } from '../../../core/shared/project-file-types'
 import {
-  defaultCanvasMetadata,
   emptyImports,
   parseSuccess,
   parseFailure,
@@ -100,16 +99,12 @@ describe('SET_PROP', () => {
                   'data-uid': jsxAttributeValue('bbb'),
                 },
                 [],
-                null,
               ),
             ],
-            null,
           ),
           null,
         ),
       ],
-      right(defaultCanvasMetadata()),
-      false,
       '',
       {},
       null,
@@ -190,27 +185,14 @@ describe('SET_CANVAS_FRAMES', () => {
               'data-uid': jsxAttributeValue('bbb'),
             },
             [],
-            null,
           ),
         ],
-        null,
       ),
       null,
     ),
   ]
 
-  const originalModel = deepFreeze(
-    parseSuccess(
-      emptyImports(),
-      components,
-      right(defaultCanvasMetadata()),
-      false,
-      '',
-      {},
-      null,
-      null,
-    ),
-  )
+  const originalModel = deepFreeze(parseSuccess(emptyImports(), components, '', {}, null, null))
   const testEditor: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
@@ -269,8 +251,6 @@ describe('moveTemplate', () => {
         rootElements.map((element, index) =>
           utopiaJSXComponent(`MyView${index}`, true, defaultPropsParam, [], element, null),
         ),
-        right(defaultCanvasMetadata()),
-        false,
         '',
         {},
         null,
@@ -300,7 +280,6 @@ describe('moveTemplate', () => {
         'data-uid': jsxAttributeValue(uid),
       },
       children,
-      null,
     )
   }
 
@@ -326,7 +305,6 @@ describe('moveTemplate', () => {
         'data-uid': jsxAttributeValue(uid),
       },
       children,
-      null,
     )
   }
 
@@ -614,7 +592,6 @@ describe('moveTemplate', () => {
         'data-uid': jsxAttributeValue('bbb'),
       },
       [],
-      null,
     )
     const group1 = group('ddd', [], -10, -10, 100, 100, 'Group')
     const root1 = view('aaa', [view1])
@@ -670,7 +647,6 @@ describe('moveTemplate', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const editor = testEditor(fileModel([flexView, group1]))
 
@@ -717,7 +693,6 @@ describe('moveTemplate', () => {
         'data-uid': jsxAttributeValue('bbb'),
       },
       [],
-      null,
     )
     const group1 = group('ddd', [view1], 50, 50, 100, 100, 'Group')
     const root1 = view('aaa', [], 0, 0, 200, 200)
@@ -763,7 +738,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
       }),
     },
     [],
-    null,
   )
   const rootElement = jsxElement(
     'View',
@@ -773,22 +747,10 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
       layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }),
     },
     [childElement],
-    null,
   )
   const firstTopLevelElement = utopiaJSXComponent('App', true, null, [], rootElement, null)
   const fileForUI = uiJsFile(
-    right(
-      parseSuccess(
-        sampleDefaultImports,
-        [firstTopLevelElement],
-        left({}),
-        false,
-        '',
-        {},
-        null,
-        null,
-      ),
-    ),
+    right(parseSuccess(sampleDefaultImports, [firstTopLevelElement], '', {}, null, null)),
     null,
     RevisionsState.BothMatch,
     0,

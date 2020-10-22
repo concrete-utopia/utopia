@@ -1454,7 +1454,7 @@ function createJSXElementAllocatingUID(
   )
   return withParserMetadata(
     {
-      value: jsxElement(name, updatedProps.value, children, null),
+      value: jsxElement(name, updatedProps.value, children),
       startLine: startPosition.line,
       startColumn: startPosition.character,
     },

@@ -251,7 +251,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
           )
           let props: JSXAttributes = objectMap(jsxAttributeValue, defaultProps)
           props['data-uid'] = jsxAttributeValue(newUID)
-          const element: JSXElement = jsxElement(jsxElementName(exportVarName, []), props, [], null)
+          const element: JSXElement = jsxElement(jsxElementName(exportVarName, []), props, [])
           dispatch(
             [
               EditorActions.enableInsertModeForJSXElement(

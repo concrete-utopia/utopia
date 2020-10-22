@@ -6,7 +6,6 @@ import {
   isParseSuccess,
   SceneMetadata,
   UIJSFile,
-  CanvasMetadataParseResult,
   isCodeFile,
 } from '../../../../core/shared/project-file-types'
 import { isRight, right } from '../../../../core/shared/either'
@@ -68,9 +67,9 @@ function migrateFromVersion1(
       if (
         isUIJSFile(file) &&
         isParseSuccess(file.fileContents) &&
-        isRight(file.fileContents.value.canvasMetadata)
+        isRight((file.fileContents.value as any).canvasMetadata)
       ) {
-        const canvasMetadataParseSuccess = file.fileContents.value.canvasMetadata.value
+        const canvasMetadataParseSuccess = (file.fileContents.value as any).canvasMetadata.value
         // this old canvas metadata might store an array of `scenes: Array<SceneMetadata>`, whereas we expect a UtopiaJSXComponent here
         if (
           (canvasMetadataParseSuccess as any).utopiaCanvasJSXComponent == null &&
@@ -78,7 +77,7 @@ function migrateFromVersion1(
         ) {
           const scenes = (canvasMetadataParseSuccess as any)['scenes'] as Array<SceneMetadata>
           const utopiaCanvasComponent = convertScenesToUtopiaCanvasComponent(scenes)
-          const updatedCanvasMetadataParseSuccess: CanvasMetadataParseResult = right({
+          const updatedCanvasMetadataParseSuccess: any = right({
             utopiaCanvasJSXComponent: utopiaCanvasComponent,
           })
           return {
@@ -115,12 +114,13 @@ function migrateFromVersion2(
     const updatedFiles = objectMap((file: ProjectFile, fileName) => {
       if (isUIJSFile(file) && isParseSuccess(file.fileContents)) {
         if (
-          isRight(file.fileContents.value.canvasMetadata) &&
+          isRight((file.fileContents.value as any).canvasMetadata) &&
           // the parseSuccess contained a utopiaCanvasJSXComponent which we now merge to the array of topLevelElements
-          (file.fileContents.value.canvasMetadata.value as any).utopiaCanvasJSXComponent != null
+          ((file.fileContents.value as any).canvasMetadata.value as any).utopiaCanvasJSXComponent !=
+            null
         ) {
-          const utopiaCanvasJSXComponent = (file.fileContents.value.canvasMetadata.value as any)
-            .utopiaCanvasJSXComponent
+          const utopiaCanvasJSXComponent = ((file.fileContents.value as any).canvasMetadata
+            .value as any).utopiaCanvasJSXComponent
           const updatedTopLevelElements = [
             ...file.fileContents.value.topLevelElements,
             utopiaCanvasJSXComponent,

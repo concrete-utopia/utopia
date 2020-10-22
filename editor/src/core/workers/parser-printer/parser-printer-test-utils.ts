@@ -50,10 +50,9 @@ import {
   defaultPropsParam,
   clearArbitraryJSBlockUniqueIDs,
 } from '../../shared/element-template'
-import { addImport, defaultCanvasMetadata } from '../common/project-file-utils'
+import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
 import {
-  CanvasMetadataParseResult,
   Imports,
   ParseResult,
   ParseSuccess,
@@ -438,7 +437,7 @@ export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {
     jsxAttributesArbitrary(),
     FastCheck.array(childArbitrary, 3),
   ).map(([elementName, elementAttributes, elementChildren]) => {
-    return jsxElement(elementName, elementAttributes, elementChildren, null)
+    return jsxElement(elementName, elementAttributes, elementChildren)
   })
 }
 
@@ -611,7 +610,6 @@ export function ensureArbitraryJSXBlockCodeHasUIDs(jsxElementChild: JSXElementCh
 export interface PrintableProjectContent {
   imports: Imports
   topLevelElements: Array<TopLevelElement>
-  canvasMetadata: CanvasMetadataParseResult
   projectContainedOldSceneMetadata: boolean
   jsxFactoryFunction: string | null
 }
@@ -663,11 +661,9 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
     const imports: Imports = allBaseVariables.reduce((workingImports, baseVariable) => {
       return addImport('testlib', baseVariable, [], null, workingImports)
     }, JustImportViewAndReact)
-    const canvasMetadata = right(defaultCanvasMetadata())
     return {
       imports: imports,
       topLevelElements: topLevelElements,
-      canvasMetadata: canvasMetadata,
       projectContainedOldSceneMetadata: projectContainedOldSceneMetadata,
       jsxFactoryFunction: jsxFactoryFunction,
     }
