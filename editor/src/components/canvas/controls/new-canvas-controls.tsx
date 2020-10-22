@@ -52,6 +52,7 @@ import { KeysPressed } from '../../../utils/keyboard'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import utils from '../../../utils/utils'
 import useSize from '@react-hook/size'
+import { TextEditingArea } from './text-editing-input-area'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -684,6 +685,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       {renderHighlightControls()}
       {textEditor}
       {isFeatureEnabled('Toolbar For Controls') ? renderToolbar() : null}
+      {isFeatureEnabled('Edit Simple Text') ? <TextEditingArea /> : null}
     </div>
   )
 }

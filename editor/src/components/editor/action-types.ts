@@ -132,6 +132,12 @@ export interface InsertJSXElement {
   indexPosition?: IndexPosition | null
 }
 
+export interface UpdateSimpleTextChild {
+  action: 'UPDATE_SIMPLE_TEXT_CHILD'
+  target: InstancePath
+  value: string
+}
+
 export type DeleteSelected = {
   action: 'DELETE_SELECTED'
 }
@@ -897,6 +903,7 @@ export type EditorAction =
   | SetShortcut
   | UpdatePropertyControlsInfo
   | PropertyControlsIFrameReady
+  | UpdateSimpleTextChild
 
 export type DispatchPriority =
   | 'everyone'
