@@ -71,18 +71,7 @@ export function createPersistentModel(): PersistentModel {
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
       '/src/app.js': uiJsFile(
-        right(
-          parseSuccess(
-            sampleImportsForTests,
-            sampleJsxComponentWithScene,
-            right({}),
-            true,
-            '',
-            {},
-            null,
-            null,
-          ),
-        ),
+        right(parseSuccess(sampleImportsForTests, sampleJsxComponentWithScene, '', {}, null, null)),
         null,
         RevisionsState.BothMatch,
         0,
@@ -112,18 +101,7 @@ export function createEditorStates(
     projectContents: contentsToTree({
       '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
       '/src/app.js': uiJsFile(
-        right(
-          parseSuccess(
-            sampleImportsForTests,
-            sampleJsxComponentWithScene,
-            right({}),
-            true,
-            '',
-            {},
-            null,
-            null,
-          ),
-        ),
+        right(parseSuccess(sampleImportsForTests, sampleJsxComponentWithScene, '', {}, null, null)),
         null,
         RevisionsState.BothMatch,
         0,

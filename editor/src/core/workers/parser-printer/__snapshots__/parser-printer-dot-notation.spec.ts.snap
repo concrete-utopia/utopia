@@ -41,7 +41,6 @@ Array [
           "elementsWithin": Object {
             "bbb": Object {
               "children": Array [],
-              "metadata": null,
               "name": Object {
                 "baseVariable": "div",
                 "propertyPath": Object {
@@ -94,7 +93,6 @@ export var storyboard = (props) => {
           "uniqueID": "",
         },
       ],
-      "metadata": null,
       "name": Object {
         "baseVariable": "Utopia",
         "propertyPath": Object {

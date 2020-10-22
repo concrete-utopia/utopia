@@ -73,18 +73,6 @@ import {
   OnClickOutsideHOC,
 } from 'uuiui'
 
-export var canvasMetadata = {
-  scenes: [
-    {
-      component: 'App',
-      frame: { height: 812, left: 0, width: 375, top: 0 },
-      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },
-      container: { layoutSystem: 'pinSystem' },
-    },
-  ],
-  elementMetadata: {},
-}
-
 export var App = (props) => {
   return (
     <View

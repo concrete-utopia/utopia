@@ -97,7 +97,7 @@ export function mapScene(scene: SceneMetadata): JSXElement {
     'data-uid': jsxAttributeValue(scene.uid),
     'data-label': jsxAttributeValue(scene.label),
   }
-  return jsxElement('Scene', sceneProps, [], null)
+  return jsxElement('Scene', sceneProps, [])
 }
 
 export function unmapScene(element: JSXElementChild): SceneMetadata | null {
@@ -149,7 +149,6 @@ export function convertScenesToUtopiaCanvasComponent(
       'Storyboard',
       { 'data-uid': jsxAttributeValue(BakedInStoryboardUID) },
       scenes.map(mapScene),
-      null,
     ),
     null,
   )
@@ -173,7 +172,7 @@ export function createSceneFromComponent(component: UtopiaJSXComponent, uid: str
       height: 812,
     }),
   }
-  return jsxElement('Scene', sceneProps, [], null)
+  return jsxElement('Scene', sceneProps, [])
 }
 
 export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
@@ -181,7 +180,7 @@ export function createStoryboardElement(scenes: Array<JSXElement>, uid: string):
     [UTOPIA_UID_KEY]: jsxAttributeValue(uid),
     layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }),
   }
-  return jsxElement('Storyboard', storyboardProps, scenes, null)
+  return jsxElement('Storyboard', storyboardProps, scenes)
 }
 
 export function convertUtopiaCanvasComponentToScenes(

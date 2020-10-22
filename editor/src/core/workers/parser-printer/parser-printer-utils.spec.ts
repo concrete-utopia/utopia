@@ -38,7 +38,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aa') }, [], null),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aa') }, []),
       null,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([withBounds(exampleComponent)])[0]
@@ -53,15 +53,10 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement(
-        'View',
-        { 'data-uid': jsxAttributeValue('root') },
-        [
-          jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [], null),
-          jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [], null),
-        ],
-        null,
-      ),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('root') }, [
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
+      ]),
       null,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([withBounds(exampleComponent)])[0]
@@ -83,7 +78,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeFunctionCall('someFunction', []) }, [], null),
+      jsxElement('View', { 'data-uid': jsxAttributeFunctionCall('someFunction', []) }, []),
       null,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([withBounds(exampleComponent)])[0]
@@ -105,15 +100,10 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement(
-        'View',
-        { 'data-uid': jsxAttributeValue('baa') },
-        [
-          jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [], null),
-          jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, [], null),
-        ],
-        null,
-      ),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, []),
+      ]),
       null,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([withBounds(exampleComponent)])[0]
@@ -130,15 +120,10 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         true,
         defaultPropsParam,
         [],
-        jsxElement(
-          'View',
-          { 'data-uid': jsxAttributeValue('baa') },
-          [
-            jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [], null),
-            jsxElement('View', {} as any, [], null),
-          ],
-          null,
-        ),
+        jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
+          jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
+          jsxElement('View', {} as any, []),
+        ]),
         null,
       ),
     )
@@ -156,23 +141,13 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         true,
         defaultPropsParam,
         [],
-        jsxElement(
-          'View',
-          { 'data-uid': jsxAttributeValue('baa') },
-          [
-            jsxElement(
-              'View',
-              { 'data-uid': jsxAttributeValue('aaa') },
-              [
-                jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, [], null),
-                jsxElement('View', { 'data-uid': jsxAttributeValue('aac') }, [], null),
-              ],
-              null,
-            ),
-            jsxElement('View', {}, [], null),
-          ],
-          null,
-        ),
+        jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
+          jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [
+            jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, []),
+            jsxElement('View', { 'data-uid': jsxAttributeValue('aac') }, []),
+          ]),
+          jsxElement('View', {}, []),
+        ]),
         null,
       ),
     )

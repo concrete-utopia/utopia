@@ -15,7 +15,7 @@ import {
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { foldEither, forEachRight, right } from '../../shared/either'
 import { ParseSuccess } from '../../shared/project-file-types'
-import { defaultCanvasMetadata, parseSuccess } from '../common/project-file-utils'
+import { parseSuccess } from '../common/project-file-utils'
 import { applyPrettier } from './prettier-utils'
 import {
   clearParseResultUniqueIDs,
@@ -174,7 +174,7 @@ export var whatever = props => (
       true,
       defaultPropsParam,
       [],
-      jsxElement('div', { 'data-uid': jsxAttributeValue('abc') }, [], null),
+      jsxElement('div', { 'data-uid': jsxAttributeValue('abc') }, []),
       null,
     )
 
@@ -188,17 +188,15 @@ export var whatever = props => (
         version: 3,
         file: 'code.tsx',
       }),
-      { aab: jsxElement('MyComp', { 'data-uid': jsxAttributeValue('aab') }, [], null) },
+      { aab: jsxElement('MyComp', { 'data-uid': jsxAttributeValue('aab') }, []) },
     )
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [codeBlock], null)
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [codeBlock])
     const whatever = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
         [...topLevelElements],
-        right(defaultCanvasMetadata()),
-        false,
         code,
         expect.objectContaining({}),
         null,
@@ -259,12 +257,10 @@ export var whatever = (props) => {
                 ),
               },
               [],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const jsCode = `const arr = [{ n: 1 }];`
     const transpiledJsCode = `var arr = [{
@@ -295,8 +291,6 @@ return { arr: arr };`
       parseSuccess(
         JustImportViewAndReact,
         [...topLevelElements],
-        right(defaultCanvasMetadata()),
-        false,
         code,
         expect.objectContaining({}),
         null,
@@ -357,12 +351,10 @@ export var whatever = (props) => {
                 ),
               },
               [],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const jsCode = `const arr = [{ a: { n: 1 } }];`
     const transpiledJsCode = `var arr = [{
@@ -395,8 +387,6 @@ return { arr: arr };`
       parseSuccess(
         JustImportViewAndReact,
         [...topLevelElements],
-        right(defaultCanvasMetadata()),
-        false,
         code,
         expect.objectContaining({}),
         null,
@@ -462,12 +452,10 @@ export var whatever = (props) => {
                 ),
               },
               [],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const jsCode = `const arr = [[1]];`
     const transpiledJsCode = `var arr = [[1]];
@@ -496,8 +484,6 @@ return { arr: arr };`
       parseSuccess(
         JustImportViewAndReact,
         [...topLevelElements],
-        right(defaultCanvasMetadata()),
-        false,
         code,
         expect.objectContaining({}),
         null,
@@ -564,15 +550,12 @@ export var whatever = (props) => {
                       {},
                     ),
                   ],
-                  null,
                 ),
               ],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -580,8 +563,6 @@ export var whatever = (props) => {
       parseSuccess(
         JustImportViewAndReact,
         [...topLevelElements],
-        right(defaultCanvasMetadata()),
-        false,
         code,
         expect.objectContaining({}),
         null,
@@ -647,12 +628,10 @@ export var whatever = (props) => {
                 ),
               },
               [],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const jsCode = `const arr = [ [ [ 1 ] ] ]`
     const transpiledJsCode = `var arr = [[[1]]];
@@ -681,8 +660,6 @@ return { arr: arr };`
       parseSuccess(
         JustImportViewAndReact,
         [...topLevelElements],
-        right(defaultCanvasMetadata()),
-        false,
         code,
         expect.objectContaining({}),
         null,
@@ -749,15 +726,12 @@ export var whatever = (props) => {
                       {},
                     ),
                   ],
-                  null,
                 ),
               ],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -765,8 +739,6 @@ export var whatever = (props) => {
       parseSuccess(
         JustImportViewAndReact,
         [...topLevelElements],
-        right(defaultCanvasMetadata()),
-        false,
         code,
         expect.objectContaining({}),
         null,
@@ -832,12 +804,10 @@ export var whatever = (props) => {
                 ),
               },
               [],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const jsCode = `const arr = [ [ [ 1 ] ] ]`
     const transpiledJsCode = `var arr = [[[1]]];
@@ -866,8 +836,6 @@ return { arr: arr };`
       parseSuccess(
         JustImportViewAndReact,
         [...topLevelElements],
-        right(defaultCanvasMetadata()),
-        false,
         code,
         expect.objectContaining({}),
         null,

@@ -85,7 +85,6 @@ import {
   canUpdateFile,
   codeFile,
   directory,
-  emptyElementCanvasMetadata,
   fileTypeFromFileName,
   getHighlightBoundsFromParseResult,
   getUtopiaJSXComponentsFromSuccess,
@@ -2871,7 +2870,6 @@ export const UPDATE_FNS = {
               'data-aspect-ratio-locked': jsxAttributeValue(true),
             },
             [],
-            null,
           )
           const size = width != null && height != null ? { width: width, height: height } : null
           const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
@@ -2908,7 +2906,6 @@ export const UPDATE_FNS = {
               'data-aspect-ratio-locked': jsxAttributeValue(true),
             },
             [],
-            null,
           )
 
           const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
@@ -2975,7 +2972,6 @@ export const UPDATE_FNS = {
           'data-aspect-ratio-locked': jsxAttributeValue(true),
         },
         [],
-        {},
       )
       const size = width != null && height != null ? { width: width, height: height } : null
       const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
@@ -3903,7 +3899,6 @@ export const UPDATE_FNS = {
           'data-aspect-ratio-locked': jsxAttributeValue(true),
         },
         [],
-        {},
       )
 
       const insertJSXElementAction = insertJSXElement(imageElement, parent, {})

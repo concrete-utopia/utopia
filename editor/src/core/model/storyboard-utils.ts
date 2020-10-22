@@ -113,7 +113,7 @@ function addStoryboardFileForComponent(
     baseImports,
   )
   // Create the file.
-  const success = parseSuccess(imports, [storyboardComponent], left({}), false, '', {}, 'jsx', null)
+  const success = parseSuccess(imports, [storyboardComponent], '', {}, 'jsx', null)
   const storyboardFileContents = uiJsFile(right(success), null, RevisionsState.ParsedAhead, 0)
 
   // Update the model.

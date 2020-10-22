@@ -111,7 +111,6 @@ const mainComponentForTests = utopiaJSXComponent(
               'data-uid': jsxAttributeValue('bbb'),
             },
             [],
-            null,
           ),
           jsxElement(
             'Rectangle',
@@ -128,7 +127,6 @@ const mainComponentForTests = utopiaJSXComponent(
               'data-uid': jsxAttributeValue('ccc'),
             },
             [],
-            null,
           ),
         ],
         false,
@@ -166,7 +164,6 @@ const mainComponentForTests = utopiaJSXComponent(
               'data-uid': jsxAttributeValue('eee'),
             },
             [],
-            null,
           ),
           jsxElement(
             'Rectangle',
@@ -183,10 +180,8 @@ const mainComponentForTests = utopiaJSXComponent(
               'data-uid': jsxAttributeValue('fff'),
             },
             [],
-            null,
           ),
         ],
-        null,
       ),
       jsxElement(
         'View',
@@ -204,7 +199,6 @@ const mainComponentForTests = utopiaJSXComponent(
           'data-uid': jsxAttributeValue('ggg'),
         },
         [],
-        null,
       ),
       jsxElement(
         'Text',
@@ -223,7 +217,6 @@ const mainComponentForTests = utopiaJSXComponent(
           'data-uid': jsxAttributeValue('hhh'),
         },
         [],
-        null,
       ),
       jsxElement(
         'Image',
@@ -239,11 +232,9 @@ const mainComponentForTests = utopiaJSXComponent(
           'data-uid': jsxAttributeValue('iii'),
         },
         [],
-        null,
       ),
-      jsxElement('MyComponent', { 'data-uid': jsxAttributeValue('mycomponent') }, [], null),
+      jsxElement('MyComponent', { 'data-uid': jsxAttributeValue('mycomponent') }, []),
     ],
-    null,
   ),
   null,
 )
@@ -260,7 +251,6 @@ const scene = utopiaJSXComponent(
       'data-uid': jsxAttributeValue('jjj'),
     },
     [],
-    null,
   ),
   null,
 )
@@ -288,12 +278,10 @@ const TestStoryboard = utopiaJSXComponent(
   false,
   null,
   [],
-  jsxElement(
-    'Storyboard',
-    { 'data-uid': jsxAttributeValue(BakedInStoryboardUID) },
-    [Scene1, Scene2],
-    null,
-  ),
+  jsxElement('Storyboard', { 'data-uid': jsxAttributeValue(BakedInStoryboardUID) }, [
+    Scene1,
+    Scene2,
+  ]),
   null,
 )
 

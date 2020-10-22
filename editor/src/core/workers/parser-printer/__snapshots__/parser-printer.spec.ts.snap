@@ -69,10 +69,6 @@ exports[`JSX parser parses back and forth as a function, with an arbitrary piece
 Object {
   "type": "RIGHT",
   "value": Object {
-    "canvasMetadata": Object {
-      "type": "RIGHT",
-      "value": Object {},
-    },
     "code": "import { cake } from 'cake'
 import * as React from 'react'
 import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
@@ -219,7 +215,6 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       },
     },
     "jsxFactoryFunction": null,
-    "projectContainedOldSceneMetadata": false,
     "topLevelElements": Array [
       Object {
         "definedElsewhere": Array [],
@@ -300,7 +295,6 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
           "children": Array [
             Object {
               "children": Array [],
-              "metadata": null,
               "name": Object {
                 "baseVariable": "cake",
                 "propertyPath": Object {
@@ -360,7 +354,6 @@ export var whatever = (props) => {
               "type": "JSX_ELEMENT",
             },
           ],
-          "metadata": null,
           "name": Object {
             "baseVariable": "View",
             "propertyPath": Object {
@@ -386,10 +379,6 @@ exports[`JSX parser parses fine with a circular dependency. 1`] = `
 Object {
   "type": "RIGHT",
   "value": Object {
-    "canvasMetadata": Object {
-      "type": "RIGHT",
-      "value": Object {},
-    },
     "code": "import * as React from \\"react\\";
 import {
   View
@@ -472,7 +461,6 @@ return { a: a, b: b };",
       },
     },
     "jsxFactoryFunction": null,
-    "projectContainedOldSceneMetadata": false,
     "topLevelElements": Array [
       Object {
         "definedElsewhere": Array [
@@ -533,7 +521,6 @@ return { a: a };",
         "propsUsed": Array [],
         "rootElement": Object {
           "children": Array [],
-          "metadata": null,
           "name": Object {
             "baseVariable": "View",
             "propertyPath": Object {
@@ -602,10 +589,6 @@ exports[`JSX parser parses the code when it has a JSX block with an object defin
 Object {
   "type": "RIGHT",
   "value": Object {
-    "canvasMetadata": Object {
-      "type": "RIGHT",
-      "value": Object {},
-    },
     "code": "import * as React from \\"react\\";
 import {
   Ellipse,
@@ -714,7 +697,6 @@ return { a: a };",
       },
     },
     "jsxFactoryFunction": null,
-    "projectContainedOldSceneMetadata": false,
     "topLevelElements": Array [
       Object {
         "definedElsewhere": Array [],
@@ -812,7 +794,6 @@ export var App = (props) => <View data-uid={'bbb'}>
               "uniqueID": "",
             },
           ],
-          "metadata": null,
           "name": Object {
             "baseVariable": "View",
             "propertyPath": Object {
@@ -838,9 +819,9 @@ exports[`getHighlightBounds gets some bounds 1`] = `
 Array [
   Object {
     "endCol": 15,
-    "endLine": 32,
+    "endLine": 28,
     "startCol": 8,
-    "startLine": 21,
+    "startLine": 17,
   },
 ]
 `;
@@ -858,10 +839,6 @@ Object {
       Text,
       View
     } from \\"utopia-api\\";
-    export var canvasMetadata = {
-      scenes: [],
-      elementMetadata: {}
-    }
     
     export var App = props => {
       const a = 20
@@ -878,13 +855,13 @@ Object {
     "errorMessage": null,
     "errorMessages": Array [
       Object {
-        "codeSnippet": "  19 |       return (
-  20 |         <View
-> 21 |           style={{ backgroundColor: \\"darkgrey\\", position: \\"absolute\\" }, ...hello}
+        "codeSnippet": "  15 |       return (
+  16 |         <View
+> 17 |           style={{ backgroundColor: \\"darkgrey\\", position: \\"absolute\\" }, ...hello}
      |                                                                         ^
-  22 |         >
-  23 |         </View>
-  24 |       )",
+  18 |         >
+  19 |         </View>
+  20 |       )",
         "endColumn": undefined,
         "endLine": undefined,
         "errorCode": null,
@@ -894,7 +871,7 @@ Object {
         "severity": "fatal",
         "source": "eslint",
         "startColumn": 73,
-        "startLine": 21,
+        "startLine": 17,
         "type": "fatal",
       },
     ],

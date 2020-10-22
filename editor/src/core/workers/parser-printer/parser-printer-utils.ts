@@ -1,31 +1,7 @@
-import * as G from 'graphlib'
-import { Graph } from 'graphlib'
 import * as TS from 'typescript'
-import { addToMapOfArraysUnique } from '../../shared/array-utils'
-import { Either, left, right } from '../../shared/either'
-import {
-  isJSXArbitraryBlock,
-  isJSXElement,
-  isUtopiaJSXComponent,
-  JSXAttribute,
-  JSXAttributes,
-  JSXElementChild,
-  TopLevelElement,
-  UtopiaJSXComponent,
-  JSXElement,
-  isJSXFragment,
-} from '../../shared/element-template'
-import { ErrorMessage } from '../../shared/error-messages'
-import { defaultIfNull, forceNotNull } from '../../shared/optional-utils'
-import {
-  CanvasElementMetadataMap,
-  ElementCanvasMetadata,
-  ParseFailure,
-} from '../../shared/project-file-types'
-import { fixUtopiaElement, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
+import { TopLevelElement, JSXElement } from '../../shared/element-template'
+import { fixUtopiaElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
-import { parseFailure } from '../common/project-file-utils'
-import { createCodeSnippetFromCode } from '../ts/ts-utils'
 import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { SourceMapConsumer, SourceNode } from 'source-map'
 
@@ -99,50 +75,6 @@ export function guaranteeUniqueUidsFromTopLevel(
         element: {
           ...tle.element,
           rootElement: fixUtopiaElement(tle.element.rootElement, []),
-        },
-      }
-    } else {
-      return tle
-    }
-  })
-}
-
-export function attachMetadataToElements(
-  topLevelElements: TopLevelElementAndCodeContext[],
-  elementMetadataMap: CanvasElementMetadataMap,
-): TopLevelElementAndCodeContext[] {
-  function attachMetadataToElementsInner(element: JSXElementChild): JSXElementChild {
-    if (isJSXElement(element)) {
-      const fixedChildren = element.children.map(attachMetadataToElementsInner)
-      let elementMetadata: ElementCanvasMetadata | null = null
-      try {
-        const elementUID = getUtopiaIDFromJSXElement(element)
-        elementMetadata = defaultIfNull<ElementCanvasMetadata | null>(
-          null,
-          elementMetadataMap[elementUID],
-        )
-      } catch (e) {
-        elementMetadata = null
-      }
-
-      return {
-        ...element,
-        metadata: elementMetadata,
-        children: fixedChildren,
-      }
-    } else {
-      return element
-    }
-  }
-
-  return topLevelElements.map((tle) => {
-    if (tle.element.type === 'UTOPIA_JSX_COMPONENT') {
-      const utopiaComponent: UtopiaJSXComponent = tle.element
-      return {
-        ...tle,
-        element: {
-          ...utopiaComponent,
-          rootElement: attachMetadataToElementsInner(utopiaComponent.rootElement),
         },
       }
     } else {
