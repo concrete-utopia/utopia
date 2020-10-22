@@ -545,12 +545,6 @@ function isNodeExported(node: TS.Node): boolean {
   )
 }
 
-const matcher = (importPath: string) => {
-  return [/\.avif$/, /\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/].some((regxp) =>
-    regxp.test(importPath),
-  )
-}
-
 export function configureLanguageService(
   rootFilenames: string[],
   fileVersions: TS.MapLike<FileVersion>,
