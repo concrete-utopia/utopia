@@ -1868,7 +1868,7 @@ export const UPDATE_FNS = {
         targetParent,
         action.jsxElement,
         elements,
-        null,
+        action.indexPosition ?? null,
         editor.jsxMetadataKILLME,
       )
 
@@ -4301,12 +4301,14 @@ export function insertJSXElement(
   element: JSXElement,
   parent: TemplatePath | null,
   importsToAdd: Imports,
+  indexPosition?: IndexPosition | null,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
     jsxElement: element,
     parent: parent,
     importsToAdd: importsToAdd,
+    indexPosition: indexPosition,
   }
 }
 

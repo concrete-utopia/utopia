@@ -45,6 +45,7 @@ import { fastForEach } from '../../../core/shared/utils'
 import { flatMapArray, uniqBy } from '../../../core/shared/array-utils'
 import { ReorderInsertIndicator } from './reorder-insert-indicator'
 import { FloatingMenu } from './floating-menu'
+import { InsertionControls } from './insertion-plus-button'
 
 export const SnappingThreshold = 5
 
@@ -947,6 +948,10 @@ export class SelectModeControlContainer extends React.Component<
       )
     }
 
+    const insertionControls = isFeatureEnabled('Insertion Plus Button') && (
+      <InsertionControls {...this.props} />
+    )
+
     return (
       <div
         style={{
@@ -989,6 +994,7 @@ export class SelectModeControlContainer extends React.Component<
               }
             })
           : null}
+        {insertionControls}
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />
