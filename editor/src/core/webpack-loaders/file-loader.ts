@@ -1,4 +1,3 @@
-import { ProjectFile } from '../shared/project-file-types'
 import { LoadModule, MatchFile, ModuleLoader } from './loader-types'
 
 const matchFile: MatchFile = (filename: string) => {
@@ -7,8 +6,9 @@ const matchFile: MatchFile = (filename: string) => {
   )
 }
 
-const loadModule: LoadModule = (filename: string, _: ProjectFile) => {
-  return `module.exports = '.${filename}'`
+const loadModule: LoadModule = (filename: string, contents: string) => {
+  const exportValue = contents.length > 0 ? contents : `.${filename}` // if the contents is a non-empty string then it is base64, so load that
+  return `module.exports = '${exportValue}'`
 }
 
 export const FileLoader: ModuleLoader = {

@@ -1,0 +1,40 @@
+import { DefaultLoader } from './default-loader'
+import { FileLoader } from './file-loader'
+import { ModuleLoader } from './loader-types'
+
+const moduleLoaders: Array<ModuleLoader> = [FileLoader, DefaultLoader]
+
+export function filenameWithoutJSSuffix(filename: string): string | undefined {
+  // The TS compiler will attempt to search for modules by appending .js to the file name,
+  // so for non-module files we will want to try stripping that suffix
+  return filename.endsWith('.js') ? filename.slice(0, -3) : undefined
+}
+
+function loadersForFile(filename: string): Array<ModuleLoader> {
+  return moduleLoaders.filter((loader) => loader.match(filename))
+}
+
+function applyMatchedLoaders(
+  filename: string,
+  contents: string,
+  matchedLoaders: Array<ModuleLoader>,
+): string {
+  return matchedLoaders.reduce(
+    (modifiedContents, nextLoader) => nextLoader.load(filename, modifiedContents),
+    contents,
+  )
+}
+
+export function loaderExistsForFile(filename: string): boolean {
+  return loadersForFile(filename).length > 0
+}
+
+export function loaderExistsForFileWithoutJSSuffix(filename: string): boolean {
+  const withSuffixStripped = filenameWithoutJSSuffix(filename)
+  return withSuffixStripped != null && loaderExistsForFile(withSuffixStripped)
+}
+
+export function applyLoaders(filename: string, contents: string): string {
+  const matchingLoaders = loadersForFile(filename)
+  return applyMatchedLoaders(filename, contents, matchingLoaders)
+}
