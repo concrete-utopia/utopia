@@ -22,12 +22,12 @@ import {
 import { generateUID } from '../../core/shared/uid-utils'
 import {
   TemplatePath,
-  isCodeFile,
-  isUIJSFile,
+  isTextFile,
   importDetails,
   importAlias,
   Imports,
   importsEquals,
+  forEachParseSuccess,
 } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
 import {
@@ -103,7 +103,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
     let currentFileComponents: Array<CurrentFileComponent> = []
     const openUIJSFile = getOpenUIJSFile(store.editor)
     if (openUIJSFile != null && openFileFullPath != null) {
-      forEachRight(openUIJSFile.fileContents, (fileContents) => {
+      forEachParseSuccess((fileContents) => {
         Utils.fastForEach(fileContents.topLevelElements, (topLevelElement) => {
           if (isUtopiaJSXComponent(topLevelElement)) {
             const componentName = topLevelElement.name
@@ -120,7 +120,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
             })
           }
         })
-      })
+      }, openUIJSFile.fileContents.parsed)
     }
 
     return {

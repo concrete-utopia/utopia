@@ -1,6 +1,11 @@
 import { handleMessage, IncomingWorkerMessage } from './ts-worker'
 import { LayoutSystem } from 'utopia-api'
-import { RevisionsState } from '../../shared/project-file-types'
+import {
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../shared/project-file-types'
 import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 
 import * as SampleTypeDefinitions from './sample-type-definitions.json'
@@ -31,17 +36,20 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
   type: 'inittsworker',
   typeDefinitions: SampleTypeDefinitions,
   projectContents: contentsToTree({
-    '/package.json': {
-      type: 'CODE_FILE',
-      fileContents:
+    '/package.json': textFile(
+      textFileContents(
         '{\n  "name": "Utopia Project",\n  "version": "0.1.0",\n  "utopia": {\n    "main-ui": "app.js",\n    "html": "index.html",\n    "js": "index.js"\n  },\n  "dependencies": {\n    "react": "16.8.6",\n    "@types/react": "16.8.17",\n    "csstype": "2.6.7",\n    "react-dom": "16.8.6",\n    "@types/react-dom": "16.8.4",\n    "utopia-api": "0.4.1",\n    "react-spring": "8.0.27"\n  }\n}',
-      lastSavedContents: null,
-    },
-    '/app.js': {
-      type: 'UI_JS_FILE',
-      fileContents: {
-        type: 'RIGHT',
-        value: {
+        unparsed(),
+        RevisionsState.BothMatch,
+      ),
+      null,
+      0,
+    ),
+    '/app.js': textFile(
+      textFileContents(
+        "/** @jsx jsx */\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n  jsx,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  TitledSection,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
+        {
+          type: 'PARSE_SUCCESS',
           imports: {
             react: {
               importedWithName: null,
@@ -213,8 +221,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               },
             ]),
           ],
-          code:
-            "/** @jsx jsx */\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n  jsx,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  TitledSection,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
           highlightBounds: {
             aaa: {
               startCol: 4,
@@ -227,38 +233,47 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
           jsxFactoryFunction: 'jsx',
           combinedTopLevelArbitraryBlock: null,
         },
-      },
-      lastSavedContents: null,
-      revisionsState: RevisionsState.BothMatch,
-      lastRevisedTime: 1585568960067,
-    },
+        RevisionsState.BothMatch,
+      ),
+      null,
+      1585568960067,
+    ),
     '/src': {
       type: 'DIRECTORY',
     },
-    '/src/components.js': {
-      type: 'CODE_FILE',
-      fileContents:
+    '/src/components.js': textFile(
+      textFileContents(
         "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n\n",
-      lastSavedContents: null,
-    },
+        unparsed(),
+        RevisionsState.CodeAhead,
+      ),
+      null,
+      0,
+    ),
     '/assets': {
       type: 'DIRECTORY',
     },
     '/public': {
       type: 'DIRECTORY',
     },
-    '/src/index.js': {
-      type: 'CODE_FILE',
-      fileContents:
+    '/src/index.js': textFile(
+      textFileContents(
         'import * as React from "react";\nimport * as ReactDOM from "react-dom";\nimport { App } from "../app";\n\nconst root = document.getElementById("root");\nif (root != null) {\nReactDOM.render(<App />, root);\n}',
-      lastSavedContents: null,
-    },
-    '/public/index.html': {
-      type: 'CODE_FILE',
-      fileContents:
+        unparsed(),
+        RevisionsState.CodeAhead,
+      ),
+      null,
+      0,
+    ),
+    '/public/index.html': textFile(
+      textFileContents(
         '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>Utopia React App</title>\n</head>\n<body>\n<div id="root"></div>\n</body>\n</html>',
-      lastSavedContents: null,
-    },
+        unparsed(),
+        RevisionsState.CodeAhead,
+      ),
+      null,
+      0,
+    ),
   }),
   buildOrParsePrint: 'build',
   jobID: '9897a53d_15b6_400d_be5f_ca5d66e47087',
@@ -267,25 +282,37 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
 const SampleUpdateFileMessage: IncomingWorkerMessage = {
   type: 'updatefile',
   filename: '/src/components.js',
-  content: {
-    type: 'CODE_FILE',
-    fileContents:
+  content: textFile(
+    textFileContents(
       "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\n\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n",
-    lastSavedContents:
+      unparsed(),
+      RevisionsState.CodeAhead,
+    ),
+    textFileContents(
       "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n",
-  },
+      unparsed(),
+      RevisionsState.CodeAhead,
+    ),
+    0,
+  ),
   jobID: '689b7b1b_d5ed_4876_ba62_bc66e2096bf6',
 }
 
 const SampleUpdateFileMessageWithError: IncomingWorkerMessage = {
   type: 'updatefile',
   filename: '/src/components.js',
-  content: {
-    type: 'CODE_FILE',
-    fileContents:
+  content: textFile(
+    textFileContents(
       "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\n+\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n",
-    lastSavedContents:
+      unparsed(),
+      RevisionsState.CodeAhead,
+    ),
+    textFileContents(
       "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\n\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n",
-  },
+      unparsed(),
+      RevisionsState.CodeAhead,
+    ),
+    0,
+  ),
   jobID: 'ffcc378d_6bc8_4635_9fd9_e54565241f27',
 }

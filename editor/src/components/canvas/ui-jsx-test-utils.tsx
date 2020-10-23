@@ -31,7 +31,14 @@ import {
   ElementInstanceMetadata,
   TopLevelElement,
 } from '../../core/shared/element-template'
-import { ParseSuccess, UIJSFile } from '../../core/shared/project-file-types'
+import {
+  isParseFailure,
+  isParseSuccess,
+  isTextFile,
+  isUnparsed,
+  ParseSuccess,
+  TextFile,
+} from '../../core/shared/project-file-types'
 import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
 import {
   FakeBundlerWorker,
@@ -206,8 +213,12 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
 }
 
 export function getPrintedUiJsCode(store: EditorStore): string {
-  return ((getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js') as UIJSFile)
-    .fileContents as Right<ParseSuccess>).value.code
+  const file = getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js')
+  if (isTextFile(file)) {
+    return file.fileContents.code
+  } else {
+    fail('File is not a text file.')
+  }
 }
 
 const TestSceneUID = 'scene-aaa'
@@ -242,10 +253,13 @@ ${snippet}
 
 export function getTestParseSuccess(fileContents: string): ParseSuccess {
   const parseResult = testParseCode(fileContents)
-  if (isLeft(parseResult)) {
-    throw new Error(`Error parsing test input code: ${parseResult.value.errorMessage}`)
+  if (isParseFailure(parseResult)) {
+    throw new Error(`Error parsing test input code: ${parseResult.errorMessage}`)
+  } else if (isUnparsed(parseResult)) {
+    throw new Error(`Unexpected unparsed file.`)
+  } else {
+    return parseResult
   }
-  return parseResult.value
 }
 
 export function testPrintCode(parseSuccess: ParseSuccess): string {

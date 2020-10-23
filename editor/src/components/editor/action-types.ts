@@ -22,7 +22,7 @@ import {
   ScenePath,
   StaticElementPath,
   TemplatePath,
-  UIJSFile,
+  TextFile,
   NodeModules,
   Imports,
 } from '../../core/shared/project-file-types'
@@ -566,7 +566,7 @@ export interface UpdateFile {
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
   filePath: string
-  file: UIJSFile
+  file: TextFile
   codeOrModel: 'Code' | 'Model'
 }
 
@@ -590,12 +590,8 @@ export interface DeleteFile {
   filename: string
 }
 
-export interface AddUIJSFile {
-  action: 'ADD_UI_JS_FILE'
-}
-
-export interface AddCodeFile {
-  action: 'ADD_CODE_FILE'
+export interface AddTextFile {
+  action: 'ADD_TEXT_FILE'
   fileName: string
   parentPath: string
 }
@@ -863,8 +859,7 @@ export type EditorAction =
   | ClearImageFileBlob
   | AddFolder
   | DeleteFile
-  | AddUIJSFile
-  | AddCodeFile
+  | AddTextFile
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors

@@ -10,15 +10,29 @@ import {
   getSamplePreviewFile,
   getSamplePreviewHTMLFile,
 } from '../core/model/new-project-files'
-import { codeFile, directory } from '../core/model/project-file-utils'
-import { ProjectContents } from '../core/shared/project-file-types'
+import { directory } from '../core/model/project-file-utils'
+import {
+  ProjectContents,
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../core/shared/project-file-types'
 import { getSampleComponentsFile, getUiBuilderUIJSFile } from './ui-builder-ui-js-file'
 
 export const UI_BUILDER_PROJECT_ID = 'UI-BUILDER'
 
 export function defaultProject(): PersistentModel {
   const projectContents: ProjectContents = {
-    '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
+    '/package.json': textFile(
+      textFileContents(
+        JSON.stringify(DefaultPackageJson, null, 2),
+        unparsed(),
+        RevisionsState.BothMatch,
+      ),
+      null,
+      0,
+    ),
     '/src': directory(),
     '/src/app.js': getDefaultUIJsFile(),
     '/assets': directory(),
@@ -34,7 +48,15 @@ export function defaultProject(): PersistentModel {
 
 function uiBuilderProject(): PersistentModel {
   const projectContents: ProjectContents = {
-    '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
+    '/package.json': textFile(
+      textFileContents(
+        JSON.stringify(DefaultPackageJson, null, 2),
+        unparsed(),
+        RevisionsState.BothMatch,
+      ),
+      null,
+      0,
+    ),
     '/src': directory(),
     '/src/app.js': getUiBuilderUIJSFile(),
     '/src/components.js': getSampleComponentsFile(),

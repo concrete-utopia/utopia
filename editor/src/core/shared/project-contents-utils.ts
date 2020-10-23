@@ -3,14 +3,14 @@ import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
 import { defaultEither, eitherToMaybe, isLeft } from './either'
 import { is } from './equality-utils'
 import { memoize } from './memoize'
-import { isCodeFile, ProjectContents, ProjectFile } from './project-file-types'
+import { isTextFile, ProjectContents, ProjectFile } from './project-file-types'
 
 function parsePackageJsonInner(
   packageJson: ProjectFile | undefined | null,
 ): Record<string, any> | null {
-  if (packageJson != null && isCodeFile(packageJson)) {
+  if (packageJson != null && isTextFile(packageJson)) {
     try {
-      return JSON.parse(packageJson.fileContents)
+      return JSON.parse(packageJson.fileContents.code)
     } catch (e) {
       console.error('Invalid package.json contents.', e)
       return null
@@ -26,9 +26,9 @@ function packageJsonEquals(l: ProjectFile | undefined, r: ProjectFile | undefine
   } else {
     return (
       l != undefined &&
-      isCodeFile(l) &&
+      isTextFile(l) &&
       r != undefined &&
-      isCodeFile(r) &&
+      isTextFile(r) &&
       l.fileContents === r.fileContents
     )
   }

@@ -2,12 +2,7 @@ import * as Babel from '@babel/standalone'
 import * as TS from 'typescript'
 import * as BrowserFS from 'browserfs'
 import { TypeDefinitions } from '../../shared/npm-dependency-types'
-import {
-  ProjectContents,
-  CodeFile,
-  UIJSFile,
-  isCodeOrUiJsFile,
-} from '../../shared/project-file-types'
+import { isTextFile, TextFile } from '../../shared/project-file-types'
 import { RawSourceMap } from './ts-typings/RawSourceMap'
 import { libfile } from './libfile'
 import { FSModule } from 'browserfs/dist/node/core/FS'
@@ -32,7 +27,7 @@ import { diagnosticToErrorMessage } from './ts-utils'
 import { MapLike } from 'typescript'
 import { ErrorMessage } from '../../shared/error-messages'
 import { fastForEach } from '../../shared/utils'
-import { getCodeFileContents } from '../common/project-file-utils'
+import { getTextFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
 import { ProjectContentTreeRoot, walkContentsTree } from '../../../components/assets'
 
@@ -74,7 +69,7 @@ export type OutgoingWorkerMessage =
 interface UpdateFileMessage {
   type: 'updatefile'
   filename: string
-  content: string | UIJSFile | CodeFile
+  content: string | TextFile | TextFile
   jobID: string
 }
 
@@ -146,7 +141,7 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 
 export function createUpdateFileMessage(
   filename: string,
-  content: string | UIJSFile | CodeFile,
+  content: string | TextFile | TextFile,
   jobID: string,
 ): UpdateFileMessage {
   return {
@@ -245,7 +240,7 @@ export function handleMessage(
         if (typeof workerMessage.content === 'string') {
           content = workerMessage.content
         } else {
-          content = getCodeFileContents(workerMessage.content, false, true)
+          content = getTextFileContents(workerMessage.content, false, true)
         }
         fileChanged(workerMessage.filename, content, workerMessage.jobID)
       } finally {
@@ -285,10 +280,10 @@ export function initTsIncrementalBuild(
   let codeFiles: Array<string> = []
   let otherFilesToWatch: Array<string> = []
   walkContentsTree(projectContents, (filename, file) => {
-    if (isCodeOrUiJsFile(file) && isJsOrTsFile(filename)) {
+    if (isTextFile(file) && isJsOrTsFile(filename)) {
       codeFiles.push(filename)
     }
-    if (isCodeOrUiJsFile(file) && isCssFile(filename)) {
+    if (isTextFile(file) && isCssFile(filename)) {
       otherFilesToWatch.push(filename)
     }
   })
@@ -322,8 +317,8 @@ export function initBrowserFS(
   })
 
   walkContentsTree(projectContents, (filename, file) => {
-    if (isCodeOrUiJsFile(file)) {
-      const fileContents = getCodeFileContents(file, false, true)
+    if (isTextFile(file)) {
+      const fileContents = getTextFileContents(file, false, true)
       writeFile(fs, filename, fileContents)
     }
   })

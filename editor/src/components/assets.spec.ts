@@ -1,12 +1,13 @@
 import * as FastCheck from 'fast-check'
 import * as R from 'ramda'
-import { codeFile, directory, imageFile, isDirectory } from '../core/model/project-file-utils'
+import { directory, imageFile, isDirectory } from '../core/model/project-file-utils'
 import {
-  CodeFile,
+  TextFile,
   Directory,
   ImageFile,
   ProjectContents,
   ProjectFile,
+  codeFile,
 } from '../core/shared/project-file-types'
 import {
   contentsToTree,
@@ -16,7 +17,7 @@ import {
   treeToContents,
 } from './assets'
 
-function codeFileArbitrary(): FastCheck.Arbitrary<CodeFile> {
+function codeFileArbitrary(): FastCheck.Arbitrary<TextFile> {
   return FastCheck.string().map((content) => codeFile(content, null))
 }
 
@@ -30,8 +31,8 @@ function localImageFileArbitrary(): FastCheck.Arbitrary<ImageFile> {
   )
 }
 
-function notDirectoryContentFileArbitrary(): FastCheck.Arbitrary<CodeFile | ImageFile> {
-  return FastCheck.oneof<CodeFile | ImageFile>(
+function notDirectoryContentFileArbitrary(): FastCheck.Arbitrary<TextFile | ImageFile> {
+  return FastCheck.oneof<TextFile | ImageFile>(
     codeFileArbitrary(),
     remoteImageFileArbitrary(),
     localImageFileArbitrary(),
@@ -102,14 +103,14 @@ describe('contentsToTree', () => {
     FastCheck.assert(prop, { verbose: true })
   })
   it('Specific case to test for directory creation', () => {
-    const contentCodeFile = codeFile('{} + []', null)
+    const contentTextFile = codeFile('{} + []', null)
     const contents: ProjectContents = {
-      '/a/b/c': contentCodeFile,
+      '/a/b/c': contentTextFile,
     }
     const expectedResult: ProjectContentTreeRoot = {
       a: projectContentDirectory('/a', directory(), {
         b: projectContentDirectory('/a/b', directory(), {
-          c: projectContentFile('/a/b/c', contentCodeFile),
+          c: projectContentFile('/a/b/c', contentTextFile),
         }),
       }),
     }

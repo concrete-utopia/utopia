@@ -20,7 +20,7 @@ import { thumbnailURL } from '../../common/server'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isRight } from '../../core/shared/either'
-import { isUIJSFile, ProjectFile } from '../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
 import Utils from '../../utils/utils'
 import { CodeEditorTheme, CodeEditorThemeCollection } from '../code-editor/code-editor-themes'
@@ -243,9 +243,9 @@ function getExistingUIDs(projectFile: ProjectFile | null): Array<string> {
   if (projectFile == null) {
     return []
   } else {
-    if (isUIJSFile(projectFile)) {
-      if (isRight(projectFile.fileContents)) {
-        const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.value)
+    if (isTextFile(projectFile)) {
+      if (isParseSuccess(projectFile.fileContents.parsed)) {
+        const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
         return getAllUniqueUids(components)
       } else {
         return []
@@ -314,9 +314,8 @@ function validToShowNavigator(editorState: EditorState): boolean {
     return false
   } else {
     switch (open.type) {
-      case 'UI_JS_FILE':
+      case 'TEXT_FILE':
         return true
-      case 'CODE_FILE':
       case 'IMAGE_FILE':
       case 'DIRECTORY':
       case 'ASSET_FILE':

@@ -1,7 +1,7 @@
 import { Machine, interpret, send, assign, actions, Interpreter, StateSchema } from 'xstate'
 import { FileContent } from './common/worker-types'
 import { TypeDefinitions } from '../shared/npm-dependency-types'
-import { ProjectContents, UIJSFile, CodeFile } from '../shared/project-file-types'
+import { TextFile } from '../shared/project-file-types'
 import {
   InitCompleteMessage,
   OutgoingWorkerMessage,
@@ -426,7 +426,7 @@ function sendIdGuardedinitializeWorkerPromise(
 function sendIdGuardedUpdateFilePromise(
   worker: BundlerWorker,
   filename: string,
-  content: string | UIJSFile | CodeFile,
+  content: string | TextFile | TextFile,
 ): Promise<BuildResultMessage | UpdateProcessedMessage> {
   const generatedJobID = utils.generateUUID()
   return new Promise((resolve, reject) => {

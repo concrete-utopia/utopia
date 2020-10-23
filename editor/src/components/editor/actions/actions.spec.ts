@@ -17,14 +17,16 @@ import {
   emptyComputedStyle,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
-import { uiJsFile } from '../../../core/model/project-file-utils'
 import {
   ParseSuccess,
   RevisionsState,
-  UIJSFile,
+  TextFile,
   isParseSuccess,
-  isUIJSFile,
-  ParseResult,
+  isTextFile,
+  ParsedTextFile,
+  textFileContents,
+  textFile,
+  TextFileContents,
 } from '../../../core/shared/project-file-types'
 import {
   emptyImports,
@@ -105,7 +107,6 @@ describe('SET_PROP', () => {
           null,
         ),
       ],
-      '',
       {},
       null,
       null,
@@ -114,7 +115,11 @@ describe('SET_PROP', () => {
   const testEditor: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
-      '/src/app.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
+      '/src/app.js': textFile(
+        textFileContents('', originalModel, RevisionsState.ParsedAhead),
+        null,
+        0,
+      ),
     }),
     selectedFile: {
       tab: openFileTab('/src/app.js'),
@@ -132,10 +137,10 @@ describe('SET_PROP', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
@@ -192,11 +197,15 @@ describe('SET_CANVAS_FRAMES', () => {
     ),
   ]
 
-  const originalModel = deepFreeze(parseSuccess(emptyImports(), components, '', {}, null, null))
+  const originalModel = deepFreeze(parseSuccess(emptyImports(), components, {}, null, null))
   const testEditor: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
-      '/src/app.js': uiJsFile(right(originalModel), null, RevisionsState.ParsedAhead, 0),
+      '/src/app.js': textFile(
+        textFileContents('', originalModel, RevisionsState.ParsedAhead),
+        null,
+        0,
+      ),
     }),
     selectedFile: {
       tab: openFileTab('/src/app.js'),
@@ -220,10 +229,10 @@ describe('SET_CANVAS_FRAMES', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
@@ -251,7 +260,6 @@ describe('moveTemplate', () => {
         rootElements.map((element, index) =>
           utopiaJSXComponent(`MyView${index}`, true, defaultPropsParam, [], element, null),
         ),
-        '',
         {},
         null,
         null,
@@ -312,7 +320,7 @@ describe('moveTemplate', () => {
     let editor: EditorState = {
       ...createEditorState(NO_OP),
       projectContents: contentsToTree({
-        '/src/app.js': uiJsFile(right(uiFile), null, RevisionsState.ParsedAhead, 0),
+        '/src/app.js': textFile(textFileContents('', uiFile, RevisionsState.ParsedAhead), null, 0),
       }),
       selectedFile: {
         tab: openFileTab('/src/app.js'),
@@ -344,10 +352,10 @@ describe('moveTemplate', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
@@ -385,9 +393,9 @@ describe('moveTemplate', () => {
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(newEditor.projectContents, '/src/app.js')
-    if (newUiJsFile != null && isUIJSFile(newUiJsFile)) {
-      if (isParseSuccess(newUiJsFile.fileContents)) {
-        const newTopLevelElements = newUiJsFile.fileContents.value.topLevelElements
+    if (newUiJsFile != null && isTextFile(newUiJsFile)) {
+      if (isParseSuccess(newUiJsFile.fileContents.parsed)) {
+        const newTopLevelElements = newUiJsFile.fileContents.parsed.topLevelElements
         const updatedRoot = newTopLevelElements[0]
         if (isUtopiaJSXComponent(updatedRoot)) {
           expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot)).toHaveLength(1)
@@ -435,10 +443,10 @@ describe('moveTemplate', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
@@ -468,10 +476,10 @@ describe('moveTemplate', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
@@ -500,10 +508,10 @@ describe('moveTemplate', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
@@ -533,10 +541,10 @@ describe('moveTemplate', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
@@ -565,10 +573,10 @@ describe('moveTemplate', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedRoot1 = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot1)).toBeTruthy()
@@ -612,10 +620,10 @@ describe('moveTemplate', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedGroup = newTopLevelElements[1] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedGroup)).toBeTruthy()
@@ -664,10 +672,10 @@ describe('moveTemplate', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedRoot1 = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot1)).toBeTruthy()
@@ -712,10 +720,10 @@ describe('moveTemplate', () => {
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
-    ) as UIJSFile
-    expect(isUIJSFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.value as ParseSuccess)
+    ) as TextFile
+    expect(isTextFile(newUiJsFile)).toBeTruthy()
+    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
+    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
       .topLevelElements
     const updatedRoot1 = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot1)).toBeTruthy()
@@ -749,10 +757,13 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     [childElement],
   )
   const firstTopLevelElement = utopiaJSXComponent('App', true, null, [], rootElement, null)
-  const fileForUI = uiJsFile(
-    right(parseSuccess(sampleDefaultImports, [firstTopLevelElement], '', {}, null, null)),
+  const fileForUI = textFile(
+    textFileContents(
+      '',
+      parseSuccess(sampleDefaultImports, [firstTopLevelElement], {}, null, null),
+      RevisionsState.BothMatch,
+    ),
     null,
-    RevisionsState.BothMatch,
     0,
   )
   const testEditorWithPins: EditorState = deepFreeze({
@@ -840,13 +851,17 @@ describe('LOAD', () => {
   it('Parses all UIJS files and bins any previously stored parsed model data', () => {
     const firstUIJSFile = '/src/app.js'
     const secondUIJSFile = '/src/some/other/file.js'
-    const initiailFileContents: ParseResult = left(parseFailure(null, null, null, [], sampleCode))
+    const initialFileContents: TextFileContents = textFileContents(
+      sampleCode,
+      parseFailure(null, null, null, []),
+      RevisionsState.BothMatch,
+    )
     const loadedModel: PersistentModel = {
       appID: null,
       projectVersion: CURRENT_PROJECT_VERSION,
       projectContents: contentsToTree({
-        [firstUIJSFile]: uiJsFile(initiailFileContents, null, RevisionsState.BothMatch, 0),
-        [secondUIJSFile]: uiJsFile(initiailFileContents, null, RevisionsState.BothMatch, 0),
+        [firstUIJSFile]: textFile(initialFileContents, null, 0),
+        [secondUIJSFile]: textFile(initialFileContents, null, 0),
       }),
       exportsInfo: [],
       openFiles: [],
@@ -899,14 +914,14 @@ describe('LOAD', () => {
     const newFirstFileContents = (getContentsTreeFileFromString(
       result.projectContents,
       firstUIJSFile,
-    ) as UIJSFile).fileContents
-    expect(isRight(newFirstFileContents)).toBeTruthy()
-    expect(newFirstFileContents.value.code).toEqual(initiailFileContents.value.code)
+    ) as TextFile).fileContents
+    expect(isParseSuccess(newFirstFileContents.parsed)).toBeTruthy()
+    expect(newFirstFileContents.code).toEqual(initialFileContents.code)
     const newSecondFileContents = (getContentsTreeFileFromString(
       result.projectContents,
       secondUIJSFile,
-    ) as UIJSFile).fileContents
-    expect(isRight(newSecondFileContents)).toBeTruthy()
-    expect(newSecondFileContents.value.code).toEqual(initiailFileContents.value.code)
+    ) as TextFile).fileContents
+    expect(isParseSuccess(newSecondFileContents.parsed)).toBeTruthy()
+    expect(newSecondFileContents.code).toEqual(initialFileContents.code)
   })
 })

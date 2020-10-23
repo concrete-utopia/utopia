@@ -12,9 +12,8 @@ import {
 } from '../../core/shared/npm-dependency-types'
 import {
   HighlightBounds,
+  isTextFile,
   ProjectContents,
-  isCodeFile,
-  isUIJSFile,
   TemplatePath,
 } from '../../core/shared/project-file-types'
 import { isJsFile, isJsOrTsFile } from '../../core/workers/ts/ts-worker'
@@ -360,8 +359,8 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
                 filename !== this.props.filename &&
                 file != null &&
                 (isDirectory(file) ||
-                  isUIJSFile(file) ||
-                  (isCodeFile(file) && isJsOrTsFile(filename)))
+                  isTextFile(file) ||
+                  (isTextFile(file) && isJsOrTsFile(filename)))
               ) {
                 let fileWithRelativePath = getFilePathToImport(filename, this.props.filename)
                 const isInSameDirAsTyped =
@@ -374,7 +373,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
                     : monaco.languages.CompletionItemKind.File
 
                   const textToInsert =
-                    isUIJSFile(file) || isCodeFile(file)
+                    isTextFile(file) || isTextFile(file)
                       ? filePathStripped.replace(/\.(js|tsx?)$/, '')
                       : filePathStripped
 
@@ -493,10 +492,8 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
       const filename = monaco.Uri.file(key)
 
       let code: string | null = null
-      if (isCodeFile(file)) {
-        code = file.fileContents
-      } else if (isUIJSFile(file)) {
-        code = file.fileContents.value.code
+      if (isTextFile(file)) {
+        code = file.fileContents.code
       }
       if (code != null) {
         let model = findModel(filename.toString())

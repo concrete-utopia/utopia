@@ -726,7 +726,7 @@ export function handleKeyDown(
       return []
     } else {
       switch (openFile.type) {
-        case 'UI_JS_FILE':
+        case 'TEXT_FILE':
           return getUIFileActions()
         default:
           return []
@@ -785,7 +785,7 @@ export function handleKeyUp(
       return []
     } else {
       switch (openFile.type) {
-        case 'UI_JS_FILE':
+        case 'TEXT_FILE':
           return getUIFileActions()
         default:
           return []

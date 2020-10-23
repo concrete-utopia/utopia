@@ -83,7 +83,6 @@ import {
 import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
 import {
   canUpdateFile,
-  codeFile,
   directory,
   fileTypeFromFileName,
   getHighlightBoundsFromParseResult,
@@ -97,9 +96,10 @@ import {
   sceneMetadata,
   switchToFileType,
   uniqueProjectContentID,
-  updateParseResultCode,
+  updateParsedTextFileHighlightBounds,
   assetFile,
-  applyToAllUIJSFilesContents,
+  saveTextFileContents,
+  applyToAllUIJSFiles,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -120,11 +120,10 @@ import type {
 } from '../../../core/shared/npm-dependency-types'
 import {
   InstancePath,
-  isCodeFile,
   isParseSuccess,
-  isUIJSFile,
+  isTextFile,
   LayoutWrapper,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   ProjectContents,
   ProjectFile,
@@ -134,7 +133,7 @@ import {
   ScenePath,
   StaticElementPath,
   TemplatePath,
-  UIJSFile,
+  TextFile,
   importAlias,
   isAssetFile,
   ESCodeFile,
@@ -143,6 +142,9 @@ import {
   Imports,
   importDetails,
   StaticInstancePath,
+  textFileContents,
+  textFile,
+  codeFile,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -217,9 +219,8 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import {
-  AddCodeFile,
+  AddTextFile,
   AddFolder,
-  AddUIJSFile,
   Alignment,
   AlignSelectedViews,
   Atomic,
@@ -1055,9 +1056,9 @@ function indexPositionForAdjustment(
     case 'backward':
     case 'forward':
       const openUIJSFile = getOpenUIJSFile(editor)
-      if (openUIJSFile != null && isRight(openUIJSFile.fileContents)) {
+      if (openUIJSFile != null && isParseSuccess(openUIJSFile.fileContents.parsed)) {
         const current = getZIndexOfElement(
-          openUIJSFile.fileContents.value.topLevelElements,
+          openUIJSFile.fileContents.parsed.topLevelElements,
           TP.asStatic(target),
         )
         return {
@@ -1311,8 +1312,16 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
-    const parsedProjectFiles = applyToAllUIJSFilesContents(migratedModel.projectContents, (k, v) =>
-      lintAndParse(k, v.value.code),
+    const parsedProjectFiles = applyToAllUIJSFiles(
+      migratedModel.projectContents,
+      (filename: string, file: TextFile) => {
+        const parseResult = lintAndParse(filename, file.fileContents.code)
+        return saveTextFileContents(
+          file,
+          textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
+          false,
+        )
+      },
     )
     const parsedModel = {
       ...migratedModel,
@@ -1381,10 +1390,10 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     const openUIJSFile = getOpenUIJSFile(editor)
-    if (openUIJSFile == null || isLeft(openUIJSFile.fileContents)) {
+    if (openUIJSFile == null || !isParseSuccess(openUIJSFile.fileContents.parsed)) {
       return editor
     } else {
-      const components = getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.value)
+      const components = getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
       const target = action.element
       const element = findElementAtPath(target, components, editor.jsxMetadataKILLME)
       if (element == null || !isJSXElement(element)) {
@@ -1435,7 +1444,7 @@ export const UPDATE_FNS = {
       console.warn('Attempted to find the index of a view with no ui file open.')
       return editor
     } else {
-      if (isRight(uiFile.fileContents)) {
+      if (isParseSuccess(uiFile.fileContents.parsed)) {
         index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadataKILLME, targetPath)
       } else {
         console.warn(
@@ -1908,7 +1917,7 @@ export const UPDATE_FNS = {
       false,
       (editor) => {
         const uiFile = getOpenUIJSFile(editor)
-        if (uiFile == null || !isParseSuccess(uiFile.fileContents)) {
+        if (uiFile == null || !isParseSuccess(uiFile.fileContents.parsed)) {
           return editor
         }
 
@@ -3170,7 +3179,7 @@ export const UPDATE_FNS = {
     const selectedFile = isOpenFileTab(action.editorTab)
       ? getFileForName(action.editorTab.filename, editor)
       : null
-    const fileOpensInCanvas = selectedFile == null || isUIJSFile(selectedFile)
+    const fileOpensInCanvas = selectedFile == null || isTextFile(selectedFile)
     const focusedPanel: EditorPanel = fileOpensInCanvas ? 'canvas' : 'misccodeeditor'
 
     const keepSelectedViews = R.equals(currentOpenFile, action.editorTab)
@@ -3244,7 +3253,7 @@ export const UPDATE_FNS = {
 
     const { file } = action
 
-    if (isUIJSFile(file)) {
+    if (isTextFile(file)) {
       const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
       const canUpdate = canUpdateFile(file, existing)
       if (!canUpdate) {
@@ -3261,8 +3270,8 @@ export const UPDATE_FNS = {
     let packageLoadingStatus: PackageStatusMap = {}
 
     // Ensure dependencies are updated if the `package.json` file has been changed.
-    if (action.filePath === '/package.json' && isCodeFile(file)) {
-      const deps = dependenciesFromPackageJsonContents(file.fileContents)
+    if (action.filePath === '/package.json' && isTextFile(file)) {
+      const deps = dependenciesFromPackageJsonContents(file.fileContents.code)
       if (deps != null) {
         packageLoadingStatus = deps.reduce((packageStatus: PackageStatusMap, dep) => {
           packageStatus[dep.name] = { status: 'loading' }
@@ -3291,7 +3300,7 @@ export const UPDATE_FNS = {
       projectContents: updatedProjectContents,
       canvas: {
         ...editor.canvas,
-        mountCount: editor.canvas.mountCount + (isUIJSFile(file) ? 0 : 1),
+        mountCount: editor.canvas.mountCount + (isTextFile(file) ? 0 : 1),
       },
       nodeModules: {
         ...editor.nodeModules,
@@ -3308,7 +3317,7 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
-    if (existing == null || !isUIJSFile(existing)) {
+    if (existing == null || !isTextFile(existing)) {
       // The worker shouldn't be recreating deleted files or reformated files
       console.error(`Worker thread is trying to update an invalid file ${action.filePath}`)
       return editor
@@ -3320,27 +3329,37 @@ export const UPDATE_FNS = {
     }
 
     // The worker should only ever cause one side to catch up to the other
-    if (action.codeOrModel === 'Code' && !codeNeedsPrinting(existing.revisionsState)) {
+    if (action.codeOrModel === 'Code' && !codeNeedsPrinting(existing.fileContents.revisionsState)) {
       return editor
-    } else if (action.codeOrModel === 'Model' && !codeNeedsParsing(existing.revisionsState)) {
+    } else if (
+      action.codeOrModel === 'Model' &&
+      !codeNeedsParsing(existing.fileContents.revisionsState)
+    ) {
       return editor
     }
 
-    let updatedFile: UIJSFile
-    let updatedContents: ParseResult
+    let updatedFile: TextFile
+    let updatedContents: ParsedTextFile
+    let code: string
     switch (action.codeOrModel) {
       case 'Code': {
-        const updatedCode = action.file.fileContents.value.code
         // we use the new highlightBounds coming from the action
-        const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents)
-        updatedContents = updateParseResultCode(existing.fileContents, updatedCode, highlightBounds)
+        code = action.file.fileContents.code
+        const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents.parsed)
+        updatedContents = updateParsedTextFileHighlightBounds(
+          existing.fileContents.parsed,
+          highlightBounds,
+        )
         break
       }
       case 'Model': {
-        const code = existing.fileContents.value.code
         // we use the new highlightBounds coming from the action
-        const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents)
-        updatedContents = updateParseResultCode(action.file.fileContents, code, highlightBounds)
+        code = existing.fileContents.code
+        const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents.parsed)
+        updatedContents = updateParsedTextFileHighlightBounds(
+          action.file.fileContents.parsed,
+          highlightBounds,
+        )
         break
       }
       default:
@@ -3351,17 +3370,17 @@ export const UPDATE_FNS = {
     if (isOlderThan(action.file, existing)) {
       // if the received file is older than the existing, we still allow it to update the other side,
       // but we don't bump the revision state or the lastRevisedTime.
-      updatedFile = {
-        ...existing,
-        fileContents: updatedContents,
-      }
+      updatedFile = textFile(
+        textFileContents(code, updatedContents, existing.fileContents.revisionsState),
+        existing.lastSavedContents,
+        existing.lastRevisedTime,
+      )
     } else {
-      updatedFile = {
-        ...existing,
-        fileContents: updatedContents,
-        revisionsState: RevisionsState.BothMatch,
-        lastRevisedTime: Date.now(),
-      }
+      updatedFile = textFile(
+        textFileContents(code, updatedContents, RevisionsState.BothMatch),
+        existing.lastSavedContents,
+        Date.now(),
+      )
     }
 
     const updatedProjectContents = addFileToProjectContents(
@@ -3423,15 +3442,15 @@ export const UPDATE_FNS = {
       },
     }
   },
-  ADD_CODE_FILE: (action: AddCodeFile, editor: EditorModel): EditorModel => {
+  ADD_TEXT_FILE: (action: AddTextFile, editor: EditorModel): EditorModel => {
     const pathPrefix = action.parentPath == '' ? '' : action.parentPath + '/'
     const newFileKey = uniqueProjectContentID(pathPrefix + action.fileName, editor.projectContents)
-    const newCodeFile = codeFile('', null)
+    const newTextFile = codeFile('', null)
 
     const updatedProjectContents = addFileToProjectContents(
       editor.projectContents,
       newFileKey,
-      newCodeFile,
+      newTextFile,
     )
 
     // Update the model.
@@ -3444,27 +3463,6 @@ export const UPDATE_FNS = {
       },
       openFiles: [...editor.openFiles, newTab],
       projectContents: updatedProjectContents,
-      fileBrowser: {
-        ...editor.fileBrowser,
-        renamingTarget: newFileKey,
-      },
-    }
-    return updatedEditor
-  },
-  ADD_UI_JS_FILE: (action: AddUIJSFile, editor: EditorModel): EditorModel => {
-    const newFileKey = uniqueProjectContentID('src/new_view.js', editor.projectContents)
-    const newUiJsFile = getDefaultUIJsFile()
-
-    // Update the model.
-    const newTab = openFileTab(newFileKey)
-    const updatedEditor: EditorModel = {
-      ...editor,
-      selectedFile: {
-        tab: newTab,
-        initialCursorPosition: null,
-      },
-      openFiles: [...editor.openFiles, newTab],
-      projectContents: addFileToProjectContents(editor.projectContents, newFileKey, newUiJsFile),
       fileBrowser: {
         ...editor.fileBrowser,
         renamingTarget: newFileKey,
@@ -3522,7 +3520,7 @@ export const UPDATE_FNS = {
           )
         }, updatedEditor)
       }
-      case 'CODE_FILE': {
+      case 'TEXT_FILE': {
         return {
           ...editor,
           projectContents: updatedProjectContents,
@@ -4414,8 +4412,8 @@ export async function load(
   retryFetchNodeModules: boolean = true,
 ): Promise<void> {
   // this action is now async!
-
-  const npmDependencies = dependenciesWithEditorRequirements(model.projectContents)
+  const migratedModel = applyMigrations(model)
+  const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
   const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
   const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
@@ -4428,13 +4426,13 @@ export async function load(
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
 
   let codeResultCache: CodeResultCache
-  if (model.exportsInfo.length > 0) {
-    workers.sendInitMessage(typeDefinitions, model.projectContents)
+  if (migratedModel.exportsInfo.length > 0) {
+    workers.sendInitMessage(typeDefinitions, migratedModel.projectContents)
     codeResultCache = generateCodeResultCache(
-      model.projectContents,
+      migratedModel.projectContents,
       {},
       {},
-      model.exportsInfo,
+      migratedModel.exportsInfo,
       nodeModules,
       dispatch,
       'full-build',
@@ -4447,7 +4445,7 @@ export async function load(
       nodeModules,
       dispatch,
       typeDefinitions,
-      model.projectContents,
+      migratedModel.projectContents,
     )
   }
 
@@ -4462,7 +4460,7 @@ export async function load(
     [
       {
         action: 'LOAD',
-        model: model,
+        model: migratedModel,
         nodeModules: nodeModules,
         packageResult: packageResult,
         codeResultCache: codeResultCache,
@@ -5129,12 +5127,6 @@ export function addFolder(parentPath: string): AddFolder {
   }
 }
 
-export function addUIJSFile(): AddUIJSFile {
-  return {
-    action: 'ADD_UI_JS_FILE',
-  }
-}
-
 export function openEditorTab(
   editorTab: EditorTab,
   cursorPosition: CursorPosition | null,
@@ -5176,7 +5168,7 @@ export function updateFile(
 
 export function updateFromWorker(
   filePath: string,
-  file: UIJSFile,
+  file: TextFile,
   codeOrModel: 'Code' | 'Model',
 ): UpdateFromWorker {
   return {
@@ -5201,9 +5193,9 @@ export function clearImageFileBlob(uiFilePath: string, elementID: string): Clear
   }
 }
 
-export function addCodeFile(parentPath: string, fileName: string): AddCodeFile {
+export function addTextFile(parentPath: string, fileName: string): AddTextFile {
   return {
-    action: 'ADD_CODE_FILE',
+    action: 'ADD_TEXT_FILE',
     fileName: fileName,
     parentPath: parentPath,
   }

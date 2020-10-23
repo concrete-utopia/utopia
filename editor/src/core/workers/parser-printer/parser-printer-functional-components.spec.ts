@@ -20,7 +20,7 @@ import {
 import { right, isRight } from '../../shared/either'
 import { parseSuccess } from '../common/project-file-utils'
 import { printCode, printCodeOptions } from './parser-printer'
-import { ParseSuccess } from '../../shared/project-file-types'
+import { isParseSuccess, ParseSuccess } from '../../shared/project-file-types'
 
 const codeWithBasicPropsObject = `import React from "react";
 import { View } from "utopia-api";
@@ -150,15 +150,12 @@ describe('Parsing a function component with props', () => {
     )
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithBasicPropsObject,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -190,15 +187,12 @@ describe('Parsing a function component with props', () => {
     )
     const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithBasicPropsObjectWithDefault,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -215,15 +209,12 @@ describe('Parsing a function component with props', () => {
     const propsParam = functionParam(false, regularParam('myProps', null))
     const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithRenamedBasicPropsObject,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -244,15 +235,12 @@ describe('Parsing a function component with props', () => {
     )
     const exported = utopiaJSXComponent('whatever', true, propsParam, ['prop'], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithDestructuredPropsObject,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -281,15 +269,12 @@ describe('Parsing a function component with props', () => {
     )
     const exported = utopiaJSXComponent('whatever', true, propsParam, ['prop'], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithDestructuredPropsObjectWithDefault,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
 
     expect(actualResult).toEqual(expectedResult)
@@ -313,15 +298,12 @@ describe('Parsing a function component with props', () => {
     )
     const exported = utopiaJSXComponent('whatever', true, propsParam, ['prop'], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithDestructuredPropsObjectWithRenamedParam,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -350,15 +332,12 @@ describe('Parsing a function component with props', () => {
     )
     const exported = utopiaJSXComponent('whatever', true, propsParam, ['prop'], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithDestructuredPropsObjectWithRenamedParamAndDefault,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -383,15 +362,12 @@ describe('Parsing a function component with props', () => {
     const propsParam = functionParam(false, destructuredObject(destructuredParams))
     const exported = utopiaJSXComponent('whatever', true, propsParam, ['prop'], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithDestructuredPropsObjectWithRestParam,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -409,15 +385,12 @@ describe('Parsing a function component with props', () => {
     const propsParam = functionParam(false, destructuredArray([destructuredParam]))
     const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithDestructuredArray,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -443,15 +416,12 @@ describe('Parsing a function component with props', () => {
     const propsParam = functionParam(false, destructuredArray([destructuredParam]))
     const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithDestructuredArrayWithDefault,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -475,15 +445,12 @@ describe('Parsing a function component with props', () => {
     )
     const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithDestructuredArrayWithOmittedParam,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -527,15 +494,12 @@ describe('Parsing a function component with props', () => {
       null,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithNestedDestructuredPropsMess,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -598,15 +562,12 @@ describe('Parsing a function component with props', () => {
       null,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements],
-        codeWithNestedDestructuredPropsMessWithDefaults,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -619,9 +580,11 @@ describe('Parsing, printing, reparsing a function component with props', () => {
   function testParsePrintParse(code: string) {
     const firstParse = clearParseResultUniqueIDs(testParseCode(code))
 
-    expect(isRight(firstParse)).toBeTruthy()
+    if (!isParseSuccess(firstParse)) {
+      fail(firstParse)
+    }
 
-    const firstAsParseSuccess = firstParse.value as ParseSuccess
+    const firstAsParseSuccess = firstParse
 
     const printed = printCode(
       printCodeOptions(false, true, true),
@@ -632,9 +595,11 @@ describe('Parsing, printing, reparsing a function component with props', () => {
 
     const secondParse = clearParseResultUniqueIDs(testParseCode(printed))
 
-    expect(isRight(secondParse)).toBeTruthy()
+    if (!isParseSuccess(secondParse)) {
+      fail(secondParse)
+    }
 
-    const secondAsParseSuccess = firstParse.value as ParseSuccess
+    const secondAsParseSuccess = firstParse
     expect(secondAsParseSuccess.topLevelElements[0]).toEqual(
       firstAsParseSuccess.topLevelElements[0],
     )

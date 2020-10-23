@@ -65,17 +65,19 @@ import {
   Imports,
   InstancePath,
   isParseFailure,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   RevisionsState,
   TemplatePath,
   importAlias,
   PropertyPath,
+  foldParsedTextFile,
+  textFile,
+  textFileContents,
 } from '../../core/shared/project-file-types'
 import {
   getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
-  uiJsFile,
 } from '../../core/model/project-file-utils'
 import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
 import { defaultProject } from '../../sample-projects/sample-project-utils'
@@ -1557,7 +1559,7 @@ export function produceCanvasTransientState(
   if (openUIFile == null) {
     return noFileTransientCanvasState()
   } else {
-    return foldEither(
+    return foldParsedTextFile(
       (_) => {
         return noFileTransientCanvasState()
       },
@@ -1648,7 +1650,10 @@ export function produceCanvasTransientState(
             throw new Error(`Unhandled editor mode ${JSON.stringify(editorState.mode)}`)
         }
       },
-      openUIFile.fileContents,
+      (_) => {
+        return noFileTransientCanvasState()
+      },
+      openUIFile.fileContents.parsed,
     )
   }
 }
@@ -2290,7 +2295,7 @@ export function duplicate(
   if (uiFile == null) {
     return null
   } else {
-    return foldEither(
+    return foldParsedTextFile(
       (_) => null,
       (parseSuccess) => {
         let metadata = editor.jsxMetadataKILLME
@@ -2403,7 +2408,8 @@ export function duplicate(
           originalFrames: newOriginalFrames,
         }
       },
-      uiFile.fileContents,
+      (_) => null,
+      uiFile.fileContents.parsed,
     )
   }
 }
@@ -2441,7 +2447,7 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse('/src/app.js', appUiJsFile) as ParseResult
+  const parsedFile = lintAndParse('/src/app.js', appUiJsFile) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')
@@ -2452,7 +2458,11 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
     projectContents: addFileToProjectContents(
       baseModel.projectContents,
       '/src/app.js',
-      uiJsFile(parsedFile, null, RevisionsState.BothMatch, Date.now()),
+      textFile(
+        textFileContents(appUiJsFile, parsedFile, RevisionsState.BothMatch),
+        null,
+        Date.now(),
+      ),
     ),
     selectedFile: openFileTab('/src/app.js'),
   }

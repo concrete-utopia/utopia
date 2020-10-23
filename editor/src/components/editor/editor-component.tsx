@@ -48,7 +48,7 @@ import {
   isUserConfigurationTab,
 } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
-import { isUIJSFile } from '../../core/shared/project-file-types'
+import { isTextFile } from '../../core/shared/project-file-types'
 import { isLiveMode, dragAndDropInsertionSubject, EditorModes, isSelectMode } from './editor-modes'
 import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
@@ -505,7 +505,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     const openEditorTab = getOpenEditorTab(store.editor)
     return {
       noFileOpen: openEditorTab == null,
-      isUiJsFileOpen: selectedFile != null && isUIJSFile(selectedFile),
+      isUiJsFileOpen: selectedFile != null && isTextFile(selectedFile),
       areReleaseNotesOpen: openEditorTab != null && isReleaseNotesTab(openEditorTab),
       isUserConfigurationOpen: openEditorTab != null && isUserConfigurationTab(openEditorTab),
     }

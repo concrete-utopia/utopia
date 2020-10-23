@@ -3,8 +3,7 @@ import {
   ImageFile,
   ProjectFile,
   Directory,
-  CodeFile,
-  UIJSFile,
+  TextFile,
   AssetFile,
 } from '../core/shared/project-file-types'
 import { isDirectory, directory, isImageFile } from '../core/model/project-file-utils'
@@ -61,12 +60,12 @@ export function projectContentDirectory(
 export interface ProjectContentFile {
   type: 'PROJECT_CONTENT_FILE'
   fullPath: string
-  content: UIJSFile | CodeFile | ImageFile | AssetFile
+  content: TextFile | ImageFile | AssetFile
 }
 
 export function projectContentFile(
   fullPath: string,
-  content: UIJSFile | CodeFile | ImageFile | AssetFile,
+  content: TextFile | ImageFile | AssetFile,
 ): ProjectContentFile {
   return {
     type: 'PROJECT_CONTENT_FILE',

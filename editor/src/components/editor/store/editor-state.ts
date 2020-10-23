@@ -19,7 +19,6 @@ import {
   getUtopiaID,
 } from '../../../core/model/element-template-utils'
 import {
-  codeFile,
   correctProjectContentsPath,
   getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
@@ -29,10 +28,9 @@ import {
 import { ErrorMessage } from '../../../core/shared/error-messages'
 import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
-  CodeFile,
   Imports,
   InstancePath,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   ProjectContents,
   ProjectFile,
@@ -41,11 +39,16 @@ import {
   ScenePath,
   StaticInstancePath,
   TemplatePath,
-  UIJSFile,
-  isCodeFile,
-  isUIJSFile,
+  TextFile,
+  isTextFile,
   StaticTemplatePath,
   NodeModules,
+  foldParsedTextFile,
+  mapParsedTextFile,
+  textFileContents,
+  isParseSuccess,
+  codeFile,
+  isParseFailure,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -131,6 +134,7 @@ import {
   immediatelyResolvableDependenciesWithEditorRequirements,
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
+import { parseSuccess } from '../../../core/workers/common/project-file-utils'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -434,7 +438,7 @@ export function getOpenUIJSFileKey(model: EditorState): string | null {
   const openEditorTab = getOpenEditorTab(model)
   if (
     openFile != null &&
-    isUIJSFile(openFile) &&
+    isTextFile(openFile) &&
     openEditorTab != null &&
     isOpenFileTab(openEditorTab)
   ) {
@@ -449,16 +453,16 @@ export function isOpenFileUiJs(model: EditorState): boolean {
   if (openFile == null) {
     return false
   }
-  return isUIJSFile(openFile)
+  return isTextFile(openFile)
 }
 
-export function getOpenUIJSFile(model: EditorState): UIJSFile | null {
+export function getOpenUIJSFile(model: EditorState): TextFile | null {
   const openUIJSFileKey = getOpenUIJSFileKey(model)
   if (openUIJSFileKey == null) {
     return null
   } else {
     const openUIJSFile = getContentsTreeFileFromString(model.projectContents, openUIJSFileKey)
-    if (openUIJSFile != null && isUIJSFile(openUIJSFile)) {
+    if (openUIJSFile != null && isTextFile(openUIJSFile)) {
       return openUIJSFile
     } else {
       throw new Error(
@@ -498,14 +502,13 @@ export function modifyParseSuccessWithSimple(
     success.topLevelElements,
     newSimpleParseSuccess.utopiaComponents,
   )
-  return {
-    imports: newSimpleParseSuccess.imports,
-    topLevelElements: newTopLevelElements,
-    code: success.code,
-    highlightBounds: {},
-    jsxFactoryFunction: success.jsxFactoryFunction,
-    combinedTopLevelArbitraryBlock: success.combinedTopLevelArbitraryBlock,
-  }
+  return parseSuccess(
+    newSimpleParseSuccess.imports,
+    newTopLevelElements,
+    {},
+    success.jsxFactoryFunction,
+    success.combinedTopLevelArbitraryBlock,
+  )
 }
 
 export interface ParseSuccessAndEditorChanges<T> {
@@ -526,26 +529,30 @@ export function applyParseAndEditorChanges<T>(
     if (openUIJSFile == null) {
       return { editor: editor, additionalData: null }
     } else {
-      const possibleChanges: ParseSuccessAndEditorChanges<T> | null = foldEither(
+      const possibleChanges: ParseSuccessAndEditorChanges<T> | null = foldParsedTextFile(
         (_) => null,
         (success) => {
           return getChanges(editor, success)
         },
-        openUIJSFile.fileContents,
+        (_) => null,
+        openUIJSFile.fileContents.parsed,
       )
       if (possibleChanges == null) {
         return { editor: editor, additionalData: null }
       } else {
-        const updatedContents: ParseResult = mapEither(
+        const updatedContents: ParsedTextFile = mapParsedTextFile(
           possibleChanges.parseSuccessTransform,
-          openUIJSFile.fileContents,
+          openUIJSFile.fileContents.parsed,
         )
 
         const updatedFile = saveUIJSFileContents(
           openUIJSFile,
-          updatedContents,
+          textFileContents(
+            openUIJSFile.fileContents.code,
+            updatedContents,
+            RevisionsState.ParsedAhead,
+          ),
           false,
-          RevisionsState.ParsedAhead,
         )
 
         const editorWithSuccessChanges = {
@@ -556,6 +563,7 @@ export function applyParseAndEditorChanges<T>(
             updatedFile,
           ),
         }
+
         return {
           editor: possibleChanges.editorStateTransform(editorWithSuccessChanges),
           additionalData: possibleChanges.additionalData,
@@ -629,7 +637,6 @@ export function modifyOpenScenesAndJSXElements(
 
     return {
       ...success,
-      code: success.code,
       topLevelElements: newTopLevelElements,
     }
   }
@@ -652,7 +659,6 @@ export function modifyOpenJSXElements(
 
     return {
       ...success,
-      code: success.code,
       topLevelElements: newTopLevelElements,
     }
   }
@@ -680,7 +686,6 @@ export function modifyOpenJSXElementsAndMetadata(
 
     return {
       ...success,
-      code: success.code,
       topLevelElements: newTopLevelElements,
     }
   }
@@ -720,8 +725,8 @@ export function getOpenUtopiaJSXComponentsFromState(model: EditorState): Array<U
   if (openUIJSFile == null) {
     return []
   } else {
-    if (isRight(openUIJSFile.fileContents)) {
-      return getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.value)
+    if (isParseSuccess(openUIJSFile.fileContents.parsed)) {
+      return getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
     } else {
       return []
     }
@@ -753,10 +758,10 @@ export function getNumberOfScenes(model: EditorState): number {
 
 export function getSceneElements(model: EditorState): JSXElement[] {
   const openUIJSFile = getOpenUIJSFile(model)
-  if (openUIJSFile == null || isLeft(openUIJSFile.fileContents)) {
+  if (openUIJSFile == null || !isParseSuccess(openUIJSFile.fileContents.parsed)) {
     return []
   } else {
-    return getSceneElementsFromParseSuccess(openUIJSFile.fileContents.value)
+    return getSceneElementsFromParseSuccess(openUIJSFile.fileContents.parsed)
   }
 }
 
@@ -810,14 +815,17 @@ export function getOpenImportsFromState(model: EditorState): Imports {
   if (openUIJSFile == null) {
     return {}
   } else {
-    return foldEither(
+    return foldParsedTextFile(
       (_) => {
         return emptyImports
       },
       (r) => {
         return r.imports
       },
-      openUIJSFile.fileContents,
+      (_) => {
+        return emptyImports
+      },
+      openUIJSFile.fileContents.parsed,
     )
   }
 }
@@ -1238,7 +1246,7 @@ export function deriveState(
     if (cursorPosition != null) {
       const { line } = cursorPosition
 
-      const highlightBounds = getHighlightBoundsFromParseResult(currentFile.fileContents)
+      const highlightBounds = getHighlightBoundsFromParseResult(currentFile.fileContents.parsed)
       const sortedHighlightBounds = Object.values(highlightBounds).sort(
         (a, b) => b.startLine - a.startLine,
       )
@@ -1520,8 +1528,8 @@ export function packageJsonFileFromProjectContents(
 
 export function getPackageJsonFromEditorState(editor: EditorState): Either<string, any> {
   const packageJsonFile = packageJsonFileFromProjectContents(editor.projectContents)
-  if (packageJsonFile != null && isCodeFile(packageJsonFile)) {
-    const packageJsonContents = Utils.jsonParseOrNull(packageJsonFile.fileContents)
+  if (packageJsonFile != null && isTextFile(packageJsonFile)) {
+    const packageJsonContents = Utils.jsonParseOrNull(packageJsonFile.fileContents.code)
     return packageJsonContents != null
       ? right(packageJsonContents)
       : left('package.json parse error')
@@ -1542,7 +1550,7 @@ export function getMainUIFromModel(model: EditorState): string | null {
   return null
 }
 
-export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<string, CodeFile> {
+export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<string, TextFile> {
   const parsedFilePath = mapEither(
     (contents) => contents?.utopia?.html,
     getPackageJsonFromEditorState(editor),
@@ -1552,7 +1560,7 @@ export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<str
       ? parsedFilePath.value
       : 'public/index.html'
   const indexHtml = getContentsTreeFileFromString(editor.projectContents, `/${filePath}`)
-  if (indexHtml != null && isCodeFile(indexHtml)) {
+  if (indexHtml != null && isTextFile(indexHtml)) {
     return right(indexHtml)
   } else {
     return left(`Can't find code file at ${filePath}`)
@@ -1577,7 +1585,7 @@ export function updatePackageJsonInEditorState(
   transformPackageJson: (packageJson: string) => string,
 ): EditorState {
   const packageJsonFile = packageJsonFileFromProjectContents(editor.projectContents)
-  let updatedPackageJsonFile: CodeFile
+  let updatedPackageJsonFile: TextFile
   if (packageJsonFile == null) {
     // Uh oh, there is no package.json file, so create a brand new one.
     updatedPackageJsonFile = codeFile(
@@ -1585,12 +1593,12 @@ export function updatePackageJsonInEditorState(
       null,
     )
   } else {
-    if (isCodeFile(packageJsonFile)) {
+    if (isTextFile(packageJsonFile)) {
       // There is a package.json file, we should update it.
-      updatedPackageJsonFile = {
-        ...packageJsonFile,
-        fileContents: transformPackageJson(packageJsonFile.fileContents),
-      }
+      updatedPackageJsonFile = codeFile(
+        transformPackageJson(packageJsonFile.fileContents.code),
+        null,
+      )
     } else {
       // There is something else called package.json, we should bulldoze over it.
       updatedPackageJsonFile = codeFile(
@@ -1670,12 +1678,12 @@ export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages) {
 
 export function parseFailureAsErrorMessages(
   fileName: string | null,
-  parseResult: UIJSFile | null,
+  parseResult: TextFile | null,
 ): Array<ErrorMessage> {
-  if (parseResult == null || isRight(parseResult.fileContents)) {
+  if (parseResult == null || !isParseFailure(parseResult.fileContents.parsed)) {
     return []
   } else {
-    const parseFailure = parseResult.fileContents.value
+    const parseFailure = parseResult.fileContents.parsed
     const fileNameString = fileName || ''
     let errors: Array<ErrorMessage> = []
     if (parseFailure.diagnostics != null && parseFailure.diagnostics.length > 0) {
@@ -1723,7 +1731,7 @@ export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMeta
   if (uiFile == null) {
     return editor.jsxMetadataKILLME
   } else {
-    return foldEither(
+    return foldParsedTextFile(
       (_) => editor.jsxMetadataKILLME,
       (success) => {
         const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
@@ -1734,7 +1742,8 @@ export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMeta
         )
         return keepDeepReferenceEqualityIfPossible(editor.jsxMetadataKILLME, mergedMetadata)
       },
-      uiFile.fileContents,
+      (_) => editor.jsxMetadataKILLME,
+      uiFile.fileContents.parsed,
     )
   }
 }

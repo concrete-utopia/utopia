@@ -117,9 +117,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_FILE_PATH':
     case 'ADD_FOLDER':
     case 'DELETE_FILE':
-    case 'ADD_UI_JS_FILE':
+    case 'ADD_TEXT_FILE':
     case 'UPDATE_FILE':
-    case 'ADD_CODE_FILE':
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
     case 'SET_SCENE_PROP':

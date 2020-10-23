@@ -60,7 +60,7 @@ import {
   ImportAlias,
   importAlias,
   Imports,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   PropertyPathPart,
   isParsedJSONSuccess,
@@ -716,12 +716,12 @@ function getJsxFactoryFunction(sourceFile: TS.SourceFile): string | null {
   }
 }
 
-export function parseCode(filename: string, sourceText: string): ParseResult {
+export function parseCode(filename: string, sourceText: string): ParsedTextFile {
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
   const jsxFactoryFunction = getJsxFactoryFunction(sourceFile)
 
   if (sourceFile == null) {
-    return left(parseFailure([], null, `File ${filename} not found.`, [], ''))
+    return parseFailure([], null, `File ${filename} not found.`, [])
   } else {
     const code = sourceFile.text
     let topLevelElements: Array<Either<string, TopLevelElementAndCodeContext>> = []
@@ -953,7 +953,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
 
     const sequencedTopLevelElements = sequenceEither(topLevelElements)
     if (isLeft(sequencedTopLevelElements)) {
-      return left(parseFailure(null, null, sequencedTopLevelElements.value, [], code))
+      return parseFailure(null, null, sequencedTopLevelElements.value, [])
     }
     const realTopLevelElements = sequencedTopLevelElements.value
 
@@ -979,15 +979,12 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
       })
     }
 
-    return right(
-      parseSuccess(
-        imports,
-        topLevelElementsIncludingScenes,
-        code,
-        highlightBounds,
-        jsxFactoryFunction,
-        combinedTopLevelArbitraryBlock,
-      ),
+    return parseSuccess(
+      imports,
+      topLevelElementsIncludingScenes,
+      highlightBounds,
+      jsxFactoryFunction,
+      combinedTopLevelArbitraryBlock,
     )
   }
 }
@@ -1185,7 +1182,7 @@ export function getParseResult(
   workers: UtopiaTsWorkers,
   filename: string,
   fileContents: string,
-): Promise<ParseResult> {
+): Promise<ParsedTextFile> {
   return new Promise((resolve, reject) => {
     const handleMessage = (e: MessageEvent) => {
       const data = e.data as ParserPrinterResultMessage
@@ -1343,12 +1340,12 @@ function collatedUIDs(sourceFile: TS.SourceFile): Array<string> {
   return result
 }
 
-export function lintAndParse(filename: string, content: string): ParseResult {
+export function lintAndParse(filename: string, content: string): ParsedTextFile {
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
   if (lintResult.filter(messageisFatal).length === 0) {
     return parseCode(filename, content)
   } else {
-    return left(parseFailure(null, null, null, lintResult, content))
+    return parseFailure(null, null, null, lintResult)
   }
 }

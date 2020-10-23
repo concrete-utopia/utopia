@@ -1,10 +1,15 @@
-import { CodeFile, UIJSFile, RevisionsState } from '../shared/project-file-types'
-import { codeFile, uiJsFile } from './project-file-utils'
+import {
+  codeFile,
+  RevisionsState,
+  textFile,
+  TextFile,
+  textFileContents,
+} from '../shared/project-file-types'
 import { lintAndParse } from '../workers/parser-printer/parser-printer'
 
-export function getDefaultUIJsFile(): UIJSFile {
+export function getDefaultUIJsFile(): TextFile {
   const result = lintAndParse('code.tsx', sampleCode)
-  return uiJsFile(result, null, RevisionsState.BothMatch, Date.now())
+  return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, Date.now())
 }
 
 export const sampleCode = `/** @jsx jsx */
@@ -30,7 +35,7 @@ export var storyboard = (
 
 `
 
-export function getSamplePreviewFile(): CodeFile {
+export function getSamplePreviewFile(): TextFile {
   return codeFile(samplePreviewFile, null)
 }
 
@@ -43,7 +48,7 @@ if (root != null) {
   ReactDOM.render(<App />, root);
 }`
 
-export function getSamplePreviewHTMLFile(): CodeFile {
+export function getSamplePreviewHTMLFile(): TextFile {
   return codeFile(previewHtml, null)
 }
 

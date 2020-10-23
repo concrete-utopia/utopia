@@ -1,7 +1,7 @@
-import { isRight } from '../../shared/either'
 import { applyPrettier } from './prettier-utils'
 import { testParseCode, testParseThenPrint } from './parser-printer-test-utils'
 import { BakedInStoryboardUID } from '../../model/scene-utils'
+import { isParseSuccess } from '../../shared/project-file-types'
 
 describe('Parsing JSX Pragma:', () => {
   it('no pragma, no problem', () => {
@@ -13,10 +13,10 @@ describe('Parsing JSX Pragma:', () => {
         return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
     };`
     const parsedPlainCode = testParseCode(code)
-    if (isRight(parsedPlainCode)) {
-      expect(parsedPlainCode.value.jsxFactoryFunction).toEqual(null)
+    if (isParseSuccess(parsedPlainCode)) {
+      expect(parsedPlainCode.jsxFactoryFunction).toEqual(null)
     } else {
-      fail(parsedPlainCode.value)
+      fail(parsedPlainCode)
     }
   })
 
@@ -29,10 +29,10 @@ describe('Parsing JSX Pragma:', () => {
         return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
     };`
     const parsedPlainCode = testParseCode(code)
-    if (isRight(parsedPlainCode)) {
-      expect(parsedPlainCode.value.jsxFactoryFunction).toEqual('jsx')
+    if (isParseSuccess(parsedPlainCode)) {
+      expect(parsedPlainCode.jsxFactoryFunction).toEqual('jsx')
     } else {
-      fail(parsedPlainCode.value)
+      fail(parsedPlainCode)
     }
   })
 
@@ -73,10 +73,10 @@ describe('Parsing JSX Pragma:', () => {
         return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
     };`
     const parsedPlainCode = testParseCode(code)
-    if (isRight(parsedPlainCode)) {
-      expect(parsedPlainCode.value.jsxFactoryFunction).toEqual('preact.h')
+    if (isParseSuccess(parsedPlainCode)) {
+      expect(parsedPlainCode.jsxFactoryFunction).toEqual('preact.h')
     } else {
-      fail(parsedPlainCode.value)
+      fail(parsedPlainCode)
     }
   })
 
@@ -91,10 +91,10 @@ describe('Parsing JSX Pragma:', () => {
         return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
     };`
     const parsedPlainCode = testParseCode(code)
-    if (isRight(parsedPlainCode)) {
-      expect(parsedPlainCode.value.jsxFactoryFunction).toEqual('preact.h')
+    if (isParseSuccess(parsedPlainCode)) {
+      expect(parsedPlainCode.jsxFactoryFunction).toEqual('preact.h')
     } else {
-      fail(parsedPlainCode.value)
+      fail(parsedPlainCode)
     }
   })
 })
