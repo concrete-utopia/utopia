@@ -526,11 +526,6 @@ function isNodeExported(node: TS.Node): boolean {
   )
 }
 
-function isValidRootFile(filename: string): boolean {
-  const validRootSuffixes = ['.ts', '.tsx', '.d.ts', '.js', '.jsx']
-  return validRootSuffixes.some((suffix) => filename.endsWith(suffix))
-}
-
 function existingFilenameToRead(filename: string): string | undefined {
   // Checks that a filename exists that we can load, and returns the filename
   if (loaderExistsForFile(filename) && fs.existsSync(filename)) {
@@ -581,7 +576,7 @@ export function configureLanguageService(
       return version
     },
     getScriptFileNames: () => {
-      return rootFilenames.filter(isValidRootFile)
+      return rootFilenames.filter(isJsOrTsFile)
     },
     getScriptVersion: (filename) =>
       fileVersions[filename] && fileVersions[filename].versionNr.toString(),
@@ -737,7 +732,8 @@ function watch(
       if (contentChanged) {
         // write the output the browserfs
         const buildResult = emitFile(services, filename)
-        const exportsInfo = [parseExportsInfo(filename)]
+        const parsedExportsInfo = parseExportsInfo(filename)
+        const exportsInfo = parsedExportsInfo == null ? [] : [parsedExportsInfo]
         sendMessage(
           createBuildResultMessage(
             exportsInfo,
@@ -760,12 +756,15 @@ function watch(
       if (buildResult.transpiledCode != null) {
         projectBuild[rootFile] = buildResult
       }
-      exportsInfo.push(parseExportsInfo(rootFile))
+      const parsedExportsInfo = parseExportsInfo(rootFile)
+      if (parsedExportsInfo != null) {
+        exportsInfo.push(parsedExportsInfo)
+      }
     })
     sendMessage(createBuildResultMessage(exportsInfo, projectBuild, jobID, 'full-build'))
   }
 
-  function parseExportsInfo(fileName: string): ExportsInfo {
+  function parseExportsInfo(fileName: string): ExportsInfo | null {
     if (isTsFile(fileName) || isJsFile(fileName)) {
       let exportTypesInner: { [name: string]: ExportType } = {}
       const fileContent = fs.readFileSync(fileName, 'utf8')
@@ -782,7 +781,7 @@ function watch(
         exportTypes: exportTypesInner,
       }
     } else {
-      return { filename: fileName, code: '', exportTypes: {} }
+      return null
     }
   }
 }

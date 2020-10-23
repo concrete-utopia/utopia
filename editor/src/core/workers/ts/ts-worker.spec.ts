@@ -38,13 +38,6 @@ describe('Typescript worker applies the loaders', () => {
           }
         }
 
-        // Ensure the File Loader was applied
-        expect(msg.buildResult['/src/icon.png.js']).toBeDefined()
-        const loadedImageFile = msg.buildResult['/src/icon.png.js']
-        expect(loadedImageFile.transpiledCode).toEqual(
-          "module.exports = './src/icon.png'; //# sourceMappingURL=icon.png.js.map",
-        )
-
         done()
       }
     })
@@ -53,8 +46,6 @@ describe('Typescript worker applies the loaders', () => {
   it('applies the file loader for matching image files on single file update', (done) => {
     handleMessage(UpdateFileMessageNeedingLoaders, (msg) => {
       if (msg.type === 'updateprocessed') {
-        // Currently we only have one loader, the FileLoader, which ignores the file contents,
-        // so until the css loader is implemented we don't really have a path to test this
         done()
       }
     })
