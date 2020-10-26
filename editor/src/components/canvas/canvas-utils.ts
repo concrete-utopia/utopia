@@ -1688,7 +1688,18 @@ export function produceResizeSingleSelectCanvasTransientState(
         x: roundedFrame.width - originalFrame.width,
         y: roundedFrame.height - originalFrame.height,
       } as CanvasVector
-      framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
+      if (
+        (dragState.edgePosition.x === 0.5 || dragState.edgePosition.y === 0.5) &&
+        dragState.targetProperty !== 'Height' &&
+        dragState.targetProperty !== 'Width'
+      ) {
+        const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
+          ? dragState.drag?.x ?? 0
+          : dragState.drag?.y ?? 0
+        framesAndTargets.push(flexResizeChange(elementToTarget, dragState.targetProperty, newDelta))
+      } else {
+        framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
+      }
     }
   }
 
