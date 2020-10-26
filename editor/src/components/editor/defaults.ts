@@ -148,3 +148,19 @@ export function defaultDivElement(uid: string): JSXElement {
     null,
   )
 }
+
+export function defaultInsertableDivElement(uid: string): JSXElement {
+  return jsxElement(
+    jsxElementName('div', []),
+    {
+      style: jsxAttributeValue({
+        backgroundColor: '#0091FFAA',
+        width: 50,
+        height: 50,
+      }),
+      'data-uid': jsxAttributeValue(uid),
+    },
+    [],
+    null,
+  )
+}

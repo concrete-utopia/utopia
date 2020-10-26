@@ -129,6 +129,7 @@ export interface InsertJSXElement {
   jsxElement: JSXElement
   parent: TemplatePath | null
   importsToAdd: Imports
+  indexPosition?: IndexPosition | null
 }
 
 export type DeleteSelected = {
