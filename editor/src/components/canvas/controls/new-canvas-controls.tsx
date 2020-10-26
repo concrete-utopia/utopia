@@ -214,20 +214,30 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     return 'enabled'
   }
 
-  const elementsThatRespectLayout = useEditorState((store) => {
-    return flatMapArray((view) => {
-      if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(store.editor.jsxMetadataKILLME, view)
-        if (scene != null) {
-          return [view, ...scene.rootElements.map((e) => e.templatePath)]
+  const elementsThatRespectLayout = useEditorState<TemplatePath[]>(
+    (store, { previousResult, previousState }) => {
+      if (
+        previousState?.editor.jsxMetadataKILLME === store.editor.jsxMetadataKILLME &&
+        previousResult != null
+      ) {
+        // short circuiting
+        return previousResult
+      }
+      return flatMapArray((view) => {
+        if (TP.isScenePath(view)) {
+          const scene = MetadataUtils.findSceneByTemplatePath(store.editor.jsxMetadataKILLME, view)
+          if (scene != null) {
+            return [view, ...scene.rootElements.map((e) => e.templatePath)]
+          } else {
+            return [view]
+          }
         } else {
           return [view]
         }
-      } else {
-        return [view]
-      }
-    }, store.derived.navigatorTargets).filter((view) => targetRespectsLayout(view, store.editor))
-  })
+      }, store.derived.navigatorTargets).filter((view) => targetRespectsLayout(view, store.editor))
+    },
+    'NewCanvasControlsClass elementsThatRespectLayout',
+  )
 
   const renderModeControlContainer = () => {
     const fallbackTransientState = props.derived.canvas.transientState

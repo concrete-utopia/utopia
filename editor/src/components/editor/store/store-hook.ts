@@ -5,6 +5,10 @@ import utils from '../../../utils/utils'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 
 type StateSelector<T, U> = (state: T) => U
+type EnhancedStateSelector<T, U> = (
+  state: T,
+  memoizationTools: { previousState: T | undefined; previousResult: U | undefined },
+) => U
 
 /**
  * React hooks can only be used in Function Components. useEditorState lets you access the most up to date editor state.
@@ -17,12 +21,13 @@ type StateSelector<T, U> = (state: T) => U
  * It is a good practice to use object destructure to consume the return value.
  */
 export const useEditorState = <U>(
-  selector: StateSelector<EditorStore, U>,
+  selector: EnhancedStateSelector<EditorStore, U>,
+  hookName?: string,
   equalityFn = utils.shallowEqual,
 ): U => {
   const context = React.useContext(EditorStateContext)
 
-  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(selector)
+  const wrappedSelector = useEnhanceSelector(selector, hookName)
 
   if (context == null) {
     throw new Error('useStore is missing from editor context')
@@ -32,11 +37,15 @@ export const useEditorState = <U>(
 
 const LogSelectorPerformance = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
 
-function useWrapSelectorInPerformanceMeasureBlock<U>(
-  selector: StateSelector<EditorStore, U>,
+function useEnhanceSelector<U>(
+  selector: EnhancedStateSelector<EditorStore, U>,
+  selectorName: string | undefined,
 ): StateSelector<EditorStore, U> {
-  const previousSelectorRef = React.useRef<StateSelector<EditorStore, U>>()
+  const previousSelectorRef = React.useRef<EnhancedStateSelector<EditorStore, U>>()
   const previousWrappedSelectorRef = React.useRef<StateSelector<EditorStore, U>>()
+
+  const previousStateRef = React.useRef<EditorStore>()
+  const previousResultRef = React.useRef<U>()
 
   if (selector === previousSelectorRef.current && previousWrappedSelectorRef.current != null) {
     // we alreaedy wrapped this selector
@@ -47,10 +56,22 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
       if (LogSelectorPerformance) {
         window.performance.mark('selector_begin')
       }
-      const result = selector(state)
+      const result = selector(state, {
+        previousState: previousStateRef.current,
+        previousResult: previousResultRef.current,
+      })
+
+      // storing the current state and result in refs so that we can provide them to the selector next time we call it
+      previousStateRef.current = state
+      previousResultRef.current = result
+
       if (LogSelectorPerformance) {
         window.performance.mark('selector_end')
-        window.performance.measure(`Zustand Selector`, 'selector_begin', 'selector_end')
+        window.performance.measure(
+          `Zustand Selector ${selectorName ?? ''}`,
+          'selector_begin',
+          'selector_end',
+        )
       }
       return result
     }
