@@ -12,6 +12,8 @@ import * as TP from '../../../core/shared/template-path'
 import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
+import { CSSCursor } from '../../../uuiui-deps'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface ComponentAreaControlProps {
   target: TemplatePath
@@ -181,15 +183,50 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
           ?.specialSizeMeasurements.layoutSystemForChildren
       : null
 
+    let cursor = CSSCursor.Select
+    if (
+      TP.isInstancePath(this.props.target) &&
+      MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, this.props.target)
+        ?.specialSizeMeasurements.parentLayoutSystem === 'flex'
+    ) {
+      cursor = CSSCursor.SelectFlex
+    }
+    if (
+      TP.isInstancePath(this.props.target) &&
+      MetadataUtils.isFlowElement(
+        MetadataUtils.getElementByInstancePathMaybe(
+          this.props.componentMetadata,
+          this.props.target,
+        ),
+      )
+    ) {
+      cursor = CSSCursor.SelectFlow
+    }
+    if (
+      TP.isInstancePath(this.props.target) &&
+      MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, this.props.target)
+        ?.specialSizeMeasurements.position === 'relative'
+    ) {
+      cursor = CSSCursor.SelectRelative
+    }
+    if (
+      TP.isInstancePath(this.props.target) &&
+      MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, this.props.target)
+        ?.specialSizeMeasurements.parentLayoutSystem === 'grid'
+    ) {
+      cursor = CSSCursor.SelectGrid
+    }
+
     const depth = TP.depth(this.props.target) - 1 // scene should be zero
 
     let colorForLayoutType: string = ''
+    // this is for xray mode
     switch (layoutType) {
       case 'flow':
-        colorForLayoutType = 'rgba(51, 255, 130, 0.8)'
+        colorForLayoutType = '#F9C659'
         break
       case 'flex':
-        colorForLayoutType = 'rgba(255, 100, 170, 0.8)'
+        colorForLayoutType = colorTheme.brandNeonPink.value
         break
       case 'grid':
         colorForLayoutType = 'rgba(255, 150, 50, 0.8)'
@@ -226,6 +263,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             outline: this.props.xrayMode ? `1px solid ${colorForLayoutType}` : undefined,
             transform: `translate3d(0, 0, ${depth * 25}px)`,
             transformStyle: 'preserve-3d',
+            cursor: isFeatureEnabled('Mouse Pointer For Layouttype') ? cursor : undefined,
           }}
           data-testid={this.props.testID}
         >

@@ -24,6 +24,7 @@ export type FeatureName =
   | 'Dragging Changes Pins(Timer)'
   | 'Layouttype Outline'
   | 'Floating Menu Warning'
+  | 'Mouse Pointer For Layouttype'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -48,6 +49,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Dragging Changes Pins(Timer)',
   'Layouttype Outline',
   'Floating Menu Warning',
+  'Mouse Pointer For Layouttype',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -73,6 +75,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Changes Pins(Timer)': true,
   'Layouttype Outline': true,
   'Floating Menu Warning': true,
+  'Mouse Pointer For Layouttype': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
