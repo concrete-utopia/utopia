@@ -45,12 +45,6 @@ export function isResolveSuccess<T>(
   return resolveResult.type === 'RESOLVE_SUCCESS'
 }
 
-function isResolveNotPresent<T>(
-  resolveResult: ResolveResult<T>,
-): resolveResult is ResolveNotPresent {
-  return resolveResult.type === 'RESOLVE_NOT_PRESENT'
-}
-
 type ResolveResultType = ResolveResult<any>['type']
 
 const resolveResultTypes: Array<ResolveResultType> = ['RESOLVE_NOT_PRESENT', 'RESOLVE_SUCCESS']

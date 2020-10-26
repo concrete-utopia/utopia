@@ -25,7 +25,7 @@ export function createDependencyNotFoundError(importOrigin: string, toImport: st
 }
 
 export const getEditorRequireFn = memoize(
-  // FIXME This completely destroys memoization
+  // FIXME De we even _care_ about memoization here? I don't think we do...
   (projectContents: ProjectContentTreeRoot, nodeModules: NodeModules, dispatch: EditorDispatch) => {
     const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
       // FIXME Update something in the state to show that we're downloading remote files
