@@ -189,12 +189,16 @@ const projectContentsFileLookup: (projectContents: ProjectContentTreeRoot) => Fi
   projectContents: ProjectContentTreeRoot,
 ) => {
   return fallbackLookup((path: string[]) => {
-    const projectFile = getContentsTreeFileFromElements(projectContents, path)
+    const withoutLeadingSlash = path.filter((s) => s.length > 0)
+    const projectFile = getContentsTreeFileFromElements(projectContents, withoutLeadingSlash)
     const fileContents = projectFile == null ? null : getProjectFileContentsAsString(projectFile)
     if (fileContents != null) {
       const filename = path.join('/')
-      const loadedFileContents = applyLoaders(filename, fileContents)
-      return fileLookupResult(filename, esCodeFile(loadedFileContents, null))
+      const loadedModuleResult = applyLoaders(filename, fileContents)
+      return fileLookupResult(
+        loadedModuleResult.filename,
+        esCodeFile(loadedModuleResult.loadedContents, null),
+      )
     } else {
       return resolveNotPresent
     }

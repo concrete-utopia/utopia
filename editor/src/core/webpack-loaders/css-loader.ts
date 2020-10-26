@@ -1,12 +1,12 @@
-import { LoadModule, MatchFile, ModuleLoader } from './loader-types'
+import { LoadModule, loadModuleResult, MatchFile, ModuleLoader } from './loader-types'
 
 const matchFile: MatchFile = (filename: string) => {
   return ['.css'].some((extension) => filename.endsWith(extension))
 }
 
-const loadModule: LoadModule = (_: string, contents: string) => {
+const loadModule: LoadModule = (filename: string, contents: string) => {
   // FIXME Replace CSS custom evaluation from evaluator.ts with this
-  return contents
+  return loadModuleResult(filename, contents)
 }
 
 export const CSSLoader: ModuleLoader = {

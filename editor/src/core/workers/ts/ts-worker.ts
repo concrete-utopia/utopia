@@ -562,9 +562,9 @@ export function configureLanguageService(
     }
 
     const fileContents = fs.readFileSync(filenameToUse, 'utf8').toString()
-    const loadedFileContents = applyLoaders(filenameToUse, fileContents)
+    const loadedModuleResult = applyLoaders(filenameToUse, fileContents)
 
-    return loadedFileContents
+    return loadedModuleResult.loadedContents
   }
 
   // Create the language service host to allow the LS to communicate with the host

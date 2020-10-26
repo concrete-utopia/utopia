@@ -1,7 +1,7 @@
 import { CSSLoader } from './css-loader'
 import { DefaultLoader } from './default-loader'
 import { FileLoader } from './file-loader'
-import { ModuleLoader } from './loader-types'
+import { loadModuleResult, LoadModuleResult, ModuleLoader } from './loader-types'
 
 const moduleLoaders: Array<ModuleLoader> = [FileLoader, CSSLoader, DefaultLoader]
 
@@ -19,10 +19,11 @@ function applyMatchedLoaders(
   filename: string,
   contents: string,
   matchedLoaders: Array<ModuleLoader>,
-): string {
+): LoadModuleResult {
   return matchedLoaders.reduce(
-    (modifiedContents, nextLoader) => nextLoader.load(filename, modifiedContents),
-    contents,
+    (loadedModuleResult, nextLoader) =>
+      nextLoader.load(loadedModuleResult.filename, loadedModuleResult.loadedContents),
+    loadModuleResult(filename, contents),
   )
 }
 
@@ -35,7 +36,7 @@ export function loaderExistsForFileWithoutJSSuffix(filename: string): boolean {
   return withSuffixStripped != null && loaderExistsForFile(withSuffixStripped)
 }
 
-export function applyLoaders(filename: string, contents: string): string {
+export function applyLoaders(filename: string, contents: string): LoadModuleResult {
   const matchingLoaders = loadersForFile(filename)
   return applyMatchedLoaders(filename, contents, matchingLoaders)
 }

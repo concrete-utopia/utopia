@@ -1,4 +1,4 @@
-import { LoadModule, MatchFile, ModuleLoader } from './loader-types'
+import { LoadModule, loadModuleResult, MatchFile, ModuleLoader } from './loader-types'
 
 const matchFile: MatchFile = (filename: string) => {
   return ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.json'].some((extension) =>
@@ -6,8 +6,8 @@ const matchFile: MatchFile = (filename: string) => {
   )
 }
 
-const loadModule: LoadModule = (_: string, contents: string) => {
-  return contents
+const loadModule: LoadModule = (filename: string, contents: string) => {
+  return loadModuleResult(filename, contents)
 }
 
 export const DefaultLoader: ModuleLoader = {
