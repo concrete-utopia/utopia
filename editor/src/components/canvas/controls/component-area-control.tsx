@@ -13,6 +13,7 @@ import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { CSSCursor } from '../../../uuiui-deps'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface ComponentAreaControlProps {
   target: TemplatePath
@@ -262,7 +263,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             outline: this.props.xrayMode ? `1px solid ${colorForLayoutType}` : undefined,
             transform: `translate3d(0, 0, ${depth * 25}px)`,
             transformStyle: 'preserve-3d',
-            cursor: cursor,
+            cursor: isFeatureEnabled('Mouse Pointer For Layouttype') ? cursor : undefined,
           }}
           data-testid={this.props.testID}
         >
