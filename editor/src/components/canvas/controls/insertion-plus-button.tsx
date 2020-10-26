@@ -23,7 +23,7 @@ interface ButtonControlProps {
   indexPosition: IndexPosition
 }
 
-export const InsertionControls = (props: ControlProps): (JSX.Element | null)[] | null => {
+export const InsertionControls = (props: ControlProps): JSX.Element | null => {
   if (props.selectedViews.length !== 1) {
     return null
   }
@@ -51,77 +51,77 @@ export const InsertionControls = (props: ControlProps): (JSX.Element | null)[] |
       child.templatePath,
       props.componentMetadata,
     )
-    if (child.specialSizeMeasurements.position === 'absolute' || childFrame == null) {
-      return
-    }
-    let direction: 'row' | 'column' =
-      child.specialSizeMeasurements.parentLayoutSystem === 'flex'
-        ? parentElement.props?.style?.flexDirection || 'row'
-        : 'column'
-    const positionX =
-      direction == 'column'
-        ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
-        : childFrame.x + childFrame.width + props.canvasOffset.x
-    const positionY =
-      direction == 'column'
-        ? childFrame.y + childFrame.height + props.canvasOffset.y
-        : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
-
-    const lineEndX =
-      direction == 'column'
-        ? parentFrame.x + parentFrame.width + props.canvasOffset.x
-        : childFrame.x + childFrame.width + props.canvasOffset.x
-    const lineEndY =
-      direction == 'column'
-        ? childFrame.y + childFrame.height + props.canvasOffset.y
-        : parentFrame.y + parentFrame.height + props.canvasOffset.y
-    controlProps.push({
-      key: TP.toString(child.templatePath),
-      positionX: positionX,
-      positionY: positionY,
-      lineEndX: lineEndX,
-      lineEndY: lineEndY,
-      isHorizontalLine: direction === 'column',
-      parentPath: parentPath,
-      indexPosition: {
-        type: 'absolute',
-        index: index + 1,
-      },
-    })
-    // first element has a plus button before the element too
-    if (index === 0) {
-      const beforeX =
+    if (child.specialSizeMeasurements.position !== 'absolute' && childFrame != null) {
+      let direction: 'row' | 'column' =
+        child.specialSizeMeasurements.parentLayoutSystem === 'flex'
+          ? parentElement.props?.style?.flexDirection || 'row'
+          : 'column'
+      const positionX =
         direction == 'column'
           ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
-          : childFrame.x + props.canvasOffset.x
-      const beforeY =
+          : childFrame.x + childFrame.width + props.canvasOffset.x
+      const positionY =
         direction == 'column'
-          ? childFrame.y + props.canvasOffset.y
+          ? childFrame.y + childFrame.height + props.canvasOffset.y
           : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
-      const beforeLineEndX =
+
+      const lineEndX =
         direction == 'column'
           ? parentFrame.x + parentFrame.width + props.canvasOffset.x
-          : childFrame.x + props.canvasOffset.x
-      const beforeLineEndY =
+          : childFrame.x + childFrame.width + props.canvasOffset.x
+      const lineEndY =
         direction == 'column'
-          ? childFrame.y + props.canvasOffset.y
+          ? childFrame.y + childFrame.height + props.canvasOffset.y
           : parentFrame.y + parentFrame.height + props.canvasOffset.y
       controlProps.push({
-        key: TP.toString(child.templatePath) + '0',
-        positionX: beforeX,
-        positionY: beforeY,
-        lineEndX: beforeLineEndX,
-        lineEndY: beforeLineEndY,
+        key: TP.toString(child.templatePath),
+        positionX: positionX,
+        positionY: positionY,
+        lineEndX: lineEndX,
+        lineEndY: lineEndY,
         isHorizontalLine: direction === 'column',
         parentPath: parentPath,
         indexPosition: {
           type: 'absolute',
-          index: 0,
+          index: index + 1,
         },
       })
+    
+      // first element has a plus button before the element too
+      if (index === 0) {
+        const beforeX =
+          direction == 'column'
+            ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
+            : childFrame.x + props.canvasOffset.x
+        const beforeY =
+          direction == 'column'
+            ? childFrame.y + props.canvasOffset.y
+            : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
+        const beforeLineEndX =
+          direction == 'column'
+            ? parentFrame.x + parentFrame.width + props.canvasOffset.x
+            : childFrame.x + props.canvasOffset.x
+        const beforeLineEndY =
+          direction == 'column'
+            ? childFrame.y + props.canvasOffset.y
+            : parentFrame.y + parentFrame.height + props.canvasOffset.y
+        controlProps.push({
+          key: TP.toString(child.templatePath) + '0',
+          positionX: beforeX,
+          positionY: beforeY,
+          lineEndX: beforeLineEndX,
+          lineEndY: beforeLineEndY,
+          isHorizontalLine: direction === 'column',
+          parentPath: parentPath,
+          indexPosition: {
+            type: 'absolute',
+            index: 0,
+          },
+        })
+      }
     }
   })
-  return controlProps.map((control) => <InsertionButtonContainer {...control} key={control.key} />)
+  return <>{controlProps.map((control) => <InsertionButtonContainer {...control} key={control.key} />)}</>
 }
 
 const InsertionButtonContainer = (props: ButtonControlProps) => {

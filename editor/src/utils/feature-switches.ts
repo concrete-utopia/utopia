@@ -26,6 +26,7 @@ export type FeatureName =
   | 'Floating Menu Warning'
   | 'Mouse Pointer For Layouttype'
   | 'Insertion Plus Button'
+  | 'Edit Simple Text'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -52,6 +53,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Floating Menu Warning',
   'Mouse Pointer For Layouttype',
   'Insertion Plus Button',
+  'Edit Simple Text',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -79,6 +81,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Floating Menu Warning': true,
   'Mouse Pointer For Layouttype': true,
   'Insertion Plus Button': true,
+  'Edit Simple Text': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

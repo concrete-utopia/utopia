@@ -60,6 +60,7 @@ import {
   isJSXAttributeOtherJavaScript,
   SettableLayoutSystem,
   walkElements,
+  jsxTextBlock,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -346,6 +347,7 @@ import {
   SetShortcut,
   UpdatePropertyControlsInfo,
   PropertyControlsIFrameReady,
+  UpdateSimpleTextChild,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -4098,6 +4100,29 @@ export const UPDATE_FNS = {
     setPropertyControlsIFrameReady(true)
     return editor
   },
+  UPDATE_SIMPLE_TEXT_CHILD: (action: UpdateSimpleTextChild, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxElementAtPath(
+      action.target,
+      (element) => {
+        if (element.children.length === 0 || element.children.length === 1) {
+          if (action.value.trim() === '') {
+            return {
+              ...element,
+              children: [],
+            }
+          } else {
+            return {
+              ...element,
+              children: [jsxTextBlock(action.value)],
+            }
+          }
+        } else {
+          return element
+        }
+      },
+      editor,
+    )
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -4309,6 +4334,14 @@ export function insertJSXElement(
     parent: parent,
     importsToAdd: importsToAdd,
     indexPosition: indexPosition,
+  }
+}
+
+export function updateSimpleTextChild(target: InstancePath, value: string): UpdateSimpleTextChild {
+  return {
+    action: 'UPDATE_SIMPLE_TEXT_CHILD',
+    target: target,
+    value: value,
   }
 }
 

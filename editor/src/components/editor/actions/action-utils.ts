@@ -138,6 +138,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_PACKAGE_JSON':
     case 'FINISH_CHECKPOINT_TIMER':
     case 'ADD_MISSING_DIMENSIONS':
+    case 'UPDATE_SIMPLE_TEXT_CHILD':
       return false
     case 'SAVE_ASSET':
       return (
