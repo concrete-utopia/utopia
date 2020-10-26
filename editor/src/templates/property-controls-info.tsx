@@ -55,6 +55,7 @@ const initPropertyControlsWorker = () => {
       propertyControlsProcessor(
         npmDependencies,
         model.nodeModulesUpdate,
+        projectContents,
         bundledProjectFiles,
         model.exportsInfo,
       )

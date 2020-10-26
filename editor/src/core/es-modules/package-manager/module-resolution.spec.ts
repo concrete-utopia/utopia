@@ -1,14 +1,20 @@
 import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
-import { resolveModule } from './module-resolution'
+import { isResolveSuccess, resolveModule } from './module-resolution'
 import { createNodeModules } from './test-utils'
 
 describe('ES Package Manager Module Resolution', () => {
   function resolve(toImport: string): string | null {
-    return resolveModule(
+    const resolveResult = resolveModule(
+      {},
       createNodeModules(moduleResolutionExamples.contents),
       '/node_modules/mypackage/src/moduleA.js',
       toImport,
     )
+    if (isResolveSuccess(resolveResult)) {
+      return resolveResult.success.path
+    } else {
+      return null
+    }
   }
 
   function testNonRelativeResolve(toImport: string, expectedResult: string | null): void {

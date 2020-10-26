@@ -1,8 +1,9 @@
+import { CSSLoader } from './css-loader'
 import { DefaultLoader } from './default-loader'
 import { FileLoader } from './file-loader'
 import { ModuleLoader } from './loader-types'
 
-const moduleLoaders: Array<ModuleLoader> = [FileLoader, DefaultLoader]
+const moduleLoaders: Array<ModuleLoader> = [FileLoader, CSSLoader, DefaultLoader]
 
 export function filenameWithoutJSSuffix(filename: string): string | undefined {
   // The TS compiler will attempt to search for modules by appending .js to the file name,

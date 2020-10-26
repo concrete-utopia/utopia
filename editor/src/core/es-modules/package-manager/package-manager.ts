@@ -5,7 +5,7 @@ import {
   isEsRemoteDependencyPlaceholder,
 } from '../../shared/project-file-types'
 import { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
-import { resolveModule } from './module-resolution'
+import { isResolveSuccess, resolveModule } from './module-resolution'
 import { evaluator } from '../evaluator/evaluator'
 import { fetchMissingFileDependency } from './fetch-packages'
 import { EditorDispatch } from '../../../components/editor/action-types'
@@ -14,6 +14,7 @@ import { mapArrayToDictionary } from '../../shared/array-utils'
 import { updateNodeModulesContents } from '../../../components/editor/actions/actions'
 import { utopiaApiTypings } from './utopia-api-typings'
 import { resolveBuiltInDependency } from './built-in-dependencies'
+import { ProjectContentTreeRoot } from '../../../components/assets'
 
 export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
 
@@ -24,14 +25,15 @@ export function createDependencyNotFoundError(importOrigin: string, toImport: st
 }
 
 export const getEditorRequireFn = memoize(
-  (nodeModules: NodeModules, dispatch: EditorDispatch) => {
+  // FIXME This completely destroys memoization
+  (projectContents: ProjectContentTreeRoot, nodeModules: NodeModules, dispatch: EditorDispatch) => {
     const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
       // FIXME Update something in the state to show that we're downloading remote files
       moduleDownload.then((modulesToAdd: NodeModules) =>
         dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
       )
     }
-    return getRequireFn(onRemoteModuleDownload, nodeModules)
+    return getRequireFn(onRemoteModuleDownload, projectContents, nodeModules)
   },
   {
     maxSize: 1,
@@ -40,6 +42,7 @@ export const getEditorRequireFn = memoize(
 
 export function getRequireFn(
   onRemoteModuleDownload: (moduleDownload: Promise<NodeModules>) => void,
+  projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   injectedEvaluator = evaluator,
 ): RequireFn {
@@ -49,10 +52,10 @@ export function getRequireFn(
       return builtInDependency
     }
 
-    const resolvedPath = resolveModule(nodeModules, importOrigin, toImport)
-    if (resolvedPath != null) {
-      const notNullResolvedPath: string = resolvedPath
-      const resolvedFile = nodeModules[resolvedPath]
+    const resolveResult = resolveModule(projectContents, nodeModules, importOrigin, toImport)
+    if (isResolveSuccess(resolveResult)) {
+      const resolvedPath = resolveResult.success.path
+      const resolvedFile = resolveResult.success.file
 
       /**
        * we create a result cache with an empty exports object here.
@@ -68,9 +71,9 @@ export function getRequireFn(
         exports: {},
       }
       function partialRequire(name: string): unknown {
-        return require(notNullResolvedPath, name)
+        return require(resolvedPath, name)
       }
-      if (resolvedFile != null && isEsCodeFile(resolvedFile)) {
+      if (isEsCodeFile(resolvedFile)) {
         if (resolvedFile.evalResultCache == null) {
           try {
             // TODO this is the node.js `module` object we pass in to the evaluation scope.

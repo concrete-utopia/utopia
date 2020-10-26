@@ -226,6 +226,7 @@ type DetailedTypeInfo = {
   memberInfo: { type: string; members: { [member: string]: string } }
 }
 
+// FIXME This needs extracting, but getCodeFileContents relies on the parse printer for printing
 function getProjectFileContentsAsString(file: ProjectFile): string | null {
   switch (file.type) {
     case 'ASSET_FILE':

@@ -54,6 +54,7 @@ describe('Property Controls Processor', () => {
       [requestedNpmDependency(packageName, packageVersion)],
       fullNodeModulesUpdate(nodeModules),
       {},
+      {},
       [],
     )
   })
@@ -97,6 +98,7 @@ describe('Property Controls Processor', () => {
     processControls(
       [requestedNpmDependency(packageName, packageVersion)],
       fullNodeModulesUpdate(nodeModules),
+      {},
       {
         '/src/index.js': {
           transpiledCode: `require("antd/dist/antd.css");`,
