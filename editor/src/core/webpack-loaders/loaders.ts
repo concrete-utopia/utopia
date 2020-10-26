@@ -31,11 +31,6 @@ export function loaderExistsForFile(filename: string): boolean {
   return loadersForFile(filename).length > 0
 }
 
-export function loaderExistsForFileWithoutJSSuffix(filename: string): boolean {
-  const withSuffixStripped = filenameWithoutJSSuffix(filename)
-  return withSuffixStripped != null && loaderExistsForFile(withSuffixStripped)
-}
-
 export function applyLoaders(filename: string, contents: string): LoadModuleResult {
   const matchingLoaders = loadersForFile(filename)
   return applyMatchedLoaders(filename, contents, matchingLoaders)
