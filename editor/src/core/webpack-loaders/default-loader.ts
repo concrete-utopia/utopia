@@ -7,6 +7,7 @@ const matchFile: MatchFile = (filename: string) => {
 }
 
 const loadModule: LoadModule = (filename: string, contents: string) => {
+  // TODO We should investigate running the Babel transform for converting to Common JS here rather than inside evaluator.js
   return loadModuleResult(filename, contents)
 }
 

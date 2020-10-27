@@ -142,8 +142,8 @@ describe('ES Package Manager Module Resolution', () => {
   })
 
   it('resolves local project files that may require a loader', () => {
-    expect(resolve('/src/app.js', './icon.png')).toEqual('/src/icon.png.js')
-    expect(resolve('/src/app.js', './folder/../icon.png')).toEqual('/src/icon.png.js')
+    expect(resolve('/src/app.js', './icon.png')).toEqual('/src/icon.png')
+    expect(resolve('/src/app.js', './folder/../icon.png')).toEqual('/src/icon.png')
     expect(resolve('/src/app.js', './simple.css')).toEqual('/src/simple.css')
     expect(resolve('/src/app.js', './thing.js')).toEqual('/src/thing.js')
   })

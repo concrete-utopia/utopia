@@ -14,7 +14,7 @@ import {
 import { applicative3Either, foldEither } from '../../shared/either'
 import { setOptionalProp } from '../../shared/object-utils'
 import { getContentsTreeFileFromElements, ProjectContentTreeRoot } from '../../../components/assets'
-import { applyLoaders, loaderExistsForFile } from '../../webpack-loaders/loaders'
+import { loaderExistsForFile } from '../../webpack-loaders/loaders'
 import { dropLast, last } from '../../shared/array-utils'
 
 interface ResolveSuccess<T> {
@@ -188,11 +188,7 @@ const projectContentsFileLookup: (projectContents: ProjectContentTreeRoot) => Fi
     const fileContents = projectFile == null ? null : getProjectFileContentsAsString(projectFile)
     if (fileContents != null) {
       const filename = path.join('/')
-      const loadedModuleResult = applyLoaders(filename, fileContents)
-      return fileLookupResult(
-        loadedModuleResult.filename,
-        esCodeFile(loadedModuleResult.loadedContents, null),
-      )
+      return fileLookupResult(filename, esCodeFile(fileContents, null))
     } else {
       return resolveNotPresent
     }
