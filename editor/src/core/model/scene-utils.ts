@@ -39,6 +39,7 @@ import {
 } from '../shared/jsx-attributes'
 import { stripNulls } from '../shared/array-utils'
 import { isPercentPin } from 'utopia-api'
+import { UTOPIA_UID_KEY } from './utopia-constants'
 
 export const EmptyScenePathForStoryboard = TP.scenePath([])
 
@@ -96,7 +97,7 @@ export function mapScene(scene: SceneMetadata): JSXElement {
     'data-uid': jsxAttributeValue(scene.uid),
     'data-label': jsxAttributeValue(scene.label),
   }
-  return jsxElement('Scene', sceneProps, [], null)
+  return jsxElement('Scene', sceneProps, [])
 }
 
 export function unmapScene(element: JSXElementChild): SceneMetadata | null {
@@ -148,10 +149,38 @@ export function convertScenesToUtopiaCanvasComponent(
       'Storyboard',
       { 'data-uid': jsxAttributeValue(BakedInStoryboardUID) },
       scenes.map(mapScene),
-      null,
     ),
     null,
   )
+}
+
+export function createSceneFromComponent(component: UtopiaJSXComponent, uid: string): JSXElement {
+  const sceneProps = {
+    component: jsxAttributeOtherJavaScript(
+      component.name,
+      `return ${component.name}`,
+      [component.name],
+      null,
+    ),
+    [UTOPIA_UID_KEY]: jsxAttributeValue(uid),
+    props: jsxAttributeValue({}),
+    style: jsxAttributeValue({
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: 375,
+      height: 812,
+    }),
+  }
+  return jsxElement('Scene', sceneProps, [])
+}
+
+export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
+  const storyboardProps = {
+    [UTOPIA_UID_KEY]: jsxAttributeValue(uid),
+    layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }),
+  }
+  return jsxElement('Storyboard', storyboardProps, scenes)
 }
 
 export function convertUtopiaCanvasComponentToScenes(
@@ -215,10 +244,9 @@ export function fishOutUtopiaCanvasFromTopLevelElements(
   topLevelElements: Array<TopLevelElement>,
 ): UtopiaJSXComponent | null {
   return (
-    topLevelElements.find(
-      (e): e is UtopiaJSXComponent =>
-        isUtopiaJSXComponent(e) && e.name === BakedInStoryboardVariableName,
-    ) ?? null
+    topLevelElements.find((e): e is UtopiaJSXComponent => {
+      return isUtopiaJSXComponent(e) && e.name === BakedInStoryboardVariableName
+    }) ?? null
   )
 }
 

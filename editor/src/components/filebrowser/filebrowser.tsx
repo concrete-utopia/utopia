@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/core'
 import * as React from 'react'
 import {
@@ -10,6 +11,7 @@ import {
   SectionTitleRow,
   SquareButton,
   Title,
+  Button,
 } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import {
@@ -143,18 +145,29 @@ export const FileBrowser = betterReactMemo('FileBrowser', () => {
     [dispatch, focusedPanel],
   )
 
+  const storyboardFileAdd = React.useCallback(() => {
+    dispatch([EditorActions.addStoryboardFile()])
+  }, [dispatch])
+
   return (
-    <Section data-name='FileBrowser' onFocus={onFocus} tabIndex={-1}>
-      <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised}>
-        <FlexRow flexGrow={1} style={{ position: 'relative' }}>
-          <Title>Project</Title>
-          <FileBrowserActionSheet visible={!minimised} />
-        </FlexRow>
-      </SectionTitleRow>
-      <SectionBodyArea minimised={minimised}>
-        {minimised ? null : <FileBrowserItems />}
-      </SectionBodyArea>
-    </Section>
+    <>
+      <Section data-name='AddStoryboardFile'>
+        <SectionBodyArea minimised={false}>
+          <Button onClick={storyboardFileAdd}>Add Storyboard File</Button>
+        </SectionBodyArea>
+      </Section>
+      <Section data-name='FileBrowser' onFocus={onFocus} tabIndex={-1}>
+        <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised}>
+          <FlexRow flexGrow={1} style={{ position: 'relative' }}>
+            <Title>Project</Title>
+            <FileBrowserActionSheet visible={!minimised} />
+          </FlexRow>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={minimised}>
+          {minimised ? null : <FileBrowserItems />}
+        </SectionBodyArea>
+      </Section>
+    </>
   )
 })
 
@@ -238,7 +251,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
           )
           let props: JSXAttributes = objectMap(jsxAttributeValue, defaultProps)
           props['data-uid'] = jsxAttributeValue(newUID)
-          const element: JSXElement = jsxElement(jsxElementName(exportVarName, []), props, [], null)
+          const element: JSXElement = jsxElement(jsxElementName(exportVarName, []), props, [])
           dispatch(
             [
               EditorActions.enableInsertModeForJSXElement(

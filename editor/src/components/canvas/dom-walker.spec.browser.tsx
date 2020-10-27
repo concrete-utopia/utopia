@@ -66,8 +66,8 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const spyCollector = emptyUiJsxCanvasContextData()
 
   const dispatch: EditorDispatch = (actions) => {
-    const result = editorDispatch(dispatch, actions, api.getState(), spyCollector)
-    api.setState(result)
+    const result = editorDispatch(dispatch, actions, storeHook.getState(), spyCollector)
+    storeHook.setState(result)
   }
 
   const initialEditorStore: EditorStore = {
@@ -87,11 +87,11 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     dispatch: dispatch,
   }
 
-  const [storeHook, api] = create<EditorStore>((set) => initialEditorStore)
+  const storeHook = create<EditorStore>((set) => initialEditorStore)
 
   const result = render(
     <HotRoot
-      api={api}
+      api={storeHook}
       useStore={storeHook}
       spyCollector={spyCollector}
       propertyControlsInfoSupported={false}
@@ -111,7 +111,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       false,
     )
   })
-  const sanitizedMetadata = sanitizeJsxMetadata(api.getState().editor.jsxMetadataKILLME)
+  const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().editor.jsxMetadataKILLME)
   expect(sanitizedMetadata).toMatchSnapshot()
 }
 

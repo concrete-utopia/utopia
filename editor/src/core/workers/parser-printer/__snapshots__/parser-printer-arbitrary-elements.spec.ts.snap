@@ -4,10 +4,6 @@ exports[`JSX parser circularly referenced arbitrary blocks parse and produce a c
 Object {
   "type": "RIGHT",
   "value": Object {
-    "canvasMetadata": Object {
-      "type": "RIGHT",
-      "value": Object {},
-    },
     "code": "/** @jsx jsx */
 import * as React from 'react'
 import { Scene, Storyboard, jsx } from 'utopia-api'
@@ -202,7 +198,6 @@ return { a: a, b: b };",
       },
     },
     "jsxFactoryFunction": "jsx",
-    "projectContainedOldSceneMetadata": false,
     "topLevelElements": Array [
       Object {
         "definedElsewhere": Array [
@@ -445,7 +440,6 @@ export var storyboard = (
               "uniqueID": "",
             },
           ],
-          "metadata": null,
           "name": Object {
             "baseVariable": "div",
             "propertyPath": Object {
@@ -577,7 +571,6 @@ return { b: b };",
           "children": Array [
             Object {
               "children": Array [],
-              "metadata": null,
               "name": Object {
                 "baseVariable": "Scene",
                 "propertyPath": Object {
@@ -669,7 +662,6 @@ export var storyboard = (
               "type": "JSX_ELEMENT",
             },
           ],
-          "metadata": null,
           "name": Object {
             "baseVariable": "Storyboard",
             "propertyPath": Object {

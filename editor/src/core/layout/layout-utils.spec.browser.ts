@@ -6,7 +6,6 @@ import {
 } from '../../components/canvas/ui-jsx-test-utils'
 import { pasteJSXElements, selectComponents } from '../../components/editor/actions/actions'
 import * as TP from '../shared/template-path'
-import * as Utils from '../../utils/utils'
 import {
   ComponentMetadata,
   jsxAttributeNestedObjectSimple,
@@ -19,7 +18,6 @@ import { generateUidWithExistingComponents } from '../model/element-template-uti
 import { right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
 import { BakedInStoryboardUID } from '../model/scene-utils'
-import { wait } from '../../utils/test-utils'
 
 const NewUID = 'catdog'
 
@@ -67,7 +65,6 @@ describe('maybeSwitchLayoutProps', () => {
         'data-uid': jsxAttributeValue(NewUID),
       },
       [],
-      null,
     )
     const metadata: ComponentMetadata[] = [
       {

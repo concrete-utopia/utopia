@@ -18,8 +18,7 @@ import {
   jsxAttributeOtherJavaScript,
 } from '../../shared/element-template'
 import { right, isRight } from '../../shared/either'
-import { parseSuccess, defaultCanvasMetadata } from '../common/project-file-utils'
-import { EmptyUtopiaCanvasComponent } from '../../model/scene-utils'
+import { parseSuccess } from '../common/project-file-utils'
 import { printCode, printCodeOptions } from './parser-printer'
 import { ParseSuccess } from '../../shared/project-file-types'
 
@@ -148,16 +147,13 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithBasicPropsObject,
         expect.objectContaining({}),
         null,
@@ -177,7 +173,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const propsParam = functionParam(
       false,
@@ -198,9 +193,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithBasicPropsObjectWithDefault,
         expect.objectContaining({}),
         null,
@@ -218,7 +211,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const propsParam = functionParam(false, regularParam('myProps', null))
     const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null)
@@ -226,9 +218,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithRenamedBasicPropsObject,
         expect.objectContaining({}),
         null,
@@ -246,7 +236,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const destructuredParam = functionParam(false, regularParam('prop', null))
     const propsParam = functionParam(
@@ -258,9 +247,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithDestructuredPropsObject,
         expect.objectContaining({}),
         null,
@@ -280,7 +267,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const destructuredParam = functionParam(
       false,
@@ -298,9 +284,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithDestructuredPropsObjectWithDefault,
         expect.objectContaining({}),
         null,
@@ -321,7 +305,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const destructuredParam = functionParam(false, regularParam('renamedProp', null))
     const propsParam = functionParam(
@@ -333,9 +316,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithDestructuredPropsObjectWithRenamedParam,
         expect.objectContaining({}),
         null,
@@ -355,7 +336,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const destructuredParam = functionParam(
       false,
@@ -373,9 +353,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithDestructuredPropsObjectWithRenamedParamAndDefault,
         expect.objectContaining({}),
         null,
@@ -395,7 +373,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const destructuredParam1 = functionParam(false, regularParam('prop', null))
     const destructuredRestParam = functionParam(true, regularParam('otherProps', null))
@@ -409,9 +386,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithDestructuredPropsObjectWithRestParam,
         expect.objectContaining({}),
         null,
@@ -429,7 +404,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const destructuredParam = functionParam(false, regularParam('prop', null))
     const propsParam = functionParam(false, destructuredArray([destructuredParam]))
@@ -438,9 +412,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithDestructuredArray,
         expect.objectContaining({}),
         null,
@@ -460,7 +432,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const destructuredParam = functionParam(
       false,
@@ -475,9 +446,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithDestructuredArrayWithDefault,
         expect.objectContaining({}),
         null,
@@ -497,7 +466,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const destructuredParam1 = functionParam(false, regularParam('prop1', null))
     const destructuredParam2 = functionParam(false, regularParam('prop2', null))
@@ -510,9 +478,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithDestructuredArrayWithOmittedParam,
         expect.objectContaining({}),
         null,
@@ -532,7 +498,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const otherArrayProps = functionParam(true, regularParam('otherArrayProps', null))
     const renamedProp2 = functionParam(false, regularParam('renamedProp2', null))
@@ -565,9 +530,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithNestedDestructuredPropsMess,
         expect.objectContaining({}),
         null,
@@ -587,7 +550,6 @@ describe('Parsing a function component with props', () => {
         'data-uid': jsxAttributeValue('aaa'),
       },
       [],
-      null,
     )
     const otherArrayProps = functionParam(true, regularParam('otherArrayProps', null))
     const renamedProp2 = functionParam(
@@ -639,9 +601,7 @@ describe('Parsing a function component with props', () => {
     const expectedResult = right(
       parseSuccess(
         JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
+        [...topLevelElements],
         codeWithNestedDestructuredPropsMessWithDefaults,
         expect.objectContaining({}),
         null,

@@ -62,7 +62,6 @@ import {
   jsxSimpleAttributeToValue,
 } from '../../core/shared/jsx-attributes'
 import {
-  CanvasMetadata,
   Imports,
   InstancePath,
   isParseFailure,
@@ -77,7 +76,6 @@ import {
   getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
   uiJsFile,
-  updateCanvasMetadataParseResult,
 } from '../../core/model/project-file-utils'
 import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
 import { defaultProject } from '../../sample-projects/sample-project-utils'

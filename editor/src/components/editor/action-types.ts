@@ -768,6 +768,10 @@ export interface PropertyControlsIFrameReady {
   action: 'PROPERTY_CONTROLS_IFRAME_READY'
 }
 
+export interface AddStoryboardFile {
+  action: 'ADD_STORYBOARD_FILE'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -896,6 +900,7 @@ export type EditorAction =
   | SetShortcut
   | UpdatePropertyControlsInfo
   | PropertyControlsIFrameReady
+  | AddStoryboardFile
 
 export type DispatchPriority =
   | 'everyone'

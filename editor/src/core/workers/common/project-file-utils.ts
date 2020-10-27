@@ -8,9 +8,6 @@ import {
   RevisionsState,
   ImportDetails,
   Imports,
-  CanvasMetadata,
-  PrintedCanvasMetadata,
-  CanvasMetadataParseResult,
   HighlightBoundsForUids,
   ParsedJSONFailure,
   ParsedJSONSuccess,
@@ -142,22 +139,9 @@ export function addImport(
   return mergeImports(imports, toAdd)
 }
 
-export function defaultCanvasMetadata(): CanvasMetadata {
-  return {}
-}
-
-export function defaultPrintedCanvasMetadata(): PrintedCanvasMetadata {
-  return {
-    scenes: null,
-    elementMetadata: {},
-  }
-}
-
 export function parseSuccess(
   imports: Imports,
   topLevelElements: Array<TopLevelElement>,
-  canvasMetadata: CanvasMetadataParseResult,
-  projectContainedOldSceneMetadata: boolean,
   code: string,
   highlightBounds: HighlightBoundsForUids,
   jsxFactoryFunction: string | null,
@@ -166,8 +150,6 @@ export function parseSuccess(
   return {
     imports: imports,
     topLevelElements: topLevelElements,
-    canvasMetadata: canvasMetadata,
-    projectContainedOldSceneMetadata: projectContainedOldSceneMetadata,
     code: code,
     highlightBounds: highlightBounds,
     jsxFactoryFunction: jsxFactoryFunction,

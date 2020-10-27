@@ -114,9 +114,6 @@ export function createInsertImageAction(
         'data-uid': jsxAttributeValue(newUID),
       },
       [],
-      {
-        aspectRatioLocked: true,
-      },
     )
     return insertJSXElement(imageElement, parentPath, {})
   } else {

@@ -525,7 +525,6 @@ describe('INSERT_JSX_ELEMENT', () => {
       jsxElementName('View', []),
       { 'data-uid': jsxAttributeValue('TestView') },
       [],
-      null,
     )
     const insertAction = insertJSXElement(elementToInsert, parentPath, {
       'utopia-api': importDetails(null, [importAlias('View')], null),
@@ -582,7 +581,6 @@ describe('INSERT_JSX_ELEMENT', () => {
       jsxElementName('View', []),
       { 'data-uid': jsxAttributeValue('TestView') },
       [],
-      null,
     )
     const insertAction = insertJSXElement(elementToInsert, null, {
       'utopia-api': importDetails(null, [importAlias('View')], null),

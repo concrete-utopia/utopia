@@ -341,8 +341,8 @@ editorAssetsEndpoint notProxiedPath possibleBranchName = do
   let loadLocally = fmap addCDNHeaders $ servePath notProxiedPath possibleBranchName
   let loadFromProxy proxyManager = return $ proxyApplication proxyManager 8088 ["editor"]
   case possibleBranchName of
-    Just _          -> loadLocally
-    Nothing         -> maybe loadLocally loadFromProxy possibleProxyManager
+    Just _  -> loadLocally
+    Nothing -> maybe loadLocally loadFromProxy possibleProxyManager
 
 downloadGithubProjectEndpoint :: Maybe Text -> Text -> Text -> ServerMonad BL.ByteString
 downloadGithubProjectEndpoint cookie owner repo = requireUser cookie $ \_ -> do
@@ -416,7 +416,7 @@ emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = N
 decodedUserConfigurationToResponse :: DecodedUserConfiguration -> UserConfigurationResponse
 decodedUserConfigurationToResponse DecodedUserConfiguration{..} = UserConfigurationResponse { _shortcutConfig = _shortcutConfig }
 
-getUserConfigurationEndpoint :: Maybe Text -> ServerMonad UserConfigurationResponse 
+getUserConfigurationEndpoint :: Maybe Text -> ServerMonad UserConfigurationResponse
 getUserConfigurationEndpoint cookie = requireUser cookie $ \sessionUser -> do
   userConfig <- getUserConfiguration (view id sessionUser)
   return $ maybe emptyUserConfigurationResponse decodedUserConfigurationToResponse userConfig

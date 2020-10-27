@@ -19,8 +19,8 @@ import { BakedInStoryboardUID } from './scene-utils'
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
     const exampleElements = [
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [], null),
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [], null),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
     ]
     const fixedElements = guaranteeUniqueUids(exampleElements, [])
 
@@ -32,8 +32,8 @@ describe('guaranteeUniqueUids', () => {
 
   it('if an element has an existing value, it will be replaced', () => {
     const exampleElements = [
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [], null),
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, [], null),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, []),
     ]
     const existingIDs = ['aab', 'bbb']
     const fixedElements = guaranteeUniqueUids(exampleElements, existingIDs)
@@ -49,7 +49,6 @@ describe('guaranteeUniqueUids', () => {
       'View',
       { 'data-uid': jsxAttributeFunctionCall('someFunction', []) },
       [],
-      null,
     )
     const fixedElements = guaranteeUniqueUids([exampleElement], [])
 
@@ -64,25 +63,20 @@ describe('guaranteeUniqueUids', () => {
 
 describe('getUtopiaID', () => {
   it('returns an id if there is one', () => {
-    const element = jsxElement('View', { 'data-uid': jsxAttributeValue('hello') }, [], null)
+    const element = jsxElement('View', { 'data-uid': jsxAttributeValue('hello') }, [])
     const id = getUtopiaID(element as JSXElement)
     expect(id).toEqual('hello')
   })
 
   it('throws if there is no ID', () => {
-    const element = jsxElement('View', {} as any, [], null)
+    const element = jsxElement('View', {} as any, [])
     expect(() => {
       getUtopiaID(element as JSXElement)
     }).toThrow()
   })
 
   it('throws if there is an ID which is not a simple jsx attribute value', () => {
-    const element = jsxElement(
-      'View',
-      { 'data-uid': jsxAttributeFunctionCall('hello', []) },
-      [],
-      null,
-    )
+    const element = jsxElement('View', { 'data-uid': jsxAttributeFunctionCall('hello', []) }, [])
     expect(() => {
       getUtopiaID(element as JSXElement)
     }).toThrow()
@@ -96,12 +90,7 @@ describe('removeJSXElementChild', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement(
-        'View',
-        { 'data-uid': jsxAttributeValue('aaa'), prop1: jsxAttributeValue(5) },
-        [],
-        null,
-      ),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa'), prop1: jsxAttributeValue(5) }, []),
       null,
     ),
     utopiaJSXComponent(
@@ -109,21 +98,15 @@ describe('removeJSXElementChild', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement(
-        'View',
-        { 'data-uid': jsxAttributeValue('aab'), prop2: jsxAttributeValue(15) },
-        [
-          jsxElement('View', { 'data-uid': jsxAttributeValue('aac') }, [], null),
-          jsxElement(
-            'View',
-            { 'data-uid': jsxAttributeValue('aad'), prop3: jsxAttributeValue(100) },
-            [],
-            null,
-          ),
-          jsxElement('View', { 'data-uid': jsxAttributeValue('aae') }, [], null),
-        ],
-        null,
-      ),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aab'), prop2: jsxAttributeValue(15) }, [
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aac') }, []),
+        jsxElement(
+          'View',
+          { 'data-uid': jsxAttributeValue('aad'), prop3: jsxAttributeValue(100) },
+          [],
+        ),
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aae') }, []),
+      ]),
       null,
     ),
   ]

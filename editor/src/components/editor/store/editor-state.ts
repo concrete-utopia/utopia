@@ -24,13 +24,11 @@ import {
   getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
   saveUIJSFileContents,
-  updateCanvasMetadataParseResult,
   getHighlightBoundsFromParseResult,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
 import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
-  CanvasMetadataParseResult,
   CodeFile,
   Imports,
   InstancePath,
@@ -158,7 +156,7 @@ export const defaultUserState: UserState = {
   shortcutConfig: {},
 }
 
-export interface EditorStore {
+export type EditorStore = {
   editor: EditorState
   derived: DerivedState
   history: StateHistory
@@ -475,18 +473,15 @@ export function getOpenUIJSFile(model: EditorState): UIJSFile | null {
 export interface SimpleParseSuccess {
   imports: Imports
   utopiaComponents: Array<UtopiaJSXComponent>
-  canvasMetadata: CanvasMetadataParseResult
 }
 
 export function simpleParseSuccess(
   imports: Imports,
   utopiaComponents: Array<UtopiaJSXComponent>,
-  canvasMetadata: CanvasMetadataParseResult,
 ): SimpleParseSuccess {
   return {
     imports: imports,
     utopiaComponents: utopiaComponents,
-    canvasMetadata: canvasMetadata,
   }
 }
 
@@ -497,7 +492,6 @@ export function modifyParseSuccessWithSimple(
   const oldSimpleParseSuccess: SimpleParseSuccess = {
     imports: success.imports,
     utopiaComponents: getUtopiaJSXComponentsFromSuccess(success),
-    canvasMetadata: success.canvasMetadata,
   }
   const newSimpleParseSuccess: SimpleParseSuccess = transform(oldSimpleParseSuccess)
   const newTopLevelElements = applyUtopiaJSXComponentsChanges(
@@ -507,8 +501,6 @@ export function modifyParseSuccessWithSimple(
   return {
     imports: newSimpleParseSuccess.imports,
     topLevelElements: newTopLevelElements,
-    canvasMetadata: newSimpleParseSuccess.canvasMetadata,
-    projectContainedOldSceneMetadata: success.projectContainedOldSceneMetadata,
     code: success.code,
     highlightBounds: {},
     jsxFactoryFunction: success.jsxFactoryFunction,

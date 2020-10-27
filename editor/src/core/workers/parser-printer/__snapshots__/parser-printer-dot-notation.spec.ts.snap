@@ -41,7 +41,6 @@ Array [
           "elementsWithin": Object {
             "bbb": Object {
               "children": Array [],
-              "metadata": null,
               "name": Object {
                 "baseVariable": "div",
                 "propertyPath": Object {
@@ -94,7 +93,6 @@ export var storyboard = (props) => {
           "uniqueID": "",
         },
       ],
-      "metadata": null,
       "name": Object {
         "baseVariable": "Utopia",
         "propertyPath": Object {
@@ -223,31 +221,6 @@ export var storyboard = (props) => {
 return { storyboard: storyboard };",
     "type": "ARBITRARY_JS_BLOCK",
     "uniqueID": "",
-  },
-  Object {
-    "arbitraryJSBlock": null,
-    "isFunction": false,
-    "name": "storyboard",
-    "param": null,
-    "propsUsed": Array [],
-    "rootElement": Object {
-      "children": Array [],
-      "metadata": null,
-      "name": Object {
-        "baseVariable": "Storyboard",
-        "propertyPath": Object {
-          "propertyElements": Array [],
-        },
-      },
-      "props": Object {
-        "data-uid": Object {
-          "type": "ATTRIBUTE_VALUE",
-          "value": "utopia-storyboard-uid",
-        },
-      },
-      "type": "JSX_ELEMENT",
-    },
-    "type": "UTOPIA_JSX_COMPONENT",
   },
 ]
 `;

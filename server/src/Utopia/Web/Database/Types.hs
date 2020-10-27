@@ -89,7 +89,7 @@ data ProjectMetadata = ProjectMetadata
 $(makeFieldsNoPrefix ''ProjectMetadata)
 
 data DecodedUserConfiguration = DecodedUserConfiguration
-                         { _id      :: Text
+                         { _id             :: Text
                          , _shortcutConfig :: Maybe Value
                          } deriving (Eq, Show)
 

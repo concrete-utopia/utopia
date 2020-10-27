@@ -1,13 +1,8 @@
 import * as TS from 'typescript'
-import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
-import { Either, foldEither, left, right } from '../../shared/either'
-import { UtopiaJSXComponent } from '../../shared/element-template'
 import {
-  CanvasMetadata,
-  CanvasMetadataRightBeforePrinting,
   isParsedJSONFailure,
+  ParsedJSONFailure,
   ParsedJSONResult,
-  PrintedCanvasMetadata,
 } from '../../shared/project-file-types'
 import { parsedJSONFailure, parsedJSONSuccess } from '../common/project-file-utils'
 import { createCodeSnippet } from '../ts/ts-utils'
@@ -46,40 +41,6 @@ export function jsonToExpression(json: any): TS.Expression {
     default:
       throw new Error(`Unsure how to handle ${JSON.stringify(json)}`)
   }
-}
-
-export function canvasMetadataToExpression(
-  canvasMetadata: CanvasMetadataRightBeforePrinting,
-): TS.Expression {
-  return jsonToExpression(canvasMetadata)
-}
-
-export function parseCanvasMetadata(sourceFile: TS.SourceFile, node: TS.Node): ParsedJSONResult {
-  const unprocessedCanvasMetadata = parseJSON(sourceFile, node)
-  if (unprocessedCanvasMetadata.type === 'FAILURE') {
-    return unprocessedCanvasMetadata
-  } else {
-    const canvasMetadata: CanvasMetadata = unprocessedCanvasMetadata.value
-    return parsedJSONSuccess(canvasMetadata)
-  }
-}
-
-export function convertPrintedMetadataToCanvasMetadata(
-  metadata: Either<unknown, PrintedCanvasMetadata>,
-): {
-  sanitizedCanvasMetadata: Either<unknown, CanvasMetadata>
-  utopiaComponentFromSceneMetadata: UtopiaJSXComponent | null
-} {
-  return foldEither(
-    (l) => ({ sanitizedCanvasMetadata: left(l), utopiaComponentFromSceneMetadata: null }),
-    (printedMetadata: PrintedCanvasMetadata) => ({
-      sanitizedCanvasMetadata: right({}),
-      utopiaComponentFromSceneMetadata: convertScenesToUtopiaCanvasComponent(
-        printedMetadata.scenes,
-      ),
-    }),
-    metadata,
-  )
 }
 
 function parseJSONObject(
@@ -161,7 +122,11 @@ function parseJSON(sourceFile: TS.SourceFile, node: TS.Node): ParsedJSONResult {
   }
 }
 
-function createJsonError(sourceFile: TS.SourceFile, node: TS.Node, reason: string) {
+function createJsonError(
+  sourceFile: TS.SourceFile,
+  node: TS.Node,
+  reason: string,
+): ParsedJSONFailure {
   const nodeStart = node.getStart(sourceFile)
   const nodeEnd = node.getEnd()
   const codeSnippet = createCodeSnippet(sourceFile, nodeStart, nodeEnd)

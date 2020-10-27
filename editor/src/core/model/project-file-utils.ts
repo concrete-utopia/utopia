@@ -7,11 +7,8 @@ import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import Utils from '../../utils/utils'
 import { bimapEither, foldEither, mapEither } from '../shared/either'
 import {
-  CanvasMetadata,
-  CanvasMetadataParseResult,
   CodeFile,
   Directory,
-  ElementCanvasMetadata,
   HighlightBoundsForUids,
   ImageFile,
   Imports,
@@ -52,10 +49,6 @@ import {
   ProjectContentTreeRoot,
   transformContentsTree,
 } from '../../components/assets'
-
-export function emptyElementCanvasMetadata(): ElementCanvasMetadata {
-  return {}
-}
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -181,13 +174,6 @@ export function getOrDefaultScenes(parsedSuccess: ParseSuccess): UtopiaJSXCompon
   }
   // If all fails, let's return an empty default component
   return defaultEmptyUtopiaComponent
-}
-
-export function updateCanvasMetadataParseResult(
-  transform: (metadata: CanvasMetadata) => CanvasMetadata,
-  parseResult: CanvasMetadataParseResult,
-): CanvasMetadataParseResult {
-  return mapEither(transform, parseResult)
 }
 
 export function getComponentsFromTopLevelElements(

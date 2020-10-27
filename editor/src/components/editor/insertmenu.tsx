@@ -408,7 +408,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                 const newUID = generateUID(this.props.existingUIDs)
                 let props: JSXAttributes = objectMap(jsxAttributeValue, defaultProps)
                 props['data-uid'] = jsxAttributeValue(newUID)
-                const newElement = jsxElement(jsxElementName(componentName, []), props, [], null)
+                const newElement = jsxElement(jsxElementName(componentName, []), props, [])
                 this.props.editorDispatch(
                   [enableInsertModeForJSXElement(newElement, newUID, {}, null)],
                   'everyone',

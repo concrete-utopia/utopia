@@ -452,19 +452,6 @@ function getPropsForStyleProp(
     View
   } from "utopia-api";
   import { cake } from 'cake'
-  export var ${CanvasMetadataName} = {
-    scenes: [],
-    elementMetadata: {
-      aab: {
-        name: 'hello',
-        aspectRatioLocked: true,
-      },
-      "111": {
-        name: 'hi',
-        aspectRatioLocked: true,
-      }
-    },
-  }
   
   export var App = (props) => {
     return (

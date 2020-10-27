@@ -1,9 +1,7 @@
 import {
   PropertyPath,
-  ElementCanvasMetadata,
   InstancePath,
   PropertyPathPart,
-  CanvasElementMetadataMap,
   SceneContainer,
   ScenePath,
   StaticElementPath,
@@ -433,7 +431,6 @@ export interface JSXElement {
   name: JSXElementName
   props: JSXAttributes
   children: JSXElementChildren
-  metadata: ElementCanvasMetadata | null
 }
 
 export type ElementsWithin = { [uid: string]: JSXElement }
@@ -554,14 +551,12 @@ export function jsxElement(
   name: JSXElementName | string,
   props: JSXAttributes,
   children: JSXElementChildren,
-  metadata: ElementCanvasMetadata | null,
 ): JSXElement {
   return {
     type: 'JSX_ELEMENT',
     name: typeof name === 'string' ? jsxElementName(name, []) : name,
     props: props,
     children: children,
-    metadata: metadata,
   }
 }
 
@@ -569,10 +564,9 @@ export function jsxTestElement(
   name: JSXElementName | string,
   props: JSXAttributes,
   children: Array<JSXElement>,
-  metadata: ElementCanvasMetadata | null = null,
   uid: string = 'aaa',
 ): JSXElement {
-  return jsxElement(name, { ...props, 'data-uid': jsxAttributeValue(uid) }, children, metadata)
+  return jsxElement(name, { ...props, 'data-uid': jsxAttributeValue(uid) }, children)
 }
 
 export function utopiaJSXComponent(

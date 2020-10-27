@@ -58,11 +58,6 @@ export const enum PinType {
   Relative = 'relative',
 }
 
-export interface ElementCanvasMetadata {}
-
-export type CanvasElementMetadataMap = { [utopiaID: string]: ElementCanvasMetadata }
-
-// KILLME CanvasMetadata is dead
 export interface ScenePinnedContainer {
   layoutSystem: LayoutSystem.PinSystem
 }
@@ -76,18 +71,6 @@ export interface SceneMetadata {
   frame: NormalisedFrame
   container: SceneContainer
   label?: string
-}
-
-export interface CanvasMetadata {}
-
-export type CanvasMetadataRightBeforePrinting = {
-  scenes: Array<Omit<SceneMetadata, 'uid'>> | null
-  elementMetadata: CanvasElementMetadataMap
-}
-
-export type PrintedCanvasMetadata = {
-  scenes: Array<SceneMetadata> | null
-  elementMetadata: CanvasElementMetadataMap
 }
 
 export interface ImportAlias {
@@ -148,13 +131,9 @@ export interface HighlightBounds {
 
 export type HighlightBoundsForUids = { [uid: string]: HighlightBounds }
 
-export type CanvasMetadataParseResult = Either<unknown, CanvasMetadata>
-
 export interface ParseSuccess {
   imports: Imports
   topLevelElements: Array<TopLevelElement>
-  canvasMetadata: CanvasMetadataParseResult
-  projectContainedOldSceneMetadata: boolean
   code: string
   highlightBounds: HighlightBoundsForUids
   jsxFactoryFunction: string | null

@@ -2,6 +2,7 @@ import * as React from 'react'
 import { EditorStore } from './editor-state'
 import { UseStore, StoreApi } from 'zustand'
 import utils from '../../../utils/utils'
+import { PRODUCTION_ENV } from '../../../common/env-vars'
 
 type StateSelector<T, U> = (state: T) => U
 
@@ -20,10 +21,43 @@ export const useEditorState = <U>(
   equalityFn = utils.shallowEqual,
 ): U => {
   const context = React.useContext(EditorStateContext)
+
+  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(selector)
+
   if (context == null) {
     throw new Error('useStore is missing from editor context')
   }
-  return context.useStore(selector, equalityFn)
+  return context.useStore(wrappedSelector, equalityFn)
+}
+
+const LogSelectorPerformance = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
+
+function useWrapSelectorInPerformanceMeasureBlock<U>(
+  selector: StateSelector<EditorStore, U>,
+): StateSelector<EditorStore, U> {
+  const previousSelectorRef = React.useRef<StateSelector<EditorStore, U>>()
+  const previousWrappedSelectorRef = React.useRef<StateSelector<EditorStore, U>>()
+
+  if (selector === previousSelectorRef.current && previousWrappedSelectorRef.current != null) {
+    // we alreaedy wrapped this selector
+    return previousWrappedSelectorRef.current
+  } else {
+    // let's create a new wrapped selector
+    const wrappedSelector = (state: EditorStore) => {
+      if (LogSelectorPerformance) {
+        window.performance.mark('selector_begin')
+      }
+      const result = selector(state)
+      if (LogSelectorPerformance) {
+        window.performance.mark('selector_end')
+        window.performance.measure(`Zustand Selector`, 'selector_begin', 'selector_end')
+      }
+      return result
+    }
+    previousSelectorRef.current = selector
+    previousWrappedSelectorRef.current = wrappedSelector
+    return wrappedSelector
+  }
 }
 
 /**

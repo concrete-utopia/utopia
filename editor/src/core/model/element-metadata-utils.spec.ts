@@ -315,12 +315,7 @@ describe('getElementLabel', () => {
   const divPath = TP.appendToPath(scenePath, 'div-1')
   const spanPath = TP.appendToPath(divPath, 'span-1')
   const textBlock = jsxTextBlock('test text')
-  const spanElement = jsxElement(
-    'span',
-    { 'data-uid': jsxAttributeValue('span-1') },
-    [textBlock],
-    null,
-  )
+  const spanElement = jsxElement('span', { 'data-uid': jsxAttributeValue('span-1') }, [textBlock])
   const spanElementMetadata = elementInstanceMetadata(
     spanPath,
     right(spanElement),
@@ -334,12 +329,7 @@ describe('getElementLabel', () => {
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
   )
-  const divElement = jsxElement(
-    'div',
-    { 'data-uid': jsxAttributeValue('div-1') },
-    [spanElement],
-    null,
-  )
+  const divElement = jsxElement('div', { 'data-uid': jsxAttributeValue('div-1') }, [spanElement])
   const divElementMetadata = elementInstanceMetadata(
     divPath,
     right(divElement),
