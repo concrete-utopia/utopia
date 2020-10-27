@@ -148,7 +148,7 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 
 export function createUpdateFileMessage(
   filename: string,
-  content: string | TextFile | TextFile,
+  content: string | TextFile,
   jobID: string,
 ): UpdateFileMessage {
   return {

@@ -242,7 +242,7 @@ function migrateFromVersion5(
             const fileType = file.type as string
             if (fileType === 'CODE_FILE') {
               const newFile = textFile(
-                textFileContents((file as any).fileContents, unparsed(), RevisionsState.CodeAhead),
+                textFileContents((file as any).fileContents, unparsed, RevisionsState.CodeAhead),
                 null,
                 0,
               )
@@ -251,7 +251,7 @@ function migrateFromVersion5(
               const code = (file as any).fileContents.value.code
               const lastRevisedTime = (file as any).lastRevisedTime
               const newFile = textFile(
-                textFileContents(code, unparsed(), RevisionsState.CodeAhead),
+                textFileContents(code, unparsed, RevisionsState.CodeAhead),
                 null,
                 lastRevisedTime,
               )

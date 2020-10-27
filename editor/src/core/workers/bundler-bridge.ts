@@ -426,7 +426,7 @@ function sendIdGuardedinitializeWorkerPromise(
 function sendIdGuardedUpdateFilePromise(
   worker: BundlerWorker,
   filename: string,
-  content: string | TextFile | TextFile,
+  content: string | TextFile,
 ): Promise<BuildResultMessage | UpdateProcessedMessage> {
   const generatedJobID = utils.generateUUID()
   return new Promise((resolve, reject) => {

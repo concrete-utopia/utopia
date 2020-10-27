@@ -11,7 +11,7 @@ import { createNodeModules } from './test-utils'
 
 const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
   '/src/thing.js': textFile(
-    textFileContents('export const Thing = 1', unparsed(), RevisionsState.CodeAhead),
+    textFileContents('export const Thing = 1', unparsed, RevisionsState.CodeAhead),
     null,
     0,
   ),
@@ -19,11 +19,7 @@ const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
     type: 'ASSET_FILE',
   },
   '/src/simple.css': textFile(
-    textFileContents(
-      '.utopiaClass { background-color: red; }',
-      unparsed(),
-      RevisionsState.CodeAhead,
-    ),
+    textFileContents('.utopiaClass { background-color: red; }', unparsed, RevisionsState.CodeAhead),
     null,
     0,
   ),

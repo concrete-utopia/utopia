@@ -358,9 +358,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
               if (
                 filename !== this.props.filename &&
                 file != null &&
-                (isDirectory(file) ||
-                  isTextFile(file) ||
-                  (isTextFile(file) && isJsOrTsFile(filename)))
+                (isDirectory(file) || (isTextFile(file) && isJsOrTsFile(filename))) // TODO Should this care if the file is a code file now we have loaders?
               ) {
                 let fileWithRelativePath = getFilePathToImport(filename, this.props.filename)
                 const isInSameDirAsTyped =
@@ -372,10 +370,9 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
                     ? monaco.languages.CompletionItemKind.Folder
                     : monaco.languages.CompletionItemKind.File
 
-                  const textToInsert =
-                    isTextFile(file) || isTextFile(file)
-                      ? filePathStripped.replace(/\.(js|tsx?)$/, '')
-                      : filePathStripped
+                  const textToInsert = isTextFile(file)
+                    ? filePathStripped.replace(/\.(js|tsx?)$/, '')
+                    : filePathStripped
 
                   if (
                     filePathStripped !== '' &&

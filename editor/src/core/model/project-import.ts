@@ -1,17 +1,10 @@
 import * as JSZip from 'jszip'
 import { JSZipObject } from 'jszip'
 import { isText } from 'istextorbinary'
-import {
-  ProjectContents,
-  RevisionsState,
-  textFile,
-  textFileContents,
-} from '../shared/project-file-types'
+import { RevisionsState, textFile, textFileContents, unparsed } from '../shared/project-file-types'
 import { assetFile, directory, fileTypeFromFileName, imageFile } from './project-file-utils'
 import { assetResultForBase64, getFileExtension, imageResultForBase64 } from '../shared/file-utils'
 import { Size } from '../shared/math-utils'
-import { left } from '../shared/either'
-import { parseFailure } from '../workers/common/project-file-utils'
 import { addFileToProjectContents, ProjectContentTreeRoot } from '../../components/assets'
 
 async function attemptedTextFileLoad(fileName: string, file: JSZipObject): Promise<string | null> {
@@ -134,16 +127,11 @@ export async function importZippedGitProject(
           if (loadedFile == null) {
             errors.push(`Unable to parse file ${shiftedFileName} as a text file`)
           } else {
-            // TODO We really need a way to represent unparsed files, or a way to separate the parsed file from the contents
             loadedProject = addFileToProjectContents(
               loadedProject,
               shiftedFileName,
               textFile(
-                textFileContents(
-                  loadedFile,
-                  parseFailure(null, null, null, []),
-                  RevisionsState.BothMatch,
-                ),
+                textFileContents(loadedFile, unparsed, RevisionsState.CodeAhead),
                 null,
                 Date.now(),
               ),

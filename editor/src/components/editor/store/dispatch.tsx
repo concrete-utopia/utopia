@@ -52,11 +52,9 @@ import {
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
-  getOpenFilename,
-  getOpenUIJSFile,
-  getOpenUIJSFileKey,
+  getOpenTextFile,
+  getOpenTextFileKey,
   getOpenUtopiaJSXComponentsFromState,
-  PersistentModel,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -270,14 +268,14 @@ function maybeRequestModelUpdateOnEditor(
     return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
   }
 
-  const openUIJSFile = getOpenUIJSFile(editor)
-  const openUIJSFilePath = getOpenUIJSFileKey(editor)
-  if (openUIJSFile == null || openUIJSFilePath == null) {
+  const openTextFile = getOpenTextFile(editor)
+  const openTextFilePath = getOpenTextFileKey(editor)
+  if (openTextFile == null || openTextFilePath == null) {
     return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
   } else {
     const modelUpdateRequested = maybeRequestModelUpdate(
-      openUIJSFile,
-      openUIJSFilePath,
+      openTextFile,
+      openTextFilePath,
       workers,
       dispatch,
     )

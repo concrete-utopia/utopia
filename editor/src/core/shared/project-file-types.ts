@@ -159,10 +159,8 @@ export interface Unparsed {
   type: 'UNPARSED'
 }
 
-export function unparsed(): Unparsed {
-  return {
-    type: 'UNPARSED',
-  }
+export const unparsed: Unparsed = {
+  type: 'UNPARSED',
 }
 
 export function isUnparsed(parsed: ParsedTextFile): parsed is Unparsed {
@@ -282,16 +280,20 @@ export function textFile(
 
 export function codeFile(fileContents: string, lastSavedContents: string | null): TextFile {
   return textFile(
-    textFileContents(fileContents, unparsed(), RevisionsState.CodeAhead),
+    textFileContents(fileContents, unparsed, RevisionsState.CodeAhead),
     lastSavedContents == null
       ? null
-      : textFileContents(lastSavedContents, unparsed(), RevisionsState.CodeAhead),
+      : textFileContents(lastSavedContents, unparsed, RevisionsState.CodeAhead),
     0,
   )
 }
 
 export function isTextFile(projectFile: ProjectFile | null): projectFile is TextFile {
   return projectFile != null && projectFile.type === 'TEXT_FILE'
+}
+
+export function isParsedTextFile(projectFile: ProjectFile | null): projectFile is TextFile {
+  return isTextFile(projectFile) && !isUnparsed(projectFile.fileContents.parsed)
 }
 
 interface EvalResult {

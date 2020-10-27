@@ -91,7 +91,7 @@ export var App = (props) => {
 
 export function getSampleComponentsFile(): TextFile {
   return textFile(
-    textFileContents(sampleComponentsFile, unparsed(), RevisionsState.BothMatch),
+    textFileContents(sampleComponentsFile, unparsed, RevisionsState.BothMatch),
     null,
     0,
   )

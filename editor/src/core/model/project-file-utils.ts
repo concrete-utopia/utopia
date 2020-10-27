@@ -358,20 +358,16 @@ export function fileTypeFromFileName(
   if (filename == null) {
     return null
   }
-  if (filename.endsWith('src/app.js')) {
+  if (isText(filename)) {
     return 'TEXT_FILE'
   } else {
-    if (isText(filename)) {
-      return 'TEXT_FILE'
+    const mimeType = mimeTypeLookup(filename)
+    if (mimeType === false) {
+      return 'TEXT_FILE' // FIXME This is definitely not a safe assumption
+    } else if (mimeType.startsWith('image/')) {
+      return 'IMAGE_FILE'
     } else {
-      const mimeType = mimeTypeLookup(filename)
-      if (mimeType === false) {
-        return 'TEXT_FILE' // FIXME This is definitely not a safe assumption
-      } else if (mimeType.startsWith('image/')) {
-        return 'IMAGE_FILE'
-      } else {
-        return 'ASSET_FILE'
-      }
+      return 'ASSET_FILE'
     }
   }
 }
@@ -471,19 +467,6 @@ export function uniqueProjectContentID(
 }
 
 export function saveTextFileContents(
-  file: TextFile,
-  contents: TextFileContents,
-  manualSave: boolean,
-): TextFile {
-  const savedContent = updateLastSavedContents(
-    file.lastSavedContents,
-    file.fileContents,
-    manualSave,
-  )
-  return textFile(contents, savedContent, Date.now())
-}
-
-export function saveUIJSFileContents(
   file: TextFile,
   contents: TextFileContents,
   manualSave: boolean,

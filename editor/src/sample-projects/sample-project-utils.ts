@@ -27,7 +27,7 @@ export function defaultProject(): PersistentModel {
     '/package.json': textFile(
       textFileContents(
         JSON.stringify(DefaultPackageJson, null, 2),
-        unparsed(),
+        unparsed,
         RevisionsState.BothMatch,
       ),
       null,
@@ -51,7 +51,7 @@ function uiBuilderProject(): PersistentModel {
     '/package.json': textFile(
       textFileContents(
         JSON.stringify(DefaultPackageJson, null, 2),
-        unparsed(),
+        unparsed,
         RevisionsState.BothMatch,
       ),
       null,

@@ -61,7 +61,7 @@ describe('addStoryboardFileToProject', () => {
     const expectedFile = textFile(
       textFileContents(
         'oh no, this is not a real storyboard file',
-        unparsed(),
+        unparsed,
         RevisionsState.CodeAhead,
       ),
       null,

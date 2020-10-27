@@ -22,7 +22,7 @@ import {
   correctProjectContentsPath,
   getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
-  saveUIJSFileContents,
+  saveTextFileContents,
   getHighlightBoundsFromParseResult,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
@@ -49,6 +49,7 @@ import {
   isParseSuccess,
   codeFile,
   isParseFailure,
+  isParsedTextFile,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -433,7 +434,7 @@ export function getFileForName(filePath: string, model: EditorState): ProjectFil
   return getContentsTreeFileFromString(model.projectContents, filePath)
 }
 
-export function getOpenUIJSFileKey(model: EditorState): string | null {
+export function getOpenTextFileKey(model: EditorState): string | null {
   const openFile = getOpenFile(model)
   const openEditorTab = getOpenEditorTab(model)
   if (
@@ -448,12 +449,36 @@ export function getOpenUIJSFileKey(model: EditorState): string | null {
   }
 }
 
+export function getOpenTextFile(model: EditorState): TextFile | null {
+  const openTextFileKey = getOpenTextFileKey(model)
+  if (openTextFileKey == null) {
+    return null
+  } else {
+    const openTextFile = getContentsTreeFileFromString(model.projectContents, openTextFileKey)
+    if (openTextFile != null && isTextFile(openTextFile)) {
+      return openTextFile
+    } else {
+      throw new Error(
+        `Inconsistency between expected open Text file ${openTextFileKey} and the file ${JSON.stringify(
+          openTextFile,
+        )}`,
+      )
+    }
+  }
+}
+
+export function getOpenUIJSFileKey(model: EditorState): string | null {
+  const openEditorTab = getOpenEditorTab(model)
+  if (isOpenFileUiJs(model) && openEditorTab != null && isOpenFileTab(openEditorTab)) {
+    return openEditorTab.filename
+  } else {
+    return null
+  }
+}
+
 export function isOpenFileUiJs(model: EditorState): boolean {
   const openFile = getOpenFile(model)
-  if (openFile == null) {
-    return false
-  }
-  return isTextFile(openFile)
+  return openFile != null && isParsedTextFile(openFile)
 }
 
 export function getOpenUIJSFile(model: EditorState): TextFile | null {
@@ -462,7 +487,7 @@ export function getOpenUIJSFile(model: EditorState): TextFile | null {
     return null
   } else {
     const openUIJSFile = getContentsTreeFileFromString(model.projectContents, openUIJSFileKey)
-    if (openUIJSFile != null && isTextFile(openUIJSFile)) {
+    if (openUIJSFile != null && isParsedTextFile(openUIJSFile)) {
       return openUIJSFile
     } else {
       throw new Error(
@@ -545,7 +570,7 @@ export function applyParseAndEditorChanges<T>(
           openUIJSFile.fileContents.parsed,
         )
 
-        const updatedFile = saveUIJSFileContents(
+        const updatedFile = saveTextFileContents(
           openUIJSFile,
           textFileContents(
             openUIJSFile.fileContents.code,

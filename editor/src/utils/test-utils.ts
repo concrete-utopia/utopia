@@ -108,7 +108,7 @@ export function createEditorStates(
       '/package.json': textFile(
         textFileContents(
           JSON.stringify(DefaultPackageJson, null, 2),
-          unparsed(),
+          unparsed,
           RevisionsState.CodeAhead,
         ),
         null,

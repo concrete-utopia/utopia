@@ -98,7 +98,6 @@ import {
   uniqueProjectContentID,
   updateParsedTextFileHighlightBounds,
   assetFile,
-  saveTextFileContents,
   applyToAllUIJSFiles,
 } from '../../../core/model/project-file-utils'
 import {
@@ -394,6 +393,7 @@ import {
   getOpenEditorTab,
   getOpenFilename,
   getOpenImportsFromState,
+  getOpenTextFileKey,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
   getOpenUtopiaJSXComponentsFromState,
@@ -1316,10 +1316,10 @@ export const UPDATE_FNS = {
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
         const parseResult = lintAndParse(filename, file.fileContents.code)
-        return saveTextFileContents(
-          file,
+        return textFile(
           textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
-          false,
+          null,
+          Date.now(),
         )
       },
     )
@@ -2738,7 +2738,7 @@ export const UPDATE_FNS = {
     }
   },
   SAVE_CURRENT_FILE: (action: SaveCurrentFile, editor: EditorModel): EditorModel => {
-    const openFilePath = getOpenUIJSFileKey(editor)
+    const openFilePath = getOpenTextFileKey(editor)
     if (openFilePath != null) {
       return {
         ...editor,

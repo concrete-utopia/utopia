@@ -23,16 +23,12 @@ import {
   TextFile,
   isParseSuccess,
   isTextFile,
-  ParsedTextFile,
   textFileContents,
   textFile,
   TextFileContents,
+  unparsed,
 } from '../../../core/shared/project-file-types'
-import {
-  emptyImports,
-  parseSuccess,
-  parseFailure,
-} from '../../../core/workers/common/project-file-utils'
+import { emptyImports, parseSuccess } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import { right, forceRight, left, isRight } from '../../../core/shared/either'
 import { createFakeMetadataForComponents } from '../../../utils/test-utils'
@@ -853,7 +849,7 @@ describe('LOAD', () => {
     const secondUIJSFile = '/src/some/other/file.js'
     const initialFileContents: TextFileContents = textFileContents(
       sampleCode,
-      parseFailure(null, null, null, []),
+      unparsed,
       RevisionsState.BothMatch,
     )
     const loadedModel: PersistentModel = {
