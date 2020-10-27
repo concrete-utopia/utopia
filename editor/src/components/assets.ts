@@ -210,6 +210,7 @@ export function walkContentsTree(
   })
 }
 
+// FIXME A lot of these files should be moved to a more relevant file
 export function getContentsTreeFileFromElements(
   tree: ProjectContentTreeRoot,
   pathElements: ReadonlyArray<string>,

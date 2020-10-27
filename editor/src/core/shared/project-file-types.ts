@@ -90,9 +90,9 @@ export function importAliasEquals(first: ImportAlias, second: ImportAlias): bool
 }
 
 export interface ImportDetails {
-  importedWithName: string | null
-  importedFromWithin: Array<ImportAlias>
-  importedAs: string | null
+  importedWithName: string | null // import name from './place'
+  importedFromWithin: Array<ImportAlias> // import { name as alias } from './place'
+  importedAs: string | null // import * as name from './place'
 }
 
 export function importDetails(

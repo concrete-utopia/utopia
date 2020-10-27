@@ -1,4 +1,5 @@
 import { PropertyControls } from 'utopia-api'
+import { ProjectContentTreeRoot } from '../../components/assets'
 import {
   getExportValuesFromAllModules,
   incorporateBuildResult,
@@ -25,6 +26,7 @@ export const initPropertyControlsProcessor = (
   const processPropertyControls = async (
     npmDependencies: RequestedNpmDependency[],
     nodeModulesUpdate: NodeModulesUpdate,
+    projectContents: ProjectContentTreeRoot,
     bundledProjectFiles: MultiFileBuildResult,
     exportsInfo: ReadonlyArray<ExportsInfo>,
   ) => {
@@ -37,11 +39,17 @@ export const initPropertyControlsProcessor = (
       resolvedNpmDependencies,
     )
 
-    processPropertyControlsWithBuildResult(propertyControlsInfo, bundledProjectFiles, exportsInfo)
+    processPropertyControlsWithBuildResult(
+      propertyControlsInfo,
+      projectContents,
+      bundledProjectFiles,
+      exportsInfo,
+    )
   }
 
   const processPropertyControlsWithBuildResult = async (
     propertyControlsInfo: PropertyControlsInfo,
+    projectContents: ProjectContentTreeRoot,
     bundledProjectFiles: MultiFileBuildResult,
     exportsInfo: ReadonlyArray<ExportsInfo>,
   ) => {
@@ -51,13 +59,14 @@ export const initPropertyControlsProcessor = (
         Object.assign(currentNodeModules, downloadedModules)
         processPropertyControlsWithBuildResult(
           propertyControlsInfo,
+          projectContents,
           bundledProjectFiles,
           exportsInfo,
         )
       })
     }
 
-    const requireFn = getRequireFn(onRemoteModuleDownload, currentNodeModules)
+    const requireFn = getRequireFn(onRemoteModuleDownload, projectContents, currentNodeModules)
 
     const exportValues = getExportValuesFromAllModules(bundledProjectFiles, requireFn)
     fastForEach(exportsInfo, (result) => {

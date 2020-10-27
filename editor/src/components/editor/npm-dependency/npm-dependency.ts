@@ -19,6 +19,7 @@ import {
   ProjectFile,
   NodeModules,
   esCodeFile,
+  ImportDetails,
 } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import {
@@ -36,6 +37,7 @@ import * as Semver from 'semver'
 import { ProjectContentTreeRoot } from '../../assets'
 import * as npa from 'npm-package-arg'
 import * as GitHost from 'hosted-git-info'
+import { importDefault, importStar } from '../../../core/es-modules/commonjs-interop'
 
 interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
@@ -402,6 +404,27 @@ export function updateDependenciesInEditorState(
   return updatePackageJsonInEditorState(editor, transformPackageJson)
 }
 
+export function importResultFromModule(
+  importDetails: ImportDetails,
+  requireResult: any,
+): MapLike<any> {
+  let result: MapLike<any> = {}
+
+  if (importDetails.importedWithName !== null) {
+    // import name from './place'
+    result[importDetails.importedWithName] = importDefault(requireResult)
+  }
+  if (importDetails.importedAs !== null) {
+    // import * as name from './place'
+    result[importDetails.importedAs] = importStar(requireResult)
+  }
+  Utils.fastForEach(importDetails.importedFromWithin, (fromWithin) => {
+    result[fromWithin.alias] = requireResult[fromWithin.name]
+  })
+
+  return result
+}
+
 export function importResultFromImports(
   importOrigin: string,
   imports: Imports,
@@ -409,20 +432,14 @@ export function importResultFromImports(
 ): MapLike<any> {
   let result: MapLike<any> = {}
   Utils.fastForEach(Object.keys(imports), (importSource) => {
-    const importContent = imports[importSource]
     const requireResult = requireFn(importOrigin, importSource)
     if (requireResult == null) {
       console.warn(`Could not find ${importSource} with a require call.`)
     } else {
-      if (importContent.importedWithName !== null) {
-        result[importContent.importedWithName] = requireResult.default
+      result = {
+        ...result,
+        ...importResultFromModule(imports[importSource], requireResult),
       }
-      if (importContent.importedAs !== null) {
-        result[importContent.importedAs] = requireResult
-      }
-      Utils.fastForEach(importContent.importedFromWithin, (fromWithin) => {
-        result[fromWithin.alias] = requireResult[fromWithin.name]
-      })
     }
   })
   return result

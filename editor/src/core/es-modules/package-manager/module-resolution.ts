@@ -1,8 +1,10 @@
 import {
+  ProjectFile,
   NodeModules,
   ESCodeFile,
   ESRemoteDependencyPlaceholder,
   isEsCodeFile,
+  esCodeFile,
 } from '../../shared/project-file-types'
 import {
   optionalObjectKeyParser,
@@ -11,6 +13,9 @@ import {
 } from '../../../utils/value-parser-utils'
 import { applicative3Either, foldEither } from '../../shared/either'
 import { setOptionalProp } from '../../shared/object-utils'
+import { getContentsTreeFileFromElements, ProjectContentTreeRoot } from '../../../components/assets'
+import { loaderExistsForFile } from '../../webpack-loaders/loaders'
+import { dropLast, last } from '../../shared/array-utils'
 
 interface ResolveSuccess<T> {
   type: 'RESOLVE_SUCCESS'
@@ -34,21 +39,17 @@ const resolveNotPresent: ResolveNotPresent = {
 
 type ResolveResult<T> = ResolveNotPresent | ResolveSuccess<T>
 
-function isResolveSuccess<T>(resolveResult: ResolveResult<T>): resolveResult is ResolveSuccess<T> {
-  return resolveResult.type === 'RESOLVE_SUCCESS'
-}
-
-function isResolveNotPresent<T>(
+export function isResolveSuccess<T>(
   resolveResult: ResolveResult<T>,
-): resolveResult is ResolveNotPresent {
-  return resolveResult.type === 'RESOLVE_NOT_PRESENT'
+): resolveResult is ResolveSuccess<T> {
+  return resolveResult.type === 'RESOLVE_SUCCESS'
 }
 
 type ResolveResultType = ResolveResult<any>['type']
 
 const resolveResultTypes: Array<ResolveResultType> = ['RESOLVE_NOT_PRESENT', 'RESOLVE_SUCCESS']
 
-export function failoverResolveResults<T>(
+function failoverResolveResults<T>(
   resolveResultCalls: Array<() => ResolveResult<T>>,
 ): ResolveResult<T> {
   let result: ResolveResult<T> = resolveNotPresent
@@ -63,6 +64,27 @@ export function failoverResolveResults<T>(
     }
   }
   return result
+}
+
+interface FoundFile {
+  path: string
+  file: ESCodeFile | ESRemoteDependencyPlaceholder
+}
+
+type FileLookupResult = ResolveResult<FoundFile>
+
+function fileLookupResult(
+  path: string,
+  file: ESCodeFile | ESRemoteDependencyPlaceholder | null,
+): FileLookupResult {
+  if (file == null) {
+    return resolveNotPresent
+  } else {
+    return resolveSuccess({
+      path: path,
+      file: file,
+    })
+  }
 }
 
 function pathToElements(path: string): string[] {
@@ -84,33 +106,103 @@ function normalizePath(path: string[]): string[] {
   }, [])
 }
 
-function findFileForPath(
-  nodeModules: NodeModules,
-  path: string[],
-): ESCodeFile | ESRemoteDependencyPlaceholder | null {
-  return nodeModules[path.join('/')] ?? null
+type FileLookupFn = (path: string[]) => FileLookupResult
+const fallbackLookup: (lookupFn: FileLookupFn) => FileLookupFn = (lookupFn: FileLookupFn) => {
+  return (path: string[]) => {
+    const asIsPath = normalizePath(path)
+    const pathToFile = dropLast(asIsPath)
+    const lastPart = last(asIsPath)
+    if (lastPart == null) {
+      return resolveNotPresent
+    } else {
+      if (loaderExistsForFile(lastPart)) {
+        const asIsResult = lookupFn(asIsPath)
+        if (isResolveSuccess(asIsResult)) {
+          return asIsResult
+        }
+      }
+
+      const withJs = lastPart + '.js'
+      if (loaderExistsForFile(withJs)) {
+        const withJsResult = lookupFn(pathToFile.concat(withJs))
+        if (isResolveSuccess(withJsResult)) {
+          return withJsResult
+        }
+      }
+
+      const withJsx = lastPart + '.jsx'
+      if (loaderExistsForFile(withJsx)) {
+        const withJsxResult = lookupFn(pathToFile.concat(withJsx))
+        if (isResolveSuccess(withJsxResult)) {
+          return withJsxResult
+        }
+      }
+
+      // TODO this also needs JSON parsing
+      const withJson = lastPart + '.json'
+      if (loaderExistsForFile(withJson)) {
+        const withJsonResult = lookupFn(pathToFile.concat(withJson))
+        if (isResolveSuccess(withJsonResult)) {
+          return withJsonResult
+        }
+      }
+
+      return resolveNotPresent
+    }
+  }
 }
 
-function findFileURIForPath(nodeModules: NodeModules, path: string[]): ResolveResult<string> {
-  const normalizedPath = normalizePath(path).join('/')
-  const uriAsIs = normalizedPath
-  if (nodeModules[uriAsIs] != null) {
-    return resolveSuccess(uriAsIs)
+const nodeModulesFileLookup: (nodeModules: NodeModules) => FileLookupFn = (
+  nodeModules: NodeModules,
+) => {
+  return fallbackLookup((path: string[]) => {
+    const filename = path.join('/')
+    return fileLookupResult(filename, nodeModules[filename])
+  })
+}
+
+function getProjectFileContentsAsString(file: ProjectFile): string | null {
+  switch (file.type) {
+    case 'ASSET_FILE':
+      return ''
+    case 'DIRECTORY':
+      return null
+    case 'IMAGE_FILE':
+      return file.base64 ?? ''
+    case 'CODE_FILE':
+      return file.fileContents
+    case 'UI_JS_FILE':
+      return file.fileContents.value.code
+    default:
+      const _exhaustiveCheck: never = file
+      throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
   }
-  const uriWithJs = normalizedPath + '.js'
-  if (nodeModules[uriWithJs] != null) {
-    return resolveSuccess(uriWithJs)
+}
+
+const projectContentsFileLookup: (projectContents: ProjectContentTreeRoot) => FileLookupFn = (
+  projectContents: ProjectContentTreeRoot,
+) => {
+  return fallbackLookup((path: string[]) => {
+    const withoutLeadingSlash = path.filter((s) => s.length > 0)
+    const projectFile = getContentsTreeFileFromElements(projectContents, withoutLeadingSlash)
+    const fileContents = projectFile == null ? null : getProjectFileContentsAsString(projectFile)
+    if (fileContents != null) {
+      const filename = path.join('/')
+      return fileLookupResult(filename, esCodeFile(fileContents, null))
+    } else {
+      return resolveNotPresent
+    }
+  })
+}
+
+const combinedFileLookup: (lookupFns: Array<FileLookupFn>) => FileLookupFn = (
+  lookupFns: Array<FileLookupFn>,
+) => {
+  return (path: string[]) => {
+    return lookupFns.reduce<FileLookupResult>((result, lookupFn) => {
+      return isResolveSuccess(result) ? result : lookupFn(path)
+    }, resolveNotPresent)
   }
-  const uriWithJsx = normalizedPath + '.jsx'
-  if (nodeModules[uriWithJsx] != null) {
-    return resolveSuccess(uriWithJsx)
-  }
-  // TODO this also needs JSON parsing
-  const uriWithJson = normalizedPath + '.json'
-  if (nodeModules[uriWithJson] != null) {
-    return resolveSuccess(uriWithJson)
-  }
-  return resolveNotPresent
 }
 
 interface PartialPackageJsonDefinition {
@@ -166,35 +258,38 @@ function processPackageJson(
 }
 
 function resolvePackageJson(
-  nodeModules: NodeModules,
+  fileLookupFn: FileLookupFn,
   packageJsonFolder: string[],
-): ResolveResult<string> {
+): FileLookupResult {
   const normalizedFolderPath = normalizePath(packageJsonFolder)
-  const folderPackageJson = findFileForPath(nodeModules, [...normalizedFolderPath, 'package.json'])
-  if (folderPackageJson != null && isEsCodeFile(folderPackageJson)) {
-    const mainEntryPath = processPackageJson(folderPackageJson.fileContents, normalizedFolderPath)
+  const folderPackageJson = fileLookupFn([...normalizedFolderPath, 'package.json'])
+  if (isResolveSuccess(folderPackageJson) && isEsCodeFile(folderPackageJson.success.file)) {
+    const mainEntryPath = processPackageJson(
+      folderPackageJson.success.file.fileContents,
+      normalizedFolderPath,
+    )
     if (isResolveSuccess(mainEntryPath)) {
       return failoverResolveResults([
         // try loading the entry path as a file
-        () => findFileURIForPath(nodeModules, mainEntryPath.success),
+        () => fileLookupFn(mainEntryPath.success),
         // fallback to loading it as a folder with an index.js
         () => {
           const indexJsPath = [...mainEntryPath.success, 'index']
-          return findFileURIForPath(nodeModules, indexJsPath)
+          return fileLookupFn(indexJsPath)
         },
       ])
     } else {
-      return mainEntryPath
+      return resolveNotPresent
     }
   }
   return resolveNotPresent
 }
 
 function resolveNonRelativeModule(
-  nodeModules: NodeModules,
+  fileLookupFn: FileLookupFn,
   importOrigin: string[],
   toImport: string[],
-): ResolveResult<string> {
+): FileLookupResult {
   if (importOrigin.length === 0) {
     // we exhausted all folders without success
     return resolveNotPresent
@@ -202,31 +297,31 @@ function resolveNonRelativeModule(
 
   return failoverResolveResults([
     // 1. look for ./node_modules/<package_name>.js
-    () => findFileURIForPath(nodeModules, [...importOrigin, 'node_modules', ...toImport]),
+    () => fileLookupFn([...importOrigin, 'node_modules', ...toImport]),
     // 2. look for ./node_modules/<package_name>/package.json
-    () => resolvePackageJson(nodeModules, [...importOrigin, 'node_modules', ...toImport]),
+    () => resolvePackageJson(fileLookupFn, [...importOrigin, 'node_modules', ...toImport]),
     // 3. look for ./node_modules/<package_name>/index.js
     () => {
       const indexJsPath = [...importOrigin, 'node_modules', ...toImport, 'index']
-      return findFileURIForPath(nodeModules, indexJsPath)
+      return fileLookupFn(indexJsPath)
     },
     // 4. repeat in the parent folder
-    () => resolveNonRelativeModule(nodeModules, importOrigin.slice(0, -1), toImport),
+    () => resolveNonRelativeModule(fileLookupFn, importOrigin.slice(0, -1), toImport),
   ])
 }
 
 function resolveRelativeModule(
-  nodeModules: NodeModules,
+  fileLookupFn: FileLookupFn,
   importOrigin: string[],
   toImport: string[],
-): ResolveResult<string> {
+): FileLookupResult {
   return failoverResolveResults([
     // 1. look for a file named <import_name>
-    () => findFileURIForPath(nodeModules, [...importOrigin, ...toImport]),
+    () => fileLookupFn([...importOrigin, ...toImport]),
     // 2. look for <import_name>/package.json
-    () => resolvePackageJson(nodeModules, [...importOrigin, ...toImport]),
+    () => resolvePackageJson(fileLookupFn, [...importOrigin, ...toImport]),
     // 3. look for <import_name>/index.js
-    () => findFileURIForPath(nodeModules, [...importOrigin, ...toImport, 'index']),
+    () => fileLookupFn([...importOrigin, ...toImport, 'index']),
   ])
 }
 
@@ -237,41 +332,36 @@ function resolveRelativeModule(
 // TODO an even more comprehensive writeup https://nodejs.org/api/modules.html#modules_all_together
 
 export function resolveModule(
+  projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   importOrigin: string,
   toImport: string,
-): string | null {
-  let resolveResult: ResolveResult<string> = resolveNotPresent
+): FileLookupResult {
+  const lookupFn = combinedFileLookup([
+    nodeModulesFileLookup(nodeModules),
+    projectContentsFileLookup(projectContents),
+  ])
+
   if (toImport.startsWith('/')) {
     // absolute import
-    resolveResult = resolveRelativeModule(
-      nodeModules,
+    return resolveRelativeModule(
+      lookupFn,
       [], // this import is relative to the root
       pathToElements(toImport),
     )
   } else {
     if (toImport.startsWith('.')) {
-      resolveResult = resolveRelativeModule(
-        nodeModules,
+      return resolveRelativeModule(
+        lookupFn,
         pathToElements(importOrigin).slice(0, -1),
         pathToElements(toImport),
       )
     } else {
-      resolveResult = resolveNonRelativeModule(
-        nodeModules,
+      return resolveNonRelativeModule(
+        lookupFn,
         pathToElements(importOrigin).slice(0, -1),
         pathToElements(toImport),
       )
     }
-  }
-
-  switch (resolveResult.type) {
-    case 'RESOLVE_SUCCESS':
-      return resolveResult.success
-    case 'RESOLVE_NOT_PRESENT':
-      return null
-    default:
-      const _exhaustiveCheck: never = resolveResult
-      throw new Error(`Unhandled case ${JSON.stringify(resolveResult)}`)
   }
 }

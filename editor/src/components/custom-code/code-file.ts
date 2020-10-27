@@ -218,7 +218,7 @@ export function generateCodeResultCache(
   // Trigger async call to build the property controls info.
   sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents, onlyProjectFiles)
 
-  const requireFn = getEditorRequireFn(nodeModules, dispatch)
+  const requireFn = getEditorRequireFn(projectContents, nodeModules, dispatch)
 
   let cache: { [code: string]: CodeResult } = {}
   Utils.fastForEach(exportsInfo, (result) => {

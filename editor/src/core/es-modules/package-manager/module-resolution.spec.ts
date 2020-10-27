@@ -1,19 +1,42 @@
+import { contentsToTree, ProjectContentTreeRoot } from '../../../components/assets'
 import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
-import { resolveModule } from './module-resolution'
+import { isResolveSuccess, resolveModule } from './module-resolution'
 import { createNodeModules } from './test-utils'
 
+const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
+  '/src/thing.js': {
+    type: 'CODE_FILE',
+    fileContents: 'export const Thing = 1',
+    lastSavedContents: null,
+  },
+  '/src/icon.png': {
+    type: 'ASSET_FILE',
+  },
+  '/src/simple.css': {
+    type: 'CODE_FILE',
+    fileContents: '.utopiaClass { background-color: red; }',
+    lastSavedContents: null,
+  },
+})
+
 describe('ES Package Manager Module Resolution', () => {
-  function resolve(toImport: string): string | null {
-    return resolveModule(
+  function resolve(importOrigin: string, toImport: string): string | null {
+    const resolveResult = resolveModule(
+      sampleProjectContents,
       createNodeModules(moduleResolutionExamples.contents),
-      '/node_modules/mypackage/src/moduleA.js',
+      importOrigin,
       toImport,
     )
+    if (isResolveSuccess(resolveResult)) {
+      return resolveResult.success.path
+    } else {
+      return null
+    }
   }
 
   function testNonRelativeResolve(toImport: string, expectedResult: string | null): void {
     it(`resolves non-relative path ${toImport}`, () => {
-      expect(resolve(toImport)).toEqual(expectedResult)
+      expect(resolve('/node_modules/mypackage/src/moduleA.js', toImport)).toEqual(expectedResult)
     })
   }
 
@@ -63,7 +86,7 @@ describe('ES Package Manager Module Resolution', () => {
 
   function testRelativeResolve(toImport: string, expectedResult: string | null): void {
     it(`resolves relative path ${toImport}`, () => {
-      expect(resolve(toImport)).toEqual(expectedResult)
+      expect(resolve('/node_modules/mypackage/src/moduleA.js', toImport)).toEqual(expectedResult)
     })
   }
 
@@ -104,15 +127,25 @@ describe('ES Package Manager Module Resolution', () => {
   testRelativeResolve('./folderWithpackageJsonMissingField', null)
 
   it('resolves absolute relative imports', () => {
-    expect(resolve('/node_modules/mypackage/src/folder/moduleD')).toEqual(
-      '/node_modules/mypackage/src/folder/moduleD.jsx',
-    )
+    expect(
+      resolve(
+        '/node_modules/mypackage/src/moduleA.js',
+        '/node_modules/mypackage/src/folder/moduleD',
+      ),
+    ).toEqual('/node_modules/mypackage/src/folder/moduleD.jsx')
   })
 
   it('throws a friendly error when finding a package.json that has no main entry and only has a module entry', () => {
-    expect(resolve('es-module-only-package')).toEqual(
+    expect(resolve('/node_modules/mypackage/src/moduleA.js', 'es-module-only-package')).toEqual(
       '/node_modules/es-module-only-package/index.js',
     )
+  })
+
+  it('resolves local project files that may require a loader', () => {
+    expect(resolve('/src/app.js', './icon.png')).toEqual('/src/icon.png')
+    expect(resolve('/src/app.js', './folder/../icon.png')).toEqual('/src/icon.png')
+    expect(resolve('/src/app.js', './simple.css')).toEqual('/src/simple.css')
+    expect(resolve('/src/app.js', './thing.js')).toEqual('/src/thing.js')
   })
 
   // it('loads self references', () => {
