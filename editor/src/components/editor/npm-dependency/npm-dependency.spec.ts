@@ -1,8 +1,10 @@
+import { importAlias, importDetails } from '../../../core/shared/project-file-types'
 import {
   findMatchingVersion,
   getVersionType,
-  packageNotFound,
+  importResultFromModule,
   npmVersionLookupSuccess,
+  packageNotFound,
 } from './npm-dependency'
 
 require('jest-fetch-mock').enableMocks()
@@ -120,5 +122,74 @@ describe('Checking the version type of a dependency', () => {
     expect(
       getVersionType('forever', 'https://github.com/indexzero/forever/tarball/v0.5.6'),
     ).toEqual('URL')
+  })
+})
+
+describe('Importing from a resolved module', () => {
+  it('Handles all forms of imports for an es module', () => {
+    // import cake, { icing as doIWantIcing } from './cake'
+    // import * as cakeStuff from './cake'
+    const imports = importDetails('cake', [importAlias('icing', 'doIWantIcing')], 'cakeStuff')
+
+    const defaultExport = 'A fully fledged cake'
+    const icingExport = 'ooooh yes please, but only the decent stuff'
+
+    // export const icing = 'ooooh yes please, but only the decent stuff'
+    // export default 'A fully fledged cake'
+    const cakesModule = {
+      default: defaultExport,
+      icing: icingExport,
+      __esModule: true,
+    }
+
+    const importResult = importResultFromModule(imports, cakesModule)
+    expect(importResult).toEqual({
+      cake: defaultExport,
+      doIWantIcing: icingExport,
+      cakeStuff: cakesModule,
+    })
+  })
+
+  it('Handles all forms of imports for a common js module with a default export', () => {
+    // import cake, { icing as doIWantIcing } from './cake'
+    // import * as cakeStuff from './cake'
+    const imports = importDetails('cake', [importAlias('icing', 'doIWantIcing')], 'cakeStuff')
+
+    const defaultExport = 'A fully fledged cake'
+
+    // module.exports = 'A fully fledged cake'
+    const cakesModule = defaultExport
+
+    const importResult = importResultFromModule(imports, cakesModule)
+    expect(importResult).toEqual({
+      cake: defaultExport,
+      doIWantIcing: undefined,
+      cakeStuff: {
+        default: defaultExport,
+      },
+    })
+  })
+
+  it('Handles all forms of imports for a common js module with named exports', () => {
+    // import cake, { icing as doIWantIcing } from './cake'
+    // import * as cakeStuff from './cake'
+    const imports = importDetails('cake', [importAlias('icing', 'doIWantIcing')], 'cakeStuff')
+
+    const icingExport = 'ooooh yes please, but only the decent stuff'
+
+    // exports.icing = 'ooooh yes please, but only the decent stuff'
+    const cakesModule = {
+      icing: icingExport,
+    }
+
+    const importResult = importResultFromModule(imports, cakesModule)
+    expect(importResult).toEqual({
+      cake: cakesModule,
+      doIWantIcing: icingExport,
+      cakeStuff: {
+        default: cakesModule,
+        icing: icingExport,
+      },
+    })
   })
 })

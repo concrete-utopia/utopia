@@ -32,6 +32,31 @@ describe('Typescript worker builds the project', () => {
     })
 })
 
+describe('Typescript worker applies the loaders', () => {
+  it('applies the file loader for matching image files on init', (done) => {
+    handleMessage(InitWorkerMessageNeedingLoaders, (msg) => {
+      if (msg.type === 'build') {
+        // Ensure no errors
+        for (const builtFile in msg.buildResult) {
+          if (msg.buildResult[builtFile].errors.length > 0) {
+            fail(`Build errors found in built file ${builtFile}`)
+          }
+        }
+
+        done()
+      }
+    })
+  })
+
+  it('applies the file loader for matching image files on single file update', (done) => {
+    handleMessage(UpdateFileMessageNeedingLoaders, (msg) => {
+      if (msg.type === 'updateprocessed') {
+        done()
+      }
+    })
+  })
+})
+
 const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
   type: 'inittsworker',
   typeDefinitions: SampleTypeDefinitions,
@@ -315,4 +340,70 @@ const SampleUpdateFileMessageWithError: IncomingWorkerMessage = {
     0,
   ),
   jobID: 'ffcc378d_6bc8_4635_9fd9_e54565241f27',
+}
+
+const InitWorkerMessageNeedingLoaders: IncomingWorkerMessage = {
+  type: 'inittsworker',
+  typeDefinitions: SampleTypeDefinitions,
+  projectContents: contentsToTree({
+    '/package.json': textFile(
+      textFileContents(
+        '{\n  "name": "Utopia Project",\n  "version": "0.1.0",\n  "utopia": {\n    "main-ui": "app.js",\n    "html": "index.html",\n    "js": "index.js"\n  },\n  "dependencies": {\n    "react": "16.8.6",\n    "@types/react": "16.8.17",\n    "csstype": "2.6.7",\n    "react-dom": "16.8.6",\n    "@types/react-dom": "16.8.4",\n    "utopia-api": "0.4.1",\n    "react-spring": "8.0.27"\n  }\n}',
+        unparsed(),
+        RevisionsState.CodeAhead,
+      ),
+      null,
+      0,
+    ),
+    '/app.js': textFile(
+      textFileContents(
+        "/** @jsx jsx */\nimport * as React from 'react'\nimport { Scene, Storyboard, jsx } from 'utopia-api'\nimport icon from './icon.png'\nexport var App = (props) => {\n  return (\n    <div\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}\n      layout={{ layoutSystem: 'pinSystem' }}\n    >\n      <img src={icon} />\n    </div>\n  )\n}\nexport var storyboard = (\n  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>\n    <Scene\n      component={App}\n      props={{}}\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\n    />\n  </Storyboard>\n)\n",
+        unparsed(),
+        RevisionsState.CodeAhead,
+      ),
+      null,
+      0,
+    ),
+    '/src': {
+      type: 'DIRECTORY',
+    },
+    '/assets': {
+      type: 'DIRECTORY',
+    },
+    '/public': {
+      type: 'DIRECTORY',
+    },
+    '/src/icon.png': {
+      type: 'ASSET_FILE',
+    },
+    '/src/index.js': textFile(
+      textFileContents(
+        'import * as React from "react";\nimport * as ReactDOM from "react-dom";\nimport { App } from "../app";\n\nconst root = document.getElementById("root");\nif (root != null) {\nReactDOM.render(<App />, root);\n}',
+        unparsed(),
+        RevisionsState.CodeAhead,
+      ),
+      null,
+      0,
+    ),
+    '/public/index.html': textFile(
+      textFileContents(
+        '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>Utopia React App</title>\n</head>\n<body>\n<div id="root"></div>\n</body>\n</html>',
+        unparsed(),
+        RevisionsState.CodeAhead,
+      ),
+      null,
+      0,
+    ),
+  }),
+  buildOrParsePrint: 'build',
+  jobID: 'LOADER_INIT_JOB_ID',
+}
+
+const UpdateFileMessageNeedingLoaders: IncomingWorkerMessage = {
+  type: 'updatefile',
+  filename: '/src/icon.png',
+  content: {
+    type: 'ASSET_FILE',
+  },
+  jobID: 'LOADER_UPDATE_JOB_ID',
 }

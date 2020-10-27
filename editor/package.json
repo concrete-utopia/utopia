@@ -167,7 +167,7 @@
     "use-context-selector": "git://github.com/dai-shi/use-context-selector.git#3f1df8f",
     "utopia-api": "file:../utopia-api",
     "xstate": "4.6.7",
-    "zustand": "2.2.3"
+    "zustand": "3.1.3"
   },
   "devDependencies": {
     "@babel/cli": "7.8.4",

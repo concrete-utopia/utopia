@@ -1,8 +1,9 @@
 import * as Babel from '@babel/standalone'
+import * as ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import * as TS from 'typescript'
 import * as BrowserFS from 'browserfs'
 import { TypeDefinitions } from '../../shared/npm-dependency-types'
-import { isTextFile, TextFile } from '../../shared/project-file-types'
+import { isTextFile, TextFile, ProjectContents, ProjectFile } from '../../shared/project-file-types'
 import { RawSourceMap } from './ts-typings/RawSourceMap'
 import { libfile } from './libfile'
 import { FSModule } from 'browserfs/dist/node/core/FS'
@@ -30,6 +31,12 @@ import { fastForEach } from '../../shared/utils'
 import { getTextFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
 import { ProjectContentTreeRoot, walkContentsTree } from '../../../components/assets'
+import { isDirectory } from '../../model/project-file-utils'
+import {
+  applyLoaders,
+  filenameWithoutJSSuffix,
+  loaderExistsForFile,
+} from '../../webpack-loaders/loaders'
 
 const TS_LIB_FILES: { [key: string]: string } = {
   'lib.d.ts': libfile,
@@ -69,7 +76,7 @@ export type OutgoingWorkerMessage =
 interface UpdateFileMessage {
   type: 'updatefile'
   filename: string
-  content: string | TextFile | TextFile
+  content: string | ProjectFile
   jobID: string
 }
 
@@ -213,6 +220,23 @@ type DetailedTypeInfo = {
   memberInfo: { type: string; members: { [member: string]: string } }
 }
 
+// FIXME This needs extracting, but getCodeFileContents relies on the parse printer for printing
+function getProjectFileContentsAsString(file: ProjectFile): string | null {
+  switch (file.type) {
+    case 'ASSET_FILE':
+      return ''
+    case 'DIRECTORY':
+      return null
+    case 'IMAGE_FILE':
+      return file.base64 ?? ''
+    case 'TEXT_FILE':
+      return getTextFileContents(file, false, true)
+    default:
+      const _exhaustiveCheck: never = file
+      throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
+  }
+}
+
 export function handleMessage(
   workerMessage: IncomingWorkerMessage,
   sendMessage: (content: OutgoingWorkerMessage) => void,
@@ -236,13 +260,16 @@ export function handleMessage(
     }
     case 'updatefile': {
       try {
-        let content: string
+        let content: string | null
         if (typeof workerMessage.content === 'string') {
           content = workerMessage.content
         } else {
-          content = getTextFileContents(workerMessage.content, false, true)
+          content = getProjectFileContentsAsString(workerMessage.content)
         }
-        fileChanged(workerMessage.filename, content, workerMessage.jobID)
+
+        if (content != null) {
+          fileChanged(workerMessage.filename, content, workerMessage.jobID)
+        }
       } finally {
         sendMessage(createUpdateProcessedMessage(workerMessage.jobID))
       }
@@ -280,11 +307,11 @@ export function initTsIncrementalBuild(
   let codeFiles: Array<string> = []
   let otherFilesToWatch: Array<string> = []
   walkContentsTree(projectContents, (filename, file) => {
-    if (isTextFile(file) && isJsOrTsFile(filename)) {
-      codeFiles.push(filename)
-    }
     if (isTextFile(file) && isCssFile(filename)) {
+      // FIXME In the bin with this when we introduce a CSS Loader
       otherFilesToWatch.push(filename)
+    } else if (!isDirectory(file)) {
+      codeFiles.push(filename)
     }
   })
   watch(
@@ -317,8 +344,8 @@ export function initBrowserFS(
   })
 
   walkContentsTree(projectContents, (filename, file) => {
-    if (isTextFile(file)) {
-      const fileContents = getTextFileContents(file, false, true)
+    const fileContents = getProjectFileContentsAsString(file)
+    if (fileContents != null) {
       writeFile(fs, filename, fileContents)
     }
   })
@@ -493,11 +520,46 @@ function isNodeExported(node: TS.Node): boolean {
   )
 }
 
+function existingFilenameToRead(filename: string): string | undefined {
+  // Checks that a filename exists that we can load, and returns the filename
+  if (loaderExistsForFile(filename) && fs.existsSync(filename)) {
+    return filename
+  } else {
+    const alternativeFilenameToTest = filenameWithoutJSSuffix(filename)
+    if (
+      alternativeFilenameToTest != null &&
+      loaderExistsForFile(alternativeFilenameToTest) &&
+      fs.existsSync(alternativeFilenameToTest)
+    ) {
+      return alternativeFilenameToTest
+    } else {
+      return undefined
+    }
+  }
+}
+
 export function configureLanguageService(
   rootFilenames: string[],
   fileVersions: TS.MapLike<FileVersion>,
   options: TS.CompilerOptions,
 ): TS.LanguageService {
+  function readFileApplyingLoaders(filename: string): string | undefined {
+    const fileVersion = fileVersions[filename]
+    if (fileVersion != null && fileVersion.asStringCached != null) {
+      return fileVersion.asStringCached
+    }
+
+    const filenameToUse = existingFilenameToRead(filename)
+    if (filenameToUse == null) {
+      return undefined
+    }
+
+    const fileContents = fs.readFileSync(filenameToUse, 'utf8').toString()
+    const loadedModuleResult = applyLoaders(filenameToUse, fileContents)
+
+    return loadedModuleResult.loadedContents
+  }
+
   // Create the language service host to allow the LS to communicate with the host
   const servicesHost: TS.LanguageServiceHost = {
     getProjectVersion(): string {
@@ -507,19 +569,14 @@ export function configureLanguageService(
       }
       return version
     },
-    getScriptFileNames: () => rootFilenames,
+    getScriptFileNames: () => {
+      return rootFilenames.filter(isJsOrTsFile)
+    },
     getScriptVersion: (filename) =>
       fileVersions[filename] && fileVersions[filename].versionNr.toString(),
     getScriptSnapshot: (filename) => {
-      const fileVersion = fileVersions[filename]
-      if (fileVersion != null && fileVersion.asStringCached != null) {
-        return TS.ScriptSnapshot.fromString(fileVersion.asStringCached)
-      }
-      if (!fs.existsSync(filename)) {
-        return undefined
-      }
-
-      return TS.ScriptSnapshot.fromString(fs.readFileSync(filename).toString())
+      const fileContents = readFileApplyingLoaders(filename)
+      return fileContents == null ? undefined : TS.ScriptSnapshot.fromString(fileContents)
     },
     getCurrentDirectory: () => '/',
     getCompilationSettings: () => options,
@@ -527,14 +584,10 @@ export function configureLanguageService(
       return 'es6.d.ts'
     },
     fileExists: (filename: string) => {
-      return fs.existsSync(filename)
+      return existingFilenameToRead(filename) != null
     },
     readFile: (filename: string) => {
-      const fileVersion = fileVersions[filename]
-      if (fileVersion != null && fileVersion.asStringCached != null) {
-        return fileVersion.asStringCached
-      }
-      return fs.readFileSync(filename, 'utf8')
+      return readFileApplyingLoaders(filename)
     },
     readDirectory: (
       path: string,
@@ -673,7 +726,8 @@ function watch(
       if (contentChanged) {
         // write the output the browserfs
         const buildResult = emitFile(services, filename)
-        const exportsInfo = [parseExportsInfo(filename)]
+        const parsedExportsInfo = parseExportsInfo(filename)
+        const exportsInfo = parsedExportsInfo == null ? [] : [parsedExportsInfo]
         sendMessage(
           createBuildResultMessage(
             exportsInfo,
@@ -696,12 +750,15 @@ function watch(
       if (buildResult.transpiledCode != null) {
         projectBuild[rootFile] = buildResult
       }
-      exportsInfo.push(parseExportsInfo(rootFile))
+      const parsedExportsInfo = parseExportsInfo(rootFile)
+      if (parsedExportsInfo != null) {
+        exportsInfo.push(parsedExportsInfo)
+      }
     })
     sendMessage(createBuildResultMessage(exportsInfo, projectBuild, jobID, 'full-build'))
   }
 
-  function parseExportsInfo(fileName: string): ExportsInfo {
+  function parseExportsInfo(fileName: string): ExportsInfo | null {
     if (isTsFile(fileName) || isJsFile(fileName)) {
       let exportTypesInner: { [name: string]: ExportType } = {}
       const fileContent = fs.readFileSync(fileName, 'utf8')
@@ -718,7 +775,7 @@ function watch(
         exportTypes: exportTypesInner,
       }
     } else {
-      return { filename: fileName, code: '', exportTypes: {} }
+      return null
     }
   }
 }

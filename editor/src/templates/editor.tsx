@@ -49,6 +49,9 @@ import {
   EditorStore,
   getMainUIFromModel,
   defaultUserState,
+  EditorState,
+  DerivedState,
+  UserState,
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
@@ -77,6 +80,7 @@ import {
 } from '../components/canvas/ui-jsx-canvas'
 import { isLeft } from '../core/shared/either'
 import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
+import { UtopiaTsWorkers } from '../core/workers/common/worker-types'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -130,11 +134,11 @@ export class Editor {
       dispatch: this.boundDispatch,
     }
 
-    const [storeHook, api] = create<EditorStore>((set) => this.storedState)
+    const storeHook = create<EditorStore>((set) => this.storedState)
 
     this.utopiaStoreHook = storeHook
-    this.updateStore = api.setState
-    this.utopiaStoreApi = api
+    this.updateStore = storeHook.setState
+    this.utopiaStoreApi = storeHook
 
     const handleWorkerMessage = (msg: OutgoingWorkerMessage) => {
       switch (msg.type) {

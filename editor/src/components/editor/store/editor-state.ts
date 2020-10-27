@@ -160,7 +160,7 @@ export const defaultUserState: UserState = {
   shortcutConfig: {},
 }
 
-export interface EditorStore {
+export type EditorStore = {
   editor: EditorState
   derived: DerivedState
   history: StateHistory

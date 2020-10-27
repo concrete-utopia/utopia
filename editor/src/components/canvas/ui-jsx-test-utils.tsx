@@ -100,7 +100,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   let workingEditorState: EditorStore
 
   function updateEditor() {
-    api.setState(workingEditorState)
+    storeHook.setState(workingEditorState)
   }
 
   const spyCollector = emptyUiJsxCanvasContextData()
@@ -149,10 +149,10 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
     dispatch: asyncTestDispatch,
   }
 
-  const [storeHook, api] = create<EditorStore>((set) => initialEditorStore)
+  const storeHook = create<EditorStore>((set) => initialEditorStore)
 
   // initializing the local editor state
-  workingEditorState = api.getState()
+  workingEditorState = storeHook.getState()
 
   let numberOfCommits = 0
 
@@ -165,7 +165,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
       }}
     >
       <HotRoot
-        api={api}
+        api={storeHook}
         useStore={storeHook}
         spyCollector={spyCollector}
         propertyControlsInfoSupported={false}
@@ -205,7 +205,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
     },
     getDomReportDispatched: () => domReportDispatched,
     getDispatchFollowUpactionsFinished: () => dispatchFollowUpActionsFinished,
-    getEditorState: () => api.getState(),
+    getEditorState: () => storeHook.getState(),
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,

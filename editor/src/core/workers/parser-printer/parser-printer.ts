@@ -718,6 +718,7 @@ function getJsxFactoryFunction(sourceFile: TS.SourceFile): string | null {
 
 export function parseCode(filename: string, sourceText: string): ParsedTextFile {
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
+
   const jsxFactoryFunction = getJsxFactoryFunction(sourceFile)
 
   if (sourceFile == null) {
