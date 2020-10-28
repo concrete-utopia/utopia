@@ -67,7 +67,7 @@ function useDefaultedLayoutSystemInfo(): {
 }
 
 function useLayoutSystemData() {
-  const dispatch = useEditorState((store) => store.dispatch)
+  const dispatch = useEditorState((store) => store.dispatch, 'useLayoutSystemData dispatch')
 
   const onLayoutSystemChange = React.useCallback(
     (layoutSystem: SettableLayoutSystem) => {

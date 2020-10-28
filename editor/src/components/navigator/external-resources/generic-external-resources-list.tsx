@@ -66,7 +66,7 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
       minimised: store.editor.genericExternalResources.minimised,
       focusedPanel: store.editor.focusedPanel,
     }
-  })
+  }, 'GenericExternalResourcesList')
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([togglePanel('genericExternalResources')], 'leftpane')

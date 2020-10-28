@@ -267,9 +267,15 @@ export const LeftPaneComponentId = 'left-pane'
 export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
 export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
-  const selectedTab = useEditorState((store) => store.editor.leftMenu.selectedTab)
-  const isValidToShowNavigator = useEditorState((store) => validToShowNavigator(store.editor))
-  const dispatch = useEditorState((store) => store.dispatch)
+  const selectedTab = useEditorState(
+    (store) => store.editor.leftMenu.selectedTab,
+    'LeftPaneComponent selectedTab',
+  )
+  const isValidToShowNavigator = useEditorState(
+    (store) => validToShowNavigator(store.editor),
+    'LeftPaneComponent isValidToShowNavigator',
+  )
+  const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
 
   return (
     <div
@@ -365,7 +371,7 @@ export const InsertMenuPane = betterReactMemo('InsertMenuPane', () => {
       dispatch: store.dispatch,
       focusedPanel: store.editor.focusedPanel,
     }
-  })
+  }, 'InsertMenuPane')
 
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
@@ -434,7 +440,7 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
       minimised: store.editor.projectSettings.minimised,
       codeEditorTheme: store.editor.codeEditorTheme,
     }
-  })
+  }, 'ProjectSettingsPanel')
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('projectsettings')], 'leftpane')

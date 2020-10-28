@@ -130,7 +130,7 @@ export const FileBrowser = betterReactMemo('FileBrowser', () => {
       minimised: store.editor.fileBrowser.minimised,
       focusedPanel: store.editor.focusedPanel,
     }
-  })
+  }, 'FileBrowser')
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('filebrowser')], 'leftpane')
@@ -199,7 +199,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
       renamingTarget: store.editor.fileBrowser.renamingTarget,
       openUiFileName: getOpenUIJSFileKey(store.editor),
     }
-  })
+  }, 'FileBrowserItems')
 
   // since useEditorState uses a shallow equality check, we use a separate one to return the entire (string) array of componentUIDs
   // because the generated array keept loosing its reference equality
@@ -208,7 +208,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
     return uiFile != null && isParseSuccess(uiFile.fileContents)
       ? getAllUniqueUids(getUtopiaJSXComponentsFromSuccess(uiFile.fileContents.value))
       : []
-  })
+  }, 'FileBrowserItems componentUIDs')
   const componentUIDsWithStableRef = useKeepReferenceEqualityIfPossible(componentUIDs)
 
   const [selectedPath, setSelectedPath] = React.useState(editorSelectedFile)
@@ -318,7 +318,10 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
 const FileBrowserActionSheet = betterReactMemo(
   'FileBrowserActionSheet',
   (props: FileBrowserActionSheetProps) => {
-    const { dispatch } = useEditorState((store) => ({ dispatch: store.dispatch }))
+    const { dispatch } = useEditorState(
+      (store) => ({ dispatch: store.dispatch }),
+      'FileBrowserActionSheet dispatch',
+    )
     const addFolderClick = React.useCallback(
       () => dispatch([EditorActions.addFolder('')], 'everyone'),
       [dispatch],

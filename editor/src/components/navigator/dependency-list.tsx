@@ -120,7 +120,7 @@ export const DependencyList = betterReactMemo('DependencyList', () => {
       packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
       packageStatus: store.editor.nodeModules.packageStatus,
     }
-  })
+  }, 'DependencyList')
 
   const dispatch = props.editorDispatch
 

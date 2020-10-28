@@ -71,7 +71,7 @@ export const InstanceContextMenu = betterReactMemo(
   ({ contextMenuInstance, propNames }: InstanceContextMenuProps) => {
     const { dispatch } = useEditorState((store) => {
       return { dispatch: store.dispatch }
-    })
+    }, 'InstanceContextMenu')
 
     const { selectedViewsRef } = useInspectorContext()
 

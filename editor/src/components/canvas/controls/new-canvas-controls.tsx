@@ -72,19 +72,22 @@ interface NewCanvasControlsProps {
 export const NewCanvasControls = betterReactMemo(
   'NewCanvasControls',
   (props: NewCanvasControlsProps) => {
-    const canvasControlProps = useEditorState((store) => ({
-      dispatch: store.dispatch,
-      editor: store.editor,
-      derived: store.derived,
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-      animationEnabled:
-        (store.editor.canvas.dragState == null || store.editor.canvas.dragState.start == null) &&
-        store.editor.canvas.animationsEnabled,
+    const canvasControlProps = useEditorState(
+      (store) => ({
+        dispatch: store.dispatch,
+        editor: store.editor,
+        derived: store.derived,
+        canvasOffset: store.editor.canvas.roundedCanvasOffset,
+        animationEnabled:
+          (store.editor.canvas.dragState == null || store.editor.canvas.dragState.start == null) &&
+          store.editor.canvas.animationsEnabled,
 
-      controls: store.derived.canvas.controls,
-      scale: store.editor.canvas.scale,
-      focusedPanel: store.editor.focusedPanel,
-    }))
+        controls: store.derived.canvas.controls,
+        scale: store.editor.canvas.scale,
+        focusedPanel: store.editor.focusedPanel,
+      }),
+      'NewCanvasControls',
+    )
 
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.

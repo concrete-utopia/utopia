@@ -16,7 +16,7 @@ export const GoogleFontsResourcesList = betterReactMemo('GoogleFontsResourcesLis
       minimised: store.editor.googleFontsResources.minimised,
       focusedPanel: store.editor.focusedPanel,
     }
-  })
+  }, 'GoogleFontsResourcesList')
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([togglePanel('googleFontsResources')], 'leftpane')

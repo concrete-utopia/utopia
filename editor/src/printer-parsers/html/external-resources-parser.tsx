@@ -446,10 +446,13 @@ export function useExternalResources(): {
   onSubmitValue: OnSubmitValue<ExternalResources>
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 } {
-  const { dispatch, editorState } = useEditorState((store) => ({
-    editorState: store.editor,
-    dispatch: store.dispatch,
-  }))
+  const { dispatch, editorState } = useEditorState(
+    (store) => ({
+      editorState: store.editor,
+      dispatch: store.dispatch,
+    }),
+    'useExternalResources',
+  )
   const externalResourcesInfo = getExternalResourcesInfo(editorState, dispatch)
   const values: Either<DescriptionParseError, ExternalResources> = isRight(externalResourcesInfo)
     ? right(externalResourcesInfo.value.externalResources)

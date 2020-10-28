@@ -18,7 +18,7 @@ type StateSelector<T, U> = (state: T) => U
  */
 export const useEditorState = <U>(
   selector: StateSelector<EditorStore, U>,
-  selectorName?: string,
+  selectorName: string,
   equalityFn = utils.shallowEqual,
 ): U => {
   const context = React.useContext(EditorStateContext)
@@ -35,7 +35,7 @@ const LogSelectorPerformance = !PRODUCTION_ENV && typeof window.performance.mark
 
 function useWrapSelectorInPerformanceMeasureBlock<U>(
   selector: StateSelector<EditorStore, U>,
-  selectorName?: string,
+  selectorName: string,
 ): StateSelector<EditorStore, U> {
   const previousSelectorRef = React.useRef<StateSelector<EditorStore, U>>()
   const previousWrappedSelectorRef = React.useRef<StateSelector<EditorStore, U>>()
@@ -53,7 +53,7 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
       if (LogSelectorPerformance) {
         window.performance.mark('selector_end')
         window.performance.measure(
-          `Zustand Selector ${selectorName ?? ''}`,
+          `Zustand Selector ${selectorName}`,
           'selector_begin',
           'selector_end',
         )

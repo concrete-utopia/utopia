@@ -274,7 +274,7 @@ export interface UsePinTogglingResult {
 }
 
 export function usePinToggling(): UsePinTogglingResult {
-  const dispatch = useEditorState((store) => store.dispatch)
+  const dispatch = useEditorState((store) => store.dispatch, 'usePinToggling dispatch')
   const selectedViewsRef = useRefSelectedViews()
   const jsxMetadataRef = useRefEditorState((store) => {
     return store.editor.jsxMetadataKILLME

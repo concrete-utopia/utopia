@@ -97,6 +97,7 @@ export const FileTabs = betterReactMemo('FileTabs', () => {
         projectContents: store.editor.projectContents,
       }
     },
+    'FileTabs',
   )
 
   const openFileTypes = useEditorState((store) => {
@@ -117,7 +118,7 @@ export const FileTabs = betterReactMemo('FileTabs', () => {
         return 'ui'
       }
     })
-  })
+  }, 'FileTabs openFileTypes')
 
   const onTabClose = React.useCallback(
     (editorTab: EditorTab) => {
