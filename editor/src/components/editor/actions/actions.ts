@@ -62,6 +62,7 @@ import {
   walkElements,
   isUtopiaJSXComponent,
   utopiaJSXComponent,
+  flattenTree,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -852,6 +853,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     spyMetadataKILLME: poppedEditor.spyMetadataKILLME,
     domMetadataKILLME: poppedEditor.domMetadataKILLME,
     jsxMetadataKILLME: poppedEditor.jsxMetadataKILLME,
+    flatMetadataMaybe: poppedEditor.flatMetadataMaybe,
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
     openFiles: poppedEditor.openFiles,
@@ -3623,14 +3625,31 @@ export const UPDATE_FNS = {
       spyCollector.current.spyValues.scenes,
     )
 
-    return keepDeepReferenceEqualityIfPossible(editor, {
+    console.time('timing flattenTree')
+    const flatMetadata = flattenTree(action.elementMetadata)
+    console.timeEnd('timing flattenTree')
+
+    console.time('timing flatMetadata')
+    const updatedFlatMetadata = keepDeepReferenceEqualityIfPossible(
+      editor.flatMetadataMaybe,
+      flatMetadata,
+    )
+    console.timeEnd('timing flatMetadata')
+
+    console.time('timing tree metadata')
+    const updatedDomMetadata = keepDeepReferenceEqualityIfPossible(
+      editor.domMetadataKILLME,
+      action.elementMetadata,
+    )
+    console.timeEnd('timing tree metadata')
+
+    const result = keepDeepReferenceEqualityIfPossible(editor, {
       ...editor,
-      domMetadataKILLME: keepDeepReferenceEqualityIfPossible(
-        editor.domMetadataKILLME,
-        action.elementMetadata,
-      ),
+      domMetadataKILLME: updatedDomMetadata,
       spyMetadataKILLME: keepDeepReferenceEqualityIfPossible(editor.spyMetadataKILLME, spyResult),
+      flatMetadataMaybe: updatedFlatMetadata,
     })
+    return result
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return addUtopiaUtilsImportIfUsed(

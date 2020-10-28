@@ -1065,3 +1065,34 @@ export function getElementsByUIDFromTopLevelElements(
   })
   return result
 }
+
+export function flattenTree(
+  elementMetadata: Array<ElementInstanceMetadata>,
+): { [templatePath: string]: MetadataWithoutChildren } {
+  function walkMetadata(
+    topLevelElements: Array<ElementInstanceMetadata>,
+    forEach: (element: ElementInstanceMetadata) => void,
+  ): void {
+    fastForEach(topLevelElements, (rootComponent) => {
+      forEach(rootComponent)
+      walkMetadata(rootComponent.children, forEach)
+    })
+  }
+
+  let flatArray: { [templatePath: string]: MetadataWithoutChildren } = {}
+  walkMetadata(elementMetadata, (element) => {
+    const childTemplatePaths = element.children.map((c) => c.templatePath)
+    const elementWithoutChildren: any = {
+      childrenTemplatePaths: childTemplatePaths,
+      componentInstance: element.componentInstance,
+      computedStyle: element.computedStyle,
+      globalFrame: element.globalFrame,
+      localFrame: element.localFrame,
+      // specialSizeMeasurements: element.specialSizeMeasurements,
+      templatePath: element.templatePath,
+    }
+    flatArray[TP.toString(element.templatePath)] = elementWithoutChildren
+  })
+
+  return flatArray
+}

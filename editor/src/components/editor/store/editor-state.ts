@@ -11,6 +11,7 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXElement,
+  MetadataWithoutChildren,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -269,6 +270,7 @@ export interface EditorState {
   spyMetadataKILLME: ComponentMetadata[] // this is coming from the canvas spy report.
   domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
   jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
+  flatMetadataMaybe: { [templatePath: string]: MetadataWithoutChildren }
   projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
@@ -1025,6 +1027,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     spyMetadataKILLME: [],
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
+    flatMetadataMaybe: {},
     projectContents: {},
     codeResultCache: generateCodeResultCache(
       {},
@@ -1311,6 +1314,7 @@ export function editorModelFromPersistentModel(
     spyMetadataKILLME: [],
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
+    flatMetadataMaybe: {},
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
       {},
