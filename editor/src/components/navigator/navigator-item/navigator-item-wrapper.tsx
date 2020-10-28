@@ -33,13 +33,13 @@ interface NavigatorItemWrapperProps {
 const navigatorItemWrapperSelector = createCachedSelector(
   (store: EditorStore) => store.editor.jsxMetadataKILLME,
   (store: EditorStore) => store.derived.canvas.transientState,
-  (store) => store.derived.navigatorTargets,
-  (store) => store.derived.elementWarnings,
-  (store, templatePath) =>
+  (store: EditorStore) => store.derived.navigatorTargets,
+  (store: EditorStore) => store.derived.elementWarnings,
+  (store: EditorStore, templatePath: TemplatePath) =>
     TP.isScenePath(templatePath)
       ? null
       : MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadataKILLME, templatePath),
-  (store) =>
+  (store: EditorStore) =>
     store.derived.canvas.transientState.fileState == null
       ? getOpenImportsFromState(store.editor)
       : store.derived.canvas.transientState.fileState.imports,
