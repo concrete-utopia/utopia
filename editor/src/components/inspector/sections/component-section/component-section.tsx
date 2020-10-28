@@ -496,7 +496,7 @@ export const ComponentSectionInner = betterReactMemo(
     const propsUsedWithoutControls = useKeepReferenceEqualityIfPossible(
       useUsedPropsWithoutControls(),
     )
-    const dispatch = useEditorState((state) => state.dispatch)
+    const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
     const onResetClicked = React.useCallback(
       (event: React.MouseEvent<HTMLElement>) => {
         dispatch(

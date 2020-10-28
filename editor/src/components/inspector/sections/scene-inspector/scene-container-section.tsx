@@ -179,13 +179,13 @@ function useSceneType(): InspectorInfo<boolean> {
   )
 }
 
-export function useIsSceneChildWidthHeightPercentage() {
+function useIsSceneChildWidthHeightPercentage() {
   const { selectedViews, metadata } = useEditorState((state) => {
     return {
       selectedViews: state.editor.selectedViews,
       metadata: state.editor.jsxMetadataKILLME,
     }
-  })
+  }, 'useIsSceneChildWidthHeightPercentage')
 
   const selectedScenePath = Utils.forceNotNull(
     'missing scene from scene section',
@@ -200,11 +200,17 @@ export function useIsSceneChildWidthHeightPercentage() {
 }
 
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
-  const { dispatch, metadata } = useEditorState((store) => ({
-    dispatch: store.dispatch,
-    metadata: store.editor.jsxMetadataKILLME,
-  }))
-  const selectedViews = useEditorState((store) => store.editor.selectedViews)
+  const { dispatch, metadata } = useEditorState(
+    (store) => ({
+      dispatch: store.dispatch,
+      metadata: store.editor.jsxMetadataKILLME,
+    }),
+    'SceneContainerSections',
+  )
+  const selectedViews = useEditorState(
+    (store) => store.editor.selectedViews,
+    'SceneContainerSections selectedViews',
+  )
   const selectedScene = Utils.forceNotNull(
     'Scene cannot be null in SceneContainerSection',
     React.useMemo(() => selectedViews.find(TP.isScenePath), [selectedViews]),

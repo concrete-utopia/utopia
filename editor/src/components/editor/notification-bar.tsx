@@ -24,7 +24,7 @@ export const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
 })
 
 export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
-  const loginState = useEditorState((store) => store.userState.loginState)
+  const loginState = useEditorState((store) => store.userState.loginState, 'LoginStatusBar')
 
   const onClickCallback = React.useCallback(() => {
     setRedirectUrl(window.top.location.pathname).then(() => window.top.location.replace(auth0Url))

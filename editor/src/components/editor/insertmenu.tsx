@@ -134,7 +134,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
       packageStatus: store.editor.nodeModules.packageStatus,
       propertyControlsInfo: store.editor.propertyControlsInfo,
     }
-  })
+  }, 'InsertMenu')
 
   const dependencies = usePossiblyResolvedPackageDependencies()
 

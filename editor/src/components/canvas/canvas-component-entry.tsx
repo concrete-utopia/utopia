@@ -20,24 +20,27 @@ interface CanvasComponentEntryProps extends CanvasReactErrorCallback {
 export const CanvasComponentEntry = betterReactMemo(
   'CanvasComponentEntry',
   (props: CanvasComponentEntryProps) => {
-    const dispatch = useEditorState((store) => store.dispatch)
+    const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
     const onDomReport = React.useCallback(
       (elementMetadata: Array<ElementInstanceMetadata>) => {
         dispatch([saveDOMReport(elementMetadata)])
       },
       [dispatch],
     )
-    const { canvasProps } = useEditorState((store) => ({
-      canvasProps: pickUiJsxCanvasProps(
-        store.editor,
-        store.derived,
-        true,
-        onDomReport,
-        props.clearConsoleLogs,
-        props.addToConsoleLogs,
-        store.dispatch,
-      ),
-    }))
+    const { canvasProps } = useEditorState(
+      (store) => ({
+        canvasProps: pickUiJsxCanvasProps(
+          store.editor,
+          store.derived,
+          true,
+          onDomReport,
+          props.clearConsoleLogs,
+          props.addToConsoleLogs,
+          store.dispatch,
+        ),
+      }),
+      'CanvasComponentEntry canvasProps',
+    )
 
     if (canvasProps == null) {
       return null

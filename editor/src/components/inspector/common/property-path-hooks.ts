@@ -869,7 +869,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
         }
       }
     })
-  })
+  }, 'useIsSubSectionVisible')
 }
 
 const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
@@ -901,7 +901,7 @@ export function useSelectedPropertyControls(
     }
 
     return selectedPropertyControls
-  })
+  }, 'useSelectedPropertyControls')
 
   // Strip ignored property controls here.
   const parsed = parsePropertyControls(propertyControls)
@@ -944,7 +944,7 @@ export function useUsedPropsWithoutControls(): Array<string> {
     })
 
     return components
-  })
+  }, 'useUsedPropsWithoutControls')
 
   return foldEither(
     (_) => [],
@@ -1000,7 +1000,7 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
       }
     })
     return propsUsed
-  })
+  }, 'useUsedPropsWithoutDefaults')
 
   const defaultProps = getDefaultPropsFromParsedControls(parsedPropertyControls)
   return findMissingDefaults(selectedComponentProps, defaultProps)
@@ -1034,7 +1034,7 @@ export function useInspectorWarningStatus(): boolean {
       }
     })
     return hasLayoutInCSSProp
-  })
+  }, 'useInspectorWarningStatus')
 }
 
 export function useSelectedViews() {

@@ -63,7 +63,7 @@ export const NavigatorComponent = betterReactMemo('NavigatorComponent', () => {
       minimised: store.editor.navigator.minimised,
       navigatorTargets: store.derived.navigatorTargets,
     }
-  })
+  }, 'NavigatorComponent')
 
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {

@@ -31,7 +31,7 @@ export function UserConfiguration() {
       dispatch: store.dispatch,
       shortcutConfig: store.userState.shortcutConfig,
     }
-  })
+  }, 'UserConfiguration')
 
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null)
 

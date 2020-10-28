@@ -157,12 +157,27 @@ export const EditorComponentInner = betterReactMemo(
       }
     }, [onWindowMouseDown, onWindowKeyDown, onWindowKeyUp, preventDefault])
 
-    const dispatch = useEditorState((store) => store.dispatch)
-    const projectName = useEditorState((store) => store.editor.projectName)
-    const previewVisible = useEditorState((store) => store.editor.preview.visible)
-    const leftMenuExpanded = useEditorState((store) => store.editor.leftMenu.expanded)
-    const leftMenuWidth = useEditorState((store) => store.editor.leftMenu.paneWidth)
-    const saveError = useEditorState((store) => store.editor.saveError)
+    const dispatch = useEditorState((store) => store.dispatch, 'EditorComponentInner dispatch')
+    const projectName = useEditorState(
+      (store) => store.editor.projectName,
+      'EditorComponentInner projectName',
+    )
+    const previewVisible = useEditorState(
+      (store) => store.editor.preview.visible,
+      'EditorComponentInner previewVisible',
+    )
+    const leftMenuExpanded = useEditorState(
+      (store) => store.editor.leftMenu.expanded,
+      'EditorComponentInner leftMenuExpanded',
+    )
+    const leftMenuWidth = useEditorState(
+      (store) => store.editor.leftMenu.paneWidth,
+      'EditorComponentInner leftMenuWidth',
+    )
+    const saveError = useEditorState(
+      (store) => store.editor.saveError,
+      'EditorComponentInner saveError',
+    )
 
     React.useEffect(() => {
       document.title = projectName + ' - Utopia'
@@ -191,8 +206,6 @@ export const EditorComponentInner = betterReactMemo(
       },
       [updateDeltaWidth],
     )
-
-    const canvasIsLive = useEditorState((store) => isLiveMode(store.editor.mode))
 
     const toggleLiveCanvas = React.useCallback(
       () => dispatch([EditorActions.toggleCanvasIsLive()]),
@@ -386,7 +399,7 @@ const ModalComponent = betterReactMemo('ModalComponent', (): React.ReactElement<
       dispatch: store.dispatch,
       modal: store.editor.modal,
     }
-  })
+  }, 'ModalComponent')
   if (modal != null) {
     if (modal.type === 'file-delete') {
       return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
@@ -509,7 +522,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
       areReleaseNotesOpen: openEditorTab != null && isReleaseNotesTab(openEditorTab),
       isUserConfigurationOpen: openEditorTab != null && isUserConfigurationTab(openEditorTab),
     }
-  })
+  }, 'OpenFileEditor')
 
   const { runtimeErrors, onRuntimeError, clearRuntimeErrors } = useRuntimeErrors()
   const { consoleLogs, addToConsoleLogs, clearConsoleLogs } = useConsoleLogs()
@@ -546,7 +559,7 @@ OpenFileEditor.displayName = 'OpenFileEditor'
 const CanvasCursorComponent = betterReactMemo('CanvasCursorComponent', () => {
   const cursor = useEditorState((store) => {
     return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
-  })
+  }, 'CanvasCursorComponent')
   return cursor == null ? null : (
     <div
       key='cursor-area'
@@ -563,7 +576,7 @@ const CanvasCursorComponent = betterReactMemo('CanvasCursorComponent', () => {
 })
 
 const ToastRenderer = betterReactMemo('ToastRenderer', () => {
-  const toasts = useEditorState((store) => store.editor.toasts)
+  const toasts = useEditorState((store) => store.editor.toasts, 'ToastRenderer')
 
   return (
     <FlexColumn

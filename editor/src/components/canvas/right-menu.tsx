@@ -101,11 +101,20 @@ interface RightMenuProps {
 }
 
 export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) => {
-  const dispatch = useEditorState((store) => store.dispatch)
-  const interfaceDesigner = useEditorState((store) => store.editor.interfaceDesigner)
+  const dispatch = useEditorState((store) => store.dispatch, 'RightMenu dispatch')
+  const interfaceDesigner = useEditorState(
+    (store) => store.editor.interfaceDesigner,
+    'RightMenu interfaceDesigner',
+  )
 
-  const isRightMenuExpanded = useEditorState((store) => store.editor.rightMenu.expanded)
-  const rightMenuSelectedTab = useEditorState((store) => store.editor.rightMenu.selectedTab)
+  const isRightMenuExpanded = useEditorState(
+    (store) => store.editor.rightMenu.expanded,
+    'RightMenu isRightMenuExpanded',
+  )
+  const rightMenuSelectedTab = useEditorState(
+    (store) => store.editor.rightMenu.selectedTab,
+    'RightMenu rightMenuSelectedTab',
+  )
 
   const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
   const isInspectorSelected = rightMenuSelectedTab === RightMenuTab.Inspector
@@ -116,12 +125,18 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
     [dispatch],
   )
 
-  const isCanvasLive = useEditorState((store) => isLiveMode(store.editor.mode))
+  const isCanvasLive = useEditorState(
+    (store) => isLiveMode(store.editor.mode),
+    'RightMenu isCanvasLive',
+  )
   const toggleLiveCanvas = React.useCallback(() => dispatch([EditorActions.toggleCanvasIsLive()]), [
     dispatch,
   ])
 
-  const isPreviewPaneVisible = useEditorState((store) => store.editor.preview.visible)
+  const isPreviewPaneVisible = useEditorState(
+    (store) => store.editor.preview.visible,
+    'RightMenu isPreviewPaneVisible',
+  )
   const togglePreviewPaneVisible = React.useCallback(
     () => dispatch([EditorActions.setPanelVisibility('preview', !isPreviewPaneVisible)]),
     [dispatch, isPreviewPaneVisible],
@@ -129,6 +144,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
 
   const isAdditionalControlsVisible = useEditorState(
     (store) => store.editor.interfaceDesigner.additionalControls,
+    'RightMenu isAdditionalControlsVisible',
   )
   const toggleAdditionalControlsVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerAdditionalControls()])
@@ -156,7 +172,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
     onShow(RightMenuTab.Inspector)
   }, [onShow])
 
-  const zoomLevel = useEditorState((store) => store.editor.canvas.scale)
+  const zoomLevel = useEditorState((store) => store.editor.canvas.scale, 'RightMenu zoomLevel')
   const zoomIn = React.useCallback(
     () => dispatch([CanvasActions.zoom(Utils.increaseScale(zoomLevel))]),
     [dispatch, zoomLevel],

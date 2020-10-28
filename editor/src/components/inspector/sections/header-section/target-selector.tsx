@@ -243,9 +243,12 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
   const [itemBeingRenamedId, setItemBeingRenamedId] = React.useState<number | null>(null)
   const [renameValue, setRenameValue] = React.useState<string | null>(null)
 
-  const { dispatch } = useEditorState((store) => ({
-    dispatch: store.dispatch,
-  }))
+  const { dispatch } = useEditorState(
+    (store) => ({
+      dispatch: store.dispatch,
+    }),
+    'TargetListItem',
+  )
 
   const startRename = React.useCallback(() => {
     setItemBeingRenamedId(fixedItemIndex)

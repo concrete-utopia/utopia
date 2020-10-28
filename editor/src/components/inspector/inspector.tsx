@@ -152,7 +152,7 @@ AlignDistributeButton.displayName = 'AlignDistributeButton'
 const AlignmentButtons = betterReactMemo(
   'AlignmentButtons',
   (props: { numberOfTargets: number }) => {
-    const dispatch = useEditorState((store) => store.dispatch)
+    const dispatch = useEditorState((store) => store.dispatch, 'AlignmentButtons dispatch')
     const alignSelected = React.useCallback(
       (alignment: Alignment) => {
         dispatch([alignSelectedViews(alignment)], 'everyone')
@@ -349,7 +349,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
       aspectRatioLocked: aspectRatioLockedInner,
     }
-  })
+  }, 'Inspector')
   const instancePaths = useKeepReferenceEqualityIfPossible(
     selectedViews.filter((view) => !TP.isScenePath(view)) as InstancePath[],
   )
@@ -457,7 +457,7 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
         selectedViews: store.editor.selectedViews,
         jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
       }
-    })
+    }, 'InspectorEntryPoint')
 
     const showSceneInspector =
       selectedViews[0] != null &&
@@ -502,6 +502,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
         imports: getOpenImportsFromState(store.editor),
       }
     },
+    'SingleInspectorEntryPoint',
   )
 
   let inspectorModel: InspectorModel = {
@@ -789,7 +790,7 @@ export const InspectorContextProvider = betterReactMemo<{
       jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
       rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
     }
-  })
+  }, 'InspectorContextProvider')
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newRealValues: Array<{ [key: string]: any }> = []

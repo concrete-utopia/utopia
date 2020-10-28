@@ -95,7 +95,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
       projectName: store.editor.projectName,
       isPreviewPaneVisible: store.editor.preview.visible,
     }
-  })
+  }, 'Menubar')
 
   const onClickTab = React.useCallback(
     (menuTab: LeftMenuTab) => {

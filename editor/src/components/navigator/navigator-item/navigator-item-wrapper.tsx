@@ -130,7 +130,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
         isElementVisible: !TP.containsPath(props.templatePath, store.editor.hiddenInstances),
         elementWarnings: elementWarningsInner ?? defaultElementWarnings,
       }
-    })
+    }, 'NavigatorItemWrapper')
 
     const childrenOfCollapsedViews = getChildrenOfCollapsedViews(navigatorTargets, collapsedViews)
     const isCollapsed = TP.containsPath(props.templatePath, collapsedViews)

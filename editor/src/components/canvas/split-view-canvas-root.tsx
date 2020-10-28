@@ -33,13 +33,22 @@ interface NumberSize {
 export const SplitViewCanvasRoot = betterReactMemo(
   'SplitViewCanvasRoot',
   (props: SplitViewCanvasRootProps) => {
-    const dispatch = useEditorState((store) => store.dispatch)
-    const interfaceDesigner = useEditorState((store) => store.editor.interfaceDesigner)
+    const dispatch = useEditorState((store) => store.dispatch, 'SplitViewCanvasRoot dispatch')
+    const interfaceDesigner = useEditorState(
+      (store) => store.editor.interfaceDesigner,
+      'SplitViewCanvasRoot interfaceDesigner',
+    )
     const layoutReversed = interfaceDesigner.layoutReversed
 
-    const isRightMenuExpanded = useEditorState((store) => store.editor.rightMenu.expanded)
+    const isRightMenuExpanded = useEditorState(
+      (store) => store.editor.rightMenu.expanded,
+      'SplitViewCanvasRoot isRightMenuExpanded',
+    )
 
-    const rightMenuSelectedTab = useEditorState((store) => store.editor.rightMenu.selectedTab)
+    const rightMenuSelectedTab = useEditorState(
+      (store) => store.editor.rightMenu.selectedTab,
+      'SplitViewCanvasRoot rightMenuSelectedTab',
+    )
     const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
 
     const updateDeltaWidth = React.useCallback(

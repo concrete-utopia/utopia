@@ -62,16 +62,19 @@ const FeatureSwitchRow = betterReactMemo('Feature Switch Row', (props: { name: F
 })
 
 export const SettingsPanel = (props: any) => {
-  const dispatch = useEditorState((store) => store.dispatch)
-  const interfaceDesigner = useEditorState((store) => store.editor.interfaceDesigner)
+  const dispatch = useEditorState((store) => store.dispatch, 'SettingsPanel dispatch')
+  const interfaceDesigner = useEditorState(
+    (store) => store.editor.interfaceDesigner,
+    'SettingsPanel interfaceDesigner',
+  )
 
   const openUiJsFile = useEditorState((store) => {
     return getOpenUIJSFile(store.editor)
-  })
+  }, 'SettingsPanel openUiJsFile')
 
   const jsxMetadata = useEditorState((store) => {
     return store.editor.jsxMetadataKILLME
-  })
+  }, 'SettingsPanel jsxMetadata')
 
   const toggleCodeEditorVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
