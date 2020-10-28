@@ -50,7 +50,7 @@ import {
   findMissingDefaults,
   getDefaultPropsFromParsedControls,
   removeIgnored,
-  getPropertyControlsForTarget,
+  getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
 import { addUniquely } from '../../../core/shared/array-utils'
 import {
@@ -895,7 +895,8 @@ export function useSelectedPropertyControls(
     if (codeResultCache != null) {
       Utils.fastForEach(selectedViews.current, (path) => {
         // TODO multiselect
-        selectedPropertyControls = getPropertyControlsForTarget(path, store.editor) ?? {}
+        // TODO use getPropertyControlsForTarget and reselect selectors
+        selectedPropertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
       })
     }
 
