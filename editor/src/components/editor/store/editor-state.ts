@@ -1732,7 +1732,7 @@ export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMeta
           editor.spyMetadataKILLME,
           editor.domMetadataKILLME,
         )
-        return keepDeepReferenceEqualityIfPossible(editor.jsxMetadataKILLME, mergedMetadata)
+        return mergedMetadata
       },
       uiFile.fileContents,
     )

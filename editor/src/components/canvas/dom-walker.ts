@@ -102,6 +102,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
+      performance.mark('DOM_WALKER_START')
       // Get some base values relating to the div this component creates.
       const refOfContainer = containerRef.current
 
@@ -437,6 +438,8 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         props.validRootPaths.map(TP.toString),
       )
 
+      performance.mark('DOM_WALKER_END')
+      performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
       props.onDomReport(rootMetadata)
     }
   })
