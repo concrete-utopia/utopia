@@ -6,9 +6,8 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ComponentMetadata } from '../../core/shared/element-template'
 import {
   getHighlightBoundsFromParseResult,
-  uiJsFile,
   updateLastSavedContents,
-  updateParseResultCode,
+  updateParsedTextFileHighlightBounds,
 } from '../../core/model/project-file-utils'
 import { messageIsFatalOrError, messageIsWarning } from '../../core/shared/error-messages'
 import {
@@ -18,8 +17,10 @@ import {
   ProjectFile,
   RevisionsState,
   TemplatePath,
-  isUIJSFile,
+  isTextFile,
   isParseSuccess,
+  textFile,
+  textFileContents,
 } from '../../core/shared/project-file-types'
 import { codeNeedsPrinting } from '../../core/workers/common/project-file-utils'
 import { isJsFile } from '../../core/workers/ts/ts-worker'
@@ -61,18 +62,8 @@ function getFileContents(file: ProjectFile): string {
     case 'IMAGE_FILE':
     case 'ASSET_FILE':
       return ''
-    case 'CODE_FILE':
-      return file.fileContents
-    case 'UI_JS_FILE':
-      return foldEither(
-        (failure: ParseFailure) => {
-          return failure.code
-        },
-        (success: ParseSuccess) => {
-          return success.code ?? ''
-        },
-        file.fileContents,
-      )
+    case 'TEXT_FILE':
+      return file.fileContents.code
     default:
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
@@ -80,7 +71,7 @@ function getFileContents(file: ProjectFile): string {
 }
 
 function fileIsLocked(file: ProjectFile): boolean {
-  return isUIJSFile(file) && codeNeedsPrinting(file.revisionsState)
+  return isTextFile(file) && codeNeedsPrinting(file.fileContents.revisionsState)
 }
 
 function updateFileContents(contents: string, file: ProjectFile, manualSave: boolean): ProjectFile {
@@ -89,33 +80,19 @@ function updateFileContents(contents: string, file: ProjectFile, manualSave: boo
     case 'IMAGE_FILE':
     case 'ASSET_FILE':
       return file
-    case 'CODE_FILE':
-      const codeLastSavedContents = updateLastSavedContents(
-        file.fileContents,
-        file.lastSavedContents,
-        manualSave,
-      )
-      return {
-        ...file,
-        fileContents: contents,
-        lastSavedContents: codeLastSavedContents,
-      }
-    case 'UI_JS_FILE':
+    case 'TEXT_FILE':
       const uiJsLastSavedContents = updateLastSavedContents(
         file.fileContents,
         file.lastSavedContents,
         manualSave,
       )
-      return uiJsFile(
-        updateParseResultCode(
-          file.fileContents,
-          contents,
-          getHighlightBoundsFromParseResult(file.fileContents), // here we just update the code without updating the highlights!
-        ),
-        uiJsLastSavedContents,
-        RevisionsState.CodeAhead,
-        Date.now(),
+
+      const newParsed = updateParsedTextFileHighlightBounds(
+        file.fileContents.parsed,
+        getHighlightBoundsFromParseResult(file.fileContents.parsed), // here we just update the code without updating the highlights!
       )
+      const newContents = textFileContents(contents, newParsed, RevisionsState.CodeAhead)
+      return textFile(newContents, uiJsLastSavedContents, Date.now())
     default:
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
@@ -124,8 +101,8 @@ function updateFileContents(contents: string, file: ProjectFile, manualSave: boo
 
 function getHighlightBoundsForTemplatePath(path: TemplatePath, store: EditorStore) {
   const selectedFile = getOpenFile(store.editor)
-  if (isUIJSFile(selectedFile) && isParseSuccess(selectedFile.fileContents)) {
-    const parseSuccess = selectedFile.fileContents.value
+  if (isTextFile(selectedFile) && isParseSuccess(selectedFile.fileContents.parsed)) {
+    const parseSuccess = selectedFile.fileContents.parsed
     if (TP.isInstancePath(path)) {
       const highlightedUID = Utils.optionalMap(
         TP.toUid,
@@ -221,8 +198,8 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
       parserPrinterErrors: parseFailureAsErrorMessages(openUIJSFileKey, openUIJSFile),
       projectContents: store.editor.projectContents,
       parsedHighlightBounds:
-        openUIJSFile != null && isRight(openUIJSFile.fileContents)
-          ? openUIJSFile.fileContents.value.highlightBounds
+        openUIJSFile != null && isParseSuccess(openUIJSFile.fileContents.parsed)
+          ? openUIJSFile.fileContents.parsed.highlightBounds
           : null,
       allTemplatePaths: store.derived.navigatorTargets,
       jsxMetadataKILLME: store.editor.jsxMetadataKILLME,

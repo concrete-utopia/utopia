@@ -7,13 +7,19 @@ import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { convertMetadataMap, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { fileTypeFromFileName, updateParseResultCode } from '../../../core/model/project-file-utils'
+import {
+  fileTypeFromFileName,
+  updateParsedTextFileHighlightBounds,
+} from '../../../core/model/project-file-utils'
 import {
   TemplatePath,
-  UIJSFile,
-  isCodeOrUiJsFile,
+  TextFile,
   isParseSuccess,
   ProjectContents,
+  isTextFile,
+  textFile,
+  textFileContents,
+  RevisionsState,
 } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -46,11 +52,9 @@ import {
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
-  getOpenFilename,
-  getOpenUIJSFile,
-  getOpenUIJSFileKey,
+  getOpenTextFile,
+  getOpenTextFileKey,
   getOpenUtopiaJSXComponentsFromState,
-  PersistentModel,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -197,28 +201,21 @@ export function updateEmbeddedPreview(
 }
 
 function maybeRequestModelUpdate(
-  file: UIJSFile,
+  file: TextFile,
   filePath: string,
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
 ): { modelUpdateRequested: boolean; parseOrPrintFinished: Promise<boolean> } {
-  if (codeNeedsParsing(file.revisionsState)) {
-    const code = file.fileContents.value.code
+  if (codeNeedsParsing(file.fileContents.revisionsState)) {
+    const code = file.fileContents.code
     const parseFinished = getParseResult(workers, filePath, code)
       .then((parseResult) => {
-        const parseResultRestoredCode = bimapEither(
-          (failure) => {
-            return {
-              ...failure,
-              code: code,
-            }
-          },
-          (success) => success,
-          parseResult,
-        )
-        const updatedFile: UIJSFile = {
+        const updatedFile: TextFile = {
           ...file,
-          fileContents: parseResultRestoredCode,
+          fileContents: {
+            ...file.fileContents,
+            parsed: parseResult,
+          },
         }
 
         dispatch([EditorActions.updateFromWorker(filePath, updatedFile, 'Model')])
@@ -230,18 +227,21 @@ function maybeRequestModelUpdate(
         return true
       })
     return { modelUpdateRequested: true, parseOrPrintFinished: parseFinished }
-  } else if (codeNeedsPrinting(file.revisionsState) && isParseSuccess(file.fileContents)) {
-    const printFinished = printCodeAsync(workers, file.fileContents.value)
+  } else if (
+    codeNeedsPrinting(file.fileContents.revisionsState) &&
+    isParseSuccess(file.fileContents.parsed)
+  ) {
+    const printFinished = printCodeAsync(workers, file.fileContents.parsed)
       .then((printResult) => {
-        const updatedContents = updateParseResultCode(
-          file.fileContents,
-          printResult.code,
+        const updatedContents = updateParsedTextFileHighlightBounds(
+          file.fileContents.parsed,
           printResult.highlightBounds,
         )
-        const updatedFile: UIJSFile = {
-          ...file,
-          fileContents: updatedContents,
-        }
+        const updatedFile: TextFile = textFile(
+          textFileContents(printResult.code, updatedContents, RevisionsState.BothMatch),
+          null,
+          Date.now(),
+        )
 
         dispatch([EditorActions.updateFromWorker(filePath, updatedFile, 'Code')])
 
@@ -268,14 +268,14 @@ function maybeRequestModelUpdateOnEditor(
     return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
   }
 
-  const openUIJSFile = getOpenUIJSFile(editor)
-  const openUIJSFilePath = getOpenUIJSFileKey(editor)
-  if (openUIJSFile == null || openUIJSFilePath == null) {
+  const openTextFile = getOpenTextFile(editor)
+  const openTextFilePath = getOpenTextFileKey(editor)
+  if (openTextFile == null || openTextFilePath == null) {
     return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
   } else {
     const modelUpdateRequested = maybeRequestModelUpdate(
-      openUIJSFile,
-      openUIJSFilePath,
+      openTextFile,
+      openTextFilePath,
       workers,
       dispatch,
     )
@@ -618,7 +618,7 @@ function notifyTsWorker(
     if (oldFile == null) {
       shouldInitTsWorker = true
     } else {
-      if (file != null && isCodeOrUiJsFile(file) && oldFile != file) {
+      if (file != null && isTextFile(file) && oldFile != file) {
         filesToUpdateInTsWorker.push(filename)
       }
     }
@@ -639,11 +639,7 @@ function notifyTsWorker(
   } else {
     Utils.fastForEach(filesToUpdateInTsWorker, (filename) => {
       const file = getContentsTreeFileFromString(newEditorState.projectContents, filename)
-      if (
-        file != null &&
-        isCodeOrUiJsFile(file) &&
-        (isJsOrTsFile(filename) || isCssFile(filename))
-      ) {
+      if (file != null && isTextFile(file) && (isJsOrTsFile(filename) || isCssFile(filename))) {
         workers.sendUpdateFileMessage(filename, file, true)
       }
     })

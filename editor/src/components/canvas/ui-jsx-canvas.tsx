@@ -160,10 +160,10 @@ export function pickUiJsxCanvasProps(
     let jsxFactoryFunction: string | null = null
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
 
-    if (uiFile != null && isParseSuccess(uiFile.fileContents)) {
-      const success = uiFile.fileContents.value
+    if (uiFile != null && isParseSuccess(uiFile.fileContents.parsed)) {
+      const success = uiFile.fileContents.parsed
       const transientCanvasState = derived.canvas.transientState
-      imports = uiFile.fileContents.value.imports
+      imports = uiFile.fileContents.parsed.imports
       topLevelElementsIncludingScenes = success.topLevelElements
       jsxFactoryFunction = success.jsxFactoryFunction
       combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
@@ -178,7 +178,7 @@ export function pickUiJsxCanvasProps(
     let linkTags = ''
     const indexHtml = getIndexHtmlFileFromEditorState(editor)
     if (isRight(indexHtml)) {
-      const parsedLinkTags = getGeneratedExternalLinkText(indexHtml.value.fileContents)
+      const parsedLinkTags = getGeneratedExternalLinkText(indexHtml.value.fileContents.code)
       if (isRight(parsedLinkTags)) {
         linkTags = parsedLinkTags.value
       }
@@ -196,7 +196,7 @@ export function pickUiJsxCanvasProps(
     return {
       offset: editor.canvas.roundedCanvasOffset,
       scale: editor.canvas.scale,
-      uiFileCode: uiFile.fileContents.value.code,
+      uiFileCode: uiFile.fileContents.code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
       hiddenInstances: hiddenInstances,

@@ -13,6 +13,7 @@ import {
 } from './parser-printer-test-utils'
 import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
+import { isParseSuccess } from '../../shared/project-file-types'
 
 export function stripUnhelpfulFields(value: any): any {
   switch (typeof value) {
@@ -43,9 +44,9 @@ export var App = props => {
   </View>
 };`
     const parsedCode = testParseCode(code)
-    forEachLeft(parsedCode, (failure) => {
-      fail(failure)
-    })
+    if (!isParseSuccess(parsedCode)) {
+      fail(parsedCode)
+    }
   })
   it('fails on unprettied code', () => {
     const code = `import Button, { LABEL } from "./src/components";
@@ -55,9 +56,9 @@ export var App = props => {
         return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
     };`
     const parsedPlainCode = testParseCode(code)
-    if (isRight(parsedPlainCode)) {
-      if (isUtopiaJSXComponent(parsedPlainCode.value.topLevelElements[0])) {
-        const topComponent: UtopiaJSXComponent = parsedPlainCode.value.topLevelElements[0]
+    if (isParseSuccess(parsedPlainCode)) {
+      if (isUtopiaJSXComponent(parsedPlainCode.topLevelElements[0])) {
+        const topComponent: UtopiaJSXComponent = parsedPlainCode.topLevelElements[0]
         if (isJSXElement(topComponent.rootElement)) {
           const expectedProps: JSXAttributes = {
             style: jsxAttributeValue({
@@ -74,7 +75,7 @@ export var App = props => {
         fail('Not a component.')
       }
     } else {
-      fail(parsedPlainCode.value)
+      fail(parsedPlainCode)
     }
   })
 })

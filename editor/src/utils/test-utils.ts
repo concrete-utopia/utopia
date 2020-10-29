@@ -29,11 +29,7 @@ import {
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
-import {
-  getUtopiaJSXComponentsFromSuccess,
-  uiJsFile,
-  codeFile,
-} from '../core/model/project-file-utils'
+import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
 import { parseSuccess } from '../core/workers/common/project-file-utils'
 import { sampleImportsForTests, sampleJsxComponentWithScene } from '../core/model/test-ui-js-file'
 import {
@@ -41,6 +37,13 @@ import {
   TemplatePath,
   isParseFailure,
   ParseSuccess,
+  foldParsedTextFile,
+  textFile,
+  textFileContents,
+  unparsed,
+  isTextFile,
+  isParseSuccess,
+  ProjectFile,
 } from '../core/shared/project-file-types'
 import { right, eitherToMaybe, isLeft } from '../core/shared/either'
 import Utils from './utils'
@@ -70,10 +73,13 @@ export function createPersistentModel(): PersistentModel {
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
-      '/src/app.js': uiJsFile(
-        right(parseSuccess(sampleImportsForTests, sampleJsxComponentWithScene, '', {}, null, null)),
+      '/src/app.js': textFile(
+        textFileContents(
+          '',
+          parseSuccess(sampleImportsForTests, sampleJsxComponentWithScene, {}, null, null),
+          RevisionsState.ParsedAhead,
+        ),
         null,
-        RevisionsState.BothMatch,
         0,
       ),
     }),
@@ -99,11 +105,22 @@ export function createEditorStates(
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
-      '/package.json': codeFile(JSON.stringify(DefaultPackageJson, null, 2), null),
-      '/src/app.js': uiJsFile(
-        right(parseSuccess(sampleImportsForTests, sampleJsxComponentWithScene, '', {}, null, null)),
+      '/package.json': textFile(
+        textFileContents(
+          JSON.stringify(DefaultPackageJson, null, 2),
+          unparsed,
+          RevisionsState.CodeAhead,
+        ),
         null,
-        RevisionsState.BothMatch,
+        0,
+      ),
+      '/src/app.js': textFile(
+        textFileContents(
+          '',
+          parseSuccess(sampleImportsForTests, sampleJsxComponentWithScene, {}, null, null),
+          RevisionsState.ParsedAhead,
+        ),
+        null,
         0,
       ),
     }),
@@ -130,12 +147,13 @@ export function createFakeMetadataForEditor(editor: EditorState): Array<Componen
   if (openUiJsFile == null) {
     return []
   } else {
-    const contents = openUiJsFile.fileContents
-    if (isParseFailure(contents)) {
-      return []
-    } else {
-      return createFakeMetadataForParseSuccess(contents.value)
-    }
+    const contents = openUiJsFile.fileContents.parsed
+    return foldParsedTextFile(
+      (_) => [],
+      createFakeMetadataForParseSuccess,
+      (_) => [],
+      contents,
+    )
   }
 }
 
@@ -276,4 +294,18 @@ export function elementsStructure(elements: Array<TopLevelElement>): string {
     structureResults.push(elementResult)
   })
   return structureResults.join('\n')
+}
+
+export function forceParseSuccessFromFileOrFail(
+  file: ProjectFile | null | undefined,
+): ParseSuccess {
+  if (file != null && isTextFile(file)) {
+    if (isParseSuccess(file.fileContents.parsed)) {
+      return file.fileContents.parsed
+    } else {
+      fail(`Not a parse success ${file.fileContents.parsed}`)
+    }
+  } else {
+    fail(`Not a text file ${file}`)
+  }
 }

@@ -8,7 +8,12 @@ import * as TP from '../core/shared/template-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ComponentMetadata } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import { Imports, InstancePath, TemplatePath } from '../core/shared/project-file-types'
+import {
+  Imports,
+  InstancePath,
+  isParseSuccess,
+  TemplatePath,
+} from '../core/shared/project-file-types'
 import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
 import { isLeft } from '../core/shared/either'
 import { setLocalClipboardData } from './local-clipboard'
@@ -152,12 +157,12 @@ export function createClipboardDataFromSelectionNewWorld(
   const openUIJSFile = getOpenUIJSFile(editor)
   if (
     openUIJSFile == null ||
-    isLeft(openUIJSFile.fileContents) ||
+    !isParseSuccess(openUIJSFile.fileContents.parsed) ||
     editor.selectedViews.length === 0
   ) {
     return null
   }
-  const parseSuccess = openUIJSFile.fileContents.value
+  const parseSuccess = openUIJSFile.fileContents.parsed
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
     return R.none((otherView) => TP.isAncestorOf(view, otherView, false), editor.selectedViews)
   })

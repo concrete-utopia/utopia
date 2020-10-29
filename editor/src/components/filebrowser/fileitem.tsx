@@ -16,7 +16,7 @@ import {
   StringInput,
   UtopiaTheme,
 } from 'uuiui'
-import { ProjectFileType } from '../../core/shared/project-file-types'
+import { codeFile, ProjectFileType } from '../../core/shared/project-file-types'
 import { parseClipboardData } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
 import { ContextMenuItem, requireDispatch } from '../context-menu-items'
@@ -27,7 +27,6 @@ import { openFileTab } from '../editor/store/editor-state'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { FileBrowserItemInfo, FileBrowserItemType } from './filebrowser'
 import { PasteResult } from '../../utils/clipboard-utils'
-import { codeFile } from '../../core/model/project-file-utils'
 import { dragAndDropInsertionSubject, EditorModes } from '../editor/editor-modes'
 import { last } from '../../core/shared/array-utils'
 import { FileResult } from '../../core/shared/file-utils'
@@ -164,8 +163,7 @@ export function getIconTypeForFileBrowserItem(
           return 'folder-open'
         }
       case 'IMAGE_FILE':
-      case 'CODE_FILE':
-      case 'UI_JS_FILE':
+      case 'TEXT_FILE':
       case 'ASSET_FILE':
         return getIconNameForFilePath(filePath)
       default:
@@ -363,7 +361,7 @@ class FileBrowserItemInner extends React.PureComponent<
   setMainUIContextMenuItem(): ContextMenuItem<unknown> {
     return {
       name: 'Set As Main UI File',
-      enabled: this.props.fileType != null && this.props.fileType === 'UI_JS_FILE',
+      enabled: this.props.fileType != null && this.props.fileType === 'TEXT_FILE',
       action: (data: unknown, dispatch?: EditorDispatch) => {
         requireDispatch(dispatch)([EditorActions.setMainUIFile(this.props.path)], 'noone')
       },
@@ -419,10 +417,10 @@ class FileBrowserItemInner extends React.PureComponent<
     this.props.dispatch([EditorActions.addFolder(this.props.path)], 'everyone')
   }
 
-  addCodeFile = () => {
+  addTextFile = () => {
     this.props.Expand(this.props.path)
     this.props.dispatch(
-      [EditorActions.addCodeFile(this.props.path, this.state.addingChildName)],
+      [EditorActions.addTextFile(this.props.path, this.state.addingChildName)],
       'everyone',
     )
   }
@@ -582,7 +580,7 @@ class FileBrowserItemInner extends React.PureComponent<
   confirmAddingFile = () => {
     this.props.Expand(this.props.path)
     this.props.dispatch(
-      [EditorActions.addCodeFile(this.props.path, this.state.addingChildName)],
+      [EditorActions.addTextFile(this.props.path, this.state.addingChildName)],
       'everyone',
     )
     this.setState({
@@ -646,7 +644,7 @@ class FileBrowserItemInner extends React.PureComponent<
 
     const displayAddFolder =
       this.state.isHovered && this.props.fileType != null && this.props.fileType === 'DIRECTORY'
-    const displayAddCodeFile =
+    const displayAddTextFile =
       this.state.isHovered && this.props.fileType != null && this.props.fileType === 'DIRECTORY'
     const displayDelete = this.state.isHovered
 
@@ -702,9 +700,9 @@ class FileBrowserItemInner extends React.PureComponent<
                   <Icons.NewFolder style={fileIconStyle} tooltipText='Add New Folder' />
                 </Button>
               ) : null}
-              {displayAddCodeFile ? (
+              {displayAddTextFile ? (
                 <Button style={{ marginRight: '2px' }} onClick={this.showAddingFileRow}>
-                  <Icons.NewCodeFile style={fileIconStyle} tooltipText='Add Code File' />
+                  <Icons.NewTextFile style={fileIconStyle} tooltipText='Add Code File' />
                 </Button>
               ) : null}
               {displayDelete ? (

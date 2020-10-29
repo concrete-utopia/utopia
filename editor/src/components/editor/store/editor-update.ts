@@ -204,10 +204,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.ADD_FOLDER(action, state)
     case 'DELETE_FILE':
       return UPDATE_FNS.DELETE_FILE(action, state, derivedState, userState)
-    case 'ADD_CODE_FILE':
-      return UPDATE_FNS.ADD_CODE_FILE(action, state)
-    case 'ADD_UI_JS_FILE':
-      return UPDATE_FNS.ADD_UI_JS_FILE(action, state)
+    case 'ADD_TEXT_FILE':
+      return UPDATE_FNS.ADD_TEXT_FILE(action, state)
     case 'SET_MAIN_UI_FILE':
       return UPDATE_FNS.SET_MAIN_UI_FILE_OLDWORLD(action, state)
     case 'SET_CODE_EDITOR_BUILD_ERRORS':

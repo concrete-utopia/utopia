@@ -3,13 +3,7 @@ import * as ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import * as TS from 'typescript'
 import * as BrowserFS from 'browserfs'
 import { TypeDefinitions } from '../../shared/npm-dependency-types'
-import {
-  ProjectContents,
-  CodeFile,
-  UIJSFile,
-  isCodeOrUiJsFile,
-  ProjectFile,
-} from '../../shared/project-file-types'
+import { isTextFile, TextFile, ProjectContents, ProjectFile } from '../../shared/project-file-types'
 import { RawSourceMap } from './ts-typings/RawSourceMap'
 import { libfile } from './libfile'
 import { FSModule } from 'browserfs/dist/node/core/FS'
@@ -34,7 +28,7 @@ import { diagnosticToErrorMessage } from './ts-utils'
 import { MapLike } from 'typescript'
 import { ErrorMessage } from '../../shared/error-messages'
 import { fastForEach } from '../../shared/utils'
-import { getCodeFileContents } from '../common/project-file-utils'
+import { getTextFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
 import { ProjectContentTreeRoot, walkContentsTree } from '../../../components/assets'
 import { isDirectory } from '../../model/project-file-utils'
@@ -154,7 +148,7 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
 
 export function createUpdateFileMessage(
   filename: string,
-  content: string | UIJSFile | CodeFile,
+  content: string | TextFile,
   jobID: string,
 ): UpdateFileMessage {
   return {
@@ -235,9 +229,8 @@ function getProjectFileContentsAsString(file: ProjectFile): string | null {
       return null
     case 'IMAGE_FILE':
       return file.base64 ?? ''
-    case 'CODE_FILE':
-    case 'UI_JS_FILE':
-      return getCodeFileContents(file, false, true)
+    case 'TEXT_FILE':
+      return getTextFileContents(file, false, true)
     default:
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
@@ -314,7 +307,7 @@ export function initTsIncrementalBuild(
   let codeFiles: Array<string> = []
   let otherFilesToWatch: Array<string> = []
   walkContentsTree(projectContents, (filename, file) => {
-    if (isCodeOrUiJsFile(file) && isCssFile(filename)) {
+    if (isTextFile(file) && isCssFile(filename)) {
       // FIXME In the bin with this when we introduce a CSS Loader
       otherFilesToWatch.push(filename)
     } else if (!isDirectory(file)) {

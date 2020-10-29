@@ -1,4 +1,3 @@
-import { foldEither } from '../../shared/either'
 import { applyPrettier } from './prettier-utils'
 import {
   clearParseResultUniqueIDs,
@@ -6,6 +5,7 @@ import {
   testParseThenPrint,
 } from './parser-printer-test-utils'
 import { BakedInStoryboardUID } from '../../model/scene-utils'
+import { foldParsedTextFile } from '../../shared/project-file-types'
 
 describe('JSX parser', () => {
   it('should parse out dot-notation element names', () => {
@@ -37,13 +37,16 @@ export var storyboard = (props) => {
       false,
     ).formatted
     const parseResult = clearParseResultUniqueIDs(testParseCode(code))
-    foldEither(
+    foldParsedTextFile(
       (failure) => {
         fail(failure)
       },
       (success) => {
         expect(success.imports).toMatchSnapshot()
         expect(success.topLevelElements).toMatchSnapshot()
+      },
+      (unparsed) => {
+        fail(unparsed)
       },
       parseResult,
     )

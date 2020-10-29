@@ -43,7 +43,7 @@ import {
   useInspectorStyleInfo,
 } from './property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { isParseSuccess, TemplatePath } from '../../../core/shared/project-file-types'
 
 interface RenderTestHookProps<T> {
   value: T
@@ -466,11 +466,11 @@ function getPropsForStyleProp(
   }`
 
   const parseResult = testParseCode(code)
-  if (!isRight(parseResult)) {
+  if (!isParseSuccess(parseResult)) {
     fail('expected parseResult to be Right')
     return null
   }
-  const appComponent = parseResult.value.topLevelElements[0]
+  const appComponent = parseResult.topLevelElements[0]
   if (!isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
     fail('expected the second topLevelElement to be the App component')
     return null
