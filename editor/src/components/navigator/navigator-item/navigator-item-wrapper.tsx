@@ -11,10 +11,15 @@ import {
   NavigatorItemDragAndDropWrapperProps,
 } from './navigator-item-dnd-container'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { getOpenImportsFromState, defaultElementWarnings } from '../../editor/store/editor-state'
+import {
+  getOpenImportsFromState,
+  defaultElementWarnings,
+  EditorStore,
+} from '../../editor/store/editor-state'
 import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/element-template'
 import { betterReactMemo } from 'uuiui-deps'
 import { getValueFromComplexMap } from '../../../utils/map'
+import { createSelector } from 'reselect'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -25,16 +30,92 @@ interface NavigatorItemWrapperProps {
   getSelectedViewsInRange: (index: number) => Array<TemplatePath>
 }
 
+const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
+  createSelector(
+    (store: EditorStore) => store.editor.jsxMetadataKILLME,
+    (store: EditorStore) => store.derived.canvas.transientState,
+    (store: EditorStore) => store.derived.navigatorTargets,
+    (store: EditorStore) => store.derived.elementWarnings,
+    (store: EditorStore) =>
+      TP.isScenePath(templatePath)
+        ? null
+        : MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadataKILLME, templatePath),
+    (store: EditorStore) =>
+      store.derived.canvas.transientState.fileState == null
+        ? getOpenImportsFromState(store.editor)
+        : store.derived.canvas.transientState.fileState.imports,
+    (jsxMetadataKILLME, transientState, navigatorTargets, elementWarnings, element, imports) => {
+      const fileState = transientState.fileState
+
+      const componentsIncludingScenes: Array<UtopiaJSXComponent> =
+        fileState == null
+          ? []
+          : fileState.topLevelElementsIncludingScenes.filter(isUtopiaJSXComponent)
+      const elementOriginType = MetadataUtils.getElementOriginType(
+        componentsIncludingScenes,
+        jsxMetadataKILLME,
+        templatePath,
+      )
+      const staticName = MetadataUtils.getStaticElementName(
+        templatePath,
+        componentsIncludingScenes,
+        jsxMetadataKILLME,
+      )
+      const labelInner = MetadataUtils.getElementLabel(templatePath, jsxMetadataKILLME, staticName)
+      const componentInstanceInner = MetadataUtils.isComponentInstance(
+        templatePath,
+        componentsIncludingScenes,
+        jsxMetadataKILLME,
+        imports,
+      )
+      // FIXME: This is a mitigation for a situation where somehow this component re-renders
+      // when the navigatorTargets indicate it shouldn't exist...
+      const isInNavigatorTargets = TP.containsPath(templatePath, navigatorTargets)
+      let noOfChildrenInner: number = 0
+      let supportsChildren: boolean = false
+      if (isInNavigatorTargets) {
+        noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadataKILLME, templatePath)
+          .length
+        supportsChildren = MetadataUtils.targetSupportsChildren(
+          imports,
+          jsxMetadataKILLME,
+          templatePath,
+        )
+      }
+
+      const elementWarningsInner = getValueFromComplexMap(
+        TP.toString,
+        elementWarnings,
+        templatePath,
+      )
+
+      return {
+        staticElementName: staticName,
+        label: labelInner,
+        element: element,
+        componentInstance: componentInstanceInner,
+        isAutosizingView: MetadataUtils.isAutoSizingView(element),
+        isSelected: TP.containsPath(templatePath, transientState.selectedViews),
+        isHighlighted: TP.containsPath(templatePath, transientState.highlightedViews),
+        noOfChildren: noOfChildrenInner,
+        supportsChildren: supportsChildren,
+        imports: imports,
+        elementOriginType: elementOriginType,
+        elementWarnings: elementWarningsInner ?? defaultElementWarnings,
+      }
+    },
+  )
+
 export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = betterReactMemo(
   'NavigatorItemWrapper',
   (props) => {
+    const selector = React.useMemo(() => navigatorItemWrapperSelectorFactory(props.templatePath), [
+      props.templatePath,
+    ])
     const {
-      dispatch,
-      navigatorTargets,
       isSelected,
       isHighlighted,
-      collapsedViews,
-      dropTargetHint,
+
       noOfChildren,
       supportsChildren,
       elementOriginType,
@@ -43,94 +124,30 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       element,
       componentInstance,
       isAutosizingView,
-      isElementVisible,
-      renamingTarget,
+
       imports,
       elementWarnings,
-    } = useEditorState((store) => {
-      const fallbackTransientState = store.derived.canvas.transientState
-      const fallbackFileState = fallbackTransientState.fileState
-      const elementInner = TP.isScenePath(props.templatePath)
-        ? null
-        : MetadataUtils.getElementByInstancePathMaybe(
-            store.editor.jsxMetadataKILLME,
-            props.templatePath,
-          )
-      const componentsIncludingScenes: Array<UtopiaJSXComponent> =
-        fallbackFileState == null
-          ? []
-          : fallbackFileState.topLevelElementsIncludingScenes.filter(isUtopiaJSXComponent)
-      const elementOriginTypeInner = MetadataUtils.getElementOriginType(
-        componentsIncludingScenes,
-        store.editor.jsxMetadataKILLME,
-        props.templatePath,
-      )
-      const staticName = MetadataUtils.getStaticElementName(
-        props.templatePath,
-        componentsIncludingScenes,
-        store.editor.jsxMetadataKILLME,
-      )
-      const labelInner = MetadataUtils.getElementLabel(
-        props.templatePath,
-        store.editor.jsxMetadataKILLME,
-        staticName,
-      )
-      const importsInner =
-        fallbackFileState == null
-          ? getOpenImportsFromState(store.editor)
-          : fallbackFileState.imports
-      const componentInstanceInner = MetadataUtils.isComponentInstance(
-        props.templatePath,
-        componentsIncludingScenes,
-        store.editor.jsxMetadataKILLME,
-        importsInner,
-      )
-      const navigatorTargetsInner = store.derived.navigatorTargets
-      // FIXME: This is a mitigation for a situation where somehow this component re-renders
-      // when the navigatorTargets indicate it shouldn't exist...
-      const isInNavigatorTargets = TP.containsPath(props.templatePath, navigatorTargetsInner)
-      let noOfChildrenInner: number = 0
-      let supportsChildrenInner: boolean = false
-      if (isInNavigatorTargets) {
-        noOfChildrenInner = MetadataUtils.getImmediateChildren(
-          store.editor.jsxMetadataKILLME,
-          props.templatePath,
-        ).length
-        supportsChildrenInner = MetadataUtils.targetSupportsChildren(
-          importsInner,
-          store.editor.jsxMetadataKILLME,
-          props.templatePath,
-        )
-      }
+    } = useEditorState(selector, 'NavigatorItemWrapper')
 
-      const elementWarningsInner = getValueFromComplexMap(
-        TP.toString,
-        store.derived.elementWarnings,
-        props.templatePath,
-      )
-
-      return {
-        staticElementName: staticName,
-        label: labelInner,
-        element: elementInner,
-        componentInstance: componentInstanceInner,
-        isAutosizingView: MetadataUtils.isAutoSizingView(elementInner),
+    const {
+      isElementVisible,
+      renamingTarget,
+      collapsedViews,
+      dropTargetHint,
+      dispatch,
+      navigatorTargets,
+    } = useEditorState(
+      (store) => ({
         navigatorTargets: store.derived.navigatorTargets,
         dispatch: store.dispatch,
         selectedViews: store.editor.selectedViews,
-        isSelected: TP.containsPath(props.templatePath, fallbackTransientState.selectedViews),
-        isHighlighted: TP.containsPath(props.templatePath, fallbackTransientState.highlightedViews),
         collapsedViews: store.editor.navigator.collapsedViews,
         dropTargetHint: store.editor.navigator.dropTargetHint,
-        noOfChildren: noOfChildrenInner,
-        supportsChildren: supportsChildrenInner,
-        imports: importsInner,
-        elementOriginType: elementOriginTypeInner,
         renamingTarget: store.editor.navigator.renamingTarget,
         isElementVisible: !TP.containsPath(props.templatePath, store.editor.hiddenInstances),
-        elementWarnings: elementWarningsInner ?? defaultElementWarnings,
-      }
-    }, 'NavigatorItemWrapper')
+      }),
+      'NavigatorItemWrapper',
+    )
 
     const childrenOfCollapsedViews = getChildrenOfCollapsedViews(navigatorTargets, collapsedViews)
     const isCollapsed = TP.containsPath(props.templatePath, collapsedViews)
