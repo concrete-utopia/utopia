@@ -21,6 +21,7 @@ import {
 } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import Utils from '../../utils/utils'
+import { StoryboardFilePath } from '../../core/model/storyboard-utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getCursorFromDragState } from '../canvas/canvas-utils'
 import { SplitViewCanvasRoot } from '../canvas/split-view-canvas-root'
@@ -44,6 +45,7 @@ import {
   EditorState,
   getOpenEditorTab,
   getOpenFile,
+  getOpenTextFileKey,
   isReleaseNotesTab,
   isUserConfigurationTab,
 } from './store/editor-state'
@@ -515,10 +517,14 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     isUserConfigurationOpen,
   } = useEditorState((store) => {
     const selectedFile = getOpenFile(store.editor)
+    const selectedFileName = getOpenTextFileKey(store.editor)
+    const isAppDotJS = selectedFileName?.endsWith('app.js')
+    const isStoryboardFile = selectedFileName?.endsWith(StoryboardFilePath)
+    const isCanvasFile = isAppDotJS || isStoryboardFile // FIXME This is not how we should determine whether or not to open the canvas
     const openEditorTab = getOpenEditorTab(store.editor)
     return {
       noFileOpen: openEditorTab == null,
-      isUiJsFileOpen: selectedFile != null && isParsedTextFile(selectedFile),
+      isUiJsFileOpen: selectedFile != null && isParsedTextFile(selectedFile) && isCanvasFile,
       areReleaseNotesOpen: openEditorTab != null && isReleaseNotesTab(openEditorTab),
       isUserConfigurationOpen: openEditorTab != null && isUserConfigurationTab(openEditorTab),
     }
