@@ -95,7 +95,10 @@ function isScene(node: Node): node is HTMLElement {
 
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const selectedViews = useEditorState((store) => store.editor.selectedViews)
+  const selectedViews = useEditorState(
+    (store) => store.editor.selectedViews,
+    'useDomWalker selectedViews',
+  )
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {

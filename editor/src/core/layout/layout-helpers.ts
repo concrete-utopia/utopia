@@ -30,6 +30,7 @@ import {
   jsxAttributeValue,
   JSXElement,
   ComponentMetadata,
+  UtopiaJSXComponent,
 } from '../shared/element-template'
 import {
   setJSXValueAtPath,
@@ -37,16 +38,31 @@ import {
   unsetJSXValuesAtPaths,
   ValueAtPath,
 } from '../shared/jsx-attributes'
-import { PropertyPath, TemplatePath } from '../shared/project-file-types'
+import { Imports, PropertyPath, TemplatePath } from '../shared/project-file-types'
 import { createLayoutPropertyPath, pinnedPropForFramePoint } from './layout-helpers-new'
 import { getLayoutProperty, getLayoutPropertyOr } from './getLayoutProperty'
 import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element-metadata-utils'
 import { EdgePosition } from '../../components/canvas/canvas-types'
 import { EditorState } from '../../components/editor/store/editor-state'
 import { getPropertyControlsForTarget } from '../property-controls/property-controls-utils'
+import { PropertyControlsInfo } from '../../components/custom-code/code-file'
 
-export function targetRespectsLayout(target: TemplatePath, editor: EditorState): boolean {
-  const propControls = getPropertyControlsForTarget(target, editor)
+export function targetRespectsLayout(
+  target: TemplatePath,
+  propertyControlsInfo: PropertyControlsInfo,
+  openImports: Imports,
+  openFilePath: string | null,
+  rootComponents: UtopiaJSXComponent[],
+  jsxMetadataKILLME: ComponentMetadata[],
+): boolean {
+  const propControls = getPropertyControlsForTarget(
+    target,
+    propertyControlsInfo,
+    openImports,
+    openFilePath,
+    rootComponents,
+    jsxMetadataKILLME,
+  )
   return propControls?.style?.type === 'styleobject'
 }
 

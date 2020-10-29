@@ -68,6 +68,7 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
   const frameHeight = useInspectorLayoutInfo('Height')
 
   const sceneTarget = useSceneTarget()
+  // TODO FIXME investigate this useKeepReferenceEqualityIfPossible here, might be expensive!
   const { propertyControlsInfo, components, openFileFullPath } = useKeepReferenceEqualityIfPossible(
     useEditorState((store) => {
       return {
@@ -75,7 +76,7 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
         components: getOpenUtopiaJSXComponentsFromState(store.editor),
         openFileFullPath: getOpenFilename(store.editor),
       }
-    }),
+    }, 'SceneSection'),
   )
 
   const filteredComponents = components.filter(

@@ -50,7 +50,7 @@ import {
   findMissingDefaults,
   getDefaultPropsFromParsedControls,
   removeIgnored,
-  getPropertyControlsForTarget,
+  getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
 import { addUniquely } from '../../../core/shared/array-utils'
 import {
@@ -869,7 +869,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
         }
       }
     })
-  })
+  }, 'useIsSubSectionVisible')
 }
 
 const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
@@ -895,12 +895,13 @@ export function useSelectedPropertyControls(
     if (codeResultCache != null) {
       Utils.fastForEach(selectedViews.current, (path) => {
         // TODO multiselect
-        selectedPropertyControls = getPropertyControlsForTarget(path, store.editor) ?? {}
+        // TODO use getPropertyControlsForTarget and reselect selectors
+        selectedPropertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
       })
     }
 
     return selectedPropertyControls
-  })
+  }, 'useSelectedPropertyControls')
 
   // Strip ignored property controls here.
   const parsed = parsePropertyControls(propertyControls)
@@ -943,7 +944,7 @@ export function useUsedPropsWithoutControls(): Array<string> {
     })
 
     return components
-  })
+  }, 'useUsedPropsWithoutControls')
 
   return foldEither(
     (_) => [],
@@ -999,7 +1000,7 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
       }
     })
     return propsUsed
-  })
+  }, 'useUsedPropsWithoutDefaults')
 
   const defaultProps = getDefaultPropsFromParsedControls(parsedPropertyControls)
   return findMissingDefaults(selectedComponentProps, defaultProps)
@@ -1033,7 +1034,7 @@ export function useInspectorWarningStatus(): boolean {
       }
     })
     return hasLayoutInCSSProp
-  })
+  }, 'useInspectorWarningStatus')
 }
 
 export function useSelectedViews() {

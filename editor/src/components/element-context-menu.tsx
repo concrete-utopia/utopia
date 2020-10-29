@@ -62,7 +62,7 @@ export const ElementContextMenu = betterReactMemo(
   ({ contextMenuInstance }: ElementContextMenuProps) => {
     const { dispatch } = useEditorState((store) => {
       return { dispatch: store.dispatch }
-    })
+    }, 'ElementContextMenu dispatch')
 
     const editorSliceRef = useRefEditorState((store) => {
       return {

@@ -87,7 +87,7 @@ export const PreviewColumn = betterReactMemo('PreviewColumn', () => {
       connected: store.editor.preview.connected,
       mainJSFilename: getMainJSFilename(store.editor.projectContents),
     }
-  })
+  }, 'PreviewColumn')
   return (
     <PreviewColumnContent
       id={id}

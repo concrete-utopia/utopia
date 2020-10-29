@@ -274,7 +274,7 @@ export interface UsePinTogglingResult {
 }
 
 export function usePinToggling(): UsePinTogglingResult {
-  const dispatch = useEditorState((store) => store.dispatch)
+  const dispatch = useEditorState((store) => store.dispatch, 'usePinToggling dispatch')
   const selectedViewsRef = useRefSelectedViews()
   const jsxMetadataRef = useRefEditorState((store) => {
     return store.editor.jsxMetadataKILLME
@@ -290,32 +290,36 @@ export function usePinToggling(): UsePinTogglingResult {
     ),
   )
 
-  const elementFrames = useEditorState((store): ReadonlyArray<Frame> => {
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
+  const elementFrames = useEditorState(
+    (store): ReadonlyArray<Frame> => {
+      const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
 
-    const jsxElements = TP.filterScenes(selectedViewsRef.current).map((path) =>
-      findElementAtPath(path, rootComponents, store.editor.jsxMetadataKILLME),
-    )
+      const jsxElements = TP.filterScenes(selectedViewsRef.current).map((path) =>
+        findElementAtPath(path, rootComponents, store.editor.jsxMetadataKILLME),
+      )
 
-    return jsxElements.map((elem) => {
-      if (elem != null && isJSXElement(elem)) {
-        return AllFramePoints.reduce<Frame>((working, point) => {
-          const layoutProp = pinnedPropForFramePoint(point)
-          const value = getLayoutProperty(layoutProp, right(elem.props))
-          if (isLeft(value)) {
-            return working
-          } else {
-            return {
-              ...working,
-              [point]: value.value,
+      return jsxElements.map((elem) => {
+        if (elem != null && isJSXElement(elem)) {
+          return AllFramePoints.reduce<Frame>((working, point) => {
+            const layoutProp = pinnedPropForFramePoint(point)
+            const value = getLayoutProperty(layoutProp, right(elem.props))
+            if (isLeft(value)) {
+              return working
+            } else {
+              return {
+                ...working,
+                [point]: value.value,
+              }
             }
-          }
-        }, {})
-      } else {
-        return {}
-      }
-    })
-  }, fastDeepEqual)
+          }, {})
+        } else {
+          return {}
+        }
+      })
+    },
+    'usePinToggling elementFrames',
+    fastDeepEqual,
+  )
 
   const framePins = React.useMemo((): FramePinsInfo => {
     const allHorizontalPoints = HorizontalFramePoints.filter((p) => allPinsMatch(p, elementFrames))

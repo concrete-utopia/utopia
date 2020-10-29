@@ -355,7 +355,7 @@ export function immediatelyResolvableDependenciesWithEditorRequirements(
 export function usePackageDependencies(): Array<RequestedNpmDependency> {
   const packageJsonFile = useEditorState((store) => {
     return packageJsonFileFromProjectContents(store.editor.projectContents)
-  })
+  }, 'usePackageDependencies')
 
   return React.useMemo(() => {
     if (isTextFile(packageJsonFile)) {
@@ -370,7 +370,7 @@ export function usePossiblyResolvedPackageDependencies(): Array<PossiblyUnversio
   const basePackageDependencies = usePackageDependencies()
   const files = useEditorState((store) => {
     return store.editor.nodeModules.files
-  })
+  }, 'usePossiblyResolvedPackageDependencies')
   return React.useMemo(() => {
     return resolvedDependencyVersions(basePackageDependencies, files)
   }, [basePackageDependencies, files])

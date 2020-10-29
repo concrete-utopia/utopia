@@ -207,7 +207,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
       codeEditorTheme: store.editor.codeEditorTheme,
       selectedViews: store.editor.selectedViews,
     }
-  })
+  }, 'ScriptEditor')
 
   const selectedViewBounds = useKeepReferenceEqualityIfPossible(
     useEditorState((store) => {
@@ -216,7 +216,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
           getHighlightBoundsForTemplatePath(selectedView, store),
         ),
       )
-    }),
+    }, 'ScriptEditor selectedViewBounds'),
   )
 
   const highlightBounds = useKeepReferenceEqualityIfPossible(
@@ -226,7 +226,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
           getHighlightBoundsForTemplatePath(highlightedView, store),
         ),
       )
-    }),
+    }, 'ScriptEditor highlightBounds'),
   )
 
   const onHover = React.useCallback(

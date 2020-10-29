@@ -9,6 +9,8 @@ import {
   getOpenUtopiaJSXComponentsFromState,
   getOpenImportsFromState,
   getMetadata,
+  EditorStore,
+  getOpenUIJSFileKey,
 } from '../../editor/store/editor-state'
 import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
 import { CanvasPositions } from '../canvas-types'
@@ -37,6 +39,8 @@ import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
+import { createSelector } from 'reselect'
+import { PropertyControlsInfo } from '../../custom-code/code-file'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -68,19 +72,22 @@ interface NewCanvasControlsProps {
 export const NewCanvasControls = betterReactMemo(
   'NewCanvasControls',
   (props: NewCanvasControlsProps) => {
-    const canvasControlProps = useEditorState((store) => ({
-      dispatch: store.dispatch,
-      editor: store.editor,
-      derived: store.derived,
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-      animationEnabled:
-        (store.editor.canvas.dragState == null || store.editor.canvas.dragState.start == null) &&
-        store.editor.canvas.animationsEnabled,
+    const canvasControlProps = useEditorState(
+      (store) => ({
+        dispatch: store.dispatch,
+        editor: store.editor,
+        derived: store.derived,
+        canvasOffset: store.editor.canvas.roundedCanvasOffset,
+        animationEnabled:
+          (store.editor.canvas.dragState == null || store.editor.canvas.dragState.start == null) &&
+          store.editor.canvas.animationsEnabled,
 
-      controls: store.derived.canvas.controls,
-      scale: store.editor.canvas.scale,
-      focusedPanel: store.editor.focusedPanel,
-    }))
+        controls: store.derived.canvas.controls,
+        scale: store.editor.canvas.scale,
+        focusedPanel: store.editor.focusedPanel,
+      }),
+      'NewCanvasControls',
+    )
 
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.
@@ -155,6 +162,45 @@ interface NewCanvasControlsClassProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
 }
 
+const selectElementsThatRespectLayout = createSelector(
+  (store: EditorStore) => store.derived.navigatorTargets,
+  (store) => store.editor.propertyControlsInfo,
+  (store) => getOpenImportsFromState(store.editor),
+  (store) => getOpenUIJSFileKey(store.editor),
+  (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
+  (store) => store.editor.jsxMetadataKILLME,
+  (
+    navigatorTargets: TemplatePath[],
+    propertyControlsInfo: PropertyControlsInfo,
+    openImports: Imports,
+    openFilePath: string | null,
+    rootComponents: UtopiaJSXComponent[],
+    jsxMetadataKILLME: ComponentMetadata[],
+  ) => {
+    return flatMapArray((view) => {
+      if (TP.isScenePath(view)) {
+        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, view)
+        if (scene != null) {
+          return [view, ...scene.rootElements.map((e) => e.templatePath)]
+        } else {
+          return [view]
+        }
+      } else {
+        return [view]
+      }
+    }, navigatorTargets).filter((view) =>
+      targetRespectsLayout(
+        view,
+        propertyControlsInfo,
+        openImports,
+        openFilePath,
+        rootComponents,
+        jsxMetadataKILLME,
+      ),
+    )
+  },
+)
+
 const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
   const selectionEnabled =
     props.editor.canvas.selectionControlsVisible &&
@@ -214,20 +260,10 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     return 'enabled'
   }
 
-  const elementsThatRespectLayout = useEditorState((store) => {
-    return flatMapArray((view) => {
-      if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(store.editor.jsxMetadataKILLME, view)
-        if (scene != null) {
-          return [view, ...scene.rootElements.map((e) => e.templatePath)]
-        } else {
-          return [view]
-        }
-      } else {
-        return [view]
-      }
-    }, store.derived.navigatorTargets).filter((view) => targetRespectsLayout(view, store.editor))
-  })
+  const elementsThatRespectLayout = useEditorState(
+    selectElementsThatRespectLayout,
+    'NewCanvasControls elementsThatRespectLayout',
+  )
 
   const renderModeControlContainer = () => {
     const fallbackTransientState = props.derived.canvas.transientState

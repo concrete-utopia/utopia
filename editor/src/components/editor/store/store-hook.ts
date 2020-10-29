@@ -18,11 +18,12 @@ type StateSelector<T, U> = (state: T) => U
  */
 export const useEditorState = <U>(
   selector: StateSelector<EditorStore, U>,
+  selectorName: string,
   equalityFn = utils.shallowEqual,
 ): U => {
   const context = React.useContext(EditorStateContext)
 
-  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(selector)
+  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(selector, selectorName)
 
   if (context == null) {
     throw new Error('useStore is missing from editor context')
@@ -34,6 +35,7 @@ const LogSelectorPerformance = !PRODUCTION_ENV && typeof window.performance.mark
 
 function useWrapSelectorInPerformanceMeasureBlock<U>(
   selector: StateSelector<EditorStore, U>,
+  selectorName: string,
 ): StateSelector<EditorStore, U> {
   const previousSelectorRef = React.useRef<StateSelector<EditorStore, U>>()
   const previousWrappedSelectorRef = React.useRef<StateSelector<EditorStore, U>>()
@@ -50,7 +52,11 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
       const result = selector(state)
       if (LogSelectorPerformance) {
         window.performance.mark('selector_end')
-        window.performance.measure(`Zustand Selector`, 'selector_begin', 'selector_end')
+        window.performance.measure(
+          `Zustand Selector ${selectorName}`,
+          'selector_begin',
+          'selector_end',
+        )
       }
       return result
     }

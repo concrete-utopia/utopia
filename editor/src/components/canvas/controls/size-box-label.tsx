@@ -57,7 +57,10 @@ export const SizeBoxLabel = React.memo((props: SizeBoxLabelProps) => {
 })
 
 const ResizeLabel = (props: SizeBoxLabelProps) => {
-  const metadata = useEditorState((state) => state.editor.jsxMetadataKILLME)
+  const metadata = useEditorState(
+    (state) => state.editor.jsxMetadataKILLME,
+    'ResizeLabel jsxMetadataKILLME',
+  )
   const isWidthResize = props.dragState?.edgePosition.x !== 0.5
   const isHeightResize = props.dragState?.edgePosition.y !== 0.5
   const padding = 2 / props.scale

@@ -40,7 +40,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
         selectedNonSceneViews[0],
       ),
     }
-  })
+  }, 'ImgSection')
   const { naturalWidth, naturalHeight, clientWidth, clientHeight } =
     zerothElementInstanceMetadata?.specialSizeMeasurements ?? emptySpecialSizeMeasurements
   const {

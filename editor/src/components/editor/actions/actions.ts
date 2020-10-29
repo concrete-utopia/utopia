@@ -453,6 +453,7 @@ import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-m
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import {
   getPropertyControlsForTarget,
+  getPropertyControlsForTargetFromEditor,
   setPropertyControlsIFrameReady,
 } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
@@ -3908,7 +3909,7 @@ export const UPDATE_FNS = {
   RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
     const openFilePath = getOpenUIJSFileKey(editor)
     if (openFilePath != null) {
-      const propertyControls = getPropertyControlsForTarget(action.target, editor)
+      const propertyControls = getPropertyControlsForTargetFromEditor(action.target, editor)
       let elementName
       if (TP.isScenePath(action.target)) {
         const element = findJSXElementChildAtPath(
