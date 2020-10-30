@@ -38,6 +38,7 @@ import {
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
   UTOPIA_UID_PARENTS_KEY,
 } from '../../core/model/utopia-constants'
+import ResizeObserver from 'resize-observer-polyfill'
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1
@@ -103,7 +104,19 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
       // Get some base values relating to the div this component creates.
+      var resizeObserver = new ResizeObserver((entries: any) => {
+        for (let entry of entries) {
+          const cr = entry.contentRect
+          console.log('Element:', entry.target)
+          console.log(`Element size: ${cr.width}px x ${cr.height}px`)
+          console.log(`Element padding: ${cr.top}px ; ${cr.left}px`)
+        }
+      })
       const refOfContainer = containerRef.current
+      Array.from(document.querySelectorAll('#canvas-container *')).map((elem) =>
+        resizeObserver.observe(elem),
+      )
+      console.log('observer attached')
 
       const containerRect = getCanvasRectangleFromElement(refOfContainer, props.scale)
 
