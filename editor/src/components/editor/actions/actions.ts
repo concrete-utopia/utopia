@@ -1004,14 +1004,13 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
       } else {
         return modifyOpenParseSuccess((parseSuccess) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-          const element = findElementAtPath(target, utopiaComponents, editor.jsxMetadataKILLME)
+          const element = findElementAtPath(target, utopiaComponents)
           if (element == null) {
             return parseSuccess
           } else {
             const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
               target,
               utopiaComponents,
-              editor.jsxMetadataKILLME,
             )
             return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
               return {
@@ -1396,7 +1395,7 @@ export const UPDATE_FNS = {
     } else {
       const components = getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
       const target = action.element
-      const element = findElementAtPath(target, components, editor.jsxMetadataKILLME)
+      const element = findElementAtPath(target, components)
       if (element == null || !isJSXElement(element)) {
         return editor
       } else {
@@ -1533,7 +1532,6 @@ export const UPDATE_FNS = {
         const components = getOpenUtopiaJSXComponentsFromState(editor)
         const staticSelectedElements = MetadataUtils.staticElementsOnly(
           components,
-          editor.jsxMetadataKILLME,
           editor.selectedViews,
         )
         return deleteElements(staticSelectedElements, editor)
@@ -1571,11 +1569,7 @@ export const UPDATE_FNS = {
       true,
       (editorState) => {
         const components = getOpenUtopiaJSXComponentsFromState(editorState)
-        const staticSelectedElements = MetadataUtils.staticElementsOnly(
-          components,
-          editorState.jsxMetadataKILLME,
-          action.targets,
-        )
+        const staticSelectedElements = MetadataUtils.staticElementsOnly(components, action.targets)
         return deleteElements(staticSelectedElements, editorState)
       },
       dispatch,
@@ -1892,7 +1886,6 @@ export const UPDATE_FNS = {
         action.jsxElement,
         elements,
         null,
-        editor.jsxMetadataKILLME,
       )
 
       const uid = getUtopiaID(action.jsxElement)
@@ -1957,7 +1950,6 @@ export const UPDATE_FNS = {
               elementToInsert,
               utopiaJSXComponents,
               null,
-              editor.jsxMetadataKILLME,
             )
 
             viewPath = TP.appendToPath(parentPath, newUID)
@@ -2335,7 +2327,6 @@ export const UPDATE_FNS = {
     if (targetParent != null) {
       const parentOriginType = MetadataUtils.getElementOriginType(
         getOpenUtopiaJSXComponentsFromState(editor),
-        editor.jsxMetadataKILLME,
         targetParent,
       )
       switch (parentOriginType) {
@@ -2367,13 +2358,7 @@ export const UPDATE_FNS = {
             }
             return addSceneToJSXComponents(accumulator, newSceneElement)
           } else {
-            const components = insertElementAtPath(
-              targetParent,
-              elementToAdd,
-              accumulator,
-              null,
-              editor.jsxMetadataKILLME,
-            )
+            const components = insertElementAtPath(targetParent, elementToAdd, accumulator, null)
             if (targetParent == null || TP.isScenePath(targetParent)) {
               return components
             } else {
@@ -3931,7 +3916,6 @@ export const UPDATE_FNS = {
         const element = findJSXElementAtPath(
           action.target,
           getOpenUtopiaJSXComponentsFromState(editor),
-          editor.jsxMetadataKILLME,
         )
         if (element != null) {
           elementName = getJSXElementNameAsString(element.name)

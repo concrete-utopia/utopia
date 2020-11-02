@@ -34,6 +34,7 @@ import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
+import { createIndexedUid } from '../../../core/shared/uid-utils'
 
 export function renderCoreElement(
   element: JSXElementChild,
@@ -78,13 +79,6 @@ export function renderCoreElement(
       if (originalIDForProps != null) {
         passthroughProps[UTOPIA_ORIGINAL_ID_KEY] = originalIDForProps
       }
-      const originalParentIDForProps = Utils.defaultIfNull(
-        assembledProps[UTOPIA_UID_ORIGINAL_PARENTS_KEY],
-        parentComponentInputProps[UTOPIA_UID_ORIGINAL_PARENTS_KEY],
-      )
-      if (originalParentIDForProps != null) {
-        originalParentIDForProps[UTOPIA_UID_ORIGINAL_PARENTS_KEY] = originalParentIDForProps
-      }
 
       return renderJSXElement(
         TP.toString(templatePath),
@@ -119,7 +113,7 @@ export function renderCoreElement(
           PP.create([UTOPIA_ORIGINAL_ID_KEY]),
           jsxAttributeValue(innerUID),
         )
-        const generatedUID = `${innerUID}-${innerIndex}`
+        const generatedUID = createIndexedUid(innerUID, innerIndex)
         const withGeneratedUID = flatMapEither(
           (attrs) =>
             setJSXValueAtPath(attrs, PP.create(['data-uid']), jsxAttributeValue(generatedUID)),

@@ -79,6 +79,7 @@ import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-ut
 import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { UTOPIA_ORIGINAL_ID_KEY, UTOPIA_UID_KEY } from './utopia-constants'
+import { extractOriginalUidFromIndexedUid } from '../shared/uid-utils'
 const ObjectPathImmutable: any = OPI
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
@@ -178,13 +179,12 @@ const ElementsToDrillIntoForTextContent = ['div', 'span']
 export const MetadataUtils = {
   getElementOriginType(
     elements: Array<UtopiaJSXComponent>,
-    metadata: Array<ComponentMetadata>,
     target: TemplatePath,
   ): ElementOriginType {
     if (TP.isScenePath(target)) {
       return 'scene'
     } else {
-      const staticTarget = this.dynamicPathToStaticPath(metadata, target)
+      const staticTarget = this.dynamicPathToStaticPath(target)
       if (staticTarget == null) {
         return 'unknown-element'
       } else {
@@ -203,11 +203,10 @@ export const MetadataUtils = {
   },
   anyUnknownOrGeneratedElements(
     elements: Array<UtopiaJSXComponent>,
-    metadata: Array<ComponentMetadata>,
     targets: Array<TemplatePath>,
   ): boolean {
     return targets.some((target) => {
-      const originType = this.getElementOriginType(elements, metadata, target)
+      const originType = this.getElementOriginType(elements, target)
       return (
         originType === 'unknown-element' || originType === 'generated-static-definition-present'
       )
@@ -412,7 +411,7 @@ export const MetadataUtils = {
       const flexDirection = getReorderDirection(this.getYogaDirection(parentInstance))
 
       if (TP.isInstancePath(target)) {
-        const staticTarget = this.dynamicPathToStaticPath(scenes, target)
+        const staticTarget = this.dynamicPathToStaticPath(target)
         if (staticTarget == null) {
           return {}
         } else {
@@ -551,52 +550,15 @@ export const MetadataUtils = {
       }
     }
   },
-  templatePathToStaticTemplatePath(
-    metadata: Array<ComponentMetadata>,
-    path: TemplatePath | null,
-  ): StaticTemplatePath | null {
+  templatePathToStaticTemplatePath(path: TemplatePath | null): StaticTemplatePath | null {
     if (path == null || TP.isScenePath(path)) {
       return path
     } else {
-      return this.dynamicPathToStaticPath(metadata, path)
+      return this.dynamicPathToStaticPath(path)
     }
   },
-  dynamicPathToStaticPath(
-    metadata: Array<ComponentMetadata>,
-    path: InstancePath,
-  ): StaticInstancePath | null {
-    const metadataAlongPath = this.getElementInstanceMetadataAlongPath(metadata, path)
-    if (metadataAlongPath == null) {
-      return null
-    } else {
-      // FIXME: Not really a fan, but needs must.
-      if (metadataAlongPath.length + 1 === TP.depth(path)) {
-        const scenePath = TP.scenePathForPath(path)
-        const pathElements = traverseEither<ElementInstanceMetadata, id, ElementInstanceMetadata>(
-          (metadataToTransform) => {
-            const staticUID = Utils.defaultIfNull(
-              metadataToTransform.props['data-uid'],
-              metadataToTransform.props[UTOPIA_ORIGINAL_ID_KEY],
-            )
-            // Should really not fall past this case,
-            // but protecting against it nonetheless.
-            if (staticUID == null) {
-              return left(metadataToTransform)
-            } else {
-              return right(staticUID)
-            }
-          },
-          metadataAlongPath,
-        )
-        return eitherToMaybe(
-          mapEither((elems) => {
-            return TP.staticInstancePath(scenePath, elems)
-          }, pathElements),
-        )
-      } else {
-        return TP.asStatic(path)
-      }
-    }
+  dynamicPathToStaticPath(path: InstancePath): StaticInstancePath | null {
+    return TP.staticInstancePath(path.scene, path.element.map(extractOriginalUidFromIndexedUid))
   },
   shiftGroupFrame(
     componentsMetadata: Array<ComponentMetadata>,
@@ -1099,7 +1061,7 @@ export const MetadataUtils = {
   getJSXElementName(
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
-    metadata: ComponentMetadata[],
+    metadata: ComponentMetadata[], // TODO maybe we could remove metadata as a dependency from here if we change findSceneByTemplatePath
   ): JSXElementName | null {
     if (TP.isScenePath(path)) {
       const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
@@ -1109,7 +1071,7 @@ export const MetadataUtils = {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components, metadata)
+      const jsxElement = findElementAtPath(path, components)
       if (jsxElement != null) {
         if (isJSXElement(jsxElement)) {
           return jsxElement.name
@@ -1123,7 +1085,7 @@ export const MetadataUtils = {
   getJSXElementBaseName(
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
-    metadata: ComponentMetadata[],
+    metadata: ComponentMetadata[], // TODO BEFORE MERGE maybe we could remove metadata as a dependency from here
   ): string | null {
     if (TP.isScenePath(path)) {
       const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
@@ -1133,7 +1095,7 @@ export const MetadataUtils = {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components, metadata)
+      const jsxElement = findElementAtPath(path, components)
       if (jsxElement != null) {
         if (isJSXElement(jsxElement)) {
           return jsxElement.name.baseVariable
@@ -1147,7 +1109,7 @@ export const MetadataUtils = {
   getJSXElementTagName(
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
-    metadata: ComponentMetadata[],
+    metadata: ComponentMetadata[], // TODO BEFORE MERGE maybe we could remove metadata as a dependency from here
   ): string | null {
     if (TP.isScenePath(path)) {
       const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
@@ -1157,7 +1119,7 @@ export const MetadataUtils = {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components, metadata)
+      const jsxElement = findElementAtPath(path, components)
       if (jsxElement != null) {
         if (isJSXElement(jsxElement)) {
           return getJSXElementNameAsString(jsxElement.name)
@@ -1233,11 +1195,10 @@ export const MetadataUtils = {
   },
   staticElementsOnly(
     elements: Array<UtopiaJSXComponent>,
-    rootMetadata: Array<ComponentMetadata>,
     targets: Array<TemplatePath>,
   ): Array<TemplatePath> {
     return targets.filter((target) => {
-      const originType = this.getElementOriginType(elements, rootMetadata, target)
+      const originType = this.getElementOriginType(elements, target)
       return originType === 'statically-defined' || originType === 'scene'
     })
   },
@@ -1397,13 +1358,12 @@ export const MetadataUtils = {
   getStaticElementName(
     path: TemplatePath,
     rootElements: Array<UtopiaJSXComponent>,
-    metadata: ComponentMetadata[],
   ): JSXElementName | null {
     if (TP.isScenePath(path)) {
       return null
     } else {
       // TODO remove dependency on metadata from here
-      const staticPath = MetadataUtils.dynamicPathToStaticPath(metadata, path)
+      const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
       const jsxElement = optionalMap((p) => findJSXElementChildAtPath(rootElements, p), staticPath)
       return optionalMap((element) => (isJSXElement(element) ? element.name : null), jsxElement)
     }
@@ -1417,7 +1377,7 @@ export const MetadataUtils = {
     if (TP.isScenePath(path)) {
       return false
     } else {
-      const elementName = MetadataUtils.getStaticElementName(path, rootElements, metadata)
+      const elementName = MetadataUtils.getStaticElementName(path, rootElements)
       const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
       return (
         elementName != null &&
@@ -1511,7 +1471,6 @@ export function convertMetadataMap(
 export function findElementAtPath(
   target: TemplatePath | null,
   components: Array<UtopiaJSXComponent>,
-  metadata: ComponentMetadata[],
 ): JSXElementChild | null {
   if (target == null) {
     return null
@@ -1519,7 +1478,7 @@ export function findElementAtPath(
     if (TP.isScenePath(target)) {
       return null
     } else {
-      const staticTarget = MetadataUtils.dynamicPathToStaticPath(metadata, target)
+      const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
       if (staticTarget == null) {
         return null
       } else {
@@ -1532,9 +1491,8 @@ export function findElementAtPath(
 export function findJSXElementAtPath(
   target: TemplatePath | null,
   components: Array<UtopiaJSXComponent>,
-  metadata: ComponentMetadata[],
 ): JSXElement | null {
-  const elem = findElementAtPath(target, components, metadata)
+  const elem = findElementAtPath(target, components)
   return Utils.optionalMap((e) => {
     if (isJSXElement(e)) {
       return e

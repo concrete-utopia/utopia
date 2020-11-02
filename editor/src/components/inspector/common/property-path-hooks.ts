@@ -842,7 +842,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
         return 'scene'
       }
 
-      const element = findElementAtPath(view, rootComponents, store.editor.jsxMetadataKILLME)
+      const element = findElementAtPath(view, rootComponents)
       if (element == null) {
         return null
       } else if (isJSXElement(element)) {
@@ -932,7 +932,7 @@ export function useUsedPropsWithoutControls(): Array<string> {
           forEachOptional(pushComponent, underlyingComponent)
         }
       } else {
-        const element = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+        const element = findElementAtPath(path, rootComponents)
         if (element != null && isJSXElement(element)) {
           const noPathName = getJSXElementNameNoPathName(element.name)
           const underlyingComponent = rootComponents.find(
@@ -989,7 +989,7 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
           forEachOptional(pushPropsForComponent, underlyingComponent)
         }
       } else {
-        const element = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+        const element = findElementAtPath(path, rootComponents)
         if (element != null && isJSXElement(element)) {
           const noPathName = getJSXElementNameNoPathName(element.name)
           const underlyingComponent = rootComponents.find(
@@ -1017,7 +1017,7 @@ export function useInspectorWarningStatus(): boolean {
         return
       }
 
-      const element = findElementAtPath(view, rootComponents, store.editor.jsxMetadataKILLME)
+      const element = findElementAtPath(view, rootComponents)
       if (element == null || !isJSXElement(element)) {
         return
       } else {

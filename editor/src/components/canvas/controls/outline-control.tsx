@@ -29,7 +29,7 @@ export function getSelectionColor(
     if (MetadataUtils.isComponentInstance(path, rootElements, metadata, imports)) {
       return colorTheme.canvasSelectionInstanceOutline.value
     }
-    const originType = MetadataUtils.getElementOriginType(rootElements, metadata, path)
+    const originType = MetadataUtils.getElementOriginType(rootElements, path)
     if (originType === 'generated-static-definition-present' || originType === 'unknown-element') {
       return colorTheme.canvasSelectionRandomDOMElementInstanceOutline.value
     } else if (createsYogaLayout) {

@@ -184,7 +184,7 @@ function getTextEditorTarget(editor: EditorState): InstancePath | null {
 
     const components = getOpenUtopiaJSXComponentsFromState(editor)
     const imports = getOpenImportsFromState(editor)
-    const element = findElementAtPath(target, components, editor.jsxMetadataKILLME)
+    const element = findElementAtPath(target, components)
     if (element != null && isUtopiaAPITextElement(element, imports)) {
       return target
     } else {

@@ -302,8 +302,8 @@ export function switchPinnedChildToFlex(
   components: UtopiaJSXComponent[],
 ): SwitchLayoutTypeResult {
   const currentFrame = MetadataUtils.getFrame(target, targetOriginalContextMetadata)
-  const newParent = findJSXElementAtPath(newParentPath, components, currentContextMetadata)
-  const element = findJSXElementAtPath(target, components, currentContextMetadata)
+  const newParent = findJSXElementAtPath(newParentPath, components)
+  const element = findJSXElementAtPath(target, components)
 
   let propsToAdd: Array<ValueAtPath> = []
 
@@ -334,31 +334,26 @@ export function switchPinnedChildToFlex(
     })
   }
 
-  const updatedComponents = transformElementAtPath(
-    components,
-    target,
-    (e: JSXElement) => {
-      // Remove the pinning props first...
-      const pinnedPropsRemoved = unsetJSXValuesAtPaths(
-        e.props,
-        AllFramePoints.map((p) => createLayoutPropertyPath(pinnedPropForFramePoint(p))),
-      )
-      // ...Add in the flex properties.
-      const flexPropsAdded = flatMapEither(
-        (props) => setJSXValuesAtPaths(props, propsToAdd),
-        pinnedPropsRemoved,
-      )
-      if (isLeft(flexPropsAdded)) {
-        return e
-      } else {
-        return {
-          ...e,
-          props: flexPropsAdded.value,
-        }
+  const updatedComponents = transformElementAtPath(components, target, (e: JSXElement) => {
+    // Remove the pinning props first...
+    const pinnedPropsRemoved = unsetJSXValuesAtPaths(
+      e.props,
+      AllFramePoints.map((p) => createLayoutPropertyPath(pinnedPropForFramePoint(p))),
+    )
+    // ...Add in the flex properties.
+    const flexPropsAdded = flatMapEither(
+      (props) => setJSXValuesAtPaths(props, propsToAdd),
+      pinnedPropsRemoved,
+    )
+    if (isLeft(flexPropsAdded)) {
+      return e
+    } else {
+      return {
+        ...e,
+        props: flexPropsAdded.value,
       }
-    },
-    currentContextMetadata,
-  )
+    }
+  })
 
   const updatedMetadata = switchLayoutMetadata(
     currentContextMetadata,
@@ -414,7 +409,6 @@ export function switchFlexChildToPinned(
   const updatedComponents = removeFlexAndAddPinnedPropsToComponent(
     target,
     components,
-    currentContextMetadata,
     newOffset.y + currentFrame.y,
     newOffset.x + currentFrame.x,
     width,
@@ -469,7 +463,6 @@ export function switchFlexChildToGroup(
   const updatedComponents = removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
     target,
     components,
-    currentContextMetadata,
     newOffset.y + currentFrame.y,
     newOffset.x + currentFrame.x,
     width,
@@ -522,7 +515,6 @@ export function switchChildToGroupWithParentFrame(
     const updatedComponents = removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
       target,
       components,
-      componentMetadata,
       newOffset.y + currentFrame.y,
       newOffset.x + currentFrame.x,
       width,
@@ -548,7 +540,6 @@ export function switchChildToGroupWithParentFrame(
     const updatedComponents = changePinsToDefaultOnComponent(
       target,
       components,
-      componentMetadata,
       newOffset.y + currentFrame.y,
       newOffset.x + currentFrame.x,
       width,
@@ -593,7 +584,6 @@ export function switchPinnedChildToGroup(
   const updatedComponents = changePinsToDefaultOnComponent(
     target,
     components,
-    currentContextMetadata,
     newOffset.y + currentFrame.y,
     newOffset.x + currentFrame.x,
     width,
@@ -640,7 +630,6 @@ export function switchChildToPinnedWithParentFrame(
   const updatedComponents = removeFlexAndAddPinnedPropsToComponent(
     target,
     components,
-    componentMetadata,
     newOffset.y + currentFrame.y,
     newOffset.x + currentFrame.x,
     width,
@@ -664,7 +653,6 @@ export function switchChildToPinnedWithParentFrame(
 function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
   target: InstancePath,
   components: UtopiaJSXComponent[],
-  componentMetadata: ComponentMetadata[],
   top: number,
   left: number,
   width: string | number,
@@ -686,35 +674,29 @@ function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
     'FlexCrossBasis',
   ]
 
-  return transformElementAtPath(
-    components,
-    target,
-    (e: JSXElement) => {
-      const flexPropsRemoved = unsetJSXValuesAtPaths(
-        e.props,
-        propsToRemove.map((p) => createLayoutPropertyPath(p)),
-      )
-      const pinnedPropsAdded = flatMapEither(
-        (props) => setJSXValuesAtPaths(props, propsToAdd),
-        flexPropsRemoved,
-      )
-      if (isLeft(pinnedPropsAdded)) {
-        return e
-      } else {
-        return {
-          ...e,
-          props: pinnedPropsAdded.value,
-        }
+  return transformElementAtPath(components, target, (e: JSXElement) => {
+    const flexPropsRemoved = unsetJSXValuesAtPaths(
+      e.props,
+      propsToRemove.map((p) => createLayoutPropertyPath(p)),
+    )
+    const pinnedPropsAdded = flatMapEither(
+      (props) => setJSXValuesAtPaths(props, propsToAdd),
+      flexPropsRemoved,
+    )
+    if (isLeft(pinnedPropsAdded)) {
+      return e
+    } else {
+      return {
+        ...e,
+        props: pinnedPropsAdded.value,
       }
-    },
-    componentMetadata,
-  )
+    }
+  })
 }
 
 function removeFlexAndAddPinnedPropsToComponent(
   target: InstancePath,
   components: UtopiaJSXComponent[],
-  componentMetadata: ComponentMetadata[],
   top: number,
   left: number,
   width: string | number,
@@ -728,35 +710,29 @@ function removeFlexAndAddPinnedPropsToComponent(
   ]
   const propsToRemove: Array<LayoutProp | StyleLayoutProp> = ['FlexFlexBasis', 'FlexCrossBasis']
 
-  return transformElementAtPath(
-    components,
-    target,
-    (e: JSXElement) => {
-      const flexPropsRemoved = unsetJSXValuesAtPaths(
-        e.props,
-        propsToRemove.map((p) => createLayoutPropertyPath(p)),
-      )
-      const pinnedPropsAdded = flatMapEither(
-        (props) => setJSXValuesAtPaths(props, propsToAdd),
-        flexPropsRemoved,
-      )
-      if (isLeft(pinnedPropsAdded)) {
-        return e
-      } else {
-        return {
-          ...e,
-          props: pinnedPropsAdded.value,
-        }
+  return transformElementAtPath(components, target, (e: JSXElement) => {
+    const flexPropsRemoved = unsetJSXValuesAtPaths(
+      e.props,
+      propsToRemove.map((p) => createLayoutPropertyPath(p)),
+    )
+    const pinnedPropsAdded = flatMapEither(
+      (props) => setJSXValuesAtPaths(props, propsToAdd),
+      flexPropsRemoved,
+    )
+    if (isLeft(pinnedPropsAdded)) {
+      return e
+    } else {
+      return {
+        ...e,
+        props: pinnedPropsAdded.value,
       }
-    },
-    componentMetadata,
-  )
+    }
+  })
 }
 
 function changePinsToDefaultOnComponent(
   target: InstancePath,
   components: UtopiaJSXComponent[],
-  componentMetadata: ComponentMetadata[],
   top: number,
   left: number,
   width: string | number,
@@ -774,29 +750,24 @@ function changePinsToDefaultOnComponent(
     'PinnedCenterX',
     'PinnedCenterY',
   ]
-  return transformElementAtPath(
-    components,
-    target,
-    (e: JSXElement) => {
-      const pinPropsRemoved = unsetJSXValuesAtPaths(
-        e.props,
-        propsToRemove.map((p) => createLayoutPropertyPath(p)),
-      )
-      const pinnedPropsAdded = flatMapEither(
-        (props) => setJSXValuesAtPaths(props, propsToAdd),
-        pinPropsRemoved,
-      )
-      if (isLeft(pinnedPropsAdded)) {
-        return e
-      } else {
-        return {
-          ...e,
-          props: pinnedPropsAdded.value,
-        }
+  return transformElementAtPath(components, target, (e: JSXElement) => {
+    const pinPropsRemoved = unsetJSXValuesAtPaths(
+      e.props,
+      propsToRemove.map((p) => createLayoutPropertyPath(p)),
+    )
+    const pinnedPropsAdded = flatMapEither(
+      (props) => setJSXValuesAtPaths(props, propsToAdd),
+      pinPropsRemoved,
+    )
+    if (isLeft(pinnedPropsAdded)) {
+      return e
+    } else {
+      return {
+        ...e,
+        props: pinnedPropsAdded.value,
       }
-    },
-    componentMetadata,
-  )
+    }
+  })
 }
 
 const propertiesToRound: Array<PropertyPath> = [

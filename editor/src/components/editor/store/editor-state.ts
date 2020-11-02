@@ -725,7 +725,7 @@ export function modifyOpenJsxElementAtPath(
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
-  const staticPath = MetadataUtils.dynamicPathToStaticPath(model.jsxMetadataKILLME, path)
+  const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
   if (staticPath == null) {
     return model
   } else {
@@ -858,9 +858,8 @@ export function getOpenImportsFromState(model: EditorState): Imports {
 export function removeElementAtPath(
   target: InstancePath,
   components: Array<UtopiaJSXComponent>,
-  metadata: ComponentMetadata[],
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.dynamicPathToStaticPath(metadata, target)
+  const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
@@ -873,9 +872,8 @@ export function insertElementAtPath(
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
-  metadata: ComponentMetadata[],
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.templatePathToStaticTemplatePath(metadata, targetParent)
+  const staticTarget = MetadataUtils.templatePathToStaticTemplatePath(targetParent)
   return insertJSXElementChild(staticTarget, elementToInsert, components, indexPosition)
 }
 
@@ -883,9 +881,8 @@ export function transformElementAtPath(
   components: Array<UtopiaJSXComponent>,
   target: InstancePath,
   transform: (elem: JSXElement) => JSXElement,
-  metadata: ComponentMetadata[],
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.dynamicPathToStaticPath(metadata, target)
+  const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
@@ -1286,7 +1283,7 @@ export function deriveState(
         const target = targets[0]
         Utils.fastForEach(componentKeys, (path) => {
           if (isInstancePath(path)) {
-            const staticPath = MetadataUtils.dynamicPathToStaticPath(editor.jsxMetadataKILLME, path)
+            const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
             const uid = staticPath != null ? toUid(staticPath) : null
             if (uid === target) {
               selectedViews.push(path)
@@ -1659,11 +1656,7 @@ export function areGeneratedElementsTargeted(
 ): boolean {
   const components = getOpenUtopiaJSXComponentsFromState(editor)
   return targets.some((target) => {
-    const originType = MetadataUtils.getElementOriginType(
-      components,
-      editor.jsxMetadataKILLME,
-      target,
-    )
+    const originType = MetadataUtils.getElementOriginType(components, target)
     switch (originType) {
       case 'unknown-element':
       case 'generated-static-definition-present':

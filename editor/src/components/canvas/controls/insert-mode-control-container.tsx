@@ -429,10 +429,7 @@ export class InsertModeControlContainer extends React.Component<
     ) {
       const insertionSubject = this.props.mode.subject
       const parent = safeIndex(this.props.highlightedViews, 0) ?? null
-      const staticParent = MetadataUtils.templatePathToStaticTemplatePath(
-        this.props.componentMetadata,
-        parent,
-      )
+      const staticParent = MetadataUtils.templatePathToStaticTemplatePath(parent)
 
       let { element } = this.props.mode.subject
       if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
@@ -572,10 +569,7 @@ export class InsertModeControlContainer extends React.Component<
         this.props.dragState.start != null
       ) {
         const parent = this.props.highlightedViews[0]
-        const staticParent = MetadataUtils.templatePathToStaticTemplatePath(
-          this.props.componentMetadata,
-          parent,
-        )
+        const staticParent = MetadataUtils.templatePathToStaticTemplatePath(parent)
         let element = this.elementWithDragFrame(insertionSubject.element)
         if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
           element = this.setTextElementFixedSize(element)
