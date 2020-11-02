@@ -89,7 +89,7 @@ export const Icons = {
   Smiangle: makeIcon({ type: 'smiangle', color: 'purple' }),
   WarningTriangle: makeIcon({ type: 'warningtriangle', color: 'gray' }),
 
-  NewCodeFile: makeIcon({
+  NewTextFile: makeIcon({
     category: 'filetype',
     type: 'other',
     width: 18,

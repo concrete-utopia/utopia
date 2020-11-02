@@ -6,9 +6,15 @@ import {
 } from '../../components/editor/store/editor-state'
 import { foldEither } from '../shared/either'
 import { clearTopLevelElementUniqueIDs } from '../shared/element-template'
-import { isUIJSFile } from '../shared/project-file-types'
+import {
+  foldParsedTextFile,
+  isTextFile,
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../shared/project-file-types'
 import { NO_OP } from '../shared/utils'
-import { codeFile } from './project-file-utils'
 import { addStoryboardFileToProject, StoryboardFilePath } from './storyboard-utils'
 
 function createTestProjectLackingStoryboardFile(): EditorState {
@@ -35,13 +41,14 @@ describe('addStoryboardFileToProject', () => {
       if (storyboardFile == null) {
         fail('No storyboard file was created.')
       } else {
-        if (isUIJSFile(storyboardFile)) {
-          const topLevelElements = foldEither(
+        if (isTextFile(storyboardFile)) {
+          const topLevelElements = foldParsedTextFile(
             (_) => [],
             (success) => {
               return success.topLevelElements.map(clearTopLevelElementUniqueIDs)
             },
-            storyboardFile.fileContents,
+            (_) => [],
+            storyboardFile.fileContents.parsed,
           )
           expect(topLevelElements).toMatchSnapshot()
         } else {
@@ -51,7 +58,15 @@ describe('addStoryboardFileToProject', () => {
     }
   })
   it('does not add a storyboard file to a project that already has one', () => {
-    const expectedFile = codeFile('oh no, this is not a real storyboard file', null)
+    const expectedFile = textFile(
+      textFileContents(
+        'oh no, this is not a real storyboard file',
+        unparsed,
+        RevisionsState.CodeAhead,
+      ),
+      null,
+      0,
+    )
     let editorModel = createTestProjectLackingStoryboardFile()
     editorModel = {
       ...editorModel,

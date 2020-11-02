@@ -53,14 +53,9 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
           : fileState.topLevelElementsIncludingScenes.filter(isUtopiaJSXComponent)
       const elementOriginType = MetadataUtils.getElementOriginType(
         componentsIncludingScenes,
-        jsxMetadataKILLME,
         templatePath,
       )
-      const staticName = MetadataUtils.getStaticElementName(
-        templatePath,
-        componentsIncludingScenes,
-        jsxMetadataKILLME,
-      )
+      const staticName = MetadataUtils.getStaticElementName(templatePath, componentsIncludingScenes)
       const labelInner = MetadataUtils.getElementLabel(templatePath, jsxMetadataKILLME, staticName)
       const componentInstanceInner = MetadataUtils.isComponentInstance(
         templatePath,

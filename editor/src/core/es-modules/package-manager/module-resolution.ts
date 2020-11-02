@@ -169,10 +169,8 @@ function getProjectFileContentsAsString(file: ProjectFile): string | null {
       return null
     case 'IMAGE_FILE':
       return file.base64 ?? ''
-    case 'CODE_FILE':
-      return file.fileContents
-    case 'UI_JS_FILE':
-      return file.fileContents.value.code
+    case 'TEXT_FILE':
+      return file.fileContents.code
     default:
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)

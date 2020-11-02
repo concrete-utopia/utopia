@@ -295,7 +295,7 @@ export function usePinToggling(): UsePinTogglingResult {
       const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
 
       const jsxElements = TP.filterScenes(selectedViewsRef.current).map((path) =>
-        findElementAtPath(path, rootComponents, store.editor.jsxMetadataKILLME),
+        findElementAtPath(path, rootComponents),
       )
 
       return jsxElements.map((elem) => {

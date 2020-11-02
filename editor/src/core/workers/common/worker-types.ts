@@ -1,8 +1,8 @@
 import { ProjectContentTreeRoot } from '../../../components/assets'
 import { TypeDefinitions } from '../../shared/npm-dependency-types'
-import { UIJSFile, CodeFile, ParseSuccess } from '../../shared/project-file-types'
+import { TextFile, ParseSuccess } from '../../shared/project-file-types'
 
-export type FileContent = string | UIJSFile | CodeFile
+export type FileContent = string | TextFile
 
 export interface UtopiaTsWorkers {
   sendInitMessage: (

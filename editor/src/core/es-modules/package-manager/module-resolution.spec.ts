@@ -1,22 +1,28 @@
 import { contentsToTree, ProjectContentTreeRoot } from '../../../components/assets'
+import {
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../shared/project-file-types'
 import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
 import { isResolveSuccess, resolveModule } from './module-resolution'
 import { createNodeModules } from './test-utils'
 
 const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
-  '/src/thing.js': {
-    type: 'CODE_FILE',
-    fileContents: 'export const Thing = 1',
-    lastSavedContents: null,
-  },
+  '/src/thing.js': textFile(
+    textFileContents('export const Thing = 1', unparsed, RevisionsState.CodeAhead),
+    null,
+    0,
+  ),
   '/src/icon.png': {
     type: 'ASSET_FILE',
   },
-  '/src/simple.css': {
-    type: 'CODE_FILE',
-    fileContents: '.utopiaClass { background-color: red; }',
-    lastSavedContents: null,
-  },
+  '/src/simple.css': textFile(
+    textFileContents('.utopiaClass { background-color: red; }', unparsed, RevisionsState.CodeAhead),
+    null,
+    0,
+  ),
 })
 
 describe('ES Package Manager Module Resolution', () => {

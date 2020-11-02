@@ -2,7 +2,7 @@ import * as json5 from 'json5'
 import * as R from 'ramda'
 import { MapLike } from 'typescript'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
-import { sameCodeFile } from '../../../core/model/project-file-utils'
+import { sameTextFile } from '../../../core/model/project-file-utils'
 import {
   PossiblyUnversionedNpmDependency,
   PackageStatusMap,
@@ -13,7 +13,7 @@ import {
   resolvedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import {
-  isCodeFile,
+  isTextFile,
   Imports,
   ProjectContents,
   ProjectFile,
@@ -298,12 +298,14 @@ export function dependenciesFromPackageJson(
   } else {
     if (
       cachedDependencies != null &&
-      sameCodeFile(packageJsonFile, cachedDependencies.packageJsonFile)
+      sameTextFile(packageJsonFile, cachedDependencies.packageJsonFile)
     ) {
       return cachedDependencies.npmDependencies
     } else {
-      if (isCodeFile(packageJsonFile)) {
-        const npmDependencies = dependenciesFromPackageJsonContents(packageJsonFile.fileContents)
+      if (isTextFile(packageJsonFile)) {
+        const npmDependencies = dependenciesFromPackageJsonContents(
+          packageJsonFile.fileContents.code,
+        )
         if (npmDependencies == null) {
           cachedDependencies = null
         } else {
@@ -356,8 +358,8 @@ export function usePackageDependencies(): Array<RequestedNpmDependency> {
   }, 'usePackageDependencies')
 
   return React.useMemo(() => {
-    if (isCodeFile(packageJsonFile)) {
-      return dependenciesFromPackageJsonContents(packageJsonFile.fileContents)
+    if (isTextFile(packageJsonFile)) {
+      return dependenciesFromPackageJsonContents(packageJsonFile.fileContents.code)
     } else {
       return []
     }

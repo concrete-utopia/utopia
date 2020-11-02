@@ -14,7 +14,7 @@ import {
   TopLevelElement,
 } from '../../core/shared/element-template'
 import { RequireFn } from '../../core/shared/npm-dependency-types'
-import { Imports } from '../../core/shared/project-file-types'
+import { foldParsedTextFile, Imports } from '../../core/shared/project-file-types'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer-test-utils'
 import { foldEither, isRight, right } from '../../core/shared/either'
 import Utils from '../../utils/utils'
@@ -93,27 +93,31 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
     errorsReported.push({ editedFile: editedFile, error: error, errorInfo: errorInfo })
   }
   const clearErrors: CanvasReactErrorCallback['clearErrors'] = Utils.NO_OP
-  const imports: Imports = foldEither(
+  const imports: Imports = foldParsedTextFile(
     (_) => emptyImports(),
     (success) => success.imports,
+    (_) => emptyImports(),
     parsedCode,
   )
-  const topLevelElements: Array<TopLevelElement> = foldEither(
+  const topLevelElements: Array<TopLevelElement> = foldParsedTextFile(
     (_) => [],
     (success) => success.topLevelElements,
+    (_) => [],
     parsedCode,
   )
-  const jsxFactoryFunction = foldEither(
+  const jsxFactoryFunction = foldParsedTextFile(
     (_) => null,
     (success) => success.jsxFactoryFunction,
+    (_) => null,
     parsedCode,
   )
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
   let consoleLogs: Array<ConsoleLog> = []
 
-  const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = foldEither(
+  const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = foldParsedTextFile(
     (_) => null,
     (success) => success.combinedTopLevelArbitraryBlock,
+    (_) => null,
     parsedCode,
   )
 

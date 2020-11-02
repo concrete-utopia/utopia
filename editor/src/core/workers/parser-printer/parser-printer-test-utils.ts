@@ -6,7 +6,6 @@ import * as FastCheck from 'fast-check'
 import { Arbitrary } from 'fast-check'
 import { MapLike } from 'typescript'
 import * as PP from '../../shared/property-path'
-import { bimapEither, foldEither, forEachRight, mapEither, right } from '../../shared/either'
 import {
   ArbitraryJSBlock,
   arbitraryJSBlock,
@@ -54,10 +53,13 @@ import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
 import {
   Imports,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   PropertyPath,
   importAlias,
+  foldParsedTextFile,
+  mapParsedTextFile,
+  forEachParseSuccess,
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
 import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
@@ -131,11 +133,11 @@ const JavaScriptReservedKeywords: Array<string> = [
   'undefined',
 ]
 
-export function testParseCode(contents: string): ParseResult {
+export function testParseCode(contents: string): ParsedTextFile {
   const filename = 'code.tsx'
   const result = lintAndParse(filename, contents)
   // Ensure that elements have valid unique IDs if the parse is successful.
-  forEachRight(result, (success) => {
+  forEachParseSuccess((success) => {
     let uids: Array<string> = []
     fastForEach(success.topLevelElements, (topLevelElement) => {
       if (isUtopiaJSXComponent(topLevelElement)) {
@@ -143,7 +145,7 @@ export function testParseCode(contents: string): ParseResult {
         ensureArbitraryJSXBlockCodeHasUIDs(topLevelElement.rootElement)
       }
     })
-  })
+  }, result)
   return result
 }
 
@@ -157,7 +159,7 @@ export function testParseModifyPrint(
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
 ): void {
   const initialParseResult = testParseCode(originalCode)
-  foldEither(
+  foldParsedTextFile(
     (failure) => fail(failure),
     (initialParseSuccess) => {
       const transformed = transform(initialParseSuccess)
@@ -169,12 +171,13 @@ export function testParseModifyPrint(
       )
       expect(printedCode).toEqual(expectedFinalCode)
     },
+    (failure) => fail(failure),
     initialParseResult,
   )
 }
 
-export function clearParseResultUniqueIDs(parseResult: ParseResult): ParseResult {
-  return mapEither((success) => {
+export function clearParseResultUniqueIDs(parseResult: ParsedTextFile): ParsedTextFile {
+  return mapParsedTextFile((success) => {
     const updatedTopLevelElements = success.topLevelElements.map(clearTopLevelElementUniqueIDs)
     return {
       ...success,
@@ -225,8 +228,8 @@ export function clearErrorMessagesPassTimes(
   return errorMessages.map(clearErrorMessagePassTime)
 }
 
-export function clearParseResultPassTimes(parseResult: ParseResult): ParseResult {
-  return bimapEither(
+export function clearParseResultPassTimes(parseResult: ParsedTextFile): ParsedTextFile {
+  return foldParsedTextFile<ParsedTextFile>(
     (failure) => {
       return {
         ...failure,
@@ -234,6 +237,7 @@ export function clearParseResultPassTimes(parseResult: ParseResult): ParseResult
       }
     },
     (success) => success,
+    (unparsedFile) => unparsedFile,
     parseResult,
   )
 }

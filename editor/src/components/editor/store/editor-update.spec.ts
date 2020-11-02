@@ -12,15 +12,20 @@ import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-f
 import {
   StaticInstancePath,
   TemplatePath,
-  isUIJSFile,
-  CodeFile,
+  isTextFile,
+  TextFile,
   esCodeFile,
   importDetails,
   importAlias,
+  isParseSuccess,
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
-import { createEditorStates, createFakeMetadataForEditor } from '../../../utils/test-utils'
+import {
+  createEditorStates,
+  createFakeMetadataForEditor,
+  forceParseSuccessFromFileOrFail,
+} from '../../../utils/test-utils'
 import Utils from '../../../utils/utils'
 import { renameComponent, reparentComponents } from '../../navigator/actions'
 import * as TP from '../../../core/shared/template-path'
@@ -295,9 +300,11 @@ describe('action NAVIGATOR_REORDER', () => {
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
     )
     const mainUIJSFile = getContentsTreeFileFromString(editor.projectContents, '/src/app.js')
-    if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
-      const topLevelElements = mainUIJSFile.fileContents.value.topLevelElements
-      const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value)
+    if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {
+      const topLevelElements = mainUIJSFile.fileContents.parsed.topLevelElements
+      const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
+        mainUIJSFile.fileContents.parsed,
+      )
       const element = utopiaJSXComponents.find((comp) => getUtopiaID(comp.rootElement) === 'aaa')
       if (element != null) {
         const targetChildren = Utils.pathOr([], ['rootElement', 'children'], element)
@@ -316,10 +323,13 @@ describe('action NAVIGATOR_REORDER', () => {
           updatedEditor.projectContents,
           '/src/app.js',
         )
-        if (isUIJSFile(updatedMainUIJSFile) && isRight(updatedMainUIJSFile.fileContents)) {
-          const updatedTopLevelElements = updatedMainUIJSFile.fileContents.value.topLevelElements
+        if (
+          isTextFile(updatedMainUIJSFile) &&
+          isParseSuccess(updatedMainUIJSFile.fileContents.parsed)
+        ) {
+          const updatedTopLevelElements = updatedMainUIJSFile.fileContents.parsed.topLevelElements
           const updatedUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
-            updatedMainUIJSFile.fileContents.value,
+            updatedMainUIJSFile.fileContents.parsed,
           )
           const updatedElement = updatedUtopiaJSXComponents.find(
             (comp) => getUtopiaID(comp.rootElement) === 'aaa',
@@ -375,20 +385,20 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
     const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
     const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, '/src/app.js')
     if (
-      isUIJSFile(oldUIJSFile) &&
-      isRight(oldUIJSFile.fileContents) &&
-      isUIJSFile(mainUIJSFile) &&
-      isRight(mainUIJSFile.fileContents)
+      isTextFile(oldUIJSFile) &&
+      isParseSuccess(oldUIJSFile.fileContents.parsed) &&
+      isTextFile(mainUIJSFile) &&
+      isParseSuccess(mainUIJSFile.fileContents.parsed)
     ) {
       const updatedChildren = Utils.pathOr(
         [],
         [0, 'rootElement', 'children'],
-        getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value),
+        getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed),
       )
       const oldChildren = Utils.pathOr(
         [],
         [0, 'rootElement', 'children'],
-        getUtopiaJSXComponentsFromSuccess(oldUIJSFile.fileContents.value),
+        getUtopiaJSXComponentsFromSuccess(oldUIJSFile.fileContents.parsed),
       )
       expect(updatedChildren).toHaveLength(oldChildren.length + 1)
     } else {
@@ -416,10 +426,10 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
     const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
     const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, '/src/app.js')
     if (
-      isUIJSFile(oldUIJSFile) &&
-      isRight(oldUIJSFile.fileContents) &&
-      isUIJSFile(mainUIJSFile) &&
-      isRight(mainUIJSFile.fileContents)
+      isTextFile(oldUIJSFile) &&
+      isParseSuccess(oldUIJSFile.fileContents.parsed) &&
+      isTextFile(mainUIJSFile) &&
+      isParseSuccess(mainUIJSFile.fileContents.parsed)
     ) {
       const updatedComponents = getOpenUtopiaJSXComponentsFromState(updatedEditor)
       const updatedChildren = Utils.pathOr([], [0, 'rootElement', 'children'], updatedComponents)
@@ -451,13 +461,13 @@ describe('action DELETE_VIEWS', () => {
   it('deletes all target elements', () => {
     const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
 
+    const parseSuccess = forceParseSuccessFromFileOrFail(
+      getContentsTreeFileFromString(editor.projectContents, '/src/app.js'),
+    )
     const originalChildrenCount = Utils.pathOr(
       [],
       [0, 'rootElement', 'children'],
-      getUtopiaJSXComponentsFromSuccess(
-        (getContentsTreeFileFromString(editor.projectContents, '/src/app.js') as any).fileContents
-          .value,
-      ),
+      parseSuccess.topLevelElements,
     ).length
 
     const firstTargetElementPath = TP.staticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb'])
@@ -479,30 +489,30 @@ describe('action DELETE_VIEWS', () => {
       emptyUiJsxCanvasContextData(),
     )
     const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
-    if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
+    if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {
       expect(
         Utils.pathOr(
           [],
           [0, 'rootElement', 'children'],
-          getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value),
+          getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed),
         ),
       ).toHaveLength(originalChildrenCount - 1)
       expect(
         Utils.pathOr(
           [],
           [0, 'rootElement', 'children', 0, 'children'],
-          getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value),
+          getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed),
         ),
       ).toHaveLength(1)
       expect(
         findJSXElementChildAtPath(
-          getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value),
+          getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed),
           firstTargetElementPath,
         ),
       ).toBeNull()
       expect(
         findJSXElementChildAtPath(
-          getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value),
+          getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed),
           secondTargetElementPath,
         ),
       ).toBeNull()
@@ -655,8 +665,8 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
       emptyUiJsxCanvasContextData(),
     )
     const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
-    if (isUIJSFile(mainUIJSFile) && isRight(mainUIJSFile.fileContents)) {
-      const components = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.value)
+    if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {
+      const components = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed)
       const textElement = Utils.forceNotNull(
         'Target text should exist',
         findJSXElementChildAtPath(components, targetText),
@@ -884,11 +894,12 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
       updatedEditor.projectContents,
       '/package.json',
     )
-    if (packageJsonFile == null || packageJsonFile.type != 'CODE_FILE') {
-      fail('Package.json file should exist and should be a CodeFile')
+    if (packageJsonFile == null || packageJsonFile.type != 'TEXT_FILE') {
+      fail('Package.json file should exist and should be a TextFile')
     } else {
       expect(packageJsonFile.fileContents).toMatchInlineSnapshot(`
-        "{
+        Object {
+          "code": "{
           \\"name\\": \\"Utopia Project\\",
           \\"version\\": \\"0.1.0\\",
           \\"utopia\\": {
@@ -900,7 +911,12 @@ describe('action PUSH_TOAST and POP_TOAST', () => {
             \\"mypackage\\": \\"1.0.0\\",
             \\"smart\\": \\"2.3.1\\"
           }
-        }"
+        }",
+          "parsed": Object {
+            "type": "UNPARSED",
+          },
+          "revisionsState": "CODE_AHEAD",
+        }
       `)
     }
   })

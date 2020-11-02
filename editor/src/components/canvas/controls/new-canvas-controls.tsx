@@ -249,10 +249,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
         componentMetadata,
         selectedView,
       )
-      return (
-        possibleMetadata == null ||
-        MetadataUtils.dynamicPathToStaticPath(componentMetadata, selectedView) == null
-      )
+      return possibleMetadata == null || MetadataUtils.dynamicPathToStaticPath(selectedView) == null
     })
     if (anyIncomprehensibleElementsSelected) {
       return 'disabled'

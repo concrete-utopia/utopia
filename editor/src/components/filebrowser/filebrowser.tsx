@@ -95,7 +95,7 @@ function collectFileBrowserItems(
         exportedFunction: false,
       })
       if (
-        (element.type === 'CODE_FILE' || element.type === 'UI_JS_FILE') &&
+        element.type === 'TEXT_FILE' &&
         isJavascriptOrTypescript(fullPath) &&
         codeResultCache != null
       ) {
@@ -193,7 +193,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
       projectContents: store.editor.projectContents,
       editorSelectedFile: getOpenFilename(store.editor),
       errorMessages: getAllCodeEditorErrors(store.editor, false, true),
-      isOpenUIFileParseSuccess: uiFile != null && isParseSuccess(uiFile.fileContents),
+      isOpenUIFileParseSuccess: uiFile != null && isParseSuccess(uiFile.fileContents.parsed),
       codeResultCache: store.editor.codeResultCache,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       renamingTarget: store.editor.fileBrowser.renamingTarget,
@@ -205,8 +205,8 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
   // because the generated array keept loosing its reference equality
   const componentUIDs = useEditorState((store) => {
     const uiFile = getOpenUIJSFile(store.editor)
-    return uiFile != null && isParseSuccess(uiFile.fileContents)
-      ? getAllUniqueUids(getUtopiaJSXComponentsFromSuccess(uiFile.fileContents.value))
+    return uiFile != null && isParseSuccess(uiFile.fileContents.parsed)
+      ? getAllUniqueUids(getUtopiaJSXComponentsFromSuccess(uiFile.fileContents.parsed))
       : []
   }, 'FileBrowserItems componentUIDs')
   const componentUIDsWithStableRef = useKeepReferenceEqualityIfPossible(componentUIDs)
@@ -326,8 +326,8 @@ const FileBrowserActionSheet = betterReactMemo(
       () => dispatch([EditorActions.addFolder('')], 'everyone'),
       [dispatch],
     )
-    const addCodeFileClick = React.useCallback(
-      () => dispatch([EditorActions.addCodeFile('', 'untitled')], 'everyone'),
+    const addTextFileClick = React.useCallback(
+      () => dispatch([EditorActions.addTextFile('', 'untitled')], 'everyone'),
       [dispatch],
     )
     if (props.visible) {
@@ -336,8 +336,8 @@ const FileBrowserActionSheet = betterReactMemo(
           <SquareButton highlight onClick={addFolderClick}>
             <Icons.NewFolder tooltipText='Add New Folder' />
           </SquareButton>
-          <SquareButton highlight onClick={addCodeFileClick}>
-            <Icons.NewCodeFile tooltipText='Add Code File' />
+          <SquareButton highlight onClick={addTextFileClick}>
+            <Icons.NewTextFile tooltipText='Add Code File' />
           </SquareButton>
         </ActionSheet>
       )

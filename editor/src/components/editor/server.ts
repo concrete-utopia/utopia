@@ -7,24 +7,12 @@ import {
   thumbnailURL,
   userConfigURL,
 } from '../../common/server'
-import {
-  assetFile,
-  codeFile,
-  directory,
-  fileTypeFromFileName,
-  imageFile,
-  isImageFile,
-  uiJsFile,
-} from '../../core/model/project-file-utils'
-import { ImageFile, ProjectContents } from '../../core/shared/project-file-types'
-import Utils from '../../utils/utils'
+import { imageFile, isImageFile } from '../../core/model/project-file-utils'
+import { ImageFile } from '../../core/shared/project-file-types'
 import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './store/editor-state'
-import { ShortcutConfiguration } from './shortcut-definitions'
 import { LoginState } from '../../uuiui-deps'
 import urljoin = require('url-join')
 import * as JSZip from 'jszip'
-import { isText } from 'istextorbinary'
-import { Either, left, right } from '../../core/shared/either'
 import { addFileToProjectContents, walkContentsTree } from '../assets'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'

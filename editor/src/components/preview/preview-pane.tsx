@@ -18,7 +18,7 @@ import { DeviceInfo, deviceInfoList } from '../../common/devices'
 import { BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { useEditorState } from '../editor/store/store-hook'
 import { SelectOption } from '../inspector/controls/select-control'
-import { isCodeFile, CodeFile, ProjectContents } from '../../core/shared/project-file-types'
+import { isTextFile, TextFile, ProjectContents } from '../../core/shared/project-file-types'
 import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
 import { eitherToMaybe } from '../../core/shared/either'
 import { shareURLForProject } from '../../core/shared/utils'
@@ -56,7 +56,7 @@ interface IntermediatePreviewColumnProps {
   id: string | null
   projectName: string
   connected: boolean
-  packageJSONFile: CodeFile | null
+  packageJSONFile: TextFile | null
 }
 
 export interface PreviewColumnProps {

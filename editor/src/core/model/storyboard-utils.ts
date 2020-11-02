@@ -11,10 +11,16 @@ import {
   UtopiaJSXComponent,
   utopiaJSXComponent,
 } from '../shared/element-template'
-import { importAlias, isUIJSFile, RevisionsState } from '../shared/project-file-types'
+import {
+  forEachParseSuccess,
+  importAlias,
+  isTextFile,
+  RevisionsState,
+  textFile,
+  textFileContents,
+} from '../shared/project-file-types'
 import { generateUID } from '../shared/uid-utils'
 import { addImport, parseSuccess } from '../workers/common/project-file-utils'
-import { uiJsFile } from './project-file-utils'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
@@ -49,9 +55,9 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
     walkContentsTree(editorModel.projectContents, (fullPath, file) => {
       // Just in case we ever find a main looking component, skip everything else.
       if (namedComponentToImport == null) {
-        if (isUIJSFile(file)) {
+        if (isTextFile(file)) {
           // For those successfully parsed files, we want to search all of the components.
-          forEachRight(file.fileContents, (success) => {
+          forEachParseSuccess((success) => {
             for (const topLevelElement of success.topLevelElements) {
               if (isUtopiaJSXComponent(topLevelElement)) {
                 // Check for components that have a name which _looks_ like it is the main one.
@@ -64,7 +70,7 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
                 }
               }
             }
-          })
+          }, file.fileContents.parsed)
         }
       }
     })
@@ -113,8 +119,12 @@ function addStoryboardFileForComponent(
     baseImports,
   )
   // Create the file.
-  const success = parseSuccess(imports, [storyboardComponent], '', {}, 'jsx', null)
-  const storyboardFileContents = uiJsFile(right(success), null, RevisionsState.ParsedAhead, 0)
+  const success = parseSuccess(imports, [storyboardComponent], {}, 'jsx', null)
+  const storyboardFileContents = textFile(
+    textFileContents('', success, RevisionsState.ParsedAhead),
+    null,
+    0,
+  )
 
   // Update the model.
   const updatedProjectContents = addFileToProjectContents(
