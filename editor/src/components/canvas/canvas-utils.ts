@@ -432,22 +432,18 @@ export function updateFramesOfScenesAndComponents(
     } else {
       // Realign to aim at the static version, not the dynamic one.
       const originalTarget = target
-      const staticTarget = MetadataUtils.dynamicPathToStaticPath(metadata, target)
+      const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
       if (staticTarget == null) {
         return
       }
 
-      const element = findJSXElementAtPath(staticTarget, workingComponentsResult, metadata)
+      const element = findJSXElementAtPath(staticTarget, workingComponentsResult)
       if (element == null) {
         throw new Error(`Unexpected result when looking for element: ${element}`)
       }
 
       const staticParentPath = TP.parentPath(staticTarget)
-      const parentElement = findJSXElementAtPath(
-        staticParentPath,
-        workingComponentsResult,
-        metadata,
-      )
+      const parentElement = findJSXElementAtPath(staticParentPath, workingComponentsResult)
 
       const isFlexContainer =
         frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
@@ -472,7 +468,6 @@ export function updateFramesOfScenesAndComponents(
             case 'FLEX_MOVE':
               workingComponentsResult = reorderComponent(
                 workingComponentsResult,
-                metadata,
                 originalTarget,
                 frameAndTarget.newIndex,
               )
@@ -1431,11 +1426,7 @@ export function produceResizeCanvasTransientState(
     // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
     const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
     const openComponents = preventAnimations
-      ? preventAnimationsOnTargets(
-          untouchedOpenComponents,
-          editorState.jsxMetadataKILLME,
-          elementsToTarget,
-        )
+      ? preventAnimationsOnTargets(untouchedOpenComponents, elementsToTarget)
       : untouchedOpenComponents
 
     const componentsIncludingFakeUtopiaScene = openComponents
@@ -1511,11 +1502,7 @@ export function produceResizeSingleSelectCanvasTransientState(
   // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
   const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
   const openComponents = preventAnimations
-    ? preventAnimationsOnTargets(
-        untouchedOpenComponents,
-        editorState.jsxMetadataKILLME,
-        elementsToTarget,
-      )
+    ? preventAnimationsOnTargets(untouchedOpenComponents, elementsToTarget)
     : untouchedOpenComponents
 
   const componentsIncludingFakeUtopiaScene = openComponents
@@ -1872,11 +1859,7 @@ export function moveTemplate(
         newParentLayoutSystem,
       )
 
-      const jsxElement = findElementAtPath(
-        target,
-        withLayoutUpdatedForNewContext,
-        withMetadataUpdatedForNewContext,
-      )
+      const jsxElement = findElementAtPath(target, withLayoutUpdatedForNewContext)
       if (jsxElement == null) {
         return noChanges()
       } else {
@@ -1889,7 +1872,6 @@ export function moveTemplate(
         const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
           target,
           withLayoutUpdatedForNewContext,
-          updatedComponentMetadata,
         )
 
         updatedUtopiaComponents = insertElementAtPath(
@@ -1897,7 +1879,6 @@ export function moveTemplate(
           jsxElement,
           withTargetRemoved,
           indexPosition,
-          updatedComponentMetadata,
         )
         if (newParentPath == null) {
           newIndex = updatedUtopiaComponents.findIndex(
@@ -1907,11 +1888,7 @@ export function moveTemplate(
             throw new Error('Invalid root element index.')
           }
         } else {
-          const parent = findElementAtPath(
-            newParentPath,
-            updatedUtopiaComponents,
-            updatedComponentMetadata,
-          )
+          const parent = findElementAtPath(newParentPath, updatedUtopiaComponents)
           if (parent == null || !isJSXElement(parent)) {
             throw new Error(`Couldn't find parent ${JSON.stringify(newParentPath)}`)
           } else {
@@ -2011,14 +1988,13 @@ export function moveTemplate(
 
 function preventAnimationsOnTargets(
   components: UtopiaJSXComponent[],
-  metadata: ComponentMetadata[],
   targets: TemplatePath[],
 ): UtopiaJSXComponent[] {
   let workingComponentsResult = [...components]
   Utils.fastForEach(targets, (target) => {
     const staticPath = TP.isScenePath(target)
       ? createSceneTemplatePath(target)
-      : MetadataUtils.dynamicPathToStaticPath(metadata, target)
+      : MetadataUtils.dynamicPathToStaticPath(target)
     if (staticPath != null) {
       workingComponentsResult = transformJSXComponentAtPath(
         workingComponentsResult,
@@ -2068,11 +2044,7 @@ function produceMoveTransientCanvasState(
   // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
   const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
   let utopiaComponentsIncludingScenes = preventAnimations
-    ? preventAnimationsOnTargets(
-        untouchedOpenComponents,
-        editorState.jsxMetadataKILLME,
-        elementsToTarget,
-      )
+    ? preventAnimationsOnTargets(untouchedOpenComponents, elementsToTarget)
     : untouchedOpenComponents
 
   if (dragState.reparent) {
@@ -2318,7 +2290,7 @@ export function duplicate(
             const scenepath = createSceneTemplatePath(path)
             jsxElement = findJSXElementChildAtPath(utopiaComponents, scenepath)
           } else {
-            jsxElement = findElementAtPath(path, utopiaComponents, metadata)
+            jsxElement = findElementAtPath(path, utopiaComponents)
           }
           let uid: string
           if (jsxElement == null) {
@@ -2380,7 +2352,6 @@ export function duplicate(
                 newElement,
                 utopiaComponents,
                 null,
-                metadata,
               )
             }
 
@@ -2416,14 +2387,13 @@ export function duplicate(
 
 export function reorderComponent(
   components: Array<UtopiaJSXComponent>,
-  componentMetadata: Array<ComponentMetadata>,
   target: InstancePath,
   newIndex: number,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
   const parentPath = TP.parentPath(target)
-  const jsxElement = findElementAtPath(target, workingComponents, componentMetadata)
+  const jsxElement = findElementAtPath(target, workingComponents)
 
   if (jsxElement != null) {
     const newPosition: IndexPosition = {
@@ -2431,15 +2401,9 @@ export function reorderComponent(
       index: newIndex,
     }
 
-    workingComponents = removeElementAtPath(target, workingComponents, componentMetadata)
+    workingComponents = removeElementAtPath(target, workingComponents)
 
-    workingComponents = insertElementAtPath(
-      parentPath,
-      jsxElement,
-      workingComponents,
-      newPosition,
-      componentMetadata,
-    )
+    workingComponents = insertElementAtPath(parentPath, jsxElement, workingComponents, newPosition)
   }
 
   return workingComponents

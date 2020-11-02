@@ -123,11 +123,7 @@ export class SelectModeControlContainer extends React.Component<
     if (
       // Only on left mouse down.
       originalEvent.buttons === 1 &&
-      !MetadataUtils.anyUnknownOrGeneratedElements(
-        this.props.rootComponents,
-        this.props.componentMetadata,
-        selectedViews,
-      )
+      !MetadataUtils.anyUnknownOrGeneratedElements(this.props.rootComponents, selectedViews)
     ) {
       const selection = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
       const moveTargets = selection.filter(

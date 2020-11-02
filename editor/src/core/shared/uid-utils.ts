@@ -33,6 +33,15 @@ export function generateUID(existingIDs: Array<string>): string {
   return generateUID(existingIDs)
 }
 
+export const GeneratedUIDSeparator = `-`
+export function createIndexedUid(originalUid: string, index: string | number): string {
+  return `${originalUid}${GeneratedUIDSeparator}${index}`
+}
+
+export function extractOriginalUidFromIndexedUid(uid: string): string {
+  return uid.split(GeneratedUIDSeparator)[0]
+}
+
 export function setUtopiaIDOnJSXElement(element: JSXElement, uid: string): JSXElement {
   return {
     ...element,

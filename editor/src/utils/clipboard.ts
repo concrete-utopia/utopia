@@ -172,7 +172,7 @@ export function createClipboardDataFromSelectionNewWorld(
       const path = createSceneTemplatePath(view)
       return findJSXElementChildAtPath(utopiaComponents, path)
     } else {
-      return findElementAtPath(view, utopiaComponents, editor.jsxMetadataKILLME)
+      return findElementAtPath(view, utopiaComponents)
     }
   })
   return {
