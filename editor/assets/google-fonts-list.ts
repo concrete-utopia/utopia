@@ -8106,3 +8106,4 @@ export const googleFontsList: Array<GoogleFontsTypeface> = [
     ],
   },
 ]
+
