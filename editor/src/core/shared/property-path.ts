@@ -27,8 +27,13 @@ function emptyPathCache(): PropertyPathCache {
   }
 }
 
-const globalPathStringToPathCache: { [key: string]: PropertyPath } = {}
-const globalPathCache: PropertyPathCache = emptyPathCache()
+let globalPathStringToPathCache: { [key: string]: PropertyPath } = {}
+let globalPathCache: PropertyPathCache = emptyPathCache()
+
+export function clearPropertyPathCache() {
+  globalPathStringToPathCache = {}
+  globalPathCache = emptyPathCache()
+}
 
 function getPathCache(elements: Array<PropertyPathPart>): PropertyPathCache {
   let workingPathCache: PropertyPathCache = globalPathCache
