@@ -483,91 +483,151 @@ function editorDispatchInner(
     // Tested quickly and it broke selection, but I'm mostly certain
     // it should only merge when both have changed.
     if (metadataChanged) {
-      result = produce(result, (r) => {
-        if (r.editor.canvas.dragState == null) {
-          const jsxMetadataKILLME = reconstructJSXMetadata(result.editor)
+      // result = produce(result, (r) => {
+      if (result.editor.canvas.dragState == null) {
+        const jsxMetadataKILLME = reconstructJSXMetadata(result.editor)
 
-          console.time('timing flattenMetadata')
-          const {
-            elementMetadataMap,
-            elementPropsMap,
-            jsxElementMap,
-            sceneMetadata,
+        console.time('timing flattenMetadata')
+        const {
+          elementMetadataMap,
+          elementPropsMap,
+          jsxElementMap,
+          sceneMetadata,
+          specialSizeMeasurementsMap,
+        } = flattenMetadata(jsxMetadataKILLME)
+        console.timeEnd('timing flattenMetadata')
+
+        console.time('timing all')
+        timeFunction('Deep ref equality for elementMetadataMap', () =>
+          keepDeepReferenceEqualityIfPossible(result.editor.elementMetadataMap, elementMetadataMap),
+        )
+        timeFunction('Deep ref equality for elementPropsMap', () =>
+          keepDeepReferenceEqualityIfPossible(result.editor.elementPropsMap, elementPropsMap),
+        )
+        timeFunction('Deep ref equality for jsxElementMap', () =>
+          keepDeepReferenceEqualityIfPossible(result.editor.jsxElementMap, jsxElementMap),
+        )
+        timeFunction('Deep ref equality for sceneMetadata', () =>
+          keepDeepReferenceEqualityIfPossible(result.editor.sceneMetadata, sceneMetadata),
+        )
+        timeFunction('Deep ref equality for specialSizeMeasurementsMap', () =>
+          keepDeepReferenceEqualityIfPossible(
+            result.editor.specialSizeMeasurementsMap,
             specialSizeMeasurementsMap,
-          } = flattenMetadata(jsxMetadataKILLME)
-          console.timeEnd('timing flattenMetadata')
+          ),
+        )
+        console.timeEnd('timing all')
 
-          console.time('timing all')
-          timeFunction('Deep ref equality for elementMetadataMap', () =>
-            keepDeepReferenceEqualityIfPossible(r.editor.elementMetadataMap, elementMetadataMap),
-          )
-          timeFunction('Deep ref equality for elementPropsMap', () =>
-            keepDeepReferenceEqualityIfPossible(r.editor.elementPropsMap, elementPropsMap),
-          )
-          timeFunction('Deep ref equality for jsxElementMap', () =>
-            keepDeepReferenceEqualityIfPossible(r.editor.jsxElementMap, jsxElementMap),
-          )
-          timeFunction('Deep ref equality for sceneMetadata', () =>
-            keepDeepReferenceEqualityIfPossible(r.editor.sceneMetadata, sceneMetadata),
-          )
-          timeFunction('Deep ref equality for specialSizeMeasurementsMap', () =>
-            keepDeepReferenceEqualityIfPossible(
-              r.editor.specialSizeMeasurementsMap,
-              specialSizeMeasurementsMap,
-            ),
-          )
-          console.timeEnd('timing all')
+        console.time('timing jsxMetadataKILLME')
+        timeFunction('Deep ref equality for jsxMetadataKILLME', () =>
+          keepDeepReferenceEqualityIfPossible(result.editor.jsxMetadataKILLME, jsxMetadataKILLME),
+        )
+        console.timeEnd('timing jsxMetadataKILLME')
 
-          console.time('timing jsxMetadataKILLME')
-          timeFunction('Deep ref equality for jsxMetadataKILLME', () =>
-            keepDeepReferenceEqualityIfPossible(r.editor.jsxMetadataKILLME, jsxMetadataKILLME),
-          )
-          console.timeEnd('timing jsxMetadataKILLME')
+        const newjsxMetadataKILLME = keepDeepReferenceEqualityIfPossible(
+          result.editor.jsxMetadataKILLME,
+          jsxMetadataKILLME,
+        )
+        console.log(
+          `Refs stayed the same for jsxMetadataKILLME? ${
+            result.editor.jsxMetadataKILLME === newjsxMetadataKILLME
+          }`,
+        )
 
-          r.editor.jsxMetadataKILLME = keepDeepReferenceEqualityIfPossible(
-            r.editor.jsxMetadataKILLME,
-            jsxMetadataKILLME,
-          )
-          r.editor.elementMetadataMap = keepDeepReferenceEqualityIfPossible(
-            r.editor.elementMetadataMap,
-            elementMetadataMap,
-          )
-          r.editor.elementPropsMap = keepDeepReferenceEqualityIfPossible(
-            r.editor.elementPropsMap,
-            elementPropsMap,
-          )
-          r.editor.jsxElementMap = keepDeepReferenceEqualityIfPossible(
-            r.editor.jsxElementMap,
-            jsxElementMap,
-          )
-          r.editor.sceneMetadata = keepDeepReferenceEqualityIfPossible(
-            r.editor.sceneMetadata,
-            sceneMetadata,
-          )
-          r.editor.specialSizeMeasurementsMap = keepDeepReferenceEqualityIfPossible(
-            r.editor.specialSizeMeasurementsMap,
-            specialSizeMeasurementsMap,
-          )
-        } else {
-          r.editor.canvas.dragState.metadata = reconstructJSXMetadata(result.editor)
+        const newelementMetadataMap = keepDeepReferenceEqualityIfPossible(
+          result.editor.elementMetadataMap,
+          elementMetadataMap,
+        )
+        console.log(
+          `Refs stayed the same for elementMetadataMap? ${
+            result.editor.elementMetadataMap === newelementMetadataMap
+          }`,
+        )
+
+        const newelementPropsMap = keepDeepReferenceEqualityIfPossible(
+          result.editor.elementPropsMap,
+          elementPropsMap,
+        )
+        console.log(
+          `Refs stayed the same for elementPropsMap? ${
+            result.editor.elementPropsMap === newelementPropsMap
+          }`,
+        )
+
+        const newjsxElementMap = keepDeepReferenceEqualityIfPossible(
+          result.editor.jsxElementMap,
+          jsxElementMap,
+        )
+        console.log(
+          `Refs stayed the same for jsxElementMap? ${
+            result.editor.jsxElementMap === newjsxElementMap
+          }`,
+        )
+
+        const newsceneMetadata = keepDeepReferenceEqualityIfPossible(
+          result.editor.sceneMetadata,
+          sceneMetadata,
+        )
+        console.log(
+          `Refs stayed the same for sceneMetadata? ${
+            result.editor.sceneMetadata === newsceneMetadata
+          }`,
+        )
+
+        const newspecialSizeMeasurementsMap = keepDeepReferenceEqualityIfPossible(
+          result.editor.specialSizeMeasurementsMap,
+          specialSizeMeasurementsMap,
+        )
+        console.log(
+          `Refs stayed the same for specialSizeMeasurementsMap? ${
+            result.editor.specialSizeMeasurementsMap === newspecialSizeMeasurementsMap
+          }`,
+        )
+
+        result = {
+          ...result,
+          editor: {
+            ...result.editor,
+            jsxMetadataKILLME: newjsxMetadataKILLME,
+            elementMetadataMap: newelementMetadataMap,
+            elementPropsMap: newelementPropsMap,
+            jsxElementMap: newjsxElementMap,
+            sceneMetadata: newsceneMetadata,
+            specialSizeMeasurementsMap: newspecialSizeMeasurementsMap,
+          },
         }
-        // TODO Re-enable this once we have addressed the root cause of the false positives
-        // (these were firing frequently even on elements that remained > 0x0 dimensions)
-        //
-        // const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
-        // const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
-        // if (newLostElements.length > 0 && isBrowserEnvironment) {
-        //   // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
-        //   // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
-        //   const toastAction = EditorActions.showToast({
-        //     message: `Some elements are no longer being rendered`,
-        //     level: 'WARNING',
-        //   })
-        //   setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
-        // }
+      } else {
+        result = {
+          ...result,
+          editor: {
+            ...result.editor,
+            canvas: {
+              ...result.editor.canvas,
+              dragState: {
+                ...result.editor.canvas.dragState,
+                metadata: reconstructJSXMetadata(result.editor),
+              },
+            },
+          },
+        }
+      }
+      // TODO Re-enable this once we have addressed the root cause of the false positives
+      // (these were firing frequently even on elements that remained > 0x0 dimensions)
+      //
+      // const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
+      // const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
+      // if (newLostElements.length > 0 && isBrowserEnvironment) {
+      //   // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
+      //   // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
+      //   const toastAction = EditorActions.showToast({
+      //     message: `Some elements are no longer being rendered`,
+      //     level: 'WARNING',
+      //   })
+      //   setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
+      // }
 
-        // r.editor.warnedInstances = allLostElements
-      })
+      // r.editor.warnedInstances = allLostElements
+      // })
     }
 
     const cleanedEditor = metadataChanged
