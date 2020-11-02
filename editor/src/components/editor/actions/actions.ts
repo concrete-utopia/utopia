@@ -3354,6 +3354,10 @@ export const UPDATE_FNS = {
         break
       }
       case 'Model': {
+        // Clear any cached paths since UIDs will have been regenerated and property paths may no longer exist
+        PP.clearPropertyPathCache()
+        TP.clearTemplatePathCache()
+
         // we use the new highlightBounds coming from the action
         code = existing.fileContents.code
         const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents.parsed)

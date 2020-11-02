@@ -51,8 +51,13 @@ function emptyInstancePathCache(): InstancePathCache {
   }
 }
 
-const globalPathStringToPathCache: { [key: string]: TemplatePath } = {}
-const globalScenePathCache: ScenePathCache = emptyScenePathCache()
+let globalPathStringToPathCache: { [key: string]: TemplatePath } = {}
+let globalScenePathCache: ScenePathCache = emptyScenePathCache()
+
+export function clearTemplatePathCache() {
+  globalPathStringToPathCache = {}
+  globalScenePathCache = emptyScenePathCache()
+}
 
 function getScenePathCache(sceneElementPath: StaticElementPath): ScenePathCache {
   let workingPathCache: ScenePathCache = globalScenePathCache
