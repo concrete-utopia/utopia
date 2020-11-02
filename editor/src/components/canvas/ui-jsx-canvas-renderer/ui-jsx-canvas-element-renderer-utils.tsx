@@ -79,13 +79,6 @@ export function renderCoreElement(
       if (originalIDForProps != null) {
         passthroughProps[UTOPIA_ORIGINAL_ID_KEY] = originalIDForProps
       }
-      // const originalParentIDForProps = Utils.defaultIfNull(
-      //   assembledProps[UTOPIA_UID_ORIGINAL_PARENTS_KEY],
-      //   parentComponentInputProps[UTOPIA_UID_ORIGINAL_PARENTS_KEY],
-      // )
-      // if (originalParentIDForProps != null) {
-      //   originalParentIDForProps[UTOPIA_UID_ORIGINAL_PARENTS_KEY] = originalParentIDForProps
-      // }
 
       return renderJSXElement(
         TP.toString(templatePath),
