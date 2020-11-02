@@ -106,7 +106,7 @@ function getHighlightBoundsForTemplatePath(path: TemplatePath, store: EditorStor
     if (TP.isInstancePath(path)) {
       const highlightedUID = Utils.optionalMap(
         TP.toUid,
-        MetadataUtils.dynamicPathToStaticPath(store.editor.jsxMetadataKILLME, path),
+        MetadataUtils.dynamicPathToStaticPath(path),
       )
       if (highlightedUID != null) {
         return parseSuccess.highlightBounds[highlightedUID]
@@ -120,7 +120,6 @@ function getTemplatePathsInBounds(
   line: number,
   parsedHighlightBounds: HighlightBoundsForUids | null,
   allTemplatePaths: TemplatePath[],
-  jsxMetadataKILLME: ComponentMetadata[],
 ): TemplatePath[] {
   if (parsedHighlightBounds == null) {
     return []
@@ -139,7 +138,7 @@ function getTemplatePathsInBounds(
     const target = targets[0]
     Utils.fastForEach(allTemplatePaths, (path) => {
       if (TP.isInstancePath(path)) {
-        const staticPath = MetadataUtils.dynamicPathToStaticPath(jsxMetadataKILLME, path)
+        const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
         const uid = staticPath != null ? TP.toUid(staticPath) : null
         if (uid === target) {
           paths.push(path)
@@ -165,14 +164,12 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     openFile,
     cursorPositionFromOpenFile,
     savedCursorPosition,
-    packageJsonFile,
     typeDefinitions,
     lintErrors,
     parserPrinterErrors,
     projectContents,
     parsedHighlightBounds,
     allTemplatePaths,
-    jsxMetadataKILLME,
     focusedPanel,
     codeEditorTheme,
     selectedViews,
@@ -192,7 +189,6 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
       cursorPositionFromOpenFile:
         store.editor.selectedFile == null ? null : store.editor.selectedFile.initialCursorPosition,
       savedCursorPosition: openFilePath == null ? null : store.editor.cursorPositions[openFilePath],
-      packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
       typeDefinitions: getDependencyTypeDefinitions(store.editor.nodeModules.files),
       lintErrors: getAllLintErrors(store.editor),
       parserPrinterErrors: parseFailureAsErrorMessages(openUIJSFileKey, openUIJSFile),
@@ -202,7 +198,6 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
           ? openUIJSFile.fileContents.parsed.highlightBounds
           : null,
       allTemplatePaths: store.derived.navigatorTargets,
-      jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
       focusedPanel: store.editor.focusedPanel,
       codeEditorTheme: store.editor.codeEditorTheme,
       selectedViews: store.editor.selectedViews,
@@ -231,33 +226,23 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
 
   const onHover = React.useCallback(
     (line: number, column: number) => {
-      const targets = getTemplatePathsInBounds(
-        line,
-        parsedHighlightBounds,
-        allTemplatePaths,
-        jsxMetadataKILLME,
-      )
+      const targets = getTemplatePathsInBounds(line, parsedHighlightBounds, allTemplatePaths)
       if (targets.length > 0) {
         const actions = targets.map((path) => EditorActions.setHighlightedView(path))
         dispatch(actions, 'everyone')
       }
     },
-    [parsedHighlightBounds, allTemplatePaths, jsxMetadataKILLME, dispatch],
+    [parsedHighlightBounds, allTemplatePaths, dispatch],
   )
 
   const onSelect = React.useCallback(
     (line: number, column: number) => {
-      const targets = getTemplatePathsInBounds(
-        line,
-        parsedHighlightBounds,
-        allTemplatePaths,
-        jsxMetadataKILLME,
-      )
+      const targets = getTemplatePathsInBounds(line, parsedHighlightBounds, allTemplatePaths)
       if (targets.length > 0) {
         dispatch([EditorActions.selectComponents(targets, false)], 'everyone')
       }
     },
-    [parsedHighlightBounds, allTemplatePaths, jsxMetadataKILLME, dispatch],
+    [parsedHighlightBounds, allTemplatePaths, dispatch],
   )
 
   const onSave = React.useCallback(

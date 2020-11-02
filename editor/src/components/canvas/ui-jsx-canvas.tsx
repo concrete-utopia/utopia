@@ -254,8 +254,8 @@ export const UiJsxCanvas = betterReactMemo(
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
-    clearConsoleLogs()
-    proxyConsole(console, addToConsoleLogs)
+    // clearConsoleLogs()
+    // proxyConsole(console, addToConsoleLogs)
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
 
