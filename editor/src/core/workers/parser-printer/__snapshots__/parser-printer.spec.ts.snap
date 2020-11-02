@@ -5,7 +5,7 @@ Object {
   "type": "RIGHT",
   "value": Object {
     "code": "var App = function App(props) {
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(View, {
+  return React.createElement(React.Fragment, null, React.createElement(View, {
     style: { ...props.style,
       backgroundColor: '#FFFFFF'
     },
@@ -17,7 +17,7 @@ Object {
 };",
     "sourceMap": Object {
       "file": "test.js",
-      "mappings": "AAcEA,IAAAA,GAAAA,GAAAA,SAAAA,GAAAA,CAAAA,KAAAA,EAAAA;AACDA,sBACcC,uDACJD,oBAAAA,IAAAA;AACJA,IAAAA,KAAAA,EAAAA,EAAAA,GAAAA,KAAAA,CAAAA,KAAAA;AAAAA,MAAAA,eAAAA,EAAAA;AAAAA,KADIA;AAECA,IAAAA,MAAAA,EAAAA;AAAAA,MAAAA,YAAAA,EAAAA;AAAAA,KAFDA;AAGFE,gBAAaC;AAHXH,IADIC,CADdD;AASKI,CAVJJ",
+      "mappings": "AAcEA,IAAAA,GAAAA,GAAAA,SAAAA,GAAAA,CAAAA,KAAAA,EAAAA;AACDA,SACcC,0CACJD,oBAAAA,IAAAA;AACJA,IAAAA,KAAAA,EAAAA,EAAAA,GAAAA,KAAAA,CAAAA,KAAAA;AAAAA,MAAAA,eAAAA,EAAAA;AAAAA,KADIA;AAECA,IAAAA,MAAAA,EAAAA;AAAAA,MAAAA,YAAAA,EAAAA;AAAAA,KAFDA;AAGFE,gBAAaC;AAHXH,IADIC,CADdD;AASKI,CAVJJ",
       "names": Array [
         "
 ",

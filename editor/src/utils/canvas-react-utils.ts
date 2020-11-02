@@ -54,33 +54,37 @@ export function filterDataProps(props: MapLike<any>): MapLike<any> {
 
 export function makeCanvasElementPropsSafe(props: any): any {
   function removeUnsafeValues(innerProps: any, visited: any[]): any {
-    switch (typeof innerProps) {
-      case 'object': {
-        if (Array.isArray(innerProps)) {
-          return innerProps.map((prop) => {
-            return removeUnsafeValues(prop, visited)
-          })
-        } else if (innerProps != null) {
-          visited.push(innerProps)
-          return Utils.objectMap((value, key) => {
-            if (typeof value === 'object') {
-              if (visited.includes(value)) {
-                return null
+    if (React.isValidElement(innerProps)) {
+      return 'REACT_ELEMENT'
+    } else {
+      switch (typeof innerProps) {
+        case 'object': {
+          if (Array.isArray(innerProps)) {
+            return innerProps.map((prop) => {
+              return removeUnsafeValues(prop, visited)
+            })
+          } else if (innerProps != null) {
+            visited.push(innerProps)
+            return Utils.objectMap((value, key) => {
+              if (typeof value === 'object') {
+                if (visited.includes(value)) {
+                  return null
+                } else {
+                  return removeUnsafeValues(value, visited)
+                }
               } else {
                 return removeUnsafeValues(value, visited)
               }
-            } else {
-              return removeUnsafeValues(value, visited)
-            }
-          }, innerProps)
+            }, innerProps)
+          }
+          break
         }
-        break
+        case 'function': {
+          return 'FUNCTION'
+        }
+        default:
+          return innerProps
       }
-      case 'function': {
-        return 'FUNCTION'
-      }
-      default:
-        return innerProps
     }
   }
 

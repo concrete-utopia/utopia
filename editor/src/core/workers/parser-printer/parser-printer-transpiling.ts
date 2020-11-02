@@ -249,6 +249,7 @@ export function transpileJavascriptFromCode(
       sourceMaps: true,
       inputSourceMap: mapToUse,
       sourceFileName: sourceFileName,
+      comments: false,
     })
     const sourceMap: RawSourceMap = {
       ...transformResult.map,
