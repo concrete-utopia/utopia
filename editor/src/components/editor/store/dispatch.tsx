@@ -481,29 +481,45 @@ function editorDispatchInner(
     // Tested quickly and it broke selection, but I'm mostly certain
     // it should only merge when both have changed.
     if (metadataChanged) {
-      result = produce(result, (r) => {
-        if (r.editor.canvas.dragState == null) {
-          r.editor.jsxMetadataKILLME = reconstructJSXMetadata(result.editor)
-        } else {
-          r.editor.canvas.dragState.metadata = reconstructJSXMetadata(result.editor)
+      if (result.editor.canvas.dragState == null) {
+        result = {
+          ...result,
+          editor: {
+            ...result.editor,
+            jsxMetadataKILLME: reconstructJSXMetadata(result.editor),
+          },
         }
-        // TODO Re-enable this once we have addressed the root cause of the false positives
-        // (these were firing frequently even on elements that remained > 0x0 dimensions)
-        //
-        // const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
-        // const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
-        // if (newLostElements.length > 0 && isBrowserEnvironment) {
-        //   // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
-        //   // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
-        //   const toastAction = EditorActions.showToast({
-        //     message: `Some elements are no longer being rendered`,
-        //     level: 'WARNING',
-        //   })
-        //   setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
-        // }
+      } else {
+        result = {
+          ...result,
+          editor: {
+            ...result.editor,
+            canvas: {
+              ...result.editor.canvas,
+              dragState: {
+                ...result.editor.canvas.dragState,
+                metadata: reconstructJSXMetadata(result.editor),
+              },
+            },
+          },
+        }
+      }
+      // TODO Re-enable this once we have addressed the root cause of the false positives
+      // (these were firing frequently even on elements that remained > 0x0 dimensions)
+      //
+      // const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
+      // const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
+      // if (newLostElements.length > 0 && isBrowserEnvironment) {
+      //   // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
+      //   // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
+      //   const toastAction = EditorActions.showToast({
+      //     message: `Some elements are no longer being rendered`,
+      //     level: 'WARNING',
+      //   })
+      //   setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
+      // }
 
-        // r.editor.warnedInstances = allLostElements
-      })
+      // r.editor.warnedInstances = allLostElements
     }
 
     const cleanedEditor = metadataChanged
