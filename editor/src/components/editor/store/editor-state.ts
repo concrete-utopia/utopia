@@ -1240,7 +1240,7 @@ export function deriveState(
 ): EditorAndDerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
-  const componentKeys = keepDeepReferenceEqualityIfPossible(
+  const componentKeys = Utils.keepReferenceIfShallowEqual(
     derivedState.navigatorTargets,
     MetadataUtils.createOrderedTemplatePathsFromElements(editor.jsxMetadataKILLME),
   )
@@ -1258,6 +1258,7 @@ export function deriveState(
     ),
   }
 
+  const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)
   let selectedViews: Array<TemplatePath> = []
 
   const currentFilePath = getOpenUIJSFileKey(editor)
@@ -1300,7 +1301,7 @@ export function deriveState(
       ...editor,
       selectedViews: selectedViews,
     },
-    derived: derived,
+    derived: sanitizedDerivedState,
   }
 }
 
@@ -1757,7 +1758,7 @@ export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMeta
           editor.spyMetadataKILLME,
           editor.domMetadataKILLME,
         )
-        return mergedMetadata
+        return keepDeepReferenceEqualityIfPossible(editor.jsxMetadataKILLME, mergedMetadata)
       },
       (_) => editor.jsxMetadataKILLME,
       uiFile.fileContents.parsed,

@@ -6,7 +6,6 @@ import { MapLike } from 'typescript'
 import { firstLetterIsLowerCase } from '../core/shared/string-utils'
 import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
 import { UtopiaKeys, UTOPIA_UID_KEY, UTOPIA_UID_PARENTS_KEY } from '../core/model/utopia-constants'
-import { v4 } from 'uuid'
 
 const realCreateElement = React.createElement
 
@@ -142,17 +141,9 @@ function attachDataUidToRoot(
 
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
-    const uuid = v4()
     const mangledFunction = (p: any, context?: any) => {
-      performance.mark(`render_start_${uuid}`)
       let originalTypeResponse = (type as React.FunctionComponent)(p, context)
       const res = attachDataUidToRoot(originalTypeResponse, (p as any)?.[UTOPIA_UID_KEY])
-      performance.mark(`render_end_${uuid}`)
-      performance.measure(
-        `Render Component ${getDisplayName(type)}`,
-        `render_start_${uuid}`,
-        `render_end_${uuid}`,
-      )
       return res
     }
     ;(mangledFunction as any).theOriginalType = type

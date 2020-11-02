@@ -3610,11 +3610,14 @@ export const UPDATE_FNS = {
       spyCollector.current.spyValues.scenes,
     )
 
-    return {
+    return keepDeepReferenceEqualityIfPossible(editor, {
       ...editor,
-      domMetadataKILLME: action.elementMetadata,
-      spyMetadataKILLME: spyResult,
-    }
+      domMetadataKILLME: keepDeepReferenceEqualityIfPossible(
+        editor.domMetadataKILLME,
+        action.elementMetadata,
+      ),
+      spyMetadataKILLME: keepDeepReferenceEqualityIfPossible(editor.spyMetadataKILLME, spyResult),
+    })
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return addUtopiaUtilsImportIfUsed(
