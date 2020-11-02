@@ -37,6 +37,7 @@ import {
   UTOPIA_UID_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
   UTOPIA_UID_PARENTS_KEY,
+  UTOPIA_TEMPLATE_PATH,
 } from '../../core/model/utopia-constants'
 import ResizeObserver from 'resize-observer-polyfill'
 
@@ -94,37 +95,94 @@ function isScene(node: Node): node is HTMLElement {
   )
 }
 
+function getDOMAttribute(element: HTMLElement, attributeName: string): string | null {
+  const attr = element.attributes.getNamedItemNS(null, attributeName)
+  if (attr == null) {
+    return null
+  } else {
+    return attr.value
+  }
+}
+
+function setDOMAttribute(element: HTMLElement, attributeName: string, value: string) {
+  const attr = document.createAttributeNS(null, attributeName)
+  attr.value = value
+  element.attributes.setNamedItemNS(attr)
+}
+
+let CanvasRectangleCache: { [path: string]: CanvasRectangle } = {}
+const resizeObserver = new ResizeObserver((entries: any) => {
+  for (let entry of entries) {
+    const path = getDOMAttribute(entry.target, UTOPIA_TEMPLATE_PATH)
+    if (path != null) {
+      const elementRect = getCanvasRectangleFromElement(entry.target, scale)
+      CanvasRectangleCache[path] = Utils.offsetRect(elementRect, Utils.negate(containerRect))
+    }
+  }
+})
+
+function getDescendantDOMRects(element: ChildNode) {
+  if (element instanceof HTMLElement) {
+    const path = getDOMAttribute(element, UTOPIA_TEMPLATE_PATH)
+    if (path != null) {
+      const elementRect = getCanvasRectangleFromElement(element, scale)
+      CanvasRectangleCache[path] = Utils.offsetRect(elementRect, Utils.negate(containerRect))
+      Array.from(element.childNodes).map(getDescendantDOMRects)
+    }
+  }
+}
+
+const mutationObserverConfig = { attributes: true, childList: true, subtree: true }
+let containerRect: CanvasRectangle
+let scale: number // TODO this is not very nice here
+const mutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+  for (let mutation of mutations) {
+    if (mutation.attributeName === 'style') {
+      if (mutation.target.parentElement instanceof HTMLElement) {
+        const parentPath = getDOMAttribute(mutation.target.parentElement, UTOPIA_TEMPLATE_PATH)
+        if (parentPath != null) {
+          const elementRect = getCanvasRectangleFromElement(mutation.target.parentElement, scale)
+          CanvasRectangleCache[parentPath] = Utils.offsetRect(
+            elementRect,
+            Utils.negate(containerRect),
+          )
+          Array.from(mutation.target.parentElement.childNodes).map(getDescendantDOMRects)
+        }
+      }
+    }
+  }
+})
+
+function globalFrameForElement(element: HTMLElement, path: TemplatePath | null): CanvasRectangle {
+  // Get the local frame from the DOM and calculate the global frame.
+  let pathAsString =
+    path != null ? TP.toString(path) : getDOMAttribute(element, UTOPIA_TEMPLATE_PATH)
+  if (pathAsString != null && CanvasRectangleCache[pathAsString] != null) {
+    return CanvasRectangleCache[pathAsString]
+  } else {
+    const elementRect = getCanvasRectangleFromElement(element, scale)
+    return Utils.offsetRect(elementRect, Utils.negate(containerRect))
+  }
+}
+
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
     'useDomWalker selectedViews',
   )
+  scale = props.scale
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
       // Get some base values relating to the div this component creates.
-      var resizeObserver = new ResizeObserver((entries: any) => {
-        for (let entry of entries) {
-          const cr = entry.contentRect
-          console.log('Element:', entry.target)
-          console.log(`Element size: ${cr.width}px x ${cr.height}px`)
-          console.log(`Element padding: ${cr.top}px ; ${cr.left}px`)
-        }
-      })
       const refOfContainer = containerRef.current
-      Array.from(document.querySelectorAll('#canvas-container *')).map((elem) =>
-        resizeObserver.observe(elem),
-      )
-      console.log('observer attached')
+      Array.from(document.querySelectorAll('#canvas-container *')).map((elem) => {
+        resizeObserver.observe(elem)
+      })
+      mutationObserver.observe(refOfContainer, mutationObserverConfig)
 
-      const containerRect = getCanvasRectangleFromElement(refOfContainer, props.scale)
-
-      function globalFrameForElement(element: HTMLElement): CanvasRectangle {
-        // Get the local frame from the DOM and calculate the global frame.
-        const elementRect = getCanvasRectangleFromElement(element, props.scale)
-        return Utils.offsetRect(elementRect, Utils.negate(containerRect))
-      }
+      containerRect = getCanvasRectangleFromElement(refOfContainer, props.scale)
 
       function getSpecialMeasurements(element: HTMLElement): SpecialSizeMeasurements {
         const elementStyle = window.getComputedStyle(element)
@@ -138,12 +196,12 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
         const coordinateSystemBounds =
           element.offsetParent instanceof HTMLElement
-            ? globalFrameForElement(element.offsetParent)
+            ? globalFrameForElement(element.offsetParent, null)
             : null
 
         const immediateParentBounds =
           element.parentElement instanceof HTMLElement
-            ? globalFrameForElement(element.parentElement)
+            ? globalFrameForElement(element.parentElement, null)
             : null
 
         const parentElementStyle =
@@ -225,15 +283,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         return computedStyle
       }
 
-      function getDOMAttribute(element: HTMLElement, attributeName: string): string | null {
-        const attr = element.attributes.getNamedItemNS(null, attributeName)
-        if (attr == null) {
-          return null
-        } else {
-          return attr.value
-        }
-      }
-
       function walkScene(scene: HTMLElement, index: number): void {
         if (scene instanceof HTMLElement) {
           // Right now this assumes that only UtopiaJSXComponents can be rendered via scenes,
@@ -288,7 +337,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         scenePath: TemplatePath,
         validPaths: Array<string>,
       ): Array<ElementInstanceMetadata> {
-        const globalFrame: CanvasRectangle = globalFrameForElement(scene)
+        const globalFrame: CanvasRectangle = globalFrameForElement(scene, scenePath)
 
         let metadatas: Array<ElementInstanceMetadata> = []
 
@@ -325,8 +374,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           return []
         }
         if (element instanceof HTMLElement) {
-          const globalFrame = globalFrameForElement(element)
-
           // Determine the uid of this element if it has one.
           const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
           const parentUIDsAttribute = getDOMAttribute(element, UTOPIA_UID_PARENTS_KEY)
@@ -356,6 +403,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             uniquePath = TP.appendToPath(uniquePath, parentUIDsAttribute.split('/'))
           }
           uniquePath = TP.appendToPath(uniquePath, pathElement)
+          setDOMAttribute(element, UTOPIA_TEMPLATE_PATH, TP.toString(uniquePath))
+
+          const globalFrame = globalFrameForElement(element, uniquePath)
 
           // Build the original path for this element.
           let originalPath: TemplatePath | null = originalParentPath
@@ -407,7 +457,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         parentPoint: CanvasPoint | null,
         childrenMetadata: ElementInstanceMetadata[],
       ): ElementInstanceMetadata {
-        const globalFrame = globalFrameForElement(element)
+        const globalFrame = globalFrameForElement(element, instancePath)
         const localFrame =
           parentPoint != null
             ? localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
