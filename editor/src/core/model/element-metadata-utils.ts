@@ -1061,7 +1061,7 @@ export const MetadataUtils = {
   getJSXElementName(
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
-    metadata: ComponentMetadata[], // TODO BEFORE MERGE maybe we could remove metadata as a dependency from here
+    metadata: ComponentMetadata[], // TODO maybe we could remove metadata as a dependency from here if we change findSceneByTemplatePath
   ): JSXElementName | null {
     if (TP.isScenePath(path)) {
       const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
