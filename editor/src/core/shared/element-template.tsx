@@ -21,6 +21,14 @@ import { ModifiableAttribute } from './jsx-attributes'
 import * as TP from './template-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
+import {
+  ElementMetadata,
+  ElementMetadataMap,
+  ElementPropsMap,
+  JSXElementMap,
+  SceneMetadata,
+  SpecialSizeMeasurementsMap,
+} from '../../components/editor/store/editor-state'
 
 export interface JSXAttributeValue<T> {
   type: 'ATTRIBUTE_VALUE'
@@ -1064,4 +1072,68 @@ export function getElementsByUIDFromTopLevelElements(
     }
   })
   return result
+}
+
+export function flattenMetadata(
+  componentMetadata: Array<ComponentMetadata>,
+): {
+  elementMetadataMap: ElementMetadataMap
+  elementPropsMap: ElementPropsMap
+  jsxElementMap: JSXElementMap
+  sceneMetadata: SceneMetadata[]
+  specialSizeMeasurementsMap: SpecialSizeMeasurementsMap
+} {
+  let sceneMetadata: SceneMetadata[] = []
+  let elementMetadataMap: ElementMetadataMap = new Map()
+  let elementPropsMap: ElementPropsMap = new Map()
+  let jsxElementMap: JSXElementMap = new Map()
+  let specialSizeMeasurementsMap: SpecialSizeMeasurementsMap = new Map()
+
+  function walkMetadata(
+    topLevelElements: Array<ElementInstanceMetadata>,
+    forEach: (element: ElementInstanceMetadata) => void,
+  ): void {
+    fastForEach(topLevelElements, (rootComponent) => {
+      forEach(rootComponent)
+      walkMetadata(rootComponent.children, forEach)
+    })
+  }
+
+  function walkComponent(component: ComponentMetadata): void {
+    sceneMetadata.push({
+      scenePath: component.scenePath,
+      templatePath: component.templatePath,
+      rootElements: component.rootElements.map((elem) => elem.templatePath),
+      component: component.component,
+      container: component.container,
+      globalFrame: component.globalFrame,
+      sceneResizesContent: component.sceneResizesContent,
+      label: component.label,
+      style: component.style,
+    })
+
+    walkMetadata(component.rootElements, (element) => {
+      const flattenedMetadata: ElementMetadata = {
+        globalFrame: element.globalFrame,
+        localFrame: element.localFrame,
+        children: element.children.map((c) => c.templatePath),
+        componentInstance: element.componentInstance,
+        computedStyle: element.computedStyle,
+      }
+      elementMetadataMap.set(element.templatePath, flattenedMetadata)
+      elementPropsMap.set(element.templatePath, element.props)
+      jsxElementMap.set(element.templatePath, element.element)
+      specialSizeMeasurementsMap.set(element.templatePath, element.specialSizeMeasurements)
+    })
+  }
+
+  fastForEach(componentMetadata, walkComponent)
+
+  return {
+    elementMetadataMap: elementMetadataMap,
+    elementPropsMap: elementPropsMap,
+    jsxElementMap: jsxElementMap,
+    sceneMetadata: sceneMetadata,
+    specialSizeMeasurementsMap: specialSizeMeasurementsMap,
+  }
 }

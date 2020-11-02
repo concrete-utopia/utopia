@@ -853,6 +853,11 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     spyMetadataKILLME: poppedEditor.spyMetadataKILLME,
     domMetadataKILLME: poppedEditor.domMetadataKILLME,
     jsxMetadataKILLME: poppedEditor.jsxMetadataKILLME,
+    sceneMetadata: poppedEditor.sceneMetadata,
+    elementMetadataMap: poppedEditor.elementMetadataMap,
+    elementPropsMap: poppedEditor.elementMetadataMap,
+    jsxElementMap: poppedEditor.jsxElementMap,
+    specialSizeMeasurementsMap: poppedEditor.specialSizeMeasurementsMap,
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
     openFiles: poppedEditor.openFiles,
@@ -3610,14 +3615,11 @@ export const UPDATE_FNS = {
       spyCollector.current.spyValues.scenes,
     )
 
-    return keepDeepReferenceEqualityIfPossible(editor, {
+    return {
       ...editor,
-      domMetadataKILLME: keepDeepReferenceEqualityIfPossible(
-        editor.domMetadataKILLME,
-        action.elementMetadata,
-      ),
-      spyMetadataKILLME: keepDeepReferenceEqualityIfPossible(editor.spyMetadataKILLME, spyResult),
-    })
+      domMetadataKILLME: action.elementMetadata,
+      spyMetadataKILLME: spyResult,
+    }
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return addUtopiaUtilsImportIfUsed(

@@ -3,6 +3,7 @@ import * as R from 'ramda'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ComponentMetadata,
+  ComputedStyle,
   ElementInstanceMetadata,
   getElementsByUIDFromTopLevelElements,
   isUtopiaJSXComponent,
@@ -11,6 +12,7 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXElement,
+  SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -35,7 +37,6 @@ import {
   ProjectContents,
   ProjectFile,
   RevisionsState,
-  SceneMetadata,
   ScenePath,
   StaticInstancePath,
   TemplatePath,
@@ -50,6 +51,7 @@ import {
   codeFile,
   isParseFailure,
   isParsedTextFile,
+  SceneContainer,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -258,6 +260,29 @@ export interface ConsoleLog {
   data: Array<any>
 }
 
+export type ElementPropsMap = Map<InstancePath, { [key: string]: any }> // the final, resolved, static props value
+export type JSXElementMap = Map<InstancePath, Either<string, JSXElementChild>>
+export type SpecialSizeMeasurementsMap = Map<InstancePath, SpecialSizeMeasurements>
+export interface ElementMetadata {
+  globalFrame: CanvasRectangle | null
+  localFrame: LocalRectangle | null
+  children: Array<InstancePath>
+  componentInstance: boolean
+  computedStyle: ComputedStyle | null
+}
+export type ElementMetadataMap = Map<InstancePath, ElementMetadata>
+export interface SceneMetadata {
+  scenePath: ScenePath
+  templatePath: InstancePath
+  rootElements: Array<InstancePath>
+  component: string | null
+  container: SceneContainer
+  globalFrame: CanvasRectangle | null
+  sceneResizesContent: boolean
+  label?: string
+  style: React.CSSProperties
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -274,6 +299,11 @@ export interface EditorState {
   spyMetadataKILLME: ComponentMetadata[] // this is coming from the canvas spy report.
   domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
   jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
+  sceneMetadata: SceneMetadata[]
+  elementMetadataMap: ElementMetadataMap
+  elementPropsMap: ElementPropsMap
+  jsxElementMap: JSXElementMap
+  specialSizeMeasurementsMap: SpecialSizeMeasurementsMap
   projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
@@ -1055,6 +1085,11 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     spyMetadataKILLME: [],
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
+    sceneMetadata: [],
+    elementMetadataMap: new Map(),
+    elementPropsMap: new Map(),
+    jsxElementMap: new Map(),
+    specialSizeMeasurementsMap: new Map(),
     projectContents: {},
     codeResultCache: generateCodeResultCache(
       {},
@@ -1341,6 +1376,11 @@ export function editorModelFromPersistentModel(
     spyMetadataKILLME: [],
     domMetadataKILLME: [],
     jsxMetadataKILLME: [],
+    sceneMetadata: [],
+    elementMetadataMap: new Map(),
+    elementPropsMap: new Map(),
+    jsxElementMap: new Map(),
+    specialSizeMeasurementsMap: new Map(),
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
       {},
@@ -1758,7 +1798,7 @@ export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMeta
           editor.spyMetadataKILLME,
           editor.domMetadataKILLME,
         )
-        return keepDeepReferenceEqualityIfPossible(editor.jsxMetadataKILLME, mergedMetadata)
+        return mergedMetadata
       },
       (_) => editor.jsxMetadataKILLME,
       uiFile.fileContents.parsed,

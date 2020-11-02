@@ -5,7 +5,7 @@ import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { convertMetadataMap, MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../../../core/shared/element-template'
+import { ComponentMetadata, flattenMetadata } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import {
   fileTypeFromFileName,
@@ -68,6 +68,8 @@ import {
   ProjectContentTreeRoot,
   walkContentsTree,
 } from '../../assets'
+import { timeFunction } from '../../../core/performance/performance-utils'
+import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -483,7 +485,69 @@ function editorDispatchInner(
     if (metadataChanged) {
       result = produce(result, (r) => {
         if (r.editor.canvas.dragState == null) {
-          r.editor.jsxMetadataKILLME = reconstructJSXMetadata(result.editor)
+          const jsxMetadataKILLME = reconstructJSXMetadata(result.editor)
+
+          console.time('timing flattenMetadata')
+          const {
+            elementMetadataMap,
+            elementPropsMap,
+            jsxElementMap,
+            sceneMetadata,
+            specialSizeMeasurementsMap,
+          } = flattenMetadata(jsxMetadataKILLME)
+          console.timeEnd('timing flattenMetadata')
+
+          console.time('timing all')
+          timeFunction('Deep ref equality for elementMetadataMap', () =>
+            keepDeepReferenceEqualityIfPossible(r.editor.elementMetadataMap, elementMetadataMap),
+          )
+          timeFunction('Deep ref equality for elementPropsMap', () =>
+            keepDeepReferenceEqualityIfPossible(r.editor.elementPropsMap, elementPropsMap),
+          )
+          timeFunction('Deep ref equality for jsxElementMap', () =>
+            keepDeepReferenceEqualityIfPossible(r.editor.jsxElementMap, jsxElementMap),
+          )
+          timeFunction('Deep ref equality for sceneMetadata', () =>
+            keepDeepReferenceEqualityIfPossible(r.editor.sceneMetadata, sceneMetadata),
+          )
+          timeFunction('Deep ref equality for specialSizeMeasurementsMap', () =>
+            keepDeepReferenceEqualityIfPossible(
+              r.editor.specialSizeMeasurementsMap,
+              specialSizeMeasurementsMap,
+            ),
+          )
+          console.timeEnd('timing all')
+
+          console.time('timing jsxMetadataKILLME')
+          timeFunction('Deep ref equality for jsxMetadataKILLME', () =>
+            keepDeepReferenceEqualityIfPossible(r.editor.jsxMetadataKILLME, jsxMetadataKILLME),
+          )
+          console.timeEnd('timing jsxMetadataKILLME')
+
+          r.editor.jsxMetadataKILLME = keepDeepReferenceEqualityIfPossible(
+            r.editor.jsxMetadataKILLME,
+            jsxMetadataKILLME,
+          )
+          r.editor.elementMetadataMap = keepDeepReferenceEqualityIfPossible(
+            r.editor.elementMetadataMap,
+            elementMetadataMap,
+          )
+          r.editor.elementPropsMap = keepDeepReferenceEqualityIfPossible(
+            r.editor.elementPropsMap,
+            elementPropsMap,
+          )
+          r.editor.jsxElementMap = keepDeepReferenceEqualityIfPossible(
+            r.editor.jsxElementMap,
+            jsxElementMap,
+          )
+          r.editor.sceneMetadata = keepDeepReferenceEqualityIfPossible(
+            r.editor.sceneMetadata,
+            sceneMetadata,
+          )
+          r.editor.specialSizeMeasurementsMap = keepDeepReferenceEqualityIfPossible(
+            r.editor.specialSizeMeasurementsMap,
+            specialSizeMeasurementsMap,
+          )
         } else {
           r.editor.canvas.dragState.metadata = reconstructJSXMetadata(result.editor)
         }
