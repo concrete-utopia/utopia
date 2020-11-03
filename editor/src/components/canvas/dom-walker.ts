@@ -154,6 +154,9 @@ function globalFrameForElement(element: HTMLElement, path: TemplatePath | null):
     return CanvasRectangleCache[pathAsString]
   } else {
     const elementRect = getCanvasRectangleFromElement(element, scale)
+    if (pathAsString != null) {
+      CanvasRectangleCache[pathAsString] = elementRect
+    }
     return Utils.offsetRect(elementRect, Utils.negate(containerRect))
   }
 }
