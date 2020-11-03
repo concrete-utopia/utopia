@@ -173,4 +173,228 @@ describe('keepDeepReferenceEqualityIfPossible', () => {
     const result = keepDeepReferenceEqualityIfPossible(oldObject, newObject)
     expect(Object.keys(result)).toEqual(['c', 'b', 'a'])
   })
+
+  it('ES6 Maps with identical keys and identical values', () => {
+    const keyA = { a: 5 }
+    const keyB = { b: '5' }
+    const keyC = { c: { key: 5 } }
+
+    const valueA = { a: 'value!' }
+    const valueB = { b: 2 }
+    const valueC = { c: { value: /regex/ } }
+
+    let map1 = new Map()
+    map1.set(keyA, valueA)
+    map1.set(keyB, valueB)
+    map1.set(keyC, valueC)
+    deepFreeze(map1)
+
+    let map2 = new Map()
+    map2.set(keyA, valueA)
+    map2.set(keyB, valueB)
+    map2.set(keyC, valueC)
+    deepFreeze(map2)
+
+    const resultingMap = keepDeepReferenceEqualityIfPossible(map1, map2)
+    expect(resultingMap).toEqual(map2)
+    expect(resultingMap).toBe(map1)
+  })
+
+  it('ES6 Maps with cloned keys and identical values', () => {
+    const keyA1 = { a: 5 }
+    const keyB1 = { b: '5' }
+    const keyC1 = { c: { key: 5 } }
+    const keyA2 = { a: 5 }
+    const keyB2 = { b: '5' }
+    const keyC2 = { c: { key: 5 } }
+
+    const valueA = { a: 'value!' }
+    const valueB = { b: 2 }
+    const valueC = { c: { value: /regex/ } }
+
+    let map1 = new Map()
+    map1.set(keyA1, valueA)
+    map1.set(keyB1, valueB)
+    map1.set(keyC1, valueC)
+    deepFreeze(map1)
+
+    let map2 = new Map()
+    map2.set(keyA2, valueA)
+    map2.set(keyB2, valueB)
+    map2.set(keyC2, valueC)
+    deepFreeze(map2)
+
+    const resultingMap = keepDeepReferenceEqualityIfPossible(map1, map2)
+    expect(resultingMap).toEqual(map2)
+    expect(resultingMap.get(keyA2)).toBe(valueA)
+    expect(resultingMap.get(keyB2)).toBe(valueB)
+    expect(resultingMap.get(keyC2)).toBe(valueC)
+  })
+
+  it('ES6 Maps with cloned keys and cloned values', () => {
+    const keyA1 = { a: 5 }
+    const keyB1 = { b: '5' }
+    const keyC1 = { c: { key: 5 } }
+    const keyA2 = { a: 5 }
+    const keyB2 = { b: '5' }
+    const keyC2 = { c: { key: 5 } }
+
+    const valueA1 = { a: 'value!' }
+    const valueB1 = { b: 2 }
+    const valueC1 = { c: { value: /regex/ } }
+    const valueA2 = { a: 'value!' }
+    const valueB2 = { b: 2 }
+    const valueC2 = { c: { value: /regex/ } }
+
+    let map1 = new Map()
+    map1.set(keyA1, valueA1)
+    map1.set(keyB1, valueB1)
+    map1.set(keyC1, valueC1)
+    deepFreeze(map1)
+
+    let map2 = new Map()
+    map2.set(keyA2, valueA2)
+    map2.set(keyB2, valueB2)
+    map2.set(keyC2, valueC2)
+    deepFreeze(map2)
+
+    const resultingMap = keepDeepReferenceEqualityIfPossible(map1, map2)
+    expect(resultingMap).toEqual(map2)
+    expect(resultingMap.get(keyA2)).toBe(valueA2)
+    expect(resultingMap.get(keyB2)).toBe(valueB2)
+    expect(resultingMap.get(keyC2)).toBe(valueC2)
+  })
+
+  it('ES6 Maps with identical keys and cloned values', () => {
+    const keyA = { a: 5 }
+    const keyB = { b: '5' }
+    const keyC = { c: { key: 5 } }
+
+    const valueA1 = { a: 'value!' }
+    const valueB1 = { b: 2 }
+    const valueC1 = { c: { value: /regex/ } }
+    const valueA2 = { a: 'value!' }
+    const valueB2 = { b: 2 }
+    const valueC2 = { c: { value: /regex/ } }
+
+    let map1 = new Map()
+    map1.set(keyA, valueA1)
+    map1.set(keyB, valueB1)
+    map1.set(keyC, valueC1)
+    deepFreeze(map1)
+
+    let map2 = new Map()
+    map2.set(keyA, valueA2)
+    map2.set(keyB, valueB2)
+    map2.set(keyC, valueC2)
+    deepFreeze(map2)
+
+    const resultingMap = keepDeepReferenceEqualityIfPossible(map1, map2)
+    expect(resultingMap).toEqual(map2)
+    expect(resultingMap).toBe(map1)
+    expect(resultingMap.get(keyA)).toBe(valueA1)
+    expect(resultingMap.get(keyB)).toBe(valueB1)
+    expect(resultingMap.get(keyC)).toBe(valueC1)
+  })
+
+  it('keeps reference equality for parts of ES6 Maps even if they have different keys', () => {
+    const keyA = { a: 5 }
+    const keyB = { b: '5' }
+    const keyC = { c: { key: 5 } }
+
+    const valueA1 = { a: 'value!' }
+    const valueB1 = { b: 2 }
+    const valueA2 = { a: 'value!' }
+    const valueB2 = { b: 2 }
+    const valueC2 = { c: { value: /regex/ } }
+
+    let map1 = new Map()
+    map1.set(keyA, valueA1)
+    map1.set(keyB, valueB1)
+    deepFreeze(map1)
+
+    let map2 = new Map()
+    map2.set(keyA, valueA2)
+    map2.set(keyB, valueB2)
+    map2.set(keyC, valueC2)
+    deepFreeze(map2)
+
+    const resultingMap = keepDeepReferenceEqualityIfPossible(map1, map2)
+    expect(resultingMap).toEqual(map2)
+    expect(resultingMap.get(keyA)).toBe(valueA1)
+    expect(resultingMap.get(keyB)).toBe(valueB1)
+    expect(resultingMap.get(keyC)).toBe(valueC2)
+  })
+
+  it('ES6 Sets keep the old reference if the entire set is the same', () => {
+    const valueA = { a: 'value!' }
+    const valueB = { b: 2 }
+    const valueC = { c: { value: /regex/ } }
+
+    const set1 = new Set()
+    set1.add(valueA)
+    set1.add(valueB)
+    set1.add(valueC)
+    deepFreeze(set1)
+
+    const set2 = new Set()
+    set2.add(valueA)
+    set2.add(valueB)
+    set2.add(valueC)
+    deepFreeze(set2)
+
+    const resultingSet = keepDeepReferenceEqualityIfPossible(set1, set2)
+    expect(resultingSet).toEqual(set2)
+    expect(resultingSet).toBe(set1)
+  })
+
+  it('ES6 Sets cant keep reference equality if one set has more elements', () => {
+    const valueA = { a: 'value!' }
+    const valueB = { b: 2 }
+    const valueC = { c: { value: /regex/ } }
+
+    const set1 = new Set()
+    set1.add(valueA)
+    set1.add(valueB)
+    deepFreeze(set1)
+
+    const set2 = new Set()
+    set2.add(valueA)
+    set2.add(valueB)
+    set2.add(valueC)
+    deepFreeze(set2)
+
+    const resultingSet = keepDeepReferenceEqualityIfPossible(set1, set2)
+    expect(resultingSet).toEqual(set2)
+    expect(resultingSet).not.toBe(set1)
+    expect(resultingSet).toBe(set2)
+  })
+
+  it('cannot be defeated by a recursive object', () => {
+    const sameValue = { a: 'same value' }
+
+    const recursiveObject1 = {
+      a: sameValue,
+      b: { clonedValue: true },
+      c: { more: sameValue, clone: { clone: true }, recursive: null as any },
+    }
+    const recursiveObject2 = {
+      a: sameValue,
+      b: { clonedValue: true },
+      c: { more: sameValue, clone: { clone: true }, recursive: null as any },
+    }
+    recursiveObject1.c.recursive = recursiveObject1
+    recursiveObject2.c.recursive = recursiveObject2
+    deepFreeze(recursiveObject1)
+    deepFreeze(recursiveObject2)
+
+    const resultingObject = keepDeepReferenceEqualityIfPossible(recursiveObject1, recursiveObject2)
+    expect(resultingObject).toEqual(recursiveObject2)
+    expect(resultingObject.a).toBe(recursiveObject1.a)
+    expect(resultingObject.b).toBe(recursiveObject1.b)
+    expect(resultingObject.c.more).toBe(recursiveObject1.c.more)
+    expect(resultingObject.c.clone).toBe(recursiveObject1.c.clone)
+    expect(resultingObject.c.clone).not.toBe(recursiveObject2.c.clone)
+    expect(resultingObject.c.recursive).toBe(recursiveObject2.c.recursive)
+  })
 })
