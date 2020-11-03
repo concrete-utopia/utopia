@@ -45,6 +45,7 @@ import {
   UTOPIA_TEMPLATE_PATH,
 } from '../../core/model/utopia-constants'
 import ResizeObserver from 'resize-observer-polyfill'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1
@@ -100,77 +101,47 @@ function isScene(node: Node): node is HTMLElement {
   )
 }
 
-let CanvasRectangleCache: Map<TemplatePath, CanvasRectangle> = new Map()
-const resizeObserver = new ResizeObserver((entries: any) => {
-  for (let entry of entries) {
-    const path = getDOMAttribute(entry.target, UTOPIA_TEMPLATE_PATH)
-    if (path != null) {
-      const pathTp = TP.fromString(path)
-      const elementRect = getCanvasRectangleFromElement(entry.target, scale)
-      CanvasRectangleCache.set(pathTp, Utils.offsetRect(elementRect, Utils.negate(containerRect)))
-    }
-  }
-})
-
-function getDescendantDOMRects(element: ChildNode) {
-  if (element instanceof HTMLElement) {
-    const path = getDOMAttribute(element, UTOPIA_TEMPLATE_PATH)
-    if (path != null) {
-      const elementRect = getCanvasRectangleFromElement(element, scale)
-      CanvasRectangleCache.set(
-        TP.fromString(path),
-        Utils.offsetRect(elementRect, Utils.negate(containerRect)),
-      )
-      Array.from(element.childNodes).map(getDescendantDOMRects)
-    }
-  }
-}
-
 const mutationObserverConfig = { attributes: true, childList: true, subtree: true }
-let containerRect: CanvasRectangle
-let scale: number // TODO this is not very nice here
-const mutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
-  for (let mutation of mutations) {
-    if (mutation.attributeName === 'style') {
-      if (mutation.target.parentElement instanceof HTMLElement) {
-        const parentPath = getDOMAttribute(mutation.target.parentElement, UTOPIA_TEMPLATE_PATH)
-        if (parentPath != null) {
-          const elementRect = getCanvasRectangleFromElement(mutation.target.parentElement, scale)
-          CanvasRectangleCache.set(
-            TP.fromString(parentPath),
-            Utils.offsetRect(elementRect, Utils.negate(containerRect)),
-          )
-          Array.from(mutation.target.parentElement.childNodes).map(getDescendantDOMRects)
-        }
-      }
-    }
-  }
-})
-
-function globalFrameForElement(element: HTMLElement, path: TemplatePath | null): CanvasRectangle {
-  // Get the local frame from the DOM and calculate the global frame.
-  const instancePath =
-    path != null && TP.isScenePath(path) ? TP.instancePath([], TP.elementPathForPath(path)) : path
-  const pathForKey = instancePath ?? TP.fromString(getDOMAttribute(element, UTOPIA_TEMPLATE_PATH)!)
-
-  if (pathForKey != null && CanvasRectangleCache.get(pathForKey) != null) {
-    return CanvasRectangleCache.get(pathForKey)!
-  } else {
-    const elementRect = getCanvasRectangleFromElement(element, scale)
-    if (pathForKey != null) {
-      CanvasRectangleCache.set(pathForKey, elementRect)
-    }
-    return Utils.offsetRect(elementRect, Utils.negate(containerRect))
-  }
-}
 
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
+  const rootMetadataRef = React.useRef<ElementInstanceMetadata[]>()
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
     'useDomWalker selectedViews',
   )
-  scale = props.scale
+
+  const resizeObserver = React.useMemo(() => {
+    return new ResizeObserver((entries: any) => {
+      for (let entry of entries) {
+        const path = getDOMAttribute(entry.target, UTOPIA_TEMPLATE_PATH)
+        if (path != null && rootMetadataRef.current != null) {
+          rootMetadataRef.current = MetadataUtils.removeElementMetadata(
+            TP.fromString(path),
+            rootMetadataRef.current,
+          )
+        }
+      }
+    })
+  }, [])
+
+  const mutationObserver = React.useMemo(() => {
+    return new MutationObserver((mutations: MutationRecord[]) => {
+      for (let mutation of mutations) {
+        if (mutation.attributeName === 'style') {
+          if (mutation.target instanceof HTMLElement) {
+            const path = getDOMAttribute(mutation.target, UTOPIA_TEMPLATE_PATH)
+            if (path != null && rootMetadataRef.current != null) {
+              rootMetadataRef.current = MetadataUtils.removeElementMetadata(
+                TP.fromString(path),
+                rootMetadataRef.current,
+              )
+            }
+          }
+        }
+      }
+    })
+  }, [])
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
@@ -181,7 +152,13 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       })
       mutationObserver.observe(refOfContainer, mutationObserverConfig)
 
-      containerRect = getCanvasRectangleFromElement(refOfContainer, props.scale)
+      const containerRect = getCanvasRectangleFromElement(refOfContainer, props.scale)
+
+      function globalFrameForElement(element: HTMLElement): CanvasRectangle {
+        // Get the local frame from the DOM and calculate the global frame.
+        const elementRect = getCanvasRectangleFromElement(element, props.scale)
+        return Utils.offsetRect(elementRect, Utils.negate(containerRect))
+      }
 
       function getSpecialMeasurements(element: HTMLElement): SpecialSizeMeasurements {
         const elementStyle = window.getComputedStyle(element)
@@ -195,12 +172,12 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
         const coordinateSystemBounds =
           element.offsetParent instanceof HTMLElement
-            ? globalFrameForElement(element.offsetParent, null)
+            ? globalFrameForElement(element.offsetParent)
             : null
 
         const immediateParentBounds =
           element.parentElement instanceof HTMLElement
-            ? globalFrameForElement(element.parentElement, null)
+            ? globalFrameForElement(element.parentElement)
             : null
 
         const parentElementStyle =
@@ -316,18 +293,28 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
         // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
         // to provide a home for the the (really existing) childMetadata
-        const metadata: ElementInstanceMetadata = elementInstanceMetadata(
-          canvasRootPath as InstancePath,
-          left('Storyboard'),
-          {},
-          null,
-          null,
-          childMetadata,
-          false,
-          emptySpecialSizeMeasurements,
-          emptyComputedStyle,
-        )
-        rootMetadata.push(metadata)
+        if (rootMetadataRef.current != null) {
+          const cachedMetadata = MetadataUtils.findElementMetadata(
+            canvasRootPath,
+            rootMetadataRef.current,
+          )
+          if (cachedMetadata != null) {
+            rootMetadata.push(cachedMetadata)
+          }
+        } else {
+          const metadata: ElementInstanceMetadata = elementInstanceMetadata(
+            canvasRootPath as InstancePath,
+            left('Storyboard'),
+            {},
+            null,
+            null,
+            childMetadata,
+            false,
+            emptySpecialSizeMeasurements,
+            emptyComputedStyle,
+          )
+          rootMetadata.push(metadata)
+        }
       }
 
       function walkSceneInner(
@@ -341,7 +328,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           UTOPIA_TEMPLATE_PATH,
           TP.toString(TP.instancePath([], TP.elementPathForPath(scenePath))),
         )
-        const globalFrame: CanvasRectangle = globalFrameForElement(scene, scenePath)
+        const globalFrame: CanvasRectangle = globalFrameForElement(scene)
 
         let metadatas: Array<ElementInstanceMetadata> = []
 
@@ -409,7 +396,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           uniquePath = TP.appendToPath(uniquePath, pathElement)
           setDOMAttribute(element, UTOPIA_TEMPLATE_PATH, TP.toString(uniquePath))
 
-          const globalFrame = globalFrameForElement(element, uniquePath)
+          const globalFrame = globalFrameForElement(element)
 
           // Build the original path for this element.
           let originalPath: TemplatePath | null = originalParentPath
@@ -461,7 +448,16 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         parentPoint: CanvasPoint | null,
         childrenMetadata: ElementInstanceMetadata[],
       ): ElementInstanceMetadata {
-        const globalFrame = globalFrameForElement(element, instancePath)
+        if (rootMetadataRef.current != null) {
+          const cachedMetadata = MetadataUtils.findElementMetadata(
+            instancePath,
+            rootMetadataRef.current,
+          )
+          if (cachedMetadata != null) {
+            return cachedMetadata
+          }
+        }
+        const globalFrame = globalFrameForElement(element)
         const localFrame =
           parentPoint != null
             ? localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
@@ -503,7 +499,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         props.canvasRootElementTemplatePath,
         props.validRootPaths.map(TP.toString),
       )
-
+      rootMetadataRef.current = rootMetadata
       props.onDomReport(rootMetadata)
     }
   })
