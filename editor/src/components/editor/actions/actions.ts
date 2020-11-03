@@ -155,8 +155,6 @@ import { OutgoingWorkerMessage, isJsFile, BuildType } from '../../../core/worker
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { defaultProject, sampleProjectForId } from '../../../sample-projects/sample-project-utils'
 import { KeysPressed, Key } from '../../../utils/keyboard'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import RU from '../../../utils/react-utils'
 import Utils, { IndexPosition } from '../../../utils/utils'
 import {
   CanvasPoint,
@@ -464,6 +462,7 @@ import {
   addStoryboardFileToProject,
   StoryboardFilePath,
 } from '../../../core/model/storyboard-utils'
+import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 export function clearSelection(): EditorAction {
   return {
@@ -3610,14 +3609,14 @@ export const UPDATE_FNS = {
       spyCollector.current.spyValues.scenes,
     )
 
-    return keepDeepReferenceEqualityIfPossible(editor, {
+    return {
       ...editor,
       domMetadataKILLME: keepDeepReferenceEqualityIfPossible(
         editor.domMetadataKILLME,
         action.elementMetadata,
       ),
       spyMetadataKILLME: keepDeepReferenceEqualityIfPossible(editor.spyMetadataKILLME, spyResult),
-    })
+    }
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return addUtopiaUtilsImportIfUsed(
