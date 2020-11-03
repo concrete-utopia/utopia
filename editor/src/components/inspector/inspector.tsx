@@ -93,6 +93,7 @@ import {
 } from './sections/target-selector-section'
 import { addStyleSheetToPage } from '../../core/shared/dom-utils'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
+import { arrayEquals } from '../../core/shared/utils'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -465,11 +466,7 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       },
       'InspectorEntryPoint',
       (oldTemplatePaths, newTemplatePaths) => {
-        if (oldTemplatePaths.length === newTemplatePaths.length) {
-          return oldTemplatePaths.every((tp, i) => TP.pathsEqual(tp, newTemplatePaths[i]))
-        } else {
-          return false
-        }
+        return arrayEquals(oldTemplatePaths, newTemplatePaths, TP.pathsEqual)
       },
     )
 
