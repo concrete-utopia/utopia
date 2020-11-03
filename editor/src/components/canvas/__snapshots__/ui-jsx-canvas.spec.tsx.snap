@@ -7468,8 +7468,8 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
   \\"
 >
   <div
-    data-utopia-scene-id=\\"526/85c\\"
-    data-utopia-valid-paths=\\"526/85c:e52 526/85c:e52/b48\\"
+    data-utopia-scene-id=\\"eee/fff\\"
+    data-utopia-valid-paths=\\"eee/fff:aaa eee/fff:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -7479,23 +7479,23 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
       left: 0;
       top: 0;
     \\"
-    data-uid=\\"526\\"
+    data-uid=\\"eee\\"
   >
     <div
+      data-uid=\\"aaa\\"
       style=\\"
         position: relative;
         width: 100%;
         height: 100%;
         background-color: #ffffff;
       \\"
-      data-uid=\\"e52\\"
     >
       Test
       <div
+        data-uid=\\"bbb\\"
         style=\\"background-color: pink; width: 100%; height: 20px;\\"
-        data-uid=\\"b48\\"
       >
-        <div>test</div>
+        <div data-uid=\\"ccc\\">test</div>
       </div>
     </div>
   </div>
@@ -7505,17 +7505,17 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
 
 exports[`UiJsxCanvas render renderrs correctly when a component is passed in via a prop 2`] = `
 Object {
-  "526/85c:e52": Object {
+  "eee/fff:aaa": Object {
     "childrenTemplatePaths": Array [
       Object {
         "element": Array [
-          "e52",
-          "b48",
+          "aaa",
+          "bbb",
         ],
         "scene": Object {
           "sceneElementPath": Array [
-            "526",
-            "85c",
+            "eee",
+            "fff",
           ],
           "type": "scenepath",
         },
@@ -7545,18 +7545,20 @@ Object {
             "props": Object {
               "data-uid": Object {
                 "type": "ATTRIBUTE_VALUE",
-                "value": "b48",
+                "value": "bbb",
               },
               "thing": Object {
                 "definedElsewhere": Array [
                   "React",
                 ],
-                "javascript": "<div>test</div>",
+                "javascript": "<div data-uid={'ccc'}>test</div>",
                 "sourceMap": Object {
                   "file": "code.tsx",
-                  "mappings": "OAUsBA,wCAADC",
+                  "mappings": "OAWuCA;AAAIC,cAAWC;AAAfF,UAADG",
                   "names": Array [
                     "div",
+                    "data",
+                    "ccc",
                     "<",
                   ],
                   "sources": Array [
@@ -7569,22 +7571,24 @@ import { Scene, Storyboard, jsx } from 'utopia-api'
 export var App = (props) => {
   return (
     <div
+      data-uid={'aaa'}
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >
       Test
-      <Thing thing={<div>test</div>} />
+      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
     </div>
   )
 }
 
 export var Thing = (props) => {
-  return <div style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
+  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
 }
 
 export var storyboard = (
-  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'eee'} layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
+      data-uid={'fff'}
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -7594,7 +7598,9 @@ export var storyboard = (
                   ],
                   "version": 3,
                 },
-                "transpiledJavascript": "return React.createElement(\\"div\\", null, \\"test\\");",
+                "transpiledJavascript": "return React.createElement(\\"div\\", {
+  \\"data-uid\\": 'ccc'
+}, \\"test\\");",
                 "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                 "uniqueID": "",
               },
@@ -7611,7 +7617,7 @@ export var storyboard = (
         "props": Object {
           "data-uid": Object {
             "type": "ATTRIBUTE_VALUE",
-            "value": "e52",
+            "value": "aaa",
           },
           "layout": Object {
             "type": "ATTRIBUTE_VALUE",
@@ -7634,7 +7640,7 @@ export var storyboard = (
     "globalFrame": null,
     "localFrame": null,
     "props": Object {
-      "data-uid": "e52",
+      "data-uid": "aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -7697,18 +7703,18 @@ export var storyboard = (
     },
     "templatePath": Object {
       "element": Array [
-        "e52",
+        "aaa",
       ],
       "scene": Object {
         "sceneElementPath": Array [
-          "526",
-          "85c",
+          "eee",
+          "fff",
         ],
         "type": "scenepath",
       },
     },
   },
-  "526/85c:e52/b48": Object {
+  "eee/fff:aaa/bbb": Object {
     "childrenTemplatePaths": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7725,18 +7731,20 @@ export var storyboard = (
         "props": Object {
           "data-uid": Object {
             "type": "ATTRIBUTE_VALUE",
-            "value": "b48",
+            "value": "bbb",
           },
           "thing": Object {
             "definedElsewhere": Array [
               "React",
             ],
-            "javascript": "<div>test</div>",
+            "javascript": "<div data-uid={'ccc'}>test</div>",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAUsBA,wCAADC",
+              "mappings": "OAWuCA;AAAIC,cAAWC;AAAfF,UAADG",
               "names": Array [
                 "div",
+                "data",
+                "ccc",
                 "<",
               ],
               "sources": Array [
@@ -7749,22 +7757,24 @@ import { Scene, Storyboard, jsx } from 'utopia-api'
 export var App = (props) => {
   return (
     <div
+      data-uid={'aaa'}
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >
       Test
-      <Thing thing={<div>test</div>} />
+      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
     </div>
   )
 }
 
 export var Thing = (props) => {
-  return <div style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
+  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
 }
 
 export var storyboard = (
-  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'eee'} layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
+      data-uid={'fff'}
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -7774,7 +7784,9 @@ export var storyboard = (
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return React.createElement(\\"div\\", null, \\"test\\");",
+            "transpiledJavascript": "return React.createElement(\\"div\\", {
+  \\"data-uid\\": 'ccc'
+}, \\"test\\");",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uniqueID": "",
           },
@@ -7785,7 +7797,7 @@ export var storyboard = (
     "globalFrame": null,
     "localFrame": null,
     "props": Object {
-      "data-uid": "b48",
+      "data-uid": "bbb",
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -7848,13 +7860,13 @@ export var storyboard = (
     },
     "templatePath": Object {
       "element": Array [
-        "e52",
-        "b48",
+        "aaa",
+        "bbb",
       ],
       "scene": Object {
         "sceneElementPath": Array [
-          "526",
-          "85c",
+          "eee",
+          "fff",
         ],
         "type": "scenepath",
       },

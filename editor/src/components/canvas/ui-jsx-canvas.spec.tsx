@@ -1937,22 +1937,24 @@ import { Scene, Storyboard, jsx } from 'utopia-api'
 export var App = (props) => {
   return (
     <div
+      data-uid={'aaa'}
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >
       Test
-      <Thing thing={<div>test</div>} />
+      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
     </div>
   )
 }
 
 export var Thing = (props) => {
-  return <div style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
+  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
 }
 
 export var storyboard = (
-  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'eee'} layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
+      data-uid={'fff'}
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
