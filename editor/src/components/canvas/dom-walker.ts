@@ -299,7 +299,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             rootMetadataRef.current,
           )
           if (cachedMetadata != null) {
-            rootMetadata.push(cachedMetadata)
+            rootMetadata.push({
+              ...cachedMetadata,
+              children: childMetadata,
+            })
           }
         } else {
           const metadata: ElementInstanceMetadata = elementInstanceMetadata(
@@ -454,7 +457,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             rootMetadataRef.current,
           )
           if (cachedMetadata != null) {
-            return cachedMetadata
+            return {
+              ...cachedMetadata,
+              children: childrenMetadata,
+            }
           }
         }
         const globalFrame = globalFrameForElement(element)
