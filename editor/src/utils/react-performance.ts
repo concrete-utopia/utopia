@@ -210,7 +210,7 @@ function failSafeMemoEqualityFunction(componentDisplayName: string, severity: 's
 }
 
 // this function has been adopted from https://github.com/epoberezkin/fast-deep-equal/tree/a33d49ab5cc659e331ff445109f35dd323230d41
-function keepDeepReferenceEqualityInnerNew(
+function keepDeepReferenceEqualityInner(
   oldValue: any,
   possibleNewValue: any,
   stackSizeInner: number,
@@ -249,7 +249,7 @@ function keepDeepReferenceEqualityInnerNew(
       }
       for (i = length; i-- !== 0; ) {
         // try to recurse into the array item here and save it if possible
-        newArrayToReturn[i] = keepDeepReferenceEqualityInnerNew(
+        newArrayToReturn[i] = keepDeepReferenceEqualityInner(
           oldValue[i],
           possibleNewValue[i],
           stackSizeInner + 1,
@@ -275,7 +275,7 @@ function keepDeepReferenceEqualityInnerNew(
       }
       for (i of possibleNewValue.entries()) {
         const oldMapValue = oldValue.get(i[0])
-        const newMapValue = keepDeepReferenceEqualityInnerNew(
+        const newMapValue = keepDeepReferenceEqualityInner(
           oldMapValue,
           i[1],
           stackSizeInner + 1,
@@ -367,7 +367,7 @@ function keepDeepReferenceEqualityInnerNew(
         continue
       }
 
-      newObjectToReturn[key] = keepDeepReferenceEqualityInnerNew(
+      newObjectToReturn[key] = keepDeepReferenceEqualityInner(
         oldValue[key],
         possibleNewValue[key],
         stackSizeInner + 1,
@@ -403,7 +403,7 @@ export function keepDeepReferenceEqualityIfPossible(
   possibleNewValue: any,
   stackSize: number = 0,
 ) {
-  return keepDeepReferenceEqualityInnerNew(oldValue, possibleNewValue, stackSize, new Set())
+  return keepDeepReferenceEqualityInner(oldValue, possibleNewValue, stackSize, new Set())
 }
 
 /**
