@@ -191,7 +191,7 @@ export function instancePath(
   elementPath: ElementPath,
 ): InstancePath {
   if (isScenePath(scene as ScenePath)) {
-    return newInstancePath(scene, elementPath)
+    return instancePath((scene as ScenePath).sceneElementPath, elementPath)
   } else {
     const sceneElementPath = scene as StaticElementPath
     if (sceneElementPath.length === 0 && elementPath.length === 0) {
