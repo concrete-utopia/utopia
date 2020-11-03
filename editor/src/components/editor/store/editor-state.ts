@@ -1252,10 +1252,7 @@ export function deriveState(
       controls: derivedState.canvas.controls,
       transientState: produceCanvasTransientState(editor, true),
     },
-    elementWarnings: keepDeepReferenceEqualityIfPossible(
-      oldDerivedState?.elementWarnings,
-      getElementWarnings(getMetadata(editor)),
-    ),
+    elementWarnings: getElementWarnings(getMetadata(editor)),
   }
 
   const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)
