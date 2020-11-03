@@ -202,6 +202,21 @@ export const intrinsicHTMLElementNamesThatSupportChildren: Array<string> = [
   'section',
 ]
 
+export function getDOMAttribute(element: HTMLElement, attributeName: string): string | null {
+  const attr = element.attributes.getNamedItemNS(null, attributeName)
+  if (attr == null) {
+    return null
+  } else {
+    return attr.value
+  }
+}
+
+export function setDOMAttribute(element: HTMLElement, attributeName: string, value: string): void {
+  const attr = document.createAttributeNS(null, attributeName)
+  attr.value = value
+  element.attributes.setNamedItemNS(attr)
+}
+
 export function getCanvasRectangleFromElement(
   element: HTMLElement,
   canvasScale: number,

@@ -12,7 +12,11 @@ import {
   emptyComputedStyle,
 } from '../../core/shared/element-template'
 import { id, TemplatePath, InstancePath } from '../../core/shared/project-file-types'
-import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
+import {
+  getCanvasRectangleFromElement,
+  getDOMAttribute,
+  setDOMAttribute,
+} from '../../core/shared/dom-utils'
 import { applicative4Either, isRight, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
@@ -95,21 +99,6 @@ function isScene(node: Node): node is HTMLElement {
   )
 }
 
-function getDOMAttribute(element: HTMLElement, attributeName: string): string | null {
-  const attr = element.attributes.getNamedItemNS(null, attributeName)
-  if (attr == null) {
-    return null
-  } else {
-    return attr.value
-  }
-}
-
-function setDOMAttribute(element: HTMLElement, attributeName: string, value: string) {
-  const attr = document.createAttributeNS(null, attributeName)
-  attr.value = value
-  element.attributes.setNamedItemNS(attr)
-}
-
 let CanvasRectangleCache: { [path: string]: CanvasRectangle } = {}
 const resizeObserver = new ResizeObserver((entries: any) => {
   for (let entry of entries) {
@@ -155,8 +144,12 @@ const mutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
 
 function globalFrameForElement(element: HTMLElement, path: TemplatePath | null): CanvasRectangle {
   // Get the local frame from the DOM and calculate the global frame.
-  let pathAsString =
-    path != null ? TP.toString(path) : getDOMAttribute(element, UTOPIA_TEMPLATE_PATH)
+  const instancePath =
+    path != null && TP.isScenePath(path) ? TP.instancePath([], TP.elementPathForPath(path)) : path
+  const pathAsString =
+    instancePath != null
+      ? TP.toString(instancePath)
+      : getDOMAttribute(element, UTOPIA_TEMPLATE_PATH)
   if (pathAsString != null && CanvasRectangleCache[pathAsString] != null) {
     return CanvasRectangleCache[pathAsString]
   } else {
@@ -337,6 +330,11 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         scenePath: TemplatePath,
         validPaths: Array<string>,
       ): Array<ElementInstanceMetadata> {
+        setDOMAttribute(
+          scene,
+          UTOPIA_TEMPLATE_PATH,
+          TP.toString(TP.instancePath([], TP.elementPathForPath(scenePath))),
+        )
         const globalFrame: CanvasRectangle = globalFrameForElement(scene, scenePath)
 
         let metadatas: Array<ElementInstanceMetadata> = []
