@@ -100,13 +100,14 @@ function isScene(node: Node): node is HTMLElement {
   )
 }
 
-let CanvasRectangleCache: { [path: string]: CanvasRectangle } = {}
+let CanvasRectangleCache: Map<TemplatePath, CanvasRectangle> = new Map()
 const resizeObserver = new ResizeObserver((entries: any) => {
   for (let entry of entries) {
     const path = getDOMAttribute(entry.target, UTOPIA_TEMPLATE_PATH)
     if (path != null) {
+      const pathTp = TP.fromString(path)
       const elementRect = getCanvasRectangleFromElement(entry.target, scale)
-      CanvasRectangleCache[path] = Utils.offsetRect(elementRect, Utils.negate(containerRect))
+      CanvasRectangleCache.set(pathTp, Utils.offsetRect(elementRect, Utils.negate(containerRect)))
     }
   }
 })
@@ -116,7 +117,10 @@ function getDescendantDOMRects(element: ChildNode) {
     const path = getDOMAttribute(element, UTOPIA_TEMPLATE_PATH)
     if (path != null) {
       const elementRect = getCanvasRectangleFromElement(element, scale)
-      CanvasRectangleCache[path] = Utils.offsetRect(elementRect, Utils.negate(containerRect))
+      CanvasRectangleCache.set(
+        TP.fromString(path),
+        Utils.offsetRect(elementRect, Utils.negate(containerRect)),
+      )
       Array.from(element.childNodes).map(getDescendantDOMRects)
     }
   }
@@ -132,9 +136,9 @@ const mutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
         const parentPath = getDOMAttribute(mutation.target.parentElement, UTOPIA_TEMPLATE_PATH)
         if (parentPath != null) {
           const elementRect = getCanvasRectangleFromElement(mutation.target.parentElement, scale)
-          CanvasRectangleCache[parentPath] = Utils.offsetRect(
-            elementRect,
-            Utils.negate(containerRect),
+          CanvasRectangleCache.set(
+            TP.fromString(parentPath),
+            Utils.offsetRect(elementRect, Utils.negate(containerRect)),
           )
           Array.from(mutation.target.parentElement.childNodes).map(getDescendantDOMRects)
         }
@@ -147,16 +151,14 @@ function globalFrameForElement(element: HTMLElement, path: TemplatePath | null):
   // Get the local frame from the DOM and calculate the global frame.
   const instancePath =
     path != null && TP.isScenePath(path) ? TP.instancePath([], TP.elementPathForPath(path)) : path
-  const pathAsString =
-    instancePath != null
-      ? TP.toString(instancePath)
-      : getDOMAttribute(element, UTOPIA_TEMPLATE_PATH)
-  if (pathAsString != null && CanvasRectangleCache[pathAsString] != null) {
-    return CanvasRectangleCache[pathAsString]
+  const pathForKey = instancePath ?? TP.fromString(getDOMAttribute(element, UTOPIA_TEMPLATE_PATH)!)
+
+  if (pathForKey != null && CanvasRectangleCache.get(pathForKey) != null) {
+    return CanvasRectangleCache.get(pathForKey)!
   } else {
     const elementRect = getCanvasRectangleFromElement(element, scale)
-    if (pathAsString != null) {
-      CanvasRectangleCache[pathAsString] = elementRect
+    if (pathForKey != null) {
+      CanvasRectangleCache.set(pathForKey, elementRect)
     }
     return Utils.offsetRect(elementRect, Utils.negate(containerRect))
   }
