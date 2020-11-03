@@ -209,86 +209,6 @@ function failSafeMemoEqualityFunction(componentDisplayName: string, severity: 's
   }
 }
 
-function keepDeepReferenceEqualityOfObject(
-  oldObject: any,
-  possibleNewObject: any,
-  stackSizeInner: number,
-  valueStackSoFar: Array<any>,
-): any {
-  const keys = Object.keys(possibleNewObject)
-  const length = keys.length
-
-  let newObjectToReturn: any = {}
-  let canSaveOldObject = true
-
-  const oldKeys = Object.keys(oldObject)
-  if (length !== oldKeys.length) {
-    canSaveOldObject = false
-  }
-
-  for (let i = 0; i < length; i++) {
-    const newKey = keys[i]
-    if (!Object.prototype.hasOwnProperty.call(oldObject, newKey) || newKey !== oldKeys[i]) {
-      canSaveOldObject = false
-    }
-  }
-
-  for (let i = 0; i < length; i++) {
-    const key = keys[i]
-    newObjectToReturn[key] = keepDeepReferenceEqualityInner(
-      oldObject[key],
-      possibleNewObject[key],
-      stackSizeInner + 1,
-      valueStackSoFar,
-    )
-    if (oldObject[key] !== newObjectToReturn[key]) {
-      canSaveOldObject = false
-    }
-  }
-
-  if (canSaveOldObject) {
-    return oldObject
-  } else {
-    return newObjectToReturn
-  }
-}
-
-function keepDeepReferenceEqualityOfMap(
-  oldMap: Map<any, any>,
-  possibleNewMap: Map<any, any>,
-  stackSizeInner: number,
-  valueStackSoFar: Array<any>,
-): Map<any, any> {
-  const length = possibleNewMap.size
-  if (length !== oldMap.size) return possibleNewMap
-
-  let newMapToReturn: Map<any, any> = new Map()
-  let canSaveOldMap = true
-
-  for (let [key, newValue] of possibleNewMap) {
-    if (canSaveOldMap && !oldMap.has(key)) {
-      canSaveOldMap = false
-    }
-    const oldValue = oldMap.get(key)
-    const newValueToReturn = keepDeepReferenceEqualityInner(
-      oldValue,
-      newValue,
-      stackSizeInner + 1,
-      valueStackSoFar,
-    )
-    newMapToReturn.set(key, newValueToReturn)
-    if (oldValue !== newValueToReturn) {
-      canSaveOldMap = false
-    }
-  }
-
-  if (canSaveOldMap) {
-    return oldMap
-  } else {
-    return newMapToReturn
-  }
-}
-
 function keepDeepReferenceEqualityInner(
   oldValueInner: any,
   possibleNewValueInner: any,
@@ -310,6 +230,8 @@ function keepDeepReferenceEqualityInner(
     return possibleNewValueInner
   }
   var isArray = Array.isArray
+  var keyList = Object.keys
+  var hasProp = Object.prototype.hasOwnProperty
 
   if (oldValueInner === possibleNewValueInner) return oldValueInner
 
@@ -380,23 +302,43 @@ function keepDeepReferenceEqualityInner(
         ? oldValueInner
         : possibleNewValueInner
 
-    var mapA = oldValueInner instanceof Map,
-      mapB = possibleNewValueInner instanceof Map
-    if (mapA && mapB) {
-      return keepDeepReferenceEqualityOfMap(
-        oldValueInner,
-        possibleNewValueInner,
-        stackSizeInner,
-        newValueStack,
-      )
+    // for objects we do a deep recursion
+    var keys = keyList(possibleNewValueInner)
+    length = keys.length
+
+    var newObjectToReturn: any = {}
+    var canSaveOldObject = true
+
+    const oldKeys = keyList(oldValueInner)
+    if (length !== oldKeys.length) {
+      canSaveOldObject = false
     }
 
-    return keepDeepReferenceEqualityOfObject(
-      oldValueInner,
-      possibleNewValueInner,
-      stackSizeInner,
-      newValueStack,
-    )
+    for (i = 0; i < length; i++) {
+      const newKey = keys[i]
+      if (!hasProp.call(oldValueInner, newKey) || newKey !== oldKeys[i]) {
+        canSaveOldObject = false
+      }
+    }
+
+    for (i = 0; i < length; i++) {
+      key = keys[i]
+      newObjectToReturn[key] = keepDeepReferenceEqualityInner(
+        oldValueInner[key],
+        possibleNewValueInner[key],
+        stackSizeInner + 1,
+        newValueStack,
+      )
+      if (oldValueInner[key] !== newObjectToReturn[key]) {
+        canSaveOldObject = false
+      }
+    }
+
+    if (canSaveOldObject) {
+      return oldValueInner
+    } else {
+      return newObjectToReturn
+    }
   }
 
   return oldValueInner !== oldValueInner && possibleNewValueInner !== possibleNewValueInner
