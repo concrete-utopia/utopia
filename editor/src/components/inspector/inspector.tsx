@@ -624,8 +624,8 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   // FIXME TODO HACK until we have better memoization in the Canvas Spy, we sacrifice using R.equals once
   // in order to prevent a big rerender of the inspector
 
-  const inspectorModelMemoized = useKeepReferenceEqualityIfPossible(inspectorModel)
-  const targetsMemoized = useKeepReferenceEqualityIfPossible(targets)
+  const inspectorModelReferentiallyStable = useKeepReferenceEqualityIfPossible(inspectorModel)
+  const targetsReferentiallyStable = useKeepReferenceEqualityIfPossible(targets)
 
   const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
     getElementsToTarget(selectedViews),
@@ -686,7 +686,9 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     [dispatch],
   )
 
-  const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(targetsMemoized[0].path)
+  const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(
+    targetsReferentiallyStable[0].path,
+  )
 
   const onSelectTarget = React.useCallback((targetPath: Array<string>) => {
     setSelectedTarget(targetPath)
@@ -765,9 +767,9 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
         selectedViews={selectedViews}
-        input={inspectorModelMemoized}
+        input={inspectorModelReferentiallyStable}
         onSubmitValue={onSubmitValue}
-        targets={targetsMemoized}
+        targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
         elementPath={elementPath}
         onSelect={onSelect}
