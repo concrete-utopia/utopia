@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { EditorStore } from './editor-state'
-import { UseStore, StoreApi } from 'zustand'
+import { UseStore, StoreApi, EqualityChecker } from 'zustand'
 import utils from '../../../utils/utils'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 
@@ -19,7 +19,7 @@ type StateSelector<T, U> = (state: T) => U
 export const useEditorState = <U>(
   selector: StateSelector<EditorStore, U>,
   selectorName: string,
-  equalityFn = utils.shallowEqual,
+  equalityFn: (oldSlice: U, newSlice: U) => boolean = utils.shallowEqual,
 ): U => {
   const context = React.useContext(EditorStateContext)
 
@@ -28,7 +28,7 @@ export const useEditorState = <U>(
   if (context == null) {
     throw new Error('useStore is missing from editor context')
   }
-  return context.useStore(wrappedSelector, equalityFn)
+  return context.useStore(wrappedSelector, equalityFn as EqualityChecker<U>)
 }
 
 const LogSelectorPerformance = !PRODUCTION_ENV && typeof window.performance.mark === 'function'

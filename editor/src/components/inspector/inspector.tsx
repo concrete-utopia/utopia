@@ -448,25 +448,35 @@ const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarge
 export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
   'InspectorEntryPoint',
   () => {
-    const { selectedViews, jsxMetadataKILLME } = useEditorState((store) => {
-      return {
-        selectedViews: store.editor.selectedViews,
-        jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      }
-    }, 'InspectorEntryPoint')
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'InspectorEntryPoint selectedViews',
+    )
+    const rootViewsForScene: Array<TemplatePath> = useEditorState(
+      (store) => {
+        const possibleRootComponent = store.editor.jsxMetadataKILLME.find((m) =>
+          TP.pathsEqual(m.scenePath, selectedViews[0]),
+        )
+        if (possibleRootComponent != null) {
+          return possibleRootComponent.rootElements.map((e) => e.templatePath)
+        } else {
+          return []
+        }
+      },
+      'InspectorEntryPoint',
+      (oldTemplatePaths, newTemplatePaths) => {
+        if (oldTemplatePaths.length === newTemplatePaths.length) {
+          return oldTemplatePaths.every((tp, i) => TP.pathsEqual(tp, newTemplatePaths[i]))
+        } else {
+          return false
+        }
+      },
+    )
 
     const showSceneInspector =
       selectedViews[0] != null &&
       TP.depth(selectedViews[0]) === 1 &&
       TP.isScenePath(selectedViews[0])
-
-    let rootViewsForScene: Array<TemplatePath> = []
-    const possibleRootComponent = jsxMetadataKILLME.find((m) =>
-      TP.pathsEqual(m.scenePath, selectedViews[0]),
-    )
-    if (possibleRootComponent != null) {
-      rootViewsForScene = possibleRootComponent.rootElements.map((e) => e.templatePath)
-    }
 
     if (showSceneInspector) {
       return (
@@ -614,7 +624,8 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   // FIXME TODO HACK until we have better memoization in the Canvas Spy, we sacrifice using R.equals once
   // in order to prevent a big rerender of the inspector
 
-  const inspectorModelMemoized = useKeepReferenceEqualityIfPossible(inspectorModel)
+  const inspectorModelReferentiallyStable = useKeepReferenceEqualityIfPossible(inspectorModel)
+  const targetsReferentiallyStable = useKeepReferenceEqualityIfPossible(targets)
 
   const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
     getElementsToTarget(selectedViews),
@@ -675,7 +686,9 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     [dispatch],
   )
 
-  const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(targets[0].path)
+  const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(
+    targetsReferentiallyStable[0].path,
+  )
 
   const onSelectTarget = React.useCallback((targetPath: Array<string>) => {
     setSelectedTarget(targetPath)
@@ -754,9 +767,9 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
         selectedViews={selectedViews}
-        input={inspectorModelMemoized}
+        input={inspectorModelReferentiallyStable}
         onSubmitValue={onSubmitValue}
-        targets={targets}
+        targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
         elementPath={elementPath}
         onSelect={onSelect}

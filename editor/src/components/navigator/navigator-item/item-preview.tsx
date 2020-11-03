@@ -20,7 +20,9 @@ import { isLeft } from '../../../core/shared/either'
 
 interface ItemPreviewProps {
   isAutosizingView: boolean
-  element: ElementInstanceMetadata | null
+  isFlexLayoutedContainer: boolean
+  yogaDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
+  yogaWrap: 'wrap' | 'wrap-reverse' | 'nowrap'
   staticElementName: JSXElementName | null
   componentInstance: boolean
   path: TemplatePath
@@ -32,7 +34,7 @@ interface ItemPreviewProps {
 
 export const ItemPreview: React.StatelessComponent<ItemPreviewProps> = (props) => {
   const isGroup = props.isAutosizingView
-  const { element, staticElementName, imports } = props
+  const { isFlexLayoutedContainer, yogaDirection, yogaWrap, staticElementName, imports } = props
 
   // preview depends on three things:
   // 1 - role
@@ -46,13 +48,12 @@ export const ItemPreview: React.StatelessComponent<ItemPreviewProps> = (props) =
 
   // role
   let role: string = 'default'
-  const isFlex = MetadataUtils.isFlexLayoutedContainer(element)
-  const originalFlexDirection = MetadataUtils.getYogaDirection(element)
+  const originalFlexDirection = yogaDirection
   const flexDirection: 'column' | 'row' =
     originalFlexDirection === 'column' || originalFlexDirection === 'column-reverse'
       ? 'column'
       : 'row'
-  const flexWrap = MetadataUtils.getYogaWrap(element)
+  const flexWrap = yogaWrap
   const flexWrapped: boolean = flexWrap === 'wrap' || flexWrap === 'wrap-reverse'
 
   if (staticElementName == null) {
@@ -82,7 +83,7 @@ export const ItemPreview: React.StatelessComponent<ItemPreviewProps> = (props) =
   }
 
   let specifierPath: string
-  if (isFlex && role === 'view') {
+  if (isFlexLayoutedContainer && role === 'view') {
     specifierPath = `-flex-${flexWrapped ? 'wrap' : 'nowrap'}-${flexDirection}`
   } else {
     if (role === 'group') {
