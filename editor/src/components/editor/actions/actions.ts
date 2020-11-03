@@ -462,6 +462,7 @@ import {
   addStoryboardFileToProject,
   StoryboardFilePath,
 } from '../../../core/model/storyboard-utils'
+import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 export function clearSelection(): EditorAction {
   return {
@@ -3610,8 +3611,11 @@ export const UPDATE_FNS = {
 
     return {
       ...editor,
-      domMetadataKILLME: action.elementMetadata,
-      spyMetadataKILLME: spyResult,
+      domMetadataKILLME: keepDeepReferenceEqualityIfPossible(
+        editor.domMetadataKILLME,
+        action.elementMetadata,
+      ),
+      spyMetadataKILLME: keepDeepReferenceEqualityIfPossible(editor.spyMetadataKILLME, spyResult),
     }
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
