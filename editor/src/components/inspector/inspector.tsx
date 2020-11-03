@@ -314,11 +314,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         // its own compared to the props.
         aspectRatioLockedInner = aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement)
 
-        const elementOriginType = MetadataUtils.getElementOriginType(
-          rootComponents,
-          rootMetadata,
-          view,
-        )
+        const elementOriginType = MetadataUtils.getElementOriginType(rootComponents, view)
         if (elementOriginType === 'unknown-element') {
           anyUnknownElementsInner = true
         }
@@ -521,11 +517,11 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     // TODO multiselect
     const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
     if (elementMetadata != null) {
-      const jsxElement = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+      const jsxElement = findElementAtPath(path, rootComponents)
       const parentPath = TP.parentPath(path)
       const parentElement =
         parentPath != null && TP.isInstancePath(parentPath)
-          ? findElementAtPath(parentPath, rootComponents, jsxMetadataKILLME)
+          ? findElementAtPath(parentPath, rootComponents)
           : null
 
       const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadataKILLME, path)
@@ -815,7 +811,7 @@ export const InspectorContextProvider = betterReactMemo<{
           return
         }
 
-        const jsxElement = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+        const jsxElement = findElementAtPath(path, rootComponents)
         const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
         newEditedMultiSelectedProps.push(jsxAttributes)
         newRealValues.push(elementMetadata.props)

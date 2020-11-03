@@ -17,7 +17,6 @@ export class ConstraintsControls extends React.Component<ConstraintsControlProps
     )
     const anyUnknownElements = MetadataUtils.anyUnknownOrGeneratedElements(
       this.props.rootComponents,
-      this.props.componentMetadata,
       this.props.selectedViews,
     )
     const validResizeDragState =

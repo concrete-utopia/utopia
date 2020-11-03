@@ -24,6 +24,7 @@ import {
   CanvasRectangle,
   LocalPoint,
   localRectangle,
+  roundToNearestHalf,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -186,8 +187,8 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         const position = getPosition(elementStyle)
 
         const offset = {
-          x: element.offsetLeft,
-          y: element.offsetTop,
+          x: roundToNearestHalf(element.offsetLeft),
+          y: roundToNearestHalf(element.offsetTop),
         } as LocalPoint
 
         const coordinateSystemBounds =
@@ -229,12 +230,12 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         let naturalWidth: number | null = null
         let naturalHeight: number | null = null
         if (element.tagName === 'IMG') {
-          naturalWidth = (element as HTMLImageElement).naturalWidth
-          naturalHeight = (element as HTMLImageElement).naturalHeight
+          naturalWidth = roundToNearestHalf((element as HTMLImageElement).naturalWidth)
+          naturalHeight = roundToNearestHalf((element as HTMLImageElement).naturalHeight)
         }
 
-        let clientWidth = element.clientWidth
-        let clientHeight = element.clientHeight
+        let clientWidth = roundToNearestHalf(element.clientWidth)
+        let clientHeight = roundToNearestHalf(element.clientHeight)
 
         return specialSizeMeasurements(
           offset,

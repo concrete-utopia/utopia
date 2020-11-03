@@ -116,7 +116,6 @@ export class YogaControls extends React.Component<YogaControlsProps> {
     })
     const unknownElementsSelected = MetadataUtils.anyUnknownOrGeneratedElements(
       this.props.rootComponents,
-      this.props.componentMetadata,
       this.props.selectedViews,
     )
     const showResizeControl =

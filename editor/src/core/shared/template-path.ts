@@ -21,11 +21,98 @@ export function toVarSafeComponentId(path: TemplatePath): string {
   return replaceAll(asStr, '-', '_')
 }
 
+interface ScenePathCache {
+  cached: ScenePath | null
+  cachedToString: string | null
+  childSceneCaches: { [key: string]: ScenePathCache }
+  childInstanceCaches: { [key: string]: InstancePathCache }
+}
+
+interface InstancePathCache {
+  cached: InstancePath | null
+  cachedToString: string | null
+  childInstanceCaches: { [key: string]: InstancePathCache }
+}
+
+function emptyScenePathCache(): ScenePathCache {
+  return {
+    cached: null,
+    cachedToString: null,
+    childSceneCaches: {},
+    childInstanceCaches: {},
+  }
+}
+
+function emptyInstancePathCache(): InstancePathCache {
+  return {
+    cached: null,
+    cachedToString: null,
+    childInstanceCaches: {},
+  }
+}
+
+let globalPathStringToPathCache: { [key: string]: TemplatePath } = {}
+let globalScenePathCache: ScenePathCache = emptyScenePathCache()
+
+export function clearTemplatePathCache() {
+  globalPathStringToPathCache = {}
+  globalScenePathCache = emptyScenePathCache()
+}
+
+function getScenePathCache(sceneElementPath: StaticElementPath): ScenePathCache {
+  let workingPathCache: ScenePathCache = globalScenePathCache
+  fastForEach(sceneElementPath, (pathPart) => {
+    if (workingPathCache.childSceneCaches[pathPart] == null) {
+      const newCache = emptyScenePathCache()
+      workingPathCache.childSceneCaches[pathPart] = newCache
+      workingPathCache = newCache
+    } else {
+      workingPathCache = workingPathCache.childSceneCaches[pathPart]
+    }
+  })
+  return workingPathCache
+}
+
+function getInstancePathCacheFromScenePathCache(
+  elementPath: ElementPath,
+  startingPoint: ScenePathCache,
+): InstancePathCache {
+  let workingPathCache: InstancePathCache = emptyInstancePathCache()
+  fastForEach(elementPath, (pathPart, index) => {
+    const cacheToReadFrom =
+      index === 0 ? startingPoint.childInstanceCaches : workingPathCache.childInstanceCaches
+
+    if (cacheToReadFrom[pathPart] == null) {
+      const newCache = emptyInstancePathCache()
+      cacheToReadFrom[pathPart] = newCache
+      workingPathCache = newCache
+    } else {
+      workingPathCache = cacheToReadFrom[pathPart]
+    }
+  })
+  return workingPathCache
+}
+
+function getInstancePathCache(
+  sceneElementPath: StaticElementPath,
+  elementPath: ElementPath,
+): InstancePathCache {
+  const scenePathCache = getScenePathCache(sceneElementPath)
+  return getInstancePathCacheFromScenePathCache(elementPath, scenePathCache)
+}
+
 const SceneSeparator = ':'
 const ElementSeparator = '/'
 
 function scenePathToString(path: ScenePath): string {
-  return elementPathToString(path.sceneElementPath)
+  const pathCache = getScenePathCache(path.sceneElementPath)
+  if (pathCache.cachedToString == null) {
+    const result = elementPathToString(path.sceneElementPath)
+    pathCache.cachedToString = result
+    return result
+  } else {
+    return pathCache.cachedToString
+  }
 }
 
 export function elementPathToString(path: ElementPath): string {
@@ -41,7 +128,16 @@ export function elementPathToString(path: ElementPath): string {
 }
 
 function instancePathToString(path: InstancePath): string {
-  return `${scenePathToString(path.scene)}${SceneSeparator}${elementPathToString(path.element)}`
+  const pathCache = getInstancePathCache(path.scene.sceneElementPath, path.element)
+  if (pathCache.cachedToString == null) {
+    const result = `${scenePathToString(path.scene)}${SceneSeparator}${elementPathToString(
+      path.element,
+    )}`
+    pathCache.cachedToString = result
+    return result
+  } else {
+    return pathCache.cachedToString
+  }
 }
 
 export function toString(target: TemplatePath): string {
@@ -52,10 +148,33 @@ export function toString(target: TemplatePath): string {
   }
 }
 
-export function scenePath(elements: ElementPath): ScenePath {
+function newScenePath(elements: StaticElementPath): ScenePath {
   return {
     type: 'scenepath',
-    sceneElementPath: elements as StaticElementPath,
+    sceneElementPath: elements,
+  }
+}
+
+const emptyScenePath: ScenePath = newScenePath(([] as any) as StaticElementPath)
+
+function newInstancePath(scene: ScenePath | ElementPath, elementPath: ElementPath): InstancePath {
+  return {
+    scene: scenePathFromElementPathOrScenePath(scene),
+    element: elementPath,
+  }
+}
+
+const emptyInstancePath: InstancePath = newInstancePath(emptyScenePath, [])
+
+export function scenePath(elements: ElementPath): ScenePath {
+  const staticElements = elements as StaticElementPath
+  const pathCache = getScenePathCache(staticElements)
+  if (pathCache.cached == null) {
+    const newPath = newScenePath(staticElements)
+    pathCache.cached = newPath
+    return newPath
+  } else {
+    return pathCache.cached
   }
 }
 
@@ -71,9 +190,22 @@ export function instancePath(
   scene: ScenePath | ElementPath,
   elementPath: ElementPath,
 ): InstancePath {
-  return {
-    scene: scenePathFromElementPathOrScenePath(scene),
-    element: elementPath,
+  if (isScenePath(scene as ScenePath)) {
+    return instancePath((scene as ScenePath).sceneElementPath, elementPath)
+  } else {
+    const sceneElementPath = scene as StaticElementPath
+    if (sceneElementPath.length === 0 && elementPath.length === 0) {
+      return emptyInstancePath
+    } else {
+      const pathCache = getInstancePathCache(sceneElementPath, elementPath)
+      if (pathCache.cached == null) {
+        const newPath = newInstancePath(sceneElementPath, elementPath)
+        pathCache.cached = newPath
+        return newPath
+      } else {
+        return pathCache.cached
+      }
+    }
   }
 }
 
@@ -81,17 +213,11 @@ export function staticInstancePath(
   scene: ScenePath | ElementPath,
   elementPath: ElementPath,
 ): StaticInstancePath {
-  return {
-    scene: scenePathFromElementPathOrScenePath(scene),
-    element: elementPath as StaticElementPath,
-  }
+  return instancePath(scene, elementPath) as StaticInstancePath
 }
 
 export function asStatic(path: InstancePath): StaticInstancePath {
-  return {
-    scene: path.scene,
-    element: path.element as StaticElementPath,
-  }
+  return path as StaticInstancePath
 }
 
 export function isScenePath(path: TemplatePath): path is ScenePath {
@@ -134,7 +260,7 @@ export function filterScenes(paths: TemplatePath[]): StaticInstancePath | Instan
 
 // FIXME: This should be retired, it's just plain dangerous.
 // Right now this is only used for SpecialNodes (in CanvasMetaData)
-export function fromString(path: string): TemplatePath {
+function fromStringUncached(path: string): TemplatePath {
   const [sceneStr, elementStr] = path.split(SceneSeparator)
   const scene = sceneStr.split(ElementSeparator).filter((e) => e.length > 0)
 
@@ -148,6 +274,17 @@ export function fromString(path: string): TemplatePath {
     } else {
       return scenePath(scene)
     }
+  }
+}
+
+export function fromString(path: string): TemplatePath {
+  let fromPathStringCache = globalPathStringToPathCache[path]
+  if (fromPathStringCache == null) {
+    const result = fromStringUncached(path)
+    globalPathStringToPathCache[path] = result
+    return result
+  } else {
+    return fromPathStringCache
   }
 }
 
@@ -194,10 +331,7 @@ export function instancePathParent(path: InstancePath): TemplatePath {
   if (parentElementPath.length === 0) {
     return path.scene
   } else {
-    return {
-      scene: path.scene,
-      element: parentElementPath,
-    }
+    return instancePath(path.scene, parentElementPath)
   }
 }
 
