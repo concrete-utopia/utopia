@@ -310,6 +310,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
               )
               if (elementFromCurrentMetadata != null) {
                 // early return for cached scenes
+                rootMetadata.push(...elementFromCurrentMetadata.children)
                 rootMetadata.push(elementFromCurrentMetadata)
                 return
               }
