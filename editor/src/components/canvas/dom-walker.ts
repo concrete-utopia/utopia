@@ -47,6 +47,8 @@ import {
 import ResizeObserver from 'resize-observer-polyfill'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
+const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
+
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1
 }
@@ -100,8 +102,6 @@ function isScene(node: Node): node is HTMLElement {
     node.attributes.getNamedItemNS(null, 'data-utopia-valid-paths') != null
   )
 }
-
-const mutationObserverConfig = { attributes: true, childList: true, subtree: true }
 
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
