@@ -137,7 +137,11 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   const mutationObserver = React.useMemo(() => {
     return new MutationObserver((mutations: MutationRecord[]) => {
       for (let mutation of mutations) {
-        if (mutation.attributeName === 'style') {
+        if (
+          mutation.attributeName === 'style' ||
+          mutation.addedNodes.length > 0 ||
+          mutation.removedNodes.length > 0
+        ) {
           if (mutation.target instanceof HTMLElement) {
             const pathAsString = getDOMAttribute(mutation.target, UTOPIA_TEMPLATE_PATH)
             const path = pathAsString != null ? TP.fromString(pathAsString) : null
