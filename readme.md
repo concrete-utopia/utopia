@@ -21,6 +21,8 @@ Utopia runs in the browser! To run it, you'll need to run the server (locally) a
 We welcome contributions. Utopia is a big project, but we're here to help, and are happy to pair up with you. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/pD8SrEJ). Please read our [contributing](contributing.md) doc to get started
 
 # Run the Editor
+There are a few different options for running Utopia below, but for all of them you'll head to [localhost:8000](https://localhost:8000). Importantly, [/project](https://localhost:8000/project) gets you to the editor.
+
 ## Dev Mode: slower performance, full error messages, easier to debug
 
 ```
