@@ -9,12 +9,12 @@ import {
   GuidelineWithSnappingVector,
 } from '../guideline'
 import { SnappingThreshold } from './select-mode-control-container'
-import { ComponentMetadata, JSXElement } from '../../../core/shared/element-template'
+import { JSXMetadata } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { EdgePosition } from '../canvas-types'
 
 export function collectParentAndSiblingGuidelines(
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
   targets: Array<TemplatePath>,
 ): Array<Guideline> {
   const allPaths = MetadataUtils.getAllPaths(componentMetadata)
@@ -47,7 +47,7 @@ export function collectParentAndSiblingGuidelines(
 }
 
 export function collectSelfAndChildrenGuidelines(
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
   targets: Array<TemplatePath>,
   insertingElementId: string,
 ): Array<Guideline> {

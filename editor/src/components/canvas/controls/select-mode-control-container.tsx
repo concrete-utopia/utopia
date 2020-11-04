@@ -25,7 +25,7 @@ import { LeftMenuTab } from '../../navigator/left-pane'
 import CanvasActions from '../canvas-actions'
 import { getOriginalCanvasFrames, createDuplicationNewUIDs } from '../canvas-utils'
 import { areYogaChildren } from './select-mode/yoga-utils'
-import { ComponentMetadata } from '../../../core/shared/element-template'
+import { JSXMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
 
@@ -33,7 +33,7 @@ export const SnappingThreshold = 5
 
 function getDistanceGuidelines(
   highlightedView: TemplatePath,
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
 ): Array<Guideline> {
   const frame = MetadataUtils.getFrameInCanvasCoords(highlightedView, componentMetadata)
   if (frame == null) {
@@ -228,21 +228,21 @@ export class SelectModeControlContainer extends React.Component<
     if (allElementsDirectlySelectable) {
       candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
     } else {
-      const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
+      const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
       let rootElementsToFilter: TemplatePath[] = []
       let dynamicScenesWithFragmentRootViews: ScenePath[] = []
       Utils.fastForEach(scenes, (path) => {
-        const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, path)
+        const scene = MetadataUtils.findSceneByTemplatePath(
+          this.props.componentMetadata.components,
+          path,
+        )
         const rootElements = scene?.rootElements
         if (
           MetadataUtils.isSceneTreatedAsGroup(scene) &&
           rootElements != null &&
           rootElements.length > 1
         ) {
-          rootElementsToFilter = [
-            ...rootElementsToFilter,
-            ...rootElements.map((element) => element.templatePath),
-          ]
+          rootElementsToFilter = [...rootElementsToFilter, ...rootElements]
           dynamicScenesWithFragmentRootViews.push(path)
         }
       })
@@ -298,7 +298,7 @@ export class SelectModeControlContainer extends React.Component<
         }
 
         const currentInstance = MetadataUtils.getElementByInstancePathMaybe(
-          this.props.componentMetadata,
+          this.props.componentMetadata.elements,
           current,
         )
         if (currentInstance == null) {
@@ -572,7 +572,7 @@ export class SelectModeControlContainer extends React.Component<
       const targets = TP.filterScenes(this.props.selectedViews)
       if (targets.length > 0) {
         const targetInstance = MetadataUtils.getElementByInstancePathMaybe(
-          this.props.componentMetadata,
+          this.props.componentMetadata.elements,
           targets[0],
         )
         if (targetInstance != null) {
@@ -621,12 +621,15 @@ export class SelectModeControlContainer extends React.Component<
   canResizeElements(): boolean {
     return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, target)
+        const scene = MetadataUtils.findSceneByTemplatePath(
+          this.props.componentMetadata.components,
+          target,
+        )
         let rootHasStyleProp = false
         if (scene != null) {
           rootHasStyleProp = scene.rootElements.some((rootElement) => {
             return this.props.elementsThatRespectLayout.some((path) => {
-              return TP.pathsEqual(path, rootElement.templatePath)
+              return TP.pathsEqual(path, rootElement)
             })
           })
         }
@@ -640,7 +643,7 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
+    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
     let labelDirectlySelectable = true
     let draggableViews = this.getSelectableViews(allElementsDirectlySelectable)
     if (!this.props.highlightsEnabled) {
@@ -653,7 +656,7 @@ export class SelectModeControlContainer extends React.Component<
     if (this.props.selectedViews.length === 1 && !TP.isScenePath(this.props.selectedViews[0])) {
       const path = this.props.selectedViews[0]
       const element = MetadataUtils.getElementByInstancePathMaybe(
-        this.props.componentMetadata,
+        this.props.componentMetadata.elements,
         path,
       )
       repositionOnly =

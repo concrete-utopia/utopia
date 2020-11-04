@@ -39,7 +39,10 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
     (store: EditorStore) =>
       TP.isScenePath(templatePath)
         ? null
-        : MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadataKILLME, templatePath),
+        : MetadataUtils.getElementByInstancePathMaybe(
+            store.editor.jsxMetadataKILLME.elements,
+            templatePath,
+          ),
     (store: EditorStore) =>
       store.derived.canvas.transientState.fileState == null
         ? getOpenImportsFromState(store.editor)

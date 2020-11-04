@@ -3,7 +3,15 @@ import * as R from 'ramda'
 import { FlexLength, LayoutSystem, Sides } from 'utopia-api'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
-import { foldThese, makeThat, makeThis, mergeThese, setThat, These } from '../../utils/these'
+import {
+  foldThese,
+  makeThat,
+  makeThis,
+  makeThisAndThat,
+  mergeThese,
+  setThat,
+  These,
+} from '../../utils/these'
 import Utils, { IndexPosition } from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
 import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
@@ -82,6 +90,7 @@ import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { UTOPIA_ORIGINAL_ID_KEY, UTOPIA_UID_KEY } from './utopia-constants'
 import { extractOriginalUidFromIndexedUid } from '../shared/uid-utils'
+import { forEachValue, omit } from '../shared/object-utils'
 const ObjectPathImmutable: any = OPI
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
@@ -92,88 +101,6 @@ function fromSpyMergeCandidate(fromSpy: ElementInstanceMetadata): MergeCandidate
 
 function fromDOMMergeCandidate(fromDOM: ElementInstanceMetadata): MergeCandidate {
   return makeThat(fromDOM)
-}
-
-function produceMetadataFromMergeCandidate(
-  elementsByUID: ElementsByUID,
-  mergeCandidate: MergeCandidate,
-): ElementInstanceMetadata {
-  const mergedMetadata = mergeThese((fromSpy, fromDOM) => {
-    // Checking if our elements support children should prevent us from ending up with the
-    // internals of draft-js showing up underneath Text elements.
-    const shouldNotTraverse = Utils.path(['props', 'data-utopia-do-not-traverse'], fromDOM)
-    let children: Array<ElementInstanceMetadata>
-    if (shouldNotTraverse) {
-      children = []
-    } else {
-      children = mergeElementMetadata(elementsByUID, fromSpy.children, fromDOM.children)
-    }
-
-    // The actual merge case.
-    return {
-      ...fromDOM,
-      props: fromSpy.props,
-      element: alternativeEither(fromSpy.element, fromDOM.element),
-      children: children,
-      componentInstance: fromSpy.componentInstance || fromDOM.componentInstance,
-    }
-  }, mergeCandidate)
-
-  const possibleUID: string | null | undefined = Utils.defaultIfNull(
-    mergedMetadata.props[UTOPIA_UID_KEY],
-    mergedMetadata.props[UTOPIA_ORIGINAL_ID_KEY],
-  )
-  if (possibleUID == null) {
-    return mergedMetadata
-  } else {
-    const possibleElement = elementsByUID[possibleUID]
-    if (possibleElement == null) {
-      return mergedMetadata
-    } else {
-      if (isIntrinsicElement(possibleElement.name)) {
-        return mergedMetadata
-      } else {
-        return {
-          ...mergedMetadata,
-          componentInstance: true,
-          element: right(possibleElement),
-        }
-      }
-    }
-  }
-}
-
-function mergeElementMetadata(
-  elementsByUID: ElementsByUID,
-  fromSpy: Array<ElementInstanceMetadata>,
-  fromDOM: Array<ElementInstanceMetadata>,
-): Array<ElementInstanceMetadata> {
-  // This logic effectively puts everything from the spy first,
-  // then anything missed out from the DOM right after it.
-  // Ideally this would function like a VCS diff inserting runs of new elements
-  // inbetween matching metadata, so it may be necessary to implement something
-  // like that in the future. But for now this is likely "good enough" that it
-  // wont make any difference.
-  let mergeCandidates: Array<MergeCandidate> = fromSpy.map(fromSpyMergeCandidate)
-  Utils.fastForEach(fromDOM, (fromDOMElement) => {
-    const potentialMergeCandidateIndex = mergeCandidates.findIndex((candidate) => {
-      return foldThese(
-        (thisValue) => TP.pathsEqual(thisValue.templatePath, fromDOMElement.templatePath),
-        (_) => false,
-        (thisValue, _) => TP.pathsEqual(thisValue.templatePath, fromDOMElement.templatePath),
-        candidate,
-      )
-    })
-    if (potentialMergeCandidateIndex === -1) {
-      mergeCandidates.push(fromDOMMergeCandidate(fromDOMElement))
-    } else {
-      const candidate = mergeCandidates[potentialMergeCandidateIndex]
-      mergeCandidates[potentialMergeCandidateIndex] = setThat(fromDOMElement, candidate)
-    }
-  })
-  return mergeCandidates.map((candidate) => {
-    return produceMetadataFromMergeCandidate(elementsByUID, candidate)
-  })
 }
 
 const ElementsToDrillIntoForTextContent = ['div', 'span']
@@ -221,7 +148,7 @@ export const MetadataUtils = {
     if (path == null) {
       return null
     } else {
-      return elementMap[TP.toString(path)]
+      return elementMap[TP.toString(path)] ?? null
     }
   },
   getElementsByInstancePath(
@@ -651,12 +578,12 @@ export const MetadataUtils = {
       })
     }
   },
-  getAllCanvasRootPaths(scenes: ComponentMetadata[]): TemplatePath[] {
-    const rootScenesAndElements = this.getCanvasRootScenesAndElements(scenes)
+  getAllCanvasRootPaths(metadata: JSXMetadata): TemplatePath[] {
+    const rootScenesAndElements = this.getCanvasRootScenesAndElements(metadata)
     return flatMapArray<ElementInstanceMetadata | ComponentMetadata, TemplatePath>((root) => {
       if (isComponentMetadata(root)) {
         if (root.rootElements != null) {
-          return root.rootElements.map((e) => e.templatePath)
+          return root.rootElements
         } else {
           return [root.scenePath]
         }
@@ -665,16 +592,19 @@ export const MetadataUtils = {
       }
     }, rootScenesAndElements)
   },
-  getAllPaths(scenes: ComponentMetadata[]): TemplatePath[] {
+  getAllPaths(metadata: JSXMetadata): TemplatePath[] {
+    // This function needs to explicitly return the paths in a depth first manner
     let result: Array<TemplatePath> = []
-    function recurseElement(element: ElementInstanceMetadata): void {
-      result.push(element.templatePath)
-      fastForEach(element.children, recurseElement)
+    function recurseElement(elementPath: InstancePath): void {
+      result.push(elementPath)
+      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, elementPath)
+      fastForEach(element?.children ?? [], recurseElement)
     }
 
-    const scenePaths = this.getAllScenePaths(scenes)
+    const scenePaths = this.getAllScenePaths(metadata.components)
+
     fastForEach(scenePaths, (scenePath) => {
-      const scene = scenes.find((s) => TP.pathsEqual(scenePath, s.scenePath))
+      const scene = metadata.components.find((s) => TP.pathsEqual(scenePath, s.scenePath))
       if (scene != null) {
         result.push(scenePath)
         scene.rootElements.forEach(recurseElement)
@@ -762,22 +692,18 @@ export const MetadataUtils = {
       return true
     }
   },
-  targetSupportsChildren(
-    imports: Imports,
-    scenes: ComponentMetadata[],
-    target: TemplatePath,
-  ): boolean {
+  targetSupportsChildren(imports: Imports, metadata: JSXMetadata, target: TemplatePath): boolean {
     if (TP.isScenePath(target)) {
       return true
     } else {
-      const instance = this.getElementByInstancePathMaybe(scenes, target)
+      const instance = this.getElementByInstancePathMaybe(metadata.elements, target)
       return instance == null ? false : this.targetElementSupportsChildren(imports, instance)
     }
   },
   // TODO update this to work with the natural width / height
   getImageMultiplier(
     imports: Imports,
-    componentMetadata: ComponentMetadata[],
+    metadata: JSXMetadata,
     targets: Array<TemplatePath>,
   ): number | null {
     const multipliers: Set<number> = Utils.emptySet()
@@ -785,7 +711,7 @@ export const MetadataUtils = {
       if (TP.isScenePath(target)) {
         return
       }
-      const instance = this.getElementByInstancePathMaybe(componentMetadata, target)
+      const instance = this.getElementByInstancePathMaybe(metadata.elements, target)
       if (instance != null && this.isImg(instance)) {
         const componentFrame = instance.localFrame
         if (componentFrame != null) {
@@ -816,19 +742,20 @@ export const MetadataUtils = {
   findStoryboardRoot(roots: Array<ComponentMetadata>): ComponentMetadata | null {
     return roots.find((root) => TP.pathsEqual(root.scenePath, EmptyScenePathForStoryboard)) ?? null
   },
-  createOrderedTemplatePathsFromElements(scenes: Array<ComponentMetadata>): Array<TemplatePath> {
-    function getKeysOfElementAndDescendants(element: ElementInstanceMetadata): Array<TemplatePath> {
-      const path = element.templatePath
+  createOrderedTemplatePathsFromElements(metadata: JSXMetadata): Array<TemplatePath> {
+    function getKeysOfElementAndDescendants(path: InstancePath): Array<InstancePath> {
+      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
+      const children = element?.children ?? []
       return [
         path,
-        ...Utils.flatMapArray<ElementInstanceMetadata, TemplatePath>((elem) => {
-          return getKeysOfElementAndDescendants(elem)
-        }, R.reverse(element.children)),
+        ...Utils.flatMapArray<InstancePath, InstancePath>((childPath) => {
+          return getKeysOfElementAndDescendants(childPath)
+        }, R.reverse(children)),
       ]
     }
     // TODO possibly replace this with a reduceRight
     return flattenArray(
-      this.getCanvasRootScenesAndElements(scenes)
+      this.getCanvasRootScenesAndElements(metadata)
         .reverse()
         .map((root) => {
           if (isComponentMetadata(root)) {
@@ -838,7 +765,7 @@ export const MetadataUtils = {
             )
             return [root.scenePath, ...childrenPathsOfRoot]
           } else {
-            return getKeysOfElementAndDescendants(root)
+            return getKeysOfElementAndDescendants(root.templatePath)
           }
         }),
     )
@@ -852,9 +779,14 @@ export const MetadataUtils = {
     if (existing == null) {
       return elementMap
     } else {
-      return {
-        ...elementMap,
-        [TP.toString(path)]: transform(existing),
+      const transformed = transform(existing)
+      if (transformed === existing) {
+        return elementMap
+      } else {
+        return {
+          ...elementMap,
+          [TP.toString(path)]: transformed,
+        }
       }
     }
   },
@@ -862,29 +794,26 @@ export const MetadataUtils = {
     const maybeScene = MetadataUtils.findSceneByTemplatePath(scenes, path)
     return maybeScene?.globalFrame ?? null
   },
-  getFrameInCanvasCoords(
-    path: TemplatePath,
-    metadata: Array<ComponentMetadata>,
-  ): CanvasRectangle | null {
+  getFrameInCanvasCoords(path: TemplatePath, metadata: JSXMetadata): CanvasRectangle | null {
     if (TP.isScenePath(path)) {
-      return this.getSceneFrame(path, metadata)
+      return this.getSceneFrame(path, metadata.components)
     } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
+      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
       return Utils.optionalMap((e) => e.globalFrame, element)
     }
   },
-  getFrame(path: TemplatePath, metadata: Array<ComponentMetadata>): LocalRectangle | null {
+  getFrame(path: TemplatePath, metadata: JSXMetadata): LocalRectangle | null {
     if (TP.isScenePath(path)) {
-      const frame = this.getSceneFrame(path, metadata)
+      const frame = this.getSceneFrame(path, metadata.components)
       return localRectangle(frame)
     } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
+      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
       return Utils.optionalMap((e) => e.localFrame, element)
     }
   },
   getFrameRelativeTo: function (
     parent: TemplatePath | null,
-    metadata: Array<ComponentMetadata>,
+    metadata: JSXMetadata,
     frame: CanvasRectangle,
   ): LocalRectangle {
     if (parent == null) {
@@ -908,17 +837,17 @@ export const MetadataUtils = {
   },
   getElementLabel(
     path: TemplatePath,
-    metadata: Array<ComponentMetadata>,
+    metadata: JSXMetadata,
     staticName: JSXElementName | null = null,
   ): string {
     if (TP.isScenePath(path)) {
-      const scene = this.findSceneByTemplatePath(metadata, path)
+      const scene = this.findSceneByTemplatePath(metadata.components, path)
       if (scene != null) {
         return scene.label ?? scene.component ?? 'Scene'
       }
     } else {
       // Try to get something from the metadata.
-      const element = this.getElementByInstancePathMaybe(metadata, path)
+      const element = this.getElementByInstancePathMaybe(metadata.elements, path)
       if (element != null) {
         const dataLabelProp = element.props['data-label']
         if (
@@ -1072,7 +1001,7 @@ export const MetadataUtils = {
   getTargetParentForPaste: function (
     imports: Imports,
     selectedViews: Array<TemplatePath>,
-    scenes: Array<ComponentMetadata>,
+    metadata: JSXMetadata,
     pasteTargetsToIgnore: TemplatePath[],
   ): TemplatePath | null {
     if (selectedViews.length > 0) {
@@ -1086,7 +1015,7 @@ export const MetadataUtils = {
         if (TP.isScenePath(parentTarget)) {
           return insertingSourceIntoItself ? null : parentTarget
         } else if (
-          this.targetSupportsChildren(imports, scenes, parentTarget) &&
+          this.targetSupportsChildren(imports, metadata, parentTarget) &&
           !insertingSourceIntoItself
         ) {
           return parentTarget
@@ -1095,7 +1024,7 @@ export const MetadataUtils = {
           if (TP.isScenePath(parentOfSelected)) {
             return parentOfSelected
           } else {
-            if (this.targetSupportsChildren(imports, scenes, parentOfSelected)) {
+            if (this.targetSupportsChildren(imports, metadata, parentOfSelected)) {
               return parentOfSelected
             } else {
               return null
@@ -1112,25 +1041,100 @@ export const MetadataUtils = {
   },
   mergeComponentMetadata(
     elementsByUID: ElementsByUID,
-    fromSpy: Array<ComponentMetadata>,
+    fromSpy: JSXMetadata,
     fromDOM: Array<ElementInstanceMetadata>,
-  ): Array<ComponentMetadata> {
-    const rootElements = flatMapArray((s) => s.rootElements, fromSpy)
-    const mergedInstanceMetadata = mergeElementMetadata(elementsByUID, rootElements, fromDOM)
+  ): JSXMetadata {
+    // This logic effectively puts everything from the spy first,
+    // then anything missed out from the DOM right after it.
+    // Ideally this would function like a VCS diff inserting runs of new elements
+    // inbetween matching metadata, so it may be necessary to implement something
+    // like that in the future. But for now this is likely "good enough" that it
+    // wont make any difference.
+    let workingElements: ElementInstanceMetadataMap = { ...fromSpy.elements }
+    let newlyFoundElements: Array<InstancePath> = []
+    fastForEach(fromDOM, (domElem) => {
+      const spyElem = MetadataUtils.getElementByInstancePathMaybe(
+        fromSpy.elements,
+        domElem.templatePath,
+      )
 
-    return fromSpy.map((scene) => {
-      const newRootElements = mergedInstanceMetadata.filter((m) =>
-        TP.isChildOf(m.templatePath, scene.scenePath),
+      // Checking if our elements support children should prevent us from ending up with the
+      // internals of draft-js showing up underneath Text elements.
+      const shouldNotTraverse = Utils.path(['props', 'data-utopia-do-not-traverse'], fromDOM)
+      let children: Array<InstancePath>
+      if (shouldNotTraverse) {
+        children = []
+      } else {
+        const spyChildren = spyElem?.children
+        children =
+          spyChildren == null
+            ? domElem.children
+            : TP.addPathsIfMissing(spyChildren, domElem.children)
+      }
+
+      if (spyElem == null) {
+        const elem =
+          children === domElem.children
+            ? domElem
+            : {
+                ...domElem,
+                children: children,
+              }
+        workingElements[TP.toString(domElem.templatePath)] = elem
+        newlyFoundElements.push(domElem.templatePath)
+      } else {
+        let componentInstance = spyElem.componentInstance || domElem.componentInstance
+        let jsxElement = alternativeEither(spyElem.element, domElem.element)
+
+        const possibleUID: string | null | undefined = Utils.defaultIfNull(
+          spyElem.props[UTOPIA_UID_KEY],
+          spyElem.props[UTOPIA_ORIGINAL_ID_KEY],
+        )
+        if (possibleUID != null) {
+          const possibleElement = elementsByUID[possibleUID]
+          if (possibleElement != null) {
+            if (!isIntrinsicElement(possibleElement.name)) {
+              componentInstance = true
+              jsxElement = right(possibleElement)
+            }
+          }
+        }
+
+        // This is quite frankly awful
+        const elementToUse =
+          isLeft(spyElem.element) && spyElem.element.value === 'Scene'
+            ? spyElem.element
+            : jsxElement
+
+        const elem: ElementInstanceMetadata = {
+          ...domElem,
+          props: spyElem.props,
+          element: elementToUse,
+          children: children,
+          componentInstance: componentInstance,
+        }
+        workingElements[TP.toString(domElem.templatePath)] = elem
+      }
+    })
+
+    const newComponents = fromSpy.components.map((scene) => {
+      const newlyFoundChildren = newlyFoundElements.filter((path) =>
+        TP.isChildOf(path, scene.scenePath),
       )
-      const sceneMetadata = mergedInstanceMetadata.find((m) =>
-        TP.pathsEqual(m.templatePath, scene.templatePath),
+      const newRootElements = TP.addPathsIfMissing(scene.rootElements, newlyFoundChildren)
+      const sceneMetadata = MetadataUtils.getElementByInstancePathMaybe(
+        workingElements,
+        scene.templatePath,
       )
+
       return {
         ...scene,
         globalFrame: sceneMetadata?.globalFrame ?? null,
         rootElements: newRootElements,
       }
     })
+
+    return jsxMetadata(newComponents, workingElements)
   },
   staticElementsOnly(
     elements: Array<UtopiaJSXComponent>,
@@ -1141,158 +1145,245 @@ export const MetadataUtils = {
       return originType === 'statically-defined' || originType === 'scene'
     })
   },
-  removeElementMetadataChild(
-    target: InstancePath,
-    scenes: Array<ComponentMetadata>,
-  ): Array<ComponentMetadata> {
+  removeElementMetadataChild(target: InstancePath, metadata: JSXMetadata): JSXMetadata {
     const parentPath = TP.parentPath(target)
     const targetID = TP.toTemplateId(target)
     // Remove it from where it used to be.
     if (TP.isScenePath(parentPath)) {
       // TODO Scene Implementation
-      return scenes
+      return metadata
     } else {
-      return this.transformAtPathOptionally(scenes, parentPath, (parentElement) => {
-        return {
-          ...parentElement,
-          children: parentElement.children.filter((child) => getUtopiaID(child) != targetID),
-        }
-      }).elements
+      let remainingElements: ElementInstanceMetadataMap = omit(
+        [TP.toString(target)],
+        metadata.elements,
+      )
+      if (Object.keys(remainingElements).length === Object.keys(metadata.elements).length) {
+        // Nothing was removed
+        return metadata
+      }
+
+      const updatedElements = MetadataUtils.transformAtPathOptionally(
+        remainingElements,
+        parentPath,
+        (elem) => {
+          const updatedChildren = elem.children.filter((child) => !TP.pathsEqual(child, target))
+          if (updatedChildren.length === elem.children.length) {
+            return elem
+          } else {
+            return {
+              ...elem,
+              children: updatedChildren,
+            }
+          }
+        },
+      )
+      return jsxMetadata(metadata.components, updatedElements)
     }
   },
-  insertElementMetadataChild(
+  updateParentWithNewChildPath(
     targetParent: TemplatePath | null,
-    elementToInsert: ElementInstanceMetadata,
-    components: Array<ComponentMetadata>,
+    childPath: InstancePath,
+    elements: ElementInstanceMetadataMap,
     indexPosition: IndexPosition | null,
-  ): Array<ComponentMetadata> {
+  ): ElementInstanceMetadataMap {
     const makeE = () => {
       // TODO delete me
       throw new Error('Should not attempt to create empty elements.')
     }
     if (targetParent == null || TP.isScenePath(targetParent)) {
       // TODO Scene Implementation
-      return components
+      return elements
     } else {
-      const transformResult = this.transformAtPathOptionally(
-        components,
-        targetParent,
-        (parentElement) => {
-          let updatedChildren: Array<ElementInstanceMetadata>
-          if (indexPosition == null) {
-            updatedChildren = parentElement.children.concat(elementToInsert)
-          } else {
-            updatedChildren = Utils.addToArrayWithFill(
-              elementToInsert,
-              parentElement.children,
-              indexPosition,
-              makeE,
-            )
-          }
-          return {
-            ...parentElement,
-            children: updatedChildren,
-          }
-        },
-      )
-      return transformResult.elements
+      return this.transformAtPathOptionally(elements, targetParent, (parentElement) => {
+        let updatedChildren: Array<InstancePath>
+        if (indexPosition == null) {
+          updatedChildren = parentElement.children.concat(childPath)
+        } else {
+          updatedChildren = Utils.addToArrayWithFill(
+            childPath,
+            parentElement.children,
+            indexPosition,
+            makeE,
+          )
+        }
+        return {
+          ...parentElement,
+          children: updatedChildren,
+        }
+      })
     }
   },
-  duplicateElementMetadata(
-    element: ElementInstanceMetadata,
-    pathToReplace: InstancePath,
-    pathToReplaceWith: InstancePath,
-    newElement: Either<string, JSXElementChild>,
-    scenes: Array<ComponentMetadata>,
-  ): ElementInstanceMetadata {
-    // Everything about this feels wrong
-    const duplicatedChildren = element.children.map((child) => {
-      const childsElement = child.element
-      let duplicatedElement: Either<string, JSXElementChild>
-      if (isLeft(childsElement) || isLeft(newElement)) {
-        duplicatedElement = childsElement
-      } else {
-        const childElementUID = getUtopiaID(childsElement.value)
-        duplicatedElement = isJSXElement(newElement.value)
-          ? right(newElement.value.children.find((c) => getUtopiaID(c) === childElementUID)!)
-          : childsElement
-      }
-      return this.duplicateElementMetadata(
-        child,
-        pathToReplace,
-        pathToReplaceWith,
-        duplicatedElement,
-        scenes,
-      )
-    })
-    const newTemplatePath = TP.replaceIfAncestor(
-      element.templatePath,
-      pathToReplace,
-      pathToReplaceWith,
-    )
-    return {
-      ...element,
-      templatePath: newTemplatePath,
-      element: newElement,
-      children: duplicatedChildren,
+  insertElementMetadataChild(
+    targetParent: TemplatePath | null,
+    elementToInsert: ElementInstanceMetadata,
+    metadata: JSXMetadata,
+    indexPosition: IndexPosition | null,
+  ): JSXMetadata {
+    // Insert into the map
+    const withNewElement: ElementInstanceMetadataMap = {
+      ...metadata.elements,
+      [TP.toString(elementToInsert.templatePath)]: elementToInsert,
     }
+
+    // Update the parent
+    const updatedElements = this.updateParentWithNewChildPath(
+      targetParent,
+      elementToInsert.templatePath,
+      withNewElement,
+      indexPosition,
+    )
+    return jsxMetadata(metadata.components, updatedElements)
   },
   duplicateElementMetadataAtPath(
     oldPath: TemplatePath,
     newPath: TemplatePath,
     newElement: Either<string, JSXElementChild>,
-    scenes: Array<ComponentMetadata>,
-  ): Array<ComponentMetadata> {
+    metadata: JSXMetadata,
+  ): JSXMetadata {
+    let workingElements = { ...metadata.elements }
+
+    function duplicateElementMetadata(
+      element: ElementInstanceMetadata,
+      pathToReplace: InstancePath,
+      pathToReplaceWith: InstancePath,
+      newElementInner: Either<string, JSXElementChild>,
+    ): InstancePath {
+      const children = MetadataUtils.getImmediateChildren(metadata, element.templatePath)
+      const duplicatedChildren = children.map((child) => {
+        const childsElement = child.element
+        let duplicatedElement: Either<string, JSXElementChild>
+        if (isLeft(childsElement) || isLeft(newElementInner)) {
+          duplicatedElement = childsElement
+        } else {
+          const childElementUID = getUtopiaID(childsElement.value)
+          duplicatedElement = isJSXElement(newElementInner.value)
+            ? right(newElementInner.value.children.find((c) => getUtopiaID(c) === childElementUID)!)
+            : childsElement
+        }
+        return duplicateElementMetadata(child, pathToReplace, pathToReplaceWith, duplicatedElement)
+      })
+
+      const newTemplatePath = TP.replaceIfAncestor(
+        element.templatePath,
+        pathToReplace,
+        pathToReplaceWith,
+      )
+
+      const newElementMetadata: ElementInstanceMetadata = {
+        ...element,
+        templatePath: newTemplatePath,
+        element: newElementInner,
+        children: duplicatedChildren,
+      }
+
+      workingElements[TP.toString(newTemplatePath)] = newElementMetadata
+      return newTemplatePath
+    }
+
     // Everything about this feels wrong
-    const originalMetadata = getSceneMetadataOrElementInstanceMetadata(oldPath, scenes)
+    const originalMetadata = getSceneMetadataOrElementInstanceMetadata(oldPath, metadata)
     if (originalMetadata == null) {
-      return scenes
+      return metadata
     } else if (isLeft(originalMetadata) && TP.isScenePath(newPath)) {
       const componentMetadata = originalMetadata.value
-      return [
-        ...scenes,
+      // FIXME I think this is wrong and we need to duplicate the children
+      const updatedScenes: ComponentMetadata[] = [
+        ...metadata.components,
         {
           ...componentMetadata,
           scenePath: newPath,
         },
       ]
+      return jsxMetadata(updatedScenes, metadata.elements)
     } else if (
       isRight(originalMetadata) &&
       TP.isInstancePath(oldPath) &&
       TP.isInstancePath(newPath)
     ) {
-      const duplicatedMetadata = this.duplicateElementMetadata(
+      const duplicatedElementPath = duplicateElementMetadata(
         originalMetadata.value,
         oldPath,
         newPath,
         newElement,
-        scenes,
       )
-      return this.insertElementMetadataChild(TP.parentPath(newPath), duplicatedMetadata, scenes, {
-        type: 'back',
-      })
+      const updatedElements = this.updateParentWithNewChildPath(
+        TP.parentPath(newPath),
+        newPath,
+        workingElements,
+        {
+          type: 'back',
+        },
+      )
+
+      return jsxMetadata(metadata.components, updatedElements)
     } else {
-      return scenes
+      return metadata
     }
   },
-  transformAllMetadata(
-    scenes: Array<ComponentMetadata>,
-    transform: (metadata: ElementInstanceMetadata) => ElementInstanceMetadata,
-  ): Array<ComponentMetadata> {
-    function innerTransform(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
-      const updatedChildren = metadata.children.map(innerTransform)
-      return transform({
-        ...metadata,
-        children: updatedChildren,
+  transformAllPathsInMetadata(
+    metadata: JSXMetadata,
+    replaceSearch: TemplatePath,
+    replaceWith: TemplatePath | null,
+  ): JSXMetadata {
+    let updatedElements: ElementInstanceMetadataMap = { ...metadata.elements }
+
+    const allPathsWithReplacements = Object.values(metadata.elements)
+      .map((e) => e.templatePath)
+      .filter((path) => TP.isAncestorOf(path, replaceSearch, true))
+      .map((path) => {
+        const replacement = TP.replaceOrDefault(path, replaceSearch, replaceWith)
+        return {
+          path: path,
+          replacement: replacement,
+          pathString: TP.toString(path),
+          replacementString: TP.toString(replacement),
+        }
       })
+
+    function updateChildren(children: InstancePath[]): InstancePath[] {
+      let childWasUpdated = false
+      const updatedChildren = children.map((child) => {
+        const replacementChild = allPathsWithReplacements.find((pathWithReplacement) =>
+          TP.pathsEqual(pathWithReplacement.path, child),
+        )
+        childWasUpdated = childWasUpdated && replacementChild != null
+        return replacementChild == null ? child : replacementChild.replacement
+      })
+
+      return childWasUpdated ? updatedChildren : children
     }
 
-    return scenes.map((scene) => {
-      return {
-        ...scene,
-        rootElements: scene.rootElements.map(innerTransform),
+    fastForEach(
+      allPathsWithReplacements,
+      ({ path, replacement, pathString, replacementString }) => {
+        const existing = MetadataUtils.getElementByInstancePathMaybe(updatedElements, path)
+        if (existing != null) {
+          delete updatedElements[pathString]
+          updatedElements[replacementString] = {
+            ...existing,
+            templatePath: replacement,
+            children: updateChildren(existing.children),
+          }
+        }
+      },
+    )
+
+    let componentsUpdated = false
+    const updatedComponents = metadata.components.map((component) => {
+      const updatedChildren = updateChildren(component.rootElements)
+      if (updatedChildren === component.rootElements) {
+        return component
+      } else {
+        componentsUpdated = true
+        return {
+          ...component,
+          rootElements: updatedChildren,
+        }
       }
     })
+
+    const componentsToReturn = componentsUpdated ? updatedComponents : metadata.components
+    return jsxMetadata(componentsToReturn, updatedElements)
   },
   getStaticElementName(
     path: TemplatePath,
@@ -1310,14 +1401,14 @@ export const MetadataUtils = {
   isComponentInstance(
     path: TemplatePath,
     rootElements: Array<UtopiaJSXComponent>,
-    metadata: ComponentMetadata[],
+    metadata: JSXMetadata,
     imports: Imports,
   ): boolean {
     if (TP.isScenePath(path)) {
       return false
     } else {
       const elementName = MetadataUtils.getStaticElementName(path, rootElements)
-      const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
+      const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
       return (
         elementName != null &&
         instanceMetadata != null &&
@@ -1330,13 +1421,10 @@ export const MetadataUtils = {
       )
     }
   },
-  isPinnedAndNotAbsolutePositioned(
-    metadata: Array<ComponentMetadata>,
-    view: TemplatePath,
-  ): boolean {
+  isPinnedAndNotAbsolutePositioned(metadata: JSXMetadata, view: TemplatePath): boolean {
     // Disable snapping and guidelines for pinned elements marked with relative positioning:
     if (TP.isInstancePath(view)) {
-      const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, view)
+      const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, view)
       if (
         elementMetadata != null &&
         elementMetadata.specialSizeMeasurements.parentLayoutSystem === 'flow' &&
@@ -1347,31 +1435,20 @@ export const MetadataUtils = {
     }
     return false
   },
-  walkElementMetadata(
-    elementMetadata: ElementInstanceMetadata,
-    parentMetadata: ElementInstanceMetadata | null,
-    withEachElement: (
-      metadata: ElementInstanceMetadata,
-      parentMetadataWith: ElementInstanceMetadata | null,
-    ) => void,
-  ): void {
-    withEachElement(elementMetadata, parentMetadata)
-    for (const child of elementMetadata.children) {
-      this.walkElementMetadata(child, elementMetadata, withEachElement)
-    }
-  },
   walkMetadata(
-    rootMetadata: Array<ComponentMetadata>,
+    metadata: JSXMetadata,
     withEachElement: (
-      metadata: ElementInstanceMetadata,
+      element: ElementInstanceMetadata,
       parentMetadata: ElementInstanceMetadata | null,
     ) => void,
   ): void {
-    for (const componentMetadata of rootMetadata) {
-      for (const rootElement of componentMetadata.rootElements) {
-        this.walkElementMetadata(rootElement, null, withEachElement)
-      }
-    }
+    fastForEach(Object.values(metadata.elements), (elem) => {
+      const parentPath = TP.parentPath(elem.templatePath)
+      const parent = TP.isInstancePath(parentPath)
+        ? this.getElementByInstancePathMaybe(metadata.elements, parentPath)
+        : null
+      withEachElement(elem, parent)
+    })
   },
 }
 
@@ -1431,23 +1508,23 @@ export function findJSXElementAtPath(
 
 export function getSceneMetadataOrElementInstanceMetadata(
   target: TemplatePath,
-  componentMetadata: Array<ComponentMetadata>,
+  metadata: JSXMetadata,
 ): Either<ComponentMetadata, ElementInstanceMetadata> | null {
   if (TP.isScenePath(target)) {
-    const sceneMetadata = MetadataUtils.findSceneByTemplatePath(componentMetadata, target)
+    const sceneMetadata = MetadataUtils.findSceneByTemplatePath(metadata.components, target)
     return optionalMap((m) => left<ComponentMetadata, ElementInstanceMetadata>(m), sceneMetadata)
   } else {
-    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
+    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, target)
     return optionalMap((m) => right<ComponentMetadata, ElementInstanceMetadata>(m), elementMetadata)
   }
 }
 
 export function getScenePropsOrElementAttributes(
   target: TemplatePath,
-  componentMetadata: Array<ComponentMetadata>,
+  metadata: JSXMetadata,
 ): PropsOrJSXAttributes | null {
-  const metadata = getSceneMetadataOrElementInstanceMetadata(target, componentMetadata)
-  if (metadata == null) {
+  const targetMetadata = getSceneMetadataOrElementInstanceMetadata(target, metadata)
+  if (targetMetadata == null) {
     return null
   } else {
     return foldEither(
@@ -1464,7 +1541,7 @@ export function getScenePropsOrElementAttributes(
           },
           elementMetadata.element,
         ),
-      metadata,
+      targetMetadata,
     )
   }
 }

@@ -75,7 +75,7 @@ function useRunSpy(
       props: {},
       globalFrame: null,
       localFrame: null,
-      childrenTemplatePaths: [],
+      children: [],
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,

@@ -1,6 +1,10 @@
 import * as R from 'ramda'
 import { findElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import { ComponentMetadata, ElementInstanceMetadata } from '../../core/shared/element-template'
+import {
+  ComponentMetadata,
+  ElementInstanceMetadata,
+  JSXMetadata,
+} from '../../core/shared/element-template'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
 import {
@@ -80,7 +84,7 @@ const Canvas = {
     TargetSearchType.ParentsOfSelected,
   ],
   getFramesInCanvasContext(
-    components: ComponentMetadata[],
+    metadata: JSXMetadata,
     useBoundingFrames: boolean,
   ): Array<FrameWithPath> {
     function recurseChildren(
@@ -102,7 +106,8 @@ const Canvas = {
       )
       const overflows = MetadataUtils.overflows(component)
       const includeClippedNext = useBoundingFrames && overflows
-      const childFrames = component.children.map((child) => {
+      const children = MetadataUtils.getImmediateChildren(metadata, component.templatePath)
+      const childFrames = children.map((child) => {
         const recurseResults = recurseChildren(offsetFrame, child)
         const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : offsetFrame
         return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
@@ -130,12 +135,13 @@ const Canvas = {
         return []
       } else {
         const nonNullGlobalFrame = rootComponent.globalFrame
+        const rootElements = MetadataUtils.getImmediateChildren(metadata, rootComponent.scenePath)
         return flatMapArray(
           (root) => recurseChildren(nonNullGlobalFrame, root).frames,
-          rootComponent.rootElements,
+          rootElements,
         )
       }
-    }, components)
+    }, metadata.components)
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {
     switch (selectedViews.length) {
@@ -169,7 +175,7 @@ const Canvas = {
   },
   jumpToSibling(
     selectedViews: Array<TemplatePath>,
-    components: ComponentMetadata[],
+    components: JSXMetadata,
     forwards: boolean,
   ): TemplatePath | null {
     switch (selectedViews.length) {
@@ -198,10 +204,7 @@ const Canvas = {
         return Utils.forceNotNull('Internal Error.', newSelection)
     }
   },
-  getFirstChild(
-    selectedViews: Array<TemplatePath>,
-    components: Array<ComponentMetadata>,
-  ): TemplatePath | null {
+  getFirstChild(selectedViews: Array<TemplatePath>, components: JSXMetadata): TemplatePath | null {
     if (selectedViews.length !== 1) {
       return null
     } else {

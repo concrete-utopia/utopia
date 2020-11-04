@@ -26,6 +26,10 @@ import {
   emptyComputedStyle,
   walkElements,
   isJSXFragment,
+  JSXMetadata,
+  emptyJsxMetadata,
+  ElementInstanceMetadataMap,
+  jsxMetadata,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
@@ -44,6 +48,7 @@ import {
   isTextFile,
   isParseSuccess,
   ProjectFile,
+  InstancePath,
 } from '../core/shared/project-file-types'
 import { right, eitherToMaybe, isLeft } from '../core/shared/either'
 import Utils from './utils'
@@ -58,7 +63,7 @@ import {
   PathForSceneDataUid,
   PathForResizeContent,
 } from '../core/model/scene-utils'
-import { NO_OP } from '../core/shared/utils'
+import { fastForEach, NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
 import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../core/shared/array-utils'
@@ -142,25 +147,27 @@ export function createEditorStates(
   }
 }
 
-export function createFakeMetadataForEditor(editor: EditorState): Array<ComponentMetadata> {
+export function createFakeMetadataForEditor(editor: EditorState): JSXMetadata {
   const openUiJsFile = getOpenUIJSFile(editor)
   if (openUiJsFile == null) {
-    return []
+    return emptyJsxMetadata
   } else {
     const contents = openUiJsFile.fileContents.parsed
     return foldParsedTextFile(
-      (_) => [],
+      (_) => emptyJsxMetadata,
       createFakeMetadataForParseSuccess,
-      (_) => [],
+      (_) => emptyJsxMetadata,
       contents,
     )
   }
 }
 
-export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<ComponentMetadata> {
-  const components = getUtopiaJSXComponentsFromSuccess(success)
+export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMetadata {
+  const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
   const sceneElements = getSceneElementsFromParseSuccess(success)
-  return sceneElements.map((scene, index) => {
+  let elements: ElementInstanceMetadataMap = {}
+
+  const components: ComponentMetadata[] = sceneElements.map((scene, index) => {
     const props = mapArrayToDictionary(
       Object.keys(scene.props),
       (key) => key,
@@ -174,12 +181,14 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
         }
       },
     )
-    const component = components.find((c) => c.name === props.component && isUtopiaJSXComponent(c))
+    const component = utopiaComponents.find(
+      (c) => c.name === props.component && isUtopiaJSXComponent(c),
+    )
     const sceneResizesContent =
       Utils.path<boolean>(PP.getElements(PathForResizeContent), props) ?? true
-    let elementMetadata: ElementInstanceMetadata | Array<ElementInstanceMetadata> | null = null
+    let rootElements: Array<InstancePath> = []
     if (component != null) {
-      elementMetadata = createFakeMetadataForJSXElement(
+      const elementMetadata = createFakeMetadataForJSXElement(
         component.rootElement,
         TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
         {
@@ -190,7 +199,14 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
         },
         {},
       )
+
+      rootElements = elementMetadata.map((individualElementMetadata) => {
+        const path = individualElementMetadata.templatePath
+        elements[TP.toString(path)] = individualElementMetadata
+        return path
+      })
     }
+
     return {
       component: props[PP.toString(PathForSceneComponent)],
       container: props[PP.toString(PathForSceneContainer)],
@@ -200,21 +216,19 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): Array<
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
       sceneResizesContent: sceneResizesContent ?? true,
       style: {},
-      rootElements:
-        elementMetadata == null
-          ? []
-          : Array.isArray(elementMetadata)
-          ? elementMetadata
-          : [elementMetadata],
+      rootElements: rootElements,
     }
   })
+
+  return jsxMetadata(components, elements)
 }
 
 export function createFakeMetadataForComponents(
-  components: Array<TopLevelElement>,
-): Array<ComponentMetadata> {
-  let metadata: Array<ComponentMetadata> = []
-  Utils.fastForEach(components, (component, index) => {
+  topLevelElements: Array<TopLevelElement>,
+): JSXMetadata {
+  let components: ComponentMetadata[] = []
+  let elements: ElementInstanceMetadataMap = {}
+  Utils.fastForEach(topLevelElements, (component, index) => {
     if (isUtopiaJSXComponent(component)) {
       const elementMetadata = createFakeMetadataForJSXElement(
         component.rootElement,
@@ -222,7 +236,14 @@ export function createFakeMetadataForComponents(
         {},
         {},
       )
-      metadata.push({
+
+      const rootElements: Array<InstancePath> = elementMetadata.map((individualElementMetadata) => {
+        const path = individualElementMetadata.templatePath
+        elements[TP.toString(path)] = individualElementMetadata
+        return path
+      })
+
+      components.push({
         scenePath: TP.scenePath([BakedInStoryboardUID, `scene-${index}`]),
         templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
         component: component.name,
@@ -230,11 +251,11 @@ export function createFakeMetadataForComponents(
         container: { layoutSystem: LayoutSystem.PinSystem },
         sceneResizesContent: false,
         style: {},
-        rootElements: Array.isArray(elementMetadata) ? elementMetadata : [elementMetadata],
+        rootElements: rootElements,
       })
     }
   })
-  return metadata
+  return jsxMetadata(components, elements)
 }
 
 function createFakeMetadataForJSXElement(
@@ -242,31 +263,39 @@ function createFakeMetadataForJSXElement(
   rootPath: TemplatePath,
   inScope: MapLike<any>,
   parentProps: MapLike<any>,
-): ElementInstanceMetadata | Array<ElementInstanceMetadata> {
+): Array<ElementInstanceMetadata> {
+  let elements: Array<ElementInstanceMetadata> = []
   if (isJSXElement(element)) {
     const elementID = getUtopiaID(element)
     const templatePath = TP.appendToPath(rootPath, elementID)
     const props = jsxAttributesToProps(inScope, element.props, Utils.NO_OP)
-    return {
+    const children = element.children.flatMap((child) =>
+      createFakeMetadataForJSXElement(child, templatePath, inScope, props),
+    )
+    const childPaths = children.map((child) => child.templatePath)
+
+    elements.push({
       templatePath: templatePath,
       element: right(element),
       props: props,
       globalFrame: Utils.zeroRectangle as CanvasRectangle, // this could be parametrized to be able to set real rectangles
       localFrame: Utils.zeroRectangle as LocalRectangle,
-      children: element.children.flatMap((child) =>
-        createFakeMetadataForJSXElement(child, templatePath, inScope, props),
-      ),
+      children: childPaths,
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
-    }
-  } else if (isJSXFragment(element)) {
-    return element.children.flatMap((child) => {
-      return createFakeMetadataForJSXElement(child, rootPath, inScope, parentProps)
     })
+    elements.push(...children)
+  } else if (isJSXFragment(element)) {
+    const children = element.children.flatMap((child) =>
+      createFakeMetadataForJSXElement(child, rootPath, inScope, parentProps),
+    )
+    elements.push(...children)
   } else {
     throw new Error(`Not a JSX element ${element}`)
   }
+
+  return elements
 }
 
 export function wait(timeout: number): Promise<void> {

@@ -65,14 +65,6 @@ import { printCode, printCodeOptions } from '../../core/workers/parser-printer/p
 import { setPropertyControlsIFrameAvailable } from '../../core/property-controls/property-controls-utils'
 import { getContentsTreeFileFromString } from '../assets'
 
-function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
-  return {
-    ...element,
-    element: left('REMOVED_FROM_TEST'),
-    children: element.children.map(sanitizeElementMetadata),
-  }
-}
-
 process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack || reason)
 })

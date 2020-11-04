@@ -453,6 +453,31 @@ export function addPathIfMissing(
   }
 }
 
+export function addPathsIfMissing(
+  existingPaths: Array<InstancePath>,
+  pathsToAdd: Array<InstancePath>,
+): Array<InstancePath>
+export function addPathsIfMissing(
+  existingPaths: Array<ScenePath>,
+  pathsToAdd: Array<ScenePath>,
+): Array<ScenePath>
+export function addPathsIfMissing(
+  existingPaths: Array<TemplatePath>,
+  pathsToAdd: Array<TemplatePath>,
+): Array<TemplatePath>
+export function addPathsIfMissing(
+  existingPaths: Array<TemplatePath>,
+  pathsToAdd: Array<TemplatePath>,
+): Array<TemplatePath> {
+  if (pathsToAdd.length === 0) {
+    return existingPaths
+  } else if (existingPaths.length === 0) {
+    return pathsToAdd
+  } else {
+    return existingPaths.concat(filterPaths(pathsToAdd, existingPaths))
+  }
+}
+
 export function isChildOf(path: TemplatePath | null, parent: TemplatePath | null): boolean {
   if (path == null || parent == null) {
     return false

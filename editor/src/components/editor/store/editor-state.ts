@@ -696,11 +696,11 @@ export function modifyOpenJSXElements(
 export function modifyOpenJSXElementsAndMetadata(
   transform: (
     utopiaComponents: Array<UtopiaJSXComponent>,
-    componentMetadata: Array<ComponentMetadata>,
-  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: Array<ComponentMetadata> },
+    componentMetadata: JSXMetadata,
+  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: JSXMetadata },
   model: EditorState,
 ): EditorState {
-  let workingMetadata: Array<ComponentMetadata> = model.jsxMetadataKILLME
+  let workingMetadata: JSXMetadata = model.jsxMetadataKILLME
   const successTransform = (success: ParseSuccess) => {
     const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
     // Apply the transformation.
@@ -926,7 +926,7 @@ export function transientCanvasState(
   }
 }
 
-export function getMetadata(editor: EditorState): Array<ComponentMetadata> {
+export function getMetadata(editor: EditorState): JSXMetadata {
   if (editor.canvas.dragState == null) {
     return editor.jsxMetadataKILLME
   } else {
@@ -1190,7 +1190,7 @@ type EditorAndDerivedState = {
 }
 
 export function getElementWarnings(
-  rootMetadata: Array<ComponentMetadata>,
+  rootMetadata: JSXMetadata,
 ): ComplexMap<TemplatePath, ElementWarnings> {
   let result: ComplexMap<TemplatePath, ElementWarnings> = emptyComplexMap()
   MetadataUtils.walkMetadata(
@@ -1222,14 +1222,17 @@ export function getElementWarnings(
       result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
     },
   )
-  fastForEach(rootMetadata, (scene) => {
+  fastForEach(rootMetadata.components, (scene) => {
     const elementWarnings: ElementWarnings = {
       widthOrHeightZero:
         scene.globalFrame != null
           ? scene.globalFrame.width === 0 || scene.globalFrame.height === 0
           : false,
       absoluteWithUnpositionedParent: false,
-      dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(scene),
+      dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(
+        scene,
+        rootMetadata,
+      ),
     }
     result = addToComplexMap(toString, result, scene.scenePath, elementWarnings)
   })
@@ -1744,7 +1747,7 @@ export function parseFailureAsErrorMessages(
   }
 }
 
-export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMetadata> {
+export function reconstructJSXMetadata(editor: EditorState): JSXMetadata {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {
     return editor.jsxMetadataKILLME

@@ -1,5 +1,5 @@
 import { ReactElement } from 'react'
-import { ComponentMetadata } from '../../core/shared/element-template'
+import { JSXMetadata } from '../../core/shared/element-template'
 import { PropertyPath, TemplatePath } from '../../core/shared/project-file-types'
 import { KeyCharacter, KeysPressed } from '../../utils/keyboard'
 import { Modifiers } from '../../utils/modifiers'
@@ -298,13 +298,13 @@ export interface InsertDragState {
   type: 'INSERT_DRAG_STATE'
   start: CanvasPoint
   drag: CanvasVector | null
-  metadata: Array<ComponentMetadata>
+  metadata: JSXMetadata
 }
 
 export function insertDragState(
   start: CanvasPoint,
   drag: CanvasVector | null,
-  metadata: Array<ComponentMetadata>,
+  metadata: JSXMetadata,
 ): InsertDragState {
   return {
     type: 'INSERT_DRAG_STATE',
@@ -332,7 +332,7 @@ export interface MoveDragState {
   reparent: boolean
   duplicateNewUIDs: Array<DuplicateNewUID> | null
   canvasPosition: CanvasPoint
-  metadata: Array<ComponentMetadata>
+  metadata: JSXMetadata
   draggedElements: TemplatePath[]
 }
 
@@ -348,7 +348,7 @@ export function moveDragState(
   reparent: boolean,
   duplicateNewUIDs: Array<DuplicateNewUID> | null,
   canvasPosition: CanvasPoint,
-  metadata: Array<ComponentMetadata>,
+  metadata: JSXMetadata,
   draggedElements: TemplatePath[],
 ): MoveDragState {
   if (duplicate === true && duplicateNewUIDs == null) {
@@ -423,7 +423,7 @@ export interface ResizeDragState {
   originalFrames: Array<OriginalCanvasAndLocalFrame>
   edgePosition: EdgePosition
   enabledDirection: EnabledDirection
-  metadata: Array<ComponentMetadata>
+  metadata: JSXMetadata
   draggedElements: TemplatePath[]
   isMultiSelect: boolean
 }
@@ -438,7 +438,7 @@ export function resizeDragState(
   originalFrames: Array<OriginalCanvasAndLocalFrame>,
   edgePosition: EdgePosition,
   enabledDirection: EnabledDirection,
-  metadata: Array<ComponentMetadata>,
+  metadata: JSXMetadata,
   draggedElements: TemplatePath[],
   isMultiSelect: boolean,
 ): ResizeDragState {
