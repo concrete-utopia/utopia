@@ -298,7 +298,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             const sceneID = sceneIndexAttr.value
             if (
               invalidatedSceneIDsRef.current == null ||
-              invalidatedSceneIDsRef.current.indexOf(sceneID) > 0
+              invalidatedSceneIDsRef.current.indexOf(sceneID) > -1
             ) {
               invalidatedSceneIDsRef.current = invalidatedSceneIDsRef.current.filter(
                 (sceneIDref) => sceneIDref !== sceneID,
