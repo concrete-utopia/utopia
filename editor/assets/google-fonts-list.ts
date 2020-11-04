@@ -4213,6 +4213,11 @@ export const googleFontsList: Array<GoogleFontsTypeface> = [
   },
   {
     type: 'google-fonts-typeface',
+    name: 'Libre Barcode EAN13 Text',
+    variants: [{ type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'normal' }],
+  },
+  {
+    type: 'google-fonts-typeface',
     name: 'Libre Baskerville',
     variants: [
       { type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'normal' },
@@ -7211,6 +7216,17 @@ export const googleFontsList: Array<GoogleFontsTypeface> = [
       { type: 'web-font-variant', webFontWeight: 700, webFontStyle: 'italic' },
       { type: 'web-font-variant', webFontWeight: 900, webFontStyle: 'normal' },
       { type: 'web-font-variant', webFontWeight: 900, webFontStyle: 'italic' },
+    ],
+  },
+  {
+    type: 'google-fonts-typeface',
+    name: 'Space Grotesk',
+    variants: [
+      { type: 'web-font-variant', webFontWeight: 300, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 500, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 600, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 700, webFontStyle: 'normal' },
     ],
   },
   {
