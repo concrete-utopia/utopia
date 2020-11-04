@@ -104,12 +104,25 @@ function isScene(node: Node): node is HTMLElement {
   )
 }
 
+function findParentScene(target: HTMLElement): string | null {
+  const sceneID = getDOMAttribute(target, 'data-utopia-scene-id')
+  if (sceneID != null) {
+    return sceneID
+  } else {
+    if (target.parentElement != null) {
+      return findParentScene(target.parentElement)
+    } else {
+      return null
+    }
+  }
+}
+
 const LogDomWalkerPerformance = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
 
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
-  const invalidatedTemplatePathsRef = React.useRef<Array<TemplatePath>>([])
+  const invalidatedSceneIDsRef = React.useRef<Array<string>>([])
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
     'useDomWalker selectedViews',
@@ -118,21 +131,17 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   const resizeObserver = React.useMemo(() => {
     return new ResizeObserver((entries: any) => {
       for (let entry of entries) {
-        const pathAsString = getDOMAttribute(entry.target, UTOPIA_TEMPLATE_PATH)
-        const path = pathAsString != null ? TP.fromString(pathAsString) : null
-        const scenePath = path != null ? TP.scenePathForPath(path) : null
+        const sceneID = findParentScene(entry.target)
         if (
-          scenePath != null &&
-          invalidatedTemplatePathsRef.current != null &&
-          !invalidatedTemplatePathsRef.current.find((invalidPath) =>
-            TP.pathsEqual(invalidPath, scenePath),
-          )
+          sceneID != null &&
+          invalidatedSceneIDsRef.current != null &&
+          invalidatedSceneIDsRef.current.indexOf(sceneID) < 0
         ) {
-          invalidatedTemplatePathsRef.current.push(scenePath)
+          invalidatedSceneIDsRef.current.push(sceneID)
         }
       }
     })
-  }, [])
+  }, [invalidatedSceneIDsRef])
 
   const mutationObserver = React.useMemo(() => {
     return new MutationObserver((mutations: MutationRecord[]) => {
@@ -143,23 +152,19 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           mutation.removedNodes.length > 0
         ) {
           if (mutation.target instanceof HTMLElement) {
-            const pathAsString = getDOMAttribute(mutation.target, UTOPIA_TEMPLATE_PATH)
-            const path = pathAsString != null ? TP.fromString(pathAsString) : null
-            const scenePath = path != null ? TP.scenePathForPath(path) : null
+            const sceneID = findParentScene(mutation.target)
             if (
-              scenePath != null &&
-              invalidatedTemplatePathsRef.current != null &&
-              !invalidatedTemplatePathsRef.current.find((invalidPath) =>
-                TP.pathsEqual(invalidPath, scenePath),
-              )
+              sceneID != null &&
+              invalidatedSceneIDsRef.current != null &&
+              invalidatedSceneIDsRef.current.indexOf(sceneID) < 0
             ) {
-              invalidatedTemplatePathsRef.current.push(scenePath)
+              invalidatedSceneIDsRef.current.push(sceneID)
             }
           }
         }
       }
     })
-  }, [])
+  }, [invalidatedSceneIDsRef])
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
@@ -290,13 +295,13 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           if (sceneIndexAttr != null && validPathsAttr != null) {
             const scenePath = TP.fromString(sceneIndexAttr.value)
             const validPaths = validPathsAttr.value.split(' ')
-
+            const sceneID = sceneIndexAttr.value
             if (
-              invalidatedTemplatePathsRef.current == null ||
-              invalidatedTemplatePathsRef.current.find((path) => TP.pathsEqual(path, scenePath))
+              (sceneID != null && invalidatedSceneIDsRef.current == null) ||
+              invalidatedSceneIDsRef.current.indexOf(sceneID) > 0
             ) {
-              invalidatedTemplatePathsRef.current = invalidatedTemplatePathsRef.current.filter(
-                (path) => !TP.pathsEqual(path, scenePath),
+              invalidatedSceneIDsRef.current = invalidatedSceneIDsRef.current.filter(
+                (sceneIDref) => sceneIDref !== sceneID,
               )
             } else {
               const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
