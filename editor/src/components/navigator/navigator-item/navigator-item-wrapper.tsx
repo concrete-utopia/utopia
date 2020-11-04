@@ -87,7 +87,9 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
       return {
         staticElementName: staticName,
         label: labelInner,
-        element: element,
+        isFlexLayoutedContainer: MetadataUtils.isFlexLayoutedContainer(element),
+        yogaDirection: MetadataUtils.getYogaDirection(element),
+        yogaWrap: MetadataUtils.getYogaWrap(element),
         componentInstance: componentInstanceInner,
         isAutosizingView: MetadataUtils.isAutoSizingView(element),
         isSelected: TP.containsPath(templatePath, transientState.selectedViews),
@@ -110,13 +112,14 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
     const {
       isSelected,
       isHighlighted,
-
+      isFlexLayoutedContainer,
+      yogaDirection,
+      yogaWrap,
       noOfChildren,
       supportsChildren,
       elementOriginType,
       staticElementName,
       label,
-      element,
       componentInstance,
       isAutosizingView,
 
@@ -165,7 +168,9 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       elementOriginType: elementOriginType,
       staticElementName: staticElementName,
       label: label,
-      element: element,
+      isFlexLayoutedContainer,
+      yogaDirection,
+      yogaWrap,
       componentInstance: componentInstance,
       isAutosizingView: isAutosizingView,
       isElementVisible: isElementVisible,
