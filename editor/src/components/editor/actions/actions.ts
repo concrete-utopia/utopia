@@ -3610,17 +3610,26 @@ export const UPDATE_FNS = {
       spyCollector.current.spyValues.scenes,
     )
 
-    return {
-      ...editor,
-      domMetadataKILLME: keepDeepReferenceEqualityIfPossible(
-        editor.domMetadataKILLME,
-        action.elementMetadata,
-      ),
-      spyMetadataKILLME: keepDeepReferenceEqualityIfPossible(editor.spyMetadataKILLME, spyResult),
-      spyElementMetadataKILLME: keepDeepReferenceEqualityIfPossible(
-        editor.spyElementMetadataKILLME,
-        spyCollector.current.spyValues.metadata,
-      ),
+    const finalDomMetadata = keepDeepReferenceEqualityIfPossible(
+      editor.domMetadataKILLME,
+      action.elementMetadata,
+    )
+    const finalSpyMetadata = keepDeepReferenceEqualityIfPossible(
+      editor.spyMetadataKILLME,
+      spyResult,
+    )
+
+    const stayedTheSame =
+      editor.domMetadataKILLME === finalDomMetadata && editor.spyMetadataKILLME === finalSpyMetadata
+
+    if (stayedTheSame) {
+      return editor
+    } else {
+      return {
+        ...editor,
+        domMetadataKILLME: finalDomMetadata,
+        spyMetadataKILLME: finalSpyMetadata,
+      }
     }
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {

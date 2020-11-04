@@ -54,7 +54,9 @@ export interface NavigatorItemDragAndDropWrapperProps {
   noOfChildren: number
   staticElementName: JSXElementName | null
   label: string
-  element: ElementInstanceMetadata | null
+  isFlexLayoutedContainer: boolean
+  yogaDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
+  yogaWrap: 'wrap' | 'wrap-reverse' | 'nowrap'
   elementOriginType: ElementOriginType
   componentInstance: boolean
   isAutosizingView: boolean
@@ -254,7 +256,9 @@ export class NavigatorItemDndWrapper extends PureComponent<
           isAutosizingView={this.props.isAutosizingView}
           staticElementName={this.props.staticElementName}
           label={this.props.label}
-          element={this.props.element}
+          isFlexLayoutedContainer={this.props.isFlexLayoutedContainer}
+          yogaDirection={this.props.yogaDirection}
+          yogaWrap={this.props.yogaWrap}
           componentInstance={this.props.componentInstance}
           dispatch={this.props.editorDispatch}
           isHighlighted={this.props.highlighted}
