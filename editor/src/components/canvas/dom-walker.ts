@@ -34,7 +34,7 @@ import {
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_LABEL_KEY,
@@ -105,7 +105,8 @@ const mutationObserverConfig = { attributes: true, childList: true, subtree: tru
 
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const rootMetadataRef = React.useRef<ElementInstanceMetadata[]>()
+  const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
+  const invalidatedTemplatePathsRef = React.useRef<Array<TemplatePath>>([])
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
     'useDomWalker selectedViews',
@@ -114,12 +115,16 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   const resizeObserver = React.useMemo(() => {
     return new ResizeObserver((entries: any) => {
       for (let entry of entries) {
-        const path = getDOMAttribute(entry.target, UTOPIA_TEMPLATE_PATH)
-        if (path != null && rootMetadataRef.current != null) {
-          rootMetadataRef.current = MetadataUtils.removeElementMetadata(
-            TP.fromString(path),
-            rootMetadataRef.current,
+        const pathAsString = getDOMAttribute(entry.target, UTOPIA_TEMPLATE_PATH)
+        const path = pathAsString != null ? TP.fromString(pathAsString) : null
+        if (
+          path != null &&
+          invalidatedTemplatePathsRef.current != null &&
+          !invalidatedTemplatePathsRef.current.find((invalidPath) =>
+            TP.pathsEqual(path, invalidPath),
           )
+        ) {
+          invalidatedTemplatePathsRef.current.push(path)
         }
       }
     })
@@ -130,12 +135,16 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       for (let mutation of mutations) {
         if (mutation.attributeName === 'style') {
           if (mutation.target instanceof HTMLElement) {
-            const path = getDOMAttribute(mutation.target, UTOPIA_TEMPLATE_PATH)
-            if (path != null && rootMetadataRef.current != null) {
-              rootMetadataRef.current = MetadataUtils.removeElementMetadata(
-                TP.fromString(path),
-                rootMetadataRef.current,
+            const pathAsString = getDOMAttribute(mutation.target, UTOPIA_TEMPLATE_PATH)
+            const path = pathAsString != null ? TP.fromString(pathAsString) : null
+            if (
+              path != null &&
+              invalidatedTemplatePathsRef.current != null &&
+              !invalidatedTemplatePathsRef.current.find((invalidPath) =>
+                TP.pathsEqual(path, invalidPath),
               )
+            ) {
+              invalidatedTemplatePathsRef.current.push(path)
             }
           }
         }
@@ -293,31 +302,18 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
         // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
         // to provide a home for the the (really existing) childMetadata
-        if (rootMetadataRef.current != null) {
-          const cachedMetadata = MetadataUtils.findElementMetadata(
-            canvasRootPath,
-            rootMetadataRef.current,
-          )
-          if (cachedMetadata != null) {
-            rootMetadata.push({
-              ...cachedMetadata,
-              children: childMetadata,
-            })
-          }
-        } else {
-          const metadata: ElementInstanceMetadata = elementInstanceMetadata(
-            canvasRootPath as InstancePath,
-            left('Storyboard'),
-            {},
-            null,
-            null,
-            childMetadata,
-            false,
-            emptySpecialSizeMeasurements,
-            emptyComputedStyle,
-          )
-          rootMetadata.push(metadata)
-        }
+        const metadata: ElementInstanceMetadata = elementInstanceMetadata(
+          canvasRootPath as InstancePath,
+          left('Storyboard'),
+          {},
+          null,
+          null,
+          childMetadata,
+          false,
+          emptySpecialSizeMeasurements,
+          emptyComputedStyle,
+        )
+        rootMetadata.push(metadata)
       }
 
       function walkSceneInner(
@@ -451,16 +447,20 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         parentPoint: CanvasPoint | null,
         childrenMetadata: ElementInstanceMetadata[],
       ): ElementInstanceMetadata {
-        if (rootMetadataRef.current != null) {
-          const cachedMetadata = MetadataUtils.findElementMetadata(
-            instancePath,
-            rootMetadataRef.current,
+        if (
+          invalidatedTemplatePathsRef.current == null ||
+          invalidatedTemplatePathsRef.current.find((path) => TP.pathsEqual(path, instancePath))
+        ) {
+          invalidatedTemplatePathsRef.current = invalidatedTemplatePathsRef.current.filter(
+            (path) => !TP.pathsEqual(path, instancePath),
           )
-          if (cachedMetadata != null) {
-            return {
-              ...cachedMetadata,
-              children: childrenMetadata,
-            }
+        } else {
+          const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
+            instancePath,
+            rootMetadataInStateRef.current,
+          )
+          if (elementFromCurrentMetadata != null) {
+            return elementFromCurrentMetadata
           }
         }
         const globalFrame = globalFrameForElement(element)
@@ -505,7 +505,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         props.canvasRootElementTemplatePath,
         props.validRootPaths.map(TP.toString),
       )
-      rootMetadataRef.current = rootMetadata
       props.onDomReport(rootMetadata)
     }
   })
