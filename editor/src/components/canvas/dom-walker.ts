@@ -395,6 +395,23 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           uniquePath = TP.appendToPath(uniquePath, pathElement)
           setDOMAttribute(element, UTOPIA_TEMPLATE_PATH, TP.toString(uniquePath))
 
+          if (
+            invalidatedTemplatePathsRef.current == null ||
+            invalidatedTemplatePathsRef.current.find((path) => TP.pathsEqual(path, uniquePath))
+          ) {
+            invalidatedTemplatePathsRef.current = invalidatedTemplatePathsRef.current.filter(
+              (path) => !TP.pathsEqual(path, uniquePath),
+            )
+          } else {
+            const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
+              uniquePath,
+              rootMetadataInStateRef.current,
+            )
+            if (elementFromCurrentMetadata != null) {
+              return [elementFromCurrentMetadata]
+            }
+          }
+
           const globalFrame = globalFrameForElement(element)
 
           // Build the original path for this element.
@@ -447,22 +464,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         parentPoint: CanvasPoint | null,
         childrenMetadata: ElementInstanceMetadata[],
       ): ElementInstanceMetadata {
-        if (
-          invalidatedTemplatePathsRef.current == null ||
-          invalidatedTemplatePathsRef.current.find((path) => TP.pathsEqual(path, instancePath))
-        ) {
-          invalidatedTemplatePathsRef.current = invalidatedTemplatePathsRef.current.filter(
-            (path) => !TP.pathsEqual(path, instancePath),
-          )
-        } else {
-          const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
-            instancePath,
-            rootMetadataInStateRef.current,
-          )
-          if (elementFromCurrentMetadata != null) {
-            return elementFromCurrentMetadata
-          }
-        }
         const globalFrame = globalFrameForElement(element)
         const localFrame =
           parentPoint != null
