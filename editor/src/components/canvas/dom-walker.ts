@@ -397,7 +397,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
           if (
             invalidatedTemplatePathsRef.current == null ||
-            invalidatedTemplatePathsRef.current.find((path) => TP.pathsEqual(path, uniquePath))
+            invalidatedTemplatePathsRef.current.find((path) =>
+              TP.isAncestorOf(path, uniquePath, true),
+            )
           ) {
             invalidatedTemplatePathsRef.current = invalidatedTemplatePathsRef.current.filter(
               (path) => !TP.pathsEqual(path, uniquePath),
