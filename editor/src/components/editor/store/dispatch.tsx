@@ -4,7 +4,7 @@ import * as R from 'ramda'
 import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
-import { convertMetadataMap, MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import {

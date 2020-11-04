@@ -850,6 +850,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
     spyMetadataKILLME: poppedEditor.spyMetadataKILLME,
+    spyElementMetadataKILLME: poppedEditor.spyElementMetadataKILLME,
     domMetadataKILLME: poppedEditor.domMetadataKILLME,
     jsxMetadataKILLME: poppedEditor.jsxMetadataKILLME,
     projectContents: poppedEditor.projectContents,
@@ -3616,6 +3617,10 @@ export const UPDATE_FNS = {
         action.elementMetadata,
       ),
       spyMetadataKILLME: keepDeepReferenceEqualityIfPossible(editor.spyMetadataKILLME, spyResult),
+      spyElementMetadataKILLME: keepDeepReferenceEqualityIfPossible(
+        editor.spyElementMetadataKILLME,
+        spyCollector.current.spyValues.metadata,
+      ),
     }
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {

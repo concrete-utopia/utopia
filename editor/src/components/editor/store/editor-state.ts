@@ -4,6 +4,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ComponentMetadata,
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   getElementsByUIDFromTopLevelElements,
   isUtopiaJSXComponent,
   JSXElement,
@@ -11,6 +12,8 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXElement,
+  JSXMetadata,
+  emptyJsxMetadata,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -271,9 +274,9 @@ export interface EditorState {
     tab: EditorTab
     initialCursorPosition: CursorPosition | null
   } | null
-  spyMetadataKILLME: ComponentMetadata[] // this is coming from the canvas spy report.
+  spyMetadataKILLME: JSXMetadata // this is coming from the canvas spy report.
   domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
-  jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
+  jsxMetadataKILLME: JSXMetadata // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
@@ -1052,9 +1055,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     openFiles: [],
     cursorPositions: {},
     selectedFile: null,
-    spyMetadataKILLME: [],
+    spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
-    jsxMetadataKILLME: [],
+    jsxMetadataKILLME: emptyJsxMetadata,
     projectContents: {},
     codeResultCache: generateCodeResultCache(
       {},
@@ -1335,9 +1338,9 @@ export function editorModelFromPersistentModel(
     isLoaded: false,
     openFiles: persistentModel.openFiles,
     cursorPositions: {},
-    spyMetadataKILLME: [],
+    spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
-    jsxMetadataKILLME: [],
+    jsxMetadataKILLME: emptyJsxMetadata,
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
       {},

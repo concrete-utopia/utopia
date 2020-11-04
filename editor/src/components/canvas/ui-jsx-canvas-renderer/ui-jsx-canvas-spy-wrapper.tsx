@@ -3,10 +3,10 @@ import { MapLike } from 'typescript'
 import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { right } from '../../../core/shared/either'
 import {
+  ElementInstanceMetadata,
   emptyComputedStyle,
   emptySpecialSizeMeasurements,
   JSXElement,
-  MetadataWithoutChildren,
 } from '../../../core/shared/element-template'
 import { InstancePath } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
@@ -32,13 +32,13 @@ export function buildSpyWrappedElement(
   }
   const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
   const spyCallback = (reportedProps: any) => {
-    const instanceMetadata: MetadataWithoutChildren = {
+    const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
       templatePath: templatePath,
       props: makeCanvasElementPropsSafe(reportedProps),
       globalFrame: null,
       localFrame: null,
-      childrenTemplatePaths: childrenTemplatePaths,
+      children: childrenTemplatePaths,
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
