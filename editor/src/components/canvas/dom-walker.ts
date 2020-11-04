@@ -159,7 +159,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       Array.from(document.querySelectorAll('#canvas-container *')).map((elem) => {
         resizeObserver.observe(elem)
       })
-      mutationObserver.observe(refOfContainer, mutationObserverConfig)
+      mutationObserver.observe(refOfContainer, MutationObserverConfig)
 
       const containerRect = getCanvasRectangleFromElement(refOfContainer, props.scale)
 
