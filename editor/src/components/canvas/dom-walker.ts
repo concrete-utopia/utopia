@@ -120,14 +120,15 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       for (let entry of entries) {
         const pathAsString = getDOMAttribute(entry.target, UTOPIA_TEMPLATE_PATH)
         const path = pathAsString != null ? TP.fromString(pathAsString) : null
+        const scenePath = path != null ? TP.scenePathForPath(path) : null
         if (
-          path != null &&
+          scenePath != null &&
           invalidatedTemplatePathsRef.current != null &&
           !invalidatedTemplatePathsRef.current.find((invalidPath) =>
-            TP.pathsEqual(path, invalidPath),
+            TP.pathsEqual(invalidPath, scenePath),
           )
         ) {
-          invalidatedTemplatePathsRef.current.push(path)
+          invalidatedTemplatePathsRef.current.push(scenePath)
         }
       }
     })
@@ -140,14 +141,15 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           if (mutation.target instanceof HTMLElement) {
             const pathAsString = getDOMAttribute(mutation.target, UTOPIA_TEMPLATE_PATH)
             const path = pathAsString != null ? TP.fromString(pathAsString) : null
+            const scenePath = path != null ? TP.scenePathForPath(path) : null
             if (
-              path != null &&
+              scenePath != null &&
               invalidatedTemplatePathsRef.current != null &&
               !invalidatedTemplatePathsRef.current.find((invalidPath) =>
-                TP.pathsEqual(path, invalidPath),
+                TP.pathsEqual(invalidPath, scenePath),
               )
             ) {
-              invalidatedTemplatePathsRef.current.push(path)
+              invalidatedTemplatePathsRef.current.push(scenePath)
             }
           }
         }
@@ -284,6 +286,25 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           if (sceneIndexAttr != null && validPathsAttr != null) {
             const scenePath = TP.fromString(sceneIndexAttr.value)
             const validPaths = validPathsAttr.value.split(' ')
+
+            if (
+              invalidatedTemplatePathsRef.current == null ||
+              invalidatedTemplatePathsRef.current.find((path) => TP.pathsEqual(path, scenePath))
+            ) {
+              invalidatedTemplatePathsRef.current = invalidatedTemplatePathsRef.current.filter(
+                (path) => !TP.pathsEqual(path, scenePath),
+              )
+            } else {
+              const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
+                scenePath,
+                rootMetadataInStateRef.current,
+              )
+              if (elementFromCurrentMetadata != null) {
+                // early return for cached scenes
+                rootMetadata.push(elementFromCurrentMetadata)
+                return
+              }
+            }
             const metadata = walkSceneInner(scene, index, scenePath, validPaths)
             rootMetadata.push(...metadata)
 
@@ -400,25 +421,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           }
           uniquePath = TP.appendToPath(uniquePath, pathElement)
           setDOMAttribute(element, UTOPIA_TEMPLATE_PATH, TP.toString(uniquePath))
-
-          if (
-            invalidatedTemplatePathsRef.current == null ||
-            invalidatedTemplatePathsRef.current.find((path) =>
-              TP.isAncestorOf(path, uniquePath, true),
-            )
-          ) {
-            invalidatedTemplatePathsRef.current = invalidatedTemplatePathsRef.current.filter(
-              (path) => !TP.pathsEqual(path, uniquePath),
-            )
-          } else {
-            const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
-              uniquePath,
-              rootMetadataInStateRef.current,
-            )
-            if (elementFromCurrentMetadata != null) {
-              return [elementFromCurrentMetadata]
-            }
-          }
 
           const globalFrame = globalFrameForElement(element)
 
