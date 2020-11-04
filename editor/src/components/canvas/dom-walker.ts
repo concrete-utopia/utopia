@@ -46,6 +46,7 @@ import {
 } from '../../core/model/utopia-constants'
 import ResizeObserver from 'resize-observer-polyfill'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { PRODUCTION_ENV } from '../../common/env-vars'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 
@@ -103,6 +104,8 @@ function isScene(node: Node): node is HTMLElement {
   )
 }
 
+const LogDomWalkerPerformance = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
+
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
@@ -154,6 +157,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
+      if (LogDomWalkerPerformance) {
+        performance.mark('DOM_WALKER_START')
+      }
       // Get some base values relating to the div this component creates.
       const refOfContainer = containerRef.current
       Array.from(document.querySelectorAll('#canvas-container *')).map((elem) => {
@@ -508,6 +514,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         props.canvasRootElementTemplatePath,
         props.validRootPaths.map(TP.toString),
       )
+      if (LogDomWalkerPerformance) {
+        performance.mark('DOM_WALKER_END')
+        performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
+      }
       props.onDomReport(rootMetadata)
     }
   })
