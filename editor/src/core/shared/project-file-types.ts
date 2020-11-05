@@ -1,6 +1,6 @@
 import * as TS from 'typescript'
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
-import { ArbitraryJSBlock, TopLevelElement } from './element-template'
+import { ArbitraryJSBlock, TopLevelElement, UtopiaJSXComponent } from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
@@ -120,6 +120,96 @@ export function importsEquals(first: Imports, second: Imports): boolean {
   return objectEquals(first, second, importDetailsEquals)
 }
 
+export interface ExportDetailNamed {
+  type: 'EXPORT_DETAIL_NAMED'
+  propertyName: string
+}
+
+export function exportDetailNamed(propertyName: string): ExportDetailNamed {
+  return {
+    type: 'EXPORT_DETAIL_NAMED',
+    propertyName: propertyName,
+  }
+}
+
+export interface ExportDetailModifier {
+  type: 'EXPORT_DETAIL_MODIFIER'
+}
+
+export function exportDetailModifier(): ExportDetailModifier {
+  return {
+    type: 'EXPORT_DETAIL_MODIFIER',
+  }
+}
+
+export type ExportDetail = ExportDetailNamed | ExportDetailModifier
+
+export function isExportDetailNamed(detail: ExportDetail): detail is ExportDetailNamed {
+  return detail.type === 'EXPORT_DETAIL_NAMED'
+}
+
+export function isExportDetailModifier(detail: ExportDetail): detail is ExportDetailModifier {
+  return detail.type === 'EXPORT_DETAIL_MODIFIER'
+}
+
+export interface ExportsDetail {
+  defaultExport: ExportDetailNamed | null
+  namedExports: Record<string, ExportDetail>
+}
+
+export function exportsDetail(
+  defaultExport: ExportDetailNamed | null,
+  namedExports: Record<string, ExportDetail>,
+): ExportsDetail {
+  return {
+    defaultExport: defaultExport,
+    namedExports: namedExports,
+  }
+}
+
+export const EmptyExportsDetail: ExportsDetail = exportsDetail(null, {})
+
+export function mergeExportsDetail(first: ExportsDetail, second: ExportsDetail): ExportsDetail {
+  return {
+    defaultExport: second.defaultExport ?? first.defaultExport,
+    namedExports: {
+      ...first.namedExports,
+      ...second.namedExports,
+    },
+  }
+}
+
+export function addNamedExportToDetail(
+  detail: ExportsDetail,
+  name: string,
+  alias: string,
+): ExportsDetail {
+  return {
+    defaultExport: detail.defaultExport,
+    namedExports: {
+      ...detail.namedExports,
+      [name]: exportDetailNamed(alias),
+    },
+  }
+}
+
+export function addModifierExportToDetail(detail: ExportsDetail, name: string): ExportsDetail {
+  return {
+    defaultExport: detail.defaultExport,
+    namedExports: {
+      ...detail.namedExports,
+      [name]: exportDetailModifier(),
+    },
+  }
+}
+
+export function setNamedDefaultExportInDetail(detail: ExportsDetail, name: string): ExportsDetail {
+  return {
+    defaultExport: exportDetailNamed(name),
+    namedExports: detail.namedExports,
+  }
+}
+
 export interface HighlightBounds {
   startLine: number
   startCol: number
@@ -137,6 +227,7 @@ export interface ParseSuccess {
   highlightBounds: HighlightBoundsForUids
   jsxFactoryFunction: string | null
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
+  exportsDetail: ExportsDetail
 }
 
 export function isParseSuccess(parsed: ParsedTextFile): parsed is ParseSuccess {

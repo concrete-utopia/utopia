@@ -1059,7 +1059,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  it('wraps in multiselected element + children, moves only the element, keeps children', async () => {
+  it('wraps in multiselected element and children, moves only the element, keeps children', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid={'aaa'}>
@@ -1162,7 +1162,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  it('reparents multiselected element + children, moves only the element, keeps children', async () => {
+  it('reparents multiselected element and children, moves only the element, keeps children', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
@@ -1208,7 +1208,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  it('reparents multiselected element + descendant (not direct children), moves both of the elements', async () => {
+  it('reparents multiselected element and descendant which are not direct children, moves both of the elements', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>

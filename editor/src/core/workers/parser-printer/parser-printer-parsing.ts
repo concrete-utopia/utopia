@@ -114,6 +114,14 @@ export function isExported(node: TS.Node): boolean {
   }
 }
 
+export function isDefaultExport(node: TS.Node): boolean {
+  if (node.modifiers == null) {
+    return false
+  } else {
+    return node.modifiers.some((modifier) => modifier.kind === TS.SyntaxKind.DefaultKeyword)
+  }
+}
+
 function parseArrayLiteralExpression(
   sourceFile: TS.SourceFile,
   filename: string,

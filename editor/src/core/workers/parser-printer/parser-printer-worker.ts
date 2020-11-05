@@ -133,6 +133,7 @@ function printCodeAsync(
     parseSuccess.imports,
     parseSuccess.topLevelElements,
     parseSuccess.jsxFactoryFunction,
+    parseSuccess.exportsDetail,
   )
   const highlightBoundsWithUID = getHighlightBoundsWithUID('with-uids', withUIDs)
 
@@ -141,6 +142,7 @@ function printCodeAsync(
     parseSuccess.imports,
     parseSuccess.topLevelElements,
     parseSuccess.jsxFactoryFunction,
+    parseSuccess.exportsDetail,
   )
   const highlightBoundsWithoutUID = getHighlightBoundsWithoutUID('without-uids', withoutUIDs)
 

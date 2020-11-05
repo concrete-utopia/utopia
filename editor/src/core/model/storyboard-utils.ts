@@ -5,13 +5,14 @@ import {
 } from '../../components/assets'
 import { EditorModel } from '../../components/editor/action-types'
 import { EditorState } from '../../components/editor/store/editor-state'
-import { forEachRight, left, right } from '../shared/either'
 import {
   isUtopiaJSXComponent,
   UtopiaJSXComponent,
   utopiaJSXComponent,
 } from '../shared/element-template'
 import {
+  addModifierExportToDetail,
+  EmptyExportsDetail,
   forEachParseSuccess,
   importAlias,
   isTextFile,
@@ -19,7 +20,6 @@ import {
   textFile,
   textFileContents,
 } from '../shared/project-file-types'
-import { generateUID } from '../shared/uid-utils'
 import { addImport, parseSuccess } from '../workers/common/project-file-utils'
 import {
   BakedInStoryboardUID,
@@ -119,7 +119,14 @@ function addStoryboardFileForComponent(
     baseImports,
   )
   // Create the file.
-  const success = parseSuccess(imports, [storyboardComponent], {}, 'jsx', null)
+  const success = parseSuccess(
+    imports,
+    [storyboardComponent],
+    {},
+    'jsx',
+    null,
+    addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+  )
   const storyboardFileContents = textFile(
     textFileContents('', success, RevisionsState.ParsedAhead),
     null,
