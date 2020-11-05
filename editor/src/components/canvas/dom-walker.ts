@@ -127,17 +127,8 @@ function lazyValue<T>(getter: () => T) {
   }
 }
 
-export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
-  const containerRef = React.useRef<HTMLDivElement>(null)
-  const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
-  const invalidatedSceneIDsRef = React.useRef<Array<string>>([])
-  const initCompleteRef = React.useRef<boolean>(false)
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'useDomWalker selectedViews',
-  )
-
-  const resizeObserver = React.useMemo(() => {
+function useResizeObserver(invalidatedSceneIDsRef: React.MutableRefObject<Array<string>>) {
+  const resizeObserver: ResizeObserver = React.useMemo(() => {
     if (ObserversAvailable) {
       return new ResizeObserver((entries: any) => {
         for (let entry of entries) {
@@ -154,8 +145,19 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
     } else {
       return null
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []) // the dependencies are empty because this should only evaluate once
+  React.useEffect(() => {
+    return function cleanup() {
+      if (resizeObserver != null) {
+        resizeObserver.disconnect()
+      }
+    }
+  }, [resizeObserver])
+  return resizeObserver
+}
 
+function useMutationObserver(invalidatedSceneIDsRef: React.MutableRefObject<Array<string>>) {
   const mutationObserver = React.useMemo(() => {
     if (ObserversAvailable) {
       return new (window as any).MutationObserver((mutations: MutationRecord[]) => {
@@ -181,7 +183,29 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
     } else {
       return null
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []) // the dependencies are empty because this should only evaluate once
+  React.useEffect(() => {
+    return function cleanup() {
+      if (mutationObserver != null) {
+        mutationObserver.disconnect()
+      }
+    }
+  }, [mutationObserver])
+  return mutationObserver
+}
+
+export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
+  const invalidatedSceneIDsRef = React.useRef<Array<string>>([])
+  const initCompleteRef = React.useRef<boolean>(false)
+  const selectedViews = useEditorState(
+    (store) => store.editor.selectedViews,
+    'useDomWalker selectedViews',
+  )
+  const resizeObserver = useResizeObserver(invalidatedSceneIDsRef)
+  const mutationObserver = useMutationObserver(invalidatedSceneIDsRef)
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
