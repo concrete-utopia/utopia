@@ -42,6 +42,7 @@ import {
 import ResizeObserver from 'resize-observer-polyfill'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
+import { CanvasContainerID } from './canvas-types'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -215,7 +216,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       // Get some base values relating to the div this component creates.
       const refOfContainer = containerRef.current
       if (ObserversAvailable && resizeObserver != null && mutationObserver != null) {
-        Array.from(document.querySelectorAll('#canvas-container *')).map((elem) => {
+        Array.from(document.querySelectorAll(`#${CanvasContainerID} *`)).map((elem) => {
           resizeObserver.observe(elem)
         })
         mutationObserver.observe(refOfContainer, MutationObserverConfig)
