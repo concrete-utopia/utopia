@@ -1927,6 +1927,42 @@ export var storyboard = (
 )`,
     )
   })
+
+  it('renderrs correctly when a component is passed in via a prop', () => {
+    testCanvasRender(
+      null,
+      `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >
+      Test
+      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
+    </div>
+  )
+}
+
+export var Thing = (props) => {
+  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'eee'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      data-uid={'fff'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)`,
+    )
+  })
 })
 
 describe('UiJsxCanvas runtime errors', () => {

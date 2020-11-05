@@ -32,7 +32,7 @@ export function processErrorWithSourceMap(
   sourceCode: string,
   rawSourceMap: RawSourceMap | null,
   inSafeFunction: boolean,
-) {
+): void {
   const errorStack = error.stack
   if (errorStack != null) {
     try {
