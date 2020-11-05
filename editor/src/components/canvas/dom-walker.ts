@@ -154,7 +154,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
     } else {
       return null
     }
-  }, [invalidatedSceneIDsRef])
+  }, [])
 
   const mutationObserver = React.useMemo(() => {
     if (ObserversAvailable) {
@@ -181,7 +181,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
     } else {
       return null
     }
-  }, [invalidatedSceneIDsRef])
+  }, [])
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
