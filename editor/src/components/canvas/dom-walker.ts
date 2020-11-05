@@ -45,6 +45,7 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
+const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1
@@ -125,41 +126,49 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   )
 
   const resizeObserver = React.useMemo(() => {
-    return new ResizeObserver((entries: any) => {
-      for (let entry of entries) {
-        const sceneID = findParentScene(entry.target)
-        if (
-          sceneID != null &&
-          invalidatedSceneIDsRef.current != null &&
-          invalidatedSceneIDsRef.current.indexOf(sceneID) < 0
-        ) {
-          invalidatedSceneIDsRef.current.push(sceneID)
+    if (ObserversAvailable) {
+      return new ResizeObserver((entries: any) => {
+        for (let entry of entries) {
+          const sceneID = findParentScene(entry.target)
+          if (
+            sceneID != null &&
+            invalidatedSceneIDsRef.current != null &&
+            invalidatedSceneIDsRef.current.indexOf(sceneID) < 0
+          ) {
+            invalidatedSceneIDsRef.current.push(sceneID)
+          }
         }
-      }
-    })
+      })
+    } else {
+      return null
+    }
   }, [invalidatedSceneIDsRef])
 
   const mutationObserver = React.useMemo(() => {
-    return new MutationObserver((mutations: MutationRecord[]) => {
-      for (let mutation of mutations) {
-        if (
-          mutation.attributeName === 'style' ||
-          mutation.addedNodes.length > 0 ||
-          mutation.removedNodes.length > 0
-        ) {
-          if (mutation.target instanceof HTMLElement) {
-            const sceneID = findParentScene(mutation.target)
-            if (
-              sceneID != null &&
-              invalidatedSceneIDsRef.current != null &&
-              invalidatedSceneIDsRef.current.indexOf(sceneID) < 0
-            ) {
-              invalidatedSceneIDsRef.current.push(sceneID)
+    if (ObserversAvailable) {
+      return new (window as any).MutationObserver((mutations: MutationRecord[]) => {
+        for (let mutation of mutations) {
+          if (
+            mutation.attributeName === 'style' ||
+            mutation.addedNodes.length > 0 ||
+            mutation.removedNodes.length > 0
+          ) {
+            if (mutation.target instanceof HTMLElement) {
+              const sceneID = findParentScene(mutation.target)
+              if (
+                sceneID != null &&
+                invalidatedSceneIDsRef.current != null &&
+                invalidatedSceneIDsRef.current.indexOf(sceneID) < 0
+              ) {
+                invalidatedSceneIDsRef.current.push(sceneID)
+              }
             }
           }
         }
-      }
-    })
+      })
+    } else {
+      return null
+    }
   }, [invalidatedSceneIDsRef])
 
   React.useLayoutEffect(() => {
@@ -169,10 +178,12 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       }
       // Get some base values relating to the div this component creates.
       const refOfContainer = containerRef.current
-      Array.from(document.querySelectorAll('#canvas-container *')).map((elem) => {
-        resizeObserver.observe(elem)
-      })
-      mutationObserver.observe(refOfContainer, MutationObserverConfig)
+      if (ObserversAvailable) {
+        Array.from(document.querySelectorAll('#canvas-container *')).map((elem) => {
+          resizeObserver.observe(elem)
+        })
+        mutationObserver!.observe(refOfContainer, MutationObserverConfig)
+      }
 
       const containerRect = getCanvasRectangleFromElement(refOfContainer, props.scale)
 
@@ -293,6 +304,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             const validPaths = validPathsAttr.value.split(' ')
             const sceneID = sceneIndexAttr.value
             if (
+              !ObserversAvailable ||
               invalidatedSceneIDsRef.current == null ||
               invalidatedSceneIDsRef.current.indexOf(sceneID) > -1
             ) {
