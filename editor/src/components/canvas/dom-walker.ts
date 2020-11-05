@@ -153,7 +153,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
     } else {
       return null
     }
-  }, [])
+  }, []) // the dependencies are empty because this should only evaluate once
 
   const mutationObserver = React.useMemo(() => {
     if (ObserversAvailable) {
@@ -180,7 +180,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
     } else {
       return null
     }
-  }, [])
+  }, []) // the dependencies are empty because this should only evaluate once
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
