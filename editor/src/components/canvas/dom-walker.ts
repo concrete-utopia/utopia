@@ -359,6 +359,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         validPaths: Array<string>,
       ) {
         if (
+          ObserversAvailable &&
           invalidatedSceneIDsRef.current?.length === 0 &&
           rootMetadataInStateRef.current.length > 0
         ) {
