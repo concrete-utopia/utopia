@@ -386,6 +386,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         if (
           ObserversAvailable &&
           invalidatedSceneIDsRef.current?.length === 0 &&
+          rootMetadataInStateRef.current.length > 0 &&
           initCompleteRef.current === true
         ) {
           // no mutation happened on the entire canvas, just return the old metadata
