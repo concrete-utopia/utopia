@@ -12,11 +12,7 @@ import {
   emptyComputedStyle,
 } from '../../core/shared/element-template'
 import { id, TemplatePath, InstancePath } from '../../core/shared/project-file-types'
-import {
-  getCanvasRectangleFromElement,
-  getDOMAttribute,
-  setDOMAttribute,
-} from '../../core/shared/dom-utils'
+import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
 import { applicative4Either, isRight, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
@@ -359,11 +355,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         scenePath: TemplatePath,
         validPaths: Array<string>,
       ): Array<ElementInstanceMetadata> {
-        setDOMAttribute(
-          scene,
-          UTOPIA_TEMPLATE_PATH,
-          TP.toString(TP.instancePath([], TP.elementPathForPath(scenePath))),
-        )
         const globalFrame: CanvasRectangle = globalFrameForElement(scene)
 
         let metadatas: Array<ElementInstanceMetadata> = []
@@ -430,7 +421,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             uniquePath = TP.appendToPath(uniquePath, parentUIDsAttribute.split('/'))
           }
           uniquePath = TP.appendToPath(uniquePath, pathElement)
-          setDOMAttribute(element, UTOPIA_TEMPLATE_PATH, TP.toString(uniquePath))
 
           const globalFrame = globalFrameForElement(element)
 
