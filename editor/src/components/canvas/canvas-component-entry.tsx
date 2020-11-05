@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEditorState } from '../editor/store/store-hook'
+import { useCanvasState } from '../editor/store/store-hook'
 import {
   UiJsxCanvas,
   pickUiJsxCanvasProps,
@@ -20,27 +20,29 @@ interface CanvasComponentEntryProps extends CanvasReactErrorCallback {
 export const CanvasComponentEntry = betterReactMemo(
   'CanvasComponentEntry',
   (props: CanvasComponentEntryProps) => {
-    const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
+    const dispatch = useCanvasState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
     const onDomReport = React.useCallback(
       (elementMetadata: Array<ElementInstanceMetadata>) => {
         dispatch([saveDOMReport(elementMetadata)])
       },
       [dispatch],
     )
-    const { canvasProps } = useEditorState(
-      (store) => ({
-        canvasProps: pickUiJsxCanvasProps(
-          store.editor,
-          store.derived,
-          true,
-          onDomReport,
-          props.clearConsoleLogs,
-          props.addToConsoleLogs,
-          store.dispatch,
-        ),
-      }),
-      'CanvasComponentEntry canvasProps',
-    )
+    // console.info('RENDERING CanvasComponentEntry')
+    const { canvasProps } = useCanvasState((store) => {
+      const picked = pickUiJsxCanvasProps(
+        store.editor,
+        store.derived,
+        true,
+        onDomReport,
+        props.clearConsoleLogs,
+        props.addToConsoleLogs,
+        store.dispatch,
+      )
+      // console.info('PICKED CANVAS OFFSET', picked?.offset.x, picked?.offset.y)
+      return {
+        canvasProps: picked,
+      }
+    }, 'CanvasComponentEntry canvasProps')
 
     if (canvasProps == null) {
       return null

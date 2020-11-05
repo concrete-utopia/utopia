@@ -93,6 +93,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     <HotRoot
       api={storeHook}
       useStore={storeHook}
+      useCanvasStore={storeHook}
       spyCollector={spyCollector}
       propertyControlsInfoSupported={false}
     />,

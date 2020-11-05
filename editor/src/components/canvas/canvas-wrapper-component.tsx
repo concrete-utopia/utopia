@@ -18,7 +18,7 @@ import {
   openFileTab,
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { useCanvasState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
 import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
 import { NO_OP } from '../../core/shared/utils'
@@ -37,7 +37,7 @@ interface CanvasWrapperComponentProps {
 export const CanvasWrapperComponent = betterReactMemo(
   'CanvasWrapperComponent',
   (props: CanvasWrapperComponentProps) => {
-    const { dispatch, editorState, derivedState } = useEditorState(
+    const { dispatch, editorState, derivedState } = useCanvasState(
       (store) => ({
         dispatch: store.dispatch,
         editorState: store.editor,
@@ -72,7 +72,7 @@ export const CanvasWrapperComponent = betterReactMemo(
       return getAllCodeEditorErrors(editorState, true, true)
     }, [editorState])
 
-    const safeMode = useEditorState((store) => {
+    const safeMode = useCanvasState((store) => {
       return store.editor.safeMode
     }, 'CanvasWrapperComponent safeMode')
 
@@ -117,14 +117,14 @@ interface ErrorOverlayComponentProps {
 const ErrorOverlayComponent = betterReactMemo(
   'ErrorOverlayComponent',
   (props: ErrorOverlayComponentProps) => {
-    const dispatch = useEditorState((store) => store.dispatch, 'ErrorOverlayComponent dispatch')
-    const utopiaParserErrors = useEditorState((store) => {
+    const dispatch = useCanvasState((store) => store.dispatch, 'ErrorOverlayComponent dispatch')
+    const utopiaParserErrors = useCanvasState((store) => {
       return parseFailureAsErrorMessages(
         getOpenUIJSFileKey(store.editor),
         getOpenUIJSFile(store.editor),
       )
     }, 'ErrorOverlayComponent utopiaParserErrors')
-    const fatalCodeEditorErrors = useEditorState((store) => {
+    const fatalCodeEditorErrors = useCanvasState((store) => {
       return getAllCodeEditorErrors(store.editor, true, true)
     }, 'ErrorOverlayComponent fatalCodeEditorErrors')
 
@@ -150,7 +150,7 @@ const ErrorOverlayComponent = betterReactMemo(
 )
 
 export const SafeModeErrorOverlay = betterReactMemo('SafeModeErrorOverlay', () => {
-  const dispatch = useEditorState((store) => store.dispatch, 'SafeModeErrorOverlay dispatch')
+  const dispatch = useCanvasState((store) => store.dispatch, 'SafeModeErrorOverlay dispatch')
   const onTryAgain = React.useCallback(() => {
     dispatch([setSafeMode(false)], 'everyone')
   }, [dispatch])

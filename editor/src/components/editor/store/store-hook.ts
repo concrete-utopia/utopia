@@ -6,6 +6,29 @@ import { PRODUCTION_ENV } from '../../../common/env-vars'
 
 type StateSelector<T, U> = (state: T) => U
 
+function editorStateHookFactory(
+  storePicker: (context: EditorStateContextData) => UseStore<EditorStore>,
+) {
+  return function useEditorState<U>(
+    selector: StateSelector<EditorStore, U>,
+    selectorName: string,
+    equalityFn: (oldSlice: U, newSlice: U) => boolean = utils.shallowEqual,
+  ): U {
+    const context = React.useContext(EditorStateContext)
+
+    const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(selector, selectorName)
+
+    if (context == null) {
+      throw new Error('useStore is missing from editor context')
+    }
+    return (storePicker(context) as any)(
+      wrappedSelector,
+      equalityFn as EqualityChecker<U>,
+      selectorName,
+    )
+  }
+}
+
 /**
  * React hooks can only be used in Function Components. useEditorState lets you access the most up to date editor state.
  * useEditorState will only trigger re-render if the return value of your state selector changes (using shallow equality)
@@ -16,20 +39,9 @@ type StateSelector<T, U> = (state: T) => U
  * The return value of the function is the return value of useEditorState itself.
  * It is a good practice to use object destructure to consume the return value.
  */
-export const useEditorState = <U>(
-  selector: StateSelector<EditorStore, U>,
-  selectorName: string,
-  equalityFn: (oldSlice: U, newSlice: U) => boolean = utils.shallowEqual,
-): U => {
-  const context = React.useContext(EditorStateContext)
+export const useEditorState = editorStateHookFactory((context) => context.useStore)
 
-  const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(selector, selectorName)
-
-  if (context == null) {
-    throw new Error('useStore is missing from editor context')
-  }
-  return context.useStore(wrappedSelector, equalityFn as EqualityChecker<U>)
-}
+export const useCanvasState = editorStateHookFactory((context) => context.useCanvasStore)
 
 const LogSelectorPerformance = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
 
@@ -120,6 +132,7 @@ export type UtopiaStoreAPI = StoreApi<EditorStore>
 export type EditorStateContextData = {
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
+  useCanvasStore: UtopiaStoreHook
 }
 
 export const EditorStateContext = React.createContext<EditorStateContextData | null>(null)

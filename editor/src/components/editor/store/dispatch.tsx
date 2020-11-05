@@ -70,6 +70,7 @@ import {
 } from '../../assets'
 
 interface DispatchResult extends EditorStore {
+  canvasOnly: boolean
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
 }
@@ -360,7 +361,12 @@ export function editorDispatch(
     (working: DispatchResult, actions) => {
       return editorDispatchInner(boundDispatch, actions, working, allTransient, spyCollector)
     },
-    { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
+    {
+      ...storedState,
+      entireUpdateFinished: Promise.resolve(true),
+      nothingChanged: true,
+      canvasOnly: true,
+    },
   )
 
   // The FINISH_CHECKPOINT_TIMER action effectively overrides the case where nothing changed,
@@ -436,6 +442,7 @@ export function editorDispatch(
     workers: storedState.workers,
     dispatch: boundDispatch,
     nothingChanged: result.nothingChanged,
+    canvasOnly: result.canvasOnly,
     entireUpdateFinished: Promise.all([
       result.entireUpdateFinished,
       editorWithModelChecked.modelUpdateFinished,
@@ -550,6 +557,9 @@ function editorDispatchInner(
       }
     }
 
+    const canvasOnly =
+      storedState.canvasOnly && !dispatchedActions.every((a) => a.action === 'SAVE_DOM_REPORT')
+
     return {
       editor: frozenEditorState,
       derived: frozenDerivedState,
@@ -559,6 +569,7 @@ function editorDispatchInner(
       dispatch: boundDispatch,
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
+      canvasOnly: canvasOnly,
     }
   } else {
     //empty return

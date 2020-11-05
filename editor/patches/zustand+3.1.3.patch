@@ -1,0 +1,236 @@
+diff --git a/node_modules/zustand/index.js b/node_modules/zustand/index.js
+index 97b84da..9d4486a 100644
+--- a/node_modules/zustand/index.js
++++ b/node_modules/zustand/index.js
+@@ -1,142 +1,161 @@
+-import { useReducer, useRef, useEffect, useLayoutEffect } from 'react';
++import { useReducer, useRef, useEffect, useLayoutEffect } from 'react'
+ 
+ function create(createState) {
+-  let state;
+-  const listeners = new Set();
++  let state
++  const listeners = new Set()
+ 
+   const setState = (partial, replace) => {
+-    const nextState = typeof partial === 'function' ? partial(state) : partial;
++    const nextState = typeof partial === 'function' ? partial(state) : partial
+ 
+     if (nextState !== state) {
+-      state = replace ? nextState : Object.assign({}, state, nextState);
+-      listeners.forEach(listener => listener(state));
++      state = replace ? nextState : Object.assign({}, state, nextState)
++      listeners.forEach((listener) => listener(state))
+     }
+-  };
++  }
+ 
+-  const getState = () => state;
++  const getState = () => state
+ 
+   const subscribeWithSelector = (listener, selector = getState, equalityFn = Object.is) => {
+-    let currentSlice = selector(state);
++    let currentSlice = selector(state)
+ 
+     function listenerToAdd() {
+       // Selector or equality function could throw but we don't want to stop
+       // the listener from being called.
+       // https://github.com/react-spring/zustand/pull/37
+       try {
+-        const newStateSlice = selector(state);
++        const newStateSlice = selector(state)
+ 
+         if (!equalityFn(currentSlice, newStateSlice)) {
+-          listener(currentSlice = newStateSlice);
++          listener((currentSlice = newStateSlice))
+         }
+       } catch (error) {
+-        listener(null, error);
++        listener(null, error)
+       }
+     }
+ 
+-    listeners.add(listenerToAdd); // Unsubscribe
++    listeners.add(listenerToAdd) // Unsubscribe
+ 
+-    return () => listeners.delete(listenerToAdd);
+-  };
++    return () => listeners.delete(listenerToAdd)
++  }
+ 
+   const subscribe = (listener, selector, equalityFn) => {
+     if (selector || equalityFn) {
+-      return subscribeWithSelector(listener, selector, equalityFn);
++      return subscribeWithSelector(listener, selector, equalityFn)
+     }
+ 
+-    listeners.add(listener); // Unsubscribe
++    listeners.add(listener) // Unsubscribe
+ 
+-    return () => listeners.delete(listener);
+-  };
++    return () => listeners.delete(listener)
++  }
+ 
+-  const destroy = () => listeners.clear();
++  const destroy = () => listeners.clear()
+ 
+   const api = {
+     setState,
+     getState,
+     subscribe,
+-    destroy
+-  };
+-  state = createState(setState, getState, api);
+-  return api;
++    destroy,
++  }
++  state = createState(setState, getState, api)
++  return api
+ }
+ 
+-const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
++const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
+ function create$1(createState) {
+-  const api = typeof createState === 'function' ? create(createState) : createState;
+-
+-  const useStore = (selector = api.getState, equalityFn = Object.is) => {
+-    const [, forceUpdate] = useReducer(c => c + 1, 0);
+-    const state = api.getState();
+-    const stateRef = useRef(state);
+-    const selectorRef = useRef(selector);
+-    const equalityFnRef = useRef(equalityFn);
+-    const erroredRef = useRef(false);
+-    const currentSliceRef = useRef();
++  let numberOfForceReloads = 0
++  const api = typeof createState === 'function' ? create(createState) : createState
++  api.getNumberOfForceReloads = () => numberOfForceReloads
++
++  const useStore = (selector = api.getState, equalityFn = Object.is, debugName = 'Unknown') => {
++    const [, forceUpdate] = useReducer((c) => {
++      numberOfForceReloads++
++      return c + 1
++    }, 0)
++    const state = api.getState()
++    const stateRef = useRef(state)
++    const selectorRef = useRef(selector)
++    const equalityFnRef = useRef(equalityFn)
++    const erroredRef = useRef(false)
++    const currentSliceRef = useRef()
+ 
+     if (currentSliceRef.current === undefined) {
+-      currentSliceRef.current = selector(state);
++      currentSliceRef.current = selector(state)
+     }
+ 
+-    let newStateSlice;
+-    let hasNewStateSlice = false; // The selector or equalityFn need to be called during the render phase if
++    let newStateSlice
++    let hasNewStateSlice = false // The selector or equalityFn need to be called during the render phase if
+     // they change. We also want legitimate errors to be visible so we re-run
+     // them if they errored in the subscriber.
+ 
+-    if (stateRef.current !== state || selectorRef.current !== selector || equalityFnRef.current !== equalityFn || erroredRef.current) {
++    if (
++      stateRef.current !== state ||
++      selectorRef.current !== selector ||
++      equalityFnRef.current !== equalityFn ||
++      erroredRef.current
++    ) {
+       // Using local variables to avoid mutations in the render phase.
+-      newStateSlice = selector(state);
+-      hasNewStateSlice = !equalityFn(currentSliceRef.current, newStateSlice);
++      newStateSlice = selector(state)
++      hasNewStateSlice = !equalityFn(currentSliceRef.current, newStateSlice)
+     } // Syncing changes in useEffect.
+ 
+-
+     useIsoLayoutEffect(() => {
+       if (hasNewStateSlice) {
+-        currentSliceRef.current = newStateSlice;
++        currentSliceRef.current = newStateSlice
+       }
+ 
+-      stateRef.current = state;
+-      selectorRef.current = selector;
+-      equalityFnRef.current = equalityFn;
+-      erroredRef.current = false;
+-    });
+-    const stateBeforeSubscriptionRef = useRef(state);
++      stateRef.current = state
++      selectorRef.current = selector
++      equalityFnRef.current = equalityFn
++      erroredRef.current = false
++    })
++    const stateBeforeSubscriptionRef = useRef(state)
+     useEffect(() => {
+       const listener = () => {
+         try {
+-          const nextState = api.getState();
+-          const nextStateSlice = selectorRef.current(nextState);
++          const nextState = api.getState()
++          const nextStateSlice = selectorRef.current(nextState)
++
++          // console.log(
++          //   'running because of editor state change',
++          //   debugName,
++          //   !equalityFnRef.current(currentSliceRef.current, nextStateSlice),
++          // )
+ 
+           if (!equalityFnRef.current(currentSliceRef.current, nextStateSlice)) {
+-            stateRef.current = nextState;
+-            currentSliceRef.current = nextStateSlice;
+-            forceUpdate();
++            stateRef.current = nextState
++            currentSliceRef.current = nextStateSlice
++            numberOfForceReloads++
++            forceUpdate()
+           }
+         } catch (error) {
+-          erroredRef.current = true;
+-          forceUpdate();
++          erroredRef.current = true
++          numberOfForceReloads++
++          forceUpdate()
+         }
+-      };
++      }
+ 
+-      const unsubscribe = api.subscribe(listener);
++      const unsubscribe = api.subscribe(listener)
+ 
+       if (api.getState() !== stateBeforeSubscriptionRef.current) {
+-        listener(); // state has changed before subscription
++        listener() // state has changed before subscription
+       }
+ 
+-      return unsubscribe;
+-    }, []);
+-    return hasNewStateSlice ? newStateSlice : currentSliceRef.current;
+-  };
++      return unsubscribe
++    }, [])
++    if (hasNewStateSlice) numberOfForceReloads++
++    // console.log('running because of render', debugName, hasNewStateSlice)
++    return hasNewStateSlice ? newStateSlice : currentSliceRef.current
++  }
+ 
+-  Object.assign(useStore, api); // For backward compatibility (No TS types for this)
++  Object.assign(useStore, api) // For backward compatibility (No TS types for this)
+ 
+   useStore[Symbol.iterator] = function* () {
+-    console.warn('[useStore, api] = create() is deprecated and will be removed in v4');
+-    yield useStore;
+-    yield api;
+-  };
++    console.warn('[useStore, api] = create() is deprecated and will be removed in v4')
++    yield useStore
++    yield api
++  }
+ 
+-  return useStore;
++  return useStore
+ }
+ 
+-export default create$1;
++export default create$1

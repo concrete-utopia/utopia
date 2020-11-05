@@ -78,6 +78,7 @@ export type SpyValues = {
 export interface UiJsxCanvasContextData {
   current: {
     spyValues: SpyValues
+    renderCount: number
   }
 }
 
@@ -88,6 +89,7 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
         metadata: {},
         scenes: {},
       },
+      renderCount: 0,
     },
   }
 }
@@ -254,8 +256,8 @@ export const UiJsxCanvas = betterReactMemo(
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
-    clearConsoleLogs()
-    proxyConsole(console, addToConsoleLogs)
+    // clearConsoleLogs()
+    // proxyConsole(console, addToConsoleLogs)
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
 
@@ -352,6 +354,8 @@ export const UiJsxCanvas = betterReactMemo(
           TP.toString(rootScenePath)
         ] = storyboardRootSceneMetadata
       }
+
+      metadataContext.current.renderCount++
 
       return (
         <>

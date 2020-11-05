@@ -56,6 +56,7 @@ export function getStoreHook(
   return {
     api: storeHook,
     useStore: storeHook,
+    useCanvasStore: storeHook,
     updateStoreWithImmer: storeHook.getState().updateStoreWithImmer,
     updateStore: storeHook.getState().updateStore,
   }

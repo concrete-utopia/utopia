@@ -30,7 +30,7 @@ import {
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import { useEditorState } from '../editor/store/store-hook'
+import { useCanvasState } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_LABEL_KEY,
@@ -96,13 +96,14 @@ function isScene(node: Node): node is HTMLElement {
 
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const selectedViews = useEditorState(
+  const selectedViews = useCanvasState(
     (store) => store.editor.selectedViews,
     'useDomWalker selectedViews',
   )
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
+      performance.mark('DOM_WALKER_START')
       // Get some base values relating to the div this component creates.
       const refOfContainer = containerRef.current
 
@@ -438,6 +439,8 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         props.validRootPaths.map(TP.toString),
       )
 
+      performance.mark('DOM_WALKER_FINISH')
+      performance.measure('DOM_WALKER', 'DOM_WALKER_START', 'DOM_WALKER_FINISH')
       props.onDomReport(rootMetadata)
     }
   })

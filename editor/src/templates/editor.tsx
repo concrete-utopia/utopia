@@ -98,6 +98,7 @@ function replaceLoadingMessage(newMessage: string) {
 export class Editor {
   storedState: EditorStore
   utopiaStoreHook: UtopiaStoreHook
+  utopiaCanvasStoreHook: UtopiaStoreHook
   utopiaStoreApi: UtopiaStoreAPI
   updateStore: (partialState: EditorStore) => void
   boundDispatch: EditorDispatch = this.dispatch.bind(this)
@@ -135,8 +136,10 @@ export class Editor {
     }
 
     const storeHook = create<EditorStore>((set) => this.storedState)
+    const canvasStoreHook = create<EditorStore>((set) => this.storedState)
 
     this.utopiaStoreHook = storeHook
+    this.utopiaCanvasStoreHook = canvasStoreHook
     this.updateStore = storeHook.setState
     this.utopiaStoreApi = storeHook
 
@@ -240,6 +243,7 @@ export class Editor {
                         () =>
                           renderRootComponent(
                             this.utopiaStoreHook,
+                            this.utopiaCanvasStoreHook,
                             this.utopiaStoreApi,
                             this.spyCollector,
                             true,
@@ -260,6 +264,7 @@ export class Editor {
             createNewProject(this.boundDispatch, () =>
               renderRootComponent(
                 this.utopiaStoreHook,
+                this.utopiaCanvasStoreHook,
                 this.utopiaStoreApi,
                 this.spyCollector,
                 true,
@@ -274,6 +279,7 @@ export class Editor {
             () =>
               renderRootComponent(
                 this.utopiaStoreHook,
+                this.utopiaCanvasStoreHook,
                 this.utopiaStoreApi,
                 this.spyCollector,
                 true,
@@ -290,6 +296,7 @@ export class Editor {
                 () =>
                   renderRootComponent(
                     this.utopiaStoreHook,
+                    this.utopiaCanvasStoreHook,
                     this.utopiaStoreApi,
                     this.spyCollector,
                     true,
@@ -303,6 +310,7 @@ export class Editor {
                 () => {
                   renderRootComponent(
                     this.utopiaStoreHook,
+                    this.utopiaCanvasStoreHook,
                     this.utopiaStoreApi,
                     this.spyCollector,
                     true,
@@ -353,11 +361,55 @@ export class Editor {
       )
       this.storedState = result
 
-      if (!result.nothingChanged) {
-        // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
+      // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
+      // console.log('dispatch', dispatchedActions[0].action)
+      if (dispatchedActions[0].action !== 'SAVE_DOM_REPORT') {
+        //if (result.canvasOnly) {
+        // first we _only_ update the canvas store.
+        if (!result.nothingChanged) {
+          const forceReloadsBefore = (this.utopiaCanvasStoreHook as any).getNumberOfForceReloads()
+
+          performance.mark('start utopiaCanvasStoreHook')
+          this.utopiaCanvasStoreHook.setState({ ...result })
+          performance.mark('finish utopiaCanvasStoreHook')
+
+          const forceReloadsAfter = (this.utopiaCanvasStoreHook as any).getNumberOfForceReloads()
+          // console.log('forcereloads', forceReloadsBefore, forceReloadsAfter) // OMG if I remove this console.log, then these two numbers are identical, I swear
+          if (forceReloadsAfter === forceReloadsBefore) {
+            // the canvas was not interested in our changes, let's call update for the entire editor
+            performance.mark('start updateStoreFallback')
+            this.updateStore({
+              ...result,
+            })
+            performance.mark('finish updateStoreFallback')
+          } else {
+            // the canvas DOM Walker ran, and called SAVE_DOM_REPORT. dispatch will let us know by giving back a false result.canvasOnly,
+            // so there's no need to update the store here and unnecessarily run the zustand selectors
+          }
+          performance.measure(
+            `Canvas Store Update, ${simpleStringifyActions(dispatchedActions)}`,
+            'start utopiaCanvasStoreHook',
+            'finish utopiaCanvasStoreHook',
+          )
+          performance.measure(
+            `FALLBACK Store Update, ${simpleStringifyActions(dispatchedActions)}`,
+            'start updateStoreFallback',
+            'finish updateStoreFallback',
+          )
+        }
+      } else {
+        performance.mark('start updateStore')
+        // then we update both stores
+        this.utopiaCanvasStoreHook.setState({ ...result })
         this.updateStore({
           ...result,
         })
+        performance.mark('finish updateStore')
+        performance.measure(
+          `Entire Store Update, ${simpleStringifyActions(dispatchedActions)}`,
+          'start updateStore',
+          'finish updateStore',
+        )
       }
     }
     if (PRODUCTION_ENV) {
@@ -371,11 +423,12 @@ export class Editor {
 export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
+  useCanvasStore: UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
   propertyControlsInfoSupported: boolean
-}> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported }) => {
+}> = hot(({ api, useStore, useCanvasStore, spyCollector, propertyControlsInfoSupported }) => {
   return (
-    <EditorStateContext.Provider value={{ api, useStore }}>
+    <EditorStateContext.Provider value={{ api, useStore, useCanvasStore }}>
       <UiJsxCanvasContext.Provider value={spyCollector}>
         <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
       </UiJsxCanvasContext.Provider>
@@ -386,6 +439,7 @@ HotRoot.displayName = 'Utopia Editor Root'
 
 async function renderRootComponent(
   useStore: UtopiaStoreHook,
+  useCanvasStore: UtopiaStoreHook,
   api: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
   propertyControlsInfoSupported: boolean,
@@ -399,6 +453,7 @@ async function renderRootComponent(
         <HotRoot
           api={api}
           useStore={useStore}
+          useCanvasStore={useCanvasStore}
           spyCollector={spyCollector}
           propertyControlsInfoSupported={propertyControlsInfoSupported}
         />,
