@@ -131,6 +131,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
   const invalidatedSceneIDsRef = React.useRef<Array<string>>([])
+  const initCompleteRef = React.useRef<boolean>(false)
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
     'useDomWalker selectedViews',
@@ -360,7 +361,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         if (
           ObserversAvailable &&
           invalidatedSceneIDsRef.current?.length === 0 &&
-          rootMetadataInStateRef.current.length > 0
+          initCompleteRef.current === true
         ) {
           // no mutation happened on the entire canvas, just return the old metadata
           rootMetadata = rootMetadataInStateRef.current
@@ -555,6 +556,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         performance.mark('DOM_WALKER_END')
         performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
       }
+      initCompleteRef.current = true
       props.onDomReport(rootMetadata)
     }
   })
