@@ -116,6 +116,18 @@ function findParentScene(target: HTMLElement): string | null {
 
 const LogDomWalkerPerformance = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
 
+function lazyValue<T>(getter: () => T) {
+  let alreadyResolved = false
+  let resolvedValue: T
+  return () => {
+    if (!alreadyResolved) {
+      resolvedValue = getter()
+      alreadyResolved = true
+    }
+    return resolvedValue
+  }
+}
+
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
@@ -185,12 +197,15 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         mutationObserver!.observe(refOfContainer, MutationObserverConfig)
       }
 
-      const containerRect = getCanvasRectangleFromElement(refOfContainer, props.scale)
+      // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
+      const containerRect = lazyValue(() => {
+        return getCanvasRectangleFromElement(refOfContainer, props.scale)
+      })
 
       function globalFrameForElement(element: HTMLElement): CanvasRectangle {
         // Get the local frame from the DOM and calculate the global frame.
         const elementRect = getCanvasRectangleFromElement(element, props.scale)
-        return Utils.offsetRect(elementRect, Utils.negate(containerRect))
+        return Utils.offsetRect(elementRect, Utils.negate(containerRect()))
       }
 
       function getSpecialMeasurements(element: HTMLElement): SpecialSizeMeasurements {
@@ -343,6 +358,14 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         canvasRootPath: TemplatePath,
         validPaths: Array<string>,
       ) {
+        if (
+          invalidatedSceneIDsRef.current?.length === 0 &&
+          rootMetadataInStateRef.current.length > 0
+        ) {
+          // no mutation happened on the entire canvas, just return the old metadata
+          rootMetadata = rootMetadataInStateRef.current
+          return
+        }
         const childMetadata = walkSceneInner(canvasRoot, index, canvasRootPath, validPaths)
         // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
         // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
