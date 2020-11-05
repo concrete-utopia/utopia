@@ -38,7 +38,6 @@ import {
   UTOPIA_UID_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
   UTOPIA_UID_PARENTS_KEY,
-  UTOPIA_TEMPLATE_PATH,
 } from '../../core/model/utopia-constants'
 import ResizeObserver from 'resize-observer-polyfill'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
