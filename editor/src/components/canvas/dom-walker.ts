@@ -128,7 +128,7 @@ function lazyValue<T>(getter: () => T) {
 }
 
 function useResizeObserver(invalidatedSceneIDsRef: React.MutableRefObject<Array<string>>) {
-  const resizeObserver: ResizeObserver = React.useMemo(() => {
+  const resizeObserver = React.useMemo((): ResizeObserver | null => {
     if (ObserversAvailable) {
       return new ResizeObserver((entries: any) => {
         for (let entry of entries) {
@@ -158,7 +158,7 @@ function useResizeObserver(invalidatedSceneIDsRef: React.MutableRefObject<Array<
 }
 
 function useMutationObserver(invalidatedSceneIDsRef: React.MutableRefObject<Array<string>>) {
-  const mutationObserver = React.useMemo(() => {
+  const mutationObserver = React.useMemo((): MutationObserver | null => {
     if (ObserversAvailable) {
       return new (window as any).MutationObserver((mutations: MutationRecord[]) => {
         for (let mutation of mutations) {
@@ -214,11 +214,11 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       }
       // Get some base values relating to the div this component creates.
       const refOfContainer = containerRef.current
-      if (ObserversAvailable) {
+      if (ObserversAvailable && resizeObserver != null && mutationObserver != null) {
         Array.from(document.querySelectorAll('#canvas-container *')).map((elem) => {
           resizeObserver.observe(elem)
         })
-        mutationObserver!.observe(refOfContainer, MutationObserverConfig)
+        mutationObserver.observe(refOfContainer, MutationObserverConfig)
       }
 
       // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
