@@ -343,36 +343,38 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             const scenePath = TP.fromString(sceneIndexAttr.value)
             const validPaths = validPathsAttr.value.split(' ')
             const sceneID = sceneIndexAttr.value
-            if (
-              !ObserversAvailable ||
-              invalidatedSceneIDsRef.current == null ||
-              invalidatedSceneIDsRef.current.indexOf(sceneID) > -1
-            ) {
-              invalidatedSceneIDsRef.current = invalidatedSceneIDsRef.current.filter(
-                (sceneIDref) => sceneIDref !== sceneID,
-              )
-            } else {
-              const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
-                scenePath,
-                rootMetadataInStateRef.current,
-              )
-              if (elementFromCurrentMetadata != null) {
-                // early return for cached scenes
-                rootMetadata.push(...elementFromCurrentMetadata.children)
-                rootMetadata.push(elementFromCurrentMetadata)
-                return
+            let cachedMetadata: ElementInstanceMetadata | null = null
+            if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
+              if (invalidatedSceneIDsRef.current.indexOf(sceneID) === -1) {
+                const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
+                  scenePath,
+                  rootMetadataInStateRef.current,
+                )
+                if (elementFromCurrentMetadata != null) {
+                  cachedMetadata = elementFromCurrentMetadata
+                }
+              } else {
+                invalidatedSceneIDsRef.current = invalidatedSceneIDsRef.current.filter(
+                  (sceneIDref) => sceneIDref !== sceneID,
+                )
               }
             }
-            const metadata = walkSceneInner(scene, index, scenePath, validPaths)
-            rootMetadata.push(...metadata)
 
-            const sceneMetadata = collectMetadata(
-              scene,
-              TP.instancePath([], TP.elementPathForPath(scenePath)),
-              null,
-              metadata,
-            )
-            rootMetadata.push(sceneMetadata)
+            if (cachedMetadata == null) {
+              const metadata = walkSceneInner(scene, index, scenePath, validPaths)
+              rootMetadata.push(...metadata)
+
+              const sceneMetadata = collectMetadata(
+                scene,
+                TP.instancePath([], TP.elementPathForPath(scenePath)),
+                null,
+                metadata,
+              )
+              rootMetadata.push(sceneMetadata)
+            } else {
+              rootMetadata.push(...cachedMetadata.children)
+              rootMetadata.push(cachedMetadata)
+            }
           }
         }
       }
@@ -391,24 +393,24 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         ) {
           // no mutation happened on the entire canvas, just return the old metadata
           rootMetadata = rootMetadataInStateRef.current
-          return
+        } else {
+          const childMetadata = walkSceneInner(canvasRoot, index, canvasRootPath, validPaths)
+          // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
+          // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
+          // to provide a home for the the (really existing) childMetadata
+          const metadata: ElementInstanceMetadata = elementInstanceMetadata(
+            canvasRootPath as InstancePath,
+            left('Storyboard'),
+            {},
+            null,
+            null,
+            childMetadata,
+            false,
+            emptySpecialSizeMeasurements,
+            emptyComputedStyle,
+          )
+          rootMetadata.push(metadata)
         }
-        const childMetadata = walkSceneInner(canvasRoot, index, canvasRootPath, validPaths)
-        // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
-        // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
-        // to provide a home for the the (really existing) childMetadata
-        const metadata: ElementInstanceMetadata = elementInstanceMetadata(
-          canvasRootPath as InstancePath,
-          left('Storyboard'),
-          {},
-          null,
-          null,
-          childMetadata,
-          false,
-          emptySpecialSizeMeasurements,
-          emptyComputedStyle,
-        )
-        rootMetadata.push(metadata)
       }
 
       function walkSceneInner(
