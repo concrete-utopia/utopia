@@ -149,7 +149,7 @@ const MeasureRenderTimes = !PRODUCTION_ENV && typeof window.performance.mark ===
 
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
-    const uuid = v4()
+    const uuid = MeasureRenderTimes ? v4() : ''
     const mangledFunction = (p: any, context?: any) => {
       if (MeasureRenderTimes) {
         performance.mark(`render_start_${uuid}`)
