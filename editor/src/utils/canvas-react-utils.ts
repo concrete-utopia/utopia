@@ -179,7 +179,7 @@ const mangleFunctionType = Utils.memoize(
 
 const mangleClassType = Utils.memoize(
   (type: any) => {
-    const uuid = v4()
+    const uuid = MeasureRenderTimes ? v4() : ''
     const originalRender = type.prototype.render
     // mutation
     type.prototype.render = function monkeyRender() {
