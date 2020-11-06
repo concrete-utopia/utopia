@@ -397,4 +397,20 @@ describe('keepDeepReferenceEqualityIfPossible', () => {
     expect(resultingObject.c.clone).not.toBe(recursiveObject2.c.clone)
     expect(resultingObject.c.recursive).toBe(recursiveObject2.c.recursive)
   })
+
+  it('Keeps the Date reference for equal dates', () => {
+    const date1 = new Date('December 17, 1995 03:24:00')
+    const date2 = new Date('December 17, 1995 03:24:00')
+
+    const result = keepDeepReferenceEqualityIfPossible(date1, date2)
+    expect(result).toBe(date1)
+  })
+
+  it('Works for not equal dates', () => {
+    const date1 = new Date('December 17, 1995 03:24:00')
+    const date2 = new Date('December 17, 1995 03:24:10')
+
+    const result = keepDeepReferenceEqualityIfPossible(date1, date2)
+    expect(result).toBe(date2)
+  })
 })
