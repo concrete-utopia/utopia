@@ -238,7 +238,7 @@ function keepDeepReferenceEqualityInner(
   ) {
     if (oldValue.constructor !== possibleNewValue.constructor) return possibleNewValue
 
-    var length, i, keys
+    var length, i, entry, keys
     if (Array.isArray(oldValue)) {
       let newArrayToReturn: any[] = []
       let canSaveOldArray = true
@@ -273,15 +273,15 @@ function keepDeepReferenceEqualityInner(
       if (oldValue.size !== possibleNewValue.size) {
         canSaveOldMap = false
       }
-      for (i of possibleNewValue.entries()) {
-        const oldMapValue = oldValue.get(i[0])
+      for (entry of possibleNewValue.entries()) {
+        const oldMapValue = oldValue.get(entry[0])
         const newMapValue = keepDeepReferenceEqualityInner(
           oldMapValue,
-          i[1],
+          entry[1],
           stackSizeInner + 1,
           valueStackSoFar,
         )
-        newMapToReturn.set(i[0], newMapValue)
+        newMapToReturn.set(entry[0], newMapValue)
         if (newMapValue !== oldMapValue) {
           canSaveOldMap = false
         }
