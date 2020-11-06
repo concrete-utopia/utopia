@@ -299,8 +299,14 @@ function keepDeepReferenceEqualityInner(
        * which makes salvaging sub-values very hard. We don't attempt to do that here
        * */
 
-      if (oldValue.size !== possibleNewValue.size) return possibleNewValue
-      for (i of oldValue.entries()) if (!possibleNewValue.has(i[0])) return possibleNewValue
+      if (oldValue.size !== possibleNewValue.size) {
+        return possibleNewValue
+      }
+      for (entry of oldValue.entries()) {
+        if (!possibleNewValue.has(entry[0])) {
+          return possibleNewValue
+        }
+      }
       return oldValue
     }
 
