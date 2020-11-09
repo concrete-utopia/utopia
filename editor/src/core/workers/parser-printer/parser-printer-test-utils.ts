@@ -557,7 +557,7 @@ export function ensureElementsHaveUID(jsxElementChild: JSXElementChild, uids: Ar
     // Relies on this function blowing out for anything that doesn't have a valid one.
     const uid = getUtopiaIDFromJSXElement(element)
     if (uids.includes(uid)) {
-      throw new Error(`UID ${uid} is duplicated in ${element}`)
+      throw new Error(`UID ${uid} is duplicated in ${JSON.stringify(element)}`)
     } else {
       uids.push(uid)
     }

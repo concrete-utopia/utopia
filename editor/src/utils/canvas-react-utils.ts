@@ -6,6 +6,8 @@ import { MapLike } from 'typescript'
 import { firstLetterIsLowerCase } from '../core/shared/string-utils'
 import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
 import { UtopiaKeys, UTOPIA_UID_KEY, UTOPIA_UID_PARENTS_KEY } from '../core/model/utopia-constants'
+import { v4 } from 'uuid'
+import { PRODUCTION_ENV } from '../common/env-vars'
 
 const realCreateElement = React.createElement
 
@@ -143,11 +145,25 @@ function attachDataUidToRoot(
   }
 }
 
+const MeasureRenderTimes = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
+
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
+    const uuid = MeasureRenderTimes ? v4() : ''
     const mangledFunction = (p: any, context?: any) => {
+      if (MeasureRenderTimes) {
+        performance.mark(`render_start_${uuid}`)
+      }
       let originalTypeResponse = (type as React.FunctionComponent)(p, context)
       const res = attachDataUidToRoot(originalTypeResponse, (p as any)?.[UTOPIA_UID_KEY])
+      if (MeasureRenderTimes) {
+        performance.mark(`render_end_${uuid}`)
+        performance.measure(
+          `Render Component ${getDisplayName(type)}`,
+          `render_start_${uuid}`,
+          `render_end_${uuid}`,
+        )
+      }
       return res
     }
     ;(mangledFunction as any).theOriginalType = type
@@ -163,11 +179,24 @@ const mangleFunctionType = Utils.memoize(
 
 const mangleClassType = Utils.memoize(
   (type: any) => {
+    const uuid = MeasureRenderTimes ? v4() : ''
     const originalRender = type.prototype.render
     // mutation
     type.prototype.render = function monkeyRender() {
+      if (MeasureRenderTimes) {
+        performance.mark(`render_start_${uuid}`)
+      }
       let originalTypeResponse = originalRender.bind(this)()
-      return attachDataUidToRoot(originalTypeResponse, (this.props as any)?.['data-uid'])
+      const res = attachDataUidToRoot(originalTypeResponse, (this.props as any)?.['data-uid'])
+      if (MeasureRenderTimes) {
+        performance.mark(`render_end_${uuid}`)
+        performance.measure(
+          `Render ComponentClass ${getDisplayName(type)}`,
+          `render_start_${uuid}`,
+          `render_end_${uuid}`,
+        )
+      }
+      return res
     }
     ;(type as any).theOriginalType = type
     ;(type as any).displayName = `UtopiaSpiedClass(${getDisplayName(type)})`
