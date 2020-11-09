@@ -1066,6 +1066,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       'full-build',
       null,
       true,
+      null,
     ),
     propertyControlsInfo: {},
     nodeModules: {
@@ -1348,6 +1349,7 @@ export function editorModelFromPersistentModel(
       'full-build',
       null,
       true,
+      null,
     ),
     projectContents: persistentModel.projectContents,
     propertyControlsInfo: getControlsForExternalDependencies(npmDependencies),

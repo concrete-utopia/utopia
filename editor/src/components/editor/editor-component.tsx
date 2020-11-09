@@ -625,8 +625,8 @@ const PropertyControlsInfoComponent = betterReactMemo('PropertyControlsInfoCompo
       allow='autoplay'
       style={{
         backgroundColor: 'transparent',
-        width: '0px',
-        height: '0px',
+        width: '300px',
+        height: '600px',
         borderWidth: 0,
       }}
     />

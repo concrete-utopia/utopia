@@ -1,3 +1,5 @@
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
 import { PropertyControls } from 'utopia-api'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import {
@@ -9,14 +11,17 @@ import {
 import { getRequireFn } from '../es-modules/package-manager/package-manager'
 import {
   applyNodeModulesUpdate,
+  CanvasRelatedProps,
+  collectCanvasProps,
   getControlsForExternalDependencies,
   NodeModulesUpdate,
-} from '../property-controls/property-controls-utils'
+} from './property-controls-utils'
 import { RequestedNpmDependency } from '../shared/npm-dependency-types'
 import { NodeModules } from '../shared/project-file-types'
-import { fastForEach } from '../shared/utils'
+import { fastForEach, NO_OP } from '../shared/utils'
 import { resolvedDependencyVersions } from '../third-party/third-party-components'
 import { ExportsInfo, MultiFileBuildResult } from '../workers/ts/ts-worker'
+import { UiJsxCanvas } from '../../components/canvas/ui-jsx-canvas'
 
 export const initPropertyControlsProcessor = (
   onControlsProcessed: (propertyControlsInfo: PropertyControlsInfo) => void,
@@ -29,7 +34,9 @@ export const initPropertyControlsProcessor = (
     projectContents: ProjectContentTreeRoot,
     bundledProjectFiles: MultiFileBuildResult,
     exportsInfo: ReadonlyArray<ExportsInfo>,
+    canvasRelatedProps: CanvasRelatedProps | null,
   ) => {
+    // console.log('processPropertyControls triggerd')
     currentNodeModules = applyNodeModulesUpdate(currentNodeModules, nodeModulesUpdate)
     const resolvedNpmDependencies = resolvedDependencyVersions(npmDependencies, currentNodeModules)
 
@@ -44,6 +51,7 @@ export const initPropertyControlsProcessor = (
       projectContents,
       bundledProjectFiles,
       exportsInfo,
+      canvasRelatedProps,
     )
   }
 
@@ -52,6 +60,7 @@ export const initPropertyControlsProcessor = (
     projectContents: ProjectContentTreeRoot,
     bundledProjectFiles: MultiFileBuildResult,
     exportsInfo: ReadonlyArray<ExportsInfo>,
+    canvasRelatedProps: CanvasRelatedProps | null,
   ) => {
     const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
       moduleDownload.then((downloadedModules: NodeModules) => {
@@ -62,6 +71,7 @@ export const initPropertyControlsProcessor = (
           projectContents,
           bundledProjectFiles,
           exportsInfo,
+          canvasRelatedProps,
         )
       })
     }
@@ -86,6 +96,16 @@ export const initPropertyControlsProcessor = (
     })
 
     onControlsProcessed(propertyControlsInfo)
+
+    const canvasProps = collectCanvasProps(false, canvasRelatedProps, projectContents, requireFn)
+
+    // console.log('rendering fresh canvas')
+    if (canvasProps != null) {
+      ReactDOM.render(
+        <UiJsxCanvas {...canvasProps} clearErrors={NO_OP} />,
+        document.getElementById('canvas-root')!,
+      )
+    }
   }
 
   return processPropertyControls

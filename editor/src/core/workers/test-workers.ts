@@ -13,6 +13,7 @@ import {
 } from './parser-printer/parser-printer-worker'
 import { handleMessage as handleTSWorkerMessage } from './ts/ts-worker'
 import { BundlerWorker } from './bundler-bridge'
+import type { EditorAction } from '../../components/editor/action-types'
 
 export class FakeBundlerWorker implements BundlerWorker {
   messageListeners: Array<(ev: MessageEvent) => any> = []
@@ -98,6 +99,13 @@ export class FakeWatchdogWorker implements WatchdogWorker {
   }
 
   sendHeartbeatResponseMessage(_id: NodeJS.Timer, _projectId: string): void {
+    // empty
+  }
+
+  sendActionToDispatcher(actions: ReadonlyArray<EditorAction>): void {
+    // empty
+  }
+  addActionDispatchEventListener(listener: (actions: ReadonlyArray<EditorAction>) => void): void {
     // empty
   }
 }

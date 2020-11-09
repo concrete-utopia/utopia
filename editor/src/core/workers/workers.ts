@@ -17,6 +17,7 @@ import {
 import { UtopiaTsWorkers, FileContent } from './common/worker-types'
 import { ExportsInfo, MultiFileBuildResult } from './ts/ts-worker'
 import { ProjectContentTreeRoot } from '../../components/assets'
+import { EditorAction } from '../../components/editor/action-types'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   private bundlerWorker: NewBundlerWorker
@@ -85,6 +86,15 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   sendHeartbeatResponseMessage(id: NodeJS.Timer, projectId: string, safeMode: boolean): void {
     this.watchdogWorker.sendHeartbeatResponseMessage(id, projectId, safeMode)
   }
+
+  sendActionToDispatcher = (actions: ReadonlyArray<EditorAction>): void => {
+    this.watchdogWorker.sendActionToDispatcher(actions)
+  }
+  addActionDispatchEventListener = (
+    listener: (actions: ReadonlyArray<EditorAction>) => void,
+  ): void => {
+    this.watchdogWorker.addActionDispatchEventListener(listener)
+  }
 }
 
 export interface ParserPrinterWorker {
@@ -152,6 +162,9 @@ export interface WatchdogWorker {
   addHeartbeatRequestEventListener(handler: (e: MessageEvent) => void): void
 
   sendHeartbeatResponseMessage(id: NodeJS.Timer, projectId: string, safeMode: boolean): void
+
+  sendActionToDispatcher(actions: ReadonlyArray<EditorAction>): void
+  addActionDispatchEventListener(listener: (actions: ReadonlyArray<EditorAction>) => void): void
 }
 
 export class RealWatchdogWorker implements WatchdogWorker {
@@ -212,6 +225,20 @@ export class RealWatchdogWorker implements WatchdogWorker {
   sendHeartbeatResponseMessage(id: NodeJS.Timer, projectId: string, safeMode: boolean): void {
     this.worker.postMessage(createHeartbeatResponseMessage(id, projectId, safeMode))
   }
+
+  sendActionToDispatcher = (actions: ReadonlyArray<EditorAction>): void => {
+    this.worker.postMessage({ type: 'DISPATCH_ACTIONS', actions: actions })
+  }
+
+  addActionDispatchEventListener = (
+    listener: (actions: ReadonlyArray<EditorAction>) => void,
+  ): void => {
+    this.worker.addEventListener('message', (messageEvent) => {
+      if (messageEvent.data?.type === 'PROCESS_ACTIONS') {
+        listener(messageEvent.data?.actions)
+      }
+    })
+  }
 }
 
 export class MockUtopiaTsWorkers implements UtopiaTsWorkers {
@@ -271,6 +298,13 @@ export class MockUtopiaTsWorkers implements UtopiaTsWorkers {
   }
 
   sendHeartbeatResponseMessage(_id: NodeJS.Timer, _projectId: string): void {
+    // empty
+  }
+
+  sendActionToDispatcher(actions: ReadonlyArray<EditorAction>): void {
+    // empty
+  }
+  addActionDispatchEventListener(listener: (actions: ReadonlyArray<EditorAction>) => void): void {
     // empty
   }
 }

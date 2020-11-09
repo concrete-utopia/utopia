@@ -10,6 +10,7 @@ import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import { SafeFunction } from '../../core/shared/code-exec-utils'
 import {
+  CanvasRelatedProps,
   getControlsForExternalDependencies,
   NodeModulesUpdate,
   sendPropertyControlsInfoRequest,
@@ -180,6 +181,7 @@ export function generateCodeResultCache(
   buildType: BuildType,
   mainUiFileName: string | null,
   onlyProjectFiles: boolean,
+  canvasRelatedProps: CanvasRelatedProps | null,
 ): CodeResultCache {
   // Makes the assumption that `fullBuild` and `updatedModules` are in line
   // with each other.
@@ -216,7 +218,13 @@ export function generateCodeResultCache(
   }
 
   // Trigger async call to build the property controls info.
-  sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents, onlyProjectFiles)
+  sendPropertyControlsInfoRequest(
+    exportsInfo,
+    nodeModules,
+    projectContents,
+    onlyProjectFiles,
+    canvasRelatedProps,
+  )
 
   const requireFn = getEditorRequireFn(projectContents, nodeModules, dispatch)
 

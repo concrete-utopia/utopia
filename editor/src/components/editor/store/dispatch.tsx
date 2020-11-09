@@ -131,6 +131,7 @@ function processAction(
     const editorAfterCanvas = runLocalCanvasAction(
       editorAfterUpdateFunction,
       working.derived,
+      dispatchEvent,
       action as CanvasAction,
     )
     let editorAfterNavigator = runLocalNavigatorAction(

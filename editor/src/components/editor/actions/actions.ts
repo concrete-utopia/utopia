@@ -452,6 +452,7 @@ import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch
 import {
   getPropertyControlsForTarget,
   getPropertyControlsForTargetFromEditor,
+  pickCanvasRelatedProps,
   setPropertyControlsIFrameReady,
 } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
@@ -521,7 +522,9 @@ function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
 }
 
 function switchAndUpdateFrames(
+  dispatch: EditorDispatch,
   editor: EditorModel,
+  derived: DerivedState,
   target: InstancePath,
   layoutSystem: SettableLayoutSystem,
 ): EditorModel {
@@ -710,7 +713,7 @@ function switchAndUpdateFrames(
       )
     }
   })
-  return setCanvasFramesInnerNew(withChildrenUpdated, framesAndTargets, null)
+  return setCanvasFramesInnerNew(dispatch, withChildrenUpdated, derived, framesAndTargets, null)
 }
 
 export function editorMoveMultiSelectedTemplates(
@@ -1426,8 +1429,9 @@ export const UPDATE_FNS = {
     action: SetCanvasFrames,
     editor: EditorModel,
     derived: DerivedState,
+    dispatch: EditorDispatch,
   ): EditorModel => {
-    return setCanvasFramesInnerNew(editor, action.framesAndTargets, null)
+    return setCanvasFramesInnerNew(dispatch, editor, derived, action.framesAndTargets, null)
   },
   NAVIGATOR_REORDER: (
     action: NavigatorReorder,
@@ -1974,7 +1978,13 @@ export const UPDATE_FNS = {
             getFrameChange(viewPath, boundingBox, isParentFlex),
           ]
           const withWrapperViewAdded = {
-            ...setCanvasFramesInnerNew(withWrapperViewAddedNoFrame, frameChanges, null),
+            ...setCanvasFramesInnerNew(
+              dispatch,
+              withWrapperViewAddedNoFrame,
+              derived,
+              frameChanges,
+              null,
+            ),
           }
 
           // If this is a group parent, realign to the origin
@@ -2650,6 +2660,7 @@ export const UPDATE_FNS = {
     action: UpdateFrameDimensions,
     editor: EditorModel,
     derived: DerivedState,
+    dispatch: EditorDispatch,
   ): EditorModel => {
     const initialFrame = MetadataUtils.getFrame(action.element, editor.jsxMetadataKILLME)
 
@@ -2702,7 +2713,7 @@ export const UPDATE_FNS = {
     const frameChanges: Array<PinOrFlexFrameChange> = [
       getFrameChange(action.element, canvasFrame, isParentFlex),
     ]
-    return setCanvasFramesInnerNew(editor, frameChanges, null)
+    return setCanvasFramesInnerNew(dispatch, editor, derived, frameChanges, null)
   },
   SET_NAVIGATOR_RENAMING_TARGET: (
     action: SetNavigatorRenamingTarget,
@@ -3060,15 +3071,17 @@ export const UPDATE_FNS = {
     action: AlignSelectedViews,
     editor: EditorModel,
     derived: DerivedState,
+    dispatch: EditorDispatch,
   ): EditorModel => {
-    return alignOrDistributeSelectedViews(editor, derived, action.alignment)
+    return alignOrDistributeSelectedViews(dispatch, editor, derived, action.alignment)
   },
   DISTRIBUTE_SELECTED_VIEWS: (
     action: DistributeSelectedViews,
     editor: EditorModel,
     derived: DerivedState,
+    dispatch: EditorDispatch,
   ): EditorModel => {
-    return alignOrDistributeSelectedViews(editor, derived, action.distribution)
+    return alignOrDistributeSelectedViews(dispatch, editor, derived, action.distribution)
   },
   SHOW_CONTEXT_MENU: (action: ShowContextMenu, editor: EditorModel): EditorModel => {
     // side effect!
@@ -3690,10 +3703,15 @@ export const UPDATE_FNS = {
   TOGGLE_PROPERTY: (action: ToggleProperty, editor: EditorModel): EditorModel => {
     return modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editor)
   },
-  SWITCH_LAYOUT_SYSTEM: (action: SwitchLayoutSystem, editor: EditorModel): EditorModel => {
+  SWITCH_LAYOUT_SYSTEM: (
+    action: SwitchLayoutSystem,
+    editor: EditorModel,
+    derived: DerivedState,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
     return editor.selectedViews.reduce((working, target) => {
       if (TP.isInstancePath(target)) {
-        return switchAndUpdateFrames(working, target, action.layoutSystem)
+        return switchAndUpdateFrames(dispatch, working, derived, target, action.layoutSystem)
       } else {
         return working
       }
@@ -3978,6 +3996,7 @@ export const UPDATE_FNS = {
   UPDATE_NODE_MODULES_CONTENTS: (
     action: UpdateNodeModulesContents,
     editor: EditorState,
+    derived: DerivedState,
     dispatch: EditorDispatch,
   ): EditorState => {
     let result: EditorState
@@ -4014,6 +4033,7 @@ export const UPDATE_FNS = {
         action.buildType,
         getMainUIFromModel(result),
         onlyProjectFiles,
+        pickCanvasRelatedProps(editor, derived),
       ),
     }
 
@@ -4050,7 +4070,12 @@ export const UPDATE_FNS = {
     // No need to actually change the editor state.
     return editor
   },
-  ADD_MISSING_DIMENSIONS: (action: AddMissingDimensions, editor: EditorState): EditorState => {
+  ADD_MISSING_DIMENSIONS: (
+    action: AddMissingDimensions,
+    editor: EditorState,
+    derived: DerivedState,
+    dispatch: EditorDispatch,
+  ): EditorState => {
     const ArbitrarySize = 10
     const frameWithExtendedDimensions = canvasRectangle({
       x: action.existingSize.x,
@@ -4063,7 +4088,7 @@ export const UPDATE_FNS = {
       frameWithExtendedDimensions,
       null,
     )
-    return setCanvasFramesInnerNew(editor, [frameAndTarget], null)
+    return setCanvasFramesInnerNew(dispatch, editor, derived, [frameAndTarget], null)
   },
   SET_PACKAGE_STATUS: (action: SetPackageStatus, editor: EditorState): EditorState => {
     const packageName = action.packageName
@@ -4119,6 +4144,7 @@ export const UPDATE_FNS = {
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
 export function alignOrDistributeSelectedViews(
+  dispatch: EditorDispatch,
   editor: EditorModel,
   derived: DerivedState,
   alignmentOrDistribution: Alignment | Distribution,
@@ -4171,7 +4197,7 @@ export function alignOrDistributeSelectedViews(
         alignmentOrDistribution,
         sourceIsParent,
       )
-      return setCanvasFramesInnerNew(editor, updatedCanvasFrames, null)
+      return setCanvasFramesInnerNew(dispatch, editor, derived, updatedCanvasFrames, null)
     }
   }
   return editor
@@ -4292,11 +4318,13 @@ function alignOrDistributeCanvasRects(
 }
 
 function setCanvasFramesInnerNew(
+  dispatch: EditorDispatch,
   editor: EditorModel,
+  derived: DerivedState,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
 ): EditorModel {
-  return modifyOpenScenesAndJSXElements((components) => {
+  const newEditorModel = modifyOpenScenesAndJSXElements((components) => {
     return updateFramesOfScenesAndComponents(
       components,
       editor.jsxMetadataKILLME,
@@ -4304,6 +4332,19 @@ function setCanvasFramesInnerNew(
       optionalParentFrame,
     )
   }, editor)
+  generateCodeResultCache(
+    newEditorModel.projectContents,
+    editor.codeResultCache.projectModules,
+    codeCacheToBuildResult(editor.codeResultCache.cache),
+    editor.codeResultCache.exportsInfo,
+    editor.nodeModules.files,
+    dispatch,
+    'incremental',
+    getMainUIFromModel(editor),
+    true,
+    pickCanvasRelatedProps(editor, derived),
+  )
+  return newEditorModel
 }
 
 export function insertScene(frame: CanvasRectangle): InsertScene {
@@ -4371,6 +4412,7 @@ export async function newProject(
     'full-build',
     null,
     false,
+    null,
   )
 
   renderEditorRoot()
@@ -4439,6 +4481,7 @@ export async function load(
       'full-build',
       null,
       false,
+      null,
     )
   } else {
     codeResultCache = await loadCodeResult(
@@ -4497,6 +4540,7 @@ function loadCodeResult(
             'full-build',
             null,
             false,
+            null,
           )
           resolve(codeResultCache)
           workers.removeBundleResultEventListener(handleMessage)

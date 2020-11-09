@@ -81,6 +81,7 @@ import {
 import { isLeft } from '../core/shared/either'
 import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
 import { UtopiaTsWorkers } from '../core/workers/common/worker-types'
+import { pickCanvasRelatedProps } from '../core/property-controls/property-controls-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -159,6 +160,7 @@ export class Editor {
               msg.buildType,
               getMainUIFromModel(this.storedState.editor),
               true,
+              pickCanvasRelatedProps(this.storedState.editor, this.storedState.derived),
             )
 
             if (codeResultCache != null) {

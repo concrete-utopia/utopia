@@ -7,6 +7,8 @@ import {
 import { mangleNodeModulePaths } from '../es-modules/package-manager/merge-modules'
 import { getJsDelivrFileUrl } from '../es-modules/package-manager/packager-url'
 import * as antdPackagerResponse from '../es-modules/test-cases/antd-packager-response.json'
+import { left } from '../shared/either'
+import { canvasPoint } from '../shared/math-utils'
 import { PackagerServerResponse, requestedNpmDependency } from '../shared/npm-dependency-types'
 import { initPropertyControlsProcessor } from './property-controls-processor'
 import { fullNodeModulesUpdate, getThirdPartyPropertyControls } from './property-controls-utils'
@@ -56,6 +58,18 @@ describe('Property Controls Processor', () => {
       {},
       {},
       [],
+      {
+        base64Blobs: {},
+        canvasIsLive: false,
+        hiddenInstances: [],
+        indexHtmlFile: left('no'),
+        mountCount: 0,
+        roundedCanvasOffset: canvasPoint({ x: 0, y: 0 }),
+        scale: 1,
+        textEditor: null,
+        transientFileState: null,
+        uiFilePath: 'src/app.js',
+      },
     )
   })
 
@@ -107,6 +121,18 @@ describe('Property Controls Processor', () => {
         },
       },
       [],
+      {
+        base64Blobs: {},
+        canvasIsLive: false,
+        hiddenInstances: [],
+        indexHtmlFile: left('no'),
+        mountCount: 0,
+        roundedCanvasOffset: canvasPoint({ x: 0, y: 0 }),
+        scale: 1,
+        textEditor: null,
+        transientFileState: null,
+        uiFilePath: 'src/app.js',
+      },
     )
   })
 })

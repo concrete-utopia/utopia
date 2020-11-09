@@ -22,11 +22,11 @@ export function runLocalEditorAction(
 ): EditorState {
   switch (action.action) {
     case 'SET_CANVAS_FRAMES':
-      return UPDATE_FNS.SET_CANVAS_FRAMES(action, state, derivedState)
+      return UPDATE_FNS.SET_CANVAS_FRAMES(action, state, derivedState, dispatch)
     case 'ALIGN_SELECTED_VIEWS':
-      return UPDATE_FNS.ALIGN_SELECTED_VIEWS(action, state, derivedState)
+      return UPDATE_FNS.ALIGN_SELECTED_VIEWS(action, state, derivedState, dispatch)
     case 'DISTRIBUTE_SELECTED_VIEWS':
-      return UPDATE_FNS.DISTRIBUTE_SELECTED_VIEWS(action, state, derivedState)
+      return UPDATE_FNS.DISTRIBUTE_SELECTED_VIEWS(action, state, derivedState, dispatch)
     case 'SAVE_ASSET':
       return UPDATE_FNS.SAVE_ASSET(action, state, derivedState, dispatch, userState)
     default:
@@ -155,7 +155,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_Z_INDEX':
       return UPDATE_FNS.SET_Z_INDEX(action, state, derivedState)
     case 'UPDATE_FRAME_DIMENSIONS':
-      return UPDATE_FNS.UPDATE_FRAME_DIMENSIONS(action, state, derivedState)
+      return UPDATE_FNS.UPDATE_FRAME_DIMENSIONS(action, state, derivedState, dispatch)
     case 'SET_NAVIGATOR_RENAMING_TARGET':
       return UPDATE_FNS.SET_NAVIGATOR_RENAMING_TARGET(action, state)
     case 'SET_STORED_FONT_SETTINGS':
@@ -223,7 +223,7 @@ export function runSimpleLocalEditorAction(
     case 'TOGGLE_PROPERTY':
       return UPDATE_FNS.TOGGLE_PROPERTY(action, state)
     case 'SWITCH_LAYOUT_SYSTEM':
-      return UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(action, state)
+      return UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(action, state, derivedState, dispatch)
     case 'CLEAR_IMAGE_FILE_BLOB':
       return UPDATE_FNS.CLEAR_IMAGE_FILE_BLOB(action, state)
     case 'SAVE_CURRENT_FILE':
@@ -269,7 +269,7 @@ export function runSimpleLocalEditorAction(
     case 'RESET_PROP_TO_DEFAULT':
       return UPDATE_FNS.RESET_PROP_TO_DEFAULT(action, state)
     case 'UPDATE_NODE_MODULES_CONTENTS':
-      return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state, dispatch)
+      return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state, derivedState, dispatch)
     case 'UPDATE_PACKAGE_JSON':
       return UPDATE_FNS.UPDATE_PACKAGE_JSON(action, state)
     case 'START_CHECKPOINT_TIMER':
@@ -277,7 +277,7 @@ export function runSimpleLocalEditorAction(
     case 'FINISH_CHECKPOINT_TIMER':
       return UPDATE_FNS.FINISH_CHECKPOINT_TIMER(action, state)
     case 'ADD_MISSING_DIMENSIONS':
-      return UPDATE_FNS.ADD_MISSING_DIMENSIONS(action, state)
+      return UPDATE_FNS.ADD_MISSING_DIMENSIONS(action, state, derivedState, dispatch)
     case 'SET_PACKAGE_STATUS':
       return UPDATE_FNS.SET_PACKAGE_STATUS(action, state)
     case 'UPDATE_PROPERTY_CONTROLS_INFO':

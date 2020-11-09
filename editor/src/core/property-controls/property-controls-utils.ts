@@ -10,7 +10,7 @@ import {
   parsePropertyControls,
 } from './property-controls-parser'
 import { PropertyControls, getDefaultProps, ControlDescription } from 'utopia-api'
-import { isRight, foldEither } from '../shared/either'
+import { isRight, foldEither, Either } from '../shared/either'
 import { forEachValue, objectMap } from '../shared/object-utils'
 import { ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
@@ -19,32 +19,45 @@ import { fastForEach } from '../shared/utils'
 import {
   isResolvedNpmDependency,
   PossiblyUnversionedNpmDependency,
+  RequireFn,
 } from '../shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../third-party/third-party-components'
 import {
+  ArbitraryJSBlock,
   ComponentMetadata,
   getJSXElementNameAsString,
   isIntrinsicHTMLElement,
+  TopLevelElement,
   UtopiaJSXComponent,
 } from '../shared/element-template'
 import {
-  esCodeFile,
   Imports,
-  isEsCodeFile,
+  InstancePath,
+  isParsedTextFile,
+  isParseSuccess,
   NodeModules,
-  ProjectContents,
   TemplatePath,
+  TextFile,
 } from '../shared/project-file-types'
 import {
   getOpenImportsFromState,
   getOpenUtopiaJSXComponentsFromState,
   getOpenUIJSFileKey,
   EditorState,
+  CanvasBase64Blobs,
+  UIFileBase64Blobs,
+  TransientFileState,
+  getIndexHtmlFileFromEditorState,
+  DerivedState,
 } from '../../components/editor/store/editor-state'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
 import { ExportsInfo } from '../workers/ts/ts-worker'
-import { ProjectContentTreeRoot } from '../../components/assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
+import type { UiJsxCanvasProps } from '../../components/canvas/ui-jsx-canvas'
+import { defaultIfNull, optionalFlatMap, optionalMap } from '../shared/optional-utils'
+import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
+import { CanvasVector, WindowPoint } from '../shared/math-utils'
 
 export interface FullNodeModulesUpdate {
   type: 'FULL_NODE_MODULES_UPDATE'
@@ -119,21 +132,154 @@ export function combineUpdates(
   }
 }
 
+export interface CanvasRelatedProps {
+  canvasIsLive: boolean
+  uiFilePath: string | null
+  base64Blobs: CanvasBase64Blobs
+  transientFileState: TransientFileState | null
+  indexHtmlFile: Either<string, TextFile>
+  textEditor: {
+    templatePath: InstancePath
+    triggerMousePosition: WindowPoint | null
+  } | null
+  hiddenInstances: Array<TemplatePath>
+  roundedCanvasOffset: CanvasVector
+  scale: number
+  mountCount: number
+}
+
+export function pickCanvasRelatedProps(
+  editor: EditorState,
+  derived: DerivedState,
+): CanvasRelatedProps {
+  return {
+    canvasIsLive: editor.mode.type === 'live',
+    base64Blobs: editor.canvas.base64Blobs,
+    hiddenInstances: editor.hiddenInstances,
+    indexHtmlFile: getIndexHtmlFileFromEditorState(editor),
+    mountCount: editor.canvas.mountCount,
+    roundedCanvasOffset: editor.canvas.roundedCanvasOffset,
+    scale: editor.canvas.scale,
+    textEditor: editor.canvas.textEditor,
+    transientFileState: derived.canvas.transientState.fileState,
+    uiFilePath: getOpenUIJSFileKey(editor),
+  }
+}
+
 export interface GetPropertyControlsInfoMessage {
   exportsInfo: ReadonlyArray<ExportsInfo>
   nodeModulesUpdate: NodeModulesUpdate
   projectContents: ProjectContentTreeRoot
+  canvasRelatedProps: CanvasRelatedProps | null
+}
+
+const emptyFileBlobs: UIFileBase64Blobs = {}
+
+const emptyImports: Imports = {}
+const emptyTopLevelElements: Array<TopLevelElement> = []
+
+export function collectCanvasProps(
+  walkDOM: boolean,
+  canvasRelatedProps: CanvasRelatedProps | null,
+  projectContents: ProjectContentTreeRoot,
+  requireFn: RequireFn,
+): UiJsxCanvasProps | null {
+  const uiFile = getContentsTreeFileFromString(
+    projectContents,
+    canvasRelatedProps?.uiFilePath ?? '',
+  )
+  const uiFilePath = canvasRelatedProps?.uiFilePath
+  if (
+    canvasRelatedProps == null ||
+    uiFile == null ||
+    uiFilePath == null ||
+    !isParsedTextFile(uiFile)
+  ) {
+    return null
+  } else {
+    const defaultedFileBlobs = defaultIfNull(
+      emptyFileBlobs,
+      optionalFlatMap((key) => canvasRelatedProps.base64Blobs[key], uiFilePath),
+    )
+
+    let imports: Imports = emptyImports
+    let topLevelElementsIncludingScenes: Array<TopLevelElement> = emptyTopLevelElements
+    let jsxFactoryFunction: string | null = null
+    let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
+
+    if (uiFile != null && isParseSuccess(uiFile.fileContents.parsed)) {
+      const success = uiFile.fileContents.parsed
+      imports = uiFile.fileContents.parsed.imports
+      topLevelElementsIncludingScenes = success.topLevelElements
+      jsxFactoryFunction = success.jsxFactoryFunction
+      combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
+      const transientFileState = canvasRelatedProps.transientFileState
+      if (transientFileState != null) {
+        imports = transientFileState.imports
+        topLevelElementsIncludingScenes = transientFileState.topLevelElementsIncludingScenes
+      }
+    }
+
+    let linkTags = ''
+    const indexHtml = canvasRelatedProps.indexHtmlFile
+    if (isRight(indexHtml)) {
+      const parsedLinkTags = getGeneratedExternalLinkText(indexHtml.value.fileContents.code)
+      if (isRight(parsedLinkTags)) {
+        linkTags = parsedLinkTags.value
+      }
+    }
+
+    const editedTextElement = optionalMap(
+      (textEd) => textEd.templatePath,
+      canvasRelatedProps.textEditor,
+    )
+
+    let hiddenInstances = canvasRelatedProps.hiddenInstances
+    if (editedTextElement != null) {
+      hiddenInstances = [...hiddenInstances, editedTextElement]
+    }
+    return {
+      offset: canvasRelatedProps.roundedCanvasOffset,
+      scale: canvasRelatedProps.scale,
+      uiFileCode: uiFile.fileContents.code,
+      uiFilePath: uiFilePath,
+      requireFn: requireFn,
+      hiddenInstances: hiddenInstances,
+      editedTextElement: editedTextElement,
+      fileBlobs: defaultedFileBlobs,
+      mountCount: canvasRelatedProps.mountCount,
+      onDomReport: () => {
+        //empty
+      },
+      walkDOM: walkDOM,
+      imports: imports,
+      topLevelElementsIncludingScenes: topLevelElementsIncludingScenes,
+      jsxFactoryFunction: jsxFactoryFunction,
+      clearConsoleLogs: () => {
+        // empty
+      },
+      addToConsoleLogs: () => {
+        // empty
+      },
+      canvasIsLive: canvasRelatedProps.canvasIsLive,
+      shouldIncludeCanvasRootInTheSpy: true,
+      linkTags: linkTags,
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
+    }
+  }
 }
 
 export function createGetPropertyControlsInfoMessage(
   exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModulesUpdate: NodeModulesUpdate,
   projectContents: ProjectContentTreeRoot,
+  canvasRelatedProps: CanvasRelatedProps | null,
 ): GetPropertyControlsInfoMessage {
   return {
     exportsInfo: exportsInfo,
     nodeModulesUpdate: nodeModulesUpdate,
     projectContents: projectContents,
+    canvasRelatedProps: canvasRelatedProps,
   }
 }
 
@@ -440,7 +586,9 @@ export function sendPropertyControlsInfoRequest(
   nodeModules: NodeModules,
   projectContents: ProjectContentTreeRoot,
   onlyProjectFiles: boolean,
+  canvasRelatedProps: CanvasRelatedProps | null,
 ): void {
+  // console.log('triggering canvas message?')
   let nodeModulesUpdate: NodeModulesUpdate
   if (onlyProjectFiles) {
     let notNodeModulesFiles: NodeModules = {}
@@ -484,11 +632,13 @@ export function sendPropertyControlsInfoRequest(
         } else {
           try {
             if (queuedNodeModulesUpdate != null) {
+              // console.log('actually sending message!!!')
               contentWindow.postMessage(
                 createGetPropertyControlsInfoMessage(
                   exportsInfo,
                   queuedNodeModulesUpdate,
                   projectContents,
+                  canvasRelatedProps,
                 ),
                 '*',
               )

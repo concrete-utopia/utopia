@@ -10,18 +10,19 @@ import {
   createGetPropertyControlsInfoMessage,
   GetPropertyControlsInfoMessage,
 } from '../core/property-controls/property-controls-utils'
-import { applicative3Either, forEachRight } from '../core/shared/either'
+import { applicative3Either, applicative4Either, forEachRight } from '../core/shared/either'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { createBundle } from '../core/workers/bundler-promise'
 import { objectKeyParser, parseAny, ParseResult } from '../utils/value-parser-utils'
 
 // Not a full parse, just checks the primary fields are there.
 function fastPropertyControlsParse(value: unknown): ParseResult<GetPropertyControlsInfoMessage> {
-  return applicative3Either(
+  return applicative4Either(
     createGetPropertyControlsInfoMessage,
     objectKeyParser(parseAny, 'exportsInfo')(value),
     objectKeyParser(parseAny, 'nodeModulesUpdate')(value),
     objectKeyParser(parseAny, 'projectContents')(value),
+    objectKeyParser(parseAny, 'canvasRelatedProps')(value),
   )
 }
 
@@ -47,17 +48,20 @@ const initPropertyControlsWorker = () => {
        * for the bundler to process it, basically with no upside
        */
       const emptyTypeDefinitions = {}
-      const bundledProjectFiles = (
-        await createBundle(bundlerWorker, emptyTypeDefinitions, projectContents)
-      ).buildResult
+      // console.log('got message GetPropertyControlsInfoMessage now updating createBundle')
+      // const bundledProjectFiles = (
+      //   await createBundle(bundlerWorker, emptyTypeDefinitions, projectContents)
+      // ).buildResult
 
+      // console.log('bundle done')
       const npmDependencies = dependenciesWithEditorRequirements(projectContents)
       propertyControlsProcessor(
         npmDependencies,
         model.nodeModulesUpdate,
         projectContents,
-        bundledProjectFiles,
+        {},
         model.exportsInfo,
+        model.canvasRelatedProps,
       )
     }
   }

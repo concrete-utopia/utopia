@@ -1,4 +1,5 @@
 import * as localforage from 'localforage'
+import type { EditorAction } from '../../components/editor/action-types'
 import { getProjectLockedKey } from '../shared/utils'
 
 export const DEFAULT_HEARTBEAT_TIMEOUT_MS = 2000
@@ -8,7 +9,11 @@ export type IncomingWatchdogWorkerMessage =
   | WatchdogInitMessage
   | WatchdogTerminateMessage
   | HeartbeatResponseMessage
-export type OutgoingWatchdogWorkerMessage = HeartbeatRequestMessage | WatchdogInitResponseMessage
+  | DispatchActions
+export type OutgoingWatchdogWorkerMessage =
+  | HeartbeatRequestMessage
+  | WatchdogInitResponseMessage
+  | ProcessActions
 
 export interface WatchdogInitMessage {
   type: 'watchdoginit'
@@ -38,6 +43,16 @@ export interface HeartbeatResponseMessage {
   id: NodeJS.Timer
   projectId: string
   safeMode: boolean
+}
+
+export interface DispatchActions {
+  type: 'DISPATCH_ACTIONS'
+  actions: Array<EditorAction>
+}
+
+export interface ProcessActions {
+  type: 'PROCESS_ACTIONS'
+  actions: Array<EditorAction>
 }
 
 export function createWatchdogInitMessage(
@@ -119,6 +134,9 @@ export async function handleMessage(
       break
     case 'watchdogterminate':
       clearTimeout(workerMessage.setIntervalId)
+      break
+    case 'DISPATCH_ACTIONS':
+      sendMessage({ type: 'PROCESS_ACTIONS', actions: workerMessage.actions })
       break
   }
 }

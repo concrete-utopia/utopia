@@ -1,4 +1,5 @@
 import { ProjectContentTreeRoot } from '../../../components/assets'
+import type { EditorAction } from '../../../components/editor/action-types'
 import { TypeDefinitions } from '../../shared/npm-dependency-types'
 import { TextFile, ParseSuccess } from '../../shared/project-file-types'
 
@@ -22,4 +23,6 @@ export interface UtopiaTsWorkers {
   initWatchdogWorker(projectID: string): void
   addHeartbeatRequestEventListener(handler: (e: MessageEvent) => void): void
   sendHeartbeatResponseMessage: (id: NodeJS.Timer, projectId: string, safeMode: boolean) => void
+  sendActionToDispatcher(actions: ReadonlyArray<EditorAction>): void
+  addActionDispatchEventListener(listener: (actions: ReadonlyArray<EditorAction>) => void): void
 }

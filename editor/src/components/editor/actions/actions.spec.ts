@@ -221,7 +221,7 @@ describe('SET_CANVAS_FRAMES', () => {
       ],
       false,
     )
-    const newEditor = UPDATE_FNS.SET_CANVAS_FRAMES(action, testEditor, derivedState)
+    const newEditor = UPDATE_FNS.SET_CANVAS_FRAMES(action, testEditor, derivedState, NO_OP)
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
       '/src/app.js',
@@ -827,16 +827,26 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   })
   it('switches from pins to flex correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')
-    const result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
+    const result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(
+      switchActionToFlex,
+      testEditorWithPins,
+      null as any,
+      NO_OP as any,
+    )
     expect(
       getOpenUtopiaJSXComponentsFromState(result).map(clearTopLevelElementUniqueIDs),
     ).toMatchSnapshot()
   })
   it('switches from flex to pins correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')
-    let result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
+    let result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(
+      switchActionToFlex,
+      testEditorWithPins,
+      null as any,
+      NO_OP as any,
+    )
     const switchActionToPins = switchLayoutSystem(LayoutSystem.PinSystem)
-    result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToPins, result)
+    result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToPins, result, null as any, NO_OP as any)
     expect(
       getOpenUtopiaJSXComponentsFromState(result).map(clearTopLevelElementUniqueIDs),
     ).toMatchSnapshot()
@@ -898,6 +908,7 @@ describe('LOAD', () => {
         'full-build',
         null,
         false,
+        null,
       ),
       title: '',
       projectId: '',

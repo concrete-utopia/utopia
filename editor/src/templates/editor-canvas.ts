@@ -43,6 +43,7 @@ import {
   getOpenImportsFromState,
   isOpenFileUiJs,
   getOpenUtopiaJSXComponentsFromState,
+  getMainUIFromModel,
 } from '../components/editor/store/editor-state'
 import {
   didWeHandleMouseMoveForThisFrame,
@@ -77,6 +78,11 @@ import {
 import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
+import {
+  codeCacheToBuildResult,
+  generateCodeResultCache,
+} from '../components/custom-code/code-file'
+import { pickCanvasRelatedProps } from '../core/property-controls/property-controls-utils'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -264,6 +270,7 @@ function on(
 export function runLocalCanvasAction(
   model: EditorState,
   derivedState: DerivedState,
+  dispatch: EditorDispatch,
   action: CanvasAction,
 ): EditorState {
   // TODO BB horrorshow performance
@@ -285,6 +292,18 @@ export function runLocalCanvasAction(
     case 'CLEAR_DRAG_STATE':
       return clearDragState(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
+      generateCodeResultCache(
+        model.projectContents,
+        model.codeResultCache.projectModules,
+        codeCacheToBuildResult(model.codeResultCache.cache),
+        model.codeResultCache.exportsInfo,
+        model.nodeModules.files,
+        dispatch,
+        'incremental',
+        getMainUIFromModel(model),
+        true,
+        pickCanvasRelatedProps(model, derivedState),
+      )
       return {
         ...model,
         canvas: {
