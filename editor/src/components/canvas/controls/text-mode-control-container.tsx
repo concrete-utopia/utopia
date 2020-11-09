@@ -44,7 +44,6 @@ export const TextModeControlContainer: React.FunctionComponent = () => {
         const focusNode = selection.focusNode as CharacterData
         const parentElement = focusNode.parentElement
         if (parentElement != null) {
-          console.dir(recursivelyGetTemplatePathForDomNode(parentElement))
           dispatch([selectComponents([recursivelyGetTemplatePathForDomNode(parentElement)], false)])
         }
       }
