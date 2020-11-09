@@ -9,9 +9,10 @@ import {
   UtopiaTheme,
   IcnProps,
   LargerIcons,
+  Icn,
 } from 'uuiui'
 import { betterReactMemo, Utils } from 'uuiui-deps'
-import { isLiveMode } from '../editor/editor-modes'
+import { EditorModes, isLiveMode } from '../editor/editor-modes'
 import { useEditorState } from '../editor/store/store-hook'
 import * as EditorActions from '../editor/actions/actions'
 import { EditorAction } from '../editor/action-types'
@@ -101,7 +102,10 @@ interface RightMenuProps {
 }
 
 export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'RightMenu dispatch')
+  const { dispatch, editorMode } = useEditorState(
+    (store) => ({ dispatch: store.dispatch, editorMode: store.editor.mode }),
+    'RightMenu dispatch',
+  )
   const interfaceDesigner = useEditorState(
     (store) => store.editor.interfaceDesigner,
     'RightMenu interfaceDesigner',
@@ -125,10 +129,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
     [dispatch],
   )
 
-  const isCanvasLive = useEditorState(
-    (store) => isLiveMode(store.editor.mode),
-    'RightMenu isCanvasLive',
-  )
+  const isCanvasLive = editorMode.type === 'live'
   const toggleLiveCanvas = React.useCallback(() => dispatch([EditorActions.toggleCanvasIsLive()]), [
     dispatch,
   ])
@@ -184,6 +185,14 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
 
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
+  const { type } = editorMode
+  const controlId = editorMode.type === 'text' ? editorMode.controlId : null
+  const onTextModeClick = React.useCallback(() => {
+    dispatch([
+      EditorActions.switchEditorMode(EditorModes.textMode(type === 'text' ? controlId : null)),
+    ])
+  }, [dispatch, type, controlId])
+
   return (
     <SimpleFlexColumn
       data-label='canvas-menu'
@@ -215,6 +224,17 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
           </span>
         </Tooltip>
       </SimpleFlexColumn>
+      <SimpleFlexColumn data-title='group' style={{ marginBottom: 24 }}>
+        <Tooltip title='Text Mode' placement='left'>
+          <RightMenuTile
+            selected={editorMode.type === 'text'}
+            highlightSelected={false}
+            icon={<Icn type='textmode' width={18} height={18} />}
+            onClick={onTextModeClick}
+          />
+        </Tooltip>
+      </SimpleFlexColumn>
+
       <SimpleFlexColumn data-title='group' style={{ marginBottom: 24 }}>
         <Tooltip title={'Live Preview'} placement='left'>
           <span>

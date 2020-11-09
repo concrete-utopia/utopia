@@ -34,6 +34,7 @@ import {
   Mode,
   isLiveMode,
   dragAndDropInsertionSubject,
+  isTextMode,
 } from '../components/editor/editor-modes'
 import {
   CanvasCursor,
@@ -116,6 +117,8 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
   switch (mode.type) {
     case 'select':
       return CSSCursor.Select
+    case 'text':
+      return CSSCursor.Text
     case 'insert':
       return CSSCursor.Insert
     case 'live':

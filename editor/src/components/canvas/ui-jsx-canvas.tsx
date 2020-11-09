@@ -1,3 +1,5 @@
+/** @jsx jsx */
+import { jsx } from '@emotion/core'
 import * as React from 'react'
 import { MapLike } from 'typescript'
 import { betterReactMemo } from 'uuiui-deps'
@@ -39,7 +41,7 @@ import {
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import { useDomWalker } from './dom-walker'
-import { isLiveMode } from '../editor/editor-modes'
+import { isLiveMode, isTextMode } from '../editor/editor-modes'
 import {
   BakedInStoryboardVariableName,
   EmptyScenePathForStoryboard,
@@ -67,6 +69,7 @@ import {
   updateMutableUtopiaContextWithNewProps,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
+import { useEditorState } from '../editor/store/store-hook'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -354,7 +357,7 @@ export const UiJsxCanvas = betterReactMemo(
       }
 
       return (
-        <>
+        <React.Fragment>
           <Helmet>{parse(linkTags)}</Helmet>
           <MutableUtopiaContext.Provider value={mutableContextRef}>
             <RerenderUtopiaContext.Provider
@@ -387,7 +390,7 @@ export const UiJsxCanvas = betterReactMemo(
               </CanvasContainer>
             </RerenderUtopiaContext.Provider>
           </MutableUtopiaContext.Provider>
-        </>
+        </React.Fragment>
       )
     } else {
       return null
@@ -450,6 +453,8 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
 ) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   let containerRef = props.walkDOM ? useDomWalker(props) : React.useRef<HTMLDivElement>(null)
+  const userSelect =
+    useEditorState((store) => store.editor.mode.type, 'Canvas textMode check') === 'text'
 
   const { scale, offset } = props
   return (
@@ -463,6 +468,14 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
         zoom: scale >= 1 ? `${scale * 100}%` : 1,
         transform:
           (scale < 1 ? `scale(${scale})` : '') + ` translate3d(${offset.x}px, ${offset.y}px, 0)`,
+      }}
+      css={{
+        '& div, & span, & img, & ul, & li, & label': userSelect
+          ? {
+              userSelect: 'text',
+              WebkitUserSelect: 'text',
+            }
+          : undefined,
       }}
     >
       {props.children}

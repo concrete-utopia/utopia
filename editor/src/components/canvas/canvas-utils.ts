@@ -1630,6 +1630,9 @@ export function produceCanvasTransientState(
                   throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
               }
             }
+          case 'text': {
+            return parseSuccessTransientCanvasState(parseSuccess)
+          }
           case 'live':
             return parseSuccessTransientCanvasState(parseSuccess)
           default:

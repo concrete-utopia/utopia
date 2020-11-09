@@ -33,7 +33,7 @@ import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
 import { CSSCursor, betterReactMemo } from 'uuiui-deps'
 import { editor } from 'monaco-editor'
-import { isLiveMode, EditorModes } from '../../editor/editor-modes'
+import { isLiveMode, EditorModes, isTextMode } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
@@ -41,6 +41,7 @@ import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo } from '../../custom-code/code-file'
+import { TextModeControlContainer } from './text-mode-control-container'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -104,6 +105,7 @@ export const NewCanvasControls = betterReactMemo(
       },
       [drop],
     )
+    const isText = isTextMode(canvasControlProps.editor.mode)
 
     if (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd) {
       return null
@@ -119,6 +121,7 @@ export const NewCanvasControls = betterReactMemo(
           }
           id='canvas-controls'
           style={{
+            pointerEvents: isText ? 'none' : undefined,
             position: 'absolute',
             top: 0,
             left: 0,
@@ -325,6 +328,9 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
           />
         )
+      }
+      case 'text': {
+        return <TextModeControlContainer />
       }
       case 'insert': {
         return (
