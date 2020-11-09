@@ -1385,6 +1385,15 @@ export const MetadataUtils = {
     const componentsToReturn = componentsUpdated ? updatedComponents : metadata.components
     return jsxMetadata(componentsToReturn, updatedElements)
   },
+  findElementMetadata(
+    target: TemplatePath,
+    elements: Array<ElementInstanceMetadata>,
+  ): ElementInstanceMetadata | null {
+    const pathToUse = TP.isScenePath(target)
+      ? TP.instancePath([], TP.elementPathForPath(target))
+      : target
+    return elements.find((elem) => TP.pathsEqual(pathToUse, elem.templatePath)) ?? null
+  },
   getStaticElementName(
     path: TemplatePath,
     rootElements: Array<UtopiaJSXComponent>,

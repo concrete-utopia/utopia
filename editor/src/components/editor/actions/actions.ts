@@ -855,7 +855,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
     spyMetadataKILLME: poppedEditor.spyMetadataKILLME,
-    domMetadataKILLME: poppedEditor.domMetadataKILLME,
+    domMetadataKILLME: [],
     jsxMetadataKILLME: poppedEditor.jsxMetadataKILLME,
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,

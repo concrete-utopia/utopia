@@ -20,6 +20,8 @@ import { EditorState, OriginalCanvasAndLocalFrame } from '../editor/store/editor
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { xor } from '../../core/shared/utils'
 
+export const CanvasContainerID = 'canvas-container'
+
 export const enum CSSCursor {
   Select = "-webkit-image-set( url( '/editor/cursors/cursor-default.png ') 1x, url( '/editor/cursors/cursor-default@2x.png ') 2x ) 4 4, default",
   PhysicsDefault = "-webkit-image-set( url( '/editor/cursors/cursor-default.png ') 1x, url( '/editor/cursors/cursor-default@2x.png ') 2x ) 4 4, default",

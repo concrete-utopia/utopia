@@ -2907,7 +2907,7 @@ const MyCustomCompomnent = props => <View data-uid={"abc"}>{props.children}</Vie
 var b = 40;
 
 var MyCustomCompomnent = function MyCustomCompomnent(props) {
-  return /*#__PURE__*/React.createElement(View, {
+  return React.createElement(View, {
     "data-uid": "abc"
   }, props.children);
 };
@@ -3122,7 +3122,7 @@ for (var n = 0; n < 5; n++) {
   }
 
   var n2 = n * 2;
-  result.push( /*#__PURE__*/React.createElement("div", {
+  result.push(React.createElement("div", {
     style: {
       left: n,
       top: n2

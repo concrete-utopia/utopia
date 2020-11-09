@@ -67,6 +67,7 @@ import {
   updateMutableUtopiaContextWithNewProps,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
+import { CanvasContainerID } from './canvas-types'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -454,7 +455,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
   const { scale, offset } = props
   return (
     <div
-      id={'canvas-container'}
+      id={CanvasContainerID}
       key={'canvas-container'}
       ref={containerRef}
       style={{
