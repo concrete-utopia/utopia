@@ -612,7 +612,7 @@ export function sendPropertyControlsInfoRequest(
   function scheduleSend(): void {
     if (propertyControlsIFrameAvailable) {
       window.clearTimeout(lastPropertyControlsInfoSendID)
-      lastPropertyControlsInfoSendID = window.setTimeout(async () => sendToIFrame(), 500)
+      lastPropertyControlsInfoSendID = window.setTimeout(async () => sendToIFrame(), 0)
     }
   }
 
