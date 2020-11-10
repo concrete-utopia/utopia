@@ -31,6 +31,8 @@ import {
   textFile,
   TextFileContents,
   unparsed,
+  addModifierExportToDetail,
+  EmptyExportsDetail,
 } from '../../../core/shared/project-file-types'
 import { emptyImports, parseSuccess } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
@@ -110,6 +112,7 @@ describe('SET_PROP', () => {
       {},
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     ),
   )
   const testEditor: EditorState = deepFreeze({
@@ -197,7 +200,16 @@ describe('SET_CANVAS_FRAMES', () => {
     ),
   ]
 
-  const originalModel = deepFreeze(parseSuccess(emptyImports(), components, {}, null, null))
+  const originalModel = deepFreeze(
+    parseSuccess(
+      emptyImports(),
+      components,
+      {},
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+    ),
+  )
   const testEditor: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
@@ -263,6 +275,7 @@ describe('moveTemplate', () => {
         {},
         null,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
   }
@@ -760,7 +773,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   const fileForUI = textFile(
     textFileContents(
       '',
-      parseSuccess(sampleDefaultImports, [firstTopLevelElement], {}, null, null),
+      parseSuccess(
+        sampleDefaultImports,
+        [firstTopLevelElement],
+        {},
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      ),
       RevisionsState.BothMatch,
     ),
     null,

@@ -32,10 +32,12 @@ import {
   TopLevelElement,
 } from '../../core/shared/element-template'
 import {
+  foldParsedTextFile,
   isParseFailure,
   isParseSuccess,
   isTextFile,
   isUnparsed,
+  ParsedTextFile,
   ParseSuccess,
   TextFile,
 } from '../../core/shared/project-file-types'
@@ -260,5 +262,15 @@ export function testPrintCode(parseSuccess: ParseSuccess): string {
     parseSuccess.imports,
     parseSuccess.topLevelElements,
     parseSuccess.jsxFactoryFunction,
+    parseSuccess.exportsDetail,
+  )
+}
+
+export function testPrintParsedTextFile(parsedTextFile: ParsedTextFile): string {
+  return foldParsedTextFile(
+    (_) => 'FAILURE',
+    testPrintCode,
+    (_) => 'UNPARSED',
+    parsedTextFile,
   )
 }

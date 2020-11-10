@@ -49,6 +49,7 @@ import {
   isParseSuccess,
   ProjectFile,
   InstancePath,
+  EmptyExportsDetail,
 } from '../core/shared/project-file-types'
 import { right, eitherToMaybe, isLeft } from '../core/shared/either'
 import Utils from './utils'
@@ -81,7 +82,14 @@ export function createPersistentModel(): PersistentModel {
       '/src/app.js': textFile(
         textFileContents(
           '',
-          parseSuccess(sampleImportsForTests, sampleJsxComponentWithScene, {}, null, null),
+          parseSuccess(
+            sampleImportsForTests,
+            sampleJsxComponentWithScene,
+            {},
+            null,
+            null,
+            EmptyExportsDetail,
+          ),
           RevisionsState.ParsedAhead,
         ),
         null,
@@ -122,7 +130,14 @@ export function createEditorStates(
       '/src/app.js': textFile(
         textFileContents(
           '',
-          parseSuccess(sampleImportsForTests, sampleJsxComponentWithScene, {}, null, null),
+          parseSuccess(
+            sampleImportsForTests,
+            sampleJsxComponentWithScene,
+            {},
+            null,
+            null,
+            EmptyExportsDetail,
+          ),
           RevisionsState.ParsedAhead,
         ),
         null,

@@ -128,6 +128,14 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
     "type": "ARBITRARY_JS_BLOCK",
     "uniqueID": "",
   },
+  "exportsDetail": Object {
+    "defaultExport": null,
+    "namedExports": Object {
+      "whatever": Object {
+        "type": "EXPORT_DETAIL_MODIFIER",
+      },
+    },
+  },
   "highlightBounds": Object {
     "aaa": Object {
       "endCol": 11,
@@ -405,6 +413,14 @@ return { a: a, b: b };",
     "type": "ARBITRARY_JS_BLOCK",
     "uniqueID": "",
   },
+  "exportsDetail": Object {
+    "defaultExport": null,
+    "namedExports": Object {
+      "whatever": Object {
+        "type": "EXPORT_DETAIL_MODIFIER",
+      },
+    },
+  },
   "highlightBounds": Object {
     "aaa": Object {
       "endCol": 58,
@@ -599,6 +615,14 @@ export var App = (props) => <View data-uid={'bbb'}>
 return { a: a };",
     "type": "ARBITRARY_JS_BLOCK",
     "uniqueID": "",
+  },
+  "exportsDetail": Object {
+    "defaultExport": null,
+    "namedExports": Object {
+      "App": Object {
+        "type": "EXPORT_DETAIL_MODIFIER",
+      },
+    },
   },
   "highlightBounds": Object {
     "bbb": Object {

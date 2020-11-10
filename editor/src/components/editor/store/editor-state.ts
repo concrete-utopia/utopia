@@ -53,6 +53,7 @@ import {
   codeFile,
   isParseFailure,
   isParsedTextFile,
+  EmptyExportsDetail,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -536,6 +537,7 @@ export function modifyParseSuccessWithSimple(
     {},
     success.jsxFactoryFunction,
     success.combinedTopLevelArbitraryBlock,
+    success.exportsDetail,
   )
 }
 
