@@ -500,6 +500,8 @@ function elementIsDescendent(l: ElementPath, r: ElementPath): boolean {
 }
 
 // This is sooooo badly named! It should be `isDescendentOf`, and tbh that was probably me...
+// e.g. isAncestorOf(instancePath(['A'], ['B', 'C']), instancePath(['A'], ['B']) would return true,
+//      isAncestorOf(instancePath(['A'], ['B']), instancePath(['A'], ['B', 'C']) would return false
 export function isAncestorOf(
   path: TemplatePath,
   targetAncestor: TemplatePath,

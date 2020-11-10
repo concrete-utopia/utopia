@@ -374,7 +374,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
               rootMetadata.push(cachedMetadata)
               // Push the cached metadata for everything from this scene downwards
               Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
-                if (TP.isAncestorOf(scenePath, elem.templatePath)) {
+                if (TP.isAncestorOf(elem.templatePath, scenePath)) {
                   rootMetadata.push(elem)
                 }
               })
