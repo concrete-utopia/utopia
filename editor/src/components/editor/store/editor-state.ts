@@ -141,6 +141,7 @@ import {
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -1223,14 +1224,16 @@ export function getElementWarnings(
         }
       }
 
-      const missingStyleProp = !targetRespectsLayout(
-        elementMetadata.templatePath,
-        propertyControlsInfo,
-        imports,
-        openFilePath,
-        jsxComponents,
-        rootMetadata,
-      )
+      const missingStyleProp = isFeatureEnabled('Navigator Style Warning')
+        ? !targetRespectsLayout(
+            elementMetadata.templatePath,
+            propertyControlsInfo,
+            imports,
+            openFilePath,
+            jsxComponents,
+            rootMetadata,
+          )
+        : false
 
       // Build the warnings object and add it to the map.
       const elementWarnings: ElementWarnings = {
