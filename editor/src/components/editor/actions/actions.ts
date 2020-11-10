@@ -463,6 +463,7 @@ import {
   StoryboardFilePath,
 } from '../../../core/model/storyboard-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import { TextEditorActions } from './text-editor/text-editor-actions'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1286,6 +1287,7 @@ let checkpointTimeoutId: number | undefined = undefined
 
 // JS Editor Actions:
 export const UPDATE_FNS = {
+  ...TextEditorActions,
   NEW: (
     action: NewProject,
     oldEditor: EditorModel,

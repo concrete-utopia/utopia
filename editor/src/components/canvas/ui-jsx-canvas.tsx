@@ -458,8 +458,12 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
     useEditorState((store) => store.editor.mode.type, 'Canvas textMode check') === 'text'
 
   const { scale, offset } = props
+
+  const isText = useEditorState((store) => store.editor.mode.type === 'text', 'UI JSX Canvas ')
   return (
     <div
+      // this doesn't work 🤔
+      contentEditable={isText}
       id={CanvasContainerID}
       key={'canvas-container'}
       ref={containerRef}

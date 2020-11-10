@@ -106,6 +106,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':
     case 'WRAP_IN_VIEW':
+    case 'WRAP_TEXT_IN_STYLED_SPAN':
     case 'UNWRAP_GROUP_OR_VIEW':
     case 'SET_CANVAS_FRAMES':
     case 'SET_PROJECT_NAME':

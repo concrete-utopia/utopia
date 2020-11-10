@@ -286,6 +286,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PROPERTY_CONTROLS_IFRAME_READY(action, state)
     case 'ADD_STORYBOARD_FILE':
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
+    case 'WRAP_TEXT_IN_STYLED_SPAN':
+      return UPDATE_FNS.WRAP_TEXT_IN_STYLED_SPAN(action, state)
     default:
       return state
   }

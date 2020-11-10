@@ -1,13 +1,13 @@
 import * as React from 'react'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { InstancePath } from '../../../core/shared/project-file-types'
 import { scenePath, staticInstancePath } from '../../../core/shared/template-path'
 import { selectComponents } from '../../editor/actions/actions'
 import { useEditorState } from '../../editor/store/store-hook'
 
-function recursivelyGetTemplatePathForDomNode(
+export function recursivelyGetTemplatePathForDomNode(
   node: HTMLElement,
   workingTemplatePath: Array<string> = [],
-): TemplatePath {
+): InstancePath {
   const uid = node.dataset.uid
   if (uid != null) {
     const newWorkingTemplatePath = [uid, ...workingTemplatePath]

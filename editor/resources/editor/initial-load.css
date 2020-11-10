@@ -12,17 +12,6 @@ body {
   overscroll-behavior-x: contain;
 }
 
-div,
-span,
-img,
-ul,
-li,
-label {
-  user-select: none;
-  -webkit-user-select: none;
-  box-sizing: border-box !important;
-}
-
 .react-error-overlay-allow-text-selection,
 .react-error-overlay-allow-text-selection,
 .react-error-overlay-allow-text-selection span,
@@ -52,8 +41,6 @@ svg:focus {
 #application-wrapper {
   display: flex;
   flex-direction: row;
-  -webkit-user-select: none;
-  user-select: none;
   position: absolute;
   top: 0;
 }

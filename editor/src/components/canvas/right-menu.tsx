@@ -17,6 +17,8 @@ import { useEditorState } from '../editor/store/store-hook'
 import * as EditorActions from '../editor/actions/actions'
 import { EditorAction } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
+import { recursivelyGetTemplatePathForDomNode } from './controls/text-mode-control-container'
+import { wrapTextInStyledSpan } from '../editor/actions/text-editor/text-editor-actions'
 
 export const enum RightMenuTab {
   Insert = 'insert',
@@ -193,6 +195,16 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
     ])
   }, [dispatch, type, controlId])
 
+  const onBoldClick = React.useCallback(() => {
+    const selection = document.getSelection()
+    if (selection != null && selection.focusNode != null && selection.focusNode.parentElement) {
+      const templatePath = recursivelyGetTemplatePathForDomNode(selection.focusNode.parentElement)
+      dispatch([wrapTextInStyledSpan(templatePath, selection)])
+    } else {
+      throw new Error(`Selection isn't found on the canvas.`)
+    }
+  }, [dispatch])
+
   return (
     <SimpleFlexColumn
       data-label='canvas-menu'
@@ -231,6 +243,14 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
             highlightSelected={false}
             icon={<Icn type='textmode' width={18} height={18} />}
             onClick={onTextModeClick}
+          />
+        </Tooltip>
+        <Tooltip title='Bold' placement='left'>
+          <RightMenuTile
+            selected={false}
+            highlightSelected={false}
+            icon={<Icn category='typography' type='bold' width={16} height={16} />}
+            onClick={onBoldClick}
           />
         </Tooltip>
       </SimpleFlexColumn>

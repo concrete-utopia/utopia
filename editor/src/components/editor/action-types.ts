@@ -51,6 +51,7 @@ import {
 } from './store/editor-state'
 import { Notice } from '../common/notices'
 import { BuildType } from '../../core/workers/ts/ts-worker'
+import { TextEditorActions } from './actions/text-editor/text-editor-actions'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
 export interface PropertyTarget {
@@ -769,6 +770,7 @@ export interface AddStoryboardFile {
 }
 
 export type EditorAction =
+  | TextEditorActions
   | ClearSelection
   | InsertScene
   | InsertJSXElement
