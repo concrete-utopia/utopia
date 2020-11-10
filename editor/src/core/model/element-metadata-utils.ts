@@ -1355,6 +1355,24 @@ export const MetadataUtils = {
       }
     })
   },
+  findElementMetadata(
+    target: TemplatePath,
+    rootElements: Array<ElementInstanceMetadata>,
+  ): ElementInstanceMetadata | null {
+    if (TP.isScenePath(target)) {
+      const sceneInstancePath = TP.instancePath([], TP.elementPathForPath(target))
+      return (
+        rootElements.find((elem) => TP.pathsEqual(sceneInstancePath, elem.templatePath)) ?? null
+      )
+    } else {
+      return TP.findAtElementPath(
+        rootElements,
+        target.element,
+        MetadataUtils.elementInstanceMetadataGetChildren,
+        getUtopiaID,
+      )
+    }
+  },
   getStaticElementName(
     path: TemplatePath,
     rootElements: Array<UtopiaJSXComponent>,

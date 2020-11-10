@@ -100,6 +100,7 @@ import creator from './ts-creator'
 import { applyPrettier } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
+import { emptySet } from '../../shared/set-utils'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -854,7 +855,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     let imports: Imports = emptyImports()
     // Find the already existing UIDs so that when we generate one it doesn't duplicate one
     // existing further ahead.
-    const alreadyExistingUIDs: ReadonlyArray<string> = collatedUIDs(sourceFile)
+    const alreadyExistingUIDs: Set<string> = emptySet() // collatedUIDs(sourceFile)
     let highlightBounds: HighlightBoundsForUids = {}
 
     // As we hit chunks of arbitrary code, shove them here so we can
@@ -1129,7 +1130,7 @@ function parseParams(
   imports: Imports,
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: ReadonlyArray<string>,
+  existingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<Array<Param>>> {
   let parsedParams: Array<Param> = []
   let highlightBounds: HighlightBoundsForUids = { ...existingHighlightBounds }
@@ -1166,7 +1167,7 @@ function parseParam(
   imports: Imports,
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: ReadonlyArray<string>,
+  existingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<Param>> {
   const dotDotDotToken = param.dotDotDotToken != null
   const parsedExpression: Either<
@@ -1217,7 +1218,7 @@ function parseBindingName(
   imports: Imports,
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: ReadonlyArray<string>,
+  existingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<BoundParam>> {
   let highlightBounds: HighlightBoundsForUids = {
     ...existingHighlightBounds,
@@ -1462,11 +1463,11 @@ export function getHighlightBoundsWithoutUID(
   return result
 }
 
-function collatedUIDs(sourceFile: TS.SourceFile): Array<string> {
-  let result: Array<string> = []
+function collatedUIDs(sourceFile: TS.SourceFile): Set<string> {
+  let result: Set<string> = emptySet()
   function addUID(boundingElement: TS.Node, attributes: TS.JsxAttributes): void {
     withUID(undefined, attributes, undefined, (uid) => {
-      result = addUniquely(result, uid)
+      result.add(uid)
     })
   }
   withJSXElementAttributes(sourceFile, addUID)

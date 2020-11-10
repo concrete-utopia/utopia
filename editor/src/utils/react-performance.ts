@@ -209,141 +209,194 @@ function failSafeMemoEqualityFunction(componentDisplayName: string, severity: 's
   }
 }
 
+// this function has been adopted from https://github.com/epoberezkin/fast-deep-equal/tree/a33d49ab5cc659e331ff445109f35dd323230d41
 function keepDeepReferenceEqualityInner(
-  oldValueInner: any,
-  possibleNewValueInner: any,
+  oldValue: any,
+  possibleNewValue: any,
   stackSizeInner: number,
-  valueStackSoFar: Array<any>,
-): any {
-  // most of the actual structure is copy-pasted from https://github.com/epoberezkin/fast-deep-equal/blob/v2/index.js
-  // I've made it return oldValue or newValue instead of true and false
-  // and the recursion only stops if we get to return oldValue
-  // otherwise we still drill into non-equal objects to try and find
-  // keys that can be made equal
-
-  // If we're more than 100 frames deep, let's just call it a day
+  valueStackSoFar: Set<any>,
+) {
   if (stackSizeInner > 100) {
-    return possibleNewValueInner
+    return possibleNewValue
   }
-
-  if (oldValueInner == null) {
-    return possibleNewValueInner
-  }
-  var isArray = Array.isArray
-  var keyList = Object.keys
-  var hasProp = Object.prototype.hasOwnProperty
-
-  if (oldValueInner === possibleNewValueInner) return oldValueInner
 
   // We appear to have looped back on ourselves,
   // escape by just returning the value.
-  if (valueStackSoFar.includes(possibleNewValueInner)) {
-    return possibleNewValueInner
+  if (valueStackSoFar.has(possibleNewValue)) {
+    return possibleNewValue
   }
+  // mutation
+  valueStackSoFar.add(possibleNewValue)
 
-  const newValueStack: Array<any> = [...valueStackSoFar, possibleNewValueInner]
+  if (oldValue === possibleNewValue) return oldValue
 
   if (
-    oldValueInner &&
-    possibleNewValueInner &&
-    typeof oldValueInner == 'object' &&
-    typeof possibleNewValueInner == 'object'
+    oldValue &&
+    possibleNewValue &&
+    typeof oldValue == 'object' &&
+    typeof possibleNewValue == 'object'
   ) {
-    const arrA = isArray(oldValueInner)
-    const arrB = isArray(possibleNewValueInner)
+    if (oldValue.constructor !== possibleNewValue.constructor) return possibleNewValue
 
-    // reusable vars for all the performance
-    let i: number = 0
-    let length: number = 0
-    let key: string = ''
+    var length, i, entry, keys
+    if (Array.isArray(oldValue)) {
+      let newArrayToReturn: any[] = []
+      let canSaveOldArray = true
 
-    if (arrA && arrB) {
-      length = possibleNewValueInner.length
-
-      var newArrayToReturn: any[] = []
-      var canSaveOldArray = true
-      if (length != oldValueInner.length) {
+      length = possibleNewValue.length
+      if (length != oldValue.length) {
         canSaveOldArray = false
       }
       for (i = length; i-- !== 0; ) {
         // try to recurse into the array item here and save it if possible
         newArrayToReturn[i] = keepDeepReferenceEqualityInner(
-          oldValueInner[i],
-          possibleNewValueInner[i],
+          oldValue[i],
+          possibleNewValue[i],
           stackSizeInner + 1,
-          newValueStack,
+          valueStackSoFar,
         )
-        if (oldValueInner[i] !== newArrayToReturn[i]) {
+        if (oldValue[i] !== newArrayToReturn[i]) {
           canSaveOldArray = false
         }
       }
       if (canSaveOldArray) {
-        return oldValueInner
+        return oldValue
       } else {
         return newArrayToReturn
       }
     }
 
-    if (arrA != arrB) return possibleNewValueInner
+    if (oldValue instanceof Map && possibleNewValue instanceof Map) {
+      let canSaveOldMap = true
+      let newMapToReturn: Map<any, any> = new Map()
 
-    var dateA = oldValueInner instanceof Date,
-      dateB = possibleNewValueInner instanceof Date
-    if (dateA != dateB) return possibleNewValueInner
-    if (dateA && dateB)
-      return oldValueInner.getTime() == possibleNewValueInner.getTime()
-        ? oldValueInner
-        : possibleNewValueInner
+      if (oldValue.size !== possibleNewValue.size) {
+        canSaveOldMap = false
+      }
+      for (entry of possibleNewValue.entries()) {
+        const oldMapValue = oldValue.get(entry[0])
+        const newMapValue = keepDeepReferenceEqualityInner(
+          oldMapValue,
+          entry[1],
+          stackSizeInner + 1,
+          valueStackSoFar,
+        )
+        newMapToReturn.set(entry[0], newMapValue)
+        if (newMapValue !== oldMapValue) {
+          canSaveOldMap = false
+        }
+      }
+      if (canSaveOldMap) {
+        return oldValue
+      } else {
+        return newMapToReturn
+      }
+    }
 
-    var regexpA = oldValueInner instanceof RegExp,
-      regexpB = possibleNewValueInner instanceof RegExp
-    if (regexpA != regexpB) return possibleNewValueInner
-    if (regexpA && regexpB)
-      return oldValueInner.toString() == possibleNewValueInner.toString()
-        ? oldValueInner
-        : possibleNewValueInner
+    if (oldValue instanceof Set && possibleNewValue instanceof Set) {
+      /**
+       * Sets use reference equality to determine if something is in the set or not,
+       * which makes salvaging sub-values very hard. We don't attempt to do that here
+       * */
 
-    // for objects we do a deep recursion
-    var keys = keyList(possibleNewValueInner)
+      if (oldValue.size !== possibleNewValue.size) {
+        return possibleNewValue
+      }
+      for (entry of oldValue.entries()) {
+        if (!possibleNewValue.has(entry[0])) {
+          return possibleNewValue
+        }
+      }
+      return oldValue
+    }
+
+    if (ArrayBuffer.isView(oldValue) && ArrayBuffer.isView(possibleNewValue)) {
+      /**
+       * we don't use ArrayBufferViews in Utopia, so I'm not going to attempt salvaging the subvalues
+       * typescript had the issues with length and index signature, I'm blindly trusting the original author here
+       */
+      length = (oldValue as any).length
+      if (length != (possibleNewValue as any).length) return possibleNewValue
+      for (i = length; i-- !== 0; )
+        if ((oldValue as any)[i] !== (possibleNewValue as any)[i]) return possibleNewValue
+      return oldValue
+    }
+
+    if (oldValue.constructor === RegExp) {
+      if (
+        oldValue.source === possibleNewValue.source &&
+        oldValue.flags === possibleNewValue.flags
+      ) {
+        return oldValue
+      } else {
+        return possibleNewValue
+      }
+    }
+    if (oldValue.valueOf !== Object.prototype.valueOf) {
+      if (oldValue.valueOf() === possibleNewValue.valueOf()) {
+        return oldValue
+      } else {
+        return possibleNewValue
+      }
+    }
+    if (oldValue.toString !== Object.prototype.toString) {
+      if (oldValue.toString() === possibleNewValue.toString()) {
+        return oldValue
+      } else {
+        return possibleNewValue
+      }
+    }
+
+    keys = Object.keys(possibleNewValue)
+    const oldKeys = Object.keys(oldValue)
     length = keys.length
 
-    var newObjectToReturn: any = {}
-    var canSaveOldObject = true
+    let newObjectToReturn: any = {}
+    let canSaveOldObject = true
 
-    const oldKeys = keyList(oldValueInner)
-    if (length !== oldKeys.length) {
+    if (length !== Object.keys(oldValue).length) {
       canSaveOldObject = false
     }
 
     for (i = 0; i < length; i++) {
-      const newKey = keys[i]
-      if (!hasProp.call(oldValueInner, newKey) || newKey !== oldKeys[i]) {
+      var key = keys[i]
+
+      if (key !== oldKeys[i]) {
         canSaveOldObject = false
       }
-    }
 
-    for (i = 0; i < length; i++) {
-      key = keys[i]
+      if (key === '_owner' && oldValue.$$typeof) {
+        // React-specific: avoid traversing React elements' _owner.
+        //  _owner contains circular references
+        // and is not needed when comparing the actual elements (and not their owners)
+        newObjectToReturn[key] = possibleNewValue[key]
+        continue
+      }
+
       newObjectToReturn[key] = keepDeepReferenceEqualityInner(
-        oldValueInner[key],
-        possibleNewValueInner[key],
+        oldValue[key],
+        possibleNewValue[key],
         stackSizeInner + 1,
-        newValueStack,
+        valueStackSoFar,
       )
-      if (oldValueInner[key] !== newObjectToReturn[key]) {
+      if (oldValue[key] !== newObjectToReturn[key]) {
         canSaveOldObject = false
       }
     }
 
     if (canSaveOldObject) {
-      return oldValueInner
+      return oldValue
     } else {
       return newObjectToReturn
     }
   }
 
-  return oldValueInner !== oldValueInner && possibleNewValueInner !== possibleNewValueInner
-    ? oldValueInner
-    : possibleNewValueInner
+  // true if both NaN, false otherwise
+  if (oldValue !== oldValue && possibleNewValue !== possibleNewValue) {
+    return oldValue
+  } else {
+    return possibleNewValue
+  }
 }
 
 export function keepDeepReferenceEqualityIfPossible<T>(
@@ -356,7 +409,7 @@ export function keepDeepReferenceEqualityIfPossible(
   possibleNewValue: any,
   stackSize: number = 0,
 ) {
-  return keepDeepReferenceEqualityInner(oldValue, possibleNewValue, stackSize, [])
+  return keepDeepReferenceEqualityInner(oldValue, possibleNewValue, stackSize, new Set())
 }
 
 /**
