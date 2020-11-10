@@ -17,10 +17,14 @@ import {
   omittedParam,
   jsxAttributeOtherJavaScript,
 } from '../../shared/element-template'
-import { right, isRight } from '../../shared/either'
 import { parseSuccess } from '../common/project-file-utils'
 import { printCode, printCodeOptions } from './parser-printer'
-import { isParseSuccess, ParseSuccess } from '../../shared/project-file-types'
+import {
+  addModifierExportToDetail,
+  addNamedExportToDetail,
+  EmptyExportsDetail,
+  isParseSuccess,
+} from '../../shared/project-file-types'
 
 const codeWithBasicPropsObject = `import React from "react";
 import { View } from "utopia-api";
@@ -156,6 +160,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -193,6 +198,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -215,6 +221,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -241,6 +248,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -275,6 +283,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
 
     expect(actualResult).toEqual(expectedResult)
@@ -304,6 +313,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -338,6 +348,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -368,6 +379,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -391,6 +403,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -422,6 +435,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -451,6 +465,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -500,6 +515,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -568,6 +584,7 @@ describe('Parsing a function component with props', () => {
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -591,6 +608,7 @@ describe('Parsing, printing, reparsing a function component with props', () => {
       firstAsParseSuccess.imports,
       firstAsParseSuccess.topLevelElements,
       firstAsParseSuccess.jsxFactoryFunction,
+      firstAsParseSuccess.exportsDetail,
     )
 
     const secondParse = clearParseResultUniqueIDs(testParseCode(printed))

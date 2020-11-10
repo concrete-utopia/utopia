@@ -20,16 +20,19 @@ import { objectMap } from './object-utils'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 
-const GeneratedUIDs: Set<string> = new Set()
-
-export function generateUID(existingIDs: Array<string>): string {
+export function generateUID(existingIDs: Array<string> | Set<string>): string {
   const fullUid = UUID().replace(/\-/g, '')
   // trying to find a new 3 character substring from the full uid
   for (let i = 0; i < fullUid.length - 3; i++) {
     const id = fullUid.substring(i, i + 3)
-    if (!existingIDs.includes(id) && !GeneratedUIDs.has(id)) {
-      GeneratedUIDs.add(id)
-      return id
+    if (Array.isArray(existingIDs)) {
+      if (!existingIDs.includes(id)) {
+        return id
+      }
+    } else {
+      if (!existingIDs.has(id)) {
+        return id
+      }
     }
   }
   // if all the substrings are already used as ids, let's try again with a new full uid

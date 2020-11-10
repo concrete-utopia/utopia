@@ -114,6 +114,14 @@ export function isExported(node: TS.Node): boolean {
   }
 }
 
+export function isDefaultExport(node: TS.Node): boolean {
+  if (node.modifiers == null) {
+    return false
+  } else {
+    return node.modifiers.some((modifier) => modifier.kind === TS.SyntaxKind.DefaultKeyword)
+  }
+}
+
 function parseArrayLiteralExpression(
   sourceFile: TS.SourceFile,
   filename: string,
@@ -122,7 +130,7 @@ function parseArrayLiteralExpression(
   propsObjectName: string | null,
   literal: TS.ArrayLiteralExpression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   let arrayContents: Array<JSXArrayElement> = []
   let simpleArrayContents: Array<any> = []
@@ -204,7 +212,7 @@ function parseObjectLiteralExpression(
   propsObjectName: string | null,
   literal: TS.ObjectLiteralExpression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   let contents: Array<JSXProperty> = []
   let simpleContents: {
@@ -408,7 +416,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
   topLevelNames: Array<string>,
   initialPropsObjectName: string | null,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
   create: (
     code: string,
     definedWithin: Array<string>,
@@ -857,7 +865,7 @@ export function parseAttributeOtherJavaScript(
   propsObjectName: string | null,
   expression: TS.Expression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttributeOtherJavaScript>> {
   return parseOtherJavaScript(
     sourceFile,
@@ -907,7 +915,7 @@ function parseJSXArbitraryBlock(
   propsObjectName: string | null,
   expression: TS.Expression | undefined,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXArbitraryBlock>> {
   return parseOtherJavaScript(
     sourceFile,
@@ -986,7 +994,7 @@ function parseAttributeExpression(
   propsObjectName: string | null,
   expression: TS.Expression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   if (TS.isArrayLiteralExpression(expression)) {
     return parseArrayLiteralExpression(
@@ -1153,7 +1161,7 @@ function getAttributeExpression(
   propsObjectName: string | null,
   initializer: TS.StringLiteral | TS.JsxExpression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   if (TS.isStringLiteral(initializer)) {
     return right(
@@ -1194,7 +1202,7 @@ function parseElementProps(
   propsObjectName: string | null,
   attributes: TS.JsxAttributes,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttributes>> {
   let result: JSXAttributes = {}
   let highlightBounds = existingHighlightBounds
@@ -1386,10 +1394,10 @@ function forciblyUpdateDataUID(
   originatingElement: TS.Node,
   props: JSXAttributes,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSXAttributes> {
-  const keysToAvoid = [...alreadyExistingUIDs, ...Object.keys(existingHighlightBounds)]
-  const uid = generateUID(keysToAvoid)
+  const uid = generateUID(alreadyExistingUIDs)
+  alreadyExistingUIDs.add(uid)
   const updatedProps = {
     ...props,
     ['data-uid']: jsxAttributeValue(uid),
@@ -1412,7 +1420,7 @@ function createJSXElementAllocatingUID(
   props: JSXAttributes,
   children: JSXElementChildren,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<SuccessfullyParsedElement> {
   const dataUIDAttribute = parseUID(props)
   const updatedProps = foldEither(
@@ -1472,7 +1480,7 @@ export function parseOutJSXElements(
   topLevelNames: Array<string>,
   propsObjectName: string | null,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): ParseElementsResult {
   let highlightBounds = existingHighlightBounds
   let propsUsed: Array<string> = []
@@ -1817,7 +1825,7 @@ export function parseArbitraryNodes(
   topLevelNames: Array<string>,
   propsObjectName: string | null,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
   rootLevel: boolean,
 ): Either<string, WithParserMetadata<ArbitraryJSBlock>> {
   return parseOtherJavaScript(
@@ -1901,7 +1909,7 @@ export function parseOutFunctionContents(
   propsObjectName: string | null,
   arrowFunctionBody: TS.ConciseBody,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: ReadonlyArray<string>,
+  alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<FunctionContents>> {
   let highlightBounds = existingHighlightBounds
   if (TS.isBlock(arrowFunctionBody)) {

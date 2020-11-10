@@ -141,6 +141,7 @@ import {
 } from '../core/shared/code-exec-utils'
 import { memoize } from '../core/shared/memoize'
 import { ValueType, OptionsType, OptionTypeBase } from 'react-select'
+import { emptySet } from '../core/shared/set-utils'
 // TODO Remove re-exported functions
 
 export type FilteredFields<Base, T> = {
@@ -790,12 +791,6 @@ function createThrottler(
       }, timeout)
     }
   }
-}
-
-// Should allow us to guard against a type being refactored into something
-// which Set allows but gives us nonsense results.
-function emptySet<T extends string | boolean | number>(): Set<T> {
-  return new Set()
 }
 
 function path<T>(

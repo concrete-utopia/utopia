@@ -1,6 +1,5 @@
 import * as FastCheck from 'fast-check'
 import { getSourceMapConsumer } from '../../../third-party/react-error-overlay/utils/getSourceMap'
-import { foldEither, isRight, right } from '../../shared/either'
 import {
   arbitraryJSBlock,
   clearTopLevelElementUniqueIDs,
@@ -31,7 +30,16 @@ import {
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports, parseSuccess } from '../common/project-file-utils'
 import { sampleImportsForTests } from '../../model/test-ui-js-file'
-import { isParseSuccess, importAlias, foldParsedTextFile } from '../../shared/project-file-types'
+import {
+  isParseSuccess,
+  importAlias,
+  foldParsedTextFile,
+  exportsDetail,
+  addNamedExportToDetail,
+  EmptyExportsDetail,
+  setNamedDefaultExportInDetail,
+  addModifierExportToDetail,
+} from '../../shared/project-file-types'
 import {
   lintAndParse,
   parseCode,
@@ -95,7 +103,14 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(
+        imports,
+        [exported],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -128,7 +143,14 @@ export var whatever = () => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent('whatever', true, null, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(
+        imports,
+        [exported],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -177,7 +199,14 @@ export function whatever(props) {
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(
+        imports,
+        [exported],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -214,7 +243,14 @@ export function whatever() {
     const exported = utopiaJSXComponent('whatever', true, null, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(
+        imports,
+        [exported],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -263,7 +299,14 @@ export default function whatever(props) {
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(
+        imports,
+        [exported],
+        expect.objectContaining({}),
+        null,
+        null,
+        setNamedDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -300,7 +343,14 @@ export default function whatever() {
     const exported = utopiaJSXComponent('whatever', true, null, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(
+        imports,
+        [exported],
+        expect.objectContaining({}),
+        null,
+        null,
+        setNamedDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -347,7 +397,14 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const importsWithCake = addImport('cake', 'cake', [], null, sampleImportsForTests)
     const importsWithStylecss = addImport('./style.css', null, [], null, importsWithCake)
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(importsWithStylecss, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(
+        importsWithStylecss,
+        [exported],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -406,7 +463,14 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     )
     const imports = addImport('cake', 'cake', [importAlias('cake2')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(
+        imports,
+        [exported],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   }),
@@ -457,7 +521,14 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         sampleImportsForTests,
       )
       const expectedResult = clearParseResultUniqueIDs(
-        parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+        parseSuccess(
+          imports,
+          [exported],
+          expect.objectContaining({}),
+          null,
+          null,
+          addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+        ),
       )
       expect(actualResult).toEqual(expectedResult)
     }),
@@ -521,7 +592,14 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       )
       const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
       const expectedResult = clearParseResultUniqueIDs(
-        parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+        parseSuccess(
+          imports,
+          [exported],
+          expect.objectContaining({}),
+          null,
+          null,
+          addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+        ),
       )
       expect(actualResult).toEqual(expectedResult)
     })
@@ -572,7 +650,14 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(
+        imports,
+        [exported],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -657,6 +742,7 @@ return { getSizing: getSizing, spacing: spacing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -728,6 +814,7 @@ return { getSizing: getSizing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -815,6 +902,7 @@ return { getSizing: getSizing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -886,6 +974,7 @@ return {  };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -947,6 +1036,7 @@ return { spacing: spacing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1011,6 +1101,7 @@ return { bgs: bgs, bg: bg };`
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1075,6 +1166,7 @@ return { greys: greys };`
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1137,6 +1229,7 @@ return { a: a, b: b };`
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1202,6 +1295,7 @@ return { a: a, b: b, c: c };`
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1271,6 +1365,7 @@ return { a: a };`
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1335,6 +1430,7 @@ return { a: a, b: b };`
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1400,6 +1496,7 @@ return { bg: bg };`
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1461,6 +1558,7 @@ return { count: count };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1523,6 +1621,7 @@ return { use20: use20 };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1565,6 +1664,7 @@ return { mySet: mySet };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1627,6 +1727,7 @@ return { spacing: spacing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1709,6 +1810,7 @@ return { MyComp: MyComp };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(MyComp),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1794,6 +1896,7 @@ export var whatever = props => (
         expect.objectContaining({}),
         null,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -1907,7 +2010,14 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, ['color'], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(
+        imports,
+        [exported],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1945,43 +2055,7 @@ export var whatever = <View data-uid={'aaa'}>
       expect.objectContaining({}),
       null,
       null,
-    )
-    expect(actualResult).toEqual(expectedResult)
-  })
-  it('parses the code when it is a var', () => {
-    const code = `import * as React from "react";
-import {
-  Ellipse,
-  Image,
-  Rectangle,
-  Storyboard,
-  Text,
-  UtopiaUtils,
-  View
-} from "utopia-api";
-import { cake } from 'cake'
-export var whatever = <View data-uid={'aaa'}>
-<cake data-uid={'aab'} style={{backgroundColor: 'red'}} />
-</View>
-`
-    const actualResult = testParseCode(code)
-    const cake = jsxElement(
-      'cake',
-      {
-        'data-uid': jsxAttributeValue('aab'),
-        style: jsxAttributeValue({ backgroundColor: 'red' }),
-      },
-      [],
-    )
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', false, null, [], view, null)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const expectedResult = parseSuccess(
-      imports,
-      [exported],
-      expect.objectContaining({}),
-      null,
-      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2013,6 +2087,7 @@ export var App = (props) => <View data-uid={'bbb'}>
       expect.objectContaining({}),
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'App'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2035,6 +2110,7 @@ export var App = (props) => <View data-uid={'bbb'}>
     const actualResult = testParseCode(code)
     expect(clearParseResultUniqueIDs(actualResult)).toMatchSnapshot()
   })
+
   it('parses back and forth as a var', () => {
     const cake = jsxElement(
       'cake',
@@ -2049,7 +2125,14 @@ export var App = (props) => <View data-uid={'bbb'}>
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
     const exported = utopiaJSXComponent('whatever', false, null, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const printedCode = printCode(printCodeOptions(false, true, true), imports, [exported], null)
+    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const printedCode = printCode(
+      printCodeOptions(false, true, true),
+      imports,
+      [exported],
+      null,
+      detailOfExports,
+    )
     const actualResult = testParseCode(printedCode)
     const expectedResult = parseSuccess(
       imports,
@@ -2057,9 +2140,11 @@ export var App = (props) => <View data-uid={'bbb'}>
       expect.objectContaining({}),
       null,
       null,
+      detailOfExports,
     )
     expect(actualResult).toEqual(expectedResult)
   })
+
   it('parses back and forth as a var, with some arbitrary javascript', () => {
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab'),
@@ -2103,11 +2188,13 @@ return { getSizing: getSizing, spacing: spacing };`
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
       imports,
       [...topLevelElements],
       null,
+      detailOfExports,
     )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
     const expectedResult = parseSuccess(
@@ -2116,6 +2203,7 @@ return { getSizing: getSizing, spacing: spacing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      detailOfExports,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2131,7 +2219,14 @@ return { getSizing: getSizing, spacing: spacing };`
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
     const exported = utopiaJSXComponent('whatever', false, null, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const printedCode = printCode(printCodeOptions(false, true, true), imports, [exported], null)
+    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const printedCode = printCode(
+      printCodeOptions(false, true, true),
+      imports,
+      [exported],
+      null,
+      detailOfExports,
+    )
     const actualResult = testParseCode(printedCode)
     const expectedResult = parseSuccess(
       imports,
@@ -2139,6 +2234,7 @@ return { getSizing: getSizing, spacing: spacing };`
       expect.objectContaining({}),
       null,
       null,
+      detailOfExports,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2204,6 +2300,7 @@ export var whatever = props => {
         sampleImportsForTests,
         parsedCode.topLevelElements,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       )
       expect(printedCode).toEqual(code)
     } else {
@@ -2222,7 +2319,14 @@ export var whatever = props => {
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, [cake])
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const printedCode = printCode(printCodeOptions(false, true, true), imports, [exported], null)
+    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const printedCode = printCode(
+      printCodeOptions(false, true, true),
+      imports,
+      [exported],
+      null,
+      detailOfExports,
+    )
     const actualResult = testParseCode(printedCode)
     const expectedResult = parseSuccess(
       imports,
@@ -2230,6 +2334,7 @@ export var whatever = props => {
       expect.objectContaining({}),
       null,
       null,
+      detailOfExports,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2249,7 +2354,14 @@ export var whatever = props => {
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, [cake])
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const printedCode = printCode(printCodeOptions(false, true, true), imports, [exported], null)
+    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const printedCode = printCode(
+      printCodeOptions(false, true, true),
+      imports,
+      [exported],
+      null,
+      detailOfExports,
+    )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
     // As false properties are eliminated from the output,
     // create a copy of the original and snip that value out.
@@ -2270,7 +2382,14 @@ export var whatever = props => {
       },
     }
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [withoutFalseProp], expect.objectContaining({}), null, null),
+      parseSuccess(
+        imports,
+        [withoutFalseProp],
+        expect.objectContaining({}),
+        null,
+        null,
+        detailOfExports,
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2322,10 +2441,17 @@ export var whatever = props => {
       null,
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
-    const printedCode = printCode(printCodeOptions(false, true, true), imports, [exported], null)
+    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const printedCode = printCode(
+      printCodeOptions(false, true, true),
+      imports,
+      [exported],
+      null,
+      detailOfExports,
+    )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null),
+      parseSuccess(imports, [exported], expect.objectContaining({}), null, null, detailOfExports),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2352,6 +2478,7 @@ export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInSt
         emptyImports(),
         parsedCode.topLevelElements,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       )
       expect(printedCode).toEqual(expectedCode)
     } else {
@@ -2441,38 +2568,13 @@ return { test: test };`
         expect.objectContaining({}),
         null,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
 
     expect(actualResult).toEqual(expectedResult)
   })
   it('parses arbitrary code in a component back and forth', () => {
-    const code = applyPrettier(
-      `import { cake } from "cake";
-import * as React from "react";
-import {
-  Ellipse,
-  Image,
-  Rectangle,
-  Storyboard,
-  Text,
-  UtopiaUtils,
-  View
-} from "utopia-api";
-export var whatever = props => {
-  function test(n) {
-    return n * 2;
-  }
-  return (
-    <View data-uid={"aaa"}>
-      <cake data-uid={"aab"} left={test(100)} />
-    </View>
-  );
-};
-export var storyboard = <Storyboard data-uid={'utopia-storyboard-uid'} />
-`,
-      false,
-    ).formatted
     const jsCode = `function test(n) {
   return n * 2;
 }`
@@ -2543,10 +2645,20 @@ return { test: test };`
         ),
       ),
     ]
-    const printedCode = printCode(printCodeOptions(false, true, true), imports, components, null)
+    const detailOfExports = addModifierExportToDetail(
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      'storyboard',
+    )
+    const printedCode = printCode(
+      printCodeOptions(false, true, true),
+      imports,
+      components,
+      null,
+      detailOfExports,
+    )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, components, expect.objectContaining({}), null, null),
+      parseSuccess(imports, components, expect.objectContaining({}), null, null, detailOfExports),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2599,7 +2711,14 @@ export var App = props => {
       null,
     )
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(sampleImportsForTests, [component], expect.objectContaining({}), null, null),
+      parseSuccess(
+        sampleImportsForTests,
+        [component],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2636,7 +2755,14 @@ export var App = props => {
       null,
     )
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(sampleImportsForTests, [component], expect.objectContaining({}), null, null),
+      parseSuccess(
+        sampleImportsForTests,
+        [component],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2694,7 +2820,14 @@ export var App = props => {
       null,
     )
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(sampleImportsForTests, [component], expect.objectContaining({}), null, null),
+      parseSuccess(
+        sampleImportsForTests,
+        [component],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2703,29 +2836,6 @@ export var App = props => {
     expect(isParseSuccess(parseResult)).toBe(true)
   })
   it('parses expressions in JSX back and forth', () => {
-    const code = applyPrettier(
-      `import * as React from "react";
-import {
-  Ellipse,
-  Image,
-  Rectangle,
-  Storyboard,
-  Text,
-  UtopiaUtils,
-  View,
-} from "utopia-api";
-export var App = props => {
-  return (
-    <View data-uid={"aaa"}>
-      {[1, 2, 3].map(n => (
-        <div data-uid={"abc"} />
-      ))}
-    </View>
-  );
-};
-`,
-      false,
-    ).formatted
     const component = utopiaJSXComponent(
       'App',
       true,
@@ -2766,15 +2876,24 @@ export var App = props => {
       ),
       null,
     )
+    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'App')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
       sampleImportsForTests,
       [component],
       null,
+      detailOfExports,
     )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(sampleImportsForTests, [component], expect.objectContaining({}), null, null),
+      parseSuccess(
+        sampleImportsForTests,
+        [component],
+        expect.objectContaining({}),
+        null,
+        null,
+        detailOfExports,
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2922,7 +3041,14 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
       ),
     )
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(sampleImportsForTests, [component], expect.objectContaining({}), null, null),
+      parseSuccess(
+        sampleImportsForTests,
+        [component],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2961,7 +3087,14 @@ export var App = props => {
       null,
     )
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(sampleImportsForTests, [component], expect.objectContaining({}), null, null),
+      parseSuccess(
+        sampleImportsForTests,
+        [component],
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2994,6 +3127,7 @@ export var whatever = props => {
       sampleImportsForTests,
       [exported],
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3026,6 +3160,7 @@ export var whatever = props => {
       sampleImportsForTests,
       [exported],
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3093,6 +3228,7 @@ return {  };`
         expect.objectContaining({}),
         null,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -3170,6 +3306,7 @@ return { result: result };`
         expect.objectContaining({}),
         null,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -3243,6 +3380,7 @@ export var whatever = props => {
         expect.objectContaining({}),
         null,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -3339,6 +3477,7 @@ return { a: a };`,
         expect.objectContaining({}),
         null,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -3358,6 +3497,7 @@ export var whatever = props => {
         expect.objectContaining({}),
         null,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -3408,6 +3548,7 @@ export var whatever2 = (props) => <View data-uid={'aaa'}>
         printableProjectContent.imports,
         printableProjectContent.topLevelElements,
         printableProjectContent.jsxFactoryFunction,
+        printableProjectContent.exportsDetail,
       )
       const parseResult = testParseCode(printedCode)
       return foldParsedTextFile(
@@ -3498,19 +3639,16 @@ export var App = props => {
     const parseResult = testParseCode(code)
     if (!isParseSuccess(parseResult)) {
       fail('expected parseResult to be Right')
-      return
     }
     const appComponent = parseResult.topLevelElements[1]
     if (!isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
       fail('expected the second topLevelElement to be the App component')
-      return
     }
 
     const arbitraryBlock = appComponent.arbitraryJSBlock
 
     if (arbitraryBlock == null) {
       fail(`expected the App component's arbitraryJSBlock to be defined`)
-      return
     }
 
     const transpiledCharacter = 1 + arbitraryBlock.transpiledJavascript.split('\n')[1].indexOf('b')
@@ -3529,23 +3667,19 @@ export var App = props => {
     const parseResult = testParseCode(code)
     if (!isParseSuccess(parseResult)) {
       fail('expected parseResult to be a success')
-      return
     }
     const appComponent = parseResult.topLevelElements[1]
     if (!isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
       fail('expected the second topLevelElement to be the App component')
-      return
     }
     if (!isJSXElement(appComponent.rootElement)) {
       fail(`expected the App component's root element to be a JSXElement`)
-      return
     }
 
     const arbitraryProp = appComponent.rootElement.props.arbitrary
 
     if (!isJSXAttributeOtherJavaScript(arbitraryProp)) {
       fail(`expected <View /> to have an arbitrary js prop called props.arbitrary`)
-      return
     }
 
     const transpiledCharacter = 1 + arbitraryProp.transpiledJavascript.indexOf('log')

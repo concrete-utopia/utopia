@@ -47,6 +47,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         parseResult.imports,
         parseResult.topLevelElements,
         parseResult.jsxFactoryFunction,
+        parseResult.exportsDetail,
       )
 
       const expectedCode = applyPrettier(

@@ -7,8 +7,8 @@ import * as TP from '../../core/shared/template-path'
 import {
   ArbitraryJSBlock,
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   isUtopiaJSXComponent,
-  MetadataWithoutChildren,
   TopLevelElement,
   UtopiaJSXComponent,
   ComponentMetadataWithoutRootElements,
@@ -67,11 +67,12 @@ import {
   updateMutableUtopiaContextWithNewProps,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
+import { CanvasContainerID } from './canvas-types'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
 export type SpyValues = {
-  metadata: { [templatePath: string]: MetadataWithoutChildren }
+  metadata: ElementInstanceMetadataMap
   scenes: { [templatePath: string]: ComponentMetadataWithoutRootElements }
 }
 
@@ -458,7 +459,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
   const { scale, offset } = props
   return (
     <div
-      id={'canvas-container'}
+      id={CanvasContainerID}
       key={'canvas-container'}
       ref={containerRef}
       style={{

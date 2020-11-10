@@ -15,6 +15,10 @@ import {
   emptySpecialSizeMeasurements,
   clearTopLevelElementUniqueIDs,
   emptyComputedStyle,
+  jsxMetadata,
+  ComponentMetadata,
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -27,6 +31,8 @@ import {
   textFile,
   TextFileContents,
   unparsed,
+  addModifierExportToDetail,
+  EmptyExportsDetail,
 } from '../../../core/shared/project-file-types'
 import { emptyImports, parseSuccess } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
@@ -106,6 +112,7 @@ describe('SET_PROP', () => {
       {},
       null,
       null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     ),
   )
   const testEditor: EditorState = deepFreeze({
@@ -193,7 +200,16 @@ describe('SET_CANVAS_FRAMES', () => {
     ),
   ]
 
-  const originalModel = deepFreeze(parseSuccess(emptyImports(), components, {}, null, null))
+  const originalModel = deepFreeze(
+    parseSuccess(
+      emptyImports(),
+      components,
+      {},
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+    ),
+  )
   const testEditor: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
@@ -259,6 +275,7 @@ describe('moveTemplate', () => {
         {},
         null,
         null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
   }
@@ -756,12 +773,77 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   const fileForUI = textFile(
     textFileContents(
       '',
-      parseSuccess(sampleDefaultImports, [firstTopLevelElement], {}, null, null),
+      parseSuccess(
+        sampleDefaultImports,
+        [firstTopLevelElement],
+        {},
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      ),
       RevisionsState.BothMatch,
     ),
     null,
     0,
   )
+  const scenePath = TP.scenePath([BakedInStoryboardUID, `scene-0`])
+  const sceneTemplatePath = TP.instancePath([], [BakedInStoryboardUID, `scene-0`])
+  const rootElementPath = TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), ['aaa'])
+  const childElementPath = TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), [
+    'aaa',
+    'bbb',
+  ])
+
+  const componentMetadata: ComponentMetadata = {
+    scenePath: scenePath,
+    templatePath: sceneTemplatePath,
+    component: 'App',
+    globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+    sceneResizesContent: false,
+    style: { width: 100, height: 100 },
+    container: { layoutSystem: LayoutSystem.PinSystem },
+    rootElements: [rootElementPath],
+  }
+
+  const rootElementMetadata: ElementInstanceMetadata = {
+    templatePath: rootElementPath,
+    element: right(firstTopLevelElement.rootElement),
+    props: {
+      'data-uid': 'aaa',
+    },
+    globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+    localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+    children: [childElementPath],
+    componentInstance: false,
+    specialSizeMeasurements: emptySpecialSizeMeasurements,
+    computedStyle: emptyComputedStyle,
+  }
+
+  const childElementMetadata: ElementInstanceMetadata = {
+    templatePath: childElementPath,
+    element: right(childElement),
+    props: {
+      'data-uid': 'bbb',
+      style: {
+        left: 5,
+        top: 10,
+        width: 200,
+        height: 300,
+      },
+    },
+    globalFrame: canvasRectangle({ x: 0, y: 0, width: 200, height: 300 }),
+    localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
+    children: [],
+    componentInstance: false,
+    specialSizeMeasurements: emptySpecialSizeMeasurements,
+    computedStyle: emptyComputedStyle,
+  }
+
+  const elementMetadataMap: ElementInstanceMetadataMap = {
+    [TP.toString(rootElementPath)]: rootElementMetadata,
+    [TP.toString(childElementPath)]: childElementMetadata,
+  }
+
   const testEditorWithPins: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
@@ -771,58 +853,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
       tab: openFileTab('/src/app.js'),
       initialCursorPosition: null,
     },
-    jsxMetadataKILLME: [
-      {
-        scenePath: TP.scenePath([BakedInStoryboardUID, `scene-0`]),
-        templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-0`]),
-        component: 'App',
-        frame: { left: 0, top: 0, width: 100, height: 100 },
-        globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-        sceneResizesContent: false,
-        style: { width: 100, height: 100 },
-        container: { layoutSystem: LayoutSystem.PinSystem },
-        rootElements: [
-          {
-            navigatorName: 'nope',
-            templatePath: TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), ['aaa']),
-            element: right(firstTopLevelElement.rootElement),
-            props: {
-              'data-uid': 'aaa',
-            },
-            globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-            localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-            children: [
-              {
-                navigatorName: 'nope',
-                templatePath: TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), [
-                  'aaa',
-                  'bbb',
-                ]),
-                element: right(childElement),
-                props: {
-                  'data-uid': 'bbb',
-                  style: {
-                    left: 5,
-                    top: 10,
-                    width: 200,
-                    height: 300,
-                  },
-                },
-                globalFrame: canvasRectangle({ x: 0, y: 0, width: 200, height: 300 }),
-                localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
-                children: [],
-                componentInstance: false,
-                specialSizeMeasurements: emptySpecialSizeMeasurements,
-                computedStyle: emptyComputedStyle,
-              },
-            ],
-            componentInstance: false,
-            specialSizeMeasurements: emptySpecialSizeMeasurements,
-            computedStyle: emptyComputedStyle,
-          },
-        ],
-      },
-    ],
+    jsxMetadataKILLME: jsxMetadata([componentMetadata], elementMetadataMap),
     selectedViews: [TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), ['aaa'])],
   })
   it('switches from pins to flex correctly', () => {

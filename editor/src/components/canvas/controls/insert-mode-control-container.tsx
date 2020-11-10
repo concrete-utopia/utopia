@@ -133,7 +133,10 @@ export class InsertModeControlContainer extends React.Component<
   parentIsFlex = (parentPath: TemplatePath | null | undefined): boolean => {
     const parentInstance =
       parentPath != null && TP.isInstancePath(parentPath)
-        ? MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, parentPath)
+        ? MetadataUtils.getElementByInstancePathMaybe(
+            this.props.componentMetadata.elements,
+            parentPath,
+          )
         : null
     return MetadataUtils.isFlexLayoutedContainer(parentInstance)
   }
@@ -659,7 +662,7 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   render() {
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
+    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
     const allPaths = MetadataUtils.getAllPaths(this.props.componentMetadata)
     const insertTargets = allPaths.filter((path) => {
       if (TP.isScenePath(path)) {
