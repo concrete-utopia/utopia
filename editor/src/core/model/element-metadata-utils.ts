@@ -1307,8 +1307,8 @@ export const MetadataUtils = {
         newElement,
       )
       const updatedElements = this.updateParentWithNewChildPath(
-        TP.parentPath(newPath),
-        newPath,
+        TP.parentPath(duplicatedElementPath),
+        duplicatedElementPath,
         workingElements,
         {
           type: 'back',
