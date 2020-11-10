@@ -25,7 +25,10 @@ export class RepositionableControl extends React.Component<ControlProps> {
 
       const instance = TP.isScenePath(selectedView)
         ? null
-        : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
+        : MetadataUtils.getElementByInstancePathMaybe(
+            this.props.componentMetadata.elements,
+            selectedView,
+          )
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
       const selectionColor = getSelectionColor(
         selectedView,

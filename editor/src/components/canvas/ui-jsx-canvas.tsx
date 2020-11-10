@@ -7,8 +7,8 @@ import * as TP from '../../core/shared/template-path'
 import {
   ArbitraryJSBlock,
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   isUtopiaJSXComponent,
-  MetadataWithoutChildren,
   TopLevelElement,
   UtopiaJSXComponent,
   ComponentMetadataWithoutRootElements,
@@ -72,7 +72,7 @@ import { CanvasContainerID } from './canvas-types'
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
 export type SpyValues = {
-  metadata: { [templatePath: string]: MetadataWithoutChildren }
+  metadata: ElementInstanceMetadataMap
   scenes: { [templatePath: string]: ComponentMetadataWithoutRootElements }
 }
 

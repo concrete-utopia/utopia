@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { colorTheme, UtopiaTheme } from 'uuiui'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../../../core/shared/element-template'
+import { JSXMetadata } from '../../../core/shared/element-template'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import { KeysPressed } from '../../../utils/keyboard'
 import utils from '../../../utils/utils'
@@ -30,7 +30,7 @@ interface ComponentAreaControlProps {
     dragStart: CanvasPoint,
     originalEvent: React.MouseEvent<HTMLDivElement>,
   ) => void
-  componentMetadata: ComponentMetadata[]
+  componentMetadata: JSXMetadata
   onHover: (target: TemplatePath) => void
   onHoverEnd: (target: TemplatePath) => void
   keysPressed: KeysPressed
@@ -85,7 +85,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
       }
       if (TP.isInstancePath(this.props.target)) {
         const instance = MetadataUtils.getElementByInstancePathMaybe(
-          this.props.componentMetadata,
+          this.props.componentMetadata.elements,
           this.props.target,
         )
         if (
