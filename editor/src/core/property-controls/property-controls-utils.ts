@@ -609,53 +609,21 @@ export function sendPropertyControlsInfoRequest(
       ? nodeModulesUpdate
       : combineUpdates(queuedNodeModulesUpdate, nodeModulesUpdate)
 
-  function scheduleSend(): void {
-    if (propertyControlsIFrameAvailable) {
-      window.clearTimeout(lastPropertyControlsInfoSendID)
-      lastPropertyControlsInfoSendID = window.setTimeout(async () => sendToIFrame(), 0)
-    }
-  }
-
-  function sendToIFrame(): void {
-    // Prevent a scheduled send from firing.
-    window.clearTimeout(lastPropertyControlsInfoSendID)
-
-    if (propertyControlsIFrameReady) {
-      const propertyControlsInfoElement = document.getElementById(PropertyControlsInfoIFrameID)
-      if (propertyControlsInfoElement == null) {
-        scheduleSend()
-      } else {
-        const iFramePropertyControlsInfoElement = (propertyControlsInfoElement as any) as HTMLIFrameElement
-        const contentWindow = iFramePropertyControlsInfoElement.contentWindow
-        if (contentWindow == null) {
-          scheduleSend()
-        } else {
-          try {
-            if (queuedNodeModulesUpdate != null) {
-              // console.log('actually sending message!!!')
-              contentWindow.postMessage(
-                createGetPropertyControlsInfoMessage(
-                  exportsInfo,
-                  queuedNodeModulesUpdate,
-                  projectContents,
-                  canvasRelatedProps,
-                ),
-                '*',
-              )
-              queuedNodeModulesUpdate = null
-            }
-          } catch (exception) {
-            // Don't nuke the editor if there's an exception posting the message.
-            // This can happen if a value can't be cloned when posted.
-            console.error('Error sending message for property controls info.', exception)
-          }
-        }
-      }
-    } else {
-      scheduleSend()
-    }
-  }
+  const propertyControlsInfoElement = document.getElementById(PropertyControlsInfoIFrameID)
+  const iFramePropertyControlsInfoElement = (propertyControlsInfoElement as any) as HTMLIFrameElement
+  const contentWindow = iFramePropertyControlsInfoElement?.contentWindow
+  // eslint-disable-next-line no-unused-expressions
+  contentWindow?.postMessage(
+    createGetPropertyControlsInfoMessage(
+      exportsInfo,
+      queuedNodeModulesUpdate,
+      projectContents,
+      canvasRelatedProps,
+    ),
+    '*',
+  )
+  queuedNodeModulesUpdate = null
 
   // Initialise the first call.
-  sendToIFrame()
+  // sendToIFrame()
 }
