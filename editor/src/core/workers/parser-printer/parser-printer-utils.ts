@@ -1,14 +1,9 @@
 import * as TS from 'typescript'
-import { TopLevelElement, JSXElement } from '../../shared/element-template'
+import { JSXElement, TopLevelElement } from '../../shared/element-template'
 import { fixUtopiaElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { SourceMapConsumer, SourceNode } from 'source-map'
-
-export interface TopLevelElementAndCodeContext {
-  element: TopLevelElement
-  bounds: NodesBounds
-}
 
 // Checks if the first value is greater than the second one.
 export function lineAndCharacterGreaterThan(
@@ -66,16 +61,13 @@ export function getBoundsOfNodes(
 }
 
 export function guaranteeUniqueUidsFromTopLevel(
-  topLevelElements: Array<TopLevelElementAndCodeContext>,
-): Array<TopLevelElementAndCodeContext> {
+  topLevelElements: Array<TopLevelElement>,
+): Array<TopLevelElement> {
   return topLevelElements.map((tle) => {
-    if (tle.element.type === 'UTOPIA_JSX_COMPONENT') {
+    if (tle.type === 'UTOPIA_JSX_COMPONENT') {
       return {
         ...tle,
-        element: {
-          ...tle.element,
-          rootElement: fixUtopiaElement(tle.element.rootElement, []),
-        },
+        rootElement: fixUtopiaElement(tle.rootElement, []),
       }
     } else {
       return tle
