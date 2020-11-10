@@ -20,6 +20,7 @@ import {
   defaultPropsParam,
   jsxAttributeOtherJavaScript,
   ComponentMetadata,
+  JSXMetadata,
 } from '../shared/element-template'
 import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
@@ -40,6 +41,7 @@ import {
 import { stripNulls } from '../shared/array-utils'
 import { isPercentPin } from 'utopia-api'
 import { UTOPIA_UID_KEY } from './utopia-constants'
+import { MetadataUtils } from './element-metadata-utils'
 
 export const EmptyScenePathForStoryboard = TP.scenePath([])
 
@@ -297,8 +299,12 @@ export function isSceneElement(element: JSXElement): boolean {
   return element.name.baseVariable === 'Scene'
 }
 
-export function isSceneChildWidthHeightPercentage(scene: ComponentMetadata): boolean {
-  const rootElementSizes = scene.rootElements.map((element) => {
+export function isSceneChildWidthHeightPercentage(
+  scene: ComponentMetadata,
+  metadata: JSXMetadata,
+): boolean {
+  const rootElements = MetadataUtils.getImmediateChildren(metadata, scene.scenePath)
+  const rootElementSizes = rootElements.map((element) => {
     return {
       width: element.props?.style?.width,
       height: element.props?.style?.height,
@@ -308,8 +314,11 @@ export function isSceneChildWidthHeightPercentage(scene: ComponentMetadata): boo
   return rootElementSizes.some((size) => isPercentPin(size.width) || isPercentPin(size.height))
 }
 
-export function isDynamicSceneChildWidthHeightPercentage(scene: ComponentMetadata): boolean {
+export function isDynamicSceneChildWidthHeightPercentage(
+  scene: ComponentMetadata,
+  metadata: JSXMetadata,
+): boolean {
   const isDynamicScene = scene.sceneResizesContent
 
-  return isDynamicScene && isSceneChildWidthHeightPercentage(scene)
+  return isDynamicScene && isSceneChildWidthHeightPercentage(scene, metadata)
 }

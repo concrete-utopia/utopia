@@ -1,5 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../../../../core/shared/element-template'
+import { JSXMetadata } from '../../../../core/shared/element-template'
 import { InstancePath, TemplatePath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
 import { CanvasRectangle } from '../../../../core/shared/math-utils'
@@ -8,7 +8,7 @@ import * as EditorActions from '../../../editor/actions/actions'
 import * as TP from '../../../../core/shared/template-path'
 
 export function areYogaChildren(
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
   selectedViews: TemplatePath[],
 ): boolean {
   if (selectedViews.length === 1) {
@@ -22,7 +22,7 @@ export function areYogaChildren(
 }
 
 export function anyInstanceYogaLayouted(
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
   selectedViews: TemplatePath[],
 ): boolean {
   return selectedViews.some((selectedView) => {
@@ -58,7 +58,7 @@ export function isYogaReverse(flexDirection: string): boolean {
 }
 
 export function getNewIndex(
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
   target: TemplatePath,
   parent: TemplatePath | null,
   flexDirection: string,

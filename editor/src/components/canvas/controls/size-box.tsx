@@ -22,7 +22,7 @@ import { ResizeStatus } from './new-canvas-controls'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import CanvasActions from '../canvas-actions'
 import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
-import { ComponentMetadata } from '../../../core/shared/element-template'
+import { JSXMetadata } from '../../../core/shared/element-template'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { betterReactMemo } from '../../../uuiui-deps'
@@ -385,7 +385,7 @@ interface ResizeRectangleProps {
   dragState: ResizeDragState | null
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   getOriginalFrames: () => Array<OriginalCanvasAndLocalFrame>
-  metadata: Array<ComponentMetadata>
+  metadata: JSXMetadata
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
   testID: string
 }

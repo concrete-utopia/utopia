@@ -30,7 +30,6 @@ import { unsetSceneProp, setSceneProp } from '../../../editor/actions/actions'
 import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
 import {
   PathForResizeContent,
-  isDynamicSceneChildWidthHeightPercentage,
   isSceneChildWidthHeightPercentage,
 } from '../../../../core/model/scene-utils'
 import { GridRow } from '../../widgets/grid-row'
@@ -191,9 +190,9 @@ function useIsSceneChildWidthHeightPercentage() {
     'missing scene from scene section',
     selectedViews.find(TP.isScenePath),
   )
-  const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScenePath)
+  const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScenePath)
   if (scene != null) {
-    return isSceneChildWidthHeightPercentage(scene)
+    return isSceneChildWidthHeightPercentage(scene, metadata)
   } else {
     return false
   }
@@ -215,7 +214,7 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
     'Scene cannot be null in SceneContainerSection',
     React.useMemo(() => selectedViews.find(TP.isScenePath), [selectedViews]),
   )
-  const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScene)
+  const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScene)
 
   const sceneResizesContentInfo = useSceneType()
   let controlStatus: ControlStatus = simpleControlStatus
