@@ -136,6 +136,7 @@ import {
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
+import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -935,12 +936,14 @@ export interface ElementWarnings {
   widthOrHeightZero: boolean
   absoluteWithUnpositionedParent: boolean
   dynamicSceneChildWidthHeightPercentage: boolean
+  missingStyleProp: boolean
 }
 
 export const defaultElementWarnings: ElementWarnings = {
   widthOrHeightZero: false,
   absoluteWithUnpositionedParent: false,
   dynamicSceneChildWidthHeightPercentage: false,
+  missingStyleProp: false,
 }
 
 export interface DerivedState {
@@ -1188,8 +1191,13 @@ type EditorAndDerivedState = {
 
 export function getElementWarnings(
   rootMetadata: Array<ComponentMetadata>,
+  editor: EditorState,
 ): ComplexMap<TemplatePath, ElementWarnings> {
   let result: ComplexMap<TemplatePath, ElementWarnings> = emptyComplexMap()
+  const propertyControlsInfo = editor.propertyControlsInfo
+  const imports = getOpenImportsFromState(editor)
+  const openFilePath = getOpenUIJSFileKey(editor)
+  const jsxComponents = getOpenUtopiaJSXComponentsFromState(editor)
   MetadataUtils.walkMetadata(
     rootMetadata,
     (elementMetadata: ElementInstanceMetadata, parentMetadata: ElementInstanceMetadata | null) => {
@@ -1210,11 +1218,21 @@ export function getElementWarnings(
         }
       }
 
+      const missingStyleProp = !targetRespectsLayout(
+        elementMetadata.templatePath,
+        propertyControlsInfo,
+        imports,
+        openFilePath,
+        jsxComponents,
+        rootMetadata,
+      )
+
       // Build the warnings object and add it to the map.
       const elementWarnings: ElementWarnings = {
         widthOrHeightZero: widthOrHeightZero,
         absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
         dynamicSceneChildWidthHeightPercentage: false,
+        missingStyleProp: missingStyleProp,
       }
       result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
     },
@@ -1227,6 +1245,7 @@ export function getElementWarnings(
           : false,
       absoluteWithUnpositionedParent: false,
       dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(scene),
+      missingStyleProp: false,
     }
     result = addToComplexMap(toString, result, scene.scenePath, elementWarnings)
   })
@@ -1252,7 +1271,7 @@ export function deriveState(
       controls: derivedState.canvas.controls,
       transientState: produceCanvasTransientState(editor, true),
     },
-    elementWarnings: getElementWarnings(getMetadata(editor)),
+    elementWarnings: getElementWarnings(getMetadata(editor), editor),
   }
 
   const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)

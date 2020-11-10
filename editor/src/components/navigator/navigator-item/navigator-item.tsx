@@ -207,6 +207,8 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       warningText = 'Missing width or height'
     } else if (elementWarnings.absoluteWithUnpositionedParent) {
       warningText = 'Element is trying to be position absolutely with an unconfigured parent'
+    } else if (elementWarnings.missingStyleProp) {
+      warningText = 'Missing Style PropertyControl'
     }
 
     const preview =
@@ -277,6 +279,11 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             inputVisible={TP.pathsEqual(renamingTarget, templatePath)}
             elementOriginType={elementOriginType}
           />
+          {elementWarnings.missingStyleProp ? (
+            <span style={{ paddingLeft: 5, textDecoration: 'line-through', color: '#929292' }}>
+              Style
+            </span>
+          ) : null}
         </FlexRow>
         <NavigatorItemActionSheet
           templatePath={templatePath}
