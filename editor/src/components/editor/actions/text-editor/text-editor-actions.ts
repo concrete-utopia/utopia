@@ -4,6 +4,7 @@ import {
   jsxIdentifier,
   jsxOpeningElement,
 } from '@babel/types'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import {
   isJSXTextBlock,
   jsxAttributeNestedObjectSimple,
@@ -14,7 +15,10 @@ import {
 } from '../../../../core/shared/element-template'
 import { InstancePath } from '../../../../core/shared/project-file-types'
 import { EditorModel } from '../../action-types'
-import { modifyOpenJsxElementAtPath } from '../../store/editor-state'
+import {
+  getOpenUtopiaJSXComponentsFromState,
+  modifyOpenJsxElementAtPath,
+} from '../../store/editor-state'
 
 interface WrapTextInStyledSpan {
   action: 'WRAP_TEXT_IN_STYLED_SPAN'
@@ -43,11 +47,9 @@ function getSimpleTextRange({ focusOffset, anchorOffset }: Selection): SimpleTex
 
 export const TextEditorActions = {
   WRAP_TEXT_IN_STYLED_SPAN: (action: WrapTextInStyledSpan, editor: EditorModel): EditorModel => {
-    console.log('hallåååå')
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        debugger
         // WARNING: EXPERIMENT
         // we only support elements with one text block as a child
         if (element.children.length === 1) {
@@ -65,6 +67,11 @@ export const TextEditorActions = {
                   'span',
                   {
                     style: jsxAttributeNestedObjectSimple({ fontWeight: jsxAttributeValue(700) }),
+                    'data-uid': jsxAttributeValue(
+                      generateUidWithExistingComponents(
+                        getOpenUtopiaJSXComponentsFromState(editor),
+                      ),
+                    ),
                   },
                   [jsxTextBlock(centerTextNode)],
                 ),

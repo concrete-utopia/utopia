@@ -41,7 +41,7 @@ import {
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import { useDomWalker } from './dom-walker'
-import { isLiveMode, isTextMode } from '../editor/editor-modes'
+import { isLiveMode } from '../editor/editor-modes'
 import {
   BakedInStoryboardVariableName,
   EmptyScenePathForStoryboard,
@@ -459,11 +459,8 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
 
   const { scale, offset } = props
 
-  const isText = useEditorState((store) => store.editor.mode.type === 'text', 'UI JSX Canvas ')
   return (
     <div
-      // this doesn't work 🤔
-      contentEditable={isText}
       id={CanvasContainerID}
       key={'canvas-container'}
       ref={containerRef}
