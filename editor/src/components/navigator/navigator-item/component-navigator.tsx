@@ -34,6 +34,7 @@ interface SelectedComponentNavigatorProps {
   utopiaComponentNames: string[]
 }
 
+// Toggle me to enable a row that just says "Render"
 const ShowRenderRow = false
 
 export const SelectedComponentNavigator = betterReactMemo(
