@@ -25,6 +25,7 @@ import { betterReactMemo } from 'uuiui-deps'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
 import { UtopiaKeys } from '../../../core/model/utopia-constants'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -77,7 +78,8 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         componentInstanceInner &&
         staticName != null &&
         element != null &&
-        !isIntrinsicElement(staticName)
+        !isIntrinsicElement(staticName) &&
+        isFeatureEnabled('Navigator Component Props')
       ) {
         Object.keys(element.props).forEach((propName) => {
           if (propName !== 'skipDeepFreeze' && UtopiaKeys.indexOf(propName) === -1) {

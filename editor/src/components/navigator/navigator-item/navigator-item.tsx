@@ -27,6 +27,7 @@ import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { WarningIcon } from '../../../uuiui/warning-icon'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -299,37 +300,39 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             dispatch={dispatch}
           />
         </FlexRow>
-        <FlexColumn
-          style={{
-            ...rowStyle,
-            height: undefined,
-            paddingLeft: Number(rowStyle.paddingLeft) + BasePaddingUnit * 2,
-          }}
-          onMouseDown={select}
-          onMouseMove={highlight}
-        >
-          {Object.keys(properties).map((propName) => {
-            const prop = properties[propName]
-            const propAsString =
-              typeof prop === 'number' || typeof prop === 'string' ? prop : JSON.stringify(prop)
-            return (
-              <div key={propName}>
-                <span>{propName}</span>
-                <span
-                  style={{
-                    paddingLeft: 10,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: 'block',
-                  }}
-                >
-                  {propAsString}
-                </span>
-              </div>
-            )
-          })}
-        </FlexColumn>
+        {isFeatureEnabled('Navigator Component Props') && (
+          <FlexColumn
+            style={{
+              ...rowStyle,
+              height: undefined,
+              paddingLeft: Number(rowStyle.paddingLeft) + BasePaddingUnit * 2,
+            }}
+            onMouseDown={select}
+            onMouseMove={highlight}
+          >
+            {Object.keys(properties).map((propName) => {
+              const prop = properties[propName]
+              const propAsString =
+                typeof prop === 'number' || typeof prop === 'string' ? prop : JSON.stringify(prop)
+              return (
+                <div key={propName}>
+                  <span>{propName}</span>
+                  <span
+                    style={{
+                      paddingLeft: 10,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: 'block',
+                    }}
+                  >
+                    {propAsString}
+                  </span>
+                </div>
+              )
+            })}
+          </FlexColumn>
+        )}
       </React.Fragment>
     )
   },
