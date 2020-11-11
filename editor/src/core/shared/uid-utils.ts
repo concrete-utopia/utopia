@@ -45,7 +45,13 @@ export function createIndexedUid(originalUid: string, index: string | number): s
 }
 
 export function extractOriginalUidFromIndexedUid(uid: string): string {
-  return uid.split(GeneratedUIDSeparator)[0]
+  //return uid.split(GeneratedUIDSeparator)[0]
+  const separatorIndex = uid.indexOf(GeneratedUIDSeparator)
+  if (separatorIndex >= 0) {
+    return uid.substr(0, separatorIndex)
+  } else {
+    return uid
+  }
 }
 
 export function setUtopiaIDOnJSXElement(element: JSXElement, uid: string): JSXElement {
