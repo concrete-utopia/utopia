@@ -6,11 +6,13 @@ export type FeatureName =
   | 'Dragging Shows Overlay'
   | 'Invisible Element Controls'
   | 'Advanced Resize Box'
+  | 'Component Navigator'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Invisible Element Controls',
   'Advanced Resize Box',
+  'Component Navigator',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -18,6 +20,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Shows Overlay': false,
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
+  'Component Navigator': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

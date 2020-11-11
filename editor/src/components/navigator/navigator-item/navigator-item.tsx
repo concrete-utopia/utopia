@@ -219,9 +219,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
           isFlexLayoutedContainer={isFlexLayoutedContainer}
           yogaDirection={yogaDirection}
           yogaWrap={yogaWrap}
-          path={templatePath}
           color={resultingStyle.iconColor}
-          selected={selected}
           imports={imports}
         />
       ) : (
