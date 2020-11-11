@@ -16,10 +16,15 @@ import {
   defaultElementWarnings,
   EditorStore,
 } from '../../editor/store/editor-state'
-import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  UtopiaJSXComponent,
+  isUtopiaJSXComponent,
+  isIntrinsicElement,
+} from '../../../core/shared/element-template'
 import { betterReactMemo } from 'uuiui-deps'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
+import { UtopiaKeys } from '../../../core/model/utopia-constants'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -66,6 +71,23 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         jsxMetadataKILLME,
         imports,
       )
+      const isSelected = TP.containsPath(templatePath, transientState.selectedViews)
+      let properties: { [key: string]: any } = {}
+      if (
+        componentInstanceInner &&
+        staticName != null &&
+        element != null &&
+        !isIntrinsicElement(staticName)
+      ) {
+        Object.keys(element.props).forEach((propName) => {
+          if (propName !== 'skipDeepFreeze' && UtopiaKeys.indexOf(propName) === -1) {
+            properties[propName] = element.props[propName]
+          }
+        })
+        if (element.children.length > 0 && properties['children'] == null) {
+          properties['children'] = element.children.length + ''
+        }
+      }
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
       const isInNavigatorTargets = TP.containsPath(templatePath, navigatorTargets)
@@ -95,13 +117,14 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         yogaWrap: MetadataUtils.getYogaWrap(element),
         componentInstance: componentInstanceInner,
         isAutosizingView: MetadataUtils.isAutoSizingView(element),
-        isSelected: TP.containsPath(templatePath, transientState.selectedViews),
+        isSelected: isSelected,
         isHighlighted: TP.containsPath(templatePath, transientState.highlightedViews),
         noOfChildren: noOfChildrenInner,
         supportsChildren: supportsChildren,
         imports: imports,
         elementOriginType: elementOriginType,
         elementWarnings: elementWarningsInner ?? defaultElementWarnings,
+        properties: properties,
       }
     },
   )
@@ -128,6 +151,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
 
       imports,
       elementWarnings,
+      properties,
     } = useEditorState(selector, 'NavigatorItemWrapper')
 
     const {
@@ -180,6 +204,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       renamingTarget: renamingTarget,
       imports: imports,
       elementWarnings: elementWarnings,
+      properties: properties,
     }
 
     return <NavigatorItemContainer {...navigatorItemProps} />

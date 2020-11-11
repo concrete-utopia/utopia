@@ -1,7 +1,16 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import * as React from 'react'
-import { colorTheme, FlexRow, IcnProps, Icons, Tooltip, UtopiaStyles, UtopiaTheme } from 'uuiui'
+import {
+  colorTheme,
+  FlexColumn,
+  FlexRow,
+  IcnProps,
+  Icons,
+  Tooltip,
+  UtopiaStyles,
+  UtopiaTheme,
+} from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
 import { ElementOriginType, Imports, TemplatePath } from '../../../core/shared/project-file-types'
@@ -57,6 +66,7 @@ export interface NavigatorItemInnerProps {
   imports: Imports
   elementOriginType: ElementOriginType
   elementWarnings: ElementWarnings
+  properties: { [key: string]: any }
 }
 
 function selectItem(
@@ -163,6 +173,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       isFlexLayoutedContainer,
       yogaDirection,
       yogaWrap,
+      properties,
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
@@ -257,36 +268,69 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     })
 
     return (
-      <FlexRow ref={domElementRef} style={rowStyle} onMouseDown={select} onMouseMove={highlight}>
-        <FlexRow style={containerStyle}>
-          <ExpandableIndicator
-            key='expandable-indicator'
-            visible={childComponentCount > 0}
-            collapsed={collapsed}
+      <React.Fragment>
+        <FlexRow ref={domElementRef} style={rowStyle} onMouseDown={select} onMouseMove={highlight}>
+          <FlexRow style={containerStyle}>
+            <ExpandableIndicator
+              key='expandable-indicator'
+              visible={childComponentCount > 0}
+              collapsed={collapsed}
+              selected={selected}
+              onMouseDown={collapse}
+            />
+            {preview}
+            <ItemLabel
+              key={`label-${label}`}
+              name={label}
+              isDynamic={isDynamic}
+              target={templatePath}
+              canRename={selected}
+              dispatch={dispatch}
+              inputVisible={TP.pathsEqual(renamingTarget, templatePath)}
+              elementOriginType={elementOriginType}
+            />
+          </FlexRow>
+          <NavigatorItemActionSheet
+            templatePath={templatePath}
             selected={selected}
-            onMouseDown={collapse}
-          />
-          {preview}
-          <ItemLabel
-            key={`label-${label}`}
-            name={label}
-            isDynamic={isDynamic}
-            target={templatePath}
-            canRename={selected}
+            highlighted={isHighlighted}
+            isVisibleOnCanvas={isElementVisible}
+            instanceOriginalComponentName={null}
             dispatch={dispatch}
-            inputVisible={TP.pathsEqual(renamingTarget, templatePath)}
-            elementOriginType={elementOriginType}
           />
         </FlexRow>
-        <NavigatorItemActionSheet
-          templatePath={templatePath}
-          selected={selected}
-          highlighted={isHighlighted}
-          isVisibleOnCanvas={isElementVisible}
-          instanceOriginalComponentName={null}
-          dispatch={dispatch}
-        />
-      </FlexRow>
+        <FlexColumn
+          style={{
+            ...rowStyle,
+            height: undefined,
+            paddingLeft: Number(rowStyle.paddingLeft) + BasePaddingUnit * 2,
+          }}
+          onMouseDown={select}
+          onMouseMove={highlight}
+        >
+          {Object.keys(properties).map((propName) => {
+            const prop = properties[propName]
+            const propAsString =
+              typeof prop === 'number' || typeof prop === 'string' ? prop : JSON.stringify(prop)
+            return (
+              <div key={propName}>
+                <span>{propName}</span>
+                <span
+                  style={{
+                    paddingLeft: 10,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: 'block',
+                  }}
+                >
+                  {propAsString}
+                </span>
+              </div>
+            )
+          })}
+        </FlexColumn>
+      </React.Fragment>
     )
   },
 )
