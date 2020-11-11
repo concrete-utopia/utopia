@@ -41,7 +41,6 @@ import {
 import { stripNulls } from '../shared/array-utils'
 import { isPercentPin } from 'utopia-api'
 import { UTOPIA_UID_KEY } from './utopia-constants'
-import { MetadataUtils } from './element-metadata-utils'
 
 export const EmptyScenePathForStoryboard = TP.scenePath([])
 
@@ -303,7 +302,9 @@ export function isSceneChildWidthHeightPercentage(
   scene: ComponentMetadata,
   metadata: JSXMetadata,
 ): boolean {
-  const rootElements = MetadataUtils.getImmediateChildren(metadata, scene.scenePath)
+  // FIXME ASAP This is reproducing logic that should stay in MetadataUtils, but importing that
+  // imports the entire editor into the worker threads, including modules that require window and document
+  const rootElements = scene.rootElements.map((path) => metadata.elements[TP.toString(path)])
   const rootElementSizes = rootElements.map((element) => {
     return {
       width: element.props?.style?.width,
