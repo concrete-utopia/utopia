@@ -301,37 +301,47 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
           />
         </FlexRow>
         {isFeatureEnabled('Navigator Component Props') && (
-          <FlexColumn
+          <FlexRow
             style={{
               ...rowStyle,
               height: undefined,
-              paddingLeft: Number(rowStyle.paddingLeft) + BasePaddingUnit * 2,
+              paddingLeft: Number(rowStyle.paddingLeft) + BasePaddingUnit,
             }}
-            onMouseDown={select}
-            onMouseMove={highlight}
           >
-            {Object.keys(properties).map((propName) => {
-              const prop = properties[propName]
-              const propAsString =
-                typeof prop === 'number' || typeof prop === 'string' ? prop : JSON.stringify(prop)
-              return (
-                <div key={propName}>
-                  <span>{propName}</span>
-                  <span
-                    style={{
-                      paddingLeft: 10,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: 'block',
-                    }}
-                  >
-                    {propAsString}
-                  </span>
-                </div>
-              )
-            })}
-          </FlexColumn>
+            <FlexColumn
+              style={{
+                backgroundColor: selected ? undefined : '#f6f6f6',
+                borderRadius: 5,
+                paddingLeft: BasePaddingUnit,
+                paddingRight: BasePaddingUnit,
+              }}
+              onMouseDown={select}
+              onMouseMove={highlight}
+            >
+              {Object.keys(properties).map((propName) => {
+                const prop = properties[propName]
+                const propAsString =
+                  typeof prop === 'number' || typeof prop === 'string' ? prop : JSON.stringify(prop)
+                return (
+                  <div key={propName}>
+                    <span>{propName}</span>
+                    <span
+                      style={{
+                        paddingLeft: 10,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: 'block',
+                        maxWidth: 150,
+                      }}
+                    >
+                      {propAsString}
+                    </span>
+                  </div>
+                )
+              })}
+            </FlexColumn>
+          </FlexRow>
         )}
       </React.Fragment>
     )
