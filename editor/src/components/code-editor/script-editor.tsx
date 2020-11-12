@@ -29,6 +29,7 @@ import {
   ImageFile,
   Directory,
   AssetFile,
+  HighlightBounds,
 } from '../../core/shared/project-file-types'
 import { codeNeedsPrinting } from '../../core/workers/common/project-file-utils'
 import { isJsFile } from '../../core/workers/ts/ts-worker'
@@ -56,7 +57,6 @@ import {
   packageJsonFileFromProjectContents,
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
 import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import * as TP from '../../core/shared/template-path'
 import { CodeEditor } from './code-editor'
@@ -108,23 +108,6 @@ function updateFileContents(contents: string, file: ProjectFile, manualSave: boo
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
   }
-}
-
-function getHighlightBoundsForTemplatePath(path: TemplatePath, store: EditorStore) {
-  const selectedFile = getOpenFile(store.editor)
-  if (isTextFile(selectedFile) && isParseSuccess(selectedFile.fileContents.parsed)) {
-    const parseSuccess = selectedFile.fileContents.parsed
-    if (TP.isInstancePath(path)) {
-      const highlightedUID = Utils.optionalMap(
-        TP.toUid,
-        MetadataUtils.dynamicPathToStaticPath(path),
-      )
-      if (highlightedUID != null) {
-        return parseSuccess.highlightBounds[highlightedUID]
-      }
-    }
-  }
-  return null
 }
 
 function getTemplatePathsInBounds(
@@ -179,6 +162,8 @@ interface ScriptEditorProps {
   allTemplatePaths: TemplatePath[]
   focusedPanel: EditorPanel | null
   codeEditorTheme: string
+  selectedViewBounds: HighlightBounds[]
+  highlightBounds: HighlightBounds[]
 }
 
 export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditorProps) => {
@@ -201,27 +186,9 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     focusedPanel,
     codeEditorTheme,
     selectedViews,
+    selectedViewBounds,
+    highlightBounds,
   } = props
-
-  const selectedViewBounds = useKeepReferenceEqualityIfPossible(
-    useEditorState((store) => {
-      return Utils.stripNulls(
-        store.editor.selectedViews.map((selectedView) =>
-          getHighlightBoundsForTemplatePath(selectedView, store),
-        ),
-      )
-    }, 'ScriptEditor selectedViewBounds'),
-  )
-
-  const highlightBounds = useKeepReferenceEqualityIfPossible(
-    useEditorState((store) => {
-      return Utils.stripNulls(
-        store.editor.highlightedViews.map((highlightedView) =>
-          getHighlightBoundsForTemplatePath(highlightedView, store),
-        ),
-      )
-    }, 'ScriptEditor highlightBounds'),
-  )
 
   const onHover = React.useCallback(
     (line: number, column: number) => {

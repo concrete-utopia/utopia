@@ -1,10 +1,12 @@
 import * as React from 'react'
+import * as TP from '../../core/shared/template-path'
 import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
 import { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
-import { isParseSuccess } from '../../core/shared/project-file-types'
-import { betterReactMemo } from '../../uuiui-deps'
+import { isParseSuccess, isTextFile, TemplatePath } from '../../core/shared/project-file-types'
+import { betterReactMemo, Utils } from '../../uuiui-deps'
 import {
   ConsoleLog,
+  EditorStore,
   getAllLintErrors,
   getOpenEditorTab,
   getOpenFile,
@@ -14,7 +16,9 @@ import {
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
+import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { ScriptEditor } from './script-editor'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export const CodeEditorContainer = betterReactMemo('CodeEditorContainer', (props) => {
   const runtimeErrors: RuntimeErrorInfo[] = []
@@ -51,6 +55,26 @@ export const CodeEditorContainer = betterReactMemo('CodeEditorContainer', (props
     }
   }, 'ScriptEditor')
 
+  const selectedViewBounds = useKeepReferenceEqualityIfPossible(
+    useEditorState((store) => {
+      return Utils.stripNulls(
+        store.editor.selectedViews.map((selectedView) =>
+          getHighlightBoundsForTemplatePath(selectedView, store),
+        ),
+      )
+    }, 'ScriptEditor selectedViewBounds'),
+  )
+
+  const highlightBounds = useKeepReferenceEqualityIfPossible(
+    useEditorState((store) => {
+      return Utils.stripNulls(
+        store.editor.highlightedViews.map((highlightedView) =>
+          getHighlightBoundsForTemplatePath(highlightedView, store),
+        ),
+      )
+    }, 'ScriptEditor highlightBounds'),
+  )
+
   return (
     <ScriptEditor
       relevantPanel={'uicodeeditor'}
@@ -71,6 +95,25 @@ export const CodeEditorContainer = betterReactMemo('CodeEditorContainer', (props
       focusedPanel={selectedProps.focusedPanel}
       codeEditorTheme={selectedProps.codeEditorTheme}
       selectedViews={selectedProps.selectedViews}
+      selectedViewBounds={selectedViewBounds}
+      highlightBounds={highlightBounds}
     />
   )
 })
+
+function getHighlightBoundsForTemplatePath(path: TemplatePath, store: EditorStore) {
+  const selectedFile = getOpenFile(store.editor)
+  if (isTextFile(selectedFile) && isParseSuccess(selectedFile.fileContents.parsed)) {
+    const parseSuccess = selectedFile.fileContents.parsed
+    if (TP.isInstancePath(path)) {
+      const highlightedUID = Utils.optionalMap(
+        TP.toUid,
+        MetadataUtils.dynamicPathToStaticPath(path),
+      )
+      if (highlightedUID != null) {
+        return parseSuccess.highlightBounds[highlightedUID]
+      }
+    }
+  }
+  return null
+}
