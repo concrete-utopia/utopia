@@ -20,12 +20,16 @@ import {
   UtopiaJSXComponent,
   isUtopiaJSXComponent,
   isIntrinsicElement,
+  isJSXElement,
+  isJSXAttributeOtherJavaScript,
 } from '../../../core/shared/element-template'
 import { betterReactMemo } from 'uuiui-deps'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
 import { UtopiaKeys } from '../../../core/model/utopia-constants'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { eitherToMaybe, isRight } from '../../../core/shared/either'
+import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -79,15 +83,23 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         staticName != null &&
         element != null &&
         !isIntrinsicElement(staticName) &&
-        isFeatureEnabled('Navigator Component Props')
+        isFeatureEnabled('Navigator Component Props') &&
+        isRight(element.element) &&
+        isJSXElement(element.element.value)
       ) {
-        Object.keys(element.props).forEach((propName) => {
-          if (propName !== 'skipDeepFreeze' && UtopiaKeys.indexOf(propName) === -1) {
-            properties[propName] = element.props[propName]
+        const attributes = element.element.value.props
+        Object.keys(attributes).forEach((propName) => {
+          if (UtopiaKeys.indexOf(propName) === -1) {
+            const attribute = attributes[propName]
+            if (isJSXAttributeOtherJavaScript(attribute)) {
+              properties[propName] = attribute.javascript
+            } else {
+              properties[propName] = eitherToMaybe(jsxSimpleAttributeToValue(attribute))
+            }
           }
         })
-        if (element.children.length > 0 && properties['children'] == null) {
-          properties['children'] = element.children.length + ''
+        if (element.element.value.children.length > 0 && properties['children'] == null) {
+          properties['children'] = element.element.value.children.length + ''
         }
       }
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
