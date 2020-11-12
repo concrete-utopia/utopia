@@ -85,6 +85,7 @@ export const useRefEditorState = <U>(
   selectorRef.current = selector // the selector is possibly a new function instance every time this hook is called
 
   const sliceRef = React.useRef(selector(api.getState()))
+  sliceRef.current = selector(api.getState()) // ensure that callers of this always have the latest data
   if (explainMe) {
     console.info('reading useEditorState', sliceRef.current)
   }
