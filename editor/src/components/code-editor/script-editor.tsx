@@ -37,7 +37,7 @@ import { foldEither, isRight } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { runtimeErrorInfoToErrorMessage } from './monaco-wrapper'
-import { EditorPanel, setFocus } from '../common/actions'
+import { EditorPanel } from '../common/actions'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/actions'
 import {
@@ -47,6 +47,7 @@ import {
 import {
   ConsoleLog,
   EditorStore,
+  EditorTab,
   getAllLintErrors,
   getOpenEditorTab,
   getOpenFile,
@@ -144,11 +145,22 @@ function getTemplatePathsInBounds(
 }
 
 interface ScriptEditorProps {
+  setHighlightedViews: (targets: TemplatePath[]) => void
+  selectComponents: (targets: TemplatePath[]) => void
+  onSave: (
+    manualSave: boolean,
+    toast: Notice | undefined,
+    filePath: string,
+    updatedFile: ProjectFile,
+  ) => void
+  openEditorTab: (editorTab: EditorTab, cursorPosition: CursorPosition | null) => void
+  setCodeEditorVisibility: (visible: boolean) => void
+  setFocus: (panel: EditorPanel | null) => void
+  saveCursorPosition: (filename: string, cursorPosition: CursorPosition) => void
   relevantPanel: EditorPanel
   runtimeErrors: Array<RuntimeErrorInfo>
   canvasConsoleLogs: Array<ConsoleLog>
   selectedViews: TemplatePath[]
-  dispatch: EditorDispatch
   workers: UtopiaTsWorkers
   filePath: string | null
   openFile: TextFile | ImageFile | Directory | AssetFile | null
@@ -168,10 +180,16 @@ interface ScriptEditorProps {
 
 export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditorProps) => {
   const {
+    setHighlightedViews,
+    selectComponents,
+    onSave,
+    openEditorTab,
+    setCodeEditorVisibility,
+    setFocus,
+    saveCursorPosition,
     relevantPanel,
     runtimeErrors,
     canvasConsoleLogs,
-    dispatch,
     workers,
     filePath,
     openFile,
@@ -194,56 +212,42 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     (line: number, column: number) => {
       const targets = getTemplatePathsInBounds(line, parsedHighlightBounds, allTemplatePaths)
       if (targets.length > 0) {
-        const actions = targets.map((path) => EditorActions.setHighlightedView(path))
-        dispatch(actions, 'everyone')
+        setHighlightedViews(targets)
       }
     },
-    [parsedHighlightBounds, allTemplatePaths, dispatch],
+    [setHighlightedViews, parsedHighlightBounds, allTemplatePaths],
   )
 
   const onSelect = React.useCallback(
     (line: number, column: number) => {
       const targets = getTemplatePathsInBounds(line, parsedHighlightBounds, allTemplatePaths)
       if (targets.length > 0) {
-        dispatch([EditorActions.selectComponents(targets, false)], 'everyone')
+        selectComponents(targets)
       }
     },
-    [parsedHighlightBounds, allTemplatePaths, dispatch],
+    [selectComponents, parsedHighlightBounds, allTemplatePaths],
   )
 
-  const onSave = React.useCallback(
+  const onSaveInner = React.useCallback(
     (value: string, manualSave: boolean, toast?: Notice) => {
       if (filePath != null && openFile != null) {
         const updatedFile = updateFileContents(value, openFile, manualSave)
-
-        const updateFileActions: EditorAction[] = [
-          EditorActions.updateFile(filePath, updatedFile, false),
-          EditorActions.setCodeEditorBuildErrors({}),
-        ]
-        const withToastAction =
-          toast == null
-            ? updateFileActions
-            : updateFileActions.concat(EditorActions.pushToast(toast))
-
-        const actions = manualSave
-          ? withToastAction.concat(EditorActions.saveCurrentFile())
-          : withToastAction
-        dispatch(actions, 'everyone')
+        onSave(manualSave, toast, filePath, updatedFile)
       }
     },
-    [openFile, dispatch, filePath],
+    [onSave, openFile, filePath],
   )
 
   const onOpenFile = React.useCallback(
     (path: string, cursorPos: CursorPosition | null) => {
-      dispatch([EditorActions.openEditorTab(openFileTab(path), cursorPos)], 'everyone')
+      openEditorTab(openFileTab(path), cursorPos)
     },
-    [dispatch],
+    [openEditorTab],
   )
 
   const close = React.useCallback(() => {
-    dispatch([EditorActions.setCodeEditorVisibility(false)], 'everyone')
-  }, [dispatch])
+    setCodeEditorVisibility(false)
+  }, [setCodeEditorVisibility])
 
   const sendLinterRequestMessage = React.useCallback(
     (content: string) => {
@@ -254,20 +258,20 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     [filePath, workers],
   )
 
-  const saveCursorPosition = React.useCallback(
+  const saveCursorPositionInner = React.useCallback(
     (position: CursorPosition) => {
       if (filePath != null) {
-        dispatch([EditorActions.saveCursorPosition(filePath, position)], 'everyone')
+        saveCursorPosition(filePath, position)
       }
     },
-    [filePath, dispatch],
+    [saveCursorPosition, filePath],
   )
 
   const onFocus = React.useCallback(() => {
     if (focusedPanel !== relevantPanel) {
-      dispatch([setFocus(relevantPanel)], 'everyone')
+      setFocus(relevantPanel)
     }
-  }, [focusedPanel, dispatch, relevantPanel])
+  }, [setFocus, focusedPanel, relevantPanel])
 
   const newErrors = [
     ...runtimeErrors.map((e) => runtimeErrorInfoToErrorMessage(projectContents, e)),
@@ -292,10 +296,10 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
         key={'script-code-editor'}
         name={filePath}
         value={fileContents}
-        onSave={onSave}
+        onSave={onSaveInner}
         onChange={sendLinterRequestMessage}
         onChangeFromProps={sendLinterRequestMessage}
-        saveCursorPosition={saveCursorPosition}
+        saveCursorPosition={saveCursorPositionInner}
         onOpenFile={onOpenFile}
         close={close}
         enabled={true}

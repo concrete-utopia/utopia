@@ -1,12 +1,23 @@
 import * as React from 'react'
 import * as TP from '../../core/shared/template-path'
+import * as EditorActions from '../editor/actions/actions'
 import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
 import { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
-import { isParseSuccess, isTextFile, TemplatePath } from '../../core/shared/project-file-types'
+import {
+  AssetFile,
+  Directory,
+  ImageFile,
+  isParseSuccess,
+  isTextFile,
+  ProjectFile,
+  TemplatePath,
+  TextFile,
+} from '../../core/shared/project-file-types'
 import { betterReactMemo, Utils } from '../../uuiui-deps'
 import {
   ConsoleLog,
   EditorStore,
+  EditorTab,
   getAllLintErrors,
   getOpenEditorTab,
   getOpenFile,
@@ -19,6 +30,10 @@ import { useEditorState } from '../editor/store/store-hook'
 import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { ScriptEditor } from './script-editor'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { Notice } from '../common/notices'
+import { EditorAction } from '../editor/action-types'
+import { CursorPosition } from './code-editor-utils'
+import { EditorPanel, setFocus } from '../common/actions'
 
 export const CodeEditorContainer = betterReactMemo('CodeEditorContainer', (props) => {
   const runtimeErrors: RuntimeErrorInfo[] = []
@@ -33,7 +48,6 @@ export const CodeEditorContainer = betterReactMemo('CodeEditorContainer', (props
     const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
 
     return {
-      dispatch: store.dispatch,
       workers: store.workers,
       filePath: openFilePath,
       openFile: selectedFile,
@@ -53,7 +67,7 @@ export const CodeEditorContainer = betterReactMemo('CodeEditorContainer', (props
       codeEditorTheme: store.editor.codeEditorTheme,
       selectedViews: store.editor.selectedViews,
     }
-  }, 'ScriptEditor')
+  }, 'CodeEditorContainer')
 
   const selectedViewBounds = useKeepReferenceEqualityIfPossible(
     useEditorState((store) => {
@@ -62,7 +76,7 @@ export const CodeEditorContainer = betterReactMemo('CodeEditorContainer', (props
           getHighlightBoundsForTemplatePath(selectedView, store),
         ),
       )
-    }, 'ScriptEditor selectedViewBounds'),
+    }, 'CodeEditorContainer selectedViewBounds'),
   )
 
   const highlightBounds = useKeepReferenceEqualityIfPossible(
@@ -72,15 +86,88 @@ export const CodeEditorContainer = betterReactMemo('CodeEditorContainer', (props
           getHighlightBoundsForTemplatePath(highlightedView, store),
         ),
       )
-    }, 'ScriptEditor highlightBounds'),
+    }, 'CodeEditorContainer highlightBounds'),
+  )
+
+  const dispatch = useEditorState((store) => store.dispatch, 'CodeEditorContainer dispatch')
+
+  const setHighlightedViews = React.useCallback(
+    (targets: TemplatePath[]) => {
+      const actions = targets.map((path) => EditorActions.setHighlightedView(path))
+      dispatch(actions)
+    },
+    [dispatch],
+  )
+
+  const selectComponents = React.useCallback(
+    (targets: TemplatePath[]) => {
+      dispatch([EditorActions.selectComponents(targets, false)])
+    },
+    [dispatch],
+  )
+
+  const onSave = React.useCallback(
+    (
+      manualSave: boolean,
+      toast: Notice | undefined,
+      filePath: string,
+      updatedFile: ProjectFile,
+    ) => {
+      const updateFileActions: EditorAction[] = [
+        EditorActions.updateFile(filePath, updatedFile, false),
+        EditorActions.setCodeEditorBuildErrors({}),
+      ]
+      const withToastAction =
+        toast == null ? updateFileActions : updateFileActions.concat(EditorActions.pushToast(toast))
+
+      const actions = manualSave
+        ? withToastAction.concat(EditorActions.saveCurrentFile())
+        : withToastAction
+      dispatch(actions, 'everyone')
+    },
+    [dispatch],
+  )
+
+  const openEditorTab = React.useCallback(
+    (editorTab: EditorTab, cursorPosition: CursorPosition | null) => {
+      dispatch([EditorActions.openEditorTab(editorTab, cursorPosition)])
+    },
+    [dispatch],
+  )
+
+  const setCodeEditorVisibility = React.useCallback(
+    (visible: boolean) => {
+      dispatch([EditorActions.setCodeEditorVisibility(visible)])
+    },
+    [dispatch],
+  )
+
+  const setFocusCallback = React.useCallback(
+    (panel: EditorPanel | null) => {
+      dispatch([setFocus(panel)])
+    },
+    [dispatch],
+  )
+
+  const saveCursorPosition = React.useCallback(
+    (filename: string, cursorPosition: CursorPosition) => {
+      dispatch([EditorActions.saveCursorPosition(filename, cursorPosition)])
+    },
+    [dispatch],
   )
 
   return (
     <ScriptEditor
+      setHighlightedViews={setHighlightedViews}
+      selectComponents={selectComponents}
+      onSave={onSave}
+      openEditorTab={openEditorTab}
+      setCodeEditorVisibility={setCodeEditorVisibility}
+      setFocus={setFocusCallback}
+      saveCursorPosition={saveCursorPosition}
       relevantPanel={'uicodeeditor'}
       runtimeErrors={runtimeErrors}
       canvasConsoleLogs={canvasConsoleLogs}
-      dispatch={selectedProps.dispatch}
       workers={selectedProps.workers}
       filePath={selectedProps.filePath}
       openFile={selectedProps.openFile}
