@@ -9,7 +9,11 @@ import {
   updateLastSavedContents,
   updateParsedTextFileHighlightBounds,
 } from '../../core/model/project-file-utils'
-import { messageIsFatalOrError, messageIsWarning } from '../../core/shared/error-messages'
+import {
+  ErrorMessage,
+  messageIsFatalOrError,
+  messageIsWarning,
+} from '../../core/shared/error-messages'
 import {
   HighlightBoundsForUids,
   ParseFailure,
@@ -21,6 +25,10 @@ import {
   isParseSuccess,
   textFile,
   textFileContents,
+  TextFile,
+  ImageFile,
+  Directory,
+  AssetFile,
 } from '../../core/shared/project-file-types'
 import { codeNeedsPrinting } from '../../core/workers/common/project-file-utils'
 import { isJsFile } from '../../core/workers/ts/ts-worker'
@@ -29,7 +37,7 @@ import Utils from '../../utils/utils'
 import { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { runtimeErrorInfoToErrorMessage } from './monaco-wrapper'
 import { EditorPanel, setFocus } from '../common/actions'
-import { EditorAction } from '../editor/action-types'
+import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/actions'
 import {
   dependenciesFromPackageJson,
@@ -55,6 +63,9 @@ import { CodeEditor } from './code-editor'
 import { CursorPosition } from './code-editor-utils'
 import { Notice } from '../common/notices'
 import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
+import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
+import { TypeDefinitions } from '../../core/shared/npm-dependency-types'
+import { ProjectContentTreeRoot } from '../assets'
 
 function getFileContents(file: ProjectFile): string {
   switch (file.type) {
@@ -153,11 +164,28 @@ interface ScriptEditorProps {
   relevantPanel: EditorPanel
   runtimeErrors: Array<RuntimeErrorInfo>
   canvasConsoleLogs: Array<ConsoleLog>
+  selectedViews: TemplatePath[]
+  dispatch: EditorDispatch
+  workers: UtopiaTsWorkers
+  filePath: string | null
+  openFile: TextFile | ImageFile | Directory | AssetFile | null
+  cursorPositionFromOpenFile: CursorPosition | null
+  savedCursorPosition: CursorPosition | null
+  typeDefinitions: TypeDefinitions
+  lintErrors: ErrorMessage[]
+  parserPrinterErrors: ErrorMessage[]
+  projectContents: ProjectContentTreeRoot
+  parsedHighlightBounds: HighlightBoundsForUids | null
+  allTemplatePaths: TemplatePath[]
+  focusedPanel: EditorPanel | null
+  codeEditorTheme: string
 }
 
 export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditorProps) => {
-  const { relevantPanel, runtimeErrors, canvasConsoleLogs } = props
   const {
+    relevantPanel,
+    runtimeErrors,
+    canvasConsoleLogs,
     dispatch,
     workers,
     filePath,
@@ -173,36 +201,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     focusedPanel,
     codeEditorTheme,
     selectedViews,
-  } = useEditorState((store) => {
-    const openEditorTab = getOpenEditorTab(store.editor)
-    const openFilePath =
-      openEditorTab != null && isOpenFileTab(openEditorTab) ? openEditorTab.filename : null
-    const selectedFile = getOpenFile(store.editor)
-    const openUIJSFile = getOpenUIJSFile(store.editor)
-    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
-
-    return {
-      dispatch: store.dispatch,
-      workers: store.workers,
-      filePath: openFilePath,
-      openFile: selectedFile,
-      cursorPositionFromOpenFile:
-        store.editor.selectedFile == null ? null : store.editor.selectedFile.initialCursorPosition,
-      savedCursorPosition: openFilePath == null ? null : store.editor.cursorPositions[openFilePath],
-      typeDefinitions: getDependencyTypeDefinitions(store.editor.nodeModules.files),
-      lintErrors: getAllLintErrors(store.editor),
-      parserPrinterErrors: parseFailureAsErrorMessages(openUIJSFileKey, openUIJSFile),
-      projectContents: store.editor.projectContents,
-      parsedHighlightBounds:
-        openUIJSFile != null && isParseSuccess(openUIJSFile.fileContents.parsed)
-          ? openUIJSFile.fileContents.parsed.highlightBounds
-          : null,
-      allTemplatePaths: store.derived.navigatorTargets,
-      focusedPanel: store.editor.focusedPanel,
-      codeEditorTheme: store.editor.codeEditorTheme,
-      selectedViews: store.editor.selectedViews,
-    }
-  }, 'ScriptEditor')
+  } = props
 
   const selectedViewBounds = useKeepReferenceEqualityIfPossible(
     useEditorState((store) => {

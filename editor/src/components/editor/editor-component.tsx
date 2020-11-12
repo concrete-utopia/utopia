@@ -25,7 +25,6 @@ import { StoryboardFilePath } from '../../core/model/storyboard-utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getCursorFromDragState } from '../canvas/canvas-utils'
 import { SplitViewCanvasRoot } from '../canvas/split-view-canvas-root'
-import { ScriptEditor } from '../code-editor/script-editor'
 import { resizeLeftPane } from '../common/actions'
 import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
@@ -62,6 +61,7 @@ import {
   PropertyControlsInfoIFrameID,
   setPropertyControlsIFrameAvailable,
 } from '../../core/property-controls/property-controls-utils'
+import { CodeEditorContainer } from '../code-editor/code-editor-container'
 
 interface NumberSize {
   width: number
@@ -551,13 +551,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
   } else if (isUserConfigurationOpen) {
     return <UserConfiguration />
   } else {
-    return (
-      <ScriptEditor
-        relevantPanel={'misccodeeditor'}
-        runtimeErrors={runtimeErrors}
-        canvasConsoleLogs={consoleLogs}
-      />
-    )
+    return <CodeEditorContainer />
   }
 })
 OpenFileEditor.displayName = 'OpenFileEditor'

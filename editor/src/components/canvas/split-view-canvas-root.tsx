@@ -4,7 +4,6 @@ import { SimpleFlexRow, UtopiaStyles, UtopiaTheme } from 'uuiui'
 
 import { betterReactMemo } from 'uuiui-deps'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
-import { ScriptEditor } from '../code-editor/script-editor'
 import * as EditorActions from '../editor/actions/actions'
 
 import { ConsoleLog } from '../editor/store/editor-state'
@@ -15,6 +14,7 @@ import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
 
 import { RightMenu, RightMenuTab } from './right-menu'
+import { CodeEditorContainer } from '../code-editor/code-editor-container'
 
 interface SplitViewCanvasRootProps {
   runtimeErrors: Array<RuntimeErrorInfo>
@@ -119,11 +119,7 @@ export const SplitViewCanvasRoot = betterReactMemo(
                 borderLeft: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
               }}
             >
-              <ScriptEditor
-                relevantPanel={'uicodeeditor'}
-                runtimeErrors={props.runtimeErrors}
-                canvasConsoleLogs={props.canvasConsoleLogs}
-              />
+              <CodeEditorContainer />
             </Resizable>
           ) : null}
         </SimpleFlexRow>
