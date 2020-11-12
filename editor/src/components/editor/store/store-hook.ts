@@ -129,7 +129,7 @@ export function useSelectorWithCallback<U>(
   selector: StateSelector<EditorStore, U>,
   callback: (newValue: U) => void,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = utils.shallowEqual,
-  explainMe = false,
+  explainMe: boolean = false,
 ): void {
   const context = React.useContext(EditorStateContext)
   if (context == null) {
