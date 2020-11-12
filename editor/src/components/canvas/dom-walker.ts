@@ -30,7 +30,11 @@ import {
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import {
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_LABEL_KEY,
@@ -196,6 +200,21 @@ function useMutationObserver(invalidatedSceneIDsRef: React.MutableRefObject<Arra
   return mutationObserver
 }
 
+function useInvalidateScenesWhenSelectedViewChanges(
+  invalidatedSceneIDsRef: React.MutableRefObject<Array<string>>,
+): void {
+  return useSelectorWithCallback(
+    (store) => store.editor.selectedViews,
+    (newSelectedViews) => {
+      const sceneIDs = newSelectedViews.map((sv) => {
+        const scenePath = TP.scenePathForPath(sv)
+        return TP.toString(scenePath)
+      })
+      invalidatedSceneIDsRef.current = [...invalidatedSceneIDsRef.current, ...sceneIDs]
+    },
+  )
+}
+
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
@@ -207,6 +226,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   )
   const resizeObserver = useResizeObserver(invalidatedSceneIDsRef)
   const mutationObserver = useMutationObserver(invalidatedSceneIDsRef)
+  useInvalidateScenesWhenSelectedViewChanges(invalidatedSceneIDsRef)
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
