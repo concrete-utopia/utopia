@@ -133,7 +133,7 @@ export const NavigatorComponent = betterReactMemo('NavigatorComponent', () => {
     dispatch([EditorActions.togglePanel('navigator')])
   }, [dispatch])
 
-  const Item = React.memo(({ index, style }: ListChildComponentProps) => {
+  const Item = betterReactMemo('Item', ({ index, style }: ListChildComponentProps) => {
     const targetPath = visibleNavigatorTargets[index]
     const componentKey = TP.toComponentId(targetPath)
     return (
