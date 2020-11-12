@@ -85,6 +85,8 @@ export const useRefEditorState = <U>(
   selectorRef.current = selector // the selector is possibly a new function instance every time this hook is called
 
   const sliceRef = React.useRef(selector(api.getState()))
+  // TODO CONCURRENT MODE: We should avoid mutation during the render phase and follow a pattern similar to
+  // https://github.com/pmndrs/zustand/blob/d82e103cc6702ed10a404a587163e42fc3ac1338/src/index.ts#L161
   sliceRef.current = selector(api.getState()) // ensure that callers of this always have the latest data
   if (explainMe) {
     console.info('reading useEditorState', sliceRef.current)
