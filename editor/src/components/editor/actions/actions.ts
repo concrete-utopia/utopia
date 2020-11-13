@@ -4545,7 +4545,7 @@ export function transientActions(actions: Array<EditorAction>): TransientActions
 export function selectComponents(
   target: Array<TemplatePath>,
   addToSelection: boolean,
-): EditorAction {
+): SelectComponents {
   return {
     action: 'SELECT_COMPONENTS',
     target: target,
