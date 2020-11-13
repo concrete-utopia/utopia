@@ -1259,11 +1259,11 @@ export function deriveState(
   )
 
   const derived: DerivedState = {
-    navigatorTargets: Utils.keepReferenceIfShallowEqual(
+    navigatorTargets: Utils.keepReferenceIfDeepEqualSLOW(
       derivedState.navigatorTargets,
       navigatorTargets,
     ),
-    visibleNavigatorTargets: Utils.keepReferenceIfShallowEqual(
+    visibleNavigatorTargets: Utils.keepReferenceIfDeepEqualSLOW(
       derivedState.visibleNavigatorTargets,
       visibleNavigatorTargets,
     ),

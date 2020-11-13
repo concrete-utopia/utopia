@@ -1463,17 +1463,6 @@ export function getHighlightBoundsWithoutUID(
   return result
 }
 
-function collatedUIDs(sourceFile: TS.SourceFile): Set<string> {
-  let result: Set<string> = emptySet()
-  function addUID(boundingElement: TS.Node, attributes: TS.JsxAttributes): void {
-    withUID(undefined, attributes, undefined, (uid) => {
-      result.add(uid)
-    })
-  }
-  withJSXElementAttributes(sourceFile, addUID)
-  return result
-}
-
 export function lintAndParse(filename: string, content: string): ParsedTextFile {
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.

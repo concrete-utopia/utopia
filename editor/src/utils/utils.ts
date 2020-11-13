@@ -142,6 +142,7 @@ import {
 import { memoize } from '../core/shared/memoize'
 import { ValueType, OptionsType, OptionTypeBase } from 'react-select'
 import { emptySet } from '../core/shared/set-utils'
+import * as fastDeepEquals from 'fast-deep-equal'
 // TODO Remove re-exported functions
 
 export type FilteredFields<Base, T> = {
@@ -904,7 +905,7 @@ export function keepReferenceIfDeepEqualSLOW<T>(original: T, maybeNew: T, measur
   if (measure) {
     performance.mark('before eq')
   }
-  const equalityCheck = R.equals(original, maybeNew)
+  const equalityCheck = fastDeepEquals(original, maybeNew)
   if (measure) {
     performance.mark('after eq')
     performance.measure('deep equality check', 'before eq', 'after eq')
