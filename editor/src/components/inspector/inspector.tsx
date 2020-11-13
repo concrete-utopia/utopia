@@ -498,18 +498,23 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<TemplatePath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadataKILLME, rootComponents, isUIJSFile, imports } = useEditorState(
-    (store) => {
-      return {
-        dispatch: store.dispatch,
-        jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-        rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
-        isUIJSFile: isOpenFileUiJs(store.editor),
-        imports: getOpenImportsFromState(store.editor),
-      }
-    },
-    'SingleInspectorEntryPoint',
-  )
+  const {
+    dispatch,
+    jsxMetadataKILLME,
+    rootComponents,
+    isUIJSFile,
+    imports,
+    selectedCSSTarget,
+  } = useEditorState((store) => {
+    return {
+      dispatch: store.dispatch,
+      jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
+      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
+      isUIJSFile: isOpenFileUiJs(store.editor),
+      imports: getOpenImportsFromState(store.editor),
+      selectedCSSTarget: store.editor.selectedPropsTarget === 'css' ? 'css' : 'style',
+    }
+  }, 'SingleInspectorEntryPoint')
 
   let inspectorModel: InspectorModel = {
     isChildOfFlexComponent: false,
@@ -770,13 +775,13 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   )
 
   const inspector = isUIJSFile ? (
-    <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
+    <InspectorContextProvider selectedViews={selectedViews} targetPath={[selectedCSSTarget]}>
       <Inspector
         selectedViews={selectedViews}
         input={inspectorModelReferentiallyStable}
         onSubmitValue={onSubmitValue}
         targets={targetsReferentiallyStable}
-        selectedTargetPath={selectedTarget}
+        selectedTargetPath={[selectedCSSTarget]}
         elementPath={elementPath}
         onSelect={onSelect}
         onSelectTarget={onSelectTarget}

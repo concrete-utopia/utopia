@@ -768,6 +768,12 @@ export interface AddStoryboardFile {
   action: 'ADD_STORYBOARD_FILE'
 }
 
+export interface SelectPropsTarget {
+  action: 'SELECT_PROPS_TARGET'
+  target: TemplatePath
+  cssTarget: string
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -896,6 +902,7 @@ export type EditorAction =
   | UpdatePropertyControlsInfo
   | PropertyControlsIFrameReady
   | AddStoryboardFile
+  | SelectPropsTarget
 
 export type DispatchPriority =
   | 'everyone'

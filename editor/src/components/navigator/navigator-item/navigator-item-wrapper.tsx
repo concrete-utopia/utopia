@@ -57,7 +57,16 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
       store.derived.canvas.transientState.fileState == null
         ? getOpenImportsFromState(store.editor)
         : store.derived.canvas.transientState.fileState.imports,
-    (jsxMetadataKILLME, transientState, navigatorTargets, elementWarnings, element, imports) => {
+    (store: EditorStore) => store.editor.selectedPropsTarget,
+    (
+      jsxMetadataKILLME,
+      transientState,
+      navigatorTargets,
+      elementWarnings,
+      element,
+      imports,
+      selectedPropsTarget,
+    ) => {
       const fileState = transientState.fileState
 
       const componentsIncludingScenes: Array<UtopiaJSXComponent> =
@@ -139,6 +148,7 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         elementOriginType: elementOriginType,
         elementWarnings: elementWarningsInner ?? defaultElementWarnings,
         properties: properties,
+        selectedPropsTarget: selectedPropsTarget,
       }
     },
   )
@@ -166,6 +176,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       imports,
       elementWarnings,
       properties,
+      selectedPropsTarget,
     } = useEditorState(selector, 'NavigatorItemWrapper')
 
     const {
@@ -219,6 +230,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       imports: imports,
       elementWarnings: elementWarnings,
       properties: properties,
+      selectedPropsTarget: selectedPropsTarget,
     }
 
     return <NavigatorItemContainer {...navigatorItemProps} />

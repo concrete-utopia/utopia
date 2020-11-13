@@ -348,6 +348,7 @@ import {
   UpdatePropertyControlsInfo,
   PropertyControlsIFrameReady,
   AddStoryboardFile,
+  SelectPropsTarget,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -957,6 +958,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     codeEditorTheme: poppedEditor.codeEditorTheme,
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
+    selectedPropsTarget: null,
   }
 }
 
@@ -4125,6 +4127,13 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.OPEN_EDITOR_TAB(openTab, updatedEditor)
     }
   },
+  SELECT_PROPS_TARGET: (action: SelectPropsTarget, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      selectedViews: [action.target],
+      selectedPropsTarget: action.cssTarget,
+    }
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -5546,5 +5555,13 @@ export function propertyControlsIFrameReady(): PropertyControlsIFrameReady {
 export function addStoryboardFile(): AddStoryboardFile {
   return {
     action: 'ADD_STORYBOARD_FILE',
+  }
+}
+
+export function selectPropsTarget(target: TemplatePath, cssTarget: string): SelectPropsTarget {
+  return {
+    action: 'SELECT_PROPS_TARGET',
+    target: target,
+    cssTarget: cssTarget,
   }
 }

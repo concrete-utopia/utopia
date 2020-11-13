@@ -380,6 +380,7 @@ export interface EditorState {
   codeEditorTheme: CodeEditorTheme
   safeMode: boolean
   saveError: boolean
+  selectedPropsTarget: string | null
 }
 
 export interface StoredEditorState {
@@ -1175,6 +1176,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     codeEditorTheme: DefaultTheme,
     safeMode: false,
     saveError: false,
+    selectedPropsTarget: null,
   }
 }
 
@@ -1460,6 +1462,7 @@ export function editorModelFromPersistentModel(
       minimised: persistentModel.fileBrowser.minimised,
     },
     codeEditorErrors: persistentModel.codeEditorErrors,
+    selectedPropsTarget: null,
   }
   return editor
 }

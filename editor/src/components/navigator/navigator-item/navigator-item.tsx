@@ -18,6 +18,7 @@ import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
 import { useKeepReferenceEqualityIfPossible } from '../../inspector/common/property-path-hooks'
 import * as TP from '../../../core/shared/template-path'
+import * as PP from '../../../core/shared/property-path'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { ItemPreview } from './item-preview'
@@ -68,6 +69,7 @@ export interface NavigatorItemInnerProps {
   elementOriginType: ElementOriginType
   elementWarnings: ElementWarnings
   properties: { [key: string]: any }
+  selectedPropsTarget: string | null
 }
 
 function selectItem(
@@ -175,6 +177,8 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       yogaDirection,
       yogaWrap,
       properties,
+      componentInstance,
+      selectedPropsTarget,
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
@@ -314,31 +318,151 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
                 borderRadius: 5,
                 paddingLeft: BasePaddingUnit,
                 paddingRight: BasePaddingUnit,
+                cursor: 'pointer',
               }}
               onMouseDown={select}
               onMouseMove={highlight}
             >
+              {componentInstance && (
+                <FlexRow style={{ paddingLeft: -5 }}>
+                  <FlexRow
+                    style={{
+                      paddingLeft: 5,
+                      outline:
+                        selected && selectedPropsTarget === 'css' ? `1px solid white` : undefined,
+                    }}
+                    // eslint-disable-next-line react/jsx-no-bind
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      dispatch([EditorActions.selectPropsTarget(templatePath, 'css')], 'everyone')
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 10,
+                        height: 10,
+                        backgroundColor: properties['css'] != null ? '#d868f5' : undefined,
+                        outline: properties['css'] != null ? undefined : '1px solid #d868f5',
+                      }}
+                    ></div>
+                    <div style={{ padding: '0 5px' }}>css</div>
+                    {selected &&
+                      selectedPropsTarget === 'css' &&
+                      TP.isInstancePath(templatePath) &&
+                      properties['css'] != null && (
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            dispatch([
+                              EditorActions.unsetProperty(templatePath, PP.create(['css'])),
+                            ])
+                          }}
+                        >
+                          ⓧ
+                        </div>
+                      )}
+                  </FlexRow>
+                  <FlexRow
+                    style={{
+                      paddingLeft: 5,
+                      outline:
+                        selected && selectedPropsTarget === 'style' ? `1px solid white` : undefined,
+                    }}
+                    // eslint-disable-next-line react/jsx-no-bind
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      dispatch([EditorActions.selectPropsTarget(templatePath, 'style')], 'everyone')
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 10,
+                        height: 10,
+                        backgroundColor: properties['style'] != null ? '#d868f5' : undefined,
+                        outline: properties['style'] != null ? undefined : '1px solid #d868f5',
+                      }}
+                    ></div>
+                    <div style={{ padding: '0 5px' }}>style</div>
+                    {selected &&
+                      selectedPropsTarget === 'style' &&
+                      TP.isInstancePath(templatePath) &&
+                      properties['style'] != null && (
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            dispatch([
+                              EditorActions.unsetProperty(templatePath, PP.create(['style'])),
+                            ])
+                          }}
+                        >
+                          ⓧ
+                        </div>
+                      )}
+                  </FlexRow>
+                </FlexRow>
+              )}
               {Object.keys(properties).map((propName) => {
                 const prop = properties[propName]
-                const propAsString =
-                  typeof prop === 'number' || typeof prop === 'string' ? prop : JSON.stringify(prop)
-                return (
-                  <div key={propName}>
-                    <span>{propName}</span>
-                    <span
+                if (propName === 'css' || propName === 'style') {
+                  return null
+                } else {
+                  const propAsString =
+                    typeof prop === 'number' || typeof prop === 'string'
+                      ? prop
+                      : JSON.stringify(prop)
+                  return (
+                    <FlexRow
                       style={{
-                        paddingLeft: 10,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: 'block',
-                        maxWidth: 150,
+                        padding: '0 5px',
+                        outline:
+                          selected && selectedPropsTarget === propName
+                            ? `1px solid white`
+                            : undefined,
+                        cursor: propName === 'children' ? 'default' : undefined,
                       }}
+                      // eslint-disable-next-line react/jsx-no-bind
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (propName !== 'children') {
+                          dispatch(
+                            [EditorActions.selectPropsTarget(templatePath, propName)],
+                            'everyone',
+                          )
+                        }
+                      }}
+                      key={propName}
                     >
-                      {propAsString}
-                    </span>
-                  </div>
-                )
+                      <span>{propName}</span>
+                      <span
+                        style={{
+                          paddingLeft: 10,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: 'block',
+                          maxWidth: 150,
+                        }}
+                      >
+                        {propAsString}
+                      </span>
+                      {propName !== 'children' &&
+                        selected &&
+                        selectedPropsTarget === propName &&
+                        TP.isInstancePath(templatePath) && (
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              dispatch([
+                                EditorActions.unsetProperty(templatePath, PP.create([propName])),
+                              ])
+                            }}
+                          >
+                            ⓧ
+                          </span>
+                        )}
+                    </FlexRow>
+                  )
+                }
               })}
             </FlexColumn>
           </FlexRow>
