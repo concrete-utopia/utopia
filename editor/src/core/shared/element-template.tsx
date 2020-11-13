@@ -854,13 +854,35 @@ export function isArbitraryJSBlock(
 
 export type ComputedStyle = { [key: string]: string }
 
+export interface JSXMetadata {
+  components: Array<ComponentMetadata>
+  elements: ElementInstanceMetadataMap
+}
+
+export function jsxMetadata(
+  components: Array<ComponentMetadata>,
+  elements: ElementInstanceMetadataMap,
+): JSXMetadata {
+  return {
+    components: components,
+    elements: elements,
+  }
+}
+
+export const emptyJsxMetadata: JSXMetadata = {
+  components: [],
+  elements: {},
+}
+
+export type ElementInstanceMetadataMap = { [key: string]: ElementInstanceMetadata }
+
 export interface ElementInstanceMetadata {
   templatePath: InstancePath
   element: Either<string, JSXElementChild>
   props: { [key: string]: any } // the final, resolved, static props value
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
-  children: Array<ElementInstanceMetadata>
+  children: Array<InstancePath>
   componentInstance: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
@@ -872,7 +894,7 @@ export function elementInstanceMetadata(
   props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
-  children: Array<ElementInstanceMetadata>,
+  children: Array<InstancePath>,
   componentInstance: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
@@ -977,7 +999,7 @@ export const emptyComputedStyle: ComputedStyle = {}
 export interface ComponentMetadata {
   scenePath: ScenePath
   templatePath: InstancePath
-  rootElements: Array<ElementInstanceMetadata>
+  rootElements: Array<InstancePath>
   component: string | null
   container: SceneContainer
   globalFrame: CanvasRectangle | null

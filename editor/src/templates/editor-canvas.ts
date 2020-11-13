@@ -54,7 +54,7 @@ import {
 } from '../components/mouse-move'
 import * as TP from '../core/shared/template-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../core/shared/element-template'
+import { ComponentMetadata, JSXMetadata } from '../core/shared/element-template'
 import { TemplatePath } from '../core/shared/project-file-types'
 import {
   getActionsForClipboardItems,
@@ -344,7 +344,7 @@ export interface ControlDependencies {
   keysPressed: KeysPressed
   scale: number
   snappingThreshold: number
-  componentMetadata: ComponentMetadata[]
+  componentMetadata: JSXMetadata
   highlightedviews: Array<TemplatePath>
   selectedViews: Array<TemplatePath>
   topLevelHiddenInstances: Array<TemplatePath>
@@ -810,7 +810,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         return false
       }
       const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
-        this.props.editor.jsxMetadataKILLME,
+        this.props.editor.jsxMetadataKILLME.elements,
         target,
       )
       if (possibleElement == null) {

@@ -11,6 +11,7 @@ import {
   ParsedJSONSuccess,
   ImportAlias,
   isParseSuccess,
+  ExportsDetail,
 } from '../../shared/project-file-types'
 import { fastForEach } from '../../shared/utils'
 import { defaultIfNull } from '../../shared/optional-utils'
@@ -42,6 +43,7 @@ export function getTextFileContents(
       file.fileContents.parsed.imports,
       file.fileContents.parsed.topLevelElements,
       file.fileContents.parsed.jsxFactoryFunction,
+      file.fileContents.parsed.exportsDetail,
     )
   } else {
     return file.fileContents.code
@@ -129,6 +131,7 @@ export function parseSuccess(
   highlightBounds: HighlightBoundsForUids,
   jsxFactoryFunction: string | null,
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null,
+  exportsDetail: ExportsDetail,
 ): ParseSuccess {
   return {
     type: 'PARSE_SUCCESS',
@@ -137,6 +140,7 @@ export function parseSuccess(
     highlightBounds: highlightBounds,
     jsxFactoryFunction: jsxFactoryFunction,
     combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
+    exportsDetail: exportsDetail,
   }
 }
 

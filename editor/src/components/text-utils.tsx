@@ -7,6 +7,7 @@ import {
   ComponentMetadata,
   ElementInstanceMetadata,
   jsxAttributeValue,
+  JSXMetadata,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { Imports, InstancePath, PropertyPath } from '../core/shared/project-file-types'
@@ -22,7 +23,7 @@ const ObjectPathImmutable: any = OPI
 
 export function autosizingTextResizeNew(
   imports: Imports,
-  elements: ComponentMetadata[],
+  metadata: JSXMetadata,
   targets: Array<InstancePath>,
   dispatch: EditorDispatch,
   property: PropertyPath,
@@ -34,7 +35,7 @@ export function autosizingTextResizeNew(
 
   let changeAttachedToPromise: boolean = false
   Utils.fastForEach(targets, (target) => {
-    const element = MetadataUtils.getElementByInstancePathMaybe(elements, target)
+    const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, target)
 
     if (element != null && MetadataUtils.isTextAgainstImports(imports, element)) {
       const updatedElementProps = ObjectPathImmutable.set(
@@ -175,7 +176,7 @@ export function toggleTextFormatting(
   let textElements: Array<ElementInstanceMetadata> = []
   const textElementPaths = instancePaths.filter((selectedView) => {
     const element = MetadataUtils.getElementByInstancePathMaybe(
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadataKILLME.elements,
       selectedView,
     )
     if (element != null && MetadataUtils.isTextAgainstImports(imports, element)) {

@@ -6,7 +6,7 @@ import { DerivedState, EditorState, getOpenUIJSFile } from '../components/editor
 import { scaleImageDimensions, getFrameAndMultiplier } from '../components/images'
 import * as TP from '../core/shared/template-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../core/shared/element-template'
+import { JSXMetadata } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
 import {
   Imports,
@@ -32,7 +32,7 @@ interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
   originalTemplatePaths: TemplatePath[]
-  targetOriginalContextMetadata: ComponentMetadata[]
+  targetOriginalContextMetadata: JSXMetadata
 }
 
 type JSXElementsJson = string
@@ -68,7 +68,7 @@ export function getActionsForClipboardItems(
   pastedFiles: Array<FileResult>,
   selectedViews: Array<TemplatePath>,
   pasteTargetsToIgnore: TemplatePath[],
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
 ): Array<EditorAction> {
   try {
     const utopiaActions = Utils.flatMapArray((data: CopyData, i: number) => {

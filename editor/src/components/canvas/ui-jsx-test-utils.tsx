@@ -32,10 +32,12 @@ import {
   TopLevelElement,
 } from '../../core/shared/element-template'
 import {
+  foldParsedTextFile,
   isParseFailure,
   isParseSuccess,
   isTextFile,
   isUnparsed,
+  ParsedTextFile,
   ParseSuccess,
   TextFile,
 } from '../../core/shared/project-file-types'
@@ -64,14 +66,6 @@ import { testParseCode } from '../../core/workers/parser-printer/parser-printer-
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 import { setPropertyControlsIFrameAvailable } from '../../core/property-controls/property-controls-utils'
 import { getContentsTreeFileFromString } from '../assets'
-
-function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
-  return {
-    ...element,
-    element: left('REMOVED_FROM_TEST'),
-    children: element.children.map(sanitizeElementMetadata),
-  }
-}
 
 process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack || reason)
@@ -268,5 +262,15 @@ export function testPrintCode(parseSuccess: ParseSuccess): string {
     parseSuccess.imports,
     parseSuccess.topLevelElements,
     parseSuccess.jsxFactoryFunction,
+    parseSuccess.exportsDetail,
+  )
+}
+
+export function testPrintParsedTextFile(parsedTextFile: ParsedTextFile): string {
+  return foldParsedTextFile(
+    (_) => 'FAILURE',
+    testPrintCode,
+    (_) => 'UNPARSED',
+    parsedTextFile,
   )
 }

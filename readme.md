@@ -235,10 +235,10 @@ use nix
 
 (This file is deliberately contained in the `.gitignore` because it is supposed to be personal to you - it allows you to add custom environment variables that will always be in scope whenever you're in this directory)
 
-Please update your .bashrc (or .zsrc) to [hook it into the shell](https://direnv.net/docs/hook.html), for example for bash add this line:
+Please update your .zshrc (or .bashrc) to [hook it into the shell](https://direnv.net/docs/hook.html), for example for zsh add this line:
 
 ```
-eval "$(direnv hook bash)"
+eval "$(direnv hook zsh)"
 ```
 
 After this step open a new shell window and enter the utopia directory. Direnv should be activated as soon as you enter, you can use the `start` and `start-performance` scripts without manually running nix-shell.

@@ -32,6 +32,7 @@ describe('JSX parser', () => {
         parseResult.imports,
         parseResult.topLevelElements,
         parseResult.jsxFactoryFunction,
+        parseResult.exportsDetail,
       )
 
       expect(printedCode).toMatchInlineSnapshot(`

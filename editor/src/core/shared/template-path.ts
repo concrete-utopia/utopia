@@ -453,6 +453,31 @@ export function addPathIfMissing(
   }
 }
 
+export function addPathsIfMissing(
+  existingPaths: Array<InstancePath>,
+  pathsToAdd: Array<InstancePath>,
+): Array<InstancePath>
+export function addPathsIfMissing(
+  existingPaths: Array<ScenePath>,
+  pathsToAdd: Array<ScenePath>,
+): Array<ScenePath>
+export function addPathsIfMissing(
+  existingPaths: Array<TemplatePath>,
+  pathsToAdd: Array<TemplatePath>,
+): Array<TemplatePath>
+export function addPathsIfMissing(
+  existingPaths: Array<TemplatePath>,
+  pathsToAdd: Array<TemplatePath>,
+): Array<TemplatePath> {
+  if (pathsToAdd.length === 0) {
+    return existingPaths
+  } else if (existingPaths.length === 0) {
+    return pathsToAdd
+  } else {
+    return existingPaths.concat(filterPaths(pathsToAdd, existingPaths))
+  }
+}
+
 export function isChildOf(path: TemplatePath | null, parent: TemplatePath | null): boolean {
   if (path == null || parent == null) {
     return false
@@ -475,6 +500,8 @@ function elementIsDescendent(l: ElementPath, r: ElementPath): boolean {
 }
 
 // This is sooooo badly named! It should be `isDescendentOf`, and tbh that was probably me...
+// e.g. isAncestorOf(instancePath(['A'], ['B', 'C']), instancePath(['A'], ['B']) would return true,
+//      isAncestorOf(instancePath(['A'], ['B']), instancePath(['A'], ['B', 'C']) would return false
 export function isAncestorOf(
   path: TemplatePath,
   targetAncestor: TemplatePath,
