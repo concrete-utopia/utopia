@@ -3,7 +3,6 @@ import { jsx } from '@emotion/core'
 import * as React from 'react'
 import { applyPrettier } from '../../core/workers/parser-printer/prettier-utils'
 import { ErrorMessage } from '../../core/shared/error-messages'
-import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { Keyboard, modifiersForEvent, strictCheckModifiers } from '../../utils/keyboard'
 import {
   HighlightBounds,
@@ -49,7 +48,6 @@ export interface CodeEditorProps {
   errorsForFile: Array<ErrorMessage> | null
   readOnly: boolean
   projectContents: ProjectContentTreeRoot
-  workers: UtopiaTsWorkers
   selectedViews: Array<TemplatePath>
   selectedViewsBounds: Array<HighlightBounds>
   highlightedViewsBounds: Array<HighlightBounds>
@@ -242,7 +240,6 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
                 cursorPosition={this.state.cursorPosition}
                 projectContents={this.props.projectContents}
                 errorMessages={this.props.errorsForFile}
-                workers={this.props.workers}
                 selectedViews={this.props.selectedViews}
                 selectedViewsBounds={this.props.selectedViewsBounds}
                 highlightedViewsBounds={this.props.highlightedViewsBounds}

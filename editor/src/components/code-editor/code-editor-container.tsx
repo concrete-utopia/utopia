@@ -35,7 +35,7 @@ import { EditorAction } from '../editor/action-types'
 import { CursorPosition } from './code-editor-utils'
 import { EditorPanel, setFocus } from '../common/actions'
 
-export const CodeEditorIFrame = betterReactMemo('CodeEditorContainer', (props) => {
+export const CodeEditorIFrame = betterReactMemo('CodeEditorIFrame', (props) => {
   const runtimeErrors: RuntimeErrorInfo[] = []
   const canvasConsoleLogs: ConsoleLog[] = []
 
@@ -48,7 +48,6 @@ export const CodeEditorIFrame = betterReactMemo('CodeEditorContainer', (props) =
     const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
 
     return {
-      workers: store.workers,
       filePath: openFilePath,
       openFile: selectedFile,
       cursorPositionFromOpenFile:
@@ -67,7 +66,7 @@ export const CodeEditorIFrame = betterReactMemo('CodeEditorContainer', (props) =
       codeEditorTheme: store.editor.codeEditorTheme,
       selectedViews: store.editor.selectedViews,
     }
-  }, 'CodeEditorContainer')
+  }, 'CodeEditorIFrame')
 
   const selectedViewBounds = useKeepReferenceEqualityIfPossible(
     useEditorState((store) => {
@@ -76,7 +75,7 @@ export const CodeEditorIFrame = betterReactMemo('CodeEditorContainer', (props) =
           getHighlightBoundsForTemplatePath(selectedView, store),
         ),
       )
-    }, 'CodeEditorContainer selectedViewBounds'),
+    }, 'CodeEditorIFrame selectedViewBounds'),
   )
 
   const highlightBounds = useKeepReferenceEqualityIfPossible(
@@ -86,10 +85,12 @@ export const CodeEditorIFrame = betterReactMemo('CodeEditorContainer', (props) =
           getHighlightBoundsForTemplatePath(highlightedView, store),
         ),
       )
-    }, 'CodeEditorContainer highlightBounds'),
+    }, 'CodeEditorIFrame highlightBounds'),
   )
 
-  const dispatch = useEditorState((store) => store.dispatch, 'CodeEditorContainer dispatch')
+  const dispatch = useEditorState((store) => store.dispatch, 'CodeEditorIFrame dispatch')
+
+  const workers = useEditorState((store) => store.workers, 'CodeEditorIFrame workers')
 
   const setHighlightedViews = React.useCallback(
     (targets: TemplatePath[]) => {
@@ -156,6 +157,13 @@ export const CodeEditorIFrame = betterReactMemo('CodeEditorContainer', (props) =
     [dispatch],
   )
 
+  const sendLinterRequestMessage = React.useCallback(
+    (filePath: string, content: string) => {
+      workers.sendLinterRequestMessage(filePath, content)
+    },
+    [workers],
+  )
+
   return (
     <ScriptEditor
       setHighlightedViews={setHighlightedViews}
@@ -165,10 +173,10 @@ export const CodeEditorIFrame = betterReactMemo('CodeEditorContainer', (props) =
       setCodeEditorVisibility={setCodeEditorVisibility}
       setFocus={setFocusCallback}
       saveCursorPosition={saveCursorPosition}
+      sendLinterRequestMessage={sendLinterRequestMessage}
       relevantPanel={'uicodeeditor'}
       runtimeErrors={runtimeErrors}
       canvasConsoleLogs={canvasConsoleLogs}
-      workers={selectedProps.workers}
       filePath={selectedProps.filePath}
       openFile={selectedProps.openFile}
       cursorPositionFromOpenFile={selectedProps.cursorPositionFromOpenFile}

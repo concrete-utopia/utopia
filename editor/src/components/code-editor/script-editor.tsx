@@ -157,11 +157,11 @@ interface ScriptEditorProps {
   setCodeEditorVisibility: (visible: boolean) => void
   setFocus: (panel: EditorPanel | null) => void
   saveCursorPosition: (filename: string, cursorPosition: CursorPosition) => void
+  sendLinterRequestMessage: (filePath: string, content: string) => void
   relevantPanel: EditorPanel
   runtimeErrors: Array<RuntimeErrorInfo>
   canvasConsoleLogs: Array<ConsoleLog>
   selectedViews: TemplatePath[]
-  workers: UtopiaTsWorkers
   filePath: string | null
   openFile: TextFile | ImageFile | Directory | AssetFile | null
   cursorPositionFromOpenFile: CursorPosition | null
@@ -187,10 +187,10 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     setCodeEditorVisibility,
     setFocus,
     saveCursorPosition,
+    sendLinterRequestMessage,
     relevantPanel,
     runtimeErrors,
     canvasConsoleLogs,
-    workers,
     filePath,
     openFile,
     cursorPositionFromOpenFile,
@@ -249,13 +249,13 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     setCodeEditorVisibility(false)
   }, [setCodeEditorVisibility])
 
-  const sendLinterRequestMessage = React.useCallback(
+  const sendLinterRequestMessageInner = React.useCallback(
     (content: string) => {
       if (filePath != null && isJsFile(filePath)) {
-        workers.sendLinterRequestMessage(filePath, content)
+        sendLinterRequestMessage(filePath, content)
       }
     },
-    [filePath, workers],
+    [sendLinterRequestMessage, filePath],
   )
 
   const saveCursorPositionInner = React.useCallback(
@@ -297,8 +297,8 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
         name={filePath}
         value={fileContents}
         onSave={onSaveInner}
-        onChange={sendLinterRequestMessage}
-        onChangeFromProps={sendLinterRequestMessage}
+        onChange={sendLinterRequestMessageInner}
+        onChangeFromProps={sendLinterRequestMessageInner}
         saveCursorPosition={saveCursorPositionInner}
         onOpenFile={onOpenFile}
         close={close}
@@ -312,7 +312,6 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
         errorsForFile={errorsForFile}
         readOnly={readOnly}
         projectContents={projectContents}
-        workers={workers}
         selectedViews={selectedViews}
         selectedViewsBounds={selectedViewBounds}
         highlightedViewsBounds={highlightBounds}
