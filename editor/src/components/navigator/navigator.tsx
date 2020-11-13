@@ -17,7 +17,7 @@ import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { betterReactMemo } from 'uuiui-deps'
-import { FixedSizeList, ListChildComponentProps } from 'react-window'
+import { VariableSizeList, ListChildComponentProps } from 'react-window'
 import { Size } from 'react-virtualized-auto-sizer'
 // There's some weirdness between the types and the results in the two module systems.
 // This is to effectively massage the result so that if it is loaded in the browser or in
@@ -49,12 +49,12 @@ export const NavigatorComponent = betterReactMemo('NavigatorComponent', () => {
     }
   })
 
-  const { dispatch, focusedPanel, minimised, visibleNavigatorTargets } = useEditorState((store) => {
+  const { dispatch, focusedPanel, minimised, navigatorTargets } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       focusedPanel: store.editor.focusedPanel,
       minimised: store.editor.navigator.minimised,
-      visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
+      navigatorTargets: store.derived.navigatorTargets,
     }
   }, 'NavigatorComponent')
 
@@ -133,41 +133,6 @@ export const NavigatorComponent = betterReactMemo('NavigatorComponent', () => {
     dispatch([EditorActions.togglePanel('navigator')])
   }, [dispatch])
 
-  const Item = betterReactMemo('Item', ({ index, style }: ListChildComponentProps) => {
-    const targetPath = visibleNavigatorTargets[index]
-    const componentKey = TP.toComponentId(targetPath)
-    return (
-      <NavigatorItemWrapper
-        key={componentKey}
-        index={index}
-        targetComponentKey={componentKey}
-        templatePath={targetPath}
-        getMaximumDistance={getDistanceFromAncestorWhereImTheLastLeaf}
-        getDragSelections={getDragSelections}
-        getSelectedViewsInRange={getSelectedViewsInRange}
-        windowStyle={style}
-      />
-    )
-  })
-
-  const ItemList = (size: Size) => {
-    if (size.height == null) {
-      return null
-    } else {
-      return (
-        <FixedSizeList
-          width={'100%'}
-          height={size.height}
-          itemSize={UtopiaTheme.layout.rowHeight.smaller}
-          itemCount={visibleNavigatorTargets.length}
-          layout={'vertical'}
-        >
-          {Item}
-        </FixedSizeList>
-      )
-    }
-  }
-
   return (
     <Section
       data-name='Navigator'
@@ -186,7 +151,21 @@ export const NavigatorComponent = betterReactMemo('NavigatorComponent', () => {
       <SectionBodyArea minimised={minimised} flexGrow={1}>
         <ElementContextMenu contextMenuInstance={'context-menu-navigator'} />
         <div style={{ flex: '1 1 auto' }}>
-          <AutoSizerComponent disableWidth={true}>{ItemList}</AutoSizerComponent>
+          {navigatorTargets.map((targetPath, index) => {
+            const componentKey = TP.toComponentId(targetPath)
+            return (
+              <NavigatorItemWrapper
+                key={componentKey}
+                index={index}
+                targetComponentKey={componentKey}
+                templatePath={targetPath}
+                getMaximumDistance={getDistanceFromAncestorWhereImTheLastLeaf}
+                getDragSelections={getDragSelections}
+                getSelectedViewsInRange={getSelectedViewsInRange}
+                windowStyle={{}}
+              />
+            )
+          })}
         </div>
       </SectionBodyArea>
     </Section>
