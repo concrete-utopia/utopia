@@ -35,7 +35,7 @@ import { EditorAction } from '../editor/action-types'
 import { CursorPosition } from './code-editor-utils'
 import { EditorPanel, setFocus } from '../common/actions'
 
-export const CodeEditorIFrame = betterReactMemo('CodeEditorIFrame', (props) => {
+export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) => {
   const runtimeErrors: RuntimeErrorInfo[] = []
   const canvasConsoleLogs: ConsoleLog[] = []
 
@@ -66,7 +66,7 @@ export const CodeEditorIFrame = betterReactMemo('CodeEditorIFrame', (props) => {
       codeEditorTheme: store.editor.codeEditorTheme,
       selectedViews: store.editor.selectedViews,
     }
-  }, 'CodeEditorIFrame')
+  }, 'CodeEditorWrapper')
 
   const selectedViewBounds = useKeepReferenceEqualityIfPossible(
     useEditorState((store) => {
@@ -75,7 +75,7 @@ export const CodeEditorIFrame = betterReactMemo('CodeEditorIFrame', (props) => {
           getHighlightBoundsForTemplatePath(selectedView, store),
         ),
       )
-    }, 'CodeEditorIFrame selectedViewBounds'),
+    }, 'CodeEditorWrapper selectedViewBounds'),
   )
 
   const highlightBounds = useKeepReferenceEqualityIfPossible(
@@ -85,12 +85,12 @@ export const CodeEditorIFrame = betterReactMemo('CodeEditorIFrame', (props) => {
           getHighlightBoundsForTemplatePath(highlightedView, store),
         ),
       )
-    }, 'CodeEditorIFrame highlightBounds'),
+    }, 'CodeEditorWrapper highlightBounds'),
   )
 
-  const dispatch = useEditorState((store) => store.dispatch, 'CodeEditorIFrame dispatch')
+  const dispatch = useEditorState((store) => store.dispatch, 'CodeEditorWrapper dispatch')
 
-  const workers = useEditorState((store) => store.workers, 'CodeEditorIFrame workers')
+  const workers = useEditorState((store) => store.workers, 'CodeEditorWrapper workers')
 
   const setHighlightedViews = React.useCallback(
     (targets: TemplatePath[]) => {

@@ -61,7 +61,7 @@ import {
   PropertyControlsInfoIFrameID,
   setPropertyControlsIFrameAvailable,
 } from '../../core/property-controls/property-controls-utils'
-import { CodeEditorIFrame } from '../code-editor/code-editor-container'
+import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 
 interface NumberSize {
   width: number
@@ -551,7 +551,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
   } else if (isUserConfigurationOpen) {
     return <UserConfiguration />
   } else {
-    return <CodeEditorIFrame />
+    return <CodeEditorWrapper />
   }
 })
 OpenFileEditor.displayName = 'OpenFileEditor'
