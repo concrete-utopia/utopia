@@ -30,7 +30,11 @@ import {
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import {
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_LABEL_KEY,
@@ -43,6 +47,7 @@ import ResizeObserver from 'resize-observer-polyfill'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
+import { emptySet } from '../../core/shared/set-utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -128,18 +133,14 @@ function lazyValue<T>(getter: () => T) {
   }
 }
 
-function useResizeObserver(invalidatedSceneIDsRef: React.MutableRefObject<Array<string>>) {
+function useResizeObserver(invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>) {
   const resizeObserver = React.useMemo((): ResizeObserver | null => {
     if (ObserversAvailable) {
       return new ResizeObserver((entries: any) => {
         for (let entry of entries) {
           const sceneID = findParentScene(entry.target)
-          if (
-            sceneID != null &&
-            invalidatedSceneIDsRef.current != null &&
-            invalidatedSceneIDsRef.current.indexOf(sceneID) < 0
-          ) {
-            invalidatedSceneIDsRef.current.push(sceneID)
+          if (sceneID != null) {
+            invalidatedSceneIDsRef.current.add(sceneID)
           }
         }
       })
@@ -158,7 +159,7 @@ function useResizeObserver(invalidatedSceneIDsRef: React.MutableRefObject<Array<
   return resizeObserver
 }
 
-function useMutationObserver(invalidatedSceneIDsRef: React.MutableRefObject<Array<string>>) {
+function useMutationObserver(invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>) {
   const mutationObserver = React.useMemo((): MutationObserver | null => {
     if (ObserversAvailable) {
       return new (window as any).MutationObserver((mutations: MutationRecord[]) => {
@@ -170,12 +171,8 @@ function useMutationObserver(invalidatedSceneIDsRef: React.MutableRefObject<Arra
           ) {
             if (mutation.target instanceof HTMLElement) {
               const sceneID = findParentScene(mutation.target)
-              if (
-                sceneID != null &&
-                invalidatedSceneIDsRef.current != null &&
-                invalidatedSceneIDsRef.current.indexOf(sceneID) < 0
-              ) {
-                invalidatedSceneIDsRef.current.push(sceneID)
+              if (sceneID != null) {
+                invalidatedSceneIDsRef.current.add(sceneID)
               }
             }
           }
@@ -196,10 +193,25 @@ function useMutationObserver(invalidatedSceneIDsRef: React.MutableRefObject<Arra
   return mutationObserver
 }
 
+function useInvalidateScenesWhenSelectedViewChanges(
+  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+): void {
+  return useSelectorWithCallback(
+    (store) => store.editor.selectedViews,
+    (newSelectedViews) => {
+      newSelectedViews.forEach((sv) => {
+        const scenePath = TP.scenePathForPath(sv)
+        const sceneID = TP.toString(scenePath)
+        invalidatedSceneIDsRef.current.add(sceneID)
+      })
+    },
+  )
+}
+
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
-  const invalidatedSceneIDsRef = React.useRef<Array<string>>([])
+  const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
   const initCompleteRef = React.useRef<boolean>(false)
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
@@ -207,6 +219,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   )
   const resizeObserver = useResizeObserver(invalidatedSceneIDsRef)
   const mutationObserver = useMutationObserver(invalidatedSceneIDsRef)
+  useInvalidateScenesWhenSelectedViewChanges(invalidatedSceneIDsRef)
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
@@ -345,7 +358,8 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             const sceneID = sceneIndexAttr.value
             let cachedMetadata: ElementInstanceMetadata | null = null
             if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
-              if (invalidatedSceneIDsRef.current.indexOf(sceneID) === -1) {
+              if (!invalidatedSceneIDsRef.current.has(sceneID)) {
+                // we can use the cache, if it exists
                 const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
                   scenePath,
                   rootMetadataInStateRef.current,
@@ -354,9 +368,8 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
                   cachedMetadata = elementFromCurrentMetadata
                 }
               } else {
-                invalidatedSceneIDsRef.current = invalidatedSceneIDsRef.current.filter(
-                  (sceneIDref) => sceneIDref !== sceneID,
-                )
+                // we proceed with the walk
+                invalidatedSceneIDsRef.current.delete(sceneID)
               }
             }
 
@@ -391,7 +404,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       ) {
         if (
           ObserversAvailable &&
-          invalidatedSceneIDsRef.current?.length === 0 &&
+          invalidatedSceneIDsRef.current.size === 0 &&
           rootMetadataInStateRef.current.length > 0 &&
           initCompleteRef.current === true
         ) {
