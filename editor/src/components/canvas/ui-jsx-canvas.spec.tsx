@@ -10,7 +10,7 @@ import * as ANTD from 'antd'
 import {
   ArbitraryJSBlock,
   clearJSXElementUniqueIDs,
-  MetadataWithoutChildren,
+  ElementInstanceMetadata,
   TopLevelElement,
 } from '../../core/shared/element-template'
 import { RequireFn } from '../../core/shared/npm-dependency-types'
@@ -62,7 +62,7 @@ const dumbRequireFn: RequireFn = (importOrigin: string, toImport: string) => {
   }
 }
 
-function stripUidsFromMetadata(metadata: MetadataWithoutChildren): MetadataWithoutChildren {
+function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
   if (isRight(metadata.element)) {
     return {
       ...metadata,

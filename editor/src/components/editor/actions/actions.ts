@@ -62,6 +62,7 @@ import {
   walkElements,
   isUtopiaJSXComponent,
   utopiaJSXComponent,
+  JSXMetadata,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -511,10 +512,10 @@ function setPropertyOnTargetAtElementPath(
 }
 
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
-  scenes: Array<ComponentMetadata>,
+  scenes: JSXMetadata,
   parentPath: InstancePath,
   value: DetectedLayoutSystem,
-): Array<ComponentMetadata> {
+): JSXMetadata {
   const allChildren = MetadataUtils.getImmediateChildren(scenes, parentPath)
   return allChildren.reduce((transformedScenes, child) => {
     return switchLayoutMetadata(transformedScenes, child.templatePath, value, undefined, undefined)
@@ -528,7 +529,7 @@ function switchAndUpdateFrames(
 ): EditorModel {
   const targetMetadata = Utils.forceNotNull(
     `Could not find metadata for ${JSON.stringify(target)}`,
-    MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, target),
+    MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, target),
   )
   if (targetMetadata.globalFrame == null) {
     // The target is a non-layoutable
@@ -699,8 +700,12 @@ function switchAndUpdateFrames(
     framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
   }
 
-  Utils.fastForEach(targetMetadata.children, (child) => {
-    if (child.globalFrame != null) {
+  Utils.fastForEach(targetMetadata.children, (childPath) => {
+    const child = MetadataUtils.getElementByInstancePathMaybe(
+      editor.jsxMetadataKILLME.elements,
+      childPath,
+    )
+    if (child?.globalFrame != null) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it
       const isParentOfChildFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         child.templatePath,
@@ -961,6 +966,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
 
   return {
     navigatorTargets: poppedDerived.navigatorTargets,
+    visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
@@ -976,23 +982,25 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
     console.error(`Attempted to delete element(s) with no UI file open.`)
     return editor
   } else {
-    const components = editor.jsxMetadataKILLME
+    const metadata = editor.jsxMetadataKILLME
+
+    const isElementToBeDeleted = (element: ElementInstanceMetadata) => {
+      return targets.some((target) => TP.pathsEqual(element.templatePath, target))
+    }
 
     const isEmptyOrContainsDeleted = (element: ElementInstanceMetadata): boolean => {
-      if (!MetadataUtils.isAutoSizingViewFromComponents(components, element.templatePath)) {
+      if (!MetadataUtils.isAutoSizingViewFromComponents(metadata, element.templatePath)) {
         return false
       }
 
-      const isElementToBeDeleted = (elem: ElementInstanceMetadata) => {
-        return targets.some((target) => TP.pathsEqual(elem.templatePath, target))
-      }
-
-      return element.children.every(
-        (child) => isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child),
-      )
+      return element.children.every((childPath) => {
+        const child = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, childPath)
+        child == null || isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child)
+      })
     }
-    const emptyGroups = MetadataUtils.findElements(components, (element: ElementInstanceMetadata) =>
-      isEmptyOrContainsDeleted(element),
+    const emptyGroups = MetadataUtils.findElements(
+      metadata.elements,
+      (element: ElementInstanceMetadata) => isEmptyOrContainsDeleted(element),
     )
     const emptyGroupTemplatePaths = emptyGroups.map((group) => group.templatePath)
 
@@ -1968,7 +1976,10 @@ export const UPDATE_FNS = {
           }
 
           const parent = TP.isInstancePath(parentPath)
-            ? MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, parentPath)
+            ? MetadataUtils.getElementByInstancePathMaybe(
+                editor.jsxMetadataKILLME.elements,
+                parentPath,
+              )
             : null
           const isParentFlex =
             parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
@@ -2029,7 +2040,7 @@ export const UPDATE_FNS = {
         }
 
         const element = MetadataUtils.getElementByInstancePathMaybe(
-          editor.jsxMetadataKILLME,
+          editor.jsxMetadataKILLME.elements,
           action.target,
         )
         const children = MetadataUtils.getChildrenHandlingGroups(
@@ -2668,7 +2679,7 @@ export const UPDATE_FNS = {
 
     if (TP.isInstancePath(action.element)) {
       const element = MetadataUtils.getElementByInstancePathMaybe(
-        editor.jsxMetadataKILLME,
+        editor.jsxMetadataKILLME.elements,
         action.element,
       )
       const imports = getOpenImportsFromState(editor)
@@ -3746,7 +3757,7 @@ export const UPDATE_FNS = {
   UNWRAP_LAYOUTABLE: (action: UnwrapLayoutable, editor: EditorModel): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, action.target),
+      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, action.target),
     )
 
     return modifyOpenJsxElementAtPath(
@@ -3781,7 +3792,7 @@ export const UPDATE_FNS = {
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, action.target),
+      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, action.target),
     )
 
     let updatedEditor = editor
@@ -4181,7 +4192,7 @@ export function alignOrDistributeSelectedViews(
 
 function alignOrDistributeCanvasRects(
   components: Array<UtopiaJSXComponent>,
-  componentMetadata: Array<ComponentMetadata>,
+  componentMetadata: JSXMetadata,
   targets: CanvasFrameAndTarget[],
   source: CanvasRectangle,
   alignmentOrDistribution: Alignment | Distribution,
@@ -4628,7 +4639,7 @@ export function closePopup(): ClosePopup {
 export function pasteJSXElements(
   elements: Array<JSXElement>,
   originalTemplatePaths: Array<TemplatePath>,
-  targetOriginalContextMetadata: Array<ComponentMetadata>,
+  targetOriginalContextMetadata: JSXMetadata,
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',

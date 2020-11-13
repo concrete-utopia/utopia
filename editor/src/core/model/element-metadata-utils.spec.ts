@@ -21,6 +21,8 @@ import {
   jsxAttributeValue,
   elementInstanceMetadata,
   emptyComputedStyle,
+  ElementInstanceMetadataMap,
+  jsxMetadata,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file'
 import { BakedInStoryboardUID } from './scene-utils'
@@ -57,30 +59,27 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
 }
 
+const testComponentMetadataGrandchild: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View2', 'View0']),
+  props: {
+    cica: 'hello',
+  },
+  element: right(jsxTestElement('View', {}, [])),
+  children: [],
+  componentInstance: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+}
+
 const testComponentMetadataChild3: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View2']),
   props: {},
   element: right(jsxTestElement('View', {}, [])),
-  children: [
-    {
-      globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-      localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-      templatePath: TP.instancePath(
-        [BakedInStoryboardUID, TestScenePath],
-        ['View', 'View2', 'View0'],
-      ),
-      props: {
-        cica: 'hello',
-      },
-      element: right(jsxTestElement('View', {}, [])),
-      children: [],
-      componentInstance: false,
-      specialSizeMeasurements: emptySpecialSizeMeasurements,
-      computedStyle: emptyComputedStyle,
-    },
-  ],
+  children: [testComponentMetadataGrandchild.templatePath],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
@@ -92,7 +91,11 @@ const testComponentRoot1: ElementInstanceMetadata = {
   templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View']),
   props: {},
   element: right(jsxTestElement('View', {}, [])),
-  children: [testComponentMetadataChild1, testComponentMetadataChild2, testComponentMetadataChild3],
+  children: [
+    testComponentMetadataChild1.templatePath,
+    testComponentMetadataChild2.templatePath,
+    testComponentMetadataChild3.templatePath,
+  ],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
@@ -105,7 +108,7 @@ const testComponentScene: ComponentMetadata = {
   container: {
     layoutSystem: LayoutSystem.PinSystem,
   },
-  rootElements: [testComponentRoot1],
+  rootElements: [testComponentRoot1.templatePath],
   sceneResizesContent: false,
   globalFrame: canvasRectangle({
     x: 0,
@@ -120,18 +123,30 @@ const testComponentScene: ComponentMetadata = {
 }
 
 const testComponentMetadata: Array<ComponentMetadata> = [testComponentScene]
+const testElementMetadataMap: ElementInstanceMetadataMap = {
+  [TP.toString(testComponentMetadataChild1.templatePath)]: testComponentMetadataChild1,
+  [TP.toString(testComponentMetadataChild2.templatePath)]: testComponentMetadataChild2,
+  [TP.toString(testComponentMetadataChild3.templatePath)]: testComponentMetadataChild3,
+  [TP.toString(testComponentMetadataGrandchild.templatePath)]: testComponentMetadataGrandchild,
+  [TP.toString(testComponentRoot1.templatePath)]: testComponentRoot1,
+}
+
+const testJsxMetadata = jsxMetadata(testComponentMetadata, testElementMetadataMap)
 
 describe('findElements', () => {
   it('Finds the element metadata', () => {
-    const foundViewsWithHelloProp = MetadataUtils.findElements(testComponentMetadata, (element) => {
-      return element.props['cica'] != null
-    })
+    const foundViewsWithHelloProp = MetadataUtils.findElements(
+      testElementMetadataMap,
+      (element) => {
+        return element.props['cica'] != null
+      },
+    )
 
     expect(foundViewsWithHelloProp).toHaveLength(1)
     expect(foundViewsWithHelloProp[0].props.cica).toEqual('hello')
 
     const notFoundViews = MetadataUtils.findElements(
-      testComponentMetadata,
+      testElementMetadataMap,
       (element) => element.props.nonexistentProp != null,
     )
     expect(notFoundViews).toHaveLength(0)
@@ -139,37 +154,37 @@ describe('findElements', () => {
 })
 
 describe('getElementByInstancePathMaybe', () => {
-  it('works with an empty array', () => {
+  it('works with an empty object', () => {
     const actualResult = MetadataUtils.getElementByInstancePathMaybe(
-      [],
+      {},
       TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View0']),
     )
     expect(actualResult).toBeNull()
   })
   it('returns null for a nonsense path', () => {
     const actualResult = MetadataUtils.getElementByInstancePathMaybe(
-      [],
+      {},
       TP.instancePath([BakedInStoryboardUID, TestScenePath], ['Hats', 'Cats']),
     )
     expect(actualResult).toBeNull()
   })
   it('returns null for a partially nonsense path', () => {
     const actualResult = MetadataUtils.getElementByInstancePathMaybe(
-      [],
+      {},
       TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'Cats']),
     )
     expect(actualResult).toBeNull()
   })
-  it('returns the element from the root', () => {
+  it('returns the element from the map', () => {
     const actualResult = MetadataUtils.getElementByInstancePathMaybe(
-      testComponentMetadata,
+      testElementMetadataMap,
       TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View']),
     )
     expect(actualResult).toBe(testComponentRoot1)
   })
   it('returns the element for a child of the root', () => {
     const actualResult = MetadataUtils.getElementByInstancePathMaybe(
-      testComponentMetadata,
+      testElementMetadataMap,
       TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View1']),
     )
     expect(actualResult).toBe(testComponentMetadataChild2)
@@ -222,93 +237,73 @@ describe('targetElementSupportsChildren', () => {
 
 describe('isPinnedAndNotAbsolutePositioned', () => {
   it('returns true for a pinned element that is not absolute positioned', () => {
-    const metadataForTest: Array<ComponentMetadata> = [
-      {
-        ...testComponentScene,
-        rootElements: [
-          {
-            ...testComponentRoot1,
-            specialSizeMeasurements: {
-              ...testComponentRoot1.specialSizeMeasurements,
-              parentLayoutSystem: 'flow',
-              position: 'static',
-            },
-          },
-        ],
+    const elementMapForTest: ElementInstanceMetadataMap = {
+      [TP.toString(testComponentRoot1.templatePath)]: {
+        ...testComponentRoot1,
+        specialSizeMeasurements: {
+          ...testComponentRoot1.specialSizeMeasurements,
+          parentLayoutSystem: 'flow',
+          position: 'static',
+        },
       },
-    ]
+    }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        metadataForTest,
+        jsxMetadata(testComponentMetadata, elementMapForTest),
         TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View']),
       ),
     ).toEqual(true)
   })
   it('returns false for a flex element that is not absolute positioned', () => {
-    const metadataForTest: Array<ComponentMetadata> = [
-      {
-        ...testComponentScene,
-        rootElements: [
-          {
-            ...testComponentRoot1,
-            specialSizeMeasurements: {
-              ...testComponentRoot1.specialSizeMeasurements,
-              parentLayoutSystem: 'flex',
-              position: 'static',
-            },
-          },
-        ],
+    const elementMapForTest: ElementInstanceMetadataMap = {
+      [TP.toString(testComponentRoot1.templatePath)]: {
+        ...testComponentRoot1,
+        specialSizeMeasurements: {
+          ...testComponentRoot1.specialSizeMeasurements,
+          parentLayoutSystem: 'flex',
+          position: 'static',
+        },
       },
-    ]
+    }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        metadataForTest,
+        jsxMetadata(testComponentMetadata, elementMapForTest),
         TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View']),
       ),
     ).toEqual(false)
   })
   it('returns false for a pinned element that is absolute positioned', () => {
-    const metadataForTest: Array<ComponentMetadata> = [
-      {
-        ...testComponentScene,
-        rootElements: [
-          {
-            ...testComponentRoot1,
-            specialSizeMeasurements: {
-              ...testComponentRoot1.specialSizeMeasurements,
-              parentLayoutSystem: 'flow',
-              position: 'absolute',
-            },
-          },
-        ],
+    const elementMapForTest: ElementInstanceMetadataMap = {
+      [TP.toString(testComponentRoot1.templatePath)]: {
+        ...testComponentRoot1,
+        specialSizeMeasurements: {
+          ...testComponentRoot1.specialSizeMeasurements,
+          parentLayoutSystem: 'flow',
+          position: 'absolute',
+        },
       },
-    ]
+    }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        metadataForTest,
+        jsxMetadata(testComponentMetadata, elementMapForTest),
         TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View']),
       ),
     ).toEqual(false)
   })
   it('returns false for a flex element that is absolute positioned', () => {
-    const metadataForTest: Array<ComponentMetadata> = [
-      {
-        ...testComponentScene,
-        rootElements: [
-          {
-            ...testComponentRoot1,
-            specialSizeMeasurements: {
-              ...testComponentRoot1.specialSizeMeasurements,
-              parentLayoutSystem: 'flex',
-              position: 'absolute',
-            },
-          },
-        ],
+    const elementMapForTest: ElementInstanceMetadataMap = {
+      [TP.toString(testComponentRoot1.templatePath)]: {
+        ...testComponentRoot1,
+        specialSizeMeasurements: {
+          ...testComponentRoot1.specialSizeMeasurements,
+          parentLayoutSystem: 'flex',
+          position: 'absolute',
+        },
       },
-    ]
+    }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        metadataForTest,
+        jsxMetadata(testComponentMetadata, elementMapForTest),
         TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View']),
       ),
     ).toEqual(false)
@@ -344,19 +339,23 @@ describe('getElementLabel', () => {
     },
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
-    [spanElementMetadata],
+    [spanElementMetadata.templatePath],
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
   )
-  const metadata: Array<ComponentMetadata> = [
+  const elements: ElementInstanceMetadataMap = {
+    [TP.toString(spanElementMetadata.templatePath)]: spanElementMetadata,
+    [TP.toString(divElementMetadata.templatePath)]: divElementMetadata,
+  }
+  const components: Array<ComponentMetadata> = [
     {
       scenePath: scenePath,
       templatePath: instancePath,
       component: 'App',
       container: { layoutSystem: LayoutSystem.PinSystem },
       sceneResizesContent: false,
-      rootElements: [divElementMetadata],
+      rootElements: [divElementMetadata.templatePath],
       globalFrame: canvasRectangle({
         x: 0,
         y: 0,
@@ -369,6 +368,7 @@ describe('getElementLabel', () => {
       },
     },
   ]
+  const metadata = jsxMetadata(components, elements)
   it('the label of a spin containing text is that text', () => {
     const actualResult = MetadataUtils.getElementLabel(spanPath, metadata)
     expect(actualResult).toEqual('test text')
@@ -377,7 +377,7 @@ describe('getElementLabel', () => {
 
 describe('getAllPaths', () => {
   it('returns the paths in a depth first manner', () => {
-    const actualResult = MetadataUtils.getAllPaths(testComponentMetadata)
+    const actualResult = MetadataUtils.getAllPaths(testJsxMetadata)
     const expectedResult: Array<TemplatePath> = [
       testComponentScene.scenePath,
       testComponentRoot1.templatePath,

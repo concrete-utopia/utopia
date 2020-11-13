@@ -4,6 +4,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ComponentMetadata,
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   getElementsByUIDFromTopLevelElements,
   isUtopiaJSXComponent,
   JSXElement,
@@ -11,6 +12,8 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXElement,
+  JSXMetadata,
+  emptyJsxMetadata,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -50,6 +53,7 @@ import {
   codeFile,
   isParseFailure,
   isParsedTextFile,
+  EmptyExportsDetail,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -271,9 +275,9 @@ export interface EditorState {
     tab: EditorTab
     initialCursorPosition: CursorPosition | null
   } | null
-  spyMetadataKILLME: ComponentMetadata[] // this is coming from the canvas spy report.
+  spyMetadataKILLME: JSXMetadata // this is coming from the canvas spy report.
   domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
-  jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
+  jsxMetadataKILLME: JSXMetadata // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
@@ -533,6 +537,7 @@ export function modifyParseSuccessWithSimple(
     {},
     success.jsxFactoryFunction,
     success.combinedTopLevelArbitraryBlock,
+    success.exportsDetail,
   )
 }
 
@@ -693,11 +698,11 @@ export function modifyOpenJSXElements(
 export function modifyOpenJSXElementsAndMetadata(
   transform: (
     utopiaComponents: Array<UtopiaJSXComponent>,
-    componentMetadata: Array<ComponentMetadata>,
-  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: Array<ComponentMetadata> },
+    componentMetadata: JSXMetadata,
+  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: JSXMetadata },
   model: EditorState,
 ): EditorState {
-  let workingMetadata: Array<ComponentMetadata> = model.jsxMetadataKILLME
+  let workingMetadata: JSXMetadata = model.jsxMetadataKILLME
   const successTransform = (success: ParseSuccess) => {
     const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
     // Apply the transformation.
@@ -923,7 +928,7 @@ export function transientCanvasState(
   }
 }
 
-export function getMetadata(editor: EditorState): Array<ComponentMetadata> {
+export function getMetadata(editor: EditorState): JSXMetadata {
   if (editor.canvas.dragState == null) {
     return editor.jsxMetadataKILLME
   } else {
@@ -945,6 +950,7 @@ export const defaultElementWarnings: ElementWarnings = {
 
 export interface DerivedState {
   navigatorTargets: Array<TemplatePath>
+  visibleNavigatorTargets: Array<TemplatePath>
   canvas: {
     descendantsOfHiddenInstances: Array<TemplatePath>
     controls: Array<HigherOrderControl>
@@ -956,6 +962,7 @@ export interface DerivedState {
 function emptyDerivedState(editorState: EditorState): DerivedState {
   return {
     navigatorTargets: [],
+    visibleNavigatorTargets: [],
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
@@ -1052,9 +1059,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     openFiles: [],
     cursorPositions: {},
     selectedFile: null,
-    spyMetadataKILLME: [],
+    spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
-    jsxMetadataKILLME: [],
+    jsxMetadataKILLME: emptyJsxMetadata,
     projectContents: {},
     codeResultCache: generateCodeResultCache(
       {},
@@ -1187,7 +1194,7 @@ type EditorAndDerivedState = {
 }
 
 export function getElementWarnings(
-  rootMetadata: Array<ComponentMetadata>,
+  rootMetadata: JSXMetadata,
 ): ComplexMap<TemplatePath, ElementWarnings> {
   let result: ComplexMap<TemplatePath, ElementWarnings> = emptyComplexMap()
   MetadataUtils.walkMetadata(
@@ -1219,14 +1226,17 @@ export function getElementWarnings(
       result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
     },
   )
-  fastForEach(rootMetadata, (scene) => {
+  fastForEach(rootMetadata.components, (scene) => {
     const elementWarnings: ElementWarnings = {
       widthOrHeightZero:
         scene.globalFrame != null
           ? scene.globalFrame.width === 0 || scene.globalFrame.height === 0
           : false,
       absoluteWithUnpositionedParent: false,
-      dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(scene),
+      dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(
+        scene,
+        rootMetadata,
+      ),
     }
     result = addToComplexMap(toString, result, scene.scenePath, elementWarnings)
   })
@@ -1240,13 +1250,23 @@ export function deriveState(
 ): EditorAndDerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
-  const componentKeys = Utils.keepReferenceIfShallowEqual(
-    derivedState.navigatorTargets,
-    MetadataUtils.createOrderedTemplatePathsFromElements(editor.jsxMetadataKILLME),
+  const {
+    navigatorTargets,
+    visibleNavigatorTargets,
+  } = MetadataUtils.createOrderedTemplatePathsFromElements(
+    editor.jsxMetadataKILLME,
+    editor.navigator.collapsedViews,
   )
 
   const derived: DerivedState = {
-    navigatorTargets: componentKeys,
+    navigatorTargets: Utils.keepReferenceIfShallowEqual(
+      derivedState.navigatorTargets,
+      navigatorTargets,
+    ),
+    visibleNavigatorTargets: Utils.keepReferenceIfShallowEqual(
+      derivedState.visibleNavigatorTargets,
+      visibleNavigatorTargets,
+    ),
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
@@ -1278,7 +1298,7 @@ export function deriveState(
 
       if (targets.length > 0) {
         const target = targets[0]
-        Utils.fastForEach(componentKeys, (path) => {
+        Utils.fastForEach(navigatorTargets, (path) => {
           if (isInstancePath(path)) {
             const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
             const uid = staticPath != null ? toUid(staticPath) : null
@@ -1335,9 +1355,9 @@ export function editorModelFromPersistentModel(
     isLoaded: false,
     openFiles: persistentModel.openFiles,
     cursorPositions: {},
-    spyMetadataKILLME: [],
+    spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
-    jsxMetadataKILLME: [],
+    jsxMetadataKILLME: emptyJsxMetadata,
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
       {},
@@ -1741,7 +1761,7 @@ export function parseFailureAsErrorMessages(
   }
 }
 
-export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMetadata> {
+export function reconstructJSXMetadata(editor: EditorState): JSXMetadata {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {
     return editor.jsxMetadataKILLME

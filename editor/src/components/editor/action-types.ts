@@ -1,10 +1,10 @@
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
   JSXAttribute,
   JSXElement,
   JSXElementName,
+  JSXMetadata,
   SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import { KeysPressed, Key } from '../../utils/keyboard'
@@ -305,7 +305,7 @@ export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
   elements: JSXElement[]
   originalTemplatePaths: TemplatePath[]
-  targetOriginalContextMetadata: ComponentMetadata[]
+  targetOriginalContextMetadata: JSXMetadata
 }
 
 export interface CopySelectionToClipboard {

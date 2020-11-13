@@ -107,6 +107,17 @@ return { a: a, b: b };",
     "type": "ARBITRARY_JS_BLOCK",
     "uniqueID": "",
   },
+  "exportsDetail": Object {
+    "defaultExport": null,
+    "namedExports": Object {
+      "App": Object {
+        "type": "EXPORT_DETAIL_MODIFIER",
+      },
+      "storyboard": Object {
+        "type": "EXPORT_DETAIL_MODIFIER",
+      },
+    },
+  },
   "highlightBounds": Object {
     "aaa": Object {
       "endCol": 26,

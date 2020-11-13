@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { colorTheme } from 'uuiui'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ComponentMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import * as TP from '../../../core/shared/template-path'
@@ -18,7 +18,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 export function getSelectionColor(
   path: TemplatePath,
   rootElements: Array<UtopiaJSXComponent>,
-  metadata: ComponentMetadata[],
+  metadata: JSXMetadata,
   imports: Imports,
   createsYogaLayout: boolean,
   anySelectedElementIsYogaLayouted: boolean,
@@ -135,7 +135,10 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
       const keyPrefix = TP.toComponentId(selectedView)
       const instance = TP.isScenePath(selectedView)
         ? null
-        : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
+        : MetadataUtils.getElementByInstancePathMaybe(
+            this.props.componentMetadata.elements,
+            selectedView,
+          )
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
       const selectionColor = getSelectionColor(
         selectedView,
@@ -186,7 +189,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
     if (
       targetPaths.length > 1 &&
       TP.areAllElementsInSameScene(targetPaths) &&
-      this.props.componentMetadata.length > 0
+      this.props.componentMetadata.components.length > 0
     ) {
       const globalFrames = targetPaths.map((selectedView) => this.getTargetFrame(selectedView))
       const boundingBox = Utils.boundingRectangleArray(globalFrames)
