@@ -70,6 +70,7 @@ export interface NavigatorItemInnerProps {
   elementWarnings: ElementWarnings
   properties: { [key: string]: any }
   selectedPropsTarget: string | null
+  stylePropsSupported: boolean
 }
 
 function selectItem(
