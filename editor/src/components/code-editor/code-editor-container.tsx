@@ -49,8 +49,7 @@ import {
   useBridgeTowardsIframe,
 } from './code-editor-bridge'
 
-export interface CodeEditorEntryPointProps {
-  sendLinterRequestMessage: (filePath: string, content: string) => void
+interface JSONStringifiedCodeEditorProps {
   relevantPanel: EditorPanel
   runtimeErrors: Array<RuntimeErrorInfo>
   canvasConsoleLogs: Array<ConsoleLog>
@@ -70,6 +69,11 @@ export interface CodeEditorEntryPointProps {
   selectedViewBounds: HighlightBounds[]
   highlightBounds: HighlightBounds[]
   npmDependencies: PossiblyUnversionedNpmDependency[]
+}
+
+export interface CodeEditorEntryPointProps {
+  sendLinterRequestMessage: (filePath: string, content: string) => void
+  jsonStringifiedProps: string
 }
 
 const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
@@ -144,9 +148,11 @@ const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
       [dispatch],
     )
 
+    const jsonProps = JSON.parse(props.jsonStringifiedProps) as JSONStringifiedCodeEditorProps
+
     return (
       <ScriptEditor
-        {...props}
+        sendLinterRequestMessage={props.sendLinterRequestMessage}
         setHighlightedViews={setHighlightedViews}
         selectComponents={selectComponents}
         onSave={onSave}
@@ -154,6 +160,7 @@ const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
         setCodeEditorVisibility={setCodeEditorVisibility}
         setFocus={setFocusCallback}
         saveCursorPosition={saveCursorPosition}
+        {...jsonProps}
       />
     )
   },
@@ -237,29 +244,35 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
 
   const npmDependencies = usePossiblyResolvedPackageDependencies()
 
+  const propsToStringify: JSONStringifiedCodeEditorProps = {
+    relevantPanel: 'uicodeeditor',
+    runtimeErrors: runtimeErrors,
+    canvasConsoleLogs: canvasConsoleLogs,
+    filePath: selectedProps.filePath,
+    openFile: selectedProps.openFile,
+    cursorPositionFromOpenFile: selectedProps.cursorPositionFromOpenFile,
+    savedCursorPosition: selectedProps.savedCursorPosition,
+    typeDefinitions: selectedProps.typeDefinitions,
+    lintErrors: selectedProps.lintErrors,
+    parserPrinterErrors: selectedProps.parserPrinterErrors,
+    projectContents: selectedProps.projectContents,
+    parsedHighlightBounds: selectedProps.parsedHighlightBounds,
+    allTemplatePaths: selectedProps.allTemplatePaths,
+    focusedPanel: selectedProps.focusedPanel,
+    codeEditorTheme: selectedProps.codeEditorTheme,
+    selectedViews: selectedProps.selectedViews,
+    selectedViewBounds: selectedViewBounds,
+    highlightBounds: highlightBounds,
+    npmDependencies: npmDependencies,
+  }
+
+  const stringifiedProps = JSON.stringify(propsToStringify)
+
   return (
     <>
       <CodeEditorIframe
         sendLinterRequestMessage={sendLinterRequestMessage}
-        relevantPanel={'uicodeeditor'}
-        runtimeErrors={runtimeErrors}
-        canvasConsoleLogs={canvasConsoleLogs}
-        filePath={selectedProps.filePath}
-        openFile={selectedProps.openFile}
-        cursorPositionFromOpenFile={selectedProps.cursorPositionFromOpenFile}
-        savedCursorPosition={selectedProps.savedCursorPosition}
-        typeDefinitions={selectedProps.typeDefinitions}
-        lintErrors={selectedProps.lintErrors}
-        parserPrinterErrors={selectedProps.parserPrinterErrors}
-        projectContents={selectedProps.projectContents}
-        parsedHighlightBounds={selectedProps.parsedHighlightBounds}
-        allTemplatePaths={selectedProps.allTemplatePaths}
-        focusedPanel={selectedProps.focusedPanel}
-        codeEditorTheme={selectedProps.codeEditorTheme}
-        selectedViews={selectedProps.selectedViews}
-        selectedViewBounds={selectedViewBounds}
-        highlightBounds={highlightBounds}
-        npmDependencies={npmDependencies}
+        jsonStringifiedProps={stringifiedProps}
       />
     </>
   )
