@@ -967,6 +967,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
 
   return {
     navigatorTargets: poppedDerived.navigatorTargets,
+    visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
