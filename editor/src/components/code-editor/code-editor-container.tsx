@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as ReactDOM from 'react-dom'
 import * as TP from '../../core/shared/template-path'
 import * as EditorActions from '../editor/actions/actions'
 import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
@@ -28,12 +29,28 @@ import {
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
-import { ScriptEditor } from './script-editor'
+import { ScriptEditor, ScriptEditorProps } from './script-editor'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Notice } from '../common/notices'
 import { EditorAction } from '../editor/action-types'
 import { CursorPosition } from './code-editor-utils'
 import { EditorPanel, setFocus } from '../common/actions'
+import { usePossiblyResolvedPackageDependencies } from '../editor/npm-dependency/npm-dependency'
+
+const CodeEditorEntryPoint = betterReactMemo<ScriptEditorProps>('CodeEditorEntryPoint', (props) => {
+  return <ScriptEditor {...props} />
+})
+
+const CodeEditorIframe = betterReactMemo<ScriptEditorProps>('CodeEditorIframe', (props) => {
+  React.useEffect(() => {
+    ReactDOM.render(
+      <CodeEditorEntryPoint {...props} />,
+      document.getElementById('code-editor-iframe-entry'),
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...Object.values(props)])
+  return <div id='code-editor-iframe-entry' style={{ display: 'flex', flex: 1 }} />
+})
 
 export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) => {
   const runtimeErrors: RuntimeErrorInfo[] = []
@@ -164,35 +181,40 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     [workers],
   )
 
+  const npmDependencies = usePossiblyResolvedPackageDependencies()
+
   return (
-    <ScriptEditor
-      setHighlightedViews={setHighlightedViews}
-      selectComponents={selectComponents}
-      onSave={onSave}
-      openEditorTab={openEditorTab}
-      setCodeEditorVisibility={setCodeEditorVisibility}
-      setFocus={setFocusCallback}
-      saveCursorPosition={saveCursorPosition}
-      sendLinterRequestMessage={sendLinterRequestMessage}
-      relevantPanel={'uicodeeditor'}
-      runtimeErrors={runtimeErrors}
-      canvasConsoleLogs={canvasConsoleLogs}
-      filePath={selectedProps.filePath}
-      openFile={selectedProps.openFile}
-      cursorPositionFromOpenFile={selectedProps.cursorPositionFromOpenFile}
-      savedCursorPosition={selectedProps.savedCursorPosition}
-      typeDefinitions={selectedProps.typeDefinitions}
-      lintErrors={selectedProps.lintErrors}
-      parserPrinterErrors={selectedProps.parserPrinterErrors}
-      projectContents={selectedProps.projectContents}
-      parsedHighlightBounds={selectedProps.parsedHighlightBounds}
-      allTemplatePaths={selectedProps.allTemplatePaths}
-      focusedPanel={selectedProps.focusedPanel}
-      codeEditorTheme={selectedProps.codeEditorTheme}
-      selectedViews={selectedProps.selectedViews}
-      selectedViewBounds={selectedViewBounds}
-      highlightBounds={highlightBounds}
-    />
+    <>
+      <CodeEditorIframe
+        setHighlightedViews={setHighlightedViews}
+        selectComponents={selectComponents}
+        onSave={onSave}
+        openEditorTab={openEditorTab}
+        setCodeEditorVisibility={setCodeEditorVisibility}
+        setFocus={setFocusCallback}
+        saveCursorPosition={saveCursorPosition}
+        sendLinterRequestMessage={sendLinterRequestMessage}
+        relevantPanel={'uicodeeditor'}
+        runtimeErrors={runtimeErrors}
+        canvasConsoleLogs={canvasConsoleLogs}
+        filePath={selectedProps.filePath}
+        openFile={selectedProps.openFile}
+        cursorPositionFromOpenFile={selectedProps.cursorPositionFromOpenFile}
+        savedCursorPosition={selectedProps.savedCursorPosition}
+        typeDefinitions={selectedProps.typeDefinitions}
+        lintErrors={selectedProps.lintErrors}
+        parserPrinterErrors={selectedProps.parserPrinterErrors}
+        projectContents={selectedProps.projectContents}
+        parsedHighlightBounds={selectedProps.parsedHighlightBounds}
+        allTemplatePaths={selectedProps.allTemplatePaths}
+        focusedPanel={selectedProps.focusedPanel}
+        codeEditorTheme={selectedProps.codeEditorTheme}
+        selectedViews={selectedProps.selectedViews}
+        selectedViewBounds={selectedViewBounds}
+        highlightBounds={highlightBounds}
+        npmDependencies={npmDependencies}
+      />
+    </>
   )
 })
 

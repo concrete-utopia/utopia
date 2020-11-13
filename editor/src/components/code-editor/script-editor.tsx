@@ -65,7 +65,10 @@ import { CursorPosition } from './code-editor-utils'
 import { Notice } from '../common/notices'
 import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
-import { TypeDefinitions } from '../../core/shared/npm-dependency-types'
+import {
+  PossiblyUnversionedNpmDependency,
+  TypeDefinitions,
+} from '../../core/shared/npm-dependency-types'
 import { ProjectContentTreeRoot } from '../assets'
 
 function getFileContents(file: ProjectFile): string {
@@ -144,7 +147,7 @@ function getTemplatePathsInBounds(
   return paths
 }
 
-interface ScriptEditorProps {
+export interface ScriptEditorProps {
   setHighlightedViews: (targets: TemplatePath[]) => void
   selectComponents: (targets: TemplatePath[]) => void
   onSave: (
@@ -176,6 +179,7 @@ interface ScriptEditorProps {
   codeEditorTheme: string
   selectedViewBounds: HighlightBounds[]
   highlightBounds: HighlightBounds[]
+  npmDependencies: PossiblyUnversionedNpmDependency[]
 }
 
 export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditorProps) => {
@@ -206,6 +210,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     selectedViews,
     selectedViewBounds,
     highlightBounds,
+    npmDependencies,
   } = props
 
   const onHover = React.useCallback(
@@ -282,8 +287,6 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
   const errors = useKeepReferenceEqualityIfPossible(newErrorsOrParserPrinterErrors)
   const newErrorsForFile = errors.filter((error) => error.fileName === filePath)
   const errorsForFile = useKeepReferenceEqualityIfPossible(newErrorsForFile)
-
-  const npmDependencies = usePossiblyResolvedPackageDependencies()
 
   if (filePath == null || openFile == null) {
     return null
