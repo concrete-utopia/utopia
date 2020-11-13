@@ -4,7 +4,6 @@ import * as React from 'react'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import { useEditorState } from '../../editor/store/store-hook'
 import * as TP from '../../../core/shared/template-path'
-import { getChildrenOfCollapsedViews } from '../navigator'
 import {
   DragSelection,
   NavigatorItemContainer,
@@ -28,6 +27,7 @@ interface NavigatorItemWrapperProps {
   getDragSelections: () => Array<DragSelection>
   getMaximumDistance: (componentId: string, initialDistance: number) => number
   getSelectedViewsInRange: (index: number) => Array<TemplatePath>
+  windowStyle: React.CSSProperties
 }
 
 const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
@@ -125,7 +125,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       label,
       componentInstance,
       isAutosizingView,
-
       imports,
       elementWarnings,
     } = useEditorState(selector, 'NavigatorItemWrapper')
@@ -136,10 +135,8 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       collapsedViews,
       dropTargetHint,
       dispatch,
-      navigatorTargets,
     } = useEditorState(
       (store) => ({
-        navigatorTargets: store.derived.navigatorTargets,
         dispatch: store.dispatch,
         selectedViews: store.editor.selectedViews,
         collapsedViews: store.editor.navigator.collapsedViews,
@@ -150,9 +147,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       'NavigatorItemWrapper',
     )
 
-    const childrenOfCollapsedViews = getChildrenOfCollapsedViews(navigatorTargets, collapsedViews)
     const isCollapsed = TP.containsPath(props.templatePath, collapsedViews)
-    const isAncestorCollapsed = TP.containsPath(props.templatePath, childrenOfCollapsedViews)
 
     const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
       index: props.index,
@@ -161,7 +156,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       selected: isSelected,
       highlighted: isHighlighted,
       collapsed: isCollapsed,
-      ancestorCollapsed: isAncestorCollapsed,
       getDragSelections: props.getDragSelections,
       getMaximumDistance: props.getMaximumDistance,
       getSelectedViewsInRange: props.getSelectedViewsInRange,
@@ -180,6 +174,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       renamingTarget: renamingTarget,
       imports: imports,
       elementWarnings: elementWarnings,
+      windowStyle: props.windowStyle,
     }
 
     return <NavigatorItemContainer {...navigatorItemProps} />
