@@ -35,7 +35,7 @@ import { EditorAction } from '../editor/action-types'
 import { CursorPosition } from './code-editor-utils'
 import { EditorPanel, setFocus } from '../common/actions'
 
-export const CodeEditorContainer = betterReactMemo('CodeEditorContainer', (props) => {
+export const CodeEditorIFrame = betterReactMemo('CodeEditorContainer', (props) => {
   const runtimeErrors: RuntimeErrorInfo[] = []
   const canvasConsoleLogs: ConsoleLog[] = []
 

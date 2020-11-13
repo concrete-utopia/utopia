@@ -14,7 +14,7 @@ import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
 
 import { RightMenu, RightMenuTab } from './right-menu'
-import { CodeEditorContainer } from '../code-editor/code-editor-container'
+import { CodeEditorIFrame } from '../code-editor/code-editor-container'
 
 interface SplitViewCanvasRootProps {
   runtimeErrors: Array<RuntimeErrorInfo>
@@ -119,7 +119,7 @@ export const SplitViewCanvasRoot = betterReactMemo(
                 borderLeft: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
               }}
             >
-              <CodeEditorContainer />
+              <CodeEditorIFrame />
             </Resizable>
           ) : null}
         </SimpleFlexRow>
