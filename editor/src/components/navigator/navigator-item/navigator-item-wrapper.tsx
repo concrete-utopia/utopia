@@ -15,6 +15,8 @@ import {
   getOpenImportsFromState,
   defaultElementWarnings,
   EditorStore,
+  getOpenUIJSFileKey,
+  getOpenUtopiaJSXComponentsFromState,
 } from '../../editor/store/editor-state'
 import {
   UtopiaJSXComponent,
@@ -30,6 +32,7 @@ import { UtopiaKeys } from '../../../core/model/utopia-constants'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { eitherToMaybe, isRight } from '../../../core/shared/either'
 import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
+import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -58,6 +61,9 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         ? getOpenImportsFromState(store.editor)
         : store.derived.canvas.transientState.fileState.imports,
     (store: EditorStore) => store.editor.selectedPropsTarget,
+    (store: EditorStore) => store.editor.propertyControlsInfo,
+    (store: EditorStore) => getOpenUtopiaJSXComponentsFromState(store.editor),
+    (store: EditorStore) => getOpenUIJSFileKey(store.editor),
     (
       jsxMetadataKILLME,
       transientState,
@@ -66,6 +72,9 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
       element,
       imports,
       selectedPropsTarget,
+      propertyControlsInfo,
+      jsxComponents,
+      openFilePath,
     ) => {
       const fileState = transientState.fileState
 
@@ -132,6 +141,15 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         templatePath,
       )
 
+      const stylePropsSupported = targetRespectsLayout(
+        templatePath,
+        propertyControlsInfo,
+        imports,
+        openFilePath,
+        jsxComponents,
+        jsxMetadataKILLME,
+      )
+
       return {
         staticElementName: staticName,
         label: labelInner,
@@ -149,6 +167,7 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         elementWarnings: elementWarningsInner ?? defaultElementWarnings,
         properties: properties,
         selectedPropsTarget: selectedPropsTarget,
+        stylePropsSupported: stylePropsSupported,
       }
     },
   )
@@ -177,6 +196,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       elementWarnings,
       properties,
       selectedPropsTarget,
+      stylePropsSupported,
     } = useEditorState(selector, 'NavigatorItemWrapper')
 
     const {
@@ -231,6 +251,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       elementWarnings: elementWarnings,
       properties: properties,
       selectedPropsTarget: selectedPropsTarget,
+      stylePropsSupported: stylePropsSupported,
     }
 
     return <NavigatorItemContainer {...navigatorItemProps} />

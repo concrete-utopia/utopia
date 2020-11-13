@@ -179,6 +179,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       properties,
       componentInstance,
       selectedPropsTarget,
+      stylePropsSupported,
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
@@ -323,7 +324,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
               onMouseDown={select}
               onMouseMove={highlight}
             >
-              {componentInstance && (
+              {componentInstance && stylePropsSupported && (
                 <FlexRow style={{ paddingLeft: -5 }}>
                   <FlexRow
                     style={{
@@ -440,7 +441,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           display: 'block',
-                          maxWidth: 150,
+                          maxWidth: 110,
                         }}
                       >
                         {propAsString}

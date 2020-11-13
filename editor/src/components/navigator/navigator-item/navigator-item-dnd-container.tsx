@@ -66,6 +66,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
   elementWarnings: ElementWarnings
   properties: { [key: string]: string }
   selectedPropsTarget: string | null
+  stylePropsSupported: boolean
 }
 
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: TemplatePath): boolean {
@@ -273,6 +274,7 @@ export class NavigatorItemDndWrapper extends PureComponent<
           elementWarnings={this.props.elementWarnings}
           properties={this.props.properties}
           selectedPropsTarget={this.props.selectedPropsTarget}
+          stylePropsSupported={this.props.stylePropsSupported}
         />
         <NavigatorHintTop
           isOver={this.props.isOver}
