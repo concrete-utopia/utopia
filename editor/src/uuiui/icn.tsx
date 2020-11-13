@@ -82,6 +82,7 @@ export const Icn = betterReactMemo(
       <img
         style={{
           userSelect: 'none',
+          display: 'block',
           ...props.style,
           ...disabledStyle,
         }}
