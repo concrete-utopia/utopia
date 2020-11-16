@@ -5,7 +5,11 @@ import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../../../core/shared/element-template'
+import {
+  ComponentMetadata,
+  isIntrinsicHTMLElement,
+  isJSXElement,
+} from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import {
   fileTypeFromFileName,
@@ -68,6 +72,8 @@ import {
   ProjectContentTreeRoot,
   walkContentsTree,
 } from '../../assets'
+import { filterDuplicates, flatMapArray } from '../../../core/shared/array-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -443,6 +449,65 @@ export function editorDispatch(
   }
 }
 
+function extendHighlightsForComponents(editorState: EditorState): EditorState {
+  const rootComponents = editorState.jsxMetadataKILLME
+  const jsxComponents = getOpenUtopiaJSXComponentsFromState(editorState)
+  const highlightedComponentInstances = flatMapArray((view) => {
+    const componentName = MetadataUtils.getJSXElementName(
+      view,
+      jsxComponents,
+      rootComponents.components,
+    )
+    const instances = Object.values(rootComponents.elements)
+      .filter((element) => {
+        const elementName = MetadataUtils.getJSXElementName(
+          element.templatePath,
+          jsxComponents,
+          rootComponents.components,
+        )
+        return (
+          elementName != null &&
+          componentName != null &&
+          !isIntrinsicHTMLElement(componentName) &&
+          componentName.baseVariable === elementName.baseVariable
+        )
+      })
+      .map((element) => element.templatePath)
+    return [view, ...instances]
+  }, editorState.highlightedViews)
+  const selectedComponentInstances = flatMapArray((view) => {
+    const componentName = MetadataUtils.getJSXElementName(
+      view,
+      jsxComponents,
+      rootComponents.components,
+    )
+    const instances = Object.values(rootComponents.elements)
+      .filter((element) => {
+        const elementName = MetadataUtils.getJSXElementName(
+          element.templatePath,
+          jsxComponents,
+          rootComponents.components,
+        )
+        return (
+          elementName != null &&
+          componentName != null &&
+          !isIntrinsicHTMLElement(componentName) &&
+          componentName.baseVariable === elementName.baseVariable
+        )
+      })
+      .map((element) => element.templatePath)
+    return instances
+  }, editorState.selectedViews)
+  const updatedHighlightedViews = [...selectedComponentInstances, ...highlightedComponentInstances]
+  return {
+    ...editorState,
+    highlightedViews: filterDuplicates(updatedHighlightedViews).filter(
+      (view) =>
+        !editorState.selectedViews.some((selectedView) => TP.pathsEqual(view, selectedView)),
+    ),
+  }
+}
+
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
@@ -505,10 +570,17 @@ function editorDispatchInner(
         }
       }
     }
+    const highlightOrSelectionChanged =
+      storedState.editor.highlightedViews !== result.editor.highlightedViews ||
+      storedState.editor.selectedViews !== result.editor.selectedViews
+    const updatedEditor =
+      isFeatureEnabled('Highlight Same Components') && highlightOrSelectionChanged
+        ? extendHighlightsForComponents(result.editor)
+        : result.editor
 
     const cleanedEditor = metadataChanged
       ? removeNonExistingViewReferencesFromState(result.editor)
-      : result.editor
+      : updatedEditor
 
     let frozenEditorState: EditorState = optionalDeepFreeze(cleanedEditor)
 
