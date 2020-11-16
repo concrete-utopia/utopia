@@ -72,7 +72,6 @@ interface JSONStringifiedCodeEditorProps {
 }
 
 export interface CodeEditorEntryPointProps {
-  sendLinterRequestMessage: (filePath: string, content: string) => void
   jsonStringifiedProps: string
 }
 
@@ -148,11 +147,18 @@ const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
       [dispatch],
     )
 
+    const sendLinterRequestMessage = React.useCallback(
+      (filePath: string, content: string) => {
+        dispatch([EditorActions.sendLinterRequestMessage(filePath, content)])
+      },
+      [dispatch],
+    )
+
     const jsonProps = JSON.parse(props.jsonStringifiedProps) as JSONStringifiedCodeEditorProps
 
     return (
       <ScriptEditor
-        sendLinterRequestMessage={props.sendLinterRequestMessage}
+        sendLinterRequestMessage={sendLinterRequestMessage}
         setHighlightedViews={setHighlightedViews}
         selectComponents={selectComponents}
         onSave={onSave}
@@ -233,15 +239,6 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     }, 'CodeEditorWrapper highlightBounds'),
   )
 
-  const workers = useEditorState((store) => store.workers, 'CodeEditorWrapper workers')
-
-  const sendLinterRequestMessage = React.useCallback(
-    (filePath: string, content: string) => {
-      workers.sendLinterRequestMessage(filePath, content)
-    },
-    [workers],
-  )
-
   const npmDependencies = usePossiblyResolvedPackageDependencies()
 
   const propsToStringify: JSONStringifiedCodeEditorProps = {
@@ -270,10 +267,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
 
   return (
     <>
-      <CodeEditorIframe
-        sendLinterRequestMessage={sendLinterRequestMessage}
-        jsonStringifiedProps={stringifiedProps}
-      />
+      <CodeEditorIframe jsonStringifiedProps={stringifiedProps} />
     </>
   )
 })

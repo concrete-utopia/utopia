@@ -611,6 +611,12 @@ export interface SetCodeEditorLintErrors {
   lintErrors: ErrorMessages
 }
 
+export interface SendLinterRequestMessage {
+  action: 'SEND_LINTER_REQUEST_MESSAGE'
+  filePath: string
+  content: string
+}
+
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: Array<ElementInstanceMetadata>
@@ -863,6 +869,7 @@ export type EditorAction =
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
+  | SendLinterRequestMessage
   | SaveDOMReport
   | SetProp
   | SetPropWithElementPath

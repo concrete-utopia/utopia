@@ -348,6 +348,7 @@ import {
   UpdatePropertyControlsInfo,
   PropertyControlsIFrameReady,
   AddStoryboardFile,
+  SendLinterRequestMessage,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -5547,5 +5548,16 @@ export function propertyControlsIFrameReady(): PropertyControlsIFrameReady {
 export function addStoryboardFile(): AddStoryboardFile {
   return {
     action: 'ADD_STORYBOARD_FILE',
+  }
+}
+
+export function sendLinterRequestMessage(
+  filePath: string,
+  content: string,
+): SendLinterRequestMessage {
+  return {
+    action: 'SEND_LINTER_REQUEST_MESSAGE',
+    filePath: filePath,
+    content: content,
   }
 }

@@ -286,6 +286,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PROPERTY_CONTROLS_IFRAME_READY(action, state)
     case 'ADD_STORYBOARD_FILE':
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
+    case 'SEND_LINTER_REQUEST_MESSAGE':
+      // side effect ☢️
+      workers.sendLinterRequestMessage(action.filePath, action.content)
+      return state
     default:
       return state
   }

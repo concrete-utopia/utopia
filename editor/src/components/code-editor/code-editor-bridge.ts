@@ -7,6 +7,7 @@ import type {
   SaveCurrentFile,
   SaveCursorPosition,
   SelectComponents,
+  SendLinterRequestMessage,
   SetCodeEditorBuildErrors,
   SetCodeEditorVisibility,
   SetHighlightedView,
@@ -25,6 +26,7 @@ export type CodeEditorAction =
   | SetCodeEditorVisibility
   | SetFocus
   | SaveCursorPosition
+  | SendLinterRequestMessage
 
 interface SendCodeEditorActionMessage {
   type: 'SEND_CODE_EDITOR_ACTION'
@@ -61,6 +63,7 @@ function validateActions(actions: Array<CodeEditorAction>): void {
       case 'SET_CODE_EDITOR_VISIBILITY':
       case 'SET_FOCUS':
       case 'SAVE_CURSOR_POSITION':
+      case 'SEND_LINTER_REQUEST_MESSAGE':
         return
       default:
         const _exhaustiveCheck: never = action
