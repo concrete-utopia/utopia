@@ -54,6 +54,8 @@ import {
   jsxFragment,
   jsxElementNameEquals,
   isIntrinsicElement,
+  clearAttributesUniqueIDs,
+  clearAttributesSourceMaps,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -63,7 +65,12 @@ import {
   PropertyPathPart,
   HighlightBoundsForUids,
 } from '../../shared/project-file-types'
-import { generateUID, getUtopiaIDFromJSXElement, parseUID } from '../../shared/uid-utils'
+import {
+  generateConsistentUID,
+  generateUID,
+  getUtopiaIDFromJSXElement,
+  parseUID,
+} from '../../shared/uid-utils'
 import { fastForEach, RETURN_TO_PREPEND } from '../../shared/utils'
 import {
   transpileJavascriptFromCode,
@@ -76,6 +83,7 @@ import {
   ElementsWithinInPosition,
   JSX_CANVAS_LOOKUP_FUNCTION_NAME,
 } from './parser-printer-utils'
+import * as Hash from 'object-hash'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -1392,11 +1400,16 @@ function buildHighlightBounds(
 function forciblyUpdateDataUID(
   sourceFile: TS.SourceFile,
   originatingElement: TS.Node,
+  name: JSXElementName | string,
   props: JSXAttributes,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSXAttributes> {
-  const uid = generateUID(alreadyExistingUIDs)
+  const hash = Hash({
+    name: name,
+    props: clearAttributesSourceMaps(clearAttributesUniqueIDs(props)),
+  })
+  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
   alreadyExistingUIDs.add(uid)
   const updatedProps = {
     ...props,
@@ -1428,6 +1441,7 @@ function createJSXElementAllocatingUID(
       forciblyUpdateDataUID(
         sourceFile,
         originatingElement,
+        name,
         props,
         existingHighlightBounds,
         alreadyExistingUIDs,
@@ -1438,6 +1452,7 @@ function createJSXElementAllocatingUID(
         return forciblyUpdateDataUID(
           sourceFile,
           originatingElement,
+          name,
           props,
           existingHighlightBounds,
           alreadyExistingUIDs,
