@@ -140,6 +140,7 @@ import {
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
+import { TemplatePathArrayKeepDeepEquality } from '../../../core/shared/deep-equality-instances'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -1246,8 +1247,7 @@ export function getElementWarnings(
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
-  uidsChanged: boolean,
-): EditorAndDerivedState {
+): DerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
   const {
@@ -1259,14 +1259,14 @@ export function deriveState(
   )
 
   const derived: DerivedState = {
-    navigatorTargets: keepDeepReferenceEqualityIfPossible(
+    navigatorTargets: TemplatePathArrayKeepDeepEquality(
       derivedState.navigatorTargets,
       navigatorTargets,
-    ),
-    visibleNavigatorTargets: keepDeepReferenceEqualityIfPossible(
+    ).value,
+    visibleNavigatorTargets: TemplatePathArrayKeepDeepEquality(
       derivedState.visibleNavigatorTargets,
       visibleNavigatorTargets,
-    ),
+    ).value,
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
@@ -1276,50 +1276,8 @@ export function deriveState(
   }
 
   const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)
-  let selectedViews: Array<TemplatePath> = []
 
-  const currentFilePath = getOpenUIJSFileKey(editor)
-  const currentFile = getOpenUIJSFile(editor)
-  if (uidsChanged && currentFile != null && currentFilePath != null) {
-    const cursorPosition = editor.cursorPositions[currentFilePath]
-    if (cursorPosition != null) {
-      const { line } = cursorPosition
-
-      const highlightBounds = getHighlightBoundsFromParseResult(currentFile.fileContents.parsed)
-      const sortedHighlightBounds = Object.values(highlightBounds).sort(
-        (a, b) => b.startLine - a.startLine,
-      )
-      const targets = sortedHighlightBounds
-        .filter((bounds) => {
-          // TS line numbers are zero based, monaco is 1-based
-          return line >= bounds.startLine + 1 && line <= bounds.endLine + 1
-        })
-        .map((bound) => bound.uid)
-
-      if (targets.length > 0) {
-        const target = targets[0]
-        Utils.fastForEach(navigatorTargets, (path) => {
-          if (isInstancePath(path)) {
-            const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
-            const uid = staticPath != null ? toUid(staticPath) : null
-            if (uid === target) {
-              selectedViews.push(path)
-            }
-          }
-        })
-      }
-    }
-  } else {
-    selectedViews = editor.selectedViews
-  }
-
-  return {
-    editor: {
-      ...editor,
-      selectedViews: selectedViews,
-    },
-    derived: sanitizedDerivedState,
-  }
+  return sanitizedDerivedState
 }
 
 export function createCanvasModelKILLME(
