@@ -81,6 +81,7 @@ export function jsxAttributeOtherJavaScript(
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
+  uniqueID: string | null = null,
 ): JSXAttributeOtherJavaScript {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -88,7 +89,7 @@ export function jsxAttributeOtherJavaScript(
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uniqueID: UUID(),
+    uniqueID: uniqueID ?? UUID(),
   }
 }
 

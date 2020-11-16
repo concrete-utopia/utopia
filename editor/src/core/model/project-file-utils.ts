@@ -36,11 +36,13 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   getJSXElementNameLastPart,
+  JSXElement,
 } from '../shared/element-template'
 import {
   sceneMetadata as _sceneMetadata,
   fishOutUtopiaCanvasFromTopLevelElements,
   EmptyUtopiaCanvasComponent,
+  isSceneElement,
 } from './scene-utils'
 import { pluck } from '../shared/array-utils'
 import { mapValues } from '../shared/object-utils'
@@ -178,6 +180,47 @@ export function getOrDefaultScenes(parsedSuccess: ParseSuccess): UtopiaJSXCompon
   return defaultEmptyUtopiaComponent
 }
 
+export function getSceneElementsFromParseSuccess(success: ParseSuccess): JSXElement[] {
+  const rootElement = getOrDefaultScenes(success).rootElement
+  if (!isJSXElement(rootElement) || rootElement.name.baseVariable !== 'Storyboard') {
+    throw new Error('the root element must be a Storyboard component')
+  }
+  return rootElement.children.filter(
+    (child): child is JSXElement => isJSXElement(child) && isSceneElement(child),
+  )
+}
+
+export function applyUtopiaJSXComponentsChanges(
+  topLevelElements: Array<TopLevelElement>,
+  newUtopiaComponents: Array<UtopiaJSXComponent>,
+): Array<TopLevelElement> {
+  // Run through the old top level elements, replacing the exported elements with those in the
+  // newly updated result with the same name.
+  // If it doesn't exist in the updated result, delete it.
+  // For any new items in the updated result, add them in.
+  const addedSoFar: Set<string> = Utils.emptySet()
+  let newTopLevelElements: Array<TopLevelElement> = []
+  Utils.fastForEach(topLevelElements, (oldTopLevelElement) => {
+    if (isUtopiaJSXComponent(oldTopLevelElement)) {
+      const updatedElement = newUtopiaComponents.find((e) => e.name === oldTopLevelElement.name)
+      if (updatedElement !== undefined) {
+        addedSoFar.add(updatedElement.name)
+        newTopLevelElements.push(updatedElement)
+      }
+    } else {
+      newTopLevelElements.push(oldTopLevelElement)
+    }
+  })
+
+  Utils.fastForEach(newUtopiaComponents, (updatedElement) => {
+    if (!addedSoFar.has(updatedElement.name)) {
+      newTopLevelElements.push(updatedElement)
+    }
+  })
+
+  return newTopLevelElements
+}
+
 export function getComponentsFromTopLevelElements(
   topLevelElements: Array<TopLevelElement>,
 ): Array<UtopiaJSXComponent> {
@@ -196,6 +239,25 @@ function getUtopiaJSXComponentsFromSuccessInner(success: ParseSuccess): Array<Ut
 
 export const getUtopiaJSXComponentsFromSuccess = Utils.memoize(
   getUtopiaJSXComponentsFromSuccessInner,
+)
+
+export type UtopiaJSXComponentsByName = { [name: string]: UtopiaJSXComponent }
+
+function getUtopiaJSXComponentsByNameFromSuccessInner(
+  success: ParseSuccess,
+): UtopiaJSXComponentsByName {
+  let result: UtopiaJSXComponentsByName = {}
+  Utils.fastForEach(success.topLevelElements, (t) => {
+    if (isUtopiaJSXComponent(t)) {
+      result[t.name] = t
+    }
+  })
+
+  return result
+}
+
+export const getUtopiaJSXComponentsByNameFromSuccess = Utils.memoize(
+  getUtopiaJSXComponentsByNameFromSuccessInner,
 )
 
 export function getHighlightBoundsFromParseResult(result: ParsedTextFile): HighlightBoundsForUids {

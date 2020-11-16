@@ -78,6 +78,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':
       return UPDATE_FNS.REDO(state, stateHistory)
+    case 'SELECT_COMPONENT':
+      return UPDATE_FNS.SELECT_COMPONENT(action, state)
     case 'SELECT_COMPONENTS':
       return UPDATE_FNS.SELECT_COMPONENTS(action, state, dispatch)
     case 'CLEAR_SELECTION':

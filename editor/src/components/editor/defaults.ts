@@ -8,6 +8,8 @@ import {
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { PathForResizeContent } from '../../core/model/scene-utils'
 import * as PP from '../../core/shared/property-path'
+import { omit } from '../../core/shared/object-utils'
+import { fastForEach } from '../../core/shared/utils'
 
 export function defaultSceneElement(
   uid: string,
@@ -16,13 +18,59 @@ export function defaultSceneElement(
   label: string,
 ): JSXElement {
   const component = componentName == null ? 'null' : componentName
+  const definedElsewhere = componentName == null ? [] : [componentName]
   const props = {
     'data-uid': jsxAttributeValue(uid),
     'data-label': jsxAttributeValue(label),
-    component: jsxAttributeOtherJavaScript(component, `return ${componentName}`, [], null),
+    component: jsxAttributeOtherJavaScript(
+      component,
+      `return ${componentName}`,
+      definedElsewhere,
+      null,
+    ),
     [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),
     style: jsxAttributeValue({
       position: 'absolute',
+      ...frame,
+    }),
+  }
+
+  return jsxElement(jsxElementName('Scene', []), props, [])
+}
+
+export function isolatedComponentSceneElement(
+  componentName: string,
+  frame: NormalisedFrame,
+  componentProps: any,
+): JSXElement {
+  const definedElsewhere = [componentName]
+  let componentPropsToUse: any = {}
+  fastForEach(Object.keys(componentProps), (key) => {
+    if (!['data-uid', 'skipDeepFreeze'].includes(key)) {
+      if (key === 'style') {
+        const styleToUse = omit(['left', 'top', 'right', 'bottom'], componentProps[key])
+        componentPropsToUse[key] = styleToUse
+      } else {
+        componentPropsToUse[key] = componentProps[key]
+      }
+    }
+  })
+
+  const props = {
+    'data-uid': jsxAttributeValue('TRANSIENT_SCENE'),
+    'data-label': jsxAttributeValue(''),
+    component: jsxAttributeOtherJavaScript(
+      componentName,
+      `return ${componentName}`,
+      definedElsewhere,
+      null,
+      'TRANSIENT_SCENE_COMPONENT',
+    ),
+    props: jsxAttributeValue(componentPropsToUse),
+    [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),
+    style: jsxAttributeValue({
+      position: 'absolute',
+      boxShadow: '0px 0px 6px 4px rgb(0, 0, 0, 0.29)',
       ...frame,
     }),
   }

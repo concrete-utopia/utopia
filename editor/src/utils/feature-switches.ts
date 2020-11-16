@@ -6,6 +6,7 @@ export type FeatureName =
   | 'Dragging Shows Overlay'
   | 'Invisible Element Controls'
   | 'Advanced Resize Box'
+  | 'Component Isolation Mode'
   | 'Component Navigator'
   | 'Re-parse Project Button'
 export const AllFeatureNames: FeatureName[] = [
@@ -22,7 +23,8 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Shows Overlay': false,
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
-  'Component Navigator': true,
+  'Component Isolation Mode': true,
+  'Component Navigator': false,
   'Re-parse Project Button': false,
 }
 

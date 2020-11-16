@@ -18,14 +18,12 @@ import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { betterReactMemo } from 'uuiui-deps'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { EditorState, getOpenImportsFromState, getOpenUIJSFile } from '../editor/store/editor-state'
 import {
-  getJSXElementNameAsString,
-  isJSXElement,
-  isUtopiaJSXComponent,
-  TopLevelElement,
-  UtopiaJSXComponent,
-} from '../../core/shared/element-template'
+  getOpenImportsFromState,
+  getOpenUIJSFile,
+  getOpenUtopiaJSXComponentsByName,
+} from '../editor/store/editor-state'
+import { getJSXElementNameAsString, isJSXElement } from '../../core/shared/element-template'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
 import { isRight } from '../../core/shared/either'
 import { SelectedComponentNavigator } from './navigator-item/component-navigator'
@@ -53,33 +51,6 @@ export const getChildrenOfCollapsedViews = (
       }),
     )
   }, collapsedViews)
-}
-
-type UtopiaJSXComponentsByName = { [name: string]: UtopiaJSXComponent }
-
-function utopiaJSXComponentsByName(topLevelElements: TopLevelElement[]): UtopiaJSXComponentsByName {
-  let result: UtopiaJSXComponentsByName = {}
-  fastForEach(topLevelElements, (t) => {
-    if (isUtopiaJSXComponent(t)) {
-      result[t.name] = t
-    }
-  })
-
-  return result
-}
-
-function getOpenUtopiaJSXComponentsByName(editor: EditorState): UtopiaJSXComponentsByName {
-  const uiFile = getOpenUIJSFile(editor)
-  if (uiFile == null) {
-    return {}
-  } else {
-    return foldParsedTextFile(
-      (_) => ({}),
-      (success) => utopiaJSXComponentsByName(success.topLevelElements),
-      (_) => ({}),
-      uiFile.fileContents.parsed,
-    )
-  }
 }
 
 const NavigatorOverflowScrollId = 'navigator-overflow-scroll'

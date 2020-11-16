@@ -23,6 +23,7 @@ interface ComponentAreaControlProps {
   hoverEffectEnabled: boolean
   doubleClickToSelect: boolean
   selectedComponents: Array<TemplatePath>
+  isolateComponent?: (target: TemplatePath) => void
   selectComponent?: (target: TemplatePath, isMultiselect: boolean) => Array<TemplatePath>
   onMouseDown: (
     views: Array<TemplatePath>,
@@ -107,6 +108,8 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             this.props.dispatch([
               EditorActions.addMissingDimensions(this.props.target, this.props.frame),
             ])
+          } else if (this.props.isolateComponent != null) {
+            this.props.isolateComponent(this.props.target)
           }
         }
       }

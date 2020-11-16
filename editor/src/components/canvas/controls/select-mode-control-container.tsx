@@ -95,6 +95,15 @@ export class SelectModeControlContainer extends React.Component<
     }
   }
 
+  isolateComponent = (target: TemplatePath) => {
+    if (
+      TP.isInstancePath(target) &&
+      this.props.selectedViews.some((view) => TP.pathsEqual(target, view))
+    ) {
+      this.props.dispatch([EditorActions.selectComponent(target)], 'everyone')
+    }
+  }
+
   selectComponent = (target: TemplatePath, isMultiselect: boolean): Array<TemplatePath> => {
     if (this.props.selectedViews.some((view) => TP.pathsEqual(target, view))) {
       return this.props.selectedViews
@@ -337,6 +346,7 @@ export class SelectModeControlContainer extends React.Component<
           canvasOffset={this.props.canvasOffset}
           hoverEffectEnabled={!isChild}
           doubleClickToSelect={isChild}
+          isolateComponent={this.isolateComponent}
           selectComponent={this.selectComponent}
           onMouseDown={this.onControlMouseDown}
           onHover={this.onHover}
