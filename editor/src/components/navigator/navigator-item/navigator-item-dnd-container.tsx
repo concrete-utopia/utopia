@@ -27,7 +27,7 @@ import { DropTargetHint } from '../navigator'
 import { ExpansionArrowWidth } from './expandable-indicator'
 import { BasePaddingUnit, getElementPadding, NavigatorItem } from './navigator-item'
 import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-components'
-import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
+import { JSXElementName } from '../../../core/shared/element-template'
 import { ElementWarnings } from '../../editor/store/editor-state'
 
 const BaseRowHeight = 35
@@ -43,7 +43,6 @@ export interface NavigatorItemDragAndDropWrapperProps {
   templatePath: TemplatePath
   dropTargetHint: DropTargetHint
   editorDispatch: EditorDispatch
-  ancestorCollapsed: boolean
   selected: boolean
   highlighted: boolean // TODO are we sure about this?
   collapsed: boolean // TODO are we sure about this?
@@ -64,6 +63,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
   renamingTarget: TemplatePath | null
   imports: Imports
   elementWarnings: ElementWarnings
+  windowStyle: React.CSSProperties
 }
 
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: TemplatePath): boolean {
@@ -236,16 +236,15 @@ export class NavigatorItemDndWrapper extends PureComponent<
     }
   }
 
-  render() {
+  render(): React.ReactElement {
     const props = this.props
 
     const navigatorItemContainer = (
       <div
         key='navigatorItem'
+        id={`navigator-item-${TP.toVarSafeComponentId(this.props.templatePath)}`}
         style={{
-          position: 'relative',
-          width: '100%',
-          display: props.ancestorCollapsed ? 'none' : 'initial',
+          ...props.windowStyle,
         }}
       >
         <NavigatorItem
