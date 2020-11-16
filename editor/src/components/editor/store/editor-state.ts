@@ -140,7 +140,10 @@ import {
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
-import { TemplatePathArrayKeepDeepEquality } from '../../../core/shared/deep-equality-instances'
+import {
+  DerivedStateKeepDeepEquality,
+  TemplatePathArrayKeepDeepEquality,
+} from '../../../core/shared/deep-equality-instances'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -1189,11 +1192,6 @@ export interface OriginalCanvasAndLocalFrame {
   canvasFrame?: CanvasRectangle
 }
 
-type EditorAndDerivedState = {
-  editor: EditorState
-  derived: DerivedState
-}
-
 export function getElementWarnings(
   rootMetadata: JSXMetadata,
 ): ComplexMap<TemplatePath, ElementWarnings> {
@@ -1259,14 +1257,8 @@ export function deriveState(
   )
 
   const derived: DerivedState = {
-    navigatorTargets: TemplatePathArrayKeepDeepEquality(
-      derivedState.navigatorTargets,
-      navigatorTargets,
-    ).value,
-    visibleNavigatorTargets: TemplatePathArrayKeepDeepEquality(
-      derivedState.visibleNavigatorTargets,
-      visibleNavigatorTargets,
-    ).value,
+    navigatorTargets: navigatorTargets,
+    visibleNavigatorTargets: visibleNavigatorTargets,
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
@@ -1275,7 +1267,7 @@ export function deriveState(
     elementWarnings: getElementWarnings(getMetadata(editor)),
   }
 
-  const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)
+  const sanitizedDerivedState = DerivedStateKeepDeepEquality(derivedState, derived).value
 
   return sanitizedDerivedState
 }
