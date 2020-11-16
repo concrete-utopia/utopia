@@ -200,10 +200,10 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
   render() {
     return (
       <div
-        className='code-editor'
         style={{
           flexGrow: 1,
           display: 'flex',
+          flexDirection: 'column',
           justifyContent: 'stretch',
           alignItems: 'stretch',
           overflowY: 'scroll',

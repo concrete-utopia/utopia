@@ -59,6 +59,9 @@ const config = {
     propertyControlsInfo: hot
       ? ['react-hot-loader/patch', './src/templates/property-controls-info.tsx']
       : './src/templates/property-controls-info.tsx',
+    monacoEditorIframe: hot
+      ? ['react-hot-loader/patch', './src/templates/monaco-editor-iframe.tsx']
+      : './src/templates/monaco-editor-iframe.tsx',
     tsWorker: './src/core/workers/ts/ts.worker.ts',
     parserPrinterWorker: './src/core/workers/parser-printer/parser-printer.worker.ts',
     linterWorker: './src/core/workers/linter/linter.worker.ts',
@@ -115,6 +118,15 @@ const config = {
       scriptLoading: 'defer',
       template: './src/templates/property-controls-info.html',
       filename: 'property-controls-info.html',
+      minify: false,
+    }),
+    new HtmlWebpackPlugin({
+      // Run it again to generate the preview.html
+      chunks: ['monacoEditorIframe'],
+      inject: 'head', // Add the script tags to the end of the <head>
+      scriptLoading: 'defer',
+      template: './src/templates/monaco-editor-iframe.html',
+      filename: 'monaco-editor-iframe.html',
       minify: false,
     }),
     new ScriptExtHtmlWebpackPlugin({

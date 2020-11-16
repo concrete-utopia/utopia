@@ -46,10 +46,14 @@ import { ProjectContentTreeRoot } from '../assets'
 import {
   BridgeTowardsMainEditor,
   CodeEditorAction,
+  sendMonacoPropsMessage,
+  useBridgeFromMainEditor,
   useBridgeTowardsIframe,
 } from './code-editor-bridge'
+import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
+import urljoin = require('url-join')
 
-interface JSONStringifiedCodeEditorProps {
+export interface JSONStringifiedCodeEditorProps {
   relevantPanel: EditorPanel
   runtimeErrors: Array<RuntimeErrorInfo>
   canvasConsoleLogs: Array<ConsoleLog>
@@ -71,13 +75,12 @@ interface JSONStringifiedCodeEditorProps {
   npmDependencies: PossiblyUnversionedNpmDependency[]
 }
 
-export interface CodeEditorEntryPointProps {
-  jsonStringifiedProps: string
-}
+export interface CodeEditorEntryPointProps {}
 
-const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
+export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
   'CodeEditorEntryPoint',
   (props) => {
+    const propsFromMainEditor = useBridgeFromMainEditor()
     const dispatch = BridgeTowardsMainEditor.sendCodeEditorAction
 
     const setHighlightedViews = React.useCallback(
@@ -154,37 +157,70 @@ const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
       [dispatch],
     )
 
-    const jsonProps = JSON.parse(props.jsonStringifiedProps) as JSONStringifiedCodeEditorProps
+    if (propsFromMainEditor == null) {
+      return null
+    } else {
+      return (
+        <ScriptEditor
+          sendLinterRequestMessage={sendLinterRequestMessage}
+          setHighlightedViews={setHighlightedViews}
+          selectComponents={selectComponents}
+          onSave={onSave}
+          openEditorTab={openEditorTab}
+          setCodeEditorVisibility={setCodeEditorVisibility}
+          setFocus={setFocusCallback}
+          saveCursorPosition={saveCursorPosition}
+          {...propsFromMainEditor}
+        />
+      )
+    }
+  },
+)
+
+const CodeEditorIframeID = 'code-editor-iframe'
+
+const CodeEditorIframe = betterReactMemo<{ propsToSend: JSONStringifiedCodeEditorProps }>(
+  'CodeEditorIframe',
+  (props) => {
+    const ref = React.useRef<HTMLIFrameElement>(null)
+    // set up communications with the iframe
+    useBridgeTowardsIframe()
+
+    React.useEffect(() => {
+      // ReactDOM.render(
+      //   <CodeEditorEntryPoint {...props} />,
+      //   document.getElementById('code-editor-iframe-entry'),
+      // )
+      if (ref.current != null) {
+        // eslint-disable-next-line no-unused-expressions
+        ref.current.contentWindow?.postMessage(sendMonacoPropsMessage(props.propsToSend), '*')
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [...Object.values(props.propsToSend)])
+    // return <div id='code-editor-iframe-entry' style={{ display: 'flex', flex: 1 }} />
+
+    const iframeSrc = urljoin(MONACO_EDITOR_IFRAME_BASE_URL, 'editor', 'monaco-editor-iframe.html')
 
     return (
-      <ScriptEditor
-        sendLinterRequestMessage={sendLinterRequestMessage}
-        setHighlightedViews={setHighlightedViews}
-        selectComponents={selectComponents}
-        onSave={onSave}
-        openEditorTab={openEditorTab}
-        setCodeEditorVisibility={setCodeEditorVisibility}
-        setFocus={setFocusCallback}
-        saveCursorPosition={saveCursorPosition}
-        {...jsonProps}
+      <iframe
+        ref={ref}
+        key={CodeEditorIframeID}
+        id={CodeEditorIframeID}
+        // width='0px'
+        // height='0px'
+        src={iframeSrc}
+        allow='autoplay'
+        style={{
+          flex: 1,
+          backgroundColor: 'transparent',
+          // width: '0px',
+          // height: '0px',
+          borderWidth: 0,
+        }}
       />
     )
   },
 )
-
-const CodeEditorIframe = betterReactMemo<CodeEditorEntryPointProps>('CodeEditorIframe', (props) => {
-  // set up communications with the iframe
-  useBridgeTowardsIframe()
-
-  React.useEffect(() => {
-    ReactDOM.render(
-      <CodeEditorEntryPoint {...props} />,
-      document.getElementById('code-editor-iframe-entry'),
-    )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...Object.values(props)])
-  return <div id='code-editor-iframe-entry' style={{ display: 'flex', flex: 1 }} />
-})
 
 export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) => {
   const runtimeErrors: RuntimeErrorInfo[] = []
@@ -241,7 +277,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
 
   const npmDependencies = usePossiblyResolvedPackageDependencies()
 
-  const propsToStringify: JSONStringifiedCodeEditorProps = {
+  const propsToSend: JSONStringifiedCodeEditorProps = {
     relevantPanel: 'uicodeeditor',
     runtimeErrors: runtimeErrors,
     canvasConsoleLogs: canvasConsoleLogs,
@@ -263,11 +299,9 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     npmDependencies: npmDependencies,
   }
 
-  const stringifiedProps = JSON.stringify(propsToStringify)
-
   return (
     <>
-      <CodeEditorIframe jsonStringifiedProps={stringifiedProps} />
+      <CodeEditorIframe propsToSend={propsToSend} />
     </>
   )
 })

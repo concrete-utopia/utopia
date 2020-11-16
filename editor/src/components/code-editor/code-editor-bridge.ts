@@ -14,6 +14,7 @@ import type {
   UpdateFile,
 } from '../editor/action-types'
 import { useEditorState } from '../editor/store/store-hook'
+import { JSONStringifiedCodeEditorProps } from './code-editor-container'
 
 export type CodeEditorAction =
   | SelectComponents
@@ -90,6 +91,46 @@ export function useBridgeTowardsIframe(): void {
       window.removeEventListener('message', listener)
     }
   }, [dispatch])
+}
+
+interface SendMonacoPropsMessage {
+  type: 'SEND_MONACO_PROPS'
+  props: JSONStringifiedCodeEditorProps
+}
+
+export function sendMonacoPropsMessage(
+  props: JSONStringifiedCodeEditorProps,
+): SendMonacoPropsMessage {
+  return {
+    type: 'SEND_MONACO_PROPS',
+    props: props,
+  }
+}
+
+function isSendMonacoPropsMessage(message: unknown): message is SendMonacoPropsMessage {
+  return (
+    message != null &&
+    (message as SendMonacoPropsMessage)?.type === 'SEND_MONACO_PROPS' &&
+    typeof (message as SendMonacoPropsMessage)?.props === 'object'
+  )
+}
+
+export function useBridgeFromMainEditor(): JSONStringifiedCodeEditorProps | null {
+  const [latestProps, setLatestProps] = React.useState<JSONStringifiedCodeEditorProps | null>(null)
+
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (isSendMonacoPropsMessage(event.data)) {
+        setLatestProps(event.data.props)
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return function cleanup() {
+      window.removeEventListener('message', handleMessage)
+    }
+  }, [])
+
+  return latestProps
 }
 
 export const BridgeTowardsMainEditor = {
