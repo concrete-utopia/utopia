@@ -24,7 +24,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
   'Component Isolation Mode': true,
-  'Component Navigator': false,
+  'Component Navigator': true,
   'Re-parse Project Button': false,
 }
 
