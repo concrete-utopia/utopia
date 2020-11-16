@@ -193,7 +193,14 @@ const CodeEditorIframe = betterReactMemo<{ propsToSend: JSONStringifiedCodeEdito
       // )
       if (ref.current != null) {
         // eslint-disable-next-line no-unused-expressions
+        performance.mark('SEND_MONACO_MESSAGE_START')
         ref.current.contentWindow?.postMessage(sendMonacoPropsMessage(props.propsToSend), '*')
+        performance.mark('SEND_MONACO_MESSAGE_END')
+        performance.measure(
+          'SEND_MONACO_MESSAGE',
+          'SEND_MONACO_MESSAGE_START',
+          'SEND_MONACO_MESSAGE_END',
+        )
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [...Object.values(props.propsToSend)])

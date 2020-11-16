@@ -135,6 +135,6 @@ export function useBridgeFromMainEditor(): JSONStringifiedCodeEditorProps | null
 
 export const BridgeTowardsMainEditor = {
   sendCodeEditorAction: (actions: Array<CodeEditorAction>): void => {
-    window.postMessage(sendCodeEditorActionMessage(actions), '*')
+    window.parent.postMessage(sendCodeEditorActionMessage(actions), '*')
   },
 }
