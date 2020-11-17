@@ -10,12 +10,14 @@ import {
 import { intrinsicHTMLElementNamesAsStrings } from '../../shared/dom-utils'
 import {
   applicative2Either,
+  applicative3Either,
   bimapEither,
   Either,
   flatMapEither,
   foldEither,
   forEachRight,
   isLeft,
+  isRight,
   left,
   mapEither,
   right,
@@ -56,6 +58,7 @@ import {
   isIntrinsicElement,
   clearAttributesUniqueIDs,
   clearAttributesSourceMaps,
+  jsxConditionalExpression,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -1265,8 +1268,6 @@ function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsT
       TS.isJsxFragment(node)
     ) {
       result.push(node)
-    } else {
-      return left(`Invalid content in JSX.`)
     }
   }
   return right(result)
@@ -1570,11 +1571,60 @@ export function parseOutJSXElements(
             break
           }
           case TS.SyntaxKind.JsxExpression: {
-            const possibleExpression = produceArbitraryBlockFromJsxExpression(elem)
-            if (isLeft(possibleExpression)) {
-              return possibleExpression
+            const parsedArbitraryBlock = produceArbitraryBlockFromJsxExpression(elem)
+            if (isRight(parsedArbitraryBlock)) {
+              if (elem.expression?.kind === TS.SyntaxKind.ConditionalExpression) {
+                const possibleExpression = ((): Either<string, SuccessfullyParsedElement> => {
+                  const arbitraryBlock = parsedArbitraryBlock.value.value
+                  if (arbitraryBlock.type === 'JSX_ARBITRARY_BLOCK') {
+                    const expression = elem.expression as TS.ConditionalExpression
+                    if (expression.kind !== TS.SyntaxKind.ConditionalExpression) {
+                      return left('this expression is not a conditional')
+                    } else {
+                      return applicative3Either<
+                        string,
+                        JSXArbitraryBlock,
+                        SuccessfullyParsedElement[],
+                        SuccessfullyParsedElement[],
+                        SuccessfullyParsedElement
+                      >(
+                        (condition, whenTrue, whenFalse) => {
+                          const conditionalExpression = jsxConditionalExpression(
+                            condition,
+                            whenTrue[0].value,
+                            whenFalse[0].value,
+                          )
+                          return successfullyParsedElement(
+                            sourceFile,
+                            expression,
+                            conditionalExpression,
+                          )
+                        },
+                        flatMapEither((condition) => {
+                          // the problem is here: the condition is a TS expression, not JSX
+                          return condition.length === 1 &&
+                            condition[0].value.type === 'JSX_ARBITRARY_BLOCK'
+                            ? right(condition[0].value)
+                            : left(
+                                'Sorry but we can only parse JSX_ARBITRARY_BLOCK as the condition! Talk to Alec',
+                              )
+                        }, innerParse([expression.condition])),
+                        innerParse([expression.whenTrue]),
+                        innerParse([expression.whenFalse]),
+                      )
+                    }
+                  } else {
+                    throw new Error('Type should be expression')
+                  }
+                })()
+                if (isRight(possibleExpression)) {
+                  addParsedElement(possibleExpression.value)
+                }
+              } else {
+                addParsedElement(parsedArbitraryBlock.value)
+              }
             } else {
-              addParsedElement(possibleExpression.value)
+              return parsedArbitraryBlock
             }
             break
           }

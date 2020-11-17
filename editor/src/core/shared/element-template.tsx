@@ -67,6 +67,14 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
   }
 }
 
+interface JSXAttributeJavaScript {
+  javascript: string
+  transpiledJavascript: string
+  definedElsewhere: Array<string>
+  sourceMap: RawSourceMap | null
+  uniqueID: string
+}
+
 export interface JSXAttributeOtherJavaScript {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   javascript: string
@@ -88,6 +96,28 @@ export function jsxAttributeOtherJavaScript(
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
+    uniqueID: UUID(),
+  }
+}
+
+export interface JSXConditionalExpression {
+  type: 'JSX_CONDITIONAL_EXPRESSION'
+  condition: JSXArbitraryBlock // <--- this is going to suck
+  whenTrue: JSXElementChild
+  whenFalse: JSXElementChild
+  uniqueID: string
+}
+
+export function jsxConditionalExpression(
+  condition: JSXArbitraryBlock,
+  whenTrue: JSXElementChild,
+  whenFalse: JSXElementChild,
+): JSXConditionalExpression {
+  return {
+    type: 'JSX_CONDITIONAL_EXPRESSION',
+    condition,
+    whenTrue,
+    whenFalse,
     uniqueID: UUID(),
   }
 }
@@ -554,7 +584,12 @@ export function jsxFragment(children: JSXElementChildren, longForm: boolean): JS
   }
 }
 
-export type JSXElementChild = JSXElement | JSXArbitraryBlock | JSXTextBlock | JSXFragment
+export type JSXElementChild =
+  | JSXElement
+  | JSXArbitraryBlock
+  | JSXConditionalExpression
+  | JSXTextBlock
+  | JSXFragment
 
 export function isJSXElement(element: JSXElementChild): element is JSXElement {
   return element.type === 'JSX_ELEMENT'
@@ -1107,6 +1142,11 @@ export function walkElement(
       fastForEach(Object.keys(element.elementsWithin), (childKey) =>
         walkElement(element.elementsWithin[childKey], parentPath, forEach),
       )
+      break
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      forEach(element.condition, parentPath)
+      forEach(element.whenTrue, parentPath)
+      forEach(element.whenFalse, parentPath)
       break
     default:
       const _exhaustiveCheck: never = element

@@ -52,6 +52,7 @@ import {
   propNamesForParam,
   JSXAttributeOtherJavaScript,
   jsxElementName,
+  jsxConditionalExpression,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -335,6 +336,17 @@ function jsxElementToExpression(
           closing,
         )
       }
+    }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      // TODO: make a nice JSXArbitraryBlockToExpression function that special cases for this.
+      const condition = jsxElementToExpression(element.condition, imports, stripUIDs)
+      const whenTrue = jsxElementToExpression(element.whenTrue, imports, stripUIDs)
+      const whenFalse = jsxElementToExpression(element.whenFalse, imports, stripUIDs)
+      // JSXText can only exist in JSX contexts
+      if (TS.isJsxText(condition) || TS.isJsxText(whenTrue) || TS.isJsxText(whenFalse)) {
+        throw new Error('Nope')
+      }
+      return TS.createJsxExpression(undefined, TS.createConditional(condition, whenTrue, whenFalse))
     }
     case 'JSX_ARBITRARY_BLOCK': {
       let createExpressionAsString: string
