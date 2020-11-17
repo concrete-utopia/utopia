@@ -141,6 +141,7 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
       case 's':
       case 'enter':
         if (cmd) {
+          event.preventDefault() // <- BB: I added this here to prevent the browser save dialog in the iframe, but we probably need a better solution
           clearTimeout(this.autoSaveTimer!)
           this.setState(
             (state) => {
