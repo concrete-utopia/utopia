@@ -1,74 +1,19 @@
-import { HigherOrderControl } from '../../components/canvas/canvas-types'
 import {
-  DerivedState,
-  transientCanvasState,
+  KeepDeepEqualityResult,
+  keepDeepEqualityResult,
+  KeepDeepEqualityCall,
+} from '../../../utils/deep-equality'
+import {
+  TemplatePathArrayKeepDeepEquality,
+  HigherOrderControlArrayKeepDeepEquality,
+} from '../../../utils/deep-equality-instances'
+import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
+import {
   TransientCanvasState,
   TransientFileState,
-} from '../../components/editor/store/editor-state'
-import {
-  arrayDeepEquality,
-  createCallFromEqualsFunction,
-  createCallFromIntrospectiveKeepDeep,
-  KeepDeepEqualityCall,
-  keepDeepEqualityResult,
-  KeepDeepEqualityResult,
-} from './deep-equality'
-import { PropertyPath, TemplatePath } from './project-file-types'
-import * as TP from './template-path'
-import * as PP from './property-path'
-import { JSXElementName } from './element-template'
-
-export const TemplatePathKeepDeepEquality: KeepDeepEqualityCall<TemplatePath> = createCallFromEqualsFunction(
-  (oldPath: TemplatePath, newPath: TemplatePath) => {
-    return TP.pathsEqual(oldPath, newPath)
-  },
-)
-
-export const PropertyPathKeepDeepEquality: KeepDeepEqualityCall<PropertyPath> = createCallFromEqualsFunction(
-  (oldPath: PropertyPath, newPath: PropertyPath) => {
-    return PP.pathsEqual(oldPath, newPath)
-  },
-)
-
-export function JSXElementNameKeepDeepEqualityCall(
-  oldName: JSXElementName,
-  newName: JSXElementName,
-): KeepDeepEqualityResult<JSXElementName> {
-  let areEqual: boolean = true
-
-  let baseVariable: string
-  if (oldName.baseVariable === newName.baseVariable) {
-    baseVariable = oldName.baseVariable
-  } else {
-    areEqual = false
-    baseVariable = newName.baseVariable
-  }
-
-  const propertyPathResult = PropertyPathKeepDeepEquality(
-    oldName.propertyPath,
-    newName.propertyPath,
-  )
-  const propertyPath = propertyPathResult.value
-  areEqual = areEqual && propertyPathResult.areEqual
-
-  if (areEqual) {
-    return keepDeepEqualityResult(oldName, true)
-  } else {
-    const elementName: JSXElementName = {
-      baseVariable: baseVariable,
-      propertyPath: propertyPath,
-    }
-    return keepDeepEqualityResult(elementName, areEqual)
-  }
-}
-
-export const TemplatePathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
-  TemplatePath
->> = arrayDeepEquality(TemplatePathKeepDeepEquality)
-
-export const HigherOrderControlArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
-  HigherOrderControl
->> = arrayDeepEquality(createCallFromIntrospectiveKeepDeep())
+  transientCanvasState,
+  DerivedState,
+} from './editor-state'
 
 export function TransientCanvasStateKeepDeepEquality(
   oldTransientState: TransientCanvasState,

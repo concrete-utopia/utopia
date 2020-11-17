@@ -20,8 +20,8 @@ import { betterReactMemo } from 'uuiui-deps'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
 import { useKeepDeepEqualityCall } from '../../inspector/common/property-path-hooks'
-import { nullableDeepEquality } from '../../../core/shared/deep-equality'
-import { JSXElementNameKeepDeepEqualityCall } from '../../../core/shared/deep-equality-instances'
+import { nullableDeepEquality } from '../../../utils/deep-equality'
+import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
 
 interface NavigatorItemWrapperProps {
   index: number

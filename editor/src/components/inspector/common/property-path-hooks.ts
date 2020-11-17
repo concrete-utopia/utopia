@@ -53,7 +53,6 @@ import {
   getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
 import { addUniquely } from '../../../core/shared/array-utils'
-import { KeepDeepEqualityCall } from '../../../core/shared/deep-equality'
 import {
   defaultEither,
   Either,
@@ -84,6 +83,7 @@ import type { PropertyPath, TemplatePath } from '../../../core/shared/project-fi
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { fastForEach } from '../../../core/shared/utils'
+import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'

@@ -140,10 +140,7 @@ import {
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
-import {
-  DerivedStateKeepDeepEquality,
-  TemplatePathArrayKeepDeepEquality,
-} from '../../../core/shared/deep-equality-instances'
+import { DerivedStateKeepDeepEquality } from './store-deep-equality-instances'
 
 export interface OriginalPath {
   originalTP: TemplatePath

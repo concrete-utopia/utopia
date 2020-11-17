@@ -1,5 +1,3 @@
-import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
-
 export interface KeepDeepEqualityResult<T> {
   value: T
   areEqual: boolean
@@ -20,13 +18,6 @@ export function createCallFromEqualsFunction<T>(check: EqualityCheck<T>): KeepDe
   return (oldValue, newValue) => {
     const areEqual = check(oldValue, newValue)
     return keepDeepEqualityResult(areEqual ? oldValue : newValue, areEqual)
-  }
-}
-
-export function createCallFromIntrospectiveKeepDeep<T>(): KeepDeepEqualityCall<T> {
-  return (oldValue, newValue) => {
-    const value = keepDeepReferenceEqualityIfPossible(oldValue, newValue)
-    return keepDeepEqualityResult(value, value === oldValue)
   }
 }
 
