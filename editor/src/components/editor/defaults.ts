@@ -58,7 +58,7 @@ export function isolatedComponentSceneElement(
 
   const props = {
     'data-uid': jsxAttributeValue('TRANSIENT_SCENE'),
-    'data-label': jsxAttributeValue(''),
+    'data-label': jsxAttributeValue(`Isolated ${componentName}`),
     component: jsxAttributeOtherJavaScript(
       componentName,
       `return ${componentName}`,

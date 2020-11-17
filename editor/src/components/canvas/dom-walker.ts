@@ -37,6 +37,7 @@ import {
 } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
+  UTOPIA_EXCLUDE_FROM_REPORT,
   UTOPIA_LABEL_KEY,
   UTOPIA_ORIGINAL_ID_KEY,
   UTOPIA_UID_KEY,
@@ -473,6 +474,12 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           return []
         }
         if (element instanceof HTMLElement) {
+          const excludeFromReportAttribute = getDOMAttribute(element, UTOPIA_EXCLUDE_FROM_REPORT)
+          if (excludeFromReportAttribute === 'true') {
+            // An element inserted during component isolation
+            return []
+          }
+
           // Determine the uid of this element if it has one.
           const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
           const parentUIDsAttribute = getDOMAttribute(element, UTOPIA_UID_PARENTS_KEY)

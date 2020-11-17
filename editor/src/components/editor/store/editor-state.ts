@@ -270,6 +270,7 @@ export interface ConsoleLog {
 export interface IsolatedComponent {
   componentName: string
   instance: InstancePath
+  scenePath: ScenePath
 }
 
 // FIXME We need to pull out ProjectState from here

@@ -53,6 +53,7 @@ interface SelectModeControlContainerProps extends ControlProps {
   maybeClearHighlightsOnHoverEnd: () => void
   duplicationState: DuplicationState | null
   dragState: MoveDragState | ResizeDragState | null
+  isolatedComponentScenePath: ScenePath | null
 }
 
 interface SelectModeControlContainerState {
@@ -237,9 +238,13 @@ export class SelectModeControlContainer extends React.Component<
     if (allElementsDirectlySelectable) {
       candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
     } else {
-      const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-      let rootElementsToFilter: TemplatePath[] = []
+      const scenes =
+        this.props.isolatedComponentScenePath == null
+          ? MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
+          : [this.props.isolatedComponentScenePath]
       let dynamicScenesWithFragmentRootViews: ScenePath[] = []
+      let allRoots: TemplatePath[] = []
+      let rootElementsToFilter: TemplatePath[] = []
       Utils.fastForEach(scenes, (path) => {
         const scene = MetadataUtils.findSceneByTemplatePath(
           this.props.componentMetadata.components,
@@ -255,9 +260,13 @@ export class SelectModeControlContainer extends React.Component<
           dynamicScenesWithFragmentRootViews.push(path)
         }
       })
-      const allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata).filter(
+      allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata).filter(
         (rootPath) => {
-          return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
+          if (this.props.isolatedComponentScenePath == null) {
+            return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
+          } else {
+            return TP.isAncestorOf(rootPath, this.props.isolatedComponentScenePath)
+          }
         },
       )
       let siblings: Array<TemplatePath> = []
@@ -653,8 +662,11 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-    let labelDirectlySelectable = true
+    const roots =
+      this.props.isolatedComponentScenePath == null
+        ? MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
+        : [this.props.isolatedComponentScenePath]
+    let labelDirectlySelectable = this.props.isolatedComponentScenePath == null
     let draggableViews = this.getSelectableViews(allElementsDirectlySelectable)
     if (!this.props.highlightsEnabled) {
       draggableViews = []

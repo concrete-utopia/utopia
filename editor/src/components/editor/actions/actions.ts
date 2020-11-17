@@ -1654,29 +1654,27 @@ export const UPDATE_FNS = {
       if (matchingComponent != null) {
         const components = getOpenUtopiaJSXComponentsFromState(editor)
         const storyBoardPath = getStoryboardTemplatePath(components)
-        const rootElementUIDProp = isJSXElement(matchingComponent.rootElement)
-          ? matchingComponent.rootElement.props['data-uid']
-          : null
-        const rootElementUID: string | null =
-          rootElementUIDProp != null && isJSXAttributeValue(rootElementUIDProp)
-            ? rootElementUIDProp.value
+        if (storyBoardPath != null) {
+          const rootElementUIDProp = isJSXElement(matchingComponent.rootElement)
+            ? matchingComponent.rootElement.props['data-uid']
             : null
-        const scenePath =
-          storyBoardPath == null
-            ? null
-            : TP.scenePath([TP.toUid(storyBoardPath), 'TRANSIENT_SCENE'])
-        const rootElementPath =
-          scenePath == null || rootElementUID == null
-            ? null
-            : TP.instancePath(scenePath, [rootElementUID])
-        const newSelection = rootElementPath == null ? [] : [rootElementPath]
-        return {
-          ...editor,
-          isolatedComponent: {
-            componentName: elementName,
-            instance: action.target,
-          },
-          selectedViews: newSelection,
+          const rootElementUID: string | null =
+            rootElementUIDProp != null && isJSXAttributeValue(rootElementUIDProp)
+              ? rootElementUIDProp.value
+              : null
+          const scenePath = TP.scenePath([TP.toUid(storyBoardPath), 'TRANSIENT_SCENE'])
+          const rootElementPath =
+            rootElementUID == null ? null : TP.instancePath(scenePath, [rootElementUID])
+          const newSelection = rootElementPath == null ? [] : [rootElementPath]
+          return {
+            ...editor,
+            isolatedComponent: {
+              componentName: elementName,
+              instance: action.target,
+              scenePath: scenePath,
+            },
+            selectedViews: newSelection,
+          }
         }
       }
     }
@@ -1688,6 +1686,11 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
+    const isolatedComponentScenePath = editor.isolatedComponent?.scenePath
+    const clearIsolatedComponent =
+      isolatedComponentScenePath != null &&
+      action.target.some((path) => !TP.isAncestorOf(path, isolatedComponentScenePath))
+
     let newlySelectedPaths: Array<TemplatePath>
     if (action.addToSelection) {
       newlySelectedPaths = action.target.reduce((working, path) => {
@@ -1703,6 +1706,7 @@ export const UPDATE_FNS = {
     const filteredNewlySelectedPaths = filterMultiSelectScenes(newlySelectedPaths)
     const updatedEditor: EditorModel = {
       ...editor,
+      isolatedComponent: clearIsolatedComponent ? null : editor.isolatedComponent,
       highlightedViews: newHighlightedViews,
       selectedViews: filteredNewlySelectedPaths,
       navigator:

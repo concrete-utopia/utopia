@@ -138,6 +138,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       offset: canvasPoint({ x: 0, y: 0 }),
       scale: 1,
       hiddenInstances: [],
+      isolatedComponentScenePath: null,
       editedTextElement: null,
       mountCount: 0,
       walkDOM: false,
@@ -170,6 +171,7 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
+      isolatedComponentScenePath: null,
     }
   }
 
