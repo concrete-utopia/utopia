@@ -641,8 +641,9 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                 style={{
                   position: 'absolute',
                   pointerEvents: 'none',
-                  left: 2,
+                  right: 0,
                   top: 5,
+                  textAlign: 'center',
                   fontWeight: 'bold',
                   fontSize: '9px',
                   width: '100%',
