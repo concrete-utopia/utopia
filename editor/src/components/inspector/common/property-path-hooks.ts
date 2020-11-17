@@ -53,6 +53,7 @@ import {
   getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
 import { addUniquely } from '../../../core/shared/array-utils'
+import { KeepDeepEqualityCall } from '../../../core/shared/deep-equality'
 import {
   defaultEither,
   Either,
@@ -829,6 +830,12 @@ export function useKeepReferenceEqualityIfPossible<T>(possibleNewValue: T, measu
   const oldValue = React.useRef<T | null>(null)
   oldValue.current = keepDeepReferenceEqualityIfPossible(oldValue.current, possibleNewValue)
   return oldValue.current!
+}
+
+export function useKeepDeepEqualityCall<T>(newValue: T, keepDeepCall: KeepDeepEqualityCall<T>): T {
+  const oldValue = React.useRef<T>(newValue)
+  oldValue.current = keepDeepCall(oldValue.current, newValue).value
+  return oldValue.current
 }
 
 export function useIsSubSectionVisible(sectionName: string): boolean {

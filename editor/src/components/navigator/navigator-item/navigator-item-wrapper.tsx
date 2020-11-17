@@ -19,6 +19,9 @@ import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/e
 import { betterReactMemo } from 'uuiui-deps'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
+import { useKeepDeepEqualityCall } from '../../inspector/common/property-path-hooks'
+import { nullableDeepEquality } from '../../../core/shared/deep-equality'
+import { JSXElementNameKeepDeepEqualityCall } from '../../../core/shared/deep-equality-instances'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -149,6 +152,11 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
 
     const isCollapsed = TP.containsPath(props.templatePath, collapsedViews)
 
+    const deepReferenceStaticElementName = useKeepDeepEqualityCall(
+      staticElementName,
+      nullableDeepEquality(JSXElementNameKeepDeepEqualityCall),
+    )
+
     const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
       index: props.index,
       editorDispatch: dispatch,
@@ -163,7 +171,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       supportsChildren: supportsChildren,
       noOfChildren: noOfChildren,
       elementOriginType: elementOriginType,
-      staticElementName: staticElementName,
+      staticElementName: deepReferenceStaticElementName,
       label: label,
       isFlexLayoutedContainer,
       yogaDirection,

@@ -56,3 +56,43 @@ export function arrayDeepEquality<T>(
     }
   }
 }
+
+export function nullableDeepEquality<T>(
+  elementCall: KeepDeepEqualityCall<T>,
+): KeepDeepEqualityCall<T | null> {
+  return (oldNullableValue, newNullableValue) => {
+    if (oldNullableValue === null) {
+      if (newNullableValue === null) {
+        return keepDeepEqualityResult(oldNullableValue, true)
+      } else {
+        return keepDeepEqualityResult(newNullableValue, false)
+      }
+    } else {
+      if (newNullableValue === null) {
+        return keepDeepEqualityResult(newNullableValue, false)
+      } else {
+        return elementCall(oldNullableValue, newNullableValue)
+      }
+    }
+  }
+}
+
+export function undefinableDeepEquality<T>(
+  elementCall: KeepDeepEqualityCall<T>,
+): KeepDeepEqualityCall<T | undefined> {
+  return (oldUndefinableValue, newUndefinableValue) => {
+    if (oldUndefinableValue === undefined) {
+      if (newUndefinableValue === undefined) {
+        return keepDeepEqualityResult(oldUndefinableValue, true)
+      } else {
+        return keepDeepEqualityResult(newUndefinableValue, false)
+      }
+    } else {
+      if (newUndefinableValue === undefined) {
+        return keepDeepEqualityResult(newUndefinableValue, false)
+      } else {
+        return elementCall(oldUndefinableValue, newUndefinableValue)
+      }
+    }
+  }
+}
