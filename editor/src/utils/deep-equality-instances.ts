@@ -52,7 +52,7 @@ export function JSXElementNameKeepDeepEqualityCall(
       baseVariable: baseVariable,
       propertyPath: propertyPath,
     }
-    return keepDeepEqualityResult(elementName, areEqual)
+    return keepDeepEqualityResult(elementName, false)
   }
 }
 
