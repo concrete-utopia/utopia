@@ -189,6 +189,46 @@ export function renderCoreElement(
         element.text,
       )
     }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const expressionEvaluated = runJSXArbitraryBlock(requireResult, element.condition, inScope)
+      if (expressionEvaluated) {
+        return renderCoreElement(
+          element.whenTrue,
+          templatePath,
+          rootScope,
+          inScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          fileBlobs,
+          validPaths,
+          uid,
+          reactChildren,
+          metadataContext,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+        )
+      } else {
+        return renderCoreElement(
+          element.whenFalse,
+          templatePath,
+          rootScope,
+          inScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          fileBlobs,
+          validPaths,
+          uid,
+          reactChildren,
+          metadataContext,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+        )
+      }
+    }
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -318,7 +358,7 @@ function utopiaCanvasJSXLookup(
   }
 }
 
-function runJSXArbitraryBlock(
+export function runJSXArbitraryBlock(
   requireResult: MapLike<any>,
   block: JSXArbitraryBlock,
   currentScope: MapLike<any>,
