@@ -46,7 +46,7 @@ import { ProjectContentTreeRoot } from '../assets'
 import {
   BridgeTowardsMainEditor,
   CodeEditorAction,
-  sendMonacoPropsMessage,
+  sendMonacoFullPropsMessage,
   useBridgeFromMainEditor,
   useBridgeTowardsIframe,
 } from './code-editor-bridge'
@@ -184,27 +184,27 @@ const CodeEditorIframe = betterReactMemo<{ propsToSend: JSONStringifiedCodeEdito
   (props) => {
     const ref = React.useRef<HTMLIFrameElement>(null)
     // set up communications with the iframe
-    useBridgeTowardsIframe()
+    useBridgeTowardsIframe(props.propsToSend, ref)
 
-    React.useEffect(() => {
-      // ReactDOM.render(
-      //   <CodeEditorEntryPoint {...props} />,
-      //   document.getElementById('code-editor-iframe-entry'),
-      // )
-      if (ref.current != null) {
-        // eslint-disable-next-line no-unused-expressions
-        performance.mark('SEND_MONACO_MESSAGE_START')
-        ref.current.contentWindow?.postMessage(sendMonacoPropsMessage(props.propsToSend), '*')
-        performance.mark('SEND_MONACO_MESSAGE_END')
-        performance.measure(
-          'SEND_MONACO_MESSAGE',
-          'SEND_MONACO_MESSAGE_START',
-          'SEND_MONACO_MESSAGE_END',
-        )
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [...Object.values(props.propsToSend)])
-    // return <div id='code-editor-iframe-entry' style={{ display: 'flex', flex: 1 }} />
+    // React.useEffect(() => {
+    //   // ReactDOM.render(
+    //   //   <CodeEditorEntryPoint {...props} />,
+    //   //   document.getElementById('code-editor-iframe-entry'),
+    //   // )
+    //   if (ref.current != null) {
+    //     // eslint-disable-next-line no-unused-expressions
+    //     performance.mark('SEND_MONACO_MESSAGE_START')
+    //     ref.current.contentWindow?.postMessage(sendMonacoFullPropsMessage(props.propsToSend), '*')
+    //     performance.mark('SEND_MONACO_MESSAGE_END')
+    //     performance.measure(
+    //       'SEND_MONACO_MESSAGE',
+    //       'SEND_MONACO_MESSAGE_START',
+    //       'SEND_MONACO_MESSAGE_END',
+    //     )
+    //   }
+    //   // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [...Object.values(props.propsToSend)])
+    // // return <div id='code-editor-iframe-entry' style={{ display: 'flex', flex: 1 }} />
 
     const iframeSrc = urljoin(MONACO_EDITOR_IFRAME_BASE_URL, 'editor', 'monaco-editor-iframe.html')
 

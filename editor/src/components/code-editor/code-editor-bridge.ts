@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as fastDeepEquals from 'fast-deep-equal'
 import { fastForEach } from '../../core/shared/utils'
 import { SetFocus } from '../common/actions'
 import type {
@@ -73,7 +74,17 @@ function validateActions(actions: Array<CodeEditorAction>): void {
   })
 }
 
-export function useBridgeTowardsIframe(): void {
+interface RequestFullUpdateMessage {
+  type: 'REQUEST_FULL_UPDATE'
+}
+
+const requestFullUpdateMessage = { type: 'REQUEST_FULL_UPDATE' }
+
+function isRequestFullUpdateMessage(message: unknown): message is RequestFullUpdateMessage {
+  return message != null && (message as RequestFullUpdateMessage)?.type === 'REQUEST_FULL_UPDATE'
+}
+
+function useListenToCodeEditorMessages(): void {
   const dispatch = useEditorState((store) => store.dispatch, 'useBridgeTowardsIframe dispatch')
 
   React.useEffect(() => {
@@ -93,44 +104,154 @@ export function useBridgeTowardsIframe(): void {
   }, [dispatch])
 }
 
-interface SendMonacoPropsMessage {
-  type: 'SEND_MONACO_PROPS'
+function useSendFullPropsAtMount(
+  props: JSONStringifiedCodeEditorProps,
+  ref: React.RefObject<HTMLIFrameElement>,
+) {
+  const propsRef = React.useRef<JSONStringifiedCodeEditorProps>(props)
+  propsRef.current = props
+  React.useEffect(
+    () => {
+      const listener = (event: MessageEvent) => {
+        if (isRequestFullUpdateMessage(event.data)) {
+          // eslint-disable-next-line no-unused-expressions
+          ref.current?.contentWindow?.postMessage(sendMonacoFullPropsMessage(props), '*')
+        }
+      }
+      window.addEventListener('message', listener)
+      return function cleanup() {
+        window.removeEventListener('message', listener)
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ref],
+  )
+}
+
+function useSendPartialPropsWhenChanged(
+  props: JSONStringifiedCodeEditorProps,
+  ref: React.RefObject<HTMLIFrameElement>,
+) {
+  const lastPropsValueRef = React.useRef<JSONStringifiedCodeEditorProps>(props)
+
+  React.useEffect(
+    () => {
+      let propsToUpdate: Partial<JSONStringifiedCodeEditorProps> = {}
+      ;(Object.keys(props) as Array<keyof JSONStringifiedCodeEditorProps>).forEach((key) => {
+        const newValue = props[key]
+        const oldValue = lastPropsValueRef.current[key]
+        if (oldValue !== newValue) {
+          // insert the key - value into the props object we want to serialize and send down to the monaco iframe
+          ;(propsToUpdate as any)[key] = newValue // sorry for the any!
+        }
+      })
+      if (Object.keys(propsToUpdate).length > 0) {
+        // we have props that are updated, let's send those (and only those) to monaco iframe
+        // eslint-disable-next-line no-unused-expressions
+        ref.current?.contentWindow?.postMessage(sendMonacoPartialPropsMessage(propsToUpdate), '*')
+      }
+      lastPropsValueRef.current = props
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ref, ...Object.values(props)],
+  )
+}
+
+function useSendPropUpdates(
+  props: JSONStringifiedCodeEditorProps,
+  ref: React.RefObject<HTMLIFrameElement>,
+): void {
+  useSendFullPropsAtMount(props, ref)
+  useSendPartialPropsWhenChanged(props, ref)
+}
+
+export function useBridgeTowardsIframe(
+  props: JSONStringifiedCodeEditorProps,
+  ref: React.RefObject<HTMLIFrameElement>,
+): void {
+  useListenToCodeEditorMessages()
+  useSendPropUpdates(props, ref)
+}
+
+interface SendMonacoFullPropsMessage {
+  type: 'SEND_MONACO_FULL_PROPS'
   props: JSONStringifiedCodeEditorProps
 }
 
-export function sendMonacoPropsMessage(
+export function sendMonacoFullPropsMessage(
   props: JSONStringifiedCodeEditorProps,
-): SendMonacoPropsMessage {
+): SendMonacoFullPropsMessage {
   return {
-    type: 'SEND_MONACO_PROPS',
+    type: 'SEND_MONACO_FULL_PROPS',
     props: props,
   }
 }
 
-function isSendMonacoPropsMessage(message: unknown): message is SendMonacoPropsMessage {
+function isSendMonacoFullPropsMessage(message: unknown): message is SendMonacoFullPropsMessage {
   return (
     message != null &&
-    (message as SendMonacoPropsMessage)?.type === 'SEND_MONACO_PROPS' &&
-    typeof (message as SendMonacoPropsMessage)?.props === 'object'
+    (message as SendMonacoFullPropsMessage)?.type === 'SEND_MONACO_FULL_PROPS' &&
+    typeof (message as SendMonacoFullPropsMessage)?.props === 'object'
   )
 }
 
-export function useBridgeFromMainEditor(): JSONStringifiedCodeEditorProps | null {
-  const [latestProps, setLatestProps] = React.useState<JSONStringifiedCodeEditorProps | null>(null)
+interface SendMonacoPartialPropsMessage {
+  type: 'SEND_MONACO_PARTIAL_PROPS'
+  partialProps: Partial<JSONStringifiedCodeEditorProps>
+}
+
+export function sendMonacoPartialPropsMessage(
+  props: Partial<JSONStringifiedCodeEditorProps>,
+): SendMonacoPartialPropsMessage {
+  return {
+    type: 'SEND_MONACO_PARTIAL_PROPS',
+    partialProps: props,
+  }
+}
+
+function isSendMonacoPartialPropsMessage(
+  message: unknown,
+): message is SendMonacoPartialPropsMessage {
+  return (
+    message != null &&
+    (message as SendMonacoPartialPropsMessage)?.type === 'SEND_MONACO_PARTIAL_PROPS' &&
+    typeof (message as SendMonacoPartialPropsMessage)?.partialProps === 'object'
+  )
+}
+
+function useAskForFullUpdateOnMount() {
+  return React.useEffect(() => {
+    window.parent.postMessage(requestFullUpdateMessage, '*')
+  }, [])
+}
+
+function usePropsFromMainEditor(): JSONStringifiedCodeEditorProps | null {
+  const [, forceUpdate] = React.useReducer((c) => c + 1, 0) as [never, () => void]
+
+  const propsRef = React.useRef<JSONStringifiedCodeEditorProps | null>(null)
 
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (isSendMonacoPropsMessage(event.data)) {
-        setLatestProps(event.data.props)
+      if (isSendMonacoFullPropsMessage(event.data)) {
+        propsRef.current = event.data.props
+        forceUpdate()
+      } else if (isSendMonacoPartialPropsMessage(event.data) && propsRef.current != null) {
+        propsRef.current = { ...propsRef.current, ...event.data.partialProps }
+        forceUpdate()
       }
     }
     window.addEventListener('message', handleMessage)
     return function cleanup() {
       window.removeEventListener('message', handleMessage)
     }
-  }, [])
+  }, [forceUpdate])
 
-  return latestProps
+  return propsRef.current
+}
+
+export function useBridgeFromMainEditor(): JSONStringifiedCodeEditorProps | null {
+  useAskForFullUpdateOnMount()
+  return usePropsFromMainEditor()
 }
 
 export const BridgeTowardsMainEditor = {
