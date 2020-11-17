@@ -70,7 +70,7 @@ export function isolatedComponentSceneElement(
     [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),
     style: jsxAttributeValue({
       position: 'absolute',
-      boxShadow: '0px 0px 6px 4px rgb(0, 0, 0, 0.29)',
+      boxShadow: '0px 0px 0px 1px rgba(255, 255, 255, 0.3), 0px 0px 6px 4px rgb(0, 0, 0, 0.29)',
       ...frame,
     }),
   }

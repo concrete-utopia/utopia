@@ -6,7 +6,7 @@ import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared
 import { TemplatePath, ScenePath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
-import { DuplicationState } from '../../editor/store/editor-state'
+import { DuplicationState, IsolatedComponent } from '../../editor/store/editor-state'
 import * as TP from '../../../core/shared/template-path'
 import { CanvasPositions, MoveDragState, ResizeDragState, moveDragState } from '../canvas-types'
 import { Guidelines, Guideline } from '../guideline'
@@ -53,7 +53,7 @@ interface SelectModeControlContainerProps extends ControlProps {
   maybeClearHighlightsOnHoverEnd: () => void
   duplicationState: DuplicationState | null
   dragState: MoveDragState | ResizeDragState | null
-  isolatedComponentScenePath: ScenePath | null
+  isolatedComponent: IsolatedComponent | null
 }
 
 interface SelectModeControlContainerState {
@@ -239,9 +239,9 @@ export class SelectModeControlContainer extends React.Component<
       candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
     } else {
       const scenes =
-        this.props.isolatedComponentScenePath == null
+        this.props.isolatedComponent == null
           ? MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-          : [this.props.isolatedComponentScenePath]
+          : [this.props.isolatedComponent.scenePath]
       let dynamicScenesWithFragmentRootViews: ScenePath[] = []
       let allRoots: TemplatePath[] = []
       let rootElementsToFilter: TemplatePath[] = []
@@ -262,10 +262,10 @@ export class SelectModeControlContainer extends React.Component<
       })
       allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata).filter(
         (rootPath) => {
-          if (this.props.isolatedComponentScenePath == null) {
+          if (this.props.isolatedComponent == null) {
             return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
           } else {
-            return TP.isAncestorOf(rootPath, this.props.isolatedComponentScenePath)
+            return TP.isAncestorOf(rootPath, this.props.isolatedComponent.scenePath)
           }
         },
       )
@@ -365,6 +365,7 @@ export class SelectModeControlContainer extends React.Component<
           selectedViews={this.props.selectedViews}
           imports={this.props.imports}
           showAdditionalControls={this.props.showAdditionalControls}
+          isolatedComponent={this.props.isolatedComponent}
         />
       )
     } else {
@@ -399,6 +400,7 @@ export class SelectModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
+        isolatedComponent={this.props.isolatedComponent}
       />
     )
   }
@@ -435,6 +437,7 @@ export class SelectModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
+        isolatedComponent={this.props.isolatedComponent}
       />
     )
   }
@@ -663,10 +666,10 @@ export class SelectModeControlContainer extends React.Component<
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
     const roots =
-      this.props.isolatedComponentScenePath == null
+      this.props.isolatedComponent == null
         ? MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-        : [this.props.isolatedComponentScenePath]
-    let labelDirectlySelectable = this.props.isolatedComponentScenePath == null
+        : [this.props.isolatedComponent.scenePath]
+    let labelDirectlySelectable = this.props.isolatedComponent == null
     let draggableViews = this.getSelectableViews(allElementsDirectlySelectable)
     if (!this.props.highlightsEnabled) {
       draggableViews = []

@@ -12,6 +12,7 @@ import * as TP from '../../../core/shared/template-path'
 import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
+import { IsolatedComponent } from '../../editor/store/editor-state'
 
 interface ComponentAreaControlProps {
   target: TemplatePath
@@ -39,6 +40,7 @@ interface ComponentAreaControlProps {
   selectedViews: TemplatePath[]
   imports: Imports
   showAdditionalControls: boolean
+  isolatedComponent: IsolatedComponent | null
   testID?: string
 }
 
@@ -160,13 +162,23 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     selectedViews: Array<TemplatePath>,
     event: React.MouseEvent<HTMLDivElement>,
   ): void {
+    // If operating on the isolated scene itself we should apply that change to the original target
+    let targets = selectedViews
+    let actualTarget = this.props.target
+    if (this.props.isolatedComponent != null) {
+      const { instance: isolatedTarget, scenePath: isolatedScene } = this.props.isolatedComponent
+      const willActOnIsolatedScene = (path: TemplatePath) =>
+        TP.pathsEqual(path, isolatedScene) || TP.isChildOf(path, isolatedScene)
+      if (selectedViews.length === 1 && willActOnIsolatedScene(selectedViews[0])) {
+        targets = [isolatedTarget]
+      }
+      if (willActOnIsolatedScene(this.props.target)) {
+        actualTarget = isolatedTarget
+      }
+    }
+
     const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
-    this.props.onMouseDown(
-      selectedViews,
-      this.props.target,
-      cursorPosition.canvasPositionRaw,
-      event,
-    )
+    this.props.onMouseDown(targets, actualTarget, cursorPosition.canvasPositionRaw, event)
   }
 
   getComponentAreaControl = (canShowInvisibleIndicator: boolean) => {

@@ -331,7 +331,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
                 : null
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
-            isolatedComponentScenePath={props.editor.isolatedComponent?.scenePath ?? null}
+            isolatedComponent={props.editor.isolatedComponent}
           />
         )
       }
@@ -348,6 +348,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
             }
             canvasOffset={props.editor.canvas.realCanvasOffset /* maybe roundedCanvasOffset? */}
             scale={props.editor.canvas.scale}
+            isolatedComponent={props.editor.isolatedComponent}
           />
         )
       }
