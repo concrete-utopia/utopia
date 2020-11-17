@@ -950,6 +950,7 @@ export const defaultElementWarnings: ElementWarnings = {
 
 export interface DerivedState {
   navigatorTargets: Array<TemplatePath>
+  visibleNavigatorTargets: Array<TemplatePath>
   canvas: {
     descendantsOfHiddenInstances: Array<TemplatePath>
     controls: Array<HigherOrderControl>
@@ -961,6 +962,7 @@ export interface DerivedState {
 function emptyDerivedState(editorState: EditorState): DerivedState {
   return {
     navigatorTargets: [],
+    visibleNavigatorTargets: [],
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
@@ -1248,13 +1250,23 @@ export function deriveState(
 ): EditorAndDerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
-  const componentKeys = Utils.keepReferenceIfShallowEqual(
-    derivedState.navigatorTargets,
-    MetadataUtils.createOrderedTemplatePathsFromElements(editor.jsxMetadataKILLME),
+  const {
+    navigatorTargets,
+    visibleNavigatorTargets,
+  } = MetadataUtils.createOrderedTemplatePathsFromElements(
+    editor.jsxMetadataKILLME,
+    editor.navigator.collapsedViews,
   )
 
   const derived: DerivedState = {
-    navigatorTargets: componentKeys,
+    navigatorTargets: keepDeepReferenceEqualityIfPossible(
+      derivedState.navigatorTargets,
+      navigatorTargets,
+    ),
+    visibleNavigatorTargets: keepDeepReferenceEqualityIfPossible(
+      derivedState.visibleNavigatorTargets,
+      visibleNavigatorTargets,
+    ),
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
@@ -1286,7 +1298,7 @@ export function deriveState(
 
       if (targets.length > 0) {
         const target = targets[0]
-        Utils.fastForEach(componentKeys, (path) => {
+        Utils.fastForEach(navigatorTargets, (path) => {
           if (isInstancePath(path)) {
             const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
             const uid = staticPath != null ? toUid(staticPath) : null
