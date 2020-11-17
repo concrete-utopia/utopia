@@ -278,6 +278,60 @@ export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
   }
 }
 
+export function clearJSXAttributeOtherJavaScriptSourceMaps(
+  attribute: JSXAttributeOtherJavaScript,
+): JSXAttributeOtherJavaScript {
+  return {
+    ...attribute,
+    sourceMap: null,
+  }
+}
+
+export function clearAttributeSourceMaps(attribute: JSXAttribute): JSXAttribute {
+  switch (attribute.type) {
+    case 'ATTRIBUTE_VALUE':
+      return attribute
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return clearJSXAttributeOtherJavaScriptSourceMaps(attribute)
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return jsxAttributeNestedArray(
+        attribute.content.map((elem) => {
+          switch (elem.type) {
+            case 'ARRAY_SPREAD':
+              return jsxArraySpread(clearAttributeSourceMaps(elem.value))
+            case 'ARRAY_VALUE':
+              return jsxArrayValue(clearAttributeSourceMaps(elem.value))
+            default:
+              const _exhaustiveCheck: never = elem
+              throw new Error(`Unhandled array element type ${JSON.stringify(elem)}`)
+          }
+        }),
+      )
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return jsxAttributeFunctionCall(
+        attribute.functionName,
+        attribute.parameters.map(clearAttributeSourceMaps),
+      )
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return jsxAttributeNestedObject(
+        attribute.content.map((prop) => {
+          switch (prop.type) {
+            case 'SPREAD_ASSIGNMENT':
+              return jsxSpreadAssignment(clearAttributeSourceMaps(prop.value))
+            case 'PROPERTY_ASSIGNMENT':
+              return jsxPropertyAssignment(prop.key, clearAttributeSourceMaps(prop.value))
+            default:
+              const _exhaustiveCheck: never = prop
+              throw new Error(`Unhandled property type ${JSON.stringify(prop)}`)
+          }
+        }),
+      )
+    default:
+      const _exhaustiveCheck: never = attribute
+      throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
+  }
+}
+
 export function isJSXAttributeValue(
   attribute: JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound,
 ): attribute is JSXAttributeValue<any> {
@@ -365,6 +419,10 @@ export function getDefinedElsewhereFromElement(element: JSXElement): Array<strin
 
 export function clearAttributesUniqueIDs(attributes: JSXAttributes): JSXAttributes {
   return objectMap(clearAttributeUniqueIDs, attributes)
+}
+
+export function clearAttributesSourceMaps(attributes: JSXAttributes): JSXAttributes {
+  return objectMap(clearAttributeSourceMaps, attributes)
 }
 
 export interface JSXElementName {

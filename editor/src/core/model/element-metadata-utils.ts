@@ -103,6 +103,21 @@ function fromDOMMergeCandidate(fromDOM: ElementInstanceMetadata): MergeCandidate
   return makeThat(fromDOM)
 }
 
+export const getChildrenOfCollapsedViews = (
+  templatePaths: TemplatePath[],
+  collapsedViews: Array<TemplatePath>,
+): Array<TemplatePath> => {
+  return Utils.flatMapArray((view) => {
+    return Utils.stripNulls(
+      templatePaths.map((childPath) => {
+        return TP.isAncestorOf(childPath, view) && !TP.pathsEqual(view, childPath)
+          ? childPath
+          : null
+      }),
+    )
+  }, collapsedViews)
+}
+
 const ElementsToDrillIntoForTextContent = ['div', 'span']
 
 export const MetadataUtils = {
@@ -742,33 +757,45 @@ export const MetadataUtils = {
   findStoryboardRoot(roots: Array<ComponentMetadata>): ComponentMetadata | null {
     return roots.find((root) => TP.pathsEqual(root.scenePath, EmptyScenePathForStoryboard)) ?? null
   },
-  createOrderedTemplatePathsFromElements(metadata: JSXMetadata): Array<TemplatePath> {
-    function getKeysOfElementAndDescendants(path: InstancePath): Array<InstancePath> {
+  createOrderedTemplatePathsFromElements(
+    metadata: JSXMetadata,
+    collapsedViews: Array<TemplatePath>,
+  ): { navigatorTargets: Array<TemplatePath>; visibleNavigatorTargets: Array<TemplatePath> } {
+    let navigatorTargets: Array<TemplatePath> = []
+    let visibleNavigatorTargets: Array<TemplatePath> = []
+
+    function walkAndAddKeys(path: InstancePath, collapsedAncestor: boolean): void {
       const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
       const children = element?.children ?? []
-      return [
-        path,
-        ...Utils.flatMapArray<InstancePath, InstancePath>((childPath) => {
-          return getKeysOfElementAndDescendants(childPath)
-        }, R.reverse(children)),
-      ]
+      const isCollapsed = TP.containsPath(path, collapsedViews)
+      const reversedChildren = R.reverse(children)
+      navigatorTargets.push(path)
+      if (!collapsedAncestor) {
+        visibleNavigatorTargets.push(path)
+      }
+      fastForEach(reversedChildren, (childElement) => {
+        walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
+      })
     }
-    // TODO possibly replace this with a reduceRight
-    return flattenArray(
-      this.getCanvasRootScenesAndElements(metadata)
-        .reverse()
-        .map((root) => {
-          if (isComponentMetadata(root)) {
-            const childrenPathsOfRoot = flatMapArray(
-              (e) => getKeysOfElementAndDescendants(e),
-              root.rootElements,
-            )
-            return [root.scenePath, ...childrenPathsOfRoot]
-          } else {
-            return getKeysOfElementAndDescendants(root.templatePath)
-          }
-        }),
-    )
+
+    const reverseCanvasRoots = this.getCanvasRootScenesAndElements(metadata).reverse()
+    fastForEach(reverseCanvasRoots, (root) => {
+      if (isComponentMetadata(root)) {
+        const isCollapsed = TP.containsPath(root.scenePath, collapsedViews)
+        navigatorTargets.push(root.scenePath)
+        visibleNavigatorTargets.push(root.scenePath)
+        fastForEach(root.rootElements, (rootElement) => {
+          walkAndAddKeys(rootElement, isCollapsed)
+        })
+      } else {
+        return walkAndAddKeys(root.templatePath, false)
+      }
+    })
+
+    return {
+      navigatorTargets: navigatorTargets,
+      visibleNavigatorTargets: visibleNavigatorTargets,
+    }
   },
   transformAtPathOptionally(
     elementMap: ElementInstanceMetadataMap,

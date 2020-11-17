@@ -20,6 +20,67 @@ import { objectMap } from './object-utils'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 
+const atoz = [
+  'a',
+  'b',
+  'c',
+  'd',
+  'e',
+  'f',
+  'g',
+  'h',
+  'i',
+  'j',
+  'k',
+  'l',
+  'm',
+  'n',
+  'o',
+  'p',
+  'q',
+  'r',
+  's',
+  't',
+  'u',
+  'v',
+  'w',
+  'x',
+  'y',
+  'z',
+]
+
+// Assumes possibleStartingValue consists only of characters that are valid to begin with.
+export function generateConsistentUID(
+  existingIDs: Set<string>,
+  possibleStartingValue: string,
+): string {
+  if (possibleStartingValue.length >= 3) {
+    const maxSteps = Math.floor(possibleStartingValue.length / 3)
+    for (let step = 0; step < maxSteps; step++) {
+      const possibleUID = possibleStartingValue.substring(step * 3, (step + 1) * 3)
+
+      if (!existingIDs.has(possibleUID)) {
+        return possibleUID
+      }
+    }
+
+    for (let firstChar of atoz) {
+      for (let secondChar of atoz) {
+        for (let thirdChar of atoz) {
+          const possibleUID = `${firstChar}${secondChar}${thirdChar}`
+
+          if (!existingIDs.has(possibleUID)) {
+            return possibleUID
+          }
+        }
+      }
+    }
+  }
+
+  // Fallback bailout.
+  throw new Error(`Unable to generate a UID from ${possibleStartingValue}`)
+}
+
 export function generateUID(existingIDs: Array<string> | Set<string>): string {
   const fullUid = UUID().replace(/\-/g, '')
   // trying to find a new 3 character substring from the full uid
@@ -45,7 +106,12 @@ export function createIndexedUid(originalUid: string, index: string | number): s
 }
 
 export function extractOriginalUidFromIndexedUid(uid: string): string {
-  return uid.split(GeneratedUIDSeparator)[0]
+  const separatorIndex = uid.indexOf(GeneratedUIDSeparator)
+  if (separatorIndex >= 0) {
+    return uid.substr(0, separatorIndex)
+  } else {
+    return uid
+  }
 }
 
 export function setUtopiaIDOnJSXElement(element: JSXElement, uid: string): JSXElement {

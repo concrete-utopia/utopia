@@ -33,7 +33,7 @@ describe('maybeSwitchLayoutProps', () => {
     //currentWindow.openDevTools()
     // This is necessary because the test code races against the Electron process
     // opening the window it would appear.
-    //await wait(5000)
+    //await wait(20000)
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
