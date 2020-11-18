@@ -17,6 +17,7 @@ import { RightMenu, RightMenuTab } from './right-menu'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 
 interface SplitViewCanvasRootProps {
+  isUiJsFileOpen: boolean
   runtimeErrors: Array<RuntimeErrorInfo>
   onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
   clearRuntimeErrors: () => void
@@ -65,9 +66,11 @@ export const SplitViewCanvasRoot = betterReactMemo(
         elementRef: HTMLDivElement,
         delta: NumberSize,
       ) => {
-        updateDeltaWidth(delta.width)
+        if (props.isUiJsFileOpen) {
+          updateDeltaWidth(delta.width)
+        }
       },
-      [updateDeltaWidth],
+      [updateDeltaWidth, props.isUiJsFileOpen],
     )
 
     return (
@@ -92,53 +95,57 @@ export const SplitViewCanvasRoot = betterReactMemo(
             borderRight: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
           }}
         >
-          <CanvasWrapperComponent {...props} />
-          {interfaceDesigner.codePaneVisible ? (
-            <Resizable
-              defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
-              onResizeStop={onResizeStop}
-              enable={{
-                top: false,
-                right: layoutReversed,
-                bottom: false,
-                left: !layoutReversed,
-                topRight: false,
-                bottomRight: false,
-                bottomLeft: false,
-                topLeft: false,
-              }}
-              className='resizableFlexColumnCanvasCode'
-              style={{
-                ...UtopiaStyles.flexColumn,
-                width: interfaceDesigner.codePaneWidth,
-                height: '100%',
-                position: 'relative',
-                overflow: 'hidden',
-                justifyContent: 'stretch',
-                alignItems: 'stretch',
-                borderLeft: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
-              }}
-            >
-              <CodeEditorWrapper />
-            </Resizable>
-          ) : null}
-        </SimpleFlexRow>
-        <RightMenu visible={true} />
-        {isRightMenuExpanded ? (
-          <SimpleFlexRow
-            className='Inspector-entrypoint'
+          {props.isUiJsFileOpen ? <CanvasWrapperComponent {...props} /> : null}
+          <Resizable
+            defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
+            size={props.isUiJsFileOpen ? undefined : { width: '100%', height: '100%' }} // this hack practically disables the Resizable without having to re-mount the code editor iframe
+            onResizeStop={onResizeStop}
+            enable={{
+              top: false,
+              right: props.isUiJsFileOpen && layoutReversed,
+              bottom: false,
+              left: props.isUiJsFileOpen && !layoutReversed,
+              topRight: false,
+              bottomRight: false,
+              bottomLeft: false,
+              topLeft: false,
+            }}
+            className='resizableFlexColumnCanvasCode'
             style={{
+              ...UtopiaStyles.flexColumn,
+              display: !props.isUiJsFileOpen || interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+              width: interfaceDesigner.codePaneWidth,
+              height: '100%',
+              position: 'relative',
+              overflow: 'hidden',
+              justifyContent: 'stretch',
               alignItems: 'stretch',
-              flexDirection: 'column',
-              width: UtopiaTheme.layout.inspectorWidth,
-              flexGrow: 0,
-              flexShrink: 0,
-              overflowY: 'scroll',
-              paddingBottom: 100,
+              borderLeft: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
             }}
           >
-            {isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
-          </SimpleFlexRow>
+            <CodeEditorWrapper />
+          </Resizable>
+        </SimpleFlexRow>
+        {props.isUiJsFileOpen ? (
+          <>
+            <RightMenu visible={true} />
+            {isRightMenuExpanded ? (
+              <SimpleFlexRow
+                className='Inspector-entrypoint'
+                style={{
+                  alignItems: 'stretch',
+                  flexDirection: 'column',
+                  width: UtopiaTheme.layout.inspectorWidth,
+                  flexGrow: 0,
+                  flexShrink: 0,
+                  overflowY: 'scroll',
+                  paddingBottom: 100,
+                }}
+              >
+                {isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
+              </SimpleFlexRow>
+            ) : null}
+          </>
         ) : null}
       </SimpleFlexRow>
     )

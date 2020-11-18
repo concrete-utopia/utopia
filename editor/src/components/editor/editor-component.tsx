@@ -61,7 +61,6 @@ import {
   PropertyControlsInfoIFrameID,
   setPropertyControlsIFrameAvailable,
 } from '../../core/property-controls/property-controls-utils'
-import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 
 interface NumberSize {
   width: number
@@ -518,8 +517,8 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
   } = useEditorState((store) => {
     const selectedFile = getOpenFile(store.editor)
     const selectedFileName = getOpenTextFileKey(store.editor)
-    const isAppDotJS = selectedFileName?.endsWith('app.js')
-    const isStoryboardFile = selectedFileName?.endsWith(StoryboardFilePath)
+    const isAppDotJS = selectedFileName?.endsWith('app.js') ?? false
+    const isStoryboardFile = selectedFileName?.endsWith(StoryboardFilePath) ?? false
     const isCanvasFile = isAppDotJS || isStoryboardFile // FIXME This is not how we should determine whether or not to open the canvas
     const openEditorTab = getOpenEditorTab(store.editor)
     return {
@@ -537,9 +536,12 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     return <Subdued>No file open</Subdued>
   } else if (areReleaseNotesOpen) {
     return <ReleaseNotesContent />
-  } else if (isUiJsFileOpen) {
+  } else if (isUserConfigurationOpen) {
+    return <UserConfiguration />
+  } else {
     return (
       <SplitViewCanvasRoot
+        isUiJsFileOpen={isUiJsFileOpen}
         runtimeErrors={runtimeErrors}
         onRuntimeError={onRuntimeError}
         clearRuntimeErrors={clearRuntimeErrors}
@@ -548,10 +550,6 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
         addToConsoleLogs={addToConsoleLogs}
       />
     )
-  } else if (isUserConfigurationOpen) {
-    return <UserConfiguration />
-  } else {
-    return <CodeEditorWrapper />
   }
 })
 OpenFileEditor.displayName = 'OpenFileEditor'
