@@ -271,7 +271,6 @@ export interface EditorState {
   projectVersion: number
   isLoaded: boolean
   openFiles: Array<EditorTab>
-  cursorPositions: { [key: string]: CursorPosition }
   selectedFile: {
     tab: EditorTab
     initialCursorPosition: CursorPosition | null
@@ -1058,7 +1057,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
     openFiles: [],
-    cursorPositions: {},
     selectedFile: null,
     spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
@@ -1301,7 +1299,6 @@ export function editorModelFromPersistentModel(
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
     openFiles: persistentModel.openFiles,
-    cursorPositions: {},
     spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
     jsxMetadataKILLME: emptyJsxMetadata,

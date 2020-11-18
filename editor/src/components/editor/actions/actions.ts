@@ -265,7 +265,6 @@ import {
   ResetPins,
   ResizeInterfaceDesignerCodePane,
   SaveCurrentFile,
-  SaveCursorPosition,
   SaveDOMReport,
   SaveAsset,
   SaveImageDoNothing,
@@ -348,6 +347,7 @@ import {
   UpdatePropertyControlsInfo,
   PropertyControlsIFrameReady,
   AddStoryboardFile,
+  SendLinterRequestMessage,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -860,7 +860,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
     openFiles: poppedEditor.openFiles,
-    cursorPositions: poppedEditor.cursorPositions,
     selectedFile: poppedEditor.selectedFile,
     codeResultCache: currentEditor.codeResultCache,
     propertyControlsInfo: currentEditor.propertyControlsInfo,
@@ -2941,15 +2940,6 @@ export const UPDATE_FNS = {
       }
     }
   },
-  SAVE_CURSOR_POSITION: (action: SaveCursorPosition, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      cursorPositions: {
-        ...editor.cursorPositions,
-        [action.filename]: action.cursorPosition,
-      },
-    }
-  },
   INSERT_IMAGE_INTO_UI: (
     action: InsertImageIntoUI,
     editor: EditorModel,
@@ -3208,10 +3198,6 @@ export const UPDATE_FNS = {
       )
     } else {
       revertedProjectContents = editor.projectContents
-    }
-    let updatedCursorPositions = { ...editor.cursorPositions }
-    if (isOpenFileTab(action.editorTab)) {
-      delete updatedCursorPositions[action.editorTab.filename]
     }
     if (R.equals(getOpenEditorTab(editor), action.editorTab)) {
       if (updatedOpenFiles.length >= 1) {
@@ -4549,7 +4535,7 @@ export function transientActions(actions: Array<EditorAction>): TransientActions
 export function selectComponents(
   target: Array<TemplatePath>,
   addToSelection: boolean,
-): EditorAction {
+): SelectComponents {
   return {
     action: 'SELECT_COMPONENTS',
     target: target,
@@ -4873,17 +4859,6 @@ export function saveAsset(
     base64: base64,
     hash: hash,
     imageDetails: imageDetails,
-  }
-}
-
-export function saveCursorPosition(
-  filename: string,
-  cursorPosition: CursorPosition,
-): SaveCursorPosition {
-  return {
-    action: 'SAVE_CURSOR_POSITION',
-    filename: filename,
-    cursorPosition: cursorPosition,
   }
 }
 
@@ -5550,5 +5525,16 @@ export function propertyControlsIFrameReady(): PropertyControlsIFrameReady {
 export function addStoryboardFile(): AddStoryboardFile {
   return {
     action: 'ADD_STORYBOARD_FILE',
+  }
+}
+
+export function sendLinterRequestMessage(
+  filePath: string,
+  content: string,
+): SendLinterRequestMessage {
+  return {
+    action: 'SEND_LINTER_REQUEST_MESSAGE',
+    filePath: filePath,
+    content: content,
   }
 }
