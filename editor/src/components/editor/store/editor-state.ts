@@ -140,6 +140,7 @@ import {
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
+import { DerivedStateKeepDeepEquality } from './store-deep-equality-instances'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -1186,11 +1187,6 @@ export interface OriginalCanvasAndLocalFrame {
   canvasFrame?: CanvasRectangle
 }
 
-type EditorAndDerivedState = {
-  editor: EditorState
-  derived: DerivedState
-}
-
 export function getElementWarnings(
   rootMetadata: JSXMetadata,
 ): ComplexMap<TemplatePath, ElementWarnings> {
@@ -1244,8 +1240,7 @@ export function getElementWarnings(
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
-  uidsChanged: boolean,
-): EditorAndDerivedState {
+): DerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
   const {
@@ -1257,14 +1252,8 @@ export function deriveState(
   )
 
   const derived: DerivedState = {
-    navigatorTargets: keepDeepReferenceEqualityIfPossible(
-      derivedState.navigatorTargets,
-      navigatorTargets,
-    ),
-    visibleNavigatorTargets: keepDeepReferenceEqualityIfPossible(
-      derivedState.visibleNavigatorTargets,
-      visibleNavigatorTargets,
-    ),
+    navigatorTargets: navigatorTargets,
+    visibleNavigatorTargets: visibleNavigatorTargets,
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
@@ -1273,12 +1262,9 @@ export function deriveState(
     elementWarnings: getElementWarnings(getMetadata(editor)),
   }
 
-  const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)
+  const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
 
-  return {
-    editor: editor,
-    derived: sanitizedDerivedState,
-  }
+  return sanitizedDerivedState
 }
 
 export function createCanvasModelKILLME(

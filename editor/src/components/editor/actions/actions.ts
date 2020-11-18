@@ -3155,10 +3155,14 @@ export const UPDATE_FNS = {
     }
   },
   SET_FOCUS: (action: SetFocus, editor: EditorModel): EditorModel => {
-    return setLeftMenuTabFromFocusedPanel({
-      ...editor,
-      focusedPanel: action.focusedPanel,
-    })
+    if (editor.focusedPanel === action.focusedPanel) {
+      return editor
+    } else {
+      return setLeftMenuTabFromFocusedPanel({
+        ...editor,
+        focusedPanel: action.focusedPanel,
+      })
+    }
   },
   OPEN_EDITOR_TAB: (action: OpenEditorTab, editor: EditorModel): EditorModel => {
     const currentOpenFile = getOpenEditorTab(editor)
@@ -3383,7 +3387,6 @@ export const UPDATE_FNS = {
           action.codeOrModel === 'Model' ? editor.canvas.mountCount + 1 : editor.canvas.mountCount,
       },
       parseOrPrintInFlight: false, // only ever clear it here
-      selectedViews: action.codeOrModel === 'Model' ? [] : editor.selectedViews,
     }
   },
   CLEAR_PARSE_OR_PRINT_IN_FLIGHT: (
