@@ -270,7 +270,6 @@ export interface EditorState {
   projectVersion: number
   isLoaded: boolean
   openFiles: Array<EditorTab>
-  cursorPositions: { [key: string]: CursorPosition }
   selectedFile: {
     tab: EditorTab
     initialCursorPosition: CursorPosition | null
@@ -1057,7 +1056,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
     openFiles: [],
-    cursorPositions: {},
     selectedFile: null,
     spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
@@ -1276,48 +1274,9 @@ export function deriveState(
   }
 
   const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)
-  let selectedViews: Array<TemplatePath> = []
-
-  const currentFilePath = getOpenUIJSFileKey(editor)
-  const currentFile = getOpenUIJSFile(editor)
-  if (uidsChanged && currentFile != null && currentFilePath != null) {
-    const cursorPosition = editor.cursorPositions[currentFilePath]
-    if (cursorPosition != null) {
-      const { line } = cursorPosition
-
-      const highlightBounds = getHighlightBoundsFromParseResult(currentFile.fileContents.parsed)
-      const sortedHighlightBounds = Object.values(highlightBounds).sort(
-        (a, b) => b.startLine - a.startLine,
-      )
-      const targets = sortedHighlightBounds
-        .filter((bounds) => {
-          // TS line numbers are zero based, monaco is 1-based
-          return line >= bounds.startLine + 1 && line <= bounds.endLine + 1
-        })
-        .map((bound) => bound.uid)
-
-      if (targets.length > 0) {
-        const target = targets[0]
-        Utils.fastForEach(navigatorTargets, (path) => {
-          if (isInstancePath(path)) {
-            const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
-            const uid = staticPath != null ? toUid(staticPath) : null
-            if (uid === target) {
-              selectedViews.push(path)
-            }
-          }
-        })
-      }
-    }
-  } else {
-    selectedViews = editor.selectedViews
-  }
 
   return {
-    editor: {
-      ...editor,
-      selectedViews: selectedViews,
-    },
+    editor: editor,
     derived: sanitizedDerivedState,
   }
 }
@@ -1354,7 +1313,6 @@ export function editorModelFromPersistentModel(
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
     openFiles: persistentModel.openFiles,
-    cursorPositions: {},
     spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
     jsxMetadataKILLME: emptyJsxMetadata,

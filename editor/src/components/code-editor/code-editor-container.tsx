@@ -61,7 +61,6 @@ export interface JSONStringifiedCodeEditorProps {
   filePath: string | null
   openFile: TextFile | ImageFile | Directory | AssetFile | null
   cursorPositionFromOpenFile: CursorPosition | null
-  savedCursorPosition: CursorPosition | null
   typeDefinitions: TypeDefinitions
   lintErrors: ErrorMessage[]
   parserPrinterErrors: ErrorMessage[]
@@ -143,13 +142,6 @@ export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
       [dispatch],
     )
 
-    const saveCursorPosition = React.useCallback(
-      (filename: string, cursorPosition: CursorPosition) => {
-        dispatch([EditorActions.saveCursorPosition(filename, cursorPosition)])
-      },
-      [dispatch],
-    )
-
     const sendLinterRequestMessage = React.useCallback(
       (filePath: string, content: string) => {
         dispatch([EditorActions.sendLinterRequestMessage(filePath, content)])
@@ -169,7 +161,6 @@ export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
           openEditorTab={openEditorTab}
           setCodeEditorVisibility={setCodeEditorVisibility}
           setFocus={setFocusCallback}
-          saveCursorPosition={saveCursorPosition}
           {...propsFromMainEditor}
         />
       )
@@ -246,7 +237,6 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
       openFile: selectedFile,
       cursorPositionFromOpenFile:
         store.editor.selectedFile == null ? null : store.editor.selectedFile.initialCursorPosition,
-      savedCursorPosition: openFilePath == null ? null : store.editor.cursorPositions[openFilePath],
       typeDefinitions: getDependencyTypeDefinitions(store.editor.nodeModules.files),
       lintErrors: getAllLintErrors(store.editor),
       parserPrinterErrors: parseFailureAsErrorMessages(openUIJSFileKey, openUIJSFile),
@@ -291,7 +281,6 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     filePath: selectedProps.filePath,
     openFile: selectedProps.openFile,
     cursorPositionFromOpenFile: selectedProps.cursorPositionFromOpenFile,
-    savedCursorPosition: selectedProps.savedCursorPosition,
     typeDefinitions: selectedProps.typeDefinitions,
     lintErrors: selectedProps.lintErrors,
     parserPrinterErrors: selectedProps.parserPrinterErrors,

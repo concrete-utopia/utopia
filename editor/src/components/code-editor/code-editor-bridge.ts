@@ -6,7 +6,6 @@ import type {
   OpenEditorTab,
   PushToast,
   SaveCurrentFile,
-  SaveCursorPosition,
   SelectComponents,
   SendLinterRequestMessage,
   SetCodeEditorBuildErrors,
@@ -27,7 +26,6 @@ export type CodeEditorAction =
   | SetCodeEditorBuildErrors
   | SetCodeEditorVisibility
   | SetFocus
-  | SaveCursorPosition
   | SendLinterRequestMessage
 
 interface SendCodeEditorActionMessage {
@@ -64,7 +62,6 @@ function validateActions(actions: Array<CodeEditorAction>): void {
       case 'SET_CODE_EDITOR_BUILD_ERRORS':
       case 'SET_CODE_EDITOR_VISIBILITY':
       case 'SET_FOCUS':
-      case 'SAVE_CURSOR_POSITION':
       case 'SEND_LINTER_REQUEST_MESSAGE':
         return
       default:

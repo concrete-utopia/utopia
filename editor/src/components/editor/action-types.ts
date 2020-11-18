@@ -420,12 +420,6 @@ export type SaveAsset = {
   imageDetails: SaveImageDetails | null
 }
 
-export type SaveCursorPosition = {
-  action: 'SAVE_CURSOR_POSITION'
-  filename: string
-  cursorPosition: CursorPosition
-}
-
 export type ResetPins = {
   action: 'RESET_PINS'
   target: InstancePath
@@ -831,7 +825,6 @@ export type EditorAction =
   | ToggleInterfaceDesignerAdditionalControls
   | SaveCurrentFile
   | SaveAsset
-  | SaveCursorPosition
   | ResetPins
   | WrapInView
   | UnwrapGroupOrView

@@ -159,7 +159,6 @@ export interface ScriptEditorProps {
   openEditorTab: (editorTab: EditorTab, cursorPosition: CursorPosition | null) => void
   setCodeEditorVisibility: (visible: boolean) => void
   setFocus: (panel: EditorPanel | null) => void
-  saveCursorPosition: (filename: string, cursorPosition: CursorPosition) => void
   sendLinterRequestMessage: (filePath: string, content: string) => void
   relevantPanel: EditorPanel
   runtimeErrors: Array<RuntimeErrorInfo>
@@ -168,7 +167,6 @@ export interface ScriptEditorProps {
   filePath: string | null
   openFile: TextFile | ImageFile | Directory | AssetFile | null
   cursorPositionFromOpenFile: CursorPosition | null
-  savedCursorPosition: CursorPosition | null
   typeDefinitions: TypeDefinitions
   lintErrors: ErrorMessage[]
   parserPrinterErrors: ErrorMessage[]
@@ -190,7 +188,6 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     openEditorTab,
     setCodeEditorVisibility,
     setFocus,
-    saveCursorPosition,
     sendLinterRequestMessage,
     relevantPanel,
     runtimeErrors,
@@ -198,7 +195,6 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     filePath,
     openFile,
     cursorPositionFromOpenFile,
-    savedCursorPosition,
     typeDefinitions,
     lintErrors,
     parserPrinterErrors,
@@ -212,6 +208,10 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     highlightBounds,
     npmDependencies,
   } = props
+
+  const [cursorPositions, setCursorPositions] = React.useState<{ [key: string]: CursorPosition }>(
+    {},
+  )
 
   const onHover = React.useCallback(
     (line: number, column: number) => {
@@ -266,10 +266,10 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
   const saveCursorPositionInner = React.useCallback(
     (position: CursorPosition) => {
       if (filePath != null) {
-        saveCursorPosition(filePath, position)
+        setCursorPositions({ ...cursorPositions, [filePath]: position })
       }
     },
-    [saveCursorPosition, filePath],
+    [cursorPositions, filePath],
   )
 
   const onFocus = React.useCallback(() => {
@@ -322,7 +322,9 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
         onSelect={onSelect}
         onFocus={onFocus}
         cursorPosition={
-          cursorPositionFromOpenFile == null ? savedCursorPosition : cursorPositionFromOpenFile
+          cursorPositionFromOpenFile == null
+            ? cursorPositions[filePath]
+            : cursorPositionFromOpenFile
         }
         canvasConsoleLogs={canvasConsoleLogs}
         codeEditorTheme={codeEditorTheme}
