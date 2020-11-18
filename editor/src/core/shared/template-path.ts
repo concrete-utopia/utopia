@@ -790,15 +790,16 @@ export function findAtElementPath<T>(
       return
     }
 
-    const [firstUIDOrIndex, ...tailPath] = workingPath
+    const firstUIDOrIndex = workingPath[0]
     if (getElementID(element) === firstUIDOrIndex) {
       // we've found the right path
-      if (tailPath.length === 0) {
+      if (workingPath.length === 1) {
         foundElement = element
         return
       } else {
         const children = getChildren(element)
         if (children != null) {
+          const tailPath = workingPath.slice(1)
           fastForEach(children, (child) => {
             if (shouldStop()) {
               return

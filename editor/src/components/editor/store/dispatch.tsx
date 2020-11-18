@@ -149,9 +149,8 @@ function processAction(
         break
       case 'NEW':
       case 'LOAD':
-        const derivedResult = deriveState(editorAfterNavigator, null, false)
-        editorAfterNavigator = derivedResult.editor
-        newStateHistory = History.init(derivedResult.editor, derivedResult.derived)
+        const derivedState = deriveState(editorAfterNavigator, null)
+        newStateHistory = History.init(editorAfterNavigator, derivedState)
         break
       default:
         newStateHistory = workingHistory
@@ -520,10 +519,8 @@ function editorDispatchInner(
       // !! We completely skip creating a new derived state, since the editor state stayed the exact same
       frozenDerivedState = storedState.derived
     } else {
-      const parsedModelUpdated = R.any(isParsedModelUpdate, dispatchedActions)
-      const derivedResult = deriveState(frozenEditorState, storedState.derived, parsedModelUpdated)
-      frozenEditorState = derivedResult.editor
-      frozenDerivedState = optionalDeepFreeze(derivedResult.derived)
+      const derivedState = deriveState(frozenEditorState, storedState.derived)
+      frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 
     if (!PRODUCTION_ENV) {

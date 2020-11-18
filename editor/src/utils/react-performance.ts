@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as fastDeepEqual from 'fast-deep-equal'
 import { PRODUCTION_ENV } from '../common/env-vars'
+import { KeepDeepEqualityCall, keepDeepEqualityResult } from './deep-equality'
 
 export function useHookUpdateAnalysisStrictEquals<P>(name: string, newValue: P) {
   const previousValue = React.useRef(newValue)
@@ -445,4 +446,11 @@ export function betterReactMemo<P extends Record<string, any>>(
   const memoized = React.memo(componentToMemo, propsAreEqual)
   memoized.displayName = displayName
   return memoized
+}
+
+export function createCallFromIntrospectiveKeepDeep<T>(): KeepDeepEqualityCall<T> {
+  return (oldValue, newValue) => {
+    const value = keepDeepReferenceEqualityIfPossible(oldValue, newValue)
+    return keepDeepEqualityResult(value, value === oldValue)
+  }
 }
