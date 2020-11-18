@@ -52,6 +52,7 @@ import {
 } from './code-editor-bridge'
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
 import urljoin = require('url-join')
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export interface JSONStringifiedCodeEditorProps {
   relevantPanel: EditorPanel
@@ -74,14 +75,27 @@ export interface JSONStringifiedCodeEditorProps {
   npmDependencies: PossiblyUnversionedNpmDependency[]
 }
 
-export interface CodeEditorEntryPointProps {}
+interface CodeEditorIframeEntryPointProps {}
 
-export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
-  'CodeEditorEntryPoint',
+export const CodeEditorIframeEntryPoint = betterReactMemo<CodeEditorIframeEntryPointProps>(
+  'CodeEditorIframeEntryPoint',
   (props) => {
     const propsFromMainEditor = useBridgeFromMainEditor()
     const dispatch = BridgeTowardsMainEditor.sendCodeEditorAction
 
+    return <CodeEditorEntryPoint propsFromMainEditor={propsFromMainEditor} dispatch={dispatch} />
+  },
+)
+
+export interface CodeEditorEntryPointProps {
+  propsFromMainEditor: JSONStringifiedCodeEditorProps | null
+  dispatch: (actions: CodeEditorAction[]) => void
+}
+
+export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
+  'CodeEditorEntryPoint',
+  (props) => {
+    const { dispatch, propsFromMainEditor } = props
     const setHighlightedViews = React.useCallback(
       (targets: TemplatePath[]) => {
         const actions = targets.map((path) => EditorActions.setHighlightedView(path))
@@ -170,32 +184,12 @@ export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
 
 const CodeEditorIframeID = 'code-editor-iframe'
 
-const CodeEditorIframe = betterReactMemo<{ propsToSend: JSONStringifiedCodeEditorProps }>(
-  'CodeEditorIframe',
+const CodeEditorIframeContainer = betterReactMemo<{ propsToSend: JSONStringifiedCodeEditorProps }>(
+  'CodeEditorIframeContainer',
   (props) => {
     const ref = React.useRef<HTMLIFrameElement>(null)
     // set up communications with the iframe
     useBridgeTowardsIframe(props.propsToSend, ref)
-
-    // React.useEffect(() => {
-    //   // ReactDOM.render(
-    //   //   <CodeEditorEntryPoint {...props} />,
-    //   //   document.getElementById('code-editor-iframe-entry'),
-    //   // )
-    //   if (ref.current != null) {
-    //     // eslint-disable-next-line no-unused-expressions
-    //     performance.mark('SEND_MONACO_MESSAGE_START')
-    //     ref.current.contentWindow?.postMessage(sendMonacoFullPropsMessage(props.propsToSend), '*')
-    //     performance.mark('SEND_MONACO_MESSAGE_END')
-    //     performance.measure(
-    //       'SEND_MONACO_MESSAGE',
-    //       'SEND_MONACO_MESSAGE_START',
-    //       'SEND_MONACO_MESSAGE_END',
-    //     )
-    //   }
-    //   // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [...Object.values(props.propsToSend)])
-    // // return <div id='code-editor-iframe-entry' style={{ display: 'flex', flex: 1 }} />
 
     const iframeSrc = urljoin(MONACO_EDITOR_IFRAME_BASE_URL, 'editor', 'monaco-editor-iframe.html')
 
@@ -274,6 +268,8 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
 
   const npmDependencies = usePossiblyResolvedPackageDependencies()
 
+  const dispatch = useEditorState((store) => store.dispatch, 'CodeEditorWrapper dispatch')
+
   const propsToSend: JSONStringifiedCodeEditorProps = {
     relevantPanel: 'uicodeeditor',
     runtimeErrors: runtimeErrors,
@@ -295,11 +291,11 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     npmDependencies: npmDependencies,
   }
 
-  return (
-    <>
-      <CodeEditorIframe propsToSend={propsToSend} />
-    </>
-  )
+  if (isFeatureEnabled('iFrame Code Editor')) {
+    return <CodeEditorIframeContainer propsToSend={propsToSend} />
+  } else {
+    return <CodeEditorEntryPoint propsFromMainEditor={propsToSend} dispatch={dispatch} />
+  }
 })
 
 function getHighlightBoundsForTemplatePath(path: TemplatePath, store: EditorStore) {

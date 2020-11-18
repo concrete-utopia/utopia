@@ -7,12 +7,14 @@ export type FeatureName =
   | 'Invisible Element Controls'
   | 'Advanced Resize Box'
   | 'Re-parse Project Button'
+  | 'iFrame Code Editor'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Invisible Element Controls',
   'Advanced Resize Box',
   'Re-parse Project Button',
+  'iFrame Code Editor',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -21,6 +23,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
   'Re-parse Project Button': false,
+  'iFrame Code Editor': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
