@@ -1264,7 +1264,7 @@ export function deriveState(
     elementWarnings: getElementWarnings(getMetadata(editor)),
   }
 
-  const sanitizedDerivedState = DerivedStateKeepDeepEquality(derivedState, derived).value
+  const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
 
   return sanitizedDerivedState
 }

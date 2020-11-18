@@ -154,7 +154,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
 
     const deepReferenceStaticElementName = useKeepDeepEqualityCall(
       staticElementName,
-      nullableDeepEquality(JSXElementNameKeepDeepEqualityCall),
+      nullableDeepEquality(JSXElementNameKeepDeepEqualityCall()),
     )
 
     const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {

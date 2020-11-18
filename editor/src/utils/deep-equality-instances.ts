@@ -1,9 +1,9 @@
 import {
   arrayDeepEquality,
+  combine2EqualityCalls,
   createCallFromEqualsFunction,
+  createCallWithTripleEquals,
   KeepDeepEqualityCall,
-  keepDeepEqualityResult,
-  KeepDeepEqualityResult,
 } from './deep-equality'
 import * as TP from '../core/shared/template-path'
 import * as PP from '../core/shared/property-path'
@@ -18,48 +18,31 @@ export const TemplatePathKeepDeepEquality: KeepDeepEqualityCall<TemplatePath> = 
   },
 )
 
+export const TemplatePathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
+  TemplatePath
+>> = arrayDeepEquality(TemplatePathKeepDeepEquality)
+
 export const PropertyPathKeepDeepEquality: KeepDeepEqualityCall<PropertyPath> = createCallFromEqualsFunction(
   (oldPath: PropertyPath, newPath: PropertyPath) => {
     return PP.pathsEqual(oldPath, newPath)
   },
 )
 
-export function JSXElementNameKeepDeepEqualityCall(
-  oldName: JSXElementName,
-  newName: JSXElementName,
-): KeepDeepEqualityResult<JSXElementName> {
-  let areEqual: boolean = true
-
-  let baseVariable: string
-  if (oldName.baseVariable === newName.baseVariable) {
-    baseVariable = oldName.baseVariable
-  } else {
-    areEqual = false
-    baseVariable = newName.baseVariable
-  }
-
-  const propertyPathResult = PropertyPathKeepDeepEquality(
-    oldName.propertyPath,
-    newName.propertyPath,
-  )
-  const propertyPath = propertyPathResult.value
-  areEqual = areEqual && propertyPathResult.areEqual
-
-  if (areEqual) {
-    return keepDeepEqualityResult(oldName, true)
-  } else {
-    const elementName: JSXElementName = {
-      baseVariable: baseVariable,
-      propertyPath: propertyPath,
-    }
-    return keepDeepEqualityResult(elementName, false)
-  }
-}
-
-export const TemplatePathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
-  TemplatePath
->> = arrayDeepEquality(TemplatePathKeepDeepEquality)
-
 export const HigherOrderControlArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
   HigherOrderControl
 >> = arrayDeepEquality(createCallFromIntrospectiveKeepDeep())
+
+export function JSXElementNameKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXElementName> {
+  return combine2EqualityCalls(
+    (name) => name.baseVariable,
+    createCallWithTripleEquals(),
+    (name) => name.propertyPath,
+    PropertyPathKeepDeepEquality,
+    (baseVariable, propertyPath) => {
+      return {
+        baseVariable: baseVariable,
+        propertyPath: propertyPath,
+      }
+    },
+  )
+}
