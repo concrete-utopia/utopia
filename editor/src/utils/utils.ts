@@ -900,7 +900,7 @@ function defer<T>(): Promise<T> & {
   return promise as any
 }
 
-export function keepReferenceIfDeepEqualSLOW<T>(original: T, maybeNew: T, measure = false) {
+export function keepReferenceIfDeepEqualSLOW<T>(original: T, maybeNew: T, measure = false): T {
   if (measure) {
     performance.mark('before eq')
   }
