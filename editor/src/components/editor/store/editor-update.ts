@@ -288,6 +288,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
     case 'WRAP_TEXT_IN_STYLED_SPAN':
       return UPDATE_FNS.WRAP_TEXT_IN_STYLED_SPAN(action, state)
+    case 'INSERT_TEXT_AT_SELECTION':
+      return UPDATE_FNS.INSERT_TEXT_AT_SELECTION(action, state)
     default:
       return state
   }

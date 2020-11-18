@@ -71,6 +71,8 @@ import {
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { useEditorState } from '../editor/store/store-hook'
 import { CanvasContainerID } from './canvas-types'
+import { recursivelyGetTemplatePathForDomNode } from './controls/text-mode-control-container'
+import { insertTextAtSelection } from '../editor/actions/text-editor/text-editor-actions'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -454,16 +456,36 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
 ) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   let containerRef = props.walkDOM ? useDomWalker(props) : React.useRef<HTMLDivElement>(null)
-  const userSelect =
-    useEditorState((store) => store.editor.mode.type, 'Canvas textMode check') === 'text'
+  const { textMode, dispatch } = useEditorState(
+    (store) => ({ textMode: store.editor.mode.type === 'text', dispatch: store.dispatch }),
+    'Canvas textMode check',
+  )
 
   const { scale, offset } = props
+
+  const onTextClick = React.useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      if (textMode) {
+        const selection = document.getSelection()
+        if (selection != null && selection.focusNode != null && selection.focusNode.parentElement) {
+          const templatePath = recursivelyGetTemplatePathForDomNode(
+            selection.focusNode.parentElement,
+          )
+          dispatch([insertTextAtSelection(templatePath, selection)])
+        } else {
+          throw new Error(`Selection isn't found on the canvas.`)
+        }
+      }
+    },
+    [textMode, dispatch],
+  )
 
   return (
     <div
       id={CanvasContainerID}
       key={'canvas-container'}
       ref={containerRef}
+      onMouseDown={onTextClick}
       style={{
         all: 'initial',
         position: 'absolute',
@@ -472,7 +494,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
           (scale < 1 ? `scale(${scale})` : '') + ` translate3d(${offset.x}px, ${offset.y}px, 0)`,
       }}
       css={{
-        '& div, & span, & img, & ul, & li, & label': userSelect
+        '& div, & span, & img, & ul, & li, & label': textMode
           ? {
               userSelect: 'text',
               WebkitUserSelect: 'text',

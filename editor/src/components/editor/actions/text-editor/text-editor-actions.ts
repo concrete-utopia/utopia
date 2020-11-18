@@ -1,9 +1,3 @@
-import {
-  jsxAttribute,
-  jsxExpressionContainer,
-  jsxIdentifier,
-  jsxOpeningElement,
-} from '@babel/types'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import {
   isJSXTextBlock,
@@ -11,7 +5,6 @@ import {
   jsxAttributeValue,
   jsxElement,
   jsxTextBlock,
-  JSXTextBlock,
 } from '../../../../core/shared/element-template'
 import { InstancePath } from '../../../../core/shared/project-file-types'
 import { EditorModel } from '../../action-types'
@@ -26,7 +19,13 @@ interface WrapTextInStyledSpan {
   selection: Selection
 }
 
-export type TextEditorActions = WrapTextInStyledSpan
+interface InsertTextAtSelection {
+  action: 'INSERT_TEXT_AT_SELECTION'
+  target: InstancePath
+  selection: Selection
+}
+
+export type TextEditorActionTypes = WrapTextInStyledSpan | InsertTextAtSelection
 
 // WARNING: this assumes LTR direction
 // Text ranges normalise anchor/focus positions in a selection to a range with a LTR start and end
@@ -46,8 +45,8 @@ function getSimpleTextRange({ focusOffset, anchorOffset }: Selection): SimpleTex
 }
 
 export const TextEditorActions = {
-  WRAP_TEXT_IN_STYLED_SPAN: (action: WrapTextInStyledSpan, editor: EditorModel): EditorModel => {
-    return modifyOpenJsxElementAtPath(
+  WRAP_TEXT_IN_STYLED_SPAN: (action: WrapTextInStyledSpan, editor: EditorModel): EditorModel =>
+    modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
         // WARNING: EXPERIMENT
@@ -83,8 +82,28 @@ export const TextEditorActions = {
         throw new Error('We only support elements with one text node child')
       },
       editor,
-    )
-  },
+    ),
+  INSERT_TEXT_AT_SELECTION: (action: InsertTextAtSelection, editor: EditorModel): EditorModel =>
+    modifyOpenJsxElementAtPath(
+      action.target,
+      (element) => {
+        if (element.children.length === 1) {
+          const child = element.children[0]
+          if (isJSXTextBlock(child)) {
+            const { startIndex: insertionIndex } = getSimpleTextRange(action.selection)
+            const leftText = child.text.substring(0, insertionIndex)
+            const centerText = ' lorem ipsum '
+            const rightText = child.text.substring(insertionIndex)
+            return {
+              ...element,
+              children: [jsxTextBlock(leftText + centerText + rightText)],
+            }
+          }
+        }
+        throw new Error('We only support elements with one text node child')
+      },
+      editor,
+    ),
 }
 
 export function wrapTextInStyledSpan(
@@ -93,6 +112,16 @@ export function wrapTextInStyledSpan(
 ): WrapTextInStyledSpan {
   return {
     action: 'WRAP_TEXT_IN_STYLED_SPAN',
+    target,
+    selection,
+  }
+}
+export function insertTextAtSelection(
+  target: InstancePath,
+  selection: Selection,
+): InsertTextAtSelection {
+  return {
+    action: 'INSERT_TEXT_AT_SELECTION',
     target,
     selection,
   }
