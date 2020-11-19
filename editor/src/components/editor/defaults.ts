@@ -18,10 +18,16 @@ export function defaultSceneElement(
   componentProps: any = null,
 ): JSXElement {
   const component = componentName == null ? 'null' : componentName
+  const definedElsewhere = [component]
   const props = {
     'data-uid': jsxAttributeValue(uid),
     'data-label': jsxAttributeValue(label),
-    component: jsxAttributeOtherJavaScript(component, `return ${componentName}`, [], null),
+    component: jsxAttributeOtherJavaScript(
+      component,
+      `return ${componentName}`,
+      definedElsewhere,
+      null,
+    ),
     [PP.toString(PathForResizeContent)]: jsxAttributeValue(resizeContent),
     style: jsxAttributeValue({
       position: 'absolute',
