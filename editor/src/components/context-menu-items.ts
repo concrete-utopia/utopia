@@ -11,6 +11,7 @@ import {
   deleteView,
   duplicateSelected,
   toggleHidden,
+  extractSceneFromComponent,
 } from './editor/actions/actions'
 import {
   toggleBackgroundLayers,
@@ -36,6 +37,15 @@ export interface CanvasData {
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
   return Utils.forceNotNull('Dispatch not supplied.', dispatch)
+}
+
+export const extractScene: ContextMenuItem<CanvasData> = {
+  name: 'Extract Scene',
+  enabled: true,
+  shortcut: '',
+  action: (data, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)([extractSceneFromComponent(data.selectedViews)] as any, 'everyone')
+  },
 }
 
 export const duplicateElement: ContextMenuItem<CanvasData> = {

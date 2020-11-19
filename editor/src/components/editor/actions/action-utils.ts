@@ -138,6 +138,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'FINISH_CHECKPOINT_TIMER':
     case 'ADD_MISSING_DIMENSIONS':
     case 'ADD_STORYBOARD_FILE':
+    case 'EXTRACT_SCENE_FROM_COMPONENT':
       return false
     case 'SAVE_ASSET':
       return (

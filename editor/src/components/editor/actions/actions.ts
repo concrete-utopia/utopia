@@ -348,6 +348,7 @@ import {
   UpdatePropertyControlsInfo,
   PropertyControlsIFrameReady,
   AddStoryboardFile,
+  ExtractSceneFromComponent,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -4126,6 +4127,61 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.OPEN_EDITOR_TAB(openTab, updatedEditor)
     }
   },
+  EXTRACT_SCENE_FROM_COMPONENT: (
+    action: ExtractSceneFromComponent,
+    editor: EditorModel,
+  ): EditorModel => {
+    const elements = Utils.stripNulls(
+      action.targets
+        .map((target) =>
+          MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, target),
+        )
+        .filter((element) => element?.componentInstance),
+    )
+    const jsxElements = getOpenUtopiaJSXComponentsFromState(editor)
+    return elements.reduce((currentEditor, element) => {
+      if (
+        element.globalFrame != null &&
+        isRight(element.element) &&
+        isJSXElement(element.element.value)
+      ) {
+        const elementName = MetadataUtils.getJSXElementName(
+          element.templatePath,
+          jsxElements,
+          editor.jsxMetadataKILLME.components,
+        )?.baseVariable
+        const numberOfScenes = getNumberOfScenes(editor)
+        const components = getOpenUtopiaJSXComponentsFromState(editor)
+        const sceneUID = generateUidWithExistingComponents(components)
+        const newSceneLabel = `Scene ${numberOfScenes}`
+        let updatedStyleProps = { ...(element.props['style'] ?? {}) }
+        Object.keys(updatedStyleProps).forEach((key) => {
+          if (updatedStyleProps[key] == null) {
+            delete updatedStyleProps[key]
+          }
+        })
+        updatedStyleProps['left'] = 400
+        updatedStyleProps['top'] = 0
+
+        const newScene: JSXElement = defaultSceneElement(
+          sceneUID,
+          elementName ?? null,
+          updatedStyleProps,
+          newSceneLabel,
+          false,
+        )
+        const storyBoardPath = getStoryboardTemplatePath(components)
+        const newSelection =
+          storyBoardPath != null ? [TP.scenePath([TP.toUid(storyBoardPath), sceneUID])] : []
+        return {
+          ...addNewScene(editor, newScene),
+          selectedViews: newSelection,
+        }
+      } else {
+        return currentEditor
+      }
+    }, editor)
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -5547,5 +5603,11 @@ export function propertyControlsIFrameReady(): PropertyControlsIFrameReady {
 export function addStoryboardFile(): AddStoryboardFile {
   return {
     action: 'ADD_STORYBOARD_FILE',
+  }
+}
+export function extractSceneFromComponent(targets: InstancePath[]): ExtractSceneFromComponent {
+  return {
+    action: 'EXTRACT_SCENE_FROM_COMPONENT',
+    targets: targets,
   }
 }

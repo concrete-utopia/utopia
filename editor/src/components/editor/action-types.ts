@@ -768,6 +768,11 @@ export interface AddStoryboardFile {
   action: 'ADD_STORYBOARD_FILE'
 }
 
+export interface ExtractSceneFromComponent {
+  action: 'EXTRACT_SCENE_FROM_COMPONENT'
+  targets: InstancePath[]
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -896,6 +901,7 @@ export type EditorAction =
   | UpdatePropertyControlsInfo
   | PropertyControlsIFrameReady
   | AddStoryboardFile
+  | ExtractSceneFromComponent
 
 export type DispatchPriority =
   | 'everyone'

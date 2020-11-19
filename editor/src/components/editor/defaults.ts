@@ -12,15 +12,16 @@ import * as PP from '../../core/shared/property-path'
 export function defaultSceneElement(
   uid: string,
   componentName: string | null,
-  frame: NormalisedFrame,
+  frame: NormalisedFrame | any,
   label: string,
+  resizeContent: boolean = true,
 ): JSXElement {
   const component = componentName == null ? 'null' : componentName
   const props = {
     'data-uid': jsxAttributeValue(uid),
     'data-label': jsxAttributeValue(label),
     component: jsxAttributeOtherJavaScript(component, `return ${componentName}`, [], null),
-    [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),
+    [PP.toString(PathForResizeContent)]: jsxAttributeValue(resizeContent),
     style: jsxAttributeValue({
       position: 'absolute',
       ...frame,

@@ -18,6 +18,7 @@ import {
   toggleShadowItem,
   ContextMenuItem,
   CanvasData,
+  extractScene,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
@@ -34,6 +35,7 @@ interface ElementContextMenuProps {
 }
 
 const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
+  extractScene,
   cutElements,
   copyElements,
   duplicateElement,
