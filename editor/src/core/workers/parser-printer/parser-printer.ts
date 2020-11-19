@@ -339,13 +339,9 @@ function jsxElementToExpression(
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
       // TODO: make a nice JSXArbitraryBlockToExpression function that special cases for this.
-      const condition = jsxElementToExpression(element.condition, imports, stripUIDs)
-      const whenTrue = jsxElementToExpression(element.whenTrue, imports, stripUIDs)
-      const whenFalse = jsxElementToExpression(element.whenFalse, imports, stripUIDs)
-      // JSXText can only exist in JSX contexts
-      if (TS.isJsxText(condition) || TS.isJsxText(whenTrue) || TS.isJsxText(whenFalse)) {
-        throw new Error('Nope')
-      }
+      const condition = jsxAttributeToExpression(element.condition)
+      const whenTrue = jsxAttributeToExpression(element.whenTrue)
+      const whenFalse = jsxAttributeToExpression(element.whenFalse)
       return TS.createJsxExpression(undefined, TS.createConditional(condition, whenTrue, whenFalse))
     }
     case 'JSX_ARBITRARY_BLOCK': {

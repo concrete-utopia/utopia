@@ -67,14 +67,6 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
   }
 }
 
-interface JSXAttributeJavaScript {
-  javascript: string
-  transpiledJavascript: string
-  definedElsewhere: Array<string>
-  sourceMap: RawSourceMap | null
-  uniqueID: string
-}
-
 export interface JSXAttributeOtherJavaScript {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   javascript: string
@@ -102,16 +94,16 @@ export function jsxAttributeOtherJavaScript(
 
 export interface JSXConditionalExpression {
   type: 'JSX_CONDITIONAL_EXPRESSION'
-  condition: JSXArbitraryBlock // <--- this is going to suck
-  whenTrue: JSXElementChild
-  whenFalse: JSXElementChild
+  condition: JSXAttribute // <--- this is going to suck
+  whenTrue: JSXAttribute
+  whenFalse: JSXAttribute
   uniqueID: string
 }
 
 export function jsxConditionalExpression(
-  condition: JSXArbitraryBlock,
-  whenTrue: JSXElementChild,
-  whenFalse: JSXElementChild,
+  condition: JSXAttribute,
+  whenTrue: JSXAttribute,
+  whenFalse: JSXAttribute,
 ): JSXConditionalExpression {
   return {
     type: 'JSX_CONDITIONAL_EXPRESSION',
@@ -607,6 +599,12 @@ export function isJSXFragment(element: JSXElementChild): element is JSXFragment 
   return element.type === 'JSX_FRAGMENT'
 }
 
+export function isJSXConditionalExpression(
+  element: JSXElementChild,
+): element is JSXConditionalExpression {
+  return element.type === 'JSX_CONDITIONAL_EXPRESSION'
+}
+
 export type JSXElementChildren = Array<JSXElementChild>
 
 export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T): T {
@@ -631,6 +629,17 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
       ...element,
       uniqueID: '',
       children: updatedChildren,
+    }
+  } else if (isJSXConditionalExpression(element)) {
+    const updatedCondition = clearAttributeUniqueIDs(element.condition)
+    const updatedWhenTrue = clearAttributeUniqueIDs(element.whenTrue)
+    const updatedwhenFalse = clearAttributeUniqueIDs(element.whenFalse)
+    return {
+      ...element,
+      condition: updatedCondition,
+      whenTrue: updatedWhenTrue,
+      whenFalse: updatedwhenFalse,
+      uniqueID: '',
     }
   } else {
     return {
@@ -1144,9 +1153,6 @@ export function walkElement(
       )
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      forEach(element.condition, parentPath)
-      forEach(element.whenTrue, parentPath)
-      forEach(element.whenFalse, parentPath)
       break
     default:
       const _exhaustiveCheck: never = element

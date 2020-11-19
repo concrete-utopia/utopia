@@ -544,9 +544,6 @@ function walkElements(
       })
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      walkElements(jsxElementChild.condition, walkWith)
-      walkElements(jsxElementChild.whenTrue, walkWith)
-      walkElements(jsxElementChild.whenFalse, walkWith)
       break
     case 'JSX_FRAGMENT':
       fastForEach(jsxElementChild.children, (child) => {
@@ -579,9 +576,6 @@ function walkAllJSXElementChilds(
       })
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      walkAllJSXElementChilds(jsxElementChild.condition, walkWith)
-      walkAllJSXElementChilds(jsxElementChild.whenTrue, walkWith)
-      walkAllJSXElementChilds(jsxElementChild.whenFalse, walkWith)
       break
     case 'JSX_FRAGMENT':
       fastForEach(jsxElementChild.children, (child) => {

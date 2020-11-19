@@ -1488,6 +1488,67 @@ function createJSXElementAllocatingUID(
   )
 }
 
+function produceConditionalFromExpression(
+  sourceFile: TS.SourceFile,
+  filename: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  propsObjectName: string | null,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  alreadyExistingUIDs: Set<string>,
+  expression: TS.ConditionalExpression,
+): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
+  function parseAttribute(
+    attributeExpression: TS.Expression,
+  ): Either<string, WithParserMetadata<JSXAttribute>> {
+    return parseAttributeExpression(
+      sourceFile,
+      filename,
+      imports,
+      topLevelNames,
+      propsObjectName,
+      attributeExpression,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+    )
+  }
+  return applicative3Either<
+    string,
+    WithParserMetadata<JSXAttribute>,
+    WithParserMetadata<JSXAttribute>,
+    WithParserMetadata<JSXAttribute>,
+    WithParserMetadata<SuccessfullyParsedElement>
+  >(
+    (condition, whenTrue, whenFalse) => {
+      const conditionalExpression = jsxConditionalExpression(
+        condition.value,
+        whenTrue.value,
+        whenFalse.value,
+      )
+      const highlightBounds = {
+        ...condition.highlightBounds,
+        ...whenTrue.highlightBounds,
+        ...whenFalse.highlightBounds,
+      }
+      const propsUsed = [...condition.propsUsed, ...whenTrue.propsUsed, ...whenFalse.propsUsed]
+      const definedElsewhere = [
+        ...condition.definedElsewhere,
+        ...whenTrue.definedElsewhere,
+        ...whenFalse.definedElsewhere,
+      ]
+      return withParserMetadata(
+        successfullyParsedElement(sourceFile, expression, conditionalExpression),
+        highlightBounds,
+        propsUsed,
+        definedElsewhere,
+      )
+    },
+    parseAttribute(expression.condition),
+    parseAttribute(expression.whenTrue),
+    parseAttribute(expression.whenFalse),
+  )
+}
+
 export function parseOutJSXElements(
   sourceFile: TS.SourceFile,
   filename: string,
@@ -1571,60 +1632,44 @@ export function parseOutJSXElements(
             break
           }
           case TS.SyntaxKind.JsxExpression: {
-            const parsedArbitraryBlock = produceArbitraryBlockFromJsxExpression(elem)
-            if (isRight(parsedArbitraryBlock)) {
-              if (elem.expression?.kind === TS.SyntaxKind.ConditionalExpression) {
-                const possibleExpression = ((): Either<string, SuccessfullyParsedElement> => {
-                  const arbitraryBlock = parsedArbitraryBlock.value.value
-                  if (arbitraryBlock.type === 'JSX_ARBITRARY_BLOCK') {
-                    const expression = elem.expression as TS.ConditionalExpression
-                    if (expression.kind !== TS.SyntaxKind.ConditionalExpression) {
-                      return left('this expression is not a conditional')
-                    } else {
-                      return applicative3Either<
-                        string,
-                        JSXArbitraryBlock,
-                        SuccessfullyParsedElement[],
-                        SuccessfullyParsedElement[],
-                        SuccessfullyParsedElement
-                      >(
-                        (condition, whenTrue, whenFalse) => {
-                          const conditionalExpression = jsxConditionalExpression(
-                            condition,
-                            whenTrue[0].value,
-                            whenFalse[0].value,
-                          )
-                          return successfullyParsedElement(
-                            sourceFile,
-                            expression,
-                            conditionalExpression,
-                          )
-                        },
-                        flatMapEither((condition) => {
-                          // the problem is here: the condition is a TS expression, not JSX
-                          return condition.length === 1 &&
-                            condition[0].value.type === 'JSX_ARBITRARY_BLOCK'
-                            ? right(condition[0].value)
-                            : left(
-                                'Sorry but we can only parse JSX_ARBITRARY_BLOCK as the condition! Talk to Alec',
-                              )
-                        }, innerParse([expression.condition])),
-                        innerParse([expression.whenTrue]),
-                        innerParse([expression.whenFalse]),
-                      )
-                    }
-                  } else {
-                    throw new Error('Type should be expression')
+            let parseResult: Either<string, SuccessfullyParsedElement> = left(
+              'Expression fallback.',
+            )
+            // Handle ternaries.
+            if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
+              const possibleConditional = produceConditionalFromExpression(
+                sourceFile,
+                filename,
+                imports,
+                topLevelNames,
+                propsObjectName,
+                existingHighlightBounds,
+                alreadyExistingUIDs,
+                elem.expression,
+              )
+              parseResult = bimapEither(
+                (failure) => failure,
+                (success) => {
+                  highlightBounds = {
+                    ...highlightBounds,
+                    ...success.highlightBounds,
                   }
-                })()
-                if (isRight(possibleExpression)) {
-                  addParsedElement(possibleExpression.value)
-                }
-              } else {
-                addParsedElement(parsedArbitraryBlock.value)
-              }
+                  propsUsed.push(...success.propsUsed)
+                  definedElsewhere.push(...success.definedElsewhere)
+                  return success.value
+                },
+                possibleConditional,
+              )
+            }
+            // Fallback to arbitrary block parsing.
+            if (isLeft(parseResult)) {
+              parseResult = produceArbitraryBlockFromJsxExpression(elem)
+            }
+
+            if (isRight(parseResult)) {
+              addParsedElement(parseResult.value)
             } else {
-              return parsedArbitraryBlock
+              return parseResult
             }
             break
           }

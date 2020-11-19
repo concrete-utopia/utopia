@@ -15,6 +15,7 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXFragment,
+  isJSXConditionalExpression,
 } from '../shared/element-template'
 import {
   Imports,
@@ -162,6 +163,8 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   } else if (isElementInstanceMetadata(element)) {
     return TP.toTemplateId(element.templatePath)
   } else if (isJSXFragment(element)) {
+    return element.uniqueID
+  } else if (isJSXConditionalExpression(element)) {
     return element.uniqueID
   }
   throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
