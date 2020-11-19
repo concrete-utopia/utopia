@@ -8,6 +8,7 @@ export type FeatureName =
   | 'Advanced Resize Box'
   | 'Re-parse Project Button'
   | 'iFrame Code Editor'
+  | 'Extract Scene'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -15,6 +16,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Advanced Resize Box',
   'Re-parse Project Button',
   'iFrame Code Editor',
+  'Extract Scene',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -24,6 +26,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Advanced Resize Box': false,
   'Re-parse Project Button': false,
   'iFrame Code Editor': false,
+  'Extract Scene': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

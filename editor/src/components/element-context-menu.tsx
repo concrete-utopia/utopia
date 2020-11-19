@@ -24,6 +24,8 @@ import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
 import { filterScenes } from '../core/shared/template-path'
 import { betterReactMemo } from 'uuiui-deps'
+import { isFeatureEnabled } from '../utils/feature-switches'
+import { stripNulls } from '../core/shared/array-utils'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -34,8 +36,8 @@ interface ElementContextMenuProps {
   contextMenuInstance: ElementContextMenuInstance
 }
 
-const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
-  extractScene,
+const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = stripNulls([
+  isFeatureEnabled('Extract Scene') ? extractScene : null,
   cutElements,
   copyElements,
   duplicateElement,
@@ -56,7 +58,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   toggleBackgroundLayersItem,
   toggleBorderItem,
   toggleShadowItem,
-]
+])
 
 // TODO Scene Implementation - seems we should have a different context menu for scenes
 export const ElementContextMenu = betterReactMemo(
