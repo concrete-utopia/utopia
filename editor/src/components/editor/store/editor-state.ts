@@ -140,6 +140,7 @@ import {
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
+import { DerivedStateKeepDeepEquality } from './store-deep-equality-instances'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -270,7 +271,6 @@ export interface EditorState {
   projectVersion: number
   isLoaded: boolean
   openFiles: Array<EditorTab>
-  cursorPositions: { [key: string]: CursorPosition }
   selectedFile: {
     tab: EditorTab
     initialCursorPosition: CursorPosition | null
@@ -1057,7 +1057,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
     openFiles: [],
-    cursorPositions: {},
     selectedFile: null,
     spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
@@ -1188,11 +1187,6 @@ export interface OriginalCanvasAndLocalFrame {
   canvasFrame?: CanvasRectangle
 }
 
-type EditorAndDerivedState = {
-  editor: EditorState
-  derived: DerivedState
-}
-
 export function getElementWarnings(
   rootMetadata: JSXMetadata,
 ): ComplexMap<TemplatePath, ElementWarnings> {
@@ -1246,8 +1240,7 @@ export function getElementWarnings(
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
-  uidsChanged: boolean,
-): EditorAndDerivedState {
+): DerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
   const {
@@ -1259,14 +1252,8 @@ export function deriveState(
   )
 
   const derived: DerivedState = {
-    navigatorTargets: keepDeepReferenceEqualityIfPossible(
-      derivedState.navigatorTargets,
-      navigatorTargets,
-    ),
-    visibleNavigatorTargets: keepDeepReferenceEqualityIfPossible(
-      derivedState.visibleNavigatorTargets,
-      visibleNavigatorTargets,
-    ),
+    navigatorTargets: navigatorTargets,
+    visibleNavigatorTargets: visibleNavigatorTargets,
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
@@ -1275,51 +1262,9 @@ export function deriveState(
     elementWarnings: getElementWarnings(getMetadata(editor)),
   }
 
-  const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)
-  let selectedViews: Array<TemplatePath> = []
+  const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
 
-  const currentFilePath = getOpenUIJSFileKey(editor)
-  const currentFile = getOpenUIJSFile(editor)
-  if (uidsChanged && currentFile != null && currentFilePath != null) {
-    const cursorPosition = editor.cursorPositions[currentFilePath]
-    if (cursorPosition != null) {
-      const { line } = cursorPosition
-
-      const highlightBounds = getHighlightBoundsFromParseResult(currentFile.fileContents.parsed)
-      const sortedHighlightBounds = Object.values(highlightBounds).sort(
-        (a, b) => b.startLine - a.startLine,
-      )
-      const targets = sortedHighlightBounds
-        .filter((bounds) => {
-          // TS line numbers are zero based, monaco is 1-based
-          return line >= bounds.startLine + 1 && line <= bounds.endLine + 1
-        })
-        .map((bound) => bound.uid)
-
-      if (targets.length > 0) {
-        const target = targets[0]
-        Utils.fastForEach(navigatorTargets, (path) => {
-          if (isInstancePath(path)) {
-            const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
-            const uid = staticPath != null ? toUid(staticPath) : null
-            if (uid === target) {
-              selectedViews.push(path)
-            }
-          }
-        })
-      }
-    }
-  } else {
-    selectedViews = editor.selectedViews
-  }
-
-  return {
-    editor: {
-      ...editor,
-      selectedViews: selectedViews,
-    },
-    derived: sanitizedDerivedState,
-  }
+  return sanitizedDerivedState
 }
 
 export function createCanvasModelKILLME(
@@ -1354,7 +1299,6 @@ export function editorModelFromPersistentModel(
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
     openFiles: persistentModel.openFiles,
-    cursorPositions: {},
     spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
     jsxMetadataKILLME: emptyJsxMetadata,

@@ -150,14 +150,14 @@ export function createEditorStates(
     },
     selectedViews: selectedViews,
   }
-  const derivedResult = deriveState(editor, null, false)
+  const derivedState = deriveState(editor, null)
   const componentMetadata = createFakeMetadataForEditor(editor)
   return {
     editor: {
-      ...derivedResult.editor,
+      ...editor,
       jsxMetadataKILLME: componentMetadata,
     },
-    derivedState: derivedResult.derived,
+    derivedState: derivedState,
     dispatch: Utils.NO_OP,
   }
 }
