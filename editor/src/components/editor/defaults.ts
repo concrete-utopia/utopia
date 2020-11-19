@@ -15,6 +15,7 @@ export function defaultSceneElement(
   frame: NormalisedFrame | any,
   label: string,
   resizeContent: boolean = true,
+  componentProps: any = null,
 ): JSXElement {
   const component = componentName == null ? 'null' : componentName
   const props = {
@@ -26,6 +27,9 @@ export function defaultSceneElement(
       position: 'absolute',
       ...frame,
     }),
+  }
+  if (componentProps != null) {
+    props['props'] = jsxAttributeValue(componentProps)
   }
 
   return jsxElement(jsxElementName('Scene', []), props, [])

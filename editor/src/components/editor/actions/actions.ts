@@ -4152,12 +4152,18 @@ export const UPDATE_FNS = {
         updatedStyleProps['left'] = 400
         updatedStyleProps['top'] = 0
 
+        let filteredProps = { ...element.props }
+        delete filteredProps['style']
+        delete filteredProps['className']
+        delete filteredProps['data-uid']
+        delete filteredProps['skipDeepFreeze']
         const newScene: JSXElement = defaultSceneElement(
           sceneUID,
           elementName ?? null,
           updatedStyleProps,
           newSceneLabel,
           false,
+          filteredProps,
         )
         const storyBoardPath = getStoryboardTemplatePath(components)
         const newSelection =
