@@ -14,6 +14,7 @@ import {
 } from '../../../core/shared/element-template'
 import { Imports } from '../../../core/shared/project-file-types'
 import { fastForEach, NO_OP } from '../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import {
   colorTheme,
   FlexRow,
@@ -29,12 +30,12 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { ItemPreview } from './item-preview'
 
 interface SelectedComponentNavigatorProps {
-  selectedComponent: UtopiaJSXComponent
+  selectedComponent: UtopiaJSXComponent | null
   imports: Imports
   utopiaComponentNames: string[]
 }
 
-const ShowRenderRow = false
+const ShowComponentOutlineTitle = isFeatureEnabled('Component Navigator Component Outline Title')
 
 export const SelectedComponentNavigator = betterReactMemo(
   'SelectedComponentNavigator',
@@ -95,7 +96,14 @@ export const SelectedComponentNavigator = betterReactMemo(
       }
     }
 
-    appendRowForElementChild(selectedComponent.rootElement, ShowRenderRow ? 1 : 0)
+    if (selectedComponent != null) {
+      appendRowForElementChild(selectedComponent.rootElement, ShowComponentOutlineTitle ? 1 : 0)
+    }
+
+    const title =
+      ShowComponentOutlineTitle || selectedComponent == null
+        ? 'Component Outline'
+        : `${selectedComponent.name} (Component Outline)`
 
     return (
       <React.Fragment>
@@ -106,29 +114,41 @@ export const SelectedComponentNavigator = betterReactMemo(
           onContextMenu={NO_OP}
           id={'component-navigator'}
           tabIndex={-1}
+          style={{ backgroundColor: '#F3F3F3' }}
         >
-          <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised} dontPad={true}>
+          <SectionTitleRow
+            minimised={minimised}
+            toggleMinimised={toggleMinimised}
+            dontPad={!ShowComponentOutlineTitle}
+            overrideStyle={{ backgroundColor: 'lightgrey' }}
+          >
             <FlexRow flexGrow={1}>
-              <ItemPreview
-                isAutosizingView={false}
-                collapsed={false}
-                isFlexLayoutedContainer={false}
-                yogaDirection={'row'}
-                yogaWrap={'wrap'}
-                staticElementName={null}
-                componentInstance={true}
-                color={'black'}
-                imports={imports}
-              />
-              <Title>{selectedComponent.name}</Title>
+              {ShowComponentOutlineTitle ? null : (
+                <ItemPreview
+                  isAutosizingView={false}
+                  collapsed={false}
+                  isFlexLayoutedContainer={false}
+                  yogaDirection={'row'}
+                  yogaWrap={'wrap'}
+                  staticElementName={null}
+                  componentInstance={true}
+                  color={'black'}
+                  imports={imports}
+                />
+              )}
+              <Title>{title}</Title>
             </FlexRow>
           </SectionTitleRow>
-          <SectionBodyArea minimised={minimised}>
-            {ShowRenderRow ? <ComponentRenderRow /> : null}
-            {rows.map((row, index) => (
-              <ComponentNavigatorRow key={`${row.name}-${index}`} {...row} />
-            ))}
-          </SectionBodyArea>
+          {selectedComponent == null ? null : (
+            <SectionBodyArea minimised={minimised}>
+              {ShowComponentOutlineTitle ? (
+                <ComponentRenderRow title={selectedComponent.name} />
+              ) : null}
+              {rows.map((row, index) => (
+                <ComponentNavigatorRow key={`${row.name}-${index}`} {...row} />
+              ))}
+            </SectionBodyArea>
+          )}
         </Section>
       </React.Fragment>
     )
@@ -197,7 +217,7 @@ const ComponentNavigatorRow = betterReactMemo(
   },
 )
 
-const ComponentRenderRow = betterReactMemo('ComponentRenderRow', () => {
+const ComponentRenderRow = betterReactMemo('ComponentRenderRow', ({ title }: { title: string }) => {
   return (
     <FlexRow
       style={{
@@ -236,7 +256,7 @@ const ComponentRenderRow = betterReactMemo('ComponentRenderRow', () => {
             whiteSpace: 'nowrap',
           }}
         >
-          Render
+          {title}
         </div>
       </FlexRow>
     </FlexRow>

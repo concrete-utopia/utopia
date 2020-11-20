@@ -8,7 +8,12 @@ import { setFocus } from '../common/actions'
 import { Title, UtopiaTheme } from 'uuiui'
 import { FlexRow } from 'uuiui'
 import { Section, SectionBodyArea, SectionTitleRow } from 'uuiui'
-import { foldParsedTextFile, TemplatePath } from '../../core/shared/project-file-types'
+import {
+  foldParsedTextFile,
+  InstancePath,
+  ScenePath,
+  TemplatePath,
+} from '../../core/shared/project-file-types'
 import * as EditorActions from '../editor/actions/actions'
 import { clearHighlightedViews, showContextMenu } from '../editor/actions/actions'
 import { DragSelection } from './navigator-item/navigator-item-dnd-container'
@@ -23,13 +28,21 @@ import {
   getOpenUIJSFile,
   getOpenUtopiaJSXComponentsByName,
 } from '../editor/store/editor-state'
-import { getJSXElementNameAsString, isJSXElement } from '../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  getJSXElementNameAsString,
+  isJSXElement,
+  JSXElement,
+  JSXMetadata,
+  UtopiaJSXComponent,
+} from '../../core/shared/element-template'
 import { fastForEach, NO_OP } from '../../core/shared/utils'
-import { isRight } from '../../core/shared/either'
+import { Either, isRight } from '../../core/shared/either'
 import { SelectedComponentNavigator } from './navigator-item/component-navigator'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import { Size } from 'react-virtualized-auto-sizer'
+import { UtopiaJSXComponentsByName } from '../../core/model/project-file-utils'
 // There's some weirdness between the types and the results in the two module systems.
 // This is to effectively massage the result so that if it is loaded in the browser or in
 // node it should end up with the right thing.
@@ -62,6 +75,68 @@ export const getChildrenOfCollapsedViews = (
 }
 
 const NavigatorOverflowScrollId = 'navigator-overflow-scroll'
+
+function getMatchingComponentForInstancePath(
+  path: InstancePath,
+  metadata: JSXMetadata,
+  componentsByName: UtopiaJSXComponentsByName,
+): UtopiaJSXComponent | null {
+  const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
+  if (elementMetadata != null) {
+    const element = elementMetadata.element
+    if (isRight(element) && isJSXElement(element.value)) {
+      const elementName = getJSXElementNameAsString(element.value.name)
+      return componentsByName[elementName] ?? null
+    }
+  }
+
+  return null
+}
+
+function getMatchingComponentForScenePath(
+  path: ScenePath,
+  metadata: JSXMetadata,
+  componentsByName: UtopiaJSXComponentsByName,
+): UtopiaJSXComponent | null {
+  const sceneMetadata = MetadataUtils.findSceneByTemplatePath(metadata.components, path)
+  const componentName = sceneMetadata?.component
+  const maybeMatchingComponent = componentName == null ? null : componentsByName[componentName]
+  return maybeMatchingComponent
+}
+
+function findNearestComponentAncestor(
+  path: TemplatePath,
+  metadata: JSXMetadata,
+  componentsByName: UtopiaJSXComponentsByName,
+): UtopiaJSXComponent | null {
+  if (TP.isInstancePath(path)) {
+    const maybeMatchingComponent = getMatchingComponentForInstancePath(
+      path,
+      metadata,
+      componentsByName,
+    )
+    return (
+      maybeMatchingComponent ??
+      findNearestComponentAncestor(TP.parentPath(path), metadata, componentsByName)
+    )
+  } else {
+    return getMatchingComponentForScenePath(path, metadata, componentsByName)
+  }
+}
+
+function findMatchingComponent(
+  path: TemplatePath,
+  metadata: JSXMetadata,
+  componentsByName: UtopiaJSXComponentsByName,
+): UtopiaJSXComponent | null {
+  if (isFeatureEnabled('Component Navigator Nearest Ancestor')) {
+    return findNearestComponentAncestor(path, metadata, componentsByName)
+  } else if (TP.isInstancePath(path)) {
+    return getMatchingComponentForInstancePath(path, metadata, componentsByName)
+  } else {
+    return getMatchingComponentForScenePath(path, metadata, componentsByName)
+  }
+}
 
 export const NavigatorComponentWrapper = betterReactMemo('NavigatorComponent', () => {
   // get selected views
@@ -97,52 +172,45 @@ export const NavigatorComponentWrapper = betterReactMemo('NavigatorComponent', (
     [dispatch],
   )
 
-  if (isFeatureEnabled('Component Navigator') && selectedViews.length === 1) {
+  if (isFeatureEnabled('Component Navigator')) {
     const selectedView = selectedViews[0]
-    if (TP.isInstancePath(selectedView)) {
-      const selectedViewMetadata = MetadataUtils.getElementByInstancePathMaybe(
-        editorSliceRef.current.metadata.elements,
-        selectedView,
-      )
+    const matchingComponent =
+      selectedView == null
+        ? null
+        : findMatchingComponent(
+            selectedView,
+            editorSliceRef.current.metadata,
+            editorSliceRef.current.componentsByName,
+          )
 
-      if (selectedViewMetadata != null) {
-        const element = selectedViewMetadata.element
-        if (isRight(element) && isJSXElement(element.value)) {
-          const elementName = getJSXElementNameAsString(element.value.name)
-          const matchingComponent = editorSliceRef.current.componentsByName[elementName]
-          if (matchingComponent != null) {
-            return (
-              <React.Fragment>
-                <div
-                  id={NavigatorOverflowScrollId}
-                  style={{
-                    height: '50%',
-                    overflowY: 'scroll',
-                    flexGrow: 1,
-                  }}
-                  onMouseDown={onMouseDown}
-                >
-                  <NavigatorComponent />
-                </div>
-                <div
-                  style={{
-                    height: '50%',
-                    overflowY: 'scroll',
-                    flexGrow: 1,
-                  }}
-                >
-                  <SelectedComponentNavigator
-                    selectedComponent={matchingComponent}
-                    imports={editorSliceRef.current.imports}
-                    utopiaComponentNames={Object.keys(editorSliceRef.current.componentsByName)}
-                  />
-                </div>
-              </React.Fragment>
-            )
-          }
-        }
-      }
-    }
+    return (
+      <React.Fragment>
+        <div
+          id={NavigatorOverflowScrollId}
+          style={{
+            height: '50%',
+            overflowY: 'scroll',
+            flexGrow: 1,
+          }}
+          onMouseDown={onMouseDown}
+        >
+          <NavigatorComponent />
+        </div>
+        <div
+          style={{
+            height: '50%',
+            overflowY: 'scroll',
+            flexGrow: 1,
+          }}
+        >
+          <SelectedComponentNavigator
+            selectedComponent={matchingComponent}
+            imports={editorSliceRef.current.imports}
+            utopiaComponentNames={Object.keys(editorSliceRef.current.componentsByName)}
+          />
+        </div>
+      </React.Fragment>
+    )
   }
 
   return (

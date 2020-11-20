@@ -8,6 +8,8 @@ export type FeatureName =
   | 'Advanced Resize Box'
   | 'Component Isolation Mode'
   | 'Component Navigator'
+  | 'Component Navigator Component Outline Title'
+  | 'Component Navigator Nearest Ancestor'
   | 'Re-parse Project Button'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -15,6 +17,8 @@ export const AllFeatureNames: FeatureName[] = [
   'Invisible Element Controls',
   'Advanced Resize Box',
   'Component Navigator',
+  'Component Navigator Component Outline Title',
+  'Component Navigator Nearest Ancestor',
   'Re-parse Project Button',
 ]
 
@@ -23,8 +27,10 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Shows Overlay': false,
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
-  'Component Isolation Mode': true,
-  'Component Navigator': false,
+  'Component Isolation Mode': false,
+  'Component Navigator': true,
+  'Component Navigator Component Outline Title': true,
+  'Component Navigator Nearest Ancestor': true,
   'Re-parse Project Button': false,
 }
 

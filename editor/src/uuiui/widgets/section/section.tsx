@@ -14,6 +14,7 @@ export const Section = styled.div({
 })
 interface SectionTitleRowProps {
   minimised: boolean
+  overrideStyle?: any
   toggleMinimised?: () => void
   dontPad?: boolean
 }
@@ -38,6 +39,7 @@ export const SectionTitleRow: React.FunctionComponent<SectionTitleRowProps> = (p
         paddingRight: 8,
         minHeight: UtopiaTheme.layout.rowHeight.large,
         cursor: 'pointer',
+        ...props.overrideStyle,
       }}
       css={{
         '&:hover': {
