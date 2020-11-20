@@ -311,6 +311,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       case 'live': {
         return (
           <SelectModeControlContainer
+            key={props.editor.selectedViews.map(TP.toString).join(';')}
             {...controlProps}
             keysPressed={props.editor.keysPressed}
             windowToCanvasPosition={props.windowToCanvasPosition}
