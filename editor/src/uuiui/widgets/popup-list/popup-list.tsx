@@ -7,6 +7,7 @@ import * as ReactDOM from 'react-dom'
 import Select, {
   components,
   createFilter,
+  InputProps,
   MenuListComponentProps,
   OptionProps,
   OptionsType,
@@ -465,6 +466,31 @@ const getContainer = (
   }
 }
 
+const Input = (props: InputProps) => {
+  const inputStyle = React.useMemo(() => {
+    return {
+      label: 'input',
+      background: 0,
+      border: 0,
+      fontSize: 'inherit',
+      opacity: props.isHidden ? 0 : 1,
+      outline: 0,
+      padding: 0,
+      color: 'inherit',
+    }
+  }, [props.isHidden])
+  return (
+    <div>
+      <input
+        className={props.className}
+        style={inputStyle}
+        disabled={props.isDisabled}
+        {...props}
+      />
+    </div>
+  )
+}
+
 export const PopupList = betterReactMemo<PopupListProps>(
   'PopupList',
   ({
@@ -497,6 +523,7 @@ export const PopupList = betterReactMemo<PopupListProps>(
           MenuPortal,
           DropdownIndicator,
           SingleValue,
+          Input,
         }}
         value={value}
         onChange={selectOnSubmitValue}
