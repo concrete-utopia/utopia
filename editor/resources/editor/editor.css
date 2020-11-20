@@ -84,6 +84,11 @@ body {
   flex-direction: row;
 }
 
+.code-editor {
+  display: flex;
+  flex-direction: column;
+}
+
 .canvas-hidden {
   width: 0px !important;
   flex: 0 !important;
