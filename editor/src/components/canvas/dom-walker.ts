@@ -279,14 +279,20 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       }
 
       // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
-      const containerRect = lazyValue(() => {
-        return getCanvasRectangleFromElement(refOfContainer, props.scale)
-      })
+      const containerRect = getCanvasRectangleFromElement(refOfContainer, props.scale)
 
+      let globalFrameCache: Map<HTMLElement, CanvasRectangle> = new Map()
       function globalFrameForElement(element: HTMLElement): CanvasRectangle {
-        // Get the local frame from the DOM and calculate the global frame.
-        const elementRect = getCanvasRectangleFromElement(element, props.scale)
-        return Utils.offsetRect(elementRect, Utils.negate(containerRect()))
+        const fromCache = globalFrameCache.get(element)
+        if (fromCache == null) {
+          // Get the local frame from the DOM and calculate the global frame.
+          const elementRect = getCanvasRectangleFromElement(element, props.scale)
+          const result = Utils.offsetRect(elementRect, Utils.negate(containerRect))
+          globalFrameCache.set(element, result)
+          return result
+        } else {
+          return fromCache
+        }
       }
 
       function getSpecialMeasurements(
@@ -374,10 +380,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         domComputedStyle: CSSStyleDeclaration,
       ): ComputedStyle | null {
         const isSelected = selectedViews.some((sv) => TP.pathsEqual(sv, path))
-        //if (!isSelected) {
-        // the element is not among the selected views, skip computing the style
-        //  return null
-        //}
+        if (!isSelected) {
+          // the element is not among the selected views, skip computing the style
+          return null
+        }
         let computedStyle: ComputedStyle = {}
         if (domComputedStyle != null) {
           fastForEach(Object.keys(domWalkerComputedStyleProps), (computedStyleProp) => {
@@ -650,6 +656,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         if (labelAttribute != null) {
           elementProps[UTOPIA_LABEL_KEY] = labelAttribute
         }
+        const metadataComputedStyle = getComputedStyle(element, instancePath, computedStyle)
         return elementInstanceMetadata(
           instancePath,
           left(element.tagName.toLowerCase()),
@@ -659,7 +666,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           children,
           false,
           getSpecialMeasurements(element, computedStyle, parentComputedStyle),
-          getComputedStyle(element, instancePath, computedStyle),
+          metadataComputedStyle,
         )
       }
 
