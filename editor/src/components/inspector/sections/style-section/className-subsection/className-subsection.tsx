@@ -9,6 +9,7 @@ import { GridRow } from '../../../widgets/grid-row'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorElementInfo } from '../../../common/property-path-hooks'
 import { styleFn } from 'react-select/src/styles'
+import { CustomReactSelectInput } from '../../../controls/select-control'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<SelectOption>> = () =>
   null
@@ -199,6 +200,7 @@ const ClassNameControl = betterReactMemo(
         components={{
           IndicatorsContainer,
           MultiValueRemove,
+          Input: CustomReactSelectInput,
         }}
         className='className-inspector-control'
         styles={{

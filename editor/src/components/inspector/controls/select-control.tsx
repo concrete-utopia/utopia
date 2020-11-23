@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import Select, { components, createFilter } from 'react-select'
+import Select, { components, createFilter, InputProps } from 'react-select'
 import CreatableSelect, { Props as SelectProps } from 'react-select/creatable'
 import { IndicatorProps } from 'react-select/src/components/indicators'
 import Utils from '../../../utils/utils'
@@ -53,6 +53,31 @@ const ControlledDropdownIndicator: React.FunctionComponent<IndicatorProps<Select
         <Icons.ExpansionArrowControlled />
       </components.DropdownIndicator>
     )
+  )
+}
+
+export const CustomReactSelectInput = (props: InputProps) => {
+  const inputStyle = React.useMemo(() => {
+    return {
+      label: 'input',
+      background: 0,
+      border: 0,
+      fontSize: 'inherit',
+      opacity: props.isHidden ? 0 : 1,
+      outline: 0,
+      padding: 0,
+      color: 'inherit',
+    }
+  }, [props.isHidden])
+  return (
+    <div>
+      <input
+        className={props.className}
+        style={inputStyle}
+        disabled={props.isDisabled}
+        {...props}
+      />
+    </div>
   )
 }
 
@@ -112,6 +137,7 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
     isDisabled: !props.controlStyles.interactive,
     components: {
       DropdownIndicator: controlledStatus ? ControlledDropdownIndicator : DropdownIndicator,
+      Input: CustomReactSelectInput,
       ...props.reactSelectComponents,
     },
     onChange: createableSelectOnSubmitValue,
