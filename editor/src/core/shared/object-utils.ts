@@ -124,8 +124,11 @@ export function objectMap<T, K extends keyof T, U>(
   return mappedObj
 }
 
-export function forEachValue<T>(fn: (val: ValueOf<T>, key: keyof T) => void, obj: T): void {
-  const keys = Object.keys(obj) as Array<keyof T>
+export function forEachValue<T, K extends keyof T>(
+  fn: (val: ValueOf<T>, key: keyof T) => void,
+  obj: T,
+): void {
+  const keys = Object.keys(obj) as Array<K>
   fastForEach(keys, (key) => {
     const value = obj[key]
     fn(value, key)

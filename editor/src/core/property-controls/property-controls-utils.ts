@@ -452,7 +452,7 @@ export function sendPropertyControlsInfoRequest(
   let nodeModulesUpdate: NodeModulesUpdate
   if (onlyProjectFiles) {
     let notNodeModulesFiles: NodeModules = {}
-    forEachValue<NodeModules>((value, key) => {
+    forEachValue<NodeModules, string>((value, key) => {
       if (typeof key === 'string' && !key.startsWith('/node_modules')) {
         notNodeModulesFiles[key] = value
       }

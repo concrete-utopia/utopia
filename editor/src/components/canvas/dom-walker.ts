@@ -48,6 +48,10 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
+import { MapLike } from 'typescript'
+import { forEachValue } from '../../core/shared/object-utils'
+import { mapArrayToDictionary } from '../../core/shared/array-utils'
+import { fastForEach } from '../../core/shared/utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -208,6 +212,45 @@ function useInvalidateScenesWhenSelectedViewChanges(
   )
 }
 
+const domWalkerComputedStyleProps: { [key: string]: string } = mapArrayToDictionary<
+  string,
+  string,
+  string
+>(
+  [
+    'alignContent',
+    'alignItems',
+    'alignSelf',
+    'bottom',
+    'display',
+    'flexDirection',
+    'flexGrow',
+    'flexShrink',
+    'flexWrap',
+    'Height',
+    'justifyContent',
+    'left',
+    'marginBottom',
+    'marginLeft',
+    'marginRight',
+    'marginTop',
+    'maxHeight',
+    'maxWidth',
+    'minHeight',
+    'minWidth',
+    'paddingBottom',
+    'paddingLeft',
+    'paddingRight',
+    'paddingTop',
+    'position',
+    'right',
+    'top',
+    'Width',
+  ],
+  (key) => key,
+  (key) => camelCaseToDashed(key),
+)
+
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
@@ -246,10 +289,13 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         return Utils.offsetRect(elementRect, Utils.negate(containerRect()))
       }
 
-      function getSpecialMeasurements(element: HTMLElement): SpecialSizeMeasurements {
-        const elementStyle = window.getComputedStyle(element)
-        const layoutSystemForChildren = elementLayoutSystem(elementStyle)
-        const position = getPosition(elementStyle)
+      function getSpecialMeasurements(
+        element: HTMLElement,
+        computedStyle: CSSStyleDeclaration,
+        parentComputedStyle: CSSStyleDeclaration | null,
+      ): SpecialSizeMeasurements {
+        const layoutSystemForChildren = elementLayoutSystem(computedStyle)
+        const position = getPosition(computedStyle)
 
         const offset = {
           x: roundToNearestHalf(element.offsetLeft),
@@ -266,30 +312,30 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             ? globalFrameForElement(element.parentElement)
             : null
 
-        const parentElementStyle =
-          element.parentElement == null ? null : window.getComputedStyle(element.parentElement)
-        const isParentNonStatic = isElementNonStatic(parentElementStyle)
+        //const parentComputedStyle =
+        //  element.parentElement == null ? null : window.getComputedStyle(element.parentElement)
+        const isParentNonStatic = isElementNonStatic(parentComputedStyle)
 
-        const providesBoundsForChildren = isElementNonStatic(elementStyle)
+        const providesBoundsForChildren = isElementNonStatic(computedStyle)
 
-        const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
+        const parentLayoutSystem = elementLayoutSystem(parentComputedStyle)
         const parentProvidesLayout = element.parentElement === element.offsetParent
-        const parentFlexDirection = parentElementStyle?.flexDirection ?? null
+        const parentFlexDirection = parentComputedStyle?.flexDirection ?? null
 
         const margin = applicative4Either(
           applicativeSidesPxTransform,
-          parseCSSLength(elementStyle.marginTop),
-          parseCSSLength(elementStyle.marginRight),
-          parseCSSLength(elementStyle.marginBottom),
-          parseCSSLength(elementStyle.marginLeft),
+          parseCSSLength(computedStyle.marginTop),
+          parseCSSLength(computedStyle.marginRight),
+          parseCSSLength(computedStyle.marginBottom),
+          parseCSSLength(computedStyle.marginLeft),
         )
 
         const padding = applicative4Either(
           applicativeSidesPxTransform,
-          parseCSSLength(elementStyle.paddingTop),
-          parseCSSLength(elementStyle.paddingRight),
-          parseCSSLength(elementStyle.paddingBottom),
-          parseCSSLength(elementStyle.paddingLeft),
+          parseCSSLength(computedStyle.paddingTop),
+          parseCSSLength(computedStyle.paddingRight),
+          parseCSSLength(computedStyle.paddingBottom),
+          parseCSSLength(computedStyle.paddingLeft),
         )
 
         let naturalWidth: number | null = null
@@ -322,22 +368,25 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         )
       }
 
-      function getComputedStyle(element: HTMLElement, path: TemplatePath): ComputedStyle | null {
+      function getComputedStyle(
+        element: HTMLElement,
+        path: TemplatePath,
+        domComputedStyle: CSSStyleDeclaration,
+      ): ComputedStyle | null {
         const isSelected = selectedViews.some((sv) => TP.pathsEqual(sv, path))
-        if (!isSelected) {
-          // the element is not among the selected views, skip computing the style
-          return null
-        }
-        const elementStyle = window.getComputedStyle(element)
+        //if (!isSelected) {
+        // the element is not among the selected views, skip computing the style
+        //  return null
+        //}
         let computedStyle: ComputedStyle = {}
-        if (elementStyle != null) {
-          Object.keys(elementStyle).forEach((key) => {
+        if (domComputedStyle != null) {
+          fastForEach(Object.keys(domWalkerComputedStyleProps), (computedStyleProp) => {
+            const styleProp = domWalkerComputedStyleProps[computedStyleProp]
             // Accessing the value directly often doesn't work, and using `getPropertyValue` requires
             // using dashed case rather than camel case
-            const caseCorrectedKey = camelCaseToDashed(key)
-            const propertyValue = elementStyle.getPropertyValue(caseCorrectedKey)
+            const propertyValue = domComputedStyle.getPropertyValue(styleProp)
             if (propertyValue != '') {
-              computedStyle[key] = propertyValue
+              computedStyle[computedStyleProp] = propertyValue
             }
           })
         }
@@ -374,13 +423,24 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             }
 
             if (cachedMetadata == null) {
-              const rootElements = walkSceneInner(scene, index, scenePath, validPaths)
+              const parentComputedStyle =
+                scene.parentElement == null ? null : window.getComputedStyle(scene.parentElement)
+              const rootElements = walkSceneInner(
+                scene,
+                index,
+                scenePath,
+                validPaths,
+                parentComputedStyle,
+              )
 
+              const computedStyle = window.getComputedStyle(scene)
               const sceneMetadata = collectMetadata(
                 scene,
                 TP.instancePath([], TP.elementPathForPath(scenePath)),
                 null,
                 rootElements,
+                computedStyle,
+                parentComputedStyle,
               )
               rootMetadata.push(sceneMetadata)
             } else {
@@ -411,7 +471,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           // no mutation happened on the entire canvas, just return the old metadata
           rootMetadata = rootMetadataInStateRef.current
         } else {
-          const rootElements = walkSceneInner(canvasRoot, index, canvasRootPath, validPaths)
+          const rootElements = walkSceneInner(canvasRoot, index, canvasRootPath, validPaths, null)
           // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
           // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
           // to provide a home for the the (really existing) childMetadata
@@ -435,6 +495,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         index: number,
         scenePath: TemplatePath,
         validPaths: Array<string>,
+        parentComputedStyle: CSSStyleDeclaration | null,
       ): Array<InstancePath> {
         const globalFrame: CanvasRectangle = globalFrameForElement(scene)
 
@@ -449,6 +510,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             scenePath,
             scenePath,
             validPaths,
+            parentComputedStyle,
           )
 
           childPaths.push(...childNodePaths)
@@ -466,6 +528,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         originalParentPath: TemplatePath | null,
         uniqueParentPath: TemplatePath,
         validPaths: Array<string>,
+        parentComputedStyle: CSSStyleDeclaration | null,
       ): Array<InstancePath> {
         if (isScene(element)) {
           // we found a nested scene, restart the walk
@@ -520,6 +583,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           const pathIsValid = isValidPath(Utils.defaultIfNull(uniquePath, originalPath), validPaths)
           const pathForChildren = pathIsValid ? uniquePath : uniqueParentPath
 
+          // Get this upfront here at the uppermost point reasonable.
+          const computedStyle = window.getComputedStyle(element)
+
           // Build the metadata for the children of this DOM node.
           let childPaths: Array<InstancePath> = []
           if (traverseChildren) {
@@ -532,13 +598,21 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
                 originalPath,
                 pathForChildren,
                 validPaths,
+                computedStyle,
               )
               childPaths.push(...childNodePaths)
             })
           }
 
           if (pathIsValid) {
-            const collectedMetadata = collectMetadata(element, uniquePath, parentPoint, childPaths)
+            const collectedMetadata = collectMetadata(
+              element,
+              uniquePath,
+              parentPoint,
+              childPaths,
+              computedStyle,
+              parentComputedStyle,
+            )
             rootMetadata.push(collectedMetadata)
             return [collectedMetadata.templatePath]
           } else {
@@ -554,6 +628,8 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         instancePath: InstancePath,
         parentPoint: CanvasPoint | null,
         children: InstancePath[],
+        computedStyle: CSSStyleDeclaration,
+        parentComputedStyle: CSSStyleDeclaration | null,
       ): ElementInstanceMetadata {
         const globalFrame = globalFrameForElement(element)
         const localFrame =
@@ -582,8 +658,8 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           localFrame,
           children,
           false,
-          getSpecialMeasurements(element),
-          getComputedStyle(element, instancePath),
+          getSpecialMeasurements(element, computedStyle, parentComputedStyle),
+          getComputedStyle(element, instancePath, computedStyle),
         )
       }
 
