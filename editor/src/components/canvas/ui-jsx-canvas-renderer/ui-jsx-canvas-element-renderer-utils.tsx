@@ -35,6 +35,7 @@ import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-p
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function renderCoreElement(
   element: JSXElementChild,
@@ -251,7 +252,10 @@ function renderJSXElement(
   const finalProps =
     elementIsIntrinsic && !elementIsBaseHTML ? filterDataProps(elementProps) : elementProps
 
-  if (FinalElement != null && TP.containsPath(templatePath, validPaths)) {
+  if (
+    FinalElement != null &&
+    (TP.containsPath(templatePath, validPaths) || isFeatureEnabled('Component Children Highlights'))
+  ) {
     let childrenTemplatePaths: InstancePath[] = []
 
     Utils.fastForEach(jsx.children, (child) => {
