@@ -1,4 +1,5 @@
 import * as R from 'ramda'
+import * as ReactDOM from 'react-dom'
 import * as React from 'react'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
@@ -105,7 +106,9 @@ export class SelectModeControlContainer extends React.Component<
       if (isMultiselect) {
         updatedSelection = TP.addPathIfMissing(target, this.state.selectedViews)
       }
-      this.setState({ selectedViews: updatedSelection })
+      ;(ReactDOM as any).flushSync(() => {
+        this.setState({ selectedViews: updatedSelection })
+      })
       // is this enough?
       setTimeout(() => {
         let selectActions = [
@@ -115,7 +118,7 @@ export class SelectModeControlContainer extends React.Component<
           EditorActions.setRightMenuTab(RightMenuTab.Inspector),
         ]
         this.props.dispatch(selectActions, 'canvas')
-      }, 1)
+      }, 0)
       return updatedSelection
     }
   }
@@ -156,25 +159,25 @@ export class SelectModeControlContainer extends React.Component<
             )
           : null
 
-        this.props.dispatch([
-          CanvasActions.createDragState(
-            moveDragState(
-              start,
-              null,
-              null,
-              originalFrames,
-              selectionArea,
-              !originalEvent.metaKey,
-              originalEvent.shiftKey,
-              duplicate,
-              originalEvent.metaKey,
-              duplicateNewUIDs,
-              start,
-              this.props.componentMetadata,
-              moveTargets,
-            ),
-          ),
-        ])
+        // this.props.dispatch([
+        //   CanvasActions.createDragState(
+        //     moveDragState(
+        //       start,
+        //       null,
+        //       null,
+        //       originalFrames,
+        //       selectionArea,
+        //       !originalEvent.metaKey,
+        //       originalEvent.shiftKey,
+        //       duplicate,
+        //       originalEvent.metaKey,
+        //       duplicateNewUIDs,
+        //       start,
+        //       this.props.componentMetadata,
+        //       moveTargets,
+        //     ),
+        //   ),
+        // ])
       }
     }
   }
@@ -702,15 +705,16 @@ export class SelectModeControlContainer extends React.Component<
           : null}
         {this.props.selectionEnabled ? (
           <>
-            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} selectedViews={this.state.selectedViews} />
             {this.canResizeElements() ? (
               repositionOnly ? (
-                <RepositionableControl {...this.props} />
+                <RepositionableControl {...this.props} selectedViews={this.state.selectedViews} />
               ) : (
                 <>
-                  <ConstraintsControls {...this.props} />
+                  <ConstraintsControls {...this.props} selectedViews={this.state.selectedViews} />
                   <YogaControls
                     {...this.props}
+                    selectedViews={this.state.selectedViews}
                     dragState={
                       this.props.dragState != null &&
                       this.props.dragState.type === 'RESIZE_DRAG_STATE'
