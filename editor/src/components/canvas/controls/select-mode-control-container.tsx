@@ -110,15 +110,17 @@ export class SelectModeControlContainer extends React.Component<
         this.setState({ selectedViews: updatedSelection })
       })
       // is this enough?
-      setTimeout(() => {
-        let selectActions = [
-          EditorActions.clearHighlightedViews(),
-          EditorActions.selectComponents(updatedSelection, false),
-          EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
-          EditorActions.setRightMenuTab(RightMenuTab.Inspector),
-        ]
-        this.props.dispatch(selectActions, 'canvas')
-      }, 0)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          let selectActions = [
+            EditorActions.clearHighlightedViews(),
+            EditorActions.selectComponents(updatedSelection, false),
+            EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
+            EditorActions.setRightMenuTab(RightMenuTab.Inspector),
+          ]
+          this.props.dispatch(selectActions, 'canvas')
+        })
+      })
       return updatedSelection
     }
   }
