@@ -141,6 +141,14 @@ export const NewCanvasControls = betterReactMemo(
             }}
           >
             <NewCanvasControlsClass
+              key={
+                canvasControlProps.derived.canvas.transientState.selectedViews
+                  .map(TP.toString)
+                  .join(';') +
+                canvasControlProps.derived.canvas.transientState.highlightedViews
+                  .map(TP.toString)
+                  .join(';')
+              }
               windowToCanvasPosition={props.windowToCanvasPosition}
               {...canvasControlProps}
             />
@@ -262,6 +270,18 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     'NewCanvasControls elementsThatRespectLayout',
   )
 
+  const [localSelectedViews, setLocalSelectedViews] = React.useState(
+    props.derived.canvas.transientState.selectedViews,
+  )
+  const [localHighlightedViews, setLocalHighlightedViews] = React.useState(
+    props.derived.canvas.transientState.highlightedViews,
+  )
+
+  const selectViewsWithPriority = React.useCallback((newSelectedViews: Array<TemplatePath>) => {
+    setLocalHighlightedViews([])
+    setLocalSelectedViews(newSelectedViews)
+  }, [])
+
   const renderModeControlContainer = () => {
     const fallbackTransientState = props.derived.canvas.transientState
     const targets = fallbackTransientState.selectedViews
@@ -311,7 +331,6 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       case 'live': {
         return (
           <SelectModeControlContainer
-            key={props.editor.selectedViews.map(TP.toString).join(';')}
             {...controlProps}
             keysPressed={props.editor.keysPressed}
             windowToCanvasPosition={props.windowToCanvasPosition}
@@ -327,6 +346,9 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
                 : null
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+            selectViewsWithPriority={selectViewsWithPriority}
+            selectedViews={localSelectedViews}
+            highlightedViews={localHighlightedViews}
           />
         )
       }
@@ -354,7 +376,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
   }
 
   const renderHighlightControls = () => {
-    const highlightedViews = props.derived.canvas.transientState.highlightedViews
+    const highlightedViews = localHighlightedViews
     return selectionEnabled
       ? highlightedViews.map((path) => {
           const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
