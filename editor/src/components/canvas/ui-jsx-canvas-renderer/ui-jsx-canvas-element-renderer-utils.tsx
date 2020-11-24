@@ -252,10 +252,8 @@ function renderJSXElement(
   const finalProps =
     elementIsIntrinsic && !elementIsBaseHTML ? filterDataProps(elementProps) : elementProps
 
-  if (
-    FinalElement != null &&
-    (TP.containsPath(templatePath, validPaths) || isFeatureEnabled('Component Children Highlights'))
-  ) {
+  const isValidPath = TP.containsPath(templatePath, validPaths)
+  if (FinalElement != null && (isValidPath || isFeatureEnabled('Component Children Highlights'))) {
     let childrenTemplatePaths: InstancePath[] = []
 
     Utils.fastForEach(jsx.children, (child) => {
@@ -281,6 +279,7 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
+      !isValidPath,
     )
   } else {
     const childrenOrNull = childrenElements.length !== 0 ? childrenElements : null

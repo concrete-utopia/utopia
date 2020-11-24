@@ -77,6 +77,7 @@ function useRunSpy(
       localFrame: null,
       children: [],
       componentInstance: false,
+      internalChildOfComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
     }

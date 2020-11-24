@@ -815,6 +815,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     children: [childElementPath],
     componentInstance: false,
+    internalChildOfComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
   }
@@ -835,6 +836,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
     children: [],
     componentInstance: false,
+    internalChildOfComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
   }

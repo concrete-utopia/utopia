@@ -424,6 +424,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             null,
             rootElements,
             false,
+            false,
             emptySpecialSizeMeasurements,
             emptyComputedStyle,
           )
@@ -584,6 +585,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           globalFrame,
           localFrame,
           children,
+          false,
           false,
           getSpecialMeasurements(element),
           getComputedStyle(element, instancePath),
