@@ -213,7 +213,7 @@ function renderJSXElement(
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
 ): React.ReactElement {
-  let elementProps = { key: key, ...passthroughProps }
+  let elementProps = { key: key, ...passthroughProps, 'data-template-path': templatePath }
   if (isHidden(hiddenInstances, templatePath)) {
     elementProps = hideElement(elementProps)
   }
@@ -261,7 +261,10 @@ function renderJSXElement(
     Utils.fastForEach(jsx.children, (child) => {
       if (isJSXElement(child)) {
         const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
-        if (TP.containsPath(childPath, validPaths)) {
+        if (
+          TP.containsPath(childPath, validPaths) ||
+          isFeatureEnabled('Component Children Highlights')
+        ) {
           childrenTemplatePaths.push(childPath)
         }
       }
