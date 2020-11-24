@@ -142,19 +142,19 @@ export class SelectModeControlContainer extends React.Component<
           }),
         )
 
-        const duplicate = originalEvent.altKey
-        const duplicateNewUIDs = duplicate
-          ? createDuplicationNewUIDs(
-              this.props.selectedViews,
-              this.props.componentMetadata,
-              this.props.rootComponents,
-            )
-          : null
-
         const onMouseMove = (event: MouseEvent) => {
           const cursorPosition = this.props.windowToCanvasPosition(event)
           if (Utils.distance(start, cursorPosition.canvasPositionRaw) > 2) {
             // actually start the drag state
+            const duplicate = event.altKey
+            const duplicateNewUIDs = duplicate
+              ? createDuplicationNewUIDs(
+                  this.props.selectedViews,
+                  this.props.componentMetadata,
+                  this.props.rootComponents,
+                )
+              : null
+
             removeMouseListeners()
             this.props.dispatch([
               CanvasActions.createDragState(
@@ -164,10 +164,10 @@ export class SelectModeControlContainer extends React.Component<
                   null,
                   originalFrames,
                   selectionArea,
-                  !originalEvent.metaKey,
-                  originalEvent.shiftKey,
+                  !event.metaKey,
+                  event.shiftKey,
                   duplicate,
-                  originalEvent.metaKey,
+                  event.metaKey,
                   duplicateNewUIDs,
                   start,
                   this.props.componentMetadata,
