@@ -2,12 +2,13 @@ import * as React from 'react'
 import { View } from 'utopia-api'
 import { useContextSelector } from 'use-context-selector'
 import * as fastDeepEquals from 'fast-deep-equal'
-import { getValidTemplatePaths } from '../../../core/model/element-template-utils'
+import { getUtopiaID, getValidTemplatePaths } from '../../../core/model/element-template-utils'
 import { left } from '../../../core/shared/either'
 import {
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
   JSXElement,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   InstancePath,
@@ -26,7 +27,10 @@ import {
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
 } from './ui-jsx-canvas-contexts'
-import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
+import {
+  renderComponentUsingJsxFactoryFunction,
+  renderCoreElement,
+} from './ui-jsx-canvas-element-renderer-utils'
 import * as TP from '../../../core/shared/template-path'
 import * as PP from '../../../core/shared/property-path'
 import { betterReactMemo } from '../../../uuiui-deps'
@@ -118,8 +122,14 @@ export const SceneRootRenderer = betterReactMemo(
     const mutableUtopiaContext = React.useContext(MutableUtopiaContext).current
     const inScope = mutableUtopiaContext.rootScope
     const requireResult = mutableUtopiaContext.requireResult
+    const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
     const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
+    const shouldIncludeCanvasRootInTheSpy = useContextSelector(
+      RerenderUtopiaContext,
+      (c) => c.shouldIncludeCanvasRootInTheSpy,
+    )
     const parentPath = useContextSelector(ParentLevelUtopiaContext, (c) => c.templatePath)
+    const metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
     const uid = getUtopiaIDFromJSXElement(props.sceneElement)
 
     if (parentPath == null) {
@@ -137,6 +147,32 @@ export const SceneRootRenderer = betterReactMemo(
 
     const validPaths = useGetValidTemplatePaths(topLevelElementName, scenePath)
 
+    const createChildrenElement = (
+      child: JSXElementChild,
+    ): React.ReactElement | Array<React.ReactElement> => {
+      const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
+      return renderCoreElement(
+        child,
+        childPath,
+        inScope,
+        inScope,
+        sceneProps,
+        requireResult,
+        hiddenInstances,
+        null,
+        mutableUtopiaContext.fileBlobs,
+        validPaths,
+        undefined,
+        undefined,
+        metadataContext,
+        mutableUtopiaContext.jsxFactoryFunctionName,
+        null,
+        shouldIncludeCanvasRootInTheSpy,
+      )
+    }
+
+    const childrenElements = props.sceneElement.children.map(createChildrenElement)
+
     useRunSpy(scenePath, templatePath, topLevelElementName, sceneProps)
 
     const rootElement =
@@ -147,7 +183,7 @@ export const SceneRootRenderer = betterReactMemo(
             mutableUtopiaContext.jsxFactoryFunctionName,
             sceneProps.component,
             sceneProps.props,
-            undefined,
+            childrenElements,
           )
 
     const sceneStyle: React.CSSProperties = {
