@@ -367,9 +367,18 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
           if (frame == null) {
             return null
           }
-          const color = TP.isScenePath(path)
-            ? colorTheme.canvasSelectionSceneOutline.value
-            : colorTheme.canvasSelectionPrimaryOutline.value
+          let color: string
+          if (TP.isScenePath(path)) {
+            color = colorTheme.canvasSelectionSceneOutline.value
+          } else {
+            const element = MetadataUtils.getElementByInstancePathMaybe(
+              componentMetadata.elements,
+              path,
+            )
+            color = element?.internalChildOfComponent
+              ? '#FFA500'
+              : colorTheme.canvasSelectionPrimaryOutline.value
+          }
           return (
             <HighlightControl
               key={`highlight-control-${TP.toComponentId(path)}`}

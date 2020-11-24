@@ -25,6 +25,7 @@ export function buildSpyWrappedElement(
   inScope: MapLike<any>,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  internalChildOfComponent: boolean,
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -40,6 +41,7 @@ export function buildSpyWrappedElement(
       localFrame: null,
       children: childrenTemplatePaths,
       componentInstance: false,
+      internalChildOfComponent: internalChildOfComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
     }

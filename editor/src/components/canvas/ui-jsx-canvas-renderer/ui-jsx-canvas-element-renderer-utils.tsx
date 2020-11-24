@@ -35,6 +35,7 @@ import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-p
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function renderCoreElement(
   element: JSXElementChild,
@@ -221,7 +222,7 @@ function renderJSXElement(
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
 ): React.ReactElement {
-  let elementProps = { key: key, ...passthroughProps }
+  let elementProps = { key: key, ...passthroughProps, 'data-template-path': templatePath }
   if (isHidden(hiddenInstances, templatePath)) {
     elementProps = hideElement(elementProps)
   }
@@ -261,13 +262,17 @@ function renderJSXElement(
   const finalProps =
     elementIsIntrinsic && !elementIsBaseHTML ? filterDataProps(elementProps) : elementProps
 
-  if (FinalElement != null && TP.containsPath(templatePath, validPaths)) {
+  const isValidPath = TP.containsPath(templatePath, validPaths)
+  if (FinalElement != null && (isValidPath || isFeatureEnabled('Component Children Highlights'))) {
     let childrenTemplatePaths: InstancePath[] = []
 
     Utils.fastForEach(jsx.children, (child) => {
       if (isJSXElement(child)) {
         const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
-        if (TP.containsPath(childPath, validPaths)) {
+        if (
+          TP.containsPath(childPath, validPaths) ||
+          isFeatureEnabled('Component Children Highlights')
+        ) {
           childrenTemplatePaths.push(childPath)
         }
       }
@@ -284,6 +289,7 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
+      !isValidPath,
     )
   } else {
     const childrenOrNull = childrenElements.length !== 0 ? childrenElements : null

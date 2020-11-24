@@ -12,6 +12,7 @@ export type FeatureName =
   | 'Component Navigator Nearest Ancestor'
   | 'Re-parse Project Button'
   | 'iFrame Code Editor'
+  | 'Component Children Highlights'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -23,6 +24,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Component Navigator Nearest Ancestor',
   'Re-parse Project Button',
   'iFrame Code Editor',
+  'Component Children Highlights',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -36,6 +38,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Component Navigator Nearest Ancestor': true,
   'Re-parse Project Button': false,
   'iFrame Code Editor': false,
+  'Component Children Highlights': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

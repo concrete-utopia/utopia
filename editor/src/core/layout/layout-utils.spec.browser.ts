@@ -80,6 +80,7 @@ describe('maybeSwitchLayoutProps', () => {
         localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
         children: [],
         componentInstance: true,
+        internalChildOfComponent: false,
         specialSizeMeasurements: specialSizeMeasurements(
           { x: 0, y: 0 } as any,
           null,
