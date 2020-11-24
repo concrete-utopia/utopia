@@ -35,7 +35,7 @@ interface SelectedComponentNavigatorProps {
   utopiaComponentNames: string[]
 }
 
-const ShowComponentOutlineTitle = isFeatureEnabled('Component Navigator Component Outline Title')
+const ShowComponentOutlineTitle = isFeatureEnabled('Component Navigator Component Title')
 
 export const SelectedComponentNavigator = betterReactMemo(
   'SelectedComponentNavigator',
