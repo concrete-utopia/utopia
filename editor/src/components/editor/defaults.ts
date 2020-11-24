@@ -4,6 +4,8 @@ import {
   jsxAttributeValue,
   jsxElementName,
   jsxAttributeOtherJavaScript,
+  JSXElementChild,
+  JSXElementChildren,
 } from '../../core/shared/element-template'
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { PathForResizeContent } from '../../core/model/scene-utils'
@@ -42,6 +44,7 @@ export function isolatedComponentSceneElement(
   componentName: string,
   frame: NormalisedFrame,
   componentProps: any,
+  children: JSXElementChildren,
 ): JSXElement {
   const definedElsewhere = [componentName]
   let componentPropsToUse: any = {}
@@ -75,7 +78,7 @@ export function isolatedComponentSceneElement(
     }),
   }
 
-  return jsxElement(jsxElementName('Scene', []), props, [])
+  return jsxElement(jsxElementName('Scene', []), props, children)
 }
 
 export function defaultViewElement(uid: string): JSXElement {

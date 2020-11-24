@@ -53,6 +53,7 @@ import {
   setUtopiaID,
   transformJSXComponentAtPath,
   findJSXElementChildAtPath,
+  getElementChildren,
 } from '../../core/model/element-template-utils'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -1563,10 +1564,15 @@ function createTransientSceneForSelectedComponent(
         instanceMetadata.globalFrame ??
         (({ left: 0, top: 0, width: 0, height: 0 } as any) as CanvasRectangle)
 
+      const children = isRight(instanceMetadata.element)
+        ? getElementChildren(instanceMetadata.element.value)
+        : []
+
       const newScene: JSXElement = isolatedComponentSceneElement(
         isolatedComponent.componentName,
         canvasFrameToNormalisedFrame(instanceFrame),
         instanceMetadata.props,
+        children,
       )
 
       const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(openFile)

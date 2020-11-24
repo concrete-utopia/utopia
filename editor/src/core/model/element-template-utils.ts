@@ -15,6 +15,7 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXFragment,
+  JSXElementChildren,
 } from '../shared/element-template'
 import {
   Imports,
@@ -289,6 +290,14 @@ function transformAtPathOptionally(
   return {
     elements: transformedElements,
     transformedElement: transformedElement,
+  }
+}
+
+export function getElementChildren(element: JSXElementChild): JSXElementChildren {
+  if (isJSXElement(element) || isJSXFragment(element)) {
+    return element.children
+  } else {
+    return []
   }
 }
 
