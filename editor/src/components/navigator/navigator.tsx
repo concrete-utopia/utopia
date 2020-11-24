@@ -242,10 +242,9 @@ export const NavigatorComponent = betterReactMemo('NavigatorComponent', () => {
     }
   })
 
-  const { dispatch, focusedPanel, minimised, visibleNavigatorTargets } = useEditorState((store) => {
+  const { dispatch, minimised, visibleNavigatorTargets } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
-      focusedPanel: store.editor.focusedPanel,
       minimised: store.editor.navigator.minimised,
       visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
     }
@@ -253,11 +252,9 @@ export const NavigatorComponent = betterReactMemo('NavigatorComponent', () => {
 
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
-      if (focusedPanel !== 'navigator') {
-        dispatch([setFocus('navigator')])
-      }
+      dispatch([setFocus('navigator')])
     },
-    [dispatch, focusedPanel],
+    [dispatch],
   )
 
   const onMouseLeave = React.useCallback(

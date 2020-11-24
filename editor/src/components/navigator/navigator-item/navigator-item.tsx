@@ -145,7 +145,6 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
   'NavigatorItem',
   (props) => {
     const {
-      staticElementName,
       label,
       isAutosizingView,
       dispatch,

@@ -17,7 +17,6 @@ import {
   TemplatePath,
 } from '../../core/shared/project-file-types'
 import { isJsFile, isJsOrTsFile } from '../../core/workers/ts/ts-worker'
-import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import utils from '../../utils/utils'
 import { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getFilePathToImport } from '../filebrowser/filepath-utils'
@@ -52,7 +51,6 @@ interface MonacoWrapperProps {
   cursorPosition: CursorPosition
   projectContents: ProjectContentTreeRoot
   errorMessages: Array<ErrorMessage> | null
-  workers: UtopiaTsWorkers
   selectedViews: Array<TemplatePath>
   selectedViewsBounds: Array<HighlightBounds>
   highlightedViewsBounds: Array<HighlightBounds>

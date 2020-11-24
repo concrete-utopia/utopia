@@ -83,6 +83,7 @@ import type { PropertyPath, TemplatePath } from '../../../core/shared/project-fi
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { fastForEach } from '../../../core/shared/utils'
+import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'
@@ -829,6 +830,12 @@ export function useKeepReferenceEqualityIfPossible<T>(possibleNewValue: T, measu
   const oldValue = React.useRef<T | null>(null)
   oldValue.current = keepDeepReferenceEqualityIfPossible(oldValue.current, possibleNewValue)
   return oldValue.current!
+}
+
+export function useKeepDeepEqualityCall<T>(newValue: T, keepDeepCall: KeepDeepEqualityCall<T>): T {
+  const oldValue = React.useRef<T>(newValue)
+  oldValue.current = keepDeepCall(oldValue.current, newValue).value
+  return oldValue.current
 }
 
 export function useIsSubSectionVisible(sectionName: string): boolean {

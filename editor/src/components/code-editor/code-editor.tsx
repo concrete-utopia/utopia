@@ -3,7 +3,6 @@ import { jsx } from '@emotion/core'
 import * as React from 'react'
 import { applyPrettier } from '../../core/workers/parser-printer/prettier-utils'
 import { ErrorMessage } from '../../core/shared/error-messages'
-import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { Keyboard, modifiersForEvent, strictCheckModifiers } from '../../utils/keyboard'
 import {
   HighlightBounds,
@@ -49,7 +48,6 @@ export interface CodeEditorProps {
   errorsForFile: Array<ErrorMessage> | null
   readOnly: boolean
   projectContents: ProjectContentTreeRoot
-  workers: UtopiaTsWorkers
   selectedViews: Array<TemplatePath>
   selectedViewsBounds: Array<HighlightBounds>
   highlightedViewsBounds: Array<HighlightBounds>
@@ -143,6 +141,7 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
       case 's':
       case 'enter':
         if (cmd) {
+          event.preventDefault() // <- BB: I added this here to prevent the browser save dialog in the iframe, but we probably need a better solution
           clearTimeout(this.autoSaveTimer!)
           this.setState(
             (state) => {
@@ -202,10 +201,10 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
   render() {
     return (
       <div
-        className='code-editor'
         style={{
           flexGrow: 1,
           display: 'flex',
+          flexDirection: 'column',
           justifyContent: 'stretch',
           alignItems: 'stretch',
           overflowY: 'scroll',
@@ -242,7 +241,6 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
                 cursorPosition={this.state.cursorPosition}
                 projectContents={this.props.projectContents}
                 errorMessages={this.props.errorsForFile}
-                workers={this.props.workers}
                 selectedViews={this.props.selectedViews}
                 selectedViewsBounds={this.props.selectedViewsBounds}
                 highlightedViewsBounds={this.props.highlightedViewsBounds}

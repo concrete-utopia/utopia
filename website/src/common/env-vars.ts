@@ -23,9 +23,10 @@ export const REFERENCE_EQUALITY_CHECK = false
 
 export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
-export const STATIC_BASE_URL: string = PRODUCTION_OR_STAGING_CONFIG && BARE_HOST !== 'localhost:8000'
-  ? `https://cdn.${BARE_HOST}/`
-  : `http://${BARE_HOST}/`
+export const STATIC_BASE_URL: string =
+  PRODUCTION_OR_STAGING_CONFIG && BARE_HOST !== 'localhost:8000'
+    ? `https://cdn.${BARE_HOST}/`
+    : `http://${BARE_HOST}/`
 
 export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
@@ -33,6 +34,11 @@ export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG
   ? 'https://utopia.baby/'
   : BASE_URL
 export const PROPERTY_CONTROLS_INFO_BASE_URL: string = PRODUCTION_CONFIG
+  ? `https://utopia.fm/`
+  : STAGING_CONFIG
+  ? 'https://utopia.baby/'
+  : BASE_URL
+export const MONACO_EDITOR_IFRAME_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
   : STAGING_CONFIG
   ? 'https://utopia.baby/'

@@ -28,6 +28,7 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { JSXMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
+import { uniqBy } from '../../../core/shared/array-utils'
 
 export const SnappingThreshold = 5
 
@@ -256,7 +257,7 @@ export class SelectModeControlContainer extends React.Component<
           rootElements != null &&
           rootElements.length > 1
         ) {
-          rootElementsToFilter = [...rootElementsToFilter, ...rootElements]
+          rootElementsToFilter.push(...rootElements)
           dynamicScenesWithFragmentRootViews.push(path)
         }
       })
@@ -282,7 +283,7 @@ export class SelectModeControlContainer extends React.Component<
       })
 
       const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
-      const uniqueSelectableViews = R.uniqWith<TemplatePath>(TP.pathsEqual, selectableViews)
+      const uniqueSelectableViews = uniqBy<TemplatePath>(selectableViews, TP.pathsEqual)
 
       const selectableViewsFiltered = uniqueSelectableViews.filter((view) => {
         // I kept the group-like behavior here that the user can't single-click select the parent group, even though it is a view now

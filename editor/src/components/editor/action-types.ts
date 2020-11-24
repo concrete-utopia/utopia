@@ -425,12 +425,6 @@ export type SaveAsset = {
   imageDetails: SaveImageDetails | null
 }
 
-export type SaveCursorPosition = {
-  action: 'SAVE_CURSOR_POSITION'
-  filename: string
-  cursorPosition: CursorPosition
-}
-
 export type ResetPins = {
   action: 'RESET_PINS'
   target: InstancePath
@@ -614,6 +608,12 @@ export interface SetCodeEditorBuildErrors {
 export interface SetCodeEditorLintErrors {
   action: 'SET_CODE_EDITOR_LINT_ERRORS'
   lintErrors: ErrorMessages
+}
+
+export interface SendLinterRequestMessage {
+  action: 'SEND_LINTER_REQUEST_MESSAGE'
+  filePath: string
+  content: string
 }
 
 export interface SaveDOMReport {
@@ -831,7 +831,6 @@ export type EditorAction =
   | ToggleInterfaceDesignerAdditionalControls
   | SaveCurrentFile
   | SaveAsset
-  | SaveCursorPosition
   | ResetPins
   | WrapInView
   | UnwrapGroupOrView
@@ -869,6 +868,7 @@ export type EditorAction =
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
+  | SendLinterRequestMessage
   | SaveDOMReport
   | SetProp
   | SetPropWithElementPath

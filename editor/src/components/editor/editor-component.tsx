@@ -25,7 +25,6 @@ import { StoryboardFilePath } from '../../core/model/storyboard-utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getCursorFromDragState } from '../canvas/canvas-utils'
 import { SplitViewCanvasRoot } from '../canvas/split-view-canvas-root'
-import { ScriptEditor } from '../code-editor/script-editor'
 import { resizeLeftPane } from '../common/actions'
 import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
@@ -518,8 +517,8 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
   } = useEditorState((store) => {
     const selectedFile = getOpenFile(store.editor)
     const selectedFileName = getOpenTextFileKey(store.editor)
-    const isAppDotJS = selectedFileName?.endsWith('app.js')
-    const isStoryboardFile = selectedFileName?.endsWith(StoryboardFilePath)
+    const isAppDotJS = selectedFileName?.endsWith('app.js') ?? false
+    const isStoryboardFile = selectedFileName?.endsWith(StoryboardFilePath) ?? false
     const isCanvasFile = isAppDotJS || isStoryboardFile // FIXME This is not how we should determine whether or not to open the canvas
     const openEditorTab = getOpenEditorTab(store.editor)
     return {
@@ -537,25 +536,18 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     return <Subdued>No file open</Subdued>
   } else if (areReleaseNotesOpen) {
     return <ReleaseNotesContent />
-  } else if (isUiJsFileOpen) {
+  } else if (isUserConfigurationOpen) {
+    return <UserConfiguration />
+  } else {
     return (
       <SplitViewCanvasRoot
+        isUiJsFileOpen={isUiJsFileOpen}
         runtimeErrors={runtimeErrors}
         onRuntimeError={onRuntimeError}
         clearRuntimeErrors={clearRuntimeErrors}
         canvasConsoleLogs={consoleLogs}
         clearConsoleLogs={clearConsoleLogs}
         addToConsoleLogs={addToConsoleLogs}
-      />
-    )
-  } else if (isUserConfigurationOpen) {
-    return <UserConfiguration />
-  } else {
-    return (
-      <ScriptEditor
-        relevantPanel={'misccodeeditor'}
-        runtimeErrors={runtimeErrors}
-        canvasConsoleLogs={consoleLogs}
       />
     )
   }
