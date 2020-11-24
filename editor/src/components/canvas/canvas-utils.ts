@@ -35,7 +35,6 @@ import {
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   isJSXElement,
   jsxAttributeValue,
   JSXElement,
@@ -44,6 +43,8 @@ import {
   ElementInstanceMetadata,
   JSXMetadata,
   TopLevelElement,
+  jsxAttributeNestedObjectSimple,
+  JSXAttribute,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -63,6 +64,7 @@ import {
   setJSXValueAtPath,
   jsxAttributesToProps,
   jsxSimpleAttributeToValue,
+  unsetJSXValueInAttributeAtPath,
 } from '../../core/shared/jsx-attributes'
 import {
   Imports,
@@ -95,6 +97,8 @@ import {
   isRight,
   right,
   isLeft,
+  reduceWithEither,
+  unwrapEither,
 } from '../../core/shared/either'
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
@@ -177,6 +181,7 @@ import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
 import { defaultSceneElement, isolatedComponentSceneElement } from '../editor/defaults'
 import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { mapToArray } from '../../core/shared/object-utils'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -1564,14 +1569,35 @@ function createTransientSceneForSelectedComponent(
         instanceMetadata.globalFrame ??
         (({ left: 0, top: 0, width: 0, height: 0 } as any) as CanvasRectangle)
 
-      const children = isRight(instanceMetadata.element)
-        ? getElementChildren(instanceMetadata.element.value)
-        : []
+      const metadataElement = instanceMetadata.element
+
+      const unfilteredProps =
+        isRight(metadataElement) && isJSXElement(metadataElement.value)
+          ? jsxAttributeNestedObjectSimple(metadataElement.value.props)
+          : jsxAttributeValue(instanceMetadata.props)
+
+      const propsToFilter: Array<PropertyPath> = [
+        PP.create(['data-uid']),
+        PP.create(['skipDeepFreeze']),
+        PP.create(['style', 'left']),
+        PP.create(['style', 'top']),
+        PP.create(['style', 'right']),
+        PP.create(['style', 'bottom']),
+      ]
+
+      const filteredProps = reduceWithEither(
+        unsetJSXValueInAttributeAtPath,
+        unfilteredProps,
+        propsToFilter,
+      )
+      const props = unwrapEither(filteredProps, jsxAttributeValue({}))
+
+      const children = isRight(metadataElement) ? getElementChildren(metadataElement.value) : []
 
       const newScene: JSXElement = isolatedComponentSceneElement(
         isolatedComponent.componentName,
         canvasFrameToNormalisedFrame(instanceFrame),
-        instanceMetadata.props,
+        props,
         children,
       )
 

@@ -6,6 +6,7 @@ import {
   jsxAttributeOtherJavaScript,
   JSXElementChild,
   JSXElementChildren,
+  JSXAttribute,
 } from '../../core/shared/element-template'
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { PathForResizeContent } from '../../core/model/scene-utils'
@@ -43,21 +44,10 @@ export function defaultSceneElement(
 export function isolatedComponentSceneElement(
   componentName: string,
   frame: NormalisedFrame,
-  componentProps: any,
+  componentProps: JSXAttribute,
   children: JSXElementChildren,
 ): JSXElement {
   const definedElsewhere = [componentName]
-  let componentPropsToUse: any = {}
-  fastForEach(Object.keys(componentProps), (key) => {
-    if (!['data-uid', 'skipDeepFreeze'].includes(key)) {
-      if (key === 'style') {
-        const styleToUse = omit(['left', 'top', 'right', 'bottom'], componentProps[key])
-        componentPropsToUse[key] = styleToUse
-      } else {
-        componentPropsToUse[key] = componentProps[key]
-      }
-    }
-  })
 
   const props = {
     'data-uid': jsxAttributeValue('TRANSIENT_SCENE'),
@@ -69,7 +59,7 @@ export function isolatedComponentSceneElement(
       null,
       'TRANSIENT_SCENE_COMPONENT',
     ),
-    props: jsxAttributeValue(componentPropsToUse),
+    props: componentProps,
     [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),
     style: jsxAttributeValue({
       position: 'absolute',
