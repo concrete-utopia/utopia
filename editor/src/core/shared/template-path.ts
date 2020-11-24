@@ -401,7 +401,7 @@ export function elementsEqual(l: id | null, r: id | null): boolean {
   return l === r
 }
 
-function scenePathsEqual(l: ScenePath, r: ScenePath): boolean {
+export function scenePathsEqual(l: ScenePath, r: ScenePath): boolean {
   return l === r || elementPathsEqual(l.sceneElementPath, r.sceneElementPath)
 }
 

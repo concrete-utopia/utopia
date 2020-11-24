@@ -948,7 +948,7 @@ export interface ElementInstanceMetadata {
 
 export function elementInstanceMetadata(
   templatePath: InstancePath,
-  element: Either<string, JSXElement>,
+  element: Either<string, JSXElementChild>,
   props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
@@ -1059,7 +1059,7 @@ export interface ComponentMetadata {
   templatePath: InstancePath
   rootElements: Array<InstancePath>
   component: string | null
-  container: SceneContainer
+  container?: SceneContainer
   globalFrame: CanvasRectangle | null
   sceneResizesContent: boolean
   label?: string
@@ -1067,9 +1067,9 @@ export interface ComponentMetadata {
 }
 
 export function isComponentMetadata(
-  maybeComponentMetadata: any,
+  maybeComponentMetadata: ComponentMetadata | ElementInstanceMetadata,
 ): maybeComponentMetadata is ComponentMetadata {
-  return maybeComponentMetadata.scenePath != null
+  return (maybeComponentMetadata as ComponentMetadata).scenePath != null
 }
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>> // TODO update typescript!!
