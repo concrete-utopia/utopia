@@ -12,7 +12,12 @@ import {
   EditorStore,
   getOpenUIJSFileKey,
 } from '../../editor/store/editor-state'
-import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
+import {
+  TemplatePath,
+  InstancePath,
+  Imports,
+  ScenePath,
+} from '../../../core/shared/project-file-types'
 import { CanvasPositions } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
@@ -326,6 +331,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
                 : null
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+            isolatedComponent={props.editor.isolatedComponent}
           />
         )
       }
@@ -342,6 +348,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
             }
             canvasOffset={props.editor.canvas.realCanvasOffset /* maybe roundedCanvasOffset? */}
             scale={props.editor.canvas.scale}
+            isolatedComponent={props.editor.isolatedComponent}
           />
         )
       }

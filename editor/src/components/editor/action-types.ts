@@ -145,6 +145,11 @@ export type DeleteViews = {
   targets: Array<TemplatePath>
 }
 
+export type SelectComponent = {
+  action: 'SELECT_COMPONENT'
+  target: InstancePath
+}
+
 export type SelectComponents = {
   action: 'SELECT_COMPONENTS'
   target: Array<TemplatePath>
@@ -777,6 +782,7 @@ export type EditorAction =
   | DeleteViews
   | UpdateEditorMode
   | SwitchEditorMode
+  | SelectComponent
   | SelectComponents
   | UnsetProperty
   | Canvas

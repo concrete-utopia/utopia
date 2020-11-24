@@ -19,8 +19,8 @@ import {
   JSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
-import { fastForEach } from '../../../core/shared/utils'
+import { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
+import { arrayEquals, fastForEach } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
@@ -44,6 +44,7 @@ export function renderCoreElement(
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   hiddenInstances: Array<TemplatePath>,
+  isolatedComponentScenePath: ScenePath | null,
   fileBlobs: UIFileBase64Blobs,
   validPaths: Array<InstancePath>,
   uid: string | undefined,
@@ -57,7 +58,11 @@ export function renderCoreElement(
     throw codeError
   }
   if (isJSXElement(element) && isSceneElement(element)) {
-    return <SceneRootRenderer sceneElement={element} />
+    const isIsolatedComponent =
+      isolatedComponentScenePath == null
+        ? false
+        : arrayEquals(isolatedComponentScenePath.sceneElementPath, templatePath.element)
+    return <SceneRootRenderer sceneElement={element} isIsolatedComponent={isIsolatedComponent} />
   }
   switch (element.type) {
     case 'JSX_ELEMENT': {
@@ -89,6 +94,7 @@ export function renderCoreElement(
         rootScope,
         inScope,
         hiddenInstances,
+        isolatedComponentScenePath,
         fileBlobs,
         validPaths,
         passthroughProps,
@@ -135,6 +141,7 @@ export function renderCoreElement(
           parentComponentInputProps,
           requireResult,
           hiddenInstances,
+          isolatedComponentScenePath,
           fileBlobs,
           validPaths,
           generatedUID,
@@ -166,6 +173,7 @@ export function renderCoreElement(
           parentComponentInputProps,
           requireResult,
           hiddenInstances,
+          isolatedComponentScenePath,
           fileBlobs,
           validPaths,
           uid,
@@ -204,6 +212,7 @@ function renderJSXElement(
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   hiddenInstances: Array<TemplatePath>,
+  isolatedComponentScenePath: ScenePath | null,
   fileBlobs: UIFileBase64Blobs,
   validPaths: Array<InstancePath>,
   passthroughProps: MapLike<any>,
@@ -230,6 +239,7 @@ function renderJSXElement(
       parentComponentInputProps,
       requireResult,
       hiddenInstances,
+      isolatedComponentScenePath,
       fileBlobs,
       validPaths,
       undefined,

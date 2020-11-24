@@ -50,7 +50,7 @@ import { ControlProps } from './new-canvas-controls'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { RightMenuTab } from '../right-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
-import { getStoryboardTemplatePath } from '../../editor/store/editor-state'
+import { getStoryboardTemplatePath, IsolatedComponent } from '../../editor/store/editor-state'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -75,6 +75,7 @@ interface InsertModeControlContainerProps extends ControlProps {
   dragState: InsertDragState | null
   canvasOffset: CanvasVector
   scale: number
+  isolatedComponent: IsolatedComponent | null
 }
 
 interface InsertModeControlContainerState {
@@ -223,6 +224,7 @@ export class InsertModeControlContainer extends React.Component<
         imports={this.props.imports}
         testID={`insert-target-${TP.toComponentId(target)}`}
         showAdditionalControls={this.props.showAdditionalControls}
+        isolatedComponent={null}
       />
     )
   }
@@ -255,6 +257,7 @@ export class InsertModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
+        isolatedComponent={null}
       />
     )
   }
@@ -662,9 +665,20 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   render() {
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
+    const roots =
+      this.props.isolatedComponent == null
+        ? MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
+        : [this.props.isolatedComponent.scenePath]
+
     const allPaths = MetadataUtils.getAllPaths(this.props.componentMetadata)
     const insertTargets = allPaths.filter((path) => {
+      if (
+        this.props.isolatedComponent != null &&
+        !TP.isAncestorOf(path, this.props.isolatedComponent.scenePath)
+      ) {
+        return false
+      }
+
       if (TP.isScenePath(path)) {
         // TODO Scene Implementation
         return false

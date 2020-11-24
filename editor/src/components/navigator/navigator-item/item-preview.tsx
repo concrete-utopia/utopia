@@ -25,9 +25,7 @@ interface ItemPreviewProps {
   yogaWrap: 'wrap' | 'wrap-reverse' | 'nowrap'
   staticElementName: JSXElementName | null
   componentInstance: boolean
-  path: TemplatePath
   collapsed: boolean
-  selected: boolean
   color: IcnProps['color']
   imports: Imports
 }

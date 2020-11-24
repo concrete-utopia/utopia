@@ -22,11 +22,15 @@ import {
   getUtopiaID,
 } from '../../../core/model/element-template-utils'
 import {
+  applyUtopiaJSXComponentsChanges,
   correctProjectContentsPath,
   getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
   saveTextFileContents,
   getHighlightBoundsFromParseResult,
+  getSceneElementsFromParseSuccess,
+  getUtopiaJSXComponentsByNameFromSuccess,
+  UtopiaJSXComponentsByName,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
 import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
@@ -140,6 +144,7 @@ import {
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { DerivedStateKeepDeepEquality } from './store-deep-equality-instances'
 
 export interface OriginalPath {
@@ -263,6 +268,12 @@ export interface ConsoleLog {
   data: Array<any>
 }
 
+export interface IsolatedComponent {
+  componentName: string
+  instance: InstancePath
+  scenePath: ScenePath
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -287,6 +298,7 @@ export interface EditorState {
     projectFilesBuildResults: MultiFileBuildResult
     packageStatus: PackageStatusMap
   }
+  isolatedComponent: IsolatedComponent | null
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
   hiddenInstances: Array<TemplatePath>
@@ -620,37 +632,6 @@ export function modifyOpenParseSuccess(
   return applyParseAndEditorChanges<Record<string, never>>(getChanges, model).editor
 }
 
-export function applyUtopiaJSXComponentsChanges(
-  topLevelElements: Array<TopLevelElement>,
-  newUtopiaComponents: Array<UtopiaJSXComponent>,
-): Array<TopLevelElement> {
-  // Run through the old top level elements, replacing the exported elements with those in the
-  // newly updated result with the same name.
-  // If it doesn't exist in the updated result, delete it.
-  // For any new items in the updated result, add them in.
-  const addedSoFar: Set<string> = Utils.emptySet()
-  let newTopLevelElements: Array<TopLevelElement> = []
-  Utils.fastForEach(topLevelElements, (oldTopLevelElement) => {
-    if (isUtopiaJSXComponent(oldTopLevelElement)) {
-      const updatedElement = newUtopiaComponents.find((e) => e.name === oldTopLevelElement.name)
-      if (updatedElement !== undefined) {
-        addedSoFar.add(updatedElement.name)
-        newTopLevelElements.push(updatedElement)
-      }
-    } else {
-      newTopLevelElements.push(oldTopLevelElement)
-    }
-  })
-
-  Utils.fastForEach(newUtopiaComponents, (updatedElement) => {
-    if (!addedSoFar.has(updatedElement.name)) {
-      newTopLevelElements.push(updatedElement)
-    }
-  })
-
-  return newTopLevelElements
-}
-
 export function modifyOpenScenesAndJSXElements(
   transform: (utopiaComponents: Array<UtopiaJSXComponent>) => Array<UtopiaJSXComponent>,
   model: EditorState,
@@ -763,6 +744,20 @@ export function getOpenUtopiaJSXComponentsFromState(model: EditorState): Array<U
   }
 }
 
+export function getOpenUtopiaJSXComponentsByName(editor: EditorState): UtopiaJSXComponentsByName {
+  const uiFile = getOpenUIJSFile(editor)
+  if (uiFile == null) {
+    return {}
+  } else {
+    return foldParsedTextFile(
+      (_) => ({}),
+      getUtopiaJSXComponentsByNameFromSuccess,
+      (_) => ({}),
+      uiFile.fileContents.parsed,
+    )
+  }
+}
+
 function modifyOpenScenes_INTERNAL(
   transform: (topLevelElementsIncludingScene: UtopiaJSXComponent[]) => UtopiaJSXComponent[],
   model: EditorState,
@@ -793,16 +788,6 @@ export function getSceneElements(model: EditorState): JSXElement[] {
   } else {
     return getSceneElementsFromParseSuccess(openUIJSFile.fileContents.parsed)
   }
-}
-
-export function getSceneElementsFromParseSuccess(success: ParseSuccess): JSXElement[] {
-  const rootElement = getOrDefaultScenes(success).rootElement
-  if (!isJSXElement(rootElement) || rootElement.name.baseVariable !== 'Storyboard') {
-    throw new Error('the root element must be a Storyboard component')
-  }
-  return rootElement.children.filter(
-    (child): child is JSXElement => isJSXElement(child) && isSceneElement(child),
-  )
 }
 
 export function addNewScene(model: EditorState, newSceneElement: JSXElement): EditorState {
@@ -966,7 +951,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(editorState, false),
+      transientState: produceCanvasTransientState(editorState, false, false),
     },
     elementWarnings: emptyComplexMap(),
   }
@@ -1080,6 +1065,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       projectFilesBuildResults: {},
       packageStatus: {},
     },
+    isolatedComponent: null,
     selectedViews: [],
     highlightedViews: [],
     hiddenInstances: [],
@@ -1257,7 +1243,11 @@ export function deriveState(
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
-      transientState: produceCanvasTransientState(editor, true),
+      transientState: produceCanvasTransientState(
+        editor,
+        true,
+        isFeatureEnabled('Component Isolation Mode'),
+      ),
     },
     elementWarnings: getElementWarnings(getMetadata(editor)),
   }
@@ -1321,6 +1311,7 @@ export function editorModelFromPersistentModel(
       projectFilesBuildResults: {},
       packageStatus: {},
     },
+    isolatedComponent: null,
     selectedViews: [],
     highlightedViews: [],
     hiddenInstances: persistentModel.hiddenInstances,

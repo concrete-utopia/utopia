@@ -6,6 +6,10 @@ export type FeatureName =
   | 'Dragging Shows Overlay'
   | 'Invisible Element Controls'
   | 'Advanced Resize Box'
+  | 'Component Isolation Mode'
+  | 'Component Navigator'
+  | 'Component Navigator Component Title'
+  | 'Component Navigator Nearest Ancestor'
   | 'Re-parse Project Button'
   | 'iFrame Code Editor'
 export const AllFeatureNames: FeatureName[] = [
@@ -13,6 +17,10 @@ export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Invisible Element Controls',
   'Advanced Resize Box',
+  'Component Isolation Mode',
+  'Component Navigator',
+  'Component Navigator Component Title',
+  'Component Navigator Nearest Ancestor',
   'Re-parse Project Button',
   'iFrame Code Editor',
 ]
@@ -22,6 +30,10 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Shows Overlay': false,
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
+  'Component Isolation Mode': false,
+  'Component Navigator': true,
+  'Component Navigator Component Title': true,
+  'Component Navigator Nearest Ancestor': true,
   'Re-parse Project Button': false,
   'iFrame Code Editor': false,
 }

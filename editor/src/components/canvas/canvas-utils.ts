@@ -43,6 +43,7 @@ import {
   UtopiaJSXComponent,
   ElementInstanceMetadata,
   JSXMetadata,
+  TopLevelElement,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -75,9 +76,12 @@ import {
   foldParsedTextFile,
   textFile,
   textFileContents,
+  StaticInstancePath,
 } from '../../core/shared/project-file-types'
 import {
+  applyUtopiaJSXComponentsChanges,
   getOrDefaultScenes,
+  getUtopiaJSXComponentsByNameFromSuccess,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../core/model/project-file-utils'
 import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
@@ -103,7 +107,6 @@ import {
 } from '../../core/shared/math-utils'
 import { insertionSubjectIsJSXElement } from '../editor/editor-modes'
 import {
-  applyUtopiaJSXComponentsChanges,
   DerivedState,
   EditorState,
   getOpenImportsFromState,
@@ -161,11 +164,18 @@ import {
 } from './guideline'
 import { addImport, mergeImports } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import { createSceneTemplatePath, PathForSceneStyle } from '../../core/model/scene-utils'
+import {
+  BakedInStoryboardVariableName,
+  createSceneTemplatePath,
+  EmptyScenePathForStoryboard,
+  PathForSceneStyle,
+} from '../../core/model/scene-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
+import { defaultSceneElement, isolatedComponentSceneElement } from '../editor/defaults'
+import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -262,7 +272,7 @@ export function clearDragState(
 ): EditorState {
   let result: EditorState = model
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
-    const producedTransientCanvasState = produceCanvasTransientState(result, false)
+    const producedTransientCanvasState = produceCanvasTransientState(result, false, false)
     const producedTransientFileState = producedTransientCanvasState.fileState
     if (producedTransientFileState != null) {
       result = modifyOpenParseSuccess((success) => {
@@ -1528,9 +1538,61 @@ export function produceResizeSingleSelectCanvasTransientState(
   )
 }
 
+interface TransientComponentSceneResult {
+  elements: TopLevelElement[]
+  parsedFile: ParseSuccess
+}
+
+function createTransientSceneForSelectedComponent(
+  editorState: EditorState,
+  openFile: ParseSuccess,
+): TransientComponentSceneResult | null {
+  const { isolatedComponent } = editorState
+  if (isolatedComponent == null) {
+    return null
+  } else {
+    const metadata = editorState.canvas.dragState?.metadata ?? editorState.jsxMetadataKILLME
+    const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(
+      metadata.elements,
+      isolatedComponent.instance,
+    )
+    if (instanceMetadata == null) {
+      return null
+    } else {
+      const instanceFrame =
+        instanceMetadata.globalFrame ??
+        (({ left: 0, top: 0, width: 0, height: 0 } as any) as CanvasRectangle)
+
+      const newScene: JSXElement = isolatedComponentSceneElement(
+        isolatedComponent.componentName,
+        canvasFrameToNormalisedFrame(instanceFrame),
+        instanceMetadata.props,
+      )
+
+      const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(openFile)
+      // Apply the transformation.
+      const updatedResult = addSceneToJSXComponents(oldUtopiaJSXComponents, newScene)
+
+      const newTopLevelElements = applyUtopiaJSXComponentsChanges(
+        openFile.topLevelElements,
+        updatedResult,
+      )
+
+      return {
+        elements: newTopLevelElements,
+        parsedFile: {
+          ...openFile,
+          topLevelElements: newTopLevelElements,
+        },
+      }
+    }
+  }
+}
+
 export function produceCanvasTransientState(
   editorState: EditorState,
   preventAnimations: boolean,
+  includeIsolatedScene: boolean,
 ): TransientCanvasState {
   function noFileTransientCanvasState(): TransientCanvasState {
     return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
@@ -1551,7 +1613,12 @@ export function produceCanvasTransientState(
       (_) => {
         return noFileTransientCanvasState()
       },
-      (parseSuccess) => {
+      (parsed) => {
+        const transientComponentSceneResult = includeIsolatedScene
+          ? createTransientSceneForSelectedComponent(editorState, parsed)
+          : null
+        const parseSuccess = transientComponentSceneResult?.parsedFile ?? parsed
+
         switch (editorState.mode.type) {
           // When we're in insert mode, we need to temporarily slip the element being inserted into
           // the model to render.
@@ -1588,7 +1655,15 @@ export function produceCanvasTransientState(
                 transientFileState(topLevelElementsIncludingScenes, updatedImports),
               )
             } else {
-              return parseSuccessTransientCanvasState(parseSuccess)
+              if (transientComponentSceneResult == null) {
+                return parseSuccessTransientCanvasState(parsed)
+              } else {
+                return transientCanvasState(
+                  editorState.selectedViews,
+                  editorState.highlightedViews,
+                  transientFileState(transientComponentSceneResult.elements, parsed.imports),
+                )
+              }
             }
           case 'select':
             if (
@@ -1596,7 +1671,15 @@ export function produceCanvasTransientState(
               editorState.canvas.dragState.start == null ||
               editorState.canvas.dragState.drag == null
             ) {
-              return parseSuccessTransientCanvasState(parseSuccess)
+              if (transientComponentSceneResult == null) {
+                return parseSuccessTransientCanvasState(parsed)
+              } else {
+                return transientCanvasState(
+                  editorState.selectedViews,
+                  editorState.highlightedViews,
+                  transientFileState(transientComponentSceneResult.elements, parsed.imports),
+                )
+              }
             } else {
               const dragState = editorState.canvas.dragState
               switch (dragState.type) {
@@ -1632,7 +1715,7 @@ export function produceCanvasTransientState(
               }
             }
           case 'live':
-            return parseSuccessTransientCanvasState(parseSuccess)
+            return parseSuccessTransientCanvasState(parsed)
           default:
             const _exhaustiveCheck: never = editorState.mode
             throw new Error(`Unhandled editor mode ${JSON.stringify(editorState.mode)}`)

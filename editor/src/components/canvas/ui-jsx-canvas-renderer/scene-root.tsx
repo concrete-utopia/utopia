@@ -107,6 +107,7 @@ function useGetValidTemplatePaths(
 }
 
 interface SceneRootRendererProps {
+  isIsolatedComponent: boolean
   sceneElement: JSXElement
   style?: React.CSSProperties
 }
@@ -161,6 +162,19 @@ export const SceneRootRenderer = betterReactMemo(
 
     return (
       <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths, scenePath: scenePath }}>
+        {props.isIsolatedComponent ? (
+          <div
+            style={{
+              width: '300vw',
+              height: '300vh',
+              left: '-100vw',
+              top: '-100vh',
+              position: 'fixed',
+              backgroundColor: '#E6E6E6AB',
+            }}
+            data-utopia-exclude-from-report={true}
+          />
+        ) : null}
         <View
           data-utopia-scene-id={TP.toString(scenePath)}
           data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}

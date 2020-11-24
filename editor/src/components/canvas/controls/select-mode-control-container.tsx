@@ -6,7 +6,7 @@ import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared
 import { TemplatePath, ScenePath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
-import { DuplicationState } from '../../editor/store/editor-state'
+import { DuplicationState, IsolatedComponent } from '../../editor/store/editor-state'
 import * as TP from '../../../core/shared/template-path'
 import { CanvasPositions, MoveDragState, ResizeDragState, moveDragState } from '../canvas-types'
 import { Guidelines, Guideline } from '../guideline'
@@ -54,6 +54,7 @@ interface SelectModeControlContainerProps extends ControlProps {
   maybeClearHighlightsOnHoverEnd: () => void
   duplicationState: DuplicationState | null
   dragState: MoveDragState | ResizeDragState | null
+  isolatedComponent: IsolatedComponent | null
 }
 
 interface SelectModeControlContainerState {
@@ -93,6 +94,15 @@ export class SelectModeControlContainer extends React.Component<
     )
     return {
       moveGuidelines: keepDeepReferenceEqualityIfPossible(previousState.moveGuidelines, guidelines),
+    }
+  }
+
+  isolateComponent = (target: TemplatePath) => {
+    if (
+      TP.isInstancePath(target) &&
+      this.props.selectedViews.some((view) => TP.pathsEqual(target, view))
+    ) {
+      this.props.dispatch([EditorActions.selectComponent(target)], 'everyone')
     }
   }
 
@@ -229,9 +239,13 @@ export class SelectModeControlContainer extends React.Component<
     if (allElementsDirectlySelectable) {
       candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
     } else {
-      const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-      let rootElementsToFilter: TemplatePath[] = []
+      const scenes =
+        this.props.isolatedComponent == null
+          ? MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
+          : [this.props.isolatedComponent.scenePath]
       let dynamicScenesWithFragmentRootViews: ScenePath[] = []
+      let allRoots: TemplatePath[] = []
+      let rootElementsToFilter: TemplatePath[] = []
       Utils.fastForEach(scenes, (path) => {
         const scene = MetadataUtils.findSceneByTemplatePath(
           this.props.componentMetadata.components,
@@ -247,9 +261,13 @@ export class SelectModeControlContainer extends React.Component<
           dynamicScenesWithFragmentRootViews.push(path)
         }
       })
-      const allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata).filter(
+      allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata).filter(
         (rootPath) => {
-          return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
+          if (this.props.isolatedComponent == null) {
+            return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
+          } else {
+            return TP.isAncestorOf(rootPath, this.props.isolatedComponent.scenePath)
+          }
         },
       )
       let siblings: Array<TemplatePath> = []
@@ -338,6 +356,7 @@ export class SelectModeControlContainer extends React.Component<
           canvasOffset={this.props.canvasOffset}
           hoverEffectEnabled={!isChild}
           doubleClickToSelect={isChild}
+          isolateComponent={this.isolateComponent}
           selectComponent={this.selectComponent}
           onMouseDown={this.onControlMouseDown}
           onHover={this.onHover}
@@ -347,6 +366,7 @@ export class SelectModeControlContainer extends React.Component<
           selectedViews={this.props.selectedViews}
           imports={this.props.imports}
           showAdditionalControls={this.props.showAdditionalControls}
+          isolatedComponent={this.props.isolatedComponent}
         />
       )
     } else {
@@ -381,6 +401,7 @@ export class SelectModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
+        isolatedComponent={this.props.isolatedComponent}
       />
     )
   }
@@ -417,6 +438,7 @@ export class SelectModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
+        isolatedComponent={this.props.isolatedComponent}
       />
     )
   }
@@ -644,8 +666,11 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-    let labelDirectlySelectable = true
+    const roots =
+      this.props.isolatedComponent == null
+        ? MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
+        : [this.props.isolatedComponent.scenePath]
+    let labelDirectlySelectable = this.props.isolatedComponent == null
     let draggableViews = this.getSelectableViews(allElementsDirectlySelectable)
     if (!this.props.highlightsEnabled) {
       draggableViews = []

@@ -14,7 +14,9 @@ export const Section = styled.div({
 })
 interface SectionTitleRowProps {
   minimised: boolean
+  overrideStyle?: any
   toggleMinimised?: () => void
+  dontPad?: boolean
 }
 
 export const SectionTitleRow: React.FunctionComponent<SectionTitleRowProps> = (props) => {
@@ -33,10 +35,11 @@ export const SectionTitleRow: React.FunctionComponent<SectionTitleRowProps> = (p
     <FlexRow
       style={{
         transition: 'all .2s ease-in-out',
-        paddingLeft: 12,
+        paddingLeft: props.dontPad ? 0 : 12,
         paddingRight: 8,
         minHeight: UtopiaTheme.layout.rowHeight.large,
         cursor: 'pointer',
+        ...props.overrideStyle,
       }}
       css={{
         '&:hover': {

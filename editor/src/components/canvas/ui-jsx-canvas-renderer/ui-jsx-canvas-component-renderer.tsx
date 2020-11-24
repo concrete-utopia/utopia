@@ -44,6 +44,10 @@ export function createComponentRendererComponent(params: {
       (c) => c.shouldIncludeCanvasRootInTheSpy,
     )
     const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
+    const isolatedComponentScenePath = useContextSelector(
+      RerenderUtopiaContext,
+      (c) => c.isolatedComponentScenePath,
+    )
     const sceneContext = React.useContext(SceneLevelUtopiaContext)
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
@@ -98,6 +102,7 @@ export function createComponentRendererComponent(params: {
           realPassedProps,
           mutableContext.requireResult,
           hiddenInstances,
+          isolatedComponentScenePath,
           mutableContext.fileBlobs,
           sceneContext.validPaths,
           realPassedProps['data-uid'],
