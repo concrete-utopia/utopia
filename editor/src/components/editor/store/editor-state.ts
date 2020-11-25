@@ -140,7 +140,10 @@ import {
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
-import { DerivedStateKeepDeepEquality } from './store-deep-equality-instances'
+import {
+  DerivedStateKeepDeepEquality,
+  JSXMetadataKeepDeepEquality,
+} from './store-deep-equality-instances'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -1719,7 +1722,7 @@ export function reconstructJSXMetadata(editor: EditorState): JSXMetadata {
           editor.spyMetadataKILLME,
           editor.domMetadataKILLME,
         )
-        return keepDeepReferenceEqualityIfPossible(editor.jsxMetadataKILLME, mergedMetadata)
+        return JSXMetadataKeepDeepEquality()(editor.jsxMetadataKILLME, mergedMetadata).value
       },
       (_) => editor.jsxMetadataKILLME,
       uiFile.fileContents.parsed,

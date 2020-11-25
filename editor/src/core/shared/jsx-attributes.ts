@@ -154,16 +154,18 @@ export function jsxFunctionAttributeToRawValue(
   }
 }
 
-export const jsxAttributeToValue = (inScope: MapLike<any>, requireResult: MapLike<any>) => (
+export function jsxAttributeToValue(
+  inScope: MapLike<any>,
+  requireResult: MapLike<any>,
   attribute: JSXAttribute,
-): any => {
+): any {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
-        const value = jsxAttributeToValue(inScope, requireResult)(elem.value)
+        const value = jsxAttributeToValue(inScope, requireResult, elem.value)
 
         // We don't need to explicitly handle spreads because `concat` will take care of it for us
         returnArray = returnArray.concat(value)
@@ -173,7 +175,7 @@ export const jsxAttributeToValue = (inScope: MapLike<any>, requireResult: MapLik
     case 'ATTRIBUTE_NESTED_OBJECT':
       let returnObject: { [key: string]: any } = {}
       fastForEach(attribute.content, (prop) => {
-        const value = jsxAttributeToValue(inScope, requireResult)(prop.value)
+        const value = jsxAttributeToValue(inScope, requireResult, prop.value)
 
         switch (prop.type) {
           case 'PROPERTY_ASSIGNMENT':
@@ -192,8 +194,8 @@ export const jsxAttributeToValue = (inScope: MapLike<any>, requireResult: MapLik
     case 'ATTRIBUTE_FUNCTION_CALL':
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
-        const resolvedParameters = attribute.parameters.map(
-          jsxAttributeToValue(inScope, requireResult),
+        const resolvedParameters = attribute.parameters.map((param) =>
+          jsxAttributeToValue(inScope, requireResult, param),
         )
         return foundFunction(...resolvedParameters)
       }
@@ -211,7 +213,7 @@ export function jsxAttributesToProps(
   attributes: JSXAttributes,
   requireResult: MapLike<any>,
 ): any {
-  return objectMap(jsxAttributeToValue(inScope, requireResult), attributes)
+  return objectMap((attrib) => jsxAttributeToValue(inScope, requireResult, attrib), attributes)
 }
 
 export type GetModifiableAttributeResult = Either<string, ModifiableAttribute>
