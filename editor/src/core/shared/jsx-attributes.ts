@@ -265,9 +265,9 @@ export function getModifiableJSXAttributeAtPathFromAttribute(
   if (isJSXAttributeNotFound(attribute)) {
     return right(jsxAttributeNotFound())
   } else if (isPartOfJSXAttributeValue(attribute)) {
-    const pathString = PP.toString(path)
-    if (ObjectPath.has(attribute.value, pathString)) {
-      const extractedValue = ObjectPath.get(attribute.value, pathString)
+    const pathElems = PP.getElements(path)
+    if (ObjectPath.has(attribute.value, pathElems)) {
+      const extractedValue = ObjectPath.get(attribute.value, pathElems)
       return right(partOfJsxAttributeValue(extractedValue))
     } else {
       return right(jsxAttributeNotFound())
@@ -299,9 +299,9 @@ export function getJSXAttributeAtPath(
       }
     default:
       const head = PP.firstPart(path)
-      const tail = PP.tail(path)
       if (head in attributes) {
         const headAttribute = attributes[head]
+        const tail = PP.tail(path)
         return getJSXAttributeAtPathInner(headAttribute, tail)
       } else {
         return getJSXAttributeResult(jsxAttributeNotFound())
@@ -318,9 +318,9 @@ export function getJSXAttributeAtPathInner(
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return getJSXAttributeResult(attribute, tail)
     case 'ATTRIBUTE_VALUE':
-      const pathString = PP.toString(tail)
-      if (ObjectPath.has(attribute.value, pathString)) {
-        const extractedValue = ObjectPath.get(attribute.value, PP.toString(tail))
+      const pathElems = PP.getElements(tail)
+      if (ObjectPath.has(attribute.value, pathElems)) {
+        const extractedValue = ObjectPath.get(attribute.value, pathElems)
         return getJSXAttributeResult(partOfJsxAttributeValue(extractedValue))
       } else {
         return getJSXAttributeResult(jsxAttributeNotFound())
@@ -337,15 +337,15 @@ export function getJSXAttributeAtPathInner(
           break
         }
       }
-      if (foundProp != null) {
-        const newTail = PP.tail(tail)
-        if (PP.depth(newTail) === 0) {
+      if (foundProp == null) {
+        return getJSXAttributeResult(jsxAttributeNotFound())
+      } else {
+        if (PP.depth(tail) <= 1) {
           return getJSXAttributeResult(foundProp.value)
         } else {
+          const newTail = PP.tail(tail)
           return getJSXAttributeAtPathInner(foundProp.value, newTail)
         }
-      } else {
-        return getJSXAttributeResult(jsxAttributeNotFound())
       }
     }
     case 'ATTRIBUTE_NESTED_ARRAY': {
@@ -358,10 +358,10 @@ export function getJSXAttributeAtPathInner(
       if (foundProp == null) {
         return getJSXAttributeResult(jsxAttributeNotFound())
       } else {
-        const newTail = PP.tail(tail)
-        if (PP.depth(newTail) === 0) {
+        if (PP.depth(tail) <= 1) {
           return getJSXAttributeResult(foundProp.value)
         } else {
+          const newTail = PP.tail(tail)
           return getJSXAttributeAtPathInner(foundProp.value, newTail)
         }
       }
@@ -390,8 +390,6 @@ export function setJSXValueInAttributeAtPath(
     case 0:
       return left('Attempted to manipulate attribute with an empty path.')
     default:
-      const attributeKey = PP.firstPart(path)
-      const tailPath = PP.tail(path)
       const lastPartOfPath = PP.depth(path) === 1
       switch (attribute.type) {
         case 'ATTRIBUTE_FUNCTION_CALL':
@@ -401,7 +399,9 @@ export function setJSXValueInAttributeAtPath(
               attribute.type,
             )}`,
           )
-        case 'ATTRIBUTE_NESTED_ARRAY':
+        case 'ATTRIBUTE_NESTED_ARRAY': {
+          const attributeKey = PP.firstPart(path)
+          const tailPath = PP.tail(path)
           if (attribute.content.some(isArraySpread)) {
             return left(`Unable to set an indexed value in an array containing spread elements`)
           }
@@ -441,7 +441,10 @@ export function setJSXValueInAttributeAtPath(
               newAttrib,
             )
           }
-        case 'ATTRIBUTE_NESTED_OBJECT':
+        }
+        case 'ATTRIBUTE_NESTED_OBJECT': {
+          const attributeKey = PP.firstPart(path)
+          const tailPath = PP.tail(path)
           const key = `${attributeKey}`
           const newProps = dropKeyFromNestedObject(attribute, key).content
           if (lastPartOfPath) {
@@ -461,6 +464,7 @@ export function setJSXValueInAttributeAtPath(
               updatedNestedAttribute,
             )
           }
+        }
         case 'ATTRIBUTE_VALUE':
           // we need to turn the attribute value into an ATTRIBUTE_NESTED_OBJECT
           const currentValue = attribute.value
@@ -555,7 +559,6 @@ export function unsetValueAtPath(value: any, path: PropertyPath): Either<string,
       throw new Error('Attempted to manipulate value with an empty path.')
     default:
       const attributeKey = PP.firstPart(path)
-      const tailPath = PP.tail(path)
       const lastPartOfPath = PP.depth(path) === 1
       if (typeof attributeKey === 'number' && typeof value === 'object' && Array.isArray(value)) {
         if (lastPartOfPath) {
@@ -563,6 +566,7 @@ export function unsetValueAtPath(value: any, path: PropertyPath): Either<string,
           newArray.splice(attributeKey, 1)
           return right(newArray)
         } else {
+          const tailPath = PP.tail(path)
           const updatedInnerValue = unsetValueAtPath(value[attributeKey], tailPath)
           return mapEither((updated) => {
             let newArray = [...value]
@@ -576,6 +580,7 @@ export function unsetValueAtPath(value: any, path: PropertyPath): Either<string,
           delete newObject[attributeKey]
           return right(newObject)
         } else {
+          const tailPath = PP.tail(path)
           const updatedInnerValue = unsetValueAtPath(value[attributeKey], tailPath)
           return mapEither((updated) => {
             let newObject = { ...value }
@@ -612,7 +617,6 @@ export function unsetJSXValueInAttributeAtPath(
       throw new Error('Attempted to manipulate attribute with an empty path.')
     default:
       const attributeKey = PP.firstPart(path)
-      const tailPath = PP.tail(path)
       const lastPartOfPath = PP.depth(path) === 1
       switch (attribute.type) {
         case 'ATTRIBUTE_FUNCTION_CALL':
@@ -633,6 +637,7 @@ export function unsetJSXValueInAttributeAtPath(
               if (existingAttribute == null) {
                 return right(attribute)
               } else {
+                const tailPath = PP.tail(path)
                 const updatedNestedAttribute = unsetJSXValueInAttributeAtPath(
                   existingAttribute.value,
                   tailPath,
@@ -659,6 +664,7 @@ export function unsetJSXValueInAttributeAtPath(
             if (existingAttributeIndex === -1) {
               return right(attribute)
             } else {
+              const tailPath = PP.tail(path)
               const existingAttribute = attribute.content[existingAttributeIndex]
               const updatedAttribute = unsetJSXValueInAttributeAtPath(
                 existingAttribute.value,
@@ -697,11 +703,11 @@ export function unsetJSXValueAtPath(
       delete updatedAttributes[attributeKey]
       return right(updatedAttributes)
     default:
-      const tailPath = PP.tail(path)
       const existingAttribute = attributes[attributeKey]
       if (existingAttribute == null) {
         return right(attributes)
       } else {
+        const tailPath = PP.tail(path)
         const updatedAttribute: Either<string, JSXAttribute> = unsetJSXValueInAttributeAtPath(
           existingAttribute,
           tailPath,
