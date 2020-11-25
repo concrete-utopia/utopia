@@ -142,34 +142,53 @@ export class SelectModeControlContainer extends React.Component<
           }),
         )
 
-        const duplicate = originalEvent.altKey
-        const duplicateNewUIDs = duplicate
-          ? createDuplicationNewUIDs(
-              this.props.selectedViews,
-              this.props.componentMetadata,
-              this.props.rootComponents,
-            )
-          : null
+        const onMouseMove = (event: MouseEvent) => {
+          const cursorPosition = this.props.windowToCanvasPosition(event)
+          if (Utils.distance(start, cursorPosition.canvasPositionRaw) > 2) {
+            // actually start the drag state
+            const duplicate = event.altKey
+            const duplicateNewUIDs = duplicate
+              ? createDuplicationNewUIDs(
+                  this.props.selectedViews,
+                  this.props.componentMetadata,
+                  this.props.rootComponents,
+                )
+              : null
 
-        this.props.dispatch([
-          CanvasActions.createDragState(
-            moveDragState(
-              start,
-              null,
-              null,
-              originalFrames,
-              selectionArea,
-              !originalEvent.metaKey,
-              originalEvent.shiftKey,
-              duplicate,
-              originalEvent.metaKey,
-              duplicateNewUIDs,
-              start,
-              this.props.componentMetadata,
-              moveTargets,
-            ),
-          ),
-        ])
+            removeMouseListeners()
+            this.props.dispatch([
+              CanvasActions.createDragState(
+                moveDragState(
+                  start,
+                  null,
+                  null,
+                  originalFrames,
+                  selectionArea,
+                  !event.metaKey,
+                  event.shiftKey,
+                  duplicate,
+                  event.metaKey,
+                  duplicateNewUIDs,
+                  start,
+                  this.props.componentMetadata,
+                  moveTargets,
+                ),
+              ),
+            ])
+          }
+        }
+
+        const onMouseUp = () => {
+          removeMouseListeners()
+        }
+
+        const removeMouseListeners = () => {
+          window.removeEventListener('mousemove', onMouseMove)
+          window.removeEventListener('mouseup', onMouseUp)
+        }
+
+        window.addEventListener('mousemove', onMouseMove)
+        window.addEventListener('mouseup', onMouseUp)
       }
     }
   }
