@@ -19,7 +19,17 @@ export function replaceAll(inString: string, searchFor: string, replaceWith: str
 }
 
 export function camelCaseToDashed(s: string): string {
-  return s.replace(/[A-Z]/g, (l) => `-${l.toLowerCase()}`)
+  let result: string = ''
+  for (let index = 0; index < s.length; index++) {
+    const char = s.charAt(index)
+    if (char >= 'A' && char <= 'Z') {
+      result += '-'
+      result += char.toLowerCase()
+    } else {
+      result += char
+    }
+  }
+  return result
 }
 
 export function splitIntoLines(s: string): Array<string> {
