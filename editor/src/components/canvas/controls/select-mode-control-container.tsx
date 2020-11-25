@@ -1,6 +1,5 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
@@ -107,9 +106,7 @@ export class SelectModeControlContainer extends React.Component<
         updatedSelection = TP.addPathIfMissing(target, this.props.selectedViews)
       }
 
-      ;(ReactDOM as any).flushSync(() => {
-        this.props.setSelectedViewsLocally(updatedSelection)
-      })
+      this.props.setSelectedViewsLocally(updatedSelection)
 
       /**
        * As of November 2020, we need two nested requestAnimationFrames here,
