@@ -1,0 +1,547 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`JSX Parser ternaries with basic values 1`] = `
+Object {
+  "react": Object {
+    "importedAs": "React",
+    "importedFromWithin": Array [],
+    "importedWithName": null,
+  },
+  "utopia-api": Object {
+    "importedAs": null,
+    "importedFromWithin": Array [
+      Object {
+        "alias": "Scene",
+        "name": "Scene",
+      },
+      Object {
+        "alias": "Storyboard",
+        "name": "Storyboard",
+      },
+      Object {
+        "alias": "jsx",
+        "name": "jsx",
+      },
+    ],
+    "importedWithName": null,
+  },
+}
+`;
+
+exports[`JSX Parser ternaries with basic values 2`] = `
+Array [
+  Object {
+    "arbitraryJSBlock": null,
+    "isFunction": true,
+    "name": "App",
+    "param": Object {
+      "boundParam": Object {
+        "defaultExpression": null,
+        "paramName": "props",
+        "type": "REGULAR_PARAM",
+      },
+      "dotDotDotToken": false,
+      "type": "PARAM",
+    },
+    "propsUsed": Array [],
+    "rootElement": Object {
+      "children": Array [
+        Object {
+          "text": "
+      ",
+          "type": "JSX_TEXT_BLOCK",
+          "uniqueID": "",
+        },
+        Object {
+          "condition": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": false,
+          },
+          "type": "JSX_CONDITIONAL_EXPRESSION",
+          "uniqueID": "",
+          "whenFalse": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "cookie",
+          },
+          "whenTrue": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "cake",
+          },
+        },
+        Object {
+          "text": "
+    ",
+          "type": "JSX_TEXT_BLOCK",
+          "uniqueID": "",
+        },
+      ],
+      "name": Object {
+        "baseVariable": "div",
+        "propertyPath": Object {
+          "propertyElements": Array [],
+        },
+      },
+      "props": Object {
+        "data-uid": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": "318",
+        },
+        "layout": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": Object {
+            "layoutSystem": "pinSystem",
+          },
+        },
+        "style": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": Object {
+            "backgroundColor": "#FFFFFF",
+            "height": "100%",
+            "width": "100%",
+          },
+        },
+      },
+      "type": "JSX_ELEMENT",
+    },
+    "type": "UTOPIA_JSX_COMPONENT",
+  },
+  Object {
+    "arbitraryJSBlock": null,
+    "isFunction": false,
+    "name": "storyboard",
+    "param": null,
+    "propsUsed": Array [],
+    "rootElement": Object {
+      "children": Array [
+        Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Scene",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Object {
+            "component": Object {
+              "definedElsewhere": Array [
+                "App",
+              ],
+              "javascript": "App",
+              "sourceMap": Object {
+                "file": "code.tsx",
+                "mappings": "OAiBkBA",
+                "names": Array [
+                  "App",
+                ],
+                "sources": Array [
+                  "code.tsx",
+                ],
+                "sourcesContent": Array [
+                  "/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >
+      {false ? 'cake' : 'cookie'}
+    </div>
+  )
+}
+export var storyboard = (
+  <Storyboard data-uid={'utopia-storyboard-uid'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      component={App}
+      layout={{ layoutSystem: 'pinSystem' }}
+      props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+      data-uid={'scene-aaa'}
+    />
+  </Storyboard>
+)
+",
+                ],
+                "version": 3,
+              },
+              "transpiledJavascript": "return App;",
+              "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+              "uniqueID": "",
+            },
+            "data-uid": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": "scene-aaa",
+            },
+            "layout": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "layoutSystem": "pinSystem",
+              },
+            },
+            "props": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "layout": Object {
+                  "bottom": 0,
+                  "left": 0,
+                  "right": 0,
+                  "top": 0,
+                },
+              },
+            },
+            "style": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "height": 812,
+                "left": 0,
+                "position": "absolute",
+                "top": 0,
+                "width": 375,
+              },
+            },
+          },
+          "type": "JSX_ELEMENT",
+        },
+      ],
+      "name": Object {
+        "baseVariable": "Storyboard",
+        "propertyPath": Object {
+          "propertyElements": Array [],
+        },
+      },
+      "props": Object {
+        "data-uid": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": "utopia-storyboard-uid",
+        },
+        "layout": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": Object {
+            "layoutSystem": "pinSystem",
+          },
+        },
+      },
+      "type": "JSX_ELEMENT",
+    },
+    "type": "UTOPIA_JSX_COMPONENT",
+  },
+]
+`;
+
+exports[`JSX Parser ternaries with elements 1`] = `
+Object {
+  "react": Object {
+    "importedAs": "React",
+    "importedFromWithin": Array [],
+    "importedWithName": null,
+  },
+  "utopia-api": Object {
+    "importedAs": null,
+    "importedFromWithin": Array [
+      Object {
+        "alias": "Scene",
+        "name": "Scene",
+      },
+      Object {
+        "alias": "Storyboard",
+        "name": "Storyboard",
+      },
+      Object {
+        "alias": "jsx",
+        "name": "jsx",
+      },
+    ],
+    "importedWithName": null,
+  },
+}
+`;
+
+exports[`JSX Parser ternaries with elements 2`] = `
+Array [
+  Object {
+    "arbitraryJSBlock": null,
+    "isFunction": true,
+    "name": "App",
+    "param": Object {
+      "boundParam": Object {
+        "defaultExpression": null,
+        "paramName": "props",
+        "type": "REGULAR_PARAM",
+      },
+      "dotDotDotToken": false,
+      "type": "PARAM",
+    },
+    "propsUsed": Array [],
+    "rootElement": Object {
+      "children": Array [
+        Object {
+          "text": "
+      ",
+          "type": "JSX_TEXT_BLOCK",
+          "uniqueID": "",
+        },
+        Object {
+          "condition": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": false,
+          },
+          "type": "JSX_CONDITIONAL_EXPRESSION",
+          "uniqueID": "",
+          "whenFalse": Object {
+            "definedElsewhere": Array [
+              "React",
+            ],
+            "javascript": "<span />",
+            "sourceMap": Object {
+              "file": "code.tsx",
+              "mappings": "OAS2BA,iCAAFC",
+              "names": Array [
+                "span",
+                " ",
+              ],
+              "sources": Array [
+                "code.tsx",
+              ],
+              "sourcesContent": Array [
+                "/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >
+      {false ? <div /> : <span />}
+    </div>
+  )
+}
+export var storyboard = (
+  <Storyboard data-uid={'utopia-storyboard-uid'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      component={App}
+      layout={{ layoutSystem: 'pinSystem' }}
+      props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+      data-uid={'scene-aaa'}
+    />
+  </Storyboard>
+)
+",
+              ],
+              "version": 3,
+            },
+            "transpiledJavascript": "return React.createElement(\\"span\\", null);",
+            "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+            "uniqueID": "",
+          },
+          "whenTrue": Object {
+            "definedElsewhere": Array [
+              "React",
+            ],
+            "javascript": "<div />",
+            "sourceMap": Object {
+              "file": "code.tsx",
+              "mappings": "OASiBA,gCAAFC",
+              "names": Array [
+                "div",
+                " ",
+              ],
+              "sources": Array [
+                "code.tsx",
+              ],
+              "sourcesContent": Array [
+                "/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >
+      {false ? <div /> : <span />}
+    </div>
+  )
+}
+export var storyboard = (
+  <Storyboard data-uid={'utopia-storyboard-uid'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      component={App}
+      layout={{ layoutSystem: 'pinSystem' }}
+      props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+      data-uid={'scene-aaa'}
+    />
+  </Storyboard>
+)
+",
+              ],
+              "version": 3,
+            },
+            "transpiledJavascript": "return React.createElement(\\"div\\", null);",
+            "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+            "uniqueID": "",
+          },
+        },
+        Object {
+          "text": "
+    ",
+          "type": "JSX_TEXT_BLOCK",
+          "uniqueID": "",
+        },
+      ],
+      "name": Object {
+        "baseVariable": "div",
+        "propertyPath": Object {
+          "propertyElements": Array [],
+        },
+      },
+      "props": Object {
+        "data-uid": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": "318",
+        },
+        "layout": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": Object {
+            "layoutSystem": "pinSystem",
+          },
+        },
+        "style": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": Object {
+            "backgroundColor": "#FFFFFF",
+            "height": "100%",
+            "width": "100%",
+          },
+        },
+      },
+      "type": "JSX_ELEMENT",
+    },
+    "type": "UTOPIA_JSX_COMPONENT",
+  },
+  Object {
+    "arbitraryJSBlock": null,
+    "isFunction": false,
+    "name": "storyboard",
+    "param": null,
+    "propsUsed": Array [],
+    "rootElement": Object {
+      "children": Array [
+        Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Scene",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Object {
+            "component": Object {
+              "definedElsewhere": Array [
+                "App",
+              ],
+              "javascript": "App",
+              "sourceMap": Object {
+                "file": "code.tsx",
+                "mappings": "OAiBkBA",
+                "names": Array [
+                  "App",
+                ],
+                "sources": Array [
+                  "code.tsx",
+                ],
+                "sourcesContent": Array [
+                  "/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >
+      {false ? <div /> : <span />}
+    </div>
+  )
+}
+export var storyboard = (
+  <Storyboard data-uid={'utopia-storyboard-uid'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      component={App}
+      layout={{ layoutSystem: 'pinSystem' }}
+      props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+      data-uid={'scene-aaa'}
+    />
+  </Storyboard>
+)
+",
+                ],
+                "version": 3,
+              },
+              "transpiledJavascript": "return App;",
+              "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+              "uniqueID": "",
+            },
+            "data-uid": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": "scene-aaa",
+            },
+            "layout": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "layoutSystem": "pinSystem",
+              },
+            },
+            "props": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "layout": Object {
+                  "bottom": 0,
+                  "left": 0,
+                  "right": 0,
+                  "top": 0,
+                },
+              },
+            },
+            "style": Object {
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "height": 812,
+                "left": 0,
+                "position": "absolute",
+                "top": 0,
+                "width": 375,
+              },
+            },
+          },
+          "type": "JSX_ELEMENT",
+        },
+      ],
+      "name": Object {
+        "baseVariable": "Storyboard",
+        "propertyPath": Object {
+          "propertyElements": Array [],
+        },
+      },
+      "props": Object {
+        "data-uid": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": "utopia-storyboard-uid",
+        },
+        "layout": Object {
+          "type": "ATTRIBUTE_VALUE",
+          "value": Object {
+            "layoutSystem": "pinSystem",
+          },
+        },
+      },
+      "type": "JSX_ELEMENT",
+    },
+    "type": "UTOPIA_JSX_COMPONENT",
+  },
+]
+`;

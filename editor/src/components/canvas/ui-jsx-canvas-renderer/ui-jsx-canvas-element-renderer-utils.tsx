@@ -18,7 +18,11 @@ import {
   isIntrinsicHTMLElement,
   JSXArbitraryBlock,
 } from '../../../core/shared/element-template'
-import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import {
+  jsxAttributesToProps,
+  jsxAttributeToValue,
+  setJSXValueAtPath,
+} from '../../../core/shared/jsx-attributes'
 import { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { arrayEquals, fastForEach } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
@@ -196,6 +200,20 @@ export function renderCoreElement(
         React.Fragment,
         { key: TP.toString(templatePath) },
         element.text,
+      )
+    }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const expressionEvaluated = jsxAttributeToValue(inScope, requireResult)(element.condition)
+      const trueOrFalseResult = jsxAttributeToValue(
+        inScope,
+        requireResult,
+      )(expressionEvaluated ? element.whenTrue : element.whenFalse)
+      return renderComponentUsingJsxFactoryFunction(
+        inScope,
+        jsxFactoryFunctionName,
+        React.Fragment,
+        { key: TP.toString(templatePath) },
+        trueOrFalseResult,
       )
     }
     default:
