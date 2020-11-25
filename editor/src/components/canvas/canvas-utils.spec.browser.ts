@@ -1355,6 +1355,24 @@ describe('moveTemplate', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
+        areaControl,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
         window,
         new MouseEvent('mouseup', {
           bubbles: true,
@@ -1552,6 +1570,24 @@ describe('moveTemplate', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
+        areaControl,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
         window,
         new MouseEvent('mouseup', {
           bubbles: true,
@@ -1626,6 +1662,24 @@ describe('moveTemplate', () => {
         buttons: 1,
       }),
     )
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        areaControl,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 45,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
 
     await act(async () => {
       const domFinished = renderResult.getDomReportDispatched()
