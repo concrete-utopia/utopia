@@ -80,7 +80,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_SHORTCUT':
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
     case 'PROPERTY_CONTROLS_IFRAME_READY':
-    case 'SAVE_CURSOR_POSITION':
+    case 'SEND_LINTER_REQUEST_MESSAGE':
       return true
 
     case 'NEW':

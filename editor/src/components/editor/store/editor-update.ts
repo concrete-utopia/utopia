@@ -252,8 +252,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state)
     case 'SET_ASPECT_RATIO_LOCK':
       return UPDATE_FNS.SET_ASPECT_RATIO_LOCK(action, state)
-    case 'SAVE_CURSOR_POSITION':
-      return UPDATE_FNS.SAVE_CURSOR_POSITION(action, state)
     case 'TOGGLE_CANVAS_IS_LIVE':
       return UPDATE_FNS.TOGGLE_CANVAS_IS_LIVE(state, derivedState)
     case 'RENAME_PROP_KEY':
@@ -286,6 +284,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PROPERTY_CONTROLS_IFRAME_READY(action, state)
     case 'ADD_STORYBOARD_FILE':
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
+    case 'SEND_LINTER_REQUEST_MESSAGE':
+      // side effect ☢️
+      workers.sendLinterRequestMessage(action.filePath, action.content)
+      return state
     default:
       return state
   }

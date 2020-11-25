@@ -28,6 +28,7 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { JSXMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
+import { uniqBy } from '../../../core/shared/array-utils'
 
 export const SnappingThreshold = 5
 
@@ -141,34 +142,53 @@ export class SelectModeControlContainer extends React.Component<
           }),
         )
 
-        const duplicate = originalEvent.altKey
-        const duplicateNewUIDs = duplicate
-          ? createDuplicationNewUIDs(
-              this.props.selectedViews,
-              this.props.componentMetadata,
-              this.props.rootComponents,
-            )
-          : null
+        const onMouseMove = (event: MouseEvent) => {
+          const cursorPosition = this.props.windowToCanvasPosition(event)
+          if (Utils.distance(start, cursorPosition.canvasPositionRaw) > 2) {
+            // actually start the drag state
+            const duplicate = event.altKey
+            const duplicateNewUIDs = duplicate
+              ? createDuplicationNewUIDs(
+                  this.props.selectedViews,
+                  this.props.componentMetadata,
+                  this.props.rootComponents,
+                )
+              : null
 
-        this.props.dispatch([
-          CanvasActions.createDragState(
-            moveDragState(
-              start,
-              null,
-              null,
-              originalFrames,
-              selectionArea,
-              !originalEvent.metaKey,
-              originalEvent.shiftKey,
-              duplicate,
-              originalEvent.metaKey,
-              duplicateNewUIDs,
-              start,
-              this.props.componentMetadata,
-              moveTargets,
-            ),
-          ),
-        ])
+            removeMouseListeners()
+            this.props.dispatch([
+              CanvasActions.createDragState(
+                moveDragState(
+                  start,
+                  null,
+                  null,
+                  originalFrames,
+                  selectionArea,
+                  !event.metaKey,
+                  event.shiftKey,
+                  duplicate,
+                  event.metaKey,
+                  duplicateNewUIDs,
+                  start,
+                  this.props.componentMetadata,
+                  moveTargets,
+                ),
+              ),
+            ])
+          }
+        }
+
+        const onMouseUp = () => {
+          removeMouseListeners()
+        }
+
+        const removeMouseListeners = () => {
+          window.removeEventListener('mousemove', onMouseMove)
+          window.removeEventListener('mouseup', onMouseUp)
+        }
+
+        window.addEventListener('mousemove', onMouseMove)
+        window.addEventListener('mouseup', onMouseUp)
       }
     }
   }
@@ -242,7 +262,7 @@ export class SelectModeControlContainer extends React.Component<
           rootElements != null &&
           rootElements.length > 1
         ) {
-          rootElementsToFilter = [...rootElementsToFilter, ...rootElements]
+          rootElementsToFilter.push(...rootElements)
           dynamicScenesWithFragmentRootViews.push(path)
         }
       })
@@ -264,7 +284,7 @@ export class SelectModeControlContainer extends React.Component<
       })
 
       const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
-      const uniqueSelectableViews = R.uniqWith<TemplatePath>(TP.pathsEqual, selectableViews)
+      const uniqueSelectableViews = uniqBy<TemplatePath>(selectableViews, TP.pathsEqual)
 
       const selectableViewsFiltered = uniqueSelectableViews.filter((view) => {
         // I kept the group-like behavior here that the user can't single-click select the parent group, even though it is a view now

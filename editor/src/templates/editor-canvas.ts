@@ -567,7 +567,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     return this.getPositionFromCoordinates(event.clientX, event.clientY)
   }
 
-  handleEvent(event: CanvasMouseEvent) {
+  handleEvent(event: CanvasMouseEvent): void {
     if (
       event.event === 'MOVE' &&
       !this.props.editor.canvas.selectionControlsVisible &&
