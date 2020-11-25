@@ -48,6 +48,28 @@ export function usePropControlledState<T>(
   return [localState, setLocalState, forceUpdate]
 }
 
+export function usePropControlledStateV2<T>(propValue: T): [T, React.Dispatch<T>] {
+  const previousPropValueRef = React.useRef<T>(propValue)
+  const localStateRef = React.useRef<T>(propValue)
+
+  // if the prop changes, update the local state ref. there is no need to force a re-render, because we are already in a render phase with the new props
+  if (propValue !== previousPropValueRef.current) {
+    localStateRef.current = propValue
+    previousPropValueRef.current = propValue
+  }
+
+  const [, forceUpdate] = React.useReducer(forceUpdateFunction, 0)
+
+  const setLocalState = React.useCallback((newValue: T) => {
+    localStateRef.current = newValue
+    forceUpdate()
+    // TODO FIXME bump eslint
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return [localStateRef.current, setLocalState]
+}
+
 export type ReadonlyRef<T> = {
   readonly current: T
 }

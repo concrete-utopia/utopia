@@ -45,6 +45,7 @@ function getDistanceGuidelines(
 }
 
 interface SelectModeControlContainerProps extends ControlProps {
+  setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
   keysPressed: KeysPressed
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   isDragging: boolean // set only when user already moves a cursor a little after a mousedown
@@ -104,13 +105,26 @@ export class SelectModeControlContainer extends React.Component<
       if (isMultiselect) {
         updatedSelection = TP.addPathIfMissing(target, this.props.selectedViews)
       }
-      let selectActions = [
-        EditorActions.clearHighlightedViews(),
-        EditorActions.selectComponents(updatedSelection, false),
-        EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
-        EditorActions.setRightMenuTab(RightMenuTab.Inspector),
-      ]
-      this.props.dispatch(selectActions, 'canvas')
+
+      this.props.setSelectedViewsLocally(updatedSelection)
+
+      /**
+       * As of November 2020, we need two nested requestAnimationFrames here,
+       * the first one is called almost immediately (before vsync),
+       * the second one is properly called in the next frame
+       */
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          let selectActions = [
+            EditorActions.clearHighlightedViews(),
+            EditorActions.selectComponents(updatedSelection, false),
+            EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
+            EditorActions.setRightMenuTab(RightMenuTab.Inspector),
+          ]
+          this.props.dispatch(selectActions, 'canvas')
+        })
+      })
+
       return updatedSelection
     }
   }
