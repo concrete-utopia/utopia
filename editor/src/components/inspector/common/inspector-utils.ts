@@ -63,6 +63,8 @@ export function usePropControlledStateV2<T>(propValue: T): [T, React.Dispatch<T>
   const setLocalState = React.useCallback((newValue: T) => {
     localStateRef.current = newValue
     forceUpdate()
+    // TODO FIXME bump eslint
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return [localStateRef.current, setLocalState]
