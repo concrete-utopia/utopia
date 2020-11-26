@@ -248,7 +248,7 @@ const initPreview = () => {
 
     incorporateBuildResult(nodeModules, bundledProjectFiles)
 
-    const require = getRequireFn(onRemoteModuleDownload, projectContents, nodeModules)
+    const requireFn = getRequireFn(onRemoteModuleDownload, projectContents, nodeModules)
 
     // replacing the document body first
     const previewHTMLFileName = getMainHTMLFilename(projectContents)
@@ -288,7 +288,7 @@ const initPreview = () => {
          * the React entry point js file traditionally has a top level side effect,
          * calling ReactDOM.render() which starts the Preview app.
          */
-        require('/', previewJSFilePath)
+        requireFn('/', previewJSFilePath)
       }
     } else {
       throw new Error(

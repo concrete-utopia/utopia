@@ -1,4 +1,4 @@
-import { testParseThenPrint } from './parser-printer-test-utils'
+import { testParseThenPrint } from './parser-printer.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 
 describe('Storyboard project files', () => {

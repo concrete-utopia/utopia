@@ -1,7 +1,7 @@
-import { clearParseResultUniqueIDs, testParseCode } from './parser-printer-test-utils'
+import { clearParseResultUniqueIDs, testParseCode } from './parser-printer.test-utils'
 import Utils from '../../../utils/utils'
 import { applyPrettier } from './prettier-utils'
-import { testPrintParsedTextFile } from '../../../components/canvas/ui-jsx-test-utils'
+import { testPrintParsedTextFile } from '../../../components/canvas/ui-jsx.test-utils'
 
 describe('parseCode', () => {
   it('should parse a directly exported component', () => {

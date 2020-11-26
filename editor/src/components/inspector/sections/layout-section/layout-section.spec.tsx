@@ -6,14 +6,14 @@ import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers
 import {
   enableWhyDidYouRenderOnComponent,
   setupReactWhyDidYouRender,
-} from '../../../../utils/react-memoize-test-utils'
+} from '../../../../utils/react-memoize.test-utils'
 import utils from '../../../../utils/utils'
 import { CanvasRectangle, CanvasVector, LocalRectangle } from '../../../../core/shared/math-utils'
 import {
   editPropOfSelectedView,
   getStoreHook,
   TestInspectorContextProvider,
-} from '../../common/inspector-test-utils'
+} from '../../common/inspector.test-utils'
 import { LayoutSection } from './layout-section'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import { NO_OP } from '../../../../core/shared/utils'

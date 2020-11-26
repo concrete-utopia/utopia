@@ -2,7 +2,7 @@ import { changePin, ElementFrameInfo, PinsInfo } from './layout-property-path-ho
 import { FramePin, Frame } from 'utopia-api'
 import { Utils } from 'uuiui-deps'
 import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
-import { testInspectorInfo } from './inspector-test-utils'
+import { testInspectorInfo } from './inspector.test-utils'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file'
 import * as TP from '../../../core/shared/template-path'

@@ -3,7 +3,7 @@ import { getAllUniqueUids } from '../../model/element-template-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import { uniq } from '../../shared/array-utils'
 import { foldParsedTextFile } from '../../shared/project-file-types'
-import { testParseCode } from './parser-printer-test-utils'
+import { testParseCode } from './parser-printer.test-utils'
 
 describe('parseCode', () => {
   it('produces unique IDs for every element', () => {

@@ -2,7 +2,7 @@ import {
   clearParseResultUniqueIDs,
   testParseCode,
   JustImportViewAndReact,
-} from './parser-printer-test-utils'
+} from './parser-printer.test-utils'
 import {
   jsxElement,
   jsxAttributeValue,

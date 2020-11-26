@@ -73,7 +73,7 @@ import {
 } from '../../../core/model/test-ui-js-file'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { getDefaultUIJsFile, sampleCode } from '../../../core/model/new-project-files'
-import { TestScenePath } from '../../canvas/ui-jsx-test-utils'
+import { TestScenePath } from '../../canvas/ui-jsx.test-utils'
 import { NO_OP } from '../../../core/shared/utils'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { generateCodeResultCache } from '../../custom-code/code-file'

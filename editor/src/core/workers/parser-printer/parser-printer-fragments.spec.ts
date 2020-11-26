@@ -1,9 +1,9 @@
 import { printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from './prettier-utils'
 import { isRight } from '../../shared/either'
-import { testParseCode, clearParseResultUniqueIDs } from './parser-printer-test-utils'
+import { testParseCode, clearParseResultUniqueIDs } from './parser-printer.test-utils'
 import { elementsStructure } from '../../../utils/test-utils'
-import { AwkwardFragmentsCode } from './parser-printer-fragments-test-utils'
+import { AwkwardFragmentsCode } from './parser-printer-fragments.test-utils'
 import { isParseSuccess } from '../../shared/project-file-types'
 
 describe('JSX parser', () => {

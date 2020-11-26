@@ -4,7 +4,7 @@ import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
 import * as TP from '../../../core/shared/template-path'
-import { testInspectorInfo } from './inspector-test-utils'
+import { testInspectorInfo } from './inspector.test-utils'
 import { changePin, ElementFrameInfo, PinsInfo } from './layout-property-path-hooks'
 
 type SimplePinsInfo = { [key in LayoutPinnedProp]: FramePin | undefined }
