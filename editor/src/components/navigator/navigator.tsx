@@ -44,6 +44,7 @@ import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import { Size } from 'react-virtualized-auto-sizer'
 import { UtopiaJSXComponentsByName } from '../../core/model/project-file-utils'
 import { findMatchingComponent } from '../../core/model/experiment-utils'
+import { CodeOutlineNavigator } from './code-outline-navigator'
 // There's some weirdness between the types and the results in the two module systems.
 // This is to effectively massage the result so that if it is loaded in the browser or in
 // node it should end up with the right thing.
@@ -110,6 +111,45 @@ export const NavigatorComponentWrapper = betterReactMemo('NavigatorComponent', (
     },
     [dispatch],
   )
+
+  if (isFeatureEnabled('Code Outline Navigator')) {
+    const selectedView = selectedViews[0]
+    const matchingComponent =
+      selectedView == null
+        ? null
+        : findMatchingComponent(
+            selectedView,
+            editorSliceRef.current.metadata,
+            editorSliceRef.current.componentsByName,
+          )
+
+    return (
+      <React.Fragment>
+        <div
+          style={{
+            height: '50%',
+            overflowY: 'scroll',
+            flexGrow: 1,
+          }}
+        >
+          <CodeOutlineNavigator />
+        </div>
+        <div
+          style={{
+            height: '50%',
+            overflowY: 'scroll',
+            flexGrow: 1,
+          }}
+        >
+          <SelectedComponentNavigator
+            selectedComponent={matchingComponent}
+            imports={editorSliceRef.current.imports}
+            utopiaComponentNames={Object.keys(editorSliceRef.current.componentsByName)}
+          />
+        </div>
+      </React.Fragment>
+    )
+  }
 
   if (isFeatureEnabled('Component Navigator')) {
     const selectedView = selectedViews[0]
