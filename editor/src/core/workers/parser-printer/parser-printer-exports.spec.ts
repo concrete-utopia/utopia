@@ -45,7 +45,7 @@ describe('parseCode', () => {
         "defaultExport": null,
         "namedExports": Object {
           "whatever": Object {
-            "propertyName": "whatever",
+            "name": "whatever",
             "type": "EXPORT_DETAIL_NAMED",
           },
         },
@@ -70,7 +70,7 @@ describe('parseCode', () => {
         "defaultExport": null,
         "namedExports": Object {
           "otherThing": Object {
-            "propertyName": "whatever",
+            "name": "whatever",
             "type": "EXPORT_DETAIL_NAMED",
           },
         },
