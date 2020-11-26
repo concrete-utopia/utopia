@@ -13,7 +13,7 @@ import {
   editPropOfSelectedView,
   getStoreHook,
   TestInspectorContextProvider,
-} from '../../common/inspector-test-utils'
+} from '../../common/inspector.test-utils'
 import { LayoutSection } from './layout-section'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import { NO_OP } from '../../../../core/shared/utils'

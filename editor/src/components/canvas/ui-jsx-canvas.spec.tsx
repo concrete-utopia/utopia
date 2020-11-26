@@ -33,7 +33,7 @@ import {
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { ConsoleLog } from '../editor/store/editor-state'
-import { AwkwardFragmentsCode } from '../../core/workers/parser-printer/parser-printer-fragments-test-utils'
+import { AwkwardFragmentsCode } from '../../core/workers/parser-printer/parser-printer-fragments.test-utils'
 import { CanvasErrorBoundary } from './canvas-component-entry'
 
 interface PartialCanvasProps {
