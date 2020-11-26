@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import * as React from 'react'
-import { betterReactMemo } from 'uuiui-deps'
+import { betterReactMemo } from '../../utils/react-performance'
 import { ComponentMetadata } from '../../core/shared/element-template'
 import {
   getHighlightBoundsFromParseResult,

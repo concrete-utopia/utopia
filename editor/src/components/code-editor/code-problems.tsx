@@ -4,20 +4,26 @@ import { Console } from 'console-feed'
 import * as R from 'ramda'
 import { Resizable, ResizeCallback } from 're-resizable'
 import * as React from 'react'
-import { colorTheme, FlexRow, Icons, TabComponent, UtopiaTheme, SimpleFlexColumn } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
+// import { colorTheme, FlexRow, Icons, TabComponent, UtopiaTheme, SimpleFlexColumn } from 'uuiui'
+// import { betterReactMemo } from 'uuiui-deps'
 import {
   ErrorMessage,
   ErrorMessageSeverity,
   messageIsFatalOrError,
   messageIsWarning,
 } from '../../core/shared/error-messages'
-import { Utils } from '../../uuiui-deps'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { CursorPosition } from './code-editor-utils'
 import { clampValue } from '../../core/shared/math-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { VariableSizeList as List } from 'react-window'
+import { colorTheme, UtopiaTheme } from '../../uuiui/styles/theme'
+import { FlexRow } from '../../uuiui/widgets/layout/flex-row'
+import { NO_OP } from '../../core/shared/utils'
+import { betterReactMemo } from '../../utils/react-performance'
+import { TabComponent } from '../../uuiui/tab'
+import { Icons } from '../../uuiui/icons'
+import { SimpleFlexColumn } from '../../uuiui/widgets/layout/flex-column'
 
 interface ErrorMessageRowProps {
   errorMessage: ErrorMessage
@@ -59,7 +65,7 @@ const ErrorMessageRow = (props: ErrorMessageRowProps) => {
           background: colorTheme.emphasizedBackground.value,
         },
       }}
-      onClick={isSourceKnown ? onClick : Utils.NO_OP}
+      onClick={isSourceKnown ? onClick : NO_OP}
     >
       <WarningIcon color={errorMessageSeverityToColor(props.errorMessage.severity)} />
       <span style={{ marginLeft: 4, userSelect: 'text' }}>{props.errorMessage.source}: </span>
