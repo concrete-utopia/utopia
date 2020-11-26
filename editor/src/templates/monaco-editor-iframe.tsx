@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { STATIC_BASE_URL } from '../common/env-vars'
-import { CodeEditorIframeEntryPoint } from '../components/code-editor/code-editor-container'
+import { CodeEditorIframeEntryPoint } from '../components/code-editor/code-editor-iframe-entry-point'
 import { addStyleSheetToPage } from '../core/shared/dom-utils'
 
 addStyleSheetToPage(`${STATIC_BASE_URL}editor/fonts.css`, true)

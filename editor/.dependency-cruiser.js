@@ -33,6 +33,19 @@ module.exports = {
     //   to: {},
     // },
     {
+      name: 'not-from-monaco-to-editor',
+      comment:
+        'The code editor files should not accidentally import the main editor, as that pulls in 10+ megabytes of dependencies',
+      severity: 'error',
+      from: {
+        path: 'monaco-editor-iframe\\.tsx$',
+      },
+      to: {
+        path: ['editor\\.tsx', 'editor-state\\.ts'],
+        reachable: true,
+      },
+    },
+    {
       name: 'no-deprecated-core',
       comment:
         'A module depends on a node core module that has been deprecated. Find an alternative - these are ' +
