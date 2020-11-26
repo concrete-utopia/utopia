@@ -12,10 +12,11 @@
   },
   "scripts": {
     "clean": "rm -rf lib/",
-    "check": "tsc --noEmit && npm run lint && npm run test",
-    "check-ci": "tsc --noEmit && npm run lint && npm run test-ci",
+    "check": "tsc --noEmit && npm run lint && npm run check-dependency-cruiser && npm run test",
+    "check-ci": "tsc --noEmit && npm run lint && npm run check-dependency-cruiser && npm run test-ci",
     "lint": "npx eslint \"src/**/*.{js,ts,tsx}\" --quiet",
     "lint-loud": "npx eslint \"src/**/*.{js,ts,tsx}\"",
+    "check-dependency-cruiser": "depcruise --config .dependency-cruiser.js src",
     "test": "jest --config ./jest.config.js",
     "test-ci": "NODE_OPTIONS=--max_old_space_size=6656 xvfb-run -a npm run test -- --maxWorkers=1",
     "test-debug": "node --inspect-brk node_modules/.bin/jest --config ./jest.config.js --runInBand",
