@@ -62,7 +62,7 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/
 import { scenePath } from '../../core/shared/template-path'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
-import { testParseCode } from '../../core/workers/parser-printer/parser-printer-test-utils'
+import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 import { setPropertyControlsIFrameAvailable } from '../../core/property-controls/property-controls-utils'
 import { getContentsTreeFileFromString } from '../assets'

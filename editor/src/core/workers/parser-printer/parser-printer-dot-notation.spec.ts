@@ -3,7 +3,7 @@ import {
   clearParseResultUniqueIDs,
   testParseCode,
   testParseThenPrint,
-} from './parser-printer-test-utils'
+} from './parser-printer.test-utils'
 import { BakedInStoryboardUID } from '../../model/scene-utils'
 import { foldParsedTextFile } from '../../shared/project-file-types'
 

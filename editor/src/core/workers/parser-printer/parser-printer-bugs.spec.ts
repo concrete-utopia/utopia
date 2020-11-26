@@ -10,7 +10,7 @@ import {
   clearParseResultUniqueIDs,
   testParseCode,
   testParseThenPrint,
-} from './parser-printer-test-utils'
+} from './parser-printer.test-utils'
 import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
 import { isParseSuccess } from '../../shared/project-file-types'

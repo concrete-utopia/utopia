@@ -15,7 +15,7 @@ import {
 } from '../../core/shared/element-template'
 import { RequireFn } from '../../core/shared/npm-dependency-types'
 import { foldParsedTextFile, Imports } from '../../core/shared/project-file-types'
-import { testParseCode } from '../../core/workers/parser-printer/parser-printer-test-utils'
+import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { foldEither, isRight, right } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { FancyError } from '../../core/shared/code-exec-utils'

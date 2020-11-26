@@ -1,7 +1,7 @@
 import { printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from './prettier-utils'
 import { isRight } from '../../shared/either'
-import { testParseCode } from './parser-printer-test-utils'
+import { testParseCode } from './parser-printer.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { isParseSuccess } from '../../shared/project-file-types'
 

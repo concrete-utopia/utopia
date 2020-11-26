@@ -9,7 +9,7 @@ import { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   setupReactWhyDidYouRender,
   enableWhyDidYouRenderOnComponent,
-} from '../../../../utils/react-memoize-test-utils'
+} from '../../../../utils/react-memoize.test-utils'
 import { ComponentSection } from './component-section'
 import { ScenePathForTestUiJsFile } from '../../../../core/model/test-ui-js-file'
 

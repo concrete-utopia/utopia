@@ -8,7 +8,7 @@ import { SceneSection } from './scene-section'
 import {
   setupReactWhyDidYouRender,
   enableWhyDidYouRenderOnComponent,
-} from '../../../../utils/react-memoize-test-utils'
+} from '../../../../utils/react-memoize.test-utils'
 import { ScenePathForTestUiJsFile } from '../../../../core/model/test-ui-js-file'
 
 describe('Scene Section', () => {

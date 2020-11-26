@@ -6,7 +6,7 @@ import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers
 import {
   enableWhyDidYouRenderOnComponent,
   setupReactWhyDidYouRender,
-} from '../../../../utils/react-memoize-test-utils'
+} from '../../../../utils/react-memoize.test-utils'
 import utils from '../../../../utils/utils'
 import { CanvasRectangle, CanvasVector, LocalRectangle } from '../../../../core/shared/math-utils'
 import {

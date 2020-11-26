@@ -10,11 +10,11 @@ import {
   ComputedStyle,
 } from '../../../core/shared/element-template'
 import { CanvasMetadataName } from '../../../core/workers/parser-printer/parser-printer-parsing'
-import { testParseCode } from '../../../core/workers/parser-printer/parser-printer-test-utils'
+import { testParseCode } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import {
   enableWhyDidYouRenderOnComponent,
   setupReactWhyDidYouRender,
-} from '../../../utils/react-memoize-test-utils'
+} from '../../../utils/react-memoize.test-utils'
 import utils from '../../../utils/utils'
 import {
   backgroundImagesAndColorToCSSBackgroundLayerArray,

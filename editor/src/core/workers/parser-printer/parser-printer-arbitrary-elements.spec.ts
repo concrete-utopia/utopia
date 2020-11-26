@@ -28,7 +28,7 @@ import {
   JustImportViewAndReact,
   testParseCode,
   testParseModifyPrint,
-} from './parser-printer-test-utils'
+} from './parser-printer.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 
 describe('JSX parser', () => {

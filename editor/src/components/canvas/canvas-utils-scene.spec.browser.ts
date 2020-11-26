@@ -4,7 +4,7 @@ import {
   TestScenePath,
   makeTestProjectCodeWithSnippet,
   getTestParseSuccess,
-} from './ui-jsx-test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
+} from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
 import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import { selectComponents } from '../editor/actions/actions'
