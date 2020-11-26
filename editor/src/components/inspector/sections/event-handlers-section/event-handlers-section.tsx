@@ -5,15 +5,12 @@ import { identity } from '../../../../core/shared/utils'
 import utils from '../../../../utils/utils'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import { DOMEventHandler, DOMEventHandlerNames } from '../../common/css-utils'
-import {
-  ParsedValues,
-  useInspectorInfo,
-  useKeepReferenceEqualityIfPossible,
-} from '../../common/property-path-hooks'
+import { ParsedValues, useInspectorInfo } from '../../common/property-path-hooks'
 import { GridRow } from '../../widgets/grid-row'
 import { isJSXAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { InspectorSectionHeader, StringInput } from '../../../../uuiui'
 import { PropertyLabel } from '../../widgets/property-label'
+import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 
 const ppCreate = (p: string) => PP.create([p])
 

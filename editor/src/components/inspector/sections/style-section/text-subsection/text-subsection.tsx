@@ -16,6 +16,7 @@ import {
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { filterScenes } from '../../../../../core/shared/template-path'
+import { useKeepShallowReferenceEquality } from '../../../../../utils/react-performance'
 import utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
@@ -30,7 +31,6 @@ import {
   useInspectorElementInfo,
   useInspectorStyleInfo,
   useIsSubSectionVisible,
-  useKeepShallowReferenceEquality,
   useSelectedViews,
 } from '../../../common/property-path-hooks'
 import { ColorControl } from '../../../controls/color-control'

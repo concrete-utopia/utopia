@@ -12,7 +12,7 @@ import type {
   TextFile,
 } from '../../core/shared/project-file-types'
 import { EditorPanel, setFocus } from '../common/actions'
-import type { ConsoleLog, EditorTab } from '../editor/store/editor-state'
+import type { ConsoleLog } from '../editor/store/editor-state'
 import type { CursorPosition } from './code-editor-utils'
 import { betterReactMemo } from '../../utils/react-performance'
 import type {
@@ -31,6 +31,7 @@ import {
 
 import * as EditorActions from '../../components/editor/actions/action-creators'
 import { ScriptEditor } from './script-editor'
+import { EditorTab } from '../editor/store/editor-tabs'
 
 export interface JSONStringifiedCodeEditorProps {
   relevantPanel: EditorPanel

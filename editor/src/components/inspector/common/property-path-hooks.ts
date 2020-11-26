@@ -84,7 +84,11 @@ import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import {
+  keepDeepReferenceEqualityIfPossible,
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from '../../../utils/react-performance'
 import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'
 import type { ReadonlyRef } from './inspector-utils'
@@ -816,26 +820,6 @@ function getValueFromSpecialSizeMeasurements<P extends LayoutProp | StyleLayoutP
     return cssNumber(value, null) as ParsedProperties[P]
   }
   return null
-}
-
-export function useKeepShallowReferenceEquality<T>(possibleNewValue: T, measure = false): T {
-  const oldValue = React.useRef<T>(possibleNewValue)
-  if (!Utils.shallowEqual(oldValue.current, possibleNewValue, measure)) {
-    oldValue.current = possibleNewValue
-  }
-  return oldValue.current
-}
-
-export function useKeepReferenceEqualityIfPossible<T>(possibleNewValue: T, measure = false): T {
-  const oldValue = React.useRef<T | null>(null)
-  oldValue.current = keepDeepReferenceEqualityIfPossible(oldValue.current, possibleNewValue)
-  return oldValue.current!
-}
-
-export function useKeepDeepEqualityCall<T>(newValue: T, keepDeepCall: KeepDeepEqualityCall<T>): T {
-  const oldValue = React.useRef<T>(newValue)
-  oldValue.current = keepDeepCall(oldValue.current, newValue).value
-  return oldValue.current
 }
 
 export function useIsSubSectionVisible(sectionName: string): boolean {

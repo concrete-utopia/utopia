@@ -11,6 +11,7 @@ import {
 import { arrayEquals, longestCommonArray, identity, fastForEach } from './utils'
 import { replaceAll } from './string-utils'
 import { last, dropLastN, drop } from './array-utils'
+import { extractOriginalUidFromIndexedUid } from './uid-utils'
 
 // KILLME, except in 106 places
 export const toComponentId = toString
@@ -835,4 +836,8 @@ export function areAllElementsInSameScene(paths: TemplatePath[]): boolean {
 
 export function isFromSameSceneAs(a: TemplatePath, b: TemplatePath): boolean {
   return scenePathsEqual(scenePathForPath(a), scenePathForPath(b))
+}
+
+export function dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {
+  return staticInstancePath(path.scene, path.element.map(extractOriginalUidFromIndexedUid))
 }

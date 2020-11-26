@@ -8,12 +8,7 @@ import Utils from '../../utils/utils'
 import { ProjectContents } from '../../core/shared/project-file-types'
 import { isModifiedFile } from '../../core/model/project-file-utils'
 import * as EditorActions from '../editor/actions/actions'
-import {
-  EditorTab,
-  getAllCodeEditorErrors,
-  getOpenEditorTab,
-  isOpenFileTab,
-} from '../editor/store/editor-state'
+import { getAllCodeEditorErrors, getOpenEditorTab } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { fileHasErrorMessages } from './filebrowser'
 import { getIconTypeForFileBrowserItem } from './fileitem'
@@ -22,6 +17,7 @@ import {
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../assets'
+import { EditorTab, isOpenFileTab } from '../editor/store/editor-tabs'
 
 function getKeyForEditorTab(editorTab: EditorTab): string {
   switch (editorTab.type) {

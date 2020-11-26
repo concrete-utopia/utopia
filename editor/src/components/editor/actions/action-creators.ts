@@ -13,7 +13,8 @@ import type {
   SetHighlightedView,
   UpdateFile,
 } from '../action-types'
-import type { EditorTab, ErrorMessages } from '../store/editor-state'
+import type { ErrorMessages } from '../store/editor-state'
+import type { EditorTab } from '../store/editor-tabs'
 
 export function selectComponents(
   target: Array<TemplatePath>,

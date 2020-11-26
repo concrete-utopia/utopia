@@ -15,7 +15,7 @@ import {
   SliderControlDescription,
   StringControlDescription,
 } from 'utopia-api'
-import { InspectorInfo, useKeepReferenceEqualityIfPossible } from '../../common/property-path-hooks'
+import { InspectorInfo } from '../../common/property-path-hooks'
 import { BooleanControl } from '../../controls/boolean-control'
 import {
   useWrappedEmptyOrUnknownOnSubmitValue,
@@ -30,6 +30,7 @@ import { NO_OP } from '../../../../core/shared/utils'
 import { SelectControl, SelectOption } from '../../controls/select-control'
 import { EventHandlerControl } from '../event-handlers-section/event-handlers-section'
 import { OptionChainControl } from '../../controls/option-chain-control'
+import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propName: string

@@ -41,7 +41,7 @@ module.exports = {
         path: 'monaco-editor-iframe\\.tsx$',
       },
       to: {
-        path: ['editor\\.tsx', 'editor-state\\.ts'],
+        path: ['src/templates/editor\\.tsx', 'src/components/editor/store/editor-state\\.ts'],
         reachable: true,
       },
     },

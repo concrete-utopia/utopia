@@ -20,17 +20,14 @@ import { betterReactMemo, Utils } from '../../uuiui-deps'
 import {
   ConsoleLog,
   EditorStore,
-  EditorTab,
   getAllLintErrors,
   getOpenEditorTab,
   getOpenFile,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
-  isOpenFileTab,
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { ScriptEditor, ScriptEditorProps } from './script-editor'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Notice } from '../common/notices'
@@ -57,6 +54,8 @@ import {
   CodeEditorEntryPoint,
   JSONStringifiedCodeEditorProps,
 } from './code-editor-iframe-entry-point'
+import { isOpenFileTab } from '../editor/store/editor-tabs'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 const CodeEditorIframeID = 'code-editor-iframe'
 

@@ -52,7 +52,6 @@ import {
   createEditorState,
   deriveState,
   EditorState,
-  openFileTab,
   reconstructJSXMetadata,
   getOpenUIJSFile,
   getOpenUtopiaJSXComponentsFromState,
@@ -78,6 +77,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { generateCodeResultCache } from '../../custom-code/code-file'
 import { contentsToTree, getContentsTreeFileFromString } from '../../assets'
+import { openFileTab } from '../store/editor-tabs'
 const chaiExpect = Chai.expect
 
 describe('SET_PROP', () => {
