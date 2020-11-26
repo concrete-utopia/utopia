@@ -186,11 +186,11 @@ function useIsSceneChildWidthHeightPercentage() {
     }
   }, 'useIsSceneChildWidthHeightPercentage')
 
-  const selectedScenePath = Utils.forceNotNull(
-    'missing scene from scene section',
-    selectedViews.find(TP.isScenePath),
-  )
-  const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScenePath)
+  const selectedScenePath = selectedViews.find(TP.isScenePath)
+  const scene =
+    selectedScenePath == null
+      ? null
+      : MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScenePath)
   if (scene != null) {
     return isSceneChildWidthHeightPercentage(scene, metadata)
   } else {
@@ -210,11 +210,11 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
     (store) => store.editor.selectedViews,
     'SceneContainerSections selectedViews',
   )
-  const selectedScene = Utils.forceNotNull(
-    'Scene cannot be null in SceneContainerSection',
-    React.useMemo(() => selectedViews.find(TP.isScenePath), [selectedViews]),
-  )
-  const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScene)
+  const selectedScene = React.useMemo(() => selectedViews.find(TP.isScenePath), [selectedViews])
+  const scene =
+    selectedScene == null
+      ? null
+      : MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScene)
 
   const sceneResizesContentInfo = useSceneType()
   let controlStatus: ControlStatus = simpleControlStatus
@@ -224,30 +224,32 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   }
   const onSubmitValue = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const newSceneResizesContentValue = event.target.checked
-      sceneResizesContentInfo.onSubmitValue(newSceneResizesContentValue)
-      if (newSceneResizesContentValue === true) {
-        dispatch(
-          [
-            unsetSceneProp(selectedScene, createLayoutPropertyPath('Width')),
-            unsetSceneProp(selectedScene, createLayoutPropertyPath('Height')),
-          ],
-          'inspector',
-        )
-      } else if (scene != null) {
-        const actions = [
-          setSceneProp(
-            selectedScene,
-            createLayoutPropertyPath('Width'),
-            jsxAttributeValue(scene.globalFrame?.width),
-          ),
-          setSceneProp(
-            selectedScene,
-            createLayoutPropertyPath('Height'),
-            jsxAttributeValue(scene.globalFrame?.height),
-          ),
-        ]
-        dispatch(actions, 'inspector')
+      if (selectedScene != null) {
+        const newSceneResizesContentValue = event.target.checked
+        sceneResizesContentInfo.onSubmitValue(newSceneResizesContentValue)
+        if (newSceneResizesContentValue === true) {
+          dispatch(
+            [
+              unsetSceneProp(selectedScene, createLayoutPropertyPath('Width')),
+              unsetSceneProp(selectedScene, createLayoutPropertyPath('Height')),
+            ],
+            'inspector',
+          )
+        } else if (scene != null) {
+          const actions = [
+            setSceneProp(
+              selectedScene,
+              createLayoutPropertyPath('Width'),
+              jsxAttributeValue(scene.globalFrame?.width),
+            ),
+            setSceneProp(
+              selectedScene,
+              createLayoutPropertyPath('Height'),
+              jsxAttributeValue(scene.globalFrame?.height),
+            ),
+          ]
+          dispatch(actions, 'inspector')
+        }
       }
     },
     [dispatch, sceneResizesContentInfo, selectedScene, scene],

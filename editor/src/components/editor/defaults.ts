@@ -42,6 +42,7 @@ export function defaultSceneElement(
 }
 
 export function isolatedComponentSceneElement(
+  uid: string,
   componentName: string,
   frame: NormalisedFrame,
   componentProps: JSXAttribute,
@@ -50,14 +51,14 @@ export function isolatedComponentSceneElement(
   const definedElsewhere = [componentName]
 
   const props = {
-    'data-uid': jsxAttributeValue('TRANSIENT_SCENE'),
+    'data-uid': jsxAttributeValue(uid),
     'data-label': jsxAttributeValue(`Isolated ${componentName}`),
     component: jsxAttributeOtherJavaScript(
       componentName,
       `return ${componentName}`,
       definedElsewhere,
       null,
-      'TRANSIENT_SCENE_COMPONENT',
+      `${uid}_COMPONENT`,
     ),
     props: componentProps,
     [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),

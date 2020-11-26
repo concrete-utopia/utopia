@@ -1557,66 +1557,51 @@ function createTransientSceneForSelectedComponent(
   if (isolatedComponent == null) {
     return null
   } else {
-    const metadata = editorState.canvas.dragState?.metadata ?? editorState.jsxMetadataKILLME
-    const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(
-      metadata.elements,
-      isolatedComponent.instance,
+    const { componentName, frame, element, scenePath } = isolatedComponent
+    const unfilteredProps = jsxAttributeNestedObjectSimple(element.props)
+
+    const propsToFilter: Array<PropertyPath> = [
+      PP.create(['data-uid']),
+      PP.create(['skipDeepFreeze']),
+      PP.create(['style', 'left']),
+      PP.create(['style', 'top']),
+      PP.create(['style', 'right']),
+      PP.create(['style', 'bottom']),
+    ]
+
+    const filteredProps = reduceWithEither(
+      unsetJSXValueInAttributeAtPath,
+      unfilteredProps,
+      propsToFilter,
     )
-    if (instanceMetadata == null) {
-      return null
-    } else {
-      const instanceFrame =
-        instanceMetadata.globalFrame ??
-        (({ left: 0, top: 0, width: 0, height: 0 } as any) as CanvasRectangle)
+    const props = unwrapEither(filteredProps, jsxAttributeValue({}))
 
-      const metadataElement = instanceMetadata.element
+    const children = getElementChildren(element)
+    const sceneUID = TP.toUid(scenePath)
 
-      const unfilteredProps =
-        isRight(metadataElement) && isJSXElement(metadataElement.value)
-          ? jsxAttributeNestedObjectSimple(metadataElement.value.props)
-          : jsxAttributeValue(instanceMetadata.props)
+    const newScene: JSXElement = isolatedComponentSceneElement(
+      sceneUID,
+      componentName,
+      frame,
+      props,
+      children,
+    )
 
-      const propsToFilter: Array<PropertyPath> = [
-        PP.create(['data-uid']),
-        PP.create(['skipDeepFreeze']),
-        PP.create(['style', 'left']),
-        PP.create(['style', 'top']),
-        PP.create(['style', 'right']),
-        PP.create(['style', 'bottom']),
-      ]
+    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(openFile)
+    // Apply the transformation.
+    const updatedResult = addSceneToJSXComponents(oldUtopiaJSXComponents, newScene)
 
-      const filteredProps = reduceWithEither(
-        unsetJSXValueInAttributeAtPath,
-        unfilteredProps,
-        propsToFilter,
-      )
-      const props = unwrapEither(filteredProps, jsxAttributeValue({}))
+    const newTopLevelElements = applyUtopiaJSXComponentsChanges(
+      openFile.topLevelElements,
+      updatedResult,
+    )
 
-      const children = isRight(metadataElement) ? getElementChildren(metadataElement.value) : []
-
-      const newScene: JSXElement = isolatedComponentSceneElement(
-        isolatedComponent.componentName,
-        canvasFrameToNormalisedFrame(instanceFrame),
-        props,
-        children,
-      )
-
-      const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(openFile)
-      // Apply the transformation.
-      const updatedResult = addSceneToJSXComponents(oldUtopiaJSXComponents, newScene)
-
-      const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-        openFile.topLevelElements,
-        updatedResult,
-      )
-
-      return {
-        elements: newTopLevelElements,
-        parsedFile: {
-          ...openFile,
-          topLevelElements: newTopLevelElements,
-        },
-      }
+    return {
+      elements: newTopLevelElements,
+      parsedFile: {
+        ...openFile,
+        topLevelElements: newTopLevelElements,
+      },
     }
   }
 }

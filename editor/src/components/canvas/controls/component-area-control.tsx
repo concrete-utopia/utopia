@@ -165,17 +165,17 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     // If operating on the isolated scene itself we should apply that change to the original target
     let targets = selectedViews
     let actualTarget = this.props.target
-    if (this.props.isolatedComponent != null) {
-      const { instance: isolatedTarget, scenePath: isolatedScene } = this.props.isolatedComponent
-      const willActOnIsolatedScene = (path: TemplatePath) =>
-        TP.pathsEqual(path, isolatedScene) || TP.isChildOf(path, isolatedScene)
-      if (selectedViews.length === 1 && willActOnIsolatedScene(selectedViews[0])) {
-        targets = [isolatedTarget]
-      }
-      if (willActOnIsolatedScene(this.props.target)) {
-        actualTarget = isolatedTarget
-      }
-    }
+    // if (this.props.isolatedComponent != null) {
+    //   const { instance: isolatedTarget, scenePath: isolatedScene } = this.props.isolatedComponent
+    //   const willActOnIsolatedScene = (path: TemplatePath) =>
+    //     TP.pathsEqual(path, isolatedScene) || TP.isChildOf(path, isolatedScene)
+    //   if (selectedViews.length === 1 && willActOnIsolatedScene(selectedViews[0])) {
+    //     targets = [isolatedTarget]
+    //   }
+    //   if (willActOnIsolatedScene(this.props.target)) {
+    //     actualTarget = isolatedTarget
+    //   }
+    // }
 
     const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
     this.props.onMouseDown(targets, actualTarget, cursorPosition.canvasPositionRaw, event)

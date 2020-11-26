@@ -467,6 +467,7 @@ import {
 } from '../../../core/model/storyboard-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { v4 as UUID } from 'uuid'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1647,7 +1648,18 @@ export const UPDATE_FNS = {
       isRight(targetMetadata.element) &&
       isJSXElement(targetMetadata.element.value)
     ) {
-      const elementName = getJSXElementNameAsString(targetMetadata.element.value.name)
+      const instanceFrame =
+        targetMetadata.globalFrame == null
+          ? null
+          : canvasFrameToNormalisedFrame(targetMetadata.globalFrame)
+      const normalisedFrame: NormalisedFrame = instanceFrame ?? {
+        left: 0,
+        top: 0,
+        width: 0,
+        height: 0,
+      }
+      const element = targetMetadata.element.value
+      const elementName = getJSXElementNameAsString(element.name)
       const componentsByName = getOpenUtopiaJSXComponentsByName(editor)
       const matchingComponent = componentsByName[elementName]
       if (matchingComponent != null) {
@@ -1661,7 +1673,9 @@ export const UPDATE_FNS = {
             rootElementUIDProp != null && isJSXAttributeValue(rootElementUIDProp)
               ? rootElementUIDProp.value
               : null
-          const scenePath = TP.scenePath([TP.toUid(storyBoardPath), 'TRANSIENT_SCENE'])
+          const sceneUID =
+            rootElementUID == null ? UUID().replace(/\-/g, '') : `${rootElementUID}_TRANSIENT_SCENE`
+          const scenePath = TP.scenePath([TP.toUid(storyBoardPath), sceneUID])
           const rootElementPath =
             rootElementUID == null ? null : TP.instancePath(scenePath, [rootElementUID])
           const newSelection = rootElementPath == null ? [] : [rootElementPath]
@@ -1669,7 +1683,8 @@ export const UPDATE_FNS = {
             ...editor,
             isolatedComponent: {
               componentName: elementName,
-              instance: action.target,
+              frame: normalisedFrame,
+              element: element,
               scenePath: scenePath,
             },
             selectedViews: newSelection,
