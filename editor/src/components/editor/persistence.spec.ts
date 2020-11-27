@@ -42,8 +42,8 @@ jest.mock('./server', () => ({
   },
 }))
 
-jest.mock('./actions/actions', () => ({
-  ...(jest.requireActual('./actions/actions') as any), // This pattern allows us to only mock a single function https://jestjs.io/docs/en/jest-object#jestrequireactualmodulename
+jest.mock('./actions/action-creators', () => ({
+  ...(jest.requireActual('./actions/action-creators') as any), // This pattern allows us to only mock a single function https://jestjs.io/docs/en/jest-object#jestrequireactualmodulename
   load: async (): Promise<void> => {
     return Promise.resolve()
   },

@@ -7,7 +7,7 @@ import {
 } from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
 import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
-import { selectComponents } from '../editor/actions/actions'
+import { selectComponents } from '../editor/actions/action-creators'
 import * as Prettier from 'prettier'
 import * as TP from '../../core/shared/template-path'
 

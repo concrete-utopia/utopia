@@ -4,7 +4,7 @@ import { BASE_URL, getProjectID, getQueryParam, PREVIEW_IS_EMBEDDED } from '../c
 import { fetchLocalProject } from '../common/persistence'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
 import { incorporateBuildResult } from '../components/custom-code/code-file'
-import { sendPreviewModel } from '../components/editor/actions/actions'
+import { sendPreviewModel } from '../components/editor/actions/action-creators'
 import { dependenciesWithEditorRequirements } from '../components/editor/npm-dependency/npm-dependency'
 import { projectIsStoredLocally } from '../components/editor/persistence'
 import { loadProject } from '../components/editor/server'

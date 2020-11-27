@@ -13,7 +13,7 @@ import {
 import { betterReactMemo, Utils } from 'uuiui-deps'
 import { isLiveMode } from '../editor/editor-modes'
 import { useEditorState } from '../editor/store/store-hook'
-import * as EditorActions from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
 import { EditorAction } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
 

@@ -39,7 +39,7 @@ import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/pre
 import * as TP from '../../../core/shared/template-path'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
 import { isTransientAction, isUndoOrRedo, isParsedModelUpdate } from '../actions/action-utils'
-import * as EditorActions from '../actions/actions'
+import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import { StateHistory } from '../history'
 import { saveToLocalStorage, saveToServer, pushProjectURLToBrowserHistory } from '../persistence'
@@ -68,6 +68,7 @@ import {
   ProjectContentTreeRoot,
   walkContentsTree,
 } from '../../assets'
+import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -114,7 +115,7 @@ function processAction(
   } else if (action.action === 'SET_SHORTCUT') {
     return {
       ...working,
-      userState: EditorActions.UPDATE_FNS.SET_SHORTCUT(action, working.userState),
+      userState: UPDATE_FNS.SET_SHORTCUT(action, working.userState),
     }
   } else {
     // Process action on the JS side.
@@ -328,7 +329,7 @@ export function editorDispatch(
   )
 
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
-  const anySendPreviewModel = dispatchedActions.some(EditorActions.isSendPreviewModel)
+  const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
 
   // With this reducer we can split the actions into groups (arrays) which can be dispatched together without rebuilding the derived state.
   // Between the different group derived state rebuild is needed
@@ -513,7 +514,7 @@ function editorDispatchInner(
 
     let frozenDerivedState: DerivedState
     if (anyUndoOrRedo) {
-      frozenDerivedState = optionalDeepFreeze(EditorActions.restoreDerivedState(result.history))
+      frozenDerivedState = optionalDeepFreeze(restoreDerivedState(result.history))
       // TODO BB put inspector and navigator back to history
     } else if (editorStayedTheSame) {
       // !! We completely skip creating a new derived state, since the editor state stayed the exact same

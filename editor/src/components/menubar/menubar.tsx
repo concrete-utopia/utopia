@@ -19,7 +19,7 @@ import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-
 import { shareURLForProject } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
-import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/actions'
+import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { EditorState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { LeftMenuTab } from '../navigator/left-pane'

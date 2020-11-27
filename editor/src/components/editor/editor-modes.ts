@@ -1,6 +1,11 @@
-import { TemplatePath, id, StaticTemplatePath, Imports } from '../../core/shared/project-file-types'
-import { JSXElement, JSXElementName } from '../../core/shared/element-template'
-import { Size } from '../../core/shared/math-utils'
+import type {
+  TemplatePath,
+  id,
+  StaticTemplatePath,
+  Imports,
+} from '../../core/shared/project-file-types'
+import type { JSXElement, JSXElementName } from '../../core/shared/element-template'
+import type { Size } from '../../core/shared/math-utils'
 
 export interface ElementInsertionSubject {
   type: 'Element'

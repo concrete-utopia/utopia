@@ -7,7 +7,7 @@ import { ErrorMessage } from '../../core/shared/error-messages'
 import Utils from '../../utils/utils'
 import { ProjectContents } from '../../core/shared/project-file-types'
 import { isModifiedFile } from '../../core/model/project-file-utils'
-import * as EditorActions from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
 import {
   EditorTab,
   getAllCodeEditorErrors,
