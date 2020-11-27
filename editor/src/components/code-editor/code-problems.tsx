@@ -4,8 +4,6 @@ import { Console } from 'console-feed'
 import * as R from 'ramda'
 import { Resizable, ResizeCallback } from 're-resizable'
 import * as React from 'react'
-// import { colorTheme, FlexRow, Icons, TabComponent, UtopiaTheme, SimpleFlexColumn } from 'uuiui'
-// import { betterReactMemo } from 'uuiui-deps'
 import {
   ErrorMessage,
   ErrorMessageSeverity,
