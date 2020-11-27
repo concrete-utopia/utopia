@@ -38,6 +38,7 @@ import { jsxAttributesToProps } from '../../../core/shared/jsx-attributes'
 import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
 import utils from '../../../utils/utils'
 import { PathForResizeContent } from '../../../core/model/scene-utils'
+import { fastForEach } from '../../../core/shared/utils'
 
 interface SceneProps {
   component: React.ComponentType | null
@@ -145,7 +146,15 @@ export const SceneRootRenderer = betterReactMemo(
 
     const topLevelElementName = getTopLevelElementName(sceneProps.component)
 
-    const validPaths = useGetValidTemplatePaths(topLevelElementName, scenePath)
+    const baseValidPaths = useGetValidTemplatePaths(topLevelElementName, scenePath)
+    let validPaths: InstancePath[] = []
+
+    // Append the children uids to the end of all paths because we don't know where it has been rendered
+    const childrenUIDs = props.sceneElement.children.map(getUtopiaID)
+    fastForEach(baseValidPaths, (path) => {
+      validPaths.push(path)
+      fastForEach(childrenUIDs, (childUID) => validPaths.push(TP.appendToPath(path, childUID)))
+    })
 
     const createChildrenElement = (
       child: JSXElementChild,
