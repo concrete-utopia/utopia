@@ -122,13 +122,13 @@ export function importsEquals(first: Imports, second: Imports): boolean {
 
 export interface ExportDetailNamed {
   type: 'EXPORT_DETAIL_NAMED'
-  propertyName: string
+  name: string
 }
 
-export function exportDetailNamed(propertyName: string): ExportDetailNamed {
+export function exportDetailNamed(name: string): ExportDetailNamed {
   return {
     type: 'EXPORT_DETAIL_NAMED',
-    propertyName: propertyName,
+    name: name,
   }
 }
 

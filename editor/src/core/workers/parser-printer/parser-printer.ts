@@ -426,7 +426,7 @@ function getModifersForComponent(
   let result: Array<TS.Modifier> = []
   let isExportedDirectly: boolean = false
   let isExportedAsDefault: boolean = false
-  if (detailOfExports.defaultExport?.propertyName === element.name) {
+  if (detailOfExports.defaultExport?.name === element.name) {
     isExportedAsDefault = true
     isExportedDirectly = true
   } else {
@@ -599,14 +599,14 @@ function produceExportDeclaration(detailOfExports: ExportsDetail) {
   for (const componentName of Object.keys(detailOfExports.namedExports)) {
     const exportForComponent = detailOfExports.namedExports[componentName]
     if (isExportDetailNamed(exportForComponent)) {
-      if (componentName === exportForComponent.propertyName) {
+      if (componentName === exportForComponent.name) {
         possibleExports.push(
           TS.createExportSpecifier(undefined, TS.createIdentifier(componentName)),
         )
       } else {
         possibleExports.push(
           TS.createExportSpecifier(
-            TS.createIdentifier(exportForComponent.propertyName),
+            TS.createIdentifier(exportForComponent.name),
             TS.createIdentifier(componentName),
           ),
         )
@@ -818,6 +818,23 @@ function getNameFromImportAlias(alias: ImportAlias): string {
 
 const compareImportAliasByName = compareOn(getNameFromImportAlias, comparePrimitive)
 
+function detailsFromExportAssignment(
+  sourceFile: TS.SourceFile,
+  declaration: TS.ExportAssignment,
+): Either<TS.ExportAssignment, ExportsDetail> {
+  if (TS.isIdentifier(declaration.expression)) {
+    const componentIdentifier = declaration.expression
+    return right(
+      setNamedDefaultExportInDetail(
+        exportsDetail(null, {}),
+        componentIdentifier.getText(sourceFile),
+      ),
+    )
+  } else {
+    return left(declaration)
+  }
+}
+
 function detailsFromExportDeclaration(
   sourceFile: TS.SourceFile,
   declaration: TS.ExportDeclaration,
@@ -830,11 +847,7 @@ function detailsFromExportDeclaration(
         return addNamedExportToDetail(workingResult, specifierName, specifierName)
       } else {
         const specifierPropertyName = specifier.propertyName.getText(sourceFile)
-        if (specifierPropertyName === 'default') {
-          return setNamedDefaultExportInDetail(workingResult, specifierName)
-        } else {
-          return addNamedExportToDetail(workingResult, specifierName, specifierPropertyName)
-        }
+        return addNamedExportToDetail(workingResult, specifierName, specifierPropertyName)
       }
     }, exportsDetail(null, {}))
     return right(result)
@@ -919,8 +932,19 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     }, topLevelNodes)
 
     for (const topLevelElement of topLevelNodes) {
-      // Handle export declarations.
-      if (TS.isExportDeclaration(topLevelElement)) {
+      // Handle export assignments: `export default App`
+      if (TS.isExportAssignment(topLevelElement)) {
+        const fromAssignment = detailsFromExportAssignment(sourceFile, topLevelElement)
+        // Parsed it fully, so it can be incorporated.
+        forEachRight(fromAssignment, (toMerge) => {
+          detailOfExports = mergeExportsDetail(detailOfExports, toMerge)
+        })
+        // Unable to parse it so treat it as an arbitrary node.
+        forEachLeft(fromAssignment, (exportDeclaration) => {
+          arbitraryNodes.push(exportDeclaration)
+        })
+        // Handle export declarations.
+      } else if (TS.isExportDeclaration(topLevelElement)) {
         const fromDeclaration = detailsFromExportDeclaration(sourceFile, topLevelElement)
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromDeclaration, (toMerge) => {
