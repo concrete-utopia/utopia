@@ -29,7 +29,7 @@ import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import * as TP from '../../core/shared/template-path'
 import * as FontFaceObserver from 'fontfaceobserver'
 import { splitIntoLines } from '../../core/shared/string-utils'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot, walkContentsTree } from '../assets'
 
 const CodeEditorFont = 'utopian-inconsolata'
 
@@ -351,8 +351,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
             const typedPath = textAfterQuotes ? textAfterQuotes[0] : ''
 
             let suggestions: monaco.languages.CompletionItem[] = []
-            utils.fastForEach(Object.keys(this.props.projectContents), (filename) => {
-              const file = getContentsTreeFileFromString(this.props.projectContents, filename)
+            walkContentsTree(this.props.projectContents, (filename, file) => {
               if (
                 filename !== this.props.filename &&
                 file != null &&
