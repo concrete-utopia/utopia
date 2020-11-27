@@ -2,7 +2,6 @@
 import { jsx } from '@emotion/core'
 import * as React from 'react'
 import styled from '@emotion/styled'
-import { Utils } from 'uuiui-deps'
 import { FlexRow, SimpleFlexRow } from './widgets/layout/flex-row'
 import { Button } from './button'
 import { Icons } from './icons'
@@ -10,6 +9,8 @@ import * as R from 'ramda'
 
 import { colorTheme, UtopiaTheme } from './styles/theme'
 import { CSSObject } from '@emotion/serialize'
+import { defaultIfNull } from '../core/shared/optional-utils'
+import { NO_OP } from '../core/shared/utils'
 
 interface TabComponentProps {
   modified?: boolean
@@ -30,14 +31,14 @@ export const TabComponent: React.FunctionComponent<TabComponentProps> = (props) 
   const [tabIsHovered, setTabIsHovered] = React.useState(false)
   const [indicatorIsHovered, setIndicatorIsHovered] = React.useState(false)
 
-  const modified = Utils.defaultIfNull<boolean>(false, props.showModifiedIndicator)
-  const showModifiedIndicator = Utils.defaultIfNull<boolean>(true, props.showModifiedIndicator)
-  const showCloseIndicator = Utils.defaultIfNull<boolean>(true, props.showCloseIndicator)
-  const selected = Utils.defaultIfNull<boolean>(false, props.selected)
-  const hasErrorMessages = Utils.defaultIfNull<boolean>(false, props.hasErrorMessages)
-  const label = Utils.defaultIfNull<React.ReactElement | string>('', props.label)
-  const icon = Utils.defaultIfNull<React.ReactElement | string>('', props.icon)
-  const onClose = Utils.defaultIfNull(Utils.NO_OP, props.onClose)
+  const modified = defaultIfNull<boolean>(false, props.showModifiedIndicator)
+  const showModifiedIndicator = defaultIfNull<boolean>(true, props.showModifiedIndicator)
+  const showCloseIndicator = defaultIfNull<boolean>(true, props.showCloseIndicator)
+  const selected = defaultIfNull<boolean>(false, props.selected)
+  const hasErrorMessages = defaultIfNull<boolean>(false, props.hasErrorMessages)
+  const label = defaultIfNull<React.ReactElement | string>('', props.label)
+  const icon = defaultIfNull<React.ReactElement | string>('', props.icon)
+  const onClose = defaultIfNull(NO_OP, props.onClose)
 
   const baseStyle = {
     paddingLeft: 4,

@@ -19,9 +19,9 @@ import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/e
 import { betterReactMemo } from 'uuiui-deps'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
-import { useKeepDeepEqualityCall } from '../../inspector/common/property-path-hooks'
 import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
+import { useKeepDeepEqualityCall } from '../../../utils/react-performance'
 
 interface NavigatorItemWrapperProps {
   index: number

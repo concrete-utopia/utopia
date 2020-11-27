@@ -29,12 +29,8 @@ import { EditorAction, EditorDispatch, LoginState } from '../editor/action-types
 import * as EditorActions from '../editor/actions/actions'
 import { clearSelection, regenerateThumbnail, setProjectName } from '../editor/actions/actions'
 import { InsertMenu } from '../editor/insertmenu'
-import {
-  DerivedState,
-  EditorState,
-  getOpenFile,
-  userConfigurationTab,
-} from '../editor/store/editor-state'
+import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-state'
+import { userConfigurationTab } from '../editor/store/editor-tabs'
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { IcnColor, IcnProps } from './icn'
-import { betterReactMemo } from '../uuiui-deps'
+import { betterReactMemo } from '../utils/react-performance'
 import { Icons } from './icons'
 
 interface WarningIconProps {

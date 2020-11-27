@@ -383,7 +383,6 @@ import {
   DuplicationState,
   editorModelFromPersistentModel,
   EditorState,
-  EditorTab,
   ErrorMessages,
   getAllBuildErrors,
   getAllLintErrors,
@@ -397,7 +396,6 @@ import {
   getOpenUIJSFileKey,
   getOpenUtopiaJSXComponentsFromState,
   insertElementAtPath,
-  isOpenFileTab,
   mergeStoredEditorStateIntoEditorState,
   ModalDialog,
   modifyOpenJsxElementAtPath,
@@ -407,7 +405,6 @@ import {
   modifyOpenSceneAtPath,
   modifyOpenScenesAndJSXElements,
   modifyParseSuccessWithSimple,
-  openFileTab,
   OriginalFrame,
   ParseSuccessAndEditorChanges,
   PersistentModel,
@@ -469,6 +466,7 @@ import {
   ElementInstanceMetadataKeepDeepEquality,
   JSXMetadataKeepDeepEquality,
 } from '../store/store-deep-equality-instances'
+import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 
 export function clearSelection(): EditorAction {
   return {

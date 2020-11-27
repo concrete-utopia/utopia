@@ -7,7 +7,6 @@ import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/el
 import { ElementOriginType, Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/actions'
-import { useKeepReferenceEqualityIfPossible } from '../../inspector/common/property-path-hooks'
 import * as TP from '../../../core/shared/template-path'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
@@ -18,6 +17,7 @@ import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { WarningIcon } from '../../../uuiui/warning-icon'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 interface ComputedLook {
   style: React.CSSProperties

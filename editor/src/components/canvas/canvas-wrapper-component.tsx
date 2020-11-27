@@ -15,7 +15,6 @@ import {
   getAllCodeEditorErrors,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
-  openFileTab,
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -24,6 +23,7 @@ import CloseButton from '../../third-party/react-error-overlay/components/CloseB
 import { NO_OP } from '../../core/shared/utils'
 import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
+import { openFileTab } from '../editor/store/editor-tabs'
 
 interface CanvasWrapperComponentProps {
   runtimeErrors: Array<RuntimeErrorInfo>

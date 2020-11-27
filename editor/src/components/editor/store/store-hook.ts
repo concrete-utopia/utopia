@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { EditorStore } from './editor-state'
+import type { EditorStore } from './editor-state'
 import { UseStore, StoreApi, EqualityChecker } from 'zustand'
 import utils from '../../../utils/utils'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
