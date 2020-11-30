@@ -8,7 +8,7 @@ import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-e
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { CursorPosition } from '../code-editor/code-editor-utils'
 import { setFocus } from '../common/actions'
-import { openEditorTab, setSafeMode } from '../editor/actions/actions'
+import { openEditorTab, setSafeMode } from '../editor/actions/action-creators'
 import {
   ConsoleLog,
   createCanvasModelKILLME,

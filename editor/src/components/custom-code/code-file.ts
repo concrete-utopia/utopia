@@ -23,7 +23,7 @@ import {
 
 import { EditorDispatch } from '../editor/action-types'
 import { getEditorRequireFn } from '../../core/es-modules/package-manager/package-manager'
-import { updateNodeModulesContents } from '../editor/actions/actions'
+import { updateNodeModulesContents } from '../editor/actions/action-creators'
 import { fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'

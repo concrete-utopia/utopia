@@ -50,7 +50,7 @@ import {
   popToast,
   updateNodeModulesContents,
   updatePackageJson,
-} from '../actions/actions'
+} from '../actions/action-creators'
 import * as History from '../history'
 import { EditorState, getOpenUtopiaJSXComponentsFromState, defaultUserState } from './editor-state'
 import { runLocalEditorAction } from './editor-update'

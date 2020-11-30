@@ -57,13 +57,8 @@ import {
   getOpenUtopiaJSXComponentsFromState,
   PersistentModel,
 } from '../store/editor-state'
-import {
-  editorMoveTemplate,
-  setCanvasFrames,
-  setProp_UNSAFE,
-  UPDATE_FNS,
-  switchLayoutSystem,
-} from './actions'
+import { editorMoveTemplate, UPDATE_FNS } from './actions'
+import { setCanvasFrames, setProp_UNSAFE, switchLayoutSystem } from './action-creators'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
   ScenePathForTestUiJsFile,

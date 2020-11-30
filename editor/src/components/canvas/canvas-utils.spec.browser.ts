@@ -8,7 +8,7 @@ import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { canvasRectangle, CanvasVector } from '../../core/shared/math-utils'
-import { selectComponents, setCanvasFrames, wrapInView } from '../editor/actions/actions'
+import { selectComponents, setCanvasFrames, wrapInView } from '../editor/actions/action-creators'
 import { reparentComponents } from '../navigator/actions'
 import * as TP from '../../core/shared/template-path'
 import {

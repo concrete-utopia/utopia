@@ -14,7 +14,7 @@ import { Imports, InstancePath, PropertyPath } from '../core/shared/project-file
 import Utils from '../utils/utils'
 import { Size } from '../core/shared/math-utils'
 import { EditorAction, EditorDispatch, TextFormattingType } from './editor/action-types'
-import * as EditorActions from './editor/actions/actions'
+import * as EditorActions from './editor/actions/action-creators'
 import { EditorState, getOpenImportsFromState } from './editor/store/editor-state'
 import * as PP from '../core/shared/property-path'
 import { isInstancePath } from '../core/shared/template-path'

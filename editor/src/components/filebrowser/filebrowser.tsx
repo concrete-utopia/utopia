@@ -37,7 +37,7 @@ import {
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
-import * as EditorActions from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
 import {
   getAllCodeEditorErrors,
   getOpenFilename,

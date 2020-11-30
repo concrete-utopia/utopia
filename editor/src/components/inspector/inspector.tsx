@@ -41,7 +41,7 @@ import Utils from '../../utils/utils'
 import { isAspectRatioLockedNew } from '../aspect-ratio'
 import { setFocus } from '../common/actions'
 import { Alignment, Distribution, EditorAction } from '../editor/action-types'
-import * as EditorActions from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
 import {
   alignSelectedViews,
   distributeSelectedViews,
@@ -54,7 +54,7 @@ import {
   unsetSceneProp,
   unwrapLayoutable,
   wrapInLayoutable,
-} from '../editor/actions/actions'
+} from '../editor/actions/action-creators'
 import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
 import {
   getOpenImportsFromState,

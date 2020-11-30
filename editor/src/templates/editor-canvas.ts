@@ -28,7 +28,7 @@ import { NewCanvasControls } from '../components/canvas/controls/new-canvas-cont
 import { CanvasReactErrorCallback } from '../components/canvas/ui-jsx-canvas'
 import { setFocus } from '../components/common/actions/index'
 import { EditorAction, EditorDispatch } from '../components/editor/action-types'
-import * as EditorActions from '../components/editor/actions/actions'
+import * as EditorActions from '../components/editor/actions/action-creators'
 import {
   EditorModes,
   Mode,

@@ -7,7 +7,7 @@ import {
   CanvasReactReportErrorCallback,
 } from './ui-jsx-canvas'
 import { betterReactMemo } from 'uuiui-deps'
-import { saveDOMReport } from '../editor/actions/actions'
+import { saveDOMReport } from '../editor/actions/action-creators'
 import { ElementInstanceMetadata } from '../../core/shared/element-template'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { UtopiaRequireFn } from '../custom-code/code-file'

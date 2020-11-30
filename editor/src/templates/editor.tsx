@@ -20,7 +20,7 @@ import {
   isLoggedIn,
   notLoggedIn,
 } from '../components/editor/action-types'
-import * as EditorActions from '../components/editor/actions/actions'
+import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
@@ -81,6 +81,11 @@ import {
 import { isLeft } from '../core/shared/either'
 import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
 import { UtopiaTsWorkers } from '../core/workers/common/worker-types'
+import {
+  isPropertyControlsIFrameReady,
+  isSendPreviewModel,
+  isUpdatePropertyControlsInfo,
+} from '../components/editor/actions/actions'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -319,12 +324,12 @@ export class Editor {
 
   onMessage = (event: MessageEvent): void => {
     const eventData = event.data
-    if (EditorActions.isSendPreviewModel(eventData)) {
+    if (isSendPreviewModel(eventData)) {
       previewIsAlive(InternalPreviewTimeout)
       this.boundDispatch([eventData], 'noone')
-    } else if (EditorActions.isPropertyControlsIFrameReady(eventData)) {
+    } else if (isPropertyControlsIFrameReady(eventData)) {
       this.boundDispatch([eventData], 'noone')
-    } else if (EditorActions.isUpdatePropertyControlsInfo(eventData)) {
+    } else if (isUpdatePropertyControlsInfo(eventData)) {
       this.boundDispatch([eventData], 'noone')
     }
   }

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { betterReactMemo } from 'uuiui-deps'
 import { InstancePath } from '../../../../core/shared/project-file-types'
 import { EditorAction, EditorDispatch } from '../../../editor/action-types'
-import { showToast, updateFrameDimensions } from '../../../editor/actions/actions'
+import { showToast, updateFrameDimensions } from '../../../editor/actions/action-creators'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { getControlStyles } from '../../common/control-status'
 

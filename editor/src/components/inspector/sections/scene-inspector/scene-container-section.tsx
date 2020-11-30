@@ -26,7 +26,7 @@ import { jsxAttributeValue, isJSXAttributeNotFound } from '../../../../core/shar
 import { useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isPercentPin } from 'utopia-api'
-import { unsetSceneProp, setSceneProp } from '../../../editor/actions/actions'
+import { unsetSceneProp, setSceneProp } from '../../../editor/actions/action-creators'
 import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
 import {
   PathForResizeContent,
