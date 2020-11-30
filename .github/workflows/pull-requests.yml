@@ -101,3 +101,13 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGING_BUNDLE_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_BUNDLE_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
+  test-ticount:
+    name: Test If Chrome Measures The TI Count
+    runs-on: ubuntu-latest
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+    steps:
+      - name: Build Editor
+        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd editor; npm install --unsafe-perm; node puppeteer-test.js"

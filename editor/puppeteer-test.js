@@ -16,6 +16,7 @@ puppeteerStart = async function () {
     console.info('ticount support is enabled!')
   } else {
     console.info('ticount support is disabled!')
+    process.exitCode = 1
   }
 }
 
