@@ -45,11 +45,11 @@ import {
   getOpenUIJSFileKey,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { FileBrowserItem } from './fileitem'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 export type FileBrowserItemType = 'file' | 'export'
 

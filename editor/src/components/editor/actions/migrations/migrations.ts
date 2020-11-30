@@ -1,4 +1,4 @@
-import { PersistentModel, EditorTab } from '../../store/editor-state'
+import { PersistentModel } from '../../store/editor-state'
 import { objectMap } from '../../../../core/shared/object-utils'
 import {
   ProjectFile,
@@ -20,6 +20,7 @@ import {
   ProjectContentsTree,
   transformContentsTree,
 } from '../../../assets'
+import { EditorTab } from '../../store/editor-tabs'
 
 export const CURRENT_PROJECT_VERSION = 6
 

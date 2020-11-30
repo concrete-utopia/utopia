@@ -1,8 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import * as React from 'react'
-import { betterReactMemo } from 'uuiui-deps'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { betterReactMemo } from '../../utils/react-performance'
 import { ComponentMetadata } from '../../core/shared/element-template'
 import {
   getHighlightBoundsFromParseResult,
@@ -44,21 +43,7 @@ import {
   dependenciesFromPackageJson,
   usePossiblyResolvedPackageDependencies,
 } from '../editor/npm-dependency/npm-dependency'
-import {
-  ConsoleLog,
-  EditorStore,
-  EditorTab,
-  getAllLintErrors,
-  getOpenEditorTab,
-  getOpenFile,
-  getOpenUIJSFile,
-  getOpenUIJSFileKey,
-  isOpenFileTab,
-  openFileTab,
-  packageJsonFileFromProjectContents,
-  parseFailureAsErrorMessages,
-} from '../editor/store/editor-state'
-import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
+import { ConsoleLog } from '../editor/store/editor-state'
 import * as TP from '../../core/shared/template-path'
 import { CodeEditor } from './code-editor'
 import { CursorPosition } from './code-editor-utils'
@@ -70,6 +55,8 @@ import {
   TypeDefinitions,
 } from '../../core/shared/npm-dependency-types'
 import { ProjectContentTreeRoot } from '../assets'
+import { EditorTab, openFileTab } from '../editor/store/editor-tabs'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 function getFileContents(file: ProjectFile): string {
   switch (file.type) {
@@ -136,7 +123,7 @@ function getTemplatePathsInBounds(
     const target = targets[0]
     Utils.fastForEach(allTemplatePaths, (path) => {
       if (TP.isInstancePath(path)) {
-        const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
+        const staticPath = TP.dynamicPathToStaticPath(path)
         const uid = staticPath != null ? TP.toUid(staticPath) : null
         if (uid === target) {
           paths.push(path)

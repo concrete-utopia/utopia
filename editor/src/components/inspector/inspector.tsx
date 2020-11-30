@@ -63,12 +63,7 @@ import {
 } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { CSSPosition } from './common/css-utils'
-import {
-  InspectorCallbackContext,
-  InspectorPropsContext,
-  useKeepReferenceEqualityIfPossible,
-  useKeepShallowReferenceEquality,
-} from './common/property-path-hooks'
+import { InspectorCallbackContext, InspectorPropsContext } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
 import { ElementPathElement } from './sections/header-section/element-path'
@@ -94,6 +89,10 @@ import {
 import { addStyleSheetToPage } from '../../core/shared/dom-utils'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import { arrayEquals } from '../../core/shared/utils'
+import {
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from '../../utils/react-performance'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps

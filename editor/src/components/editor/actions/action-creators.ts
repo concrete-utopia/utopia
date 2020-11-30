@@ -181,11 +181,11 @@ import type {
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
   DuplicationState,
-  EditorTab,
   ErrorMessages,
   ModalDialog,
   OriginalFrame,
 } from '../store/editor-state'
+import { EditorTab } from '../store/editor-tabs'
 
 export function clearSelection(): EditorAction {
   return {

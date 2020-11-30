@@ -19,10 +19,8 @@ import {
 } from './server'
 import {
   createNewProjectName,
-  EditorTab,
   PersistentModel,
   persistentModelForProjectContents,
-  releaseNotesTab,
 } from './store/editor-state'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { arrayContains, projectURLForProject } from '../../core/shared/utils'

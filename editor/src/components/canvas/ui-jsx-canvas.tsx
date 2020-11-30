@@ -45,7 +45,6 @@ import {
   EmptyScenePathForStoryboard,
 } from '../../core/model/scene-utils'
 import { EditorDispatch } from '../editor/action-types'
-import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { usePrevious } from '../editor/hook-utils'
 import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import { unimportCSSFile } from '../../core/shared/css-style-loader'
@@ -68,6 +67,7 @@ import {
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 

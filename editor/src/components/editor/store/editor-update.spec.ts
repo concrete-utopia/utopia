@@ -52,12 +52,7 @@ import {
   updatePackageJson,
 } from '../actions/action-creators'
 import * as History from '../history'
-import {
-  EditorState,
-  getOpenUtopiaJSXComponentsFromState,
-  openFileTab,
-  defaultUserState,
-} from './editor-state'
+import { EditorState, getOpenUtopiaJSXComponentsFromState, defaultUserState } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
@@ -67,6 +62,7 @@ import {
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { getContentsTreeFileFromString } from '../../assets'
+import { openFileTab } from './editor-tabs'
 
 const chaiExpect = Chai.expect
 

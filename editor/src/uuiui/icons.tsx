@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Icn, IcnProps } from './icn'
-import { betterReactMemo } from 'uuiui-deps'
+import { betterReactMemo } from '../utils/react-performance'
 
 const makeIcon = (appliedProps: IcnProps): React.FunctionComponent<Omit<IcnProps, 'type'>> =>
   betterReactMemo(`icon-${appliedProps.type}`, (props) => <Icn {...appliedProps} {...props} />)

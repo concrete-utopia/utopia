@@ -1,10 +1,10 @@
 import { contentsToTree } from '../components/assets'
 import {
   DefaultPackageJson,
-  openFileTab,
   PersistentModel,
   persistentModelForProjectContents,
 } from '../components/editor/store/editor-state'
+import { openFileTab } from '../components/editor/store/editor-tabs'
 import {
   getDefaultUIJsFile,
   getSamplePreviewFile,

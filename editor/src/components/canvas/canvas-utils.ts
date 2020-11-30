@@ -111,7 +111,6 @@ import {
   getOpenUtopiaJSXComponentsFromState,
   insertElementAtPath,
   modifyOpenParseSuccess,
-  openFileTab,
   OriginalCanvasAndLocalFrame,
   PersistentModel,
   removeElementAtPath,
@@ -166,6 +165,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
+import { openFileTab } from '../editor/store/editor-tabs'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,

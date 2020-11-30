@@ -14,7 +14,7 @@ import type {
   UpdateFile,
 } from '../editor/action-types'
 import { useEditorState } from '../editor/store/store-hook'
-import { JSONStringifiedCodeEditorProps } from './code-editor-container'
+import type { JSONStringifiedCodeEditorProps } from './code-editor-iframe-entry-point'
 
 export type CodeEditorAction =
   | SelectComponents

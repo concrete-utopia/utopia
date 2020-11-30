@@ -5,10 +5,7 @@ import {
   DerivedState,
   deriveState,
   EditorState,
-  EditorTab,
   getOpenUIJSFile,
-  openFileTab,
-  getSceneElements,
   getSceneElementsFromParseSuccess,
   PersistentModel,
   persistentModelFromEditorModel,
@@ -70,6 +67,7 @@ import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../core/shared/array-utils'
 import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
+import { EditorTab, openFileTab } from '../components/editor/store/editor-tabs'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))

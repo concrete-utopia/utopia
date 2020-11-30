@@ -20,17 +20,14 @@ import { betterReactMemo, Utils } from '../../uuiui-deps'
 import {
   ConsoleLog,
   EditorStore,
-  EditorTab,
   getAllLintErrors,
   getOpenEditorTab,
   getOpenFile,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
-  isOpenFileTab,
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { ScriptEditor, ScriptEditorProps } from './script-editor'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Notice } from '../common/notices'
@@ -53,134 +50,12 @@ import {
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
 import urljoin = require('url-join')
 import { isFeatureEnabled } from '../../utils/feature-switches'
-
-export interface JSONStringifiedCodeEditorProps {
-  relevantPanel: EditorPanel
-  runtimeErrors: Array<RuntimeErrorInfo>
-  canvasConsoleLogs: Array<ConsoleLog>
-  selectedViews: TemplatePath[]
-  filePath: string | null
-  openFile: TextFile | ImageFile | Directory | AssetFile | null
-  cursorPositionFromOpenFile: CursorPosition | null
-  typeDefinitions: TypeDefinitions
-  lintErrors: ErrorMessage[]
-  parserPrinterErrors: ErrorMessage[]
-  projectContents: ProjectContentTreeRoot
-  parsedHighlightBounds: HighlightBoundsForUids | null
-  allTemplatePaths: TemplatePath[]
-  focusedPanel: EditorPanel | null
-  codeEditorTheme: string
-  selectedViewBounds: HighlightBounds[]
-  highlightBounds: HighlightBounds[]
-  npmDependencies: PossiblyUnversionedNpmDependency[]
-}
-
-interface CodeEditorIframeEntryPointProps {}
-
-export const CodeEditorIframeEntryPoint = betterReactMemo<CodeEditorIframeEntryPointProps>(
-  'CodeEditorIframeEntryPoint',
-  (props) => {
-    const propsFromMainEditor = useBridgeFromMainEditor()
-    const dispatch = BridgeTowardsMainEditor.sendCodeEditorAction
-
-    return <CodeEditorEntryPoint propsFromMainEditor={propsFromMainEditor} dispatch={dispatch} />
-  },
-)
-
-export interface CodeEditorEntryPointProps {
-  propsFromMainEditor: JSONStringifiedCodeEditorProps | null
-  dispatch: (actions: CodeEditorAction[]) => void
-}
-
-export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
-  'CodeEditorEntryPoint',
-  (props) => {
-    const { dispatch, propsFromMainEditor } = props
-    const setHighlightedViews = React.useCallback(
-      (targets: TemplatePath[]) => {
-        const actions = targets.map((path) => EditorActions.setHighlightedView(path))
-        dispatch(actions)
-      },
-      [dispatch],
-    )
-
-    const selectComponents = React.useCallback(
-      (targets: TemplatePath[]) => {
-        dispatch([EditorActions.selectComponents(targets, false)])
-      },
-      [dispatch],
-    )
-
-    const onSave = React.useCallback(
-      (
-        manualSave: boolean,
-        toast: Notice | undefined,
-        filePath: string,
-        updatedFile: ProjectFile,
-      ) => {
-        const updateFileActions: CodeEditorAction[] = [
-          EditorActions.updateFile(filePath, updatedFile, false),
-          EditorActions.setCodeEditorBuildErrors({}),
-        ]
-        const withToastAction =
-          toast == null
-            ? updateFileActions
-            : updateFileActions.concat(EditorActions.pushToast(toast))
-
-        const actions = manualSave
-          ? withToastAction.concat(EditorActions.saveCurrentFile())
-          : withToastAction
-        dispatch(actions)
-      },
-      [dispatch],
-    )
-
-    const openEditorTab = React.useCallback(
-      (editorTab: EditorTab, cursorPosition: CursorPosition | null) => {
-        dispatch([EditorActions.openEditorTab(editorTab, cursorPosition)])
-      },
-      [dispatch],
-    )
-
-    const setCodeEditorVisibility = React.useCallback(
-      (visible: boolean) => {
-        dispatch([EditorActions.setCodeEditorVisibility(visible)])
-      },
-      [dispatch],
-    )
-
-    const setFocusCallback = React.useCallback(
-      (panel: EditorPanel | null) => {
-        dispatch([setFocus(panel)])
-      },
-      [dispatch],
-    )
-
-    const sendLinterRequestMessage = React.useCallback(
-      (filePath: string, content: string) => {
-        dispatch([EditorActions.sendLinterRequestMessage(filePath, content)])
-      },
-      [dispatch],
-    )
-
-    if (propsFromMainEditor == null) {
-      return null
-    } else {
-      return (
-        <ScriptEditor
-          sendLinterRequestMessage={sendLinterRequestMessage}
-          setHighlightedViews={setHighlightedViews}
-          selectComponents={selectComponents}
-          onSave={onSave}
-          openEditorTab={openEditorTab}
-          setCodeEditorVisibility={setCodeEditorVisibility}
-          setFocus={setFocusCallback}
-          {...propsFromMainEditor}
-        />
-      )
-    }
-  },
-)
+import {
+  CodeEditorEntryPoint,
+  JSONStringifiedCodeEditorProps,
+} from './code-editor-iframe-entry-point'
+import { isOpenFileTab } from '../editor/store/editor-tabs'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 const CodeEditorIframeID = 'code-editor-iframe'
 
