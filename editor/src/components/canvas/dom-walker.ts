@@ -208,11 +208,28 @@ function useInvalidateScenesWhenSelectedViewChanges(
   )
 }
 
+function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, () => void] {
+  const initCompleteRef = React.useRef<boolean>(false)
+  const previousMountCountRef = React.useRef<number>(mountCount)
+
+  const setInitComplete = React.useCallback(() => {
+    initCompleteRef.current = true
+  }, [])
+
+  if (previousMountCountRef.current !== mountCount) {
+    // mount count increased, re-initialize dom-walker
+    initCompleteRef.current = false
+    previousMountCountRef.current = mountCount
+  }
+
+  return [initCompleteRef.current, setInitComplete]
+}
+
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
   const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
-  const initCompleteRef = React.useRef<boolean>(false)
+  const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(props.mountCount)
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
     'useDomWalker selectedViews',
@@ -373,7 +390,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
               }
             }
 
-            if (cachedMetadata == null) {
+            if (cachedMetadata == null || initComplete === false) {
               const rootElements = walkSceneInner(scene, index, scenePath, validPaths)
 
               const sceneMetadata = collectMetadata(
@@ -406,7 +423,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           ObserversAvailable &&
           invalidatedSceneIDsRef.current.size === 0 &&
           rootMetadataInStateRef.current.length > 0 &&
-          initCompleteRef.current === true
+          initComplete === true
         ) {
           // no mutation happened on the entire canvas, just return the old metadata
           rootMetadata = rootMetadataInStateRef.current
@@ -601,7 +618,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         performance.mark('DOM_WALKER_END')
         performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
       }
-      initCompleteRef.current = true
+      setInitComplete()
       props.onDomReport(rootMetadata)
     }
   })
