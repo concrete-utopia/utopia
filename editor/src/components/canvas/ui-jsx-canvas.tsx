@@ -367,6 +367,7 @@ export const UiJsxCanvas = betterReactMemo(
               }}
             >
               <CanvasContainer
+                mountCount={props.mountCount}
                 walkDOM={walkDOM}
                 scale={scale}
                 offset={offset}
@@ -444,6 +445,7 @@ export interface CanvasContainerProps {
   onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void
   canvasRootElementTemplatePath: TemplatePath
   validRootPaths: Array<StaticInstancePath>
+  mountCount: number
 }
 
 const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasContainerProps>> = (
