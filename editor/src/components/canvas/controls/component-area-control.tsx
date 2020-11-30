@@ -162,23 +162,26 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     selectedViews: Array<TemplatePath>,
     event: React.MouseEvent<HTMLDivElement>,
   ): void {
-    // If operating on the isolated scene itself we should apply that change to the original target
-    let targets = selectedViews
-    let actualTarget = this.props.target
+    // If operating on the isolated scene itself or its root view, prevent dragging
+    let draggingEnabled: boolean = true
     if (this.props.isolatedComponent != null) {
-      const { instance: isolatedTarget, scenePath: isolatedScene } = this.props.isolatedComponent
+      const { scenePath: isolatedScene } = this.props.isolatedComponent
       const willActOnIsolatedScene = (path: TemplatePath) =>
         TP.pathsEqual(path, isolatedScene) || TP.isChildOf(path, isolatedScene)
-      if (selectedViews.length === 1 && willActOnIsolatedScene(selectedViews[0])) {
-        targets = [isolatedTarget]
-      }
-      if (willActOnIsolatedScene(this.props.target)) {
-        actualTarget = isolatedTarget
-      }
+      const isolatedSceneSelected = selectedViews.some(willActOnIsolatedScene)
+      const isolatedSceneTargeted = willActOnIsolatedScene(this.props.target)
+      draggingEnabled = !isolatedSceneSelected && !isolatedSceneTargeted
     }
 
-    const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
-    this.props.onMouseDown(targets, actualTarget, cursorPosition.canvasPositionRaw, event)
+    if (draggingEnabled) {
+      const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
+      this.props.onMouseDown(
+        selectedViews,
+        this.props.target,
+        cursorPosition.canvasPositionRaw,
+        event,
+      )
+    }
   }
 
   getComponentAreaControl = (canShowInvisibleIndicator: boolean) => {

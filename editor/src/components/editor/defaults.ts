@@ -4,6 +4,8 @@ import {
   jsxAttributeValue,
   jsxElementName,
   jsxAttributeOtherJavaScript,
+  JSXAttribute,
+  JSXElementChildren,
 } from '../../core/shared/element-template'
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { PathForResizeContent } from '../../core/model/scene-utils'
@@ -39,34 +41,25 @@ export function defaultSceneElement(
 }
 
 export function isolatedComponentSceneElement(
+  uid: string,
   componentName: string,
   frame: NormalisedFrame,
-  componentProps: any,
+  componentProps: JSXAttribute,
+  children: JSXElementChildren,
 ): JSXElement {
   const definedElsewhere = [componentName]
-  let componentPropsToUse: any = {}
-  fastForEach(Object.keys(componentProps), (key) => {
-    if (!['data-uid', 'skipDeepFreeze'].includes(key)) {
-      if (key === 'style') {
-        const styleToUse = omit(['left', 'top', 'right', 'bottom'], componentProps[key])
-        componentPropsToUse[key] = styleToUse
-      } else {
-        componentPropsToUse[key] = componentProps[key]
-      }
-    }
-  })
 
   const props = {
-    'data-uid': jsxAttributeValue('TRANSIENT_SCENE'),
+    'data-uid': jsxAttributeValue(uid),
     'data-label': jsxAttributeValue(`Isolated ${componentName}`),
     component: jsxAttributeOtherJavaScript(
       componentName,
       `return ${componentName}`,
       definedElsewhere,
       null,
-      'TRANSIENT_SCENE_COMPONENT',
+      `${uid}_COMPONENT`,
     ),
-    props: jsxAttributeValue(componentPropsToUse),
+    props: componentProps,
     [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),
     style: jsxAttributeValue({
       position: 'absolute',
@@ -75,7 +68,7 @@ export function isolatedComponentSceneElement(
     }),
   }
 
-  return jsxElement(jsxElementName('Scene', []), props, [])
+  return jsxElement(jsxElementName('Scene', []), props, children)
 }
 
 export function defaultViewElement(uid: string): JSXElement {

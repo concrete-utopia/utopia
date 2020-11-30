@@ -32,7 +32,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Shows Overlay': false,
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
-  'Component Isolation Mode': false,
+  'Component Isolation Mode': true,
   'Component Navigator': true,
   'Component Navigator Component Title': true,
   'Component Navigator Nearest Ancestor': true,

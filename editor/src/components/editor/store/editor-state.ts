@@ -146,6 +146,7 @@ import { getControlsForExternalDependencies } from '../../../core/property-contr
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { DerivedStateKeepDeepEquality } from './store-deep-equality-instances'
+import { NormalisedFrame } from 'utopia-api'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -270,7 +271,8 @@ export interface ConsoleLog {
 
 export interface IsolatedComponent {
   componentName: string
-  instance: InstancePath
+  frame: NormalisedFrame
+  element: JSXElement
   scenePath: ScenePath
 }
 

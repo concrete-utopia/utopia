@@ -355,8 +355,12 @@ function elementPathToUID(path: ElementPath): id {
 export function toTemplateId(path: InstancePath): id {
   return elementPathToUID(path.element)
 }
-export function toUid(path: InstancePath): id {
-  return elementPathToUID(path.element)
+export function toUid(path: TemplatePath): id {
+  if (isInstancePath(path)) {
+    return elementPathToUID(path.element)
+  } else {
+    return elementPathToUID(path.sceneElementPath)
+  }
 }
 
 export function allTemplateIds(path: InstancePath): Array<id> {
