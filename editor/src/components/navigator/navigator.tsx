@@ -14,8 +14,8 @@ import {
   ScenePath,
   TemplatePath,
 } from '../../core/shared/project-file-types'
-import * as EditorActions from '../editor/actions/actions'
-import { clearHighlightedViews, showContextMenu } from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
+import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
 import { DragSelection } from './navigator-item/navigator-item-dnd-container'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'

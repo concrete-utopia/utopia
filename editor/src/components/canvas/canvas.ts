@@ -29,7 +29,7 @@ import {
   canvasRectangle,
 } from '../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
-import * as EditorActions from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
 import {
   defaultEllipseElement,
   defaultRectangleElement,

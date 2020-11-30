@@ -12,7 +12,7 @@ import { mapToArray } from '../core/shared/object-utils'
 import { Key } from '../utils/keyboard'
 import { capitalize } from '../core/shared/string-utils'
 import Keyboard from '../utils/keyboard'
-import { setShortcut } from './editor/actions/actions'
+import { setShortcut } from './editor/actions/action-creators'
 
 interface ShortcutWithName extends Shortcut {
   name: string

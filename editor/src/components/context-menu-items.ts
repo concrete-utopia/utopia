@@ -5,13 +5,13 @@ import * as PP from '../core/shared/property-path'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import { EditorDispatch } from './editor/action-types'
-import * as EditorActions from './editor/actions/actions'
+import * as EditorActions from './editor/actions/action-creators'
 import {
   copySelectionToClipboard,
   deleteView,
   duplicateSelected,
   toggleHidden,
-} from './editor/actions/actions'
+} from './editor/actions/action-creators'
 import {
   toggleBackgroundLayers,
   toggleBorder,

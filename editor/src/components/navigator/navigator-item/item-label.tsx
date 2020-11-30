@@ -4,7 +4,7 @@ import { StringInput } from 'uuiui'
 import { flexRowStyle } from 'uuiui'
 import { TemplatePath, ElementOriginType } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
-import * as EditorActions from '../../editor/actions/actions'
+import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'
 import { renameComponent } from '../actions'
 

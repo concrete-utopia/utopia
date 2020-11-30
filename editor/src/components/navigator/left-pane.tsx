@@ -26,8 +26,12 @@ import Utils from '../../utils/utils'
 import { CodeEditorTheme, CodeEditorThemeCollection } from '../code-editor/code-editor-themes'
 import { setFocus } from '../common/actions'
 import { EditorAction, EditorDispatch, LoginState } from '../editor/action-types'
-import * as EditorActions from '../editor/actions/actions'
-import { clearSelection, regenerateThumbnail, setProjectName } from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
+import {
+  clearSelection,
+  regenerateThumbnail,
+  setProjectName,
+} from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
 import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-state'
 import { userConfigurationTab } from '../editor/store/editor-tabs'

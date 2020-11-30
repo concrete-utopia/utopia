@@ -4,7 +4,7 @@ import { SimpleFlexRow, UtopiaStyles, UtopiaTheme } from 'uuiui'
 
 import { betterReactMemo } from 'uuiui-deps'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
-import * as EditorActions from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
 
 import { ConsoleLog } from '../editor/store/editor-state'
 

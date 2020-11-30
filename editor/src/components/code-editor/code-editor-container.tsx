@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import * as TP from '../../core/shared/template-path'
-import * as EditorActions from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
 import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
 import { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import {

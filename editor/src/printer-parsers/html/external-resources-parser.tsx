@@ -3,7 +3,7 @@ import * as NodeHTMLParser from 'node-html-parser'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { notice } from '../../components/common/notices'
 import { EditorDispatch } from '../../components/editor/action-types'
-import { pushToast, updateFile } from '../../components/editor/actions/actions'
+import { pushToast, updateFile } from '../../components/editor/actions/action-creators'
 import { defaultIndexHtmlFilePath, EditorState } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
 import {

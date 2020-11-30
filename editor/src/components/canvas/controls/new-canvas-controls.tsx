@@ -30,7 +30,7 @@ import {
   clearHighlightedViews,
   insertDroppedImage,
   switchEditorMode,
-} from '../../editor/actions/actions'
+} from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
 import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'

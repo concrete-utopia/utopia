@@ -20,7 +20,7 @@ import { useKeepShallowReferenceEquality } from '../../../../../utils/react-perf
 import utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
-import * as EditorActions from '../../../../editor/actions/actions'
+import * as EditorActions from '../../../../editor/actions/action-creators'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { measureTextFieldNew } from '../../../../text-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'

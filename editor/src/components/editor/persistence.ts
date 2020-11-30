@@ -7,14 +7,8 @@ import {
 import { checkProjectOwnership } from '../../common/server'
 import Utils from '../../utils/utils'
 import { EditorDispatch } from './action-types'
-import {
-  load,
-  loadSampleProject,
-  newProject,
-  setProjectID,
-  showToast,
-  setSaveError,
-} from './actions/actions'
+import { load, loadSampleProject, newProject } from './actions/actions'
+import { setProjectID, showToast, setSaveError } from './actions/action-creators'
 import {
   createNewProjectID,
   loadProject,

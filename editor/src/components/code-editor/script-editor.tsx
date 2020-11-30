@@ -38,7 +38,7 @@ import { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { runtimeErrorInfoToErrorMessage } from './monaco-wrapper'
 import { EditorPanel } from '../common/actions'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
-import * as EditorActions from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
 import {
   dependenciesFromPackageJson,
   usePossiblyResolvedPackageDependencies,

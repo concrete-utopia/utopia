@@ -32,7 +32,7 @@ import {
 import { LeftMenuTab } from '../navigator/left-pane'
 import { toggleTextFormatting } from '../text-utils'
 import { EditorAction, EditorDispatch } from './action-types'
-import * as EditorActions from './actions/actions'
+import * as EditorActions from './actions/action-creators'
 import {
   defaultEllipseElement,
   defaultRectangleElement,

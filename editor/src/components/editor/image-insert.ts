@@ -1,6 +1,6 @@
 import { extractImage } from '../../core/shared/file-utils'
 import { EditorDispatch } from './action-types'
-import * as EditorActions from './actions/actions'
+import * as EditorActions from './actions/action-creators'
 
 function handleImageSelected(
   files: FileList | null,

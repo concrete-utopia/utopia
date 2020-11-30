@@ -40,7 +40,7 @@ import {
 import { FontSettings } from '../inspector/common/css-utils'
 import { existingUIDs } from '../navigator/left-pane'
 import { EditorAction, EditorDispatch } from './action-types'
-import { enableInsertModeForJSXElement, enableInsertModeForScene } from './actions/actions'
+import { enableInsertModeForJSXElement, enableInsertModeForScene } from './actions/action-creators'
 import {
   ElementInsertionSubject,
   insertionSubjectIsScene,

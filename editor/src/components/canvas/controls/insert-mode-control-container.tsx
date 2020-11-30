@@ -21,7 +21,7 @@ import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
 import { setFocus } from '../../common/actions'
 import { EditorAction } from '../../editor/action-types'
-import * as EditorActions from '../../editor/actions/actions'
+import * as EditorActions from '../../editor/actions/action-creators'
 import {
   EditorModes,
   elementInsertionSubject,

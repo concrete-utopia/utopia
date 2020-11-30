@@ -4,7 +4,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../components/canvas/ui-jsx.test-utils'
-import { pasteJSXElements, selectComponents } from '../../components/editor/actions/actions'
+import { pasteJSXElements, selectComponents } from '../../components/editor/actions/action-creators'
 import * as TP from '../shared/template-path'
 import {
   ComponentMetadata,

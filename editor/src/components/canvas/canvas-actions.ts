@@ -1,5 +1,5 @@
-import { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
-import { CanvasAction, DragState } from './canvas-types'
+import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
+import type { CanvasAction, DragState } from './canvas-types'
 
 const CanvasActions = {
   scrollCanvas: function (delta: CanvasVector): CanvasAction {

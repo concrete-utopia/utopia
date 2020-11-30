@@ -4,7 +4,7 @@ import { InstancePath, TemplatePath } from '../../../../core/shared/project-file
 import Utils from '../../../../utils/utils'
 import { CanvasRectangle } from '../../../../core/shared/math-utils'
 import { EditorAction } from '../../../editor/action-types'
-import * as EditorActions from '../../../editor/actions/actions'
+import * as EditorActions from '../../../editor/actions/action-creators'
 import * as TP from '../../../../core/shared/template-path'
 
 export function areYogaChildren(

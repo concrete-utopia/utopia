@@ -4,7 +4,7 @@ import {
   getPrintedUiJsCode,
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
-import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/actions'
+import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/action-creators'
 import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
 import { jsxAttributeValue } from '../shared/element-template'

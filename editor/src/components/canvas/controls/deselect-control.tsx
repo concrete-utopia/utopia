@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as EditorActions from '../../editor/actions/actions'
+import * as EditorActions from '../../editor/actions/action-creators'
 import { Mode } from '../../editor/editor-modes'
 import { EditorDispatch } from '../../editor/action-types'
 

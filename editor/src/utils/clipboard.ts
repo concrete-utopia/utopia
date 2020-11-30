@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { EditorAction } from '../components/editor/action-types'
-import * as EditorActions from '../components/editor/actions/actions'
+import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import { DerivedState, EditorState, getOpenUIJSFile } from '../components/editor/store/editor-state'
 import { scaleImageDimensions, getFrameAndMultiplier } from '../components/images'

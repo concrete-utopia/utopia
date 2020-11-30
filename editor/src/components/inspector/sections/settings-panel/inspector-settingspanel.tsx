@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as EditorActions from '../../../editor/actions/actions'
+import * as EditorActions from '../../../editor/actions/action-creators'
 import { Button, colorTheme, UtopiaTheme } from 'uuiui'
 import { FlexRow } from 'uuiui'
 import { H2 } from 'uuiui'
