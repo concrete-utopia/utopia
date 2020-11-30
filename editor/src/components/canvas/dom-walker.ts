@@ -390,7 +390,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
               }
             }
 
-            if (cachedMetadata == null || initComplete === false) {
+            if (cachedMetadata == null || !initComplete) {
               const rootElements = walkSceneInner(scene, index, scenePath, validPaths)
 
               const sceneMetadata = collectMetadata(
@@ -423,7 +423,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           ObserversAvailable &&
           invalidatedSceneIDsRef.current.size === 0 &&
           rootMetadataInStateRef.current.length > 0 &&
-          initComplete === true
+          initComplete
         ) {
           // no mutation happened on the entire canvas, just return the old metadata
           rootMetadata = rootMetadataInStateRef.current
