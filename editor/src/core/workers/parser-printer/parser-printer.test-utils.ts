@@ -474,7 +474,15 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
     arbitraryJSBlockArbitrary(),
   )
     .map(([name, isFunction, rootElement, jsBlock]) => {
-      return utopiaJSXComponent(name, isFunction, defaultPropsParam, [], rootElement, jsBlock)
+      return utopiaJSXComponent(
+        name,
+        isFunction,
+        defaultPropsParam,
+        [],
+        rootElement,
+        jsBlock,
+        false,
+      )
     })
     .filter((component) => {
       // Prevent creating a component that depends on itself.

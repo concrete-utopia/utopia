@@ -152,6 +152,7 @@ export function convertScenesToUtopiaCanvasComponent(
       scenes.map(mapScene),
     ),
     null,
+    false,
   )
 }
 
