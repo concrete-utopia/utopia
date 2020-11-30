@@ -107,6 +107,8 @@ jobs:
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
