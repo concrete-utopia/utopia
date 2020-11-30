@@ -45,6 +45,7 @@ function getDistanceGuidelines(
 }
 
 interface SelectModeControlContainerProps extends ControlProps {
+  setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
   keysPressed: KeysPressed
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   isDragging: boolean // set only when user already moves a cursor a little after a mousedown
@@ -114,13 +115,26 @@ export class SelectModeControlContainer extends React.Component<
       if (isMultiselect) {
         updatedSelection = TP.addPathIfMissing(target, this.props.selectedViews)
       }
-      let selectActions = [
-        EditorActions.clearHighlightedViews(),
-        EditorActions.selectComponents(updatedSelection, false),
-        EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
-        EditorActions.setRightMenuTab(RightMenuTab.Inspector),
-      ]
-      this.props.dispatch(selectActions, 'canvas')
+
+      this.props.setSelectedViewsLocally(updatedSelection)
+
+      /**
+       * As of November 2020, we need two nested requestAnimationFrames here,
+       * the first one is called almost immediately (before vsync),
+       * the second one is properly called in the next frame
+       */
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          let selectActions = [
+            EditorActions.clearHighlightedViews(),
+            EditorActions.selectComponents(updatedSelection, false),
+            EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
+            EditorActions.setRightMenuTab(RightMenuTab.Inspector),
+          ]
+          this.props.dispatch(selectActions, 'canvas')
+        })
+      })
+
       return updatedSelection
     }
   }
@@ -152,34 +166,53 @@ export class SelectModeControlContainer extends React.Component<
           }),
         )
 
-        const duplicate = originalEvent.altKey
-        const duplicateNewUIDs = duplicate
-          ? createDuplicationNewUIDs(
-              this.props.selectedViews,
-              this.props.componentMetadata,
-              this.props.rootComponents,
-            )
-          : null
+        const onMouseMove = (event: MouseEvent) => {
+          const cursorPosition = this.props.windowToCanvasPosition(event)
+          if (Utils.distance(start, cursorPosition.canvasPositionRaw) > 2) {
+            // actually start the drag state
+            const duplicate = event.altKey
+            const duplicateNewUIDs = duplicate
+              ? createDuplicationNewUIDs(
+                  this.props.selectedViews,
+                  this.props.componentMetadata,
+                  this.props.rootComponents,
+                )
+              : null
 
-        this.props.dispatch([
-          CanvasActions.createDragState(
-            moveDragState(
-              start,
-              null,
-              null,
-              originalFrames,
-              selectionArea,
-              !originalEvent.metaKey,
-              originalEvent.shiftKey,
-              duplicate,
-              originalEvent.metaKey,
-              duplicateNewUIDs,
-              start,
-              this.props.componentMetadata,
-              moveTargets,
-            ),
-          ),
-        ])
+            removeMouseListeners()
+            this.props.dispatch([
+              CanvasActions.createDragState(
+                moveDragState(
+                  start,
+                  null,
+                  null,
+                  originalFrames,
+                  selectionArea,
+                  !event.metaKey,
+                  event.shiftKey,
+                  duplicate,
+                  event.metaKey,
+                  duplicateNewUIDs,
+                  start,
+                  this.props.componentMetadata,
+                  moveTargets,
+                ),
+              ),
+            ])
+          }
+        }
+
+        const onMouseUp = () => {
+          removeMouseListeners()
+        }
+
+        const removeMouseListeners = () => {
+          window.removeEventListener('mousemove', onMouseMove)
+          window.removeEventListener('mouseup', onMouseUp)
+        }
+
+        window.addEventListener('mousemove', onMouseMove)
+        window.addEventListener('mouseup', onMouseUp)
       }
     }
   }

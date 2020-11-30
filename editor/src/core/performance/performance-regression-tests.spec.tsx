@@ -3,7 +3,7 @@ import {
   renderTestEditorWithCode,
   getPrintedUiJsCode,
   TestScenePath,
-} from '../../components/canvas/ui-jsx-test-utils'
+} from '../../components/canvas/ui-jsx.test-utils'
 import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/actions'
 import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'

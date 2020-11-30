@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as fastDeepEqual from 'fast-deep-equal'
 import { PRODUCTION_ENV } from '../common/env-vars'
 import { KeepDeepEqualityCall, keepDeepEqualityResult } from './deep-equality'
+import { shallowEqual } from '../core/shared/equality-utils'
 
 export function useHookUpdateAnalysisStrictEquals<P>(name: string, newValue: P) {
   const previousValue = React.useRef(newValue)
@@ -453,4 +454,24 @@ export function createCallFromIntrospectiveKeepDeep<T>(): KeepDeepEqualityCall<T
     const value = keepDeepReferenceEqualityIfPossible(oldValue, newValue)
     return keepDeepEqualityResult(value, value === oldValue)
   }
+}
+
+export function useKeepShallowReferenceEquality<T>(possibleNewValue: T, measure = false): T {
+  const oldValue = React.useRef<T>(possibleNewValue)
+  if (!shallowEqual(oldValue.current, possibleNewValue, measure)) {
+    oldValue.current = possibleNewValue
+  }
+  return oldValue.current
+}
+
+export function useKeepReferenceEqualityIfPossible<T>(possibleNewValue: T, measure = false): T {
+  const oldValue = React.useRef<T | null>(null)
+  oldValue.current = keepDeepReferenceEqualityIfPossible(oldValue.current, possibleNewValue)
+  return oldValue.current!
+}
+
+export function useKeepDeepEqualityCall<T>(newValue: T, keepDeepCall: KeepDeepEqualityCall<T>): T {
+  const oldValue = React.useRef<T>(newValue)
+  oldValue.current = keepDeepCall(oldValue.current, newValue).value
+  return oldValue.current
 }

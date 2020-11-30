@@ -7,14 +7,18 @@ import { EditorModel } from '../../components/editor/action-types'
 import { EditorState } from '../../components/editor/store/editor-state'
 import {
   isUtopiaJSXComponent,
+  JSXElement,
   UtopiaJSXComponent,
   utopiaJSXComponent,
 } from '../shared/element-template'
+import { forEachValue } from '../shared/object-utils'
 import {
   addModifierExportToDetail,
   EmptyExportsDetail,
+  ExportDetail,
   forEachParseSuccess,
   importAlias,
+  isParsedTextFile,
   isTextFile,
   RevisionsState,
   textFile,
@@ -32,16 +36,63 @@ export const StoryboardFilePath: string = '/src/storyboard.js'
 
 const PossiblyMainComponentNames: Array<string> = ['App', 'Application', 'Main']
 
-interface ComponentToImport {
+interface DefaultComponentToImport {
+  type: 'DEFAULT_COMPONENT_TO_IMPORT'
   path: string
-  component: UtopiaJSXComponent
 }
 
-function componentToImport(path: string, component: UtopiaJSXComponent): ComponentToImport {
+interface NamedComponentToImport {
+  type: 'NAMED_COMPONENT_TO_IMPORT'
+  path: string
+  possibleMainComponentName: boolean
+  toImport: string
+}
+
+function defaultComponentToImport(path: string): DefaultComponentToImport {
   return {
+    type: 'DEFAULT_COMPONENT_TO_IMPORT',
     path: path,
-    component: component,
   }
+}
+
+function namedComponentToImport(
+  path: string,
+  possibleMainComponentName: boolean,
+  toImport: string,
+): NamedComponentToImport {
+  return {
+    type: 'NAMED_COMPONENT_TO_IMPORT',
+    path: path,
+    possibleMainComponentName: possibleMainComponentName,
+    toImport: toImport,
+  }
+}
+
+type ComponentToImport = DefaultComponentToImport | NamedComponentToImport
+
+function betterImportCandidate(
+  path: string,
+  isDefaultImport: boolean,
+  name: string | null,
+  current: ComponentToImport | null,
+): boolean {
+  if (current == null) {
+    return true
+  } else {
+    if (path.split('/').length < current.path.split('/').length) {
+      return true
+    } else {
+      if (name != null && current.type === 'NAMED_COMPONENT_TO_IMPORT') {
+        const candidatePossibleMainComponentName = PossiblyMainComponentNames.includes(name)
+        return candidatePossibleMainComponentName > current.possibleMainComponentName
+      }
+      if (isDefaultImport && current.type === 'NAMED_COMPONENT_TO_IMPORT') {
+        return true
+      }
+    }
+  }
+
+  return false
 }
 
 export function addStoryboardFileToProject(editorModel: EditorModel): EditorModel | null {
@@ -50,37 +101,35 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
     StoryboardFilePath,
   )
   if (storyboardFile == null) {
-    let namedComponentToImport: ComponentToImport | null = null as any
-    let firstComponentToImport: ComponentToImport | null = null as any
+    let currentImportCandidate: ComponentToImport | null = null
     walkContentsTree(editorModel.projectContents, (fullPath, file) => {
-      // Just in case we ever find a main looking component, skip everything else.
-      if (namedComponentToImport == null) {
-        if (isTextFile(file)) {
-          // For those successfully parsed files, we want to search all of the components.
-          forEachParseSuccess((success) => {
-            for (const topLevelElement of success.topLevelElements) {
-              if (isUtopiaJSXComponent(topLevelElement)) {
-                // Check for components that have a name which _looks_ like it is the main one.
-                if (PossiblyMainComponentNames.includes(topLevelElement.name)) {
-                  namedComponentToImport = componentToImport(fullPath, topLevelElement)
-                }
-                // Capture one at the start.
-                if (firstComponentToImport == null) {
-                  firstComponentToImport = componentToImport(fullPath, topLevelElement)
-                }
-              }
+      if (isParsedTextFile(file)) {
+        // For those successfully parsed files, we want to search all of the components.
+        forEachParseSuccess((success) => {
+          if (success.exportsDetail.defaultExport != null) {
+            if (betterImportCandidate(fullPath, true, null, currentImportCandidate)) {
+              currentImportCandidate = defaultComponentToImport(fullPath)
             }
-          }, file.fileContents.parsed)
-        }
+          }
+
+          forEachValue((exportDetail, exportName) => {
+            if (betterImportCandidate(fullPath, false, exportName, currentImportCandidate)) {
+              const possibleMainComponentName = PossiblyMainComponentNames.includes(exportName)
+              currentImportCandidate = namedComponentToImport(
+                fullPath,
+                possibleMainComponentName,
+                exportName,
+              )
+            }
+          }, success.exportsDetail.namedExports)
+        }, file.fileContents.parsed)
       }
     })
 
-    const createFileWithComponent: ComponentToImport | null =
-      firstComponentToImport ?? namedComponentToImport
-    if (createFileWithComponent == null) {
+    if (currentImportCandidate == null) {
       return null
     } else {
-      return addStoryboardFileForComponent(createFileWithComponent, editorModel)
+      return addStoryboardFileForComponent(currentImportCandidate, editorModel)
     }
   } else {
     return null
@@ -92,7 +141,7 @@ function addStoryboardFileForComponent(
   editorModel: EditorState,
 ) {
   // Add import of storyboard and scene components.
-  const baseImports = addImport(
+  let imports = addImport(
     'utopia-api',
     null,
     [importAlias('Storyboard'), importAlias('Scene'), importAlias('jsx')],
@@ -100,7 +149,26 @@ function addStoryboardFileForComponent(
     {},
   )
   // Create the storyboard variable.
-  const sceneElement = createSceneFromComponent(createFileWithComponent.component, 'scene-1')
+  let sceneElement: JSXElement
+  switch (createFileWithComponent.type) {
+    case 'NAMED_COMPONENT_TO_IMPORT':
+      sceneElement = createSceneFromComponent(createFileWithComponent.toImport, 'scene-1')
+      imports = addImport(
+        createFileWithComponent.path,
+        null,
+        [importAlias(createFileWithComponent.toImport)],
+        null,
+        imports,
+      )
+      break
+    case 'DEFAULT_COMPONENT_TO_IMPORT':
+      sceneElement = createSceneFromComponent('StoryboardComponent', 'scene-1')
+      imports = addImport(createFileWithComponent.path, 'StoryboardComponent', [], null, imports)
+      break
+    default:
+      const _exhaustiveCheck: never = createFileWithComponent
+      throw new Error(`Unhandled type ${JSON.stringify(createFileWithComponent)}`)
+  }
   const storyboardElement = createStoryboardElement([sceneElement], BakedInStoryboardUID)
   const storyboardComponent = utopiaJSXComponent(
     BakedInStoryboardVariableName,
@@ -111,13 +179,6 @@ function addStoryboardFileForComponent(
     null,
   )
   // Add the component import.
-  const imports = addImport(
-    createFileWithComponent.path,
-    null,
-    [importAlias(createFileWithComponent.component.name)],
-    null,
-    baseImports,
-  )
   // Create the file.
   const success = parseSuccess(
     imports,

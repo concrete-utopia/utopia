@@ -155,12 +155,12 @@ export function convertScenesToUtopiaCanvasComponent(
   )
 }
 
-export function createSceneFromComponent(component: UtopiaJSXComponent, uid: string): JSXElement {
+export function createSceneFromComponent(componentImportedAs: string, uid: string): JSXElement {
   const sceneProps = {
     component: jsxAttributeOtherJavaScript(
-      component.name,
-      `return ${component.name}`,
-      [component.name],
+      componentImportedAs,
+      `return ${componentImportedAs}`,
+      [componentImportedAs],
       null,
     ),
     [UTOPIA_UID_KEY]: jsxAttributeValue(uid),

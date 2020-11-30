@@ -31,7 +31,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestScenePath as TestScenePathForTestProject,
-} from '../../components/canvas/ui-jsx-test-utils'
+} from '../../components/canvas/ui-jsx.test-utils'
 import { createIndexedUid } from '../shared/uid-utils'
 
 const TestScenePath = 'scene-aaa'

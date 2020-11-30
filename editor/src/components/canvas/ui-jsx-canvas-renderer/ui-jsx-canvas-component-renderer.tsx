@@ -22,7 +22,7 @@ export type ComponentRendererComponent = React.ComponentType<any> & {
 }
 
 export function isComponentRendererComponent(
-  component: ComponentRendererComponent | React.ComponentType | null,
+  component: ComponentRendererComponent | React.ComponentType | null | undefined,
 ): component is ComponentRendererComponent {
   return (
     component != null &&

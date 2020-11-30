@@ -446,56 +446,59 @@ export function preparsedLayer(value: string, enabled: boolean): PreparsedLayer 
   }
 }
 
-export function traverseForPreparsedLayers(
-  remaining: string,
-  inComment = false,
-  layers: Array<PreparsedLayer> = [],
-  workingValue = '',
-): Array<PreparsedLayer> {
-  if (remaining.length === 0) {
+export function traverseForPreparsedLayers(toTraverse: string): Array<PreparsedLayer> {
+  let inComment: boolean = false
+  let layers: Array<PreparsedLayer> = []
+  let workingValue: string = ''
+  let index: number = 0
+
+  function addWorkingValue(): void {
     const trimmedWorkingValue = workingValue.trim()
     if (trimmedWorkingValue !== '') {
       layers.push(preparsedLayer(trimmedWorkingValue, !inComment))
     }
-    return layers
+    workingValue = ''
   }
-  switch (remaining[0]) {
-    case '/': {
-      if (remaining[1] === '*') {
-        const trimmedWorkingValue = workingValue.trim()
-        if (trimmedWorkingValue !== '') {
-          layers.push(preparsedLayer(trimmedWorkingValue, !inComment))
+
+  while (index < toTraverse.length) {
+    let shiftIndexBy: number = 1
+    switch (toTraverse[index]) {
+      case '/': {
+        if (toTraverse[index + 1] === '*') {
+          addWorkingValue()
+          inComment = true
+          shiftIndexBy = 2
+        } else {
+          workingValue = workingValue += '/'
         }
-        return traverseForPreparsedLayers(remaining.slice(2), true, layers, '')
-      } else {
-        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue + '/')
+        break
+      }
+      case '*': {
+        if (inComment && toTraverse[index + 1] === '/') {
+          addWorkingValue()
+          inComment = false
+          shiftIndexBy = 2
+        } else {
+          workingValue = workingValue + '*'
+        }
+        break
+      }
+      case ',': {
+        if (!inComment) {
+          addWorkingValue()
+          inComment = false
+        }
+        break
+      }
+      default: {
+        workingValue = workingValue + toTraverse[index]
       }
     }
-    case '*': {
-      if (inComment && remaining[1] === '/') {
-        layers.push(preparsedLayer(workingValue.trim(), !inComment))
-        return traverseForPreparsedLayers(remaining.slice(2), false, layers)
-      } else {
-        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue + '*')
-      }
-    }
-    case ',': {
-      if (inComment) {
-        return traverseForPreparsedLayers(remaining.slice(1), inComment, layers, workingValue)
-      } else {
-        layers.push(preparsedLayer(workingValue.trim(), !inComment))
-        return traverseForPreparsedLayers(remaining.slice(1), false, layers)
-      }
-    }
-    default: {
-      return traverseForPreparsedLayers(
-        remaining.slice(1),
-        inComment,
-        layers,
-        workingValue + remaining[0],
-      )
-    }
+    index += shiftIndexBy
   }
+
+  addWorkingValue()
+  return layers
 }
 
 export function cssValueOnlyContainsComments(cssValue: string): boolean {

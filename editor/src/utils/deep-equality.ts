@@ -1,3 +1,5 @@
+import { fastForEach } from '../core/shared/utils'
+
 export interface KeepDeepEqualityResult<T> {
   value: T
   areEqual: boolean
@@ -10,9 +12,33 @@ export function keepDeepEqualityResult<T>(value: T, areEqual: boolean): KeepDeep
   }
 }
 
+export function mapKeepDeepEqualityResult<T, U>(
+  transform: (t: T) => U,
+  result: KeepDeepEqualityResult<T>,
+): KeepDeepEqualityResult<U> {
+  return keepDeepEqualityResult(transform(result.value), result.areEqual)
+}
+
 export type EqualityCheck<T> = (oldValue: T, newValue: T) => boolean
 
 export type KeepDeepEqualityCall<T> = (oldValue: T, newValue: T) => KeepDeepEqualityResult<T>
+
+export function combine1EqualityCall<A, X>(
+  getAValue: (x: X) => A,
+  callA: KeepDeepEqualityCall<A>,
+  combine: (a: A) => X,
+): KeepDeepEqualityCall<X> {
+  return (oldValue, newValue) => {
+    const resultA = callA(getAValue(oldValue), getAValue(newValue))
+    const areEqual = resultA.areEqual
+    if (areEqual) {
+      return keepDeepEqualityResult(oldValue, true)
+    } else {
+      const value = combine(resultA.value)
+      return keepDeepEqualityResult(value, false)
+    }
+  }
+}
 
 export function combine2EqualityCalls<A, B, X>(
   getAValue: (x: X) => A,
@@ -273,6 +299,131 @@ export function combine8EqualityCalls<A, B, C, D, E, F, G, H, X>(
   }
 }
 
+export function combine9EqualityCalls<A, B, C, D, E, F, G, H, I, X>(
+  getAValue: (x: X) => A,
+  callA: KeepDeepEqualityCall<A>,
+  getBValue: (x: X) => B,
+  callB: KeepDeepEqualityCall<B>,
+  getCValue: (x: X) => C,
+  callC: KeepDeepEqualityCall<C>,
+  getDValue: (x: X) => D,
+  callD: KeepDeepEqualityCall<D>,
+  getEValue: (x: X) => E,
+  callE: KeepDeepEqualityCall<E>,
+  getFValue: (x: X) => F,
+  callF: KeepDeepEqualityCall<F>,
+  getGValue: (x: X) => G,
+  callG: KeepDeepEqualityCall<G>,
+  getHValue: (x: X) => H,
+  callH: KeepDeepEqualityCall<H>,
+  getIValue: (x: X) => I,
+  callI: KeepDeepEqualityCall<I>,
+  combine: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I) => X,
+): KeepDeepEqualityCall<X> {
+  return (oldValue, newValue) => {
+    const resultA = callA(getAValue(oldValue), getAValue(newValue))
+    const resultB = callB(getBValue(oldValue), getBValue(newValue))
+    const resultC = callC(getCValue(oldValue), getCValue(newValue))
+    const resultD = callD(getDValue(oldValue), getDValue(newValue))
+    const resultE = callE(getEValue(oldValue), getEValue(newValue))
+    const resultF = callF(getFValue(oldValue), getFValue(newValue))
+    const resultG = callG(getGValue(oldValue), getGValue(newValue))
+    const resultH = callH(getHValue(oldValue), getHValue(newValue))
+    const resultI = callI(getIValue(oldValue), getIValue(newValue))
+    const areEqual =
+      resultA.areEqual &&
+      resultB.areEqual &&
+      resultC.areEqual &&
+      resultD.areEqual &&
+      resultE.areEqual &&
+      resultF.areEqual &&
+      resultG.areEqual &&
+      resultH.areEqual &&
+      resultI.areEqual
+    if (areEqual) {
+      return keepDeepEqualityResult(oldValue, true)
+    } else {
+      const value = combine(
+        resultA.value,
+        resultB.value,
+        resultC.value,
+        resultD.value,
+        resultE.value,
+        resultF.value,
+        resultG.value,
+        resultH.value,
+        resultI.value,
+      )
+      return keepDeepEqualityResult(value, false)
+    }
+  }
+}
+
+export function combine10EqualityCalls<A, B, C, D, E, F, G, H, I, J, X>(
+  getAValue: (x: X) => A,
+  callA: KeepDeepEqualityCall<A>,
+  getBValue: (x: X) => B,
+  callB: KeepDeepEqualityCall<B>,
+  getCValue: (x: X) => C,
+  callC: KeepDeepEqualityCall<C>,
+  getDValue: (x: X) => D,
+  callD: KeepDeepEqualityCall<D>,
+  getEValue: (x: X) => E,
+  callE: KeepDeepEqualityCall<E>,
+  getFValue: (x: X) => F,
+  callF: KeepDeepEqualityCall<F>,
+  getGValue: (x: X) => G,
+  callG: KeepDeepEqualityCall<G>,
+  getHValue: (x: X) => H,
+  callH: KeepDeepEqualityCall<H>,
+  getIValue: (x: X) => I,
+  callI: KeepDeepEqualityCall<I>,
+  getJValue: (x: X) => J,
+  callJ: KeepDeepEqualityCall<J>,
+  combine: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J) => X,
+): KeepDeepEqualityCall<X> {
+  return (oldValue, newValue) => {
+    const resultA = callA(getAValue(oldValue), getAValue(newValue))
+    const resultB = callB(getBValue(oldValue), getBValue(newValue))
+    const resultC = callC(getCValue(oldValue), getCValue(newValue))
+    const resultD = callD(getDValue(oldValue), getDValue(newValue))
+    const resultE = callE(getEValue(oldValue), getEValue(newValue))
+    const resultF = callF(getFValue(oldValue), getFValue(newValue))
+    const resultG = callG(getGValue(oldValue), getGValue(newValue))
+    const resultH = callH(getHValue(oldValue), getHValue(newValue))
+    const resultI = callI(getIValue(oldValue), getIValue(newValue))
+    const resultJ = callJ(getJValue(oldValue), getJValue(newValue))
+    const areEqual =
+      resultA.areEqual &&
+      resultB.areEqual &&
+      resultC.areEqual &&
+      resultD.areEqual &&
+      resultE.areEqual &&
+      resultF.areEqual &&
+      resultG.areEqual &&
+      resultH.areEqual &&
+      resultI.areEqual &&
+      resultJ.areEqual
+    if (areEqual) {
+      return keepDeepEqualityResult(oldValue, true)
+    } else {
+      const value = combine(
+        resultA.value,
+        resultB.value,
+        resultC.value,
+        resultD.value,
+        resultE.value,
+        resultF.value,
+        resultG.value,
+        resultH.value,
+        resultI.value,
+        resultJ.value,
+      )
+      return keepDeepEqualityResult(value, false)
+    }
+  }
+}
+
 export function createCallWithTripleEquals<T>(): KeepDeepEqualityCall<T> {
   return (oldValue, newValue) => {
     const areEqual = oldValue === newValue
@@ -291,22 +442,67 @@ export function arrayDeepEquality<T>(
   elementCall: KeepDeepEqualityCall<T>,
 ): KeepDeepEqualityCall<Array<T>> {
   return (oldArray, newArray) => {
-    let areEquals: boolean = true
-    let workingResult: Array<T> = []
     if (oldArray === newArray) {
       return keepDeepEqualityResult(oldArray, true)
     } else {
+      let areEquals: boolean = true
+      let workingResult: Array<T> = []
       const length = newArray.length
+      const oldLength = oldArray.length
       for (let arrayIndex = 0; arrayIndex < length; arrayIndex++) {
-        const oldArrayElement = oldArray[arrayIndex]
         const newArrayElement = newArray[arrayIndex]
-        const equalityResult = elementCall(oldArrayElement, newArrayElement)
-        areEquals = areEquals && equalityResult.areEqual
-        workingResult.push(equalityResult.value)
+        if (arrayIndex < oldLength) {
+          const oldArrayElement = oldArray[arrayIndex]
+          const equalityResult = elementCall(oldArrayElement, newArrayElement)
+          areEquals = areEquals && equalityResult.areEqual
+          workingResult.push(equalityResult.value)
+        } else {
+          areEquals = false
+          workingResult.push(newArrayElement)
+        }
       }
 
       if (length === oldArray.length && areEquals) {
         return keepDeepEqualityResult(oldArray, true)
+      } else {
+        return keepDeepEqualityResult(workingResult, false)
+      }
+    }
+  }
+}
+
+export function objectDeepEquality<T>(
+  valueCall: KeepDeepEqualityCall<T>,
+): KeepDeepEqualityCall<Record<string, T>> {
+  return (oldObject, newObject) => {
+    if (oldObject === newObject) {
+      return keepDeepEqualityResult(oldObject, true)
+    } else {
+      let areEquals: boolean = true
+      let workingResult: Record<string, T> = {}
+      const newObjectKeys = Object.keys(newObject)
+      fastForEach(newObjectKeys, (newObjectKey) => {
+        const newObjectValue = newObject[newObjectKey]
+        if (newObjectKey in oldObject) {
+          const oldObjectValue = oldObject[newObjectKey]
+          const valueResult = valueCall(oldObjectValue, newObjectValue)
+          workingResult[newObjectKey] = valueResult.value
+          areEquals = areEquals && valueResult.areEqual
+        } else {
+          workingResult[newObjectKey] = newObjectValue
+          areEquals = false
+        }
+      })
+      // Check if keys have been removed.
+      if (areEquals) {
+        const oldObjectKeys = Object.keys(oldObject)
+        if (oldObjectKeys.length !== newObjectKeys.length) {
+          areEquals = false
+        }
+      }
+
+      if (areEquals) {
+        return keepDeepEqualityResult(oldObject, true)
       } else {
         return keepDeepEqualityResult(workingResult, false)
       }

@@ -22,7 +22,7 @@ export function applyPropsParamToPassedProps(
     defaultExpression: JSXAttributeOtherJavaScript | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
-      return jsxAttributeToValue(inScope, requireResult)(defaultExpression)
+      return jsxAttributeToValue(inScope, requireResult, defaultExpression)
     } else {
       return value
     }

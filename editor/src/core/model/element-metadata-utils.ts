@@ -439,8 +439,8 @@ export const MetadataUtils = {
       return this.dynamicPathToStaticPath(path)
     }
   },
-  dynamicPathToStaticPath(path: InstancePath): StaticInstancePath | null {
-    return TP.staticInstancePath(path.scene, path.element.map(extractOriginalUidFromIndexedUid))
+  dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {
+    return TP.dynamicPathToStaticPath(path)
   },
   shiftGroupFrame(
     metadata: JSXMetadata,

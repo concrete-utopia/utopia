@@ -38,16 +38,7 @@ import * as EditorActions from './actions/actions'
 import { handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { StateHistory } from './history'
 import { LoginStatusBar, EditorOfflineBar, BrowserInfoBar } from './notification-bar'
-import {
-  ConsoleLog,
-  DerivedState,
-  EditorState,
-  getOpenEditorTab,
-  getOpenFile,
-  getOpenTextFileKey,
-  isReleaseNotesTab,
-  isUserConfigurationTab,
-} from './store/editor-state'
+import { ConsoleLog, getOpenEditorTab, getOpenFile, getOpenTextFileKey } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { isParsedTextFile } from '../../core/shared/project-file-types'
 import { isLiveMode, dragAndDropInsertionSubject, EditorModes, isSelectMode } from './editor-modes'
@@ -61,6 +52,7 @@ import {
   PropertyControlsInfoIFrameID,
   setPropertyControlsIFrameAvailable,
 } from '../../core/property-controls/property-controls-utils'
+import { isReleaseNotesTab, isUserConfigurationTab } from './store/editor-tabs'
 
 interface NumberSize {
   width: number

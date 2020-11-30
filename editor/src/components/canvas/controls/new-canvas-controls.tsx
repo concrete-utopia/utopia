@@ -46,6 +46,7 @@ import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo } from '../../custom-code/code-file'
+import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -145,7 +146,7 @@ export const NewCanvasControls = betterReactMemo(
               transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
             }}
           >
-            <NewCanvasControlsClass
+            <NewCanvasControlsInner
               windowToCanvasPosition={props.windowToCanvasPosition}
               {...canvasControlProps}
             />
@@ -158,7 +159,7 @@ export const NewCanvasControls = betterReactMemo(
 )
 NewCanvasControls.displayName = 'NewCanvasControls'
 
-interface NewCanvasControlsClassProps {
+interface NewCanvasControlsInnerProps {
   editor: EditorState
   derived: DerivedState
   dispatch: EditorDispatch
@@ -206,7 +207,22 @@ const selectElementsThatRespectLayout = createSelector(
   },
 )
 
-const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
+const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
+  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
+    props.derived.canvas.transientState.selectedViews,
+  )
+  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
+    props.derived.canvas.transientState.highlightedViews,
+  )
+
+  const setSelectedViewsLocally = React.useCallback(
+    (newSelectedViews: Array<TemplatePath>) => {
+      setLocalSelectedViews(newSelectedViews)
+      setLocalHighlightedViews([])
+    },
+    [setLocalSelectedViews, setLocalHighlightedViews],
+  )
+
   const selectionEnabled =
     props.editor.canvas.selectionControlsVisible &&
     !props.editor.keysPressed['z'] &&
@@ -238,7 +254,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
   }, [selectionEnabled, isDragging, isResizing, dispatch])
 
   const getResizeStatus = () => {
-    const selectedViews = props.derived.canvas.transientState.selectedViews
+    const selectedViews = localSelectedViews
     if (props.editor.canvas.textEditor != null || props.editor.keysPressed['z']) {
       return 'disabled'
     }
@@ -268,9 +284,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
   )
 
   const renderModeControlContainer = () => {
-    const fallbackTransientState = props.derived.canvas.transientState
-    const targets = fallbackTransientState.selectedViews
-    const elementAspectRatioLocked = targets.every((target) => {
+    const elementAspectRatioLocked = localSelectedViews.every((target) => {
       if (TP.isScenePath(target)) {
         return false
       }
@@ -288,12 +302,12 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     const imageMultiplier: number | null = MetadataUtils.getImageMultiplier(
       imports,
       componentMetadata,
-      targets,
+      localSelectedViews,
     )
     const rootComponents = getOpenUtopiaJSXComponentsFromState(props.editor)
     const controlProps: ControlProps = {
-      selectedViews: targets,
-      highlightedViews: fallbackTransientState.highlightedViews,
+      selectedViews: localSelectedViews,
+      highlightedViews: localHighlightedViews,
       rootComponents: rootComponents,
       componentMetadata: componentMetadata,
       imports: imports,
@@ -317,6 +331,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
         return (
           <SelectModeControlContainer
             {...controlProps}
+            setSelectedViewsLocally={setSelectedViewsLocally}
             keysPressed={props.editor.keysPressed}
             windowToCanvasPosition={props.windowToCanvasPosition}
             isDragging={isDragging}
@@ -360,9 +375,8 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
   }
 
   const renderHighlightControls = () => {
-    const highlightedViews = props.derived.canvas.transientState.highlightedViews
     return selectionEnabled
-      ? highlightedViews.map((path) => {
+      ? localHighlightedViews.map((path) => {
           const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
           if (frame == null) {
             return null
@@ -394,7 +408,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
 
   const renderTextEditor = (target: InstancePath) => {
     const dragState = props.editor.canvas.dragState
-    const selectedViews = props.derived.canvas.transientState.selectedViews
+    const selectedViews = localSelectedViews
     if (dragState != null || selectedViews.length !== 1) {
       return null
     } else {

@@ -1,6 +1,6 @@
 import * as deepEqual from 'fast-deep-equal'
 import { UtopiaUtils } from 'utopia-api'
-import { colorTheme } from 'uuiui'
+import { colorTheme } from '../../../uuiui/styles/theme'
 import {
   isJSXAttributeNotFound,
   isJSXAttributeValue,

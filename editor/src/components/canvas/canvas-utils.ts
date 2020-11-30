@@ -119,7 +119,6 @@ import {
   getOpenUtopiaJSXComponentsFromState,
   insertElementAtPath,
   modifyOpenParseSuccess,
-  openFileTab,
   OriginalCanvasAndLocalFrame,
   PersistentModel,
   removeElementAtPath,
@@ -181,6 +180,7 @@ import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
 import { defaultSceneElement, isolatedComponentSceneElement } from '../editor/defaults'
 import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { openFileTab } from '../editor/store/editor-tabs'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,

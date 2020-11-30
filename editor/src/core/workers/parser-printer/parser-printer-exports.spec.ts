@@ -1,7 +1,7 @@
-import { clearParseResultUniqueIDs, testParseCode } from './parser-printer-test-utils'
+import { clearParseResultUniqueIDs, testParseCode } from './parser-printer.test-utils'
 import Utils from '../../../utils/utils'
 import { applyPrettier } from './prettier-utils'
-import { testPrintParsedTextFile } from '../../../components/canvas/ui-jsx-test-utils'
+import { testPrintParsedTextFile } from '../../../components/canvas/ui-jsx.test-utils'
 
 describe('parseCode', () => {
   it('should parse a directly exported component', () => {
@@ -45,7 +45,7 @@ describe('parseCode', () => {
         "defaultExport": null,
         "namedExports": Object {
           "whatever": Object {
-            "propertyName": "whatever",
+            "name": "whatever",
             "type": "EXPORT_DETAIL_NAMED",
           },
         },
@@ -70,7 +70,7 @@ describe('parseCode', () => {
         "defaultExport": null,
         "namedExports": Object {
           "otherThing": Object {
-            "propertyName": "whatever",
+            "name": "whatever",
             "type": "EXPORT_DETAIL_NAMED",
           },
         },

@@ -3,7 +3,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
-} from '../../components/canvas/ui-jsx-test-utils'
+} from '../../components/canvas/ui-jsx.test-utils'
 import { pasteJSXElements, selectComponents } from '../../components/editor/actions/actions'
 import * as TP from '../shared/template-path'
 import {

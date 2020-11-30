@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { View } from 'utopia-api'
+import { LayoutSystem, View } from 'utopia-api'
 import { useContextSelector } from 'use-context-selector'
 import * as fastDeepEquals from 'fast-deep-equal'
 import { getUtopiaID, getValidTemplatePaths } from '../../../core/model/element-template-utils'
@@ -41,12 +41,12 @@ import { PathForResizeContent } from '../../../core/model/scene-utils'
 import { fastForEach } from '../../../core/shared/utils'
 
 interface SceneProps {
-  component: React.ComponentType | null
-  props: any
-  style: React.CSSProperties
-  layout: ScenePinnedContainer
-  'data-uid': string
-  'data-label': string | undefined
+  component?: React.ComponentType | null
+  props?: any
+  style?: React.CSSProperties
+  layout?: ScenePinnedContainer
+  'data-uid'?: string
+  'data-label'?: string
 }
 
 function useRunSpy(
@@ -71,7 +71,7 @@ function useRunSpy(
     sceneResizesContent: resizesContent,
     globalFrame: null,
     label: props['data-label'],
-    style: props.style,
+    style: props.style ?? {},
   }
   if (shouldIncludeCanvasRootInTheSpy) {
     metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
@@ -90,7 +90,7 @@ function useRunSpy(
 }
 
 function getTopLevelElementName(
-  componentRenderer: ComponentRendererComponent | React.ComponentType | null,
+  componentRenderer: ComponentRendererComponent | React.ComponentType | null | undefined,
 ): string | null {
   if (isComponentRendererComponent(componentRenderer)) {
     return componentRenderer.topLevelElementName

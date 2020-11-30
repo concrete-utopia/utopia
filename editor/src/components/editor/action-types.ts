@@ -42,7 +42,6 @@ import type {
 import {
   DuplicationState,
   EditorState,
-  EditorTab,
   ErrorMessages,
   ModalDialog,
   OriginalFrame,
@@ -51,6 +50,7 @@ import {
 } from './store/editor-state'
 import { Notice } from '../common/notices'
 import { BuildType } from '../../core/workers/ts/ts-worker'
+import type { EditorTab } from './store/editor-tabs'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
 export interface PropertyTarget {

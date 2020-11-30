@@ -57,7 +57,7 @@ import {
   PrintableProjectContent,
   printableProjectContentArbitrary,
   testParseCode,
-} from './parser-printer-test-utils'
+} from './parser-printer.test-utils'
 import { InfiniteLoopError, InfiniteLoopMaxIterations } from './transform-prevent-infinite-loops'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 

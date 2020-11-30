@@ -384,7 +384,6 @@ import {
   DuplicationState,
   editorModelFromPersistentModel,
   EditorState,
-  EditorTab,
   ErrorMessages,
   getAllBuildErrors,
   getAllLintErrors,
@@ -398,7 +397,6 @@ import {
   getOpenUIJSFileKey,
   getOpenUtopiaJSXComponentsFromState,
   insertElementAtPath,
-  isOpenFileTab,
   mergeStoredEditorStateIntoEditorState,
   ModalDialog,
   modifyOpenJsxElementAtPath,
@@ -408,7 +406,6 @@ import {
   modifyOpenSceneAtPath,
   modifyOpenScenesAndJSXElements,
   modifyParseSuccessWithSimple,
-  openFileTab,
   OriginalFrame,
   ParseSuccessAndEditorChanges,
   PersistentModel,
@@ -468,6 +465,12 @@ import {
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { v4 as UUID } from 'uuid'
+import { arrayDeepEquality } from '../../../utils/deep-equality'
+import {
+  ElementInstanceMetadataKeepDeepEquality,
+  JSXMetadataKeepDeepEquality,
+} from '../store/store-deep-equality-instances'
+import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 
 export function clearSelection(): EditorAction {
   return {
@@ -3682,14 +3685,12 @@ export const UPDATE_FNS = {
       spyCollector.current.spyValues.scenes,
     )
 
-    const finalDomMetadata = keepDeepReferenceEqualityIfPossible(
+    const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality())(
       editor.domMetadataKILLME,
       action.elementMetadata,
-    )
-    const finalSpyMetadata = keepDeepReferenceEqualityIfPossible(
-      editor.spyMetadataKILLME,
-      spyResult,
-    )
+    ).value
+    const finalSpyMetadata = JSXMetadataKeepDeepEquality()(editor.spyMetadataKILLME, spyResult)
+      .value
 
     const stayedTheSame =
       editor.domMetadataKILLME === finalDomMetadata && editor.spyMetadataKILLME === finalSpyMetadata

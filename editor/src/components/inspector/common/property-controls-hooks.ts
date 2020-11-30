@@ -16,7 +16,6 @@ import {
 } from 'utopia-api'
 import {
   InspectorInfo,
-  useKeepReferenceEqualityIfPossible,
   InspectorPropsContext,
   useCallbackFactory,
   useInspectorContext,
@@ -33,6 +32,7 @@ import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
 } from './control-status'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]

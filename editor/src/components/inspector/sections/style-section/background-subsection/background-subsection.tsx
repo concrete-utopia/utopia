@@ -31,13 +31,13 @@ import {
   stylePropPathMappingFn,
   useInspectorInfo,
   useIsSubSectionVisible,
-  useKeepReferenceEqualityIfPossible,
 } from '../../../common/property-path-hooks'
 import { ConicGradientBackgroundLayer } from './conic-gradient-layer'
 import { LinearGradientBackgroundLayer } from './linear-gradient-layer'
 import { RadialGradientBackgroundLayer } from './radial-gradient-layer'
 import { SolidBackgroundLayer } from './solid-background-layer'
 import { URLBackgroundLayer } from './url-background-layer'
+import { useKeepReferenceEqualityIfPossible } from '../../../../../utils/react-performance'
 
 function insertBackgroundLayer(
   cssBackgroundLayers: CSSBackgroundLayers,
