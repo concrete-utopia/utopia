@@ -121,6 +121,7 @@ export const NavigatorComponentWrapper = betterReactMemo('NavigatorComponent', (
             selectedView,
             editorSliceRef.current.metadata,
             editorSliceRef.current.componentsByName,
+            isFeatureEnabled('Component Navigator Nearest Ancestor'),
           )
 
     return (

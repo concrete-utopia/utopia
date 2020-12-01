@@ -203,11 +203,12 @@ export function renderCoreElement(
       )
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
-      const expressionEvaluated = jsxAttributeToValue(inScope, requireResult)(element.condition)
+      const expressionEvaluated = jsxAttributeToValue(inScope, requireResult, element.condition)
       const trueOrFalseResult = jsxAttributeToValue(
         inScope,
         requireResult,
-      )(expressionEvaluated ? element.whenTrue : element.whenFalse)
+        expressionEvaluated ? element.whenTrue : element.whenFalse,
+      )
       return renderComponentUsingJsxFactoryFunction(
         inScope,
         jsxFactoryFunctionName,

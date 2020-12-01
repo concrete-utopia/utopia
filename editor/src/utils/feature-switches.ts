@@ -46,7 +46,6 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Component Second Canvas': false,
   'Re-parse Project Button': false,
   'iFrame Code Editor': false,
-  'Component Children Highlights': true,
   'Code Outline Navigator': false,
 }
 
