@@ -16,13 +16,12 @@ puppeteerStart = async function () {
   }
   await browser.close()
   let traceData = fs.readFileSync('trace.json').toString()
-  // console.log(traceData);
-  if (traceData.includes(',"ticount":')) {
-    console.info('ticount support is enabled!')
-  } else {
-    console.info('ticount support is disabled!')
-    process.exitCode = 1
-  }
+  const traceJson = JSON.parse(traceData)
+  const performanceMeasureEvents = traceJson.traceEvents.filter((e) => e.name === 'SLOW_THING')
+  const beginEvent = performanceMeasureEvents.find((e) => e.ph === 'b')
+  const endEvent = performanceMeasureEvents.find((e) => e.ph === 'e')
+  const time = endEvent.ts - beginEvent.ts
+  console.info('time!', time)
 }
 
 puppeteerStart()
