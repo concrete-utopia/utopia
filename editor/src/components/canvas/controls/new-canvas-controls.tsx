@@ -11,6 +11,7 @@ import {
   getMetadata,
   EditorStore,
   getOpenUIJSFileKey,
+  IsolatedComponent,
 } from '../../editor/store/editor-state'
 import {
   TemplatePath,
@@ -47,6 +48,7 @@ import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo } from '../../custom-code/code-file'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -223,6 +225,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     [setLocalSelectedViews, setLocalHighlightedViews],
   )
 
+  const isolatedComponent: IsolatedComponent | null = isFeatureEnabled('Component Isolation Mode')
+    ? props.editor.isolatedComponent
+    : null
+
   const selectionEnabled =
     props.editor.canvas.selectionControlsVisible &&
     !props.editor.keysPressed['z'] &&
@@ -346,7 +352,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 : null
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
-            isolatedComponent={props.editor.isolatedComponent}
+            isolatedComponent={isolatedComponent}
           />
         )
       }
@@ -363,7 +369,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             }
             canvasOffset={props.editor.canvas.realCanvasOffset /* maybe roundedCanvasOffset? */}
             scale={props.editor.canvas.scale}
-            isolatedComponent={props.editor.isolatedComponent}
+            isolatedComponent={isolatedComponent}
           />
         )
       }

@@ -1206,7 +1206,7 @@ export function deriveState(
       transientState: produceCanvasTransientState(
         editor,
         true,
-        isFeatureEnabled('Component Isolation Mode'),
+        isFeatureEnabled('Component Isolation Mode') || isFeatureEnabled('Component Second Canvas'),
       ),
     },
     elementWarnings: getElementWarnings(getMetadata(editor)),

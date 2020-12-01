@@ -7,24 +7,26 @@ export type FeatureName =
   | 'Invisible Element Controls'
   | 'Advanced Resize Box'
   | 'Component Isolation Mode'
+  | 'Component Children Highlights'
   | 'Component Navigator'
   | 'Component Navigator Component Title'
   | 'Component Navigator Nearest Ancestor'
+  | 'Component Second Canvas'
   | 'Re-parse Project Button'
   | 'iFrame Code Editor'
-  | 'Component Children Highlights'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Invisible Element Controls',
   'Advanced Resize Box',
+  'Component Children Highlights',
   'Component Isolation Mode',
   'Component Navigator',
   'Component Navigator Component Title',
   'Component Navigator Nearest Ancestor',
+  'Component Second Canvas',
   'Re-parse Project Button',
   'iFrame Code Editor',
-  'Component Children Highlights',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -32,13 +34,14 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Shows Overlay': false,
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
+  'Component Children Highlights': true,
   'Component Isolation Mode': true,
   'Component Navigator': true,
   'Component Navigator Component Title': true,
   'Component Navigator Nearest Ancestor': true,
+  'Component Second Canvas': false,
   'Re-parse Project Button': false,
   'iFrame Code Editor': false,
-  'Component Children Highlights': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

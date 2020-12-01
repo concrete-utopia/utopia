@@ -29,6 +29,7 @@ import { JSXMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
 import { uniqBy } from '../../../core/shared/array-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const SnappingThreshold = 5
 
@@ -100,6 +101,7 @@ export class SelectModeControlContainer extends React.Component<
 
   isolateComponent = (target: TemplatePath) => {
     if (
+      isFeatureEnabled('Component Isolation Mode') &&
       TP.isInstancePath(target) &&
       this.props.selectedViews.some((view) => TP.pathsEqual(target, view))
     ) {

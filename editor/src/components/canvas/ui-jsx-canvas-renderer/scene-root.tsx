@@ -39,6 +39,7 @@ import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
 import utils from '../../../utils/utils'
 import { PathForResizeContent } from '../../../core/model/scene-utils'
 import { fastForEach } from '../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -208,7 +209,7 @@ export const SceneRootRenderer = betterReactMemo(
 
     return (
       <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths, scenePath: scenePath }}>
-        {props.isIsolatedComponent ? (
+        {isFeatureEnabled('Component Isolation Mode') && props.isIsolatedComponent ? (
           <div
             style={{
               width: '300vw',

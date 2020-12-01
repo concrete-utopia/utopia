@@ -43,6 +43,7 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import { Size } from 'react-virtualized-auto-sizer'
 import { UtopiaJSXComponentsByName } from '../../core/model/project-file-utils'
+import { findMatchingComponent } from '../../core/model/experiment-utils'
 // There's some weirdness between the types and the results in the two module systems.
 // This is to effectively massage the result so that if it is loaded in the browser or in
 // node it should end up with the right thing.
@@ -75,68 +76,6 @@ export const getChildrenOfCollapsedViews = (
 }
 
 const NavigatorOverflowScrollId = 'navigator-overflow-scroll'
-
-function getMatchingComponentForInstancePath(
-  path: InstancePath,
-  metadata: JSXMetadata,
-  componentsByName: UtopiaJSXComponentsByName,
-): UtopiaJSXComponent | null {
-  const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
-  if (elementMetadata != null) {
-    const element = elementMetadata.element
-    if (isRight(element) && isJSXElement(element.value)) {
-      const elementName = getJSXElementNameAsString(element.value.name)
-      return componentsByName[elementName] ?? null
-    }
-  }
-
-  return null
-}
-
-function getMatchingComponentForScenePath(
-  path: ScenePath,
-  metadata: JSXMetadata,
-  componentsByName: UtopiaJSXComponentsByName,
-): UtopiaJSXComponent | null {
-  const sceneMetadata = MetadataUtils.findSceneByTemplatePath(metadata.components, path)
-  const componentName = sceneMetadata?.component
-  const maybeMatchingComponent = componentName == null ? null : componentsByName[componentName]
-  return maybeMatchingComponent
-}
-
-function findNearestComponentAncestor(
-  path: TemplatePath,
-  metadata: JSXMetadata,
-  componentsByName: UtopiaJSXComponentsByName,
-): UtopiaJSXComponent | null {
-  if (TP.isInstancePath(path)) {
-    const maybeMatchingComponent = getMatchingComponentForInstancePath(
-      path,
-      metadata,
-      componentsByName,
-    )
-    return (
-      maybeMatchingComponent ??
-      findNearestComponentAncestor(TP.parentPath(path), metadata, componentsByName)
-    )
-  } else {
-    return getMatchingComponentForScenePath(path, metadata, componentsByName)
-  }
-}
-
-function findMatchingComponent(
-  path: TemplatePath,
-  metadata: JSXMetadata,
-  componentsByName: UtopiaJSXComponentsByName,
-): UtopiaJSXComponent | null {
-  if (isFeatureEnabled('Component Navigator Nearest Ancestor')) {
-    return findNearestComponentAncestor(path, metadata, componentsByName)
-  } else if (TP.isInstancePath(path)) {
-    return getMatchingComponentForInstancePath(path, metadata, componentsByName)
-  } else {
-    return getMatchingComponentForScenePath(path, metadata, componentsByName)
-  }
-}
 
 export const NavigatorComponentWrapper = betterReactMemo('NavigatorComponent', () => {
   // get selected views
@@ -181,6 +120,7 @@ export const NavigatorComponentWrapper = betterReactMemo('NavigatorComponent', (
             selectedView,
             editorSliceRef.current.metadata,
             editorSliceRef.current.componentsByName,
+            isFeatureEnabled('Component Navigator Nearest Ancestor'),
           )
 
     return (
