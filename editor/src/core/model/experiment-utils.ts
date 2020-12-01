@@ -13,6 +13,7 @@ import { MetadataUtils } from './element-metadata-utils'
 import { UtopiaJSXComponentsByName } from './project-file-utils'
 
 interface MatchingComponentResult {
+  path: TemplatePath
   element: JSXElement
   component: UtopiaJSXComponent
 }
@@ -31,6 +32,7 @@ export function getMatchingComponentForInstancePath(
       return component == null
         ? null
         : {
+            path: path,
             element: element.value,
             component: component,
           }
@@ -55,6 +57,7 @@ export function getMatchingComponentForScenePath(
   return maybeMatchingComponent == null || maybeMatchingRootElement == null
     ? null
     : {
+        path: path,
         element: maybeMatchingRootElement,
         component: maybeMatchingComponent,
       }

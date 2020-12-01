@@ -1753,16 +1753,29 @@ export const UPDATE_FNS = {
           componentsByName,
         )
         if (nearestComponentResult != null) {
-          const { element, component: componentToIsolate } = nearestComponentResult
+          const { element, component: componentToIsolate, path } = nearestComponentResult
+
           const elementName = componentToIsolate.name
           const components = getOpenUtopiaJSXComponentsFromState(editor)
           const storyBoardPath = getStoryboardTemplatePath(components)
           if (elementName !== newIsolatedComponent?.componentName && storyBoardPath != null) {
+            const instanceFrame = MetadataUtils.getFrameInCanvasCoords(
+              path,
+              editor.jsxMetadataKILLME,
+            )
+            const normalisedInstanceFrame =
+              instanceFrame == null
+                ? {
+                    left: 0,
+                    top: 0,
+                    width: 375,
+                    height: 812,
+                  }
+                : canvasFrameToNormalisedFrame(instanceFrame)
+
             const normalisedFrame: NormalisedFrame = {
-              left: 430,
-              top: 0,
-              width: 375,
-              height: 812,
+              ...normalisedInstanceFrame,
+              left: normalisedInstanceFrame.left + 430,
             }
 
             const rootElementUIDProp = isJSXElement(componentToIsolate.rootElement)
