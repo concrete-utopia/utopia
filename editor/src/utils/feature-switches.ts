@@ -35,11 +35,11 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
   'Component Children Highlights': true,
-  'Component Isolation Mode': true,
+  'Component Isolation Mode': false,
   'Component Navigator': true,
   'Component Navigator Component Title': true,
   'Component Navigator Nearest Ancestor': true,
-  'Component Second Canvas': false,
+  'Component Second Canvas': true,
   'Re-parse Project Button': false,
   'iFrame Code Editor': false,
 }
