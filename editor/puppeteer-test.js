@@ -22,6 +22,7 @@ puppeteerStart = async function () {
   const endEvent = performanceMeasureEvents.find((e) => e.ph === 'e')
   const time = endEvent.ts - beginEvent.ts
   console.info('time!', time)
+  console.info(`::set-output name=perf-result::${time}ms`)
 }
 
 puppeteerStart()

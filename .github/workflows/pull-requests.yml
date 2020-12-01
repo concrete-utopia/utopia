@@ -113,7 +113,14 @@ jobs:
         uses: cachix/install-nix-action@v12
         with:
           nix_path: nixpkgs=channel:nixos-20.09
-      - name: Build Editor
+      - name: Run Performance Test
+        id: run-performance-test
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd editor; npm install --unsafe-perm; node puppeteer-test.js"
+      - name: Notify slack
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.BUILD_NOTIFIER_SLACK_BOT_TOKEN }}
+        uses: pullreminders/slack-action@master
+        with:
+          args: '{\"channel\":\"CBRHFJ9JQ\",\"text\":\"Performance measurement: ${{ steps.run-performance-test.outputs.perf-result }}\"}'
