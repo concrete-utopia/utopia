@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Parcel Sandbox</title>
+    <meta charset="UTF-8" />
+  </head>
+
+  <body>
+    <h1>Hello performance testing!</h1>
+
+    <div onclick="doSlowThing()">Click me for expensive computation</div>
+
+    <script>
+      function slowdown(seconds = 0.5) {
+        const start = new Date().getTime()
+        let end = start
+        while (end - start < seconds * 1000) {
+          end = new Date().getTime()
+        }
+      }
+
+      function doSlowThing() {
+        console.log('hi!')
+        performance.mark('SLOW_START')
+        slowdown(1)
+        performance.mark('SLOW_END')
+        performance.measure('SLOW_THING', 'SLOW_START', 'SLOW_END')
+        console.log('slow thing done!')
+      }
+    </script>
+  </body>
+</html>
