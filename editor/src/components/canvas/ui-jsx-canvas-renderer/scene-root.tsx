@@ -3,7 +3,7 @@ import { LayoutSystem, View } from 'utopia-api'
 import { useContextSelector } from 'use-context-selector'
 import * as fastDeepEquals from 'fast-deep-equal'
 import { getUtopiaID, getValidTemplatePaths } from '../../../core/model/element-template-utils'
-import { left } from '../../../core/shared/either'
+import { left, right } from '../../../core/shared/either'
 import {
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
@@ -55,6 +55,7 @@ function useRunSpy(
   templatePath: InstancePath,
   componentName: string | null,
   props: SceneProps,
+  jsx: JSXElement,
 ): void {
   const shouldIncludeCanvasRootInTheSpy = useContextSelector(
     RerenderUtopiaContext,
@@ -76,9 +77,9 @@ function useRunSpy(
   }
   if (shouldIncludeCanvasRootInTheSpy) {
     metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
-      element: left('Scene'),
+      element: right(jsx),
       templatePath: templatePath,
-      props: {},
+      props: props.props,
       globalFrame: null,
       localFrame: null,
       children: [],
@@ -184,7 +185,7 @@ export const SceneRootRenderer = betterReactMemo(
 
     const childrenElements = props.sceneElement.children.map(createChildrenElement)
 
-    useRunSpy(scenePath, templatePath, topLevelElementName, sceneProps)
+    useRunSpy(scenePath, templatePath, topLevelElementName, sceneProps, props.sceneElement)
 
     const rootElement =
       sceneProps.component == null
