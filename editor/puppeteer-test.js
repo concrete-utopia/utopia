@@ -20,7 +20,7 @@ puppeteerStart = async function () {
   const performanceMeasureEvents = traceJson.traceEvents.filter((e) => e.name === 'SLOW_THING')
   const beginEvent = performanceMeasureEvents.find((e) => e.ph === 'b')
   const endEvent = performanceMeasureEvents.find((e) => e.ph === 'e')
-  const time = endEvent.ts - beginEvent.ts
+  const time = (endEvent.ts - beginEvent.ts) / 1000
   console.info('time!', time)
   console.info(`::set-output name=perf-result::${time}ms`)
 }
