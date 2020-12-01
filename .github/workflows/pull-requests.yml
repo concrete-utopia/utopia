@@ -118,9 +118,11 @@ jobs:
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd editor; npm install --unsafe-perm; node puppeteer-test.js"
-      - name: Notify slack
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.BUILD_NOTIFIER_SLACK_BOT_TOKEN }}
-        uses: pullreminders/slack-action@master
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v1
         with:
-          args: '{\"channel\":\"CBRHFJ9JQ\",\"text\":\"Performance measurement: ${{ steps.run-performance-test.outputs.perf-result }}\"}'
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            These are the results of the :racing_car: **SPEED TEST**
+
+            ${{ steps.run-performance-test.outputs.perf-result }}
