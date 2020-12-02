@@ -13,9 +13,16 @@ export function useTriggerScrollPerformanceTest(): () => void {
   const trigger = React.useCallback(async () => {
     let framesPassed = 0
     async function step() {
-      framesPassed++
+      performance.mark(`scroll_step_${framesPassed}`)
       await dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -5, y: -1 }))])
         .entireUpdateFinished
+      performance.mark(`scroll_dispatch_finished_${framesPassed}`)
+      performance.measure(
+        `scroll_frame_${framesPassed}`,
+        `scroll_step_${framesPassed}`,
+        `scroll_dispatch_finished_${framesPassed}`,
+      )
+      framesPassed++
       if (framesPassed < 100) {
         requestAnimationFrame(step)
       }
