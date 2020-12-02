@@ -39,7 +39,7 @@
     "@types/styled-components": "4.1.10",
     "@types/url-join": "4.0.0",
     "patch-package": "6.2.0",
-    "typescript": "4.0.2"
+    "typescript": "4.0.5"
   },
   "scripts": {
     "start": "BROWSER=none PORT=3000 WDS_SOCKET_PORT=3000 REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` react-scripts start",

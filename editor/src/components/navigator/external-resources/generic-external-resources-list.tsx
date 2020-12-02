@@ -15,7 +15,7 @@ import {
   useExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { clearSelection, togglePanel } from '../../editor/actions/actions'
+import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
 import { GridRowProps } from '../../inspector/widgets/grid-row'
 import { GenericExternalResourcesInput } from './generic-external-resources-input'
@@ -66,7 +66,7 @@ export const GenericExternalResourcesList = betterReactMemo('GenericExternalReso
       minimised: store.editor.genericExternalResources.minimised,
       focusedPanel: store.editor.focusedPanel,
     }
-  })
+  }, 'GenericExternalResourcesList')
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([togglePanel('genericExternalResources')], 'leftpane')

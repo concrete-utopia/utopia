@@ -45,6 +45,7 @@ import {
   UtopiaJSXComponent,
   ElementInstanceMetadata,
   JSXAttributeValue,
+  JSXMetadata,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -65,22 +66,22 @@ import {
   jsxSimpleAttributeToValue,
 } from '../../core/shared/jsx-attributes'
 import {
-  CanvasMetadata,
   Imports,
   InstancePath,
   isParseFailure,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   RevisionsState,
   TemplatePath,
   importAlias,
   PropertyPath,
+  foldParsedTextFile,
+  textFile,
+  textFileContents,
 } from '../../core/shared/project-file-types'
 import {
   getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
-  uiJsFile,
-  updateCanvasMetadataParseResult,
 } from '../../core/model/project-file-utils'
 import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
 import { defaultProject } from '../../sample-projects/sample-project-utils'
@@ -114,7 +115,6 @@ import {
   getOpenUtopiaJSXComponentsFromState,
   insertElementAtPath,
   modifyOpenParseSuccess,
-  openFileTab,
   OriginalCanvasAndLocalFrame,
   PersistentModel,
   removeElementAtPath,
@@ -184,10 +184,11 @@ import {
 } from '../inspector/common/css-utils'
 import { immutablyUpdateArrayIndex } from '../../core/shared/array-utils'
 import { EditorDispatch } from '../editor/action-types'
+import { openFileTab } from '../editor/store/editor-tabs'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: Array<ComponentMetadata>,
+  componentMetadata: JSXMetadata,
 ): Array<OriginalCanvasAndLocalFrame> {
   let originalFrames: Array<OriginalCanvasAndLocalFrame> = []
   function includeChildren(view: TemplatePath): Array<TemplatePath> {
@@ -239,7 +240,7 @@ export function getOriginalFrames(
 
 export function getOriginalCanvasFrames(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: Array<ComponentMetadata>,
+  componentMetadata: JSXMetadata,
 ): Array<CanvasFrameAndTarget> {
   const originalFrames: Array<CanvasFrameAndTarget> = []
   function includeChildren(view: TemplatePath): Array<TemplatePath> {
@@ -365,7 +366,7 @@ export function canvasFrameToNormalisedFrame(frame: CanvasRectangle): Normalised
 
 export function updateFramesOfScenesAndComponents(
   components: Array<UtopiaJSXComponent>,
-  metadata: Array<ComponentMetadata>,
+  metadata: JSXMetadata,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
   areWeInTemporaryDragState: boolean,
@@ -511,22 +512,18 @@ export function updateFramesOfScenesAndComponents(
     } else {
       // Realign to aim at the static version, not the dynamic one.
       const originalTarget = target
-      const staticTarget = MetadataUtils.dynamicPathToStaticPath(metadata, target)
+      const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
       if (staticTarget == null) {
         return
       }
 
-      const element = findJSXElementAtPath(staticTarget, workingComponentsResult, metadata)
+      const element = findJSXElementAtPath(staticTarget, workingComponentsResult)
       if (element == null) {
         throw new Error(`Unexpected result when looking for element: ${element}`)
       }
 
       const staticParentPath = TP.parentPath(staticTarget)
-      const parentElement = findJSXElementAtPath(
-        staticParentPath,
-        workingComponentsResult,
-        metadata,
-      )
+      const parentElement = findJSXElementAtPath(staticParentPath, workingComponentsResult)
 
       const isFlexContainer =
         frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
@@ -570,7 +567,6 @@ export function updateFramesOfScenesAndComponents(
               }
               workingComponentsResult = reorderComponent(
                 workingComponentsResult,
-                metadata,
                 originalTarget,
                 frameAndTarget.newIndex,
               )
@@ -868,7 +864,6 @@ export function updateFramesOfScenesAndComponents(
             }
             workingComponentsResult = reorderComponent(
               workingComponentsResult,
-              metadata,
               originalTarget,
               frameAndTarget.newIndex,
             )
@@ -1177,7 +1172,7 @@ export const SnappingThreshold = 5
 
 export function collectGuidelines(
   imports: Imports,
-  metadata: Array<ComponentMetadata>,
+  metadata: JSXMetadata,
   selectedViews: Array<TemplatePath>,
   scale: number,
   draggedPoint: CanvasPoint | null,
@@ -1199,7 +1194,7 @@ export function collectGuidelines(
         return
       }
 
-      const instance = MetadataUtils.getElementByInstancePathMaybe(metadata, selectedView)
+      const instance = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, selectedView)
       if (instance != null && MetadataUtils.isImg(instance) && instance.localFrame != null) {
         const frame = instance.localFrame
         const imageSize = getImageSizeFromMetadata(instance)
@@ -1602,11 +1597,7 @@ export function produceResizeCanvasTransientState(
     // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
     const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
     const openComponents = preventAnimations
-      ? preventAnimationsOnTargets(
-          untouchedOpenComponents,
-          editorState.jsxMetadataKILLME,
-          elementsToTarget,
-        )
+      ? preventAnimationsOnTargets(untouchedOpenComponents, elementsToTarget)
       : untouchedOpenComponents
 
     const componentsIncludingFakeUtopiaScene = openComponents
@@ -1706,11 +1697,7 @@ export function produceResizeSingleSelectCanvasTransientState(
   // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
   const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
   const openComponents = preventAnimations
-    ? preventAnimationsOnTargets(
-        untouchedOpenComponents,
-        editorState.jsxMetadataKILLME,
-        elementsToTarget,
-      )
+    ? preventAnimationsOnTargets(untouchedOpenComponents, elementsToTarget)
     : untouchedOpenComponents
 
   const componentsIncludingFakeUtopiaScene = openComponents
@@ -1763,7 +1750,7 @@ export function produceCanvasTransientState(
   if (openUIFile == null) {
     return noFileTransientCanvasState()
   } else {
-    return foldEither(
+    return foldParsedTextFile(
       (_) => {
         return noFileTransientCanvasState()
       },
@@ -1872,7 +1859,10 @@ export function produceCanvasTransientState(
             throw new Error(`Unhandled editor mode ${JSON.stringify(editorState.mode)}`)
         }
       },
-      openUIFile.fileContents,
+      (_) => {
+        return noFileTransientCanvasState()
+      },
+      openUIFile.fileContents.parsed,
     )
   }
 }
@@ -1890,7 +1880,7 @@ export function createDuplicationNewUIDsFromEditorState(
 
 export function createDuplicationNewUIDs(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
   rootComponents: Array<UtopiaJSXComponent>,
 ): Array<DuplicateNewUID> {
   const targetViews = determineElementsToOperateOnForDragging(
@@ -2012,7 +2002,7 @@ export function getReparentTarget(
 export interface MoveTemplateResult {
   utopiaComponentsIncludingScenes: Array<UtopiaJSXComponent>
   newPath: TemplatePath | null
-  metadata: Array<ComponentMetadata>
+  metadata: JSXMetadata
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
   reparentTargetPositions: Array<ReparentTargetIndicatorPosition>
@@ -2038,7 +2028,7 @@ export function moveTemplate(
   newParentPath: TemplatePath | null,
   parentFrame: CanvasRectangle | null,
   utopiaComponentsIncludingScenes: Array<UtopiaJSXComponent>,
-  componentMetadata: Array<ComponentMetadata>,
+  componentMetadata: JSXMetadata,
   selectedViews: Array<TemplatePath>,
   highlightedViews: Array<TemplatePath>,
   newParentLayoutSystem: LayoutSystem | null,
@@ -2110,25 +2100,20 @@ export function moveTemplate(
         newParentLayoutSystem,
       )
 
-      const jsxElement = findElementAtPath(
-        target,
-        withLayoutUpdatedForNewContext,
-        withMetadataUpdatedForNewContext,
-      )
+      const jsxElement = findElementAtPath(target, withLayoutUpdatedForNewContext)
       if (jsxElement == null) {
         return noChanges()
       } else {
         let updatedUtopiaComponents: Array<UtopiaJSXComponent> = utopiaComponentsIncludingScenes
         let reparentTargetPositions: Array<ReparentTargetIndicatorPosition> = []
         let newPath: TemplatePath | null = null
-        let updatedComponentMetadata: Array<ComponentMetadata> = withMetadataUpdatedForNewContext
+        let updatedComponentMetadata: JSXMetadata = withMetadataUpdatedForNewContext
 
         flexContextChanged = flexContextChanged || didSwitch
 
         const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
           target,
           withLayoutUpdatedForNewContext,
-          updatedComponentMetadata,
         )
 
         updatedUtopiaComponents = insertElementAtPath(
@@ -2136,7 +2121,6 @@ export function moveTemplate(
           jsxElement,
           withTargetRemoved,
           indexPosition,
-          updatedComponentMetadata,
         )
         if (newParentPath == null) {
           newIndex = updatedUtopiaComponents.findIndex(
@@ -2146,11 +2130,7 @@ export function moveTemplate(
             throw new Error('Invalid root element index.')
           }
         } else {
-          const parent = findElementAtPath(
-            newParentPath,
-            updatedUtopiaComponents,
-            updatedComponentMetadata,
-          )
+          const parent = findElementAtPath(newParentPath, updatedUtopiaComponents)
           if (parent == null || !isJSXElement(parent)) {
             throw new Error(`Couldn't find parent ${JSON.stringify(newParentPath)}`)
           } else {
@@ -2166,7 +2146,7 @@ export function moveTemplate(
 
         // Need to make these changes ahead of updating the frame.
         const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
-          updatedComponentMetadata,
+          updatedComponentMetadata.elements,
           target,
         )
 
@@ -2183,19 +2163,10 @@ export function moveTemplate(
             indexPosition,
           )
 
-          updatedComponentMetadata = MetadataUtils.transformAllMetadata(
+          updatedComponentMetadata = MetadataUtils.transformAllPathsInMetadata(
             updatedComponentMetadata,
-            (metadata) => {
-              const updatedPath = TP.replaceOrDefault(
-                metadata.templatePath,
-                target,
-                newInstancePath,
-              )
-              return {
-                ...metadata,
-                templatePath: updatedPath,
-              }
-            },
+            target,
+            newInstancePath,
           )
         }
 
@@ -2253,14 +2224,13 @@ export function moveTemplate(
 
 function preventAnimationsOnTargets(
   components: UtopiaJSXComponent[],
-  metadata: ComponentMetadata[],
   targets: TemplatePath[],
 ): UtopiaJSXComponent[] {
   let workingComponentsResult = [...components]
   Utils.fastForEach(targets, (target) => {
     const staticPath = TP.isScenePath(target)
       ? createSceneTemplatePath(target)
-      : MetadataUtils.dynamicPathToStaticPath(metadata, target)
+      : MetadataUtils.dynamicPathToStaticPath(target)
     if (staticPath != null) {
       workingComponentsResult = transformJSXComponentAtPath(
         workingComponentsResult,
@@ -2299,7 +2269,7 @@ function produceMoveTransientCanvasState(
   applyChanges: boolean,
 ): TransientCanvasState {
   let selectedViews: Array<TemplatePath> = dragState.draggedElements
-  let metadata: Array<ComponentMetadata> = editorState.jsxMetadataKILLME
+  let metadata: JSXMetadata = editorState.jsxMetadataKILLME
   let originalFrames: Array<CanvasFrameAndTarget> = dragState.originalFrames
   let highlightedViews: Array<TemplatePath> = editorState.highlightedViews
 
@@ -2313,11 +2283,7 @@ function produceMoveTransientCanvasState(
   // We don't want animations included in the transient state, except for the case where we're about to apply that to the final state
   const untouchedOpenComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
   let utopiaComponentsIncludingScenes = preventAnimations
-    ? preventAnimationsOnTargets(
-        untouchedOpenComponents,
-        editorState.jsxMetadataKILLME,
-        elementsToTarget,
-      )
+    ? preventAnimationsOnTargets(untouchedOpenComponents, elementsToTarget)
     : untouchedOpenComponents
 
   if (dragState.reparent || dragState.localReparent || dragState.reparentMove) {
@@ -2432,7 +2398,7 @@ export function getCanvasOffset(
   previousOffset: CanvasPoint,
   previousScale: number,
   scale: number,
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
   selectedViews: TemplatePath[],
   focusPoint: CanvasPoint | null,
   isFirstLoad: boolean,
@@ -2513,7 +2479,7 @@ export function focusPointForZoom(
   selectedViews: Array<TemplatePath>,
   scale: number,
   previousScale: number,
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
   canvasOffset: CanvasPoint,
   canvasDivSize: ClientRect,
 ): CanvasPoint {
@@ -2545,7 +2511,7 @@ export function focusPointForZoom(
 export interface DuplicateResult {
   utopiaComponents: Array<UtopiaJSXComponent>
   selectedViews: Array<TemplatePath>
-  metadata: Array<ComponentMetadata>
+  metadata: JSXMetadata
   originalFrames: Array<CanvasFrameAndTarget> | null
 }
 
@@ -2558,7 +2524,7 @@ export function duplicate(
   if (uiFile == null) {
     return null
   } else {
-    return foldEither(
+    return foldParsedTextFile(
       (_) => null,
       (parseSuccess) => {
         let metadata = editor.jsxMetadataKILLME
@@ -2581,7 +2547,7 @@ export function duplicate(
             const scenepath = createSceneTemplatePath(path)
             jsxElement = findJSXElementChildAtPath(utopiaComponents, scenepath)
           } else {
-            jsxElement = findElementAtPath(path, utopiaComponents, metadata)
+            jsxElement = findElementAtPath(path, utopiaComponents)
           }
           let uid: string
           if (jsxElement == null) {
@@ -2643,7 +2609,6 @@ export function duplicate(
                 newElement,
                 utopiaComponents,
                 null,
-                metadata,
               )
             }
 
@@ -2671,21 +2636,21 @@ export function duplicate(
           originalFrames: newOriginalFrames,
         }
       },
-      uiFile.fileContents,
+      (_) => null,
+      uiFile.fileContents.parsed,
     )
   }
 }
 
 export function reorderComponent(
   components: Array<UtopiaJSXComponent>,
-  componentMetadata: Array<ComponentMetadata>,
   target: InstancePath,
   newIndex: number,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
   const parentPath = TP.parentPath(target)
-  const jsxElement = findElementAtPath(target, workingComponents, componentMetadata)
+  const jsxElement = findElementAtPath(target, workingComponents)
 
   if (jsxElement != null) {
     const newPosition: IndexPosition = {
@@ -2693,15 +2658,9 @@ export function reorderComponent(
       index: newIndex,
     }
 
-    workingComponents = removeElementAtPath(target, workingComponents, componentMetadata)
+    workingComponents = removeElementAtPath(target, workingComponents)
 
-    workingComponents = insertElementAtPath(
-      parentPath,
-      jsxElement,
-      workingComponents,
-      newPosition,
-      componentMetadata,
-    )
+    workingComponents = insertElementAtPath(parentPath, jsxElement, workingComponents, newPosition)
   }
 
   return workingComponents
@@ -2709,7 +2668,7 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse('/src/app.js', appUiJsFile) as ParseResult
+  const parsedFile = lintAndParse('/src/app.js', appUiJsFile) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')
@@ -2720,7 +2679,11 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
     projectContents: addFileToProjectContents(
       baseModel.projectContents,
       '/src/app.js',
-      uiJsFile(parsedFile, null, RevisionsState.BothMatch, Date.now()),
+      textFile(
+        textFileContents(appUiJsFile, parsedFile, RevisionsState.BothMatch),
+        null,
+        Date.now(),
+      ),
     ),
     selectedFile: openFileTab('/src/app.js'),
   }
@@ -2734,24 +2697,18 @@ export function cullSpyCollector(
   // Collate all the valid paths.
   let elementPaths: Set<string> = Utils.emptySet()
   let scenePaths: Set<string> = Utils.emptySet()
-  fastForEach(domMetadata, (rootMetadata) => {
-    MetadataUtils.walkElementMetadata(
-      rootMetadata,
-      null,
-      (metadata: ElementInstanceMetadata, parentMetadata: ElementInstanceMetadata | null) => {
-        let workingPath: TemplatePath | null = metadata.templatePath
-        while (workingPath != null) {
-          const pathAsString = TP.toString(workingPath)
-          if (TP.isScenePath(workingPath)) {
-            elementPaths.add(TP.toString(TP.instancePath([], workingPath.sceneElementPath)))
-            scenePaths.add(pathAsString)
-          } else {
-            elementPaths.add(pathAsString)
-          }
-          workingPath = TP.parentPath(workingPath)
-        }
-      },
-    )
+  fastForEach(domMetadata, (element) => {
+    let workingPath: TemplatePath | null = element.templatePath
+    while (workingPath != null) {
+      const pathAsString = TP.toString(workingPath)
+      if (TP.isScenePath(workingPath)) {
+        elementPaths.add(TP.toString(TP.instancePath([], workingPath.sceneElementPath)))
+        scenePaths.add(pathAsString)
+      } else {
+        elementPaths.add(pathAsString)
+      }
+      workingPath = TP.parentPath(workingPath)
+    }
   })
   // Eliminate the element paths which are invalid.
   fastForEach(Object.keys(spyCollector.current.spyValues.metadata), (elementPath) => {

@@ -10,7 +10,7 @@ import { ProjectContents, TemplatePath } from '../core/shared/project-file-types
 import Utils from '../utils/utils'
 import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/shared/math-utils'
 import { EditorAction } from './editor/action-types'
-import { insertJSXElement } from './editor/actions/actions'
+import { insertJSXElement } from './editor/actions/action-creators'
 import { forceNotNull } from '../core/shared/optional-utils'
 
 export function getImageSrc(
@@ -114,9 +114,6 @@ export function createInsertImageAction(
         'data-uid': jsxAttributeValue(newUID),
       },
       [],
-      {
-        aspectRatioLocked: true,
-      },
     )
     return insertJSXElement(imageElement, parentPath, {})
   } else {

@@ -7,14 +7,8 @@ import {
 import { checkProjectOwnership } from '../../common/server'
 import Utils from '../../utils/utils'
 import { EditorDispatch } from './action-types'
-import {
-  load,
-  loadSampleProject,
-  newProject,
-  setProjectID,
-  showToast,
-  setSaveError,
-} from './actions/actions'
+import { load, loadSampleProject, newProject } from './actions/actions'
+import { setProjectID, showToast, setSaveError } from './actions/action-creators'
 import {
   createNewProjectID,
   loadProject,
@@ -25,10 +19,8 @@ import {
 } from './server'
 import {
   createNewProjectName,
-  EditorTab,
   PersistentModel,
   persistentModelForProjectContents,
-  releaseNotesTab,
 } from './store/editor-state'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { arrayContains, projectURLForProject } from '../../core/shared/utils'

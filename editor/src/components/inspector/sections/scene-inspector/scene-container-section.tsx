@@ -26,11 +26,10 @@ import { jsxAttributeValue, isJSXAttributeNotFound } from '../../../../core/shar
 import { useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isPercentPin } from 'utopia-api'
-import { unsetSceneProp, setSceneProp } from '../../../editor/actions/actions'
+import { unsetSceneProp, setSceneProp } from '../../../editor/actions/action-creators'
 import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
 import {
   PathForResizeContent,
-  isDynamicSceneChildWidthHeightPercentage,
   isSceneChildWidthHeightPercentage,
 } from '../../../../core/model/scene-utils'
 import { GridRow } from '../../widgets/grid-row'
@@ -179,37 +178,43 @@ function useSceneType(): InspectorInfo<boolean> {
   )
 }
 
-export function useIsSceneChildWidthHeightPercentage() {
+function useIsSceneChildWidthHeightPercentage() {
   const { selectedViews, metadata } = useEditorState((state) => {
     return {
       selectedViews: state.editor.selectedViews,
       metadata: state.editor.jsxMetadataKILLME,
     }
-  })
+  }, 'useIsSceneChildWidthHeightPercentage')
 
   const selectedScenePath = Utils.forceNotNull(
     'missing scene from scene section',
     selectedViews.find(TP.isScenePath),
   )
-  const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScenePath)
+  const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScenePath)
   if (scene != null) {
-    return isSceneChildWidthHeightPercentage(scene)
+    return isSceneChildWidthHeightPercentage(scene, metadata)
   } else {
     return false
   }
 }
 
 export const SceneContainerSections = betterReactMemo('SceneContainerSections', () => {
-  const { dispatch, metadata } = useEditorState((store) => ({
-    dispatch: store.dispatch,
-    metadata: store.editor.jsxMetadataKILLME,
-  }))
-  const selectedViews = useEditorState((store) => store.editor.selectedViews)
+  const { dispatch, metadata } = useEditorState(
+    (store) => ({
+      dispatch: store.dispatch,
+      metadata: store.editor.jsxMetadataKILLME,
+    }),
+    'SceneContainerSections',
+  )
+  const selectedViews = useEditorState(
+    (store) => store.editor.selectedViews,
+    'SceneContainerSections selectedViews',
+  )
   const selectedScene = Utils.forceNotNull(
     'Scene cannot be null in SceneContainerSection',
     React.useMemo(() => selectedViews.find(TP.isScenePath), [selectedViews]),
   )
-  const scene = MetadataUtils.findSceneByTemplatePath(metadata, selectedScene)
+  const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScene)
 
   const sceneResizesContentInfo = useSceneType()
   let controlStatus: ControlStatus = simpleControlStatus

@@ -14,7 +14,7 @@ export type GetOrUpdateFunctionCache = (
 
 let functionCache: { [uniqueID: string]: (...args: Array<any>) => any } = {}
 
-export function resetFunctionCache() {
+export function resetFunctionCache(): void {
   functionCache = {}
 }
 

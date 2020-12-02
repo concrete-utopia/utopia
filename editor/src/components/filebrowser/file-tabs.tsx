@@ -7,13 +7,8 @@ import { ErrorMessage } from '../../core/shared/error-messages'
 import Utils from '../../utils/utils'
 import { ProjectContents } from '../../core/shared/project-file-types'
 import { isModifiedFile } from '../../core/model/project-file-utils'
-import * as EditorActions from '../editor/actions/actions'
-import {
-  EditorTab,
-  getAllCodeEditorErrors,
-  getOpenEditorTab,
-  isOpenFileTab,
-} from '../editor/store/editor-state'
+import * as EditorActions from '../editor/actions/action-creators'
+import { getAllCodeEditorErrors, getOpenEditorTab } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { fileHasErrorMessages } from './filebrowser'
 import { getIconTypeForFileBrowserItem } from './fileitem'
@@ -22,6 +17,7 @@ import {
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../assets'
+import { EditorTab, isOpenFileTab } from '../editor/store/editor-tabs'
 
 function getKeyForEditorTab(editorTab: EditorTab): string {
   switch (editorTab.type) {
@@ -97,6 +93,7 @@ export const FileTabs = betterReactMemo('FileTabs', () => {
         projectContents: store.editor.projectContents,
       }
     },
+    'FileTabs',
   )
 
   const openFileTypes = useEditorState((store) => {
@@ -117,7 +114,7 @@ export const FileTabs = betterReactMemo('FileTabs', () => {
         return 'ui'
       }
     })
-  })
+  }, 'FileTabs openFileTypes')
 
   const onTabClose = React.useCallback(
     (editorTab: EditorTab) => {

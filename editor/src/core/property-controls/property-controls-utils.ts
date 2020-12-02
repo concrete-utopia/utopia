@@ -21,9 +21,15 @@ import {
   PossiblyUnversionedNpmDependency,
 } from '../shared/npm-dependency-types'
 import { getThirdPartyComponents } from '../third-party/third-party-components'
-import { getJSXElementNameAsString, isIntrinsicHTMLElement } from '../shared/element-template'
+import {
+  getJSXElementNameAsString,
+  isIntrinsicHTMLElement,
+  JSXMetadata,
+  UtopiaJSXComponent,
+} from '../shared/element-template'
 import {
   esCodeFile,
+  Imports,
   isEsCodeFile,
   NodeModules,
   ProjectContents,
@@ -345,7 +351,7 @@ export function getControlsForExternalDependencies(
   return propertyControlsInfo
 }
 
-export function getPropertyControlsForTarget(
+export function getPropertyControlsForTargetFromEditor(
   target: TemplatePath,
   editor: EditorState,
 ): PropertyControls | null {
@@ -353,21 +359,43 @@ export function getPropertyControlsForTarget(
   const imports = getOpenImportsFromState(editor)
   const openFilePath = getOpenUIJSFileKey(editor)
   const rootComponents = getOpenUtopiaJSXComponentsFromState(editor)
+  return getPropertyControlsForTarget(
+    target,
+    propertyControlsInfo,
+    imports,
+    openFilePath,
+    rootComponents,
+    editor.jsxMetadataKILLME,
+  )
+}
+
+export function getPropertyControlsForTarget(
+  target: TemplatePath,
+  propertyControlsInfo: PropertyControlsInfo,
+  openImports: Imports,
+  openFilePath: string | null,
+  rootComponents: UtopiaJSXComponent[],
+  jsxMetadataKILLME: JSXMetadata,
+): PropertyControls | null {
   const tagName = MetadataUtils.getJSXElementTagName(
     target,
     rootComponents,
-    editor.jsxMetadataKILLME,
+    jsxMetadataKILLME.components,
   )
   const importedName = MetadataUtils.getJSXElementBaseName(
     target,
     rootComponents,
-    editor.jsxMetadataKILLME,
+    jsxMetadataKILLME.components,
   )
-  const jsxName = MetadataUtils.getJSXElementName(target, rootComponents, editor.jsxMetadataKILLME)
+  const jsxName = MetadataUtils.getJSXElementName(
+    target,
+    rootComponents,
+    jsxMetadataKILLME.components,
+  )
   if (importedName != null && tagName != null) {
     // TODO default and star imports
-    let filename = Object.keys(imports).find((key) => {
-      return pluck(imports[key].importedFromWithin, 'name').includes(importedName)
+    let filename = Object.keys(openImports).find((key) => {
+      return pluck(openImports[key].importedFromWithin, 'name').includes(importedName)
     })
     if (filename == null && jsxName != null && isIntrinsicHTMLElement(jsxName)) {
       /**

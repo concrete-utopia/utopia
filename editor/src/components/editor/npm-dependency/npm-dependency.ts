@@ -2,7 +2,7 @@ import * as json5 from 'json5'
 import * as R from 'ramda'
 import { MapLike } from 'typescript'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
-import { sameCodeFile } from '../../../core/model/project-file-utils'
+import { sameTextFile } from '../../../core/model/project-file-utils'
 import {
   PossiblyUnversionedNpmDependency,
   PackageStatusMap,
@@ -13,12 +13,13 @@ import {
   resolvedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import {
-  isCodeFile,
+  isTextFile,
   Imports,
   ProjectContents,
   ProjectFile,
   NodeModules,
   esCodeFile,
+  ImportDetails,
 } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import {
@@ -36,6 +37,7 @@ import * as Semver from 'semver'
 import { ProjectContentTreeRoot } from '../../assets'
 import * as npa from 'npm-package-arg'
 import * as GitHost from 'hosted-git-info'
+import { importDefault, importStar } from '../../../core/es-modules/commonjs-interop'
 
 interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
@@ -296,12 +298,14 @@ export function dependenciesFromPackageJson(
   } else {
     if (
       cachedDependencies != null &&
-      sameCodeFile(packageJsonFile, cachedDependencies.packageJsonFile)
+      sameTextFile(packageJsonFile, cachedDependencies.packageJsonFile)
     ) {
       return cachedDependencies.npmDependencies
     } else {
-      if (isCodeFile(packageJsonFile)) {
-        const npmDependencies = dependenciesFromPackageJsonContents(packageJsonFile.fileContents)
+      if (isTextFile(packageJsonFile)) {
+        const npmDependencies = dependenciesFromPackageJsonContents(
+          packageJsonFile.fileContents.code,
+        )
         if (npmDependencies == null) {
           cachedDependencies = null
         } else {
@@ -351,11 +355,11 @@ export function immediatelyResolvableDependenciesWithEditorRequirements(
 export function usePackageDependencies(): Array<RequestedNpmDependency> {
   const packageJsonFile = useEditorState((store) => {
     return packageJsonFileFromProjectContents(store.editor.projectContents)
-  })
+  }, 'usePackageDependencies')
 
   return React.useMemo(() => {
-    if (isCodeFile(packageJsonFile)) {
-      return dependenciesFromPackageJsonContents(packageJsonFile.fileContents)
+    if (isTextFile(packageJsonFile)) {
+      return dependenciesFromPackageJsonContents(packageJsonFile.fileContents.code)
     } else {
       return []
     }
@@ -366,7 +370,7 @@ export function usePossiblyResolvedPackageDependencies(): Array<PossiblyUnversio
   const basePackageDependencies = usePackageDependencies()
   const files = useEditorState((store) => {
     return store.editor.nodeModules.files
-  })
+  }, 'usePossiblyResolvedPackageDependencies')
   return React.useMemo(() => {
     return resolvedDependencyVersions(basePackageDependencies, files)
   }, [basePackageDependencies, files])
@@ -402,6 +406,27 @@ export function updateDependenciesInEditorState(
   return updatePackageJsonInEditorState(editor, transformPackageJson)
 }
 
+export function importResultFromModule(
+  importDetails: ImportDetails,
+  requireResult: any,
+): MapLike<any> {
+  let result: MapLike<any> = {}
+
+  if (importDetails.importedWithName !== null) {
+    // import name from './place'
+    result[importDetails.importedWithName] = importDefault(requireResult)
+  }
+  if (importDetails.importedAs !== null) {
+    // import * as name from './place'
+    result[importDetails.importedAs] = importStar(requireResult)
+  }
+  Utils.fastForEach(importDetails.importedFromWithin, (fromWithin) => {
+    result[fromWithin.alias] = requireResult[fromWithin.name]
+  })
+
+  return result
+}
+
 export function importResultFromImports(
   importOrigin: string,
   imports: Imports,
@@ -409,20 +434,14 @@ export function importResultFromImports(
 ): MapLike<any> {
   let result: MapLike<any> = {}
   Utils.fastForEach(Object.keys(imports), (importSource) => {
-    const importContent = imports[importSource]
     const requireResult = requireFn(importOrigin, importSource)
     if (requireResult == null) {
       console.warn(`Could not find ${importSource} with a require call.`)
     } else {
-      if (importContent.importedWithName !== null) {
-        result[importContent.importedWithName] = requireResult.default
+      result = {
+        ...result,
+        ...importResultFromModule(imports[importSource], requireResult),
       }
-      if (importContent.importedAs !== null) {
-        result[importContent.importedAs] = requireResult
-      }
-      Utils.fastForEach(importContent.importedFromWithin, (fromWithin) => {
-        result[fromWithin.alias] = requireResult[fromWithin.name]
-      })
     }
   })
   return result

@@ -7,8 +7,8 @@ import * as TP from '../../core/shared/template-path'
 import {
   ArbitraryJSBlock,
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   isUtopiaJSXComponent,
-  MetadataWithoutChildren,
   TopLevelElement,
   UtopiaJSXComponent,
   ComponentMetadataWithoutRootElements,
@@ -45,7 +45,6 @@ import {
   EmptyScenePathForStoryboard,
 } from '../../core/model/scene-utils'
 import { EditorDispatch } from '../editor/action-types'
-import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { usePrevious } from '../editor/hook-utils'
 import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import { unimportCSSFile } from '../../core/shared/css-style-loader'
@@ -67,11 +66,13 @@ import {
   updateMutableUtopiaContextWithNewProps,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
+import { CanvasContainerID } from './canvas-types'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
 export type SpyValues = {
-  metadata: { [templatePath: string]: MetadataWithoutChildren }
+  metadata: ElementInstanceMetadataMap
   scenes: { [templatePath: string]: ComponentMetadataWithoutRootElements }
 }
 
@@ -160,10 +161,10 @@ export function pickUiJsxCanvasProps(
     let jsxFactoryFunction: string | null = null
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
 
-    if (uiFile != null && isParseSuccess(uiFile.fileContents)) {
-      const success = uiFile.fileContents.value
+    if (uiFile != null && isParseSuccess(uiFile.fileContents.parsed)) {
+      const success = uiFile.fileContents.parsed
       const transientCanvasState = derived.canvas.transientState
-      imports = uiFile.fileContents.value.imports
+      imports = uiFile.fileContents.parsed.imports
       topLevelElementsIncludingScenes = success.topLevelElements
       jsxFactoryFunction = success.jsxFactoryFunction
       combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
@@ -178,7 +179,7 @@ export function pickUiJsxCanvasProps(
     let linkTags = ''
     const indexHtml = getIndexHtmlFileFromEditorState(editor)
     if (isRight(indexHtml)) {
-      const parsedLinkTags = getGeneratedExternalLinkText(indexHtml.value.fileContents)
+      const parsedLinkTags = getGeneratedExternalLinkText(indexHtml.value.fileContents.code)
       if (isRight(parsedLinkTags)) {
         linkTags = parsedLinkTags.value
       }
@@ -196,7 +197,7 @@ export function pickUiJsxCanvasProps(
     return {
       offset: editor.canvas.roundedCanvasOffset,
       scale: editor.canvas.scale,
-      uiFileCode: uiFile.fileContents.value.code,
+      uiFileCode: uiFile.fileContents.code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
       hiddenInstances: hiddenInstances,
@@ -366,6 +367,7 @@ export const UiJsxCanvas = betterReactMemo(
               }}
             >
               <CanvasContainer
+                mountCount={props.mountCount}
                 walkDOM={walkDOM}
                 scale={scale}
                 offset={offset}
@@ -442,6 +444,7 @@ export interface CanvasContainerProps {
   onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void
   canvasRootElementTemplatePath: TemplatePath
   validRootPaths: Array<StaticInstancePath>
+  mountCount: number
 }
 
 const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasContainerProps>> = (
@@ -453,7 +456,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
   const { scale, offset } = props
   return (
     <div
-      id={'canvas-container'}
+      id={CanvasContainerID}
       key={'canvas-container'}
       ref={containerRef}
       style={{

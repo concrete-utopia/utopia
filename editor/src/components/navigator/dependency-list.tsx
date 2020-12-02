@@ -20,8 +20,8 @@ import { betterReactMemo } from '../../utils/react-performance'
 import Utils from '../../utils/utils'
 import { EditorPanel, setFocus } from '../common/actions'
 import { EditorDispatch } from '../editor/action-types'
-import * as EditorActions from '../editor/actions/actions'
-import { clearSelection, pushToast } from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
+import { clearSelection, pushToast } from '../editor/actions/action-creators'
 import {
   dependenciesFromPackageJson,
   findLatestVersion,
@@ -120,7 +120,7 @@ export const DependencyList = betterReactMemo('DependencyList', () => {
       packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
       packageStatus: store.editor.nodeModules.packageStatus,
     }
-  })
+  }, 'DependencyList')
 
   const dispatch = props.editorDispatch
 

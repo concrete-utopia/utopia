@@ -20,21 +20,21 @@ import { thumbnailURL } from '../../common/server'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isRight } from '../../core/shared/either'
-import { isUIJSFile, ProjectFile } from '../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
 import Utils from '../../utils/utils'
 import { CodeEditorTheme, CodeEditorThemeCollection } from '../code-editor/code-editor-themes'
 import { setFocus } from '../common/actions'
 import { EditorAction, EditorDispatch, LoginState } from '../editor/action-types'
-import * as EditorActions from '../editor/actions/actions'
-import { clearSelection, regenerateThumbnail, setProjectName } from '../editor/actions/actions'
-import { InsertMenu } from '../editor/insertmenu'
+import * as EditorActions from '../editor/actions/action-creators'
 import {
-  DerivedState,
-  EditorState,
-  getOpenFile,
-  userConfigurationTab,
-} from '../editor/store/editor-state'
+  clearSelection,
+  regenerateThumbnail,
+  setProjectName,
+} from '../editor/actions/action-creators'
+import { InsertMenu } from '../editor/insertmenu'
+import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-state'
+import { userConfigurationTab } from '../editor/store/editor-tabs'
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
@@ -243,9 +243,9 @@ function getExistingUIDs(projectFile: ProjectFile | null): Array<string> {
   if (projectFile == null) {
     return []
   } else {
-    if (isUIJSFile(projectFile)) {
-      if (isRight(projectFile.fileContents)) {
-        const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.value)
+    if (isTextFile(projectFile)) {
+      if (isParseSuccess(projectFile.fileContents.parsed)) {
+        const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
         return getAllUniqueUids(components)
       } else {
         return []
@@ -267,9 +267,15 @@ export const LeftPaneComponentId = 'left-pane'
 export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
 export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
-  const selectedTab = useEditorState((store) => store.editor.leftMenu.selectedTab)
-  const isValidToShowNavigator = useEditorState((store) => validToShowNavigator(store.editor))
-  const dispatch = useEditorState((store) => store.dispatch)
+  const selectedTab = useEditorState(
+    (store) => store.editor.leftMenu.selectedTab,
+    'LeftPaneComponent selectedTab',
+  )
+  const isValidToShowNavigator = useEditorState(
+    (store) => validToShowNavigator(store.editor),
+    'LeftPaneComponent isValidToShowNavigator',
+  )
+  const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
 
   return (
     <div
@@ -314,9 +320,8 @@ function validToShowNavigator(editorState: EditorState): boolean {
     return false
   } else {
     switch (open.type) {
-      case 'UI_JS_FILE':
+      case 'TEXT_FILE':
         return true
-      case 'CODE_FILE':
       case 'IMAGE_FILE':
       case 'DIRECTORY':
       case 'ASSET_FILE':
@@ -365,7 +370,7 @@ export const InsertMenuPane = betterReactMemo('InsertMenuPane', () => {
       dispatch: store.dispatch,
       focusedPanel: store.editor.focusedPanel,
     }
-  })
+  }, 'InsertMenuPane')
 
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
@@ -434,7 +439,7 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
       minimised: store.editor.projectSettings.minimised,
       codeEditorTheme: store.editor.codeEditorTheme,
     }
-  })
+  }, 'ProjectSettingsPanel')
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('projectsettings')], 'leftpane')

@@ -23,6 +23,7 @@ import {
   forEachLeft,
   bimapEither,
   forEachRight,
+  traverseEither,
 } from '../../shared/either'
 import {
   ArbitraryJSBlock,
@@ -56,29 +57,26 @@ import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
 import { defaultIfNull, maybeToArray, optionalMap } from '../../shared/optional-utils'
 import {
-  CanvasMetadataParseResult,
   HighlightBoundsForUids,
   ImportAlias,
   importAlias,
   Imports,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   PropertyPathPart,
-  CanvasElementMetadataMap,
-  CanvasMetadataRightBeforePrinting,
-  PrintedCanvasMetadata,
-  isParsedJSONSuccess,
   HighlightBounds,
+  exportsDetail,
+  ExportsDetail,
+  addNamedExportToDetail,
+  setNamedDefaultExportInDetail,
+  mergeExportsDetail,
+  addModifierExportToDetail,
+  isExportDetailNamed,
+  EmptyExportsDetail,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { fastForEach, NO_OP } from '../../shared/utils'
-import {
-  addImport,
-  emptyImports,
-  parseFailure,
-  parseSuccess,
-  defaultPrintedCanvasMetadata,
-} from '../common/project-file-utils'
+import { addImport, emptyImports, parseFailure, parseSuccess } from '../common/project-file-utils'
 import { UtopiaTsWorkers } from '../common/worker-types'
 import { lintCode } from '../linter/linter'
 import {
@@ -86,7 +84,6 @@ import {
   flattenOutAnnoyingContainers,
   FunctionContents,
   getPropertyNameText,
-  isExported,
   liftParsedElementsIntoFunctionContents,
   parseArbitraryNodes,
   parseOutFunctionContents,
@@ -94,17 +91,16 @@ import {
   WithParserMetadata,
   parseAttributeOtherJavaScript,
   withParserMetadata,
+  isExported,
+  isDefaultExport,
 } from './parser-printer-parsing'
-import {
-  attachMetadataToElements,
-  getBoundsOfNodes,
-  guaranteeUniqueUidsFromTopLevel,
-  TopLevelElementAndCodeContext,
-} from './parser-printer-utils'
+import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { ParserPrinterResultMessage } from './parser-printer-worker'
 import creator from './ts-creator'
 import { applyPrettier } from './prettier-utils'
-import { convertPrintedMetadataToCanvasMetadata, jsonToExpression } from './canvas-metadata-parser'
+import { jsonToExpression } from './json-to-expression'
+import { compareOn, comparePrimitive } from '../../../utils/compare'
+import { emptySet } from '../../shared/set-utils'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -423,13 +419,42 @@ export function printCodeOptions(
   }
 }
 
+function getModifersForComponent(
+  element: UtopiaJSXComponent,
+  detailOfExports: ExportsDetail,
+): Array<TS.Modifier> {
+  let result: Array<TS.Modifier> = []
+  let isExportedDirectly: boolean = false
+  let isExportedAsDefault: boolean = false
+  if (detailOfExports.defaultExport?.name === element.name) {
+    isExportedAsDefault = true
+    isExportedDirectly = true
+  } else {
+    const componentExport = detailOfExports.namedExports[element.name]
+    if (componentExport != null && componentExport.type === 'EXPORT_DETAIL_MODIFIER') {
+      isExportedDirectly = true
+    }
+  }
+
+  if (isExportedDirectly) {
+    result.push(TS.createToken(TS.SyntaxKind.ExportKeyword))
+  }
+  if (isExportedAsDefault) {
+    result.push(TS.createToken(TS.SyntaxKind.DefaultKeyword))
+  }
+
+  return result
+}
+
 function printUtopiaJSXComponent(
   printOptions: PrintCodeOptions,
   imports: Imports,
   element: UtopiaJSXComponent,
+  detailOfExports: ExportsDetail,
 ): TS.Node {
   const asJSX = jsxElementToExpression(element.rootElement, imports, printOptions.stripUIDs)
   if (TS.isJsxElement(asJSX) || TS.isJsxSelfClosingElement(asJSX)) {
+    const modifiers = getModifersForComponent(element, detailOfExports)
     if (element.isFunction) {
       const arrowParams = maybeToArray(element.param).map(printParam)
       let statements: Array<TS.Statement> = []
@@ -450,10 +475,10 @@ function printUtopiaJSXComponent(
         bodyBlock,
       )
       const varDec = TS.createVariableDeclaration(element.name, undefined, arrowFunction)
-      return TS.createVariableStatement([TS.createToken(TS.SyntaxKind.ExportKeyword)], [varDec])
+      return TS.createVariableStatement(modifiers, [varDec])
     } else {
       const varDec = TS.createVariableDeclaration(element.name, undefined, asJSX)
-      return TS.createVariableStatement([TS.createToken(TS.SyntaxKind.ExportKeyword)], [varDec])
+      return TS.createVariableStatement(modifiers, [varDec])
     }
   } else {
     throw new Error(
@@ -569,11 +594,38 @@ function createJsxPragma(jsxFactoryFunction: string | null): string {
   }
 }
 
+function produceExportDeclaration(detailOfExports: ExportsDetail) {
+  let possibleExports: Array<TS.ExportSpecifier> = []
+  for (const componentName of Object.keys(detailOfExports.namedExports)) {
+    const exportForComponent = detailOfExports.namedExports[componentName]
+    if (isExportDetailNamed(exportForComponent)) {
+      if (componentName === exportForComponent.name) {
+        possibleExports.push(
+          TS.createExportSpecifier(undefined, TS.createIdentifier(componentName)),
+        )
+      } else {
+        possibleExports.push(
+          TS.createExportSpecifier(
+            TS.createIdentifier(exportForComponent.name),
+            TS.createIdentifier(componentName),
+          ),
+        )
+      }
+    }
+  }
+  if (possibleExports.length === 0) {
+    return null
+  } else {
+    return TS.createExportDeclaration(undefined, undefined, TS.createNamedExports(possibleExports))
+  }
+}
+
 function printCodeImpl(
   printOptions: PrintCodeOptions,
   imports: Imports,
   topLevelElementsIncludingScenes: Array<TopLevelElement>,
   jsxFactoryFunction: string | null,
+  detailOfExports: ExportsDetail,
 ): string {
   // if the project used the old SceneMetadata notation, strip out the Storyboard component here
   const topLevelElements = topLevelElementsIncludingScenes
@@ -647,10 +699,10 @@ function printCodeImpl(
     }
   })
 
-  const exportStatements = topLevelElements.map((e) => {
+  const topLevelStatements = topLevelElements.map((e) => {
     switch (e.type) {
       case 'UTOPIA_JSX_COMPONENT':
-        return printUtopiaJSXComponent(printOptions, imports, e)
+        return printUtopiaJSXComponent(printOptions, imports, e, detailOfExports)
       case 'ARBITRARY_JS_BLOCK':
         return printArbitraryJSBlock(e)
       default:
@@ -659,10 +711,15 @@ function printCodeImpl(
     }
   })
 
+  const exportDeclaration: TS.ExportDeclaration | null = produceExportDeclaration(detailOfExports)
+
   let statementsToPrint: Array<TS.Node> = []
   statementsToPrint.push(...importDeclarations)
+  statementsToPrint.push(...topLevelStatements)
+  if (exportDeclaration != null) {
+    statementsToPrint.push(exportDeclaration)
+  }
 
-  statementsToPrint.push(...exportStatements)
   const printedCode = printStatements(statementsToPrint, printOptions.pretty)
   const jsxPragma = createJsxPragma(jsxFactoryFunction)
   // we just dumbly append the parsed jsx pragma to the top of the file, no matter where it was originally
@@ -671,14 +728,40 @@ function printCodeImpl(
 }
 
 interface PossibleCanvasContentsExpression {
+  type: 'POSSIBLE_CANVAS_CONTENTS_EXPRESSION'
   name: string
   initializer: TS.Expression
 }
 
+function possibleCanvasContentsExpression(
+  name: string,
+  initializer: TS.Expression,
+): PossibleCanvasContentsExpression {
+  return {
+    type: 'POSSIBLE_CANVAS_CONTENTS_EXPRESSION',
+    name: name,
+    initializer: initializer,
+  }
+}
+
 interface PossibleCanvasContentsFunction {
+  type: 'POSSIBLE_CANVAS_CONTENTS_FUNCTION'
   name: string
   parameters: TS.NodeArray<TS.ParameterDeclaration>
   body: TS.ConciseBody
+}
+
+function possibleCanvasContentsFunction(
+  name: string,
+  parameters: TS.NodeArray<TS.ParameterDeclaration>,
+  body: TS.ConciseBody,
+): PossibleCanvasContentsFunction {
+  return {
+    type: 'POSSIBLE_CANVAS_CONTENTS_FUNCTION',
+    name: name,
+    parameters: parameters,
+    body: body,
+  }
 }
 
 type PossibleCanvasContents = PossibleCanvasContentsExpression | PossibleCanvasContentsFunction
@@ -686,7 +769,7 @@ type PossibleCanvasContents = PossibleCanvasContentsExpression | PossibleCanvasC
 function isPossibleCanvasContentsFunction(
   canvasContents: PossibleCanvasContents,
 ): canvasContents is PossibleCanvasContentsFunction {
-  return (canvasContents as PossibleCanvasContentsFunction).body != null
+  return canvasContents.type === 'POSSIBLE_CANVAS_CONTENTS_FUNCTION'
 }
 
 export function looksLikeCanvasElements(
@@ -700,16 +783,18 @@ export function looksLikeCanvasElements(
         const name = variableDeclaration.name.getText(sourceFile)
         const initializer = variableDeclaration.initializer
         if (TS.isArrowFunction(initializer)) {
-          return right({ name: name, parameters: initializer.parameters, body: initializer.body })
+          return right(
+            possibleCanvasContentsFunction(name, initializer.parameters, initializer.body),
+          )
         } else {
-          return right({ name: name, initializer: variableDeclaration.initializer })
+          return right(possibleCanvasContentsExpression(name, variableDeclaration.initializer))
         }
       }
     }
   } else if (TS.isFunctionDeclaration(node)) {
     if (node.name != null && node.body != null) {
       const name = node.name.getText(sourceFile)
-      return right({ name: name, parameters: node.parameters, body: node.body })
+      return right(possibleCanvasContentsFunction(name, node.parameters, node.body))
     }
   }
 
@@ -727,46 +812,72 @@ function getJsxFactoryFunction(sourceFile: TS.SourceFile): string | null {
   }
 }
 
-export function looksLikeCanvasMetadata(
-  sourceFile: TS.SourceFile,
-  node: TS.Node,
-): Either<TS.Node, TS.Expression> {
-  if (TS.isVariableStatement(node) && isExported(node)) {
-    const variableDeclaration = node.declarationList.declarations[0]
-    if (variableDeclaration != null) {
-      if (variableDeclaration.name.getText(sourceFile) === CanvasMetadataName) {
-        if (variableDeclaration.initializer != null) {
-          return right(variableDeclaration.initializer)
-        }
-      }
-    }
-  }
-
-  return left(node)
+function getNameFromImportAlias(alias: ImportAlias): string {
+  return alias.name
 }
 
-export function parseCode(filename: string, sourceText: string): ParseResult {
+const compareImportAliasByName = compareOn(getNameFromImportAlias, comparePrimitive)
+
+function detailsFromExportAssignment(
+  sourceFile: TS.SourceFile,
+  declaration: TS.ExportAssignment,
+): Either<TS.ExportAssignment, ExportsDetail> {
+  if (TS.isIdentifier(declaration.expression)) {
+    const componentIdentifier = declaration.expression
+    return right(
+      setNamedDefaultExportInDetail(
+        exportsDetail(null, {}),
+        componentIdentifier.getText(sourceFile),
+      ),
+    )
+  } else {
+    return left(declaration)
+  }
+}
+
+function detailsFromExportDeclaration(
+  sourceFile: TS.SourceFile,
+  declaration: TS.ExportDeclaration,
+): Either<TS.ExportDeclaration, ExportsDetail> {
+  const exportClause = declaration.exportClause
+  if (exportClause != null && TS.isNamedExports(exportClause)) {
+    const result = exportClause.elements.reduce((workingResult, specifier) => {
+      const specifierName = specifier.name.getText(sourceFile)
+      if (specifier.propertyName == null) {
+        return addNamedExportToDetail(workingResult, specifierName, specifierName)
+      } else {
+        const specifierPropertyName = specifier.propertyName.getText(sourceFile)
+        return addNamedExportToDetail(workingResult, specifierName, specifierPropertyName)
+      }
+    }, exportsDetail(null, {}))
+    return right(result)
+  } else {
+    return left(declaration)
+  }
+}
+
+export function parseCode(filename: string, sourceText: string): ParsedTextFile {
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
+
   const jsxFactoryFunction = getJsxFactoryFunction(sourceFile)
 
   if (sourceFile == null) {
-    return left(parseFailure([], null, `File ${filename} not found.`, [], ''))
+    return parseFailure([], null, `File ${filename} not found.`, [])
   } else {
-    const code = sourceFile.text
-    let canvasMetadata: Either<unknown, PrintedCanvasMetadata> = right(
-      defaultPrintedCanvasMetadata(),
-    )
-    let topLevelElements: Array<Either<string, TopLevelElementAndCodeContext>> = []
+    let topLevelElements: Array<Either<string, TopLevelElement>> = []
     let imports: Imports = emptyImports()
     // Find the already existing UIDs so that when we generate one it doesn't duplicate one
     // existing further ahead.
-    const alreadyExistingUIDs: ReadonlyArray<string> = collatedUIDs(sourceFile)
+    const alreadyExistingUIDs: Set<string> = emptySet() // collatedUIDs(sourceFile)
     let highlightBounds: HighlightBoundsForUids = {}
 
     // As we hit chunks of arbitrary code, shove them here so we can
     // handle them as a block of code.
     let arbitraryNodes: Array<TS.Node> = []
     let allArbitraryNodes: Array<TS.Node> = []
+
+    // Account for exported components.
+    let detailOfExports: ExportsDetail = EmptyExportsDetail
 
     function applyAndResetArbitraryNodes(): void {
       const filteredArbitraryNodes = arbitraryNodes.filter(
@@ -787,11 +898,7 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
         topLevelElements.push(
           mapEither((parsed) => {
             highlightBounds = parsed.highlightBounds
-            const bounds = getBoundsOfNodes(sourceFile, filteredArbitraryNodes)
-            return {
-              element: parsed.value,
-              bounds: bounds,
-            }
+            return parsed.value
           }, nodeParseResult),
         )
         allArbitraryNodes = [...allArbitraryNodes, ...filteredArbitraryNodes]
@@ -825,8 +932,30 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
     }, topLevelNodes)
 
     for (const topLevelElement of topLevelNodes) {
-      // Handle imports.
-      if (TS.isImportDeclaration(topLevelElement)) {
+      // Handle export assignments: `export default App`
+      if (TS.isExportAssignment(topLevelElement)) {
+        const fromAssignment = detailsFromExportAssignment(sourceFile, topLevelElement)
+        // Parsed it fully, so it can be incorporated.
+        forEachRight(fromAssignment, (toMerge) => {
+          detailOfExports = mergeExportsDetail(detailOfExports, toMerge)
+        })
+        // Unable to parse it so treat it as an arbitrary node.
+        forEachLeft(fromAssignment, (exportDeclaration) => {
+          arbitraryNodes.push(exportDeclaration)
+        })
+        // Handle export declarations.
+      } else if (TS.isExportDeclaration(topLevelElement)) {
+        const fromDeclaration = detailsFromExportDeclaration(sourceFile, topLevelElement)
+        // Parsed it fully, so it can be incorporated.
+        forEachRight(fromDeclaration, (toMerge) => {
+          detailOfExports = mergeExportsDetail(detailOfExports, toMerge)
+        })
+        // Unable to parse it so treat it as an arbitrary node.
+        forEachLeft(fromDeclaration, (exportDeclaration) => {
+          arbitraryNodes.push(exportDeclaration)
+        })
+        // Handle imports.
+      } else if (TS.isImportDeclaration(topLevelElement)) {
         if (TS.isStringLiteral(topLevelElement.moduleSpecifier)) {
           const importClause: TS.ImportClause | undefined = topLevelElement.importClause
           const importFrom: string = topLevelElement.moduleSpecifier.text
@@ -861,127 +990,120 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
             const importBindings = importClause.namedBindings
             importedAs = importBindings.name.getText(sourceFile)
           }
-          importedFromWithin.sort((i1, i2) => {
-            if (i1.name < i2.name) {
-              return -1
-            }
-            if (i1.name > i2.name) {
-              return 1
-            }
-            return 0
-          })
+          importedFromWithin.sort(compareImportAliasByName)
           imports = addImport(importFrom, importedWithName, importedFromWithin, importedAs, imports)
         }
       } else {
-        const possibleCanvasMetadata = looksLikeCanvasMetadata(sourceFile, topLevelElement)
-        if (isRight(possibleCanvasMetadata)) {
-          // KILLME CanvasMetadata is dead
-        } else {
-          const possibleDeclaration = looksLikeCanvasElements(sourceFile, topLevelElement)
-          if (isRight(possibleDeclaration)) {
-            const canvasContents = possibleDeclaration.value
-            const { name } = canvasContents
-            let parsedContents: Either<string, WithParserMetadata<FunctionContents>> = left(
-              'No contents',
+        const possibleDeclaration = looksLikeCanvasElements(sourceFile, topLevelElement)
+        if (isRight(possibleDeclaration)) {
+          const canvasContents = possibleDeclaration.value
+          const { name } = canvasContents
+          let parsedContents: Either<string, WithParserMetadata<FunctionContents>> = left(
+            'No contents',
+          )
+          let isFunction: boolean = false
+          let parsedFunctionParam: Either<string, WithParserMetadata<Param> | null> = right(null)
+          let propsUsed: Array<string> = []
+          if (isPossibleCanvasContentsFunction(canvasContents)) {
+            const { parameters, body } = canvasContents
+            isFunction = true
+            const parsedFunctionParams = parseParams(
+              parameters,
+              sourceFile,
+              filename,
+              imports,
+              topLevelNames,
+              highlightBounds,
+              alreadyExistingUIDs,
             )
-            let isFunction: boolean = false
-            let parsedFunctionParam: Either<string, WithParserMetadata<Param> | null> = right(null)
-            let propsUsed: Array<string> = []
-            if (isPossibleCanvasContentsFunction(canvasContents)) {
-              const { parameters, body } = canvasContents
-              isFunction = true
-              const parsedFunctionParams = parseParams(
-                parameters,
+            parsedFunctionParam = flatMapEither((parsedParams) => {
+              const paramsValue = parsedParams.value
+              if (paramsValue.length === 0) {
+                return right(null)
+              } else if (paramsValue.length === 1) {
+                // Note: We're explicitly ignoring the `propsUsed` value as
+                // that should be handled by the call to `propNamesForParam` below.
+                return right(
+                  withParserMetadata(paramsValue[0], parsedParams.highlightBounds, [], []),
+                )
+              } else {
+                return left('Invalid number of params')
+              }
+            }, parsedFunctionParams)
+            forEachRight(parsedFunctionParam, (param) => {
+              const boundParam = param?.value.boundParam
+              const propsObjectName =
+                boundParam != null && isRegularParam(boundParam) ? boundParam.paramName : null
+
+              propsUsed = param == null ? [] : propNamesForParam(param.value)
+
+              parsedContents = parseOutFunctionContents(
                 sourceFile,
                 filename,
                 imports,
                 topLevelNames,
-                highlightBounds,
+                propsObjectName,
+                body,
+                param?.highlightBounds ?? {},
                 alreadyExistingUIDs,
               )
-              parsedFunctionParam = flatMapEither((parsedParams) => {
-                const paramsValue = parsedParams.value
-                if (paramsValue.length === 0) {
-                  return right(null)
-                } else if (paramsValue.length === 1) {
-                  // Note: We're explicitly ignoring the `propsUsed` value as
-                  // that should be handled by the call to `propNamesForParam` below.
-                  return right(
-                    withParserMetadata(paramsValue[0], parsedParams.highlightBounds, [], []),
-                  )
-                } else {
-                  return left('Invalid number of params')
-                }
-              }, parsedFunctionParams)
-              forEachRight(parsedFunctionParam, (param) => {
-                const boundParam = param?.value.boundParam
-                const propsObjectName =
-                  boundParam != null && isRegularParam(boundParam) ? boundParam.paramName : null
-
-                propsUsed = param == null ? [] : propNamesForParam(param.value)
-
-                parsedContents = parseOutFunctionContents(
-                  sourceFile,
-                  filename,
-                  imports,
-                  topLevelNames,
-                  propsObjectName,
-                  body,
-                  param?.highlightBounds ?? {},
-                  alreadyExistingUIDs,
-                )
-              })
-            } else {
-              // In this case it's likely/hopefully a straight JSX expression attached to the var.
-              parsedContents = liftParsedElementsIntoFunctionContents(
-                parseOutJSXElements(
-                  sourceFile,
-                  filename,
-                  [canvasContents.initializer],
-                  imports,
-                  topLevelNames,
-                  null,
-                  highlightBounds,
-                  alreadyExistingUIDs,
-                ),
-              )
-            }
-            if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
-              arbitraryNodes.push(topLevelElement)
-            } else {
-              highlightBounds = parsedContents.value.highlightBounds
-              const contents = parsedContents.value.value
-              // If propsUsed is already populated, it's because the user used destructuring, so we can
-              // use that. Otherwise, we have to use the list retrieved during parsing
-              propsUsed = propsUsed.length > 0 ? propsUsed : uniq(parsedContents.value.propsUsed)
-              if (contents.elements.length === 1) {
-                applyAndResetArbitraryNodes()
-                const utopiaComponent = utopiaJSXComponent(
-                  name,
-                  isFunction,
-                  foldEither(
-                    (_) => null,
-                    (param) => param?.value ?? null,
-                    parsedFunctionParam,
-                  ),
-                  propsUsed,
-                  contents.elements[0].value,
-                  contents.arbitraryJSBlock,
-                )
-                const bounds = getBoundsOfNodes(sourceFile, topLevelElement)
-                topLevelElements.push(
-                  right({
-                    element: utopiaComponent,
-                    bounds: bounds,
-                  }),
-                )
-              } else {
-                arbitraryNodes.push(topLevelElement)
-              }
-            }
+            })
           } else {
-            arbitraryNodes.push(topLevelElement)
+            // In this case it's likely/hopefully a straight JSX expression attached to the var.
+            parsedContents = liftParsedElementsIntoFunctionContents(
+              parseOutJSXElements(
+                sourceFile,
+                filename,
+                [canvasContents.initializer],
+                imports,
+                topLevelNames,
+                null,
+                highlightBounds,
+                alreadyExistingUIDs,
+              ),
+            )
           }
+          if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
+            arbitraryNodes.push(topLevelElement)
+          } else {
+            highlightBounds = parsedContents.value.highlightBounds
+            const contents = parsedContents.value.value
+            // If propsUsed is already populated, it's because the user used destructuring, so we can
+            // use that. Otherwise, we have to use the list retrieved during parsing
+            propsUsed = propsUsed.length > 0 ? propsUsed : uniq(parsedContents.value.propsUsed)
+            if (contents.elements.length === 1) {
+              applyAndResetArbitraryNodes()
+              const exported = isExported(topLevelElement)
+
+              const utopiaComponent = utopiaJSXComponent(
+                name,
+                isFunction,
+                foldEither(
+                  (_) => null,
+                  (param) => param?.value ?? null,
+                  parsedFunctionParam,
+                ),
+                propsUsed,
+                contents.elements[0].value,
+                contents.arbitraryJSBlock,
+              )
+
+              const defaultExport = isDefaultExport(topLevelElement)
+              if (exported) {
+                if (defaultExport) {
+                  detailOfExports = setNamedDefaultExportInDetail(detailOfExports, name)
+                } else {
+                  detailOfExports = addModifierExportToDetail(detailOfExports, name)
+                }
+              }
+
+              topLevelElements.push(right(utopiaComponent))
+            } else {
+              arbitraryNodes.push(topLevelElement)
+            }
+          }
+        } else {
+          arbitraryNodes.push(topLevelElement)
         }
       }
     }
@@ -990,30 +1112,11 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
 
     const sequencedTopLevelElements = sequenceEither(topLevelElements)
     if (isLeft(sequencedTopLevelElements)) {
-      return left(parseFailure(null, null, sequencedTopLevelElements.value, [], code))
+      return parseFailure(null, null, sequencedTopLevelElements.value, [])
     }
     const realTopLevelElements = sequencedTopLevelElements.value
 
     const topLevelElementsWithFixedUIDs = guaranteeUniqueUidsFromTopLevel(realTopLevelElements)
-    const topLevelElementsWithMetadataAttached = foldEither(
-      (_) => topLevelElementsWithFixedUIDs,
-      (metadata) => {
-        return attachMetadataToElements(topLevelElementsWithFixedUIDs, metadata.elementMetadata)
-      },
-      canvasMetadata,
-    )
-
-    const {
-      sanitizedCanvasMetadata,
-      utopiaComponentFromSceneMetadata,
-    } = convertPrintedMetadataToCanvasMetadata(canvasMetadata)
-
-    const topLevelElementsIncludingScenes = addUtopiaCanvasComponentOrDefault(
-      topLevelElementsWithMetadataAttached.map((e) => e.element),
-      utopiaComponentFromSceneMetadata,
-    )
-
-    const projectContainedOldSceneMetadata = utopiaComponentFromSceneMetadata != null
 
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
     if (allArbitraryNodes.length > 0) {
@@ -1033,17 +1136,13 @@ export function parseCode(filename: string, sourceText: string): ParseResult {
       })
     }
 
-    return right(
-      parseSuccess(
-        imports,
-        topLevelElementsIncludingScenes,
-        sanitizedCanvasMetadata,
-        projectContainedOldSceneMetadata,
-        code,
-        highlightBounds,
-        jsxFactoryFunction,
-        combinedTopLevelArbitraryBlock,
-      ),
+    return parseSuccess(
+      imports,
+      topLevelElementsWithFixedUIDs,
+      highlightBounds,
+      jsxFactoryFunction,
+      combinedTopLevelArbitraryBlock,
+      detailOfExports,
     )
   }
 }
@@ -1055,7 +1154,7 @@ function parseParams(
   imports: Imports,
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: ReadonlyArray<string>,
+  existingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<Array<Param>>> {
   let parsedParams: Array<Param> = []
   let highlightBounds: HighlightBoundsForUids = { ...existingHighlightBounds }
@@ -1092,7 +1191,7 @@ function parseParam(
   imports: Imports,
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: ReadonlyArray<string>,
+  existingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<Param>> {
   const dotDotDotToken = param.dotDotDotToken != null
   const parsedExpression: Either<
@@ -1143,7 +1242,7 @@ function parseBindingName(
   imports: Imports,
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: ReadonlyArray<string>,
+  existingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<BoundParam>> {
   let highlightBounds: HighlightBoundsForUids = {
     ...existingHighlightBounds,
@@ -1237,32 +1336,11 @@ function parseBindingName(
   }
 }
 
-function addUtopiaCanvasComponentOrDefault(
-  topLevelElements: Array<TopLevelElement>,
-  maybeUtopiaComponent: UtopiaJSXComponent | null,
-): Array<TopLevelElement> {
-  const existingUtopiaCanvasTopLevelElements = topLevelElements.filter(
-    (tle) => isUtopiaJSXComponent(tle) && tle.name === BakedInStoryboardVariableName,
-  )
-  if (existingUtopiaCanvasTopLevelElements.length === 0) {
-    const utopiaCanvasComponentToAppend = defaultIfNull(
-      EmptyUtopiaCanvasComponent,
-      maybeUtopiaComponent,
-    )
-    return [...topLevelElements, utopiaCanvasComponentToAppend]
-  } else if (existingUtopiaCanvasTopLevelElements.length === 1) {
-    // there is already an UtopiaCanvas, nothing to do here
-    return topLevelElements
-  } else {
-    throw new Error('found more than one `storyboard` variable, this is an illegal state')
-  }
-}
-
 export function getParseResult(
   workers: UtopiaTsWorkers,
   filename: string,
   fileContents: string,
-): Promise<ParseResult> {
+): Promise<ParsedTextFile> {
   return new Promise((resolve, reject) => {
     const handleMessage = (e: MessageEvent) => {
       const data = e.data as ParserPrinterResultMessage
@@ -1409,23 +1487,12 @@ export function getHighlightBoundsWithoutUID(
   return result
 }
 
-function collatedUIDs(sourceFile: TS.SourceFile): Array<string> {
-  let result: Array<string> = []
-  function addUID(boundingElement: TS.Node, attributes: TS.JsxAttributes): void {
-    withUID(undefined, attributes, undefined, (uid) => {
-      result = addUniquely(result, uid)
-    })
-  }
-  withJSXElementAttributes(sourceFile, addUID)
-  return result
-}
-
-export function lintAndParse(filename: string, content: string): ParseResult {
+export function lintAndParse(filename: string, content: string): ParsedTextFile {
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
   if (lintResult.filter(messageisFatal).length === 0) {
     return parseCode(filename, content)
   } else {
-    return left(parseFailure(null, null, null, lintResult, content))
+    return parseFailure(null, null, null, lintResult)
   }
 }

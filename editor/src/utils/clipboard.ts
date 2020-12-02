@@ -1,14 +1,19 @@
 import * as R from 'ramda'
 import { EditorAction } from '../components/editor/action-types'
-import * as EditorActions from '../components/editor/actions/actions'
+import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import { DerivedState, EditorState, getOpenUIJSFile } from '../components/editor/store/editor-state'
 import { scaleImageDimensions, getFrameAndMultiplier } from '../components/images'
 import * as TP from '../core/shared/template-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../core/shared/element-template'
+import { JSXMetadata } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import { Imports, InstancePath, TemplatePath } from '../core/shared/project-file-types'
+import {
+  Imports,
+  InstancePath,
+  isParseSuccess,
+  TemplatePath,
+} from '../core/shared/project-file-types'
 import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
 import { isLeft } from '../core/shared/either'
 import { setLocalClipboardData } from './local-clipboard'
@@ -27,7 +32,7 @@ interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
   originalTemplatePaths: TemplatePath[]
-  targetOriginalContextMetadata: ComponentMetadata[]
+  targetOriginalContextMetadata: JSXMetadata
 }
 
 type JSXElementsJson = string
@@ -63,7 +68,7 @@ export function getActionsForClipboardItems(
   pastedFiles: Array<FileResult>,
   selectedViews: Array<TemplatePath>,
   pasteTargetsToIgnore: TemplatePath[],
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
 ): Array<EditorAction> {
   try {
     const utopiaActions = Utils.flatMapArray((data: CopyData, i: number) => {
@@ -152,12 +157,12 @@ export function createClipboardDataFromSelectionNewWorld(
   const openUIJSFile = getOpenUIJSFile(editor)
   if (
     openUIJSFile == null ||
-    isLeft(openUIJSFile.fileContents) ||
+    !isParseSuccess(openUIJSFile.fileContents.parsed) ||
     editor.selectedViews.length === 0
   ) {
     return null
   }
-  const parseSuccess = openUIJSFile.fileContents.value
+  const parseSuccess = openUIJSFile.fileContents.parsed
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
     return R.none((otherView) => TP.isAncestorOf(view, otherView, false), editor.selectedViews)
   })
@@ -167,7 +172,7 @@ export function createClipboardDataFromSelectionNewWorld(
       const path = createSceneTemplatePath(view)
       return findJSXElementChildAtPath(utopiaComponents, path)
     } else {
-      return findElementAtPath(view, utopiaComponents, editor.jsxMetadataKILLME)
+      return findElementAtPath(view, utopiaComponents)
     }
   })
   return {

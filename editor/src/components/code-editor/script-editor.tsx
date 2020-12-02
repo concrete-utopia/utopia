@@ -1,16 +1,18 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import * as React from 'react'
-import { betterReactMemo } from 'uuiui-deps'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { betterReactMemo } from '../../utils/react-performance'
 import { ComponentMetadata } from '../../core/shared/element-template'
 import {
   getHighlightBoundsFromParseResult,
-  uiJsFile,
   updateLastSavedContents,
-  updateParseResultCode,
+  updateParsedTextFileHighlightBounds,
 } from '../../core/model/project-file-utils'
-import { messageIsFatalOrError, messageIsWarning } from '../../core/shared/error-messages'
+import {
+  ErrorMessage,
+  messageIsFatalOrError,
+  messageIsWarning,
+} from '../../core/shared/error-messages'
 import {
   HighlightBoundsForUids,
   ParseFailure,
@@ -18,8 +20,15 @@ import {
   ProjectFile,
   RevisionsState,
   TemplatePath,
-  isUIJSFile,
+  isTextFile,
   isParseSuccess,
+  textFile,
+  textFileContents,
+  TextFile,
+  ImageFile,
+  Directory,
+  AssetFile,
+  HighlightBounds,
 } from '../../core/shared/project-file-types'
 import { codeNeedsPrinting } from '../../core/workers/common/project-file-utils'
 import { isJsFile } from '../../core/workers/ts/ts-worker'
@@ -27,33 +36,27 @@ import { foldEither, isRight } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { runtimeErrorInfoToErrorMessage } from './monaco-wrapper'
-import { EditorPanel, setFocus } from '../common/actions'
-import { EditorAction } from '../editor/action-types'
-import * as EditorActions from '../editor/actions/actions'
+import { EditorPanel } from '../common/actions'
+import { EditorAction, EditorDispatch } from '../editor/action-types'
+import * as EditorActions from '../editor/actions/action-creators'
 import {
   dependenciesFromPackageJson,
   usePossiblyResolvedPackageDependencies,
 } from '../editor/npm-dependency/npm-dependency'
-import {
-  ConsoleLog,
-  EditorStore,
-  getAllLintErrors,
-  getOpenEditorTab,
-  getOpenFile,
-  getOpenUIJSFile,
-  getOpenUIJSFileKey,
-  isOpenFileTab,
-  openFileTab,
-  packageJsonFileFromProjectContents,
-  parseFailureAsErrorMessages,
-} from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
-import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
+import { ConsoleLog } from '../editor/store/editor-state'
 import * as TP from '../../core/shared/template-path'
 import { CodeEditor } from './code-editor'
 import { CursorPosition } from './code-editor-utils'
 import { Notice } from '../common/notices'
 import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
+import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
+import {
+  PossiblyUnversionedNpmDependency,
+  TypeDefinitions,
+} from '../../core/shared/npm-dependency-types'
+import { ProjectContentTreeRoot } from '../assets'
+import { EditorTab, openFileTab } from '../editor/store/editor-tabs'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 function getFileContents(file: ProjectFile): string {
   switch (file.type) {
@@ -61,18 +64,8 @@ function getFileContents(file: ProjectFile): string {
     case 'IMAGE_FILE':
     case 'ASSET_FILE':
       return ''
-    case 'CODE_FILE':
-      return file.fileContents
-    case 'UI_JS_FILE':
-      return foldEither(
-        (failure: ParseFailure) => {
-          return failure.code
-        },
-        (success: ParseSuccess) => {
-          return success.code ?? ''
-        },
-        file.fileContents,
-      )
+    case 'TEXT_FILE':
+      return file.fileContents.code
     default:
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
@@ -80,7 +73,7 @@ function getFileContents(file: ProjectFile): string {
 }
 
 function fileIsLocked(file: ProjectFile): boolean {
-  return isUIJSFile(file) && codeNeedsPrinting(file.revisionsState)
+  return isTextFile(file) && codeNeedsPrinting(file.fileContents.revisionsState)
 }
 
 function updateFileContents(contents: string, file: ProjectFile, manualSave: boolean): ProjectFile {
@@ -89,61 +82,29 @@ function updateFileContents(contents: string, file: ProjectFile, manualSave: boo
     case 'IMAGE_FILE':
     case 'ASSET_FILE':
       return file
-    case 'CODE_FILE':
-      const codeLastSavedContents = updateLastSavedContents(
-        file.fileContents,
-        file.lastSavedContents,
-        manualSave,
-      )
-      return {
-        ...file,
-        fileContents: contents,
-        lastSavedContents: codeLastSavedContents,
-      }
-    case 'UI_JS_FILE':
+    case 'TEXT_FILE':
       const uiJsLastSavedContents = updateLastSavedContents(
         file.fileContents,
         file.lastSavedContents,
         manualSave,
       )
-      return uiJsFile(
-        updateParseResultCode(
-          file.fileContents,
-          contents,
-          getHighlightBoundsFromParseResult(file.fileContents), // here we just update the code without updating the highlights!
-        ),
-        uiJsLastSavedContents,
-        RevisionsState.CodeAhead,
-        Date.now(),
+
+      const newParsed = updateParsedTextFileHighlightBounds(
+        file.fileContents.parsed,
+        getHighlightBoundsFromParseResult(file.fileContents.parsed), // here we just update the code without updating the highlights!
       )
+      const newContents = textFileContents(contents, newParsed, RevisionsState.CodeAhead)
+      return textFile(newContents, uiJsLastSavedContents, Date.now())
     default:
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
   }
 }
 
-function getHighlightBoundsForTemplatePath(path: TemplatePath, store: EditorStore) {
-  const selectedFile = getOpenFile(store.editor)
-  if (isUIJSFile(selectedFile) && isParseSuccess(selectedFile.fileContents)) {
-    const parseSuccess = selectedFile.fileContents.value
-    if (TP.isInstancePath(path)) {
-      const highlightedUID = Utils.optionalMap(
-        TP.toUid,
-        MetadataUtils.dynamicPathToStaticPath(store.editor.jsxMetadataKILLME, path),
-      )
-      if (highlightedUID != null) {
-        return parseSuccess.highlightBounds[highlightedUID]
-      }
-    }
-  }
-  return null
-}
-
 function getTemplatePathsInBounds(
   line: number,
   parsedHighlightBounds: HighlightBoundsForUids | null,
   allTemplatePaths: TemplatePath[],
-  jsxMetadataKILLME: ComponentMetadata[],
 ): TemplatePath[] {
   if (parsedHighlightBounds == null) {
     return []
@@ -162,7 +123,7 @@ function getTemplatePathsInBounds(
     const target = targets[0]
     Utils.fastForEach(allTemplatePaths, (path) => {
       if (TP.isInstancePath(path)) {
-        const staticPath = MetadataUtils.dynamicPathToStaticPath(jsxMetadataKILLME, path)
+        const staticPath = TP.dynamicPathToStaticPath(path)
         const uid = staticPath != null ? TP.toUid(staticPath) : null
         if (uid === target) {
           paths.push(path)
@@ -173,173 +134,136 @@ function getTemplatePathsInBounds(
   return paths
 }
 
-interface ScriptEditorProps {
+export interface ScriptEditorProps {
+  setHighlightedViews: (targets: TemplatePath[]) => void
+  selectComponents: (targets: TemplatePath[]) => void
+  onSave: (
+    manualSave: boolean,
+    toast: Notice | undefined,
+    filePath: string,
+    updatedFile: ProjectFile,
+  ) => void
+  openEditorTab: (editorTab: EditorTab, cursorPosition: CursorPosition | null) => void
+  setCodeEditorVisibility: (visible: boolean) => void
+  setFocus: (panel: EditorPanel | null) => void
+  sendLinterRequestMessage: (filePath: string, content: string) => void
   relevantPanel: EditorPanel
   runtimeErrors: Array<RuntimeErrorInfo>
   canvasConsoleLogs: Array<ConsoleLog>
+  selectedViews: TemplatePath[]
+  filePath: string | null
+  openFile: TextFile | ImageFile | Directory | AssetFile | null
+  cursorPositionFromOpenFile: CursorPosition | null
+  typeDefinitions: TypeDefinitions
+  lintErrors: ErrorMessage[]
+  parserPrinterErrors: ErrorMessage[]
+  projectContents: ProjectContentTreeRoot
+  parsedHighlightBounds: HighlightBoundsForUids | null
+  allTemplatePaths: TemplatePath[]
+  focusedPanel: EditorPanel | null
+  codeEditorTheme: string
+  selectedViewBounds: HighlightBounds[]
+  highlightBounds: HighlightBounds[]
+  npmDependencies: PossiblyUnversionedNpmDependency[]
 }
 
 export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditorProps) => {
-  const { relevantPanel, runtimeErrors, canvasConsoleLogs } = props
   const {
-    dispatch,
-    workers,
+    setHighlightedViews,
+    selectComponents,
+    onSave,
+    openEditorTab,
+    setCodeEditorVisibility,
+    setFocus,
+    sendLinterRequestMessage,
+    relevantPanel,
+    runtimeErrors,
+    canvasConsoleLogs,
     filePath,
     openFile,
     cursorPositionFromOpenFile,
-    savedCursorPosition,
-    packageJsonFile,
     typeDefinitions,
     lintErrors,
     parserPrinterErrors,
     projectContents,
     parsedHighlightBounds,
     allTemplatePaths,
-    jsxMetadataKILLME,
     focusedPanel,
     codeEditorTheme,
     selectedViews,
-  } = useEditorState((store) => {
-    const openEditorTab = getOpenEditorTab(store.editor)
-    const openFilePath =
-      openEditorTab != null && isOpenFileTab(openEditorTab) ? openEditorTab.filename : null
-    const selectedFile = getOpenFile(store.editor)
-    const openUIJSFile = getOpenUIJSFile(store.editor)
-    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
+    selectedViewBounds,
+    highlightBounds,
+    npmDependencies,
+  } = props
 
-    return {
-      dispatch: store.dispatch,
-      workers: store.workers,
-      filePath: openFilePath,
-      openFile: selectedFile,
-      cursorPositionFromOpenFile:
-        store.editor.selectedFile == null ? null : store.editor.selectedFile.initialCursorPosition,
-      savedCursorPosition: openFilePath == null ? null : store.editor.cursorPositions[openFilePath],
-      packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
-      typeDefinitions: getDependencyTypeDefinitions(store.editor.nodeModules.files),
-      lintErrors: getAllLintErrors(store.editor),
-      parserPrinterErrors: parseFailureAsErrorMessages(openUIJSFileKey, openUIJSFile),
-      projectContents: store.editor.projectContents,
-      parsedHighlightBounds:
-        openUIJSFile != null && isRight(openUIJSFile.fileContents)
-          ? openUIJSFile.fileContents.value.highlightBounds
-          : null,
-      allTemplatePaths: store.derived.navigatorTargets,
-      jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      focusedPanel: store.editor.focusedPanel,
-      codeEditorTheme: store.editor.codeEditorTheme,
-      selectedViews: store.editor.selectedViews,
-    }
-  })
-
-  const selectedViewBounds = useKeepReferenceEqualityIfPossible(
-    useEditorState((store) => {
-      return Utils.stripNulls(
-        store.editor.selectedViews.map((selectedView) =>
-          getHighlightBoundsForTemplatePath(selectedView, store),
-        ),
-      )
-    }),
-  )
-
-  const highlightBounds = useKeepReferenceEqualityIfPossible(
-    useEditorState((store) => {
-      return Utils.stripNulls(
-        store.editor.highlightedViews.map((highlightedView) =>
-          getHighlightBoundsForTemplatePath(highlightedView, store),
-        ),
-      )
-    }),
+  const [cursorPositions, setCursorPositions] = React.useState<{ [key: string]: CursorPosition }>(
+    {},
   )
 
   const onHover = React.useCallback(
     (line: number, column: number) => {
-      const targets = getTemplatePathsInBounds(
-        line,
-        parsedHighlightBounds,
-        allTemplatePaths,
-        jsxMetadataKILLME,
-      )
+      const targets = getTemplatePathsInBounds(line, parsedHighlightBounds, allTemplatePaths)
       if (targets.length > 0) {
-        const actions = targets.map((path) => EditorActions.setHighlightedView(path))
-        dispatch(actions, 'everyone')
+        setHighlightedViews(targets)
       }
     },
-    [parsedHighlightBounds, allTemplatePaths, jsxMetadataKILLME, dispatch],
+    [setHighlightedViews, parsedHighlightBounds, allTemplatePaths],
   )
 
   const onSelect = React.useCallback(
     (line: number, column: number) => {
-      const targets = getTemplatePathsInBounds(
-        line,
-        parsedHighlightBounds,
-        allTemplatePaths,
-        jsxMetadataKILLME,
-      )
+      const targets = getTemplatePathsInBounds(line, parsedHighlightBounds, allTemplatePaths)
       if (targets.length > 0) {
-        dispatch([EditorActions.selectComponents(targets, false)], 'everyone')
+        selectComponents(targets)
       }
     },
-    [parsedHighlightBounds, allTemplatePaths, jsxMetadataKILLME, dispatch],
+    [selectComponents, parsedHighlightBounds, allTemplatePaths],
   )
 
-  const onSave = React.useCallback(
+  const onSaveInner = React.useCallback(
     (value: string, manualSave: boolean, toast?: Notice) => {
       if (filePath != null && openFile != null) {
         const updatedFile = updateFileContents(value, openFile, manualSave)
-
-        const updateFileActions: EditorAction[] = [
-          EditorActions.updateFile(filePath, updatedFile, false),
-          EditorActions.setCodeEditorBuildErrors({}),
-        ]
-        const withToastAction =
-          toast == null
-            ? updateFileActions
-            : updateFileActions.concat(EditorActions.pushToast(toast))
-
-        const actions = manualSave
-          ? withToastAction.concat(EditorActions.saveCurrentFile())
-          : withToastAction
-        dispatch(actions, 'everyone')
+        onSave(manualSave, toast, filePath, updatedFile)
       }
     },
-    [openFile, dispatch, filePath],
+    [onSave, openFile, filePath],
   )
 
   const onOpenFile = React.useCallback(
     (path: string, cursorPos: CursorPosition | null) => {
-      dispatch([EditorActions.openEditorTab(openFileTab(path), cursorPos)], 'everyone')
+      openEditorTab(openFileTab(path), cursorPos)
     },
-    [dispatch],
+    [openEditorTab],
   )
 
   const close = React.useCallback(() => {
-    dispatch([EditorActions.setCodeEditorVisibility(false)], 'everyone')
-  }, [dispatch])
+    setCodeEditorVisibility(false)
+  }, [setCodeEditorVisibility])
 
-  const sendLinterRequestMessage = React.useCallback(
+  const sendLinterRequestMessageInner = React.useCallback(
     (content: string) => {
       if (filePath != null && isJsFile(filePath)) {
-        workers.sendLinterRequestMessage(filePath, content)
+        sendLinterRequestMessage(filePath, content)
       }
     },
-    [filePath, workers],
+    [sendLinterRequestMessage, filePath],
   )
 
-  const saveCursorPosition = React.useCallback(
+  const saveCursorPositionInner = React.useCallback(
     (position: CursorPosition) => {
       if (filePath != null) {
-        dispatch([EditorActions.saveCursorPosition(filePath, position)], 'everyone')
+        setCursorPositions({ ...cursorPositions, [filePath]: position })
       }
     },
-    [filePath, dispatch],
+    [cursorPositions, filePath],
   )
 
   const onFocus = React.useCallback(() => {
     if (focusedPanel !== relevantPanel) {
-      dispatch([setFocus(relevantPanel)], 'everyone')
+      setFocus(relevantPanel)
     }
-  }, [focusedPanel, dispatch, relevantPanel])
+  }, [setFocus, focusedPanel, relevantPanel])
 
   const newErrors = [
     ...runtimeErrors.map((e) => runtimeErrorInfoToErrorMessage(projectContents, e)),
@@ -350,8 +274,6 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
   const errors = useKeepReferenceEqualityIfPossible(newErrorsOrParserPrinterErrors)
   const newErrorsForFile = errors.filter((error) => error.fileName === filePath)
   const errorsForFile = useKeepReferenceEqualityIfPossible(newErrorsForFile)
-
-  const npmDependencies = usePossiblyResolvedPackageDependencies()
 
   if (filePath == null || openFile == null) {
     return null
@@ -364,10 +286,10 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
         key={'script-code-editor'}
         name={filePath}
         value={fileContents}
-        onSave={onSave}
-        onChange={sendLinterRequestMessage}
-        onChangeFromProps={sendLinterRequestMessage}
-        saveCursorPosition={saveCursorPosition}
+        onSave={onSaveInner}
+        onChange={sendLinterRequestMessageInner}
+        onChangeFromProps={sendLinterRequestMessageInner}
+        saveCursorPosition={saveCursorPositionInner}
         onOpenFile={onOpenFile}
         close={close}
         enabled={true}
@@ -380,7 +302,6 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
         errorsForFile={errorsForFile}
         readOnly={readOnly}
         projectContents={projectContents}
-        workers={workers}
         selectedViews={selectedViews}
         selectedViewsBounds={selectedViewBounds}
         highlightedViewsBounds={highlightBounds}
@@ -388,7 +309,9 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
         onSelect={onSelect}
         onFocus={onFocus}
         cursorPosition={
-          cursorPositionFromOpenFile == null ? savedCursorPosition : cursorPositionFromOpenFile
+          cursorPositionFromOpenFile == null
+            ? cursorPositions[filePath]
+            : cursorPositionFromOpenFile
         }
         canvasConsoleLogs={canvasConsoleLogs}
         codeEditorTheme={codeEditorTheme}

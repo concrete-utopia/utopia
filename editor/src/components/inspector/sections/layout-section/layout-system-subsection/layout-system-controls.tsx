@@ -11,7 +11,7 @@ import {
   InspectorInfo,
 } from '../../../common/property-path-hooks'
 import { useEditorState } from '../../../../editor/store/store-hook'
-import { switchLayoutSystem } from '../../../../editor/actions/actions'
+import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
@@ -67,7 +67,7 @@ function useDefaultedLayoutSystemInfo(): {
 }
 
 function useLayoutSystemData() {
-  const dispatch = useEditorState((store) => store.dispatch)
+  const dispatch = useEditorState((store) => store.dispatch, 'useLayoutSystemData dispatch')
 
   const onLayoutSystemChange = React.useCallback(
     (layoutSystem: SettableLayoutSystem) => {

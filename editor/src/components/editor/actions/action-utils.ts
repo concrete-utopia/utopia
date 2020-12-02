@@ -80,7 +80,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_SHORTCUT':
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
     case 'PROPERTY_CONTROLS_IFRAME_READY':
-    case 'SAVE_CURSOR_POSITION':
+    case 'SEND_LINTER_REQUEST_MESSAGE':
       return true
 
     case 'NEW':
@@ -117,9 +117,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_FILE_PATH':
     case 'ADD_FOLDER':
     case 'DELETE_FILE':
-    case 'ADD_UI_JS_FILE':
+    case 'ADD_TEXT_FILE':
     case 'UPDATE_FILE':
-    case 'ADD_CODE_FILE':
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
     case 'SET_SCENE_PROP':
@@ -139,6 +138,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'FINISH_CHECKPOINT_TIMER':
     case 'ADD_MISSING_DIMENSIONS':
     case 'UPDATE_SIMPLE_TEXT_CHILD':
+    case 'ADD_STORYBOARD_FILE':
       return false
     case 'SAVE_ASSET':
       return (

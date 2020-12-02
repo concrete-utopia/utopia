@@ -1,6 +1,6 @@
 import { Placement } from 'tippy.js'
 import * as React from 'react'
-import { betterReactMemo } from 'uuiui-deps'
+import { betterReactMemo } from '../utils/react-performance'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'
 
@@ -82,6 +82,7 @@ export const Icn = betterReactMemo(
       <img
         style={{
           userSelect: 'none',
+          display: 'block',
           ...props.style,
           ...disabledStyle,
         }}

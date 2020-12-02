@@ -4,16 +4,22 @@ import * as R from 'ramda'
 import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
-import { convertMetadataMap, MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ComponentMetadata } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { fileTypeFromFileName, updateParseResultCode } from '../../../core/model/project-file-utils'
+import {
+  fileTypeFromFileName,
+  updateParsedTextFileHighlightBounds,
+} from '../../../core/model/project-file-utils'
 import {
   TemplatePath,
-  UIJSFile,
-  isCodeOrUiJsFile,
+  TextFile,
   isParseSuccess,
   ProjectContents,
+  isTextFile,
+  textFile,
+  textFileContents,
+  RevisionsState,
 } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -33,7 +39,7 @@ import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/pre
 import * as TP from '../../../core/shared/template-path'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
 import { isTransientAction, isUndoOrRedo, isParsedModelUpdate } from '../actions/action-utils'
-import * as EditorActions from '../actions/actions'
+import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import { StateHistory } from '../history'
 import { saveToLocalStorage, saveToServer, pushProjectURLToBrowserHistory } from '../persistence'
@@ -46,11 +52,9 @@ import {
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
-  getOpenFilename,
-  getOpenUIJSFile,
-  getOpenUIJSFileKey,
+  getOpenTextFile,
+  getOpenTextFileKey,
   getOpenUtopiaJSXComponentsFromState,
-  PersistentModel,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -64,6 +68,7 @@ import {
   ProjectContentTreeRoot,
   walkContentsTree,
 } from '../../assets'
+import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 
 interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -110,7 +115,7 @@ function processAction(
   } else if (action.action === 'SET_SHORTCUT') {
     return {
       ...working,
-      userState: EditorActions.UPDATE_FNS.SET_SHORTCUT(action, working.userState),
+      userState: UPDATE_FNS.SET_SHORTCUT(action, working.userState),
     }
   } else {
     // Process action on the JS side.
@@ -145,9 +150,8 @@ function processAction(
         break
       case 'NEW':
       case 'LOAD':
-        const derivedResult = deriveState(editorAfterNavigator, null, false, null)
-        editorAfterNavigator = derivedResult.editor
-        newStateHistory = History.init(derivedResult.editor, derivedResult.derived)
+        const derivedState = deriveState(editorAfterNavigator, null, null)
+        newStateHistory = History.init(editorAfterNavigator, derivedState)
         break
       default:
         newStateHistory = workingHistory
@@ -197,28 +201,21 @@ export function updateEmbeddedPreview(
 }
 
 function maybeRequestModelUpdate(
-  file: UIJSFile,
+  file: TextFile,
   filePath: string,
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
 ): { modelUpdateRequested: boolean; parseOrPrintFinished: Promise<boolean> } {
-  if (codeNeedsParsing(file.revisionsState)) {
-    const code = file.fileContents.value.code
+  if (codeNeedsParsing(file.fileContents.revisionsState)) {
+    const code = file.fileContents.code
     const parseFinished = getParseResult(workers, filePath, code)
       .then((parseResult) => {
-        const parseResultRestoredCode = bimapEither(
-          (failure) => {
-            return {
-              ...failure,
-              code: code,
-            }
-          },
-          (success) => success,
-          parseResult,
-        )
-        const updatedFile: UIJSFile = {
+        const updatedFile: TextFile = {
           ...file,
-          fileContents: parseResultRestoredCode,
+          fileContents: {
+            ...file.fileContents,
+            parsed: parseResult,
+          },
         }
 
         dispatch([EditorActions.updateFromWorker(filePath, updatedFile, 'Model')])
@@ -230,18 +227,21 @@ function maybeRequestModelUpdate(
         return true
       })
     return { modelUpdateRequested: true, parseOrPrintFinished: parseFinished }
-  } else if (codeNeedsPrinting(file.revisionsState) && isParseSuccess(file.fileContents)) {
-    const printFinished = printCodeAsync(workers, file.fileContents.value)
+  } else if (
+    codeNeedsPrinting(file.fileContents.revisionsState) &&
+    isParseSuccess(file.fileContents.parsed)
+  ) {
+    const printFinished = printCodeAsync(workers, file.fileContents.parsed)
       .then((printResult) => {
-        const updatedContents = updateParseResultCode(
-          file.fileContents,
-          printResult.code,
+        const updatedContents = updateParsedTextFileHighlightBounds(
+          file.fileContents.parsed,
           printResult.highlightBounds,
         )
-        const updatedFile: UIJSFile = {
-          ...file,
-          fileContents: updatedContents,
-        }
+        const updatedFile: TextFile = textFile(
+          textFileContents(printResult.code, updatedContents, RevisionsState.BothMatch),
+          null,
+          Date.now(),
+        )
 
         dispatch([EditorActions.updateFromWorker(filePath, updatedFile, 'Code')])
 
@@ -268,14 +268,14 @@ function maybeRequestModelUpdateOnEditor(
     return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
   }
 
-  const openUIJSFile = getOpenUIJSFile(editor)
-  const openUIJSFilePath = getOpenUIJSFileKey(editor)
-  if (openUIJSFile == null || openUIJSFilePath == null) {
+  const openTextFile = getOpenTextFile(editor)
+  const openTextFilePath = getOpenTextFileKey(editor)
+  if (openTextFile == null || openTextFilePath == null) {
     return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
   } else {
     const modelUpdateRequested = maybeRequestModelUpdate(
-      openUIJSFile,
-      openUIJSFilePath,
+      openTextFile,
+      openTextFilePath,
       workers,
       dispatch,
     )
@@ -329,7 +329,7 @@ export function editorDispatch(
   )
 
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
-  const anySendPreviewModel = dispatchedActions.some(EditorActions.isSendPreviewModel)
+  const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
 
   // With this reducer we can split the actions into groups (arrays) which can be dispatched together without rebuilding the derived state.
   // Between the different group derived state rebuild is needed
@@ -481,29 +481,29 @@ function editorDispatchInner(
     // Tested quickly and it broke selection, but I'm mostly certain
     // it should only merge when both have changed.
     if (metadataChanged) {
-      result = produce(result, (r) => {
-        if (r.editor.canvas.dragState == null) {
-          r.editor.jsxMetadataKILLME = reconstructJSXMetadata(result.editor)
-        } else {
-          r.editor.canvas.dragState.metadata = reconstructJSXMetadata(result.editor)
+      if (result.editor.canvas.dragState == null) {
+        result = {
+          ...result,
+          editor: {
+            ...result.editor,
+            jsxMetadataKILLME: reconstructJSXMetadata(result.editor),
+          },
         }
-        // TODO Re-enable this once we have addressed the root cause of the false positives
-        // (these were firing frequently even on elements that remained > 0x0 dimensions)
-        //
-        // const allLostElements = lostElements(r.editor.selectedViews, r.editor.jsxMetadataKILLME)
-        // const newLostElements = TP.filterPaths(allLostElements, r.editor.warnedInstances)
-        // if (newLostElements.length > 0 && isBrowserEnvironment) {
-        //   // FIXME The above `isBrowserEnvironment` check is required because this is tripped by tests that don't update the metadata
-        //   // correctly. Rather than preventing this code running during tests, we should make sure tests are all updating metadata correctly.
-        //   const toastAction = EditorActions.showToast({
-        //     message: `Some elements are no longer being rendered`,
-        //     level: 'WARNING',
-        //   })
-        //   setTimeout(() => boundDispatch([toastAction], 'everyone'), 0)
-        // }
-
-        // r.editor.warnedInstances = allLostElements
-      })
+      } else {
+        result = {
+          ...result,
+          editor: {
+            ...result.editor,
+            canvas: {
+              ...result.editor.canvas,
+              dragState: {
+                ...result.editor.canvas.dragState,
+                metadata: reconstructJSXMetadata(result.editor),
+              },
+            },
+          },
+        }
+      }
     }
 
     const cleanedEditor = metadataChanged
@@ -514,21 +514,14 @@ function editorDispatchInner(
 
     let frozenDerivedState: DerivedState
     if (anyUndoOrRedo) {
-      frozenDerivedState = optionalDeepFreeze(EditorActions.restoreDerivedState(result.history))
+      frozenDerivedState = optionalDeepFreeze(restoreDerivedState(result.history))
       // TODO BB put inspector and navigator back to history
     } else if (editorStayedTheSame) {
       // !! We completely skip creating a new derived state, since the editor state stayed the exact same
       frozenDerivedState = storedState.derived
     } else {
-      const parsedModelUpdated = R.any(isParsedModelUpdate, dispatchedActions)
-      const derivedResult = deriveState(
-        frozenEditorState,
-        storedState.derived,
-        parsedModelUpdated,
-        storedState.dispatch,
-      )
-      frozenEditorState = derivedResult.editor
-      frozenDerivedState = optionalDeepFreeze(derivedResult.derived)
+      const derivedState = deriveState(frozenEditorState, storedState.derived, storedState.dispatch)
+      frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 
     if (!PRODUCTION_ENV) {
@@ -623,7 +616,7 @@ function notifyTsWorker(
     if (oldFile == null) {
       shouldInitTsWorker = true
     } else {
-      if (file != null && isCodeOrUiJsFile(file) && oldFile != file) {
+      if (file != null && isTextFile(file) && oldFile != file) {
         filesToUpdateInTsWorker.push(filename)
       }
     }
@@ -644,11 +637,7 @@ function notifyTsWorker(
   } else {
     Utils.fastForEach(filesToUpdateInTsWorker, (filename) => {
       const file = getContentsTreeFileFromString(newEditorState.projectContents, filename)
-      if (
-        file != null &&
-        isCodeOrUiJsFile(file) &&
-        (isJsOrTsFile(filename) || isCssFile(filename))
-      ) {
+      if (file != null && isTextFile(file) && (isJsOrTsFile(filename) || isCssFile(filename))) {
         workers.sendUpdateFileMessage(filename, file, true)
       }
     })

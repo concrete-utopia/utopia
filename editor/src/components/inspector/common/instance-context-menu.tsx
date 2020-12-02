@@ -4,7 +4,7 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { betterReactMemo } from 'uuiui-deps'
 import { ContextMenuItem, requireDispatch } from '../../context-menu-items'
 import { EditorDispatch } from '../../editor/action-types'
-import * as EditorActions from '../../editor/actions/actions'
+import * as EditorActions from '../../editor/actions/action-creators'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import utils from '../../../utils/utils'
 import * as PP from '../../../core/shared/property-path'
@@ -71,7 +71,7 @@ export const InstanceContextMenu = betterReactMemo(
   ({ contextMenuInstance, propNames }: InstanceContextMenuProps) => {
     const { dispatch } = useEditorState((store) => {
       return { dispatch: store.dispatch }
-    })
+    }, 'InstanceContextMenu')
 
     const { selectedViewsRef } = useInspectorContext()
 

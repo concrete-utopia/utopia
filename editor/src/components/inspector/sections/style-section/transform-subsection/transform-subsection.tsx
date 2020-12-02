@@ -1,17 +1,13 @@
 import * as OPI from 'object-path-immutable'
 import * as React from 'react'
 import { animated, SpringValue } from 'react-spring'
-import {
-  FlexRow,
-  Icn,
-  InspectorSubsectionHeader,
-  NumberInput,
-  SquareButton,
-  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
-  UtopiaTheme,
-} from 'uuiui'
+import { FlexRow, Icn, InspectorSubsectionHeader, SquareButton, UtopiaTheme } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import utils from '../../../../../utils/utils'
+import {
+  NumberInput,
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+} from '../../../../../uuiui/inputs/number-input'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import { ControlStatus, ControlStyles } from '../../../common/control-status'

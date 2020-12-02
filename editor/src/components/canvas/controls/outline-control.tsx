@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { colorTheme } from 'uuiui'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ComponentMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import * as TP from '../../../core/shared/template-path'
@@ -20,7 +20,7 @@ import { CanvasPinControls } from './pin-controls'
 export function getSelectionColor(
   path: TemplatePath,
   rootElements: Array<UtopiaJSXComponent>,
-  metadata: ComponentMetadata[],
+  metadata: JSXMetadata,
   imports: Imports,
   createsYogaLayout: boolean,
   anySelectedElementIsYogaLayouted: boolean,
@@ -33,7 +33,7 @@ export function getSelectionColor(
     if (MetadataUtils.isComponentInstance(path, rootElements, metadata, imports)) {
       return colorTheme.canvasSelectionInstanceOutline.value
     }
-    const originType = MetadataUtils.getElementOriginType(rootElements, metadata, path)
+    const originType = MetadataUtils.getElementOriginType(rootElements, path)
     if (originType === 'generated-static-definition-present' || originType === 'unknown-element') {
       return colorTheme.canvasSelectionRandomDOMElementInstanceOutline.value
     } else if (createsYogaLayout) {
@@ -146,7 +146,10 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
       const keyPrefix = TP.toComponentId(selectedView)
       const instance = TP.isScenePath(selectedView)
         ? null
-        : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
+        : MetadataUtils.getElementByInstancePathMaybe(
+            this.props.componentMetadata.elements,
+            selectedView,
+          )
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
       const isPositionRelative = instance?.specialSizeMeasurements.position === 'relative'
       const isFlow = MetadataUtils.isFlowElement(instance)
@@ -202,7 +205,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
     if (
       targetPaths.length > 1 &&
       TP.areAllElementsInSameScene(targetPaths) &&
-      this.props.componentMetadata.length > 0 &&
+      this.props.componentMetadata.components.length > 0 &&
       !this.props.xrayMode
     ) {
       const globalFrames = targetPaths.map((selectedView) => this.getTargetFrame(selectedView))
@@ -289,11 +292,11 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
 
     const containingBlockHighlights = this.props.selectedViews.map((view) => {
       const containingBlockParent = MetadataUtils.findContainingBlock(
-        this.props.componentMetadata,
+        this.props.componentMetadata.elements,
         view,
       )
       const containingRectangle = MetadataUtils.getElementByTemplatePathMaybe(
-        this.props.componentMetadata,
+        this.props.componentMetadata.elements,
         containingBlockParent,
       )?.globalFrame
       if (containingRectangle == null) {

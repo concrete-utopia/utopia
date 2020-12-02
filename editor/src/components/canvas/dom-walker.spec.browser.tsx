@@ -13,7 +13,12 @@ import { act, render } from '@testing-library/react'
 import * as React from 'react'
 import create from 'zustand'
 import { notLoggedIn } from '../../common/user'
-import { ComponentMetadata, ElementInstanceMetadata } from '../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  jsxMetadata,
+  JSXMetadata,
+} from '../../core/shared/element-template'
 import {
   FakeBundlerWorker,
   FakeLinterWorker,
@@ -32,42 +37,31 @@ import { createTestProjectWithCode } from './canvas-utils'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { NO_OP } from '../../core/shared/utils'
+import { mapValues } from '../../core/shared/object-utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   return {
     ...element,
     element: left('REMOVED_FROM_TEST'),
-    children: element.children.map(sanitizeElementMetadata),
   }
 }
 
-function sanitizeJsxMetadata(jsxMetadata: ComponentMetadata[]) {
-  return jsxMetadata.map((componentMetadata) => {
-    const rootElements = componentMetadata.rootElements
-    if (rootElements != null) {
-      return {
-        ...componentMetadata,
-        rootElements: rootElements.map(sanitizeElementMetadata),
-      }
-    } else {
-      return componentMetadata
-    }
-  })
+function sanitizeJsxMetadata(metadata: JSXMetadata) {
+  const elements: ElementInstanceMetadataMap = mapValues(sanitizeElementMetadata, metadata.elements)
+  return jsxMetadata(metadata.components, elements)
 }
 
 async function renderTestEditorWithCode(appUiJsFileCode: string) {
   let emptyEditorState = createEditorState(NO_OP)
-  const fromScratchResult = deriveState(emptyEditorState, null, false, null)
-  emptyEditorState = fromScratchResult.editor
-  const derivedState = fromScratchResult.derived
+  const derivedState = deriveState(emptyEditorState, null, null)
 
   const history = History.init(emptyEditorState, derivedState)
   const spyCollector = emptyUiJsxCanvasContextData()
 
   const dispatch: EditorDispatch = (actions) => {
-    const result = editorDispatch(dispatch, actions, api.getState(), spyCollector)
-    api.setState(result)
+    const result = editorDispatch(dispatch, actions, storeHook.getState(), spyCollector)
+    storeHook.setState(result)
   }
 
   const initialEditorStore: EditorStore = {
@@ -87,11 +81,11 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     dispatch: dispatch,
   }
 
-  const [storeHook, api] = create<EditorStore>((set) => initialEditorStore)
+  const storeHook = create<EditorStore>((set) => initialEditorStore)
 
   const result = render(
     <HotRoot
-      api={api}
+      api={storeHook}
       useStore={storeHook}
       spyCollector={spyCollector}
       propertyControlsInfoSupported={false}
@@ -111,7 +105,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       false,
     )
   })
-  const sanitizedMetadata = sanitizeJsxMetadata(api.getState().editor.jsxMetadataKILLME)
+  const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().editor.jsxMetadataKILLME)
   expect(sanitizedMetadata).toMatchSnapshot()
 }
 

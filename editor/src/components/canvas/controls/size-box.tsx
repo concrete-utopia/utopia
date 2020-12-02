@@ -5,7 +5,7 @@ import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { colorTheme } from 'uuiui'
 import { EditorDispatch } from '../../editor/action-types'
-import { setCanvasAnimationsEnabled } from '../../editor/actions/actions'
+import { setCanvasAnimationsEnabled } from '../../editor/actions/action-creators'
 import { ControlFontSize } from '../canvas-controls-frame'
 import {
   CSSCursor,
@@ -24,6 +24,7 @@ import { TemplatePath } from '../../../core/shared/project-file-types'
 import CanvasActions from '../canvas-actions'
 import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
 import { ComponentMetadata, ElementInstanceMetadata } from '../../../core/shared/element-template'
+import { JSXMetadata } from '../../../core/shared/element-template'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { betterReactMemo } from '../../../uuiui-deps'
@@ -546,7 +547,7 @@ interface ResizeRectangleProps {
   dragState: ResizeDragState | null
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   getOriginalFrames: () => Array<OriginalCanvasAndLocalFrame>
-  metadata: Array<ComponentMetadata>
+  metadata: JSXMetadata
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
   testID: string
   labels: {

@@ -3,12 +3,12 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestScenePath,
-} from './ui-jsx-test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
+} from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
 import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { canvasRectangle, CanvasVector } from '../../core/shared/math-utils'
-import { selectComponents, setCanvasFrames, wrapInView } from '../editor/actions/actions'
+import { selectComponents, setCanvasFrames, wrapInView } from '../editor/actions/action-creators'
 import { reparentComponents } from '../navigator/actions'
 import * as TP from '../../core/shared/template-path'
 import {
@@ -1059,7 +1059,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  it('wraps in multiselected element + children, moves only the element, keeps children', async () => {
+  it('wraps in multiselected element and children, moves only the element, keeps children', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid={'aaa'}>
@@ -1162,7 +1162,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  it('reparents multiselected element + children, moves only the element, keeps children', async () => {
+  it('reparents multiselected element and children, moves only the element, keeps children', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
@@ -1208,7 +1208,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  it('reparents multiselected element + descendant (not direct children), moves both of the elements', async () => {
+  it('reparents multiselected element and descendant which are not direct children, moves both of the elements', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid={'aaa'}>
@@ -1332,6 +1332,24 @@ describe('moveTemplate', () => {
         buttons: 1,
       }),
     )
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        areaControl,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
 
     await act(async () => {
       const domFinished = renderResult.getDomReportDispatched()
@@ -1552,6 +1570,24 @@ describe('moveTemplate', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
+        areaControl,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
         window,
         new MouseEvent('mouseup', {
           bubbles: true,
@@ -1626,6 +1662,24 @@ describe('moveTemplate', () => {
         buttons: 1,
       }),
     )
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        areaControl,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 45,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
 
     await act(async () => {
       const domFinished = renderResult.getDomReportDispatched()

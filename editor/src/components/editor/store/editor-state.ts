@@ -4,6 +4,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ComponentMetadata,
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   getElementsByUIDFromTopLevelElements,
   isUtopiaJSXComponent,
   JSXElement,
@@ -11,6 +12,8 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXElement,
+  JSXMetadata,
+  emptyJsxMetadata,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -19,22 +22,18 @@ import {
   getUtopiaID,
 } from '../../../core/model/element-template-utils'
 import {
-  codeFile,
   correctProjectContentsPath,
   getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
-  saveUIJSFileContents,
-  updateCanvasMetadataParseResult,
+  saveTextFileContents,
   getHighlightBoundsFromParseResult,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
 import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
-  CanvasMetadataParseResult,
-  CodeFile,
   Imports,
   InstancePath,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   ProjectContents,
   ProjectFile,
@@ -43,11 +42,18 @@ import {
   ScenePath,
   StaticInstancePath,
   TemplatePath,
-  UIJSFile,
-  isCodeFile,
-  isUIJSFile,
+  TextFile,
+  isTextFile,
   StaticTemplatePath,
   NodeModules,
+  foldParsedTextFile,
+  mapParsedTextFile,
+  textFileContents,
+  isParseSuccess,
+  codeFile,
+  isParseFailure,
+  isParsedTextFile,
+  EmptyExportsDetail,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -134,6 +140,12 @@ import {
   immediatelyResolvableDependenciesWithEditorRequirements,
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
+import { parseSuccess } from '../../../core/workers/common/project-file-utils'
+import {
+  DerivedStateKeepDeepEquality,
+  JSXMetadataKeepDeepEquality,
+} from './store-deep-equality-instances'
+import { EditorTab, isOpenFileTab, releaseNotesTab } from './editor-tabs'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -159,7 +171,7 @@ export const defaultUserState: UserState = {
   shortcutConfig: {},
 }
 
-export interface EditorStore {
+export type EditorStore = {
   editor: EditorState
   derived: DerivedState
   history: StateHistory
@@ -205,52 +217,6 @@ export type CanvasBase64Blobs = { [key: string]: UIFileBase64Blobs }
 
 export type ErrorMessages = { [filename: string]: Array<ErrorMessage> }
 
-export interface OpenFileTab {
-  type: 'OPEN_FILE_TAB'
-  filename: string
-}
-
-export function openFileTab(filename: string): OpenFileTab {
-  return {
-    type: 'OPEN_FILE_TAB',
-    filename: filename,
-  }
-}
-
-export interface ReleaseNotesTab {
-  type: 'RELEASE_NOTES_TAB'
-}
-
-export function releaseNotesTab(): ReleaseNotesTab {
-  return {
-    type: 'RELEASE_NOTES_TAB',
-  }
-}
-
-export interface UserConfigurationTab {
-  type: 'USER_CONFIGURATION_TAB'
-}
-
-export function userConfigurationTab(): UserConfigurationTab {
-  return {
-    type: 'USER_CONFIGURATION_TAB',
-  }
-}
-
-export type EditorTab = OpenFileTab | ReleaseNotesTab | UserConfigurationTab
-
-export function isOpenFileTab(editorTab: EditorTab): editorTab is OpenFileTab {
-  return editorTab.type === 'OPEN_FILE_TAB'
-}
-
-export function isReleaseNotesTab(editorTab: EditorTab): editorTab is ReleaseNotesTab {
-  return editorTab.type === 'RELEASE_NOTES_TAB'
-}
-
-export function isUserConfigurationTab(editorTab: EditorTab): editorTab is UserConfigurationTab {
-  return editorTab.type === 'USER_CONFIGURATION_TAB'
-}
-
 export interface ConsoleLog {
   method: string
   data: Array<any>
@@ -264,14 +230,13 @@ export interface EditorState {
   projectVersion: number
   isLoaded: boolean
   openFiles: Array<EditorTab>
-  cursorPositions: { [key: string]: CursorPosition }
   selectedFile: {
     tab: EditorTab
     initialCursorPosition: CursorPosition | null
   } | null
-  spyMetadataKILLME: ComponentMetadata[] // this is coming from the canvas spy report.
+  spyMetadataKILLME: JSXMetadata // this is coming from the canvas spy report.
   domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
-  jsxMetadataKILLME: ComponentMetadata[] // this is a merged result of the two above.
+  jsxMetadataKILLME: JSXMetadata // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
@@ -432,12 +397,12 @@ export function getFileForName(filePath: string, model: EditorState): ProjectFil
   return getContentsTreeFileFromString(model.projectContents, filePath)
 }
 
-export function getOpenUIJSFileKey(model: EditorState): string | null {
+export function getOpenTextFileKey(model: EditorState): string | null {
   const openFile = getOpenFile(model)
   const openEditorTab = getOpenEditorTab(model)
   if (
     openFile != null &&
-    isUIJSFile(openFile) &&
+    isTextFile(openFile) &&
     openEditorTab != null &&
     isOpenFileTab(openEditorTab)
   ) {
@@ -447,21 +412,45 @@ export function getOpenUIJSFileKey(model: EditorState): string | null {
   }
 }
 
-export function isOpenFileUiJs(model: EditorState): boolean {
-  const openFile = getOpenFile(model)
-  if (openFile == null) {
-    return false
+export function getOpenTextFile(model: EditorState): TextFile | null {
+  const openTextFileKey = getOpenTextFileKey(model)
+  if (openTextFileKey == null) {
+    return null
+  } else {
+    const openTextFile = getContentsTreeFileFromString(model.projectContents, openTextFileKey)
+    if (openTextFile != null && isTextFile(openTextFile)) {
+      return openTextFile
+    } else {
+      throw new Error(
+        `Inconsistency between expected open Text file ${openTextFileKey} and the file ${JSON.stringify(
+          openTextFile,
+        )}`,
+      )
+    }
   }
-  return isUIJSFile(openFile)
 }
 
-export function getOpenUIJSFile(model: EditorState): UIJSFile | null {
+export function getOpenUIJSFileKey(model: EditorState): string | null {
+  const openEditorTab = getOpenEditorTab(model)
+  if (isOpenFileUiJs(model) && openEditorTab != null && isOpenFileTab(openEditorTab)) {
+    return openEditorTab.filename
+  } else {
+    return null
+  }
+}
+
+export function isOpenFileUiJs(model: EditorState): boolean {
+  const openFile = getOpenFile(model)
+  return openFile != null && isParsedTextFile(openFile)
+}
+
+export function getOpenUIJSFile(model: EditorState): TextFile | null {
   const openUIJSFileKey = getOpenUIJSFileKey(model)
   if (openUIJSFileKey == null) {
     return null
   } else {
     const openUIJSFile = getContentsTreeFileFromString(model.projectContents, openUIJSFileKey)
-    if (openUIJSFile != null && isUIJSFile(openUIJSFile)) {
+    if (openUIJSFile != null && isParsedTextFile(openUIJSFile)) {
       return openUIJSFile
     } else {
       throw new Error(
@@ -476,18 +465,15 @@ export function getOpenUIJSFile(model: EditorState): UIJSFile | null {
 export interface SimpleParseSuccess {
   imports: Imports
   utopiaComponents: Array<UtopiaJSXComponent>
-  canvasMetadata: CanvasMetadataParseResult
 }
 
 export function simpleParseSuccess(
   imports: Imports,
   utopiaComponents: Array<UtopiaJSXComponent>,
-  canvasMetadata: CanvasMetadataParseResult,
 ): SimpleParseSuccess {
   return {
     imports: imports,
     utopiaComponents: utopiaComponents,
-    canvasMetadata: canvasMetadata,
   }
 }
 
@@ -498,23 +484,20 @@ export function modifyParseSuccessWithSimple(
   const oldSimpleParseSuccess: SimpleParseSuccess = {
     imports: success.imports,
     utopiaComponents: getUtopiaJSXComponentsFromSuccess(success),
-    canvasMetadata: success.canvasMetadata,
   }
   const newSimpleParseSuccess: SimpleParseSuccess = transform(oldSimpleParseSuccess)
   const newTopLevelElements = applyUtopiaJSXComponentsChanges(
     success.topLevelElements,
     newSimpleParseSuccess.utopiaComponents,
   )
-  return {
-    imports: newSimpleParseSuccess.imports,
-    topLevelElements: newTopLevelElements,
-    canvasMetadata: newSimpleParseSuccess.canvasMetadata,
-    projectContainedOldSceneMetadata: success.projectContainedOldSceneMetadata,
-    code: success.code,
-    highlightBounds: {},
-    jsxFactoryFunction: success.jsxFactoryFunction,
-    combinedTopLevelArbitraryBlock: success.combinedTopLevelArbitraryBlock,
-  }
+  return parseSuccess(
+    newSimpleParseSuccess.imports,
+    newTopLevelElements,
+    {},
+    success.jsxFactoryFunction,
+    success.combinedTopLevelArbitraryBlock,
+    success.exportsDetail,
+  )
 }
 
 export interface ParseSuccessAndEditorChanges<T> {
@@ -535,26 +518,30 @@ export function applyParseAndEditorChanges<T>(
     if (openUIJSFile == null) {
       return { editor: editor, additionalData: null }
     } else {
-      const possibleChanges: ParseSuccessAndEditorChanges<T> | null = foldEither(
+      const possibleChanges: ParseSuccessAndEditorChanges<T> | null = foldParsedTextFile(
         (_) => null,
         (success) => {
           return getChanges(editor, success)
         },
-        openUIJSFile.fileContents,
+        (_) => null,
+        openUIJSFile.fileContents.parsed,
       )
       if (possibleChanges == null) {
         return { editor: editor, additionalData: null }
       } else {
-        const updatedContents: ParseResult = mapEither(
+        const updatedContents: ParsedTextFile = mapParsedTextFile(
           possibleChanges.parseSuccessTransform,
-          openUIJSFile.fileContents,
+          openUIJSFile.fileContents.parsed,
         )
 
-        const updatedFile = saveUIJSFileContents(
+        const updatedFile = saveTextFileContents(
           openUIJSFile,
-          updatedContents,
+          textFileContents(
+            openUIJSFile.fileContents.code,
+            updatedContents,
+            RevisionsState.ParsedAhead,
+          ),
           false,
-          RevisionsState.ParsedAhead,
         )
 
         const editorWithSuccessChanges = {
@@ -565,6 +552,7 @@ export function applyParseAndEditorChanges<T>(
             updatedFile,
           ),
         }
+
         return {
           editor: possibleChanges.editorStateTransform(editorWithSuccessChanges),
           additionalData: possibleChanges.additionalData,
@@ -638,7 +626,6 @@ export function modifyOpenScenesAndJSXElements(
 
     return {
       ...success,
-      code: success.code,
       topLevelElements: newTopLevelElements,
     }
   }
@@ -661,7 +648,6 @@ export function modifyOpenJSXElements(
 
     return {
       ...success,
-      code: success.code,
       topLevelElements: newTopLevelElements,
     }
   }
@@ -671,11 +657,11 @@ export function modifyOpenJSXElements(
 export function modifyOpenJSXElementsAndMetadata(
   transform: (
     utopiaComponents: Array<UtopiaJSXComponent>,
-    componentMetadata: Array<ComponentMetadata>,
-  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: Array<ComponentMetadata> },
+    componentMetadata: JSXMetadata,
+  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: JSXMetadata },
   model: EditorState,
 ): EditorState {
-  let workingMetadata: Array<ComponentMetadata> = model.jsxMetadataKILLME
+  let workingMetadata: JSXMetadata = model.jsxMetadataKILLME
   const successTransform = (success: ParseSuccess) => {
     const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
     // Apply the transformation.
@@ -689,7 +675,6 @@ export function modifyOpenJSXElementsAndMetadata(
 
     return {
       ...success,
-      code: success.code,
       topLevelElements: newTopLevelElements,
     }
   }
@@ -704,7 +689,7 @@ export function modifyOpenJsxElementAtPath(
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
-  const staticPath = MetadataUtils.dynamicPathToStaticPath(model.jsxMetadataKILLME, path)
+  const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
   if (staticPath == null) {
     return model
   } else {
@@ -729,8 +714,8 @@ export function getOpenUtopiaJSXComponentsFromState(model: EditorState): Array<U
   if (openUIJSFile == null) {
     return []
   } else {
-    if (isRight(openUIJSFile.fileContents)) {
-      return getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.value)
+    if (isParseSuccess(openUIJSFile.fileContents.parsed)) {
+      return getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
     } else {
       return []
     }
@@ -762,10 +747,10 @@ export function getNumberOfScenes(model: EditorState): number {
 
 export function getSceneElements(model: EditorState): JSXElement[] {
   const openUIJSFile = getOpenUIJSFile(model)
-  if (openUIJSFile == null || isLeft(openUIJSFile.fileContents)) {
+  if (openUIJSFile == null || !isParseSuccess(openUIJSFile.fileContents.parsed)) {
     return []
   } else {
-    return getSceneElementsFromParseSuccess(openUIJSFile.fileContents.value)
+    return getSceneElementsFromParseSuccess(openUIJSFile.fileContents.parsed)
   }
 }
 
@@ -819,14 +804,17 @@ export function getOpenImportsFromState(model: EditorState): Imports {
   if (openUIJSFile == null) {
     return {}
   } else {
-    return foldEither(
+    return foldParsedTextFile(
       (_) => {
         return emptyImports
       },
       (r) => {
         return r.imports
       },
-      openUIJSFile.fileContents,
+      (_) => {
+        return emptyImports
+      },
+      openUIJSFile.fileContents.parsed,
     )
   }
 }
@@ -834,9 +822,8 @@ export function getOpenImportsFromState(model: EditorState): Imports {
 export function removeElementAtPath(
   target: InstancePath,
   components: Array<UtopiaJSXComponent>,
-  metadata: ComponentMetadata[],
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.dynamicPathToStaticPath(metadata, target)
+  const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
@@ -849,9 +836,8 @@ export function insertElementAtPath(
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
-  metadata: ComponentMetadata[],
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.templatePathToStaticTemplatePath(metadata, targetParent)
+  const staticTarget = MetadataUtils.templatePathToStaticTemplatePath(targetParent)
   return insertJSXElementChild(staticTarget, elementToInsert, components, indexPosition)
 }
 
@@ -859,9 +845,8 @@ export function transformElementAtPath(
   components: Array<UtopiaJSXComponent>,
   target: InstancePath,
   transform: (elem: JSXElement) => JSXElement,
-  metadata: ComponentMetadata[],
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.dynamicPathToStaticPath(metadata, target)
+  const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
@@ -906,7 +891,7 @@ export function transientCanvasState(
   }
 }
 
-export function getMetadata(editor: EditorState): Array<ComponentMetadata> {
+export function getMetadata(editor: EditorState): JSXMetadata {
   if (editor.canvas.dragState == null) {
     return editor.jsxMetadataKILLME
   } else {
@@ -928,6 +913,7 @@ export const defaultElementWarnings: ElementWarnings = {
 
 export interface DerivedState {
   navigatorTargets: Array<TemplatePath>
+  visibleNavigatorTargets: Array<TemplatePath>
   canvas: {
     descendantsOfHiddenInstances: Array<TemplatePath>
     controls: Array<HigherOrderControl>
@@ -939,6 +925,7 @@ export interface DerivedState {
 function emptyDerivedState(editorState: EditorState): DerivedState {
   return {
     navigatorTargets: [],
+    visibleNavigatorTargets: [],
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
@@ -1033,11 +1020,10 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
     openFiles: [],
-    cursorPositions: {},
     selectedFile: null,
-    spyMetadataKILLME: [],
+    spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
-    jsxMetadataKILLME: [],
+    jsxMetadataKILLME: emptyJsxMetadata,
     projectContents: {},
     codeResultCache: generateCodeResultCache(
       {},
@@ -1164,13 +1150,8 @@ export interface OriginalCanvasAndLocalFrame {
   canvasFrame?: CanvasRectangle
 }
 
-type EditorAndDerivedState = {
-  editor: EditorState
-  derived: DerivedState
-}
-
 export function getElementWarnings(
-  rootMetadata: Array<ComponentMetadata>,
+  rootMetadata: JSXMetadata,
 ): ComplexMap<TemplatePath, ElementWarnings> {
   let result: ComplexMap<TemplatePath, ElementWarnings> = emptyComplexMap()
   MetadataUtils.walkMetadata(
@@ -1202,14 +1183,17 @@ export function getElementWarnings(
       result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
     },
   )
-  fastForEach(rootMetadata, (scene) => {
+  fastForEach(rootMetadata.components, (scene) => {
     const elementWarnings: ElementWarnings = {
       widthOrHeightZero:
         scene.globalFrame != null
           ? scene.globalFrame.width === 0 || scene.globalFrame.height === 0
           : false,
       absoluteWithUnpositionedParent: false,
-      dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(scene),
+      dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(
+        scene,
+        rootMetadata,
+      ),
     }
     result = addToComplexMap(toString, result, scene.scenePath, elementWarnings)
   })
@@ -1219,74 +1203,32 @@ export function getElementWarnings(
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
-  uidsChanged: boolean,
   dispatch: EditorDispatch | null,
-): EditorAndDerivedState {
+): DerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
-  const componentKeys = Utils.keepReferenceIfShallowEqual(
-    derivedState.navigatorTargets,
-    MetadataUtils.createOrderedTemplatePathsFromElements(editor.jsxMetadataKILLME),
+  const {
+    navigatorTargets,
+    visibleNavigatorTargets,
+  } = MetadataUtils.createOrderedTemplatePathsFromElements(
+    editor.jsxMetadataKILLME,
+    editor.navigator.collapsedViews,
   )
 
   const derived: DerivedState = {
-    navigatorTargets: componentKeys,
+    navigatorTargets: navigatorTargets,
+    visibleNavigatorTargets: visibleNavigatorTargets,
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
       transientState: produceCanvasTransientState(editor, true, dispatch, oldDerivedState, false),
     },
-    elementWarnings: keepDeepReferenceEqualityIfPossible(
-      oldDerivedState?.elementWarnings,
-      getElementWarnings(getMetadata(editor)),
-    ),
+    elementWarnings: getElementWarnings(getMetadata(editor)),
   }
 
-  const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)
-  let selectedViews: Array<TemplatePath> = []
+  const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
 
-  const currentFilePath = getOpenUIJSFileKey(editor)
-  const currentFile = getOpenUIJSFile(editor)
-  if (uidsChanged && currentFile != null && currentFilePath != null) {
-    const cursorPosition = editor.cursorPositions[currentFilePath]
-    if (cursorPosition != null) {
-      const { line } = cursorPosition
-
-      const highlightBounds = getHighlightBoundsFromParseResult(currentFile.fileContents)
-      const sortedHighlightBounds = Object.values(highlightBounds).sort(
-        (a, b) => b.startLine - a.startLine,
-      )
-      const targets = sortedHighlightBounds
-        .filter((bounds) => {
-          // TS line numbers are zero based, monaco is 1-based
-          return line >= bounds.startLine + 1 && line <= bounds.endLine + 1
-        })
-        .map((bound) => bound.uid)
-
-      if (targets.length > 0) {
-        const target = targets[0]
-        Utils.fastForEach(componentKeys, (path) => {
-          if (isInstancePath(path)) {
-            const staticPath = MetadataUtils.dynamicPathToStaticPath(editor.jsxMetadataKILLME, path)
-            const uid = staticPath != null ? toUid(staticPath) : null
-            if (uid === target) {
-              selectedViews.push(path)
-            }
-          }
-        })
-      }
-    }
-  } else {
-    selectedViews = editor.selectedViews
-  }
-
-  return {
-    editor: {
-      ...editor,
-      selectedViews: selectedViews,
-    },
-    derived: sanitizedDerivedState,
-  }
+  return sanitizedDerivedState
 }
 
 export function createCanvasModelKILLME(
@@ -1321,10 +1263,9 @@ export function editorModelFromPersistentModel(
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
     openFiles: persistentModel.openFiles,
-    cursorPositions: {},
-    spyMetadataKILLME: [],
+    spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
-    jsxMetadataKILLME: [],
+    jsxMetadataKILLME: emptyJsxMetadata,
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
       {},
@@ -1534,8 +1475,8 @@ export function packageJsonFileFromProjectContents(
 
 export function getPackageJsonFromEditorState(editor: EditorState): Either<string, any> {
   const packageJsonFile = packageJsonFileFromProjectContents(editor.projectContents)
-  if (packageJsonFile != null && isCodeFile(packageJsonFile)) {
-    const packageJsonContents = Utils.jsonParseOrNull(packageJsonFile.fileContents)
+  if (packageJsonFile != null && isTextFile(packageJsonFile)) {
+    const packageJsonContents = Utils.jsonParseOrNull(packageJsonFile.fileContents.code)
     return packageJsonContents != null
       ? right(packageJsonContents)
       : left('package.json parse error')
@@ -1556,7 +1497,7 @@ export function getMainUIFromModel(model: EditorState): string | null {
   return null
 }
 
-export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<string, CodeFile> {
+export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<string, TextFile> {
   const parsedFilePath = mapEither(
     (contents) => contents?.utopia?.html,
     getPackageJsonFromEditorState(editor),
@@ -1566,7 +1507,7 @@ export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<str
       ? parsedFilePath.value
       : 'public/index.html'
   const indexHtml = getContentsTreeFileFromString(editor.projectContents, `/${filePath}`)
-  if (indexHtml != null && isCodeFile(indexHtml)) {
+  if (indexHtml != null && isTextFile(indexHtml)) {
     return right(indexHtml)
   } else {
     return left(`Can't find code file at ${filePath}`)
@@ -1591,7 +1532,7 @@ export function updatePackageJsonInEditorState(
   transformPackageJson: (packageJson: string) => string,
 ): EditorState {
   const packageJsonFile = packageJsonFileFromProjectContents(editor.projectContents)
-  let updatedPackageJsonFile: CodeFile
+  let updatedPackageJsonFile: TextFile
   if (packageJsonFile == null) {
     // Uh oh, there is no package.json file, so create a brand new one.
     updatedPackageJsonFile = codeFile(
@@ -1599,12 +1540,12 @@ export function updatePackageJsonInEditorState(
       null,
     )
   } else {
-    if (isCodeFile(packageJsonFile)) {
+    if (isTextFile(packageJsonFile)) {
       // There is a package.json file, we should update it.
-      updatedPackageJsonFile = {
-        ...packageJsonFile,
-        fileContents: transformPackageJson(packageJsonFile.fileContents),
-      }
+      updatedPackageJsonFile = codeFile(
+        transformPackageJson(packageJsonFile.fileContents.code),
+        null,
+      )
     } else {
       // There is something else called package.json, we should bulldoze over it.
       updatedPackageJsonFile = codeFile(
@@ -1640,11 +1581,7 @@ export function areGeneratedElementsTargeted(
 ): boolean {
   const components = getOpenUtopiaJSXComponentsFromState(editor)
   return targets.some((target) => {
-    const originType = MetadataUtils.getElementOriginType(
-      components,
-      editor.jsxMetadataKILLME,
-      target,
-    )
+    const originType = MetadataUtils.getElementOriginType(components, target)
     switch (originType) {
       case 'unknown-element':
       case 'generated-static-definition-present':
@@ -1684,12 +1621,12 @@ export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages) {
 
 export function parseFailureAsErrorMessages(
   fileName: string | null,
-  parseResult: UIJSFile | null,
+  parseResult: TextFile | null,
 ): Array<ErrorMessage> {
-  if (parseResult == null || isRight(parseResult.fileContents)) {
+  if (parseResult == null || !isParseFailure(parseResult.fileContents.parsed)) {
     return []
   } else {
-    const parseFailure = parseResult.fileContents.value
+    const parseFailure = parseResult.fileContents.parsed
     const fileNameString = fileName || ''
     let errors: Array<ErrorMessage> = []
     if (parseFailure.diagnostics != null && parseFailure.diagnostics.length > 0) {
@@ -1732,12 +1669,12 @@ export function parseFailureAsErrorMessages(
   }
 }
 
-export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMetadata> {
+export function reconstructJSXMetadata(editor: EditorState): JSXMetadata {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {
     return editor.jsxMetadataKILLME
   } else {
-    return foldEither(
+    return foldParsedTextFile(
       (_) => editor.jsxMetadataKILLME,
       (success) => {
         const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
@@ -1746,9 +1683,10 @@ export function reconstructJSXMetadata(editor: EditorState): Array<ComponentMeta
           editor.spyMetadataKILLME,
           editor.domMetadataKILLME,
         )
-        return keepDeepReferenceEqualityIfPossible(editor.jsxMetadataKILLME, mergedMetadata)
+        return JSXMetadataKeepDeepEquality()(editor.jsxMetadataKILLME, mergedMetadata).value
       },
-      uiFile.fileContents,
+      (_) => editor.jsxMetadataKILLME,
+      uiFile.fileContents.parsed,
     )
   }
 }

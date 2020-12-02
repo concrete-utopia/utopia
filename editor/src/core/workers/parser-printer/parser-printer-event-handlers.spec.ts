@@ -1,8 +1,9 @@
 import { printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from './prettier-utils'
 import { isRight } from '../../shared/either'
-import { testParseCode } from './parser-printer-test-utils'
+import { testParseCode } from './parser-printer.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
+import { isParseSuccess } from '../../shared/project-file-types'
 
 describe('JSX parser', () => {
   it('should preserve arrow functions in printed code', () => {
@@ -40,12 +41,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       false,
     ).formatted
     const parseResult = testParseCode(code)
-    if (isRight(parseResult)) {
+    if (isParseSuccess(parseResult)) {
       const printedCode = printCode(
         printCodeOptions(false, true, true),
-        parseResult.value.imports,
-        parseResult.value.topLevelElements,
-        parseResult.value.jsxFactoryFunction,
+        parseResult.imports,
+        parseResult.topLevelElements,
+        parseResult.jsxFactoryFunction,
+        parseResult.exportsDetail,
       )
 
       const expectedCode = applyPrettier(
@@ -88,7 +90,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       ).formatted
       expect(printedCode).toEqual(expectedCode)
     } else {
-      fail(parseResult.value)
+      fail(parseResult)
     }
   })
 })

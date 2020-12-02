@@ -615,14 +615,16 @@ function unitParseFnForType(
 const LeadingSign = String.raw`(?:-?|\+?)`
 const NumericPart = String.raw`(?:\d*\.?\d+|\d+\.?)`
 const UnitPart = String.raw`[a-zA-Z%]*`
+const NumericTypeStringRegex = new RegExp(
+  String.raw`^\s*(${LeadingSign}${NumericPart})\s*(${UnitPart})\s*$`,
+)
 
 function parseCSSNumericTypeString(
   input: string,
   parseUnit: (i: string) => Either<string, CSSNumberUnit>,
   defaultUnit: CSSNumberUnit | null = null,
 ): Either<string, CSSNumber> {
-  const regex = String.raw`^\s*(${LeadingSign}${NumericPart})\s*(${UnitPart})\s*$`
-  const matches = input.match(regex)
+  const matches = input.match(NumericTypeStringRegex)
   if (matches == null) {
     return left(`Unable to parse ${input}`)
   } else {

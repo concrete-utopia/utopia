@@ -141,6 +141,7 @@ import {
 } from '../core/shared/code-exec-utils'
 import { memoize } from '../core/shared/memoize'
 import { ValueType, OptionsType, OptionTypeBase } from 'react-select'
+import { emptySet } from '../core/shared/set-utils'
 // TODO Remove re-exported functions
 
 export type FilteredFields<Base, T> = {
@@ -792,12 +793,6 @@ function createThrottler(
   }
 }
 
-// Should allow us to guard against a type being refactored into something
-// which Set allows but gives us nonsense results.
-function emptySet<T extends string | boolean | number>(): Set<T> {
-  return new Set()
-}
-
 function path<T>(
   objPath: Array<string | number>,
   obj: Record<string | number, any> | undefined | null,
@@ -905,7 +900,7 @@ function defer<T>(): Promise<T> & {
   return promise as any
 }
 
-export function keepReferenceIfDeepEqualSLOW<T>(original: T, maybeNew: T, measure = false) {
+export function keepReferenceIfDeepEqualSLOW<T>(original: T, maybeNew: T, measure = false): T {
   if (measure) {
     performance.mark('before eq')
   }

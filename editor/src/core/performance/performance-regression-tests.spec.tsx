@@ -3,8 +3,8 @@ import {
   renderTestEditorWithCode,
   getPrintedUiJsCode,
   TestScenePath,
-} from '../../components/canvas/ui-jsx-test-utils'
-import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/actions'
+} from '../../components/canvas/ui-jsx.test-utils'
+import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/action-creators'
 import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
 import { jsxAttributeValue } from '../shared/element-template'
@@ -59,8 +59,8 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(605) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(615)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(565) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(580)
   })
 
   xit('Changing the selected view', async () => {
@@ -116,7 +116,7 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(740) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(750)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(570) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(580)
   })
 })

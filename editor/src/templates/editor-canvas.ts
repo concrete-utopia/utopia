@@ -28,7 +28,7 @@ import { NewCanvasControls } from '../components/canvas/controls/new-canvas-cont
 import { CanvasReactErrorCallback } from '../components/canvas/ui-jsx-canvas'
 import { setFocus } from '../components/common/actions/index'
 import { EditorAction, EditorDispatch } from '../components/editor/action-types'
-import * as EditorActions from '../components/editor/actions/actions'
+import * as EditorActions from '../components/editor/actions/action-creators'
 import {
   EditorModes,
   Mode,
@@ -53,7 +53,7 @@ import {
 } from '../components/mouse-move'
 import * as TP from '../core/shared/template-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../core/shared/element-template'
+import { ComponentMetadata, JSXMetadata } from '../core/shared/element-template'
 import { TemplatePath } from '../core/shared/project-file-types'
 import {
   getActionsForClipboardItems,
@@ -341,7 +341,7 @@ export interface ControlDependencies {
   keysPressed: KeysPressed
   scale: number
   snappingThreshold: number
-  componentMetadata: ComponentMetadata[]
+  componentMetadata: JSXMetadata
   highlightedviews: Array<TemplatePath>
   selectedViews: Array<TemplatePath>
   topLevelHiddenInstances: Array<TemplatePath>
@@ -567,7 +567,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     return this.getPositionFromCoordinates(event.clientX, event.clientY)
   }
 
-  handleEvent(event: CanvasMouseEvent) {
+  handleEvent(event: CanvasMouseEvent): void {
     if (
       event.event === 'MOVE' &&
       !this.props.editor.canvas.selectionControlsVisible &&
@@ -807,7 +807,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         return false
       }
       const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
-        this.props.editor.jsxMetadataKILLME,
+        this.props.editor.jsxMetadataKILLME.elements,
         target,
       )
       if (possibleElement == null) {

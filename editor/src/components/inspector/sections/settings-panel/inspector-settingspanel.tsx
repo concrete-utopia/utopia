@@ -1,12 +1,12 @@
 import * as React from 'react'
-import * as EditorActions from '../../../editor/actions/actions'
+import * as EditorActions from '../../../editor/actions/action-creators'
 import { Button, colorTheme, UtopiaTheme } from 'uuiui'
 import { FlexRow } from 'uuiui'
 import { H2 } from 'uuiui'
 import { FlexColumn } from 'uuiui'
 import styled from '@emotion/styled'
 import { CheckboxInput } from 'uuiui'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { betterReactMemo } from '../../../../uuiui-deps'
 import {
   FeatureName,
@@ -61,15 +61,18 @@ const FeatureSwitchRow = betterReactMemo('Feature Switch Row', (props: { name: F
   )
 })
 
-export const SettingsPanel = (props: any) => {
-  const dispatch = useEditorState((store) => store.dispatch)
-  const interfaceDesigner = useEditorState((store) => store.editor.interfaceDesigner)
+export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
+  const dispatch = useEditorState((store) => store.dispatch, 'SettingsPanel dispatch')
+  const interfaceDesigner = useEditorState(
+    (store) => store.editor.interfaceDesigner,
+    'SettingsPanel interfaceDesigner',
+  )
 
-  const openUiJsFile = useEditorState((store) => {
+  const openUiJsFile = useRefEditorState((store) => {
     return getOpenUIJSFile(store.editor)
   })
 
-  const jsxMetadata = useEditorState((store) => {
+  const jsxMetadata = useRefEditorState((store) => {
     return store.editor.jsxMetadataKILLME
   })
 
@@ -86,11 +89,11 @@ export const SettingsPanel = (props: any) => {
   }, [dispatch])
 
   const printOpenUiJsFileModel = React.useCallback(() => {
-    console.info('Open UIJSFile:', openUiJsFile)
+    console.info('Open UIJSFile:', openUiJsFile.current)
   }, [openUiJsFile])
 
   const printCanvasMetadata = React.useCallback(() => {
-    console.info('Latest metadata:', jsxMetadata)
+    console.info('Latest metadata:', jsxMetadata.current)
   }, [jsxMetadata])
 
   return (
@@ -140,4 +143,4 @@ export const SettingsPanel = (props: any) => {
       <FeatureSwitchesSection />
     </FlexColumn>
   )
-}
+})

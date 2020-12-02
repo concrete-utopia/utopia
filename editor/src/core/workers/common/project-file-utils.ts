@@ -1,30 +1,24 @@
 import * as TS from 'typescript'
 import {
-  ProjectFile,
-  UIJSFile,
-  CodeFile,
+  TextFile,
   ParseFailure,
   ParseSuccess,
   RevisionsState,
   ImportDetails,
   Imports,
-  CanvasMetadata,
-  PrintedCanvasMetadata,
-  CanvasMetadataParseResult,
   HighlightBoundsForUids,
   ParsedJSONFailure,
   ParsedJSONSuccess,
   ImportAlias,
-  HighlightBounds,
+  isParseSuccess,
+  ExportsDetail,
 } from '../../shared/project-file-types'
-import { foldEither } from '../../shared/either'
-import { fastForEach, arrayContains } from '../../shared/utils'
+import { fastForEach } from '../../shared/utils'
 import { defaultIfNull } from '../../shared/optional-utils'
 import { ErrorMessage } from '../../shared/error-messages'
 
 import { printCode, printCodeOptions } from '../parser-printer/parser-printer'
 import { ArbitraryJSBlock, TopLevelElement } from '../../shared/element-template'
-import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 
 export function codeNeedsPrinting(revisionsState: RevisionsState): boolean {
   return revisionsState === RevisionsState.ParsedAhead
@@ -34,36 +28,25 @@ export function codeNeedsParsing(revisionsState: RevisionsState): boolean {
   return revisionsState === RevisionsState.CodeAhead
 }
 
-export function getCodeFileContents(
-  file: CodeFile | UIJSFile,
+export function getTextFileContents(
+  file: TextFile,
   pretty: boolean,
   allowPrinting: boolean,
 ): string {
-  switch (file.type) {
-    case 'CODE_FILE':
-      return file.fileContents
-    case 'UI_JS_FILE':
-      return foldEither(
-        (failure: ParseFailure) => {
-          return failure.code
-        },
-        (success: ParseSuccess) => {
-          if (allowPrinting && (success.code == null || codeNeedsPrinting(file.revisionsState))) {
-            return printCode(
-              printCodeOptions(false, pretty, true),
-              success.imports,
-              success.topLevelElements,
-              success.jsxFactoryFunction,
-            )
-          } else {
-            return success.code
-          }
-        },
-        file.fileContents,
-      )
-    default:
-      const _exhaustiveCheck: never = file
-      throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
+  if (
+    allowPrinting &&
+    codeNeedsPrinting(file.fileContents.revisionsState) &&
+    isParseSuccess(file.fileContents.parsed)
+  ) {
+    return printCode(
+      printCodeOptions(false, pretty, true),
+      file.fileContents.parsed.imports,
+      file.fileContents.parsed.topLevelElements,
+      file.fileContents.parsed.jsxFactoryFunction,
+      file.fileContents.parsed.exportsDetail,
+    )
+  } else {
+    return file.fileContents.code
   }
 }
 
@@ -142,36 +125,22 @@ export function addImport(
   return mergeImports(imports, toAdd)
 }
 
-export function defaultCanvasMetadata(): CanvasMetadata {
-  return {}
-}
-
-export function defaultPrintedCanvasMetadata(): PrintedCanvasMetadata {
-  return {
-    scenes: null,
-    elementMetadata: {},
-  }
-}
-
 export function parseSuccess(
   imports: Imports,
   topLevelElements: Array<TopLevelElement>,
-  canvasMetadata: CanvasMetadataParseResult,
-  projectContainedOldSceneMetadata: boolean,
-  code: string,
   highlightBounds: HighlightBoundsForUids,
   jsxFactoryFunction: string | null,
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null,
+  exportsDetail: ExportsDetail,
 ): ParseSuccess {
   return {
+    type: 'PARSE_SUCCESS',
     imports: imports,
     topLevelElements: topLevelElements,
-    canvasMetadata: canvasMetadata,
-    projectContainedOldSceneMetadata: projectContainedOldSceneMetadata,
-    code: code,
     highlightBounds: highlightBounds,
     jsxFactoryFunction: jsxFactoryFunction,
     combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
+    exportsDetail: exportsDetail,
   }
 }
 
@@ -180,14 +149,13 @@ export function parseFailure(
   parsedJSON: ParsedJSONFailure | null,
   errorMessage: string | null,
   errorMessages: Array<ErrorMessage>,
-  code: string,
 ): ParseFailure {
   return {
+    type: 'PARSE_FAILURE',
     diagnostics: diagnostics,
     parsedJSONFailure: parsedJSON,
     errorMessage: errorMessage,
     errorMessages: errorMessages,
-    code: code,
   }
 }
 

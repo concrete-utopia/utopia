@@ -4,8 +4,8 @@ import * as React from 'react'
 import { FormButton } from 'uuiui'
 import { Dialog } from 'uuiui'
 import { EditorDispatch } from '../editor/action-types'
-import * as EditorActions from '../editor/actions/actions'
-import { EditorTab, isOpenFileTab } from '../editor/store/editor-state'
+import * as EditorActions from '../editor/actions/action-creators'
+import { EditorTab, isOpenFileTab } from '../editor/store/editor-tabs'
 
 interface ConfirmCloseDialogProps {
   dispatch: EditorDispatch

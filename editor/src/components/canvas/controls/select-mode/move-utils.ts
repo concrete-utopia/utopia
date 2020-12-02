@@ -20,13 +20,15 @@ import Utils from '../../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import * as EditorActions from '../../../editor/actions/actions'
-import { setCanvasFrames } from '../../../editor/actions/actions'
 import {
   DerivedState,
   EditorState,
   getOpenFile,
   getOpenUIJSFile,
+  getOpenUtopiaJSXComponentsFromState,
 } from '../../../editor/store/editor-state'
+import { JSXMetadata } from '../../../../core/shared/element-template'
+
 import * as TP from '../../../../core/shared/template-path'
 import {
   CanvasFrameAndTarget,
@@ -53,6 +55,11 @@ import { FlexAlignment } from 'utopia-api'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../../core/model/project-file-utils'
 import { eitherToMaybe, isRight, right } from '../../../../core/shared/either'
 import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
+import {
+  setCanvasFrames,
+  startCheckpointTimer,
+  unsetProperty,
+} from '../../../editor/actions/action-creators'
 
 function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {
@@ -64,7 +71,7 @@ function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
 
 export function extendSelectedViewsForInteraction(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
 ): Array<TemplatePath> {
   return Utils.flatMapArray((view) => {
     const frame = MetadataUtils.getFrameInCanvasCoords(view, componentMetadata)
@@ -86,7 +93,7 @@ export function extendSelectedViewsForInteraction(
 
 export function determineElementsToOperateOnForDragging(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
   isMoving: boolean,
   isAnchor: boolean,
 ): Array<TemplatePath> {
@@ -102,7 +109,10 @@ export function determineElementsToOperateOnForDragging(
     ).map((view) => {
       const parentPath = TP.parentPath(view)
       if (parentPath != null && TP.isScenePath(parentPath)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata, parentPath)
+        const scene = MetadataUtils.findSceneByTemplatePath(
+          componentMetadata.components,
+          parentPath,
+        )
         if (MetadataUtils.isSceneTreatedAsGroup(scene)) {
           return parentPath
         } else {
@@ -116,9 +126,9 @@ export function determineElementsToOperateOnForDragging(
     // Resizing.
     return flatMapArray<TemplatePath, TemplatePath>((view) => {
       if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata, view)
+        const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata.components, view)
         if (scene != null && MetadataUtils.isSceneTreatedAsGroup(scene)) {
-          return scene.rootElements.map((e) => e.templatePath)
+          return scene.rootElements
         } else {
           return [view]
         }
@@ -130,7 +140,7 @@ export function determineElementsToOperateOnForDragging(
 }
 
 export function dragComponent(
-  componentsMetadata: ComponentMetadata[],
+  componentsMetadata: JSXMetadata,
   selectedViews: Array<TemplatePath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,
@@ -190,16 +200,15 @@ export function dragComponent(
           if (parentPath != null && isFeatureEnabled('Flex Properties (Timer)')) {
             const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, componentsMetadata)
             let currentAlignment: FlexAlignment | null = null
-            const openFile = getOpenUIJSFile(editor)
-            if (TP.isInstancePath(view) && openFile != null && isRight(openFile.fileContents)) {
+            if (TP.isInstancePath(view)) {
               const draggedJsxElements = derivedState?.canvas.transientState?.fileState?.topLevelElementsIncludingScenes?.filter(
                 isUtopiaJSXComponent,
               )
               const jsxElements =
                 draggedJsxElements != null
                   ? draggedJsxElements
-                  : getUtopiaJSXComponentsFromSuccess(eitherToMaybe(openFile.fileContents)!)
-              const element = findJSXElementAtPath(view, jsxElements, componentsMetadata)
+                  : getOpenUtopiaJSXComponentsFromState(editor)
+              const element = findJSXElementAtPath(view, jsxElements)
               if (element != null) {
                 currentAlignment = eitherToMaybe(
                   getSimpleAttributeAtPath(
@@ -211,9 +220,11 @@ export function dragComponent(
             }
             let childElements: ElementInstanceMetadata[] | null = []
             if (TP.isInstancePath(parentPath)) {
-              childElements =
-                MetadataUtils.getElementByInstancePathMaybe(componentsMetadata, parentPath)
-                  ?.children ?? null
+              childElements = MetadataUtils.getChildrenHandlingGroups(
+                componentsMetadata,
+                parentPath,
+                false,
+              )
             }
             if (parentFrame != null) {
               let newAlignment: FlexAlignment = FlexAlignment.Auto
@@ -307,7 +318,7 @@ export function dragComponent(
                       ]
                       Utils.fastForEach(childElements ?? [], (element) => {
                         actions.push(
-                          EditorActions.unsetProperty(
+                          unsetProperty(
                             element.templatePath,
                             createLayoutPropertyPath('alignSelf'),
                           ),
@@ -340,7 +351,7 @@ export function dragComponent(
       }
     } else {
       // TODO determine if node graph affects the drag
-      const element = MetadataUtils.getElementByTemplatePathMaybe(componentsMetadata, view)
+      const element = MetadataUtils.getElementByTemplatePathMaybe(componentsMetadata.elements, view)
       const isFlow = TP.isInstancePath(view) && MetadataUtils.isFlowElement(element)
 
       const constrainedDragAxis: ConstrainedDragAxis | null =
@@ -377,7 +388,7 @@ export function dragComponent(
           )
           const flowTarget = targetsUnderCursor.find((target) =>
             MetadataUtils.isFlowElement(
-              MetadataUtils.getElementByTemplatePathMaybe(componentsMetadata, target),
+              MetadataUtils.getElementByTemplatePathMaybe(componentsMetadata.elements, target),
             ),
           )
           if (flowTarget != null) {
@@ -387,16 +398,16 @@ export function dragComponent(
             dragChanges.push(reorderChange(view, newIndex, beforeOrAfter))
           }
         } else if (isFeatureEnabled('Dragging Changes Pins(Timer)')) {
-          const containingBlockParent = MetadataUtils.findContainingBlock(componentsMetadata, view)
+          const containingBlockParent = MetadataUtils.findContainingBlock(
+            componentsMetadata.elements,
+            view,
+          )
           const containingRectangle = MetadataUtils.getElementByTemplatePathMaybe(
-            componentsMetadata,
+            componentsMetadata.elements,
             containingBlockParent,
           )?.globalFrame
-          const openFile = getOpenUIJSFile(editor)
           if (
             TP.isInstancePath(view) &&
-            openFile != null &&
-            isRight(openFile.fileContents) &&
             containingBlockParent != null &&
             containingRectangle != null
           ) {
@@ -406,8 +417,8 @@ export function dragComponent(
             const jsxElements =
               draggedJsxElements != null
                 ? draggedJsxElements
-                : getUtopiaJSXComponentsFromSuccess(eitherToMaybe(openFile.fileContents)!)
-            const jsxElement = findJSXElementAtPath(view, jsxElements, componentsMetadata)
+                : getOpenUtopiaJSXComponentsFromState(editor)
+            const jsxElement = findJSXElementAtPath(view, jsxElements)
 
             if (jsxElement != null) {
               const isOnRightEdge =
@@ -490,7 +501,7 @@ export function dragComponent(
                     if (dispatch != null) {
                       let actions: EditorAction[] = [
                         EditorActions.setProp_UNSAFE(view, propToSet!, jsxAttributeValue(newValue)),
-                        EditorActions.unsetProperty(view, propToUnset!),
+                        unsetProperty(view, propToUnset!),
                         EditorActions.clearHighlightedViews(),
                       ]
                       dispatch(actions, 'canvas')
@@ -534,7 +545,7 @@ export function dragComponent(
 }
 
 export function dragComponentForActions(
-  componentsMetadata: ComponentMetadata[],
+  componentsMetadata: JSXMetadata,
   selectedViews: Array<TemplatePath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,
@@ -649,7 +660,7 @@ export function adjustAllSelectedFrames(
         }
       }),
     )
-    actions = [EditorActions.setCanvasFrames(newFrameAndTargets, keepChildrenAtPlace)]
+    actions = [setCanvasFrames(newFrameAndTargets, keepChildrenAtPlace)]
   } else {
     const originalFrames: CanvasFrameAndTarget[] = Utils.stripNulls(
       editor.selectedViews.map((view) => {
@@ -688,7 +699,7 @@ export function adjustAllSelectedFrames(
     )
   }
 
-  actions.push(EditorActions.startCheckpointTimer())
+  actions.push(startCheckpointTimer())
   return actions
 }
 

@@ -4,7 +4,7 @@ import { BASE_URL, getProjectID, getQueryParam, PREVIEW_IS_EMBEDDED } from '../c
 import { fetchLocalProject } from '../common/persistence'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
 import { incorporateBuildResult } from '../components/custom-code/code-file'
-import { sendPreviewModel } from '../components/editor/actions/actions'
+import { sendPreviewModel } from '../components/editor/actions/action-creators'
 import { dependenciesWithEditorRequirements } from '../components/editor/npm-dependency/npm-dependency'
 import { projectIsStoredLocally } from '../components/editor/persistence'
 import { loadProject } from '../components/editor/server'
@@ -13,7 +13,7 @@ import { fetchNodeModules } from '../core/es-modules/package-manager/fetch-packa
 import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
 import { pluck } from '../core/shared/array-utils'
 import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
-import { isCodeFile, NodeModules } from '../core/shared/project-file-types'
+import { isTextFile, NodeModules } from '../core/shared/project-file-types'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { createBundle } from '../core/workers/bundler-promise'
 import Utils from '../utils/utils'
@@ -248,7 +248,7 @@ const initPreview = () => {
 
     incorporateBuildResult(nodeModules, bundledProjectFiles)
 
-    const require = getRequireFn(onRemoteModuleDownload, nodeModules)
+    const requireFn = getRequireFn(onRemoteModuleDownload, projectContents, nodeModules)
 
     // replacing the document body first
     const previewHTMLFileName = getMainHTMLFilename(projectContents)
@@ -256,7 +256,7 @@ const initPreview = () => {
       projectContents,
       `/${previewHTMLFileName}`,
     )
-    if (previewHTMLFile != null && isCodeFile(previewHTMLFile)) {
+    if (previewHTMLFile != null && isTextFile(previewHTMLFile)) {
       try {
         try {
           ReactErrorOverlay.stopReportingRuntimeErrors()
@@ -264,7 +264,7 @@ const initPreview = () => {
           // we don't care
         }
         document.open()
-        document.write(previewHTMLFile.fileContents)
+        document.write(previewHTMLFile.fileContents.code)
         document.close()
         addOpenInUtopiaButton()
         addWindowListeners()
@@ -277,7 +277,7 @@ const initPreview = () => {
     const previewJSFileName = getMainJSFilename(projectContents)
     const previewJSFilePath = `/${previewJSFileName}`
     const previewJSFile = getContentsTreeFileFromString(projectContents, previewJSFilePath)
-    if (previewJSFile != null && isCodeFile(previewJSFile)) {
+    if (previewJSFile != null && isTextFile(previewJSFile)) {
       if (bundledProjectFiles[previewJSFilePath] == null) {
         throw new Error(
           `Error processing the project files: the build result does not contain the preview file: ${previewJSFilePath}`,
@@ -288,7 +288,7 @@ const initPreview = () => {
          * the React entry point js file traditionally has a top level side effect,
          * calling ReactDOM.render() which starts the Preview app.
          */
-        require('/', previewJSFilePath)
+        requireFn('/', previewJSFilePath)
       }
     } else {
       throw new Error(

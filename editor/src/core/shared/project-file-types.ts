@@ -1,7 +1,6 @@
 import * as TS from 'typescript'
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
-import { Either, Left, Right, isRight, isLeft } from './either'
-import { ArbitraryJSBlock, TopLevelElement } from './element-template'
+import { ArbitraryJSBlock, TopLevelElement, UtopiaJSXComponent } from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
@@ -70,24 +69,12 @@ export interface SceneMetadata {
   label?: string
 }
 
-export interface CanvasMetadata {}
-
-export type CanvasMetadataRightBeforePrinting = {
-  scenes: Array<Omit<SceneMetadata, 'uid'>> | null
-  elementMetadata: CanvasElementMetadataMap
-}
-
-export type PrintedCanvasMetadata = {
-  scenes: Array<SceneMetadata> | null
-  elementMetadata: CanvasElementMetadataMap
-}
-
 export interface ImportAlias {
   name: string
   alias: string
 }
 
-export function importAlias(name: string, alias?: string) {
+export function importAlias(name: string, alias?: string): ImportAlias {
   return {
     name: name,
     alias: alias == null ? name : alias,
@@ -99,9 +86,9 @@ export function importAliasEquals(first: ImportAlias, second: ImportAlias): bool
 }
 
 export interface ImportDetails {
-  importedWithName: string | null
-  importedFromWithin: Array<ImportAlias>
-  importedAs: string | null
+  importedWithName: string | null // import name from './place'
+  importedFromWithin: Array<ImportAlias> // import { name as alias } from './place'
+  importedAs: string | null // import * as name from './place'
 }
 
 export function importDetails(
@@ -130,6 +117,96 @@ export function importsEquals(first: Imports, second: Imports): boolean {
   return objectEquals(first, second, importDetailsEquals)
 }
 
+export interface ExportDetailNamed {
+  type: 'EXPORT_DETAIL_NAMED'
+  name: string
+}
+
+export function exportDetailNamed(name: string): ExportDetailNamed {
+  return {
+    type: 'EXPORT_DETAIL_NAMED',
+    name: name,
+  }
+}
+
+export interface ExportDetailModifier {
+  type: 'EXPORT_DETAIL_MODIFIER'
+}
+
+export function exportDetailModifier(): ExportDetailModifier {
+  return {
+    type: 'EXPORT_DETAIL_MODIFIER',
+  }
+}
+
+export type ExportDetail = ExportDetailNamed | ExportDetailModifier
+
+export function isExportDetailNamed(detail: ExportDetail): detail is ExportDetailNamed {
+  return detail.type === 'EXPORT_DETAIL_NAMED'
+}
+
+export function isExportDetailModifier(detail: ExportDetail): detail is ExportDetailModifier {
+  return detail.type === 'EXPORT_DETAIL_MODIFIER'
+}
+
+export interface ExportsDetail {
+  defaultExport: ExportDetailNamed | null
+  namedExports: Record<string, ExportDetail>
+}
+
+export function exportsDetail(
+  defaultExport: ExportDetailNamed | null,
+  namedExports: Record<string, ExportDetail>,
+): ExportsDetail {
+  return {
+    defaultExport: defaultExport,
+    namedExports: namedExports,
+  }
+}
+
+export const EmptyExportsDetail: ExportsDetail = exportsDetail(null, {})
+
+export function mergeExportsDetail(first: ExportsDetail, second: ExportsDetail): ExportsDetail {
+  return {
+    defaultExport: second.defaultExport ?? first.defaultExport,
+    namedExports: {
+      ...first.namedExports,
+      ...second.namedExports,
+    },
+  }
+}
+
+export function addNamedExportToDetail(
+  detail: ExportsDetail,
+  name: string,
+  alias: string,
+): ExportsDetail {
+  return {
+    defaultExport: detail.defaultExport,
+    namedExports: {
+      ...detail.namedExports,
+      [name]: exportDetailNamed(alias),
+    },
+  }
+}
+
+export function addModifierExportToDetail(detail: ExportsDetail, name: string): ExportsDetail {
+  return {
+    defaultExport: detail.defaultExport,
+    namedExports: {
+      ...detail.namedExports,
+      [name]: exportDetailModifier(),
+    },
+  }
+}
+
+export function setNamedDefaultExportInDetail(detail: ExportsDetail, name: string): ExportsDetail {
+  return {
+    defaultExport: exportDetailNamed(name),
+    namedExports: detail.namedExports,
+  }
+}
+
 export interface HighlightBounds {
   startLine: number
   startCol: number
@@ -140,36 +217,84 @@ export interface HighlightBounds {
 
 export type HighlightBoundsForUids = { [uid: string]: HighlightBounds }
 
-export type CanvasMetadataParseResult = Either<unknown, CanvasMetadata>
-
 export interface ParseSuccess {
+  type: 'PARSE_SUCCESS'
   imports: Imports
   topLevelElements: Array<TopLevelElement>
-  canvasMetadata: CanvasMetadataParseResult
-  projectContainedOldSceneMetadata: boolean
-  code: string
   highlightBounds: HighlightBoundsForUids
   jsxFactoryFunction: string | null
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
+  exportsDetail: ExportsDetail
 }
 
-export function isParseSuccess(result: ParseResult): result is Right<ParseSuccess> {
-  return isRight(result)
+export function isParseSuccess(parsed: ParsedTextFile): parsed is ParseSuccess {
+  return parsed.type === 'PARSE_SUCCESS'
 }
 
 export interface ParseFailure {
+  type: 'PARSE_FAILURE'
   diagnostics: Array<TS.Diagnostic> | null
   parsedJSONFailure: ParsedJSONFailure | null
   errorMessage: string | null
   errorMessages: Array<ErrorMessage>
-  code: string
 }
 
-export function isParseFailure(result: ParseResult): result is Left<ParseFailure> {
-  return isLeft(result)
+export function isParseFailure(parsed: ParsedTextFile): parsed is ParseFailure {
+  return parsed.type === 'PARSE_FAILURE'
 }
 
-export type ParseResult = Either<ParseFailure, ParseSuccess>
+export interface Unparsed {
+  type: 'UNPARSED'
+}
+
+export const unparsed: Unparsed = {
+  type: 'UNPARSED',
+}
+
+export function isUnparsed(parsed: ParsedTextFile): parsed is Unparsed {
+  return parsed.type === 'UNPARSED'
+}
+
+export type ParsedTextFile = ParseFailure | ParseSuccess | Unparsed
+
+export function foldParsedTextFile<X>(
+  foldFailure: (failure: ParseFailure) => X,
+  foldSuccess: (success: ParseSuccess) => X,
+  foldUnparsed: (unparsed: Unparsed) => X,
+  file: ParsedTextFile,
+): X {
+  switch (file.type) {
+    case 'PARSE_FAILURE':
+      return foldFailure(file)
+    case 'PARSE_SUCCESS':
+      return foldSuccess(file)
+    case 'UNPARSED':
+      return foldUnparsed(file)
+    default:
+      const _exhaustiveCheck: never = file
+      throw new Error(`Unhandled type ${JSON.stringify(file)}`)
+  }
+}
+
+export function mapParsedTextFile(
+  transform: (success: ParseSuccess) => ParseSuccess,
+  file: ParsedTextFile,
+): ParsedTextFile {
+  if (file.type === 'PARSE_SUCCESS') {
+    return transform(file)
+  } else {
+    return file
+  }
+}
+
+export function forEachParseSuccess(
+  action: (success: ParseSuccess) => void,
+  file: ParsedTextFile,
+): void {
+  if (file.type === 'PARSE_SUCCESS') {
+    return action(file)
+  }
+}
 
 export interface ParsedJSONSuccess {
   type: 'SUCCESS'
@@ -203,30 +328,60 @@ export const enum RevisionsState {
   BothMatch = 'BOTH_MATCH',
 }
 
-export interface UIJSFile {
-  type: 'UI_JS_FILE'
-  fileContents: ParseResult
-  lastSavedContents: ParseResult | null // it is null when the file is saved
+export interface TextFileContents {
+  code: string
+  parsed: ParsedTextFile
   revisionsState: RevisionsState
+}
+
+export function textFileContents(
+  code: string,
+  parsed: ParsedTextFile,
+  revisionsState: RevisionsState,
+): TextFileContents {
+  return {
+    code: code,
+    parsed: parsed,
+    revisionsState: revisionsState,
+  }
+}
+
+export interface TextFile {
+  type: 'TEXT_FILE'
+  fileContents: TextFileContents
+  lastSavedContents: TextFileContents | null // it is null when the file is saved
   lastRevisedTime: number
 }
 
-export function isUIJSFile(projectFile: ProjectFile | null): projectFile is UIJSFile {
-  return projectFile != null && projectFile.type === 'UI_JS_FILE'
+export function textFile(
+  fileContents: TextFileContents,
+  lastSavedContents: TextFileContents | null,
+  lastRevisedTime: number,
+): TextFile {
+  return {
+    type: 'TEXT_FILE',
+    fileContents: fileContents,
+    lastSavedContents: lastSavedContents,
+    lastRevisedTime: lastRevisedTime,
+  }
 }
 
-export interface CodeFile {
-  type: 'CODE_FILE'
-  fileContents: string // Maybe should be more like an asset?
-  lastSavedContents: string | null // it is null when the file is saved
+export function codeFile(fileContents: string, lastSavedContents: string | null): TextFile {
+  return textFile(
+    textFileContents(fileContents, unparsed, RevisionsState.CodeAhead),
+    lastSavedContents == null
+      ? null
+      : textFileContents(lastSavedContents, unparsed, RevisionsState.CodeAhead),
+    0,
+  )
 }
 
-export function isCodeFile(projectFile: ProjectFile | null): projectFile is CodeFile {
-  return projectFile != null && projectFile.type === 'CODE_FILE'
+export function isTextFile(projectFile: ProjectFile | null): projectFile is TextFile {
+  return projectFile != null && projectFile.type === 'TEXT_FILE'
 }
 
-export function isCodeOrUiJsFile(file: ProjectFile): file is CodeFile | UIJSFile {
-  return file.type === 'CODE_FILE' || file.type === 'UI_JS_FILE'
+export function isParsedTextFile(projectFile: ProjectFile | null): projectFile is TextFile {
+  return isTextFile(projectFile) && !isUnparsed(projectFile.fileContents.parsed)
 }
 
 interface EvalResult {
@@ -297,7 +452,7 @@ export interface Directory {
   type: 'DIRECTORY'
 }
 
-export type ProjectFile = UIJSFile | CodeFile | ImageFile | Directory | AssetFile
+export type ProjectFile = TextFile | ImageFile | Directory | AssetFile
 
 export type ProjectFileType = ProjectFile['type']
 

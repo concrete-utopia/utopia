@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Icn, IcnProps } from './icn'
-import { betterReactMemo } from 'uuiui-deps'
+import { betterReactMemo } from '../utils/react-performance'
 
 const makeIcon = (appliedProps: IcnProps): React.FunctionComponent<Omit<IcnProps, 'type'>> =>
   betterReactMemo(`icon-${appliedProps.type}`, (props) => <Icn {...appliedProps} {...props} />)
@@ -89,7 +89,7 @@ export const Icons = {
   Smiangle: makeIcon({ type: 'smiangle', color: 'purple' }),
   WarningTriangle: makeIcon({ type: 'warningtriangle', color: 'gray' }),
 
-  NewCodeFile: makeIcon({
+  NewTextFile: makeIcon({
     category: 'filetype',
     type: 'other',
     width: 18,

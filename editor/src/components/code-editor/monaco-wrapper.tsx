@@ -12,13 +12,11 @@ import {
 } from '../../core/shared/npm-dependency-types'
 import {
   HighlightBounds,
+  isTextFile,
   ProjectContents,
-  isCodeFile,
-  isUIJSFile,
   TemplatePath,
 } from '../../core/shared/project-file-types'
 import { isJsFile, isJsOrTsFile } from '../../core/workers/ts/ts-worker'
-import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import utils from '../../utils/utils'
 import { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getFilePathToImport } from '../filebrowser/filepath-utils'
@@ -31,7 +29,7 @@ import { arrayEquals, fastForEach } from '../../core/shared/utils'
 import * as TP from '../../core/shared/template-path'
 import * as FontFaceObserver from 'fontfaceobserver'
 import { splitIntoLines } from '../../core/shared/string-utils'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot, walkContentsTree } from '../assets'
 
 const CodeEditorFont = 'utopian-inconsolata'
 
@@ -53,7 +51,6 @@ interface MonacoWrapperProps {
   cursorPosition: CursorPosition
   projectContents: ProjectContentTreeRoot
   errorMessages: Array<ErrorMessage> | null
-  workers: UtopiaTsWorkers
   selectedViews: Array<TemplatePath>
   selectedViewsBounds: Array<HighlightBounds>
   highlightedViewsBounds: Array<HighlightBounds>
@@ -354,14 +351,11 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
             const typedPath = textAfterQuotes ? textAfterQuotes[0] : ''
 
             let suggestions: monaco.languages.CompletionItem[] = []
-            utils.fastForEach(Object.keys(this.props.projectContents), (filename) => {
-              const file = getContentsTreeFileFromString(this.props.projectContents, filename)
+            walkContentsTree(this.props.projectContents, (filename, file) => {
               if (
                 filename !== this.props.filename &&
                 file != null &&
-                (isDirectory(file) ||
-                  isUIJSFile(file) ||
-                  (isCodeFile(file) && isJsOrTsFile(filename)))
+                (isDirectory(file) || (isTextFile(file) && isJsOrTsFile(filename))) // TODO Should this care if the file is a code file now we have loaders?
               ) {
                 let fileWithRelativePath = getFilePathToImport(filename, this.props.filename)
                 const isInSameDirAsTyped =
@@ -373,10 +367,9 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
                     ? monaco.languages.CompletionItemKind.Folder
                     : monaco.languages.CompletionItemKind.File
 
-                  const textToInsert =
-                    isUIJSFile(file) || isCodeFile(file)
-                      ? filePathStripped.replace(/\.(js|tsx?)$/, '')
-                      : filePathStripped
+                  const textToInsert = isTextFile(file)
+                    ? filePathStripped.replace(/\.(js|tsx?)$/, '')
+                    : filePathStripped
 
                   if (
                     filePathStripped !== '' &&
@@ -493,10 +486,8 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
       const filename = monaco.Uri.file(key)
 
       let code: string | null = null
-      if (isCodeFile(file)) {
-        code = file.fileContents
-      } else if (isUIJSFile(file)) {
-        code = file.fileContents.value.code
+      if (isTextFile(file)) {
+        code = file.fileContents.code
       }
       if (code != null) {
         let model = findModel(filename.toString())

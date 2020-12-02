@@ -16,7 +16,6 @@ import {
 } from 'utopia-api'
 import {
   InspectorInfo,
-  useKeepReferenceEqualityIfPossible,
   InspectorPropsContext,
   useCallbackFactory,
   useInspectorContext,
@@ -33,6 +32,7 @@ import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
 } from './control-status'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]
@@ -77,7 +77,10 @@ export function useInspectorInfoForPropertyControl(
 
   const parserFn = unwrapperAndParserForPropertyControl(control)
   const printerFn = printerForPropertyControl(control)
-  const parsedValue = eitherToMaybe(parserFn(rawValues[0], realValues[0])) // TODO We need a way to surface these errors to the users
+  let parsedValue: unknown = null
+  if (0 in rawValues && 0 in realValues) {
+    parsedValue = eitherToMaybe(parserFn(rawValues[0], realValues[0])) // TODO We need a way to surface these errors to the users
+  }
 
   const onSubmitValue = React.useCallback(
     (newValue: any, transient = false) => {

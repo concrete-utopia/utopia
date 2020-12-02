@@ -19,6 +19,7 @@ import {
   defaultPropsParam,
   jsxAttributeOtherJavaScript,
   ComponentMetadata,
+  JSXMetadata,
 } from '../shared/element-template'
 import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
@@ -38,6 +39,7 @@ import {
 } from '../shared/jsx-attributes'
 import { stripNulls } from '../shared/array-utils'
 import { isPercentPin } from 'utopia-api'
+import { UTOPIA_UID_KEY } from './utopia-constants'
 
 export const EmptyScenePathForStoryboard = TP.scenePath([])
 
@@ -92,7 +94,7 @@ export function mapScene(scene: SceneMetadata): JSXElement {
     'data-uid': jsxAttributeValue(scene.uid),
     'data-label': jsxAttributeValue(scene.label),
   }
-  return jsxElement('Scene', sceneProps, [], null)
+  return jsxElement('Scene', sceneProps, [])
 }
 
 export function unmapScene(element: JSXElementChild): SceneMetadata | null {
@@ -142,10 +144,38 @@ export function convertScenesToUtopiaCanvasComponent(
       'Storyboard',
       { 'data-uid': jsxAttributeValue(BakedInStoryboardUID) },
       scenes.map(mapScene),
-      null,
     ),
     null,
   )
+}
+
+export function createSceneFromComponent(componentImportedAs: string, uid: string): JSXElement {
+  const sceneProps = {
+    component: jsxAttributeOtherJavaScript(
+      componentImportedAs,
+      `return ${componentImportedAs}`,
+      [componentImportedAs],
+      null,
+    ),
+    [UTOPIA_UID_KEY]: jsxAttributeValue(uid),
+    props: jsxAttributeValue({}),
+    style: jsxAttributeValue({
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: 375,
+      height: 812,
+    }),
+  }
+  return jsxElement('Scene', sceneProps, [])
+}
+
+export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
+  const storyboardProps = {
+    [UTOPIA_UID_KEY]: jsxAttributeValue(uid),
+    layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }),
+  }
+  return jsxElement('Storyboard', storyboardProps, scenes)
 }
 
 export function convertUtopiaCanvasComponentToScenes(
@@ -209,10 +239,9 @@ export function fishOutUtopiaCanvasFromTopLevelElements(
   topLevelElements: Array<TopLevelElement>,
 ): UtopiaJSXComponent | null {
   return (
-    topLevelElements.find(
-      (e): e is UtopiaJSXComponent =>
-        isUtopiaJSXComponent(e) && e.name === BakedInStoryboardVariableName,
-    ) ?? null
+    topLevelElements.find((e): e is UtopiaJSXComponent => {
+      return isUtopiaJSXComponent(e) && e.name === BakedInStoryboardVariableName
+    }) ?? null
   )
 }
 
@@ -261,8 +290,14 @@ export function isSceneElement(element: JSXElement): boolean {
   return element.name.baseVariable === 'Scene'
 }
 
-export function isSceneChildWidthHeightPercentage(scene: ComponentMetadata): boolean {
-  const rootElementSizes = scene.rootElements.map((element) => {
+export function isSceneChildWidthHeightPercentage(
+  scene: ComponentMetadata,
+  metadata: JSXMetadata,
+): boolean {
+  // FIXME ASAP This is reproducing logic that should stay in MetadataUtils, but importing that
+  // imports the entire editor into the worker threads, including modules that require window and document
+  const rootElements = scene.rootElements.map((path) => metadata.elements[TP.toString(path)])
+  const rootElementSizes = rootElements.map((element) => {
     return {
       width: element.props?.style?.width,
       height: element.props?.style?.height,
@@ -272,8 +307,11 @@ export function isSceneChildWidthHeightPercentage(scene: ComponentMetadata): boo
   return rootElementSizes.some((size) => isPercentPin(size.width) || isPercentPin(size.height))
 }
 
-export function isDynamicSceneChildWidthHeightPercentage(scene: ComponentMetadata): boolean {
+export function isDynamicSceneChildWidthHeightPercentage(
+  scene: ComponentMetadata,
+  metadata: JSXMetadata,
+): boolean {
   const isDynamicScene = scene.sceneResizesContent
 
-  return isDynamicScene && isSceneChildWidthHeightPercentage(scene)
+  return isDynamicScene && isSceneChildWidthHeightPercentage(scene, metadata)
 }

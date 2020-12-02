@@ -12,7 +12,7 @@ import {
   emptyComputedStyle,
 } from '../../core/shared/element-template'
 import { id, TemplatePath, InstancePath } from '../../core/shared/project-file-types'
-import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
+import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
 import { applicative4Either, isRight, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
@@ -20,6 +20,7 @@ import {
   CanvasRectangle,
   LocalPoint,
   localRectangle,
+  roundToNearestHalf,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -29,7 +30,11 @@ import {
 } from '../inspector/common/css-utils'
 import { CanvasContainerProps } from './ui-jsx-canvas'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import { useEditorState } from '../editor/store/store-hook'
+import {
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_LABEL_KEY,
@@ -38,6 +43,14 @@ import {
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
   UTOPIA_UID_PARENTS_KEY,
 } from '../../core/model/utopia-constants'
+import ResizeObserver from 'resize-observer-polyfill'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { PRODUCTION_ENV } from '../../common/env-vars'
+import { CanvasContainerID } from './canvas-types'
+import { emptySet } from '../../core/shared/set-utils'
+
+const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
+const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
 
 function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
   return path != null && validPaths.indexOf(TP.toString(path)) > -1
@@ -93,21 +106,161 @@ function isScene(node: Node): node is HTMLElement {
   )
 }
 
+function findParentScene(target: HTMLElement): string | null {
+  const sceneID = getDOMAttribute(target, 'data-utopia-scene-id')
+  if (sceneID != null) {
+    return sceneID
+  } else {
+    if (target.parentElement != null) {
+      return findParentScene(target.parentElement)
+    } else {
+      return null
+    }
+  }
+}
+
+const LogDomWalkerPerformance = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
+
+function lazyValue<T>(getter: () => T) {
+  let alreadyResolved = false
+  let resolvedValue: T
+  return () => {
+    if (!alreadyResolved) {
+      resolvedValue = getter()
+      alreadyResolved = true
+    }
+    return resolvedValue
+  }
+}
+
+function useResizeObserver(invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>) {
+  const resizeObserver = React.useMemo((): ResizeObserver | null => {
+    if (ObserversAvailable) {
+      return new ResizeObserver((entries: any) => {
+        for (let entry of entries) {
+          const sceneID = findParentScene(entry.target)
+          if (sceneID != null) {
+            invalidatedSceneIDsRef.current.add(sceneID)
+          }
+        }
+      })
+    } else {
+      return null
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []) // the dependencies are empty because this should only evaluate once
+  React.useEffect(() => {
+    return function cleanup() {
+      if (resizeObserver != null) {
+        resizeObserver.disconnect()
+      }
+    }
+  }, [resizeObserver])
+  return resizeObserver
+}
+
+function useMutationObserver(invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>) {
+  const mutationObserver = React.useMemo((): MutationObserver | null => {
+    if (ObserversAvailable) {
+      return new (window as any).MutationObserver((mutations: MutationRecord[]) => {
+        for (let mutation of mutations) {
+          if (
+            mutation.attributeName === 'style' ||
+            mutation.addedNodes.length > 0 ||
+            mutation.removedNodes.length > 0
+          ) {
+            if (mutation.target instanceof HTMLElement) {
+              const sceneID = findParentScene(mutation.target)
+              if (sceneID != null) {
+                invalidatedSceneIDsRef.current.add(sceneID)
+              }
+            }
+          }
+        }
+      })
+    } else {
+      return null
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []) // the dependencies are empty because this should only evaluate once
+  React.useEffect(() => {
+    return function cleanup() {
+      if (mutationObserver != null) {
+        mutationObserver.disconnect()
+      }
+    }
+  }, [mutationObserver])
+  return mutationObserver
+}
+
+function useInvalidateScenesWhenSelectedViewChanges(
+  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+): void {
+  return useSelectorWithCallback(
+    (store) => store.editor.selectedViews,
+    (newSelectedViews) => {
+      newSelectedViews.forEach((sv) => {
+        const scenePath = TP.scenePathForPath(sv)
+        const sceneID = TP.toString(scenePath)
+        invalidatedSceneIDsRef.current.add(sceneID)
+      })
+    },
+  )
+}
+
+function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, () => void] {
+  const initCompleteRef = React.useRef<boolean>(false)
+  const previousMountCountRef = React.useRef<number>(mountCount)
+
+  const setInitComplete = React.useCallback(() => {
+    initCompleteRef.current = true
+  }, [])
+
+  if (previousMountCountRef.current !== mountCount) {
+    // mount count increased, re-initialize dom-walker
+    initCompleteRef.current = false
+    previousMountCountRef.current = mountCount
+  }
+
+  return [initCompleteRef.current, setInitComplete]
+}
+
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const selectedViews = useEditorState((store) => store.editor.selectedViews)
+  const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
+  const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
+  const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(props.mountCount)
+  const selectedViews = useEditorState(
+    (store) => store.editor.selectedViews,
+    'useDomWalker selectedViews',
+  )
+  const resizeObserver = useResizeObserver(invalidatedSceneIDsRef)
+  const mutationObserver = useMutationObserver(invalidatedSceneIDsRef)
+  useInvalidateScenesWhenSelectedViewChanges(invalidatedSceneIDsRef)
 
   React.useLayoutEffect(() => {
     if (containerRef.current != null) {
+      if (LogDomWalkerPerformance) {
+        performance.mark('DOM_WALKER_START')
+      }
       // Get some base values relating to the div this component creates.
       const refOfContainer = containerRef.current
+      if (ObserversAvailable && resizeObserver != null && mutationObserver != null) {
+        Array.from(document.querySelectorAll(`#${CanvasContainerID} *`)).map((elem) => {
+          resizeObserver.observe(elem)
+        })
+        mutationObserver.observe(refOfContainer, MutationObserverConfig)
+      }
 
-      const containerRect = getCanvasRectangleFromElement(refOfContainer, props.scale)
+      // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
+      const containerRect = lazyValue(() => {
+        return getCanvasRectangleFromElement(refOfContainer, props.scale)
+      })
 
       function globalFrameForElement(element: HTMLElement): CanvasRectangle {
         // Get the local frame from the DOM and calculate the global frame.
         const elementRect = getCanvasRectangleFromElement(element, props.scale)
-        return Utils.offsetRect(elementRect, Utils.negate(containerRect))
+        return Utils.offsetRect(elementRect, Utils.negate(containerRect()))
       }
 
       function getSpecialMeasurements(element: HTMLElement): SpecialSizeMeasurements {
@@ -116,8 +269,8 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         const position = getPosition(elementStyle)
 
         const offset = {
-          x: element.offsetLeft,
-          y: element.offsetTop,
+          x: roundToNearestHalf(element.offsetLeft),
+          y: roundToNearestHalf(element.offsetTop),
         } as LocalPoint
 
         const coordinateSystemBounds =
@@ -159,12 +312,12 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         let naturalWidth: number | null = null
         let naturalHeight: number | null = null
         if (element.tagName === 'IMG') {
-          naturalWidth = (element as HTMLImageElement).naturalWidth
-          naturalHeight = (element as HTMLImageElement).naturalHeight
+          naturalWidth = roundToNearestHalf((element as HTMLImageElement).naturalWidth)
+          naturalHeight = roundToNearestHalf((element as HTMLImageElement).naturalHeight)
         }
 
-        let clientWidth = element.clientWidth
-        let clientHeight = element.clientHeight
+        let clientWidth = roundToNearestHalf(element.clientWidth)
+        let clientHeight = roundToNearestHalf(element.clientHeight)
 
         return specialSizeMeasurements(
           offset,
@@ -209,15 +362,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         return computedStyle
       }
 
-      function getDOMAttribute(element: HTMLElement, attributeName: string): string | null {
-        const attr = element.attributes.getNamedItemNS(null, attributeName)
-        if (attr == null) {
-          return null
-        } else {
-          return attr.value
-        }
-      }
-
       function walkScene(scene: HTMLElement, index: number): void {
         if (scene instanceof HTMLElement) {
           // Right now this assumes that only UtopiaJSXComponents can be rendered via scenes,
@@ -228,16 +372,43 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           if (sceneIndexAttr != null && validPathsAttr != null) {
             const scenePath = TP.fromString(sceneIndexAttr.value)
             const validPaths = validPathsAttr.value.split(' ')
-            const metadata = walkSceneInner(scene, index, scenePath, validPaths)
-            rootMetadata.push(...metadata)
+            const sceneID = sceneIndexAttr.value
+            let cachedMetadata: ElementInstanceMetadata | null = null
+            if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
+              if (!invalidatedSceneIDsRef.current.has(sceneID)) {
+                // we can use the cache, if it exists
+                const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
+                  scenePath,
+                  rootMetadataInStateRef.current,
+                )
+                if (elementFromCurrentMetadata != null) {
+                  cachedMetadata = elementFromCurrentMetadata
+                }
+              } else {
+                // we proceed with the walk
+                invalidatedSceneIDsRef.current.delete(sceneID)
+              }
+            }
 
-            const sceneMetadata = collectMetadata(
-              scene,
-              TP.instancePath([], TP.elementPathForPath(scenePath)),
-              null,
-              metadata,
-            )
-            rootMetadata.push(sceneMetadata)
+            if (cachedMetadata == null || !initComplete) {
+              const rootElements = walkSceneInner(scene, index, scenePath, validPaths)
+
+              const sceneMetadata = collectMetadata(
+                scene,
+                TP.instancePath([], TP.elementPathForPath(scenePath)),
+                null,
+                rootElements,
+              )
+              rootMetadata.push(sceneMetadata)
+            } else {
+              rootMetadata.push(cachedMetadata)
+              // Push the cached metadata for everything from this scene downwards
+              Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
+                if (TP.isAncestorOf(elem.templatePath, scenePath)) {
+                  rootMetadata.push(elem)
+                }
+              })
+            }
           }
         }
       }
@@ -248,22 +419,32 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         canvasRootPath: TemplatePath,
         validPaths: Array<string>,
       ) {
-        const childMetadata = walkSceneInner(canvasRoot, index, canvasRootPath, validPaths)
-        // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
-        // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
-        // to provide a home for the the (really existing) childMetadata
-        const metadata: ElementInstanceMetadata = elementInstanceMetadata(
-          canvasRootPath as InstancePath,
-          left('Storyboard'),
-          {},
-          null,
-          null,
-          childMetadata,
-          false,
-          emptySpecialSizeMeasurements,
-          emptyComputedStyle,
-        )
-        rootMetadata.push(metadata)
+        if (
+          ObserversAvailable &&
+          invalidatedSceneIDsRef.current.size === 0 &&
+          rootMetadataInStateRef.current.length > 0 &&
+          initComplete
+        ) {
+          // no mutation happened on the entire canvas, just return the old metadata
+          rootMetadata = rootMetadataInStateRef.current
+        } else {
+          const rootElements = walkSceneInner(canvasRoot, index, canvasRootPath, validPaths)
+          // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
+          // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
+          // to provide a home for the the (really existing) childMetadata
+          const metadata: ElementInstanceMetadata = elementInstanceMetadata(
+            canvasRootPath as InstancePath,
+            left('Storyboard'),
+            {},
+            null,
+            null,
+            rootElements,
+            false,
+            emptySpecialSizeMeasurements,
+            emptyComputedStyle,
+          )
+          rootMetadata.push(metadata)
+        }
       }
 
       function walkSceneInner(
@@ -271,13 +452,13 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         index: number,
         scenePath: TemplatePath,
         validPaths: Array<string>,
-      ): Array<ElementInstanceMetadata> {
+      ): Array<InstancePath> {
         const globalFrame: CanvasRectangle = globalFrameForElement(scene)
 
-        let metadatas: Array<ElementInstanceMetadata> = []
+        let childPaths: Array<InstancePath> = []
 
         scene.childNodes.forEach((childNode) => {
-          const metadata = walkElements(
+          const childNodePaths = walkElements(
             childNode,
             index,
             0,
@@ -287,10 +468,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             validPaths,
           )
 
-          metadatas.push(...metadata)
+          childPaths.push(...childNodePaths)
         })
 
-        return metadatas
+        return childPaths
       }
 
       // Walks through the DOM producing the structure and values from within.
@@ -302,15 +483,13 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         originalParentPath: TemplatePath | null,
         uniqueParentPath: TemplatePath,
         validPaths: Array<string>,
-      ): Array<ElementInstanceMetadata> {
+      ): Array<InstancePath> {
         if (isScene(element)) {
           // we found a nested scene, restart the walk
           walkScene(element, index)
           return []
         }
         if (element instanceof HTMLElement) {
-          const globalFrame = globalFrameForElement(element)
-
           // Determine the uid of this element if it has one.
           const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
           const parentUIDsAttribute = getDOMAttribute(element, UTOPIA_UID_PARENTS_KEY)
@@ -341,6 +520,8 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           }
           uniquePath = TP.appendToPath(uniquePath, pathElement)
 
+          const globalFrame = globalFrameForElement(element)
+
           // Build the original path for this element.
           let originalPath: TemplatePath | null = originalParentPath
           if (originalPath != null) {
@@ -357,10 +538,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           const pathForChildren = pathIsValid ? uniquePath : uniqueParentPath
 
           // Build the metadata for the children of this DOM node.
-          let metadataOfChildren: Array<ElementInstanceMetadata> = []
+          let childPaths: Array<InstancePath> = []
           if (traverseChildren) {
             element.childNodes.forEach((child, childIndex) => {
-              const childMetadata = walkElements(
+              const childNodePaths = walkElements(
                 child,
                 childIndex,
                 depth + 1,
@@ -369,16 +550,16 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
                 pathForChildren,
                 validPaths,
               )
-              if (childMetadata != null) {
-                metadataOfChildren.push(...childMetadata)
-              }
+              childPaths.push(...childNodePaths)
             })
           }
 
           if (pathIsValid) {
-            return [collectMetadata(element, uniquePath, parentPoint, metadataOfChildren)]
+            const collectedMetadata = collectMetadata(element, uniquePath, parentPoint, childPaths)
+            rootMetadata.push(collectedMetadata)
+            return [collectedMetadata.templatePath]
           } else {
-            return metadataOfChildren
+            return childPaths
           }
         } else {
           return []
@@ -389,7 +570,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         element: HTMLElement,
         instancePath: InstancePath,
         parentPoint: CanvasPoint | null,
-        childrenMetadata: ElementInstanceMetadata[],
+        children: InstancePath[],
       ): ElementInstanceMetadata {
         const globalFrame = globalFrameForElement(element)
         const localFrame =
@@ -416,7 +597,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           elementProps,
           globalFrame,
           localFrame,
-          childrenMetadata,
+          children,
           false,
           getSpecialMeasurements(element),
           getComputedStyle(element, instancePath),
@@ -433,7 +614,11 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         props.canvasRootElementTemplatePath,
         props.validRootPaths.map(TP.toString),
       )
-
+      if (LogDomWalkerPerformance) {
+        performance.mark('DOM_WALKER_END')
+        performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
+      }
+      setInitComplete()
       props.onDomReport(rootMetadata)
     }
   })

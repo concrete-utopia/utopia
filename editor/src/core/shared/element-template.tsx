@@ -1,6 +1,5 @@
 import {
   PropertyPath,
-  ElementCanvasMetadata,
   InstancePath,
   PropertyPathPart,
   CanvasElementMetadataMap,
@@ -278,6 +277,60 @@ export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
   }
 }
 
+export function clearJSXAttributeOtherJavaScriptSourceMaps(
+  attribute: JSXAttributeOtherJavaScript,
+): JSXAttributeOtherJavaScript {
+  return {
+    ...attribute,
+    sourceMap: null,
+  }
+}
+
+export function clearAttributeSourceMaps(attribute: JSXAttribute): JSXAttribute {
+  switch (attribute.type) {
+    case 'ATTRIBUTE_VALUE':
+      return attribute
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return clearJSXAttributeOtherJavaScriptSourceMaps(attribute)
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return jsxAttributeNestedArray(
+        attribute.content.map((elem) => {
+          switch (elem.type) {
+            case 'ARRAY_SPREAD':
+              return jsxArraySpread(clearAttributeSourceMaps(elem.value))
+            case 'ARRAY_VALUE':
+              return jsxArrayValue(clearAttributeSourceMaps(elem.value))
+            default:
+              const _exhaustiveCheck: never = elem
+              throw new Error(`Unhandled array element type ${JSON.stringify(elem)}`)
+          }
+        }),
+      )
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return jsxAttributeFunctionCall(
+        attribute.functionName,
+        attribute.parameters.map(clearAttributeSourceMaps),
+      )
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return jsxAttributeNestedObject(
+        attribute.content.map((prop) => {
+          switch (prop.type) {
+            case 'SPREAD_ASSIGNMENT':
+              return jsxSpreadAssignment(clearAttributeSourceMaps(prop.value))
+            case 'PROPERTY_ASSIGNMENT':
+              return jsxPropertyAssignment(prop.key, clearAttributeSourceMaps(prop.value))
+            default:
+              const _exhaustiveCheck: never = prop
+              throw new Error(`Unhandled property type ${JSON.stringify(prop)}`)
+          }
+        }),
+      )
+    default:
+      const _exhaustiveCheck: never = attribute
+      throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
+  }
+}
+
 export function isJSXAttributeValue(
   attribute: JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound,
 ): attribute is JSXAttributeValue<any> {
@@ -367,6 +420,10 @@ export function clearAttributesUniqueIDs(attributes: JSXAttributes): JSXAttribut
   return objectMap(clearAttributeUniqueIDs, attributes)
 }
 
+export function clearAttributesSourceMaps(attributes: JSXAttributes): JSXAttributes {
+  return objectMap(clearAttributeSourceMaps, attributes)
+}
+
 export interface JSXElementName {
   baseVariable: string
   propertyPath: PropertyPath
@@ -432,7 +489,6 @@ export interface JSXElement {
   name: JSXElementName
   props: JSXAttributes
   children: JSXElementChildren
-  metadata: ElementCanvasMetadata | null
 }
 
 export type ElementsWithin = { [uid: string]: JSXElement }
@@ -576,14 +632,12 @@ export function jsxElement(
   name: JSXElementName | string,
   props: JSXAttributes,
   children: JSXElementChildren,
-  metadata: ElementCanvasMetadata | null,
 ): JSXElement {
   return {
     type: 'JSX_ELEMENT',
     name: typeof name === 'string' ? jsxElementName(name, []) : name,
     props: props,
     children: children,
-    metadata: metadata,
   }
 }
 
@@ -591,10 +645,9 @@ export function jsxTestElement(
   name: JSXElementName | string,
   props: JSXAttributes,
   children: Array<JSXElement>,
-  metadata: ElementCanvasMetadata | null = null,
   uid: string = 'aaa',
 ): JSXElement {
-  return jsxElement(name, { ...props, 'data-uid': jsxAttributeValue(uid) }, children, metadata)
+  return jsxElement(name, { ...props, 'data-uid': jsxAttributeValue(uid) }, children)
 }
 
 export function utopiaJSXComponent(
@@ -882,13 +935,35 @@ export function isArbitraryJSBlock(
 
 export type ComputedStyle = { [key: string]: string }
 
+export interface JSXMetadata {
+  components: Array<ComponentMetadata>
+  elements: ElementInstanceMetadataMap
+}
+
+export function jsxMetadata(
+  components: Array<ComponentMetadata>,
+  elements: ElementInstanceMetadataMap,
+): JSXMetadata {
+  return {
+    components: components,
+    elements: elements,
+  }
+}
+
+export const emptyJsxMetadata: JSXMetadata = {
+  components: [],
+  elements: {},
+}
+
+export type ElementInstanceMetadataMap = { [key: string]: ElementInstanceMetadata }
+
 export interface ElementInstanceMetadata {
   templatePath: InstancePath
   element: Either<string, JSXElementChild>
   props: { [key: string]: any } // the final, resolved, static props value
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
-  children: Array<ElementInstanceMetadata>
+  children: Array<InstancePath>
   componentInstance: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
@@ -896,11 +971,11 @@ export interface ElementInstanceMetadata {
 
 export function elementInstanceMetadata(
   templatePath: InstancePath,
-  element: Either<string, JSXElement>,
+  element: Either<string, JSXElementChild>,
   props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
-  children: Array<ElementInstanceMetadata>,
+  children: Array<InstancePath>,
   componentInstance: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
@@ -1005,7 +1080,7 @@ export const emptyComputedStyle: ComputedStyle = {}
 export interface ComponentMetadata {
   scenePath: ScenePath
   templatePath: InstancePath
-  rootElements: Array<ElementInstanceMetadata>
+  rootElements: Array<InstancePath>
   component: string | null
   globalFrame: CanvasRectangle | null
   sceneResizesContent: boolean
@@ -1014,9 +1089,9 @@ export interface ComponentMetadata {
 }
 
 export function isComponentMetadata(
-  maybeComponentMetadata: any,
+  maybeComponentMetadata: ComponentMetadata | ElementInstanceMetadata,
 ): maybeComponentMetadata is ComponentMetadata {
-  return maybeComponentMetadata.scenePath != null
+  return (maybeComponentMetadata as ComponentMetadata).scenePath != null
 }
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>> // TODO update typescript!!

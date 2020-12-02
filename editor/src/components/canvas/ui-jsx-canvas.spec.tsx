@@ -10,12 +10,12 @@ import * as ANTD from 'antd'
 import {
   ArbitraryJSBlock,
   clearJSXElementUniqueIDs,
-  MetadataWithoutChildren,
+  ElementInstanceMetadata,
   TopLevelElement,
 } from '../../core/shared/element-template'
 import { RequireFn } from '../../core/shared/npm-dependency-types'
-import { Imports } from '../../core/shared/project-file-types'
-import { testParseCode } from '../../core/workers/parser-printer/parser-printer-test-utils'
+import { foldParsedTextFile, Imports } from '../../core/shared/project-file-types'
+import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { foldEither, isRight, right } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { FancyError } from '../../core/shared/code-exec-utils'
@@ -33,7 +33,7 @@ import {
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { ConsoleLog } from '../editor/store/editor-state'
-import { AwkwardFragmentsCode } from '../../core/workers/parser-printer/parser-printer-fragments-test-utils'
+import { AwkwardFragmentsCode } from '../../core/workers/parser-printer/parser-printer-fragments.test-utils'
 import { CanvasErrorBoundary } from './canvas-component-entry'
 
 interface PartialCanvasProps {
@@ -62,7 +62,7 @@ const dumbRequireFn: RequireFn = (importOrigin: string, toImport: string) => {
   }
 }
 
-function stripUidsFromMetadata(metadata: MetadataWithoutChildren): MetadataWithoutChildren {
+function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
   if (isRight(metadata.element)) {
     return {
       ...metadata,
@@ -93,27 +93,31 @@ function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | nu
     errorsReported.push({ editedFile: editedFile, error: error, errorInfo: errorInfo })
   }
   const clearErrors: CanvasReactErrorCallback['clearErrors'] = Utils.NO_OP
-  const imports: Imports = foldEither(
+  const imports: Imports = foldParsedTextFile(
     (_) => emptyImports(),
     (success) => success.imports,
+    (_) => emptyImports(),
     parsedCode,
   )
-  const topLevelElements: Array<TopLevelElement> = foldEither(
+  const topLevelElements: Array<TopLevelElement> = foldParsedTextFile(
     (_) => [],
     (success) => success.topLevelElements,
+    (_) => [],
     parsedCode,
   )
-  const jsxFactoryFunction = foldEither(
+  const jsxFactoryFunction = foldParsedTextFile(
     (_) => null,
     (success) => success.jsxFactoryFunction,
+    (_) => null,
     parsedCode,
   )
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
   let consoleLogs: Array<ConsoleLog> = []
 
-  const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = foldEither(
+  const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = foldParsedTextFile(
     (_) => null,
     (success) => success.combinedTopLevelArbitraryBlock,
+    (_) => null,
     parsedCode,
   )
 
@@ -1915,6 +1919,42 @@ export var storyboard = (
   <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid={'ccc'}>
     <Scene
       data-uid={'ddd'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)`,
+    )
+  })
+
+  it('renderrs correctly when a component is passed in via a prop', () => {
+    testCanvasRender(
+      null,
+      `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >
+      Test
+      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
+    </div>
+  )
+}
+
+export var Thing = (props) => {
+  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'eee'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      data-uid={'fff'}
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}

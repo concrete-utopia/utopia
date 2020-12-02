@@ -27,7 +27,7 @@ export function defaultSceneElement(
     }),
   }
 
-  return jsxElement(jsxElementName('Scene', []), props, [], null)
+  return jsxElement(jsxElementName('Scene', []), props, [])
 }
 
 export function defaultViewElement(uid: string): JSXElement {
@@ -41,7 +41,6 @@ export function defaultViewElement(uid: string): JSXElement {
       'data-uid': jsxAttributeValue(uid),
     },
     [],
-    null,
   )
 }
 
@@ -55,7 +54,6 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
       'data-uid': jsxAttributeValue(uid),
     },
     [],
-    null,
   )
 }
 
@@ -74,7 +72,6 @@ export function defaultTransparentViewElement(
         'data-uid': jsxAttributeValue(uid),
       },
       [],
-      null,
     )
   } else {
     return jsxElement(
@@ -86,7 +83,6 @@ export function defaultTransparentViewElement(
         'data-uid': jsxAttributeValue(uid),
       },
       [],
-      null,
     )
   }
 }
@@ -102,7 +98,6 @@ export function defaultTextElement(uid: string): JSXElement {
       'data-uid': jsxAttributeValue(uid),
     },
     [],
-    null,
   )
 }
 
@@ -116,7 +111,6 @@ export function defaultRectangleElement(uid: string): JSXElement {
       'data-uid': jsxAttributeValue(uid),
     },
     [],
-    null,
   )
 }
 
@@ -130,7 +124,6 @@ export function defaultEllipseElement(uid: string): JSXElement {
       'data-uid': jsxAttributeValue(uid),
     },
     [],
-    null,
   )
 }
 
@@ -145,7 +138,6 @@ export function defaultDivElement(uid: string): JSXElement {
       'data-uid': jsxAttributeValue(uid),
     },
     [],
-    null,
   )
 }
 
@@ -161,6 +153,5 @@ export function defaultInsertableDivElement(uid: string): JSXElement {
       'data-uid': jsxAttributeValue(uid),
     },
     [],
-    null,
   )
 }

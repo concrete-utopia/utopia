@@ -3,7 +3,7 @@ import * as NodeHTMLParser from 'node-html-parser'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { notice } from '../../components/common/notices'
 import { EditorDispatch } from '../../components/editor/action-types'
-import { pushToast, updateFile } from '../../components/editor/actions/actions'
+import { pushToast, updateFile } from '../../components/editor/actions/action-creators'
 import { defaultIndexHtmlFilePath, EditorState } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
 import {
@@ -20,9 +20,16 @@ import {
   generatedExternalResourcesLinksClose,
   generatedExternalResourcesLinksOpen,
 } from '../../core/model/new-project-files'
-import { codeFile } from '../../core/model/project-file-utils'
 import { Either, isRight, left, mapEither, right } from '../../core/shared/either'
-import { CodeFile, isCodeFile, ProjectContents } from '../../core/shared/project-file-types'
+import {
+  TextFile,
+  isTextFile,
+  ProjectContents,
+  textFileContents,
+  textFile,
+  unparsed,
+  RevisionsState,
+} from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
 import { DescriptionParseError, descriptionParseError } from '../../utils/value-parser-utils'
 import { OnSubmitValue } from '../../uuiui-deps'
@@ -91,9 +98,9 @@ function getPreviewHTMLFilePath(
   projectContents: ProjectContentTreeRoot,
 ): Either<DescriptionParseError, string> {
   const packageJson = getContentsTreeFileFromString(projectContents, '/package.json')
-  if (packageJson != null && isCodeFile(packageJson)) {
+  if (packageJson != null && isTextFile(packageJson)) {
     try {
-      const parsedJSON = json5.parse(packageJson.fileContents)
+      const parsedJSON = json5.parse(packageJson.fileContents.code)
       if (parsedJSON != null && 'utopia' in parsedJSON) {
         const htmlFilePath = parsedJSON.utopia?.html
         if (htmlFilePath != null) {
@@ -114,12 +121,12 @@ function getPreviewHTMLFilePath(
   }
 }
 
-function getCodeFileContentsFromPath(
+function getTextFileContentsFromPath(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
-): Either<DescriptionParseError, CodeFile> {
+): Either<DescriptionParseError, TextFile> {
   const fileContents = getContentsTreeFileFromString(projectContents, filePath)
-  if (fileContents != null && isCodeFile(fileContents)) {
+  if (fileContents != null && isTextFile(fileContents)) {
     return right(fileContents)
   } else {
     return left(
@@ -402,31 +409,36 @@ export function getExternalResourcesInfo(
     isRight(packageJsonHtmlFilePath) ? packageJsonHtmlFilePath.value : defaultIndexHtmlFilePath
   }`
 
-  const previewHTMLFilePathContents = getCodeFileContentsFromPath(
+  const previewHTMLFilePathContents = getTextFileContentsFromPath(
     htmlFilePath,
     editor.projectContents,
   )
   if (isRight(previewHTMLFilePathContents)) {
     const fileContents = previewHTMLFilePathContents.value.fileContents
-    const parsedLinkTagsText = getGeneratedExternalLinkText(fileContents)
+    const parsedLinkTagsText = getGeneratedExternalLinkText(fileContents.code)
     if (isRight(parsedLinkTagsText)) {
       const parsedExternalResources = parseLinkTags(parsedLinkTagsText.value)
       if (isRight(parsedExternalResources)) {
         function onSubmitValue(newValue: ExternalResources) {
-          const updatedCodeFileContents = updateHTMLExternalResourcesLinks(
-            fileContents,
+          const updatedTextFileContents = updateHTMLExternalResourcesLinks(
+            fileContents.code,
             printExternalResources(newValue),
           )
-          if (isRight(updatedCodeFileContents)) {
+          if (isRight(updatedTextFileContents)) {
+            const newFileContents = textFileContents(
+              updatedTextFileContents.value,
+              unparsed,
+              RevisionsState.BothMatch,
+            )
             dispatch([
               updateFile(
                 htmlFilePath,
-                codeFile(updatedCodeFileContents.value, updatedCodeFileContents.value),
+                textFile(newFileContents, newFileContents, Date.now()),
                 false,
               ),
             ])
           } else {
-            dispatch([pushToast(notice(updatedCodeFileContents.value.description))])
+            dispatch([pushToast(notice(updatedTextFileContents.value.description))])
           }
         }
         return right({ externalResources: parsedExternalResources.value, onSubmitValue })
@@ -446,10 +458,13 @@ export function useExternalResources(): {
   onSubmitValue: OnSubmitValue<ExternalResources>
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 } {
-  const { dispatch, editorState } = useEditorState((store) => ({
-    editorState: store.editor,
-    dispatch: store.dispatch,
-  }))
+  const { dispatch, editorState } = useEditorState(
+    (store) => ({
+      editorState: store.editor,
+      dispatch: store.dispatch,
+    }),
+    'useExternalResources',
+  )
   const externalResourcesInfo = getExternalResourcesInfo(editorState, dispatch)
   const values: Either<DescriptionParseError, ExternalResources> = isRight(externalResourcesInfo)
     ? right(externalResourcesInfo.value.externalResources)

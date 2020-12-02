@@ -52,7 +52,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
 exports[`UiJsxCanvas render Label carried through for generated elements 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -67,7 +67,6 @@ Object {
             "elementsWithin": Object {
               "bbb": Object {
                 "children": Array [],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "div",
                   "propertyPath": Object {
@@ -137,7 +136,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -326,14 +324,13 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
 exports[`UiJsxCanvas render Label carried through for normal elements 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -519,14 +516,13 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
 exports[`UiJsxCanvas render Renders input tag without errors 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:567": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "InputElement",
           "propertyPath": Object {
@@ -632,7 +628,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
 exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbitrary jsx block 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -697,7 +693,6 @@ Object {
                     "uniqueID": "",
                   },
                 ],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "div",
                   "propertyPath": Object {
@@ -764,7 +759,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -882,7 +876,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
 exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbitrary jsx block inside an element inside an arbitrary jsx block 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -962,7 +956,6 @@ Object {
                             "uniqueID": "",
                           },
                         ],
-                        "metadata": null,
                         "name": Object {
                           "baseVariable": "div",
                           "propertyPath": Object {
@@ -1035,7 +1028,6 @@ Object {
                     "uniqueID": "",
                   },
                 ],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "div",
                   "propertyPath": Object {
@@ -1117,7 +1109,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -1222,7 +1213,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
 exports[`UiJsxCanvas render class component is available from arbitrary block in JSX element 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "zzz",
@@ -1258,7 +1249,6 @@ Object {
         "children": Array [
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Thing",
               "propertyPath": Object {
@@ -1275,7 +1265,6 @@ Object {
           },
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Thing",
               "propertyPath": Object {
@@ -1291,7 +1280,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -1358,14 +1346,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Thing",
           "propertyPath": Object {
@@ -1433,14 +1420,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Thing",
           "propertyPath": Object {
@@ -1546,14 +1532,13 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
 exports[`UiJsxCanvas render console logging does not do anything bizarre 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -1740,7 +1725,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
 exports[`UiJsxCanvas render does not crash if the metadata scenes are not the appropriate value 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -1756,7 +1741,6 @@ Object {
             "elementsWithin": Object {
               "bbb": Object {
                 "children": Array [],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "MyCard",
                   "propertyPath": Object {
@@ -1874,7 +1858,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -1980,7 +1963,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
 exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -1996,7 +1979,6 @@ Object {
             "elementsWithin": Object {
               "bbb": Object {
                 "children": Array [],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "MyCard",
                   "propertyPath": Object {
@@ -2114,7 +2096,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -2219,7 +2200,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
 exports[`UiJsxCanvas render function component is available from arbitrary block in JSX element 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "zzz",
@@ -2255,7 +2236,6 @@ Object {
         "children": Array [
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Thing",
               "propertyPath": Object {
@@ -2272,7 +2252,6 @@ Object {
           },
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Thing",
               "propertyPath": Object {
@@ -2288,7 +2267,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -2355,14 +2333,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Thing",
           "propertyPath": Object {
@@ -2430,14 +2407,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Thing",
           "propertyPath": Object {
@@ -2543,7 +2519,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
 exports[`UiJsxCanvas render function component works inside a map 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -2559,7 +2535,6 @@ Object {
             "elementsWithin": Object {
               "aaa": Object {
                 "children": Array [],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "Thing",
                   "propertyPath": Object {
@@ -2625,7 +2600,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -2742,7 +2716,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
 exports[`UiJsxCanvas render handles a component that destructures its props object 2`] = `
 Object {
   "utopia-storyboard-uid/scene-0:aaa": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -2765,7 +2739,6 @@ Object {
         "children": Array [
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Card",
               "propertyPath": Object {
@@ -2841,7 +2814,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -3011,14 +2983,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Card",
           "propertyPath": Object {
@@ -3231,7 +3202,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
 exports[`UiJsxCanvas render handles a component that renames its props object 2`] = `
 Object {
   "utopia-storyboard-uid/scene-0:aaa": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -3254,7 +3225,6 @@ Object {
         "children": Array [
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Card",
               "propertyPath": Object {
@@ -3330,7 +3300,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -3500,14 +3469,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Card",
           "propertyPath": Object {
@@ -3713,7 +3681,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
 exports[`UiJsxCanvas render handles a component with a props object written by someone that wants to watch the world burn 2`] = `
 Object {
   "utopia-storyboard-uid/scene-0:aaa": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -3736,7 +3704,6 @@ Object {
         "children": Array [
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Card",
               "propertyPath": Object {
@@ -3836,7 +3803,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -4006,14 +3972,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Card",
           "propertyPath": Object {
@@ -4249,7 +4214,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
 exports[`UiJsxCanvas render handles a component with a props object written by someone that wants to watch the world burn and also loves defaults 2`] = `
 Object {
   "utopia-storyboard-uid/scene-0:aaa": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -4272,7 +4237,6 @@ Object {
         "children": Array [
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Card",
               "propertyPath": Object {
@@ -4372,7 +4336,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -4542,14 +4505,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Card",
           "propertyPath": Object {
@@ -4770,14 +4732,13 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
 exports[`UiJsxCanvas render handles chaining dependencies into the appropriate order 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Widget",
           "propertyPath": Object {
@@ -4973,7 +4934,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
 exports[`UiJsxCanvas render handles fragments in an arbitrary block 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -5126,7 +5087,6 @@ export var storyboard = (props) => {
                         "uniqueID": "",
                       },
                     ],
-                    "metadata": null,
                     "name": Object {
                       "baseVariable": "div",
                       "propertyPath": Object {
@@ -5262,7 +5222,6 @@ export var storyboard = (props) => {
                     "children": Array [
                       Object {
                         "children": Array [],
-                        "metadata": null,
                         "name": Object {
                           "baseVariable": "KeyboardShortcut",
                           "propertyPath": Object {
@@ -5395,7 +5354,6 @@ export var storyboard = (props) => {
                         "type": "JSX_ELEMENT",
                       },
                     ],
-                    "metadata": null,
                     "name": Object {
                       "baseVariable": "div",
                       "propertyPath": Object {
@@ -5549,7 +5507,7 @@ export var storyboard = (props) => {
         ))",
                 "sourceMap": Object {
                   "file": "code.tsx",
-                  "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,sBACd;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
+                  "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,SACd;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
                   "names": Array [
                     "keyboardShortcuts",
                     "map",
@@ -5657,7 +5615,7 @@ export var storyboard = (props) => {
                   "version": 3,
                 },
                 "transpiledJavascript": "return keyboardShortcuts.map(function (pair) {
-  return /*#__PURE__*/React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
+  return React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
     pair: pair
   }), utopiaCanvasJSXLookup(\\"999\\", {
     pair: pair
@@ -5667,7 +5625,6 @@ export var storyboard = (props) => {
                 "uniqueID": "",
               },
             ],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Grid",
               "propertyPath": Object {
@@ -5683,7 +5640,6 @@ export var storyboard = (props) => {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -5975,7 +5931,7 @@ export var storyboard = (props) => {
     },
   },
   "utopia-storyboard-uid/scene-aaa:aaa/03a": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -6112,7 +6068,6 @@ export var storyboard = (props) => {
                     "uniqueID": "",
                   },
                 ],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "div",
                   "propertyPath": Object {
@@ -6248,7 +6203,6 @@ export var storyboard = (props) => {
                 "children": Array [
                   Object {
                     "children": Array [],
-                    "metadata": null,
                     "name": Object {
                       "baseVariable": "KeyboardShortcut",
                       "propertyPath": Object {
@@ -6381,7 +6335,6 @@ export var storyboard = (props) => {
                     "type": "JSX_ELEMENT",
                   },
                 ],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "div",
                   "propertyPath": Object {
@@ -6535,7 +6488,7 @@ export var storyboard = (props) => {
         ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,sBACd;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
+              "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,SACd;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
               "names": Array [
                 "keyboardShortcuts",
                 "map",
@@ -6643,7 +6596,7 @@ export var storyboard = (props) => {
               "version": 3,
             },
             "transpiledJavascript": "return keyboardShortcuts.map(function (pair) {
-  return /*#__PURE__*/React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
+  return React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
     pair: pair
   }), utopiaCanvasJSXLookup(\\"999\\", {
     pair: pair
@@ -6653,7 +6606,6 @@ export var storyboard = (props) => {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Grid",
           "propertyPath": Object {
@@ -6801,7 +6753,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
 exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block inside a text range 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "zzz",
@@ -6837,7 +6789,6 @@ Object {
         "children": Array [
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Thing",
               "propertyPath": Object {
@@ -6858,7 +6809,6 @@ Object {
           },
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Thang",
               "propertyPath": Object {
@@ -6878,7 +6828,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -6945,14 +6894,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Thing",
           "propertyPath": Object {
@@ -7025,14 +6973,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Thang",
           "propertyPath": Object {
@@ -7140,14 +7087,13 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
 exports[`UiJsxCanvas render refs are handled and triggered correctly in a class component 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Thing",
           "propertyPath": Object {
@@ -7307,14 +7253,13 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
 exports[`UiJsxCanvas render refs are handled and triggered correctly in a functional component 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -7512,6 +7457,424 @@ Object {
 }
 `;
 
+exports[`UiJsxCanvas render renderrs correctly when a component is passed in via a prop 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
+>
+  <div
+    data-utopia-scene-id=\\"eee/fff\\"
+    data-utopia-valid-paths=\\"eee/fff:aaa eee/fff:aaa/bbb\\"
+    style=\\"
+      position: absolute;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      width: 375px;
+      height: 812px;
+      left: 0;
+      top: 0;
+    \\"
+    data-uid=\\"eee\\"
+  >
+    <div
+      data-uid=\\"aaa\\"
+      style=\\"
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background-color: #ffffff;
+      \\"
+    >
+      Test
+      <div
+        data-uid=\\"bbb\\"
+        style=\\"background-color: pink; width: 100%; height: 20px;\\"
+      >
+        <div data-uid=\\"ccc\\">test</div>
+      </div>
+    </div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renderrs correctly when a component is passed in via a prop 2`] = `
+Object {
+  "eee/fff:aaa": Object {
+    "children": Array [
+      Object {
+        "element": Array [
+          "aaa",
+          "bbb",
+        ],
+        "scene": Object {
+          "sceneElementPath": Array [
+            "eee",
+            "fff",
+          ],
+          "type": "scenepath",
+        },
+      },
+    ],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "text": "
+      Test
+      ",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "Thing",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Object {
+              "data-uid": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": "bbb",
+              },
+              "thing": Object {
+                "definedElsewhere": Array [
+                  "React",
+                ],
+                "javascript": "<div data-uid={'ccc'}>test</div>",
+                "sourceMap": Object {
+                  "file": "code.tsx",
+                  "mappings": "OAWuCA;AAAIC,cAAWC;AAAfF,UAADG",
+                  "names": Array [
+                    "div",
+                    "data",
+                    "ccc",
+                    "<",
+                  ],
+                  "sources": Array [
+                    "code.tsx",
+                  ],
+                  "sourcesContent": Array [
+                    "/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >
+      Test
+      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
+    </div>
+  )
+}
+
+export var Thing = (props) => {
+  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'eee'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      data-uid={'fff'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)",
+                  ],
+                  "version": 3,
+                },
+                "transpiledJavascript": "return React.createElement(\\"div\\", {
+  \\"data-uid\\": 'ccc'
+}, \\"test\\");",
+                "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                "uniqueID": "",
+              },
+            },
+            "type": "JSX_ELEMENT",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Object {
+          "data-uid": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "aaa",
+          },
+          "layout": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {
+              "layoutSystem": "pinSystem",
+            },
+          },
+          "style": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {
+              "backgroundColor": "#FFFFFF",
+              "height": "100%",
+              "width": "100%",
+            },
+          },
+        },
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "aaa",
+      "skipDeepFreeze": true,
+      "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
+        "alignSelf": undefined,
+        "backgroundColor": "#FFFFFF",
+        "bottom": undefined,
+        "flexBasis": undefined,
+        "flexDirection": undefined,
+        "flexGrow": undefined,
+        "flexShrink": undefined,
+        "flexWrap": undefined,
+        "height": "100%",
+        "justifyContent": undefined,
+        "left": undefined,
+        "marginBottom": undefined,
+        "marginLeft": undefined,
+        "marginRight": undefined,
+        "marginTop": undefined,
+        "maxHeight": undefined,
+        "maxWidth": undefined,
+        "minHeight": undefined,
+        "minWidth": undefined,
+        "position": "relative",
+        "right": undefined,
+        "top": undefined,
+        "width": "100%",
+      },
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "aaa",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [
+          "eee",
+          "fff",
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+  "eee/fff:aaa/bbb": Object {
+    "children": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "Thing",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Object {
+          "data-uid": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": "bbb",
+          },
+          "thing": Object {
+            "definedElsewhere": Array [
+              "React",
+            ],
+            "javascript": "<div data-uid={'ccc'}>test</div>",
+            "sourceMap": Object {
+              "file": "code.tsx",
+              "mappings": "OAWuCA;AAAIC,cAAWC;AAAfF,UAADG",
+              "names": Array [
+                "div",
+                "data",
+                "ccc",
+                "<",
+              ],
+              "sources": Array [
+                "code.tsx",
+              ],
+              "sourcesContent": Array [
+                "/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      layout={{ layoutSystem: 'pinSystem' }}
+    >
+      Test
+      <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
+    </div>
+  )
+}
+
+export var Thing = (props) => {
+  return <div data-uid={'ddd'} style={{backgroundColor: 'pink', width: '100%', height: 20}}>{props.thing}</div>
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'eee'} layout={{ layoutSystem: 'pinSystem' }}>
+    <Scene
+      data-uid={'fff'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)",
+              ],
+              "version": 3,
+            },
+            "transpiledJavascript": "return React.createElement(\\"div\\", {
+  \\"data-uid\\": 'ccc'
+}, \\"test\\");",
+            "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+            "uniqueID": "",
+          },
+        },
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "bbb",
+      "skipDeepFreeze": true,
+      "style": Object {
+        "alignContent": undefined,
+        "alignItems": undefined,
+        "alignSelf": undefined,
+        "bottom": undefined,
+        "flexBasis": undefined,
+        "flexDirection": undefined,
+        "flexGrow": undefined,
+        "flexShrink": undefined,
+        "flexWrap": undefined,
+        "height": undefined,
+        "justifyContent": undefined,
+        "left": undefined,
+        "marginBottom": undefined,
+        "marginLeft": undefined,
+        "marginRight": undefined,
+        "marginTop": undefined,
+        "maxHeight": undefined,
+        "maxWidth": undefined,
+        "minHeight": undefined,
+        "minWidth": undefined,
+        "position": "absolute",
+        "right": undefined,
+        "top": undefined,
+        "width": undefined,
+      },
+      "thing": "REACT_ELEMENT",
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "aaa",
+        "bbb",
+      ],
+      "scene": Object {
+        "sceneElementPath": Array [
+          "eee",
+          "fff",
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
+
 exports[`UiJsxCanvas render renders a 1st party component with uids correctly, using the passed uid instead inside App 1`] = `
 "<div
   id=\\"canvas-container\\"
@@ -7597,7 +7960,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
 exports[`UiJsxCanvas render renders a 1st party component with uids correctly, using the passed uid instead inside App 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -7622,7 +7985,6 @@ Object {
             "children": Array [
               Object {
                 "children": Array [],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "View",
                   "propertyPath": Object {
@@ -7653,7 +8015,6 @@ Object {
                 "type": "JSX_ELEMENT",
               },
             ],
-            "metadata": null,
             "name": Object {
               "baseVariable": "Inner",
               "propertyPath": Object {
@@ -7678,7 +8039,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -7788,7 +8148,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:aaa/d59": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -7812,7 +8172,6 @@ Object {
         "children": Array [
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "View",
               "propertyPath": Object {
@@ -7843,7 +8202,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "Inner",
           "propertyPath": Object {
@@ -7946,14 +8304,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:aaa/d59/dd5": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -8109,7 +8466,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
 exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard component 2`] = `
 Object {
   "utopia-storyboard-uid/scene-0:aaa": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -8138,7 +8495,6 @@ Object {
                 "uniqueID": "",
               },
             ],
-            "metadata": null,
             "name": Object {
               "baseVariable": "View",
               "propertyPath": Object {
@@ -8154,7 +8510,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -8323,7 +8678,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -8336,7 +8691,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -8469,7 +8823,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
 exports[`UiJsxCanvas render renders a component used in an arbitrary block correctly 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -8485,7 +8839,6 @@ Object {
             "elementsWithin": Object {
               "bbb": Object {
                 "children": Array [],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "MyCard",
                   "propertyPath": Object {
@@ -8603,7 +8956,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -8709,7 +9061,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
 exports[`UiJsxCanvas render renders a component used in an arbitrary block correctly, with an HTML element name as a parameter name 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -8725,7 +9077,6 @@ Object {
             "elementsWithin": Object {
               "bbb": Object {
                 "children": Array [],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "MyCard",
                   "propertyPath": Object {
@@ -8844,7 +9195,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -8950,7 +9300,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
 exports[`UiJsxCanvas render renders a component used in an arbitrary block with eye-stabbingly awful nested destructuring correctly 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -8967,7 +9317,6 @@ Object {
             "elementsWithin": Object {
               "bbb": Object {
                 "children": Array [],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "MyCard",
                   "propertyPath": Object {
@@ -9091,7 +9440,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -9194,7 +9542,7 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
 exports[`UiJsxCanvas render renders a component with a fragment at the root 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -9207,7 +9555,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -9274,7 +9621,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -9287,7 +9634,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -9398,7 +9744,7 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
 exports[`UiJsxCanvas render renders correctly with a context 2`] = `
 Object {
   "ccc/ddd:aaa": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -9421,7 +9767,6 @@ Object {
         "children": Array [
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "div",
               "propertyPath": Object {
@@ -9451,7 +9796,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "AppContext",
           "propertyPath": Object {
@@ -9575,14 +9919,13 @@ export var storyboard = (
     },
   },
   "ccc/ddd:aaa/bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -9737,7 +10080,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
 exports[`UiJsxCanvas render renders fine with two circularly referencing arbitrary blocks 2`] = `
 Object {
   "utopia-storyboard-uid/scene:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -9878,7 +10221,6 @@ export var storyboard = (
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -10021,14 +10363,13 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
 exports[`UiJsxCanvas render renders fine with two components that reference each other 2`] = `
 Object {
   "utopia-storyboard-uid/scene:BBB": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "B",
           "propertyPath": Object {
@@ -10159,7 +10500,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
 exports[`UiJsxCanvas render renders fragments correctly 2`] = `
 Object {
   "eee/fff:aaa": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -10199,7 +10540,6 @@ Object {
                     "children": Array [
                       Object {
                         "children": Array [],
-                        "metadata": null,
                         "name": Object {
                           "baseVariable": "div",
                           "propertyPath": Object {
@@ -10231,7 +10571,6 @@ Object {
                     "uniqueID": "",
                   },
                 ],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "div",
                   "propertyPath": Object {
@@ -10276,7 +10615,6 @@ Object {
                 "uniqueID": "",
               },
             ],
-            "metadata": null,
             "name": Object {
               "baseVariable": "div",
               "propertyPath": Object {
@@ -10292,7 +10630,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -10463,7 +10800,7 @@ export var storyboard = (
     },
   },
   "eee/fff:aaa/ddd": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -10476,7 +10813,6 @@ export var storyboard = (
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -10610,7 +10946,7 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
 exports[`UiJsxCanvas render renders img tag 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "aaa",
@@ -10633,7 +10969,6 @@ Object {
         "children": Array [
           Object {
             "children": Array [],
-            "metadata": null,
             "name": Object {
               "baseVariable": "img",
               "propertyPath": Object {
@@ -10653,7 +10988,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -10720,14 +11054,13 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:aaa/bbb": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "img",
           "propertyPath": Object {
@@ -10861,14 +11194,13 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
 exports[`UiJsxCanvas render respects a jsx pragma 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "MyComp",
           "propertyPath": Object {
@@ -10981,7 +11313,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
 exports[`UiJsxCanvas render supports passing down the scope to children of components 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -11051,7 +11383,6 @@ Object {
                         "uniqueID": "",
                       },
                     ],
-                    "metadata": null,
                     "name": Object {
                       "baseVariable": "div",
                       "propertyPath": Object {
@@ -11067,7 +11398,6 @@ Object {
                     "type": "JSX_ELEMENT",
                   },
                 ],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "div",
                   "propertyPath": Object {
@@ -11141,7 +11471,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "View",
           "propertyPath": Object {
@@ -11247,7 +11576,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
 exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElement 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "zzz",
@@ -11278,7 +11607,6 @@ Object {
                     "uniqueID": "",
                   },
                 ],
-                "metadata": null,
                 "name": Object {
                   "baseVariable": "div",
                   "propertyPath": Object {
@@ -11294,7 +11622,6 @@ Object {
                 "type": "JSX_ELEMENT",
               },
             ],
-            "metadata": null,
             "name": Object {
               "baseVariable": "ClonerComponent",
               "propertyPath": Object {
@@ -11310,7 +11637,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -11377,7 +11703,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/cloner": Object {
-    "childrenTemplatePaths": Array [
+    "children": Array [
       Object {
         "element": Array [
           "zzz",
@@ -11407,7 +11733,6 @@ Object {
                 "uniqueID": "",
               },
             ],
-            "metadata": null,
             "name": Object {
               "baseVariable": "div",
               "propertyPath": Object {
@@ -11423,7 +11748,6 @@ Object {
             "type": "JSX_ELEMENT",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "ClonerComponent",
           "propertyPath": Object {
@@ -11491,7 +11815,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/cloner/cloned": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -11504,7 +11828,6 @@ Object {
             "uniqueID": "",
           },
         ],
-        "metadata": null,
         "name": Object {
           "baseVariable": "div",
           "propertyPath": Object {
@@ -11617,14 +11940,13 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
 exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "MyComp",
           "propertyPath": Object {
@@ -11732,14 +12054,13 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
 exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
-    "childrenTemplatePaths": Array [],
+    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
       "value": Object {
         "children": Array [],
-        "metadata": null,
         "name": Object {
           "baseVariable": "MyComp",
           "propertyPath": Object {

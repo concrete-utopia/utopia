@@ -1,16 +1,17 @@
 import { printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from './prettier-utils'
 import { isRight } from '../../shared/either'
-import { testParseCode, clearParseResultUniqueIDs } from './parser-printer-test-utils'
+import { testParseCode, clearParseResultUniqueIDs } from './parser-printer.test-utils'
 import { elementsStructure } from '../../../utils/test-utils'
-import { AwkwardFragmentsCode } from './parser-printer-fragments-test-utils'
+import { AwkwardFragmentsCode } from './parser-printer-fragments.test-utils'
+import { isParseSuccess } from '../../shared/project-file-types'
 
 describe('JSX parser', () => {
   it('handle some weird nested fragments', () => {
     const code = applyPrettier(AwkwardFragmentsCode, false).formatted
     const parseResult = clearParseResultUniqueIDs(testParseCode(code))
-    if (isRight(parseResult)) {
-      expect(elementsStructure(parseResult.value.topLevelElements)).toMatchInlineSnapshot(`
+    if (isParseSuccess(parseResult)) {
+      expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
         "  JSX_ELEMENT - aaa
             JSX_TEXT_BLOCK
             JSX_FRAGMENT
@@ -28,9 +29,10 @@ describe('JSX parser', () => {
 
       const printedCode = printCode(
         printCodeOptions(false, true, true),
-        parseResult.value.imports,
-        parseResult.value.topLevelElements,
-        parseResult.value.jsxFactoryFunction,
+        parseResult.imports,
+        parseResult.topLevelElements,
+        parseResult.jsxFactoryFunction,
+        parseResult.exportsDetail,
       )
 
       expect(printedCode).toMatchInlineSnapshot(`
@@ -74,7 +76,7 @@ describe('JSX parser', () => {
         "
       `)
     } else {
-      fail(parseResult.value)
+      fail(parseResult)
     }
   })
 })

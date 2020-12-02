@@ -21,10 +21,10 @@ import {
 } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import Utils from '../../utils/utils'
+import { StoryboardFilePath } from '../../core/model/storyboard-utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getCursorFromDragState } from '../canvas/canvas-utils'
 import { SplitViewCanvasRoot } from '../canvas/split-view-canvas-root'
-import { ScriptEditor } from '../code-editor/script-editor'
 import { resizeLeftPane } from '../common/actions'
 import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
@@ -34,21 +34,13 @@ import { LeftPaneComponent, LeftMenuTab } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
 import { ReleaseNotesContent } from '../documentation/release-notes'
 import { EditorDispatch, LoginState } from './action-types'
-import * as EditorActions from './actions/actions'
+import * as EditorActions from './actions/action-creators'
 import { handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { StateHistory } from './history'
 import { LoginStatusBar, EditorOfflineBar, BrowserInfoBar } from './notification-bar'
-import {
-  ConsoleLog,
-  DerivedState,
-  EditorState,
-  getOpenEditorTab,
-  getOpenFile,
-  isReleaseNotesTab,
-  isUserConfigurationTab,
-} from './store/editor-state'
+import { ConsoleLog, getOpenEditorTab, getOpenFile, getOpenTextFileKey } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
-import { isUIJSFile } from '../../core/shared/project-file-types'
+import { isParsedTextFile } from '../../core/shared/project-file-types'
 import { isLiveMode, dragAndDropInsertionSubject, EditorModes, isSelectMode } from './editor-modes'
 import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
@@ -60,6 +52,7 @@ import {
   PropertyControlsInfoIFrameID,
   setPropertyControlsIFrameAvailable,
 } from '../../core/property-controls/property-controls-utils'
+import { isReleaseNotesTab, isUserConfigurationTab } from './store/editor-tabs'
 
 interface NumberSize {
   width: number
@@ -157,12 +150,27 @@ export const EditorComponentInner = betterReactMemo(
       }
     }, [onWindowMouseDown, onWindowKeyDown, onWindowKeyUp, preventDefault])
 
-    const dispatch = useEditorState((store) => store.dispatch)
-    const projectName = useEditorState((store) => store.editor.projectName)
-    const previewVisible = useEditorState((store) => store.editor.preview.visible)
-    const leftMenuExpanded = useEditorState((store) => store.editor.leftMenu.expanded)
-    const leftMenuWidth = useEditorState((store) => store.editor.leftMenu.paneWidth)
-    const saveError = useEditorState((store) => store.editor.saveError)
+    const dispatch = useEditorState((store) => store.dispatch, 'EditorComponentInner dispatch')
+    const projectName = useEditorState(
+      (store) => store.editor.projectName,
+      'EditorComponentInner projectName',
+    )
+    const previewVisible = useEditorState(
+      (store) => store.editor.preview.visible,
+      'EditorComponentInner previewVisible',
+    )
+    const leftMenuExpanded = useEditorState(
+      (store) => store.editor.leftMenu.expanded,
+      'EditorComponentInner leftMenuExpanded',
+    )
+    const leftMenuWidth = useEditorState(
+      (store) => store.editor.leftMenu.paneWidth,
+      'EditorComponentInner leftMenuWidth',
+    )
+    const saveError = useEditorState(
+      (store) => store.editor.saveError,
+      'EditorComponentInner saveError',
+    )
 
     React.useEffect(() => {
       document.title = projectName + ' - Utopia'
@@ -191,8 +199,6 @@ export const EditorComponentInner = betterReactMemo(
       },
       [updateDeltaWidth],
     )
-
-    const canvasIsLive = useEditorState((store) => isLiveMode(store.editor.mode))
 
     const toggleLiveCanvas = React.useCallback(
       () => dispatch([EditorActions.toggleCanvasIsLive()]),
@@ -386,7 +392,7 @@ const ModalComponent = betterReactMemo('ModalComponent', (): React.ReactElement<
       dispatch: store.dispatch,
       modal: store.editor.modal,
     }
-  })
+  }, 'ModalComponent')
   if (modal != null) {
     if (modal.type === 'file-delete') {
       return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
@@ -502,14 +508,18 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     isUserConfigurationOpen,
   } = useEditorState((store) => {
     const selectedFile = getOpenFile(store.editor)
+    const selectedFileName = getOpenTextFileKey(store.editor)
+    const isAppDotJS = selectedFileName?.endsWith('app.js') ?? false
+    const isStoryboardFile = selectedFileName?.endsWith(StoryboardFilePath) ?? false
+    const isCanvasFile = isAppDotJS || isStoryboardFile // FIXME This is not how we should determine whether or not to open the canvas
     const openEditorTab = getOpenEditorTab(store.editor)
     return {
       noFileOpen: openEditorTab == null,
-      isUiJsFileOpen: selectedFile != null && isUIJSFile(selectedFile),
+      isUiJsFileOpen: selectedFile != null && isParsedTextFile(selectedFile) && isCanvasFile,
       areReleaseNotesOpen: openEditorTab != null && isReleaseNotesTab(openEditorTab),
       isUserConfigurationOpen: openEditorTab != null && isUserConfigurationTab(openEditorTab),
     }
-  })
+  }, 'OpenFileEditor')
 
   const { runtimeErrors, onRuntimeError, clearRuntimeErrors } = useRuntimeErrors()
   const { consoleLogs, addToConsoleLogs, clearConsoleLogs } = useConsoleLogs()
@@ -518,25 +528,18 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     return <Subdued>No file open</Subdued>
   } else if (areReleaseNotesOpen) {
     return <ReleaseNotesContent />
-  } else if (isUiJsFileOpen) {
+  } else if (isUserConfigurationOpen) {
+    return <UserConfiguration />
+  } else {
     return (
       <SplitViewCanvasRoot
+        isUiJsFileOpen={isUiJsFileOpen}
         runtimeErrors={runtimeErrors}
         onRuntimeError={onRuntimeError}
         clearRuntimeErrors={clearRuntimeErrors}
         canvasConsoleLogs={consoleLogs}
         clearConsoleLogs={clearConsoleLogs}
         addToConsoleLogs={addToConsoleLogs}
-      />
-    )
-  } else if (isUserConfigurationOpen) {
-    return <UserConfiguration />
-  } else {
-    return (
-      <ScriptEditor
-        relevantPanel={'misccodeeditor'}
-        runtimeErrors={runtimeErrors}
-        canvasConsoleLogs={consoleLogs}
       />
     )
   }
@@ -546,7 +549,7 @@ OpenFileEditor.displayName = 'OpenFileEditor'
 const CanvasCursorComponent = betterReactMemo('CanvasCursorComponent', () => {
   const cursor = useEditorState((store) => {
     return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
-  })
+  }, 'CanvasCursorComponent')
   return cursor == null ? null : (
     <div
       key='cursor-area'
@@ -563,7 +566,7 @@ const CanvasCursorComponent = betterReactMemo('CanvasCursorComponent', () => {
 })
 
 const ToastRenderer = betterReactMemo('ToastRenderer', () => {
-  const toasts = useEditorState((store) => store.editor.toasts)
+  const toasts = useEditorState((store) => store.editor.toasts, 'ToastRenderer')
 
   return (
     <FlexColumn

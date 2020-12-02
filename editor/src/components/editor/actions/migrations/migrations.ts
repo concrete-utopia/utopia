@@ -1,25 +1,30 @@
 import {
   PersistentModel,
-  EditorTab,
   modifyParseSuccessWithSimple,
   modifyOpenJSXElements,
 } from '../../store/editor-state'
 import { objectMap } from '../../../../core/shared/object-utils'
 import {
-  isUIJSFile,
   ProjectFile,
   isParseSuccess,
   SceneMetadata,
-  UIJSFile,
-  CanvasMetadataParseResult,
-  isCodeFile,
+  TextFile,
+  isTextFile,
+  textFile,
+  textFileContents,
+  unparsed,
+  RevisionsState,
 } from '../../../../core/shared/project-file-types'
 import { eitherToMaybe, isRight, right } from '../../../../core/shared/either'
 import { convertScenesToUtopiaCanvasComponent } from '../../../../core/model/scene-utils'
-import { codeFile } from '../../../../core/model/project-file-utils'
-import { contentsToTree, treeToContents } from '../../../assets'
-import { isJSXElement, transformAllElements } from '../../../../core/shared/element-template'
-import { jsxSimpleAttributeToValue } from '../../../../core/shared/jsx-attributes'
+import {
+  contentsToTree,
+  projectContentFile,
+  ProjectContentFile,
+  ProjectContentsTree,
+  transformContentsTree,
+} from '../../../assets'
+import { EditorTab } from '../../store/editor-tabs'
 
 export const CURRENT_PROJECT_VERSION = 6
 
@@ -74,11 +79,11 @@ function migrateFromVersion1(
   } else {
     const updatedFiles = objectMap((file: ProjectFile, fileName) => {
       if (
-        isUIJSFile(file) &&
-        isParseSuccess(file.fileContents) &&
-        isRight(file.fileContents.value.canvasMetadata)
+        isTextFile(file) &&
+        isParseSuccess(file.fileContents as any) &&
+        isRight((file.fileContents as any).value.canvasMetadata)
       ) {
-        const canvasMetadataParseSuccess = file.fileContents.value.canvasMetadata.value
+        const canvasMetadataParseSuccess = (file.fileContents as any).value.canvasMetadata.value
         // this old canvas metadata might store an array of `scenes: Array<SceneMetadata>`, whereas we expect a UtopiaJSXComponent here
         if (
           (canvasMetadataParseSuccess as any).utopiaCanvasJSXComponent == null &&
@@ -86,7 +91,7 @@ function migrateFromVersion1(
         ) {
           const scenes = (canvasMetadataParseSuccess as any)['scenes'] as Array<SceneMetadata>
           const utopiaCanvasComponent = convertScenesToUtopiaCanvasComponent(scenes)
-          const updatedCanvasMetadataParseSuccess: CanvasMetadataParseResult = right({
+          const updatedCanvasMetadataParseSuccess: any = right({
             utopiaCanvasJSXComponent: utopiaCanvasComponent,
           })
           return {
@@ -94,11 +99,11 @@ function migrateFromVersion1(
             fileContents: {
               ...file.fileContents,
               value: {
-                ...file.fileContents.value,
+                ...(file.fileContents as any).value,
                 canvasMetadata: updatedCanvasMetadataParseSuccess,
               },
             },
-          } as UIJSFile
+          } as TextFile
         } else {
           return file
         }
@@ -121,16 +126,17 @@ function migrateFromVersion2(
     return persistentModel as any
   } else {
     const updatedFiles = objectMap((file: ProjectFile, fileName) => {
-      if (isUIJSFile(file) && isParseSuccess(file.fileContents)) {
+      if (isTextFile(file) && isParseSuccess(file.fileContents as any)) {
         if (
-          isRight(file.fileContents.value.canvasMetadata) &&
+          isRight((file.fileContents as any).value.canvasMetadata) &&
           // the parseSuccess contained a utopiaCanvasJSXComponent which we now merge to the array of topLevelElements
-          (file.fileContents.value.canvasMetadata.value as any).utopiaCanvasJSXComponent != null
+          ((file.fileContents as any).value.canvasMetadata.value as any).utopiaCanvasJSXComponent !=
+            null
         ) {
-          const utopiaCanvasJSXComponent = (file.fileContents.value.canvasMetadata.value as any)
-            .utopiaCanvasJSXComponent
+          const utopiaCanvasJSXComponent = ((file.fileContents as any).value.canvasMetadata
+            .value as any).utopiaCanvasJSXComponent
           const updatedTopLevelElements = [
-            ...file.fileContents.value.topLevelElements,
+            ...(file.fileContents as any).value.topLevelElements,
             utopiaCanvasJSXComponent,
           ]
           return {
@@ -138,20 +144,20 @@ function migrateFromVersion2(
             fileContents: {
               ...file.fileContents,
               value: {
-                ...file.fileContents.value,
+                ...(file.fileContents as any).value,
                 topLevelElements: updatedTopLevelElements,
                 canvasMetadata: right({}),
                 projectContainedOldSceneMetadata: true,
               },
             },
-          } as UIJSFile
+          } as TextFile
         } else {
           return {
             ...file,
             fileContents: {
               ...file.fileContents,
               value: {
-                ...file.fileContents.value,
+                ...(file.fileContents as any).value,
                 projectContainedOldSceneMetadata: true,
               },
             },
@@ -178,8 +184,8 @@ function migrateFromVersion3(
     return persistentModel as any
   } else {
     const packageJsonFile = (persistentModel.projectContents as any)[PackageJsonUrl]
-    if (packageJsonFile != null && isCodeFile(packageJsonFile)) {
-      const parsedPackageJson = JSON.parse(packageJsonFile.fileContents)
+    if (packageJsonFile != null && isTextFile(packageJsonFile)) {
+      const parsedPackageJson = JSON.parse(packageJsonFile.fileContents as any)
       const updatedPackageJson = {
         ...parsedPackageJson,
         utopia: {
@@ -189,7 +195,11 @@ function migrateFromVersion3(
         },
       }
       const printedPackageJson = JSON.stringify(updatedPackageJson, null, 2)
-      const updatedPackageJsonFile = codeFile(printedPackageJson, null)
+      const updatedPackageJsonFile = {
+        type: 'CODE_FILE',
+        fileContents: printedPackageJson,
+        lastSavedContents: null,
+      }
 
       return {
         ...persistentModel,
@@ -226,48 +236,39 @@ function migrateFromVersion5(
   if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 5) {
     return persistentModel as any
   } else {
-    const updatedFiles = objectMap((file: ProjectFile, fileName) => {
-      if (isUIJSFile(file) && isParseSuccess(file.fileContents)) {
-        const updatedParseSuccess = modifyParseSuccessWithSimple((s) => {
-          const components = transformAllElements(s.utopiaComponents, (element) => {
-            if (isJSXElement(element) && element.props['layout'] != null) {
-              const hasPinnedSystem =
-                eitherToMaybe(jsxSimpleAttributeToValue(element.props['layout']))?.layoutSystem ===
-                'pinSystem'
-              if (hasPinnedSystem) {
-                const updatedProps = { ...element.props }
-                delete updatedProps['layout']
-                return {
-                  ...element,
-                  props: updatedProps,
-                }
-              } else {
-                return element
-              }
-            } else {
-              return element
-            }
-          })
-          return {
-            ...s,
-            utopiaComponents: components,
-          }
-        }, file.fileContents.value)
-        return {
-          ...file,
-          fileContents: {
-            ...file.fileContents,
-            value: updatedParseSuccess,
-          },
-        }
-      } else {
-        return file
-      }
-    }, treeToContents(persistentModel.projectContents))
     return {
       ...persistentModel,
       projectVersion: 6,
-      projectContents: contentsToTree(updatedFiles),
+      projectContents: transformContentsTree(
+        persistentModel.projectContents,
+        (tree: ProjectContentsTree) => {
+          if (tree.type === 'PROJECT_CONTENT_FILE') {
+            const file: ProjectContentFile['content'] = tree.content
+            const fileType = file.type as string
+            if (fileType === 'CODE_FILE') {
+              const newFile = textFile(
+                textFileContents((file as any).fileContents, unparsed, RevisionsState.CodeAhead),
+                null,
+                0,
+              )
+              return projectContentFile(tree.fullPath, newFile)
+            } else if (fileType === 'UI_JS_FILE') {
+              const code = (file as any).fileContents.value.code
+              const lastRevisedTime = (file as any).lastRevisedTime
+              const newFile = textFile(
+                textFileContents(code, unparsed, RevisionsState.CodeAhead),
+                null,
+                lastRevisedTime,
+              )
+              return projectContentFile(tree.fullPath, newFile)
+            } else {
+              return tree
+            }
+          } else {
+            return tree
+          }
+        },
+      ),
     }
   }
 }

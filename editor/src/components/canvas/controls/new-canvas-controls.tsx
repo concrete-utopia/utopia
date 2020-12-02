@@ -9,6 +9,8 @@ import {
   getOpenUtopiaJSXComponentsFromState,
   getOpenImportsFromState,
   getMetadata,
+  EditorStore,
+  getOpenUIJSFileKey,
 } from '../../editor/store/editor-state'
 import {
   TemplatePath,
@@ -28,9 +30,9 @@ import {
   clearHighlightedViews,
   insertDroppedImage,
   switchEditorMode,
-} from '../../editor/actions/actions'
+} from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
-import { ComponentMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
@@ -53,6 +55,9 @@ import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import utils from '../../../utils/utils'
 import useSize from '@react-hook/size'
 import { TextEditingArea } from './text-editing-input-area'
+import { createSelector } from 'reselect'
+import { PropertyControlsInfo } from '../../custom-code/code-file'
+import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -60,7 +65,7 @@ export interface ControlProps {
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
   rootComponents: Array<UtopiaJSXComponent>
-  componentMetadata: ComponentMetadata[]
+  componentMetadata: JSXMetadata
   imports: Imports
   hiddenInstances: Array<TemplatePath>
   highlightsEnabled: boolean
@@ -122,19 +127,22 @@ function useTargetSelector(defaultTargets: LayoutTargetableProp[], keysPressed: 
 export const NewCanvasControls = betterReactMemo(
   'NewCanvasControls',
   (props: NewCanvasControlsProps) => {
-    const canvasControlProps = useEditorState((store) => ({
-      dispatch: store.dispatch,
-      editor: store.editor,
-      derived: store.derived,
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
-      animationEnabled:
-        (store.editor.canvas.dragState == null || store.editor.canvas.dragState.start == null) &&
-        store.editor.canvas.animationsEnabled,
+    const canvasControlProps = useEditorState(
+      (store) => ({
+        dispatch: store.dispatch,
+        editor: store.editor,
+        derived: store.derived,
+        canvasOffset: store.editor.canvas.roundedCanvasOffset,
+        animationEnabled:
+          (store.editor.canvas.dragState == null || store.editor.canvas.dragState.start == null) &&
+          store.editor.canvas.animationsEnabled,
 
-      controls: store.derived.canvas.controls,
-      scale: store.editor.canvas.scale,
-      focusedPanel: store.editor.focusedPanel,
-    }))
+        controls: store.derived.canvas.controls,
+        scale: store.editor.canvas.scale,
+        focusedPanel: store.editor.focusedPanel,
+      }),
+      'NewCanvasControls',
+    )
 
     const [targets, targetIndex, setTargetOptionsArray] = useTargetSelector(
       ['Width', 'minWidth', 'maxWidth'],
@@ -160,8 +168,14 @@ export const NewCanvasControls = betterReactMemo(
     const containerRef = React.useRef(null)
     const [width, height] = useSize(containerRef)
 
-    const selectedViews = useEditorState((store) => store.editor.selectedViews)
-    const componentMetadata = useEditorState((store) => store.editor.jsxMetadataKILLME)
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'canvas-controls-selectedviews',
+    )
+    const componentMetadata = useEditorState(
+      (store) => store.editor.jsxMetadataKILLME,
+      'canvas-controls-metadata',
+    )
     const selectedScene = selectedViews.length > 0 ? TP.scenePathForPath(selectedViews[0]) : null
     const sceneSize =
       selectedScene == null
@@ -169,6 +183,7 @@ export const NewCanvasControls = betterReactMemo(
         : MetadataUtils.getFrameInCanvasCoords(selectedScene, componentMetadata)
     const codePaneVisible = useEditorState(
       (store) => !store.editor.interfaceDesigner.codePaneVisible,
+      'canvas-controls-codepane-visible',
     )
 
     if (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd) {
@@ -196,30 +211,15 @@ export const NewCanvasControls = betterReactMemo(
               cursor: props.cursor,
             }}
           >
-            <div
-              ref={containerRef}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-                height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-                transformOrigin: 'top left',
-                transform:
-                  canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
-              }}
-            >
-              <NewCanvasControlsClass
-                windowToCanvasPosition={props.windowToCanvasPosition}
-                {...canvasControlProps}
-                propertyTargetOptions={targets}
-                propertyTargetSelectedIndex={targetIndex}
-                setTargetOptionsArray={setTargetOptionsArray}
-                xrayView={false}
-                selectedScene={selectedScene}
-              />
-            </div>
-            <ElementContextMenu contextMenuInstance='context-menu-canvas' />
+            <NewCanvasControlsInner
+              windowToCanvasPosition={props.windowToCanvasPosition}
+              {...canvasControlProps}
+              propertyTargetOptions={targets}
+              propertyTargetSelectedIndex={targetIndex}
+              setTargetOptionsArray={setTargetOptionsArray}
+              xrayView={false}
+              selectedScene={selectedScene}
+            />
           </div>
           {isFeatureEnabled('Mini Navigator') ? <MiniNavigator /> : null}
           {isFeatureEnabled('Hierarchy View') && codePaneVisible && (
@@ -240,7 +240,7 @@ export const NewCanvasControls = betterReactMemo(
               }}
             >
               ☠︎ X-RAY Mode ☠︎
-              <NewCanvasControlsClass
+              <NewCanvasControlsInner
                 key={'xrayview-controls'}
                 // eslint-disable-next-line react/jsx-no-bind
                 windowToCanvasPosition={() => ({
@@ -266,7 +266,7 @@ export const NewCanvasControls = betterReactMemo(
 )
 NewCanvasControls.displayName = 'NewCanvasControls'
 
-interface NewCanvasControlsClassProps {
+interface NewCanvasControlsInnerProps {
   editor: EditorState
   derived: DerivedState
   dispatch: EditorDispatch
@@ -280,7 +280,6 @@ interface NewCanvasControlsClassProps {
   selectedScene: ScenePath | null
   scale: number
 }
-
 export type SelectModeState =
   | 'move'
   | 'translate'
@@ -289,9 +288,62 @@ export type SelectModeState =
   | 'reparentGlobal'
   | 'reparentLocal'
 
-const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
+const selectElementsThatRespectLayout = createSelector(
+  (store: EditorStore) => store.derived.navigatorTargets,
+  (store) => store.editor.propertyControlsInfo,
+  (store) => getOpenImportsFromState(store.editor),
+  (store) => getOpenUIJSFileKey(store.editor),
+  (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
+  (store) => store.editor.jsxMetadataKILLME,
+  (
+    navigatorTargets: TemplatePath[],
+    propertyControlsInfo: PropertyControlsInfo,
+    openImports: Imports,
+    openFilePath: string | null,
+    rootComponents: UtopiaJSXComponent[],
+    jsxMetadataKILLME: JSXMetadata,
+  ) => {
+    return flatMapArray((view) => {
+      if (TP.isScenePath(view)) {
+        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, view)
+        if (scene != null) {
+          return [view, ...scene.rootElements]
+        } else {
+          return [view]
+        }
+      } else {
+        return [view]
+      }
+    }, navigatorTargets).filter((view) =>
+      targetRespectsLayout(
+        view,
+        propertyControlsInfo,
+        openImports,
+        openFilePath,
+        rootComponents,
+        jsxMetadataKILLME,
+      ),
+    )
+  },
+)
+
+const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const [layoutSectionHovered] = useRecoilState(layoutHoveredState)
   const [selectModeState, setSelectModeState] = React.useState<SelectModeState>('move')
+  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
+    props.derived.canvas.transientState.selectedViews,
+  )
+  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
+    props.derived.canvas.transientState.highlightedViews,
+  )
+
+  const setSelectedViewsLocally = React.useCallback(
+    (newSelectedViews: Array<TemplatePath>) => {
+      setLocalSelectedViews(newSelectedViews)
+      setLocalHighlightedViews([])
+    },
+    [setLocalSelectedViews, setLocalHighlightedViews],
+  )
 
   const selectionEnabled =
     props.editor.canvas.selectionControlsVisible &&
@@ -324,7 +376,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
   }, [selectionEnabled, isDragging, isResizing, dispatch])
 
   const getResizeStatus = () => {
-    const selectedViews = props.derived.canvas.transientState.selectedViews
+    const selectedViews = localSelectedViews
     if (props.editor.canvas.textEditor != null || props.editor.keysPressed['z']) {
       return 'disabled'
     }
@@ -337,13 +389,10 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       }
 
       const possibleMetadata = MetadataUtils.getElementByInstancePathMaybe(
-        componentMetadata,
+        componentMetadata.elements,
         selectedView,
       )
-      return (
-        possibleMetadata == null ||
-        MetadataUtils.dynamicPathToStaticPath(componentMetadata, selectedView) == null
-      )
+      return possibleMetadata == null || MetadataUtils.dynamicPathToStaticPath(selectedView) == null
     })
     if (anyIncomprehensibleElementsSelected) {
       return 'disabled'
@@ -351,29 +400,20 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     return 'enabled'
   }
 
-  const elementsThatRespectLayout = useEditorState((store) => {
-    return flatMapArray((view) => {
-      if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(store.editor.jsxMetadataKILLME, view)
-        if (scene != null) {
-          return [view, ...scene.rootElements.map((e) => e.templatePath)]
-        } else {
-          return [view]
-        }
-      } else {
-        return [view]
-      }
-    }, store.derived.navigatorTargets).filter((view) => targetRespectsLayout(view, store.editor))
-  })
+  const elementsThatRespectLayout = useEditorState(
+    selectElementsThatRespectLayout,
+    'NewCanvasControls elementsThatRespectLayout',
+  )
 
   const renderModeControlContainer = () => {
-    const fallbackTransientState = props.derived.canvas.transientState
-    const targets = fallbackTransientState.selectedViews
-    const elementAspectRatioLocked = targets.every((target) => {
+    const elementAspectRatioLocked = localSelectedViews.every((target) => {
       if (TP.isScenePath(target)) {
         return false
       }
-      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
+      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
+        componentMetadata.elements,
+        target,
+      )
       if (possibleElement == null) {
         return false
       } else {
@@ -384,12 +424,12 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
     const imageMultiplier: number | null = MetadataUtils.getImageMultiplier(
       imports,
       componentMetadata,
-      targets,
+      localSelectedViews,
     )
     const rootComponents = getOpenUtopiaJSXComponentsFromState(props.editor)
     const controlProps: ControlProps = {
-      selectedViews: targets,
-      highlightedViews: fallbackTransientState.highlightedViews,
+      selectedViews: localSelectedViews,
+      highlightedViews: localHighlightedViews,
       rootComponents: rootComponents,
       componentMetadata: componentMetadata,
       imports: imports,
@@ -417,6 +457,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
       return (
         <SelectModeControlContainer
           {...controlProps}
+          setSelectedViewsLocally={setSelectedViewsLocally}
           keysPressed={props.editor.keysPressed}
           windowToCanvasPosition={props.windowToCanvasPosition}
           isDragging={false}
@@ -442,6 +483,7 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
         return (
           <SelectModeControlContainer
             {...controlProps}
+            setSelectedViewsLocally={setSelectedViewsLocally}
             keysPressed={props.editor.keysPressed}
             windowToCanvasPosition={props.windowToCanvasPosition}
             isDragging={isDragging}
@@ -489,9 +531,8 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
   }
 
   const renderHighlightControls = () => {
-    const highlightedViews = props.derived.canvas.transientState.highlightedViews
     return selectionEnabled
-      ? highlightedViews.map((path) => {
+      ? localHighlightedViews.map((path) => {
           const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
           if (frame == null) {
             return null
@@ -539,11 +580,14 @@ const NewCanvasControlsClass = (props: NewCanvasControlsClassProps) => {
 
   const renderTextEditor = (target: InstancePath) => {
     const dragState = props.editor.canvas.dragState
-    const selectedViews = props.derived.canvas.transientState.selectedViews
+    const selectedViews = localSelectedViews
     if (dragState != null || selectedViews.length !== 1) {
       return null
     } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
+      const element = MetadataUtils.getElementByInstancePathMaybe(
+        componentMetadata.elements,
+        target,
+      )
       const canAnimate =
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
           target,

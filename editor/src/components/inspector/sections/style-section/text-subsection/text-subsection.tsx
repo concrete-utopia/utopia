@@ -16,10 +16,11 @@ import {
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { filterScenes } from '../../../../../core/shared/template-path'
+import { useKeepShallowReferenceEquality } from '../../../../../utils/react-performance'
 import utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
-import * as EditorActions from '../../../../editor/actions/actions'
+import * as EditorActions from '../../../../editor/actions/action-creators'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { measureTextFieldNew } from '../../../../text-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
@@ -30,7 +31,6 @@ import {
   useInspectorElementInfo,
   useInspectorStyleInfo,
   useIsSubSectionVisible,
-  useKeepShallowReferenceEquality,
   useSelectedViews,
 } from '../../../common/property-path-hooks'
 import { ColorControl } from '../../../controls/color-control'
@@ -472,7 +472,7 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
       let actions: Array<EditorAction> = []
       for (let path of selectedPaths) {
         const element = MetadataUtils.getElementByInstancePathMaybe(
-          stateRef.current.componentMetadata,
+          stateRef.current.componentMetadata.elements,
           path,
         )
 

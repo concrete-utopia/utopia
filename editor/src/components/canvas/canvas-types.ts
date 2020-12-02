@@ -1,5 +1,5 @@
 import { ReactElement } from 'react'
-import { ComponentMetadata } from '../../core/shared/element-template'
+import { JSXMetadata } from '../../core/shared/element-template'
 import { PropertyPath, TemplatePath } from '../../core/shared/project-file-types'
 import { KeyCharacter, KeysPressed } from '../../utils/keyboard'
 import { Modifiers } from '../../utils/modifiers'
@@ -25,6 +25,8 @@ import {
   LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
 import { FlexAlignment } from 'utopia-api'
+
+export const CanvasContainerID = 'canvas-container'
 
 export const enum CSSCursor {
   Select = "-webkit-image-set( url( '/editor/cursors/cursor-default.png ') 1x, url( '/editor/cursors/cursor-default@2x.png ') 2x ) 4 4, default",
@@ -373,13 +375,13 @@ export interface InsertDragState {
   type: 'INSERT_DRAG_STATE'
   start: CanvasPoint
   drag: CanvasVector | null
-  metadata: Array<ComponentMetadata>
+  metadata: JSXMetadata
 }
 
 export function insertDragState(
   start: CanvasPoint,
   drag: CanvasVector | null,
-  metadata: Array<ComponentMetadata>,
+  metadata: JSXMetadata,
 ): InsertDragState {
   return {
     type: 'INSERT_DRAG_STATE',
@@ -409,7 +411,7 @@ export interface MoveDragState {
   localReparent: boolean
   duplicateNewUIDs: Array<DuplicateNewUID> | null
   canvasPosition: CanvasPoint
-  metadata: Array<ComponentMetadata>
+  metadata: JSXMetadata
   draggedElements: TemplatePath[]
   translate: boolean
 }
@@ -428,7 +430,7 @@ export function moveDragState(
   localReparent: boolean,
   duplicateNewUIDs: Array<DuplicateNewUID> | null,
   canvasPosition: CanvasPoint,
-  metadata: Array<ComponentMetadata>,
+  metadata: JSXMetadata,
   draggedElements: TemplatePath[],
   translate: boolean,
 ): MoveDragState {
@@ -507,7 +509,7 @@ export interface ResizeDragState {
   originalFrames: Array<OriginalCanvasAndLocalFrame>
   edgePosition: EdgePosition
   enabledDirection: EnabledDirection
-  metadata: Array<ComponentMetadata>
+  metadata: JSXMetadata
   draggedElements: TemplatePath[]
   isMultiSelect: boolean
   targetProperty: LayoutTargetableProp
@@ -523,7 +525,7 @@ export function resizeDragState(
   originalFrames: Array<OriginalCanvasAndLocalFrame>,
   edgePosition: EdgePosition,
   enabledDirection: EnabledDirection,
-  metadata: Array<ComponentMetadata>,
+  metadata: JSXMetadata,
   draggedElements: TemplatePath[],
   isMultiSelect: boolean,
   targetProperty: LayoutTargetableProp,

@@ -1,20 +1,10 @@
 import * as JSZip from 'jszip'
 import { JSZipObject } from 'jszip'
 import { isText } from 'istextorbinary'
-import { ProjectContents, RevisionsState } from '../shared/project-file-types'
-import {
-  assetFile,
-  codeFile,
-  directory,
-  fileTypeFromFileName,
-  imageFile,
-  uiJsFile,
-} from './project-file-utils'
-import { lintAndParse } from '../workers/parser-printer/parser-printer'
+import { RevisionsState, textFile, textFileContents, unparsed } from '../shared/project-file-types'
+import { assetFile, directory, fileTypeFromFileName, imageFile } from './project-file-utils'
 import { assetResultForBase64, getFileExtension, imageResultForBase64 } from '../shared/file-utils'
 import { Size } from '../shared/math-utils'
-import { left } from '../shared/either'
-import { parseFailure } from '../workers/common/project-file-utils'
 import { addFileToProjectContents, ProjectContentTreeRoot } from '../../components/assets'
 
 async function attemptedTextFileLoad(fileName: string, file: JSZipObject): Promise<string | null> {
@@ -132,31 +122,20 @@ export async function importZippedGitProject(
           )
           break
         }
-        case 'UI_JS_FILE':
-        case 'CODE_FILE':
+        case 'TEXT_FILE':
           const loadedFile = await attemptedTextFileLoad(shiftedFileName, file)
           if (loadedFile == null) {
             errors.push(`Unable to parse file ${shiftedFileName} as a text file`)
           } else {
-            if (expectedFileType === 'UI_JS_FILE') {
-              // TODO We really need a way to represent unparsed files, or a way to separate the parsed file from the contents
-              loadedProject = addFileToProjectContents(
-                loadedProject,
-                shiftedFileName,
-                uiJsFile(
-                  left(parseFailure(null, null, null, [], loadedFile)),
-                  null,
-                  RevisionsState.BothMatch,
-                  Date.now(),
-                ),
-              )
-            } else {
-              loadedProject = addFileToProjectContents(
-                loadedProject,
-                shiftedFileName,
-                codeFile(loadedFile, null),
-              )
-            }
+            loadedProject = addFileToProjectContents(
+              loadedProject,
+              shiftedFileName,
+              textFile(
+                textFileContents(loadedFile, unparsed, RevisionsState.CodeAhead),
+                null,
+                Date.now(),
+              ),
+            )
           }
           break
         default:

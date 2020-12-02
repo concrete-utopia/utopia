@@ -1,5 +1,10 @@
-import { codeFile, uiJsFile } from '../core/model/project-file-utils'
-import { CodeFile, RevisionsState, UIJSFile } from '../core/shared/project-file-types'
+import {
+  RevisionsState,
+  textFile,
+  TextFile,
+  textFileContents,
+  unparsed,
+} from '../core/shared/project-file-types'
 import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
 
 // FIXME I've disabled the below because Jest can't deal with it, but we're not using it anyway
@@ -9,7 +14,7 @@ import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
 
 // export function getUuiUiFolder() {
 //   return utils.objectMap((projectFile, fileName) => {
-//     if (isCodeFile(projectFile)) {
+//     if (isTextFile(projectFile)) {
 //       return {
 //         ...projectFile,
 //         fileContents: atob(projectFile.fileContents), // the uuiuiFolder stores the file contents as base64 strings
@@ -20,9 +25,9 @@ import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
 //   }, uuiuiFolder)
 // }
 
-export function getUiBuilderUIJSFile(): UIJSFile {
+export function getUiBuilderUIJSFile(): TextFile {
   const result = lintAndParse('code.tsx', sampleCode)
-  return uiJsFile(result, null, RevisionsState.BothMatch, Date.now())
+  return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, 0)
 }
 
 export const sampleCode = `/** @jsx jsx */
@@ -73,18 +78,6 @@ import {
   OnClickOutsideHOC,
 } from 'uuiui'
 
-export var canvasMetadata = {
-  scenes: [
-    {
-      component: 'App',
-      frame: { height: 812, left: 0, width: 375, top: 0 },
-      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },
-      container: { layoutSystem: 'pinSystem' },
-    },
-  ],
-  elementMetadata: {},
-}
-
 export var App = (props) => {
   return (
     <View
@@ -96,8 +89,12 @@ export var App = (props) => {
 
 `
 
-export function getSampleComponentsFile(): CodeFile {
-  return codeFile(sampleComponentsFile, null)
+export function getSampleComponentsFile(): TextFile {
+  return textFile(
+    textFileContents(sampleComponentsFile, unparsed, RevisionsState.BothMatch),
+    null,
+    0,
+  )
 }
 
 const sampleComponentsFile = `// component library

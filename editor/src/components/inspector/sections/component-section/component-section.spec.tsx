@@ -3,13 +3,13 @@ import { render, fireEvent, act } from '@testing-library/react'
 
 import * as TP from '../../../../core/shared/template-path'
 
-import { getStoreHook, TestInspectorContextProvider } from '../../common/inspector-test-utils'
+import { getStoreHook, TestInspectorContextProvider } from '../../common/inspector.test-utils'
 import utils from '../../../../utils/utils'
 import { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   setupReactWhyDidYouRender,
   enableWhyDidYouRenderOnComponent,
-} from '../../../../utils/react-memoize-test-utils'
+} from '../../../../utils/react-memoize.test-utils'
 import { ComponentSection } from './component-section'
 import { ScenePathForTestUiJsFile } from '../../../../core/model/test-ui-js-file'
 

@@ -5,8 +5,8 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestScenePath,
-} from '../../canvas/ui-jsx-test-utils'
-import { toggleProperty } from '../../editor/actions/actions'
+} from '../../canvas/ui-jsx.test-utils'
+import { toggleProperty } from '../../editor/actions/action-creators'
 import { toggleBorder, toggleShadow, toggleStylePropPath } from './css-utils'
 
 describe('toggle style prop', () => {

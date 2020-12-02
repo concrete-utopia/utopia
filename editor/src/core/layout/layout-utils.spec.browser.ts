@@ -3,10 +3,9 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
-} from '../../components/canvas/ui-jsx-test-utils'
-import { pasteJSXElements, selectComponents } from '../../components/editor/actions/actions'
+} from '../../components/canvas/ui-jsx.test-utils'
+import { pasteJSXElements, selectComponents } from '../../components/editor/actions/action-creators'
 import * as TP from '../shared/template-path'
-import * as Utils from '../../utils/utils'
 import {
   ComponentMetadata,
   jsxAttributeNestedObjectSimple,
@@ -14,12 +13,13 @@ import {
   jsxElement,
   specialSizeMeasurements,
   emptyComputedStyle,
+  ElementInstanceMetadataMap,
+  jsxMetadata,
 } from '../shared/element-template'
 import { generateUidWithExistingComponents } from '../model/element-template-utils'
 import { right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
 import { BakedInStoryboardUID } from '../model/scene-utils'
-import { wait } from '../../utils/test-utils'
 
 const NewUID = 'catdog'
 
@@ -33,7 +33,7 @@ describe('maybeSwitchLayoutProps', () => {
     //currentWindow.openDevTools()
     // This is necessary because the test code races against the Electron process
     // opening the window it would appear.
-    //await wait(5000)
+    //await wait(20000)
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
@@ -67,9 +67,42 @@ describe('maybeSwitchLayoutProps', () => {
         'data-uid': jsxAttributeValue(NewUID),
       },
       [],
-      null,
     )
-    const metadata: ComponentMetadata[] = [
+    const elementPath = TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], [NewUID])
+    const elements: ElementInstanceMetadataMap = {
+      [TP.toString(elementPath)]: {
+        templatePath: TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], [NewUID]),
+        element: right(elementToPaste),
+        props: {
+          'data-uid': NewUID,
+        },
+        globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
+        localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
+        children: [],
+        componentInstance: true,
+        specialSizeMeasurements: specialSizeMeasurements(
+          { x: 0, y: 0 } as any,
+          null,
+          null,
+          true,
+          true,
+          'none',
+          'none',
+          false,
+          'absolute',
+          sides(undefined, undefined, undefined, undefined),
+          sides(undefined, undefined, undefined, undefined),
+          null,
+          null,
+          0,
+          0,
+          null,
+        ),
+        computedStyle: emptyComputedStyle,
+      },
+    }
+
+    const components: ComponentMetadata[] = [
       {
         scenePath: TP.scenePath([BakedInStoryboardUID, 'scene-aaa']),
         templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
@@ -77,40 +110,10 @@ describe('maybeSwitchLayoutProps', () => {
         sceneResizesContent: false,
         globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
         style: { width: 375, height: 812 },
-        rootElements: [
-          {
-            templatePath: TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], [NewUID]),
-            element: right(elementToPaste),
-            props: {
-              'data-uid': NewUID,
-            },
-            globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
-            localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
-            children: [],
-            componentInstance: true,
-            specialSizeMeasurements: specialSizeMeasurements(
-              { x: 0, y: 0 } as any,
-              null,
-              null,
-              true,
-              true,
-              'none',
-              'none',
-              false,
-              'absolute',
-              sides(undefined, undefined, undefined, undefined),
-              sides(undefined, undefined, undefined, undefined),
-              null,
-              null,
-              0,
-              0,
-              null,
-            ),
-            computedStyle: emptyComputedStyle,
-          },
-        ],
+        rootElements: [elementPath],
       },
     ]
+    const metadata = jsxMetadata(components, elements)
     const pasteElements = pasteJSXElements(
       [elementToPaste],
       [TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], [NewUID])],

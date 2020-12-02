@@ -2,7 +2,7 @@ import { Component as ReactComponent, RefObject } from 'react'
 import * as React from 'react'
 import * as R from 'ramda'
 
-import * as EditorActions from './actions/actions'
+import * as EditorActions from './actions/action-creators'
 import { EditorDispatch, EditorAction } from './action-types'
 
 import {

@@ -8,14 +8,13 @@ import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-e
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { CursorPosition } from '../code-editor/code-editor-utils'
 import { setFocus } from '../common/actions'
-import { openEditorTab, setSafeMode } from '../editor/actions/actions'
+import { openEditorTab, setSafeMode } from '../editor/actions/action-creators'
 import {
   ConsoleLog,
   createCanvasModelKILLME,
   getAllCodeEditorErrors,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
-  openFileTab,
   parseFailureAsErrorMessages,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -24,6 +23,7 @@ import CloseButton from '../../third-party/react-error-overlay/components/CloseB
 import { NO_OP } from '../../core/shared/utils'
 import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
+import { openFileTab } from '../editor/store/editor-tabs'
 
 interface CanvasWrapperComponentProps {
   runtimeErrors: Array<RuntimeErrorInfo>
@@ -37,11 +37,14 @@ interface CanvasWrapperComponentProps {
 export const CanvasWrapperComponent = betterReactMemo(
   'CanvasWrapperComponent',
   (props: CanvasWrapperComponentProps) => {
-    const { dispatch, editorState, derivedState } = useEditorState((store) => ({
-      dispatch: store.dispatch,
-      editorState: store.editor,
-      derivedState: store.derived,
-    }))
+    const { dispatch, editorState, derivedState } = useEditorState(
+      (store) => ({
+        dispatch: store.dispatch,
+        editorState: store.editor,
+        derivedState: store.derived,
+      }),
+      'CanvasWrapperComponent',
+    )
 
     const {
       runtimeErrors,
@@ -71,7 +74,7 @@ export const CanvasWrapperComponent = betterReactMemo(
 
     const safeMode = useEditorState((store) => {
       return store.editor.safeMode
-    })
+    }, 'CanvasWrapperComponent safeMode')
 
     return (
       <FlexColumn
@@ -114,16 +117,16 @@ interface ErrorOverlayComponentProps {
 const ErrorOverlayComponent = betterReactMemo(
   'ErrorOverlayComponent',
   (props: ErrorOverlayComponentProps) => {
-    const dispatch = useEditorState((store) => store.dispatch)
+    const dispatch = useEditorState((store) => store.dispatch, 'ErrorOverlayComponent dispatch')
     const utopiaParserErrors = useEditorState((store) => {
       return parseFailureAsErrorMessages(
         getOpenUIJSFileKey(store.editor),
         getOpenUIJSFile(store.editor),
       )
-    })
+    }, 'ErrorOverlayComponent utopiaParserErrors')
     const fatalCodeEditorErrors = useEditorState((store) => {
       return getAllCodeEditorErrors(store.editor, true, true)
-    })
+    }, 'ErrorOverlayComponent fatalCodeEditorErrors')
 
     const lintErrors = fatalCodeEditorErrors.filter((e) => e.source === 'eslint')
     // we start with the lint errors, since those show up the fastest. any subsequent error will go below in the error screen
@@ -147,7 +150,7 @@ const ErrorOverlayComponent = betterReactMemo(
 )
 
 export const SafeModeErrorOverlay = betterReactMemo('SafeModeErrorOverlay', () => {
-  const dispatch = useEditorState((store) => store.dispatch)
+  const dispatch = useEditorState((store) => store.dispatch, 'SafeModeErrorOverlay dispatch')
   const onTryAgain = React.useCallback(() => {
     dispatch([setSafeMode(false)], 'everyone')
   }, [dispatch])

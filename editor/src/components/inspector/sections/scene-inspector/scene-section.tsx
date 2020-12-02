@@ -13,7 +13,6 @@ import {
   InspectorInfo,
   useInspectorInfoSimpleUntyped,
   useInspectorLayoutInfo,
-  useKeepReferenceEqualityIfPossible,
 } from '../../common/property-path-hooks'
 import { pinnedPropForFramePoint } from '../../../../core/layout/layout-helpers-new'
 import {
@@ -42,6 +41,7 @@ import { PropertyRow } from '../../widgets/property-row'
 import { ComponentSection } from '../component-section/component-section'
 import { pinLabels } from '../layout-section/self-layout-subsection/gigantic-size-pins-subsection'
 import { SceneContainerSections } from './scene-container-section'
+import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
@@ -68,6 +68,7 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
   const frameHeight = useInspectorLayoutInfo('Height')
 
   const sceneTarget = useSceneTarget()
+  // TODO FIXME investigate this useKeepReferenceEqualityIfPossible here, might be expensive!
   const { propertyControlsInfo, components, openFileFullPath } = useKeepReferenceEqualityIfPossible(
     useEditorState((store) => {
       return {
@@ -75,7 +76,7 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
         components: getOpenUtopiaJSXComponentsFromState(store.editor),
         openFileFullPath: getOpenFilename(store.editor),
       }
-    }),
+    }, 'SceneSection'),
   )
 
   const filteredComponents = components.filter(

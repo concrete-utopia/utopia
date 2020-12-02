@@ -27,6 +27,8 @@ export type FeatureName =
   | 'Mouse Pointer For Layouttype'
   | 'Insertion Plus Button'
   | 'Edit Simple Text'
+  | 'Re-parse Project Button'
+  | 'iFrame Code Editor'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -54,6 +56,8 @@ export const AllFeatureNames: FeatureName[] = [
   'Mouse Pointer For Layouttype',
   'Insertion Plus Button',
   'Edit Simple Text',
+  'Re-parse Project Button',
+  'iFrame Code Editor',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -82,6 +86,8 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Mouse Pointer For Layouttype': true,
   'Insertion Plus Button': true,
   'Edit Simple Text': true,
+  'Re-parse Project Button': false,
+  'iFrame Code Editor': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

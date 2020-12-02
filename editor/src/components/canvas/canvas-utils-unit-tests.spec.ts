@@ -4,7 +4,7 @@ import {
   makeTestProjectCodeWithSnippet,
   TestScenePath,
   testPrintCode,
-} from './ui-jsx-test-utils'
+} from './ui-jsx.test-utils'
 import { singleResizeChange, EdgePosition } from './canvas-types'
 import { CanvasVector, canvasRectangle } from '../../core/shared/math-utils'
 import { updateFramesOfScenesAndComponents } from './canvas-utils'

@@ -61,6 +61,9 @@ import {
   SettableLayoutSystem,
   walkElements,
   jsxTextBlock,
+  isUtopiaJSXComponent,
+  utopiaJSXComponent,
+  JSXMetadata,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -82,9 +85,7 @@ import {
 import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
 import {
   canUpdateFile,
-  codeFile,
   directory,
-  emptyElementCanvasMetadata,
   fileTypeFromFileName,
   getHighlightBoundsFromParseResult,
   getUtopiaJSXComponentsFromSuccess,
@@ -97,9 +98,9 @@ import {
   sceneMetadata,
   switchToFileType,
   uniqueProjectContentID,
-  updateParseResultCode,
+  updateParsedTextFileHighlightBounds,
   assetFile,
-  applyToAllUIJSFilesContents,
+  applyToAllUIJSFiles,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -120,11 +121,10 @@ import type {
 } from '../../../core/shared/npm-dependency-types'
 import {
   InstancePath,
-  isCodeFile,
   isParseSuccess,
-  isUIJSFile,
+  isTextFile,
   LayoutWrapper,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   ProjectContents,
   ProjectFile,
@@ -133,7 +133,7 @@ import {
   ScenePath,
   StaticElementPath,
   TemplatePath,
-  UIJSFile,
+  TextFile,
   importAlias,
   isAssetFile,
   ESCodeFile,
@@ -142,6 +142,9 @@ import {
   Imports,
   importDetails,
   StaticInstancePath,
+  textFileContents,
+  textFile,
+  codeFile,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -153,8 +156,6 @@ import { OutgoingWorkerMessage, isJsFile, BuildType } from '../../../core/worker
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { defaultProject, sampleProjectForId } from '../../../sample-projects/sample-project-utils'
 import { KeysPressed, Key } from '../../../utils/keyboard'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import RU from '../../../utils/react-utils'
 import Utils, { IndexPosition } from '../../../utils/utils'
 import {
   CanvasPoint,
@@ -216,9 +217,8 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import {
-  AddCodeFile,
+  AddTextFile,
   AddFolder,
-  AddUIJSFile,
   Alignment,
   AlignSelectedViews,
   Atomic,
@@ -265,7 +265,6 @@ import {
   ResetPins,
   ResizeInterfaceDesignerCodePane,
   SaveCurrentFile,
-  SaveCursorPosition,
   SaveDOMReport,
   SaveAsset,
   SaveImageDoNothing,
@@ -348,6 +347,8 @@ import {
   UpdatePropertyControlsInfo,
   PropertyControlsIFrameReady,
   UpdateSimpleTextChild,
+  AddStoryboardFile,
+  SendLinterRequestMessage,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -383,7 +384,6 @@ import {
   DuplicationState,
   editorModelFromPersistentModel,
   EditorState,
-  EditorTab,
   ErrorMessages,
   getAllBuildErrors,
   getAllLintErrors,
@@ -392,11 +392,11 @@ import {
   getOpenEditorTab,
   getOpenFilename,
   getOpenImportsFromState,
+  getOpenTextFileKey,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
   getOpenUtopiaJSXComponentsFromState,
   insertElementAtPath,
-  isOpenFileTab,
   mergeStoredEditorStateIntoEditorState,
   ModalDialog,
   modifyOpenJsxElementAtPath,
@@ -406,7 +406,6 @@ import {
   modifyOpenSceneAtPath,
   modifyOpenScenesAndJSXElements,
   modifyParseSuccessWithSimple,
-  openFileTab,
   OriginalFrame,
   ParseSuccessAndEditorChanges,
   PersistentModel,
@@ -424,17 +423,19 @@ import {
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
-import { getProjectLockedKey } from '../../../core/shared/utils'
+import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import {
-  createNewSceneElement,
   PathForSceneDataLabel,
   createSceneTemplatePath,
   PathForSceneComponent,
   PathForSceneProps,
+  fishOutUtopiaCanvasFromTopLevelElements,
+  createSceneFromComponent,
+  BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
 import { addUtopiaUtilsImportIfUsed } from '../import-utils'
 import { getFrameAndMultiplier } from '../../images'
-import { arrayToMaybe } from '../../../core/shared/optional-utils'
+import { arrayToMaybe, forceNotNull } from '../../../core/shared/optional-utils'
 
 import {
   updateRightMenuExpanded,
@@ -448,18 +449,32 @@ import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-m
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import {
   getPropertyControlsForTarget,
+  getPropertyControlsForTargetFromEditor,
   setPropertyControlsIFrameReady,
 } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
-
-export function clearSelection(): EditorAction {
-  return {
-    action: 'CLEAR_SELECTION',
-  }
-}
+import {
+  addStoryboardFileToProject,
+  StoryboardFilePath,
+} from '../../../core/model/storyboard-utils'
+import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import { arrayDeepEquality } from '../../../utils/deep-equality'
+import {
+  ElementInstanceMetadataKeepDeepEquality,
+  JSXMetadataKeepDeepEquality,
+} from '../store/store-deep-equality-instances'
+import {
+  showToast,
+  popToast,
+  enableInsertModeForJSXElement,
+  setPackageStatus,
+  updateNodeModulesContents,
+  finishCheckpointTimer,
+} from './action-creators'
+import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -501,10 +516,10 @@ function setPropertyOnTargetAtElementPath(
 }
 
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
-  scenes: Array<ComponentMetadata>,
+  scenes: JSXMetadata,
   parentPath: InstancePath,
   value: DetectedLayoutSystem,
-): Array<ComponentMetadata> {
+): JSXMetadata {
   const allChildren = MetadataUtils.getImmediateChildren(scenes, parentPath)
   return allChildren.reduce((transformedScenes, child) => {
     return switchLayoutMetadata(transformedScenes, child.templatePath, value, undefined, undefined)
@@ -518,7 +533,7 @@ function switchAndUpdateFrames(
 ): EditorModel {
   const targetMetadata = Utils.forceNotNull(
     `Could not find metadata for ${JSON.stringify(target)}`,
-    MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, target),
+    MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, target),
   )
   if (targetMetadata.globalFrame == null) {
     // The target is a non-layoutable
@@ -685,8 +700,12 @@ function switchAndUpdateFrames(
     framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
   }
 
-  Utils.fastForEach(targetMetadata.children, (child) => {
-    if (child.globalFrame != null) {
+  Utils.fastForEach(targetMetadata.children, (childPath) => {
+    const child = MetadataUtils.getElementByInstancePathMaybe(
+      editor.jsxMetadataKILLME.elements,
+      childPath,
+    )
+    if (child?.globalFrame != null) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it
       const isParentOfChildFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         child.templatePath,
@@ -838,12 +857,11 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
     spyMetadataKILLME: poppedEditor.spyMetadataKILLME,
-    domMetadataKILLME: poppedEditor.domMetadataKILLME,
+    domMetadataKILLME: [],
     jsxMetadataKILLME: poppedEditor.jsxMetadataKILLME,
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
     openFiles: poppedEditor.openFiles,
-    cursorPositions: poppedEditor.cursorPositions,
     selectedFile: poppedEditor.selectedFile,
     codeResultCache: currentEditor.codeResultCache,
     propertyControlsInfo: currentEditor.propertyControlsInfo,
@@ -948,6 +966,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
 
   return {
     navigatorTargets: poppedDerived.navigatorTargets,
+    visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
@@ -963,23 +982,25 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
     console.error(`Attempted to delete element(s) with no UI file open.`)
     return editor
   } else {
-    const components = editor.jsxMetadataKILLME
+    const metadata = editor.jsxMetadataKILLME
+
+    const isElementToBeDeleted = (element: ElementInstanceMetadata) => {
+      return targets.some((target) => TP.pathsEqual(element.templatePath, target))
+    }
 
     const isEmptyOrContainsDeleted = (element: ElementInstanceMetadata): boolean => {
-      if (!MetadataUtils.isAutoSizingViewFromComponents(components, element.templatePath)) {
+      if (!MetadataUtils.isAutoSizingViewFromComponents(metadata, element.templatePath)) {
         return false
       }
 
-      const isElementToBeDeleted = (elem: ElementInstanceMetadata) => {
-        return targets.some((target) => TP.pathsEqual(elem.templatePath, target))
-      }
-
-      return element.children.every(
-        (child) => isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child),
-      )
+      return element.children.every((childPath) => {
+        const child = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, childPath)
+        child == null || isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child)
+      })
     }
-    const emptyGroups = MetadataUtils.findElements(components, (element: ElementInstanceMetadata) =>
-      isEmptyOrContainsDeleted(element),
+    const emptyGroups = MetadataUtils.findElements(
+      metadata.elements,
+      (element: ElementInstanceMetadata) => isEmptyOrContainsDeleted(element),
     )
     const emptyGroupTemplatePaths = emptyGroups.map((group) => group.templatePath)
 
@@ -991,14 +1012,13 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
       } else {
         return modifyOpenParseSuccess((parseSuccess) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-          const element = findElementAtPath(target, utopiaComponents, editor.jsxMetadataKILLME)
+          const element = findElementAtPath(target, utopiaComponents)
           if (element == null) {
             return parseSuccess
           } else {
             const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
               target,
               utopiaComponents,
-              editor.jsxMetadataKILLME,
             )
             return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
               return {
@@ -1044,9 +1064,9 @@ function indexPositionForAdjustment(
     case 'backward':
     case 'forward':
       const openUIJSFile = getOpenUIJSFile(editor)
-      if (openUIJSFile != null && isRight(openUIJSFile.fileContents)) {
+      if (openUIJSFile != null && isParseSuccess(openUIJSFile.fileContents.parsed)) {
         const current = getZIndexOfElement(
-          openUIJSFile.fileContents.value.topLevelElements,
+          openUIJSFile.fileContents.parsed.topLevelElements,
           TP.asStatic(target),
         )
         return {
@@ -1300,8 +1320,16 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
-    const parsedProjectFiles = applyToAllUIJSFilesContents(migratedModel.projectContents, (k, v) =>
-      lintAndParse(k, v.value.code),
+    const parsedProjectFiles = applyToAllUIJSFiles(
+      migratedModel.projectContents,
+      (filename: string, file: TextFile) => {
+        const parseResult = lintAndParse(filename, file.fileContents.code)
+        return textFile(
+          textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
+          null,
+          Date.now(),
+        )
+      },
     )
     const parsedModel = {
       ...migratedModel,
@@ -1370,12 +1398,12 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     const openUIJSFile = getOpenUIJSFile(editor)
-    if (openUIJSFile == null || isLeft(openUIJSFile.fileContents)) {
+    if (openUIJSFile == null || !isParseSuccess(openUIJSFile.fileContents.parsed)) {
       return editor
     } else {
-      const components = getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.value)
+      const components = getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
       const target = action.element
-      const element = findElementAtPath(target, components, editor.jsxMetadataKILLME)
+      const element = findElementAtPath(target, components)
       if (element == null || !isJSXElement(element)) {
         return editor
       } else {
@@ -1424,7 +1452,7 @@ export const UPDATE_FNS = {
       console.warn('Attempted to find the index of a view with no ui file open.')
       return editor
     } else {
-      if (isRight(uiFile.fileContents)) {
+      if (isParseSuccess(uiFile.fileContents.parsed)) {
         index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadataKILLME, targetPath)
       } else {
         console.warn(
@@ -1512,7 +1540,6 @@ export const UPDATE_FNS = {
         const components = getOpenUtopiaJSXComponentsFromState(editor)
         const staticSelectedElements = MetadataUtils.staticElementsOnly(
           components,
-          editor.jsxMetadataKILLME,
           editor.selectedViews,
         )
         return deleteElements(staticSelectedElements, editor)
@@ -1550,11 +1577,7 @@ export const UPDATE_FNS = {
       true,
       (editorState) => {
         const components = getOpenUtopiaJSXComponentsFromState(editorState)
-        const staticSelectedElements = MetadataUtils.staticElementsOnly(
-          components,
-          editorState.jsxMetadataKILLME,
-          action.targets,
-        )
+        const staticSelectedElements = MetadataUtils.staticElementsOnly(components, action.targets)
         return deleteElements(staticSelectedElements, editorState)
       },
       dispatch,
@@ -1871,7 +1894,6 @@ export const UPDATE_FNS = {
         action.jsxElement,
         elements,
         action.indexPosition ?? null,
-        editor.jsxMetadataKILLME,
       )
 
       const uid = getUtopiaID(action.jsxElement)
@@ -1897,7 +1919,7 @@ export const UPDATE_FNS = {
       false,
       (editor) => {
         const uiFile = getOpenUIJSFile(editor)
-        if (uiFile == null || !isParseSuccess(uiFile.fileContents)) {
+        if (uiFile == null || !isParseSuccess(uiFile.fileContents.parsed)) {
           return editor
         }
 
@@ -1926,17 +1948,13 @@ export const UPDATE_FNS = {
 
           let viewPath: TemplatePath | null = null
           const withWrapperViewAddedNoFrame = modifyOpenParseSuccess((parseSuccess) => {
-            const elementToInsert: JSXElement = defaultTransparentViewElement(
-              newUID,
-              action.layoutSystem,
-            )
+            const elementToInsert: JSXElement = defaultTransparentViewElement(newUID, null)
             const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
             const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
               parentPath,
               elementToInsert,
               utopiaJSXComponents,
               null,
-              editor.jsxMetadataKILLME,
             )
 
             viewPath = TP.appendToPath(parentPath, newUID)
@@ -1954,7 +1972,10 @@ export const UPDATE_FNS = {
           }
 
           const parent = TP.isInstancePath(parentPath)
-            ? MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, parentPath)
+            ? MetadataUtils.getElementByInstancePathMaybe(
+                editor.jsxMetadataKILLME.elements,
+                parentPath,
+              )
             : null
           const isParentFlex =
             parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
@@ -2015,7 +2036,7 @@ export const UPDATE_FNS = {
         }
 
         const element = MetadataUtils.getElementByInstancePathMaybe(
-          editor.jsxMetadataKILLME,
+          editor.jsxMetadataKILLME.elements,
           action.target,
         )
         const children = MetadataUtils.getChildrenHandlingGroups(
@@ -2314,7 +2335,6 @@ export const UPDATE_FNS = {
     if (targetParent != null) {
       const parentOriginType = MetadataUtils.getElementOriginType(
         getOpenUtopiaJSXComponentsFromState(editor),
-        editor.jsxMetadataKILLME,
         targetParent,
       )
       switch (parentOriginType) {
@@ -2346,13 +2366,7 @@ export const UPDATE_FNS = {
             }
             return addSceneToJSXComponents(accumulator, newSceneElement)
           } else {
-            const components = insertElementAtPath(
-              targetParent,
-              elementToAdd,
-              accumulator,
-              null,
-              editor.jsxMetadataKILLME,
-            )
+            const components = insertElementAtPath(targetParent, elementToAdd, accumulator, null)
             if (targetParent == null || TP.isScenePath(targetParent)) {
               return components
             } else {
@@ -2661,7 +2675,7 @@ export const UPDATE_FNS = {
 
     if (TP.isInstancePath(action.element)) {
       const element = MetadataUtils.getElementByInstancePathMaybe(
-        editor.jsxMetadataKILLME,
+        editor.jsxMetadataKILLME.elements,
         action.element,
       )
       const imports = getOpenImportsFromState(editor)
@@ -2718,7 +2732,7 @@ export const UPDATE_FNS = {
     }
   },
   SAVE_CURRENT_FILE: (action: SaveCurrentFile, editor: EditorModel): EditorModel => {
-    const openFilePath = getOpenUIJSFileKey(editor)
+    const openFilePath = getOpenTextFileKey(editor)
     if (openFilePath != null) {
       return {
         ...editor,
@@ -2859,7 +2873,6 @@ export const UPDATE_FNS = {
               'data-aspect-ratio-locked': jsxAttributeValue(true),
             },
             [],
-            null,
           )
           const size = width != null && height != null ? { width: width, height: height } : null
           const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
@@ -2896,7 +2909,6 @@ export const UPDATE_FNS = {
               'data-aspect-ratio-locked': jsxAttributeValue(true),
             },
             [],
-            null,
           )
 
           const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
@@ -2927,15 +2939,6 @@ export const UPDATE_FNS = {
       }
     }
   },
-  SAVE_CURSOR_POSITION: (action: SaveCursorPosition, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      cursorPositions: {
-        ...editor.cursorPositions,
-        [action.filename]: action.cursorPosition,
-      },
-    }
-  },
   INSERT_IMAGE_INTO_UI: (
     action: InsertImageIntoUI,
     editor: EditorModel,
@@ -2963,7 +2966,6 @@ export const UPDATE_FNS = {
           'data-aspect-ratio-locked': jsxAttributeValue(true),
         },
         [],
-        {},
       )
       const size = width != null && height != null ? { width: width, height: height } : null
       const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
@@ -3152,17 +3154,21 @@ export const UPDATE_FNS = {
     }
   },
   SET_FOCUS: (action: SetFocus, editor: EditorModel): EditorModel => {
-    return setLeftMenuTabFromFocusedPanel({
-      ...editor,
-      focusedPanel: action.focusedPanel,
-    })
+    if (editor.focusedPanel === action.focusedPanel) {
+      return editor
+    } else {
+      return setLeftMenuTabFromFocusedPanel({
+        ...editor,
+        focusedPanel: action.focusedPanel,
+      })
+    }
   },
   OPEN_EDITOR_TAB: (action: OpenEditorTab, editor: EditorModel): EditorModel => {
     const currentOpenFile = getOpenEditorTab(editor)
     const selectedFile = isOpenFileTab(action.editorTab)
       ? getFileForName(action.editorTab.filename, editor)
       : null
-    const fileOpensInCanvas = selectedFile == null || isUIJSFile(selectedFile)
+    const fileOpensInCanvas = selectedFile == null || isTextFile(selectedFile)
     const focusedPanel: EditorPanel = fileOpensInCanvas ? 'canvas' : 'misccodeeditor'
 
     const keepSelectedViews = R.equals(currentOpenFile, action.editorTab)
@@ -3191,10 +3197,6 @@ export const UPDATE_FNS = {
       )
     } else {
       revertedProjectContents = editor.projectContents
-    }
-    let updatedCursorPositions = { ...editor.cursorPositions }
-    if (isOpenFileTab(action.editorTab)) {
-      delete updatedCursorPositions[action.editorTab.filename]
     }
     if (R.equals(getOpenEditorTab(editor), action.editorTab)) {
       if (updatedOpenFiles.length >= 1) {
@@ -3236,7 +3238,7 @@ export const UPDATE_FNS = {
 
     const { file } = action
 
-    if (isUIJSFile(file)) {
+    if (isTextFile(file)) {
       const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
       const canUpdate = canUpdateFile(file, existing)
       if (!canUpdate) {
@@ -3253,8 +3255,8 @@ export const UPDATE_FNS = {
     let packageLoadingStatus: PackageStatusMap = {}
 
     // Ensure dependencies are updated if the `package.json` file has been changed.
-    if (action.filePath === '/package.json' && isCodeFile(file)) {
-      const deps = dependenciesFromPackageJsonContents(file.fileContents)
+    if (action.filePath === '/package.json' && isTextFile(file)) {
+      const deps = dependenciesFromPackageJsonContents(file.fileContents.code)
       if (deps != null) {
         packageLoadingStatus = deps.reduce((packageStatus: PackageStatusMap, dep) => {
           packageStatus[dep.name] = { status: 'loading' }
@@ -3283,7 +3285,7 @@ export const UPDATE_FNS = {
       projectContents: updatedProjectContents,
       canvas: {
         ...editor.canvas,
-        mountCount: editor.canvas.mountCount + (isUIJSFile(file) ? 0 : 1),
+        mountCount: editor.canvas.mountCount + (isTextFile(file) ? 0 : 1),
       },
       nodeModules: {
         ...editor.nodeModules,
@@ -3300,7 +3302,7 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
-    if (existing == null || !isUIJSFile(existing)) {
+    if (existing == null || !isTextFile(existing)) {
       // The worker shouldn't be recreating deleted files or reformated files
       console.error(`Worker thread is trying to update an invalid file ${action.filePath}`)
       return editor
@@ -3312,27 +3314,41 @@ export const UPDATE_FNS = {
     }
 
     // The worker should only ever cause one side to catch up to the other
-    if (action.codeOrModel === 'Code' && !codeNeedsPrinting(existing.revisionsState)) {
+    if (action.codeOrModel === 'Code' && !codeNeedsPrinting(existing.fileContents.revisionsState)) {
       return editor
-    } else if (action.codeOrModel === 'Model' && !codeNeedsParsing(existing.revisionsState)) {
+    } else if (
+      action.codeOrModel === 'Model' &&
+      !codeNeedsParsing(existing.fileContents.revisionsState)
+    ) {
       return editor
     }
 
-    let updatedFile: UIJSFile
-    let updatedContents: ParseResult
+    let updatedFile: TextFile
+    let updatedContents: ParsedTextFile
+    let code: string
     switch (action.codeOrModel) {
       case 'Code': {
-        const updatedCode = action.file.fileContents.value.code
         // we use the new highlightBounds coming from the action
-        const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents)
-        updatedContents = updateParseResultCode(existing.fileContents, updatedCode, highlightBounds)
+        code = action.file.fileContents.code
+        const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents.parsed)
+        updatedContents = updateParsedTextFileHighlightBounds(
+          existing.fileContents.parsed,
+          highlightBounds,
+        )
         break
       }
       case 'Model': {
-        const code = existing.fileContents.value.code
+        // Clear any cached paths since UIDs will have been regenerated and property paths may no longer exist
+        PP.clearPropertyPathCache()
+        TP.clearTemplatePathCache()
+
         // we use the new highlightBounds coming from the action
-        const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents)
-        updatedContents = updateParseResultCode(action.file.fileContents, code, highlightBounds)
+        code = existing.fileContents.code
+        const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents.parsed)
+        updatedContents = updateParsedTextFileHighlightBounds(
+          action.file.fileContents.parsed,
+          highlightBounds,
+        )
         break
       }
       default:
@@ -3343,17 +3359,17 @@ export const UPDATE_FNS = {
     if (isOlderThan(action.file, existing)) {
       // if the received file is older than the existing, we still allow it to update the other side,
       // but we don't bump the revision state or the lastRevisedTime.
-      updatedFile = {
-        ...existing,
-        fileContents: updatedContents,
-      }
+      updatedFile = textFile(
+        textFileContents(code, updatedContents, existing.fileContents.revisionsState),
+        existing.lastSavedContents,
+        existing.lastRevisedTime,
+      )
     } else {
-      updatedFile = {
-        ...existing,
-        fileContents: updatedContents,
-        revisionsState: RevisionsState.BothMatch,
-        lastRevisedTime: Date.now(),
-      }
+      updatedFile = textFile(
+        textFileContents(code, updatedContents, RevisionsState.BothMatch),
+        existing.lastSavedContents,
+        Date.now(),
+      )
     }
 
     const updatedProjectContents = addFileToProjectContents(
@@ -3370,7 +3386,6 @@ export const UPDATE_FNS = {
           action.codeOrModel === 'Model' ? editor.canvas.mountCount + 1 : editor.canvas.mountCount,
       },
       parseOrPrintInFlight: false, // only ever clear it here
-      selectedViews: action.codeOrModel === 'Model' ? [] : editor.selectedViews,
     }
   },
   CLEAR_PARSE_OR_PRINT_IN_FLIGHT: (
@@ -3415,15 +3430,15 @@ export const UPDATE_FNS = {
       },
     }
   },
-  ADD_CODE_FILE: (action: AddCodeFile, editor: EditorModel): EditorModel => {
+  ADD_TEXT_FILE: (action: AddTextFile, editor: EditorModel): EditorModel => {
     const pathPrefix = action.parentPath == '' ? '' : action.parentPath + '/'
     const newFileKey = uniqueProjectContentID(pathPrefix + action.fileName, editor.projectContents)
-    const newCodeFile = codeFile('', null)
+    const newTextFile = codeFile('', null)
 
     const updatedProjectContents = addFileToProjectContents(
       editor.projectContents,
       newFileKey,
-      newCodeFile,
+      newTextFile,
     )
 
     // Update the model.
@@ -3436,27 +3451,6 @@ export const UPDATE_FNS = {
       },
       openFiles: [...editor.openFiles, newTab],
       projectContents: updatedProjectContents,
-      fileBrowser: {
-        ...editor.fileBrowser,
-        renamingTarget: newFileKey,
-      },
-    }
-    return updatedEditor
-  },
-  ADD_UI_JS_FILE: (action: AddUIJSFile, editor: EditorModel): EditorModel => {
-    const newFileKey = uniqueProjectContentID('src/new_view.js', editor.projectContents)
-    const newUiJsFile = getDefaultUIJsFile()
-
-    // Update the model.
-    const newTab = openFileTab(newFileKey)
-    const updatedEditor: EditorModel = {
-      ...editor,
-      selectedFile: {
-        tab: newTab,
-        initialCursorPosition: null,
-      },
-      openFiles: [...editor.openFiles, newTab],
-      projectContents: addFileToProjectContents(editor.projectContents, newFileKey, newUiJsFile),
       fileBrowser: {
         ...editor.fileBrowser,
         renamingTarget: newFileKey,
@@ -3514,7 +3508,7 @@ export const UPDATE_FNS = {
           )
         }, updatedEditor)
       }
-      case 'CODE_FILE': {
+      case 'TEXT_FILE': {
         return {
           ...editor,
           projectContents: updatedProjectContents,
@@ -3614,14 +3608,25 @@ export const UPDATE_FNS = {
       spyCollector.current.spyValues.scenes,
     )
 
-    return keepDeepReferenceEqualityIfPossible(editor, {
-      ...editor,
-      domMetadataKILLME: keepDeepReferenceEqualityIfPossible(
-        editor.domMetadataKILLME,
-        action.elementMetadata,
-      ),
-      spyMetadataKILLME: keepDeepReferenceEqualityIfPossible(editor.spyMetadataKILLME, spyResult),
-    })
+    const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality())(
+      editor.domMetadataKILLME,
+      action.elementMetadata,
+    ).value
+    const finalSpyMetadata = JSXMetadataKeepDeepEquality()(editor.spyMetadataKILLME, spyResult)
+      .value
+
+    const stayedTheSame =
+      editor.domMetadataKILLME === finalDomMetadata && editor.spyMetadataKILLME === finalSpyMetadata
+
+    if (stayedTheSame) {
+      return editor
+    } else {
+      return {
+        ...editor,
+        domMetadataKILLME: finalDomMetadata,
+        spyMetadataKILLME: finalSpyMetadata,
+      }
+    }
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return addUtopiaUtilsImportIfUsed(
@@ -3736,7 +3741,7 @@ export const UPDATE_FNS = {
   UNWRAP_LAYOUTABLE: (action: UnwrapLayoutable, editor: EditorModel): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, action.target),
+      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, action.target),
     )
 
     return modifyOpenJsxElementAtPath(
@@ -3771,7 +3776,7 @@ export const UPDATE_FNS = {
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, action.target),
+      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, action.target),
     )
 
     let updatedEditor = editor
@@ -3891,7 +3896,6 @@ export const UPDATE_FNS = {
           'data-aspect-ratio-locked': jsxAttributeValue(true),
         },
         [],
-        {},
       )
 
       const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
@@ -3903,7 +3907,7 @@ export const UPDATE_FNS = {
   RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
     const openFilePath = getOpenUIJSFileKey(editor)
     if (openFilePath != null) {
-      const propertyControls = getPropertyControlsForTarget(action.target, editor)
+      const propertyControls = getPropertyControlsForTargetFromEditor(action.target, editor)
       let elementName
       if (TP.isScenePath(action.target)) {
         const element = findJSXElementChildAtPath(
@@ -3921,7 +3925,6 @@ export const UPDATE_FNS = {
         const element = findJSXElementAtPath(
           action.target,
           getOpenUtopiaJSXComponentsFromState(editor),
-          editor.jsxMetadataKILLME,
         )
         if (element != null) {
           elementName = getJSXElementNameAsString(element.name)
@@ -4123,6 +4126,15 @@ export const UPDATE_FNS = {
       editor,
     )
   },
+  ADD_STORYBOARD_FILE: (_action: AddStoryboardFile, editor: EditorModel): EditorModel => {
+    const updatedEditor = addStoryboardFileToProject(editor)
+    if (updatedEditor == null) {
+      return editor
+    } else {
+      const openTab = openEditorTab(openFileTab(StoryboardFilePath), null)
+      return UPDATE_FNS.OPEN_EDITOR_TAB(openTab, updatedEditor)
+    }
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -4187,7 +4199,7 @@ export function alignOrDistributeSelectedViews(
 
 function alignOrDistributeCanvasRects(
   components: Array<UtopiaJSXComponent>,
-  componentMetadata: Array<ComponentMetadata>,
+  componentMetadata: JSXMetadata,
   targets: CanvasFrameAndTarget[],
   source: CanvasRectangle,
   alignmentOrDistribution: Alignment | Distribution,
@@ -4432,8 +4444,8 @@ export async function load(
   retryFetchNodeModules: boolean = true,
 ): Promise<void> {
   // this action is now async!
-
-  const npmDependencies = dependenciesWithEditorRequirements(model.projectContents)
+  const migratedModel = applyMigrations(model)
+  const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
   const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
   const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
@@ -4446,13 +4458,13 @@ export async function load(
   const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
 
   let codeResultCache: CodeResultCache
-  if (model.exportsInfo.length > 0) {
-    workers.sendInitMessage(typeDefinitions, model.projectContents)
+  if (migratedModel.exportsInfo.length > 0) {
+    workers.sendInitMessage(typeDefinitions, migratedModel.projectContents)
     codeResultCache = generateCodeResultCache(
-      model.projectContents,
+      migratedModel.projectContents,
       {},
       {},
-      model.exportsInfo,
+      migratedModel.exportsInfo,
       nodeModules,
       dispatch,
       'full-build',
@@ -4465,7 +4477,7 @@ export async function load(
       nodeModules,
       dispatch,
       typeDefinitions,
-      model.projectContents,
+      migratedModel.projectContents,
     )
   }
 
@@ -4480,7 +4492,7 @@ export async function load(
     [
       {
         action: 'LOAD',
-        model: model,
+        model: migratedModel,
         nodeModules: nodeModules,
         packageResult: packageResult,
         codeResultCache: codeResultCache,
@@ -4529,192 +4541,30 @@ function loadCodeResult(
   })
 }
 
-export function unsetProperty(element: InstancePath, property: PropertyPath): UnsetProperty {
-  return {
-    action: 'UNSET_PROPERTY',
-    element: element,
-    property: property,
-  }
+export function isSendPreviewModel(action: any): action is SendPreviewModel {
+  return action != null && (action as SendPreviewModel).action === 'SEND_PREVIEW_MODEL'
 }
 
-export function toggleHidden(targets: Array<TemplatePath> = []): ToggleHidden {
-  return {
-    action: 'TOGGLE_HIDDEN',
-    targets: targets,
-  }
-}
-
-export function transientActions(actions: Array<EditorAction>): TransientActions {
-  return {
-    action: 'TRANSIENT_ACTIONS',
-    transientActions: actions,
-  }
-}
-
-export function selectComponents(
-  target: Array<TemplatePath>,
-  addToSelection: boolean,
-): EditorAction {
-  return {
-    action: 'SELECT_COMPONENTS',
-    target: target,
-    addToSelection: addToSelection,
-  }
-}
-
-export function updateEditorMode(mode: Mode): UpdateEditorMode {
-  return {
-    action: 'UPDATE_EDITOR_MODE',
-    mode: mode,
-  }
-}
-
-export function switchEditorMode(mode: Mode): SwitchEditorMode {
-  return {
-    action: 'SWITCH_EDITOR_MODE',
-    mode: mode,
-  }
-}
-
-export function duplicateSelected(): DuplicateSelected {
-  return {
-    action: 'DUPLICATE_SELECTED',
-  }
-}
-
-export function duplicateSpecificElements(paths: Array<TemplatePath>): DuplicateSpecificElements {
-  return {
-    action: 'DUPLICATE_SPECIFIC_ELEMENTS',
-    paths: paths,
-  }
-}
-
-export function updateDuplicationState(
-  duplicationState: DuplicationState | null,
-): UpdateDuplicationState {
-  return {
-    action: 'UPDATE_DUPLICATION_STATE',
-    duplicationState: duplicationState,
-  }
-}
-
-export function setCanvasFrames(
-  framesAndTargets: Array<PinOrFlexFrameChange>,
-  keepChildrenGlobalCoords: boolean,
-  originalFrames: Array<OriginalFrame> | null = null,
-): SetCanvasFrames {
-  return {
-    action: 'SET_CANVAS_FRAMES',
-    framesAndTargets: framesAndTargets,
-    keepChildrenGlobalCoords: keepChildrenGlobalCoords,
-    originalFrames: originalFrames,
-  }
-}
-
-export function setPanelVisibility(
-  target: EditorPanel | EditorPane,
-  visible: boolean,
-): SetPanelVisibility {
-  return {
-    action: 'SET_PANEL_VISIBILITY',
-    target: target,
-    visible: visible,
-  }
-}
-
-export function togglePanel(panel: EditorPanel | EditorPane): TogglePane {
-  return {
-    action: 'TOGGLE_PANE',
-    target: panel,
-  }
-}
-
-export function openPopup(popupId: string): OpenPopup {
-  return {
-    action: 'OPEN_POPUP',
-    popupId: popupId,
-  }
-}
-
-export function closePopup(): ClosePopup {
-  return {
-    action: 'CLOSE_POPUP',
-  }
-}
-
-export function pasteJSXElements(
-  elements: Array<JSXElement>,
-  originalTemplatePaths: Array<TemplatePath>,
-  targetOriginalContextMetadata: Array<ComponentMetadata>,
-): PasteJSXElements {
-  return {
-    action: 'PASTE_JSX_ELEMENTS',
-    elements: elements,
-    originalTemplatePaths: originalTemplatePaths,
-    targetOriginalContextMetadata: targetOriginalContextMetadata,
-  }
-}
-
-export function copySelectionToClipboard(): CopySelectionToClipboard {
-  return {
-    action: 'COPY_SELECTION_TO_CLIPBOARD',
-  }
-}
-
-export function openTextEditor(
-  target: InstancePath,
-  mousePosition: WindowPoint | null, // if mousePosition is zero, the whole text will be selected
-): OpenTextEditor {
-  return {
-    action: 'OPEN_TEXT_EDITOR',
-    target: target,
-    mousePosition: mousePosition,
-  }
-}
-
-export function closeTextEditor(): CloseTextEditor {
-  return {
-    action: 'CLOSE_TEXT_EDITOR',
-  }
-}
-
-export function toggleCollapse(target: TemplatePath): ToggleCollapse {
-  return {
-    action: 'TOGGLE_COLLAPSE',
-    target: target,
-  }
-}
-
-export function enableInsertModeForJSXElement(
-  element: JSXElement,
-  uid: string,
-  importsToAdd: Imports,
-  size: Size | null,
-): SwitchEditorMode {
-  return switchEditorMode(
-    EditorModes.insertMode(false, elementInsertionSubject(uid, element, size, importsToAdd, null)),
+export function isPropertyControlsIFrameReady(
+  action: unknown,
+): action is PropertyControlsIFrameReady {
+  const parseResult = objectKeyParser(parseString, 'action')(action)
+  return foldEither(
+    (_) => false,
+    (prop) => prop === 'PROPERTY_CONTROLS_IFRAME_READY',
+    parseResult,
   )
 }
 
-export function enableInsertModeForScene(name: JSXElementName | 'scene'): SwitchEditorMode {
-  return switchEditorMode(EditorModes.insertMode(false, SceneInsertionSubject()))
-}
-
-export function pushToast(toastContent: Notice): PushToast {
-  return {
-    action: 'PUSH_TOAST',
-    toast: toastContent,
-  }
-}
-
-export function popToast(): PopToast {
-  return {
-    action: 'POP_TOAST',
-  }
-}
-
-export function showToast(toastContent: Notice): PushToast {
-  return pushToast(toastContent)
+export function isUpdatePropertyControlsInfo(
+  action: unknown,
+): action is UpdatePropertyControlsInfo {
+  const parseResult = objectKeyParser(parseString, 'action')(action)
+  return foldEither(
+    (_) => false,
+    (prop) => prop === 'UPDATE_PROPERTY_CONTROLS_INFO',
+    parseResult,
+  )
 }
 
 let selectionControlTimer: any // TODO maybe this should live inside the editormodel
@@ -4878,17 +4728,6 @@ export function saveAsset(
     base64: base64,
     hash: hash,
     imageDetails: imageDetails,
-  }
-}
-
-export function saveCursorPosition(
-  filename: string,
-  cursorPosition: CursorPosition,
-): SaveCursorPosition {
-  return {
-    action: 'SAVE_CURSOR_POSITION',
-    filename: filename,
-    cursorPosition: cursorPosition,
   }
 }
 
@@ -5146,13 +4985,6 @@ export function addFolder(parentPath: string): AddFolder {
     parentPath: parentPath,
   }
 }
-
-export function addUIJSFile(): AddUIJSFile {
-  return {
-    action: 'ADD_UI_JS_FILE',
-  }
-}
-
 export function openEditorTab(
   editorTab: EditorTab,
   cursorPosition: CursorPosition | null,
@@ -5194,7 +5026,7 @@ export function updateFile(
 
 export function updateFromWorker(
   filePath: string,
-  file: UIJSFile,
+  file: TextFile,
   codeOrModel: 'Code' | 'Model',
 ): UpdateFromWorker {
   return {
@@ -5216,14 +5048,6 @@ export function clearImageFileBlob(uiFilePath: string, elementID: string): Clear
     action: 'CLEAR_IMAGE_FILE_BLOB',
     uiFilePath: uiFilePath,
     elementID: elementID,
-  }
-}
-
-export function addCodeFile(parentPath: string, fileName: string): AddCodeFile {
-  return {
-    action: 'ADD_CODE_FILE',
-    fileName: fileName,
-    parentPath: parentPath,
   }
 }
 
@@ -5280,32 +5104,6 @@ export function renamePropKey(
     cssTargetPath,
     value,
   }
-}
-
-export function isSendPreviewModel(action: any): action is SendPreviewModel {
-  return action != null && (action as SendPreviewModel).action === 'SEND_PREVIEW_MODEL'
-}
-
-export function isPropertyControlsIFrameReady(
-  action: unknown,
-): action is PropertyControlsIFrameReady {
-  const parseResult = objectKeyParser(parseString, 'action')(action)
-  return foldEither(
-    (_) => false,
-    (prop) => prop === 'PROPERTY_CONTROLS_IFRAME_READY',
-    parseResult,
-  )
-}
-
-export function isUpdatePropertyControlsInfo(
-  action: unknown,
-): action is UpdatePropertyControlsInfo {
-  const parseResult = objectKeyParser(parseString, 'action')(action)
-  return foldEither(
-    (_) => false,
-    (prop) => prop === 'UPDATE_PROPERTY_CONTROLS_INFO',
-    parseResult,
-  )
 }
 
 export function setCodeEditorBuildErrors(buildErrors: ErrorMessages): SetCodeEditorBuildErrors {
@@ -5382,178 +5180,5 @@ function saveFileInProjectContents(
     return projectContents
   } else {
     return addFileToProjectContents(projectContents, filePath, saveFile(file))
-  }
-}
-
-export function setSceneProp(
-  scenePath: ScenePath,
-  propertyPath: PropertyPath,
-  value: JSXAttribute,
-): SetSceneProp {
-  return {
-    action: 'SET_SCENE_PROP',
-    scenePath: scenePath,
-    propertyPath: propertyPath,
-    value: value,
-  }
-}
-
-export function unsetSceneProp(scenePath: ScenePath, propertyPath: PropertyPath): UnsetSceneProp {
-  return {
-    action: 'UNSET_SCENE_PROP',
-    scenePath: scenePath,
-    propertyPath: propertyPath,
-  }
-}
-
-export function wrapInLayoutable(target: InstancePath, wrapper: LayoutWrapper): WrapInLayoutable {
-  return {
-    action: 'WRAP_IN_LAYOUTABLE',
-    target: target,
-    wrapper: wrapper,
-  }
-}
-
-export function unwrapLayoutable(target: InstancePath): UnwrapLayoutable {
-  return {
-    action: 'UNWRAP_LAYOUTABLE',
-    target: target,
-  }
-}
-
-export function updateJSXElementName(
-  target: InstancePath,
-  elementName: JSXElementName,
-): UpdateJSXElementName {
-  return {
-    action: 'UPDATE_JSX_ELEMENT_NAME',
-    target: target,
-    elementName: elementName,
-  }
-}
-
-export function setAspectRatioLock(target: InstancePath, locked: boolean): SetAspectRatioLock {
-  return {
-    action: 'SET_ASPECT_RATIO_LOCK',
-    target: target,
-    locked: locked,
-  }
-}
-
-export function toggleCanvasIsLive(): ToggleCanvasIsLive {
-  return {
-    action: 'TOGGLE_CANVAS_IS_LIVE',
-  }
-}
-
-export function setCodeEditorTheme(value: CodeEditorTheme): SetCodeEditorTheme {
-  return {
-    action: 'SET_CODE_EDITOR_THEME',
-    value: value,
-  }
-}
-
-export function setSafeMode(value: boolean): SetSafeMode {
-  return {
-    action: 'SET_SAFE_MODE',
-    value: value,
-  }
-}
-
-export function setSaveError(value: boolean): SetSaveError {
-  return {
-    action: 'SET_SAVE_ERROR',
-    value: value,
-  }
-}
-
-export function insertDroppedImage(imagePath: string, position: CanvasPoint): InsertDroppedImage {
-  return {
-    action: 'INSERT_DROPPED_IMAGE',
-    imagePath: imagePath,
-    position: position,
-  }
-}
-
-export function resetPropToDefault(
-  target: TemplatePath,
-  path: PropertyPath | null,
-): ResetPropToDefault {
-  return {
-    action: 'RESET_PROP_TO_DEFAULT',
-    target: target,
-    path: path,
-  }
-}
-
-export function updateNodeModulesContents(
-  contentsToAdd: NodeModules,
-  buildType: BuildType,
-): UpdateNodeModulesContents {
-  return {
-    action: 'UPDATE_NODE_MODULES_CONTENTS',
-    contentsToAdd: contentsToAdd,
-    buildType: buildType,
-  }
-}
-
-export function updatePackageJson(dependencies: Array<RequestedNpmDependency>): UpdatePackageJson {
-  return {
-    action: 'UPDATE_PACKAGE_JSON',
-    dependencies: dependencies,
-  }
-}
-
-export function startCheckpointTimer(): StartCheckpointTimer {
-  return {
-    action: 'START_CHECKPOINT_TIMER',
-  }
-}
-
-export function finishCheckpointTimer(): FinishCheckpointTimer {
-  return {
-    action: 'FINISH_CHECKPOINT_TIMER',
-  }
-}
-
-export function addMissingDimensions(
-  target: InstancePath,
-  existingSize: CanvasRectangle,
-): AddMissingDimensions {
-  return {
-    action: 'ADD_MISSING_DIMENSIONS',
-    existingSize: existingSize,
-    target: target,
-  }
-}
-
-export function setPackageStatus(packageName: string, status: PackageStatus): SetPackageStatus {
-  return {
-    action: 'SET_PACKAGE_STATUS',
-    packageName: packageName,
-    status: status,
-  }
-}
-
-export function setShortcut(shortcutName: string, newKey: Key): SetShortcut {
-  return {
-    action: 'SET_SHORTCUT',
-    shortcutName: shortcutName,
-    newKey: newKey,
-  }
-}
-
-export function updatePropertyControlsInfo(
-  propertyControlsInfo: PropertyControlsInfo,
-): UpdatePropertyControlsInfo {
-  return {
-    action: 'UPDATE_PROPERTY_CONTROLS_INFO',
-    propertyControlsInfo: propertyControlsInfo,
-  }
-}
-
-export function propertyControlsIFrameReady(): PropertyControlsIFrameReady {
-  return {
-    action: 'PROPERTY_CONTROLS_IFRAME_READY',
   }
 }

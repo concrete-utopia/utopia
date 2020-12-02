@@ -31,7 +31,16 @@ import {
   ElementInstanceMetadata,
   TopLevelElement,
 } from '../../core/shared/element-template'
-import { ParseSuccess, UIJSFile } from '../../core/shared/project-file-types'
+import {
+  foldParsedTextFile,
+  isParseFailure,
+  isParseSuccess,
+  isTextFile,
+  isUnparsed,
+  ParsedTextFile,
+  ParseSuccess,
+  TextFile,
+} from '../../core/shared/project-file-types'
 import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
 import {
   FakeBundlerWorker,
@@ -53,18 +62,10 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/
 import { scenePath } from '../../core/shared/template-path'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
-import { testParseCode } from '../../core/workers/parser-printer/parser-printer-test-utils'
+import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 import { setPropertyControlsIFrameAvailable } from '../../core/property-controls/property-controls-utils'
 import { getContentsTreeFileFromString } from '../assets'
-
-function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
-  return {
-    ...element,
-    element: left('REMOVED_FROM_TEST'),
-    children: element.children.map(sanitizeElementMetadata),
-  }
-}
 
 process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack || reason)
@@ -74,9 +75,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const renderCountBaseline = renderCount
 
   let emptyEditorState = createEditorState(NO_OP)
-  const fromScratchResult = deriveState(emptyEditorState, null, false, null)
-  emptyEditorState = fromScratchResult.editor
-  const derivedState = fromScratchResult.derived
+  const derivedState = deriveState(emptyEditorState, null, null)
 
   const history = History.init(emptyEditorState, derivedState)
 
@@ -93,7 +92,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   let workingEditorState: EditorStore
 
   function updateEditor() {
-    api.setState(workingEditorState)
+    storeHook.setState(workingEditorState)
   }
 
   const spyCollector = emptyUiJsxCanvasContextData()
@@ -142,10 +141,10 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
     dispatch: asyncTestDispatch,
   }
 
-  const [storeHook, api] = create<EditorStore>((set) => initialEditorStore)
+  const storeHook = create<EditorStore>((set) => initialEditorStore)
 
   // initializing the local editor state
-  workingEditorState = api.getState()
+  workingEditorState = storeHook.getState()
 
   let numberOfCommits = 0
 
@@ -158,7 +157,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
       }}
     >
       <HotRoot
-        api={api}
+        api={storeHook}
         useStore={storeHook}
         spyCollector={spyCollector}
         propertyControlsInfoSupported={false}
@@ -198,7 +197,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
     },
     getDomReportDispatched: () => domReportDispatched,
     getDispatchFollowUpactionsFinished: () => dispatchFollowUpActionsFinished,
-    getEditorState: () => api.getState(),
+    getEditorState: () => storeHook.getState(),
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
@@ -206,8 +205,12 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
 }
 
 export function getPrintedUiJsCode(store: EditorStore): string {
-  return ((getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js') as UIJSFile)
-    .fileContents as Right<ParseSuccess>).value.code
+  const file = getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js')
+  if (isTextFile(file)) {
+    return file.fileContents.code
+  } else {
+    fail('File is not a text file.')
+  }
 }
 
 const TestSceneUID = 'scene-aaa'
@@ -242,10 +245,13 @@ ${snippet}
 
 export function getTestParseSuccess(fileContents: string): ParseSuccess {
   const parseResult = testParseCode(fileContents)
-  if (isLeft(parseResult)) {
-    throw new Error(`Error parsing test input code: ${parseResult.value.errorMessage}`)
+  if (isParseFailure(parseResult)) {
+    throw new Error(`Error parsing test input code: ${parseResult.errorMessage}`)
+  } else if (isUnparsed(parseResult)) {
+    throw new Error(`Unexpected unparsed file.`)
+  } else {
+    return parseResult
   }
-  return parseResult.value
 }
 
 export function testPrintCode(parseSuccess: ParseSuccess): string {
@@ -254,5 +260,15 @@ export function testPrintCode(parseSuccess: ParseSuccess): string {
     parseSuccess.imports,
     parseSuccess.topLevelElements,
     parseSuccess.jsxFactoryFunction,
+    parseSuccess.exportsDetail,
+  )
+}
+
+export function testPrintParsedTextFile(parsedTextFile: ParsedTextFile): string {
+  return foldParsedTextFile(
+    (_) => 'FAILURE',
+    testPrintCode,
+    (_) => 'UNPARSED',
+    parsedTextFile,
   )
 }

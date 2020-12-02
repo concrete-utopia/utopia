@@ -41,7 +41,6 @@ Array [
           "elementsWithin": Object {
             "bbb": Object {
               "children": Array [],
-              "metadata": null,
               "name": Object {
                 "baseVariable": "div",
                 "propertyPath": Object {
@@ -94,7 +93,6 @@ export var storyboard = (props) => {
           "uniqueID": "",
         },
       ],
-      "metadata": null,
       "name": Object {
         "baseVariable": "Utopia",
         "propertyPath": Object {
@@ -138,7 +136,7 @@ export var storyboard = (props) => {
 };",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAKQA,IAAIC,UAAUC,GAAGC,SAAbF,UAAaE,CAACC,KAADD,EAAWE;AACjCC,sBACEC,oBAACC,UAADD;AAAYE,gBAAUC;AAAtBH,kBACEA,oBAACI,KAADJ;AACEK,IAAAA,KAAKC,EAAER;AAAES,MAAAA,IAAIC,EAAEC,CAARX;AAAWY,MAAAA,GAAGF,EAAEC,CAAhBX;AAAmBa,MAAAA,KAAKH,EAAEI,GAA1Bd;AAA+Be,MAAAA,MAAML,EAAEI;AAAvCd,KADTE;AAEEc,IAAAA,SAASR,EAAES,GAFbf;AAGEgB,IAAAA,MAAMV,EAAER;AAAEmB,MAAAA,YAAYT,EAAEL;AAAhBL,KAHVE;AAIEH,IAAAA,KAAKS,EAAER;AAAEkB,MAAAA,MAAMR,EAAEV;AAAEoB,QAAAA,MAAMV,EAAEC,CAAVX;AAAaS,QAAAA,IAAIC,EAAEC,CAAnBX;AAAsBqB,QAAAA,KAAKX,EAAEC,CAA7BX;AAAgCY,QAAAA,GAAGF,EAAEC;AAArCX;AAAVA,KAJTE;AAKEE,gBAAUC;AALZH,IADFA,CADFD;AAWFqB,CAZO3B",
+      "mappings": "AAKQA,IAAIC,UAAUC,GAAGC,SAAbF,UAAaE,CAACC,KAADD,EAAWE;AACjCC,SACEC,oBAACC,UAADD;AAAYE,gBAAUC;AAAtBH,KACEA,oBAACI,KAADJ;AACEK,IAAAA,KAAKC,EAAER;AAAES,MAAAA,IAAIC,EAAEC,CAARX;AAAWY,MAAAA,GAAGF,EAAEC,CAAhBX;AAAmBa,MAAAA,KAAKH,EAAEI,GAA1Bd;AAA+Be,MAAAA,MAAML,EAAEI;AAAvCd,KADTE;AAEEc,IAAAA,SAASR,EAAES,GAFbf;AAGEgB,IAAAA,MAAMV,EAAER;AAAEmB,MAAAA,YAAYT,EAAEL;AAAhBL,KAHVE;AAIEH,IAAAA,KAAKS,EAAER;AAAEkB,MAAAA,MAAMR,EAAEV;AAAEoB,QAAAA,MAAMV,EAAEC,CAAVX;AAAaS,QAAAA,IAAIC,EAAEC,CAAnBX;AAAsBqB,QAAAA,KAAKX,EAAEC,CAA7BX;AAAgCY,QAAAA,GAAGF,EAAEC;AAArCX;AAAVA,KAJTE;AAKEE,gBAAUC;AALZH,IADFA,CADFD;AAWFqB,CAZO3B",
       "names": Array [
         "var",
         "storyboard",
@@ -196,9 +194,9 @@ export var storyboard = (props) => {
       "version": 3,
     },
     "transpiledJavascript": "var storyboard = function storyboard(props) {
-  return /*#__PURE__*/React.createElement(Storyboard, {
+  return React.createElement(Storyboard, {
     \\"data-uid\\": 'utopia-storyboard-uid'
-  }, /*#__PURE__*/React.createElement(Scene, {
+  }, React.createElement(Scene, {
     style: {
       left: 0,
       top: 0,
@@ -223,31 +221,6 @@ export var storyboard = (props) => {
 return { storyboard: storyboard };",
     "type": "ARBITRARY_JS_BLOCK",
     "uniqueID": "",
-  },
-  Object {
-    "arbitraryJSBlock": null,
-    "isFunction": false,
-    "name": "storyboard",
-    "param": null,
-    "propsUsed": Array [],
-    "rootElement": Object {
-      "children": Array [],
-      "metadata": null,
-      "name": Object {
-        "baseVariable": "Storyboard",
-        "propertyPath": Object {
-          "propertyElements": Array [],
-        },
-      },
-      "props": Object {
-        "data-uid": Object {
-          "type": "ATTRIBUTE_VALUE",
-          "value": "utopia-storyboard-uid",
-        },
-      },
-      "type": "JSX_ELEMENT",
-    },
-    "type": "UTOPIA_JSX_COMPONENT",
   },
 ]
 `;

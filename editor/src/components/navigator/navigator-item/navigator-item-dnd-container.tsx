@@ -6,7 +6,7 @@ import { DragSource, DropTarget, DropTargetMonitor } from 'react-dnd'
 import * as ReactDOM from 'react-dom'
 import { TemplatePath, ElementOriginType, Imports } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
-import * as EditorActions from '../../editor/actions/actions'
+import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'
 import {
   placeComponentsAfter,
@@ -27,7 +27,7 @@ import { DropTargetHint } from '../navigator'
 import { ExpansionArrowWidth } from './expandable-indicator'
 import { BasePaddingUnit, getElementPadding, NavigatorItem } from './navigator-item'
 import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-components'
-import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
+import { JSXElementName } from '../../../core/shared/element-template'
 import { ElementWarnings } from '../../editor/store/editor-state'
 
 const BaseRowHeight = 35
@@ -43,7 +43,6 @@ export interface NavigatorItemDragAndDropWrapperProps {
   templatePath: TemplatePath
   dropTargetHint: DropTargetHint
   editorDispatch: EditorDispatch
-  ancestorCollapsed: boolean
   selected: boolean
   highlighted: boolean // TODO are we sure about this?
   collapsed: boolean // TODO are we sure about this?
@@ -54,7 +53,9 @@ export interface NavigatorItemDragAndDropWrapperProps {
   noOfChildren: number
   staticElementName: JSXElementName | null
   label: string
-  element: ElementInstanceMetadata | null
+  isFlexLayoutedContainer: boolean
+  yogaDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
+  yogaWrap: 'wrap' | 'wrap-reverse' | 'nowrap'
   elementOriginType: ElementOriginType
   componentInstance: boolean
   isAutosizingView: boolean
@@ -62,6 +63,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
   renamingTarget: TemplatePath | null
   imports: Imports
   elementWarnings: ElementWarnings
+  windowStyle: React.CSSProperties
 }
 
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: TemplatePath): boolean {
@@ -234,16 +236,15 @@ export class NavigatorItemDndWrapper extends PureComponent<
     }
   }
 
-  render() {
+  render(): React.ReactElement {
     const props = this.props
 
     const navigatorItemContainer = (
       <div
         key='navigatorItem'
+        id={`navigator-item-${TP.toVarSafeComponentId(this.props.templatePath)}`}
         style={{
-          position: 'relative',
-          width: '100%',
-          display: props.ancestorCollapsed ? 'none' : 'initial',
+          ...props.windowStyle,
         }}
       >
         <NavigatorItem
@@ -254,7 +255,9 @@ export class NavigatorItemDndWrapper extends PureComponent<
           isAutosizingView={this.props.isAutosizingView}
           staticElementName={this.props.staticElementName}
           label={this.props.label}
-          element={this.props.element}
+          isFlexLayoutedContainer={this.props.isFlexLayoutedContainer}
+          yogaDirection={this.props.yogaDirection}
+          yogaWrap={this.props.yogaWrap}
           componentInstance={this.props.componentInstance}
           dispatch={this.props.editorDispatch}
           isHighlighted={this.props.highlighted}

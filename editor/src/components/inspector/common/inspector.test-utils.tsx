@@ -48,16 +48,16 @@ export function getStoreHook(
     dispatch: mockDispatch,
   }
 
-  const [storeHook, api] = create<EditorStore & UpdateFunctionHelpers>((set) => ({
+  const storeHook = create<EditorStore & UpdateFunctionHelpers>((set) => ({
     ...defaultState,
     updateStoreWithImmer: (fn: (store: EditorStore) => void) => set(produce(fn)),
     updateStore: (fn: (store: EditorStore) => EditorStore) => set(fn),
   }))
   return {
-    api: api,
+    api: storeHook,
     useStore: storeHook,
-    updateStoreWithImmer: api.getState().updateStoreWithImmer,
-    updateStore: api.getState().updateStore,
+    updateStoreWithImmer: storeHook.getState().updateStoreWithImmer,
+    updateStore: storeHook.getState().updateStore,
   }
 }
 

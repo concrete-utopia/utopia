@@ -22,12 +22,12 @@ import {
 import { generateUID } from '../../core/shared/uid-utils'
 import {
   TemplatePath,
-  isCodeFile,
-  isUIJSFile,
+  isTextFile,
   importDetails,
   importAlias,
   Imports,
   importsEquals,
+  forEachParseSuccess,
 } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
 import {
@@ -40,7 +40,7 @@ import {
 import { FontSettings } from '../inspector/common/css-utils'
 import { existingUIDs } from '../navigator/left-pane'
 import { EditorAction, EditorDispatch } from './action-types'
-import { enableInsertModeForJSXElement, enableInsertModeForScene } from './actions/actions'
+import { enableInsertModeForJSXElement, enableInsertModeForScene } from './actions/action-creators'
 import {
   ElementInsertionSubject,
   insertionSubjectIsScene,
@@ -103,7 +103,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
     let currentFileComponents: Array<CurrentFileComponent> = []
     const openUIJSFile = getOpenUIJSFile(store.editor)
     if (openUIJSFile != null && openFileFullPath != null) {
-      forEachRight(openUIJSFile.fileContents, (fileContents) => {
+      forEachParseSuccess((fileContents) => {
         Utils.fastForEach(fileContents.topLevelElements, (topLevelElement) => {
           if (isUtopiaJSXComponent(topLevelElement)) {
             const componentName = topLevelElement.name
@@ -120,7 +120,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
             })
           }
         })
-      })
+      }, openUIJSFile.fileContents.parsed)
     }
 
     return {
@@ -134,7 +134,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
       packageStatus: store.editor.nodeModules.packageStatus,
       propertyControlsInfo: store.editor.propertyControlsInfo,
     }
-  })
+  }, 'InsertMenu')
 
   const dependencies = usePossiblyResolvedPackageDependencies()
 
@@ -408,7 +408,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                 const newUID = generateUID(this.props.existingUIDs)
                 let props: JSXAttributes = objectMap(jsxAttributeValue, defaultProps)
                 props['data-uid'] = jsxAttributeValue(newUID)
-                const newElement = jsxElement(jsxElementName(componentName, []), props, [], null)
+                const newElement = jsxElement(jsxElementName(componentName, []), props, [])
                 this.props.editorDispatch(
                   [enableInsertModeForJSXElement(newElement, newUID, {}, null)],
                   'everyone',

@@ -50,7 +50,7 @@ import {
   findMissingDefaults,
   getDefaultPropsFromParsedControls,
   removeIgnored,
-  getPropertyControlsForTarget,
+  getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
 import { addUniquely } from '../../../core/shared/array-utils'
 import {
@@ -83,7 +83,12 @@ import type { PropertyPath, TemplatePath } from '../../../core/shared/project-fi
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { fastForEach } from '../../../core/shared/utils'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
+import {
+  keepDeepReferenceEqualityIfPossible,
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from '../../../utils/react-performance'
 import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'
 import type { ReadonlyRef } from './inspector-utils'
@@ -817,20 +822,6 @@ function getValueFromSpecialSizeMeasurements<P extends LayoutProp | StyleLayoutP
   return null
 }
 
-export function useKeepShallowReferenceEquality<T>(possibleNewValue: T, measure = false): T {
-  const oldValue = React.useRef<T>(possibleNewValue)
-  if (!Utils.shallowEqual(oldValue.current, possibleNewValue, measure)) {
-    oldValue.current = possibleNewValue
-  }
-  return oldValue.current
-}
-
-export function useKeepReferenceEqualityIfPossible<T>(possibleNewValue: T, measure = false): T {
-  const oldValue = React.useRef<T | null>(null)
-  oldValue.current = keepDeepReferenceEqualityIfPossible(oldValue.current, possibleNewValue)
-  return oldValue.current!
-}
-
 export function useIsSubSectionVisible(sectionName: string): boolean {
   const selectedViews = useRefSelectedViews()
 
@@ -842,7 +833,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
         return 'scene'
       }
 
-      const element = findElementAtPath(view, rootComponents, store.editor.jsxMetadataKILLME)
+      const element = findElementAtPath(view, rootComponents)
       if (element == null) {
         return null
       } else if (isJSXElement(element)) {
@@ -869,7 +860,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
         }
       }
     })
-  })
+  }, 'useIsSubSectionVisible')
 }
 
 const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
@@ -895,12 +886,13 @@ export function useSelectedPropertyControls(
     if (codeResultCache != null) {
       Utils.fastForEach(selectedViews.current, (path) => {
         // TODO multiselect
-        selectedPropertyControls = getPropertyControlsForTarget(path, store.editor) ?? {}
+        // TODO use getPropertyControlsForTarget and reselect selectors
+        selectedPropertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
       })
     }
 
     return selectedPropertyControls
-  })
+  }, 'useSelectedPropertyControls')
 
   // Strip ignored property controls here.
   const parsed = parsePropertyControls(propertyControls)
@@ -923,7 +915,7 @@ export function useUsedPropsWithoutControls(): Array<string> {
     const pushComponent = (component: UtopiaJSXComponent) => components.push(component)
     fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
+        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
         if (scene != null) {
           const underlyingComponent = rootComponents.find(
             (component) => component.name === scene.component,
@@ -931,7 +923,7 @@ export function useUsedPropsWithoutControls(): Array<string> {
           forEachOptional(pushComponent, underlyingComponent)
         }
       } else {
-        const element = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+        const element = findElementAtPath(path, rootComponents)
         if (element != null && isJSXElement(element)) {
           const noPathName = getJSXElementNameNoPathName(element.name)
           const underlyingComponent = rootComponents.find(
@@ -943,7 +935,7 @@ export function useUsedPropsWithoutControls(): Array<string> {
     })
 
     return components
-  })
+  }, 'useUsedPropsWithoutControls')
 
   return foldEither(
     (_) => [],
@@ -980,7 +972,7 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
       propsUsed.push(...component.propsUsed)
     fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
+        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
         if (scene != null) {
           const underlyingComponent = rootComponents.find(
             (component) => component.name === scene.component,
@@ -988,7 +980,7 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
           forEachOptional(pushPropsForComponent, underlyingComponent)
         }
       } else {
-        const element = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+        const element = findElementAtPath(path, rootComponents)
         if (element != null && isJSXElement(element)) {
           const noPathName = getJSXElementNameNoPathName(element.name)
           const underlyingComponent = rootComponents.find(
@@ -999,7 +991,7 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
       }
     })
     return propsUsed
-  })
+  }, 'useUsedPropsWithoutDefaults')
 
   const defaultProps = getDefaultPropsFromParsedControls(parsedPropertyControls)
   return findMissingDefaults(selectedComponentProps, defaultProps)
@@ -1016,7 +1008,7 @@ export function useInspectorWarningStatus(): boolean {
         return
       }
 
-      const element = findElementAtPath(view, rootComponents, store.editor.jsxMetadataKILLME)
+      const element = findElementAtPath(view, rootComponents)
       if (element == null || !isJSXElement(element)) {
         return
       } else {
@@ -1033,7 +1025,7 @@ export function useInspectorWarningStatus(): boolean {
       }
     })
     return hasLayoutInCSSProp
-  })
+  }, 'useInspectorWarningStatus')
 }
 
 export function useSelectedViews() {

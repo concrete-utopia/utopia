@@ -10,11 +10,11 @@ import {
   ComputedStyle,
 } from '../../../core/shared/element-template'
 import { CanvasMetadataName } from '../../../core/workers/parser-printer/parser-printer-parsing'
-import { testParseCode } from '../../../core/workers/parser-printer/parser-printer-test-utils'
+import { testParseCode } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import {
   enableWhyDidYouRenderOnComponent,
   setupReactWhyDidYouRender,
-} from '../../../utils/react-memoize-test-utils'
+} from '../../../utils/react-memoize.test-utils'
 import utils from '../../../utils/utils'
 import {
   backgroundImagesAndColorToCSSBackgroundLayerArray,
@@ -43,7 +43,7 @@ import {
   useInspectorStyleInfo,
 } from './property-path-hooks'
 import { betterReactMemo } from 'uuiui-deps'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { isParseSuccess, TemplatePath } from '../../../core/shared/project-file-types'
 
 interface RenderTestHookProps<T> {
   value: T
@@ -452,19 +452,6 @@ function getPropsForStyleProp(
     View
   } from "utopia-api";
   import { cake } from 'cake'
-  export var ${CanvasMetadataName} = {
-    scenes: [],
-    elementMetadata: {
-      aab: {
-        name: 'hello',
-        aspectRatioLocked: true,
-      },
-      "111": {
-        name: 'hi',
-        aspectRatioLocked: true,
-      }
-    },
-  }
   
   export var App = (props) => {
     return (
@@ -479,11 +466,11 @@ function getPropsForStyleProp(
   }`
 
   const parseResult = testParseCode(code)
-  if (!isRight(parseResult)) {
+  if (!isParseSuccess(parseResult)) {
     fail('expected parseResult to be Right')
     return null
   }
-  const appComponent = parseResult.value.topLevelElements[0]
+  const appComponent = parseResult.topLevelElements[0]
   if (!isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
     fail('expected the second topLevelElement to be the App component')
     return null

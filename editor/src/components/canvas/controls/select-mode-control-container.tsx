@@ -10,7 +10,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { TemplatePath, ScenePath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
-import * as EditorActions from '../../editor/actions/actions'
+import * as EditorActions from '../../editor/actions/action-creators'
 import { DuplicationState } from '../../editor/store/editor-state'
 import * as TP from '../../../core/shared/template-path'
 import {
@@ -36,7 +36,7 @@ import { LeftMenuTab } from '../../navigator/left-pane'
 import CanvasActions from '../canvas-actions'
 import { getOriginalCanvasFrames, createDuplicationNewUIDs } from '../canvas-utils'
 import { areYogaChildren } from './select-mode/yoga-utils'
-import { ComponentMetadata } from '../../../core/shared/element-template'
+import { JSXMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -51,7 +51,7 @@ export const SnappingThreshold = 5
 
 function getDistanceGuidelines(
   highlightedView: TemplatePath,
-  componentMetadata: ComponentMetadata[],
+  componentMetadata: JSXMetadata,
 ): Array<Guideline> {
   const frame = MetadataUtils.getFrameInCanvasCoords(highlightedView, componentMetadata)
   if (frame == null) {
@@ -62,6 +62,7 @@ function getDistanceGuidelines(
 }
 
 interface SelectModeControlContainerProps extends ControlProps {
+  setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
   keysPressed: KeysPressed
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   isDragging: boolean // set only when user already moves a cursor a little after a mousedown
@@ -127,13 +128,26 @@ export class SelectModeControlContainer extends React.Component<
       if (isMultiselect) {
         updatedSelection = TP.addPathIfMissing(target, this.props.selectedViews)
       }
-      let selectActions = [
-        EditorActions.clearHighlightedViews(),
-        EditorActions.selectComponents(updatedSelection, false),
-        EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
-        EditorActions.setRightMenuTab(RightMenuTab.Inspector),
-      ]
-      this.props.dispatch(selectActions, 'canvas')
+
+      this.props.setSelectedViewsLocally(updatedSelection)
+
+      /**
+       * As of November 2020, we need two nested requestAnimationFrames here,
+       * the first one is called almost immediately (before vsync),
+       * the second one is properly called in the next frame
+       */
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          let selectActions = [
+            EditorActions.clearHighlightedViews(),
+            EditorActions.selectComponents(updatedSelection, false),
+            EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
+            EditorActions.setRightMenuTab(RightMenuTab.Inspector),
+          ]
+          this.props.dispatch(selectActions, 'canvas')
+        })
+      })
+
       return updatedSelection
     }
   }
@@ -147,11 +161,7 @@ export class SelectModeControlContainer extends React.Component<
     if (
       // Only on left mouse down.
       originalEvent.buttons === 1 &&
-      !MetadataUtils.anyUnknownOrGeneratedElements(
-        this.props.rootComponents,
-        this.props.componentMetadata,
-        selectedViews,
-      )
+      !MetadataUtils.anyUnknownOrGeneratedElements(this.props.rootComponents, selectedViews)
     ) {
       if (this.props.xrayMode) {
         return
@@ -178,45 +188,64 @@ export class SelectModeControlContainer extends React.Component<
           }),
         )
 
-        const duplicate = originalEvent.altKey
-        const duplicateNewUIDs = duplicate
-          ? createDuplicationNewUIDs(
-              this.props.selectedViews,
-              this.props.componentMetadata,
-              this.props.rootComponents,
-            )
-          : null
+        const onMouseMove = (event: MouseEvent) => {
+          const cursorPosition = this.props.windowToCanvasPosition(event)
+          if (Utils.distance(start, cursorPosition.canvasPositionRaw) > 2) {
+            // actually start the drag state
+            const duplicate = event.altKey
+            const duplicateNewUIDs = duplicate
+              ? createDuplicationNewUIDs(
+                  this.props.selectedViews,
+                  this.props.componentMetadata,
+                  this.props.rootComponents,
+                )
+              : null
 
-        this.props.dispatch([
-          CanvasActions.createDragState(
-            moveDragState(
-              start,
-              null,
-              null,
-              originalFrames,
-              selectionArea,
-              !originalEvent.metaKey,
-              originalEvent.shiftKey,
-              duplicate,
-              isFeatureEnabled('Toolbar For Controls')
-                ? this.props.selectModeState === 'reparentGlobal'
-                : false,
-              isFeatureEnabled('Toolbar For Controls')
-                ? this.props.selectModeState === 'reparentMove'
-                : originalEvent.metaKey,
-              isFeatureEnabled('Toolbar For Controls')
-                ? this.props.selectModeState === 'reparentLocal'
-                : false,
-              duplicateNewUIDs,
-              start,
-              this.props.componentMetadata,
-              moveTargets,
-              isFeatureEnabled('Toolbar For Controls')
-                ? this.props.selectModeState === 'translate'
-                : false,
-            ),
-          ),
-        ])
+            removeMouseListeners()
+            this.props.dispatch([
+              CanvasActions.createDragState(
+                moveDragState(
+                  start,
+                  null,
+                  null,
+                  originalFrames,
+                  selectionArea,
+                  !originalEvent.metaKey,
+                  originalEvent.shiftKey,
+                  duplicate,
+                  isFeatureEnabled('Toolbar For Controls')
+                    ? this.props.selectModeState === 'reparentGlobal'
+                    : false,
+                  isFeatureEnabled('Toolbar For Controls')
+                    ? this.props.selectModeState === 'reparentMove'
+                    : originalEvent.metaKey,
+                  isFeatureEnabled('Toolbar For Controls')
+                    ? this.props.selectModeState === 'reparentLocal'
+                    : false,
+                  duplicateNewUIDs,
+                  start,
+                  this.props.componentMetadata,
+                  moveTargets,
+                  isFeatureEnabled('Toolbar For Controls')
+                    ? this.props.selectModeState === 'translate'
+                    : false,
+                ),
+              ),
+            ])
+          }
+        }
+
+        const onMouseUp = () => {
+          removeMouseListeners()
+        }
+
+        const removeMouseListeners = () => {
+          window.removeEventListener('mousemove', onMouseMove)
+          window.removeEventListener('mouseup', onMouseUp)
+        }
+
+        window.addEventListener('mousemove', onMouseMove)
+        window.addEventListener('mouseup', onMouseUp)
       }
     }
   }
@@ -278,21 +307,21 @@ export class SelectModeControlContainer extends React.Component<
     } else if (allElementsDirectlySelectable) {
       candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
     } else {
-      const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
+      const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
       let rootElementsToFilter: TemplatePath[] = []
       let dynamicScenesWithFragmentRootViews: ScenePath[] = []
       Utils.fastForEach(scenes, (path) => {
-        const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, path)
+        const scene = MetadataUtils.findSceneByTemplatePath(
+          this.props.componentMetadata.components,
+          path,
+        )
         const rootElements = scene?.rootElements
         if (
           MetadataUtils.isSceneTreatedAsGroup(scene) &&
           rootElements != null &&
           rootElements.length > 1
         ) {
-          rootElementsToFilter = [
-            ...rootElementsToFilter,
-            ...rootElements.map((element) => element.templatePath),
-          ]
+          rootElementsToFilter.push(...rootElements)
           dynamicScenesWithFragmentRootViews.push(path)
         }
       })
@@ -314,7 +343,7 @@ export class SelectModeControlContainer extends React.Component<
       })
 
       const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
-      const uniqueSelectableViews = R.uniqWith<TemplatePath>(TP.pathsEqual, selectableViews)
+      const uniqueSelectableViews = uniqBy<TemplatePath>(selectableViews, TP.pathsEqual)
 
       const selectableViewsFiltered = uniqueSelectableViews.filter((view) => {
         // I kept the group-like behavior here that the user can't single-click select the parent group, even though it is a view now
@@ -397,7 +426,7 @@ export class SelectModeControlContainer extends React.Component<
         return 'none'
       } else {
         const element = MetadataUtils.getElementByInstancePathMaybe(
-          this.props.componentMetadata,
+          this.props.componentMetadata.elements,
           view,
         )
         if (MetadataUtils.isFlowElement(element)) {
@@ -527,7 +556,7 @@ export class SelectModeControlContainer extends React.Component<
         }
 
         const currentInstance = MetadataUtils.getElementByInstancePathMaybe(
-          this.props.componentMetadata,
+          this.props.componentMetadata.elements,
           current,
         )
         if (currentInstance == null) {
@@ -566,7 +595,10 @@ export class SelectModeControlContainer extends React.Component<
           TP.pathsEqual(TP.parentPath(target), view) &&
           TP.isInstancePath(view) &&
           MetadataUtils.isFlexLayoutedContainer(
-            MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, view),
+            MetadataUtils.getElementByInstancePathMaybe(
+              this.props.componentMetadata.elements,
+              view,
+            ),
           )
         )
       }) && !cmdIsPressed
@@ -830,7 +862,7 @@ export class SelectModeControlContainer extends React.Component<
       const targets = TP.filterScenes(this.props.selectedViews)
       if (targets.length > 0) {
         const targetInstance = MetadataUtils.getElementByInstancePathMaybe(
-          this.props.componentMetadata,
+          this.props.componentMetadata.elements,
           targets[0],
         )
         if (targetInstance != null) {
@@ -886,12 +918,15 @@ export class SelectModeControlContainer extends React.Component<
     }
     return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(this.props.componentMetadata, target)
+        const scene = MetadataUtils.findSceneByTemplatePath(
+          this.props.componentMetadata.components,
+          target,
+        )
         let rootHasStyleProp = false
         if (scene != null) {
           rootHasStyleProp = scene.rootElements.some((rootElement) => {
             return this.props.elementsThatRespectLayout.some((path) => {
-              return TP.pathsEqual(path, rootElement.templatePath)
+              return TP.pathsEqual(path, rootElement)
             })
           })
         }
@@ -905,7 +940,7 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata)
+    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
     let labelDirectlySelectable = true
     let draggableViews = this.getSelectableViews(allElementsDirectlySelectable)
     if (!this.props.highlightsEnabled) {
@@ -918,7 +953,7 @@ export class SelectModeControlContainer extends React.Component<
     if (this.props.selectedViews.length === 1 && !TP.isScenePath(this.props.selectedViews[0])) {
       const path = this.props.selectedViews[0]
       const element = MetadataUtils.getElementByInstancePathMaybe(
-        this.props.componentMetadata,
+        this.props.componentMetadata.elements,
         path,
       )
       repositionOnly =

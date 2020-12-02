@@ -300,10 +300,11 @@ export function findJSXElementChildAtPath(
     element: JSXElementChild,
     workingPath: Array<string>,
   ): JSXElementChild | null {
-    const [firstUIDOrIndex, ...tailPath] = workingPath
+    const firstUIDOrIndex = workingPath[0]
     if (isJSXElement(element)) {
       const uid = getUtopiaID(element)
       if (uid === firstUIDOrIndex) {
+        const tailPath = workingPath.slice(1)
         if (tailPath.length === 0) {
           // this is the element we want
           return element

@@ -13,21 +13,23 @@ import {
   defaultPropsParam,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
-import { foldEither, forEachRight, right } from '../../shared/either'
-import { ParseSuccess } from '../../shared/project-file-types'
-import { defaultCanvasMetadata, parseSuccess } from '../common/project-file-utils'
+import { forEachRight } from '../../shared/either'
+import {
+  addModifierExportToDetail,
+  addNamedExportToDetail,
+  EmptyExportsDetail,
+  foldParsedTextFile,
+  ParseSuccess,
+} from '../../shared/project-file-types'
+import { parseSuccess } from '../common/project-file-utils'
 import { applyPrettier } from './prettier-utils'
 import {
   clearParseResultUniqueIDs,
   JustImportViewAndReact,
   testParseCode,
   testParseModifyPrint,
-} from './parser-printer-test-utils'
-import {
-  EmptyUtopiaCanvasComponent,
-  BakedInStoryboardUID,
-  BakedInStoryboardVariableName,
-} from '../../model/scene-utils'
+} from './parser-printer.test-utils'
+import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 
 describe('JSX parser', () => {
   it('should add in uid attributes for elements', () => {
@@ -57,7 +59,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       false,
     ).formatted
     const parseResult = testParseCode(code)
-    foldEither(
+    foldParsedTextFile(
       (failure) => fail(failure),
       (success) => {
         const firstComponent = success.topLevelElements[0]
@@ -80,6 +82,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           fail('Not a component at the root.')
         }
       },
+      (unparsed) => fail(unparsed),
       parseResult,
     )
   })
@@ -178,7 +181,7 @@ export var whatever = props => (
       true,
       defaultPropsParam,
       [],
-      jsxElement('div', { 'data-uid': jsxAttributeValue('abc') }, [], null),
+      jsxElement('div', { 'data-uid': jsxAttributeValue('abc') }, []),
       null,
     )
 
@@ -192,22 +195,18 @@ export var whatever = props => (
         version: 3,
         file: 'code.tsx',
       }),
-      { aab: jsxElement('MyComp', { 'data-uid': jsxAttributeValue('aab') }, [], null) },
+      { aab: jsxElement('MyComp', { 'data-uid': jsxAttributeValue('aab') }, []) },
     )
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [codeBlock], null)
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [codeBlock])
     const whatever = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
-        code,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -263,12 +262,10 @@ export var whatever = (props) => {
                 ),
               },
               [],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const jsCode = `const arr = [{ n: 1 }];`
     const transpiledJsCode = `var arr = [{
@@ -295,17 +292,13 @@ return { arr: arr };`
       arbitraryBlock,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
-        code,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -361,12 +354,10 @@ export var whatever = (props) => {
                 ),
               },
               [],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const jsCode = `const arr = [{ a: { n: 1 } }];`
     const transpiledJsCode = `var arr = [{
@@ -395,17 +386,13 @@ return { arr: arr };`
       arbitraryBlock,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
-        code,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -466,12 +453,10 @@ export var whatever = (props) => {
                 ),
               },
               [],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const jsCode = `const arr = [[1]];`
     const transpiledJsCode = `var arr = [[1]];
@@ -496,17 +481,13 @@ return { arr: arr };`
       arbitraryBlock,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
-        code,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -568,29 +549,22 @@ export var whatever = (props) => {
                       {},
                     ),
                   ],
-                  null,
                 ),
               ],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
-        code,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -651,12 +625,10 @@ export var whatever = (props) => {
                 ),
               },
               [],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const jsCode = `const arr = [ [ [ 1 ] ] ]`
     const transpiledJsCode = `var arr = [[[1]]];
@@ -681,17 +653,13 @@ return { arr: arr };`
       arbitraryBlock,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
-        code,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -753,29 +721,22 @@ export var whatever = (props) => {
                       {},
                     ),
                   ],
-                  null,
                 ),
               ],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null)
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
-        code,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -836,12 +797,10 @@ export var whatever = (props) => {
                 ),
               },
               [],
-              null,
             ),
           },
         ),
       ],
-      null,
     )
     const jsCode = `const arr = [ [ [ 1 ] ] ]`
     const transpiledJsCode = `var arr = [[[1]]];
@@ -866,17 +825,13 @@ return { arr: arr };`
       arbitraryBlock,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = right(
-      parseSuccess(
-        JustImportViewAndReact,
-        [...topLevelElements, EmptyUtopiaCanvasComponent],
-        right(defaultCanvasMetadata()),
-        false,
-        code,
-        expect.objectContaining({}),
-        null,
-        null,
-      ),
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      [...topLevelElements],
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })

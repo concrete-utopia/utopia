@@ -9,7 +9,7 @@ import {
 import { NO_OP } from '../../core/shared/utils'
 import { createPersistentModel, delay } from '../../utils/test-utils'
 import { generateUID } from '../../core/shared/uid-utils'
-import { UIJSFile } from '../../core/shared/project-file-types'
+import { TextFile } from '../../core/shared/project-file-types'
 import { SaveProjectResponse } from './server'
 import { localProjectKey } from '../../common/persistence'
 import { MockUtopiaTsWorkers } from '../../core/workers/workers'

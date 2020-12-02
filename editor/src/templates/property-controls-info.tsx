@@ -3,7 +3,7 @@ import { PropertyControlsInfo } from '../components/custom-code/code-file'
 import {
   propertyControlsIFrameReady,
   updatePropertyControlsInfo,
-} from '../components/editor/actions/actions'
+} from '../components/editor/actions/action-creators'
 import { dependenciesWithEditorRequirements } from '../components/editor/npm-dependency/npm-dependency'
 import { initPropertyControlsProcessor } from '../core/property-controls/property-controls-processor'
 import {
@@ -55,6 +55,7 @@ const initPropertyControlsWorker = () => {
       propertyControlsProcessor(
         npmDependencies,
         model.nodeModulesUpdate,
+        projectContents,
         bundledProjectFiles,
         model.exportsInfo,
       )

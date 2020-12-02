@@ -32,7 +32,7 @@ import {
 import { LeftMenuTab } from '../navigator/left-pane'
 import { toggleTextFormatting } from '../text-utils'
 import { EditorAction, EditorDispatch } from './action-types'
-import * as EditorActions from './actions/actions'
+import * as EditorActions from './actions/action-creators'
 import {
   defaultEllipseElement,
   defaultRectangleElement,
@@ -184,7 +184,7 @@ function getTextEditorTarget(editor: EditorState): InstancePath | null {
 
     const components = getOpenUtopiaJSXComponentsFromState(editor)
     const imports = getOpenImportsFromState(editor)
-    const element = findElementAtPath(target, components, editor.jsxMetadataKILLME)
+    const element = findElementAtPath(target, components)
     if (element != null && isUtopiaAPITextElement(element, imports)) {
       return target
     } else {
@@ -726,7 +726,7 @@ export function handleKeyDown(
       return []
     } else {
       switch (openFile.type) {
-        case 'UI_JS_FILE':
+        case 'TEXT_FILE':
           return getUIFileActions()
         default:
           return []
@@ -785,7 +785,7 @@ export function handleKeyUp(
       return []
     } else {
       switch (openFile.type) {
-        case 'UI_JS_FILE':
+        case 'TEXT_FILE':
           return getUIFileActions()
         default:
           return []

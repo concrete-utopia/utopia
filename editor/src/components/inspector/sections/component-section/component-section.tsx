@@ -32,11 +32,12 @@ import { foldEither } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
 import { getParseErrorDetails, ParseError } from '../../../../utils/value-parser-utils'
 import { InfoBox } from '../../../common/notices'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
-import { showContextMenu } from '../../../editor/actions/actions'
+import { showContextMenu } from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import { InstanceContextMenu } from '../../common/instance-context-menu'
@@ -45,7 +46,6 @@ import {
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import {
-  useKeepReferenceEqualityIfPossible,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
   useUsedPropsWithoutDefaults,
@@ -496,7 +496,7 @@ export const ComponentSectionInner = betterReactMemo(
     const propsUsedWithoutControls = useKeepReferenceEqualityIfPossible(
       useUsedPropsWithoutControls(),
     )
-    const dispatch = useEditorState((state) => state.dispatch)
+    const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
     const onResetClicked = React.useCallback(
       (event: React.MouseEvent<HTMLElement>) => {
         dispatch(

@@ -41,7 +41,7 @@ import Utils from '../../utils/utils'
 import { isAspectRatioLockedNew } from '../aspect-ratio'
 import { setFocus } from '../common/actions'
 import { Alignment, Distribution, EditorAction } from '../editor/action-types'
-import * as EditorActions from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
 import {
   alignSelectedViews,
   distributeSelectedViews,
@@ -54,7 +54,7 @@ import {
   unsetSceneProp,
   unwrapLayoutable,
   wrapInLayoutable,
-} from '../editor/actions/actions'
+} from '../editor/actions/action-creators'
 import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
 import {
   getOpenImportsFromState,
@@ -63,12 +63,7 @@ import {
 } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { CSSPosition } from './common/css-utils'
-import {
-  InspectorCallbackContext,
-  InspectorPropsContext,
-  useKeepReferenceEqualityIfPossible,
-  useKeepShallowReferenceEquality,
-} from './common/property-path-hooks'
+import { InspectorCallbackContext, InspectorPropsContext } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
 import { ElementPathElement } from './sections/header-section/element-path'
@@ -93,6 +88,11 @@ import {
 } from './sections/target-selector-section'
 import { addStyleSheetToPage } from '../../core/shared/dom-utils'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
+import { arrayEquals } from '../../core/shared/utils'
+import {
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from '../../utils/react-performance'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -152,7 +152,7 @@ AlignDistributeButton.displayName = 'AlignDistributeButton'
 const AlignmentButtons = betterReactMemo(
   'AlignmentButtons',
   (props: { numberOfTargets: number }) => {
-    const dispatch = useEditorState((store) => store.dispatch)
+    const dispatch = useEditorState((store) => store.dispatch, 'AlignmentButtons dispatch')
     const alignSelected = React.useCallback(
       (alignment: Alignment) => {
         dispatch([alignSelectedViews(alignment)], 'everyone')
@@ -308,17 +308,16 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       anyComponentsInner =
         anyComponentsInner ||
         MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
-      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(rootMetadata, view)
+      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
+        rootMetadata.elements,
+        view,
+      )
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
         // its own compared to the props.
         aspectRatioLockedInner = aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement)
 
-        const elementOriginType = MetadataUtils.getElementOriginType(
-          rootComponents,
-          rootMetadata,
-          view,
-        )
+        const elementOriginType = MetadataUtils.getElementOriginType(rootComponents, view)
         if (elementOriginType === 'unknown-element') {
           anyUnknownElementsInner = true
         }
@@ -349,7 +348,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
       aspectRatioLocked: aspectRatioLockedInner,
     }
-  })
+  }, 'Inspector')
   const instancePaths = useKeepReferenceEqualityIfPossible(
     selectedViews.filter((view) => !TP.isScenePath(view)) as InstancePath[],
   )
@@ -452,25 +451,31 @@ const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarge
 export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
   'InspectorEntryPoint',
   () => {
-    const { selectedViews, jsxMetadataKILLME } = useEditorState((store) => {
-      return {
-        selectedViews: store.editor.selectedViews,
-        jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      }
-    })
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'InspectorEntryPoint selectedViews',
+    )
+    const rootViewsForScene: Array<TemplatePath> = useEditorState(
+      (store) => {
+        const possibleRootComponent = store.editor.jsxMetadataKILLME.components.find((m) =>
+          TP.pathsEqual(m.scenePath, selectedViews[0]),
+        )
+        if (possibleRootComponent != null) {
+          return possibleRootComponent.rootElements
+        } else {
+          return []
+        }
+      },
+      'InspectorEntryPoint',
+      (oldTemplatePaths, newTemplatePaths) => {
+        return arrayEquals(oldTemplatePaths, newTemplatePaths, TP.pathsEqual)
+      },
+    )
 
     const showSceneInspector =
       selectedViews[0] != null &&
       TP.depth(selectedViews[0]) === 1 &&
       TP.isScenePath(selectedViews[0])
-
-    let rootViewsForScene: Array<TemplatePath> = []
-    const possibleRootComponent = jsxMetadataKILLME.find((m) =>
-      TP.pathsEqual(m.scenePath, selectedViews[0]),
-    )
-    if (possibleRootComponent != null) {
-      rootViewsForScene = possibleRootComponent.rootElements.map((e) => e.templatePath)
-    }
 
     if (showSceneInspector) {
       return (
@@ -502,6 +507,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
         imports: getOpenImportsFromState(store.editor),
       }
     },
+    'SingleInspectorEntryPoint',
   )
 
   let inspectorModel: InspectorModel = {
@@ -518,13 +524,16 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
   Utils.fastForEach(TP.filterScenes(selectedViews), (path) => {
     // TODO multiselect
-    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
+    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
+      jsxMetadataKILLME.elements,
+      path,
+    )
     if (elementMetadata != null) {
-      const jsxElement = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+      const jsxElement = findElementAtPath(path, rootComponents)
       const parentPath = TP.parentPath(path)
       const parentElement =
         parentPath != null && TP.isInstancePath(parentPath)
-          ? findElementAtPath(parentPath, rootComponents, jsxMetadataKILLME)
+          ? findElementAtPath(parentPath, rootComponents)
           : null
 
       const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadataKILLME, path)
@@ -617,7 +626,8 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   // FIXME TODO HACK until we have better memoization in the Canvas Spy, we sacrifice using R.equals once
   // in order to prevent a big rerender of the inspector
 
-  const inspectorModelMemoized = useKeepReferenceEqualityIfPossible(inspectorModel)
+  const inspectorModelReferentiallyStable = useKeepReferenceEqualityIfPossible(inspectorModel)
+  const targetsReferentiallyStable = useKeepReferenceEqualityIfPossible(targets)
 
   const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
     getElementsToTarget(selectedViews),
@@ -633,7 +643,10 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
         // TODO Scene Implementation
         if (TP.isInstancePath(path)) {
-          const component = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
+          const component = MetadataUtils.getElementByInstancePathMaybe(
+            jsxMetadataKILLME.elements,
+            path,
+          )
           if (component != null) {
             elements.push({
               name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
@@ -641,7 +654,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
             })
           }
         } else {
-          const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME, path)
+          const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
           if (scene != null) {
             elements.push({
               name: scene.label,
@@ -678,7 +691,9 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     [dispatch],
   )
 
-  const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(targets[0].path)
+  const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(
+    targetsReferentiallyStable[0].path,
+  )
 
   const onSelectTarget = React.useCallback((targetPath: Array<string>) => {
     setSelectedTarget(targetPath)
@@ -757,9 +772,9 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
         selectedViews={selectedViews}
-        input={inspectorModelMemoized}
+        input={inspectorModelReferentiallyStable}
         onSubmitValue={onSubmitValue}
-        targets={targets}
+        targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
         elementPath={elementPath}
         onSelect={onSelect}
@@ -789,7 +804,7 @@ export const InspectorContextProvider = betterReactMemo<{
       jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
       rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
     }
-  })
+  }, 'InspectorContextProvider')
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newRealValues: Array<{ [key: string]: any }> = []
@@ -803,7 +818,10 @@ export const InspectorContextProvider = betterReactMemo<{
         newEditedMultiSelectedProps.push(selectedSceneElement.props)
       }
     } else {
-      const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
+      const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
+        jsxMetadataKILLME.elements,
+        path,
+      )
       if (elementMetadata != null) {
         if (elementMetadata.computedStyle == null) {
           /**
@@ -814,7 +832,7 @@ export const InspectorContextProvider = betterReactMemo<{
           return
         }
 
-        const jsxElement = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+        const jsxElement = findElementAtPath(path, rootComponents)
         const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
         newEditedMultiSelectedProps.push(jsxAttributes)
         newRealValues.push(elementMetadata.props)

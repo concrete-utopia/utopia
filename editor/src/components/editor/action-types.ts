@@ -1,10 +1,10 @@
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
   JSXAttribute,
   JSXElement,
   JSXElementName,
+  JSXMetadata,
   SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import { KeysPressed, Key } from '../../utils/keyboard'
@@ -22,7 +22,7 @@ import {
   ScenePath,
   StaticElementPath,
   TemplatePath,
-  UIJSFile,
+  TextFile,
   NodeModules,
   Imports,
 } from '../../core/shared/project-file-types'
@@ -42,7 +42,6 @@ import type {
 import {
   DuplicationState,
   EditorState,
-  EditorTab,
   ErrorMessages,
   ModalDialog,
   OriginalFrame,
@@ -51,6 +50,7 @@ import {
 } from './store/editor-state'
 import { Notice } from '../common/notices'
 import { BuildType } from '../../core/workers/ts/ts-worker'
+import type { EditorTab } from './store/editor-tabs'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
 export interface PropertyTarget {
@@ -311,7 +311,7 @@ export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
   elements: JSXElement[]
   originalTemplatePaths: TemplatePath[]
-  targetOriginalContextMetadata: ComponentMetadata[]
+  targetOriginalContextMetadata: JSXMetadata
 }
 
 export interface CopySelectionToClipboard {
@@ -427,12 +427,6 @@ export type SaveAsset = {
   imageDetails: SaveImageDetails | null
 }
 
-export type SaveCursorPosition = {
-  action: 'SAVE_CURSOR_POSITION'
-  filename: string
-  cursorPosition: CursorPosition
-}
-
 export type ResetPins = {
   action: 'RESET_PINS'
   target: InstancePath
@@ -441,7 +435,7 @@ export type ResetPins = {
 export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: TemplatePath[]
-  layoutSystem: LayoutSystem | null
+  layoutSystem: null
 }
 
 export interface UnwrapGroupOrView {
@@ -573,7 +567,7 @@ export interface UpdateFile {
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
   filePath: string
-  file: UIJSFile
+  file: TextFile
   codeOrModel: 'Code' | 'Model'
 }
 
@@ -597,12 +591,8 @@ export interface DeleteFile {
   filename: string
 }
 
-export interface AddUIJSFile {
-  action: 'ADD_UI_JS_FILE'
-}
-
-export interface AddCodeFile {
-  action: 'ADD_CODE_FILE'
+export interface AddTextFile {
+  action: 'ADD_TEXT_FILE'
   fileName: string
   parentPath: string
 }
@@ -620,6 +610,12 @@ export interface SetCodeEditorBuildErrors {
 export interface SetCodeEditorLintErrors {
   action: 'SET_CODE_EDITOR_LINT_ERRORS'
   lintErrors: ErrorMessages
+}
+
+export interface SendLinterRequestMessage {
+  action: 'SEND_LINTER_REQUEST_MESSAGE'
+  filePath: string
+  content: string
 }
 
 export interface SaveDOMReport {
@@ -775,6 +771,10 @@ export interface PropertyControlsIFrameReady {
   action: 'PROPERTY_CONTROLS_IFRAME_READY'
 }
 
+export interface AddStoryboardFile {
+  action: 'ADD_STORYBOARD_FILE'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -832,7 +832,6 @@ export type EditorAction =
   | ToggleInterfaceDesignerAdditionalControls
   | SaveCurrentFile
   | SaveAsset
-  | SaveCursorPosition
   | ResetPins
   | WrapInView
   | UnwrapGroupOrView
@@ -866,11 +865,11 @@ export type EditorAction =
   | ClearImageFileBlob
   | AddFolder
   | DeleteFile
-  | AddUIJSFile
-  | AddCodeFile
+  | AddTextFile
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
+  | SendLinterRequestMessage
   | SaveDOMReport
   | SetProp
   | SetPropWithElementPath
@@ -904,6 +903,7 @@ export type EditorAction =
   | UpdatePropertyControlsInfo
   | PropertyControlsIFrameReady
   | UpdateSimpleTextChild
+  | AddStoryboardFile
 
 export type DispatchPriority =
   | 'everyone'

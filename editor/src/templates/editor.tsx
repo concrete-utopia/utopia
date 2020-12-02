@@ -20,7 +20,7 @@ import {
   isLoggedIn,
   notLoggedIn,
 } from '../components/editor/action-types'
-import * as EditorActions from '../components/editor/actions/actions'
+import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
@@ -49,6 +49,9 @@ import {
   EditorStore,
   getMainUIFromModel,
   defaultUserState,
+  EditorState,
+  DerivedState,
+  UserState,
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
@@ -77,6 +80,12 @@ import {
 } from '../components/canvas/ui-jsx-canvas'
 import { isLeft } from '../core/shared/either'
 import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
+import { UtopiaTsWorkers } from '../core/workers/common/worker-types'
+import {
+  isPropertyControlsIFrameReady,
+  isSendPreviewModel,
+  isUpdatePropertyControlsInfo,
+} from '../components/editor/actions/actions'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -104,9 +113,7 @@ export class Editor {
     startPreviewConnectedMonitoring(this.boundDispatch)
 
     let emptyEditorState = createEditorState(this.boundDispatch)
-    const fromScratchResult = deriveState(emptyEditorState, null, false, null)
-    emptyEditorState = fromScratchResult.editor
-    const derivedState = fromScratchResult.derived
+    const derivedState = deriveState(emptyEditorState, null, null)
 
     const history = History.init(emptyEditorState, derivedState)
 
@@ -130,11 +137,11 @@ export class Editor {
       dispatch: this.boundDispatch,
     }
 
-    const [storeHook, api] = create<EditorStore>((set) => this.storedState)
+    const storeHook = create<EditorStore>((set) => this.storedState)
 
     this.utopiaStoreHook = storeHook
-    this.updateStore = api.setState
-    this.utopiaStoreApi = api
+    this.updateStore = storeHook.setState
+    this.utopiaStoreApi = storeHook
 
     const handleWorkerMessage = (msg: OutgoingWorkerMessage) => {
       switch (msg.type) {
@@ -317,12 +324,12 @@ export class Editor {
 
   onMessage = (event: MessageEvent): void => {
     const eventData = event.data
-    if (EditorActions.isSendPreviewModel(eventData)) {
+    if (isSendPreviewModel(eventData)) {
       previewIsAlive(InternalPreviewTimeout)
       this.boundDispatch([eventData], 'noone')
-    } else if (EditorActions.isPropertyControlsIFrameReady(eventData)) {
+    } else if (isPropertyControlsIFrameReady(eventData)) {
       this.boundDispatch([eventData], 'noone')
-    } else if (EditorActions.isUpdatePropertyControlsInfo(eventData)) {
+    } else if (isUpdatePropertyControlsInfo(eventData)) {
       this.boundDispatch([eventData], 'noone')
     }
   }

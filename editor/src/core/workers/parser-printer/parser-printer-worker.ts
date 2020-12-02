@@ -1,4 +1,8 @@
-import { ParseSuccess, ParseResult, HighlightBoundsForUids } from '../../shared/project-file-types'
+import {
+  ParseSuccess,
+  ParsedTextFile,
+  HighlightBoundsForUids,
+} from '../../shared/project-file-types'
 import {
   printCodeOptions,
   printCode,
@@ -58,10 +62,10 @@ export function createParseFileMessage(filename: string, content: string): Parse
 
 export interface ParseFileResultMessage {
   type: 'parsefileresult'
-  parseResult: ParseResult
+  parseResult: ParsedTextFile
 }
 
-function createParseFileResultMessage(parseResult: ParseResult): ParseFileResultMessage {
+function createParseFileResultMessage(parseResult: ParsedTextFile): ParseFileResultMessage {
   return {
     type: 'parsefileresult',
     parseResult: parseResult,
@@ -129,6 +133,7 @@ function printCodeAsync(
     parseSuccess.imports,
     parseSuccess.topLevelElements,
     parseSuccess.jsxFactoryFunction,
+    parseSuccess.exportsDetail,
   )
   const highlightBoundsWithUID = getHighlightBoundsWithUID('with-uids', withUIDs)
 
@@ -137,6 +142,7 @@ function printCodeAsync(
     parseSuccess.imports,
     parseSuccess.topLevelElements,
     parseSuccess.jsxFactoryFunction,
+    parseSuccess.exportsDetail,
   )
   const highlightBoundsWithoutUID = getHighlightBoundsWithoutUID('without-uids', withoutUIDs)
 

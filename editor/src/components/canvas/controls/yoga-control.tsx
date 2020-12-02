@@ -150,7 +150,6 @@ export class YogaControls extends React.Component<YogaControlsProps> {
     })
     const unknownElementsSelected = MetadataUtils.anyUnknownOrGeneratedElements(
       this.props.rootComponents,
-      this.props.componentMetadata,
       this.props.selectedViews,
     )
     const showResizeControl =
@@ -161,7 +160,10 @@ export class YogaControls extends React.Component<YogaControlsProps> {
       const selectedView = targets[0]
       const instance = TP.isScenePath(selectedView)
         ? null
-        : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
+        : MetadataUtils.getElementByInstancePathMaybe(
+            this.props.componentMetadata.elements,
+            selectedView,
+          )
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
       const isPositionRelative = instance?.specialSizeMeasurements.position === 'relative'
       color = getSelectionColor(
@@ -183,7 +185,10 @@ export class YogaControls extends React.Component<YogaControlsProps> {
             {...this.props}
             target={targets[0]}
             targetElement={
-              MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, targets[0])!
+              MetadataUtils.getElementByInstancePathMaybe(
+                this.props.componentMetadata.elements,
+                targets[0],
+              )!
             }
             color={color}
           />

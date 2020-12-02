@@ -15,9 +15,11 @@ import {
 import { betterReactMemo } from 'uuiui-deps'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { LoginState } from '../../common/user'
+import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { shareURLForProject } from '../../core/shared/utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
-import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/actions'
+import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { EditorState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { LeftMenuTab } from '../navigator/left-pane'
@@ -95,7 +97,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
       projectName: store.editor.projectName,
       isPreviewPaneVisible: store.editor.preview.visible,
     }
-  })
+  }, 'Menubar')
 
   const onClickTab = React.useCallback(
     (menuTab: LeftMenuTab) => {
@@ -127,6 +129,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
     () => dispatch([setPanelVisibility('preview', !isPreviewPaneVisible)]),
     [dispatch, isPreviewPaneVisible],
   )
+
+  const onReparseClick = useReParseOpenProjectFile()
 
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
@@ -180,6 +184,11 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
       </FlexColumn>
+      {isFeatureEnabled('Re-parse Project Button') ? (
+        <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+          <a onClick={onReparseClick}>R</a>
+        </Tile>
+      ) : null}
       <Tile style={{ marginTop: 12, marginBottom: 12 }}>
         <a href='/projects'>
           <Avatar loginState={userState.loginState} size={28} />

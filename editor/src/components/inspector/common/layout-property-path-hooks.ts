@@ -24,7 +24,7 @@ import { LocalRectangle } from '../../../core/shared/math-utils'
 import { InstancePath } from '../../../core/shared/project-file-types'
 import * as TP from '../../../core/shared/template-path'
 import Utils from '../../../utils/utils'
-import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/actions'
+import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
 import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { getFullFrame } from '../../frame'
@@ -274,7 +274,7 @@ export interface UsePinTogglingResult {
 }
 
 export function usePinToggling(): UsePinTogglingResult {
-  const dispatch = useEditorState((store) => store.dispatch)
+  const dispatch = useEditorState((store) => store.dispatch, 'usePinToggling dispatch')
   const selectedViewsRef = useRefSelectedViews()
   const jsxMetadataRef = useRefEditorState((store) => {
     return store.editor.jsxMetadataKILLME
@@ -286,36 +286,40 @@ export function usePinToggling(): UsePinTogglingResult {
 
   const elementsRef = useRefEditorState((store) =>
     TP.filterScenes(selectedViewsRef.current).map((e) =>
-      MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadataKILLME, e),
+      MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadataKILLME.elements, e),
     ),
   )
 
-  const elementFrames = useEditorState((store): ReadonlyArray<Frame> => {
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
+  const elementFrames = useEditorState(
+    (store): ReadonlyArray<Frame> => {
+      const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
 
-    const jsxElements = TP.filterScenes(selectedViewsRef.current).map((path) =>
-      findElementAtPath(path, rootComponents, store.editor.jsxMetadataKILLME),
-    )
+      const jsxElements = TP.filterScenes(selectedViewsRef.current).map((path) =>
+        findElementAtPath(path, rootComponents),
+      )
 
-    return jsxElements.map((elem) => {
-      if (elem != null && isJSXElement(elem)) {
-        return AllFramePoints.reduce<Frame>((working, point) => {
-          const layoutProp = pinnedPropForFramePoint(point)
-          const value = getLayoutProperty(layoutProp, right(elem.props))
-          if (isLeft(value)) {
-            return working
-          } else {
-            return {
-              ...working,
-              [point]: value.value,
+      return jsxElements.map((elem) => {
+        if (elem != null && isJSXElement(elem)) {
+          return AllFramePoints.reduce<Frame>((working, point) => {
+            const layoutProp = pinnedPropForFramePoint(point)
+            const value = getLayoutProperty(layoutProp, right(elem.props))
+            if (isLeft(value)) {
+              return working
+            } else {
+              return {
+                ...working,
+                [point]: value.value,
+              }
             }
-          }
-        }, {})
-      } else {
-        return {}
-      }
-    })
-  }, fastDeepEqual)
+          }, {})
+        } else {
+          return {}
+        }
+      })
+    },
+    'usePinToggling elementFrames',
+    fastDeepEqual,
+  )
 
   const framePins = React.useMemo((): FramePinsInfo => {
     const allHorizontalPoints = HorizontalFramePoints.filter((p) => allPinsMatch(p, elementFrames))

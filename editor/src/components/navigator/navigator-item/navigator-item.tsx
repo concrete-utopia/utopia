@@ -6,8 +6,7 @@ import { betterReactMemo } from 'uuiui-deps'
 import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
 import { ElementOriginType, Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
-import * as EditorActions from '../../editor/actions/actions'
-import { useKeepReferenceEqualityIfPossible } from '../../inspector/common/property-path-hooks'
+import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
@@ -18,6 +17,7 @@ import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { WarningIcon } from '../../../uuiui/warning-icon'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -43,7 +43,9 @@ export interface NavigatorItemInnerProps {
   noOfChildren: number
   isAutosizingView: boolean
   label: string
-  element: ElementInstanceMetadata | null
+  isFlexLayoutedContainer: boolean
+  yogaDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
+  yogaWrap: 'wrap' | 'wrap-reverse' | 'nowrap'
   staticElementName: JSXElementName | null
   componentInstance: boolean
   dispatch: EditorDispatch
@@ -143,9 +145,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
   'NavigatorItem',
   (props) => {
     const {
-      staticElementName,
       label,
-      element,
       isAutosizingView,
       dispatch,
       isHighlighted,
@@ -159,6 +159,9 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       getSelectedViewsInRange,
       index,
       elementWarnings,
+      isFlexLayoutedContainer,
+      yogaDirection,
+      yogaWrap,
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
@@ -212,7 +215,9 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
           {...props}
           isAutosizingView={isAutosizingView}
           collapsed={collapsed}
-          element={element}
+          isFlexLayoutedContainer={isFlexLayoutedContainer}
+          yogaDirection={yogaDirection}
+          yogaWrap={yogaWrap}
           path={templatePath}
           color={resultingStyle.iconColor}
           selected={selected}

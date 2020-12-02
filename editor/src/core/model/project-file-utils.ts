@@ -5,28 +5,27 @@ import * as PP from '../shared/property-path'
 import { isText } from 'istextorbinary'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import Utils from '../../utils/utils'
-import { bimapEither, foldEither, mapEither } from '../shared/either'
 import {
-  CanvasMetadata,
-  CanvasMetadataParseResult,
-  CodeFile,
   Directory,
-  ElementCanvasMetadata,
   HighlightBoundsForUids,
   ImageFile,
   Imports,
-  isCodeFile,
   isParseFailure,
-  isUIJSFile,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   ProjectContents,
   ProjectFile,
   ProjectFileType,
   RevisionsState,
   SceneMetadata,
-  UIJSFile,
+  TextFile,
   AssetFile,
+  foldParsedTextFile,
+  isTextFile,
+  textFile,
+  TextFileContents,
+  textFileContents,
+  unparsed,
 } from '../shared/project-file-types'
 import {
   isJSXElement,
@@ -51,10 +50,6 @@ import {
   ProjectContentTreeRoot,
   transformContentsTree,
 } from '../../components/assets'
-
-export function emptyElementCanvasMetadata(): ElementCanvasMetadata {
-  return {}
-}
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -182,13 +177,6 @@ export function getOrDefaultScenes(parsedSuccess: ParseSuccess): UtopiaJSXCompon
   return defaultEmptyUtopiaComponent
 }
 
-export function updateCanvasMetadataParseResult(
-  transform: (metadata: CanvasMetadata) => CanvasMetadata,
-  parseResult: CanvasMetadataParseResult,
-): CanvasMetadataParseResult {
-  return mapEither(transform, parseResult)
-}
-
 export function getComponentsFromTopLevelElements(
   topLevelElements: Array<TopLevelElement>,
 ): Array<UtopiaJSXComponent> {
@@ -209,43 +197,33 @@ export const getUtopiaJSXComponentsFromSuccess = Utils.memoize(
   getUtopiaJSXComponentsFromSuccessInner,
 )
 
-export function getHighlightBoundsFromParseResult(result: ParseResult): HighlightBoundsForUids {
-  if (isParseFailure(result)) {
-    return {}
-  } else {
-    return result.value.highlightBounds
-  }
-}
-
-export function updateParseResultCode(
-  result: ParseResult,
-  code: string,
-  highlightBounds: HighlightBoundsForUids,
-): ParseResult {
-  return bimapEither(
-    (l) => {
-      return { ...l, code: code }
+export function getHighlightBoundsFromParseResult(result: ParsedTextFile): HighlightBoundsForUids {
+  return foldParsedTextFile<HighlightBoundsForUids>(
+    (_) => {
+      return {}
     },
-    (r) => {
-      return { ...r, code: code, highlightBounds: highlightBounds }
+    (success) => {
+      return success.highlightBounds
+    },
+    (_) => {
+      return {}
     },
     result,
   )
 }
 
-export function uiJsFile(
-  fileContents: ParseResult,
-  lastSavedContents: ParseResult | null,
-  revisionsState: RevisionsState,
-  lastRevisedTime: number,
-): UIJSFile {
-  return {
-    type: 'UI_JS_FILE',
-    fileContents: fileContents,
-    lastSavedContents: lastSavedContents,
-    revisionsState: revisionsState,
-    lastRevisedTime: lastRevisedTime,
-  }
+export function updateParsedTextFileHighlightBounds(
+  result: ParsedTextFile,
+  highlightBounds: HighlightBoundsForUids,
+): ParsedTextFile {
+  return foldParsedTextFile<ParsedTextFile>(
+    (failure) => failure,
+    (success) => {
+      return { ...success, highlightBounds: highlightBounds }
+    },
+    (unparsedResult) => unparsedResult,
+    result,
+  )
 }
 
 export function canUpdateRevisionsState(
@@ -271,8 +249,8 @@ export function isOlderThan(maybeNew: ProjectFile, existing: ProjectFile | null)
   }
 
   return (
-    isUIJSFile(maybeNew) &&
-    isUIJSFile(existing) &&
+    isTextFile(maybeNew) &&
+    isTextFile(existing) &&
     maybeNew.lastRevisedTime < existing.lastRevisedTime
   )
 }
@@ -282,39 +260,30 @@ export function canUpdateFile(updated: ProjectFile, existing: ProjectFile | null
     return true
   }
 
-  if (isUIJSFile(existing)) {
+  if (isTextFile(existing)) {
     return (
-      isUIJSFile(updated) &&
+      isTextFile(updated) &&
+      isTextFile(existing) &&
       isOlderThan(existing, updated) &&
-      canUpdateRevisionsState(updated.revisionsState, existing.revisionsState)
+      canUpdateRevisionsState(
+        updated.fileContents.revisionsState,
+        existing.fileContents.revisionsState,
+      )
     )
   }
 
   return true
 }
 
-export function updateUiJsCode(file: UIJSFile, code: string, codeIsNowAhead: boolean): UIJSFile {
-  const updatedContents: ParseResult = bimapEither(
-    (failure) => {
-      return { ...failure, code: code }
-    },
-    (success) => {
-      return { ...success, code: code }
-    },
-    file.fileContents,
-  )
-
+export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boolean): TextFile {
   const revisionsState = codeIsNowAhead ? RevisionsState.CodeAhead : RevisionsState.BothMatch
-
-  return uiJsFile(updatedContents, file.lastSavedContents, revisionsState, Date.now())
-}
-
-export function codeFile(fileContents: string, lastSavedContents: string | null): CodeFile {
-  return {
-    type: 'CODE_FILE',
-    fileContents: fileContents,
-    lastSavedContents: lastSavedContents,
+  const fileContents: TextFileContents = {
+    ...file.fileContents,
+    revisionsState: revisionsState,
+    code: code,
   }
+
+  return textFile(fileContents, file.lastSavedContents, Date.now())
 }
 
 export function imageFile(
@@ -346,8 +315,8 @@ export function directory(): Directory {
   }
 }
 
-export function sameCodeFile(first: ProjectFile, second: ProjectFile): boolean {
-  if (isCodeFile(first) && isCodeFile(second)) {
+export function sameTextFile(first: ProjectFile, second: ProjectFile): boolean {
+  if (isTextFile(first) && isTextFile(second)) {
     return first.fileContents === second.fileContents
   } else {
     return false
@@ -388,30 +357,25 @@ export function fileTypeFromFileName(
   if (filename == null) {
     return null
   }
-  if (filename.endsWith('src/app.js')) {
-    return 'UI_JS_FILE'
+  if (isText(filename)) {
+    return 'TEXT_FILE'
   } else {
-    if (isText(filename)) {
-      return 'CODE_FILE'
+    const mimeType = mimeTypeLookup(filename)
+    if (mimeType === false) {
+      return 'TEXT_FILE' // FIXME This is definitely not a safe assumption
+    } else if (mimeType.startsWith('image/')) {
+      return 'IMAGE_FILE'
     } else {
-      const mimeType = mimeTypeLookup(filename)
-      if (mimeType === false) {
-        return 'CODE_FILE' // FIXME This is definitely not a safe assumption
-      } else if (mimeType.startsWith('image/')) {
-        return 'IMAGE_FILE'
-      } else {
-        return 'ASSET_FILE'
-      }
+      return 'ASSET_FILE'
     }
   }
 }
 
 export function switchToFileType(from: ProjectFile, to: ProjectFileType): ProjectFile | null {
   switch (from.type) {
-    case 'CODE_FILE':
+    case 'TEXT_FILE':
       switch (to) {
-        case 'CODE_FILE':
-        case 'UI_JS_FILE':
+        case 'TEXT_FILE':
           return from
         case 'IMAGE_FILE':
         case 'DIRECTORY':
@@ -425,8 +389,7 @@ export function switchToFileType(from: ProjectFile, to: ProjectFileType): Projec
       switch (to) {
         case 'IMAGE_FILE':
           return from
-        case 'UI_JS_FILE':
-        case 'CODE_FILE':
+        case 'TEXT_FILE':
         case 'DIRECTORY':
         case 'ASSET_FILE':
           return null
@@ -438,22 +401,8 @@ export function switchToFileType(from: ProjectFile, to: ProjectFileType): Projec
       switch (to) {
         case 'DIRECTORY':
           return from
-        case 'UI_JS_FILE':
-        case 'CODE_FILE':
+        case 'TEXT_FILE':
         case 'IMAGE_FILE':
-        case 'ASSET_FILE':
-          return null
-        default:
-          const _exhaustiveCheck: never = to
-          throw new Error(`Unhandled target type ${JSON.stringify(to)}.`)
-      }
-    case 'UI_JS_FILE':
-      switch (to) {
-        case 'UI_JS_FILE':
-        case 'CODE_FILE':
-          return from
-        case 'IMAGE_FILE':
-        case 'DIRECTORY':
         case 'ASSET_FILE':
           return null
         default:
@@ -464,10 +413,9 @@ export function switchToFileType(from: ProjectFile, to: ProjectFileType): Projec
       switch (to) {
         case 'ASSET_FILE':
           return from
-        case 'CODE_FILE':
+        case 'TEXT_FILE':
         case 'IMAGE_FILE':
         case 'DIRECTORY':
-        case 'UI_JS_FILE':
           return null
         default:
           const _exhaustiveCheck: never = to
@@ -517,54 +465,25 @@ export function uniqueProjectContentID(
   }
 }
 
-export function getCodeFile(projectContents: ProjectContents, contentId: string): CodeFile | null {
-  const projectContent = projectContents[contentId]
-  if (projectContent == null) {
-    return null
-  } else {
-    if (isCodeFile(projectContent)) {
-      return projectContent
-    } else {
-      return null
-    }
-  }
-}
-
-export function saveCodeFileContents(file: CodeFile, contents: string, manualSave: boolean) {
-  const savedContent = updateLastSavedContents(
-    file.lastSavedContents,
-    file.fileContents,
-    manualSave,
-  )
-  return codeFile(contents, savedContent)
-}
-
-export function saveUIJSFileContents(
-  file: UIJSFile,
-  contents: ParseResult,
+export function saveTextFileContents(
+  file: TextFile,
+  contents: TextFileContents,
   manualSave: boolean,
-  revisionsState: RevisionsState,
-) {
+): TextFile {
   const savedContent = updateLastSavedContents(
     file.lastSavedContents,
     file.fileContents,
     manualSave,
   )
-
   const contentsUpdated = contents !== file.fileContents
-  return uiJsFile(
-    contents,
-    savedContent,
-    revisionsState,
-    contentsUpdated ? Date.now() : file.lastRevisedTime,
-  )
+  return textFile(contents, savedContent, contentsUpdated ? Date.now() : file.lastRevisedTime)
 }
 
 export function updateLastSavedContents<T>(
   lastSavedContents: T | null,
   contents: T,
   manualSave: boolean,
-) {
+): T | null {
   if (manualSave) {
     return null
   }
@@ -574,27 +493,21 @@ export function updateLastSavedContents<T>(
   return lastSavedContents
 }
 
-export function isModifiedFile(file: ProjectFile) {
-  return (isCodeFile(file) || isUIJSFile(file)) && file.lastSavedContents != null
+export function isModifiedFile(file: ProjectFile): boolean {
+  return isTextFile(file) && file.lastSavedContents != null
 }
 
 export function revertFile(file: ProjectFile): ProjectFile {
   if (isModifiedFile(file)) {
     switch (file.type) {
-      case 'CODE_FILE':
+      case 'TEXT_FILE':
         return {
           ...file,
           fileContents: file.lastSavedContents,
           lastSavedContents: null,
-        } as CodeFile
-      case 'UI_JS_FILE':
-        return {
-          ...file,
-          fileContents: file.lastSavedContents,
-          lastSavedContents: null,
-        } as UIJSFile
+        } as TextFile
       default:
-        throw new Error(`Only code and uijs files can be modified`)
+        throw new Error(`Only text files can be modified.`)
     }
   }
   return file
@@ -603,12 +516,10 @@ export function revertFile(file: ProjectFile): ProjectFile {
 export function saveFile(file: ProjectFile): ProjectFile {
   if (isModifiedFile(file)) {
     switch (file.type) {
-      case 'CODE_FILE':
-        return saveCodeFileContents(file, file.fileContents, true)
-      case 'UI_JS_FILE':
-        return saveUIJSFileContents(file, file.fileContents, true, file.revisionsState)
+      case 'TEXT_FILE':
+        return saveTextFileContents(file, file.fileContents, true)
       default:
-        throw new Error(`Only code and uijs files can be modified`)
+        throw new Error(`Only text files can be modified.`)
     }
   }
   return file
@@ -633,11 +544,11 @@ export function correctProjectContentsPath(path: string): string {
 
 export function applyToAllUIJSFiles(
   allFiles: ProjectContentTreeRoot,
-  fn: (filename: string, uiJSFile: UIJSFile) => UIJSFile,
+  fn: (filename: string, uiJSFile: TextFile) => TextFile,
 ): ProjectContentTreeRoot {
   return transformContentsTree(allFiles, (tree: ProjectContentsTree) => {
     if (tree.type === 'PROJECT_CONTENT_FILE') {
-      if (isUIJSFile(tree.content)) {
+      if (isTextFile(tree.content)) {
         const updatedContent = fn(tree.fullPath, tree.content)
         return projectContentFile(tree.fullPath, updatedContent)
       } else {
@@ -645,18 +556,6 @@ export function applyToAllUIJSFiles(
       }
     } else {
       return tree
-    }
-  })
-}
-
-export function applyToAllUIJSFilesContents(
-  allFiles: ProjectContentTreeRoot,
-  fn: (filename: string, fileContents: ParseResult) => ParseResult,
-): ProjectContentTreeRoot {
-  return applyToAllUIJSFiles(allFiles, (k, v) => {
-    return {
-      ...v,
-      fileContents: fn(k, v.fileContents),
     }
   })
 }

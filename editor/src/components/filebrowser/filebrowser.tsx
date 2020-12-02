@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/core'
 import * as React from 'react'
 import {
@@ -10,6 +11,7 @@ import {
   SectionTitleRow,
   SquareButton,
   Title,
+  Button,
 } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
 import {
@@ -35,7 +37,7 @@ import {
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { setFocus } from '../common/actions'
 import { CodeResultCache, isJavascriptOrTypescript } from '../custom-code/code-file'
-import * as EditorActions from '../editor/actions/actions'
+import * as EditorActions from '../editor/actions/action-creators'
 import {
   getAllCodeEditorErrors,
   getOpenFilename,
@@ -43,11 +45,11 @@ import {
   getOpenUIJSFileKey,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { useKeepReferenceEqualityIfPossible } from '../inspector/common/property-path-hooks'
 import { FileBrowserItem } from './fileitem'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -93,7 +95,7 @@ function collectFileBrowserItems(
         exportedFunction: false,
       })
       if (
-        (element.type === 'CODE_FILE' || element.type === 'UI_JS_FILE') &&
+        element.type === 'TEXT_FILE' &&
         isJavascriptOrTypescript(fullPath) &&
         codeResultCache != null
       ) {
@@ -128,7 +130,7 @@ export const FileBrowser = betterReactMemo('FileBrowser', () => {
       minimised: store.editor.fileBrowser.minimised,
       focusedPanel: store.editor.focusedPanel,
     }
-  })
+  }, 'FileBrowser')
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('filebrowser')], 'leftpane')
@@ -143,18 +145,29 @@ export const FileBrowser = betterReactMemo('FileBrowser', () => {
     [dispatch, focusedPanel],
   )
 
+  const storyboardFileAdd = React.useCallback(() => {
+    dispatch([EditorActions.addStoryboardFile()])
+  }, [dispatch])
+
   return (
-    <Section data-name='FileBrowser' onFocus={onFocus} tabIndex={-1}>
-      <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised}>
-        <FlexRow flexGrow={1} style={{ position: 'relative' }}>
-          <Title>Project</Title>
-          <FileBrowserActionSheet visible={!minimised} />
-        </FlexRow>
-      </SectionTitleRow>
-      <SectionBodyArea minimised={minimised}>
-        {minimised ? null : <FileBrowserItems />}
-      </SectionBodyArea>
-    </Section>
+    <>
+      <Section data-name='AddStoryboardFile'>
+        <SectionBodyArea minimised={false}>
+          <Button onClick={storyboardFileAdd}>Add Storyboard File</Button>
+        </SectionBodyArea>
+      </Section>
+      <Section data-name='FileBrowser' onFocus={onFocus} tabIndex={-1}>
+        <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised}>
+          <FlexRow flexGrow={1} style={{ position: 'relative' }}>
+            <Title>Project</Title>
+            <FileBrowserActionSheet visible={!minimised} />
+          </FlexRow>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={minimised}>
+          {minimised ? null : <FileBrowserItems />}
+        </SectionBodyArea>
+      </Section>
+    </>
   )
 })
 
@@ -180,22 +193,22 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
       projectContents: store.editor.projectContents,
       editorSelectedFile: getOpenFilename(store.editor),
       errorMessages: getAllCodeEditorErrors(store.editor, false, true),
-      isOpenUIFileParseSuccess: uiFile != null && isParseSuccess(uiFile.fileContents),
+      isOpenUIFileParseSuccess: uiFile != null && isParseSuccess(uiFile.fileContents.parsed),
       codeResultCache: store.editor.codeResultCache,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       renamingTarget: store.editor.fileBrowser.renamingTarget,
       openUiFileName: getOpenUIJSFileKey(store.editor),
     }
-  })
+  }, 'FileBrowserItems')
 
   // since useEditorState uses a shallow equality check, we use a separate one to return the entire (string) array of componentUIDs
   // because the generated array keept loosing its reference equality
   const componentUIDs = useEditorState((store) => {
     const uiFile = getOpenUIJSFile(store.editor)
-    return uiFile != null && isParseSuccess(uiFile.fileContents)
-      ? getAllUniqueUids(getUtopiaJSXComponentsFromSuccess(uiFile.fileContents.value))
+    return uiFile != null && isParseSuccess(uiFile.fileContents.parsed)
+      ? getAllUniqueUids(getUtopiaJSXComponentsFromSuccess(uiFile.fileContents.parsed))
       : []
-  })
+  }, 'FileBrowserItems componentUIDs')
   const componentUIDsWithStableRef = useKeepReferenceEqualityIfPossible(componentUIDs)
 
   const [selectedPath, setSelectedPath] = React.useState(editorSelectedFile)
@@ -238,7 +251,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
           )
           let props: JSXAttributes = objectMap(jsxAttributeValue, defaultProps)
           props['data-uid'] = jsxAttributeValue(newUID)
-          const element: JSXElement = jsxElement(jsxElementName(exportVarName, []), props, [], null)
+          const element: JSXElement = jsxElement(jsxElementName(exportVarName, []), props, [])
           dispatch(
             [
               EditorActions.enableInsertModeForJSXElement(
@@ -305,13 +318,16 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
 const FileBrowserActionSheet = betterReactMemo(
   'FileBrowserActionSheet',
   (props: FileBrowserActionSheetProps) => {
-    const { dispatch } = useEditorState((store) => ({ dispatch: store.dispatch }))
+    const { dispatch } = useEditorState(
+      (store) => ({ dispatch: store.dispatch }),
+      'FileBrowserActionSheet dispatch',
+    )
     const addFolderClick = React.useCallback(
       () => dispatch([EditorActions.addFolder('')], 'everyone'),
       [dispatch],
     )
-    const addCodeFileClick = React.useCallback(
-      () => dispatch([EditorActions.addCodeFile('', 'untitled')], 'everyone'),
+    const addTextFileClick = React.useCallback(
+      () => dispatch([EditorActions.addTextFile('', 'untitled')], 'everyone'),
       [dispatch],
     )
     if (props.visible) {
@@ -320,8 +336,8 @@ const FileBrowserActionSheet = betterReactMemo(
           <SquareButton highlight onClick={addFolderClick}>
             <Icons.NewFolder tooltipText='Add New Folder' />
           </SquareButton>
-          <SquareButton highlight onClick={addCodeFileClick}>
-            <Icons.NewCodeFile tooltipText='Add Code File' />
+          <SquareButton highlight onClick={addTextFileClick}>
+            <Icons.NewTextFile tooltipText='Add Code File' />
           </SquareButton>
         </ActionSheet>
       )

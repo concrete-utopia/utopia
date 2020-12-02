@@ -1,5 +1,5 @@
 import { ReactDOM } from 'react'
-import { canvasRectangle, CanvasRectangle, scaleRect } from './math-utils'
+import { canvasRectangle, CanvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
@@ -202,6 +202,21 @@ export const intrinsicHTMLElementNamesThatSupportChildren: Array<string> = [
   'section',
 ]
 
+export function getDOMAttribute(element: HTMLElement, attributeName: string): string | null {
+  const attr = element.attributes.getNamedItemNS(null, attributeName)
+  if (attr == null) {
+    return null
+  } else {
+    return attr.value
+  }
+}
+
+export function setDOMAttribute(element: HTMLElement, attributeName: string, value: string): void {
+  const attr = document.createAttributeNS(null, attributeName)
+  attr.value = value
+  element.attributes.setNamedItemNS(attr)
+}
+
 export function getCanvasRectangleFromElement(
   element: HTMLElement,
   canvasScale: number,
@@ -212,10 +227,10 @@ export function getCanvasRectangleFromElement(
   const scale = canvasScale < 1 ? 1 / canvasScale : 1
   return scaleRect(
     canvasRectangle({
-      x: boundingRect.left,
-      y: boundingRect.top,
-      width: boundingRect.width,
-      height: boundingRect.height,
+      x: roundToNearestHalf(boundingRect.left),
+      y: roundToNearestHalf(boundingRect.top),
+      width: roundToNearestHalf(boundingRect.width),
+      height: roundToNearestHalf(boundingRect.height),
     }),
     scale,
   )

@@ -6,7 +6,6 @@ import * as FastCheck from 'fast-check'
 import { Arbitrary } from 'fast-check'
 import { MapLike } from 'typescript'
 import * as PP from '../../shared/property-path'
-import { bimapEither, foldEither, forEachRight, mapEither, right } from '../../shared/either'
 import {
   ArbitraryJSBlock,
   arbitraryJSBlock,
@@ -50,15 +49,25 @@ import {
   defaultPropsParam,
   clearArbitraryJSBlockUniqueIDs,
 } from '../../shared/element-template'
-import { addImport, defaultCanvasMetadata } from '../common/project-file-utils'
+import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
 import {
-  CanvasMetadataParseResult,
   Imports,
-  ParseResult,
+  ParsedTextFile,
   ParseSuccess,
   PropertyPath,
   importAlias,
+  foldParsedTextFile,
+  mapParsedTextFile,
+  forEachParseSuccess,
+  ExportsDetail,
+  exportsDetail,
+  ExportDetailNamed,
+  exportDetailNamed,
+  ExportDetailModifier,
+  exportDetailModifier,
+  ExportDetail,
+  EmptyExportsDetail,
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
 import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
@@ -132,11 +141,11 @@ const JavaScriptReservedKeywords: Array<string> = [
   'undefined',
 ]
 
-export function testParseCode(contents: string): ParseResult {
+export function testParseCode(contents: string): ParsedTextFile {
   const filename = 'code.tsx'
   const result = lintAndParse(filename, contents)
   // Ensure that elements have valid unique IDs if the parse is successful.
-  forEachRight(result, (success) => {
+  forEachParseSuccess((success) => {
     let uids: Array<string> = []
     fastForEach(success.topLevelElements, (topLevelElement) => {
       if (isUtopiaJSXComponent(topLevelElement)) {
@@ -144,7 +153,7 @@ export function testParseCode(contents: string): ParseResult {
         ensureArbitraryJSXBlockCodeHasUIDs(topLevelElement.rootElement)
       }
     })
-  })
+  }, result)
   return result
 }
 
@@ -158,7 +167,7 @@ export function testParseModifyPrint(
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
 ): void {
   const initialParseResult = testParseCode(originalCode)
-  foldEither(
+  foldParsedTextFile(
     (failure) => fail(failure),
     (initialParseSuccess) => {
       const transformed = transform(initialParseSuccess)
@@ -167,15 +176,17 @@ export function testParseModifyPrint(
         transformed.imports,
         transformed.topLevelElements,
         transformed.jsxFactoryFunction,
+        transformed.exportsDetail,
       )
       expect(printedCode).toEqual(expectedFinalCode)
     },
+    (failure) => fail(failure),
     initialParseResult,
   )
 }
 
-export function clearParseResultUniqueIDs(parseResult: ParseResult): ParseResult {
-  return mapEither((success) => {
+export function clearParseResultUniqueIDs(parseResult: ParsedTextFile): ParsedTextFile {
+  return mapParsedTextFile((success) => {
     const updatedTopLevelElements = success.topLevelElements.map(clearTopLevelElementUniqueIDs)
     return {
       ...success,
@@ -226,8 +237,8 @@ export function clearErrorMessagesPassTimes(
   return errorMessages.map(clearErrorMessagePassTime)
 }
 
-export function clearParseResultPassTimes(parseResult: ParseResult): ParseResult {
-  return bimapEither(
+export function clearParseResultPassTimes(parseResult: ParsedTextFile): ParsedTextFile {
+  return foldParsedTextFile<ParsedTextFile>(
     (failure) => {
       return {
         ...failure,
@@ -235,6 +246,7 @@ export function clearParseResultPassTimes(parseResult: ParseResult): ParseResult
       }
     },
     (success) => success,
+    (unparsedFile) => unparsedFile,
     parseResult,
   )
 }
@@ -438,7 +450,7 @@ export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {
     jsxAttributesArbitrary(),
     FastCheck.array(childArbitrary, 3),
   ).map(([elementName, elementAttributes, elementChildren]) => {
-    return jsxElement(elementName, elementAttributes, elementChildren, null)
+    return jsxElement(elementName, elementAttributes, elementChildren)
   })
 }
 
@@ -479,6 +491,36 @@ export function topLevelElementArbitrary(): Arbitrary<TopLevelElement> {
     arbitraryJSBlockArbitrary(),
     utopiaJSXComponentArbitrary(),
   )
+}
+
+export function exportDetailNamedArbitrary(
+  possibleNames: Array<string>,
+): Arbitrary<ExportDetailNamed> {
+  return FastCheck.constantFrom(...possibleNames).map(exportDetailNamed)
+}
+
+export function exportDetailModifierArbitrary(): Arbitrary<ExportDetailModifier> {
+  return lowercaseStringArbitrary().map(exportDetailModifier)
+}
+
+export function exportDetailArbitrary(possibleNames: Array<string>): Arbitrary<ExportDetail> {
+  return FastCheck.oneof<ExportDetail>(
+    exportDetailNamedArbitrary(possibleNames),
+    exportDetailModifierArbitrary(),
+  )
+}
+
+export function exportsDetailArbitrary(possibleNames: Array<string>): Arbitrary<ExportsDetail> {
+  if (possibleNames.length === 0) {
+    return FastCheck.constant(EmptyExportsDetail)
+  } else {
+    return FastCheck.tuple(
+      FastCheck.constant(null), //FastCheck.option(exportDetailNamedArbitrary(possibleNames)),
+      flatObjectArbitrary(lowercaseStringArbitrary(), exportDetailArbitrary(possibleNames)),
+    ).map(([defaultExport, namedExports]) => {
+      return exportsDetail(defaultExport, namedExports)
+    })
+  }
 }
 
 function walkElements(
@@ -554,7 +596,7 @@ export function ensureElementsHaveUID(jsxElementChild: JSXElementChild, uids: Ar
     // Relies on this function blowing out for anything that doesn't have a valid one.
     const uid = getUtopiaIDFromJSXElement(element)
     if (uids.includes(uid)) {
-      throw new Error(`UID ${uid} is duplicated in ${element}`)
+      throw new Error(`UID ${uid} is duplicated in ${JSON.stringify(element)}`)
     } else {
       uids.push(uid)
     }
@@ -611,9 +653,9 @@ export function ensureArbitraryJSXBlockCodeHasUIDs(jsxElementChild: JSXElementCh
 export interface PrintableProjectContent {
   imports: Imports
   topLevelElements: Array<TopLevelElement>
-  canvasMetadata: CanvasMetadataParseResult
   projectContainedOldSceneMetadata: boolean
   jsxFactoryFunction: string | null
+  exportsDetail: ExportsDetail
 }
 
 function getTopLevelElementVariableName(topLevelElement: TopLevelElement): string | null {
@@ -648,28 +690,40 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
     FastCheck.array(topLevelElementArbitrary(), 3).filter(areTopLevelElementsValid),
     FastCheck.option(lowercaseStringArbitrary()),
     FastCheck.boolean(),
-  ).map(([topLevelElements, jsxFactoryFunction, projectContainedOldSceneMetadata]) => {
-    const allBaseVariables = flatMapArray((topLevelElement) => {
-      switch (topLevelElement.type) {
-        case 'UTOPIA_JSX_COMPONENT':
-          return getAllBaseVariables(topLevelElement.rootElement)
-        case 'ARBITRARY_JS_BLOCK':
+  ).chain(([topLevelElements, jsxFactoryFunction, projectContainedOldSceneMetadata]) => {
+    const possibleNames = flatMapArray((topLevelElement) => {
+      if (isUtopiaJSXComponent(topLevelElement)) {
+        if (topLevelElement.isFunction) {
           return []
-        default:
-          const _exhaustiveCheck: never = topLevelElement
-          throw new Error(`Unhandled type ${JSON.stringify(topLevelElement)}`)
+        } else {
+          return [topLevelElement.name]
+        }
+      } else {
+        return []
       }
     }, topLevelElements)
-    const imports: Imports = allBaseVariables.reduce((workingImports, baseVariable) => {
-      return addImport('testlib', baseVariable, [], null, workingImports)
-    }, JustImportViewAndReact)
-    const canvasMetadata = right(defaultCanvasMetadata())
-    return {
-      imports: imports,
-      topLevelElements: topLevelElements,
-      canvasMetadata: canvasMetadata,
-      projectContainedOldSceneMetadata: projectContainedOldSceneMetadata,
-      jsxFactoryFunction: jsxFactoryFunction,
-    }
+    return exportsDetailArbitrary(possibleNames).map((detailOfExports) => {
+      const allBaseVariables = flatMapArray((topLevelElement) => {
+        switch (topLevelElement.type) {
+          case 'UTOPIA_JSX_COMPONENT':
+            return getAllBaseVariables(topLevelElement.rootElement)
+          case 'ARBITRARY_JS_BLOCK':
+            return []
+          default:
+            const _exhaustiveCheck: never = topLevelElement
+            throw new Error(`Unhandled type ${JSON.stringify(topLevelElement)}`)
+        }
+      }, topLevelElements)
+      const imports: Imports = allBaseVariables.reduce((workingImports, baseVariable) => {
+        return addImport('testlib', baseVariable, [], null, workingImports)
+      }, JustImportViewAndReact)
+      return {
+        imports: imports,
+        topLevelElements: topLevelElements,
+        projectContainedOldSceneMetadata: projectContainedOldSceneMetadata,
+        jsxFactoryFunction: jsxFactoryFunction,
+        exportsDetail: detailOfExports,
+      }
+    })
   })
 }
