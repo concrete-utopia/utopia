@@ -15,6 +15,7 @@ import CanvasActions from '../components/canvas/canvas-actions'
 import { CodeResultCache, generateCodeResultCache } from '../components/custom-code/code-file'
 import { getAllErrorsFromBuildResult } from '../components/custom-code/custom-code-utils'
 import {
+  DebugDispatch,
   EditorAction,
   EditorDispatch,
   isLoggedIn,
@@ -42,7 +43,11 @@ import {
   getUserConfiguration,
   isRequestFailure,
 } from '../components/editor/server'
-import { editorDispatch, simpleStringifyActions } from '../components/editor/store/dispatch'
+import {
+  DispatchResult,
+  editorDispatch,
+  simpleStringifyActions,
+} from '../components/editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
@@ -105,7 +110,7 @@ export class Editor {
   utopiaStoreHook: UtopiaStoreHook
   utopiaStoreApi: UtopiaStoreAPI
   updateStore: (partialState: EditorStore) => void
-  boundDispatch: EditorDispatch = this.dispatch.bind(this)
+  boundDispatch: DebugDispatch = this.dispatch.bind(this)
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
   constructor() {
@@ -346,7 +351,11 @@ export class Editor {
     )
   }
 
-  dispatch(dispatchedActions: readonly EditorAction[]) {
+  dispatch(
+    dispatchedActions: readonly EditorAction[],
+  ): {
+    entireUpdateFinished: Promise<any>
+  } {
     const runDispatch = () => {
       const result = editorDispatch(
         this.boundDispatch,
@@ -362,11 +371,16 @@ export class Editor {
           ...result,
         })
       }
+      return { entireUpdateFinished: result.entireUpdateFinished }
     }
     if (PRODUCTION_ENV) {
-      runDispatch()
+      return runDispatch()
     } else {
-      trace(`action-${dispatchedActions.map((a) => a.action)}`, performance.now(), runDispatch)
+      return trace(
+        `action-${dispatchedActions.map((a) => a.action)}`,
+        performance.now(),
+        runDispatch,
+      )
     }
   }
 }
