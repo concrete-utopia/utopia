@@ -104,6 +104,4 @@ jobs:
       - name: Flush Editor Bundle
         shell: bash
         run: |
-          curl -i -X DELETE 'https://$STAGING_SERVER/internal/branch?branch_name=${{ steps.extract_branch.outputs.branch }}'
-        env:
-          STAGING_SERVER: ${{ secrets.STAGING_SERVER }}
+          curl -i -X DELETE 'https://${{ secrets.STAGING_SERVER }}/internal/branch?branch_name=${{ steps.extract_branch.outputs.branch }}'
