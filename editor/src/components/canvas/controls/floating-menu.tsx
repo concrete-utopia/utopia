@@ -16,7 +16,7 @@ export const FloatingMenu = (props: ControlProps) => {
   }
 
   const element = MetadataUtils.getElementByTemplatePathMaybe(
-    props.componentMetadata,
+    props.componentMetadata.elements,
     props.selectedViews[0],
   )
   if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {

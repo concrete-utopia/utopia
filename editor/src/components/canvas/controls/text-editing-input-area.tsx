@@ -17,17 +17,20 @@ interface TextInputProps {
 }
 
 export const TextEditingArea = () => {
-  const { selectedViews, componentMetadata } = useEditorState((store) => ({
-    selectedViews: store.editor.selectedViews,
-    componentMetadata: store.editor.jsxMetadataKILLME,
-  }))
-  const dispatch = useEditorState((store) => store.dispatch)
+  const { selectedViews, componentMetadata } = useEditorState(
+    (store) => ({
+      selectedViews: store.editor.selectedViews,
+      componentMetadata: store.editor.jsxMetadataKILLME,
+    }),
+    'text-editing-selectedviews-metadata',
+  )
+  const dispatch = useEditorState((store) => store.dispatch, 'text-editing-dispatch')
   let textBlock: JSXTextBlock | null = null
   let target: TemplatePath | null = null
   let disabled = false
   if (selectedViews.length === 1) {
     target = selectedViews[0]
-    const element = MetadataUtils.getElementByTemplatePathMaybe(componentMetadata, target)
+    const element = MetadataUtils.getElementByTemplatePathMaybe(componentMetadata.elements, target)
     if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
       if (element.element.value.children.length === 1) {
         if (element.element.value.children[0].type === 'JSX_TEXT_BLOCK') {

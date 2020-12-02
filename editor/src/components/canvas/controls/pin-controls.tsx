@@ -13,9 +13,10 @@ import {
   StyleLayoutProp,
 } from '../../../core/layout/layout-helpers-new'
 import { useEditorState } from '../../editor/store/store-hook'
-import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/actions'
+import { setProp_UNSAFE } from '../../editor/actions/actions'
 import { InstancePath } from '../../../core/shared/project-file-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { unsetProperty } from '../../editor/actions/action-creators'
 
 interface PinOutlineProps {
   key: string
@@ -109,15 +110,21 @@ const PinOutline = (props: PinOutlineProps): JSX.Element => {
 const PinControls = (props: OutlineControlsProps): JSX.Element | null => {
   const isDraggable = isFeatureEnabled('Drag Pin Controls')
   const target = props.selectedViews[0] as InstancePath
-  const dispatch = useEditorState((state) => state.dispatch)
-  const containingBlockParent = MetadataUtils.findContainingBlock(props.componentMetadata, target)
+  const dispatch = useEditorState((state) => state.dispatch, 'pin-controls')
+  const containingBlockParent = MetadataUtils.findContainingBlock(
+    props.componentMetadata.elements,
+    target,
+  )
   const containingRectangle = MetadataUtils.getElementByTemplatePathMaybe(
-    props.componentMetadata,
+    props.componentMetadata.elements,
     containingBlockParent,
   )?.globalFrame
 
   const frame = MetadataUtils.getFrameInCanvasCoords(target, props.componentMetadata)
-  const element = MetadataUtils.getElementByTemplatePathMaybe(props.componentMetadata, target)
+  const element = MetadataUtils.getElementByTemplatePathMaybe(
+    props.componentMetadata.elements,
+    target,
+  )
   const [draggedProp, setDraggedProp] = React.useState<null | LayoutProp | StyleLayoutProp>(null)
 
   const jsxAttributes =

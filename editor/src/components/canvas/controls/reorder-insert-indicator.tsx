@@ -13,11 +13,15 @@ export const ReorderInsertIndicator: React.FunctionComponent<{
   const { x, y, horizontal, flow } = useEditorState((store) => {
     const canvasOffset = store.editor.canvas.roundedCanvasOffset
     const targetParent = MetadataUtils.getElementByTemplatePathMaybe(
-      store.editor.jsxMetadataKILLME,
+      store.editor.jsxMetadataKILLME.elements,
       props.target,
     )
-    if (targetParent != null) {
-      const childToPutIndexBefore = targetParent.children[props.showAtChildIndex]
+    if (targetParent != null && props.target != null) {
+      const childToPutIndexBefore = MetadataUtils.getChildrenHandlingGroups(
+        store.editor.jsxMetadataKILLME,
+        props.target,
+        false,
+      )[props.showAtChildIndex]
       if (childToPutIndexBefore != null && childToPutIndexBefore.globalFrame != null) {
         const isHorizontal =
           childToPutIndexBefore.specialSizeMeasurements?.parentFlexDirection === 'row'
@@ -37,7 +41,7 @@ export const ReorderInsertIndicator: React.FunctionComponent<{
     }
 
     return { x: 0, y: 0, horizontal: false, flow: false }
-  })
+  }, 'reorder-insert-indicator')
 
   if (flow) {
     return (

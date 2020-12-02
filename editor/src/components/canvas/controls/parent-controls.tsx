@@ -210,7 +210,7 @@ export const ParentControls = (props: ControlProps): JSX.Element | null => {
     return null
   }
   const parentElement = MetadataUtils.getElementByInstancePathMaybe(
-    props.componentMetadata,
+    props.componentMetadata.elements,
     parentTarget,
   )
   if (parentElement == null) {

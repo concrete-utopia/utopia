@@ -35,7 +35,7 @@ export const InsertionControls = (props: ControlProps): JSX.Element | null => {
       : null
   const parentElement =
     parentPath != null
-      ? MetadataUtils.getElementByTemplatePathMaybe(props.componentMetadata, parentPath)
+      ? MetadataUtils.getElementByTemplatePathMaybe(props.componentMetadata.elements, parentPath)
       : null
   if (parentPath == null || parentFrame == null || parentElement == null) {
     return null
@@ -86,7 +86,7 @@ export const InsertionControls = (props: ControlProps): JSX.Element | null => {
           index: index + 1,
         },
       })
-    
+
       // first element has a plus button before the element too
       if (index === 0) {
         const beforeX =
@@ -121,7 +121,13 @@ export const InsertionControls = (props: ControlProps): JSX.Element | null => {
       }
     }
   })
-  return <>{controlProps.map((control) => <InsertionButtonContainer {...control} key={control.key} />)}</>
+  return (
+    <>
+      {controlProps.map((control) => (
+        <InsertionButtonContainer {...control} key={control.key} />
+      ))}
+    </>
+  )
 }
 
 const InsertionButtonContainer = (props: ButtonControlProps) => {
@@ -182,7 +188,7 @@ const BlueDot = (props: ButtonControlProps) => {
 
 const ButtonSize = 12
 const PlusButton = (props: ButtonControlProps) => {
-  const dispatch = useEditorState((store) => store.dispatch)
+  const dispatch = useEditorState((store) => store.dispatch, 'plus-button')
   const { parentPath, indexPosition } = props
   const insertElement = React.useCallback(() => {
     dispatch(

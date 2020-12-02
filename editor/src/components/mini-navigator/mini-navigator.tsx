@@ -20,16 +20,14 @@ import {
   getJSXElementNameLastPart,
   JSXElement,
   JSXElementChild,
+  JSXMetadata,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import { InstancePath, TemplatePath } from '../../core/shared/project-file-types'
 import { arrayToObject, last, mapArrayToDictionary } from '../../core/shared/array-utils'
 import { colorTheme, Icn } from '../../uuiui'
-import {
-  clearHighlightedViews,
-  selectComponents,
-  setHighlightedView,
-} from '../editor/actions/actions'
+import { clearHighlightedViews, setHighlightedView } from '../editor/actions/actions'
+import { selectComponents } from '../editor/actions/action-creators'
 
 interface NavigatorItemData {
   id: string
@@ -62,15 +60,17 @@ function getElementType(element: JSXElementChild): string {
 }
 
 function getNavigatorItemDataFromJsxElement(
-  metadata: ComponentMetadata[],
+  metadata: JSXMetadata,
   path: InstancePath,
   element: JSXElementChild,
   indentation: number,
   selected: boolean,
   highlighted: boolean,
 ): NavigatorItemData {
-  const specialSizeMeasurements = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
-    ?.specialSizeMeasurements
+  const specialSizeMeasurements = MetadataUtils.getElementByInstancePathMaybe(
+    metadata.elements,
+    path,
+  )?.specialSizeMeasurements
 
   return {
     id: getUtopiaID(element),
@@ -103,7 +103,7 @@ function useGetNavigatorItemsToShow(): {
       const selectedViewUid = (isInstancePath(selectedView) && last(selectedView.element)) || null
 
       const parent = instancePathForPath(parentPath(selectedView))
-      const parentElement = findJSXElementAtPath(parent, editedComponents, metadata)
+      const parentElement = findJSXElementAtPath(parent, editedComponents)
       const parentNavigatorEntry: NavigatorItemData | undefined =
         parentElement == null || parent == null
           ? undefined
@@ -150,7 +150,7 @@ function useGetNavigatorItemsToShow(): {
     } else {
       return { parent: undefined, sections: [] }
     }
-  })
+  }, 'get-navigator-items-to-show')
 }
 
 const MiniNavigatorRoot = styled.div({
@@ -167,7 +167,7 @@ const MiniNavigatorRoot = styled.div({
 
 export const MiniNavigator: React.FunctionComponent = () => {
   const items = useGetNavigatorItemsToShow()
-  const dispatch = useEditorState((store) => store.dispatch)
+  const dispatch = useEditorState((store) => store.dispatch, 'mini-navigator-dispatch')
 
   return (
     <MiniNavigatorRoot
@@ -212,7 +212,7 @@ const MiniNavigatorItem: React.FunctionComponent<{
   index: number
   isParent: boolean
 }> = (props) => {
-  const dispatch = useEditorState((store) => store.dispatch)
+  const dispatch = useEditorState((store) => store.dispatch, 'mini-navigator-item-dispatch')
   return (
     <>
       <div

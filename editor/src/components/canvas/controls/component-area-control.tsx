@@ -179,15 +179,19 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     } = calculateExtraSizeForZeroSizedElement(this.props.frame)
     const showInvisibleIndicator = canShowInvisibleIndicator && showingInvisibleElement
     const layoutType = TP.isInstancePath(this.props.target)
-      ? MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, this.props.target)
-          ?.specialSizeMeasurements.layoutSystemForChildren
+      ? MetadataUtils.getElementByInstancePathMaybe(
+          this.props.componentMetadata.elements,
+          this.props.target,
+        )?.specialSizeMeasurements.layoutSystemForChildren
       : null
 
     let cursor = CSSCursor.Select
     if (
       TP.isInstancePath(this.props.target) &&
-      MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, this.props.target)
-        ?.specialSizeMeasurements.parentLayoutSystem === 'flex'
+      MetadataUtils.getElementByInstancePathMaybe(
+        this.props.componentMetadata.elements,
+        this.props.target,
+      )?.specialSizeMeasurements.parentLayoutSystem === 'flex'
     ) {
       cursor = CSSCursor.SelectFlex
     }
@@ -195,7 +199,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
       TP.isInstancePath(this.props.target) &&
       MetadataUtils.isFlowElement(
         MetadataUtils.getElementByInstancePathMaybe(
-          this.props.componentMetadata,
+          this.props.componentMetadata.elements,
           this.props.target,
         ),
       )
@@ -204,15 +208,19 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     }
     if (
       TP.isInstancePath(this.props.target) &&
-      MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, this.props.target)
-        ?.specialSizeMeasurements.position === 'relative'
+      MetadataUtils.getElementByInstancePathMaybe(
+        this.props.componentMetadata.elements,
+        this.props.target,
+      )?.specialSizeMeasurements.position === 'relative'
     ) {
       cursor = CSSCursor.SelectRelative
     }
     if (
       TP.isInstancePath(this.props.target) &&
-      MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, this.props.target)
-        ?.specialSizeMeasurements.parentLayoutSystem === 'grid'
+      MetadataUtils.getElementByInstancePathMaybe(
+        this.props.componentMetadata.elements,
+        this.props.target,
+      )?.specialSizeMeasurements.parentLayoutSystem === 'grid'
     ) {
       cursor = CSSCursor.SelectGrid
     }

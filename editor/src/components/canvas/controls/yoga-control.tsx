@@ -84,11 +84,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
       horizontal: 'FlexCrossBasis',
     }
     const parentPath = TP.parentPath(this.props.target)
-    const parentElement = findJSXElementAtPath(
-      parentPath,
-      this.props.rootComponents,
-      this.props.componentMetadata,
-    )
+    const parentElement = findJSXElementAtPath(parentPath, this.props.rootComponents)
     if (parentElement != null) {
       const flexDirection = eitherToMaybe(FlexLayoutHelpers.getMainAxis(right(parentElement.props)))
       if (flexDirection === 'vertical') {

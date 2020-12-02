@@ -615,7 +615,7 @@ export function wrapInView(targets: Array<TemplatePath>): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',
     targets: targets,
-    layoutSystem: LayoutSystem.PinSystem,
+    layoutSystem: null,
   }
 }
 

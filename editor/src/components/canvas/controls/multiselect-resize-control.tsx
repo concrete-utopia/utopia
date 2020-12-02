@@ -219,11 +219,11 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
       } as const
       const frame = MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
       const target = MetadataUtils.getElementByInstancePathMaybe(
-        this.props.componentMetadata,
+        this.props.componentMetadata.elements,
         TP.toInstancePathMaybe(view),
       )
       const isFlowLayouted = MetadataUtils.isFlowElement(
-        MetadataUtils.getElementByTemplatePathMaybe(this.props.componentMetadata, view),
+        MetadataUtils.getElementByTemplatePathMaybe(this.props.componentMetadata.elements, view),
       )
 
       if (frame != null) {
