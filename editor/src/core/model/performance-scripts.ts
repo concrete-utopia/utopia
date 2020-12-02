@@ -14,7 +14,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
     let framesPassed = 0
     async function step() {
       framesPassed++
-      await dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -15, y: -1 }))])
+      await dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -5, y: -1 }))])
         .entireUpdateFinished
       if (framesPassed < 100) {
         requestAnimationFrame(step)
