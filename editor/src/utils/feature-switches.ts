@@ -29,7 +29,7 @@ export type FeatureName =
   | 'Edit Simple Text'
   | 'Re-parse Project Button'
   | 'iFrame Code Editor'
-
+  | 'Component Children Highlights'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -58,6 +58,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Edit Simple Text',
   'Re-parse Project Button',
   'iFrame Code Editor',
+  'Component Children Highlights',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -88,6 +89,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Edit Simple Text': true,
   'Re-parse Project Button': false,
   'iFrame Code Editor': false,
+  'Component Children Highlights': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

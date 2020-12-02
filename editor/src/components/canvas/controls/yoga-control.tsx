@@ -171,6 +171,7 @@ export class YogaControls extends React.Component<YogaControlsProps> {
         true,
         isPositionRelative,
         false,
+        instance?.internalChildOfComponent,
       )
     }
 

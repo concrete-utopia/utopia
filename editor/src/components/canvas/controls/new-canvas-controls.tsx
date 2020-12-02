@@ -554,9 +554,17 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               color = colorTheme.red.o(50).value
             }
           } else {
-            color = TP.isScenePath(path)
-              ? colorTheme.canvasSelectionSceneOutline.value
-              : colorTheme.canvasSelectionPrimaryOutline.value
+            if (TP.isScenePath(path)) {
+              color = colorTheme.canvasSelectionSceneOutline.value
+            } else {
+              const element = MetadataUtils.getElementByInstancePathMaybe(
+                componentMetadata.elements,
+                path,
+              )
+              color = element?.internalChildOfComponent
+                ? '#FFA500'
+                : colorTheme.canvasSelectionPrimaryOutline.value
+            }
           }
           const zOffset =
             isFeatureEnabled('Hierarchy View') && !props.editor.interfaceDesigner.codePaneVisible

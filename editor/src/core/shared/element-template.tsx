@@ -965,6 +965,7 @@ export interface ElementInstanceMetadata {
   localFrame: LocalRectangle | null
   children: Array<InstancePath>
   componentInstance: boolean
+  internalChildOfComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
 }
@@ -977,6 +978,7 @@ export function elementInstanceMetadata(
   localFrame: LocalRectangle | null,
   children: Array<InstancePath>,
   componentInstance: boolean,
+  internalChildOfComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
 ): ElementInstanceMetadata {
@@ -988,6 +990,7 @@ export function elementInstanceMetadata(
     localFrame: localFrame,
     children: children,
     componentInstance: componentInstance,
+    internalChildOfComponent: internalChildOfComponent,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
   }

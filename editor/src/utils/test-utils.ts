@@ -292,6 +292,7 @@ function createFakeMetadataForJSXElement(
       localFrame: Utils.zeroRectangle as LocalRectangle,
       children: childPaths,
       componentInstance: false,
+      internalChildOfComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
     })

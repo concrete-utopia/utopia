@@ -26,6 +26,7 @@ export function getSelectionColor(
   anySelectedElementIsYogaLayouted: boolean,
   isPositionRelative: boolean,
   isFlow: boolean,
+  internalChildOfComponent: boolean | undefined,
 ): string {
   if (TP.isScenePath(path)) {
     return colorTheme.canvasSelectionSceneOutline.value
@@ -36,6 +37,8 @@ export function getSelectionColor(
     const originType = MetadataUtils.getElementOriginType(rootElements, path)
     if (originType === 'generated-static-definition-present' || originType === 'unknown-element') {
       return colorTheme.canvasSelectionRandomDOMElementInstanceOutline.value
+    } else if (internalChildOfComponent) {
+      return '#FFA500'
     } else if (createsYogaLayout) {
       return colorTheme.canvasSelectionAlternateOutlineYogaParent.value
     } else if (anySelectedElementIsYogaLayouted) {
@@ -162,6 +165,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         anySelectedElementIsYogaLayouted,
         isPositionRelative,
         isFlow,
+        instance?.internalChildOfComponent,
       )
 
       if (this.props.dragState == null) {

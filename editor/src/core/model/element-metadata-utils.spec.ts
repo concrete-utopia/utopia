@@ -44,6 +44,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   element: right(jsxTestElement('View', {}, [])),
   children: [],
   componentInstance: false,
+  internalChildOfComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
 }
@@ -55,6 +56,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   element: right(jsxTestElement('View', {}, [])),
   children: [],
   componentInstance: false,
+  internalChildOfComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
 }
@@ -69,6 +71,7 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   element: right(jsxTestElement('View', {}, [])),
   children: [],
   componentInstance: false,
+  internalChildOfComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
 }
@@ -81,6 +84,7 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   element: right(jsxTestElement('View', {}, [])),
   children: [testComponentMetadataGrandchild.templatePath],
   componentInstance: false,
+  internalChildOfComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
 }
@@ -97,6 +101,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
     testComponentMetadataChild3.templatePath,
   ],
   componentInstance: false,
+  internalChildOfComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
 }
@@ -200,6 +205,7 @@ describe('targetElementSupportsChildren', () => {
       element: right(jsxTestElement(elementName, {}, [])),
       children: [],
       componentInstance: false,
+      internalChildOfComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
     }
@@ -324,6 +330,7 @@ describe('getElementLabel', () => {
     zeroRectangle as LocalRectangle,
     [],
     false,
+    false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
   )
@@ -337,6 +344,7 @@ describe('getElementLabel', () => {
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
     [spanElementMetadata.templatePath],
+    false,
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,

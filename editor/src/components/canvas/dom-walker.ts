@@ -48,6 +48,7 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -440,6 +441,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             null,
             rootElements,
             false,
+            false,
             emptySpecialSizeMeasurements,
             emptyComputedStyle,
           )
@@ -534,7 +536,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           }
 
           // Check this is a path we're interested in, otherwise skip straight to the children
-          const pathIsValid = isValidPath(Utils.defaultIfNull(uniquePath, originalPath), validPaths)
+          const pathIsValid =
+            isValidPath(Utils.defaultIfNull(uniquePath, originalPath), validPaths) ||
+            isFeatureEnabled('Component Children Highlights')
           const pathForChildren = pathIsValid ? uniquePath : uniqueParentPath
 
           // Build the metadata for the children of this DOM node.
@@ -598,6 +602,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           globalFrame,
           localFrame,
           children,
+          false,
           false,
           getSpecialMeasurements(element),
           getComputedStyle(element, instancePath),

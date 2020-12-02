@@ -1130,6 +1130,8 @@ export const MetadataUtils = {
         newlyFoundElements.push(domElem.templatePath)
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
+        let internalChildOfComponent =
+          spyElem.internalChildOfComponent || domElem.internalChildOfComponent
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
 
         const possibleUID: string | null | undefined = Utils.defaultIfNull(
@@ -1158,6 +1160,7 @@ export const MetadataUtils = {
           element: elementToUse,
           children: children,
           componentInstance: componentInstance,
+          internalChildOfComponent: internalChildOfComponent,
         }
         workingElements[TP.toString(domElem.templatePath)] = elem
       }
