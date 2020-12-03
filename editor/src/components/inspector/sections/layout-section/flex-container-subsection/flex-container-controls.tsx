@@ -371,7 +371,7 @@ const alignContentOptions = (
     },
   ] as Array<OptionChainOption<string | number>>
 
-const justifyContentOptions = (
+export const justifyContentOptions = (
   alignDirection: FlexDirection,
   justifyFlexStart: uglyLabel,
   justifyFlexEnd: uglyLabel,
@@ -434,7 +434,7 @@ const justifyContentOptions = (
     },
   ] as Array<OptionChainOption<string | number>>
 
-const alignItemsOptions = (
+export const alignItemsOptions = (
   alignDirection: string,
   alignItemsFlexStart: uglyLabel,
   alignItemsFlexEnd: uglyLabel,
@@ -486,7 +486,7 @@ const alignItemsOptions = (
     },
   ] as Array<OptionChainOption<string | number>>
 
-const flexDirectionOptions = (flexWrap: FlexWrap) => {
+export const flexDirectionOptions = (flexWrap: FlexWrap) => {
   const flexDirectionWrap = flexWrap === 'wrap' || flexWrap === 'wrap-reverse' ? 'wrap' : 'nowrap'
   const flexWrapReverse = flexWrap === 'wrap-reverse' ? 'reverse' : 'regular'
 

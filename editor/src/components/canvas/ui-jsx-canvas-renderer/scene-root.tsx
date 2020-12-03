@@ -9,11 +9,7 @@ import {
   emptyComputedStyle,
   JSXElement,
 } from '../../../core/shared/element-template'
-import {
-  InstancePath,
-  ScenePath,
-  ScenePinnedContainer,
-} from '../../../core/shared/project-file-types'
+import { InstancePath, ScenePath } from '../../../core/shared/project-file-types'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
 import { UiJsxCanvasContextData, UiJsxCanvasContext } from '../ui-jsx-canvas'
 import {
@@ -36,12 +32,11 @@ import utils from '../../../utils/utils'
 import { PathForResizeContent } from '../../../core/model/scene-utils'
 
 interface SceneProps {
-  component?: React.ComponentType | null
-  props?: any
-  style?: React.CSSProperties
-  layout?: ScenePinnedContainer
-  'data-uid'?: string
-  'data-label'?: string
+  component: React.ComponentType | null
+  props: any
+  style: React.CSSProperties
+  'data-uid': string
+  'data-label': string | undefined
 }
 
 function useRunSpy(
@@ -61,7 +56,6 @@ function useRunSpy(
   metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
     scenePath: scenePath,
     templatePath: templatePath,
-    container: props.layout,
     component: componentName,
     sceneResizesContent: resizesContent,
     globalFrame: null,
@@ -77,6 +71,7 @@ function useRunSpy(
       localFrame: null,
       children: [],
       componentInstance: false,
+      internalChildOfComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
     }
@@ -165,7 +160,6 @@ export const SceneRootRenderer = betterReactMemo(
           data-utopia-scene-id={TP.toString(scenePath)}
           data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
           style={sceneStyle}
-          layout={sceneProps.layout}
         >
           {rootElement}
         </View>

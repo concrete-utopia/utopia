@@ -220,7 +220,8 @@ describe('SET_CANVAS_FRAMES', () => {
     },
     jsxMetadataKILLME: createFakeMetadataForComponents(originalModel.topLevelElements),
   })
-  const derivedState = deriveState(testEditor, null)
+
+  const derivedState = deriveState(testEditor, null, null)
   it('Updates the frame of the child correctly', () => {
     const action = setCanvasFrames(
       [
@@ -796,7 +797,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     sceneResizesContent: false,
     style: { width: 100, height: 100 },
-    container: { layoutSystem: LayoutSystem.PinSystem },
     rootElements: [rootElementPath],
   }
 
@@ -810,6 +810,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     children: [childElementPath],
     componentInstance: false,
+    internalChildOfComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
   }
@@ -830,6 +831,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
     children: [],
     componentInstance: false,
+    internalChildOfComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
   }
@@ -854,15 +856,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   it('switches from pins to flex correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')
     const result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
-    expect(
-      getOpenUtopiaJSXComponentsFromState(result).map(clearTopLevelElementUniqueIDs),
-    ).toMatchSnapshot()
-  })
-  it('switches from flex to pins correctly', () => {
-    const switchActionToFlex = switchLayoutSystem('flex')
-    let result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
-    const switchActionToPins = switchLayoutSystem(LayoutSystem.PinSystem)
-    result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToPins, result)
     expect(
       getOpenUtopiaJSXComponentsFromState(result).map(clearTopLevelElementUniqueIDs),
     ).toMatchSnapshot()

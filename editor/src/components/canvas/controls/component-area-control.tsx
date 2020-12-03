@@ -12,6 +12,8 @@ import * as TP from '../../../core/shared/template-path'
 import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
+import { CSSCursor } from '../../../uuiui-deps'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface ComponentAreaControlProps {
   target: TemplatePath
@@ -39,6 +41,8 @@ interface ComponentAreaControlProps {
   imports: Imports
   showAdditionalControls: boolean
   testID?: string
+  siblingIndex?: number | null
+  xrayMode: boolean
 }
 
 // SelectModeControl is a transparent react component sitting on top of a utopia component.
@@ -174,6 +178,72 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
       borderRadius,
     } = calculateExtraSizeForZeroSizedElement(this.props.frame)
     const showInvisibleIndicator = canShowInvisibleIndicator && showingInvisibleElement
+    const layoutType = TP.isInstancePath(this.props.target)
+      ? MetadataUtils.getElementByInstancePathMaybe(
+          this.props.componentMetadata.elements,
+          this.props.target,
+        )?.specialSizeMeasurements.layoutSystemForChildren
+      : null
+
+    let cursor = CSSCursor.Select
+    if (
+      TP.isInstancePath(this.props.target) &&
+      MetadataUtils.getElementByInstancePathMaybe(
+        this.props.componentMetadata.elements,
+        this.props.target,
+      )?.specialSizeMeasurements.parentLayoutSystem === 'flex'
+    ) {
+      cursor = CSSCursor.SelectFlex
+    }
+    if (
+      TP.isInstancePath(this.props.target) &&
+      MetadataUtils.isFlowElement(
+        MetadataUtils.getElementByInstancePathMaybe(
+          this.props.componentMetadata.elements,
+          this.props.target,
+        ),
+      )
+    ) {
+      cursor = CSSCursor.SelectFlow
+    }
+    if (
+      TP.isInstancePath(this.props.target) &&
+      MetadataUtils.getElementByInstancePathMaybe(
+        this.props.componentMetadata.elements,
+        this.props.target,
+      )?.specialSizeMeasurements.position === 'relative'
+    ) {
+      cursor = CSSCursor.SelectRelative
+    }
+    if (
+      TP.isInstancePath(this.props.target) &&
+      MetadataUtils.getElementByInstancePathMaybe(
+        this.props.componentMetadata.elements,
+        this.props.target,
+      )?.specialSizeMeasurements.parentLayoutSystem === 'grid'
+    ) {
+      cursor = CSSCursor.SelectGrid
+    }
+
+    const depth = TP.depth(this.props.target) - 1 // scene should be zero
+
+    let colorForLayoutType: string = ''
+    // this is for xray mode
+    switch (layoutType) {
+      case 'flow':
+        colorForLayoutType = '#F9C659'
+        break
+      case 'flex':
+        colorForLayoutType = colorTheme.brandNeonPink.value
+        break
+      case 'grid':
+        colorForLayoutType = 'rgba(255, 150, 50, 0.8)'
+        break
+      default:
+        break
+    }
+
+    const fontSize = (Math.floor((this.props.frame.width + extraWidth) / 30) * 30) / 2
 
     return (
       <React.Fragment>
@@ -195,9 +265,28 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             borderStyle: showInvisibleIndicator ? 'solid' : undefined,
             borderWidth: 0.5 / this.props.scale,
             borderRadius: showInvisibleIndicator ? borderRadius : 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            outline: this.props.xrayMode ? `1px solid ${colorForLayoutType}` : undefined,
+            transform: `translate3d(0, 0, ${depth * 25}px)`,
+            transformStyle: 'preserve-3d',
+            cursor: isFeatureEnabled('Mouse Pointer For Layouttype') ? cursor : undefined,
           }}
           data-testid={this.props.testID}
-        />
+        >
+          <div
+            style={{
+              fontSize: fontSize + 'px',
+              textAlign: 'center',
+              color: this.isTargetSelected()
+                ? UtopiaTheme.color.secondaryBackground.o(70).value
+                : UtopiaTheme.color.secondaryBackground.o(30).value,
+            }}
+          >
+            {this.props.siblingIndex}
+          </div>
+        </div>
       </React.Fragment>
     )
   }
@@ -277,7 +366,9 @@ export class ComponentAreaControl extends ComponentAreaControlInner {
     const isParentSelected = this.props.selectedComponents.some((tp: TemplatePath) =>
       TP.pathsEqual(TP.parentPath(this.props.target), tp),
     )
-    return this.getComponentAreaControl(isParentSelected || this.props.showAdditionalControls)
+    return this.getComponentAreaControl(
+      this.props.xrayMode || isParentSelected || this.props.showAdditionalControls,
+    )
   }
 }
 

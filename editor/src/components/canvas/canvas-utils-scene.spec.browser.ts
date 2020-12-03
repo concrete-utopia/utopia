@@ -561,7 +561,7 @@ describe('moving a scene/rootview on the canvas', () => {
 })
 
 describe('resizing a scene/rootview on the canvas', () => {
-  it('resizing a dynamic scene’s root view sets the root view size', async () => {
+  xit('resizing a dynamic scene’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
       `/** @jsx jsx */
         import * as React from 'react'
@@ -690,7 +690,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
-  it('resizing a dynamic scene sets the root view size', async () => {
+  xit('resizing a dynamic scene sets the root view size', async () => {
     const testCode = Prettier.format(
       `/** @jsx jsx */
         import * as React from 'react'
@@ -816,7 +816,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
-  it('resizing a (group-like) scene with resizeContent enabled that also has width and height ignores the width and height: resizing sets the root view size', async () => {
+  xit('resizing a (group-like) scene with resizeContent enabled that also has width and height ignores the width and height: resizing sets the root view size', async () => {
     const testCode = Prettier.format(
       `/** @jsx jsx */
         import * as React from 'react'
@@ -942,7 +942,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
-  it('resizing a static scene’s root view sets the root view size', async () => {
+  xit('resizing a static scene’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
       `/** @jsx jsx */
         import * as React from 'react'
@@ -1069,7 +1069,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
-  it('resizing a static scene sets the scene size', async () => {
+  xit('resizing a static scene sets the scene size', async () => {
     const testCode = Prettier.format(
       `/** @jsx jsx */
       import * as React from 'react'

@@ -72,7 +72,6 @@ function useLayoutSystemData() {
   const onLayoutSystemChange = React.useCallback(
     (layoutSystem: SettableLayoutSystem) => {
       switch (layoutSystem) {
-        case LayoutSystem.PinSystem:
         case 'flow':
         case 'flex':
           dispatch([switchLayoutSystem(layoutSystem)], 'everyone')
@@ -108,11 +107,7 @@ export const LayoutSystemControl = betterReactMemo(
   'LayoutSystemControl',
   (props: LayoutSystemControlProps) => {
     const layoutSystemData = useLayoutSystemData()
-    const isDetectedLayoutSystemPinSystem =
-      props.layoutSystem === 'flow' && props.providesCoordinateSystemForChildren
-    const detectedLayoutSystem = isDetectedLayoutSystemPinSystem
-      ? 'pinSystem'
-      : props.layoutSystem ?? layoutSystemData.value
+    const detectedLayoutSystem = props.layoutSystem ?? layoutSystemData.value
     return (
       <OptionChainControl
         id={'layoutSystem'}
@@ -138,11 +133,6 @@ const layoutSystemOptions = [
     value: 'flex',
     tooltip: 'Layout children with flexbox',
     label: 'Flex',
-  },
-  {
-    value: 'pinSystem',
-    tooltip: 'Layout children with pins',
-    label: 'Pins',
   },
   {
     value: 'grid',

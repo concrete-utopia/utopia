@@ -57,18 +57,15 @@ export const enum PinType {
   Relative = 'relative',
 }
 
-export interface ScenePinnedContainer {
-  layoutSystem: LayoutSystem.PinSystem
-}
+export interface ElementCanvasMetadata {}
 
-export type SceneContainer = ScenePinnedContainer
+export type CanvasElementMetadataMap = { [utopiaID: string]: ElementCanvasMetadata }
 
 export interface SceneMetadata {
   uid: string
   component: string | null
   props: { [key: string]: any }
   frame: NormalisedFrame
-  container: SceneContainer
   label?: string
 }
 

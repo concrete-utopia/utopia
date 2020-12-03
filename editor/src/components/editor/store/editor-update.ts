@@ -282,6 +282,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_PROPERTY_CONTROLS_INFO(action, state)
     case 'PROPERTY_CONTROLS_IFRAME_READY':
       return UPDATE_FNS.PROPERTY_CONTROLS_IFRAME_READY(action, state)
+    case 'UPDATE_SIMPLE_TEXT_CHILD':
+      return UPDATE_FNS.UPDATE_SIMPLE_TEXT_CHILD(action, state)
     case 'ADD_STORYBOARD_FILE':
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
     case 'SEND_LINTER_REQUEST_MESSAGE':

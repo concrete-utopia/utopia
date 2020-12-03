@@ -1547,7 +1547,9 @@ function printCSSTransformItem(cssTransform: CSSTransformItem): string {
   }
 }
 
-function printTransform(cssTransforms: CSSTransforms): JSXAttributeValue<Property.Transform> {
+export function printTransform(
+  cssTransforms: CSSTransforms,
+): JSXAttributeValue<Property.Transform> {
   return jsxAttributeValue(cssTransforms.map(printCSSTransformItem).join(' '))
 }
 
@@ -3806,10 +3808,7 @@ function isOneOfTheseParser<T extends PrimitiveType>(values: Array<T>): Parser<T
   }
 }
 
-const layoutSystemParser: Parser<LayoutSystem> = isOneOfTheseParser([
-  LayoutSystem.PinSystem,
-  LayoutSystem.Group,
-])
+const layoutSystemParser: Parser<LayoutSystem> = isOneOfTheseParser([LayoutSystem.Group])
 
 const flexWrapParser: Parser<FlexWrap> = isOneOfTheseParser([
   FlexWrap.NoWrap,

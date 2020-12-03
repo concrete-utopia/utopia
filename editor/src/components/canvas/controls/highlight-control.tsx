@@ -8,6 +8,8 @@ interface HighlightControlProps {
   canvasOffset: CanvasPoint
   scale: number
   color?: string
+  striped?: boolean
+  zOffset?: number | null
 }
 
 export class HighlightControl extends React.Component<HighlightControlProps> {
@@ -31,8 +33,16 @@ export class HighlightControl extends React.Component<HighlightControlProps> {
             width: this.props.frame.width + extraWidth,
             height: this.props.frame.height + extraHeight,
             boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
+            backgroundImage: this.props.striped
+              ? `linear-gradient(135deg, ${this.props.color} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${this.props.color} 50%, ${this.props.color} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`
+              : '',
+            backgroundSize: `${20 / this.props.scale}px ${20 / this.props.scale}px`,
             pointerEvents: 'none',
             borderRadius: borderRadius,
+            transform: this.props.zOffset
+              ? `translate3d(0, 0, ${this.props.zOffset || 0}px)`
+              : 'none',
+            transformStyle: this.props.zOffset ? 'preserve-3d' : undefined,
           }}
         />
       </>

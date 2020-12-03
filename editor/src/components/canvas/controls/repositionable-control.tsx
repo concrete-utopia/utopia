@@ -30,6 +30,8 @@ export class RepositionableControl extends React.Component<ControlProps> {
             selectedView,
           )
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
+      const isPositionRelative = instance?.specialSizeMeasurements.position === 'relative'
+      const isFlow = MetadataUtils.isFlowElement(instance)
       const selectionColor = getSelectionColor(
         selectedView,
         this.props.rootComponents,
@@ -37,6 +39,9 @@ export class RepositionableControl extends React.Component<ControlProps> {
         this.props.imports,
         createsYogaLayout,
         anySelectedElementIsYogaLayouted,
+        isPositionRelative,
+        isFlow,
+        instance?.internalChildOfComponent,
       )
 
       indicators.push(

@@ -54,7 +54,7 @@ function sanitizeJsxMetadata(metadata: JSXMetadata) {
 
 async function renderTestEditorWithCode(appUiJsFileCode: string) {
   let emptyEditorState = createEditorState(NO_OP)
-  const derivedState = deriveState(emptyEditorState, null)
+  const derivedState = deriveState(emptyEditorState, null, null)
 
   const history = History.init(emptyEditorState, derivedState)
   const spyCollector = emptyUiJsxCanvasContextData()

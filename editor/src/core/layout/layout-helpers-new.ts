@@ -12,6 +12,21 @@ export type LayoutFlexElementNumericProp = 'Width' | 'Height' | 'FlexFlexBasis' 
 
 export type LayoutFlexElementProp = LayoutFlexElementNumericProp
 
+export type LayoutTargetableProp =
+  | LayoutFlexElementProp
+  | 'minWidth'
+  | 'maxWidth'
+  | 'minHeight'
+  | 'maxHeight'
+  | 'marginTop'
+  | 'marginRight'
+  | 'marginBottom'
+  | 'marginLeft'
+  | 'paddingTop'
+  | 'paddingRight'
+  | 'paddingBottom'
+  | 'paddingLeft'
+
 export type LayoutPinnedProp =
   | LayoutDimension
   | 'PinnedLeft'
@@ -60,11 +75,14 @@ export type StyleLayoutProp =
   | 'marginLeft'
   | 'display'
 
+type TransformProp = 'transform'
+
 export type LayoutProp =
   | 'LayoutSystem'
   | LayoutPinnedProp
   | LayoutFlexContainerProp
   | LayoutFlexElementProp
+  | TransformProp
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {
@@ -157,6 +175,8 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
   paddingBottom: ['style', 'paddingBottom'],
   paddingLeft: ['style', 'paddingLeft'],
   display: ['style', 'display'],
+
+  transform: ['style', 'transform'],
 }
 
 export interface LayoutPropertyTypes {

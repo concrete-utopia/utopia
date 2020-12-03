@@ -129,6 +129,13 @@ export interface InsertJSXElement {
   jsxElement: JSXElement
   parent: TemplatePath | null
   importsToAdd: Imports
+  indexPosition?: IndexPosition | null
+}
+
+export interface UpdateSimpleTextChild {
+  action: 'UPDATE_SIMPLE_TEXT_CHILD'
+  target: InstancePath
+  value: string
 }
 
 export type DeleteSelected = {
@@ -428,7 +435,7 @@ export type ResetPins = {
 export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: TemplatePath[]
-  layoutSystem: LayoutSystem
+  layoutSystem: null
 }
 
 export interface UnwrapGroupOrView {
@@ -895,6 +902,7 @@ export type EditorAction =
   | SetShortcut
   | UpdatePropertyControlsInfo
   | PropertyControlsIFrameReady
+  | UpdateSimpleTextChild
   | AddStoryboardFile
 
 export type DispatchPriority =

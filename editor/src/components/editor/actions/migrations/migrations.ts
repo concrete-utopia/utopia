@@ -1,4 +1,8 @@
-import { PersistentModel } from '../../store/editor-state'
+import {
+  PersistentModel,
+  modifyParseSuccessWithSimple,
+  modifyOpenJSXElements,
+} from '../../store/editor-state'
 import { objectMap } from '../../../../core/shared/object-utils'
 import {
   ProjectFile,
@@ -11,7 +15,7 @@ import {
   unparsed,
   RevisionsState,
 } from '../../../../core/shared/project-file-types'
-import { isRight, right } from '../../../../core/shared/either'
+import { eitherToMaybe, isRight, right } from '../../../../core/shared/either'
 import { convertScenesToUtopiaCanvasComponent } from '../../../../core/model/scene-utils'
 import {
   contentsToTree,

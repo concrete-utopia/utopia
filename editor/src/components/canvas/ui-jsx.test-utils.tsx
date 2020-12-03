@@ -75,7 +75,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const renderCountBaseline = renderCount
 
   let emptyEditorState = createEditorState(NO_OP)
-  const derivedState = deriveState(emptyEditorState, null)
+  const derivedState = deriveState(emptyEditorState, null, null)
 
   const history = History.init(emptyEditorState, derivedState)
 

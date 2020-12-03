@@ -21,6 +21,7 @@ import {
   LayoutProp,
   pinnedPropForFramePoint,
   LayoutPinnedProp,
+  LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
 import {
   maybeSwitchLayoutProps,
@@ -32,6 +33,7 @@ import {
 import {
   findElementAtPath,
   findJSXElementAtPath,
+  getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import {
@@ -42,6 +44,7 @@ import {
   JSXElementChild,
   UtopiaJSXComponent,
   ElementInstanceMetadata,
+  JSXAttributeValue,
   JSXMetadata,
 } from '../../core/shared/element-template'
 import {
@@ -90,6 +93,7 @@ import {
   isRight,
   right,
   isLeft,
+  Either,
 } from '../../core/shared/either'
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
@@ -137,6 +141,7 @@ import {
   oppositeEdgePositionPart,
   pinFrameChange,
   PinOrFlexFrameChange,
+  ReparentTargetIndicatorPosition,
   ResizeDragState,
   singleResizeChange,
 } from './canvas-types'
@@ -165,6 +170,20 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import {
+  cssDefault,
+  cssNumber,
+  cssPixelLength,
+  cssPixelLengthZero,
+  CSSTransformItem,
+  cssTransformTranslate,
+  CSSTransformTranslateItem,
+  parseTransform,
+  printTransform,
+} from '../inspector/common/css-utils'
+import { immutablyUpdateArrayIndex } from '../../core/shared/array-utils'
+import { EditorDispatch } from '../editor/action-types'
 import { openFileTab } from '../editor/store/editor-tabs'
 
 export function getOriginalFrames(
@@ -255,14 +274,65 @@ export function getOriginalCanvasFrames(
   return originalFrames
 }
 
+function updateTransformTranslate(
+  transformValue: Either<string, unknown>,
+  deltaX: number,
+  deltaY: number,
+): JSXAttributeValue<string> {
+  const parsedCssTransformsEither = parseTransform(transformValue.value)
+  if (isRight(parsedCssTransformsEither)) {
+    const parsedCssTransforms = parsedCssTransformsEither.value
+    let lastTranslateIndex = R.findLastIndex(
+      (t: CSSTransformItem): boolean => t.type === 'translate' && t.enabled,
+      parsedCssTransforms,
+    )
+    if (lastTranslateIndex === -1) {
+      lastTranslateIndex = parsedCssTransforms.length
+    }
+
+    const translateTransform =
+      (parsedCssTransforms[lastTranslateIndex] as CSSTransformTranslateItem) ??
+      cssTransformTranslate(cssPixelLengthZero, cssDefault(cssPixelLengthZero))
+
+    const updatedTranslate = cssTransformTranslate(
+      cssPixelLength(translateTransform.values[0].value + deltaX),
+      cssDefault(cssPixelLength(translateTransform.values[1].value.value + deltaY), false),
+    )
+    const updatedArray = immutablyUpdateArrayIndex(
+      parsedCssTransforms,
+      updatedTranslate,
+      lastTranslateIndex,
+    )
+    return printTransform(updatedArray)
+  }
+  return printTransform([
+    cssTransformTranslate(cssPixelLength(deltaX), cssDefault(cssPixelLength(deltaY), false)),
+  ])
+}
+
 export function clearDragState(
   model: EditorState,
   derived: DerivedState,
   applyChanges: boolean,
 ): EditorState {
   let result: EditorState = model
+  clearTimeout((window as any)['flexParentTimer'])
+  clearTimeout((window as any)['flexParentHighlightTimer'])
+  clearTimeout((window as any)['elementPinTimer'])
+  clearTimeout((window as any)['elementContainerHighlightTimer'])
+  ;(window as any)['flexAlignmentDrag'] = null
+  ;(window as any)['flexParentTimer'] = null
+  ;(window as any)['flexParentHighlightTimer'] = null
+  ;(window as any)['elementPinTimer'] = null
+  ;(window as any)['elementContainerHighlightTimer'] = null
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
-    const producedTransientCanvasState = produceCanvasTransientState(result, false)
+    const producedTransientCanvasState = produceCanvasTransientState(
+      result,
+      false,
+      null,
+      derived,
+      applyChanges,
+    )
     const producedTransientFileState = producedTransientCanvasState.fileState
     if (producedTransientFileState != null) {
       result = modifyOpenParseSuccess((success) => {
@@ -285,6 +355,7 @@ export function clearDragState(
     selectedViews: applyChanges
       ? derived.canvas.transientState.selectedViews
       : result.selectedViews,
+    highlightedViews: [],
   }
 }
 
@@ -298,8 +369,13 @@ export function updateFramesOfScenesAndComponents(
   metadata: JSXMetadata,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
-): Array<UtopiaJSXComponent> {
+  areWeInTemporaryDragState: boolean,
+): {
+  components: Array<UtopiaJSXComponent>
+  reparentTargetPositions: Array<ReparentTargetIndicatorPosition>
+} {
   let workingComponentsResult = [...components]
+  let reparentTargetPositions: Array<ReparentTargetIndicatorPosition> = []
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
     const { target } = frameAndTarget
     if (TP.isScenePath(target)) {
@@ -423,6 +499,9 @@ export function updateFramesOfScenesAndComponents(
           break
         case 'FLEX_MOVE':
         case 'FLEX_RESIZE':
+        case 'MOVE_TRANSLATE_CHANGE':
+        case 'FLEX_ALIGN':
+        case 'REORDER_CHANGE':
           throw new Error(
             `Attempted to change a scene with a flex change ${JSON.stringify(target)}.`,
           )
@@ -450,6 +529,7 @@ export function updateFramesOfScenesAndComponents(
         frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
         frameAndTarget.type !== 'PIN_MOVE_CHANGE' &&
         frameAndTarget.type !== 'PIN_SIZE_CHANGE' &&
+        frameAndTarget.type !== 'REORDER_CHANGE' &&
         frameAndTarget.type !== 'SINGLE_RESIZE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
 
       let propsToSet: Array<ValueAtPath> = []
@@ -460,13 +540,31 @@ export function updateFramesOfScenesAndComponents(
             case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
             case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
             case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+            case 'REORDER_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
             case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
               throw new Error(
                 `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
                   staticParentPath,
                 )}.`,
               )
+            case 'FLEX_ALIGN': {
+              propsToSet.push({
+                path: createLayoutPropertyPath('alignSelf'),
+                value: jsxAttributeValue(frameAndTarget.alignment),
+              })
+              propsToSkip.push(createLayoutPropertyPath('FlexFlexBasis'))
+              propsToSkip.push(createLayoutPropertyPath('FlexCrossBasis'))
+              break
+            }
             case 'FLEX_MOVE':
+              if (areWeInTemporaryDragState && isFeatureEnabled('Reorder Shows Placeholder Line')) {
+                reparentTargetPositions.push({
+                  drawAtChildIndex: frameAndTarget.newIndex,
+                  parent: TP.parentPath(frameAndTarget.target),
+                  beforeOrAfter: frameAndTarget.beforeOrAfter,
+                })
+                break
+              }
               workingComponentsResult = reorderComponent(
                 workingComponentsResult,
                 originalTarget,
@@ -480,30 +578,62 @@ export function updateFramesOfScenesAndComponents(
                 if (parentElement == null) {
                   throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
                 }
-                // Flex based layout.
-                const possibleFlexProps = FlexLayoutHelpers.convertWidthHeightToFlex(
-                  frameAndTarget.newSize.width,
-                  frameAndTarget.newSize.height,
-                  element.props,
-                  right(parentElement.props),
-                  frameAndTarget.edgePosition,
+
+                const currentAttributeToChange =
+                  eitherToMaybe(
+                    getSimpleAttributeAtPath(
+                      right(element.props),
+                      createLayoutPropertyPath(frameAndTarget.targetProperty),
+                    ),
+                  ) ?? 0
+
+                const newAttributeValue = jsxAttributeValue(
+                  currentAttributeToChange + frameAndTarget.delta,
                 )
-                forEachRight(possibleFlexProps, (flexProps) => {
-                  const { flexBasis, crossBasis } = flexProps
-                  if (flexBasis != null) {
-                    propsToSet.push({
-                      path: createLayoutPropertyPath('FlexFlexBasis'),
-                      value: jsxAttributeValue(flexBasis),
-                    })
-                  }
-                  if (crossBasis != null) {
-                    propsToSet.push({
-                      path: createLayoutPropertyPath('FlexCrossBasis'),
-                      value: jsxAttributeValue(crossBasis),
-                    })
-                  }
+
+                propsToSet.push({
+                  path: createLayoutPropertyPath(frameAndTarget.targetProperty),
+                  value: newAttributeValue,
                 })
+
+                propsToSkip.push(
+                  createLayoutPropertyPath('left'),
+                  createLayoutPropertyPath('top'),
+                  createLayoutPropertyPath('right'),
+                  createLayoutPropertyPath('bottom'),
+                  createLayoutPropertyPath('Width'),
+                  createLayoutPropertyPath('Height'),
+                  createLayoutPropertyPath('minWidth'),
+                  createLayoutPropertyPath('minHeight'),
+                  createLayoutPropertyPath('maxWidth'),
+                  createLayoutPropertyPath('maxHeight'),
+                  createLayoutPropertyPath('FlexCrossBasis'),
+                  createLayoutPropertyPath('FlexFlexBasis'),
+                )
               }
+              break
+            case 'MOVE_TRANSLATE_CHANGE':
+              const updatedAttribute = updateTransformTranslate(
+                getSimpleAttributeAtPath(
+                  right(element.props),
+                  createLayoutPropertyPath('transform'),
+                ),
+                frameAndTarget.delta.x,
+                frameAndTarget.delta.y,
+              )
+
+              propsToSet.push({
+                path: createLayoutPropertyPath('transform'),
+                value: updatedAttribute,
+              })
+              propsToSkip.push(
+                createLayoutPropertyPath('Width'),
+                createLayoutPropertyPath('Height'),
+                createLayoutPropertyPath('PinnedLeft'),
+                createLayoutPropertyPath('PinnedTop'),
+                createLayoutPropertyPath('FlexFlexBasis'),
+                createLayoutPropertyPath('FlexCrossBasis'),
+              )
               break
             default:
               const _exhaustiveCheck: never = frameAndTarget
@@ -653,6 +783,26 @@ export function updateFramesOfScenesAndComponents(
             )
             break
           }
+          case 'MOVE_TRANSLATE_CHANGE':
+            const updatedAttribute = updateTransformTranslate(
+              getSimpleAttributeAtPath(right(element.props), createLayoutPropertyPath('transform')),
+              frameAndTarget.delta.x,
+              frameAndTarget.delta.y,
+            )
+
+            propsToSet.push({
+              path: createLayoutPropertyPath('transform'),
+              value: updatedAttribute,
+            })
+            propsToSkip.push(
+              createLayoutPropertyPath('Width'),
+              createLayoutPropertyPath('Height'),
+              createLayoutPropertyPath('PinnedLeft'),
+              createLayoutPropertyPath('PinnedTop'),
+              createLayoutPropertyPath('FlexFlexBasis'),
+              createLayoutPropertyPath('FlexCrossBasis'),
+            )
+            break
           case 'SINGLE_RESIZE':
             let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
             Utils.fastForEach(LayoutPinnedProps, (p) => {
@@ -703,8 +853,24 @@ export function updateFramesOfScenesAndComponents(
               ),
             )
             break
+          case 'REORDER_CHANGE':
+            if (areWeInTemporaryDragState) {
+              reparentTargetPositions.push({
+                drawAtChildIndex: frameAndTarget.newIndex,
+                parent: TP.parentPath(frameAndTarget.target),
+                beforeOrAfter: frameAndTarget.beforeOrAfter,
+              })
+              break
+            }
+            workingComponentsResult = reorderComponent(
+              workingComponentsResult,
+              originalTarget,
+              frameAndTarget.newIndex,
+            )
+            break
           case 'FLEX_MOVE':
           case 'FLEX_RESIZE':
+          case 'FLEX_ALIGN':
             throw new Error(
               `Attempted to make a flex change against a pinned element ${JSON.stringify(
                 staticParentPath,
@@ -773,7 +939,7 @@ export function updateFramesOfScenesAndComponents(
       // doesn't work. Once that is fixed we can re-implement keeping the children in place
     }
   })
-  return workingComponentsResult
+  return { components: workingComponentsResult, reparentTargetPositions: reparentTargetPositions }
 }
 
 function updateFrameValueForProp(
@@ -1377,6 +1543,7 @@ export function produceResizeCanvasTransientState(
   parseSuccess: ParseSuccess,
   dragState: ResizeDragState,
   preventAnimations: boolean,
+  applyChanges: boolean,
 ): TransientCanvasState {
   const elementsToTarget = determineElementsToOperateOnForDragging(
     dragState.draggedElements,
@@ -1396,7 +1563,7 @@ export function produceResizeCanvasTransientState(
   })
   const boundingBox = Utils.boundingRectangleArray(globalFrames)
   if (boundingBox == null) {
-    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null)
+    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null, [])
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
       const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, target)
@@ -1417,7 +1584,10 @@ export function produceResizeCanvasTransientState(
           editorState.jsxMetadataKILLME,
         )
         if (isFlexContainer) {
-          framesAndTargets.push(flexResizeChange(target, roundedFrame, dragState.edgePosition))
+          const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
+            ? dragState.drag?.x ?? 0
+            : dragState.drag?.y ?? 0
+          framesAndTargets.push(flexResizeChange(target, dragState.targetProperty, newDelta))
         } else {
           framesAndTargets.push(pinFrameChange(target, roundedFrame, dragState.edgePosition))
         }
@@ -1432,11 +1602,15 @@ export function produceResizeCanvasTransientState(
 
     const componentsIncludingFakeUtopiaScene = openComponents
 
-    const updatedScenesAndComponents = updateFramesOfScenesAndComponents(
+    const {
+      components: updatedScenesAndComponents,
+      reparentTargetPositions,
+    } = updateFramesOfScenesAndComponents(
       componentsIncludingFakeUtopiaScene,
       editorState.jsxMetadataKILLME,
       framesAndTargets,
       null,
+      !applyChanges,
     )
 
     // Sync these back up.
@@ -1449,8 +1623,13 @@ export function produceResizeCanvasTransientState(
       editorState.selectedViews,
       editorState.highlightedViews,
       transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+      reparentTargetPositions,
     )
   }
+}
+
+export function isTargetPropertyHorizontal(edgePosition: EdgePosition): boolean {
+  return edgePosition.x !== 0.5
 }
 
 export function produceResizeSingleSelectCanvasTransientState(
@@ -1458,6 +1637,7 @@ export function produceResizeSingleSelectCanvasTransientState(
   parseSuccess: ParseSuccess,
   dragState: ResizeDragState,
   preventAnimations: boolean,
+  applyChanges: boolean,
 ): TransientCanvasState {
   const elementsToTarget = determineElementsToOperateOnForDragging(
     dragState.draggedElements,
@@ -1466,7 +1646,7 @@ export function produceResizeSingleSelectCanvasTransientState(
     true,
   )
   if (elementsToTarget.length !== 1) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
   }
   const elementToTarget = elementsToTarget[0]
 
@@ -1486,8 +1666,11 @@ export function produceResizeSingleSelectCanvasTransientState(
       elementToTarget,
       editorState.jsxMetadataKILLME,
     )
-    if (isFlexContainer) {
-      framesAndTargets.push(flexResizeChange(elementToTarget, roundedFrame, dragState.edgePosition))
+    if (isFlexContainer && (dragState.edgePosition.x === 0.5 || dragState.edgePosition.y === 0.5)) {
+      const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
+        ? dragState.drag?.x ?? 0
+        : dragState.drag?.y ?? 0
+      framesAndTargets.push(flexResizeChange(elementToTarget, dragState.targetProperty, newDelta))
     } else {
       const edgePosition = dragState.centerBasedResize
         ? ({ x: 0.5, y: 0.5 } as EdgePosition)
@@ -1496,7 +1679,18 @@ export function produceResizeSingleSelectCanvasTransientState(
         x: roundedFrame.width - originalFrame.width,
         y: roundedFrame.height - originalFrame.height,
       } as CanvasVector
-      framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
+      if (
+        (dragState.edgePosition.x === 0.5 || dragState.edgePosition.y === 0.5) &&
+        dragState.targetProperty !== 'Height' &&
+        dragState.targetProperty !== 'Width'
+      ) {
+        const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
+          ? dragState.drag?.x ?? 0
+          : dragState.drag?.y ?? 0
+        framesAndTargets.push(flexResizeChange(elementToTarget, dragState.targetProperty, newDelta))
+      } else {
+        framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
+      }
     }
   }
 
@@ -1508,11 +1702,15 @@ export function produceResizeSingleSelectCanvasTransientState(
 
   const componentsIncludingFakeUtopiaScene = openComponents
 
-  const updatedScenesAndComponents = updateFramesOfScenesAndComponents(
+  const {
+    components: updatedScenesAndComponents,
+    reparentTargetPositions,
+  } = updateFramesOfScenesAndComponents(
     componentsIncludingFakeUtopiaScene,
     editorState.jsxMetadataKILLME,
     framesAndTargets,
     null,
+    !applyChanges,
   )
 
   // Sync these back up.
@@ -1525,15 +1723,19 @@ export function produceResizeSingleSelectCanvasTransientState(
     editorState.selectedViews,
     editorState.highlightedViews,
     transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+    reparentTargetPositions,
   )
 }
 
 export function produceCanvasTransientState(
   editorState: EditorState,
   preventAnimations: boolean,
+  dispatch: EditorDispatch | null,
+  derivedState: DerivedState | null,
+  applyChanges: boolean,
 ): TransientCanvasState {
   function noFileTransientCanvasState(): TransientCanvasState {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
   }
   function parseSuccessTransientCanvasState(parseSuccess: ParseSuccess): TransientCanvasState {
     const topLevelElementsIncludingScenes = parseSuccess.topLevelElements
@@ -1541,6 +1743,7 @@ export function produceCanvasTransientState(
       selectedViews: editorState.selectedViews,
       highlightedViews: editorState.highlightedViews,
       fileState: transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+      reparentTargetPositions: [],
     }
   }
   const openUIFile = getOpenUIJSFile(editorState)
@@ -1586,6 +1789,7 @@ export function produceCanvasTransientState(
                 editorState.selectedViews,
                 editorState.highlightedViews,
                 transientFileState(topLevelElementsIncludingScenes, updatedImports),
+                [], // TODO interesting idea: for insertion we could show a similar indicator
               )
             } else {
               return parseSuccessTransientCanvasState(parseSuccess)
@@ -1601,12 +1805,27 @@ export function produceCanvasTransientState(
               const dragState = editorState.canvas.dragState
               switch (dragState.type) {
                 case 'MOVE_DRAG_STATE':
-                  return produceMoveTransientCanvasState(
-                    editorState,
-                    dragState,
-                    parseSuccess,
-                    preventAnimations,
-                  )
+                  if (dragState.translate) {
+                    return produceMoveTransientCanvasState(
+                      editorState,
+                      dragState,
+                      parseSuccess,
+                      preventAnimations,
+                      dispatch,
+                      derivedState,
+                      applyChanges,
+                    )
+                  } else {
+                    return produceMoveTransientCanvasState(
+                      editorState,
+                      dragState,
+                      parseSuccess,
+                      preventAnimations,
+                      dispatch,
+                      derivedState,
+                      applyChanges,
+                    )
+                  }
                 case 'RESIZE_DRAG_STATE':
                   if (dragState.isMultiSelect) {
                     return produceResizeCanvasTransientState(
@@ -1614,6 +1833,7 @@ export function produceCanvasTransientState(
                       parseSuccess,
                       dragState,
                       preventAnimations,
+                      applyChanges,
                     )
                   } else {
                     return produceResizeSingleSelectCanvasTransientState(
@@ -1621,6 +1841,7 @@ export function produceCanvasTransientState(
                       parseSuccess,
                       dragState,
                       preventAnimations,
+                      applyChanges,
                     )
                   }
 
@@ -1723,6 +1944,7 @@ export function getReparentTarget(
 ): {
   shouldReparent: boolean
   newParent: TemplatePath | null
+  possibleTargets: TemplatePath[]
 } {
   const result = getReparentTargetAtPosition(editorState, position)
   const possibleNewParent = result == undefined ? null : result
@@ -1730,8 +1952,19 @@ export function getReparentTarget(
     toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadataKILLME, view)),
   )
   let parentSupportsChild = true
+  const imports = getOpenImportsFromState(editorState)
+  const possibleTargets = Canvas.getAllTargetsAtPoint(
+    editorState,
+    position,
+    [TargetSearchType.All],
+    false,
+    'around-the-target',
+  )
+    .filter((target) => editorState.selectedViews.every((view) => !TP.pathsEqual(view, target)))
+    .filter((target) =>
+      MetadataUtils.targetSupportsChildren(imports, editorState.jsxMetadataKILLME, target),
+    )
   if (possibleNewParent != null) {
-    const imports = getOpenImportsFromState(editorState)
     parentSupportsChild = MetadataUtils.targetSupportsChildren(
       imports,
       editorState.jsxMetadataKILLME,
@@ -1743,6 +1976,7 @@ export function getReparentTarget(
     return {
       shouldReparent: storyboardComponent != null,
       newParent: storyboardComponent,
+      possibleTargets: possibleTargets,
     }
   }
   if (
@@ -1754,11 +1988,13 @@ export function getReparentTarget(
     return {
       shouldReparent: true,
       newParent: possibleNewParent,
+      possibleTargets: possibleTargets,
     }
   } else {
     return {
       shouldReparent: false,
       newParent: null,
+      possibleTargets: possibleTargets,
     }
   }
 }
@@ -1769,6 +2005,7 @@ export interface MoveTemplateResult {
   metadata: JSXMetadata
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
+  reparentTargetPositions: Array<ReparentTargetIndicatorPosition>
 }
 
 export function getFrameChange(
@@ -1777,7 +2014,7 @@ export function getFrameChange(
   isParentFlex: boolean,
 ): PinOrFlexFrameChange {
   if (isParentFlex) {
-    return flexResizeChange(target, newFrame, null)
+    return flexResizeChange(target, 'FlexFlexBasis', 0) // KILLME
   } else {
     return pinFrameChange(target, newFrame, null)
   }
@@ -1795,6 +2032,7 @@ export function moveTemplate(
   selectedViews: Array<TemplatePath>,
   highlightedViews: Array<TemplatePath>,
   newParentLayoutSystem: LayoutSystem | null,
+  areWeInTemporaryDragState: boolean,
 ): MoveTemplateResult {
   function noChanges(): MoveTemplateResult {
     return {
@@ -1803,6 +2041,7 @@ export function moveTemplate(
       metadata: componentMetadata,
       selectedViews: selectedViews,
       highlightedViews: highlightedViews,
+      reparentTargetPositions: [],
     }
   }
   if (TP.isScenePath(target)) {
@@ -1832,6 +2071,7 @@ export function moveTemplate(
         metadata: componentMetadata,
         selectedViews: selectedViews,
         highlightedViews: highlightedViews,
+        reparentTargetPositions: [],
       }
     }
   } else {
@@ -1865,6 +2105,7 @@ export function moveTemplate(
         return noChanges()
       } else {
         let updatedUtopiaComponents: Array<UtopiaJSXComponent> = utopiaComponentsIncludingScenes
+        let reparentTargetPositions: Array<ReparentTargetIndicatorPosition> = []
         let newPath: TemplatePath | null = null
         let updatedComponentMetadata: JSXMetadata = withMetadataUpdatedForNewContext
 
@@ -1948,9 +2189,11 @@ export function moveTemplate(
             updatedComponentMetadata,
             frameChanges,
             parentFrame,
+            areWeInTemporaryDragState,
           )
 
-          updatedUtopiaComponents = frameChangeResult
+          updatedUtopiaComponents = frameChangeResult.components
+          reparentTargetPositions = frameChangeResult.reparentTargetPositions
         }
 
         const newSelectedViews = selectedViews.map((v) => {
@@ -1972,6 +2215,7 @@ export function moveTemplate(
           metadata: updatedComponentMetadata,
           selectedViews: filterMultiSelectScenes(Utils.stripNulls(newSelectedViews)),
           highlightedViews: Utils.stripNulls(newHighlightedViews),
+          reparentTargetPositions,
         }
       }
     }
@@ -2020,6 +2264,9 @@ function produceMoveTransientCanvasState(
   dragState: MoveDragState,
   parseSuccess: ParseSuccess,
   preventAnimations: boolean,
+  dispatch: EditorDispatch | null,
+  derivedState: DerivedState | null,
+  applyChanges: boolean,
 ): TransientCanvasState {
   let selectedViews: Array<TemplatePath> = dragState.draggedElements
   let metadata: JSXMetadata = editorState.jsxMetadataKILLME
@@ -2039,7 +2286,7 @@ function produceMoveTransientCanvasState(
     ? preventAnimationsOnTargets(untouchedOpenComponents, elementsToTarget)
     : untouchedOpenComponents
 
-  if (dragState.reparent) {
+  if (dragState.reparent || dragState.localReparent || dragState.reparentMove) {
     const reparentTarget = getReparentTarget(
       editorState,
       elementsToTarget,
@@ -2048,13 +2295,14 @@ function produceMoveTransientCanvasState(
 
     if (reparentTarget.shouldReparent) {
       Utils.fastForEach(elementsToTarget, (target) => {
-        const frame = originalFrames.find((originalFrameAndTarget) => {
-          return TP.pathsEqual(originalFrameAndTarget.target, target)
-        })?.frame
+        const frame =
+          originalFrames.find((originalFrameAndTarget) => {
+            return TP.pathsEqual(originalFrameAndTarget.target, target)
+          })?.frame ?? null
         const reparentResult = moveTemplate(
           target,
           target,
-          frame ?? null,
+          dragState.localReparent ? 'skipFrameChange' : frame,
           { type: 'front' },
           reparentTarget.newParent,
           null,
@@ -2063,8 +2311,11 @@ function produceMoveTransientCanvasState(
           selectedViews,
           highlightedViews,
           null,
+          !applyChanges,
         )
-        highlightedViews = reparentResult.highlightedViews
+        highlightedViews = isFeatureEnabled('Nearby Reparent Target Highlight')
+          ? reparentTarget.possibleTargets
+          : reparentResult.highlightedViews
         selectedViews = reparentResult.selectedViews
         metadata = reparentResult.metadata
         utopiaComponentsIncludingScenes = reparentResult.utopiaComponentsIncludingScenes
@@ -2080,6 +2331,8 @@ function produceMoveTransientCanvasState(
           }
         })
       })
+    } else {
+      highlightedViews = reparentTarget.possibleTargets
     }
   } else if (dragState.duplicate) {
     const parentTarget = MetadataUtils.getDuplicationParentTargets(selectedViews)
@@ -2102,19 +2355,30 @@ function produceMoveTransientCanvasState(
     moveGuidelines,
     dragState.dragSelectionBoundingBox,
     dragState.drag,
-    Utils.defaultIfNull(Utils.zeroPoint as CanvasPoint, dragState.drag),
+    dragState.localReparent || dragState.reparent
+      ? (Utils.zeroPoint as CanvasPoint)
+      : Utils.defaultIfNull(Utils.zeroPoint as CanvasPoint, dragState.drag),
     dragState.enableSnapping,
     dragState.constrainDragAxis,
     editorState.canvas.scale,
+    dragState.translate,
+    dragState.start,
+    editorState,
+    dispatch,
+    derivedState,
   )
 
   const componentsIncludingFakeUtopiaScene = utopiaComponentsIncludingScenes
 
-  const updatedScenesAndComponents = updateFramesOfScenesAndComponents(
+  const {
+    components: updatedScenesAndComponents,
+    reparentTargetPositions,
+  } = updateFramesOfScenesAndComponents(
     componentsIncludingFakeUtopiaScene,
     metadata,
     framesAndTargets,
     null,
+    !applyChanges,
   )
 
   // Sync these back up.
@@ -2126,6 +2390,7 @@ function produceMoveTransientCanvasState(
     selectedViews,
     highlightedViews,
     transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+    reparentTargetPositions,
   )
 }
 

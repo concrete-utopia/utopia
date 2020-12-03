@@ -32,10 +32,7 @@ function computeNonGroupChildren(
         child.props,
         child.props.children,
       )
-      const childPinsProps =
-        parentLayoutProps.layoutSystem === LayoutSystem.PinSystem
-          ? convertPinsToAbsoluteStyleProps(childLayout)
-          : convertPinsToStyleProps(childLayout)
+      const childPinsProps = convertPinsToStyleProps(childLayout)
       return {
         ...childFlexProps,
         ...childContainerProps,
@@ -149,7 +146,6 @@ export function calculateChildStylesToPrepend(
   const layout = { ...props.layout, ...props.style } as LayoutProps
 
   switch (layout.layoutSystem) {
-    case LayoutSystem.PinSystem:
     case undefined:
       return computeNonGroupChildren(children, layout)
     case LayoutSystem.Group:
@@ -181,7 +177,6 @@ export function calculateChildStylesThatOverwriteStyle(
         }
       })
       return childPositionStyles
-    case LayoutSystem.PinSystem:
     case undefined:
       return []
     default:
@@ -203,10 +198,6 @@ function calculateContainerProps(
       return {
         position: 'absolute',
         ...selfFrame,
-      }
-    case LayoutSystem.PinSystem:
-      return {
-        position: parentLayoutSystem === LayoutSystem.PinSystem ? 'absolute' : 'relative',
       }
     case undefined:
       return flexParentPropsToStyle(layout)
@@ -232,13 +223,6 @@ export function calculateOwnStyleProp(
         return {
           position: 'absolute',
           ...selfFrame,
-        }
-      case LayoutSystem.PinSystem:
-        return {
-          ...flexElementPropsToStyle(layout, {}, 0, 1), // TODO instead of flexElementPropsToStyle, make a function that moves only the non-magic props to style
-          ...flexParentPropsToStyle(layout),
-          ...convertPinsToStyleProps(layout as any),
-          position: 'relative',
         }
       default:
         return {

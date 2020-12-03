@@ -11,9 +11,11 @@ import { anyInstanceYogaLayouted } from './select-mode/yoga-utils'
 import { MarginControls } from './margin-controls'
 import { PaddingControls } from './padding-controls'
 import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
-import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
+import { canvasRectangle, CanvasRectangle, offsetRect, rect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { KeysPressed } from '../../../utils/keyboard'
+import { CanvasPinControls } from './pin-controls'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -22,6 +24,9 @@ export function getSelectionColor(
   imports: Imports,
   createsYogaLayout: boolean,
   anySelectedElementIsYogaLayouted: boolean,
+  isPositionRelative: boolean,
+  isFlow: boolean,
+  internalChildOfComponent: boolean | undefined,
 ): string {
   if (TP.isScenePath(path)) {
     return colorTheme.canvasSelectionSceneOutline.value
@@ -32,10 +37,16 @@ export function getSelectionColor(
     const originType = MetadataUtils.getElementOriginType(rootElements, path)
     if (originType === 'generated-static-definition-present' || originType === 'unknown-element') {
       return colorTheme.canvasSelectionRandomDOMElementInstanceOutline.value
+    } else if (internalChildOfComponent) {
+      return '#FFA500'
     } else if (createsYogaLayout) {
       return colorTheme.canvasSelectionAlternateOutlineYogaParent.value
     } else if (anySelectedElementIsYogaLayouted) {
       return colorTheme.canvasSelectionAlternateOutlineYogaChild.value
+    } else if (isPositionRelative && isFeatureEnabled('Layouttype Outline')) {
+      return '#0DDCAA'
+    } else if (isFlow && isFeatureEnabled('Layouttype Outline')) {
+      return '#F9C659'
     } else {
       return colorTheme.canvasSelectionPrimaryOutline.value
     }
@@ -44,6 +55,9 @@ export function getSelectionColor(
 
 export interface OutlineControlsProps extends ControlProps {
   dragState: MoveDragState | ResizeDragState | null
+  keysPressed: KeysPressed
+  layoutInspectorSectionHovered: boolean
+  xrayMode: boolean
 }
 
 function isDraggingToMove(
@@ -140,6 +154,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
             selectedView,
           )
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
+      const isPositionRelative = instance?.specialSizeMeasurements.position === 'relative'
+      const isFlow = MetadataUtils.isFlowElement(instance)
       const selectionColor = getSelectionColor(
         selectedView,
         this.props.rootComponents,
@@ -147,6 +163,9 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         this.props.imports,
         createsYogaLayout,
         anySelectedElementIsYogaLayouted,
+        isPositionRelative,
+        isFlow,
+        instance?.internalChildOfComponent,
       )
 
       if (this.props.dragState == null) {
@@ -182,6 +201,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
           color={selectionColor}
           striped={createsYogaLayout}
           stripedColor={colorTheme.canvasSelectionAlternateOutlineYogaParent.shade(50).value}
+          zOffset={this.props.xrayMode ? (TP.depth(selectedView) - 1) * 25 : null}
         />,
       )
     })
@@ -189,7 +209,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
     if (
       targetPaths.length > 1 &&
       TP.areAllElementsInSameScene(targetPaths) &&
-      this.props.componentMetadata.components.length > 0
+      this.props.componentMetadata.components.length > 0 &&
+      !this.props.xrayMode
     ) {
       const globalFrames = targetPaths.map((selectedView) => this.getTargetFrame(selectedView))
       const boundingBox = Utils.boundingRectangleArray(globalFrames)
@@ -205,8 +226,103 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         )
       }
     }
+    const parentHighlights = !(
+      this.props.keysPressed['cmd'] || this.props.layoutInspectorSectionHovered
+    )
+      ? []
+      : this.props.selectedViews.map((view) => {
+          const parentPath = TP.parentPath(view)
+          if (parentPath != null) {
+            const parentFrame = MetadataUtils.getFrameInCanvasCoords(
+              parentPath,
+              this.props.componentMetadata,
+            )
+            if (parentFrame != null) {
+              return (
+                <>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: parentFrame.x + this.props.canvasOffset.x - 4,
+                      top: parentFrame.y + this.props.canvasOffset.y - 11,
+                      color: colorTheme.red.value,
+                      fontSize: '13px',
+                    }}
+                  >
+                    ×
+                  </div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 5,
+                      top: parentFrame.y + this.props.canvasOffset.y - 11,
+                      color: colorTheme.red.value,
+                      fontSize: '13px',
+                    }}
+                  >
+                    ×
+                  </div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: parentFrame.x + this.props.canvasOffset.x - 4,
+                      top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 12,
+                      color: colorTheme.red.value,
+                      fontSize: '13px',
+                    }}
+                  >
+                    ×
+                  </div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: parentFrame.x + parentFrame.width + this.props.canvasOffset.x - 4,
+                      top: parentFrame.y + parentFrame.height + this.props.canvasOffset.y - 12,
+                      color: colorTheme.red.value,
+                      fontSize: '13px',
+                    }}
+                  >
+                    ×
+                  </div>
+                </>
+              )
+            } else {
+              return null
+            }
+          } else {
+            return null
+          }
+        })
+
+    const containingBlockHighlights = this.props.selectedViews.map((view) => {
+      const containingBlockParent = MetadataUtils.findContainingBlock(
+        this.props.componentMetadata.elements,
+        view,
+      )
+      const containingRectangle = MetadataUtils.getElementByTemplatePathMaybe(
+        this.props.componentMetadata.elements,
+        containingBlockParent,
+      )?.globalFrame
+      if (containingRectangle == null) {
+        return null
+      } else {
+        return (
+          <Outline
+            key={`containing-block`}
+            rect={containingRectangle}
+            offset={this.props.canvasOffset}
+            scale={this.props.scale}
+            color={colorTheme.brandPurple.value}
+          />
+        )
+      }
+    })
+
     return (
       <>
+        {isFeatureEnabled('Flex Sibling Numbers') ? parentHighlights : null}
+        {isFeatureEnabled('Highlight Containing Block') ? containingBlockHighlights : null}
+        {isFeatureEnabled('Show Pins') ? <CanvasPinControls {...this.props} /> : null}
         {...selectionOutlines}
         {multiSelectOutline}
       </>

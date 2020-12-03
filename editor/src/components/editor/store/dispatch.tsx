@@ -150,7 +150,7 @@ function processAction(
         break
       case 'NEW':
       case 'LOAD':
-        const derivedState = deriveState(editorAfterNavigator, null)
+        const derivedState = deriveState(editorAfterNavigator, null, null)
         newStateHistory = History.init(editorAfterNavigator, derivedState)
         break
       default:
@@ -520,7 +520,7 @@ function editorDispatchInner(
       // !! We completely skip creating a new derived state, since the editor state stayed the exact same
       frozenDerivedState = storedState.derived
     } else {
-      const derivedState = deriveState(frozenEditorState, storedState.derived)
+      const derivedState = deriveState(frozenEditorState, storedState.derived, storedState.dispatch)
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 

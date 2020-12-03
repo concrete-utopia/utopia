@@ -265,7 +265,7 @@ export function removeAll<T>(
 }
 
 export function immutablyUpdateArrayIndex<T>(
-  oldValue: Array<T>,
+  oldValue: ReadonlyArray<T>,
   newValue: T,
   indexToReplace: number,
 ): Array<T> {

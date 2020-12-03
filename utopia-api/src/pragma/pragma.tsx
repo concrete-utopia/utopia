@@ -73,7 +73,7 @@ export const jsx = (type: any, ...pragmaParams: any[]) => {
 
       const reactChildren = props.children
 
-      const { layout: passedLayout, ...originalProps } = props
+      const { layout: passedLayout } = props
 
       const childStyles = calculateChildStylesToPrepend(props, reactChildren)
       const ownStyle = calculateOwnStyleProp(props, reactChildren)
@@ -83,28 +83,25 @@ export const jsx = (type: any, ...pragmaParams: any[]) => {
       )
 
       const isGroup: boolean = passedLayout == null ? false : passedLayout.layoutSystem === 'group'
-      const styleFromProps = isGroup
-        ? filterFrameFromStyle(originalProps.style)
-        : { ...originalProps.style }
+      const styleFromProps = isGroup ? filterFrameFromStyle(props.style) : { ...props.style }
 
       const styleIsDefined = styleFromProps != null || ownStyle != undefined
       const finalOwnProps = styleIsDefined
         ? {
-            ...originalProps,
+            ...props,
             style: {
               ...ownStyle,
               ...styleFromProps,
             },
           }
-        : originalProps // we don't modify the props object in case there is no need to do so
+        : props // we don't modify the props object in case there is no need to do so
 
       const mappedChildren = React.Children.map(reactChildren, (child, index) => {
         if (
           (childStyles[index] != null || childStylesThatOverwriteStyle[index] != null) &&
           React.isValidElement(child)
         ) {
-          const removeLayoutPropFromReactBuiltins =
-            typeof child.type === 'string' ? { layout: undefined } : {}
+          const removeLayoutPropFromReactBuiltins = typeof child.type === 'string' ? {} : {} // do not remove layout prop
 
           const childProps: any = child.props
           const childStyleProps =

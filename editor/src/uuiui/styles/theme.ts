@@ -28,6 +28,7 @@ const lightBase = {
   brandNeonPink: base.neonpink,
   spectrumTop: base.white,
   spectrumBottom: base.black,
+  red: base.red,
 }
 
 const darkBase = lightBase

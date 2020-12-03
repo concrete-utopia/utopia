@@ -1,14 +1,15 @@
 import * as React from 'react'
 import { FlexStretch, Sides } from 'utopia-api'
 import { colorTheme } from 'uuiui'
-import { LayoutHelpers } from '../../../core/layout/layout-helpers'
+import { FlexLayoutHelpers, LayoutHelpers } from '../../../core/layout/layout-helpers'
 import {
+  findJSXElementAtPath,
   getSceneMetadataOrElementInstanceMetadata,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { InstancePath } from '../../../core/shared/project-file-types'
-import { defaultEither, mapEither } from '../../../core/shared/either'
+import { defaultEither, eitherToMaybe, mapEither, right } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
@@ -75,10 +76,35 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
       return null
     }
 
+    let labels: {
+      vertical: 'FlexFlexBasis' | 'FlexCrossBasis'
+      horizontal: 'FlexFlexBasis' | 'FlexCrossBasis'
+    } = {
+      vertical: 'FlexFlexBasis',
+      horizontal: 'FlexCrossBasis',
+    }
+    const parentPath = TP.parentPath(this.props.target)
+    const parentElement = findJSXElementAtPath(parentPath, this.props.rootComponents)
+    if (parentElement != null) {
+      const flexDirection = eitherToMaybe(FlexLayoutHelpers.getMainAxis(right(parentElement.props)))
+      if (flexDirection === 'vertical') {
+        // column, column-reverse
+        labels = {
+          horizontal: 'FlexCrossBasis',
+          vertical: 'FlexFlexBasis',
+        }
+      } else {
+        labels = {
+          vertical: 'FlexFlexBasis',
+          horizontal: 'FlexCrossBasis',
+        }
+      }
+    }
     const yogaSize = this.getYogaSize(visualSize)
 
     return (
       <ResizeRectangle
+        targetComponentMetadata={this.props.targetElement}
         dispatch={this.props.dispatch}
         scale={this.props.scale}
         canvasOffset={this.props.canvasOffset}
@@ -96,6 +122,10 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         metadata={this.props.componentMetadata}
         onResizeStart={Utils.NO_OP}
         testID={`component-resize-control-${TP.toComponentId(this.props.target)}-0`}
+        labels={labels}
+        propertyTargetOptions={this.props.propertyTargetOptions}
+        propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
+        setTargetOptionsArray={this.props.setTargetOptionsArray}
       />
     )
   }
@@ -131,6 +161,7 @@ export class YogaControls extends React.Component<YogaControlsProps> {
             selectedView,
           )
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
+      const isPositionRelative = instance?.specialSizeMeasurements.position === 'relative'
       color = getSelectionColor(
         selectedView,
         this.props.rootComponents,
@@ -138,6 +169,9 @@ export class YogaControls extends React.Component<YogaControlsProps> {
         this.props.imports,
         createsYogaLayout,
         true,
+        isPositionRelative,
+        false,
+        instance?.internalChildOfComponent,
       )
     }
 

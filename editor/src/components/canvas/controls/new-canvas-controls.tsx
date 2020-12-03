@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as TP from '../../../core/shared/template-path'
 import Utils from '../../../utils/utils'
-import { CanvasPoint } from '../../../core/shared/math-utils'
+import { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
   DerivedState,
@@ -12,8 +12,13 @@ import {
   EditorStore,
   getOpenUIJSFileKey,
 } from '../../editor/store/editor-state'
-import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
-import { CanvasPositions } from '../canvas-types'
+import {
+  TemplatePath,
+  InstancePath,
+  Imports,
+  ScenePath,
+} from '../../../core/shared/project-file-types'
+import { CanvasPositions, ReparentTargetIndicatorPosition } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
@@ -39,6 +44,17 @@ import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { useRecoilState } from 'recoil'
+import { layoutHoveredState } from '../../../core/shared/inspector-recoil'
+import { MiniNavigator } from '../../mini-navigator/mini-navigator'
+import { shallowEqual } from '../../../core/shared/equality-utils'
+import { usePrevious } from '../../editor/hook-utils'
+import { KeysPressed } from '../../../utils/keyboard'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
+import utils from '../../../utils/utils'
+import useSize from '@react-hook/size'
+import { TextEditingArea } from './text-editing-input-area'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo } from '../../custom-code/code-file'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
@@ -63,11 +79,49 @@ export interface ControlProps {
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
   elementsThatRespectLayout: Array<TemplatePath>
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 interface NewCanvasControlsProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cursor: CSSCursor
+}
+
+function useArrayAndIndex(defaultTargets: LayoutTargetableProp[]) {
+  const [targets, setTargets] = React.useState<LayoutTargetableProp[]>(defaultTargets)
+  const [targetIndex, setTargetIndex] = React.useState(0)
+
+  function incrementTargetIndex() {
+    if (targetIndex < targets.length - 1) {
+      setTargetIndex(targetIndex + 1)
+    } else {
+      setTargetIndex(0)
+    }
+  }
+
+  function setTargetsResetIndex(newTargets: LayoutTargetableProp[]) {
+    if (!shallowEqual(targets, newTargets)) {
+      setTargets(newTargets)
+      setTargetIndex(0)
+    }
+  }
+
+  return [targets, targetIndex, setTargetsResetIndex, incrementTargetIndex] as const
+}
+
+function useTargetSelector(defaultTargets: LayoutTargetableProp[], keysPressed: KeysPressed) {
+  const [targets, targetIndex, setTargets, incrementTargetIndex] = useArrayAndIndex(defaultTargets)
+
+  const shiftPressed = keysPressed.shift
+  const previousShiftPressed = usePrevious(shiftPressed)
+
+  if (shiftPressed && !previousShiftPressed) {
+    incrementTargetIndex()
+  }
+
+  return [targets, targetIndex, setTargets] as const
 }
 
 export const NewCanvasControls = betterReactMemo(
@@ -90,6 +144,11 @@ export const NewCanvasControls = betterReactMemo(
       'NewCanvasControls',
     )
 
+    const [targets, targetIndex, setTargetOptionsArray] = useTargetSelector(
+      ['Width', 'minWidth', 'maxWidth'],
+      canvasControlProps.editor.keysPressed,
+    )
+
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.
     const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', unknown> = {
@@ -106,48 +165,101 @@ export const NewCanvasControls = betterReactMemo(
       [drop],
     )
 
+    const containerRef = React.useRef(null)
+    const [width, height] = useSize(containerRef)
+
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'canvas-controls-selectedviews',
+    )
+    const componentMetadata = useEditorState(
+      (store) => store.editor.jsxMetadataKILLME,
+      'canvas-controls-metadata',
+    )
+    const selectedScene = selectedViews.length > 0 ? TP.scenePathForPath(selectedViews[0]) : null
+    const sceneSize =
+      selectedScene == null
+        ? null
+        : MetadataUtils.getFrameInCanvasCoords(selectedScene, componentMetadata)
+    const codePaneVisible = useEditorState(
+      (store) => !store.editor.interfaceDesigner.codePaneVisible,
+      'canvas-controls-codepane-visible',
+    )
+
     if (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd) {
       return null
     } else {
       return (
-        <div
-          key='canvas-controls'
-          ref={forwardedRef}
-          className={
-            canvasControlProps.focusedPanel === 'canvas'
-              ? '  canvas-controls focused '
-              : ' canvas-controls '
-          }
-          id='canvas-controls'
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            transform: 'translate3d(0, 0, 0)',
-            width: `100%`,
-            height: `100%`,
-            zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
-            cursor: props.cursor,
-          }}
-        >
+        <>
           <div
+            key='canvas-controls'
+            ref={forwardedRef}
+            className={
+              canvasControlProps.focusedPanel === 'canvas'
+                ? '  canvas-controls focused '
+                : ' canvas-controls '
+            }
+            id='canvas-controls'
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
-              width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-              height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-              transformOrigin: 'top left',
-              transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+              transform: 'translate3d(0, 0, 0)',
+              width: `100%`,
+              height: `100%`,
+              zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
+              cursor: props.cursor,
             }}
           >
             <NewCanvasControlsInner
               windowToCanvasPosition={props.windowToCanvasPosition}
               {...canvasControlProps}
+              propertyTargetOptions={targets}
+              propertyTargetSelectedIndex={targetIndex}
+              setTargetOptionsArray={setTargetOptionsArray}
+              xrayView={false}
+              selectedScene={selectedScene}
             />
           </div>
-          <ElementContextMenu contextMenuInstance='context-menu-canvas' />
-        </div>
+          {isFeatureEnabled('Mini Navigator') ? <MiniNavigator /> : null}
+          {isFeatureEnabled('Hierarchy View') && codePaneVisible && (
+            <div
+              key={'xrayview'}
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: width / 2,
+                height: height,
+                backgroundColor: 'white',
+                transformOrigin: 'top left',
+                outline: '1px solid #e6e6e6',
+                transform:
+                  canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+                overflow: 'hidden',
+              }}
+            >
+              ☠︎ X-RAY Mode ☠︎
+              <NewCanvasControlsInner
+                key={'xrayview-controls'}
+                // eslint-disable-next-line react/jsx-no-bind
+                windowToCanvasPosition={() => ({
+                  windowPosition: utils.zeroPoint as WindowPoint,
+                  canvasPositionRaw: utils.zeroPoint as CanvasPoint,
+                  canvasPositionRounded: utils.zeroPoint as CanvasPoint,
+                })}
+                {...canvasControlProps}
+                canvasOffset={canvasControlProps.canvasOffset}
+                xrayView={true}
+                selectedScene={selectedScene}
+                scale={canvasControlProps.scale}
+                propertyTargetOptions={[]}
+                propertyTargetSelectedIndex={0}
+                setTargetOptionsArray={Utils.NO_OP}
+              />
+            </div>
+          )}
+        </>
       )
     }
   },
@@ -161,7 +273,20 @@ interface NewCanvasControlsInnerProps {
   canvasOffset: CanvasPoint
   animationEnabled: boolean
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
+  xrayView: boolean
+  selectedScene: ScenePath | null
+  scale: number
 }
+export type SelectModeState =
+  | 'move'
+  | 'translate'
+  | 'resize'
+  | 'reparentMove'
+  | 'reparentGlobal'
+  | 'reparentLocal'
 
 const selectElementsThatRespectLayout = createSelector(
   (store: EditorStore) => store.derived.navigatorTargets,
@@ -203,6 +328,8 @@ const selectElementsThatRespectLayout = createSelector(
 )
 
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
+  const [layoutSectionHovered] = useRecoilState(layoutHoveredState)
+  const [selectModeState, setSelectModeState] = React.useState<SelectModeState>('move')
   const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
     props.derived.canvas.transientState.selectedViews,
   )
@@ -309,7 +436,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       hiddenInstances: props.editor.hiddenInstances,
       highlightsEnabled: props.editor.canvas.highlightsEnabled,
       canvasOffset: props.canvasOffset,
-      scale: props.editor.canvas.scale,
+      scale: props.scale,
       dispatch: props.dispatch,
       resizeStatus: getResizeStatus(),
       elementAspectRatioLocked: elementAspectRatioLocked,
@@ -318,8 +445,38 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
       elementsThatRespectLayout: elementsThatRespectLayout,
+      propertyTargetOptions: props.propertyTargetOptions,
+      propertyTargetSelectedIndex: props.propertyTargetSelectedIndex,
+      setTargetOptionsArray: props.setTargetOptionsArray,
     }
     const dragState = props.editor.canvas.dragState
+    const reparentTargetPositions: Array<ReparentTargetIndicatorPosition> =
+      props.derived.canvas.transientState.reparentTargetPositions
+
+    if (props.xrayView) {
+      return (
+        <SelectModeControlContainer
+          {...controlProps}
+          setSelectedViewsLocally={setSelectedViewsLocally}
+          keysPressed={props.editor.keysPressed}
+          windowToCanvasPosition={props.windowToCanvasPosition}
+          isDragging={false}
+          isResizing={false}
+          selectionEnabled={selectionEnabled}
+          maybeHighlightOnHover={maybeHighlightOnHover}
+          maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+          duplicationState={null}
+          dragState={null}
+          showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+          xrayMode={true}
+          selectedScene={props.selectedScene}
+          layoutInspectorSectionHovered={false}
+          selectModeState={selectModeState}
+          setSelectModeState={setSelectModeState}
+          reparentTargetPositions={reparentTargetPositions}
+        />
+      )
+    }
     switch (props.editor.mode.type) {
       case 'select':
       case 'live': {
@@ -341,6 +498,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 : null
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+            layoutInspectorSectionHovered={layoutSectionHovered}
+            selectModeState={selectModeState}
+            setSelectModeState={setSelectModeState}
+            xrayMode={false}
+            selectedScene={null}
+            reparentTargetPositions={reparentTargetPositions}
           />
         )
       }
@@ -374,9 +537,40 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           if (frame == null) {
             return null
           }
-          const color = TP.isScenePath(path)
-            ? colorTheme.canvasSelectionSceneOutline.value
-            : colorTheme.canvasSelectionPrimaryOutline.value
+          let striped = false
+          let color = colorTheme.canvasSelectionPrimaryOutline.value
+          if (
+            props.editor.canvas.dragState?.type === 'MOVE_DRAG_STATE' &&
+            props.editor.canvas.dragState.reparent &&
+            isFeatureEnabled('Nearby Reparent Target Highlight')
+          ) {
+            const isNewParent = props.derived.canvas.transientState.selectedViews.some((view) =>
+              TP.pathsEqual(TP.parentPath(view), path),
+            )
+            if (isNewParent) {
+              striped = true
+              color = colorTheme.red.o(70).value
+            } else {
+              color = colorTheme.red.o(50).value
+            }
+          } else {
+            if (TP.isScenePath(path)) {
+              color = colorTheme.canvasSelectionSceneOutline.value
+            } else {
+              const element = MetadataUtils.getElementByInstancePathMaybe(
+                componentMetadata.elements,
+                path,
+              )
+              color = element?.internalChildOfComponent
+                ? '#FFA500'
+                : colorTheme.canvasSelectionPrimaryOutline.value
+            }
+          }
+          const zOffset =
+            isFeatureEnabled('Hierarchy View') && !props.editor.interfaceDesigner.codePaneVisible
+              ? (TP.depth(path) - 1) * 25
+              : null
+
           return (
             <HighlightControl
               key={`highlight-control-${TP.toComponentId(path)}`}
@@ -384,6 +578,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               frame={frame}
               scale={props.editor.canvas.scale}
               canvasOffset={props.canvasOffset}
+              striped={striped}
+              zOffset={zOffset}
             />
           )
         })
@@ -464,6 +660,62 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     ) : null
   }
 
+  const buttonStyle = (active: boolean) => ({
+    borderRadius: 5,
+    border: `1px solid ${colorTheme.neutralBorder.value}`,
+    backgroundColor: active ? colorTheme.primary.value : '#fefefe',
+  })
+
+  const renderToolbar = () => {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 40,
+          left: 0,
+          width: 110,
+        }}
+      >
+        <div
+          style={buttonStyle(selectModeState === 'move')}
+          onClick={() => setSelectModeState('move')}
+        >
+          → move
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'translate')}
+          onClick={() => setSelectModeState('translate')}
+        >
+          ↯ translate
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'resize')}
+          onClick={() => setSelectModeState('resize')}
+        >
+          ↕️ resize
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'reparentMove')}
+          onClick={() => setSelectModeState('reparentMove')}
+        >
+          ↲ reparent(move)
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'reparentGlobal')}
+          onClick={() => setSelectModeState('reparentGlobal')}
+        >
+          ↲ reparent(global)
+        </div>
+        <div
+          style={buttonStyle(selectModeState === 'reparentLocal')}
+          onClick={() => setSelectModeState('reparentLocal')}
+        >
+          ↲ reparent(local)
+        </div>
+      </div>
+    )
+  }
+
   const textEditor =
     props.editor.canvas.textEditor != null
       ? renderTextEditor(props.editor.canvas.textEditor.templatePath)
@@ -476,12 +728,16 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         position: 'relative',
         width: '100%',
         height: '100%',
+        transform: props.xrayView ? 'rotateY(35deg) rotateX(15deg) rotateZ(0deg)' : 'none',
+        transformStyle: props.xrayView ? 'preserve-3d' : undefined,
       }}
     >
       {renderDeselectControl()}
       {renderModeControlContainer()}
       {renderHighlightControls()}
       {textEditor}
+      {isFeatureEnabled('Toolbar For Controls') ? renderToolbar() : null}
+      {isFeatureEnabled('Edit Simple Text') ? <TextEditingArea /> : null}
     </div>
   )
 }

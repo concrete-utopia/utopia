@@ -2,19 +2,30 @@ import * as R from 'ramda'
 import * as React from 'react'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
-import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  rectanglesEqual,
+} from '../../../core/shared/math-utils'
 import { TemplatePath, ScenePath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { DuplicationState } from '../../editor/store/editor-state'
 import * as TP from '../../../core/shared/template-path'
-import { CanvasPositions, MoveDragState, ResizeDragState, moveDragState } from '../canvas-types'
+import {
+  CanvasPositions,
+  MoveDragState,
+  ResizeDragState,
+  moveDragState,
+  ReparentTargetIndicatorPosition,
+} from '../canvas-types'
 import { Guidelines, Guideline } from '../guideline'
 import { ConstraintsControls } from './constraints-control'
 import { DistanceGuideline } from './distance-guideline'
 import { GuidelineControl } from './guideline-control'
 import { collectParentAndSiblingGuidelines, getSnappedGuidelines } from './guideline-helpers'
-import { ControlProps } from './new-canvas-controls'
+import { ControlProps, SelectModeState } from './new-canvas-controls'
 import { ComponentAreaControl, ComponentLabelControl } from './component-area-control'
 import { YogaControls } from './yoga-control'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -28,7 +39,13 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { JSXMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
-import { uniqBy } from '../../../core/shared/array-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { ParentControls } from './parent-controls'
+import { fastForEach } from '../../../core/shared/utils'
+import { flatMapArray, uniqBy } from '../../../core/shared/array-utils'
+import { ReorderInsertIndicator } from './reorder-insert-indicator'
+import { FloatingMenu } from './floating-menu'
+import { InsertionControls } from './insertion-plus-button'
 
 export const SnappingThreshold = 5
 
@@ -55,6 +72,12 @@ interface SelectModeControlContainerProps extends ControlProps {
   maybeClearHighlightsOnHoverEnd: () => void
   duplicationState: DuplicationState | null
   dragState: MoveDragState | ResizeDragState | null
+  layoutInspectorSectionHovered: boolean
+  selectModeState: SelectModeState
+  setSelectModeState: (newState: SelectModeState) => void
+  xrayMode: boolean
+  selectedScene: ScenePath | null
+  reparentTargetPositions: Array<ReparentTargetIndicatorPosition>
 }
 
 interface SelectModeControlContainerState {
@@ -140,12 +163,21 @@ export class SelectModeControlContainer extends React.Component<
       originalEvent.buttons === 1 &&
       !MetadataUtils.anyUnknownOrGeneratedElements(this.props.rootComponents, selectedViews)
     ) {
+      if (this.props.xrayMode) {
+        return
+      }
       const selection = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
       const moveTargets = selection.filter(
         (view) =>
           TP.isScenePath(view) ||
           this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
+
+      if (isFeatureEnabled('Toolbar For Controls') && this.props.selectModeState === 'resize') {
+        // early exit
+        return
+      }
+
       // setting original frames
       if (moveTargets.length > 0) {
         let originalFrames = getOriginalCanvasFrames(moveTargets, this.props.componentMetadata)
@@ -178,14 +210,25 @@ export class SelectModeControlContainer extends React.Component<
                   null,
                   originalFrames,
                   selectionArea,
-                  !event.metaKey,
-                  event.shiftKey,
+                  !originalEvent.metaKey,
+                  originalEvent.shiftKey,
                   duplicate,
-                  event.metaKey,
+                  isFeatureEnabled('Toolbar For Controls')
+                    ? this.props.selectModeState === 'reparentGlobal'
+                    : false,
+                  isFeatureEnabled('Toolbar For Controls')
+                    ? this.props.selectModeState === 'reparentMove'
+                    : originalEvent.metaKey,
+                  isFeatureEnabled('Toolbar For Controls')
+                    ? this.props.selectModeState === 'reparentLocal'
+                    : false,
                   duplicateNewUIDs,
                   start,
                   this.props.componentMetadata,
                   moveTargets,
+                  isFeatureEnabled('Toolbar For Controls')
+                    ? this.props.selectModeState === 'translate'
+                    : false,
                 ),
               ),
             ])
@@ -259,7 +302,9 @@ export class SelectModeControlContainer extends React.Component<
   getSelectableViews(allElementsDirectlySelectable: boolean): TemplatePath[] {
     let candidateViews: Array<TemplatePath>
 
-    if (allElementsDirectlySelectable) {
+    if (this.props.xrayMode) {
+      candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
+    } else if (allElementsDirectlySelectable) {
       candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
     } else {
       const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
@@ -321,6 +366,185 @@ export class SelectModeControlContainer extends React.Component<
     return this.filterHiddenInstances(candidateViews)
   }
 
+  layoutInfoLabel = (label: string, color: string, elementsUseThisLayout: number): JSX.Element => {
+    return (
+      <div
+        style={{
+          padding: '0px 8px',
+          display: 'flex',
+          alignItems: 'center',
+          borderRadius: 6,
+        }}
+      >
+        <div
+          style={{
+            padding: 2,
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: 4,
+            backgroundColor: elementsUseThisLayout > 0 ? '#e6e6e6' : 'inherit',
+          }}
+        >
+          <div
+            style={{
+              display: 'inline-block',
+              width: 6,
+              height: 6,
+              margin: 5,
+              borderRadius: 6,
+              backgroundColor: elementsUseThisLayout > 0 ? color : '#c2c2c2',
+            }}
+          />
+          <span
+            style={{
+              padding: 2,
+              fontWeight: elementsUseThisLayout > 0 ? 600 : 500,
+            }}
+          >
+            {label}
+          </span>
+          {elementsUseThisLayout > 1 ? (
+            <span
+              style={{
+                paddingRight: 2,
+              }}
+            >
+              {elementsUseThisLayout}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    )
+  }
+
+  layoutInfo = (): JSX.Element | null => {
+    if (this.props.selectedViews.length === 0) {
+      return null
+    }
+    const elementLayouts = this.props.selectedViews.map((view) => {
+      if (TP.isScenePath(view)) {
+        return 'none'
+      } else {
+        const element = MetadataUtils.getElementByInstancePathMaybe(
+          this.props.componentMetadata.elements,
+          view,
+        )
+        if (MetadataUtils.isFlowElement(element)) {
+          return 'flow'
+        } else if (
+          element?.specialSizeMeasurements.parentLayoutSystem === 'flow' &&
+          element?.specialSizeMeasurements.usesParentBounds
+        ) {
+          return 'nonstatic'
+        } else {
+          return element?.specialSizeMeasurements.parentLayoutSystem
+        }
+      }
+    })
+
+    const flow = elementLayouts.filter((layout) => layout === 'flow' || layout === 'none').length
+    const block = elementLayouts.filter((layout) => layout === 'nonstatic').length
+    const flex = elementLayouts.filter((layout) => layout === 'flex').length
+    const grid = elementLayouts.filter((layout) => layout === 'grid').length
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 10,
+          height: 25,
+          marginLeft: 25,
+          marginRight: 25,
+          minWidth: 330,
+          width: 'calc(100% - 50px)',
+          backgroundColor: '#f9f9f9',
+          borderRadius: 8,
+          display: 'flex',
+        }}
+      >
+        {this.layoutInfoLabel('Flow', 'hotpink', flow)}
+        {this.layoutInfoLabel('Block', '#fa006c', block)}
+        {this.layoutInfoLabel('Flex', '#32c5ff', flex)}
+        {this.layoutInfoLabel('Grid', '#18c39e', grid)}
+      </div>
+    )
+  }
+
+  getOverlappingLabels = (targets: TemplatePath[]): any[] => {
+    const allFrames = Utils.stripNulls(
+      targets.map((target) => {
+        const frame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
+        if (frame == null) {
+          return null
+        }
+        return {
+          frame: frame,
+          target: target,
+        }
+      }),
+    )
+    let overlappingElements: { frame: CanvasRectangle; targets: TemplatePath[] }[] = []
+    fastForEach(allFrames, (targetAndFrame) => {
+      return allFrames.some((allFramesFrame) => {
+        if (
+          TP.isAncestorOf(allFramesFrame.target, targetAndFrame.target, false) &&
+          rectanglesEqual(targetAndFrame.frame, allFramesFrame.frame)
+        ) {
+          const alreadyAdded = overlappingElements.findIndex((overlapData) =>
+            rectanglesEqual(overlapData.frame, allFramesFrame.frame),
+          )
+          if (alreadyAdded > -1) {
+            overlappingElements[alreadyAdded] = {
+              frame: targetAndFrame.frame,
+              targets: uniqBy(
+                [
+                  ...overlappingElements[alreadyAdded].targets,
+                  targetAndFrame.target,
+                  allFramesFrame.target,
+                ],
+                TP.pathsEqual,
+              ),
+            }
+          } else {
+            overlappingElements.push({
+              frame: targetAndFrame.frame,
+              targets: [targetAndFrame.target, allFramesFrame.target],
+            })
+          }
+        }
+      })
+    })
+
+    return flatMapArray((overlapData) => {
+      const frame = overlapData.frame
+      return overlapData.targets.map((target, index) => {
+        const isSelected = this.props.selectedViews.some((view) => TP.pathsEqual(target, view))
+        return (
+          <div
+            key={TP.toString(target)}
+            style={{
+              position: 'absolute',
+              left: frame.x + this.props.canvasOffset.x + 30 * index,
+              top: frame.y + this.props.canvasOffset.y - 12,
+              backgroundColor: isSelected ? 'rgb(255,105,180,0.9)' : 'rgb(255,105,180,0.2)',
+              border: '1px solid hotpink',
+              paddingLeft: 2,
+              fontSize: 8,
+              width: 30,
+              borderRadius: 2,
+            }}
+            onMouseDown={() => {
+              this.props.dispatch([EditorActions.selectComponents([target], false)], 'canvas')
+            }}
+            onMouseOver={() => this.onHover(target)}
+            onMouseLeave={() => this.onHoverEnd(target)}
+          >
+            {index + 1}
+          </div>
+        )
+      })
+    }, overlappingElements)
+  }
+
   getClippedArea = (target: TemplatePath): CanvasRectangle | null => {
     const targetFrame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
 
@@ -354,8 +578,36 @@ export class SelectModeControlContainer extends React.Component<
     )
   }
 
-  renderControl = (target: TemplatePath, index: number, isChild: boolean): JSX.Element | null => {
+  renderControl = (
+    target: TemplatePath,
+    index: number,
+    isChild: boolean,
+    cmdIsPressed: boolean,
+  ): JSX.Element | null => {
     const frame = this.getClippedArea(target)
+    const siblingIsSelected =
+      this.props.selectedViews.some((view) =>
+        TP.pathsEqual(TP.parentPath(view), TP.parentPath(target)),
+      ) && cmdIsPressed
+    const parentIsSelectedAndFlex =
+      this.props.selectedViews.some((view) => {
+        return (
+          TP.pathsEqual(TP.parentPath(target), view) &&
+          TP.isInstancePath(view) &&
+          MetadataUtils.isFlexLayoutedContainer(
+            MetadataUtils.getElementByInstancePathMaybe(
+              this.props.componentMetadata.elements,
+              view,
+            ),
+          )
+        )
+      }) && !cmdIsPressed
+    const showSiblingIndex =
+      isFeatureEnabled('Flex Sibling Numbers') && (siblingIsSelected || parentIsSelectedAndFlex)
+
+    const siblingIndex = showSiblingIndex
+      ? MetadataUtils.getViewZIndexFromMetadata(this.props.componentMetadata, target) + 1
+      : null
     if (frame != null) {
       return (
         <ComponentAreaControl
@@ -380,6 +632,8 @@ export class SelectModeControlContainer extends React.Component<
           selectedViews={this.props.selectedViews}
           imports={this.props.imports}
           showAdditionalControls={this.props.showAdditionalControls}
+          siblingIndex={siblingIndex}
+          xrayMode={this.props.xrayMode}
         />
       )
     } else {
@@ -414,6 +668,7 @@ export class SelectModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
+        xrayMode={this.props.xrayMode}
       />
     )
   }
@@ -450,6 +705,7 @@ export class SelectModeControlContainer extends React.Component<
         selectedViews={this.props.selectedViews}
         imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
+        xrayMode={this.props.xrayMode}
       />
     )
   }
@@ -653,6 +909,13 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   canResizeElements(): boolean {
+    if (isFeatureEnabled('Toolbar For Controls') && this.props.selectModeState !== 'resize') {
+      return false
+    }
+
+    if (this.props.xrayMode) {
+      return false
+    }
     return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
         const scene = MetadataUtils.findSceneByTemplatePath(
@@ -697,6 +960,33 @@ export class SelectModeControlContainer extends React.Component<
         element != null && MetadataUtils.isAutoSizingText(this.props.imports, element)
     }
 
+    const selectedElementsLayoutInfo = isFeatureEnabled('Layout Info Box')
+      ? this.layoutInfo()
+      : null
+
+    const overlappingLabels =
+      allElementsDirectlySelectable && isFeatureEnabled('Wrapper Element Controls')
+        ? this.getOverlappingLabels(draggableViews)
+        : null
+    if (this.props.xrayMode) {
+      return (
+        <div
+          style={{
+            pointerEvents: 'initial',
+          }}
+        >
+          {draggableViews.map((draggableView, index) => {
+            return this.renderControl(draggableView, index, false, false)
+          })}
+          <OutlineControls {...this.props} />
+        </div>
+      )
+    }
+
+    const insertionControls = isFeatureEnabled('Insertion Plus Button') && (
+      <InsertionControls {...this.props} />
+    )
+
     return (
       <div
         style={{
@@ -704,6 +994,7 @@ export class SelectModeControlContainer extends React.Component<
         }}
         onContextMenu={this.onContextMenu}
       >
+        {selectedElementsLayoutInfo}
         {roots.map((root) => {
           return (
             <React.Fragment key={`${TP.toComponentId(root)}}-root-controls`}>
@@ -721,13 +1012,24 @@ export class SelectModeControlContainer extends React.Component<
                 )
               ) {
                 // only double clickable to select and drag
-                return this.renderControl(draggableView, index, true)
+                return this.renderControl(
+                  draggableView,
+                  index,
+                  true,
+                  cmdPressed || this.props.layoutInspectorSectionHovered,
+                )
               } else {
                 // directly draggable
-                return this.renderControl(draggableView, index, false)
+                return this.renderControl(
+                  draggableView,
+                  index,
+                  false,
+                  cmdPressed || this.props.layoutInspectorSectionHovered,
+                )
               }
             })
           : null}
+        {insertionControls}
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />
@@ -751,9 +1053,22 @@ export class SelectModeControlContainer extends React.Component<
             ) : null}
           </>
         ) : null}
+        {overlappingLabels}
         {...this.getMoveGuidelines()}
         {this.getDistanceGuidelines()}
         {this.getBoundingMarks()}
+        {this.props.selectionEnabled && <ParentControls {...this.props} />}
+        {this.props.selectionEnabled && <FloatingMenu {...this.props} />}
+        {this.props.reparentTargetPositions.map((reparentTarget) => {
+          return (
+            <ReorderInsertIndicator
+              key={`${TP.toString(reparentTarget.parent!)}-${reparentTarget.drawAtChildIndex}`}
+              target={reparentTarget.parent}
+              showAtChildIndex={reparentTarget.drawAtChildIndex}
+              beforeOrAfter={reparentTarget.beforeOrAfter}
+            />
+          )
+        })}
       </div>
     )
   }

@@ -80,6 +80,7 @@ describe('maybeSwitchLayoutProps', () => {
         localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
         children: [],
         componentInstance: true,
+        internalChildOfComponent: false,
         specialSizeMeasurements: specialSizeMeasurements(
           { x: 0, y: 0 } as any,
           null,
@@ -107,9 +108,6 @@ describe('maybeSwitchLayoutProps', () => {
         scenePath: TP.scenePath([BakedInStoryboardUID, 'scene-aaa']),
         templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
         component: 'Component1',
-        container: {
-          layoutSystem: LayoutSystem.PinSystem,
-        },
         sceneResizesContent: false,
         globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
         style: { width: 375, height: 812 },

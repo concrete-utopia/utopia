@@ -6,15 +6,59 @@ export type FeatureName =
   | 'Dragging Shows Overlay'
   | 'Invisible Element Controls'
   | 'Advanced Resize Box'
+  | 'Wrapper Element Controls'
+  | 'Layout Info Box'
+  | 'Nearby Reparent Target Highlight'
+  | 'Toolbar For Controls'
+  | 'Flex Sibling Numbers'
+  | 'Flex Container Tools'
+  | 'Element Resize Menu'
+  | 'Flex Properties (Timer)'
+  | 'Mini Navigator'
+  | 'Hierarchy View'
+  | 'Reorder Shows Placeholder Line'
+  | 'Flow Resize'
+  | 'Highlight Containing Block'
+  | 'Show Pins'
+  | 'Drag Pin Controls'
+  | 'Dragging Changes Pins(Timer)'
+  | 'Layouttype Outline'
+  | 'Floating Menu Warning'
+  | 'Mouse Pointer For Layouttype'
+  | 'Insertion Plus Button'
+  | 'Edit Simple Text'
   | 'Re-parse Project Button'
   | 'iFrame Code Editor'
+  | 'Component Children Highlights'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
   'Invisible Element Controls',
   'Advanced Resize Box',
+  'Wrapper Element Controls',
+  'Layout Info Box',
+  'Toolbar For Controls',
+  'Nearby Reparent Target Highlight',
+  'Flex Sibling Numbers',
+  'Flex Container Tools',
+  'Element Resize Menu',
+  'Flex Properties (Timer)',
+  'Mini Navigator',
+  'Hierarchy View',
+  'Reorder Shows Placeholder Line',
+  'Flow Resize',
+  'Highlight Containing Block',
+  'Show Pins',
+  'Drag Pin Controls',
+  'Dragging Changes Pins(Timer)',
+  'Layouttype Outline',
+  'Floating Menu Warning',
+  'Mouse Pointer For Layouttype',
+  'Insertion Plus Button',
+  'Edit Simple Text',
   'Re-parse Project Button',
   'iFrame Code Editor',
+  'Component Children Highlights',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -22,8 +66,30 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Shows Overlay': false,
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
+  'Layout Info Box': false,
+  'Wrapper Element Controls': true,
+  'Toolbar For Controls': false,
+  'Nearby Reparent Target Highlight': true,
+  'Flex Sibling Numbers': true,
+  'Flex Container Tools': true,
+  'Element Resize Menu': true,
+  'Flex Properties (Timer)': true,
+  'Mini Navigator': true,
+  'Hierarchy View': true,
+  'Reorder Shows Placeholder Line': true,
+  'Flow Resize': true,
+  'Highlight Containing Block': true,
+  'Show Pins': true,
+  'Drag Pin Controls': true,
+  'Dragging Changes Pins(Timer)': true,
+  'Layouttype Outline': true,
+  'Floating Menu Warning': true,
+  'Mouse Pointer For Layouttype': true,
+  'Insertion Plus Button': true,
+  'Edit Simple Text': true,
   'Re-parse Project Button': false,
   'iFrame Code Editor': false,
+  'Component Children Highlights': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

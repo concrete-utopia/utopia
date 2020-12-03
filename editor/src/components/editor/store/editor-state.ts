@@ -92,6 +92,7 @@ import {
   DragState,
   FrameAndTarget,
   HigherOrderControl,
+  ReparentTargetIndicatorPosition,
 } from '../../canvas/canvas-types'
 import { produceCanvasTransientState } from '../../canvas/canvas-utils'
 import { CodeEditorTheme, DefaultTheme } from '../../code-editor/code-editor-themes'
@@ -872,17 +873,21 @@ export interface TransientCanvasState {
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
   fileState: TransientFileState | null
+
+  reparentTargetPositions: Array<ReparentTargetIndicatorPosition>
 }
 
 export function transientCanvasState(
   selectedViews: Array<TemplatePath>,
   highlightedViews: Array<TemplatePath>,
   fileState: TransientFileState | null,
+  reparentTargetPositions: Array<ReparentTargetIndicatorPosition>,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
     fileState: fileState,
+    reparentTargetPositions: reparentTargetPositions,
   }
 }
 
@@ -924,7 +929,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(editorState, false),
+      transientState: produceCanvasTransientState(editorState, false, null, null, false),
     },
     elementWarnings: emptyComplexMap(),
   }
@@ -1198,6 +1203,7 @@ export function getElementWarnings(
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
+  dispatch: EditorDispatch | null,
 ): DerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
@@ -1215,7 +1221,7 @@ export function deriveState(
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
-      transientState: produceCanvasTransientState(editor, true),
+      transientState: produceCanvasTransientState(editor, true, dispatch, oldDerivedState, false),
     },
     elementWarnings: getElementWarnings(getMetadata(editor)),
   }

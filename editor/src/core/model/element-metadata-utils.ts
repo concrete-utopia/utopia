@@ -156,6 +156,16 @@ export const MetadataUtils = {
       )
     })
   },
+  getElementByTemplatePathMaybe(
+    elementMap: ElementInstanceMetadataMap,
+    path: TemplatePath | null,
+  ): ElementInstanceMetadata | null {
+    if (TP.isInstancePath(path)) {
+      return this.getElementByInstancePathMaybe(elementMap, path)
+    } else {
+      return null
+    }
+  },
   getElementByInstancePathMaybe(
     elementMap: ElementInstanceMetadataMap,
     path: InstancePath | null,
@@ -176,8 +186,11 @@ export const MetadataUtils = {
   },
   findSceneByTemplatePath(
     scenes: ComponentMetadata[],
-    path: TemplatePath,
+    path: TemplatePath | null,
   ): ComponentMetadata | null {
+    if (path == null) {
+      return null
+    }
     const scenePath = TP.scenePathForPath(path)
     return scenes.find((s) => TP.pathsEqual(s.scenePath, scenePath)) ?? null
   },
@@ -284,6 +297,12 @@ export const MetadataUtils = {
   },
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
+  },
+  isFlowElement(instance: ElementInstanceMetadata | null): boolean {
+    return (
+      instance?.specialSizeMeasurements.parentLayoutSystem === 'flow' &&
+      !MetadataUtils.isPositionAbsolute(instance)
+    )
   },
   getYogaSizeProps(
     target: TemplatePath,
@@ -1111,6 +1130,8 @@ export const MetadataUtils = {
         newlyFoundElements.push(domElem.templatePath)
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
+        let internalChildOfComponent =
+          spyElem.internalChildOfComponent || domElem.internalChildOfComponent
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
 
         const possibleUID: string | null | undefined = Utils.defaultIfNull(
@@ -1139,6 +1160,7 @@ export const MetadataUtils = {
           element: elementToUse,
           children: children,
           componentInstance: componentInstance,
+          internalChildOfComponent: internalChildOfComponent,
         }
         workingElements[TP.toString(domElem.templatePath)] = elem
       }
@@ -1486,6 +1508,22 @@ export const MetadataUtils = {
       withEachElement(elem, parent)
     })
   },
+  findContainingBlock(
+    elements: ElementInstanceMetadataMap,
+    view: TemplatePath,
+  ): TemplatePath | null {
+    const specialSizeMeasurements = this.getElementByTemplatePathMaybe(elements, view)
+      ?.specialSizeMeasurements
+    const parentPath = TP.parentPath(view)
+    if (parentPath == null || specialSizeMeasurements == null) {
+      return null
+    }
+    if (specialSizeMeasurements.immediateParentProvidesLayout) {
+      return parentPath
+    } else {
+      return this.findContainingBlock(elements, parentPath)
+    }
+  },
 }
 
 export function convertMetadataMap(
@@ -1564,7 +1602,7 @@ export function getScenePropsOrElementAttributes(
     return null
   } else {
     return foldEither(
-      (sceneMetadata) => left(sceneMetadata.container),
+      (sceneMetadata) => left(sceneMetadata.style),
       (elementMetadata) =>
         foldEither(
           () => null,

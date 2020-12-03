@@ -19,6 +19,12 @@ import { Mode } from '../editor/editor-modes'
 import { EditorState, OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { xor } from '../../core/shared/utils'
+import {
+  LayoutFlexElementNumericProp,
+  LayoutFlexElementProp,
+  LayoutTargetableProp,
+} from '../../core/layout/layout-helpers-new'
+import { FlexAlignment } from 'utopia-api'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -42,6 +48,10 @@ export const enum CSSCursor {
   VertexInsert = "-webkit-image-set( url( '/editor/cursors/cursor-vertex-default.png ') 1x, url( '/editor/cursors/cursor-vertex-default@2x.png ') 2x ) 4 4, zoom-out",
   VertexDelete = "-webkit-image-set( url( '/editor/cursors/cursor-vertex-default.png ') 1x, url( '/editor/cursors/cursor-vertex-default@2x.png ') 2x ) 4 4, zoom-out",
   VertexMove = "-webkit-image-set( url( '/editor/cursors/cursor-vertex-default.png ') 1x, url( '/editor/cursors/cursor-vertex-default@2x.png ') 2x ) 4 4, zoom-out",
+  SelectFlex = "-webkit-image-set( url( '/editor/cursors/cursor-select-flex-color.png ') 1x, url( '/editor/cursors/cursor-select-flex-color@2x.png ') 2x ) 4 4, zoom-out",
+  SelectFlow = "-webkit-image-set( url( '/editor/cursors/cursor-select-flow-color.png ') 1x, url( '/editor/cursors/cursor-select-flow-color@2x.png ') 2x ) 4 4, zoom-out",
+  SelectGrid = "-webkit-image-set( url( '/editor/cursors/cursor-select-grid-color.png ') 1x, url( '/editor/cursors/cursor-select-grid-color@2x.png ') 2x ) 4 4, zoom-out",
+  SelectRelative = "-webkit-image-set( url( '/editor/cursors/cursor-select-relative-color.png ') 1x, url( '/editor/cursors/cursor-select-relative-color@2x.png ') 2x ) 4 4, zoom-out",
   Text = 'text',
   TextInsert = 'text',
   BrowserAuto = 'auto',
@@ -177,6 +187,12 @@ export type HigherOrderControl = SvgControl | DivControl
 
 export type ControlOrHigherOrderControl = SvgFragmentControl | HigherOrderControl
 
+export type ReparentTargetIndicatorPosition = {
+  parent: TemplatePath | null
+  drawAtChildIndex: number
+  beforeOrAfter: 'before' | 'after'
+}
+
 export interface FrameAndTarget<C extends CoordinateMarker> {
   target: TemplatePath
   frame: Rectangle<C> | null
@@ -200,17 +216,36 @@ export interface PinMoveChange {
   delta: CanvasVector
 }
 
+export interface MoveTranslateChange {
+  type: 'MOVE_TRANSLATE_CHANGE'
+  target: TemplatePath
+  delta: CanvasVector
+}
+
 export interface FlexMoveChange {
   type: 'FLEX_MOVE'
   target: TemplatePath
   newIndex: number
+  beforeOrAfter: 'before' | 'after'
+}
+export interface ReorderChange {
+  type: 'REORDER_CHANGE'
+  target: TemplatePath
+  newIndex: number
+  beforeOrAfter: 'before' | 'after'
+}
+
+export interface FlexAlignChange {
+  type: 'FLEX_ALIGN'
+  target: TemplatePath
+  alignment: FlexAlignment
 }
 
 export interface FlexResizeChange {
   type: 'FLEX_RESIZE'
   target: TemplatePath
-  newSize: Size
-  edgePosition: EdgePosition | null
+  targetProperty: LayoutTargetableProp
+  delta: number
 }
 
 export interface SingleResizeChange {
@@ -227,6 +262,9 @@ export type PinOrFlexFrameChange =
   | FlexMoveChange
   | FlexResizeChange
   | SingleResizeChange
+  | MoveTranslateChange
+  | FlexAlignChange
+  | ReorderChange
 
 export function pinFrameChange(
   target: TemplatePath,
@@ -262,24 +300,61 @@ export function pinMoveChange(target: TemplatePath, delta: CanvasVector): PinMov
   }
 }
 
-export function flexMoveChange(target: TemplatePath, newIndex: number): FlexMoveChange {
+export function reorderChange(
+  target: TemplatePath,
+  newIndex: number,
+  beforeOrAfter: 'before' | 'after',
+): ReorderChange {
+  return {
+    type: 'REORDER_CHANGE',
+    target: target,
+    newIndex: newIndex,
+    beforeOrAfter: beforeOrAfter,
+  }
+}
+
+export function moveTranslateChange(
+  target: TemplatePath,
+  delta: CanvasVector,
+): MoveTranslateChange {
+  return {
+    type: 'MOVE_TRANSLATE_CHANGE',
+    target: target,
+    delta: delta,
+  }
+}
+
+export function flexMoveChange(
+  target: TemplatePath,
+  newIndex: number,
+  beforeOrAfter: 'before' | 'after',
+): FlexMoveChange {
   return {
     type: 'FLEX_MOVE',
     target: target,
     newIndex: newIndex,
+    beforeOrAfter: beforeOrAfter,
+  }
+}
+
+export function flexAlignChange(target: TemplatePath, alignment: FlexAlignment): FlexAlignChange {
+  return {
+    type: 'FLEX_ALIGN',
+    target: target,
+    alignment: alignment,
   }
 }
 
 export function flexResizeChange(
   target: TemplatePath,
-  newSize: Size,
-  edgePosition: EdgePosition | null = null,
+  targetProperty: LayoutTargetableProp,
+  delta: number,
 ): FlexResizeChange {
   return {
     type: 'FLEX_RESIZE',
     target: target,
-    newSize: newSize,
-    edgePosition: edgePosition,
+    targetProperty,
+    delta,
   }
 }
 
@@ -332,10 +407,13 @@ export interface MoveDragState {
   constrainDragAxis: boolean
   duplicate: boolean
   reparent: boolean
+  reparentMove: boolean
+  localReparent: boolean
   duplicateNewUIDs: Array<DuplicateNewUID> | null
   canvasPosition: CanvasPoint
   metadata: JSXMetadata
   draggedElements: TemplatePath[]
+  translate: boolean
 }
 
 export function moveDragState(
@@ -348,10 +426,13 @@ export function moveDragState(
   constrainDragAxis: boolean,
   duplicate: boolean,
   reparent: boolean,
+  reparentMove: boolean,
+  localReparent: boolean,
   duplicateNewUIDs: Array<DuplicateNewUID> | null,
   canvasPosition: CanvasPoint,
   metadata: JSXMetadata,
   draggedElements: TemplatePath[],
+  translate: boolean,
 ): MoveDragState {
   if (duplicate === true && duplicateNewUIDs == null) {
     throw new Error('duplicateNewUIDs cannot be null when duplicate is true')
@@ -371,10 +452,13 @@ export function moveDragState(
     constrainDragAxis: constrainDragAxis,
     duplicate: duplicate,
     reparent: actuallyReparent,
+    reparentMove: reparentMove,
+    localReparent: localReparent,
     duplicateNewUIDs: duplicateNewUIDs,
     canvasPosition: canvasPosition,
     metadata: metadata,
     draggedElements: draggedElements,
+    translate: translate,
   }
 }
 
@@ -404,7 +488,7 @@ export function updateMoveDragState(
     constrainDragAxis:
       constrainDragAxis === undefined ? current.constrainDragAxis : constrainDragAxis,
     duplicate: duplicate === undefined ? current.duplicate : duplicate,
-    reparent: actuallyReparent,
+    reparent: current.reparent,
     duplicateNewUIDs: duplicateNewUIDs === undefined ? current.duplicateNewUIDs : duplicateNewUIDs,
     canvasPosition: canvasPosition === undefined ? current.canvasPosition : canvasPosition,
   })
@@ -428,6 +512,7 @@ export interface ResizeDragState {
   metadata: JSXMetadata
   draggedElements: TemplatePath[]
   isMultiSelect: boolean
+  targetProperty: LayoutTargetableProp
 }
 
 export function resizeDragState(
@@ -443,6 +528,7 @@ export function resizeDragState(
   metadata: JSXMetadata,
   draggedElements: TemplatePath[],
   isMultiSelect: boolean,
+  targetProperty: LayoutTargetableProp,
 ): ResizeDragState {
   return {
     type: 'RESIZE_DRAG_STATE',
@@ -458,12 +544,14 @@ export function resizeDragState(
     metadata: metadata,
     draggedElements: draggedElements,
     isMultiSelect: isMultiSelect,
+    targetProperty: targetProperty,
   }
 }
 
 export function updateResizeDragState(
   current: ResizeDragState,
   drag: CanvasVector | null | undefined,
+  targetProperty: LayoutTargetableProp,
   enableSnapping: boolean | undefined,
   centerBasedResize: boolean | undefined,
   keepAspectRatio: boolean | undefined,
@@ -475,6 +563,7 @@ export function updateResizeDragState(
     centerBasedResize:
       centerBasedResize === undefined ? current.centerBasedResize : centerBasedResize,
     keepAspectRatio: keepAspectRatio === undefined ? current.keepAspectRatio : keepAspectRatio,
+    targetProperty: targetProperty,
   })
 }
 

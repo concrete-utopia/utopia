@@ -113,7 +113,7 @@ export class Editor {
     startPreviewConnectedMonitoring(this.boundDispatch)
 
     let emptyEditorState = createEditorState(this.boundDispatch)
-    const derivedState = deriveState(emptyEditorState, null)
+    const derivedState = deriveState(emptyEditorState, null, null)
 
     const history = History.init(emptyEditorState, derivedState)
 
@@ -371,6 +371,8 @@ export class Editor {
   }
 }
 
+import { RecoilRoot } from 'recoil'
+
 export const HotRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
@@ -378,11 +380,13 @@ export const HotRoot: React.FunctionComponent<{
   propertyControlsInfoSupported: boolean
 }> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported }) => {
   return (
-    <EditorStateContext.Provider value={{ api, useStore }}>
-      <UiJsxCanvasContext.Provider value={spyCollector}>
-        <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
-      </UiJsxCanvasContext.Provider>
-    </EditorStateContext.Provider>
+    <RecoilRoot>
+      <EditorStateContext.Provider value={{ api, useStore }}>
+        <UiJsxCanvasContext.Provider value={spyCollector}>
+          <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
+        </UiJsxCanvasContext.Provider>
+      </EditorStateContext.Provider>
+    </RecoilRoot>
   )
 })
 HotRoot.displayName = 'Utopia Editor Root'

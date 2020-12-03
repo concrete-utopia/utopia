@@ -3,7 +3,6 @@ import {
   SceneMetadata,
   StaticInstancePath,
   ScenePath,
-  SceneContainer,
   PropertyPath,
 } from '../shared/project-file-types'
 import {
@@ -47,7 +46,6 @@ export const EmptyScenePathForStoryboard = TP.scenePath([])
 export const PathForSceneComponent = PP.create(['component'])
 export const PathForSceneDataUid = PP.create(['data-uid'])
 export const PathForSceneDataLabel = PP.create(['data-label'])
-export const PathForSceneContainer = PP.create(['layout'])
 export const PathForSceneFrame = PP.create(['style'])
 
 export const BakedInStoryboardUID = 'utopia-storyboard-uid'
@@ -78,10 +76,9 @@ export function createNewSceneElement(
     width: number
     height: number
   },
-  container: SceneContainer,
   label?: string,
 ): JSXElement {
-  return mapScene(sceneMetadata(uid, component, props, frame, container, label))
+  return mapScene(sceneMetadata(uid, component, props, frame, label))
 }
 
 export function mapScene(scene: SceneMetadata): JSXElement {
@@ -94,7 +91,6 @@ export function mapScene(scene: SceneMetadata): JSXElement {
     ),
     props: jsxAttributeValue(scene.props),
     style: jsxAttributeValue(scene.frame),
-    layout: jsxAttributeValue(scene.container),
     'data-uid': jsxAttributeValue(scene.uid),
     'data-label': jsxAttributeValue(scene.label),
   }
@@ -106,14 +102,13 @@ export function unmapScene(element: JSXElementChild): SceneMetadata | null {
     return null
   }
   return eitherToMaybe(
-    applicative6Either(
-      (component, props, style, layout, label, uid) => {
+    applicative5Either(
+      (component, props, style, label, uid) => {
         const scene: SceneMetadata = {
           uid: uid,
           component: component,
           props: props,
           frame: style,
-          container: layout,
           ...(label == null ? {} : { label: label }),
         }
         return scene
@@ -121,7 +116,6 @@ export function unmapScene(element: JSXElementChild): SceneMetadata | null {
       getSimpleAttributeAtPathCustom(element.props, PP.create(['component'])),
       getSimpleAttributeAtPathCustom(element.props, PP.create(['props'])),
       getSimpleAttributeAtPathCustom(element.props, PP.create(['style'])),
-      getSimpleAttributeAtPathCustom(element.props, PP.create(['layout'])),
       getSimpleAttributeAtPathCustom(element.props, PP.create(['data-label'])),
       getSimpleAttributeAtPathCustom(element.props, PP.create(['data-uid'])),
     ),
@@ -273,7 +267,6 @@ export function sceneMetadata(
     width: number
     height: number
   },
-  container: SceneContainer,
   label?: string,
 ): SceneMetadata {
   let scene: SceneMetadata = {
@@ -281,7 +274,6 @@ export function sceneMetadata(
     component: component,
     frame: frame,
     props: props,
-    container: container,
   }
 
   if (label != null) {

@@ -8,6 +8,8 @@ import {
   DetectedLayoutSystem,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
+import { useRecoilState } from 'recoil'
+import { layoutHoveredState } from '../../../../core/shared/inspector-recoil'
 
 export interface ResolvedLayoutProps {
   frame: LocalRectangle | null
@@ -26,8 +28,17 @@ interface LayoutSectionProps {
 }
 
 export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSectionProps) => {
+  const [, setLayoutHovered] = useRecoilState(layoutHoveredState)
+
   return (
-    <>
+    <div
+      onMouseOver={() => {
+        setLayoutHovered(true)
+      }}
+      onMouseOut={() => {
+        setLayoutHovered(false)
+      }}
+    >
       <SelfLayoutSubsection
         input={props.input}
         position={props.position}
@@ -37,6 +48,6 @@ export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSect
         toggleAspectRatioLock={props.toggleAspectRatioLock}
       />
       <LayoutSystemSubsection specialSizeMeasurements={props.specialSizeMeasurements} />
-    </>
+    </div>
   )
 })

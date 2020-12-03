@@ -17,16 +17,24 @@ import {
   DirectionVertical,
   DirectionHorizontal,
   DirectionAll,
+  DragState,
 } from '../canvas-types'
 import { ResizeStatus } from './new-canvas-controls'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import CanvasActions from '../canvas-actions'
 import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
+import { ComponentMetadata, ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { JSXMetadata } from '../../../core/shared/element-template'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { SizeBoxLabel } from './size-box-label'
+import { PropertyTargetSelector } from './property-target-selector'
+import {
+  LayoutFlexElementProp,
+  LayoutTargetableProp,
+} from '../../../core/layout/layout-helpers-new'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -55,6 +63,9 @@ class ResizeControl extends React.Component<ResizeControlProps> {
       const start: CanvasPoint = canvasPositions.canvasPositionRaw
       const originalFrames = this.props.getOriginalFrames()
       const isMultiSelect = this.props.selectedViews.length !== 1
+      const targetProp = isFeatureEnabled('Element Resize Menu')
+        ? this.props.propertyTargetOptions[this.props.propertyTargetSelectedIndex]
+        : this.props.propertyTargetOptions[0]
       const newDragState = resizeDragState(
         start,
         null,
@@ -68,6 +79,7 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         this.props.metadata,
         this.props.selectedViews,
         isMultiSelect,
+        targetProp,
       )
 
       this.props.dispatch(
@@ -103,21 +115,24 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         ) : (
           this.props.children
         )}
-        <SizeBoxLabel
-          visible={shouldShowSizeLabel}
-          left={labelLeft}
-          top={labelTop}
-          scale={this.props.scale}
-          size={currentSize}
-          imageMultiplier={this.props.imageMultiplier}
-          dragState={this.props.dragState}
-        />
+        {!isFeatureEnabled('Element Resize Menu') && (
+          <SizeBoxLabel
+            visible={shouldShowSizeLabel}
+            left={labelLeft}
+            top={labelTop}
+            scale={this.props.scale}
+            size={currentSize}
+            imageMultiplier={this.props.imageMultiplier}
+            dragState={this.props.dragState}
+          />
+        )}
       </React.Fragment>
     )
   }
 }
 
 interface ResizeEdgeProps {
+  targetComponentMetadata: ElementInstanceMetadata | null
   dispatch: EditorDispatch
   cursor: CSSCursor
   direction: 'horizontal' | 'vertical'
@@ -126,15 +141,36 @@ interface ResizeEdgeProps {
   scale: number
   position: EdgePosition
   resizeStatus: ResizeStatus
+  labels: {
+    vertical: string
+    horizontal: string
+  }
+  dragState: DragState | null
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
-class ResizeEdge extends React.Component<ResizeEdgeProps> {
+interface ResizeEdgeState {
+  showLabel: boolean
+}
+
+class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
+  constructor(props: ResizeEdgeProps) {
+    super(props)
+    this.state = {
+      showLabel: false,
+    }
+  }
   reference = React.createRef<HTMLDivElement>()
 
   render() {
     if (this.props.resizeStatus != 'enabled') {
       return null
     }
+    const beforeOrAfter =
+      this.props.position.y === 0.5 ? this.props.position.x : this.props.position.y
+    const edge = beforeOrAfter === 0 ? 'before' : 'after'
     const baseLeft =
       this.props.canvasOffset.x +
       this.props.visualSize.x +
@@ -154,25 +190,78 @@ class ResizeEdge extends React.Component<ResizeEdgeProps> {
       baseTop +
       (this.props.direction === 'vertical' ? -this.props.visualSize.height / 2 : -lineSize / 2)
 
+    const isEdgeDragged =
+      this.props.dragState != null &&
+      this.props.dragState.type === 'RESIZE_DRAG_STATE' &&
+      this.props.dragState.start != null &&
+      this.props.dragState.edgePosition.x === this.props.position.x &&
+      this.props.dragState.edgePosition.y === this.props.position.y
+
+    const options: LayoutTargetableProp[] =
+      this.props.direction === 'horizontal'
+        ? [
+            'Height',
+            edge === 'before' ? 'paddingTop' : 'paddingBottom',
+            edge === 'before' ? 'marginTop' : 'marginBottom',
+            'minHeight',
+            'maxHeight',
+          ]
+        : [
+            'Width',
+            edge === 'before' ? 'paddingLeft' : 'paddingRight',
+            edge === 'before' ? 'marginLeft' : 'marginRight',
+            'minWidth',
+            'maxWidth',
+          ]
+
     return (
-      <div
-        ref={this.reference}
-        style={{
-          position: 'absolute',
-          left: left,
-          top: top,
-          width: width,
-          height: height,
-          boxSizing: 'border-box',
-          backgroundColor: 'transparent',
-          cursor: this.props.resizeStatus === 'enabled' ? this.props.cursor : undefined,
-        }}
-      />
+      <React.Fragment>
+        <div
+          ref={this.reference}
+          onMouseOver={() => this.setState({ showLabel: true })}
+          onMouseOut={() => this.setState({ showLabel: false })}
+          style={{
+            position: 'absolute',
+            left: left,
+            top: top,
+            width: width,
+            height: height,
+            boxSizing: 'border-box',
+            backgroundColor: 'transparent',
+            cursor: this.props.resizeStatus === 'enabled' ? this.props.cursor : undefined,
+          }}
+        />
+        {(this.state.showLabel || isEdgeDragged) && (
+          <PropertyTargetSelector
+            top={
+              top +
+              (this.props.direction === 'horizontal'
+                ? edge === 'before' && this.props.direction === 'horizontal'
+                  ? -105
+                  : 10
+                : -10)
+            }
+            left={
+              left +
+              (this.props.direction === 'vertical'
+                ? edge === 'before' && this.props.direction === 'vertical'
+                  ? -95
+                  : 10
+                : -10)
+            }
+            options={options}
+            selected={this.props.propertyTargetSelectedIndex}
+            setOptionsCallback={this.props.setTargetOptionsArray}
+            targetComponentMetadata={this.props.targetComponentMetadata}
+          />
+        )}
+      </React.Fragment>
     )
   }
 }
 
 interface ResizeLinesProps {
+  targetComponentMetadata: ElementInstanceMetadata | null
   cursor: CSSCursor
   direction: 'horizontal' | 'vertical'
   canvasOffset: CanvasPoint
@@ -180,17 +269,33 @@ interface ResizeLinesProps {
   scale: number
   position: EdgePosition
   resizeStatus: ResizeStatus
+  dragState: DragState | null
   color?: string
+  labels: {
+    vertical: 'Width' | 'FlexFlexBasis' | 'FlexCrossBasis'
+    horizontal: 'Height' | 'FlexFlexBasis' | 'FlexCrossBasis'
+  }
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 const LineOffset = 6
 const ResizeLines = (props: ResizeLinesProps) => {
+  const [showLabel, setShowLabel] = React.useState(false)
   const reference = React.createRef<HTMLDivElement>()
   const LineSVGComponent =
     props.position.y === 0.5 ? DimensionableControlVertical : DimensionableControlHorizontal
 
   const beforeOrAfter = props.position.y === 0.5 ? props.position.x : props.position.y
   const edge = beforeOrAfter === 0 ? 'before' : 'after'
+
+  const isEdgeDragged =
+    props.dragState != null &&
+    props.dragState.type === 'RESIZE_DRAG_STATE' &&
+    props.dragState.start != null &&
+    props.dragState.edgePosition.x === props.position.x &&
+    props.dragState.edgePosition.y === props.position.y
 
   const left = props.canvasOffset.x + props.visualSize.x + props.position.x * props.visualSize.width
   const top = props.canvasOffset.y + props.visualSize.y + props.position.y * props.visualSize.height
@@ -201,6 +306,12 @@ const ResizeLines = (props: ResizeLinesProps) => {
     props.resizeStatus !== 'enabled' ? null : (
       <div
         ref={reference}
+        onMouseEnter={() => {
+          setShowLabel(true)
+        }}
+        onMouseLeave={() => {
+          setShowLabel(false)
+        }}
         style={{
           position: 'absolute',
           width: catchmentSize,
@@ -222,6 +333,34 @@ const ResizeLines = (props: ResizeLinesProps) => {
         edge={edge}
         color={props.color}
       />
+      {(showLabel || isEdgeDragged) && (
+        <PropertyTargetSelector
+          top={
+            top +
+            (props.direction === 'horizontal'
+              ? edge === 'before' && props.direction === 'horizontal'
+                ? -25
+                : 10
+              : -10)
+          }
+          left={
+            left +
+            (props.direction === 'vertical'
+              ? edge === 'before' && props.direction === 'vertical'
+                ? -25
+                : 10
+              : -10)
+          }
+          options={
+            props.direction === 'vertical'
+              ? [props.labels.vertical, 'minWidth', 'maxWidth']
+              : [props.labels.horizontal, 'minHeight', 'maxHeight']
+          }
+          setOptionsCallback={props.setTargetOptionsArray}
+          selected={props.propertyTargetSelectedIndex}
+          targetComponentMetadata={props.targetComponentMetadata}
+        />
+      )}
       {mouseCatcher}
     </React.Fragment>
   )
@@ -244,10 +383,21 @@ const DimensionableControlVertical = (props: DimensionableControlProps) => {
   const scaledControlLength = controlLength / props.scale
   const scaledControlOffsetTop = -(scaledControlLength / 2)
 
-  return (
-    <div
-      className='label-dimensionableControlVertical'
-      style={{
+  const style: React.CSSProperties = isFeatureEnabled('Element Resize Menu')
+    ? {
+        position: 'absolute',
+        backgroundColor: '#d4f3ff',
+        borderRadius: `${5 / props.scale}px`,
+        // These just about work. I can clean them up afterwards
+        boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.controlledBlue.value}, 0px ${
+          1 / props.scale
+        }px ${3 / props.scale}px rgba(140,140,140,.9)`,
+        height: controlLength / props.scale,
+        width: controlWidth / props.scale,
+        left: props.centerX - 1,
+        top: props.centerY + scaledControlOffsetTop,
+      }
+    : {
         position: 'absolute',
         backgroundColor: 'white',
         borderRadius: `${5 / props.scale}px`,
@@ -259,9 +409,9 @@ const DimensionableControlVertical = (props: DimensionableControlProps) => {
         width: controlWidth / props.scale,
         left: props.centerX + (props.edge === 'before' ? -(controlWidth + 2) : 2) / props.scale,
         top: props.centerY + scaledControlOffsetTop,
-      }}
-    />
-  )
+      }
+
+  return <div className='label-dimensionableControlVertical' style={style} />
 }
 
 const DimensionableControlHorizontal = (props: DimensionableControlProps) => {
@@ -270,10 +420,21 @@ const DimensionableControlHorizontal = (props: DimensionableControlProps) => {
   const scaledControlWidth = controlWidth / props.scale
   const scaledControlOffsetLeft = -(scaledControlWidth / 2)
 
-  return (
-    <div
-      className='label-dimensionableControlVertical'
-      style={{
+  const style: React.CSSProperties = isFeatureEnabled('Element Resize Menu')
+    ? {
+        position: 'absolute',
+        backgroundColor: '#d4f3ff',
+        borderRadius: `${5 / props.scale}px`,
+        // These just about work. I can clean them up afterwards
+        boxShadow: `0px 0px 0px ${0.3 / props.scale}px ${colorTheme.controlledBlue.value}, 0px ${
+          1 / props.scale
+        }px ${3 / props.scale}px rgba(140,140,140,.9)`,
+        height: controlLength / props.scale,
+        width: controlWidth / props.scale,
+        left: props.centerX + scaledControlOffsetLeft,
+        top: props.centerY - 1,
+      }
+    : {
         position: 'absolute',
         backgroundColor: 'white',
         borderRadius: `${5 / props.scale}px`,
@@ -285,9 +446,9 @@ const DimensionableControlHorizontal = (props: DimensionableControlProps) => {
         width: controlWidth / props.scale,
         left: props.centerX + scaledControlOffsetLeft,
         top: props.centerY + (props.edge === 'before' ? -(controlLength + 2) : 2) / props.scale,
-      }}
-    />
-  )
+      }
+
+  return <div className='label-dimensionableControlVertical' style={style} />
 }
 
 interface ResizePointProps {
@@ -371,6 +532,7 @@ interface DoubleClickExtenderProps {
 }
 
 interface ResizeRectangleProps {
+  targetComponentMetadata: ElementInstanceMetadata | null
   dispatch: EditorDispatch
   scale: number
   canvasOffset: CanvasPoint
@@ -388,6 +550,13 @@ interface ResizeRectangleProps {
   metadata: JSXMetadata
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
   testID: string
+  labels: {
+    vertical: 'Width' | 'FlexFlexBasis' | 'FlexCrossBasis'
+    horizontal: 'Height' | 'FlexFlexBasis' | 'FlexCrossBasis'
+  }
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
@@ -583,62 +752,98 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
         </React.Fragment>
       )
 
-      const resizeLines = !this.props.sideResizer ? null : (
-        <React.Fragment>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNS}
-            position={{ x: 0.5, y: 0 }}
-            enabledDirection={DirectionVertical}
-          >
-            <ResizeLines
-              {...controlProps}
-              cursor={CSSCursor.ResizeNS}
-              direction='horizontal'
-              position={{ x: 0.5, y: 0 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeNS}
-            position={{ x: 0.5, y: 1 }}
-            enabledDirection={DirectionVertical}
-          >
-            <ResizeLines
-              {...controlProps}
-              cursor={CSSCursor.ResizeNS}
-              direction='horizontal'
-              position={{ x: 0.5, y: 1 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeEW}
-            position={{ x: 0, y: 0.5 }}
-            enabledDirection={DirectionHorizontal}
-          >
-            <ResizeLines
-              {...controlProps}
-              cursor={CSSCursor.ResizeEW}
-              direction='vertical'
-              position={{ x: 0, y: 0.5 }}
-            />
-          </ResizeControl>
-          <ResizeControl
-            {...controlProps}
-            cursor={CSSCursor.ResizeEW}
-            position={{ x: 1, y: 0.5 }}
-            enabledDirection={DirectionHorizontal}
-          >
-            <ResizeLines
-              {...controlProps}
-              cursor={CSSCursor.ResizeEW}
-              direction='vertical'
-              position={{ x: 1, y: 0.5 }}
-            />
-          </ResizeControl>
-        </React.Fragment>
-      )
+      let resizeLines = null
+      if (this.props.sideResizer) {
+        if (isFeatureEnabled('Element Resize Menu') || isFeatureEnabled('Flow Resize')) {
+          resizeLines = (
+            <React.Fragment>
+              <ResizeControl
+                {...controlProps}
+                cursor={CSSCursor.ResizeNS}
+                position={{ x: 0.5, y: 1 }}
+                enabledDirection={DirectionVertical}
+              >
+                <ResizeLines
+                  {...controlProps}
+                  cursor={CSSCursor.ResizeNS}
+                  direction='horizontal'
+                  position={{ x: 0.5, y: 1 }}
+                />
+              </ResizeControl>
+              <ResizeControl
+                {...controlProps}
+                cursor={CSSCursor.ResizeEW}
+                position={{ x: 1, y: 0.5 }}
+                enabledDirection={DirectionHorizontal}
+              >
+                <ResizeLines
+                  {...controlProps}
+                  cursor={CSSCursor.ResizeEW}
+                  direction='vertical'
+                  position={{ x: 1, y: 0.5 }}
+                />
+              </ResizeControl>
+            </React.Fragment>
+          )
+        } else {
+          resizeLines = (
+            <React.Fragment>
+              <ResizeControl
+                {...controlProps}
+                cursor={CSSCursor.ResizeNS}
+                position={{ x: 0.5, y: 0 }}
+                enabledDirection={DirectionVertical}
+              >
+                <ResizeLines
+                  {...controlProps}
+                  cursor={CSSCursor.ResizeNS}
+                  direction='horizontal'
+                  position={{ x: 0.5, y: 0 }}
+                />
+              </ResizeControl>
+              <ResizeControl
+                {...controlProps}
+                cursor={CSSCursor.ResizeNS}
+                position={{ x: 0.5, y: 1 }}
+                enabledDirection={DirectionVertical}
+              >
+                <ResizeLines
+                  {...controlProps}
+                  cursor={CSSCursor.ResizeNS}
+                  direction='horizontal'
+                  position={{ x: 0.5, y: 1 }}
+                />
+              </ResizeControl>
+              <ResizeControl
+                {...controlProps}
+                cursor={CSSCursor.ResizeEW}
+                position={{ x: 0, y: 0.5 }}
+                enabledDirection={DirectionHorizontal}
+              >
+                <ResizeLines
+                  {...controlProps}
+                  cursor={CSSCursor.ResizeEW}
+                  direction='vertical'
+                  position={{ x: 0, y: 0.5 }}
+                />
+              </ResizeControl>
+              <ResizeControl
+                {...controlProps}
+                cursor={CSSCursor.ResizeEW}
+                position={{ x: 1, y: 0.5 }}
+                enabledDirection={DirectionHorizontal}
+              >
+                <ResizeLines
+                  {...controlProps}
+                  cursor={CSSCursor.ResizeEW}
+                  direction='vertical'
+                  position={{ x: 1, y: 0.5 }}
+                />
+              </ResizeControl>
+            </React.Fragment>
+          )
+        }
+      }
 
       return (
         <React.Fragment>

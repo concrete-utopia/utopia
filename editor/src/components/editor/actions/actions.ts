@@ -60,6 +60,7 @@ import {
   isJSXAttributeOtherJavaScript,
   SettableLayoutSystem,
   walkElements,
+  jsxTextBlock,
   isUtopiaJSXComponent,
   utopiaJSXComponent,
   JSXMetadata,
@@ -129,7 +130,6 @@ import {
   ProjectFile,
   PropertyPath,
   RevisionsState,
-  SceneContainer,
   ScenePath,
   StaticElementPath,
   TemplatePath,
@@ -346,6 +346,7 @@ import {
   SetShortcut,
   UpdatePropertyControlsInfo,
   PropertyControlsIFrameReady,
+  UpdateSimpleTextChild,
   AddStoryboardFile,
   SendLinterRequestMessage,
 } from '../action-types'
@@ -425,7 +426,6 @@ import { applyMigrations } from './migrations/migrations'
 import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import {
   PathForSceneDataLabel,
-  PathForSceneContainer,
   createSceneTemplatePath,
   PathForSceneComponent,
   PathForSceneProps,
@@ -469,13 +469,7 @@ import {
 import {
   showToast,
   popToast,
-  setPropWithElementPath_UNSAFE,
-  clearImageFileBlob,
-  updateFile,
   enableInsertModeForJSXElement,
-  insertJSXElement,
-  updateThumbnailGenerated,
-  openEditorTab,
   setPackageStatus,
   updateNodeModulesContents,
   finishCheckpointTimer,
@@ -589,7 +583,6 @@ function switchAndUpdateFrames(
         },
       )
       break
-    case LayoutSystem.PinSystem:
     case LayoutSystem.Group:
     default:
       withUpdatedLayoutSystem = setPropertyOnTarget(
@@ -638,7 +631,6 @@ function switchAndUpdateFrames(
         ),
       }
       break
-    case LayoutSystem.PinSystem:
     case LayoutSystem.Group:
     default:
       withUpdatedLayoutSystem = {
@@ -664,8 +656,6 @@ function switchAndUpdateFrames(
     switch (layoutSystem) {
       case 'flex':
         return 'flex'
-      case LayoutSystem.PinSystem:
-        return 'flow'
       case LayoutSystem.Group:
       default:
         return 'flow'
@@ -814,6 +804,7 @@ export function editorMoveTemplate(
       editorForChanges.selectedViews,
       editorForChanges.highlightedViews,
       newParentLayoutSystem,
+      false,
     )
     return {
       parseSuccessTransform: (success: ParseSuccess) => {
@@ -979,7 +970,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
-      transientState: produceCanvasTransientState(history.current.editor, true),
+      transientState: produceCanvasTransientState(history.current.editor, true, null, null, false),
     },
     elementWarnings: poppedDerived.elementWarnings,
   }
@@ -1902,7 +1893,7 @@ export const UPDATE_FNS = {
         targetParent,
         action.jsxElement,
         elements,
-        null,
+        action.indexPosition ?? null,
       )
 
       const uid = getUtopiaID(action.jsxElement)
@@ -1957,10 +1948,7 @@ export const UPDATE_FNS = {
 
           let viewPath: TemplatePath | null = null
           const withWrapperViewAddedNoFrame = modifyOpenParseSuccess((parseSuccess) => {
-            const elementToInsert: JSXElement = defaultTransparentViewElement(
-              newUID,
-              action.layoutSystem,
-            )
+            const elementToInsert: JSXElement = defaultTransparentViewElement(newUID, null)
             const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
             const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
               parentPath,
@@ -4115,6 +4103,29 @@ export const UPDATE_FNS = {
     setPropertyControlsIFrameReady(true)
     return editor
   },
+  UPDATE_SIMPLE_TEXT_CHILD: (action: UpdateSimpleTextChild, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxElementAtPath(
+      action.target,
+      (element) => {
+        if (element.children.length === 0 || element.children.length === 1) {
+          if (action.value.trim() === '') {
+            return {
+              ...element,
+              children: [],
+            }
+          } else {
+            return {
+              ...element,
+              children: [jsxTextBlock(action.value)],
+            }
+          }
+        } else {
+          return element
+        }
+      },
+      editor,
+    )
+  },
   ADD_STORYBOARD_FILE: (_action: AddStoryboardFile, editor: EditorModel): EditorModel => {
     const updatedEditor = addStoryboardFileToProject(editor)
     if (updatedEditor == null) {
@@ -4311,8 +4322,59 @@ function setCanvasFramesInnerNew(
       editor.jsxMetadataKILLME,
       framesAndTargets,
       optionalParentFrame,
-    )
+      false,
+    ).components
   }, editor)
+}
+
+export function insertScene(frame: CanvasRectangle): InsertScene {
+  return {
+    action: 'INSERT_SCENE',
+    frame: frame,
+  }
+}
+
+export function insertJSXElement(
+  element: JSXElement,
+  parent: TemplatePath | null,
+  importsToAdd: Imports,
+  indexPosition?: IndexPosition | null,
+): InsertJSXElement {
+  return {
+    action: 'INSERT_JSX_ELEMENT',
+    jsxElement: element,
+    parent: parent,
+    importsToAdd: importsToAdd,
+    indexPosition: indexPosition,
+  }
+}
+
+export function updateSimpleTextChild(target: InstancePath, value: string): UpdateSimpleTextChild {
+  return {
+    action: 'UPDATE_SIMPLE_TEXT_CHILD',
+    target: target,
+    value: value,
+  }
+}
+
+export function deleteView(target: TemplatePath): DeleteView {
+  return {
+    action: 'DELETE_VIEW',
+    target: target,
+  }
+}
+
+export function deleteViews(targets: Array<TemplatePath>): DeleteViews {
+  return {
+    action: 'DELETE_VIEWS',
+    targets: targets,
+  }
+}
+
+export function deleteSelected(): EditorAction {
+  return {
+    action: 'DELETE_SELECTED',
+  }
 }
 
 export async function newProject(
@@ -4503,6 +4565,593 @@ export function isUpdatePropertyControlsInfo(
     (prop) => prop === 'UPDATE_PROPERTY_CONTROLS_INFO',
     parseResult,
   )
+}
+
+let selectionControlTimer: any // TODO maybe this should live inside the editormodel
+export function hideAndShowSelectionControls(dispatch: EditorDispatch): void {
+  dispatch([CanvasActions.setSelectionControlsVisibility(false)], 'canvas')
+  if (selectionControlTimer != null) {
+    window.clearTimeout(selectionControlTimer)
+  }
+  selectionControlTimer = window.setTimeout(() => {
+    dispatch([CanvasActions.setSelectionControlsVisibility(true)], 'canvas')
+    selectionControlTimer = null
+  }, 2000)
+}
+
+export function setLeftMenuTab(tab: LeftMenuTab): SetLeftMenuTab {
+  return {
+    action: 'SET_LEFT_MENU_TAB',
+    tab: tab,
+  }
+}
+
+export function setLeftMenuExpanded(expanded: boolean): SetLeftMenuExpanded {
+  return {
+    action: 'SET_LEFT_MENU_EXPANDED',
+    expanded: expanded,
+  }
+}
+
+export function setRightMenuTab(tab: RightMenuTab): SetRightMenuTab {
+  return {
+    action: 'SET_RIGHT_MENU_TAB',
+    tab: tab,
+  }
+}
+
+export function setRightMenuExpanded(expanded: boolean): SetRightMenuExpanded {
+  return {
+    action: 'SET_RIGHT_MENU_EXPANDED',
+    expanded: expanded,
+  }
+}
+
+export function setHighlightedView(target: TemplatePath): SetHighlightedView {
+  return {
+    action: 'SET_HIGHLIGHTED_VIEW',
+    target: target,
+  }
+}
+
+export function clearHighlightedViews(): ClearHighlightedViews {
+  return {
+    action: 'CLEAR_HIGHLIGHTED_VIEWS',
+  }
+}
+
+export function updateKeys(keys: KeysPressed): UpdateKeysPressed {
+  return {
+    action: 'UPDATE_KEYS_PRESSED',
+    keys: keys,
+  }
+}
+
+export function hideModal(): HideModal {
+  return {
+    action: 'HIDE_MODAL',
+  }
+}
+
+export function showModal(modal: ModalDialog): ShowModal {
+  return {
+    action: 'SHOW_MODAL',
+    modal: modal,
+  }
+}
+
+export function resizeInterfaceDesignerCodePane(
+  deltaCodePaneWidth: number,
+): ResizeInterfaceDesignerCodePane {
+  return {
+    action: 'RESIZE_INTERFACEDESIGNER_CODEPANE',
+    deltaCodePaneWidth: deltaCodePaneWidth,
+  }
+}
+
+export function toggleInterfaceDesignerCodeEditor(): ToggleInterfaceDesignerCodeEditor {
+  return {
+    action: 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR',
+  }
+}
+
+export function toggleInterfaceDesignerLayoutReversed(): ToggleInterfaceDesignerLayoutReversed {
+  return {
+    action: 'TOGGLE_INTERFACEDESIGNER_LAYOUT_REVERSED',
+  }
+}
+
+export function toggleInterfaceDesignerAdditionalControls(): ToggleInterfaceDesignerAdditionalControls {
+  return {
+    action: 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS',
+  }
+}
+
+export function saveImageSwitchMode(): SaveImageSwitchMode {
+  return {
+    type: 'SAVE_IMAGE_SWITCH_MODE',
+  }
+}
+
+export function saveImageDoNothing(): SaveImageDoNothing {
+  return {
+    type: 'SAVE_IMAGE_DO_NOTHING',
+  }
+}
+
+export function saveImageReplace(): SaveImageReplace {
+  return {
+    type: 'SAVE_IMAGE_REPLACE',
+  }
+}
+
+export function saveImageInsertWith(
+  parentPath: TemplatePath | null,
+  frame: CanvasRectangle,
+  multiplier: number,
+): SaveImageInsertWith {
+  return {
+    type: 'SAVE_IMAGE_INSERT_WITH',
+    parentPath: parentPath,
+    frame: frame,
+    multiplier: multiplier,
+  }
+}
+
+export function saveCurrentFile(): SaveCurrentFile {
+  return {
+    action: 'SAVE_CURRENT_FILE',
+  }
+}
+
+export function saveImageDetails(
+  imageSize: Size | null,
+  afterSave: SaveImageSwitchMode | SaveImageDoNothing | SaveImageInsertWith | SaveImageReplace,
+): SaveImageDetails {
+  return {
+    imageSize: imageSize,
+    afterSave: afterSave,
+  }
+}
+
+export function saveAsset(
+  fileName: string,
+  fileType: string,
+  base64: string,
+  hash: string,
+  imageDetails: SaveImageDetails | null,
+): SaveAsset {
+  return {
+    action: 'SAVE_ASSET',
+    fileName: fileName,
+    fileType: fileType,
+    base64: base64,
+    hash: hash,
+    imageDetails: imageDetails,
+  }
+}
+
+export function resetPins(target: InstancePath): ResetPins {
+  return {
+    action: 'RESET_PINS',
+    target: target,
+  }
+}
+
+export function wrapInGroup(targets: Array<TemplatePath>): WrapInView {
+  return wrapInView(targets)
+  // FIXME: Make Groups Great Again.
+  //return {
+  //  action: 'WRAP_IN_VIEW',
+  //  targets: targets,
+  //  layoutSystem: LayoutSystem.Group,
+  //}
+}
+
+export function unwrapGroupOrView(target: TemplatePath): UnwrapGroupOrView {
+  return {
+    // TODO make it only run when the target is a group
+    action: 'UNWRAP_GROUP_OR_VIEW',
+    target: target,
+    onlyForGroups: false,
+  }
+}
+
+export function wrapInView(targets: Array<TemplatePath>): WrapInView {
+  return {
+    action: 'WRAP_IN_VIEW',
+    targets: targets,
+    layoutSystem: null,
+  }
+}
+
+export function setCursorOverlay(cursor: CSSCursor | null): SetCursorOverlay {
+  return {
+    action: 'SET_CURSOR_OVERLAY',
+    cursor: cursor,
+  }
+}
+
+export function setCanvasAnimationsEnabled(value: boolean): SetCanvasAnimationsEnabled {
+  return {
+    action: 'SET_CANVAS_ANIMATIONS_ENABLED',
+    value: value,
+  }
+}
+
+export function setZIndex(target: TemplatePath, index: number): SetZIndex {
+  return {
+    action: 'SET_Z_INDEX',
+    target: target,
+    indexPosition: {
+      type: 'absolute',
+      index: index,
+    },
+  }
+}
+
+export function moveSelectedBackward(): MoveSelectedBackward {
+  return {
+    action: 'MOVE_SELECTED_BACKWARD',
+  }
+}
+
+export function moveSelectedToBack(): MoveSelectedToBack {
+  return {
+    action: 'MOVE_SELECTED_TO_BACK',
+  }
+}
+
+export function moveSelectedForward(): MoveSelectedForward {
+  return {
+    action: 'MOVE_SELECTED_FORWARD',
+  }
+}
+
+export function moveSelectedToFront(): MoveSelectedToFront {
+  return {
+    action: 'MOVE_SELECTED_TO_FRONT',
+  }
+}
+
+export function updateFrameDimensions(
+  element: TemplatePath,
+  width: number,
+  height: number,
+): UpdateFrameDimensions {
+  return {
+    action: 'UPDATE_FRAME_DIMENSIONS',
+    element: element,
+    width: width,
+    height: height,
+  }
+}
+
+export function setNavigatorRenamingTarget(
+  target: TemplatePath | null,
+): SetNavigatorRenamingTarget {
+  return {
+    action: 'SET_NAVIGATOR_RENAMING_TARGET',
+    target: target,
+  }
+}
+
+export function redrawOldCanvasControls(): RedrawOldCanvasControls {
+  return {
+    action: 'REDRAW_OLD_CANVAS_CONTROLS',
+  }
+}
+
+export function setStoredFontSettings(fontSettings: FontSettings): SetStoredFontSettings {
+  return {
+    action: 'SET_STORED_FONT_SETTINGS',
+    fontSettings: fontSettings,
+  }
+}
+
+export function setProjectID(id: string): SetProjectID {
+  return {
+    action: 'SET_PROJECT_ID',
+    id: id,
+  }
+}
+
+export function atomic(actions: Array<EditorAction>): Atomic {
+  return {
+    action: 'ATOMIC',
+    actions: actions,
+  }
+}
+
+export function selectAllSiblings(): SelectAllSiblings {
+  return {
+    action: 'SELECT_ALL_SIBLINGS',
+  }
+}
+
+export function undo(): Undo {
+  return {
+    action: 'UNDO',
+  }
+}
+
+export function redo(): Redo {
+  return {
+    action: 'REDO',
+  }
+}
+
+export function updateCodeResultCache(
+  codeResultCache: CodeResultCache,
+  buildType: BuildType,
+): UpdateCodeResultCache {
+  return {
+    action: 'UPDATE_CODE_RESULT_CACHE',
+    codeResultCache: codeResultCache,
+    buildType: buildType,
+  }
+}
+
+export function setCodeEditorVisibility(value: boolean): SetCodeEditorVisibility {
+  return {
+    action: 'SET_CODE_EDITOR_VISIBILITY',
+    value: value,
+  }
+}
+
+export function setProjectName(projectName: string): SetProjectName {
+  return {
+    action: 'SET_PROJECT_NAME',
+    name: projectName,
+  }
+}
+
+export function regenerateThumbnail(): RegenerateThumbnail {
+  return {
+    action: 'REGENERATE_THUMBNAIL',
+  }
+}
+
+export function updateThumbnailGenerated(timestamp: number): UpdateThumbnailGenerated {
+  return {
+    action: 'UPDATE_THUMBNAIL_GENERATED',
+    timestamp: timestamp,
+  }
+}
+
+export function updatePreviewConnected(connected: boolean): UpdatePreviewConnected {
+  return {
+    action: 'UPDATE_PREVIEW_CONNECTED',
+    connected: connected,
+  }
+}
+
+export function setHighlightsEnabled(value: boolean): SetHighlightsEnabled {
+  return {
+    action: 'SET_HIGHLIGHTS_ENABLED',
+    value: value,
+  }
+}
+
+export function alignSelectedViews(alignment: Alignment): AlignSelectedViews {
+  return {
+    action: 'ALIGN_SELECTED_VIEWS',
+    alignment: alignment,
+  }
+}
+
+export function distributeSelectedViews(distribution: Distribution): DistributeSelectedViews {
+  return {
+    action: 'DISTRIBUTE_SELECTED_VIEWS',
+    distribution: distribution,
+  }
+}
+
+export function showContextMenu(
+  menuName: ElementContextMenuInstance,
+  event: MouseEvent,
+): ShowContextMenu {
+  return {
+    action: 'SHOW_CONTEXT_MENU',
+    menuName: menuName,
+    event: event,
+  }
+}
+
+export function sendPreviewModel(): SendPreviewModel {
+  return {
+    action: 'SEND_PREVIEW_MODEL',
+  }
+}
+
+export function updateFilePath(oldPath: string, newPath: string): UpdateFilePath {
+  return {
+    action: 'UPDATE_FILE_PATH',
+    oldPath: oldPath,
+    newPath: newPath,
+  }
+}
+
+export function deleteFile(filename: string): DeleteFile {
+  return {
+    action: 'DELETE_FILE',
+    filename: filename,
+  }
+}
+
+export function addFolder(parentPath: string): AddFolder {
+  return {
+    action: 'ADD_FOLDER',
+    parentPath: parentPath,
+  }
+}
+export function openEditorTab(
+  editorTab: EditorTab,
+  cursorPosition: CursorPosition | null,
+): OpenEditorTab {
+  return {
+    action: 'OPEN_FILE',
+    editorTab: editorTab,
+    cursorPosition: cursorPosition,
+  }
+}
+
+export function closeEditorTab(editorTab: EditorTab): CloseEditorTab {
+  return {
+    action: 'CLOSE_FILE',
+    editorTab: editorTab,
+  }
+}
+
+export function reorderOpenFiles(editorTab: EditorTab, newIndex: number): ReorderEditorTabs {
+  return {
+    action: 'REORDER_OPEN_FILES',
+    editorTab: editorTab,
+    newIndex: newIndex,
+  }
+}
+
+export function updateFile(
+  filePath: string,
+  file: ProjectFile,
+  addIfNotInFiles: boolean,
+): UpdateFile {
+  return {
+    action: 'UPDATE_FILE',
+    filePath: filePath,
+    file: file,
+    addIfNotInFiles: addIfNotInFiles,
+  }
+}
+
+export function updateFromWorker(
+  filePath: string,
+  file: TextFile,
+  codeOrModel: 'Code' | 'Model',
+): UpdateFromWorker {
+  return {
+    action: 'UPDATE_FROM_WORKER',
+    filePath: filePath,
+    file: file,
+    codeOrModel: codeOrModel,
+  }
+}
+
+export function clearParseOrPrintInFlight(): ClearParseOrPrintInFlight {
+  return {
+    action: 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT',
+  }
+}
+
+export function clearImageFileBlob(uiFilePath: string, elementID: string): ClearImageFileBlob {
+  return {
+    action: 'CLEAR_IMAGE_FILE_BLOB',
+    uiFilePath: uiFilePath,
+    elementID: elementID,
+  }
+}
+
+export function setMainUIFile(uiFile: string): SetMainUIFile {
+  return {
+    action: 'SET_MAIN_UI_FILE',
+    uiFile: uiFile,
+  }
+}
+
+export function saveDOMReport(elementMetadata: Array<ElementInstanceMetadata>): SaveDOMReport {
+  return {
+    action: 'SAVE_DOM_REPORT',
+    elementMetadata: elementMetadata,
+  }
+}
+
+/** WARNING: you probably don't want to use setProp, instead you should use a domain-specific action! */
+export function setProp_UNSAFE(
+  target: InstancePath,
+  propertyPath: PropertyPath,
+  value: JSXAttribute,
+): SetProp {
+  return {
+    action: 'SET_PROP',
+    target: target,
+    propertyPath: propertyPath,
+    value: value,
+  }
+}
+
+/** WARNING: you probably don't want to use setProp, instead you should use a domain-specific action! */
+function setPropWithElementPath_UNSAFE(
+  target: StaticElementPath,
+  propertyPath: PropertyPath,
+  value: JSXAttribute,
+): SetPropWithElementPath {
+  return {
+    action: 'SET_PROP_WITH_ELEMENT_PATH',
+    target: target,
+    propertyPath: propertyPath,
+    value: value,
+  }
+}
+
+export function renamePropKey(
+  target: InstancePath,
+  cssTargetPath: CSSTarget,
+  value: Array<string>,
+): RenameStyleSelector {
+  return {
+    action: 'RENAME_PROP_KEY',
+    target,
+    cssTargetPath,
+    value,
+  }
+}
+
+export function setCodeEditorBuildErrors(buildErrors: ErrorMessages): SetCodeEditorBuildErrors {
+  return {
+    action: 'SET_CODE_EDITOR_BUILD_ERRORS',
+    buildErrors: buildErrors,
+  }
+}
+
+export function setCodeEditorLintErrors(lintErrors: ErrorMessages): SetCodeEditorLintErrors {
+  return {
+    action: 'SET_CODE_EDITOR_LINT_ERRORS',
+    lintErrors: lintErrors,
+  }
+}
+
+export function setFilebrowserRenamingTarget(
+  filename: string | null,
+): SetFilebrowserRenamingTarget {
+  return {
+    action: 'SET_FILEBROWSER_RENAMING_TARGET',
+    filename: filename,
+  }
+}
+
+export function toggleProperty(
+  target: InstancePath,
+  togglePropValue: (element: JSXElement) => JSXElement,
+): ToggleProperty {
+  return {
+    action: 'TOGGLE_PROPERTY',
+    target: target,
+    togglePropValue: togglePropValue,
+  }
+}
+
+export function switchLayoutSystem(layoutSystem: SettableLayoutSystem): SwitchLayoutSystem {
+  return {
+    action: 'SWITCH_LAYOUT_SYSTEM',
+    layoutSystem: layoutSystem,
+  }
+}
+
+export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
+  return {
+    action: 'INSERT_IMAGE_INTO_UI',
+    imagePath: imagePath,
+  }
 }
 
 function revertFileInProjectContents(

@@ -35,12 +35,10 @@ export function defaultViewElement(uid: string): JSXElement {
     jsxElementName('View', []),
     {
       style: jsxAttributeValue({
+        position: 'absolute',
         backgroundColor: '#0091FFAA',
       }),
       'data-uid': jsxAttributeValue(uid),
-      layout: jsxAttributeValue({
-        layoutSystem: 'pinSystem',
-      }),
     },
     [],
   )
@@ -59,18 +57,34 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
   )
 }
 
-export function defaultTransparentViewElement(uid: string, layoutSystem: LayoutSystem): JSXElement {
-  return jsxElement(
-    jsxElementName('View', []),
-    {
-      layout: jsxAttributeValue({
-        layoutSystem: layoutSystem,
-      }),
-      style: jsxAttributeValue({}),
-      'data-uid': jsxAttributeValue(uid),
-    },
-    [],
-  )
+export function defaultTransparentViewElement(
+  uid: string,
+  layoutSystem: LayoutSystem | null,
+): JSXElement {
+  if (layoutSystem != null) {
+    return jsxElement(
+      jsxElementName('View', []),
+      {
+        layout: jsxAttributeValue({
+          layoutSystem: layoutSystem,
+        }),
+        style: jsxAttributeValue({}),
+        'data-uid': jsxAttributeValue(uid),
+      },
+      [],
+    )
+  } else {
+    return jsxElement(
+      jsxElementName('View', []),
+      {
+        style: jsxAttributeValue({
+          position: 'absolute',
+        }),
+        'data-uid': jsxAttributeValue(uid),
+      },
+      [],
+    )
+  }
 }
 
 export function defaultTextElement(uid: string): JSXElement {
@@ -118,12 +132,25 @@ export function defaultDivElement(uid: string): JSXElement {
     jsxElementName('div', []),
     {
       style: jsxAttributeValue({
+        position: 'absolute',
         backgroundColor: '#0091FFAA',
       }),
       'data-uid': jsxAttributeValue(uid),
-      layout: jsxAttributeValue({
-        layoutSystem: 'pinSystem',
+    },
+    [],
+  )
+}
+
+export function defaultInsertableDivElement(uid: string): JSXElement {
+  return jsxElement(
+    jsxElementName('div', []),
+    {
+      style: jsxAttributeValue({
+        backgroundColor: '#0091FFAA',
+        width: 50,
+        height: 50,
       }),
+      'data-uid': jsxAttributeValue(uid),
     },
     [],
   )

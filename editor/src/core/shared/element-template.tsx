@@ -2,7 +2,7 @@ import {
   PropertyPath,
   InstancePath,
   PropertyPathPart,
-  SceneContainer,
+  CanvasElementMetadataMap,
   ScenePath,
   StaticElementPath,
 } from './project-file-types'
@@ -605,6 +605,29 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
   }
 }
 
+export function transformAllElements(
+  components: Array<UtopiaJSXComponent>,
+  transform: (element: JSXElementChild) => JSXElementChild,
+): Array<UtopiaJSXComponent> {
+  function innerTransform(element: JSXElementChild): JSXElementChild {
+    if (isJSXElement(element) || isJSXFragment(element)) {
+      const updatedChildren = element.children.map(innerTransform)
+      return transform({
+        ...element,
+        children: updatedChildren,
+      })
+    } else {
+      return transform(element)
+    }
+  }
+  return components.map((component) => {
+    return {
+      ...component,
+      rootElement: innerTransform(component.rootElement),
+    }
+  })
+}
+
 export function jsxElement(
   name: JSXElementName | string,
   props: JSXAttributes,
@@ -942,6 +965,7 @@ export interface ElementInstanceMetadata {
   localFrame: LocalRectangle | null
   children: Array<InstancePath>
   componentInstance: boolean
+  internalChildOfComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
 }
@@ -954,6 +978,7 @@ export function elementInstanceMetadata(
   localFrame: LocalRectangle | null,
   children: Array<InstancePath>,
   componentInstance: boolean,
+  internalChildOfComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
 ): ElementInstanceMetadata {
@@ -965,6 +990,7 @@ export function elementInstanceMetadata(
     localFrame: localFrame,
     children: children,
     componentInstance: componentInstance,
+    internalChildOfComponent: internalChildOfComponent,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
   }
@@ -1059,7 +1085,6 @@ export interface ComponentMetadata {
   templatePath: InstancePath
   rootElements: Array<InstancePath>
   component: string | null
-  container?: SceneContainer
   globalFrame: CanvasRectangle | null
   sceneResizesContent: boolean
   label?: string

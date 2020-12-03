@@ -232,7 +232,6 @@ declare module 'utopia-api/layout/layout' {
   import { FlexParentProps, FlexElementProps, FlexPosition, FlexAlignment, FlexDirection, FlexJustifyContent, FlexWrap, Sides, FlexLength } from 'utopia-api/layout/flex';
   import { Frame, FramePin } from 'utopia-api/layout/frame';
   export enum LayoutSystem {
-      PinSystem = "pinSystem",
       Group = "group"
   }
   export interface LayoutProps extends Frame, FlexElementProps, FlexParentProps {

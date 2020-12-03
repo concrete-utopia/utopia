@@ -209,12 +209,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                       },
                     ],
                   },
-                  layout: {
-                    type: 'ATTRIBUTE_VALUE',
-                    value: {
-                      layoutSystem: LayoutSystem.PinSystem,
-                    },
-                  },
                   'data-uid': {
                     type: 'ATTRIBUTE_VALUE',
                     value: 'aaa',
@@ -241,9 +235,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                   top: 0,
                   width: 375,
                   height: 812,
-                },
-                container: {
-                  layoutSystem: LayoutSystem.PinSystem,
                 },
               },
             ]),

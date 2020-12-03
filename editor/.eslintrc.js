@@ -160,7 +160,6 @@ module.exports = {
     '@typescript-eslint/prefer-interface': 'off',
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-shadow': ['error'],
   },
   overrides: [
     {
