@@ -18,13 +18,12 @@ import { Scene, Storyboard, jsx } from 'utopia-api'
 export var App = (props) => {
   return (
     <div
-      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}
     />
   )
 }
 export var storyboard = (
-  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard>
     <Scene
       component={App}
       props={{}}

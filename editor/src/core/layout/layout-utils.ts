@@ -346,10 +346,10 @@ export function switchPinnedChildToFlex(
 
   const updatedComponents = transformElementAtPath(components, target, (e: JSXElement) => {
     // Remove the pinning props first...
-    const pinnedPropsRemoved = unsetJSXValuesAtPaths(
-      e.props,
-      AllFramePoints.map((p) => createLayoutPropertyPath(pinnedPropForFramePoint(p))),
-    )
+    const pinnedPropsRemoved = unsetJSXValuesAtPaths(e.props, [
+      ...AllFramePoints.map((p) => createLayoutPropertyPath(pinnedPropForFramePoint(p))),
+      createLayoutPropertyPath('position'),
+    ])
     // ...Add in the flex properties.
     const flexPropsAdded = flatMapEither(
       (props) => setJSXValuesAtPaths(props, propsToAdd),
@@ -729,6 +729,7 @@ function removeFlexAndAddPinnedPropsToComponent(
     { path: createLayoutPropertyPath('PinnedTop'), value: jsxAttributeValue(top) },
     { path: createLayoutPropertyPath('Width'), value: jsxAttributeValue(width) },
     { path: createLayoutPropertyPath('Height'), value: jsxAttributeValue(height) },
+    { path: createLayoutPropertyPath('position'), value: jsxAttributeValue('absolute') },
   ]
   const propsToRemove: Array<LayoutProp | StyleLayoutProp> = ['FlexFlexBasis', 'FlexCrossBasis']
 

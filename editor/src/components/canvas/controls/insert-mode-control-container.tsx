@@ -13,9 +13,9 @@ import {
   JSXElement,
   JSXElementChild,
 } from '../../../core/shared/element-template'
-import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import { setJSXValueAtPath, unsetJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { PropertyPath, TemplatePath, Imports } from '../../../core/shared/project-file-types'
-import { Either, isLeft, right } from '../../../core/shared/either'
+import { Either, eitherToMaybe, isLeft, right } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
@@ -51,6 +51,7 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { RightMenuTab } from '../right-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { getStoryboardTemplatePath } from '../../editor/store/editor-state'
+import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -437,7 +438,16 @@ export class InsertModeControlContainer extends React.Component<
       let { element } = this.props.mode.subject
       if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
         element = this.getTextElementAutoSizeWithPosition(element, snappedMousePoint)
+      } else if (this.parentIsFlex(this.props.highlightedViews[0])) {
+        element = {
+          ...element,
+          props:
+            eitherToMaybe(
+              unsetJSXValueAtPath(element.props, createLayoutPropertyPath('position')),
+            ) ?? element.props,
+        }
       }
+
       this.props.dispatch(
         [
           EditorActions.updateEditorMode(
