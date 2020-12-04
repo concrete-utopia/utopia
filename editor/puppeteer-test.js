@@ -76,7 +76,6 @@ puppeteerStart = async function () {
       )}]"`,
     )
   } catch (e) {
-    process.exitCode = 1
     console.info(
       `::set-output name=perf-result::"There was an error with Puppeteer: ${e.name} – ${e.message}"`,
     )
