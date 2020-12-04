@@ -91,3 +91,16 @@ export function compareCompose<T>(...comparisons: Array<Compare<T>>): Compare<T>
     return 0
   }
 }
+
+export function compareIfIs<T, U extends T>(
+  isCheck: (t: T) => t is U,
+  compare: Compare<U>,
+): Compare<T> {
+  return (first: T, second: T) => {
+    if (isCheck(first) && isCheck(second)) {
+      return compare(first, second)
+    } else {
+      return 0
+    }
+  }
+}
