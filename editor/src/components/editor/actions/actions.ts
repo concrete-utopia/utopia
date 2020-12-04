@@ -100,6 +100,7 @@ import {
   updateParsedTextFileHighlightBounds,
   assetFile,
   applyToAllUIJSFiles,
+  applyUtopiaJSXComponentsChanges,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -347,6 +348,7 @@ import {
   UpdatePropertyControlsInfo,
   PropertyControlsIFrameReady,
   AddStoryboardFile,
+  SelectComponent,
   SendLinterRequestMessage,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
@@ -376,7 +378,6 @@ import {
 } from '../server'
 import {
   applyParseAndEditorChanges,
-  applyUtopiaJSXComponentsChanges,
   areGeneratedElementsTargeted,
   CanvasBase64Blobs,
   DerivedState,
@@ -419,6 +420,8 @@ import {
   addSceneToJSXComponents,
   UserState,
   UserConfiguration,
+  getOpenUtopiaJSXComponentsByName,
+  IsolatedComponent,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -461,6 +464,8 @@ import {
   StoryboardFilePath,
 } from '../../../core/model/storyboard-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { v4 as UUID } from 'uuid'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import {
   ElementInstanceMetadataKeepDeepEquality,
@@ -481,6 +486,10 @@ import {
   finishCheckpointTimer,
 } from './action-creators'
 import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
+import {
+  filterScenesWithElementPredicate,
+  findNearestComponentAncestor,
+} from '../../../core/model/experiment-utils'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -874,6 +883,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     selectedFile: poppedEditor.selectedFile,
     codeResultCache: currentEditor.codeResultCache,
     propertyControlsInfo: currentEditor.propertyControlsInfo,
+    isolatedComponent: poppedEditor.isolatedComponent,
     selectedViews: poppedEditor.selectedViews,
     highlightedViews: poppedEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
@@ -979,7 +989,11 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
-      transientState: produceCanvasTransientState(history.current.editor, true),
+      transientState: produceCanvasTransientState(
+        history.current.editor,
+        true,
+        isFeatureEnabled('Component Isolation Mode') || isFeatureEnabled('Component Second Canvas'),
+      ),
     },
     elementWarnings: poppedDerived.elementWarnings,
   }
@@ -1640,11 +1654,74 @@ export const UPDATE_FNS = {
   MOVE_SELECTED_FORWARD: (editor: EditorModel): EditorModel => {
     return setZIndexOnSelected(editor, 'forward')
   },
+  SELECT_COMPONENT: (action: SelectComponent, editor: EditorModel): EditorModel => {
+    const targetMetadata = MetadataUtils.getElementByInstancePathMaybe(
+      editor.jsxMetadataKILLME.elements,
+      action.target,
+    )
+    if (
+      targetMetadata != null &&
+      isRight(targetMetadata.element) &&
+      isJSXElement(targetMetadata.element.value)
+    ) {
+      const instanceFrame =
+        targetMetadata.globalFrame == null
+          ? null
+          : canvasFrameToNormalisedFrame(targetMetadata.globalFrame)
+      const normalisedFrame: NormalisedFrame = instanceFrame ?? {
+        left: 0,
+        top: 0,
+        width: 0,
+        height: 0,
+      }
+      const element = targetMetadata.element.value
+      const elementName = getJSXElementNameAsString(element.name)
+      const componentsByName = getOpenUtopiaJSXComponentsByName(editor)
+      const matchingComponent = componentsByName[elementName]
+      if (matchingComponent != null) {
+        const components = getOpenUtopiaJSXComponentsFromState(editor)
+        const storyBoardPath = getStoryboardTemplatePath(components)
+        if (storyBoardPath != null) {
+          const rootElementUIDProp = isJSXElement(matchingComponent.rootElement)
+            ? matchingComponent.rootElement.props['data-uid']
+            : null
+          const rootElementUID: string | null =
+            rootElementUIDProp != null && isJSXAttributeValue(rootElementUIDProp)
+              ? rootElementUIDProp.value
+              : null
+          const baseSceneUID = rootElementUID == null ? UUID().replace(/\-/g, '') : rootElementUID
+          const sceneUID = `${baseSceneUID}_TRANSIENT_SCENE`
+          const scenePath = TP.scenePath([TP.toUid(storyBoardPath), sceneUID])
+          const rootElementPath =
+            rootElementUID == null ? null : TP.instancePath(scenePath, [rootElementUID])
+          const newSelection = rootElementPath == null ? [] : [rootElementPath]
+          return {
+            ...editor,
+            isolatedComponent: {
+              componentName: elementName,
+              frame: normalisedFrame,
+              element: element,
+              scenePath: scenePath,
+            },
+            selectedViews: newSelection,
+          }
+        }
+      }
+    }
+
+    return editor
+  },
   SELECT_COMPONENTS: (
     action: SelectComponents,
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
+    const currentIsolatedComponentScenePath = editor.isolatedComponent?.scenePath
+    const clearIsolatedComponent =
+      isFeatureEnabled('Component Isolation Mode') &&
+      currentIsolatedComponentScenePath != null &&
+      action.target.some((path) => !TP.isAncestorOf(path, currentIsolatedComponentScenePath))
+
     let newlySelectedPaths: Array<TemplatePath>
     if (action.addToSelection) {
       newlySelectedPaths = action.target.reduce((working, path) => {
@@ -1658,8 +1735,73 @@ export const UPDATE_FNS = {
     )
 
     const filteredNewlySelectedPaths = filterMultiSelectScenes(newlySelectedPaths)
+
+    let newIsolatedComponent: IsolatedComponent | null = clearIsolatedComponent
+      ? null
+      : editor.isolatedComponent
+
+    if (isFeatureEnabled('Component Second Canvas')) {
+      const nonTransientSelectedViews = filterScenesWithElementPredicate(
+        filteredNewlySelectedPaths,
+        (elem: string) => !elem.includes('_TRANSIENT_SCENE'),
+      )
+      if (nonTransientSelectedViews.length > 0) {
+        const componentsByName = getOpenUtopiaJSXComponentsByName(editor)
+        const nearestComponentResult = findNearestComponentAncestor(
+          nonTransientSelectedViews[0],
+          editor.jsxMetadataKILLME,
+          componentsByName,
+        )
+        if (nearestComponentResult != null) {
+          const { element, component: componentToIsolate, path } = nearestComponentResult
+          const elementName = componentToIsolate.name
+          const components = getOpenUtopiaJSXComponentsFromState(editor)
+          const storyBoardPath = getStoryboardTemplatePath(components)
+          if (elementName !== newIsolatedComponent?.componentName && storyBoardPath != null) {
+            const instanceFrame = MetadataUtils.getFrameInCanvasCoords(
+              path,
+              editor.jsxMetadataKILLME,
+            )
+            const normalisedInstanceFrame =
+              instanceFrame == null
+                ? {
+                    left: 0,
+                    top: 0,
+                    width: 375,
+                    height: 812,
+                  }
+                : canvasFrameToNormalisedFrame(instanceFrame)
+
+            const normalisedFrame: NormalisedFrame = {
+              ...normalisedInstanceFrame,
+              left: normalisedInstanceFrame.left + 430,
+            }
+
+            const rootElementUIDProp = isJSXElement(componentToIsolate.rootElement)
+              ? componentToIsolate.rootElement.props['data-uid']
+              : null
+            const rootElementUID: string | null =
+              rootElementUIDProp != null && isJSXAttributeValue(rootElementUIDProp)
+                ? rootElementUIDProp.value
+                : null
+            const baseSceneUID = rootElementUID == null ? UUID().replace(/\-/g, '') : rootElementUID
+            const sceneUID = `${baseSceneUID}_TRANSIENT_SCENE`
+            const scenePath = TP.scenePath([TP.toUid(storyBoardPath), sceneUID])
+
+            newIsolatedComponent = {
+              componentName: elementName,
+              frame: normalisedFrame,
+              element: element,
+              scenePath: scenePath,
+            }
+          }
+        }
+      }
+    }
+
     const updatedEditor: EditorModel = {
       ...editor,
+      isolatedComponent: newIsolatedComponent,
       highlightedViews: newHighlightedViews,
       selectedViews: filteredNewlySelectedPaths,
       navigator:
@@ -1685,6 +1827,7 @@ export const UPDATE_FNS = {
 
     return {
       ...editor,
+      isolatedComponent: null,
       selectedViews: [],
       navigator: updateNavigatorCollapsedState([], editor.navigator),
       pasteTargetsToIgnore: [],

@@ -44,6 +44,10 @@ export function createComponentRendererComponent(params: {
       (c) => c.shouldIncludeCanvasRootInTheSpy,
     )
     const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
+    const isolatedComponentScenePath = useContextSelector(
+      RerenderUtopiaContext,
+      (c) => c.isolatedComponentScenePath,
+    )
     const sceneContext = React.useContext(SceneLevelUtopiaContext)
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
@@ -88,7 +92,9 @@ export function createComponentRendererComponent(params: {
         // if this component is used as an instance inside some other component, this template path will be garbage.
         // but! worry not, because in cases this is an instance, we are not running the DOM-walker and we discard the spy results
         // so it is not an issue that we have a false template path
-        const ownTemplatePath = TP.instancePath(scenePath, [getUtopiaID(element)])
+        const realTemplatePath = realPassedProps['data-template-path']
+        const uid = realPassedProps['data-uid'] || getUtopiaID(element)
+        const ownTemplatePath = realTemplatePath ?? TP.instancePath(scenePath, [uid])
 
         return renderCoreElement(
           element,
@@ -98,6 +104,7 @@ export function createComponentRendererComponent(params: {
           realPassedProps,
           mutableContext.requireResult,
           hiddenInstances,
+          isolatedComponentScenePath,
           mutableContext.fileBlobs,
           sceneContext.validPaths,
           realPassedProps['data-uid'],

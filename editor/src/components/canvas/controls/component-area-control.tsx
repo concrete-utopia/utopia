@@ -12,6 +12,7 @@ import * as TP from '../../../core/shared/template-path'
 import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
+import { IsolatedComponent } from '../../editor/store/editor-state'
 
 interface ComponentAreaControlProps {
   target: TemplatePath
@@ -23,6 +24,7 @@ interface ComponentAreaControlProps {
   hoverEffectEnabled: boolean
   doubleClickToSelect: boolean
   selectedComponents: Array<TemplatePath>
+  isolateComponent?: (target: TemplatePath) => void
   selectComponent?: (target: TemplatePath, isMultiselect: boolean) => Array<TemplatePath>
   onMouseDown: (
     views: Array<TemplatePath>,
@@ -38,6 +40,7 @@ interface ComponentAreaControlProps {
   selectedViews: TemplatePath[]
   imports: Imports
   showAdditionalControls: boolean
+  isolatedComponent: IsolatedComponent | null
   testID?: string
 }
 
@@ -107,6 +110,8 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             this.props.dispatch([
               EditorActions.addMissingDimensions(this.props.target, this.props.frame),
             ])
+          } else if (this.props.isolateComponent != null) {
+            this.props.isolateComponent(this.props.target)
           }
         }
       }
@@ -157,13 +162,26 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     selectedViews: Array<TemplatePath>,
     event: React.MouseEvent<HTMLDivElement>,
   ): void {
-    const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
-    this.props.onMouseDown(
-      selectedViews,
-      this.props.target,
-      cursorPosition.canvasPositionRaw,
-      event,
-    )
+    // If operating on the isolated scene itself or its root view, prevent dragging
+    let draggingEnabled: boolean = true
+    if (this.props.isolatedComponent != null) {
+      const { scenePath: isolatedScene } = this.props.isolatedComponent
+      const willActOnIsolatedScene = (path: TemplatePath) =>
+        TP.pathsEqual(path, isolatedScene) || TP.isChildOf(path, isolatedScene)
+      const isolatedSceneSelected = selectedViews.some(willActOnIsolatedScene)
+      const isolatedSceneTargeted = willActOnIsolatedScene(this.props.target)
+      draggingEnabled = !isolatedSceneSelected && !isolatedSceneTargeted
+    }
+
+    if (draggingEnabled) {
+      const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
+      this.props.onMouseDown(
+        selectedViews,
+        this.props.target,
+        cursorPosition.canvasPositionRaw,
+        event,
+      )
+    }
   }
 
   getComponentAreaControl = (canShowInvisibleIndicator: boolean) => {

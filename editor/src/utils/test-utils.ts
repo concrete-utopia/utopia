@@ -6,7 +6,6 @@ import {
   deriveState,
   EditorState,
   getOpenUIJSFile,
-  getSceneElementsFromParseSuccess,
   PersistentModel,
   persistentModelFromEditorModel,
   DefaultPackageJson,
@@ -30,7 +29,10 @@ import {
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
-import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
+import {
+  getSceneElementsFromParseSuccess,
+  getUtopiaJSXComponentsFromSuccess,
+} from '../core/model/project-file-utils'
 import { parseSuccess } from '../core/workers/common/project-file-utils'
 import { sampleImportsForTests, sampleJsxComponentWithScene } from '../core/model/test-ui-js-file'
 import {
@@ -295,6 +297,7 @@ function createFakeMetadataForJSXElement(
       localFrame: Utils.zeroRectangle as LocalRectangle,
       children: childPaths,
       componentInstance: false,
+      internalChildOfComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
     })

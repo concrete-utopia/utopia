@@ -70,6 +70,7 @@ import {
   combine7EqualityCalls,
   combine8EqualityCalls,
   undefinableDeepEquality,
+  combine10EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   TemplatePathArrayKeepDeepEquality,
@@ -545,7 +546,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
 export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   ElementInstanceMetadata
 > {
-  return combine9EqualityCalls(
+  return combine10EqualityCalls(
     (metadata) => metadata.templatePath,
     InstancePathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -559,6 +560,8 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.children,
     InstancePathArrayKeepDeepEquality,
     (metadata) => metadata.componentInstance,
+    createCallWithTripleEquals(),
+    (metadata) => metadata.internalChildOfComponent,
     createCallWithTripleEquals(),
     (metadata) => metadata.specialSizeMeasurements,
     SpecialSizeMeasurementsKeepDeepEquality(),

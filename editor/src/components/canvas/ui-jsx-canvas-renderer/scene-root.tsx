@@ -2,12 +2,13 @@ import * as React from 'react'
 import { LayoutSystem, View } from 'utopia-api'
 import { useContextSelector } from 'use-context-selector'
 import * as fastDeepEquals from 'fast-deep-equal'
-import { getValidTemplatePaths } from '../../../core/model/element-template-utils'
-import { left } from '../../../core/shared/either'
+import { getUtopiaID, getValidTemplatePaths } from '../../../core/model/element-template-utils'
+import { left, right } from '../../../core/shared/either'
 import {
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
   JSXElement,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   InstancePath,
@@ -26,7 +27,10 @@ import {
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
 } from './ui-jsx-canvas-contexts'
-import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
+import {
+  renderComponentUsingJsxFactoryFunction,
+  renderCoreElement,
+} from './ui-jsx-canvas-element-renderer-utils'
 import * as TP from '../../../core/shared/template-path'
 import * as PP from '../../../core/shared/property-path'
 import { betterReactMemo } from '../../../uuiui-deps'
@@ -34,6 +38,8 @@ import { jsxAttributesToProps } from '../../../core/shared/jsx-attributes'
 import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
 import utils from '../../../utils/utils'
 import { PathForResizeContent } from '../../../core/model/scene-utils'
+import { fastForEach } from '../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -49,6 +55,7 @@ function useRunSpy(
   templatePath: InstancePath,
   componentName: string | null,
   props: SceneProps,
+  jsx: JSXElement,
 ): void {
   const shouldIncludeCanvasRootInTheSpy = useContextSelector(
     RerenderUtopiaContext,
@@ -70,13 +77,14 @@ function useRunSpy(
   }
   if (shouldIncludeCanvasRootInTheSpy) {
     metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
-      element: left('Scene'),
+      element: right(jsx),
       templatePath: templatePath,
-      props: {},
+      props: props.props,
       globalFrame: null,
       localFrame: null,
       children: [],
       componentInstance: false,
+      internalChildOfComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
     }
@@ -107,6 +115,7 @@ function useGetValidTemplatePaths(
 }
 
 interface SceneRootRendererProps {
+  isIsolatedComponent: boolean
   sceneElement: JSXElement
   style?: React.CSSProperties
 }
@@ -117,8 +126,14 @@ export const SceneRootRenderer = betterReactMemo(
     const mutableUtopiaContext = React.useContext(MutableUtopiaContext).current
     const inScope = mutableUtopiaContext.rootScope
     const requireResult = mutableUtopiaContext.requireResult
+    const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
     const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
+    const shouldIncludeCanvasRootInTheSpy = useContextSelector(
+      RerenderUtopiaContext,
+      (c) => c.shouldIncludeCanvasRootInTheSpy,
+    )
     const parentPath = useContextSelector(ParentLevelUtopiaContext, (c) => c.templatePath)
+    const metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
     const uid = getUtopiaIDFromJSXElement(props.sceneElement)
 
     if (parentPath == null) {
@@ -134,9 +149,43 @@ export const SceneRootRenderer = betterReactMemo(
 
     const topLevelElementName = getTopLevelElementName(sceneProps.component)
 
-    const validPaths = useGetValidTemplatePaths(topLevelElementName, scenePath)
+    const baseValidPaths = useGetValidTemplatePaths(topLevelElementName, scenePath)
+    let validPaths: InstancePath[] = []
 
-    useRunSpy(scenePath, templatePath, topLevelElementName, sceneProps)
+    // Append the children uids to the end of all paths because we don't know where it has been rendered
+    const childrenUIDs = props.sceneElement.children.map(getUtopiaID)
+    fastForEach(baseValidPaths, (path) => {
+      validPaths.push(path)
+      fastForEach(childrenUIDs, (childUID) => validPaths.push(TP.appendToPath(path, childUID)))
+    })
+
+    const createChildrenElement = (
+      child: JSXElementChild,
+    ): React.ReactElement | Array<React.ReactElement> => {
+      const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
+      return renderCoreElement(
+        child,
+        childPath,
+        inScope,
+        inScope,
+        sceneProps,
+        requireResult,
+        hiddenInstances,
+        null,
+        mutableUtopiaContext.fileBlobs,
+        validPaths,
+        undefined,
+        undefined,
+        metadataContext,
+        mutableUtopiaContext.jsxFactoryFunctionName,
+        null,
+        shouldIncludeCanvasRootInTheSpy,
+      )
+    }
+
+    const childrenElements = props.sceneElement.children.map(createChildrenElement)
+
+    useRunSpy(scenePath, templatePath, topLevelElementName, sceneProps, props.sceneElement)
 
     const rootElement =
       sceneProps.component == null
@@ -146,7 +195,7 @@ export const SceneRootRenderer = betterReactMemo(
             mutableUtopiaContext.jsxFactoryFunctionName,
             sceneProps.component,
             sceneProps.props,
-            undefined,
+            childrenElements,
           )
 
     const sceneStyle: React.CSSProperties = {
@@ -161,6 +210,19 @@ export const SceneRootRenderer = betterReactMemo(
 
     return (
       <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths, scenePath: scenePath }}>
+        {isFeatureEnabled('Component Isolation Mode') && props.isIsolatedComponent ? (
+          <div
+            style={{
+              width: '300vw',
+              height: '300vh',
+              left: '-100vw',
+              top: '-100vh',
+              position: 'fixed',
+              backgroundColor: '#E6E6E6AB',
+            }}
+            data-utopia-exclude-from-report={true}
+          />
+        ) : null}
         <View
           data-utopia-scene-id={TP.toString(scenePath)}
           data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}

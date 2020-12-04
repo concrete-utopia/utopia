@@ -44,7 +44,7 @@ import { GridRow } from '../inspector/widgets/grid-row'
 import { DependencyList } from './dependency-list'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
 import { GoogleFontsResourcesList } from './external-resources/google-fonts-resources-list'
-import { NavigatorComponent } from './navigator'
+import { NavigatorComponent, NavigatorComponentWrapper } from './navigator'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -277,6 +277,8 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
   )
   const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
 
+  const showNavigator = selectedTab === LeftMenuTab.UINavigate && isValidToShowNavigator
+
   return (
     <div
       id={LeftPaneComponentId}
@@ -289,27 +291,28 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
       }}
       onMouseDown={() => closeTextEditorIfPresent()}
     >
-      <div
-        id={LeftPaneOverflowScrollId}
-        className='overflow-y-scroll'
-        style={{
-          height: '100%',
-          flexGrow: 1,
-        }}
-        onMouseDown={(mouseEvent: React.MouseEvent<HTMLDivElement>) => {
-          if (mouseEvent.target instanceof HTMLDivElement) {
-            if (mouseEvent.target.id === LeftPaneOverflowScrollId) {
-              dispatch([clearSelection()])
+      {showNavigator ? (
+        <NavigatorComponentWrapper />
+      ) : (
+        <div
+          id={LeftPaneOverflowScrollId}
+          style={{
+            height: '100%',
+            overflowY: 'scroll',
+            flexGrow: 1,
+          }}
+          onMouseDown={(mouseEvent: React.MouseEvent<HTMLDivElement>) => {
+            if (mouseEvent.target instanceof HTMLDivElement) {
+              if (mouseEvent.target.id === LeftPaneOverflowScrollId) {
+                dispatch([clearSelection()])
+              }
             }
-          }
-        }}
-      >
-        {selectedTab === LeftMenuTab.ProjectStructure ? <ProjectStructurePane /> : null}
-        {selectedTab === LeftMenuTab.UINavigate && isValidToShowNavigator ? (
-          <NavigatorComponent />
-        ) : null}
-        {selectedTab === LeftMenuTab.ProjectSettings ? <ProjectSettingsPanel /> : null}
-      </div>
+          }}
+        >
+          {selectedTab === LeftMenuTab.ProjectStructure ? <ProjectStructurePane /> : null}
+          {selectedTab === LeftMenuTab.ProjectSettings ? <ProjectSettingsPanel /> : null}
+        </div>
+      )}
     </div>
   )
 })

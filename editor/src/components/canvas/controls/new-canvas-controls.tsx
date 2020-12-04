@@ -11,8 +11,14 @@ import {
   getMetadata,
   EditorStore,
   getOpenUIJSFileKey,
+  IsolatedComponent,
 } from '../../editor/store/editor-state'
-import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
+import {
+  TemplatePath,
+  InstancePath,
+  Imports,
+  ScenePath,
+} from '../../../core/shared/project-file-types'
 import { CanvasPositions } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
@@ -42,6 +48,7 @@ import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo } from '../../custom-code/code-file'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -218,6 +225,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     [setLocalSelectedViews, setLocalHighlightedViews],
   )
 
+  const isolatedComponent: IsolatedComponent | null = isFeatureEnabled('Component Isolation Mode')
+    ? props.editor.isolatedComponent
+    : null
+
   const selectionEnabled =
     props.editor.canvas.selectionControlsVisible &&
     !props.editor.keysPressed['z'] &&
@@ -341,6 +352,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 : null
             }
             showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+            isolatedComponent={isolatedComponent}
           />
         )
       }
@@ -357,6 +369,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             }
             canvasOffset={props.editor.canvas.realCanvasOffset /* maybe roundedCanvasOffset? */}
             scale={props.editor.canvas.scale}
+            isolatedComponent={isolatedComponent}
           />
         )
       }
@@ -374,9 +387,18 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           if (frame == null) {
             return null
           }
-          const color = TP.isScenePath(path)
-            ? colorTheme.canvasSelectionSceneOutline.value
-            : colorTheme.canvasSelectionPrimaryOutline.value
+          let color: string
+          if (TP.isScenePath(path)) {
+            color = colorTheme.canvasSelectionSceneOutline.value
+          } else {
+            const element = MetadataUtils.getElementByInstancePathMaybe(
+              componentMetadata.elements,
+              path,
+            )
+            color = element?.internalChildOfComponent
+              ? '#FFA500'
+              : colorTheme.canvasSelectionPrimaryOutline.value
+          }
           return (
             <HighlightControl
               key={`highlight-control-${TP.toComponentId(path)}`}

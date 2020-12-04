@@ -138,6 +138,7 @@ export class YogaControls extends React.Component<YogaControlsProps> {
         this.props.imports,
         createsYogaLayout,
         true,
+        instance?.internalChildOfComponent,
       )
     }
 

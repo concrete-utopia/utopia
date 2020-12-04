@@ -105,6 +105,7 @@ export interface UiJsxCanvasProps {
   uiFilePath: string
   requireFn: UtopiaRequireFn | null
   hiddenInstances: TemplatePath[]
+  isolatedComponentScenePath: ScenePath | null
   editedTextElement: InstancePath | null
   fileBlobs: UIFileBase64Blobs
   mountCount: number
@@ -201,6 +202,7 @@ export function pickUiJsxCanvasProps(
       uiFilePath: uiFilePath,
       requireFn: requireFn,
       hiddenInstances: hiddenInstances,
+      isolatedComponentScenePath: editor.isolatedComponent?.scenePath ?? null,
       editedTextElement: editedTextElement,
       fileBlobs: defaultedFileBlobs,
       mountCount: editor.canvas.mountCount,
@@ -240,6 +242,7 @@ export const UiJsxCanvas = betterReactMemo(
       uiFilePath,
       requireFn,
       hiddenInstances,
+      isolatedComponentScenePath,
       fileBlobs,
       walkDOM,
       onDomReport,
@@ -361,6 +364,7 @@ export const UiJsxCanvas = betterReactMemo(
             <RerenderUtopiaContext.Provider
               value={{
                 hiddenInstances: hiddenInstances,
+                isolatedComponentScenePath: isolatedComponentScenePath,
                 topLevelElements: topLevelElementsMap,
                 canvasIsLive: canvasIsLive,
                 shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,

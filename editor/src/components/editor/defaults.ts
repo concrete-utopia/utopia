@@ -4,10 +4,14 @@ import {
   jsxAttributeValue,
   jsxElementName,
   jsxAttributeOtherJavaScript,
+  JSXAttribute,
+  JSXElementChildren,
 } from '../../core/shared/element-template'
 import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import { PathForResizeContent } from '../../core/model/scene-utils'
 import * as PP from '../../core/shared/property-path'
+import { omit } from '../../core/shared/object-utils'
+import { fastForEach } from '../../core/shared/utils'
 
 export function defaultSceneElement(
   uid: string,
@@ -16,10 +20,16 @@ export function defaultSceneElement(
   label: string,
 ): JSXElement {
   const component = componentName == null ? 'null' : componentName
+  const definedElsewhere = componentName == null ? [] : [componentName]
   const props = {
     'data-uid': jsxAttributeValue(uid),
     'data-label': jsxAttributeValue(label),
-    component: jsxAttributeOtherJavaScript(component, `return ${componentName}`, [], null),
+    component: jsxAttributeOtherJavaScript(
+      component,
+      `return ${componentName}`,
+      definedElsewhere,
+      null,
+    ),
     [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),
     style: jsxAttributeValue({
       position: 'absolute',
@@ -28,6 +38,37 @@ export function defaultSceneElement(
   }
 
   return jsxElement(jsxElementName('Scene', []), props, [])
+}
+
+export function isolatedComponentSceneElement(
+  uid: string,
+  componentName: string,
+  frame: NormalisedFrame,
+  componentProps: JSXAttribute,
+  children: JSXElementChildren,
+): JSXElement {
+  const definedElsewhere = [componentName]
+
+  const props = {
+    'data-uid': jsxAttributeValue(uid),
+    'data-label': jsxAttributeValue(`Isolated ${componentName}`),
+    component: jsxAttributeOtherJavaScript(
+      componentName,
+      `return ${componentName}`,
+      definedElsewhere,
+      null,
+      `${uid}_COMPONENT`,
+    ),
+    props: componentProps,
+    [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),
+    style: jsxAttributeValue({
+      position: 'absolute',
+      boxShadow: '0px 0px 0px 1px rgba(255, 255, 255, 0.3), 0px 0px 6px 4px rgb(0, 0, 0, 0.29)',
+      ...frame,
+    }),
+  }
+
+  return jsxElement(jsxElementName('Scene', []), props, children)
 }
 
 export function defaultViewElement(uid: string): JSXElement {

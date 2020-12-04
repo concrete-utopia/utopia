@@ -110,6 +110,7 @@ import type {
   SaveImageReplace,
   SaveImageSwitchMode,
   SelectAllSiblings,
+  SelectComponent,
   SelectComponents,
   SendLinterRequestMessage,
   SendPreviewModel,
@@ -714,6 +715,13 @@ export function atomic(actions: Array<EditorAction>): Atomic {
   return {
     action: 'ATOMIC',
     actions: actions,
+  }
+}
+
+export function selectComponent(target: InstancePath): SelectComponent {
+  return {
+    action: 'SELECT_COMPONENT',
+    target: target,
   }
 }
 

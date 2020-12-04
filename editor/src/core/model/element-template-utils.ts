@@ -15,6 +15,8 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXFragment,
+  JSXElementChildren,
+  isJSXConditionalExpression,
 } from '../shared/element-template'
 import {
   Imports,
@@ -163,6 +165,8 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
     return TP.toTemplateId(element.templatePath)
   } else if (isJSXFragment(element)) {
     return element.uniqueID
+  } else if (isJSXConditionalExpression(element)) {
+    return element.uniqueID
   }
   throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
 }
@@ -289,6 +293,14 @@ function transformAtPathOptionally(
   return {
     elements: transformedElements,
     transformedElement: transformedElement,
+  }
+}
+
+export function getElementChildren(element: JSXElementChild): JSXElementChildren {
+  if (isJSXElement(element) || isJSXFragment(element)) {
+    return element.children
+  } else {
+    return []
   }
 }
 

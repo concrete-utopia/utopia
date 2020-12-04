@@ -18,9 +18,13 @@ import {
   isIntrinsicHTMLElement,
   JSXArbitraryBlock,
 } from '../../../core/shared/element-template'
-import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
-import { fastForEach } from '../../../core/shared/utils'
+import {
+  jsxAttributesToProps,
+  jsxAttributeToValue,
+  setJSXValueAtPath,
+} from '../../../core/shared/jsx-attributes'
+import { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
+import { arrayEquals, fastForEach } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
@@ -35,6 +39,7 @@ import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-p
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function renderCoreElement(
   element: JSXElementChild,
@@ -44,6 +49,7 @@ export function renderCoreElement(
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   hiddenInstances: Array<TemplatePath>,
+  isolatedComponentScenePath: ScenePath | null,
   fileBlobs: UIFileBase64Blobs,
   validPaths: Array<InstancePath>,
   uid: string | undefined,
@@ -57,7 +63,11 @@ export function renderCoreElement(
     throw codeError
   }
   if (isJSXElement(element) && isSceneElement(element)) {
-    return <SceneRootRenderer sceneElement={element} />
+    const isIsolatedComponent =
+      isolatedComponentScenePath == null
+        ? false
+        : arrayEquals(isolatedComponentScenePath.sceneElementPath, templatePath.element)
+    return <SceneRootRenderer sceneElement={element} isIsolatedComponent={isIsolatedComponent} />
   }
   switch (element.type) {
     case 'JSX_ELEMENT': {
@@ -89,6 +99,7 @@ export function renderCoreElement(
         rootScope,
         inScope,
         hiddenInstances,
+        isolatedComponentScenePath,
         fileBlobs,
         validPaths,
         passthroughProps,
@@ -135,6 +146,7 @@ export function renderCoreElement(
           parentComponentInputProps,
           requireResult,
           hiddenInstances,
+          isolatedComponentScenePath,
           fileBlobs,
           validPaths,
           generatedUID,
@@ -166,6 +178,7 @@ export function renderCoreElement(
           parentComponentInputProps,
           requireResult,
           hiddenInstances,
+          isolatedComponentScenePath,
           fileBlobs,
           validPaths,
           uid,
@@ -189,6 +202,21 @@ export function renderCoreElement(
         element.text,
       )
     }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const expressionEvaluated = jsxAttributeToValue(inScope, requireResult, element.condition)
+      const trueOrFalseResult = jsxAttributeToValue(
+        inScope,
+        requireResult,
+        expressionEvaluated ? element.whenTrue : element.whenFalse,
+      )
+      return renderComponentUsingJsxFactoryFunction(
+        inScope,
+        jsxFactoryFunctionName,
+        React.Fragment,
+        { key: TP.toString(templatePath) },
+        trueOrFalseResult,
+      )
+    }
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -204,6 +232,7 @@ function renderJSXElement(
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   hiddenInstances: Array<TemplatePath>,
+  isolatedComponentScenePath: ScenePath | null,
   fileBlobs: UIFileBase64Blobs,
   validPaths: Array<InstancePath>,
   passthroughProps: MapLike<any>,
@@ -212,7 +241,7 @@ function renderJSXElement(
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
 ): React.ReactElement {
-  let elementProps = { key: key, ...passthroughProps }
+  let elementProps = { key: key, ...passthroughProps, 'data-template-path': templatePath }
   if (isHidden(hiddenInstances, templatePath)) {
     elementProps = hideElement(elementProps)
   }
@@ -230,6 +259,7 @@ function renderJSXElement(
       parentComponentInputProps,
       requireResult,
       hiddenInstances,
+      isolatedComponentScenePath,
       fileBlobs,
       validPaths,
       undefined,
@@ -251,13 +281,17 @@ function renderJSXElement(
   const finalProps =
     elementIsIntrinsic && !elementIsBaseHTML ? filterDataProps(elementProps) : elementProps
 
-  if (FinalElement != null && TP.containsPath(templatePath, validPaths)) {
+  const isValidPath = TP.containsPath(templatePath, validPaths)
+  if (FinalElement != null && (isValidPath || isFeatureEnabled('Component Children Highlights'))) {
     let childrenTemplatePaths: InstancePath[] = []
 
     Utils.fastForEach(jsx.children, (child) => {
       if (isJSXElement(child)) {
         const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
-        if (TP.containsPath(childPath, validPaths)) {
+        if (
+          TP.containsPath(childPath, validPaths) ||
+          isFeatureEnabled('Component Children Highlights')
+        ) {
           childrenTemplatePaths.push(childPath)
         }
       }
@@ -274,6 +308,7 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
+      !isValidPath,
     )
   } else {
     const childrenOrNull = childrenElements.length !== 0 ? childrenElements : null
