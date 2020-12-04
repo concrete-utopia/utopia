@@ -14,7 +14,6 @@ export type FeatureName =
   | 'Component Second Canvas'
   | 'Re-parse Project Button'
   | 'iFrame Code Editor'
-  | 'Component Children Highlights'
   | 'Code Outline Navigator'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -29,7 +28,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Component Second Canvas',
   'Re-parse Project Button',
   'iFrame Code Editor',
-  'Component Children Highlights',
   'Code Outline Navigator',
 ]
 
