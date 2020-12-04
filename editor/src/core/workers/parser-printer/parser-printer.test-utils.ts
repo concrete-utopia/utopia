@@ -510,6 +510,7 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
         [],
         rootElement,
         jsBlock,
+        false,
         leadingComments,
       )
     })

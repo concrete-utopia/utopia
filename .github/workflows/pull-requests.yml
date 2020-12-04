@@ -101,3 +101,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGING_BUNDLE_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_BUNDLE_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
+      - name: Flush Staging Editor Bundle
+        shell: bash
+        run: |
+          curl -s -o /dev/null -w "FLUSH STAGING HTTP RESPONSE CODE: %{http_code}" -X DELETE 'https://${{ secrets.STAGING_SERVER }}/internal/branch?branch_name=${{ steps.extract_branch.outputs.branch }}'

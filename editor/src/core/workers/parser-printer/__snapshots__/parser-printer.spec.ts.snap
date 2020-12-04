@@ -361,6 +361,7 @@ export var whatever = (props) => {
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",
+      "usedInReactDOMRender": false,
     },
   ],
   "type": "PARSE_SUCCESS",
@@ -529,6 +530,7 @@ return { a: a };",
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",
+      "usedInReactDOMRender": false,
     },
     Object {
       "definedElsewhere": Array [
@@ -797,6 +799,7 @@ export var App = (props) => <View data-uid={'bbb'}>
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",
+      "usedInReactDOMRender": false,
     },
   ],
   "type": "PARSE_SUCCESS",

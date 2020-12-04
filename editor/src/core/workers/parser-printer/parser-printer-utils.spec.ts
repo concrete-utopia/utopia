@@ -21,6 +21,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('aa') }, []),
       null,
+      false,
       [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -38,6 +39,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
       ]),
       null,
+      false,
       [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -61,6 +63,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       [],
       jsxElement('View', { 'data-uid': jsxAttributeFunctionCall('someFunction', []) }, []),
       null,
+      false,
       [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -84,6 +87,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, []),
       ]),
       null,
+      false,
       [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -103,6 +107,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         jsxElement('View', {} as any, []),
       ]),
       null,
+      false,
       [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -125,6 +130,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         jsxElement('View', {}, []),
       ]),
       null,
+      false,
       [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]

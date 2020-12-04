@@ -183,6 +183,7 @@ export var whatever = props => (
       [],
       jsxElement('div', { 'data-uid': jsxAttributeValue('abc') }, []),
       null,
+      false,
       [],
     )
 
@@ -199,7 +200,16 @@ export var whatever = props => (
       { aab: jsxElement('MyComp', { 'data-uid': jsxAttributeValue('aab') }, []) },
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [codeBlock])
-    const whatever = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, [])
+    const whatever = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
@@ -291,6 +301,7 @@ return { arr: arr };`
       [],
       view,
       arbitraryBlock,
+      false,
       [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -386,6 +397,7 @@ return { arr: arr };`
       [],
       view,
       arbitraryBlock,
+      false,
       [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -482,6 +494,7 @@ return { arr: arr };`
       [],
       view,
       arbitraryBlock,
+      false,
       [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -560,7 +573,16 @@ export var whatever = (props) => {
         ),
       ],
     )
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, [])
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
@@ -655,6 +677,7 @@ return { arr: arr };`
       [],
       view,
       arbitraryBlock,
+      false,
       [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -733,7 +756,16 @@ export var whatever = (props) => {
         ),
       ],
     )
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, [])
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
@@ -828,6 +860,7 @@ return { arr: arr };`
       [],
       view,
       arbitraryBlock,
+      false,
       [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)

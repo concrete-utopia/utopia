@@ -668,6 +668,7 @@ export function utopiaJSXComponent(
   propsUsed: Array<string>,
   rootElement: JSXElementChild,
   jsBlock: ArbitraryJSBlock | null,
+  usedInReactDOMRender: boolean,
   leadingComments: Array<Comment>,
 ): UtopiaJSXComponent {
   return {
@@ -678,6 +679,7 @@ export function utopiaJSXComponent(
     propsUsed: propsUsed,
     rootElement: rootElement,
     arbitraryJSBlock: jsBlock,
+    usedInReactDOMRender: usedInReactDOMRender,
     leadingComments: leadingComments,
   }
 }
@@ -839,6 +841,7 @@ export interface UtopiaJSXComponent extends WithComments {
   propsUsed: Array<string>
   rootElement: JSXElementChild
   arbitraryJSBlock: ArbitraryJSBlock | null
+  usedInReactDOMRender: boolean
 }
 
 export interface ArbitraryJSBlock {

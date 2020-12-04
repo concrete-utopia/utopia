@@ -237,6 +237,7 @@ const mainComponentForTests = utopiaJSXComponent(
     ],
   ),
   null,
+  false,
   [],
 )
 
@@ -254,6 +255,7 @@ const scene = utopiaJSXComponent(
     [],
   ),
   null,
+  false,
   [],
 )
 
@@ -285,6 +287,7 @@ const TestStoryboard = utopiaJSXComponent(
     Scene2,
   ]),
   null,
+  false,
   [],
 )
 

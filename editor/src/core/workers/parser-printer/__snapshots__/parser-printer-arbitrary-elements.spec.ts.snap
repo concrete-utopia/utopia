@@ -441,6 +441,7 @@ export var storyboard = (
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",
+      "usedInReactDOMRender": false,
     },
     Object {
       "definedElsewhere": Array [
@@ -657,6 +658,7 @@ export var storyboard = (
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",
+      "usedInReactDOMRender": false,
     },
   ],
   "type": "PARSE_SUCCESS",

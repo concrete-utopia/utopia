@@ -111,6 +111,7 @@ export var storyboard = (props) => {
       "type": "JSX_ELEMENT",
     },
     "type": "UTOPIA_JSX_COMPONENT",
+    "usedInReactDOMRender": false,
   },
   Object {
     "definedElsewhere": Array [

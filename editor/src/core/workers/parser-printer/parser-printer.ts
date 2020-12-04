@@ -855,6 +855,53 @@ function detailsFromExportDeclaration(
   }
 }
 
+export function getComponentsRenderedWithReactDOM(
+  sourceFile: TS.SourceFile,
+  node: TS.Node,
+): Array<string> {
+  if (TS.isExpressionStatement(node)) {
+    const expressionStatement: TS.ExpressionStatement = node
+    if (TS.isCallExpression(expressionStatement.expression)) {
+      const callExpression: TS.CallExpression = expressionStatement.expression
+      if (TS.isPropertyAccessExpression(callExpression.expression)) {
+        const propertyAccessExpression = callExpression.expression
+        if (
+          TS.isIdentifier(propertyAccessExpression.expression) &&
+          TS.isIdentifier(propertyAccessExpression.name)
+        ) {
+          const propertyExpressionIdentifier: TS.Identifier = propertyAccessExpression.expression
+          const propertyNameIdentifier: TS.Identifier = propertyAccessExpression.name
+          // Checks if this starts as ReactDOM.render(...).
+          if (
+            propertyExpressionIdentifier.getText(sourceFile) === 'ReactDOM' &&
+            propertyNameIdentifier.getText(sourceFile) === 'render'
+          ) {
+            const firstArgument = callExpression.arguments[0]
+            if (firstArgument != null) {
+              if (TS.isJsxSelfClosingElement(firstArgument)) {
+                const selfClosingElement: TS.JsxSelfClosingElement = firstArgument
+                if (TS.isIdentifier(selfClosingElement.tagName)) {
+                  const tagName: TS.Identifier = selfClosingElement.tagName
+                  return [tagName.getText(sourceFile)]
+                }
+              }
+              if (TS.isJsxElement(firstArgument)) {
+                const jsxElement: TS.JsxElement = firstArgument
+                if (TS.isIdentifier(jsxElement.openingElement.tagName)) {
+                  const tagName: TS.Identifier = jsxElement.openingElement.tagName
+                  return [tagName.getText(sourceFile)]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return []
+}
+
 export function parseCode(filename: string, sourceText: string): ParsedTextFile {
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
 
@@ -1086,6 +1133,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
                 propsUsed,
                 contents.elements[0].value,
                 contents.arbitraryJSBlock,
+                false,
                 comments.leadingComments,
               )
 
@@ -1117,7 +1165,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     }
     const realTopLevelElements = sequencedTopLevelElements.value
 
-    const topLevelElementsWithFixedUIDs = guaranteeUniqueUidsFromTopLevel(realTopLevelElements)
+    let topLevelElementsWithFixedUIDs = guaranteeUniqueUidsFromTopLevel(realTopLevelElements)
 
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
     if (allArbitraryNodes.length > 0) {
@@ -1134,6 +1182,30 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {
         combinedTopLevelArbitraryBlock = nodeParseSuccess.value
+      })
+
+      const componentsRenderedByReactDOM = flatMapArray(
+        (node) => getComponentsRenderedWithReactDOM(sourceFile, node),
+        allArbitraryNodes,
+      )
+      topLevelElementsWithFixedUIDs = topLevelElementsWithFixedUIDs.map((topLevelElement) => {
+        if (
+          isUtopiaJSXComponent(topLevelElement) &&
+          componentsRenderedByReactDOM.includes(topLevelElement.name)
+        ) {
+          return utopiaJSXComponent(
+            topLevelElement.name,
+            topLevelElement.isFunction,
+            topLevelElement.param,
+            topLevelElement.propsUsed,
+            topLevelElement.rootElement,
+            topLevelElement.arbitraryJSBlock,
+            true,
+            [],
+          )
+        } else {
+          return topLevelElement
+        }
       })
     }
 

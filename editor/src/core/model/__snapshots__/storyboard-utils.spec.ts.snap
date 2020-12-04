@@ -73,6 +73,7 @@ Array [
       "type": "JSX_ELEMENT",
     },
     "type": "UTOPIA_JSX_COMPONENT",
+    "usedInReactDOMRender": false,
   },
 ]
 `;

@@ -92,6 +92,7 @@ describe('removeJSXElementChild', () => {
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('aaa'), prop1: jsxAttributeValue(5) }, []),
       null,
+      false,
       [],
     ),
     utopiaJSXComponent(
@@ -109,6 +110,7 @@ describe('removeJSXElementChild', () => {
         jsxElement('View', { 'data-uid': jsxAttributeValue('aae') }, []),
       ]),
       null,
+      false,
       [],
     ),
   ]
