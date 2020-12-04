@@ -2039,7 +2039,7 @@ export const UPDATE_FNS = {
             viewPath,
             parentBounds,
             withWrapperViewAdded,
-            null,
+            action.layoutSystem,
           ).editor
 
           return {

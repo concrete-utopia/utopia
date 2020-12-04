@@ -951,8 +951,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ position: 'absolute', backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
           data-uid={'bbb'}
         />
       </View>
@@ -968,13 +967,11 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid={'aaa'}>
         <View
-          layout={{ layoutSystem: 'pinSystem' }}
-          style={{ left: 52, top: 61, width: 256, height: 202 }}
+          style={{ position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
           data-uid={'${NewUID}'}
         >
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 0, top: 0, width: 256, height: 202 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', left: 0, top: 0, width: 256, height: 202, position: 'absolute' }}
             data-uid={'bbb'}
           />
         </View>
@@ -985,15 +982,13 @@ describe('moveTemplate', () => {
   it('wraps multiselected elements', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} data-uid={'aaa'}>
+      <View style={{ ...props.style, width: '100%', height: '100%', position: 'relative' }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202, position: 'absolute' }}
           data-uid={'bbb'}
         >
           <View
-            style={{ left: 10, top: 10, width: 100, height: 100 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ left: 10, top: 10, width: 100, height: 100, position: 'absolute' }}
             data-uid={'ccc'}
           >
             <View data-uid={'ddd'} />
@@ -1001,12 +996,11 @@ describe('moveTemplate', () => {
         </View>
         <View data-uid={'eee'}/>
         <View
-          style={{ left: 10, top: 10, width: 256, height: 150 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ left: 10, top: 10, width: 256, height: 150, position: 'absolute' }}
           data-uid={'fff'}
         >
             <View
-              style={{ left: 5, top: 0, width: 246, height: 150 }}
+              style={{ left: 5, top: 0, width: 246, height: 150, position: 'absolute'  }}
               data-uid={'ggg'}
             />
           </View>
@@ -1025,33 +1019,29 @@ describe('moveTemplate', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} data-uid={'aaa'}>
+      <View style={{ ...props.style, width: '100%', height: '100%', position: 'relative' }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202, position: 'absolute' }}
           data-uid={'bbb'}
         />
         <View data-uid={'eee'} />
         <View
-          style={{ left: 10, top: 10, width: 256, height: 150 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ left: 10, top: 10, width: 256, height: 150, position: 'absolute' }}
           data-uid={'fff'}
         />
         <View data-uid={'hhh'} />
         <View
-          layout={{ layoutSystem: 'pinSystem' }}
-          style={{  left: 15, top: 71, width: 246, height: 291  }}
+          style={{ position: 'absolute', left: 15, top: 10, width: 246, height: 161 }}
           data-uid={'${NewUID}'}
         >
           <View
-            style={{ left: 47, top: 0, width: 100, height: 100 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ left: 47, top: 61, width: 100, height: 100, position: 'absolute' }}
             data-uid={'ccc'}
           >
             <View data-uid={'ddd'} />
           </View>
           <View
-            style={{ left: 0, top: 141, width: 246, height: 150 }}
+            style={{ left: 0, top: 0, width: 246, height: 150, position: 'absolute' }}
             data-uid={'ggg'}
           />
         </View>
@@ -1064,8 +1054,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid={'aaa'}>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ position: 'absolute', backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
           data-uid={'bbb'}
         >
           <View data-uid={'ccc'}>
@@ -1090,13 +1079,11 @@ describe('moveTemplate', () => {
       <View style={{ ...props.style }} data-uid={'aaa'}>
         <View data-uid={'eee'} />
         <View
-          layout={{ layoutSystem: 'pinSystem' }}
-          style={{ left: 52, top: 61, width: 256, height: 202 }}
+          style={{ position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
           data-uid={'${NewUID}'}
         >
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 0, top: 0, width: 256, height: 202 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', left: 0, top: 0, width: 256, height: 202, position: 'absolute' }}
             data-uid={'bbb'}
           >
             <View data-uid={'ccc'}>
@@ -1404,12 +1391,12 @@ describe('moveTemplate', () => {
   it('inserting a new element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
+            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex', position: 'absolute' }}
             data-uid={'bbb'}
           >
-            <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 20, crossBasis: 20 }} />
+            <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
           </View>
         </View>
       `),
@@ -1492,16 +1479,16 @@ describe('moveTemplate', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View style={{ ...props.style }} data-uid={'aaa'}>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
+            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex', position: 'absolute' }}
             data-uid={'bbb'}
           >
-            <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 20, crossBasis: 20 }} />
+            <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
             <View
               style={{ backgroundColor: '#0091FFAA' }}
               data-uid={'${NewUID}'}
-              layout={{ layoutSystem: 'pinSystem', flexBasis: 75, crossBasis: 75 }}
+              layout={{ flexBasis: 75, crossBasis: 75 }}
             />
           </View>
         </View>

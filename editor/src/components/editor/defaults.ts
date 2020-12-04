@@ -61,7 +61,9 @@ export function defaultTransparentViewElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('View', []),
     {
-      style: jsxAttributeValue({}),
+      style: jsxAttributeValue({
+        position: 'absolute',
+      }),
       'data-uid': jsxAttributeValue(uid),
     },
     [],
