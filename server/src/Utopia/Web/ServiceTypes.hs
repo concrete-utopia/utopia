@@ -118,6 +118,7 @@ data ServiceCallsF a = NotFound
                      | GetPathToServe FilePath (Maybe Text) (FilePath -> a)
                      | GetUserConfiguration Text (Maybe DecodedUserConfiguration -> a)
                      | SaveUserConfiguration Text (Maybe Value) a
+                     | ClearBranchCache Text a
                      deriving Functor
 
 {-
