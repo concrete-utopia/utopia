@@ -80,7 +80,7 @@ puppeteerStart = async function () {
     console.info(
       `::set-output name=perf-result::"There was an error with Puppeteer: ${e.name} – ${e.message}"`,
     )
-    process.exit(1)
+    return
   }
 }
 
