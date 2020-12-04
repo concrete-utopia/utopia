@@ -34,7 +34,7 @@ puppeteerStart = async function () {
   try {
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--enable-thread-instruction-count'],
-      headless: false,
+      headless: true,
     })
     const page = await browser.newPage()
     // page.on('console', (message) =>
@@ -80,6 +80,7 @@ puppeteerStart = async function () {
     console.info(
       `::set-output name=perf-result::"There was an error with Puppeteer: ${e.name} – ${e.message}"`,
     )
+    process.exit(1)
   }
 }
 
