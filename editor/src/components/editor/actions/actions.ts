@@ -602,7 +602,13 @@ function switchAndUpdateFrames(
       withUpdatedLayoutSystem = setPropertyOnTarget(
         withUpdatedLayoutSystem,
         target,
-        LayoutHelpers.setLayoutAttribute(layoutSystem),
+        (attributes) => {
+          return setJSXValueAtPath(
+            attributes,
+            createLayoutPropertyPath('position'),
+            jsxAttributeValue('absolute'),
+          )
+        },
       )
   }
 
