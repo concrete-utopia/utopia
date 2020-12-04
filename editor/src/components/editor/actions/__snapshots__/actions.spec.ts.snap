@@ -5,6 +5,7 @@ Array [
   Object {
     "arbitraryJSBlock": null,
     "isFunction": true,
+    "leadingComments": Array [],
     "name": "App",
     "param": null,
     "propsUsed": Array [],
@@ -118,6 +119,7 @@ Array [
   Object {
     "arbitraryJSBlock": null,
     "isFunction": true,
+    "leadingComments": Array [],
     "name": "App",
     "param": null,
     "propsUsed": Array [],

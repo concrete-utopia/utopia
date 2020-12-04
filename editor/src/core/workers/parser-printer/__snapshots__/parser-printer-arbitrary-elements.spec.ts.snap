@@ -22,6 +22,7 @@ function b(n) {
     return a(n - 1);
   }
 }",
+    "leadingComments": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
       "mappings": "AAICA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAWFA;;AAEDX,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
@@ -182,6 +183,7 @@ return { a: a, b: b };",
     return b(n - 1);
   }
 }",
+      "leadingComments": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAICA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
@@ -262,6 +264,7 @@ return { a: a };",
     Object {
       "arbitraryJSBlock": null,
       "isFunction": true,
+      "leadingComments": Array [],
       "name": "App",
       "param": Object {
         "boundParam": Object {
@@ -453,6 +456,7 @@ export var storyboard = (
     return a(n - 1);
   }
 }",
+      "leadingComments": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAsBCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
@@ -533,6 +537,7 @@ return { b: b };",
     Object {
       "arbitraryJSBlock": null,
       "isFunction": false,
+      "leadingComments": Array [],
       "name": "storyboard",
       "param": null,
       "propsUsed": Array [],

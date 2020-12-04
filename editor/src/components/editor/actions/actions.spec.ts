@@ -102,6 +102,7 @@ describe('SET_PROP', () => {
             ],
           ),
           null,
+          [],
         ),
       ],
       {},
@@ -192,6 +193,7 @@ describe('SET_CANVAS_FRAMES', () => {
         ],
       ),
       null,
+      [],
     ),
   ]
 
@@ -265,7 +267,7 @@ describe('moveTemplate', () => {
       parseSuccess(
         emptyImports(),
         rootElements.map((element, index) =>
-          utopiaJSXComponent(`MyView${index}`, true, defaultPropsParam, [], element, null),
+          utopiaJSXComponent(`MyView${index}`, true, defaultPropsParam, [], element, null, []),
         ),
         {},
         null,
@@ -764,7 +766,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     },
     [childElement],
   )
-  const firstTopLevelElement = utopiaJSXComponent('App', true, null, [], rootElement, null)
+  const firstTopLevelElement = utopiaJSXComponent('App', true, null, [], rootElement, null, [])
   const fileForUI = textFile(
     textFileContents(
       '',

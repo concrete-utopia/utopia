@@ -22,6 +22,40 @@ import * as TP from './template-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 
+export interface MultiLineComment {
+  type: 'MULTI_LINE_COMMENT'
+  comment: string
+  trailingNewLine: boolean
+}
+
+export function multiLineComment(comment: string, trailingNewLine: boolean): MultiLineComment {
+  return {
+    type: 'MULTI_LINE_COMMENT',
+    comment: comment,
+    trailingNewLine: trailingNewLine,
+  }
+}
+
+export interface SingleLineComment {
+  type: 'SINGLE_LINE_COMMENT'
+  comment: string
+  trailingNewLine: boolean
+}
+
+export function singleLineComment(comment: string, trailingNewLine: boolean): SingleLineComment {
+  return {
+    type: 'SINGLE_LINE_COMMENT',
+    comment: comment,
+    trailingNewLine: trailingNewLine,
+  }
+}
+
+export type Comment = MultiLineComment | SingleLineComment
+
+export interface WithComments {
+  leadingComments: Array<Comment>
+}
+
 export interface JSXAttributeValue<T> {
   type: 'ATTRIBUTE_VALUE'
   value: T
@@ -634,6 +668,7 @@ export function utopiaJSXComponent(
   propsUsed: Array<string>,
   rootElement: JSXElementChild,
   jsBlock: ArbitraryJSBlock | null,
+  leadingComments: Array<Comment>,
 ): UtopiaJSXComponent {
   return {
     type: 'UTOPIA_JSX_COMPONENT',
@@ -643,6 +678,7 @@ export function utopiaJSXComponent(
     propsUsed: propsUsed,
     rootElement: rootElement,
     arbitraryJSBlock: jsBlock,
+    leadingComments: leadingComments,
   }
 }
 
@@ -790,7 +826,7 @@ export function propNamesForParam(param: Param): Array<string> {
   }
 }
 
-export interface UtopiaJSXComponent {
+export interface UtopiaJSXComponent extends WithComments {
   type: 'UTOPIA_JSX_COMPONENT'
   name: string
   /**

@@ -21,6 +21,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('aa') }, []),
       null,
+      [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(Utils.path(['rootElement', 'props', 'data-uid'], fixedComponent)).toBeDefined()
@@ -37,6 +38,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
       ]),
       null,
+      [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     const child0UID = Utils.path(
@@ -59,6 +61,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       [],
       jsxElement('View', { 'data-uid': jsxAttributeFunctionCall('someFunction', []) }, []),
       null,
+      [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
 
@@ -81,6 +84,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, []),
       ]),
       null,
+      [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(
@@ -99,6 +103,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         jsxElement('View', {} as any, []),
       ]),
       null,
+      [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(
@@ -120,6 +125,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
         jsxElement('View', {}, []),
       ]),
       null,
+      [],
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(exampleComponent === fixedComponent).toBeFalsy()

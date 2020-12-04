@@ -79,6 +79,7 @@ Object {
 function otherFn(n) {
   return n;
 }",
+    "leadingComments": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
       "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
@@ -217,6 +218,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
 function otherFn(n) {
   return n;
 }",
+      "leadingComments": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
@@ -269,6 +271,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
     Object {
       "arbitraryJSBlock": null,
       "isFunction": true,
+      "leadingComments": Array [],
       "name": "whatever",
       "param": Object {
         "boundParam": Object {
@@ -374,6 +377,7 @@ Object {
     ],
     "javascript": "const a = n => n > 0 ? n : b(10);
 const b = n => n > 0 ? n : a(10);",
+    "leadingComments": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
       "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
@@ -457,6 +461,7 @@ return { a: a, b: b };",
         "a",
       ],
       "javascript": "const a = n => n > 0 ? n : b(10);",
+      "leadingComments": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
@@ -495,6 +500,7 @@ return { a: a };",
     Object {
       "arbitraryJSBlock": null,
       "isFunction": true,
+      "leadingComments": Array [],
       "name": "whatever",
       "param": Object {
         "boundParam": Object {
@@ -532,6 +538,7 @@ return { a: a };",
         "b",
       ],
       "javascript": "const b = n => n > 0 ? n : a(10);",
+      "leadingComments": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAMCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
@@ -580,6 +587,7 @@ Object {
       "a",
     ],
     "javascript": "const a = \\"cake\\";",
+    "leadingComments": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
       "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
@@ -682,6 +690,7 @@ return { a: a };",
         "a",
       ],
       "javascript": "const a = \\"cake\\";",
+      "leadingComments": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
@@ -721,6 +730,7 @@ return { a: a };",
     Object {
       "arbitraryJSBlock": null,
       "isFunction": true,
+      "leadingComments": Array [],
       "name": "App",
       "param": Object {
         "boundParam": Object {

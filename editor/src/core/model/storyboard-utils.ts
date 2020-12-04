@@ -177,6 +177,7 @@ function addStoryboardFileForComponent(
     [],
     storyboardElement,
     null,
+    [],
   )
   // Add the component import.
   // Create the file.
