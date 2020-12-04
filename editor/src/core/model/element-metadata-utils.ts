@@ -929,6 +929,8 @@ export const MetadataUtils = {
                   return '(text)'
                 case 'JSX_ARBITRARY_BLOCK':
                   return '(code)'
+                case 'JSX_CONDITIONAL_EXPRESSION':
+                  return '(ternary)'
                 case 'JSX_FRAGMENT':
                   return '(fragment)'
                 default:

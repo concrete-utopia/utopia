@@ -48,6 +48,7 @@ import {
   utopiaJSXComponent,
   defaultPropsParam,
   clearArbitraryJSBlockUniqueIDs,
+  isJSXElement,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -542,6 +543,8 @@ function walkElements(
         walkElements(innerElement, walkWith)
       })
       break
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      break
     case 'JSX_FRAGMENT':
       fastForEach(jsxElementChild.children, (child) => {
         walkElements(child, walkWith)
@@ -571,6 +574,8 @@ function walkAllJSXElementChilds(
         const innerElement = jsxElementChild.elementsWithin[elementWithinKey]
         walkAllJSXElementChilds(innerElement, walkWith)
       })
+      break
+    case 'JSX_CONDITIONAL_EXPRESSION':
       break
     case 'JSX_FRAGMENT':
       fastForEach(jsxElementChild.children, (child) => {
