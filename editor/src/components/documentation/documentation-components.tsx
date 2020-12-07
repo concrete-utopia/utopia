@@ -48,7 +48,7 @@ export const EM = styled.em({
   fontWeight: 600,
 })
 
-export const P = styled.p({
+export const P = styled.div({
   marginTop: '36px',
 })
 
