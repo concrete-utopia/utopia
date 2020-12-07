@@ -271,8 +271,8 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
       <H1>Change Log - June 2020</H1>
       <div>
         <P>
-            <EM>Highlights of June</EM>
-            <ul style={{ paddingLeft: 30 }}></ul>
+          <EM>Highlights of June</EM>
+          <ul style={{ paddingLeft: 30 }}></ul>
         </P>
       </div>
 
@@ -366,7 +366,7 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
           Shades of Purple, Glass, OneDarkPro, OneMonokai, Firefox Light, and more. To change
           themes, go to Project Settings and select the theme.
         </P>
-      </div>  
+      </div>
     </FixedWidth>
   )
 })
