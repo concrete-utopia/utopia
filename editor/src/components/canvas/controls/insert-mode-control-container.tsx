@@ -13,7 +13,7 @@ import {
   JSXElement,
   JSXElementChild,
 } from '../../../core/shared/element-template'
-import { setJSXValueAtPath, unsetJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { PropertyPath, TemplatePath, Imports } from '../../../core/shared/project-file-types'
 import { Either, eitherToMaybe, isLeft, right } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
@@ -443,7 +443,11 @@ export class InsertModeControlContainer extends React.Component<
           ...element,
           props:
             eitherToMaybe(
-              unsetJSXValueAtPath(element.props, createLayoutPropertyPath('position')),
+              setJSXValueAtPath(
+                element.props,
+                createLayoutPropertyPath('position'),
+                jsxAttributeValue('relative'),
+              ),
             ) ?? element.props,
         }
       }

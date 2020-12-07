@@ -315,7 +315,12 @@ export function switchPinnedChildToFlex(
   const newParent = findJSXElementAtPath(newParentPath, components)
   const element = findJSXElementAtPath(target, components)
 
-  let propsToAdd: Array<ValueAtPath> = []
+  let propsToAdd: Array<ValueAtPath> = [
+    {
+      path: createLayoutPropertyPath('position'),
+      value: jsxAttributeValue('relative'),
+    },
+  ]
 
   if (currentFrame != null && newParent != null && element != null) {
     // When moving pinned to flex, use width and height to set basis values
@@ -349,6 +354,7 @@ export function switchPinnedChildToFlex(
     const pinnedPropsRemoved = unsetJSXValuesAtPaths(e.props, [
       ...AllFramePoints.map((p) => createLayoutPropertyPath(pinnedPropForFramePoint(p))),
       createLayoutPropertyPath('position'),
+      createLayoutPropertyPath('LayoutSystem'),
     ])
     // ...Add in the flex properties.
     const flexPropsAdded = flatMapEither(

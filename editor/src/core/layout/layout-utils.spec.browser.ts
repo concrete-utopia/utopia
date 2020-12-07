@@ -135,7 +135,7 @@ describe('maybeSwitchLayoutProps', () => {
             style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
             data-uid={'bbb'}
           >
-            <View style={{}} data-uid={'catdog'} />
+            <View style={{ position: 'relative' }} data-uid={'catdog'} />
           </View>
         </View>`,
       ),
