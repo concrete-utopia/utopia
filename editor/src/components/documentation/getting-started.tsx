@@ -222,7 +222,7 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
       <FeaturedProjects />
 
       <H1>Keyboard Shortcuts</H1>
-      <P>
+      <div>
         <ul>
           <li>
             Showing / hiding the code editor: use <PrettyKeys shortcut='⌘⎇.' />
@@ -236,17 +236,17 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
           You don't need an account to get started, but you'll need to sign up to use assets in your
           products, and share them with others.
         </Callout>
-      </P>
-      <P>
+      </div>
+      <div>
         <H2>Using controls</H2>
         You can add custom controls to your components, and configure them in the inspector. To try
         it, copy and paste this code at the end of your project.
         <SyntaxHighlighter language='jsx' style={syntaxTheme}>
           {codeString}
         </SyntaxHighlighter>
-      </P>
+      </div>
 
-      <P>
+      <div>
         <H2>Known Issues</H2>
         Utopia is in developer preview. You should expect your code to be safe, your projects
         recoverable, and code errors being reported well and consistently. However, some features -
@@ -266,19 +266,19 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
           </li>
           <li>Class-based components, and top-level code mutation, don't yet work reliably.</li>
         </ul>
-      </P>
+      </div>
 
       <H1>Change Log - June 2020</H1>
       <div>
-        <p style={{ marginTop: 36 }}>
-          <EM>Highlights of June</EM>
-          <ul style={{ paddingLeft: 30 }}></ul>
-        </p>
+        <div>
+            <EM>Highlights of June</EM>
+            <ul style={{ paddingLeft: 30 }}></ul>
+        </div>
       </div>
 
       <H1>Change Log - May 2020</H1>
       <div>
-        <p style={{ marginTop: 36 }}>
+        <div>
           <EM>Highlights of May</EM>
           <ul style={{ paddingLeft: 30 }}>
             <li>
@@ -300,12 +300,12 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
               improved how and when we show error messages, and added offline detection.
             </li>
           </ul>
-        </p>
+        </div>
       </div>
 
       <H1>Change Log - April 2020</H1>
       <div>
-        <p style={{ marginTop: 36 }}>
+        <div>
           <EM>Highlights of April.</EM>Welcome to Utopia, April developer preview :) We shipped a
           lot of things, here are some of the highlights:
           <ul style={{ paddingLeft: 30 }}>
@@ -351,10 +351,10 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
               <EM>Infinite loop protection</EM> - in the app.js file for now
             </li>
           </ul>
-        </p>
+        </div>
         <hr />
-        <h3>😎Theme Support 😎</h3>
-        <p>
+        <h3>😎Theme Support😎</h3>
+        <div>
           We now support a lot more themes for the code editor, including some of the most popular
           ones:&nbsp;
           <A href='https://draculatheme.com/visual-studio/'>Dracula</A>,&nbsp;
@@ -365,8 +365,8 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
           <A href='https://github.com/dempfi/ayu'>Ayu</A>,&nbsp;Horizon, Pale Night, Material,
           Shades of Purple, Glass, OneDarkPro, OneMonokai, Firefox Light, and more. To change
           themes, go to Project Settings and select the theme.
-        </p>
-      </div>
+        </div>
+      </div>  
     </FixedWidth>
   )
 })
