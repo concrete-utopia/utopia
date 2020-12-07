@@ -275,15 +275,6 @@ export const LayoutHelpers = {
     const parsedLayoutSystem = this.getLayoutSystemFromAttributes(props)
     return isRight(parsedLayoutSystem) ? parsedLayoutSystem.value : LayoutSystem.PinSystem
   },
-  setLayoutAttribute: (newValue: LayoutSystem) => (
-    props: JSXAttributes,
-  ): Either<string, JSXAttributes> => {
-    return setJSXValueAtPath(
-      props,
-      createLayoutPropertyPath('LayoutSystem'),
-      jsxAttributeValue(newValue),
-    )
-  },
   stretchesChild(
     parentProps: PropsOrJSXAttributes,
     childProps: JSXAttributes,

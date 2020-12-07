@@ -602,7 +602,13 @@ function switchAndUpdateFrames(
       withUpdatedLayoutSystem = setPropertyOnTarget(
         withUpdatedLayoutSystem,
         target,
-        LayoutHelpers.setLayoutAttribute(layoutSystem),
+        (attributes) => {
+          return setJSXValueAtPath(
+            attributes,
+            createLayoutPropertyPath('position'),
+            jsxAttributeValue('absolute'),
+          )
+        },
       )
   }
 
@@ -627,6 +633,15 @@ function switchAndUpdateFrames(
           'flex',
         ),
       }
+      withUpdatedLayoutSystem = {
+        ...withUpdatedLayoutSystem,
+        jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadataKILLME,
+          target,
+          createLayoutPropertyPath('position'), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
+          'relative',
+        ),
+      }
       break
     case 'flow':
       withUpdatedLayoutSystem = {
@@ -639,6 +654,24 @@ function switchAndUpdateFrames(
       }
       break
     case LayoutSystem.PinSystem:
+      withUpdatedLayoutSystem = {
+        ...withUpdatedLayoutSystem,
+        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadataKILLME,
+          target,
+          layoutSystemPath,
+        ),
+      }
+      withUpdatedLayoutSystem = {
+        ...withUpdatedLayoutSystem,
+        jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadataKILLME,
+          target,
+          createLayoutPropertyPath('position'), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
+          'absolute',
+        ),
+      }
+      break
     case LayoutSystem.Group:
     default:
       withUpdatedLayoutSystem = {
@@ -1957,10 +1990,7 @@ export const UPDATE_FNS = {
 
           let viewPath: TemplatePath | null = null
           const withWrapperViewAddedNoFrame = modifyOpenParseSuccess((parseSuccess) => {
-            const elementToInsert: JSXElement = defaultTransparentViewElement(
-              newUID,
-              action.layoutSystem,
-            )
+            const elementToInsert: JSXElement = defaultTransparentViewElement(newUID)
             const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
             const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
               parentPath,
