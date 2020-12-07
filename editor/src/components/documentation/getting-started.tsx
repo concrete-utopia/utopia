@@ -269,104 +269,96 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
       </P>
 
       <H1>Change Log - June 2020</H1>
-      <div>
-        <P>
-          <EM>Highlights of June</EM>
-          <ul style={{ paddingLeft: 30 }}></ul>
-        </P>
-      </div>
+      <P>
+        <EM>Highlights of June</EM>
+        <ul style={{ paddingLeft: 30 }}></ul>
+      </P>
 
       <H1>Change Log - May 2020</H1>
-      <div>
-        <P>
-          <EM>Highlights of May</EM>
-          <ul style={{ paddingLeft: 30 }}>
-            <li>
-              <EM>Image handling</EM> We've made it a lot easier to add images to your projects,
-              configure them, and swap them out.
-            </li>
-            <li>
-              <EM>Asset support</EM> You can now add other assets to your projects. For now there's
-              an upper limit of 5MB. You can also upload code files. Utopia can open and edit any
-              file you import that's text or code.
-            </li>
-            <li>
-              <EM>Crash recovery</EM>. The editor now recovers after crashes, and starts in Safe
-              Mode so you can fix your loops.
-            </li>
+      <P>
+        <EM>Highlights of May</EM>
+        <ul style={{ paddingLeft: 30 }}>
+          <li>
+            <EM>Image handling</EM> We've made it a lot easier to add images to your projects,
+            configure them, and swap them out.
+          </li>
+          <li>
+            <EM>Asset support</EM> You can now add other assets to your projects. For now there's an
+            upper limit of 5MB. You can also upload code files. Utopia can open and edit any file
+            you import that's text or code.
+          </li>
+          <li>
+            <EM>Crash recovery</EM>. The editor now recovers after crashes, and starts in Safe Mode
+            so you can fix your loops.
+          </li>
 
-            <li>
-              <EM>Bug fixes:</EM> We've patched a few editor holes, improved recovery and auto-save,
-              improved how and when we show error messages, and added offline detection.
-            </li>
-          </ul>
-        </P>
-      </div>
+          <li>
+            <EM>Bug fixes:</EM> We've patched a few editor holes, improved recovery and auto-save,
+            improved how and when we show error messages, and added offline detection.
+          </li>
+        </ul>
+      </P>
 
       <H1>Change Log - April 2020</H1>
-      <div>
-        <P>
-          <EM>Highlights of April.</EM>Welcome to Utopia, April developer preview :) We shipped a
-          lot of things, here are some of the highlights:
-          <ul style={{ paddingLeft: 30 }}>
-            <li>
-              <EM>Better multiselection across scenes</EM>
-            </li>
-            <li>
-              <EM>Inspector clean-ups</EM> - easier reading, more consistent layout
-            </li>
+      <P>
+        <EM>Highlights of April.</EM>Welcome to Utopia, April developer preview :) We shipped a lot
+        of things, here are some of the highlights:
+        <ul style={{ paddingLeft: 30 }}>
+          <li>
+            <EM>Better multiselection across scenes</EM>
+          </li>
+          <li>
+            <EM>Inspector clean-ups</EM> - easier reading, more consistent layout
+          </li>
 
-            <li>
-              <EM>Image insertion works properly now</EM>
-            </li>
-            <li>
-              <EM>Load Speed</EM> - Editor now loads 30-50% faster
-            </li>
-            <li>
-              <EM>Default Project</EM> - Removed junk, made it faster
-            </li>
-            <li>
-              <EM>Speed</EM> - Preview button now starts preview, separate button shows separate
-              preview. Top tip: use <PrettyKeys shortcut={'⌘ ⎇ p'} /> to turn the canvas into an
-              interactive preview.
-            </li>
-            <li>
-              <EM>Live Canvas</EM> - switch between editing and running your components directly on
-              the canvas
-            </li>
-            <li>
-              <EM>Better multifile project support</EM> - errors and warnings are grouped by source
-              files
-            </li>
-            <li>
-              <EM>Improved code editing</EM> - JSX tags now close automatically, and we've got
-              auto-indent
-            </li>
+          <li>
+            <EM>Image insertion works properly now</EM>
+          </li>
+          <li>
+            <EM>Load Speed</EM> - Editor now loads 30-50% faster
+          </li>
+          <li>
+            <EM>Default Project</EM> - Removed junk, made it faster
+          </li>
+          <li>
+            <EM>Speed</EM> - Preview button now starts preview, separate button shows separate
+            preview. Top tip: use <PrettyKeys shortcut={'⌘ ⎇ p'} /> to turn the canvas into an
+            interactive preview.
+          </li>
+          <li>
+            <EM>Live Canvas</EM> - switch between editing and running your components directly on
+            the canvas
+          </li>
+          <li>
+            <EM>Better multifile project support</EM> - errors and warnings are grouped by source
+            files
+          </li>
+          <li>
+            <EM>Improved code editing</EM> - JSX tags now close automatically, and we've got
+            auto-indent
+          </li>
 
-            <li>
-              <EM>Open Graph tags</EM> - share a project URL on Twitter, Slack, Discord, Facebook,
-              etc See a preview image, title, and creator info
-            </li>
-            <li>
-              <EM>Infinite loop protection</EM> - in the app.js file for now
-            </li>
-          </ul>
-        </P>
-        <hr />
-        <h3>😎Theme Support😎</h3>
-        <P>
-          We now support a lot more themes for the code editor, including some of the most popular
-          ones:&nbsp;
-          <A href='https://draculatheme.com/visual-studio/'>Dracula</A>,&nbsp;
-          <A href='https://marketplace.visualstudio.com/items?itemName=liviuschera.noctis'>
-            Noctis
-          </A>
-          ,&nbsp;
-          <A href='https://github.com/dempfi/ayu'>Ayu</A>,&nbsp;Horizon, Pale Night, Material,
-          Shades of Purple, Glass, OneDarkPro, OneMonokai, Firefox Light, and more. To change
-          themes, go to Project Settings and select the theme.
-        </P>
-      </div>
+          <li>
+            <EM>Open Graph tags</EM> - share a project URL on Twitter, Slack, Discord, Facebook, etc
+            See a preview image, title, and creator info
+          </li>
+          <li>
+            <EM>Infinite loop protection</EM> - in the app.js file for now
+          </li>
+        </ul>
+      </P>
+      <hr />
+      <h3>😎Theme Support😎</h3>
+      <P>
+        We now support a lot more themes for the code editor, including some of the most popular
+        ones:&nbsp;
+        <A href='https://draculatheme.com/visual-studio/'>Dracula</A>,&nbsp;
+        <A href='https://marketplace.visualstudio.com/items?itemName=liviuschera.noctis'>Noctis</A>
+        ,&nbsp;
+        <A href='https://github.com/dempfi/ayu'>Ayu</A>,&nbsp;Horizon, Pale Night, Material, Shades
+        of Purple, Glass, OneDarkPro, OneMonokai, Firefox Light, and more. To change themes, go to
+        Project Settings and select the theme.
+      </P>
     </FixedWidth>
   )
 })
