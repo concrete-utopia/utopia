@@ -313,7 +313,7 @@ export const UiJsxCanvas = betterReactMemo(
       Utils.fastForEach(topLevelElementsIncludingScenes, (topLevelElement) => {
         if (isUtopiaJSXComponent(topLevelElement)) {
           topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-          if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
+          if (!(topLevelElement.name in topLevelComponentRendererComponents.current)) {
             topLevelComponentRendererComponents.current[
               topLevelElement.name
             ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
