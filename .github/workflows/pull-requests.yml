@@ -115,9 +115,8 @@ jobs:
           nix_path: nixpkgs=channel:nixos-20.09
       - name: Run Performance Test
         id: run-performance-test
-        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd editor; npm install --unsafe-perm; node puppeteer-test.js"
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd performance-test; npm install --unsafe-perm; npm start"
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v1
         if: ${{ success() || failure() }}

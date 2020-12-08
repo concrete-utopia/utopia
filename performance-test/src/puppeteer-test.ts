@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer')
+import puppeteer from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 
@@ -15,13 +15,8 @@ function defer() {
   return promise
 }
 
-/**
- *
- * @param {puppeteer.Page} page
- */
-
-function consoleDoneMessage(page) {
-  return new Promise((resolve, reject) => {
+function consoleDoneMessage(page: puppeteer.Page) {
+  return new Promise<void>((resolve, reject) => {
     page.on('console', (message) => {
       if (message.text().includes('SCROLL_TEST_FINISHED')) {
         resolve()
@@ -30,7 +25,7 @@ function consoleDoneMessage(page) {
   })
 }
 
-puppeteerStart = async function () {
+export const puppeteerStart = async function () {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: true,
@@ -42,23 +37,25 @@ puppeteerStart = async function () {
   await page.goto(`https://utopia.pizza/project/5596ecdd/?branch_name=feature/perf-test-button`)
   await page.waitForXPath("//a[contains(., 'P S')]")
   const [button] = await page.$x("//a[contains(., 'P S')]")
-  await button.click()
+  await button!.click()
   await consoleDoneMessage(page)
   const [button2] = await page.$x("//a[contains(., 'P S')]")
-  await button2.click()
+  await button2!.click()
   await consoleDoneMessage(page)
   await page.tracing.start({ path: 'trace.json' })
   const [button3] = await page.$x("//a[contains(., 'P S')]")
-  await button3.click()
+  await button3!.click()
   await consoleDoneMessage(page)
   await page.tracing.stop()
   await browser.close()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
 
-  const frameTimeEvents = traceJson.traceEvents.filter((e) => e.name.startsWith('scroll_step_'))
-  let frameTimes = []
-  let lastFrameTimestamp = null
+  const frameTimeEvents: any[] = traceJson.traceEvents.filter((e: any) =>
+    e.name.startsWith('scroll_step_'),
+  )
+  let frameTimes: Array<number> = []
+  let lastFrameTimestamp: number | null = null
   let totalFrameTimes = 0
   frameTimeEvents.forEach((fte) => {
     const frameID = fte.name.split('scroll_step_')[1] - 1
@@ -79,10 +76,3 @@ puppeteerStart = async function () {
     )}]"`,
   )
 }
-
-puppeteerStart().catch((e) => {
-  console.info(
-    `::set-output name=perf-result::"There was an error with Puppeteer: ${e.name} – ${e.message}"`,
-  )
-  return
-})
