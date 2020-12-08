@@ -2,6 +2,8 @@ import puppeteer from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 
+const BRANCH_NAME = process.env.BRANCH_NAME
+
 // this is the same as utils.ts@defer
 function defer() {
   var res, rej
@@ -36,7 +38,7 @@ export const testScrollingPerformance = async function () {
   // page.on('console', (message) =>
   //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
   // )
-  await page.goto(`https://utopia.pizza/project/5596ecdd/?branch_name=feature/perf-test-button`)
+  await page.goto(`https://utopia.pizza/project/5596ecdd/?branch_name=${BRANCH_NAME}`)
   await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P S')]")
