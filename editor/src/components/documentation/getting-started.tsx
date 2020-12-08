@@ -11,7 +11,15 @@ import { base16AteliersulphurpoolLight as syntaxTheme } from 'react-syntax-highl
 
 import * as React from 'react'
 import { colorTheme, UtopiaStyles, SimpleFlexRow, FlexRow, FlexColumn } from 'uuiui'
-import { H1, H2, PrettyKeys, EM, CalloutPrimary as Callout, A, P } from './documentation-components'
+import {
+  H1,
+  H2,
+  PrettyKeys,
+  EM,
+  CalloutPrimary as Callout,
+  A,
+  PMT,
+} from './documentation-components'
 import { betterReactMemo } from '../../uuiui-deps'
 import { ProjectListing } from '../../common/persistence'
 import { fetchProjectMetadata } from '../../common/server'
@@ -210,19 +218,19 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
   return (
     <FixedWidth>
       <H1>Welcome to the Developer Preview</H1>
-      <P>
+      <PMT>
         Utopia is an online design and coding environment for React. You can go back and forth
         between design and code, and between design and preview.
-      </P>
-      <P>
+      </PMT>
+      <PMT>
         Our goal is to give you a creative tool to realize your interface ideas by connecting design
         and code.
-      </P>
-      <P>To get started, check out some of our example projects, or start from scratch.</P>
+      </PMT>
+      <PMT>To get started, check out some of our example projects, or start from scratch.</PMT>
       <FeaturedProjects />
 
       <H1>Keyboard Shortcuts</H1>
-      <P>
+      <PMT>
         <ul>
           <li>
             Showing / hiding the code editor: use <PrettyKeys shortcut='⌘⎇.' />
@@ -236,17 +244,17 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
           You don't need an account to get started, but you'll need to sign up to use assets in your
           products, and share them with others.
         </Callout>
-      </P>
-      <P>
+      </PMT>
+      <PMT>
         <H2>Using controls</H2>
         You can add custom controls to your components, and configure them in the inspector. To try
         it, copy and paste this code at the end of your project.
         <SyntaxHighlighter language='jsx' style={syntaxTheme}>
           {codeString}
         </SyntaxHighlighter>
-      </P>
+      </PMT>
 
-      <P>
+      <PMT>
         <H2>Known Issues</H2>
         Utopia is in developer preview. You should expect your code to be safe, your projects
         recoverable, and code errors being reported well and consistently. However, some features -
@@ -266,107 +274,99 @@ export const GettingStarted = betterReactMemo('Getting Started', () => {
           </li>
           <li>Class-based components, and top-level code mutation, don't yet work reliably.</li>
         </ul>
-      </P>
+      </PMT>
 
       <H1>Change Log - June 2020</H1>
-      <div>
-        <p style={{ marginTop: 36 }}>
-          <EM>Highlights of June</EM>
-          <ul style={{ paddingLeft: 30 }}></ul>
-        </p>
-      </div>
+      <PMT>
+        <EM>Highlights of June</EM>
+        <ul style={{ paddingLeft: 30 }}></ul>
+      </PMT>
 
       <H1>Change Log - May 2020</H1>
-      <div>
-        <p style={{ marginTop: 36 }}>
-          <EM>Highlights of May</EM>
-          <ul style={{ paddingLeft: 30 }}>
-            <li>
-              <EM>Image handling</EM> We've made it a lot easier to add images to your projects,
-              configure them, and swap them out.
-            </li>
-            <li>
-              <EM>Asset support</EM> You can now add other assets to your projects. For now there's
-              an upper limit of 5MB. You can also upload code files. Utopia can open and edit any
-              file you import that's text or code.
-            </li>
-            <li>
-              <EM>Crash recovery</EM>. The editor now recovers after crashes, and starts in Safe
-              Mode so you can fix your loops.
-            </li>
+      <PMT>
+        <EM>Highlights of May</EM>
+        <ul style={{ paddingLeft: 30 }}>
+          <li>
+            <EM>Image handling</EM> We've made it a lot easier to add images to your projects,
+            configure them, and swap them out.
+          </li>
+          <li>
+            <EM>Asset support</EM> You can now add other assets to your projects. For now there's an
+            upper limit of 5MB. You can also upload code files. Utopia can open and edit any file
+            you import that's text or code.
+          </li>
+          <li>
+            <EM>Crash recovery</EM>. The editor now recovers after crashes, and starts in Safe Mode
+            so you can fix your loops.
+          </li>
 
-            <li>
-              <EM>Bug fixes:</EM> We've patched a few editor holes, improved recovery and auto-save,
-              improved how and when we show error messages, and added offline detection.
-            </li>
-          </ul>
-        </p>
-      </div>
+          <li>
+            <EM>Bug fixes:</EM> We've patched a few editor holes, improved recovery and auto-save,
+            improved how and when we show error messages, and added offline detection.
+          </li>
+        </ul>
+      </PMT>
 
       <H1>Change Log - April 2020</H1>
-      <div>
-        <p style={{ marginTop: 36 }}>
-          <EM>Highlights of April.</EM>Welcome to Utopia, April developer preview :) We shipped a
-          lot of things, here are some of the highlights:
-          <ul style={{ paddingLeft: 30 }}>
-            <li>
-              <EM>Better multiselection across scenes</EM>
-            </li>
-            <li>
-              <EM>Inspector clean-ups</EM> - easier reading, more consistent layout
-            </li>
+      <PMT>
+        <EM>Highlights of April.</EM>Welcome to Utopia, April developer preview :) We shipped a lot
+        of things, here are some of the highlights:
+        <ul style={{ paddingLeft: 30 }}>
+          <li>
+            <EM>Better multiselection across scenes</EM>
+          </li>
+          <li>
+            <EM>Inspector clean-ups</EM> - easier reading, more consistent layout
+          </li>
 
-            <li>
-              <EM>Image insertion works properly now</EM>
-            </li>
-            <li>
-              <EM>Load Speed</EM> - Editor now loads 30-50% faster
-            </li>
-            <li>
-              <EM>Default Project</EM> - Removed junk, made it faster
-            </li>
-            <li>
-              <EM>Speed</EM> - Preview button now starts preview, separate button shows separate
-              preview. Top tip: use <PrettyKeys shortcut={'⌘ ⎇ p'} /> to turn the canvas into an
-              interactive preview.
-            </li>
-            <li>
-              <EM>Live Canvas</EM> - switch between editing and running your components directly on
-              the canvas
-            </li>
-            <li>
-              <EM>Better multifile project support</EM> - errors and warnings are grouped by source
-              files
-            </li>
-            <li>
-              <EM>Improved code editing</EM> - JSX tags now close automatically, and we've got
-              auto-indent
-            </li>
+          <li>
+            <EM>Image insertion works properly now</EM>
+          </li>
+          <li>
+            <EM>Load Speed</EM> - Editor now loads 30-50% faster
+          </li>
+          <li>
+            <EM>Default Project</EM> - Removed junk, made it faster
+          </li>
+          <li>
+            <EM>Speed</EM> - Preview button now starts preview, separate button shows separate
+            preview. Top tip: use <PrettyKeys shortcut={'⌘ ⎇ p'} /> to turn the canvas into an
+            interactive preview.
+          </li>
+          <li>
+            <EM>Live Canvas</EM> - switch between editing and running your components directly on
+            the canvas
+          </li>
+          <li>
+            <EM>Better multifile project support</EM> - errors and warnings are grouped by source
+            files
+          </li>
+          <li>
+            <EM>Improved code editing</EM> - JSX tags now close automatically, and we've got
+            auto-indent
+          </li>
 
-            <li>
-              <EM>Open Graph tags</EM> - share a project URL on Twitter, Slack, Discord, Facebook,
-              etc See a preview image, title, and creator info
-            </li>
-            <li>
-              <EM>Infinite loop protection</EM> - in the app.js file for now
-            </li>
-          </ul>
-        </p>
-        <hr />
-        <h3>😎Theme Support 😎</h3>
-        <p>
-          We now support a lot more themes for the code editor, including some of the most popular
-          ones:&nbsp;
-          <A href='https://draculatheme.com/visual-studio/'>Dracula</A>,&nbsp;
-          <A href='https://marketplace.visualstudio.com/items?itemName=liviuschera.noctis'>
-            Noctis
-          </A>
-          ,&nbsp;
-          <A href='https://github.com/dempfi/ayu'>Ayu</A>,&nbsp;Horizon, Pale Night, Material,
-          Shades of Purple, Glass, OneDarkPro, OneMonokai, Firefox Light, and more. To change
-          themes, go to Project Settings and select the theme.
-        </p>
-      </div>
+          <li>
+            <EM>Open Graph tags</EM> - share a project URL on Twitter, Slack, Discord, Facebook, etc
+            See a preview image, title, and creator info
+          </li>
+          <li>
+            <EM>Infinite loop protection</EM> - in the app.js file for now
+          </li>
+        </ul>
+      </PMT>
+      <hr />
+      <h3>😎Theme Support😎</h3>
+      <PMT>
+        We now support a lot more themes for the code editor, including some of the most popular
+        ones:&nbsp;
+        <A href='https://draculatheme.com/visual-studio/'>Dracula</A>,&nbsp;
+        <A href='https://marketplace.visualstudio.com/items?itemName=liviuschera.noctis'>Noctis</A>
+        ,&nbsp;
+        <A href='https://github.com/dempfi/ayu'>Ayu</A>,&nbsp;Horizon, Pale Night, Material, Shades
+        of Purple, Glass, OneDarkPro, OneMonokai, Firefox Light, and more. To change themes, go to
+        Project Settings and select the theme.
+      </PMT>
     </FixedWidth>
   )
 })
