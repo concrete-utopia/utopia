@@ -107,7 +107,7 @@ import { FontSettings } from '../../inspector/common/css-utils'
 import { DefaultPackagesList, PackageDetails } from '../../navigator/dependency-list'
 import { LeftMenuTab, LeftPaneDefaultWidth } from '../../navigator/left-pane'
 import { DropTargetHint } from '../../navigator/navigator'
-import { EditorDispatch, LoginState, ProjectListing } from '../action-types'
+import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
 import {
