@@ -798,7 +798,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     sceneResizesContent: false,
     style: { width: 100, height: 100 },
-    container: { layoutSystem: LayoutSystem.PinSystem },
     rootElements: [rootElementPath],
   }
 

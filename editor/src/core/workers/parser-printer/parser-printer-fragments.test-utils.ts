@@ -21,12 +21,11 @@ export var App = (props) => {
   )
 }
 export var ${BakedInStoryboardVariableName} = (
-  <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid={'eee'}>
+  <Storyboard data-uid={'eee'}>
     <Scene
-      style={{ height: 812, left: 0, width: 375, top: 0 }}
+      style={{ position: 'relative', height: 812, left: 0, width: 375, top: 0 }}
       component={App}
-      layout={{ layoutSystem: 'pinSystem' }}
-      props={{ style: { bottom: 0, left: 0, right: 0, top: 0 } }}
+      props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
       data-uid={'fff'}
     />
   </Storyboard>

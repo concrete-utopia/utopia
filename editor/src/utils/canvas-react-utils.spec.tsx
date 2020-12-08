@@ -16,13 +16,7 @@ const Storyboard = (props: React.PropsWithChildren<any>) => {
   return <React.Fragment key='monkey-oh-monkey-please-leave-me-be'>{props.children}</React.Fragment>
 }
 
-const Scene = (props: {
-  component: any
-  'data-uid': string
-  style?: any
-  props?: any
-  layout?: any
-}) => {
+const Scene = (props: { component: any; 'data-uid': string; style?: any; props?: any }) => {
   const { component, 'data-uid': uid, style, ...restProps } = props
   const child = React.createElement(component, { ...restProps, ...props.props })
   const result = <div style={props.style}>{child}</div>
@@ -575,7 +569,6 @@ describe('Monkey Function', () => {
         <Scene
           style={{ left: 0, top: 0, width: 400, height: 400 }}
           component={App}
-          layout={{ layoutSystem: 'pinSystem' }}
           props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
           data-uid={'scene-aaa'}
         />

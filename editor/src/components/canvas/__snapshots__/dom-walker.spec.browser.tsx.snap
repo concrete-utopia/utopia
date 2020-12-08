@@ -5,7 +5,6 @@ Object {
   "components": Array [
     Object {
       "component": "storyboard",
-      "container": Object {},
       "globalFrame": null,
       "label": "Storyboard",
       "rootElements": Array [
@@ -35,9 +34,6 @@ Object {
     },
     Object {
       "component": "App",
-      "container": Object {
-        "layoutSystem": "pinSystem",
-      },
       "globalFrame": Object {
         "height": 812,
         "width": 375,
@@ -70,6 +66,7 @@ Object {
       "style": Object {
         "height": 812,
         "left": 0,
+        "position": "relative",
         "top": 0,
         "width": 375,
       },
@@ -626,7 +623,6 @@ Object {
   "components": Array [
     Object {
       "component": "storyboard",
-      "container": Object {},
       "globalFrame": null,
       "label": "Storyboard",
       "rootElements": Array [
@@ -656,9 +652,6 @@ Object {
     },
     Object {
       "component": "App",
-      "container": Object {
-        "layoutSystem": "pinSystem",
-      },
       "globalFrame": Object {
         "height": 812,
         "width": 375,
@@ -691,6 +684,7 @@ Object {
       "style": Object {
         "height": 812,
         "left": 0,
+        "position": "relative",
         "top": 0,
         "width": 375,
       },
@@ -968,7 +962,6 @@ Object {
   "components": Array [
     Object {
       "component": "storyboard",
-      "container": Object {},
       "globalFrame": null,
       "label": "Storyboard",
       "rootElements": Array [
@@ -998,9 +991,6 @@ Object {
     },
     Object {
       "component": "App",
-      "container": Object {
-        "layoutSystem": "pinSystem",
-      },
       "globalFrame": Object {
         "height": 812,
         "width": 375,
@@ -1033,6 +1023,7 @@ Object {
       "style": Object {
         "height": 812,
         "left": 0,
+        "position": "relative",
         "top": 0,
         "width": 375,
       },
@@ -1548,7 +1539,6 @@ Object {
   "components": Array [
     Object {
       "component": "storyboard",
-      "container": Object {},
       "globalFrame": null,
       "label": "Storyboard",
       "rootElements": Array [
@@ -1578,9 +1568,6 @@ Object {
     },
     Object {
       "component": "App",
-      "container": Object {
-        "layoutSystem": "pinSystem",
-      },
       "globalFrame": Object {
         "height": 812,
         "width": 375,
@@ -1613,6 +1600,7 @@ Object {
       "style": Object {
         "height": 812,
         "left": 0,
+        "position": "relative",
         "top": 0,
         "width": 375,
       },
@@ -2129,7 +2117,6 @@ Object {
   "components": Array [
     Object {
       "component": "storyboard",
-      "container": Object {},
       "globalFrame": null,
       "label": "Storyboard",
       "rootElements": Array [
@@ -2159,9 +2146,6 @@ Object {
     },
     Object {
       "component": "App",
-      "container": Object {
-        "layoutSystem": "pinSystem",
-      },
       "globalFrame": Object {
         "height": 812,
         "width": 375,
@@ -2194,6 +2178,7 @@ Object {
       "style": Object {
         "height": 812,
         "left": 0,
+        "position": "relative",
         "top": 0,
         "width": 375,
       },
