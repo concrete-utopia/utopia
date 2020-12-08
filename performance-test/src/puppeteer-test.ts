@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 
-const BRANCH_NAME = 'feature/perf-test-button' // process.env.BRANCH_NAME
+const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
 const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
 
