@@ -61,6 +61,14 @@ Array [
                     "value": 300,
                   },
                 },
+                Object {
+                  "key": "position",
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": "absolute",
+                  },
+                },
               ],
               "type": "ATTRIBUTE_NESTED_OBJECT",
             },
@@ -80,17 +88,8 @@ Array [
           "value": "aaa",
         },
         "layout": Object {
-          "content": Array [
-            Object {
-              "key": "layoutSystem",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": "pinSystem",
-              },
-            },
-          ],
-          "type": "ATTRIBUTE_NESTED_OBJECT",
+          "type": "ATTRIBUTE_VALUE",
+          "value": Object {},
         },
         "style": Object {
           "content": Array [
@@ -102,6 +101,14 @@ Array [
                 "value": "#FFFFFF",
               },
             },
+            Object {
+              "key": "position",
+              "type": "PROPERTY_ASSIGNMENT",
+              "value": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": "absolute",
+              },
+            },
           ],
           "type": "ATTRIBUTE_NESTED_OBJECT",
         },
@@ -109,6 +116,7 @@ Array [
       "type": "JSX_ELEMENT",
     },
     "type": "UTOPIA_JSX_COMPONENT",
+    "usedInReactDOMRender": false,
   },
 ]
 `;
@@ -158,8 +166,17 @@ Array [
               "type": "ATTRIBUTE_NESTED_OBJECT",
             },
             "style": Object {
-              "type": "ATTRIBUTE_VALUE",
-              "value": Object {},
+              "content": Array [
+                Object {
+                  "key": "position",
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": "relative",
+                  },
+                },
+              ],
+              "type": "ATTRIBUTE_NESTED_OBJECT",
             },
           },
           "type": "JSX_ELEMENT",
@@ -205,6 +222,7 @@ Array [
       "type": "JSX_ELEMENT",
     },
     "type": "UTOPIA_JSX_COMPONENT",
+    "usedInReactDOMRender": false,
   },
 ]
 `;

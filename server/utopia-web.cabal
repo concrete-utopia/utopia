@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 59365a7cae4d2a726cdca15fd8fc3bfbf56f429e927cc5fe7295c4498d64fec9
+-- hash: 58ab737db13887effbbb6f5660ddeffb97c44ed4e7cd966f51c5a969460b52b7
 
 name:           utopia-web
 version:        0.1.0.4
@@ -88,6 +88,7 @@ executable utopia-web
     , monad-logger
     , mtl
     , network-uri
+    , path
     , path-pieces
     , pathwalk
     , persistent <2.10.0
@@ -201,6 +202,7 @@ test-suite utopia-web-test
     , monad-logger
     , mtl
     , network-uri
+    , path
     , path-pieces
     , pathwalk
     , persistent <2.10.0

@@ -270,7 +270,7 @@ innerServerExecutor (GetSiteRoot action) = do
 innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
   pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
-                   ("./editor", (Just branchName), (Just downloads))  -> liftIO $ downloadBranchBundle downloads branchName
+                   ("./editor", (Just branchName), (Just downloads))  -> liftIO $ getBranchBundleFolder downloads branchName
                    _                                                  -> return defaultPathToServe
   return $ action pathToServe
 innerServerExecutor (GetUserConfiguration user action) = do
@@ -281,6 +281,10 @@ innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig action) =
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
   saveUserConfigurationWithPool metrics pool user possibleShortcutConfig
+  return action
+innerServerExecutor (ClearBranchCache branchName action) = do
+  possibleDownloads <- fmap _branchDownloads ask
+  liftIO $ traverse_ (\d -> deleteBranchCache d branchName) possibleDownloads
   return action
 
 {-|

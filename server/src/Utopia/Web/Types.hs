@@ -135,6 +135,8 @@ type GetPackageVersionsAPI = "v1" :> "javascript" :> "package" :> "versions" :> 
 
 type MonitoringAPI = "monitoring" :> "secret" :> "location" :> Get '[JSON] Value
 
+type ClearBranchAPI = "internal" :> "branch" :> QueryParam' '[Required, Strict] "branch_name" Text :> Delete '[JSON] NoContent
+
 type HashedAssetPathsAPI = "hashed-assets.json" :> Get '[JSON] Value
 
 type EditorAssetsAPI = "editor" :> BranchNameParam :> RawM
@@ -180,6 +182,7 @@ type Unprotected = AuthenticateAPI
               :<|> PreviewProjectAssetAPI
               :<|> LoadProjectThumbnailAPI
               :<|> MonitoringAPI
+              :<|> ClearBranchAPI
               :<|> PackagePackagerAPI
               :<|> GetPackageJSONAPI
               :<|> GetPackageVersionJSONAPI

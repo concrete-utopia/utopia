@@ -5,7 +5,7 @@ import {
   jsxElementName,
   jsxAttributeOtherJavaScript,
 } from '../../core/shared/element-template'
-import { LayoutSystem, NormalisedFrame } from 'utopia-api'
+import { NormalisedFrame } from 'utopia-api'
 import { PathForResizeContent } from '../../core/model/scene-utils'
 import * as PP from '../../core/shared/property-path'
 
@@ -36,11 +36,9 @@ export function defaultViewElement(uid: string): JSXElement {
     {
       style: jsxAttributeValue({
         backgroundColor: '#0091FFAA',
+        position: 'absolute',
       }),
       'data-uid': jsxAttributeValue(uid),
-      layout: jsxAttributeValue({
-        layoutSystem: 'pinSystem',
-      }),
     },
     [],
   )
@@ -59,14 +57,13 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
   )
 }
 
-export function defaultTransparentViewElement(uid: string, layoutSystem: LayoutSystem): JSXElement {
+export function defaultTransparentViewElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('View', []),
     {
-      layout: jsxAttributeValue({
-        layoutSystem: layoutSystem,
+      style: jsxAttributeValue({
+        position: 'absolute',
       }),
-      style: jsxAttributeValue({}),
       'data-uid': jsxAttributeValue(uid),
     },
     [],
@@ -119,11 +116,9 @@ export function defaultDivElement(uid: string): JSXElement {
     {
       style: jsxAttributeValue({
         backgroundColor: '#0091FFAA',
+        position: 'absolute',
       }),
       'data-uid': jsxAttributeValue(uid),
-      layout: jsxAttributeValue({
-        layoutSystem: 'pinSystem',
-      }),
     },
     [],
   )

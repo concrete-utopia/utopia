@@ -3650,6 +3650,28 @@ export const googleFontsList: Array<GoogleFontsTypeface> = [
   },
   {
     type: 'google-fonts-typeface',
+    name: 'JetBrains Mono',
+    variants: [
+      { type: 'web-font-variant', webFontWeight: 100, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 100, webFontStyle: 'italic' },
+      { type: 'web-font-variant', webFontWeight: 200, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 200, webFontStyle: 'italic' },
+      { type: 'web-font-variant', webFontWeight: 300, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 300, webFontStyle: 'italic' },
+      { type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'italic' },
+      { type: 'web-font-variant', webFontWeight: 500, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 500, webFontStyle: 'italic' },
+      { type: 'web-font-variant', webFontWeight: 600, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 600, webFontStyle: 'italic' },
+      { type: 'web-font-variant', webFontWeight: 700, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 700, webFontStyle: 'italic' },
+      { type: 'web-font-variant', webFontWeight: 800, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 800, webFontStyle: 'italic' },
+    ],
+  },
+  {
+    type: 'google-fonts-typeface',
     name: 'Jim Nightshade',
     variants: [{ type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'normal' }],
   },
@@ -8253,4 +8275,3 @@ export const googleFontsList: Array<GoogleFontsTypeface> = [
     ],
   },
 ]
-

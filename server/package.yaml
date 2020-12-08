@@ -42,6 +42,7 @@ dependencies:
   - monad-logger
   - mtl
   - network-uri
+  - path
   - path-pieces
   - pathwalk
   - persistent <2.10.0

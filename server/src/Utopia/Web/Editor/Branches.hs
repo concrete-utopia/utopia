@@ -6,6 +6,7 @@ module Utopia.Web.Editor.Branches where
 
 import           Codec.Archive.Tar
 import           Codec.Compression.GZip
+import           Control.Concurrent.QSemN
 import           Control.Lens
 import           Control.Monad
 import           Control.Monad.Trans.Maybe
@@ -14,6 +15,7 @@ import qualified Data.HashMap.Strict       as M
 import           Data.IORef
 import qualified Data.Text                 as T
 import qualified Network.Wreq              as W
+import           Path                      hiding ((</>))
 import           Protolude
 import           System.Directory
 import           System.Environment
@@ -23,9 +25,17 @@ import           Text.URI                  (QueryParam (..), mkQueryKey,
                                             mkQueryValue, mkURI, render)
 import           Text.URI.Lens
 
-type BranchDownloadResult = Either SomeException FilePath
+fullSemaphoreLimit :: Int
+fullSemaphoreLimit = 100
 
-type BranchDownload = MVar BranchDownloadResult
+data BranchDownloadResult = BranchDownloadSuccess FilePath
+                          | BranchDownloadFailure SomeException
+                          | BranchDownloadNotStarted
+
+data BranchDownload = BranchDownload
+                    { _branchDownloadResult    :: BranchDownloadResult
+                    , _branchDownloadSemaphore :: QSemN
+                    }
 
 type BranchDownloadsMap = M.HashMap Text BranchDownload
 
@@ -39,6 +49,22 @@ data BranchDownloads = BranchDownloads
                      , _branchDownloadsURLTextToReplace     :: Text
                      , _branchDownloadsReplaceURLTextWith   :: Text
                      }
+
+fixBranchName :: Text -> Text
+fixBranchName = T.replace "/" "-"
+
+getLocalFolder :: BranchDownloads -> Text -> IO FilePath
+getLocalFolder BranchDownloads{..} branchName = do
+  let fixedBranchName = fixBranchName branchName
+  absoluteBaseFolder <- makeAbsolute _branchDownloadsBaseFolder
+  let branchFolder = _branchDownloadsBaseFolder </> toS fixedBranchName
+  absoluteBranchFolder <- makeAbsolute branchFolder
+  -- Ensure the path isn't pointing up to parent directories and potentially reaching
+  -- something it shouldn't.
+  _ <- parseAbsDir absoluteBranchFolder
+  case isPrefixOf absoluteBaseFolder absoluteBranchFolder of
+    True -> pure absoluteBranchFolder
+    False -> fail $ toS ("Branch name '" <> branchName <> "' does not resolve to a valid folder.")
 
 getOptionalEnv :: Text -> MaybeT IO Text
 getOptionalEnv envVar = do
@@ -57,6 +83,43 @@ createBranchDownloads = runMaybeT $ do
   _branchDownloadsReplaceURLTextWith <- getOptionalEnv "STAGING_BUNDLE_REPLACE_URL_TEXT_WITH"
   return $ BranchDownloads{..}
 
+newBranchDownload :: IO BranchDownload
+newBranchDownload = do
+  _branchDownloadSemaphore <- newQSemN fullSemaphoreLimit
+  let _branchDownloadResult = BranchDownloadNotStarted
+  pure BranchDownload{..}
+
+addDownloadStorage :: Text -> BranchDownload -> BranchDownloadsMap -> (BranchDownloadsMap, BranchDownload)
+addDownloadStorage branchName newDownload downloads =
+  let lookupResult = M.lookup branchName downloads
+      nonExistant = (M.insert branchName newDownload downloads, newDownload)
+      downloadExists download = (downloads, download)
+  in  maybe nonExistant downloadExists lookupResult
+
+getBranchDownload :: BranchDownloads -> Text -> IO BranchDownload
+getBranchDownload BranchDownloads{..} branchName = do
+  defaultedBranchDownload <- newBranchDownload
+  atomicModifyIORef' _branchDownloadsContent (addDownloadStorage branchName defaultedBranchDownload)
+
+readLockForBranch :: BranchDownloads -> Text -> IO a -> IO a
+readLockForBranch branchDownloads@BranchDownloads{..} branchName action = do
+  BranchDownload{..} <- getBranchDownload branchDownloads branchName
+  bracket_ (waitQSemN _branchDownloadSemaphore 1) (signalQSemN _branchDownloadSemaphore 1) $ do
+    action
+
+writeLockForBranch :: BranchDownloads -> Text -> IO a -> IO a
+writeLockForBranch branchDownloads@BranchDownloads{..} branchName action = do
+  BranchDownload{..} <- getBranchDownload branchDownloads branchName
+  bracket_ (waitQSemN _branchDownloadSemaphore fullSemaphoreLimit) (signalQSemN _branchDownloadSemaphore fullSemaphoreLimit) $ do
+    action
+
+elevateIntoWriteLockForBranch :: BranchDownloads -> Text -> IO a -> IO a
+elevateIntoWriteLockForBranch branchDownloads@BranchDownloads{..} branchName action = do
+  BranchDownload{..} <- getBranchDownload branchDownloads branchName
+  -- Reverse of the read lock, nesting will lead to bad times.
+  bracket_ (signalQSemN _branchDownloadSemaphore 1) (waitQSemN _branchDownloadSemaphore 1) $ do
+    writeLockForBranch branchDownloads branchName action
+
 writeEntry :: FilePath -> IO () -> Entry -> IO ()
 writeEntry baseFolder previousResult entry = do
   -- Ensures we do the work to write all the entries out.
@@ -74,40 +137,60 @@ writeEntry baseFolder previousResult entry = do
     NamedPipe               -> fail "NamedPipe is unhandled."
     (OtherEntryType _ _ _)  -> fail "OtherEntryType is unhandled."
 
-triggerDownload :: BranchDownloads -> Text -> BranchDownload -> IO ()
-triggerDownload BranchDownloads{..} branchName download = do
+updateDownloadResultMap :: Text -> BranchDownloadResult -> BranchDownloadsMap -> (BranchDownloadsMap, Bool)
+updateDownloadResultMap branchName downloadResult downloads =
+  let lookupResult = M.lookup branchName downloads
+      nonExistant = (downloads, False)
+      downloadExists _ = (M.adjust (\result -> result { _branchDownloadResult = downloadResult }) branchName downloads, True)
+  in  maybe nonExistant downloadExists lookupResult
+
+updateDownloadResult :: BranchDownloads -> Text -> BranchDownloadResult -> IO ()
+updateDownloadResult BranchDownloads{..} branchName result = do
+  updateResult <- atomicModifyIORef' _branchDownloadsContent (updateDownloadResultMap branchName result)
+  unless updateResult $ fail ("Non-existant download result for " <> toS branchName <> ".")
+
+triggerDownloadAsNeeded :: BranchDownloads -> Text -> BranchDownloadResult -> IO FilePath
+triggerDownloadAsNeeded _ _ (BranchDownloadSuccess branchPath) = pure branchPath
+triggerDownloadAsNeeded _ _ (BranchDownloadFailure e) = throwIO e
+triggerDownloadAsNeeded branchDownloads@BranchDownloads{..} branchName BranchDownloadNotStarted = do
   putText ("Downloading for branch " <> branchName)
+  let fixedBranchName = fixBranchName branchName
+  branchFolder <- getLocalFolder branchDownloads branchName
   let wreqOptions = W.defaults & W.auth ?~ W.awsAuth W.AWSv4 (toS _branchDownloadsAWSAccessKey) (toS _branchDownloadsAWSSecretKey)
-  let fixedBranchName = T.replace "/" "-" branchName
   let targetURL = "https://" <> _branchDownloadsAWSBucket <> ".s3.amazonaws.com/editor/" <> fixedBranchName <> ".tar.gz"
-  void $ forkIO $ do
+  -- Warning, this expects to be launched inside a read locked context.
+  elevateIntoWriteLockForBranch branchDownloads branchName $ do
     -- On an error put that into the download MVar.
-    handle (\e -> putMVar download $ Left e) $ do
+    handle (\e -> updateDownloadResult branchDownloads branchName (BranchDownloadFailure e) >> throwIO e) $ do
       response <- W.getWith wreqOptions (toS targetURL)
       let downloadBytes = view W.responseBody response
-      let branchFolder = _branchDownloadsBaseFolder </> toS fixedBranchName
       -- Write out the contents of the .tar.gz file.
       let entries = read $ decompress downloadBytes
       let writeResult = foldlEntries (writeEntry branchFolder) (pure ()) entries
       -- Throw an error if there was one.
       either (\(e, _) -> throwIO e) identity writeResult
       -- Record the folder that the bundle was exploded into in the download MVar.
-      putMVar download $ Right branchFolder
+      updateDownloadResult branchDownloads branchName (BranchDownloadSuccess branchFolder)
+      pure branchFolder
 
-addDownloadStorage :: Text -> BranchDownload -> BranchDownloadsMap -> (BranchDownloadsMap, (Bool, BranchDownload))
-addDownloadStorage branchName newDownload downloads =
-  let lookupResult = M.lookup branchName downloads
-      nonExistant = (M.insert branchName newDownload downloads, (True, newDownload))
-      downloadExists download = (downloads, (False, download))
-  in  maybe nonExistant downloadExists lookupResult
+getBranchBundleFolder :: BranchDownloads -> Text -> IO FilePath
+getBranchBundleFolder branchDownloads branchName = downloadBranchBundle branchDownloads branchName pure
 
-downloadBranchBundle :: BranchDownloads -> Text -> IO FilePath
-downloadBranchBundle branchDownloads@BranchDownloads{..} branchName = do
-  newDownload <- newEmptyMVar
-  (isNewlyCreated, download) <- atomicModifyIORef' _branchDownloadsContent (addDownloadStorage branchName newDownload)
-  when isNewlyCreated $ triggerDownload branchDownloads branchName download
-  downloadResult <- readMVar download
-  either throwIO return downloadResult
+downloadBranchBundle :: BranchDownloads -> Text -> (FilePath -> IO a) -> IO a
+downloadBranchBundle branchDownloads@BranchDownloads{..} branchName action = readLockForBranch branchDownloads branchName $ do
+  defaultedBranchDownload <- newBranchDownload
+  download <- atomicModifyIORef' _branchDownloadsContent (addDownloadStorage branchName defaultedBranchDownload)
+  branchPath <- triggerDownloadAsNeeded branchDownloads branchName (_branchDownloadResult download)
+  action branchPath
+
+deleteBranchCache :: BranchDownloads -> Text -> IO ()
+deleteBranchCache branchDownloads@BranchDownloads{..} branchName = do
+  putText ("Deleting content for branch " <> branchName)
+  branchFolder <- getLocalFolder branchDownloads branchName
+  writeLockForBranch branchDownloads branchName $ do
+    updateDownloadResult branchDownloads branchName BranchDownloadNotStarted
+    exists <- doesDirectoryExist branchFolder
+    when exists $ removeDirectoryRecursive branchFolder
 
 rewriteURL :: BranchDownloads -> QueryParam -> Text -> Text
 rewriteURL BranchDownloads{..} branchNameQueryParam possibleURL =
@@ -142,12 +225,12 @@ rewriteTag _ _ tag = tag
 
 readBranchHTMLContent :: BranchDownloads -> Text -> Text -> IO Text
 readBranchHTMLContent downloads@BranchDownloads{..} branchName fileToLoad = do
-  baseFolder <- downloadBranchBundle downloads branchName
-  fileContent <- readFile (baseFolder </> toS fileToLoad)
-  let parsedTags = parseTags fileContent
-  branchNameQueryValue <- mkQueryValue branchName
-  branchNameAttributeKey <- mkQueryKey "branch_name"
-  let branchNameQueryParam = QueryParam branchNameAttributeKey branchNameQueryValue
-  let updatedTags = fmap (rewriteTag downloads branchNameQueryParam) parsedTags
-  return $ renderTags updatedTags
+  downloadBranchBundle downloads branchName $ \baseFolder -> do
+    fileContent <- readFile (baseFolder </> toS fileToLoad)
+    let parsedTags = parseTags fileContent
+    branchNameQueryValue <- mkQueryValue branchName
+    branchNameAttributeKey <- mkQueryKey "branch_name"
+    let branchNameQueryParam = QueryParam branchNameAttributeKey branchNameQueryValue
+    let updatedTags = fmap (rewriteTag downloads branchNameQueryParam) parsedTags
+    return $ renderTags updatedTags
 

@@ -352,6 +352,11 @@ downloadGithubProjectEndpoint cookie owner repo = requireUser cookie $ \_ -> do
 monitoringEndpoint :: ServerMonad Value
 monitoringEndpoint = getMetrics
 
+clearBranchCacheEndpoint :: Text -> ServerMonad NoContent
+clearBranchCacheEndpoint branchName = do
+  clearBranchCache branchName
+  pure NoContent
+
 websiteAssetsEndpoint :: FilePath -> ServerMonad Application
 websiteAssetsEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
@@ -462,6 +467,7 @@ unprotected = authenticate
          :<|> loadProjectAssetEndpoint
          :<|> loadProjectThumbnailEndpoint
          :<|> monitoringEndpoint
+         :<|> clearBranchCacheEndpoint
          :<|> packagePackagerEndpoint
          :<|> getPackageJSONEndpoint
          :<|> getPackageVersionJSONEndpoint
