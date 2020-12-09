@@ -62,12 +62,6 @@ Array [
           "type": "ATTRIBUTE_VALUE",
           "value": "utopia-storyboard-uid",
         },
-        "layout": Object {
-          "type": "ATTRIBUTE_VALUE",
-          "value": Object {
-            "layoutSystem": "pinSystem",
-          },
-        },
       },
       "type": "JSX_ELEMENT",
     },
