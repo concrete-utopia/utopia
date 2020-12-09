@@ -1,4 +1,4 @@
-import { PersistentModel } from '../../store/editor-state'
+import { modifyParseSuccessWithSimple, PersistentModel } from '../../store/editor-state'
 import { objectMap } from '../../../../core/shared/object-utils'
 import {
   ProjectFile,
@@ -21,8 +21,10 @@ import {
   transformContentsTree,
 } from '../../../assets'
 import { EditorTab } from '../../store/editor-tabs'
+import { transformAllElements } from '../../../../core/model/element-template-utils'
+import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
 
-export const CURRENT_PROJECT_VERSION = 6
+export const CURRENT_PROJECT_VERSION = 7
 
 export function applyMigrations(
   persistentModel: PersistentModel,
@@ -33,7 +35,8 @@ export function applyMigrations(
   const version4 = migrateFromVersion3(version3)
   const version5 = migrateFromVersion4(version4)
   const version6 = migrateFromVersion5(version5)
-  return version6
+  const version7 = migrateFromVersion6(version6)
+  return version7
 }
 
 function migrateFromVersion0(
@@ -257,6 +260,54 @@ function migrateFromVersion5(
                 lastRevisedTime,
               )
               return projectContentFile(tree.fullPath, newFile)
+            } else {
+              return tree
+            }
+          } else {
+            return tree
+          }
+        },
+      ),
+    }
+  }
+}
+
+function migrateFromVersion6(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 7 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 6) {
+    return persistentModel as any
+  } else {
+    return {
+      ...persistentModel,
+      projectVersion: 7,
+      projectContents: transformContentsTree(
+        persistentModel.projectContents,
+        (tree: ProjectContentsTree) => {
+          if (tree.type === 'PROJECT_CONTENT_FILE') {
+            const file: ProjectContentFile['content'] = tree.content
+            if (file.type === 'TEXT_FILE' && isParseSuccess(file.fileContents.parsed)) {
+              const updatedParseSuccess = modifyParseSuccessWithSimple((s) => {
+                const updatedUtopiaComponents = transformAllElements(
+                  s.utopiaComponents,
+                  LayoutHelpers.removeLayoutSystemProperties,
+                )
+                return {
+                  ...s,
+                  utopiaComponents: updatedUtopiaComponents,
+                }
+              }, file.fileContents.parsed)
+              return {
+                ...tree,
+                content: {
+                  ...tree.content,
+                  fileContents: {
+                    ...file.fileContents,
+                    parsed: updatedParseSuccess,
+                    revisionsState: RevisionsState.ParsedAhead,
+                  },
+                },
+              }
             } else {
               return tree
             }

@@ -32,8 +32,10 @@ import {
   ComponentMetadata,
   UtopiaJSXComponent,
   JSXMetadata,
+  JSXElementChild,
 } from '../shared/element-template'
 import {
+  jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
@@ -352,5 +354,34 @@ export const LayoutHelpers = {
         vertical: createLayoutPropertyPath('Height'),
       }
     }
+  },
+  removeLayoutSystemProperties(element: JSXElementChild): JSXElementChild {
+    if (isJSXElement(element) && element.props['layout'] != null) {
+      const layoutProps = eitherToMaybe(jsxSimpleAttributeToValue(element.props['layout']))
+      const withLayoutPropsRemoved = eitherToMaybe(
+        unsetJSXValuesAtPaths(element.props, [createLayoutPropertyPath('LayoutSystem')]),
+      )
+      if (withLayoutPropsRemoved != null) {
+        const withPositionAbsoluteAdded = eitherToMaybe(
+          setJSXValueAtPath(
+            withLayoutPropsRemoved,
+            createLayoutPropertyPath('position'),
+            jsxAttributeValue('absolute'),
+          ),
+        )
+        if (layoutProps?.layoutSystem != null && withPositionAbsoluteAdded != null) {
+          return {
+            ...element,
+            props: withPositionAbsoluteAdded,
+          }
+        } else {
+          return {
+            ...element,
+            props: withLayoutPropsRemoved,
+          }
+        }
+      }
+    }
+    return element
   },
 }
