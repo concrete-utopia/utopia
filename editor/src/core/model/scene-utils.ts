@@ -153,6 +153,7 @@ export function convertScenesToUtopiaCanvasComponent(
     ),
     null,
     false,
+    [],
   )
 }
 

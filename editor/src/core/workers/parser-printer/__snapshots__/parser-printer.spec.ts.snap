@@ -269,6 +269,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
     Object {
       "arbitraryJSBlock": null,
       "isFunction": true,
+      "leadingComments": Array [],
       "name": "whatever",
       "param": Object {
         "boundParam": Object {
@@ -496,6 +497,7 @@ return { a: a };",
     Object {
       "arbitraryJSBlock": null,
       "isFunction": true,
+      "leadingComments": Array [],
       "name": "whatever",
       "param": Object {
         "boundParam": Object {
@@ -723,6 +725,7 @@ return { a: a };",
     Object {
       "arbitraryJSBlock": null,
       "isFunction": true,
+      "leadingComments": Array [],
       "name": "App",
       "param": Object {
         "boundParam": Object {

@@ -224,6 +224,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               },
               arbitraryJSBlock: null,
               usedInReactDOMRender: false,
+              leadingComments: [],
             },
             convertScenesToUtopiaCanvasComponent([
               {

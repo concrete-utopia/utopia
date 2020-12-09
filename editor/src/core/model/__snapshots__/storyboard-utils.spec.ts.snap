@@ -5,6 +5,7 @@ Array [
   Object {
     "arbitraryJSBlock": null,
     "isFunction": false,
+    "leadingComments": Array [],
     "name": "storyboard",
     "param": null,
     "propsUsed": Array [],
