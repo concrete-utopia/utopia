@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a function 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
+>
+  <div
+    data-utopia-scene-id=\\"fc3/12b\\"
+    data-utopia-valid-paths=\\"\\"
+    style=\\"
+      position: absolute;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      width: 375px;
+      height: 812px;
+      left: 0;
+      top: 0;
+    \\"
+    data-uid=\\"fc3\\"
+  >
+    <div data-uid=\\"de3\\">hat</div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a function 2`] = `Object {}`;
