@@ -14,13 +14,13 @@ import { ESCodeFile } from '../../shared/project-file-types'
 import { NO_OP } from '../../shared/utils'
 import { NodeModules } from '../../shared/project-file-types'
 import { getPackagerUrl, getJsDelivrFileUrl } from './packager-url'
-import { InjectedCSSFilePrefix } from '../../shared/css-style-loader'
 import {
   npmVersion,
   npmVersionLookupSuccess,
   VersionLookupResult,
 } from '../../../components/editor/npm-dependency/npm-dependency'
 import { PackagerServerResponse, requestedNpmDependency } from '../../shared/npm-dependency-types'
+import { InjectedCSSFilePrefix } from '../../webpack-loaders/css-loader'
 
 require('jest-fetch-mock').enableMocks()
 
