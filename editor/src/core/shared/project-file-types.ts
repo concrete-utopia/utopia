@@ -1,5 +1,5 @@
 import * as TS from 'typescript'
-import { LayoutSystem, NormalisedFrame } from 'utopia-api'
+import { NormalisedFrame } from 'utopia-api'
 import { ArbitraryJSBlock, TopLevelElement, UtopiaJSXComponent } from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'

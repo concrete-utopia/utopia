@@ -1,4 +1,3 @@
-import { LayoutSystem } from 'utopia-api'
 import { EditorDispatch } from '../components/editor/action-types'
 import {
   createEditorState,

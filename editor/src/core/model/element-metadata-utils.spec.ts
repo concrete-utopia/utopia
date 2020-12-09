@@ -1,4 +1,3 @@
-import { LayoutSystem } from 'utopia-api'
 import * as TP from '../shared/template-path'
 import {
   canvasRectangle,

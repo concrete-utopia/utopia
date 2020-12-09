@@ -160,7 +160,6 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
 export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
   const storyboardProps = {
     [UTOPIA_UID_KEY]: jsxAttributeValue(uid),
-    layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }),
   }
   return jsxElement('Storyboard', storyboardProps, scenes)
 }
