@@ -20,6 +20,11 @@
       "isModule": false,
       "requires": []
     },
+    "/node_modules/mypackage/simple.css": {
+      "content": ".utopiaClass { background-color: red; }",
+      "isModule": false,
+      "requires": []
+    },
     "/node_modules/mypackage/package.json": {
       "content": "{\"name\": \"mypackage\", \"version\": \"0.0.1\", \"main\": \"web.cjs.js\"}",
       "isModule": false,
