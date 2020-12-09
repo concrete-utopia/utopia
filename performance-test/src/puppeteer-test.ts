@@ -4,8 +4,8 @@ const path = require('path')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
-// const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
+// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
+const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -78,10 +78,19 @@ export const testScrollingPerformance = async function () {
     lastFrameTimestamp = frameTimestamp
   })
 
+
+  
   const frameAvg = totalFrameTimes / frameTimes.length
+  const percentile25 = frameTimes.sort((a, b) => a - b)[Math.floor(frameTimes.length * 0.25)]
+  const percentile50 = frameTimes.sort((a, b) => a - b)[Math.floor(frameTimes.length * 0.50)]
+  const percentile75 = frameTimes.sort((a,b) => a- b)[Math.floor(frameTimeEvents.length * 0.75)]
+
+
+  
+  
 
   console.info(
-    `::set-output name=perf-result::"${totalFrameTimes}ms – average frame length: ${frameAvg} – frame times: [${frameTimes.join(
+    `::set-output name=perf-result::"${totalFrameTimes}ms – average frame length: ${frameAvg} – Q1: ${percentile25} – Q2: ${percentile50} – Q3: ${percentile75} – Median: ${percentile50} – frame times: [${frameTimes.join(
       ',',
     )}]"`,
   )
