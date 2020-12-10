@@ -36,7 +36,7 @@ export const testScrollingPerformance = async function () {
   
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: true, // enable for myself, however, when making change enable to true
+    headless: false, // enable for myself, however, when making change enable to true
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768});
@@ -115,19 +115,6 @@ export const testScrollingPerformance = async function () {
     var fileStream = ffs.createWriteStream('2.png');
     imageStream.pipe(fileStream);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   console.info(
     `::set-output name=perf-result::"${totalFrameTimes}ms – average frame length: ${frameAvg} – Q1: ${percentile25} – Q2: ${percentile50} – Q3: ${percentile75} – Median: ${percentile50} – frame times: [${frameTimes.join(
