@@ -1275,7 +1275,7 @@ describe('moveTemplate', () => {
             data-uid={'bbb'}
           >
             <View data-uid={'ccc'} layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
-            <View data-uid={'eee'} layout={{ flexBasis: 80, crossBasis: 80 }} style={{ position: 'relative' }} />
+            <View data-uid={'eee'} layout={{}} style={{ position: 'relative', flexBasis: 80, height: 80 }} />
           </View>
         </View>
       `),
@@ -1381,7 +1381,7 @@ describe('moveTemplate', () => {
             data-uid={'bbb'}
           >
             <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
-            <View data-uid={'eee'} style={{ backgroundColor: '#00ff00', position: 'relative' }} layout={{ flexBasis: 80, crossBasis: 80 }} />
+            <View data-uid={'eee'} style={{ backgroundColor: '#00ff00', position: 'relative', flexBasis: 80, height: 80 }} layout={{}} />
           </View>
         </View>
       `),
@@ -1486,9 +1486,8 @@ describe('moveTemplate', () => {
           >
             <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
             <View
-              style={{ backgroundColor: '#0091FFAA', position: 'relative' }}
+              style={{ backgroundColor: '#0091FFAA', position: 'relative', flexBasis: 75, height: 75 }}
               data-uid={'${NewUID}'}
-              layout={{ flexBasis: 75, crossBasis: 75 }}
             />
           </View>
         </View>
