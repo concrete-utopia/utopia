@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { LayoutSystem, View } from 'utopia-api'
+import { View } from 'utopia-api'
 import { useContextSelector } from 'use-context-selector'
 import * as fastDeepEquals from 'fast-deep-equal'
 import { getValidTemplatePaths } from '../../../core/model/element-template-utils'
@@ -9,11 +9,7 @@ import {
   emptyComputedStyle,
   JSXElement,
 } from '../../../core/shared/element-template'
-import {
-  InstancePath,
-  ScenePath,
-  ScenePinnedContainer,
-} from '../../../core/shared/project-file-types'
+import { InstancePath, ScenePath } from '../../../core/shared/project-file-types'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
 import { UiJsxCanvasContextData, UiJsxCanvasContext } from '../ui-jsx-canvas'
 import {
@@ -39,7 +35,6 @@ interface SceneProps {
   component?: React.ComponentType | null
   props?: any
   style?: React.CSSProperties
-  layout?: ScenePinnedContainer
   'data-uid'?: string
   'data-label'?: string
 }
@@ -61,7 +56,6 @@ function useRunSpy(
   metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
     scenePath: scenePath,
     templatePath: templatePath,
-    container: props.layout,
     component: componentName,
     sceneResizesContent: resizesContent,
     globalFrame: null,
@@ -165,7 +159,6 @@ export const SceneRootRenderer = betterReactMemo(
           data-utopia-scene-id={TP.toString(scenePath)}
           data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
           style={sceneStyle}
-          layout={sceneProps.layout}
         >
           {rootElement}
         </View>

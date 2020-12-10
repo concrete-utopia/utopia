@@ -14,13 +14,13 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -116,10 +116,10 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -183,10 +183,10 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -301,13 +301,13 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -378,10 +378,10 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -497,13 +497,13 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:567\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -605,13 +605,13 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -675,10 +675,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -737,10 +736,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -841,13 +839,13 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -938,10 +936,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1005,10 +1002,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1085,10 +1081,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1191,13 +1186,13 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -1510,13 +1505,13 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -1584,10 +1579,10 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1702,13 +1697,13 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -1785,10 +1780,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1836,10 +1830,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1940,13 +1933,13 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -2023,10 +2016,10 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -2074,10 +2067,10 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -2178,13 +2171,13 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -2497,13 +2490,13 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -2580,10 +2573,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -2682,13 +2674,13 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 200px;
-      height: 200px;
-      left: 59px;
-      top: 79px;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      height: 200px;
+      left: 59px;
+      width: 200px;
+      top: 79px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -2754,6 +2746,7 @@ Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#000000",
+                  "position": "absolute",
                 },
               },
               "title": Object {
@@ -2763,7 +2756,7 @@ Object {
                 "javascript": "props.title",
                 "sourceMap": Object {
                   "file": "code.tsx",
-                  "mappings": "OAYgFA,KAAMC,MAAND",
+                  "mappings": "OAWsGA,KAAMC,MAAND",
                   "names": Array [
                     "props",
                     "title",
@@ -2781,10 +2774,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} title={props.title} />
+            <Card data-uid={'bbb'} style={{position: 'absolute', backgroundColor: '#000000'}} title={props.title} />
           </View>
         )
       }
@@ -2793,10 +2785,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -2824,12 +2815,6 @@ Object {
           "data-uid": Object {
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
-          },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "layoutSystem": "pinSystem",
-            },
           },
           "style": Object {
             "content": Array [
@@ -2860,10 +2845,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} title={props.title} />
+            <Card data-uid={'bbb'} style={{position: 'absolute', backgroundColor: '#000000'}} title={props.title} />
           </View>
         )
       }
@@ -2872,10 +2856,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -3005,6 +2988,7 @@ Object {
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#000000",
+              "position": "absolute",
             },
           },
           "title": Object {
@@ -3014,7 +2998,7 @@ Object {
             "javascript": "props.title",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAYgFA,KAAMC,MAAND",
+              "mappings": "OAWsGA,KAAMC,MAAND",
               "names": Array [
                 "props",
                 "title",
@@ -3032,10 +3016,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} title={props.title} />
+            <Card data-uid={'bbb'} style={{position: 'absolute', backgroundColor: '#000000'}} title={props.title} />
           </View>
         )
       }
@@ -3044,10 +3027,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -3173,13 +3155,13 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 200px;
-      height: 200px;
-      left: 59px;
-      top: 79px;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      height: 200px;
+      left: 59px;
+      width: 200px;
+      top: 79px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -3240,6 +3222,7 @@ Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#000000",
+                  "position": "absolute",
                 },
               },
               "title": Object {
@@ -3249,7 +3232,7 @@ Object {
                 "javascript": "props.title",
                 "sourceMap": Object {
                   "file": "code.tsx",
-                  "mappings": "OAYgFA,KAAMC,MAAND",
+                  "mappings": "OAWuGA,KAAMC,MAAND",
                   "names": Array [
                     "props",
                     "title",
@@ -3267,10 +3250,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} title={props.title} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000'}} title={props.title} />
           </View>
         )
       }
@@ -3279,10 +3261,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -3310,12 +3291,6 @@ Object {
           "data-uid": Object {
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
-          },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "layoutSystem": "pinSystem",
-            },
           },
           "style": Object {
             "content": Array [
@@ -3346,10 +3321,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} title={props.title} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000'}} title={props.title} />
           </View>
         )
       }
@@ -3358,10 +3332,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -3491,6 +3464,7 @@ Object {
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#000000",
+              "position": "absolute",
             },
           },
           "title": Object {
@@ -3500,7 +3474,7 @@ Object {
             "javascript": "props.title",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAYgFA,KAAMC,MAAND",
+              "mappings": "OAWuGA,KAAMC,MAAND",
               "names": Array [
                 "props",
                 "title",
@@ -3518,10 +3492,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} title={props.title} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000'}} title={props.title} />
           </View>
         )
       }
@@ -3530,10 +3503,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -3647,13 +3619,13 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 200px;
-      height: 200px;
-      left: 59px;
-      top: 79px;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      height: 200px;
+      left: 59px;
+      width: 200px;
+      top: 79px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -3719,6 +3691,7 @@ Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#000000",
+                  "position": "absolute",
                 },
               },
               "titles": Object {
@@ -3732,7 +3705,7 @@ Object {
                       "javascript": "props.title",
                       "sourceMap": Object {
                         "file": "code.tsx",
-                        "mappings": "OAYkFA,KAAMC,MAAND",
+                        "mappings": "OAW0GA,KAAMC,MAAND",
                         "names": Array [
                           "props",
                           "title",
@@ -3750,10 +3723,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000' }} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
           </View>
         )
       }
@@ -3762,10 +3734,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -3814,12 +3785,6 @@ Object {
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "layoutSystem": "pinSystem",
-            },
-          },
           "style": Object {
             "content": Array [
               Object {
@@ -3849,10 +3814,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000' }} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
           </View>
         )
       }
@@ -3861,10 +3825,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -3994,6 +3957,7 @@ Object {
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#000000",
+              "position": "absolute",
             },
           },
           "titles": Object {
@@ -4007,7 +3971,7 @@ Object {
                   "javascript": "props.title",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAYkFA,KAAMC,MAAND",
+                    "mappings": "OAW0GA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "title",
@@ -4025,10 +3989,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000' }} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
           </View>
         )
       }
@@ -4037,10 +4000,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -4180,13 +4142,13 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 200px;
-      height: 200px;
-      left: 59px;
-      top: 79px;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      height: 200px;
+      left: 59px;
+      width: 200px;
+      top: 79px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -4252,6 +4214,7 @@ Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#000000",
+                  "position": "absolute",
                 },
               },
               "titles": Object {
@@ -4265,7 +4228,7 @@ Object {
                       "javascript": "props.title",
                       "sourceMap": Object {
                         "file": "code.tsx",
-                        "mappings": "OAYkFA,KAAMC,MAAND",
+                        "mappings": "OAW0GA,KAAMC,MAAND",
                         "names": Array [
                           "props",
                           "title",
@@ -4283,10 +4246,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000' }} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
           </View>
         )
       }
@@ -4295,10 +4257,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -4347,12 +4308,6 @@ Object {
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "layoutSystem": "pinSystem",
-            },
-          },
           "style": Object {
             "content": Array [
               Object {
@@ -4382,10 +4337,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000' }} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
           </View>
         )
       }
@@ -4394,10 +4348,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -4527,6 +4480,7 @@ Object {
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#000000",
+              "position": "absolute",
             },
           },
           "titles": Object {
@@ -4540,7 +4494,7 @@ Object {
                   "javascript": "props.title",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAYkFA,KAAMC,MAAND",
+                    "mappings": "OAW0GA,KAAMC,MAAND",
                     "names": Array [
                       "props",
                       "title",
@@ -4558,10 +4512,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000' }} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
           </View>
         )
       }
@@ -4570,10 +4523,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -4713,13 +4665,13 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -4821,13 +4773,13 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/03a utopia-storyboard-uid/scene-aaa:aaa/03a/834 utopia-storyboard-uid/scene-aaa:aaa/03a/999 utopia-storyboard-uid/scene-aaa:aaa/03a/999/000\\"
     style=\\"
-      position: relative;
-      width: 375px;
-      height: 812px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 375px;
+      height: 812px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -5046,7 +4998,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -5069,10 +5021,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -5171,7 +5122,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -5194,10 +5145,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -5310,7 +5260,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -5333,10 +5283,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -5438,7 +5387,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -5461,10 +5410,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -5578,7 +5526,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -5601,10 +5549,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -5650,12 +5597,6 @@ export var storyboard = (props) => {
           "data-uid": Object {
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
-          },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "layoutSystem": "pinSystem",
-            },
           },
           "style": Object {
             "content": Array [
@@ -5738,7 +5679,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -5761,10 +5702,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -6027,7 +5967,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -6050,10 +5990,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -6152,7 +6091,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -6175,10 +6114,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -6291,7 +6229,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -6314,10 +6252,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -6419,7 +6356,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -6442,10 +6379,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -6559,7 +6495,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -6582,10 +6518,9 @@ export var storyboard = (props) => {
     <Storyboard data-uid={'utopia-storyboard-uid'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -6647,7 +6582,7 @@ export var storyboard = (props) => {
         "maxWidth": undefined,
         "minHeight": undefined,
         "minWidth": undefined,
-        "position": "absolute",
+        "position": undefined,
         "right": undefined,
         "top": undefined,
         "width": undefined,
@@ -6731,13 +6666,13 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -7068,13 +7003,13 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -7141,10 +7076,10 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -7231,13 +7166,13 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -7302,10 +7237,10 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -7353,10 +7288,10 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -7474,21 +7409,16 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      width: 375px;
-      height: 812px;
       left: 0;
       top: 0;
+      width: 375px;
+      height: 812px;
     \\"
     data-uid=\\"eee\\"
   >
     <div
       data-uid=\\"aaa\\"
-      style=\\"
-        position: relative;
-        width: 100%;
-        height: 100%;
-        background-color: #ffffff;
-      \\"
+      style=\\"width: 100%; height: 100%; background-color: #ffffff;\\"
     >
       Test
       <div
@@ -7573,7 +7503,7 @@ export var App = (props) => {
     <div
       data-uid={'aaa'}
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
     >
       Test
       <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
@@ -7586,7 +7516,7 @@ export var Thing = (props) => {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'eee'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'eee'} >
     <Scene
       data-uid={'fff'}
       component={App}
@@ -7619,12 +7549,6 @@ export var storyboard = (
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "layoutSystem": "pinSystem",
-            },
-          },
           "style": Object {
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
@@ -7643,30 +7567,8 @@ export var storyboard = (
       "data-uid": "aaa",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": "relative",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -7759,7 +7661,7 @@ export var App = (props) => {
     <div
       data-uid={'aaa'}
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
     >
       Test
       <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
@@ -7772,7 +7674,7 @@ export var Thing = (props) => {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'eee'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'eee'} >
     <Scene
       data-uid={'fff'}
       component={App}
@@ -7799,32 +7701,6 @@ export var storyboard = (
     "props": Object {
       "data-uid": "bbb",
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": "absolute",
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "thing": "REACT_ELEMENT",
     },
     "specialSizeMeasurements": Object {
@@ -7889,25 +7765,18 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/d59 utopia-storyboard-uid/scene-aaa:aaa/d59/dd5\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"
-        position: absolute;
-        left: 0;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        background-color: lightgrey;
-      \\"
+      style=\\"position: absolute; background-color: lightgrey;\\"
       data-uid=\\"aaa\\"
     >
       <div
@@ -7996,19 +7865,14 @@ Object {
                     "type": "ATTRIBUTE_VALUE",
                     "value": "dd5",
                   },
-                  "layout": Object {
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": Object {
-                      "height": 244,
-                      "left": 14,
-                      "top": 21,
-                      "width": 193,
-                    },
-                  },
                   "style": Object {
                     "type": "ATTRIBUTE_VALUE",
                     "value": Object {
                       "backgroundColor": "#fff",
+                      "height": 244,
+                      "left": 14,
+                      "top": 21,
+                      "width": 193,
                     },
                   },
                 },
@@ -8026,7 +7890,7 @@ Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": "d59",
               },
-              "layout": Object {
+              "style": Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "height": 348,
@@ -8050,15 +7914,6 @@ Object {
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "bottom": 0,
-              "left": 0,
-              "right": 0,
-              "top": 0,
-            },
-          },
           "style": Object {
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
@@ -8076,31 +7931,8 @@ Object {
       "data-uid": "aaa",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "lightgrey",
-        "bottom": 0,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": 0,
-        "top": 0,
-        "width": undefined,
       },
     },
     "specialSizeMeasurements": Object {
@@ -8183,19 +8015,14 @@ Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": "dd5",
               },
-              "layout": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "height": 244,
-                  "left": 14,
-                  "top": 21,
-                  "width": 193,
-                },
-              },
               "style": Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#fff",
+                  "height": 244,
+                  "left": 14,
+                  "top": 21,
+                  "width": 193,
                 },
               },
             },
@@ -8213,7 +8040,7 @@ Object {
             "type": "ATTRIBUTE_VALUE",
             "value": "d59",
           },
-          "layout": Object {
+          "style": Object {
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "height": 348,
@@ -8322,19 +8149,14 @@ Object {
             "type": "ATTRIBUTE_VALUE",
             "value": "dd5",
           },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "height": 244,
-              "left": 14,
-              "top": 21,
-              "width": 193,
-            },
-          },
           "style": Object {
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#fff",
+              "height": 244,
+              "left": 14,
+              "top": 21,
+              "width": 193,
             },
           },
         },
@@ -8437,13 +8259,13 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 200px;
-      height: 200px;
-      left: 59px;
-      top: 79px;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      height: 200px;
+      left: 59px;
+      width: 200px;
+      top: 79px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -8506,6 +8328,12 @@ Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
+              "style": Object {
+                "type": "ATTRIBUTE_VALUE",
+                "value": Object {
+                  "position": "absolute",
+                },
+              },
             },
             "type": "JSX_ELEMENT",
           },
@@ -8520,12 +8348,6 @@ Object {
           "data-uid": Object {
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
-          },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "layoutSystem": "pinSystem",
-            },
           },
           "style": Object {
             "content": Array [
@@ -8555,10 +8377,9 @@ Object {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <View data-uid={'bbb'}>hi</View>
+            <View style={{position: 'absolute'}} data-uid={'bbb'}>hi</View>
           </View>
         )
       }
@@ -8567,10 +8388,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -8702,6 +8522,12 @@ Object {
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
+          "style": Object {
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {
+              "position": "absolute",
+            },
+          },
         },
         "type": "JSX_ELEMENT",
       },
@@ -8800,13 +8626,13 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -8883,10 +8709,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -8934,10 +8759,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -9038,13 +8862,13 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -9122,10 +8946,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -9173,10 +8996,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -9277,13 +9099,13 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -9362,10 +9184,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -9416,10 +9237,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -9719,21 +9539,16 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      width: 375px;
-      height: 812px;
       left: 0;
       top: 0;
+      width: 375px;
+      height: 812px;
     \\"
     data-uid=\\"ccc\\"
   >
     <div
       data-uid=\\"bbb\\"
-      style=\\"
-        position: relative;
-        width: 100%;
-        height: 100%;
-        background-color: #eb1010;
-      \\"
+      style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
       data-utopia-parents=\\"aaa\\"
     ></div>
   </div>
@@ -9777,12 +9592,6 @@ Object {
               "data-uid": Object {
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
-              },
-              "layout": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {
-                  "layoutSystem": "pinSystem",
-                },
               },
               "style": Object {
                 "type": "ATTRIBUTE_VALUE",
@@ -9838,14 +9647,14 @@ export var App = (props) => {
       <div
         data-uid={'bbb'}
         style={{ width: '100%', height: '100%', backgroundColor: '#EB1010' }}
-        layout={{ layoutSystem: 'pinSystem' }}
+        
       />
     </AppContext.Provider>
   )
 }
 
 export var storyboard = (
-  <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid={'ccc'}>
+  <Storyboard  data-uid={'ccc'}>
     <Scene
       data-uid={'ddd'}
       component={App}
@@ -9937,12 +9746,6 @@ export var storyboard = (
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "layoutSystem": "pinSystem",
-            },
-          },
           "style": Object {
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
@@ -9962,30 +9765,8 @@ export var storyboard = (
       "data-utopia-parents": "aaa",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#EB1010",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": "relative",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -10054,21 +9835,16 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      width: 375px;
-      height: 812px;
       left: 0;
       top: 0;
+      width: 375px;
+      height: 812px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       data-uid=\\"aaa\\"
-      style=\\"
-        position: relative;
-        width: 100%;
-        height: 100%;
-        background-color: #ffffff;
-      \\"
+      style=\\"width: 100%; height: 100%; background-color: #ffffff;\\"
     >
       0 - 0
     </div>
@@ -10121,7 +9897,7 @@ export var App = (props) => {
     <div
       data-uid={'aaa'}
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
     >{b(5)} - {a(5)}</div>
   )
 }
@@ -10135,7 +9911,7 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'utopia-storyboard-uid'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'utopia-storyboard-uid'} >
     <Scene
       data-uid={'scene'}
       component={App}
@@ -10190,7 +9966,7 @@ export var App = (props) => {
     <div
       data-uid={'aaa'}
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
     >{b(5)} - {a(5)}</div>
   )
 }
@@ -10204,7 +9980,7 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'utopia-storyboard-uid'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'utopia-storyboard-uid'} >
     <Scene
       data-uid={'scene'}
       component={App}
@@ -10232,12 +10008,6 @@ export var storyboard = (
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {
-              "layoutSystem": "pinSystem",
-            },
-          },
           "style": Object {
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
@@ -10256,30 +10026,8 @@ export var storyboard = (
       "data-uid": "aaa",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": "relative",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -10347,10 +10095,10 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      width: 375px;
-      height: 812px;
       left: 0;
       top: 0;
+      width: 375px;
+      height: 812px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -10458,12 +10206,12 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
     data-utopia-valid-paths=\\"eee/fff:aaa eee/fff:aaa/bbb eee/fff:aaa/bbb/ccc eee/fff:aaa/ddd\\"
     style=\\"
       position: absolute;
-      width: 375px;
-      height: 812px;
-      left: 0;
-      top: 0;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      height: 812px;
+      left: 0;
+      width: 375px;
+      top: 0;
     \\"
     data-uid=\\"eee\\"
   >
@@ -10688,12 +10436,11 @@ export var App = (props) => {
   )
 }
 export var storyboard = (
-  <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid={'eee'}>
+  <Storyboard data-uid={'eee'}>
     <Scene
-      style={{ height: 812, left: 0, width: 375, top: 0 }}
+      style={{ position: 'absolute', height: 812, left: 0, width: 375, top: 0 }}
       component={App}
-      layout={{ layoutSystem: 'pinSystem' }}
-      props={{ style: { bottom: 0, left: 0, right: 0, top: 0 } }}
+      props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
       data-uid={'fff'}
     />
   </Storyboard>
@@ -10922,13 +10669,13 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -11175,13 +10922,13 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -11284,13 +11031,13 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb utopia-storyboard-uid/scene-aaa:aaa/bbb/ccc\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -11365,10 +11112,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -11449,10 +11195,9 @@ Object {
           <Storyboard data-uid={'utopia-storyboard-uid'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -11553,13 +11298,13 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/cloner utopia-storyboard-uid/scene-aaa:zzz/cloner/cloned\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -11916,13 +11661,13 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -12029,13 +11774,13 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
@@ -12143,13 +11888,13 @@ exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 1
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
     data-utopia-valid-paths=\\"\\"
     style=\\"
-      position: relative;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
+      position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >

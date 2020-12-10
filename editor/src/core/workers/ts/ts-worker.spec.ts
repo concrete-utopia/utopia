@@ -244,9 +244,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                   width: 375,
                   height: 812,
                 },
-                container: {
-                  layoutSystem: LayoutSystem.PinSystem,
-                },
               },
             ]),
           ],

@@ -1,5 +1,5 @@
 import * as TS from 'typescript'
-import { LayoutSystem, NormalisedFrame } from 'utopia-api'
+import { NormalisedFrame } from 'utopia-api'
 import { ArbitraryJSBlock, TopLevelElement, UtopiaJSXComponent } from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
@@ -57,18 +57,11 @@ export const enum PinType {
   Relative = 'relative',
 }
 
-export interface ScenePinnedContainer {
-  layoutSystem: LayoutSystem.PinSystem
-}
-
-export type SceneContainer = ScenePinnedContainer
-
 export interface SceneMetadata {
   uid: string
   component: string | null
   props: { [key: string]: any }
   frame: NormalisedFrame
-  container: SceneContainer
   label?: string
 }
 
