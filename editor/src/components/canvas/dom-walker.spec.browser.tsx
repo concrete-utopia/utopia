@@ -143,7 +143,7 @@ describe('DOM Walker tests', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
               component={App}
               props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
@@ -188,7 +188,7 @@ describe('DOM Walker tests', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
               component={App}
               props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
@@ -233,7 +233,7 @@ describe('DOM Walker tests', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
               component={App}
               props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
@@ -264,7 +264,7 @@ describe('DOM Walker tests', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
               component={App}
               props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
@@ -299,7 +299,7 @@ describe('DOM Walker tests', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
               component={App}
               props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
