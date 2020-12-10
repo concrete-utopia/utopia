@@ -1,5 +1,5 @@
 import { transparent } from './utopi-colors'
-import { css } from '@emotion/core'
+import { css } from '@emotion/react'
 import { CSSPropertiesWithMultiValues, FunctionInterpolation } from '@emotion/serialize'
 import { UtopiColor } from './utopi-color-helpers'
 import { Property } from 'csstype'

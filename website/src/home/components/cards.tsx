@@ -1,12 +1,9 @@
 /** @jsx jsx */
 import React from 'react'
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
-import { layout, FlexRow, FlexColumn, FlexWrappingList } from './layout'
-import { H2 } from './style'
-import props from 'ramda/es/props'
-import { ContainerProps } from 'react-select/src/components/containers'
+import { layout } from './layout'
 import { colors } from './theme'
 
 export const cardLayout = {
@@ -16,7 +13,7 @@ export const cardLayout = {
   imageHeight: 160,
 }
 
-export const cardLayoutStyle: React.CSSProperties = {
+export const cardLayoutStyle = {
   flexBasis: cardLayout.width,
   flexGrow: 1,
   flexShrink: 1,
