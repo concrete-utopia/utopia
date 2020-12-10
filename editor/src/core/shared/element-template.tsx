@@ -2,7 +2,6 @@ import {
   PropertyPath,
   InstancePath,
   PropertyPathPart,
-  SceneContainer,
   ScenePath,
   StaticElementPath,
 } from './project-file-types'
@@ -1098,7 +1097,6 @@ export interface ComponentMetadata {
   templatePath: InstancePath
   rootElements: Array<InstancePath>
   component: string | null
-  container?: SceneContainer
   globalFrame: CanvasRectangle | null
   sceneResizesContent: boolean
   label?: string

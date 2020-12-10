@@ -17,7 +17,6 @@ import {
   ProjectFile,
   ProjectFileType,
   RevisionsState,
-  SceneContainer,
   SceneMetadata,
   TextFile,
   AssetFile,

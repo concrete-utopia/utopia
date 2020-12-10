@@ -1,4 +1,3 @@
-import { LayoutSystem } from 'utopia-api'
 import * as TP from '../shared/template-path'
 import {
   canvasRectangle,
@@ -105,9 +104,6 @@ const testComponentScene: ComponentMetadata = {
   scenePath: TP.scenePath([BakedInStoryboardUID, TestScenePath]),
   templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
   component: 'MyView',
-  container: {
-    layoutSystem: LayoutSystem.PinSystem,
-  },
   rootElements: [testComponentRoot1.templatePath],
   sceneResizesContent: false,
   globalFrame: canvasRectangle({
@@ -353,7 +349,6 @@ describe('getElementLabel', () => {
       scenePath: scenePath,
       templatePath: instancePath,
       component: 'App',
-      container: { layoutSystem: LayoutSystem.PinSystem },
       sceneResizesContent: false,
       rootElements: [divElementMetadata.templatePath],
       globalFrame: canvasRectangle({

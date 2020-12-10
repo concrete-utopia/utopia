@@ -1,4 +1,3 @@
-import { LayoutSystem } from 'utopia-api'
 import { EditorDispatch } from '../components/editor/action-types'
 import {
   createEditorState,
@@ -55,7 +54,6 @@ import {
   createSceneUidFromIndex,
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
-  PathForSceneContainer,
   PathForSceneComponent,
   PathForSceneDataLabel,
   PathForSceneDataUid,
@@ -222,7 +220,6 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMet
 
     return {
       component: props[PP.toString(PathForSceneComponent)],
-      container: props[PP.toString(PathForSceneContainer)],
       label: props[PP.toString(PathForSceneDataLabel)],
       scenePath: TP.scenePath([BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]),
       templatePath: TP.instancePath([], [BakedInStoryboardUID, createSceneUidFromIndex(index)]),
@@ -261,7 +258,6 @@ export function createFakeMetadataForComponents(
         templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
         component: component.name,
         globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
-        container: { layoutSystem: LayoutSystem.PinSystem },
         sceneResizesContent: false,
         style: {},
         rootElements: rootElements,
