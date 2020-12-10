@@ -10,7 +10,7 @@ let
   release = (import ./release.nix {});
   pkgs = release.pkgs;
   lib = pkgs.lib;
-  node = pkgs.nodejs-12_x;
+  node = pkgs.nodejs-14_x;
   stdenv = pkgs.stdenv;
 
   cabal = pkgs.haskellPackages.cabal-install;
