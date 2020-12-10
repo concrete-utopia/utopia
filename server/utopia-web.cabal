@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.32.0.
+-- This file has been generated from package.yaml by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 58ab737db13887effbbb6f5660ddeffb97c44ed4e7cd966f51c5a969460b52b7
+-- hash: 483a863c58b53e60647a7bb800c15da9ad012e2f916ad65e854b62012b4767d4
 
 name:           utopia-web
 version:        0.1.0.4
@@ -96,14 +96,14 @@ executable utopia-web
     , persistent-sqlite
     , persistent-template
     , process
-    , protolude
+    , protolude ==0.2.4
     , resource-pool
     , servant ==0.15
     , servant-blaze
     , servant-client ==0.15
     , servant-rawm ==0.3.0.0
     , servant-server ==0.15
-    , servant-websockets
+    , servant-websockets ==1.1.0
     , serversession
     , serversession-backend-persistent
     , split
@@ -211,7 +211,7 @@ test-suite utopia-web-test
     , persistent-template
     , port-utils
     , process
-    , protolude
+    , protolude ==0.2.4
     , resource-pool
     , servant ==0.15
     , servant-blaze
@@ -219,7 +219,7 @@ test-suite utopia-web-test
     , servant-client-core
     , servant-rawm ==0.3.0.0
     , servant-server ==0.15
-    , servant-websockets
+    , servant-websockets ==1.1.0
     , serversession
     , serversession-backend-persistent
     , split
