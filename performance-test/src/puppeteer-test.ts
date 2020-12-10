@@ -4,8 +4,8 @@ const path = require('path')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
-const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
+const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
+// const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -33,6 +33,7 @@ function consoleDoneMessage(page: puppeteer.Page) {
 }
 
 export const testScrollingPerformance = async function () {
+  
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: true, // enable for myself, however, when making change enable to true
@@ -78,16 +79,55 @@ export const testScrollingPerformance = async function () {
     lastFrameTimestamp = frameTimestamp
   })
 
+  var arr1 = frameTimes.sort((a,b) => a - b)
+  function returnArr() {
+    return arr1;
+  }
 
   
   const frameAvg = totalFrameTimes / frameTimes.length
   const percentile25 = frameTimes.sort((a, b) => a - b)[Math.floor(frameTimes.length * 0.25)]
   const percentile50 = frameTimes.sort((a, b) => a - b)[Math.floor(frameTimes.length * 0.50)]
   const percentile75 = frameTimes.sort((a,b) => a- b)[Math.floor(frameTimeEvents.length * 0.75)]
+  
+  const plotly = require('plotly')("OmarDaSilva", "szS7pGItjmB7z50Ft3e9")
+  const ffs = require('fs');
+
+  const x = frameTimes.sort((a,b) => a-b);
+
+  const data = 
+    {
+      x: x,
+      type: "histogram"
+    };
+
+  let figure = {'data': [data] };
+
+  let imgOpts = {
+    format: 'png',
+    width: 1000,
+    height: 500
+  };
+
+  plotly.getImage(figure, imgOpts, function (error: any, imageStream: any) {
+    if (error) return console.log (error);
+
+    var fileStream = ffs.createWriteStream('2.png');
+    imageStream.pipe(fileStream);
+});
 
 
-  
-  
+
+
+
+
+
+
+
+
+
+
+
 
   console.info(
     `::set-output name=perf-result::"${totalFrameTimes}ms – average frame length: ${frameAvg} – Q1: ${percentile25} – Q2: ${percentile50} – Q3: ${percentile75} – Median: ${percentile50} – frame times: [${frameTimes.join(
@@ -95,3 +135,5 @@ export const testScrollingPerformance = async function () {
     )}]"`,
   )
 }
+
+
