@@ -24,6 +24,7 @@ import {
   InjectedCSSFilePrefix,
   unimportAllButTheseCSSFiles,
 } from '../../webpack-loaders/css-loader'
+import { svgToBase64 } from '../../shared/file-utils'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -108,6 +109,21 @@ describe('ES Dependency Package Manager', () => {
 
     unimportAllButTheseCSSFiles([])
     expect(document.getElementById('/node_modules/mypackage/simple.css')).toBeNull()
+  })
+
+  it('resolves a svg import', () => {
+    const reqFn = getRequireFn(
+      NO_OP,
+      {},
+      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+    )
+
+    const requireResult = reqFn('/src/index.js', 'mypackage/simple.svg')
+    expect(requireResult).toHaveProperty('ReactComponent')
+    expect(requireResult).toHaveProperty('default')
+    expect((requireResult as any).default).toEqual(
+      svgToBase64(fileWithImports.contents['/node_modules/mypackage/simple.svg'].content),
+    )
   })
 
   it('throws exception on not found dependency', () => {

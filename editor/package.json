@@ -84,6 +84,7 @@
     "@emotion/styled-base": "10.0.31",
     "@popperjs/core": "2.4.4",
     "@seznam/compose-react-refs": "^1.0.4",
+    "@svgr/plugin-jsx": "5.5.0",
     "@tippyjs/react": "4.1.0",
     "@types/fontfaceobserver": "0.0.6",
     "@types/react-syntax-highlighter": "11.0.4",

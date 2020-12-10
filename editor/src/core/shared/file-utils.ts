@@ -127,6 +127,10 @@ export async function imageResultForBase64(
   }
 }
 
+export function svgToBase64(rawSVG: string): string {
+  return `data:image/svg+xml;base64,${btoa(rawSVG)}`
+}
+
 function getImageSize(imageDataUrl: string): Promise<Size> {
   return new Promise((resolve, reject) => {
     const image = new Image()
