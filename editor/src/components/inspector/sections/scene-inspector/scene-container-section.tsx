@@ -45,15 +45,15 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
   const alignItems = useInspectorLayoutInfo('alignItems')
   const alignContent = useInspectorLayoutInfo('alignContent')
   const justifyContent = useInspectorLayoutInfo('justifyContent')
-  const flexGapMain = useInspectorLayoutInfo('FlexGapMain')
+  const flexGap = useInspectorLayoutInfo('FlexGap')
 
   const wrappedFlexGapOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    flexGapMain.onSubmitValue,
-    flexGapMain.onUnsetValues,
+    flexGap.onSubmitValue,
+    flexGap.onUnsetValues,
   )
   const wrappedFlexGapOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    flexGapMain.onSubmitValue,
-    flexGapMain.onUnsetValues,
+    flexGap.onSubmitValue,
+    flexGap.onUnsetValues,
   )
 
   if (styleDisplayMetadata.value === 'flex') {
@@ -67,7 +67,7 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
       cssEmptyValues.justifyContent,
       justifyContent.value,
     )
-    const flexGapMainValue = Utils.defaultIfNull(layoutEmptyValues.gapMain, flexGapMain.value)
+    const flexGapValue = Utils.defaultIfNull(layoutEmptyValues.gapMain, flexGap.value)
     const alignContentValue = Utils.defaultIfNull(cssEmptyValues.alignContent, alignContent.value)
 
     const {
@@ -122,10 +122,10 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
         <PropertyRow>
           <span>Gap</span>
           <FlexGapControl
-            value={flexGapMainValue}
+            value={flexGapValue}
             onSubmitValue={wrappedFlexGapOnSubmitValue}
             onTransientSubmitValue={wrappedFlexGapOnTransientSubmitValue}
-            onUnset={flexGapMain.onUnsetValues}
+            onUnset={flexGap.onUnsetValues}
             controlStatus={simpleControlStatus}
             controlStyles={simpleControlStyles}
           />
