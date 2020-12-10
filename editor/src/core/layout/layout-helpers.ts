@@ -105,14 +105,13 @@ export const PinLayoutHelpers = {
 
 export type FixedAndBases = {
   flexBasis: number | null
-  crossBasis: number | null
+  width: number | null
+  height: number | null
 }
 
 export type TopLeftWidthHeight = Pick<FullFrame, 'top' | 'left' | 'width' | 'height'>
 
 export const FlexBasisPath = createLayoutPropertyPath('FlexFlexBasis')
-
-export const CrossBasisPath = createLayoutPropertyPath('FlexCrossBasis')
 
 export const FlexLayoutHelpers = {
   updateLayoutPropsToFlexWithFrame(
@@ -122,11 +121,11 @@ export const FlexLayoutHelpers = {
     height: number,
   ): Either<string, JSXAttributes> {
     // Remove all of the properties so that old values don't mess with this.
-    const withoutLayoutProps = unsetJSXValuesAtPaths(elementProps, [FlexBasisPath, CrossBasisPath])
+    const withoutLayoutProps = unsetJSXValuesAtPaths(elementProps, [FlexBasisPath])
 
     return joinEither(
       applicative2Either(
-        (props, { flexBasis, crossBasis }) => {
+        (props, { flexBasis, width: widthToSet, height: heightToSet }) => {
           // Build the new properties.
           let propsToSet: Array<ValueAtPath> = []
           function addPropToSet(path: PropertyPath, value: string | number | undefined): void {
@@ -137,8 +136,11 @@ export const FlexLayoutHelpers = {
           if (flexBasis != null) {
             addPropToSet(FlexBasisPath, flexBasis)
           }
-          if (crossBasis != null) {
-            addPropToSet(CrossBasisPath, crossBasis)
+          if (widthToSet != null) {
+            addPropToSet(createLayoutPropertyPath('Width'), widthToSet)
+          }
+          if (heightToSet != null) {
+            addPropToSet(createLayoutPropertyPath('Height'), heightToSet)
           }
 
           // Assign the new properties
@@ -224,10 +226,15 @@ export const FlexLayoutHelpers = {
   ): Either<string, FixedAndBases> => {
     const possibleMainAxis = FlexLayoutHelpers.getMainAxis(parentProps)
     const currentFlexBasis = eitherToMaybe(getSimpleAttributeAtPath(right(props), FlexBasisPath))
-    const currentCrossBasis = eitherToMaybe(getSimpleAttributeAtPath(right(props), CrossBasisPath))
+    const currentWidth = eitherToMaybe(
+      getSimpleAttributeAtPath(right(props), createLayoutPropertyPath('Width')),
+    )
+    const currentHeight = eitherToMaybe(
+      getSimpleAttributeAtPath(right(props), createLayoutPropertyPath('Height')),
+    )
     return mapEither((mainAxis) => {
       const flexBasis = mainAxis === 'horizontal' ? width : height
-      const crossBasis = mainAxis === 'vertical' ? width : height
+      const crossBasis = mainAxis === 'vertical' ? height : width
       let shouldSetFlexBasis = true
       let shouldSetCrossBasis = true
       if (edgePosition != null) {
@@ -238,7 +245,18 @@ export const FlexLayoutHelpers = {
       }
       return {
         flexBasis: currentFlexBasis != null || shouldSetFlexBasis ? flexBasis : null,
-        crossBasis: currentCrossBasis != null || shouldSetCrossBasis ? crossBasis : null,
+        width:
+          mainAxis === 'vertical'
+            ? currentWidth != null || shouldSetCrossBasis
+              ? width
+              : null
+            : null,
+        height:
+          mainAxis === 'horizontal'
+            ? currentHeight != null || shouldSetCrossBasis
+              ? height
+              : null
+            : null,
       }
     }, possibleMainAxis)
   },
@@ -338,11 +356,11 @@ export const LayoutHelpers = {
       if (element.specialSizeMeasurements.parentFlexDirection === 'row') {
         return {
           horizontal: createLayoutPropertyPath('FlexFlexBasis'),
-          vertical: createLayoutPropertyPath('FlexCrossBasis'),
+          vertical: createLayoutPropertyPath('Height'),
         }
       } else {
         return {
-          horizontal: createLayoutPropertyPath('FlexCrossBasis'),
+          horizontal: createLayoutPropertyPath('Width'),
           vertical: createLayoutPropertyPath('FlexFlexBasis'),
         }
       }

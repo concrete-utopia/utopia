@@ -263,10 +263,8 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
       case 'horizontal':
       case null:
         widthControl = flexLayoutNumberControl('W', 'FlexFlexBasis')
-        heightControl = flexLayoutNumberControl('H', 'FlexCrossBasis')
         break
       case 'vertical':
-        widthControl = flexLayoutNumberControl('W', 'FlexCrossBasis')
         heightControl = flexLayoutNumberControl('H', 'FlexFlexBasis')
         break
       default:

@@ -119,11 +119,11 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
   LayoutSystem: ['layout', 'layoutSystem'],
   PinnedCenterX: ['layout', 'centerX'],
   PinnedCenterY: ['layout', 'centerY'],
-  FlexFlexBasis: ['layout', 'flexBasis'],
   FlexCrossBasis: ['layout', 'crossBasis'],
 
   // TODO FIXME 'style' here should point to the inspector target selector's current target instead of always pointing to style
   FlexGap: ['style', 'gap'],
+  FlexFlexBasis: ['style', 'flexBasis'],
   PinnedLeft: ['style', 'left'],
   PinnedTop: ['style', 'top'],
   Width: ['style', 'width'],
