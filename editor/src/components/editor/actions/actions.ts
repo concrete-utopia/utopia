@@ -1363,16 +1363,12 @@ export const UPDATE_FNS = {
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
-        if (file.fileContents.revisionsState === RevisionsState.ParsedAhead) {
-          return file
-        } else {
-          const parseResult = lintAndParse(filename, file.fileContents.code)
-          return textFile(
-            textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
-            null,
-            Date.now(),
-          )
-        }
+        const parseResult = lintAndParse(filename, file.fileContents.code)
+        return textFile(
+          textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
+          null,
+          Date.now(),
+        )
       },
     )
     const parsedModel = {

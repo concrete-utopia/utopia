@@ -482,26 +482,3 @@ export function getZIndexOfElement(
   }
   return -1
 }
-
-export function transformAllElements(
-  components: Array<UtopiaJSXComponent>,
-  transform: (element: JSXElementChild) => JSXElementChild,
-): Array<UtopiaJSXComponent> {
-  function innerTransform(element: JSXElementChild): JSXElementChild {
-    if (isJSXElement(element) || isJSXFragment(element)) {
-      const updatedChildren = element.children.map(innerTransform)
-      return transform({
-        ...element,
-        children: updatedChildren,
-      })
-    } else {
-      return transform(element)
-    }
-  }
-  return components.map((component) => {
-    return {
-      ...component,
-      rootElement: innerTransform(component.rootElement),
-    }
-  })
-}
