@@ -6,8 +6,12 @@ import type { PackageDetails } from './dependency-list'
 import { NpmDependencyVersionAndStatusIndicator } from './dependecy-version-status-indicator'
 import { ContextMenuItem } from '../context-menu-items'
 import { MomentumContextMenu } from '../../uuiui-deps'
-import { MenuProvider } from 'react-contexify'
+import { MenuProvider as ReactContexifyMenuProvider } from 'react-contexify'
 import { NO_OP } from '../../core/shared/utils'
+
+// FIXME: For some reason we've been able to use this incorrectly
+// according to the types, but following the types causes the code to fail.
+const MenuProvider = ReactContexifyMenuProvider as any
 
 interface DependencyListItemProps {
   packageDetails: PackageDetails
@@ -114,7 +118,7 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
       ]
 
   return (
-    <MenuProvider id={menuId} storeRef={false} component={null} event={'onContextMenu'}>
+    <MenuProvider id={menuId} storeRef={false}>
       <FlexRow
         ref={ref}
         key={name}
