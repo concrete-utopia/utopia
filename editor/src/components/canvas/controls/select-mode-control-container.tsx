@@ -256,7 +256,9 @@ export class SelectModeControlContainer extends React.Component<
     return this.props.highlightedViews.some((highlighted) => TP.pathsEqual(path, highlighted))
   }
 
-  getSelectableViews(allElementsDirectlySelectable: boolean): TemplatePath[] {
+  getSelectableViews(
+    allElementsDirectlySelectable: boolean,
+  ): Array<{ linkTo: TemplatePath; drawAt: TemplatePath }> {
     let candidateViews: Array<TemplatePath>
 
     if (allElementsDirectlySelectable) {
@@ -318,7 +320,24 @@ export class SelectModeControlContainer extends React.Component<
       candidateViews = selectableViewsFiltered
     }
 
-    return this.filterHiddenInstances(candidateViews)
+    const getAllChildren = (parent: TemplatePath): Array<TemplatePath> => {
+      const children = MetadataUtils.getChildrenHandlingGroups(
+        this.props.componentMetadata,
+        parent,
+        true,
+      )
+      return children
+        .map((child) => [child.templatePath, ...getAllChildren(child.templatePath)])
+        .flat()
+    }
+
+    const includeAllChildren = (
+      linkTo: TemplatePath,
+    ): Array<{ linkTo: TemplatePath; drawAt: TemplatePath }> => {
+      return [linkTo, ...getAllChildren(linkTo)].map((v) => ({ linkTo: linkTo, drawAt: v }))
+    }
+
+    return this.filterHiddenInstances(candidateViews).map(includeAllChildren).flat()
   }
 
   getClippedArea = (target: TemplatePath): CanvasRectangle | null => {
@@ -354,18 +373,25 @@ export class SelectModeControlContainer extends React.Component<
     )
   }
 
-  renderControl = (target: TemplatePath, index: number, isChild: boolean): JSX.Element | null => {
-    const frame = this.getClippedArea(target)
+  renderControl = (
+    target: {
+      linkTo: TemplatePath
+      drawAt: TemplatePath
+    },
+    index: number,
+    isChild: boolean,
+  ): JSX.Element | null => {
+    const frame = this.getClippedArea(target.drawAt)
     if (frame != null) {
       return (
         <ComponentAreaControl
-          key={`${TP.toComponentId(target)}-${index}-control`}
-          testID={`component-area-control-${TP.toComponentId(target)}-${index}`}
+          key={`${TP.toComponentId(target.drawAt)}-${index}-control`}
+          testID={`component-area-control-${TP.toComponentId(target.drawAt)}-${index}`}
           componentMetadata={this.props.componentMetadata}
-          target={target}
+          target={target.linkTo}
           frame={frame}
           scale={this.props.scale}
-          highlighted={this.isHighlighted(target)}
+          highlighted={this.isHighlighted(target.linkTo)}
           selectedComponents={this.props.selectedViews}
           dispatch={this.props.dispatch}
           canvasOffset={this.props.canvasOffset}
@@ -717,7 +743,7 @@ export class SelectModeControlContainer extends React.Component<
               if (
                 !allElementsDirectlySelectable &&
                 this.props.selectedViews.some((view) =>
-                  TP.pathsEqual(TP.parentPath(draggableView), view),
+                  TP.pathsEqual(TP.parentPath(draggableView.linkTo), view),
                 )
               ) {
                 // only double clickable to select and drag
