@@ -1,4 +1,4 @@
-import { extractAsset, extractImage, extractText, FileResult } from '../core/shared/file-utils'
+import { extractFile, FileResult } from '../core/shared/file-utils'
 import { CopyData } from './clipboard'
 
 export interface PasteResult {
@@ -37,13 +37,7 @@ function extractFiles(items: DataTransferItemList): Promise<Array<FileResult>> {
       if (file == null) {
         return Promise.reject('Could not extract file.')
       } else {
-        if (item.type.startsWith('text/')) {
-          return extractText(file)
-        } else if (item.type.startsWith('image/')) {
-          return extractImage(file)
-        } else {
-          return extractAsset(file)
-        }
+        return extractFile(file)
       }
     }),
   )

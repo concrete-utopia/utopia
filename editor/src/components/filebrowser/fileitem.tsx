@@ -31,6 +31,7 @@ import { dragAndDropInsertionSubject, EditorModes } from '../editor/editor-modes
 import { last } from '../../core/shared/array-utils'
 import { FileResult } from '../../core/shared/file-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
+import { fileResultUploadAction } from '../editor/image-insert'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -466,53 +467,9 @@ class FileBrowserItemInner extends React.PureComponent<
           default:
           // Do nothing, overwriting an image onto a UI file seems wrong.
         }
-        switch (resultFile.type) {
-          case 'IMAGE_RESULT': {
-            const afterSave = EditorActions.saveImageReplace()
-            if (targetPath != null) {
-              actions.push(
-                EditorActions.saveAsset(
-                  targetPath,
-                  resultFile.fileType,
-                  resultFile.base64Bytes,
-                  resultFile.hash,
-                  EditorActions.saveImageDetails(resultFile.size, afterSave),
-                ),
-              )
-            }
-            break
-          }
-          case 'ASSET_RESULT': {
-            if (targetPath != null) {
-              let fileType: string = ''
-              const splitPath = targetPath.split('.')
-              if (splitPath.length > 1) {
-                fileType = splitPath[splitPath.length - 1]
-              }
-              actions.push(
-                EditorActions.saveAsset(
-                  targetPath,
-                  fileType,
-                  resultFile.base64Bytes,
-                  resultFile.hash,
-                  null,
-                ),
-              )
-            }
-            break
-          }
-          case 'TEXT_RESULT': {
-            if (targetPath != null) {
-              actions.push(
-                EditorActions.updateFile(targetPath, codeFile(resultFile.content, null), true),
-              )
-            }
-            break
-          }
 
-          default:
-            const _exhaustiveCheck: never = resultFile
-            throw new Error(`Unhandled type ${JSON.stringify(resultFile)}`)
+        if (targetPath != null) {
+          actions.push(fileResultUploadAction(resultFile, targetPath))
         }
       })
       this.props.dispatch(actions, 'everyone')

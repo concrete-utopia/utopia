@@ -39,5 +39,5 @@ describe('Applying loaders', () => {
   verifyCorrectLoaderUsed(CSSLoader, ['.css'], '.utopiaClass { background-color: red; }')
   verifyCorrectLoaderUsed(DefaultLoader, ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.json'], '{}')
   verifyCorrectLoaderUsed(FileLoader, ['.avif', '.bmp', '.gif', '.jpg', '.jpeg', '.png'], '')
-  verifyCorrectLoaderUsed(SVGLoader, ['.svg'], '')
+  verifyCorrectLoaderUsed(SVGLoader, ['.svg'], '<svg/>')
 })
