@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import { useEditorState } from '../../editor/store/store-hook'

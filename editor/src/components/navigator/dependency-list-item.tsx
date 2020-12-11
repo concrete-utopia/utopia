@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx, keyframes } from '@emotion/core'
+import { jsx, keyframes } from '@emotion/react'
 import * as React from 'react'
 import { Button, colorTheme, FlexRow, FunctionIcons, Icons, UtopiaTheme, Tooltip } from 'uuiui'
 import type { PackageDetails } from './dependency-list'
@@ -114,7 +114,7 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
       ]
 
   return (
-    <MenuProvider id={menuId} storeRef={false}>
+    <MenuProvider id={menuId} storeRef={false} component={null} event={'onContextMenu'}>
       <FlexRow
         ref={ref}
         key={name}

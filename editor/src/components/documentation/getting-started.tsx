@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 // this is the expensive fully-loaded Prism. If you read this comment, and it's after the 7th of May, 2020,

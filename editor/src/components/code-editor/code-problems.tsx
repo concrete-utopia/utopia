@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { Console } from 'console-feed'
 import * as R from 'ramda'
 import { Resizable, ResizeCallback } from 're-resizable'
