@@ -320,21 +320,37 @@ export class SelectModeControlContainer extends React.Component<
       candidateViews = selectableViewsFiltered
     }
 
-    const getAllChildren = (parent: TemplatePath): Array<TemplatePath> => {
-      const children = MetadataUtils.getChildrenHandlingGroups(
-        this.props.componentMetadata,
-        parent,
-        true,
-      )
-      return children
-        .map((child) => [child.templatePath, ...getAllChildren(child.templatePath)])
-        .flat()
+    const getAllChildrenIfOverflows = (parent: TemplatePath): Array<TemplatePath> => {
+      const overflows =
+        TP.isInstancePath(parent) &&
+        MetadataUtils.overflows(
+          MetadataUtils.getElementByInstancePathMaybe(
+            this.props.componentMetadata.elements,
+            parent,
+          ),
+        )
+
+      if (overflows) {
+        const children = MetadataUtils.getChildrenHandlingGroups(
+          this.props.componentMetadata,
+          parent,
+          true,
+        )
+        return children
+          .map((child) => [child.templatePath, ...getAllChildrenIfOverflows(child.templatePath)])
+          .flat()
+      } else {
+        return []
+      }
     }
 
     const includeAllChildren = (
       linkTo: TemplatePath,
     ): Array<{ linkTo: TemplatePath; drawAt: TemplatePath }> => {
-      return [linkTo, ...getAllChildren(linkTo)].map((v) => ({ linkTo: linkTo, drawAt: v }))
+      return [linkTo, ...getAllChildrenIfOverflows(linkTo)].map((v) => ({
+        linkTo: linkTo,
+        drawAt: v,
+      }))
     }
 
     return this.filterHiddenInstances(candidateViews).map(includeAllChildren).flat()
