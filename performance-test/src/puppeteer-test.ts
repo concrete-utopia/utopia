@@ -4,8 +4,8 @@ const path = require('path')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
-const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
+const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
+// const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -36,7 +36,7 @@ export const testScrollingPerformance = async function () {
   
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: true, 
+    headless: false, 
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768});
@@ -114,6 +114,7 @@ export const testScrollingPerformance = async function () {
         x: 0.05,
       },
       xaxis: {
+        //range: [, 16.6],
         title: {
           text: 'Frame Times (ms)',
           font: {
@@ -149,8 +150,8 @@ export const testScrollingPerformance = async function () {
 }
   returnTestPng();
 
-  console.info(`![GitHub Logo](https://imgur.com/a/n5YXrB8.png) `,
-    `::set-output name=perf-result::"${totalFrameTimes}ms – average frame length: ${frameAvg} – Q1: ${percentile25} – Q2: ${percentile50} – Q3: ${percentile75} – Median: ${percentile50} – frame times: [${frameTimes.join(
+  console.info(
+    `::set-output name=perf-result:: " ![GitHub Logo](https://imgur.com/a/n5YXrB8.png) ${totalFrameTimes}ms – average frame length: ${frameAvg} – Q1: ${percentile25} – Q2: ${percentile50} – Q3: ${percentile75} – Median: ${percentile50} – frame times: [${frameTimes.join(
       ',',
     )}]"`
   )
