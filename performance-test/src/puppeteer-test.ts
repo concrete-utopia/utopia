@@ -151,7 +151,7 @@ export const testScrollingPerformance = async function () {
   returnTestPng();
 
   console.info(
-    `::set-output name=perf-result:: " ![GitHub Logo](https://imgur.com/a/n5YXrB8.png) ${totalFrameTimes}ms – average frame length: ${frameAvg} – Q1: ${percentile25} – Q2: ${percentile50} – Q3: ${percentile75} – Median: ${percentile50} – frame times: [${frameTimes.join(
+    `::set-output name=perf-result:: " ![GitHub Logo](https://drive.google.com/file/d/1ZDrchD8LaYd-m1iPZ04MuhNw96yAindz/view?usp=sharing.png) ${totalFrameTimes}ms – average frame length: ${frameAvg} – Q1: ${percentile25} – Q2: ${percentile50} – Q3: ${percentile75} – Median: ${percentile50} – frame times: [${frameTimes.join(
       ',',
     )}]"`
   )
