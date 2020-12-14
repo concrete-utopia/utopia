@@ -493,7 +493,6 @@ export class InsertModeControlContainer extends React.Component<
 
     const baseActions: EditorAction[] = [
       EditorActions.updateEditorMode(EditorModes.selectMode()),
-      EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
       EditorActions.setRightMenuTab(RightMenuTab.Inspector),
       EditorActions.clearHighlightedViews(),
       CanvasActions.clearDragState(false),

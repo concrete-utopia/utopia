@@ -441,7 +441,6 @@ export function handleKeyDown(
             EditorActions.switchEditorMode(EditorModes.selectMode()),
             CanvasActions.clearDragState(false),
             EditorActions.clearHighlightedViews(),
-            EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
           ]
         } else if (editor.canvas.dragState != null && editor.canvas.dragState.start != null) {
           return [CanvasActions.clearDragState(false)]
@@ -587,7 +586,6 @@ export function handleKeyDown(
           EditorActions.switchEditorMode(EditorModes.selectMode()),
           CanvasActions.clearDragState(false),
           EditorActions.clearHighlightedViews(),
-          EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
         ]
         if (editor.selectedViews.length === 1) {
           const target = editor.selectedViews[0]

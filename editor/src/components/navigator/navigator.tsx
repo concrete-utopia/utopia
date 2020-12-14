@@ -19,6 +19,7 @@ import { createDragSelections } from '../../templates/editor-navigator'
 import { betterReactMemo } from 'uuiui-deps'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import { Size } from 'react-virtualized-auto-sizer'
+import { LeftPaneDefaultWidth } from './left-pane'
 // There's some weirdness between the types and the results in the two module systems.
 // This is to effectively massage the result so that if it is loaded in the browser or in
 // node it should end up with the right thing.
@@ -173,7 +174,7 @@ export const NavigatorComponent = betterReactMemo('NavigatorComponent', () => {
       onContextMenu={onContextMenu}
       id={NavigatorContainerId}
       tabIndex={-1}
-      style={{ height: '100%' }}
+      style={{ height: '100%', width: LeftPaneDefaultWidth }}
     >
       <SectionTitleRow minimised={minimised} toggleMinimised={toggleTwirler}>
         <FlexRow flexGrow={1}>

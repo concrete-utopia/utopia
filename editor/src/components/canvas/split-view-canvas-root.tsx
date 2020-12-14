@@ -15,6 +15,7 @@ import { InsertMenuPane } from '../navigator/left-pane'
 
 import { RightMenu, RightMenuTab } from './right-menu'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
+import { NavigatorComponent } from '../navigator/navigator'
 
 interface SplitViewCanvasRootProps {
   isUiJsFileOpen: boolean
@@ -95,7 +96,12 @@ export const SplitViewCanvasRoot = betterReactMemo(
             borderRight: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
           }}
         >
-          {props.isUiJsFileOpen ? <CanvasWrapperComponent {...props} /> : null}
+          {props.isUiJsFileOpen ? (
+            <>
+              <CanvasWrapperComponent {...props} />
+              <NavigatorComponent />
+            </>
+          ) : null}
           <Resizable
             defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
             size={props.isUiJsFileOpen ? undefined : { width: '100%', height: '100%' }} // this hack practically disables the Resizable without having to re-mount the code editor iframe

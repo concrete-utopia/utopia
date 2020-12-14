@@ -1053,7 +1053,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     leftMenu: {
       selectedTab: LeftMenuTab.ProjectStructure,
-      expanded: true,
+      expanded: false,
       paneWidth: LeftPaneDefaultWidth,
     },
     rightMenu: {
@@ -1294,7 +1294,7 @@ export function editorModelFromPersistentModel(
     },
     leftMenu: {
       selectedTab: LeftMenuTab.ProjectStructure,
-      expanded: true,
+      expanded: false,
       paneWidth: LeftPaneDefaultWidth,
     },
     rightMenu: {
