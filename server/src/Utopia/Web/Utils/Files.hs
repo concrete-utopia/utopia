@@ -155,3 +155,18 @@ requestRewriter cacheGetter applicationToWrap originalRequest sendResponse = do
   case requestPath == mappedPath of
     True  -> applicationToWrap originalRequest sendResponse
     False -> applicationToWrap (originalRequest { pathInfo = mappedPath }) (addHeadersToResponse sendResponse)
+
+normalizePath' :: [Text] -> [Text] -> [Text]
+normalizePath' [] workingResult = workingResult
+normalizePath' ("." : remainingPath) workingResult = normalizePath' remainingPath workingResult
+normalizePath' (".." : remainingPath) workingResult = normalizePath' remainingPath (L.init workingResult)
+normalizePath' (next : remainingPath) workingResult = normalizePath' remainingPath (workingResult ++ [next])
+
+normalizePath :: [Text] -> [Text]
+normalizePath path = normalizePath' path []
+
+projectContentsPathForFilePath :: [Text] -> [Text]
+projectContentsPathForFilePath filePath = 
+  let withChildrenInserted = intersperse "children" filePath
+      withContentsKeyPrepended = "projectContents" : withChildrenInserted
+  in withContentsKeyPrepended ++ ["content", "fileContents", "code"]
