@@ -246,16 +246,10 @@ export const FlexLayoutHelpers = {
       return {
         flexBasis: currentFlexBasis != null || shouldSetFlexBasis ? flexBasis : null,
         width:
-          mainAxis === 'vertical'
-            ? currentWidth != null || shouldSetCrossBasis
-              ? width
-              : null
-            : null,
+          mainAxis === 'vertical' && (currentWidth != null || shouldSetCrossBasis) ? width : null,
         height:
-          mainAxis === 'horizontal'
-            ? currentHeight != null || shouldSetCrossBasis
-              ? height
-              : null
+          mainAxis === 'horizontal' && (currentHeight != null || shouldSetCrossBasis)
+            ? height
             : null,
       }
     }, possibleMainAxis)
