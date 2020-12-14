@@ -314,6 +314,7 @@ export interface EditorState {
     dropTargetHint: DropTargetHint
     collapsedViews: TemplatePath[]
     renamingTarget: TemplatePath | null
+    visible: boolean
   }
   preview: {
     visible: boolean
@@ -1104,6 +1105,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     navigator: {
       minimised: false,
+      visible: true,
       dropTargetHint: {
         target: null,
         type: null,
@@ -1368,6 +1370,7 @@ export function editorModelFromPersistentModel(
       collapsedViews: [],
       renamingTarget: null,
       minimised: persistentModel.navigator.minimised,
+      visible: true,
     },
     fileBrowser: {
       renamingTarget: null,

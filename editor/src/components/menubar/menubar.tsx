@@ -16,15 +16,13 @@ import { betterReactMemo } from 'uuiui-deps'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { LoginState } from '../../common/user'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
-import { CanvasVector } from '../../core/shared/math-utils'
 import { shareURLForProject } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import CanvasActions from '../canvas/canvas-actions'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { EditorState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { LeftMenuTab, LeftPaneDefaultWidth } from '../navigator/left-pane'
+import { LeftMenuTab } from '../navigator/left-pane'
 
 const Tile = styled.div({
   display: 'flex',
@@ -89,7 +87,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
     projectId,
     projectName,
     isPreviewPaneVisible,
-    navigatorVisible,
   } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -99,7 +96,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
       projectId: store.editor.id,
       projectName: store.editor.projectName,
       isPreviewPaneVisible: store.editor.preview.visible,
-      navigatorVisible: !store.editor.navigator.minimised,
     }
   }, 'Menubar')
 
@@ -120,14 +116,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
   const onDoubleClick = React.useCallback(() => {
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
-
-  const onClickNavigateTab = React.useCallback(() => {
-    const offset = navigatorVisible ? -LeftPaneDefaultWidth : LeftPaneDefaultWidth
-    dispatch([
-      togglePanel('navigator'),
-      CanvasActions.scrollCanvas({ x: offset, y: 0 } as CanvasVector),
-    ])
-  }, [dispatch, navigatorVisible])
 
   const onClickStructureTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.ProjectStructure)
@@ -164,16 +152,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
 
-        <Tooltip title={'Navigator'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={navigatorVisible}
-              menuExpanded={navigatorVisible}
-              icon={<MenuIcons.Project />}
-              onClick={onClickNavigateTab}
-            />
-          </span>
-        </Tooltip>
         <a target='_blank' rel='noopener noreferrer' href={previewURL}>
           <Tooltip title={'Launch External Preview'} placement={'right'}>
             <span>

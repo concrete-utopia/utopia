@@ -130,10 +130,7 @@ export const NavigatorComponent = betterReactMemo('NavigatorComponent', () => {
   )
 
   const toggleTwirler = React.useCallback(() => {
-    dispatch([
-      EditorActions.togglePanel('navigator'),
-      CanvasActions.scrollCanvas({ x: -LeftPaneDefaultWidth, y: 0 } as CanvasVector),
-    ])
+    dispatch([EditorActions.togglePanel('navigator')])
   }, [dispatch])
 
   const Item = betterReactMemo('Item', ({ index, style }: ListChildComponentProps) => {

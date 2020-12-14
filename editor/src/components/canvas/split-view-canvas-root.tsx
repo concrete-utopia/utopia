@@ -41,7 +41,7 @@ export const SplitViewCanvasRoot = betterReactMemo(
       'SplitViewCanvasRoot interfaceDesigner',
     )
     const navigatorVisible = useEditorState(
-      (store) => !store.editor.navigator.minimised,
+      (store) => store.editor.navigator.visible,
       'SplitViewCanvasRoot navigatorVisible',
     )
     const layoutReversed = interfaceDesigner.layoutReversed

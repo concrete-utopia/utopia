@@ -1,7 +1,6 @@
 export type PreviewPanel = 'preview'
 
 export type LeftMenuPanel =
-  | 'navigator'
   | 'filebrowser'
   | 'dependencylist'
   | 'genericExternalResources'
@@ -15,12 +14,15 @@ export type InspectorPanel = 'inspector'
 
 export type CodeEditorPanel = 'uicodeeditor'
 
+export type NavigatorPanel = 'navigatorPane' | 'navigator'
+
 export type EditorPanel =
   | LeftMenuPanel
   | CenterPanel
   | CodeEditorPanel
   | InspectorPanel
   | PreviewPanel
+  | NavigatorPanel
 
 export type EditorPane = 'leftmenu' | 'center' | 'inspector' | 'preview' | 'rightmenu'
 

@@ -971,6 +971,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     },
     navigator: {
       minimised: currentEditor.navigator.minimised,
+      visible: currentEditor.navigator.visible,
       dropTargetHint: {
         target: null,
         type: null,
@@ -2271,6 +2272,14 @@ export const UPDATE_FNS = {
           navigator: {
             ...editor.navigator,
             minimised: !editor.navigator.minimised,
+          },
+        }
+      case 'navigatorPane':
+        return {
+          ...editor,
+          navigator: {
+            ...editor.navigator,
+            visible: !editor.navigator.visible,
           },
         }
       case 'inspector':
