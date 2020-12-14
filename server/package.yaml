@@ -50,14 +50,14 @@ dependencies:
   - persistent-sqlite
   - persistent-template
   - process
-  - protolude
+  - protolude ==0.2.4
   - resource-pool
   - servant ==0.15
   - servant-blaze
   - servant-client ==0.15
   - servant-rawm ==0.3.0.0
   - servant-server ==0.15
-  - servant-websockets
+  - servant-websockets ==1.1.0
   - serversession
   - serversession-backend-persistent
   - split
