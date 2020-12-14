@@ -36,7 +36,7 @@ export const testScrollingPerformance = async function () {
   
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: false, // enable for myself, however, when making change enable to true
+    headless: true, // enable for myself, however, when making change enable to true
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768});
@@ -149,11 +149,13 @@ export const testScrollingPerformance = async function () {
 }
   returnTestPng();
 
-  console.info(
+  console.info(`![GitHub Logo](https://imgur.com/a/n5YXrB8.png) `,
     `::set-output name=perf-result::"${totalFrameTimes}ms – average frame length: ${frameAvg} – Q1: ${percentile25} – Q2: ${percentile50} – Q3: ${percentile75} – Median: ${percentile50} – frame times: [${frameTimes.join(
       ',',
-    )}]"`,
+    )}]"`
   )
+
+
 }
 
 

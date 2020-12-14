@@ -23,7 +23,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
         `scroll_dispatch_finished_${framesPassed}`,
       )
       framesPassed++
-      if (framesPassed < 300) {
+      if (framesPassed < 100) {
         requestAnimationFrame(step)
       } else {
         console.info('SCROLL_TEST_FINISHED')
