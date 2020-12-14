@@ -204,7 +204,7 @@ export const PinControl = (props: PinControlProps) => {
               id='positioncontrols-pin-centerx-transparent'
               stroke='transparent'
               fill='transparent'
-              onMouseDown={handlePinMouseDown('PinnedCenterX')}
+              onMouseDown={Utils.NO_OP}
             />
             <path
               d={`M 0,0 ${HorizontalDividerWidth},0 0,${VerticalDividerHeight} ${HorizontalDividerWidth},${VerticalDividerHeight} z`}
@@ -212,7 +212,7 @@ export const PinControl = (props: PinControlProps) => {
               id='positioncontrols-pin-centery-transparent'
               stroke='transparent'
               fill='transparent'
-              onMouseDown={handlePinMouseDown('PinnedCenterY')}
+              onMouseDown={Utils.NO_OP}
             />
           </g>
         </g>

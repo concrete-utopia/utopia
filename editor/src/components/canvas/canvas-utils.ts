@@ -489,17 +489,23 @@ export function updateFramesOfScenesAndComponents(
                   frameAndTarget.edgePosition,
                 )
                 forEachRight(possibleFlexProps, (flexProps) => {
-                  const { flexBasis, crossBasis } = flexProps
+                  const { flexBasis, width, height } = flexProps
                   if (flexBasis != null) {
                     propsToSet.push({
                       path: createLayoutPropertyPath('FlexFlexBasis'),
                       value: jsxAttributeValue(flexBasis),
                     })
                   }
-                  if (crossBasis != null) {
+                  if (width != null) {
                     propsToSet.push({
-                      path: createLayoutPropertyPath('FlexCrossBasis'),
-                      value: jsxAttributeValue(crossBasis),
+                      path: createLayoutPropertyPath('Width'),
+                      value: jsxAttributeValue(width),
+                    })
+                  }
+                  if (height != null) {
+                    propsToSet.push({
+                      path: createLayoutPropertyPath('Height'),
+                      value: jsxAttributeValue(height),
                     })
                   }
                 })
