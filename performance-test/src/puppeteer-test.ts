@@ -36,7 +36,7 @@ export const testScrollingPerformance = async function () {
   
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: true, // enable for myself, however, when making change enable to true
+    headless: true, 
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768});
