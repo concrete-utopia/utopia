@@ -1,4 +1,3 @@
-import { ObjectInterpolation } from '@emotion/core'
 import styled from '@emotion/styled'
 import { getChainSegmentEdge } from '../../utils/utils'
 import { ControlStyles, betterReactMemo } from '../../uuiui-deps'
@@ -20,11 +19,7 @@ export type BoxCorners =
   | 'none'
   | 'all'
 
-function getChainedBoxShadow(
-  controlStyles: ControlStyles,
-  chained: ChainedType,
-  focused: boolean,
-): ObjectInterpolation<any> {
+function getChainedBoxShadow(controlStyles: ControlStyles, chained: ChainedType, focused: boolean) {
   const controlStatusEdges = getChainSegmentEdge(controlStyles)
   const focusedBoxShadow = `0 0 0 1px ${UtopiaTheme.color.inspectorFocusedColor.value} inset`
 

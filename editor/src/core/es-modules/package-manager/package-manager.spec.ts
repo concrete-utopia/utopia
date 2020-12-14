@@ -14,13 +14,16 @@ import { ESCodeFile } from '../../shared/project-file-types'
 import { NO_OP } from '../../shared/utils'
 import { NodeModules } from '../../shared/project-file-types'
 import { getPackagerUrl, getJsDelivrFileUrl } from './packager-url'
-import { InjectedCSSFilePrefix } from '../../shared/css-style-loader'
 import {
   npmVersion,
   npmVersionLookupSuccess,
   VersionLookupResult,
 } from '../../../components/editor/npm-dependency/npm-dependency'
 import { PackagerServerResponse, requestedNpmDependency } from '../../shared/npm-dependency-types'
+import {
+  InjectedCSSFilePrefix,
+  unimportAllButTheseCSSFiles,
+} from '../../webpack-loaders/css-loader'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -79,6 +82,32 @@ describe('ES Dependency Package Manager', () => {
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
     expect((requireResult as any).hello).toEqual('hello!')
+  })
+
+  it('resolves a css import', () => {
+    const reqFn = getRequireFn(
+      NO_OP,
+      {},
+      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+    )
+    reqFn('/src/index.js', 'mypackage/simple.css')
+
+    const styleTag = document.getElementById('/node_modules/mypackage/simple.css')
+    expect(styleTag).toBeDefined()
+  })
+
+  it('unloads a previously loaded css import', () => {
+    const reqFn = getRequireFn(
+      NO_OP,
+      {},
+      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+    )
+    reqFn('/src/index.js', 'mypackage/simple.css')
+
+    expect(document.getElementById('/node_modules/mypackage/simple.css')).toBeDefined()
+
+    unimportAllButTheseCSSFiles([])
+    expect(document.getElementById('/node_modules/mypackage/simple.css')).toBeNull()
   })
 
   it('throws exception on not found dependency', () => {

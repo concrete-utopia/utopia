@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import Tippy from '@tippyjs/react'
 import { Placement } from 'tippy.js'
 import 'tippy.js/dist/tippy.css'
