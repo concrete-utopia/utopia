@@ -40,6 +40,10 @@ export const SplitViewCanvasRoot = betterReactMemo(
       (store) => store.editor.interfaceDesigner,
       'SplitViewCanvasRoot interfaceDesigner',
     )
+    const navigatorVisible = useEditorState(
+      (store) => !store.editor.navigator.minimised,
+      'SplitViewCanvasRoot navigatorVisible',
+    )
     const layoutReversed = interfaceDesigner.layoutReversed
 
     const isRightMenuExpanded = useEditorState(
@@ -98,8 +102,9 @@ export const SplitViewCanvasRoot = betterReactMemo(
         >
           {props.isUiJsFileOpen ? (
             <>
+              {navigatorVisible && !layoutReversed && <NavigatorComponent />}
               <CanvasWrapperComponent {...props} />
-              <NavigatorComponent />
+              {navigatorVisible && layoutReversed && <NavigatorComponent />}
             </>
           ) : null}
           <Resizable
