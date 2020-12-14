@@ -289,6 +289,6 @@
     "webpack-node-externals": "1.7.2"
   },
   "optionalDependencies": {
-    "fsevents": "2.1.2"
+    "fsevents": "^2.1.2"
   }
 }

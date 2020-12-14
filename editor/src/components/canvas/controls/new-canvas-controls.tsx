@@ -128,6 +128,7 @@ export const NewCanvasControls = betterReactMemo(
             height: `100%`,
             zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
             cursor: props.cursor,
+            pointerEvents: 'none',
           }}
         >
           <div
@@ -473,6 +474,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     <div
       className='new-canvas-controls-container'
       style={{
+        pointerEvents: 'none',
         position: 'relative',
         width: '100%',
         height: '100%',
