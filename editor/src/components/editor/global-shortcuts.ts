@@ -89,7 +89,6 @@ import {
   TOGGLE_BORDER_SHORTCUT,
   TOGGLE_CODE_EDITOR_SHORTCUT,
   TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT,
-  TOGGLE_DESIGNER_LAYOUT_REVERSED,
   TOGGLE_HIDDEN_SHORTCUT,
   TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT,
   TOGGLE_LEFT_MENU_SHORTCUT,
@@ -710,10 +709,6 @@ export function handleKeyDown(
       },
       [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: () => {
         return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
-      },
-      [TOGGLE_DESIGNER_LAYOUT_REVERSED]: () => {
-        // prevent opening new tab
-        return [EditorActions.toggleInterfaceDesignerLayoutReversed()]
       },
     })
   }

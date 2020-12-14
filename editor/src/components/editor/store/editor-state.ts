@@ -268,7 +268,6 @@ export interface EditorState {
     codePaneWidth: number
     codePaneVisible: boolean
     restorableCodePaneWidth: number
-    layoutReversed: boolean
     additionalControls: boolean
   }
   canvas: {
@@ -1065,7 +1064,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       codePaneWidth: 500,
       codePaneVisible: true,
       restorableCodePaneWidth: 500,
-      layoutReversed: true,
       additionalControls: true,
     },
     canvas: {
@@ -1307,7 +1305,6 @@ export function editorModelFromPersistentModel(
       codePaneWidth: 500,
       codePaneVisible: true,
       restorableCodePaneWidth: 500,
-      layoutReversed: true,
       additionalControls: true,
     },
     canvas: {

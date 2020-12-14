@@ -80,10 +80,6 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
   }, [dispatch])
 
-  const toggleLayoutReversed = React.useCallback(() => {
-    dispatch([EditorActions.toggleInterfaceDesignerLayoutReversed()])
-  }, [dispatch])
-
   const toggleAdditionalControls = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerAdditionalControls()])
   }, [dispatch])
@@ -114,15 +110,6 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
           onChange={toggleCodeEditorVisible}
         />
         <label htmlFor='showCodeEditorLabel'>Show Code Editor</label>
-      </StyledFlexRow>
-      <StyledFlexRow>
-        <CheckboxInput
-          style={{ marginRight: 8 }}
-          id='toggleInterfaceDesignerLayoutReversed'
-          checked={interfaceDesigner.layoutReversed}
-          onChange={toggleLayoutReversed}
-        />
-        <label htmlFor='toggleInterfaceDesignerLayoutReversed'>Code Editor Left of Canvas </label>
       </StyledFlexRow>
       <StyledFlexRow>
         <CheckboxInput
