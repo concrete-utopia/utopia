@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { colorTheme, FlexRow, IcnProps, Icons, Tooltip, UtopiaStyles, UtopiaTheme } from 'uuiui'
 import { betterReactMemo } from 'uuiui-deps'
