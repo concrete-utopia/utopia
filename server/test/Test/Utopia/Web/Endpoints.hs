@@ -285,7 +285,7 @@ routingSpec = around_ withServer $ do
       (getLoadedTitleAndContents firstLoad) `shouldBe` (Just ("My Project", projectContents))
       secondLoad `shouldBe` (ProjectUnchanged $ toUrlPiece projectId)
   describe "GET /project/{project_id}/{file_path} (using the sample project)" $ do
-    it "should return the contents of the file if it is a text file" $  withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+    it "should return the contents of the file if it is a text file" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       fileFromPathResult <- withClientEnv clientEnv $ do
         _ <- authenticateClient (Just "logmein") (Just "")
@@ -293,10 +293,9 @@ routingSpec = around_ withServer $ do
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        loadedFile <- loadProjectFileClient projectId ["src", "index.js"] identity
-        return loadedFile
+        loadProjectFileClient projectId ["src", "index.js"] identity
       isRight fileFromPathResult `shouldBe` True
-    it "should return 404 for a non existent file (using the sample project)" $  withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+    it "should return 404 for a non existent file (using the sample project)" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       fileFromPathResult <- withClientEnv clientEnv $ do
         _ <- authenticateClient (Just "logmein") (Just "")
@@ -304,12 +303,23 @@ routingSpec = around_ withServer $ do
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        loadedFile <- loadProjectFileClient projectId ["src", "non-existent-file", "index.js"] identity
-        return loadedFile
+        loadProjectFileClient projectId ["src", "non-existent-file", "index.js"] identity
       case fileFromPathResult of
         (Left (FailureResponse response)) -> responseStatusCode response `shouldBe` notFound404
         (Left _)                          -> expectationFailure "Unexpected response type."
         (Right _)                         -> expectationFailure "Unexpected successful response."
+    it "should fallback to using the asset load logic" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      projectContents <- getSampleProject
+      fileFromPathResult <- withClientEnv clientEnv $ do
+        _ <- authenticateClient (Just "logmein") (Just "")
+        cookieHeader <- getCookieHeader cookieJarTVar
+        createProjectResult <- createProjectClient
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        _ <- saveProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"] setBodyAsJPG
+        loadProjectFileClient projectId ["assets", "picture.jpg"] identity
+      fileFromPath <- either throwIO return fileFromPathResult
+      (responseBody fileFromPath) `shouldBe` (toS jpgBytes)
   describe "POST /project" $ do
     it "should create a project if a request body is supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
