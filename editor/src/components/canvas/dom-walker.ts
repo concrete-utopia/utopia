@@ -50,6 +50,7 @@ import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import { last } from '../../core/shared/array-utils'
 import { selectComponents } from '../editor/actions/action-creators'
+import { findFirstParentWithValidUID, findParentSceneValidPaths } from './dom-lookup'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -115,38 +116,6 @@ function findParentScene(target: HTMLElement): string | null {
   } else {
     if (target.parentElement != null) {
       return findParentScene(target.parentElement)
-    } else {
-      return null
-    }
-  }
-}
-
-function findParentSceneValidPaths(target: HTMLElement): Array<string> | null {
-  const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
-  if (validPaths != null) {
-    return validPaths.split(' ')
-  } else {
-    if (target.parentElement != null) {
-      return findParentSceneValidPaths(target.parentElement)
-    } else {
-      return null
-    }
-  }
-}
-
-function findFirstParentWithValidUID(
-  validTemplatePaths: Array<string>,
-  target: HTMLElement,
-): string | null {
-  const uid = getDOMAttribute(target, 'data-uid')
-  const originalUid = getDOMAttribute(target, 'data-utopia-original-uid')
-  if (originalUid != null && validTemplatePaths.find((tp) => tp.endsWith(originalUid))) {
-    return last(validTemplatePaths.filter((tp) => tp.endsWith(originalUid))) ?? null
-  } else if (uid != null && validTemplatePaths.find((tp) => tp.endsWith(uid))) {
-    return last(validTemplatePaths.filter((tp) => tp.endsWith(uid))) ?? null
-  } else {
-    if (target.parentElement != null) {
-      return findFirstParentWithValidUID(validTemplatePaths, target.parentElement)
     } else {
       return null
     }

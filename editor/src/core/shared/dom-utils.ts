@@ -202,7 +202,8 @@ export const intrinsicHTMLElementNamesThatSupportChildren: Array<string> = [
   'section',
 ]
 
-export function getDOMAttribute(element: HTMLElement, attributeName: string): string | null {
+// eslint-disable-next-line no-restricted-globals
+export function getDOMAttribute(element: Element, attributeName: string): string | null {
   const attr = element.attributes.getNamedItemNS(null, attributeName)
   if (attr == null) {
     return null
