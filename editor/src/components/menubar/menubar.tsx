@@ -15,6 +15,7 @@ import {
 import { betterReactMemo } from 'uuiui-deps'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { LoginState } from '../../common/user'
+import { useTriggerScrollPerformanceTest } from '../../core/model/performance-scripts'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { shareURLForProject } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -132,6 +133,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
 
   const onReparseClick = useReParseOpenProjectFile()
 
+  const onTriggerScrollTest = useTriggerScrollPerformanceTest()
+
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
 
@@ -184,6 +187,11 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
       </FlexColumn>
+      {isFeatureEnabled('Performance Test Triggers') ? (
+        <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+          <a onClick={onTriggerScrollTest}>P S</a>
+        </Tile>
+      ) : null}
       {isFeatureEnabled('Re-parse Project Button') ? (
         <Tile style={{ marginTop: 12, marginBottom: 12 }}>
           <a onClick={onReparseClick}>R</a>

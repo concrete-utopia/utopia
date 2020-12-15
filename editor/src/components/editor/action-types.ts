@@ -910,5 +910,12 @@ export type EditorDispatch = (
   priority?: DispatchPriority,
 ) => void
 
+export type DebugDispatch = (
+  actions: ReadonlyArray<EditorAction>,
+  priority?: DispatchPriority,
+) => {
+  entireUpdateFinished: Promise<any>
+}
+
 export type Alignment = 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom'
 export type Distribution = 'horizontal' | 'vertical'
