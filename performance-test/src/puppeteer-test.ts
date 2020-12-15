@@ -172,7 +172,7 @@ function uploadPNGtoAWS(testFile = createTestPng()) {
 //uploadPNGtoAWS()
 
   console.info(
-    `::set-output name=perf-result:: " ![TestFrameChart](hhttps://frame-test-png.s3.eu-west-2.amazonaws.com/TestPic.png) ${totalFrameTimes}ms – average frame length: ${frameData.frameAvg}
+    `::set-output name=perf-result:: " ![TestFrameChart](https://frame-test-png.s3.eu-west-2.amazonaws.com/TestPic.png) ${totalFrameTimes}ms – average frame length: ${frameData.frameAvg}
      – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${frameData.percentile75} – Median: ${frameData.percentile50} – frame times: [${frameTimes.join(
       ',',
     )}]"`
