@@ -7,6 +7,7 @@ import * as EmotionReact from '@emotion/react'
 
 import * as editorPackageJSON from '../../../../package.json'
 import * as utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
+import { NO_OP } from '../../shared/utils'
 
 interface BuiltInDependency {
   moduleName: string
@@ -29,12 +30,19 @@ function builtInDependency(
   }
 }
 
+// Prevent ReactDOM.render from running in the canvas/editor because it's
+// entirely likely to cause either havoc or just break.
+export const SafeReactDOM = {
+  ...ReactDOM,
+  render: NO_OP,
+}
+
 const BuiltInDependencies: Array<BuiltInDependency> = [
   builtInDependency('utopia-api', UtopiaAPI, utopiaAPIPackageJSON.version),
   builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
   builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
   builtInDependency('react', React, editorPackageJSON.dependencies.react),
-  builtInDependency('react-dom', ReactDOM, editorPackageJSON.dependencies['react-dom']),
+  builtInDependency('react-dom', SafeReactDOM, editorPackageJSON.dependencies['react-dom']),
   builtInDependency(
     '@emotion/react',
     EmotionReact,

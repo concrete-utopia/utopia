@@ -243,7 +243,7 @@ export function transpileJavascriptFromCode(
     plugins.push('proposal-class-properties')
     plugins.push(ReactTransformPlugin)
     const transformResult = Babel.transform(codeToUse, {
-      presets: ['es2015'],
+      presets: ['es2015', 'react'],
       plugins: plugins,
       sourceType: 'script',
       sourceMaps: true,
