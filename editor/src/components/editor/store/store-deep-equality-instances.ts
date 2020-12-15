@@ -51,7 +51,6 @@ import {
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../../../core/shared/math-utils'
-import { SceneContainer } from '../../../core/shared/project-file-types'
 import {
   KeepDeepEqualityResult,
   keepDeepEqualityResult,
@@ -574,20 +573,8 @@ export function ElementInstanceMetadataMapKeepDeepEquality(): KeepDeepEqualityCa
   return objectDeepEquality(ElementInstanceMetadataKeepDeepEquality())
 }
 
-export function SceneContainerKeepDeepEquality(): KeepDeepEqualityCall<SceneContainer> {
-  return combine1EqualityCall(
-    (container) => container.layoutSystem,
-    createCallWithTripleEquals(),
-    (layoutSystem) => {
-      return {
-        layoutSystem: layoutSystem,
-      }
-    },
-  )
-}
-
 export function ComponentMetadataKeepDeepEquality(): KeepDeepEqualityCall<ComponentMetadata> {
-  return combine9EqualityCalls(
+  return combine8EqualityCalls(
     (metadata) => metadata.scenePath,
     ScenePathKeepDeepEquality,
     (metadata) => metadata.templatePath,
@@ -596,8 +583,6 @@ export function ComponentMetadataKeepDeepEquality(): KeepDeepEqualityCall<Compon
     InstancePathArrayKeepDeepEquality,
     (metadata) => metadata.component,
     nullableDeepEquality(createCallWithTripleEquals()),
-    (metadata) => metadata.container,
-    undefinableDeepEquality(SceneContainerKeepDeepEquality()),
     (metadata) => metadata.globalFrame,
     nullableDeepEquality(CanvasRectangleKeepDeepEquality),
     (metadata) => metadata.sceneResizesContent,
@@ -611,7 +596,6 @@ export function ComponentMetadataKeepDeepEquality(): KeepDeepEqualityCall<Compon
       templatePath,
       rootElements,
       component,
-      container,
       globalFrame,
       sceneResizesContent,
       label,
@@ -622,7 +606,6 @@ export function ComponentMetadataKeepDeepEquality(): KeepDeepEqualityCall<Compon
         templatePath: templatePath,
         rootElements: rootElements,
         component: component,
-        container: container,
         globalFrame: globalFrame,
         sceneResizesContent: sceneResizesContent,
         label: label,

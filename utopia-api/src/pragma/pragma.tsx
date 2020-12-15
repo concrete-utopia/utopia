@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx as EmotionJsx } from '@emotion/core'
+import { jsx as EmotionJsx } from '@emotion/react'
 import * as React from 'react'
 import {
   calculateChildStylesToPrepend,

@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import useInterval from '@use-it/interval'
 import * as React from 'react'

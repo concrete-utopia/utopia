@@ -103,6 +103,7 @@ describe('SET_PROP', () => {
           ),
           null,
           false,
+          [],
         ),
       ],
       {},
@@ -194,6 +195,7 @@ describe('SET_CANVAS_FRAMES', () => {
       ),
       null,
       false,
+      [],
     ),
   ]
 
@@ -267,7 +269,16 @@ describe('moveTemplate', () => {
       parseSuccess(
         emptyImports(),
         rootElements.map((element, index) =>
-          utopiaJSXComponent(`MyView${index}`, true, defaultPropsParam, [], element, null, false),
+          utopiaJSXComponent(
+            `MyView${index}`,
+            true,
+            defaultPropsParam,
+            [],
+            element,
+            null,
+            false,
+            [],
+          ),
         ),
         {},
         null,
@@ -766,7 +777,16 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     },
     [childElement],
   )
-  const firstTopLevelElement = utopiaJSXComponent('App', true, null, [], rootElement, null, false)
+  const firstTopLevelElement = utopiaJSXComponent(
+    'App',
+    true,
+    null,
+    [],
+    rootElement,
+    null,
+    false,
+    [],
+  )
   const fileForUI = textFile(
     textFileContents(
       '',
@@ -798,7 +818,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     sceneResizesContent: false,
     style: { width: 100, height: 100 },
-    container: { layoutSystem: LayoutSystem.PinSystem },
     rootElements: [rootElementPath],
   }
 

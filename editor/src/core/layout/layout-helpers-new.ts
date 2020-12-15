@@ -6,7 +6,7 @@ import { ParsedCSSProperties } from '../../components/inspector/common/css-utils
 
 export type LayoutDimension = 'Width' | 'Height'
 
-export type LayoutFlexContainerProp = LayoutDimension | 'FlexGapMain'
+export type LayoutFlexContainerProp = LayoutDimension | 'FlexGap'
 
 export type LayoutFlexElementNumericProp = 'Width' | 'Height' | 'FlexFlexBasis' | 'FlexCrossBasis'
 
@@ -115,15 +115,15 @@ export function pinnedPropForFramePoint(point: FramePoint): LayoutPinnedProp {
 }
 
 const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPathPart> } = {
+  // TODO LAYOUT remove these once no place uses it
   LayoutSystem: ['layout', 'layoutSystem'],
   PinnedCenterX: ['layout', 'centerX'],
   PinnedCenterY: ['layout', 'centerY'],
-  FlexGapMain: ['layout', 'gapMain'],
-
-  FlexFlexBasis: ['layout', 'flexBasis'],
   FlexCrossBasis: ['layout', 'crossBasis'],
 
   // TODO FIXME 'style' here should point to the inspector target selector's current target instead of always pointing to style
+  FlexGap: ['style', 'gap'],
+  FlexFlexBasis: ['style', 'flexBasis'],
   PinnedLeft: ['style', 'left'],
   PinnedTop: ['style', 'top'],
   Width: ['style', 'width'],
@@ -165,7 +165,7 @@ export interface LayoutPropertyTypes {
   Width: FramePin | undefined
   Height: FramePin | undefined
 
-  FlexGapMain: number
+  FlexGap: number
   FlexFlexBasis: FlexLength
   FlexCrossBasis: FlexLength
 

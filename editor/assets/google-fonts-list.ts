@@ -336,6 +336,16 @@ export const googleFontsList: Array<GoogleFontsTypeface> = [
   },
   {
     type: 'google-fonts-typeface',
+    name: 'Andika New Basic',
+    variants: [
+      { type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'italic' },
+      { type: 'web-font-variant', webFontWeight: 700, webFontStyle: 'normal' },
+      { type: 'web-font-variant', webFontWeight: 700, webFontStyle: 'italic' },
+    ],
+  },
+  {
+    type: 'google-fonts-typeface',
     name: 'Angkor',
     variants: [{ type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'normal' }],
   },
@@ -4199,6 +4209,11 @@ export const googleFontsList: Array<GoogleFontsTypeface> = [
   {
     type: 'google-fonts-typeface',
     name: 'Lancelot',
+    variants: [{ type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'normal' }],
+  },
+  {
+    type: 'google-fonts-typeface',
+    name: 'Langar',
     variants: [{ type: 'web-font-variant', webFontWeight: 400, webFontStyle: 'normal' }],
   },
   {

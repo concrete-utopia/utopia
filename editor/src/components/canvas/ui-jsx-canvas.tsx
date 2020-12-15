@@ -308,7 +308,7 @@ export const UiJsxCanvas = betterReactMemo(
       Utils.fastForEach(topLevelElementsIncludingScenes, (topLevelElement) => {
         if (isUtopiaJSXComponent(topLevelElement)) {
           topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-          if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
+          if (!(topLevelElement.name in topLevelComponentRendererComponents.current)) {
             topLevelComponentRendererComponents.current[
               topLevelElement.name
             ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
@@ -416,7 +416,6 @@ function useGetStoryboardRoot(
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements = {
     component: BakedInStoryboardVariableName,
     sceneResizesContent: false,
-    container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
     scenePath: EmptyScenePathForStoryboard,
     templatePath: TP.instancePath([], []),
     globalFrame: null,

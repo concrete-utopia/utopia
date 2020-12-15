@@ -17,7 +17,7 @@ import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
 
-const flexGapProp = [createLayoutPropertyPath('FlexGapMain')]
+const flexGapProp = [createLayoutPropertyPath('FlexGap')]
 const alignItemsProp = [createLayoutPropertyPath('alignItems')]
 
 export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }>(
@@ -29,7 +29,7 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
     const alignItems = useInspectorLayoutInfo('alignItems')
     const alignContent = useInspectorLayoutInfo('alignContent')
     const justifyContent = useInspectorLayoutInfo('justifyContent')
-    const flexGapMain = useInspectorLayoutInfo('FlexGapMain')
+    const flexGap = useInspectorLayoutInfo('FlexGap')
 
     const {
       justifyFlexStart,
@@ -47,12 +47,12 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
       flexWrap.value === FlexWrap.NoWrap ? getControlStyles('disabled') : alignItems.controlStyles
 
     const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexGapMain.onSubmitValue,
-      flexGapMain.onUnsetValues,
+      flexGap.onSubmitValue,
+      flexGap.onUnsetValues,
     )
     const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexGapMain.onSubmitValue,
-      flexGapMain.onUnsetValues,
+      flexGap.onSubmitValue,
+      flexGap.onUnsetValues,
     )
 
     return (
@@ -80,12 +80,12 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
         <GridRow padded={true} type='<---1fr--->|------172px-------|'>
           <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
           <FlexGapControl
-            value={flexGapMain.value}
+            value={flexGap.value}
             onSubmitValue={wrappedOnSubmitValue}
             onTransientSubmitValue={wrappedOnTransientSubmitValue}
-            onUnset={flexGapMain.onUnsetValues}
-            controlStatus={flexGapMain.controlStatus}
-            controlStyles={flexGapMain.controlStyles}
+            onUnset={flexGap.onUnsetValues}
+            controlStatus={flexGap.controlStatus}
+            controlStyles={flexGap.controlStyles}
           />
         </GridRow>
         <GridRow padded={true} type='<---1fr--->|------172px-------|'>

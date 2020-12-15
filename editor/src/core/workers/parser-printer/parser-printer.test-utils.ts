@@ -48,6 +48,9 @@ import {
   utopiaJSXComponent,
   defaultPropsParam,
   clearArbitraryJSBlockUniqueIDs,
+  SingleLineComment,
+  MultiLineComment,
+  Comment,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -74,6 +77,31 @@ import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
+
+export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercaseStringArbitrary().map(
+  (text) => {
+    return {
+      type: 'SINGLE_LINE_COMMENT',
+      comment: text,
+      trailingNewLine: false,
+    }
+  },
+)
+
+export const multiLineCommentArbitrary: Arbitrary<MultiLineComment> = lowercaseStringArbitrary().map(
+  (text) => {
+    return {
+      type: 'MULTI_LINE_COMMENT',
+      comment: text,
+      trailingNewLine: false,
+    }
+  },
+)
+
+export const commentArbitrary: Arbitrary<Comment> = FastCheck.oneof<Comment>(
+  singleLineCommentArbitrary,
+  multiLineCommentArbitrary,
+)
 
 const JavaScriptReservedKeywords: Array<string> = [
   'break',
@@ -472,8 +500,9 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
     FastCheck.boolean(),
     jsxElementArbitrary(3),
     arbitraryJSBlockArbitrary(),
+    FastCheck.array(commentArbitrary),
   )
-    .map(([name, isFunction, rootElement, jsBlock]) => {
+    .map(([name, isFunction, rootElement, jsBlock, leadingComments]) => {
       return utopiaJSXComponent(
         name,
         isFunction,
@@ -482,6 +511,7 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
         rootElement,
         jsBlock,
         false,
+        leadingComments,
       )
     })
     .filter((component) => {

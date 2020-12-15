@@ -224,6 +224,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               },
               arbitraryJSBlock: null,
               usedInReactDOMRender: false,
+              leadingComments: [],
             },
             convertScenesToUtopiaCanvasComponent([
               {
@@ -242,9 +243,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                   top: 0,
                   width: 375,
                   height: 812,
-                },
-                container: {
-                  layoutSystem: LayoutSystem.PinSystem,
                 },
               },
             ]),

@@ -129,7 +129,6 @@ import {
   ProjectFile,
   PropertyPath,
   RevisionsState,
-  SceneContainer,
   ScenePath,
   StaticElementPath,
   TemplatePath,
@@ -425,7 +424,6 @@ import { applyMigrations } from './migrations/migrations'
 import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import {
   PathForSceneDataLabel,
-  PathForSceneContainer,
   createSceneTemplatePath,
   PathForSceneComponent,
   PathForSceneProps,

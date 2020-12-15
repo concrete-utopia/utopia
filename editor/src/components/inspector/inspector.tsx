@@ -277,8 +277,6 @@ RenderedLayoutSection.displayName = 'RenderedLayoutSection'
 const nonDefaultPositionPaths: Array<PropertyPath> = [
   createLayoutPropertyPath('PinnedRight'),
   createLayoutPropertyPath('PinnedBottom'),
-  createLayoutPropertyPath('PinnedCenterX'),
-  createLayoutPropertyPath('PinnedCenterY'),
 ]
 
 export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: InspectorProps) => {

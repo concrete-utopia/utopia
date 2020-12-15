@@ -70,7 +70,7 @@ import {
 } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 
-interface DispatchResult extends EditorStore {
+export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
 }

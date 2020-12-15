@@ -262,6 +262,7 @@ return { a: a };",
     Object {
       "arbitraryJSBlock": null,
       "isFunction": true,
+      "leadingComments": Array [],
       "name": "App",
       "param": Object {
         "boundParam": Object {
@@ -534,6 +535,7 @@ return { b: b };",
     Object {
       "arbitraryJSBlock": null,
       "isFunction": false,
+      "leadingComments": Array [],
       "name": "storyboard",
       "param": null,
       "propsUsed": Array [],

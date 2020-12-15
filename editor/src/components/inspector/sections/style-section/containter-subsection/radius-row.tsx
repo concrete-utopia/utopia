@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { OptionsType } from 'react-select'
 import { FramePin } from 'utopia-api'
 import {
