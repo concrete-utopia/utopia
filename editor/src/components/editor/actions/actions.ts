@@ -2139,6 +2139,14 @@ export const UPDATE_FNS = {
             minimised: !action.visible,
           },
         }
+      case 'navigatorPane':
+        return {
+          ...editor,
+          navigator: {
+            ...editor.navigator,
+            visible: !action.visible,
+          },
+        }
       case 'filebrowser':
         return {
           ...editor,

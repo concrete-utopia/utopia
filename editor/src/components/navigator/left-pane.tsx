@@ -305,25 +305,6 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
   )
 })
 
-function validToShowNavigator(editorState: EditorState): boolean {
-  const open = getOpenFile(editorState)
-  if (open == null) {
-    return false
-  } else {
-    switch (open.type) {
-      case 'TEXT_FILE':
-        return true
-      case 'IMAGE_FILE':
-      case 'DIRECTORY':
-      case 'ASSET_FILE':
-        return false
-      default:
-        const _exhaustiveCheck: never = open
-        throw new Error(`Unhandled type ${JSON.stringify(open)}`)
-    }
-  }
-}
-
 const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
   return (
     <FlexColumn

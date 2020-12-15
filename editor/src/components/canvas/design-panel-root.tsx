@@ -11,7 +11,7 @@ import { ConsoleLog } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
-import { InsertMenuPane } from '../navigator/left-pane'
+import { InsertMenuPane, LeftPaneDefaultWidth } from '../navigator/left-pane'
 
 import { RightMenu, RightMenuTab } from './right-menu'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
@@ -52,6 +52,12 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     (store) => store.editor.rightMenu.selectedTab,
     'DesignPanelRoot rightMenuSelectedTab',
   )
+
+  const leftMenuExpanded = useEditorState(
+    (store) => store.editor.leftMenu.expanded,
+    'EditorComponentInner leftMenuExpanded',
+  )
+
   const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
 
   const updateDeltaWidth = React.useCallback(
@@ -136,7 +142,19 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
             }}
           >
             <CanvasWrapperComponent {...props} />
-            {navigatorVisible && <NavigatorComponent />}
+            {navigatorVisible && (
+              <NavigatorComponent
+                style={{
+                  position: 'absolute',
+                  height: '100%',
+                  left:
+                    leftMenuExpanded && !interfaceDesigner.codePaneVisible
+                      ? LeftPaneDefaultWidth
+                      : undefined,
+                  width: LeftPaneDefaultWidth,
+                }}
+              />
+            )}
           </SimpleFlexRow>
         ) : null}
       </SimpleFlexRow>

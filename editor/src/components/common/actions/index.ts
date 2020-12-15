@@ -30,8 +30,6 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
   switch (panel) {
     case null:
       return null
-    case 'navigator':
-      return 'leftmenu'
     case 'filebrowser':
       return 'leftmenu'
     case 'dependencylist':
@@ -44,6 +42,10 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
       return 'rightmenu'
     case 'projectsettings':
       return 'leftmenu'
+    case 'navigator':
+      return 'center'
+    case 'navigatorPane':
+      return 'center'
     case 'canvas':
       return 'center'
     case 'misccodeeditor':
