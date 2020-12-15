@@ -166,6 +166,7 @@ import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
 import { openFileTab } from '../editor/store/editor-tabs'
+import { last } from '../../core/shared/array-utils'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -1711,7 +1712,11 @@ function getReparentTargetAtPosition(
   // filtering for non-selected views from alltargets
   return R.head(
     allTargets.filter((target) =>
-      editorState.selectedViews.every((view) => !TP.pathsEqual(view, target)),
+      editorState.selectedViews.every(
+        (view) =>
+          !TP.pathsEqual(view, target) &&
+          last(TP.elementPathForPath(view)) !== last(TP.elementPathForPath(target)),
+      ),
     ),
   )
 }

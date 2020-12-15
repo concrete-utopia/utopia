@@ -195,7 +195,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             borderStyle: showInvisibleIndicator ? 'solid' : undefined,
             borderWidth: 0.5 / this.props.scale,
             borderRadius: showInvisibleIndicator ? borderRadius : 0,
-            pointerEvents: 'none',
+            // pointerEvents: 'none',
           }}
           data-testid={this.props.testID}
         />

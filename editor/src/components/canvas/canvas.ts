@@ -13,7 +13,7 @@ import {
   importDetails,
   importAlias,
 } from '../../core/shared/project-file-types'
-import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
+import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
   KeyCharacter,
   KeysPressed,
@@ -27,6 +27,7 @@ import {
   CanvasRectangle,
   rectangleIntersection,
   canvasRectangle,
+  WindowPoint,
 } from '../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -56,6 +57,7 @@ import * as TP from '../../core/shared/template-path'
 import CanvasActions from './canvas-actions'
 import { adjustAllSelectedFrames } from './controls/select-mode/move-utils'
 import { flatMapArray } from '../../core/shared/array-utils'
+import { getAllTargetsAtPoint } from './dom-lookup'
 
 export const enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -277,42 +279,24 @@ const Canvas = {
     useBoundingFrames: boolean,
     looseTargetingForZeroSizedElements: 'strict' | 'loose',
   ): Array<TemplatePath> {
-    const looseReparentThreshold = 5
-    const targetFilters = Canvas.targetFilter(editor.selectedViews, searchTypes)
-    const framesWithPaths = Canvas.getFramesInCanvasContext(
-      editor.jsxMetadataKILLME,
-      useBoundingFrames,
+    // hack to use the diff of CanvasMousePositionRaw and WindowMousePositionRaw to calculate a window coordinate
+    if (WindowMousePositionRaw == null || CanvasMousePositionRaw == null) {
+      return []
+    }
+    const canvasOffset = Utils.pointDifference(
+      (CanvasMousePositionRaw as unknown) as WindowPoint,
+      WindowMousePositionRaw,
     )
-    const filteredFrames = framesWithPaths.filter((frameWithPath) => {
-      const shouldUseLooseTargeting =
-        looseTargetingForZeroSizedElements &&
-        (frameWithPath.frame.width <= 0 || frameWithPath.frame.height <= 0)
-
-      return targetFilters.some((filter) => filter(frameWithPath.path)) &&
-        !editor.hiddenInstances.some((hidden) =>
-          TP.isAncestorOf(frameWithPath.path, hidden, true),
-        ) &&
-        shouldUseLooseTargeting
-        ? rectangleIntersection(
-            canvasRectangle({
-              x: frameWithPath.frame.x,
-              y: frameWithPath.frame.y,
-              width: frameWithPath.frame.width || 1,
-              height: frameWithPath.frame.height || 1,
-            }),
-            canvasRectangle({
-              x: canvasPosition.x - looseReparentThreshold,
-              y: canvasPosition.y - looseReparentThreshold,
-              width: 2 * looseReparentThreshold,
-              height: 2 * looseReparentThreshold,
-            }),
-          ) != null
-        : Utils.rectContainsPoint(frameWithPath.frame, canvasPosition)
-    })
-    filteredFrames.reverse()
-
-    const targets = filteredFrames.map((filteredFrame) => filteredFrame.path)
-    return targets
+    const windowPosition = Utils.offsetPoint(
+      (canvasPosition as unknown) as WindowPoint,
+      canvasOffset,
+    )
+    const unfilteredPaths = getAllTargetsAtPoint(windowPosition)
+    const targetFilters = Canvas.targetFilter(editor.selectedViews, searchTypes)
+    const filteredPaths = unfilteredPaths.filter((path) =>
+      targetFilters.some((filter) => filter(path)),
+    )
+    return filteredPaths
   },
   getNextTarget(
     current: Array<TemplatePath>,
