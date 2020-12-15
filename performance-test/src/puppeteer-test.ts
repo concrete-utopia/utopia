@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
+const AWS = require('aws-sdk')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
@@ -79,24 +80,16 @@ export const testScrollingPerformance = async function () {
     lastFrameTimestamp = frameTimestamp
   })
 
-  var arr1 = frameTimes.sort((a,b) => a - b)
-  function returnArr() {
-    return arr1;
+  const frameData = {
+    frameAvg: totalFrameTimes / frameTimes.length,
+    percentile25: frameTimes.sort((a, b) => a - b)[Math.floor(frameTimes.length * 0.25)],
+    percentile50: frameTimes.sort((a, b) => a - b)[Math.floor(frameTimes.length * 0.50)],
+    percentile75: frameTimes.sort((a,b) => a- b)[Math.floor(frameTimeEvents.length * 0.75)]
   }
-
-  const frameAvg = totalFrameTimes / frameTimes.length
-  const percentile25 = frameTimes.sort((a, b) => a - b)[Math.floor(frameTimes.length * 0.25)]
-  const percentile50 = frameTimes.sort((a, b) => a - b)[Math.floor(frameTimes.length * 0.50)]
-  const percentile75 = frameTimes.sort((a,b) => a- b)[Math.floor(frameTimeEvents.length * 0.75)]
   
-  
-  
-  
-  
-  
-  function returnTestPng(testResults = frameTimes) {
+    
+  function createTestPng(testResults = frameTimes, testFileName = "TestFrameGraph" ) {
     const plotly = require('plotly')("OmarDaSilva", "szS7pGItjmB7z50Ft3e9")
-    const ffs = require('fs');
 
     const trace = {
       x: testResults.sort((a,b) => a-b),
@@ -144,13 +137,43 @@ export const testScrollingPerformance = async function () {
     plotly.getImage(figure, imgOpts, function (error: any, imageStream: any) {
       if (error) return console.log (error);
   
-      var fileStream = ffs.createWriteStream('2.png');
+      var fileStream = fs.createWriteStream(testFileName);
       imageStream.pipe(fileStream);
   });
+  return testFileName
 }
 
+function uploadPNGtoAWS(testFile = createTestPng()) {
+  AWS.config.update({
+    region: 'eu-west-2',
+    "accessKeyId": "",
+    "secretAccessKey": "" })
+  
+    let s3 = new AWS.s3({apiVersion: '2006-03-01'});
+    const uploadParams = {Bucket: process.argv[2], Key: testFile, Body: ''};
+    let file = process.argv[3];
+
+    let filestream = fs.createReadStream(file);
+    filestream.on('error', function(err: any) {
+      console.log('File Error', err);
+    });
+    uploadParams.Body = filestream;
+    uploadParams.Key = path.basename(file);
+    
+    s3.upload (uploadParams, function (err: any, data: any) {
+      if (err) {
+        console.log("Error", err);
+      } if (data) {
+        console.log("Upload Success", data.Location)
+      }
+    });
+}
+
+//uploadPNGtoAWS()
+
   console.info(
-    `::set-output name=perf-result:: " ![GitHub Logo](hhttps://frame-test-png.s3.eu-west-2.amazonaws.com/TestPic.png) ${totalFrameTimes}ms – average frame length: ${frameAvg} – Q1: ${percentile25} – Q2: ${percentile50} – Q3: ${percentile75} – Median: ${percentile50} – frame times: [${frameTimes.join(
+    `::set-output name=perf-result:: " ![TestFrameChart](hhttps://frame-test-png.s3.eu-west-2.amazonaws.com/TestPic.png) ${totalFrameTimes}ms – average frame length: ${frameData.frameAvg}
+     – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${frameData.percentile75} – Median: ${frameData.percentile50} – frame times: [${frameTimes.join(
       ',',
     )}]"`
   )
