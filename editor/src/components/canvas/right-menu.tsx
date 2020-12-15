@@ -17,8 +17,6 @@ import { useEditorState } from '../editor/store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
 import { EditorAction } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
-import { LeftPaneDefaultWidth } from '../navigator/left-pane'
-import { CanvasVector } from '../../core/shared/math-utils'
 
 export const enum RightMenuTab {
   Insert = 'insert',
@@ -193,12 +191,8 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
   const onClickNavigateTab = React.useCallback(() => {
-    const offset = navigatorVisible ? -LeftPaneDefaultWidth : LeftPaneDefaultWidth
-    dispatch([
-      EditorActions.togglePanel('navigatorPane'),
-      CanvasActions.scrollCanvas({ x: offset, y: 0 } as CanvasVector),
-    ])
-  }, [dispatch, navigatorVisible])
+    dispatch([EditorActions.togglePanel('navigatorPane')])
+  }, [dispatch])
 
   return (
     <SimpleFlexColumn

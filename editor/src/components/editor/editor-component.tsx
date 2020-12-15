@@ -24,7 +24,7 @@ import Utils from '../../utils/utils'
 import { StoryboardFilePath } from '../../core/model/storyboard-utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getCursorFromDragState } from '../canvas/canvas-utils'
-import { SplitViewCanvasRoot } from '../canvas/split-view-canvas-root'
+import { DesignPanelRoot } from '../canvas/design-panel-root'
 import { resizeLeftPane } from '../common/actions'
 import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
@@ -532,7 +532,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     return <UserConfiguration />
   } else {
     return (
-      <SplitViewCanvasRoot
+      <DesignPanelRoot
         isUiJsFileOpen={isUiJsFileOpen}
         runtimeErrors={runtimeErrors}
         onRuntimeError={onRuntimeError}

@@ -20,8 +20,6 @@ import { betterReactMemo } from 'uuiui-deps'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import { Size } from 'react-virtualized-auto-sizer'
 import { LeftPaneDefaultWidth } from './left-pane'
-import CanvasActions from '../canvas/canvas-actions'
-import { CanvasVector } from '../../core/shared/math-utils'
 // There's some weirdness between the types and the results in the two module systems.
 // This is to effectively massage the result so that if it is loaded in the browser or in
 // node it should end up with the right thing.
@@ -176,7 +174,13 @@ export const NavigatorComponent = betterReactMemo('NavigatorComponent', () => {
       onContextMenu={onContextMenu}
       id={NavigatorContainerId}
       tabIndex={-1}
-      style={{ height: '100%', width: LeftPaneDefaultWidth }}
+      style={{
+        position: 'absolute',
+        height: '100%',
+        width: LeftPaneDefaultWidth,
+        backgroundColor: UtopiaTheme.color.leftPaneBackground.o(80).value,
+        backdropFilter: 'blur(7px)',
+      }}
     >
       <SectionTitleRow minimised={minimised} toggleMinimised={toggleTwirler}>
         <FlexRow flexGrow={1}>
