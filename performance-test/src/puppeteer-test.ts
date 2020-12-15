@@ -148,10 +148,11 @@ function uploadPNGtoAWS(testFile = createTestPng()) {
     region: 'eu-west-2',
     "accessKeyId": "",
     "secretAccessKey": "" })
-  
-    let s3 = new AWS.s3({apiVersion: '2006-03-01'});
-    const uploadParams = {Bucket: process.argv[2], Key: testFile, Body: ''};
-    let file = process.argv[3];
+
+    const metaData = testFile.split('.').pop();
+    let s3 = new AWS.S3({apiVersion: '2006-03-01'});
+    let file = testFile;
+    const uploadParams = {Bucket: "frame-test-png", Key: testFile, Body: '', ContentType: metaData , ACL: 'public-read'};
 
     let filestream = fs.createReadStream(file);
     filestream.on('error', function(err: any) {
@@ -160,7 +161,7 @@ function uploadPNGtoAWS(testFile = createTestPng()) {
     uploadParams.Body = filestream;
     uploadParams.Key = path.basename(file);
     
-    s3.upload (uploadParams, function (err: any, data: any) {
+    s3.upload(uploadParams, function (err: any, data: any) {
       if (err) {
         console.log("Error", err);
       } if (data) {
