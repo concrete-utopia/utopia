@@ -152,7 +152,7 @@ function uploadPNGtoAWS(testFile = createTestPng()) {
     const metaData = testFile.split('.').pop();
     let s3 = new AWS.S3({apiVersion: '2006-03-01'});
     let file = testFile;
-    const uploadParams = {Bucket: "frame-test-png", Key: testFile, Body: '', ContentType: metaData , ACL: 'public-read'};
+    const uploadParams = {Bucket: "frame-test-png", Key: testFile, Body: '', ContentType: 'image/png' , ACL: 'public-read'};
 
     let filestream = fs.createReadStream(file);
     filestream.on('error', function(err: any) {
