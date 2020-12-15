@@ -362,7 +362,6 @@ export const EditorComponentInner = betterReactMemo(
         <ModalComponent />
         <ToastRenderer />
         <CanvasCursorComponent />
-        <HelpTriangle />
         {props.propertyControlsInfoSupported ? <PropertyControlsInfoComponent /> : null}
       </SimpleFlexRow>
     )
@@ -393,26 +392,6 @@ export function EditorComponent(props: EditorProps) {
     </DndProvider>
   )
 }
-
-const HelpTriangle = () => (
-  <div
-    style={{
-      position: 'absolute',
-      bottom: '16px',
-      right: '16px',
-      width: '50px',
-      height: '39px',
-    }}
-  >
-    <a href='https://github.com/concrete-utopia/utopia' target='_blank' rel='noopener noreferrer'>
-      <img
-        src='/static/brand/triangle-question-brandpurple-50x39@2x.png'
-        alt='help'
-        style={{ width: '50px', height: '39px' }}
-      />
-    </a>
-  </div>
-)
 
 function useRuntimeErrors(): {
   runtimeErrors: Array<RuntimeErrorInfo>
