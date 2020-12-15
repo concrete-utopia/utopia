@@ -148,10 +148,6 @@ export const testScrollingPerformance = async function () {
       imageStream.pipe(fileStream);
   });
 }
-  returnTestPng();
-  let AWS = require('aws-sdk');
-  AWS.config({region: 'eu-west-2'})
-  
 
   console.info(
     `::set-output name=perf-result:: " ![GitHub Logo](hhttps://frame-test-png.s3.eu-west-2.amazonaws.com/TestPic.png) ${totalFrameTimes}ms – average frame length: ${frameAvg} – Q1: ${percentile25} – Q2: ${percentile50} – Q3: ${percentile75} – Median: ${percentile50} – frame times: [${frameTimes.join(
