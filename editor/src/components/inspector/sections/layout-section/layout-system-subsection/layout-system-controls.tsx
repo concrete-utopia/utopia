@@ -258,7 +258,7 @@ const layoutSystemConfigPropertyPaths = [
   createLayoutPropertyPath('LayoutSystem'),
   PP.create(['style', 'display']),
   createLayoutPropertyPath('flexDirection'),
-  createLayoutPropertyPath('FlexGapMain'),
+  createLayoutPropertyPath('FlexGap'),
   createLayoutPropertyPath('flexWrap'),
   createLayoutPropertyPath('justifyContent'),
   createLayoutPropertyPath('alignItems'),

@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { ResizeDirection } from 're-resizable'
 import * as React from 'react'
 import { DndProvider } from 'react-dnd'

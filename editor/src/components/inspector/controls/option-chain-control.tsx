@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { InterpolationWithTheme, jsx } from '@emotion/core'
+import { Interpolation, jsx } from '@emotion/react'
 import * as R from 'ramda'
 import * as React from 'react'
 import { IcnProps } from 'uuiui'
@@ -25,7 +25,7 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
     throw new Error('OptionControl needs an array of `options`')
   }
 
-  const optionCSS: InterpolationWithTheme<any> = {
+  const optionCSS: Interpolation<any> = {
     position: 'relative',
     // This is the divider in between controls
     '&:not(:first-of-type)::after': {

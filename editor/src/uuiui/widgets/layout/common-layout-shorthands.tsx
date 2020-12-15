@@ -1,4 +1,4 @@
-import { css } from '@emotion/core'
+import { css } from '@emotion/react'
 import { CSSProperties } from '@emotion/serialize'
 
 interface CommonSenseUtopiaProps {

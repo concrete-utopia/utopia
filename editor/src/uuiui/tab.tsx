@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import styled from '@emotion/styled'
 import { FlexRow, SimpleFlexRow } from './widgets/layout/flex-row'

@@ -24,10 +24,6 @@ Array [
               "type": "ATTRIBUTE_VALUE",
               "value": "bbb",
             },
-            "layout": Object {
-              "content": Array [],
-              "type": "ATTRIBUTE_NESTED_OBJECT",
-            },
             "style": Object {
               "content": Array [
                 Object {
@@ -146,8 +142,16 @@ Array [
               "type": "ATTRIBUTE_VALUE",
               "value": "bbb",
             },
-            "layout": Object {
+            "style": Object {
               "content": Array [
+                Object {
+                  "key": "position",
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": "relative",
+                  },
+                },
                 Object {
                   "key": "flexBasis",
                   "type": "PROPERTY_ASSIGNMENT",
@@ -157,24 +161,11 @@ Array [
                   },
                 },
                 Object {
-                  "key": "crossBasis",
+                  "key": "height",
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
                     "type": "ATTRIBUTE_VALUE",
                     "value": 300,
-                  },
-                },
-              ],
-              "type": "ATTRIBUTE_NESTED_OBJECT",
-            },
-            "style": Object {
-              "content": Array [
-                Object {
-                  "key": "position",
-                  "type": "PROPERTY_ASSIGNMENT",
-                  "value": Object {
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": "relative",
                   },
                 },
               ],

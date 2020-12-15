@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import composeRefs from '@seznam/compose-react-refs'
 import * as React from 'react'
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import {
   ControlStatus,
   getControlStyles,

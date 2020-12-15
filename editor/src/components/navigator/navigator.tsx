@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as R from 'ramda'
 import * as React from 'react'
 import * as TP from '../../core/shared/template-path'

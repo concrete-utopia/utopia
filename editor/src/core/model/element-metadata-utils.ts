@@ -304,9 +304,9 @@ export const MetadataUtils = {
           const element = findJSXElementChildAtPath(components, staticTarget)
           if (element != null && isJSXElement(element)) {
             const widthLookupAxis: LayoutProp =
-              flexDirection === 'horizontal' ? 'FlexFlexBasis' : 'FlexCrossBasis'
+              flexDirection === 'horizontal' ? 'FlexFlexBasis' : 'Width'
             const heightLookupAxis: LayoutProp =
-              flexDirection === 'vertical' ? 'FlexFlexBasis' : 'FlexCrossBasis'
+              flexDirection === 'vertical' ? 'FlexFlexBasis' : 'Height'
             let result: Partial<Size> = {}
             const width: Either<string, FlexLength> = alternativeEither(
               getLayoutProperty(widthLookupAxis, right(element.props)),
