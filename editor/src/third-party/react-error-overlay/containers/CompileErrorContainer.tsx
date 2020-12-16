@@ -7,7 +7,7 @@
 
 /* @flow */
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { PureComponent } from 'react'
 import ErrorOverlay from '../components/ErrorOverlay'

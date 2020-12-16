@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import * as React from 'react'
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { DEPRECATEDControlProps } from './control'
 import { CheckboxInput } from 'uuiui'
 

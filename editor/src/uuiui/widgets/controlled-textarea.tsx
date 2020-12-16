@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { InterpolationWithTheme, jsx } from '@emotion/core'
+import { Interpolation, jsx } from '@emotion/react'
 import * as React from 'react'
 
 interface ControlledTextAreaProps {
@@ -10,7 +10,7 @@ interface ControlledTextAreaProps {
   onClickSelectsAll: boolean
   onBlurOnCmdReturn?: boolean
   disabled: boolean
-  css?: InterpolationWithTheme<any>
+  css?: Interpolation<any>
 }
 
 interface ControlledTextAreaState {

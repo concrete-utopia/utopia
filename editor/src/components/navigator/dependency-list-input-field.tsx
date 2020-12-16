@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import CreatableSelect from 'react-select/creatable'
 import { FunctionIcons, StringInput, Tooltip } from 'uuiui'

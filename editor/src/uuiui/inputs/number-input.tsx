@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx, ObjectInterpolation } from '@emotion/core'
+import { Interpolation, jsx } from '@emotion/react'
 import * as classNames from 'classnames'
 import * as React from 'react'
 import {
@@ -570,7 +570,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       placeholder = 'mixed'
     }
 
-    const chainedStyles: ObjectInterpolation<any> | undefined =
+    const chainedStyles: Interpolation<any> | undefined =
       (chained === 'first' || chained === 'middle') && !isFocused
         ? {
             '&:not(:hover)::after': {

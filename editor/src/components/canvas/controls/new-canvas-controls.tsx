@@ -1,3 +1,5 @@
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import * as TP from '../../../core/shared/template-path'
 import Utils from '../../../utils/utils'

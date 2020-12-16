@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as Path from 'path'
 import * as pathParse from 'path-parse'
 import * as R from 'ramda'

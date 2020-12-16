@@ -1486,7 +1486,7 @@ describe('FlexRow works', () => {
       </FlexRow>
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"flex-row\\" class=\\"css-1pyjm1n\\">
+      "<div id=\\"flex-row\\" class=\\"css-bwokob\\">
         <div id=\\"child\\" style=\\"flex-basis: 100px; height: 100px;\\"></div>
       </div>
       "
@@ -1509,7 +1509,7 @@ describe('FlexRow works', () => {
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div>
-        <div id=\\"flex-row\\" class=\\"css-1pyjm1n\\">
+        <div id=\\"flex-row\\" class=\\"css-bwokob\\">
           <div id=\\"child\\" style=\\"flex-basis: 100px; height: 100px;\\"></div>
         </div>
       </div>
@@ -1533,7 +1533,7 @@ describe('FlexRow works', () => {
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div>
-        <div id=\\"flex-row\\" class=\\"css-1pyjm1n\\">
+        <div id=\\"flex-row\\" class=\\"css-bwokob\\">
           <div id=\\"child\\" style=\\"flex-basis: 100px; height: 100px;\\"></div>
         </div>
       </div>
@@ -1551,7 +1551,7 @@ describe('FlexRow works', () => {
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
       "<div>
-        <div id=\\"flex-row\\" class=\\"css-1pyjm1n\\">
+        <div id=\\"flex-row\\" class=\\"css-bwokob\\">
           <div id=\\"child\\" style=\\"width: 100px; height: 100px;\\"></div>
         </div>
       </div>
@@ -1571,11 +1571,11 @@ describe('FlexRow works', () => {
       </FlexColumn>
     )
     expect(testRenderScene(TestScene)).toMatchInlineSnapshot(`
-      "<div id=\\"flex-col\\" class=\\"css-11bzz9m\\">
-        <div id=\\"flex-row-1\\" class=\\"css-1pyjm1n\\">
+      "<div id=\\"flex-col\\" class=\\"css-1wuo1ms\\">
+        <div id=\\"flex-row-1\\" class=\\"css-bwokob\\">
           <div id=\\"div-1\\" style=\\"width: 100px; height: 100px;\\"></div>
         </div>
-        <div id=\\"flex-row-2\\" class=\\"css-1pyjm1n\\">
+        <div id=\\"flex-row-2\\" class=\\"css-bwokob\\">
           <div id=\\"div-1\\" style=\\"width: 100px; height: 100px;\\"></div>
         </div>
       </div>

@@ -101,6 +101,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      [],
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
@@ -141,7 +142,7 @@ export var whatever = () => <View data-uid={'aaa'}>
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false)
+    const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false, [])
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -198,6 +199,7 @@ export function whatever(props) {
       view,
       null,
       false,
+      [],
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
@@ -242,7 +244,7 @@ export function whatever() {
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false)
+    const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false, [])
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -299,6 +301,7 @@ export default function whatever(props) {
       view,
       null,
       false,
+      [],
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
@@ -343,7 +346,7 @@ export default function whatever() {
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false)
+    const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false, [])
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -397,6 +400,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      [],
     )
     const importsWithCake = addImport('cake', 'cake', [], null, sampleImportsForTests)
     const importsWithStylecss = addImport('./style.css', null, [], null, importsWithCake)
@@ -465,6 +469,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      [],
     )
     const imports = addImport('cake', 'cake', [importAlias('cake2')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
@@ -518,6 +523,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         view,
         null,
         false,
+        [],
       )
       const imports = addImport(
         'cake',
@@ -596,6 +602,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         view,
         null,
         false,
+        [],
       )
       const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
       const expectedResult = clearParseResultUniqueIDs(
@@ -655,6 +662,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      [],
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
@@ -720,7 +728,16 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const jsCode = `function getSizing(n) {
   return 100 + n;
 }
@@ -796,6 +813,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      [],
     )
     const jsCode = `export default function getSizing(n) {
   return 100 + n;
@@ -874,6 +892,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      [],
     )
     const jsCode = `export function getSizing(n) {
   switch (n) {
@@ -958,6 +977,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      [],
     )
     const jsCode = `export default (n => {
   return 100 + n;
@@ -1025,7 +1045,16 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const transpiledJSCode = `var spacing = 20;
 return { spacing: spacing };`
     const jsVariable = arbitraryJSBlock(
@@ -1105,6 +1134,7 @@ return { bgs: bgs, bg: bg };`
       view,
       arbitraryBlock,
       false,
+      [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1171,6 +1201,7 @@ return { greys: greys };`
       view,
       arbitraryBlock,
       false,
+      [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1235,6 +1266,7 @@ return { a: a, b: b };`
       view,
       arbitraryBlock,
       false,
+      [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1302,6 +1334,7 @@ return { a: a, b: b, c: c };`
       view,
       arbitraryBlock,
       false,
+      [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1373,6 +1406,7 @@ return { a: a };`
       view,
       arbitraryBlock,
       false,
+      [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1439,6 +1473,7 @@ return { a: a, b: b };`
       view,
       arbitraryBlock,
       false,
+      [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1506,6 +1541,7 @@ return { bg: bg };`
       view,
       arbitraryBlock,
       false,
+      [],
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1553,7 +1589,16 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const jsCode = `var count = 10;`
     const transpiledJSCode = `var count = 10;
 return { count: count };`
@@ -1617,7 +1662,16 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const transpiledJSCode = `var use20 = true;
 return { use20: use20 };`
     const jsVariable = arbitraryJSBlock(
@@ -1661,7 +1715,16 @@ export var whatever = (props) => <View data-uid={'aaa'}>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const transpiledJSCode = `var mySet = new Set();
 return { mySet: mySet };`
     const jsVariable = arbitraryJSBlock(
@@ -1731,6 +1794,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      [],
     )
     const transpiledJSCode = `var spacing = 20;
 return { spacing: spacing };`
@@ -1828,7 +1892,16 @@ return { MyComp: MyComp };`
     }
     const myCompElement = jsxElement('MyComp', myCompAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [myCompElement])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const topLevelElements = [MyComp, exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       sampleImportsForTests,
@@ -1913,6 +1986,7 @@ export var whatever = props => (
       rootDiv,
       null,
       false,
+      [],
     )
 
     const myCompAttributes: JSXAttributes = {
@@ -1921,7 +1995,16 @@ export var whatever = props => (
     }
     const myCompElement = jsxElement('MyComp', myCompAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [myCompElement])
-    const whatever = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const whatever = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -2049,6 +2132,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      [],
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
@@ -2089,7 +2173,7 @@ export var whatever = <View data-uid={'aaa'}>
       [],
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false)
+    const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false, [])
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const expectedResult = parseSuccess(
       imports,
@@ -2122,7 +2206,7 @@ export var App = (props) => <View data-uid={'bbb'}>
       uniqueID: expect.any(String),
     }
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('bbb') }, [emptyBrackets])
-    const exported = utopiaJSXComponent('App', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent('App', true, defaultPropsParam, [], view, null, false, [])
     const expectedResult = parseSuccess(
       sampleImportsForTests,
       [exported],
@@ -2165,7 +2249,7 @@ export var App = (props) => <View data-uid={'bbb'}>
       [],
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false)
+    const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false, [])
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
@@ -2206,7 +2290,16 @@ export var App = (props) => <View data-uid={'bbb'}>
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const jsCode = `function getSizing(n) {
   return 100 + n;
 }
@@ -2259,7 +2352,7 @@ return { getSizing: getSizing, spacing: spacing };`
       [],
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false)
+    const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false, [])
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
@@ -2359,7 +2452,16 @@ export var whatever = props => {
       [],
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
@@ -2394,7 +2496,16 @@ export var whatever = props => {
       [],
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
@@ -2482,6 +2593,7 @@ export var whatever = props => {
       view,
       null,
       false,
+      [],
     )
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
@@ -2607,6 +2719,7 @@ return { test: test };`
             ),
             clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
             false,
+            [],
           ),
         ],
         expect.objectContaining({}),
@@ -2671,6 +2784,7 @@ return { test: test };`
             }),
           ),
           false,
+          [],
         ),
       ),
       clearTopLevelElementUniqueIDs(
@@ -2688,6 +2802,7 @@ return { test: test };`
           ),
           null,
           false,
+          [],
         ),
       ),
     ]
@@ -2756,6 +2871,7 @@ export var App = props => {
       ),
       null,
       false,
+      [],
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -2801,6 +2917,7 @@ export var App = props => {
       ),
       null,
       false,
+      [],
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -2867,6 +2984,7 @@ export var App = props => {
       ),
       null,
       false,
+      [],
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -2925,6 +3043,7 @@ export var App = props => {
       ),
       null,
       false,
+      [],
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'App')
     const printedCode = printCode(
@@ -3090,6 +3209,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
         }),
       ),
       false,
+      [],
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3137,6 +3257,7 @@ export var App = props => {
       ),
       null,
       false,
+      [],
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3173,7 +3294,16 @@ export var whatever = props => {
       { 'data-uid': jsxAttributeValue('aaa'), booleanProperty: jsxAttributeValue(true) },
       [],
     )
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const actualResult = printCode(
       printCodeOptions(false, true, true),
       sampleImportsForTests,
@@ -3206,7 +3336,16 @@ export var whatever = props => {
       { 'data-uid': jsxAttributeValue('aaa'), booleanProperty: jsxAttributeValue(false) },
       [],
     )
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const actualResult = printCode(
       printCodeOptions(false, true, true),
       sampleImportsForTests,
@@ -3273,6 +3412,7 @@ return {  };`
       view,
       arbitraryBlock,
       false,
+      [],
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3352,6 +3492,7 @@ return { result: result };`
       view,
       arbitraryBlock,
       false,
+      [],
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3426,7 +3567,16 @@ export var whatever = props => {
       { bbb: innerElement },
     )
     const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa') }, [arbitraryBlock])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         { react: sampleImportsForTests['react'] },
@@ -3524,6 +3674,7 @@ return { a: a };`,
       view,
       topLevelArbitraryBlock,
       false,
+      [],
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3544,7 +3695,16 @@ export var whatever = props => {
 }`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const view = jsxElement('svg', { 'data-uid': jsxAttributeValue('abc') }, [])
-    const exported = utopiaJSXComponent('whatever', true, defaultPropsParam, [], view, null, false)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      [],
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         { react: sampleImportsForTests['react'] },

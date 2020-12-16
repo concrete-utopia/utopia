@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import * as React from 'react'
@@ -69,8 +69,8 @@ export const PrettyKeys = (props: PrettyKeysProps) => {
 
   return (
     <span>
-      {[...props.shortcut].map((keyb) => (
-        <span key={keyb} style={{ ...keyStyle }}>
+      {[...props.shortcut].map((keyb, index) => (
+        <span key={keyb === ' ' ? `space-${index}` : keyb} style={{ ...keyStyle }}>
           {keyb}
         </span>
       ))}

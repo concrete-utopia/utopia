@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import * as React from 'react'
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { Icn, IcnProps } from 'uuiui'
 import { Tooltip } from 'uuiui'

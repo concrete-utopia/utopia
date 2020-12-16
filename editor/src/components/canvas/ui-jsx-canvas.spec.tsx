@@ -1,299 +1,10 @@
-import * as Prettier from 'prettier'
-import * as React from 'react'
-import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
-applyUIDMonkeyPatch()
-import * as ReactDOM from 'react-dom'
-import * as ReactDOMServer from 'react-dom/server'
-import * as UtopiaAPI from 'utopia-api'
-import * as UUIUI from 'uuiui'
-import * as ANTD from 'antd'
-import {
-  ArbitraryJSBlock,
-  clearJSXElementUniqueIDs,
-  ElementInstanceMetadata,
-  TopLevelElement,
-} from '../../core/shared/element-template'
-import { RequireFn } from '../../core/shared/npm-dependency-types'
-import { foldParsedTextFile, Imports } from '../../core/shared/project-file-types'
-import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
-import { foldEither, isRight, right } from '../../core/shared/either'
-import Utils from '../../utils/utils'
-import { FancyError } from '../../core/shared/code-exec-utils'
-import { canvasPoint } from '../../core/shared/math-utils'
-import { normalizeName } from '../custom-code/custom-code-utils'
-import {
-  CanvasReactErrorCallback,
-  UiJsxCanvas,
-  UiJsxCanvasContext,
-  UiJsxCanvasContextData,
-  UiJsxCanvasProps,
-  UiJsxCanvasPropsWithErrorCallback,
-  emptyUiJsxCanvasContextData,
-} from './ui-jsx-canvas'
-import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import { ConsoleLog } from '../editor/store/editor-state'
 import { AwkwardFragmentsCode } from '../../core/workers/parser-printer/parser-printer-fragments.test-utils'
-import { CanvasErrorBoundary } from './canvas-component-entry'
-
-interface PartialCanvasProps {
-  offset: UiJsxCanvasProps['offset']
-  scale: UiJsxCanvasProps['scale']
-  hiddenInstances: UiJsxCanvasProps['hiddenInstances']
-  editedTextElement: UiJsxCanvasProps['editedTextElement']
-  mountCount: UiJsxCanvasProps['mountCount']
-}
-
-const dumbRequireFn: RequireFn = (importOrigin: string, toImport: string) => {
-  const normalizedName = normalizeName(importOrigin, toImport)
-  switch (normalizedName) {
-    case 'utopia-api':
-      return UtopiaAPI
-    case 'react':
-      return React
-    case 'react-dom':
-      return ReactDOM
-    case 'uuiui':
-      return UUIUI
-    case 'antd':
-      return ANTD
-    default:
-      throw new Error(`Unhandled values of ${importOrigin} and ${toImport}.`)
-  }
-}
-
-function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
-  if (isRight(metadata.element)) {
-    return {
-      ...metadata,
-      element: right(clearJSXElementUniqueIDs(metadata.element.value)),
-    }
-  } else {
-    return metadata
-  }
-}
-
-function renderCanvasReturnResultAndError(possibleProps: PartialCanvasProps | null, code: string) {
-  const spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
-
-  const parsedCode = testParseCode(code)
-  let errorsReported: Array<{
-    editedFile: string
-    error: FancyError
-    errorInfo?: React.ErrorInfo
-  }> = []
-  const uiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.js'
-  const requireFn: UiJsxCanvasProps['requireFn'] = dumbRequireFn
-  const fileBlobs: UiJsxCanvasProps['fileBlobs'] = {}
-  const reportError: CanvasReactErrorCallback['reportError'] = (
-    editedFile: string,
-    error: FancyError,
-    errorInfo?: React.ErrorInfo,
-  ) => {
-    errorsReported.push({ editedFile: editedFile, error: error, errorInfo: errorInfo })
-  }
-  const clearErrors: CanvasReactErrorCallback['clearErrors'] = Utils.NO_OP
-  const imports: Imports = foldParsedTextFile(
-    (_) => emptyImports(),
-    (success) => success.imports,
-    (_) => emptyImports(),
-    parsedCode,
-  )
-  const topLevelElements: Array<TopLevelElement> = foldParsedTextFile(
-    (_) => [],
-    (success) => success.topLevelElements,
-    (_) => [],
-    parsedCode,
-  )
-  const jsxFactoryFunction = foldParsedTextFile(
-    (_) => null,
-    (success) => success.jsxFactoryFunction,
-    (_) => null,
-    parsedCode,
-  )
-  let canvasProps: UiJsxCanvasPropsWithErrorCallback
-  let consoleLogs: Array<ConsoleLog> = []
-
-  const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = foldParsedTextFile(
-    (_) => null,
-    (success) => success.combinedTopLevelArbitraryBlock,
-    (_) => null,
-    parsedCode,
-  )
-
-  function clearConsoleLogs(): void {
-    consoleLogs = []
-  }
-  function addToConsoleLogs(log: ConsoleLog): void {
-    consoleLogs.push(log)
-  }
-  if (possibleProps == null) {
-    canvasProps = {
-      uiFileCode: code,
-      uiFilePath: uiFilePath,
-      requireFn: requireFn,
-      fileBlobs: fileBlobs,
-      onDomReport: Utils.NO_OP,
-      clearErrors: clearErrors,
-      offset: canvasPoint({ x: 0, y: 0 }),
-      scale: 1,
-      hiddenInstances: [],
-      editedTextElement: null,
-      mountCount: 0,
-      walkDOM: false,
-      imports: imports,
-      topLevelElementsIncludingScenes: topLevelElements,
-      jsxFactoryFunction: jsxFactoryFunction,
-      canvasIsLive: false,
-      shouldIncludeCanvasRootInTheSpy: false,
-      clearConsoleLogs: clearConsoleLogs,
-      addToConsoleLogs: addToConsoleLogs,
-      linkTags: '',
-      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
-    }
-  } else {
-    canvasProps = {
-      ...possibleProps,
-      uiFileCode: code,
-      uiFilePath: uiFilePath,
-      requireFn: requireFn,
-      fileBlobs: fileBlobs,
-      onDomReport: Utils.NO_OP,
-      clearErrors: clearErrors,
-      walkDOM: false,
-      imports: imports,
-      topLevelElementsIncludingScenes: topLevelElements,
-      jsxFactoryFunction: jsxFactoryFunction,
-      canvasIsLive: false,
-      shouldIncludeCanvasRootInTheSpy: false,
-      clearConsoleLogs: clearConsoleLogs,
-      addToConsoleLogs: addToConsoleLogs,
-      linkTags: '',
-      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
-    }
-  }
-
-  const canvasPropsSpyDisabled = {
-    ...canvasProps,
-    spyEnabled: false,
-  }
-
-  let formattedSpyEnabled
-  let errorsReportedSpyEnabled = []
-  try {
-    const flatFormat = ReactDOMServer.renderToStaticMarkup(
-      <UiJsxCanvasContext.Provider value={spyCollector}>
-        <CanvasErrorBoundary
-          fileCode={code}
-          filePath={uiFilePath}
-          reportError={reportError}
-          requireFn={canvasProps.requireFn}
-        >
-          <UiJsxCanvas {...canvasProps} />
-        </CanvasErrorBoundary>
-      </UiJsxCanvasContext.Provider>,
-    )
-    formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })
-    errorsReportedSpyEnabled = errorsReported
-  } catch (e) {
-    errorsReportedSpyEnabled = [e]
-  }
-  errorsReported = []
-
-  let formattedSpyDisabled
-  let errorsReportedSpyDisabled = []
-
-  try {
-    const flatFormatSpyDisabled = ReactDOMServer.renderToStaticMarkup(
-      <UiJsxCanvasContext.Provider value={emptyUiJsxCanvasContextData()}>
-        <UiJsxCanvas {...canvasPropsSpyDisabled} />
-      </UiJsxCanvasContext.Provider>,
-    )
-    formattedSpyDisabled = Prettier.format(flatFormatSpyDisabled, { parser: 'html' })
-    errorsReportedSpyDisabled = errorsReported
-  } catch (e) {
-    errorsReportedSpyDisabled = [e]
-  }
-
-  return {
-    formattedSpyEnabled,
-    formattedSpyDisabled,
-    errorsReportedSpyEnabled,
-    errorsReportedSpyDisabled,
-    spyValues: spyCollector.current.spyValues,
-  }
-}
-
-function testCanvasRender(possibleProps: PartialCanvasProps | null, code: string): void {
-  const {
-    formattedSpyEnabled,
-    formattedSpyDisabled,
-    errorsReportedSpyEnabled,
-    errorsReportedSpyDisabled,
-    spyValues,
-  } = renderCanvasReturnResultAndError(possibleProps, code)
-  if (errorsReportedSpyEnabled.length > 0) {
-    throw new Error(`Canvas Tests, Spy Enabled: Errors reported: ${errorsReportedSpyEnabled}`)
-  }
-  if (errorsReportedSpyDisabled.length > 0) {
-    throw new Error(`Canvas Tests, Spy Disabled: Errors reported: ${errorsReportedSpyDisabled}`)
-  }
-
-  // Spy enabled or disabled should have no effect on the rendered HTML
-  expect(formattedSpyEnabled).toEqual(formattedSpyDisabled)
-
-  expect(formattedSpyEnabled).toMatchSnapshot()
-
-  const metadataWithoutUIDs = Utils.objectMap(stripUidsFromMetadata, spyValues.metadata)
-  expect(metadataWithoutUIDs).toMatchSnapshot()
-}
-
-function testCanvasRenderInline(possibleProps: PartialCanvasProps | null, code: string): string {
-  const {
-    formattedSpyEnabled,
-    formattedSpyDisabled,
-    errorsReportedSpyEnabled,
-    errorsReportedSpyDisabled,
-    spyValues,
-  } = renderCanvasReturnResultAndError(possibleProps, code)
-  if (errorsReportedSpyEnabled.length > 0) {
-    console.error(errorsReportedSpyEnabled)
-  }
-  if (errorsReportedSpyEnabled.length > 0) {
-    throw new Error(`Canvas Tests, Spy Enabled: Errors reported: ${errorsReportedSpyEnabled}`)
-  }
-  if (errorsReportedSpyDisabled.length > 0) {
-    throw new Error(`Canvas Tests, Spy Disabled: Errors reported: ${errorsReportedSpyDisabled}`)
-  }
-
-  // Spy enabled or disabled should have no effect on the rendered HTML
-  expect(formattedSpyEnabled).toEqual(formattedSpyDisabled)
-  expect(formattedSpyEnabled).toBeDefined()
-
-  return formattedSpyEnabled!
-}
-
-function testCanvasError(possibleProps: PartialCanvasProps | null, code: string): void {
-  const { errorsReportedSpyEnabled, errorsReportedSpyDisabled } = renderCanvasReturnResultAndError(
-    possibleProps,
-    code,
-  )
-
-  expect(errorsReportedSpyEnabled.length).toEqual(errorsReportedSpyDisabled.length)
-  expect(errorsReportedSpyEnabled.length).toBeGreaterThan(0)
-  const errorsToCheck = errorsReportedSpyEnabled.map((error) => {
-    let realError = error.error != null ? error.error : error
-    const stackFrame = realError.stackFrames?.[0]
-    return {
-      name: realError.name,
-      message: realError.message,
-      originalCode: stackFrame?._originalScriptCode,
-      lineNumber: stackFrame?._originalLineNumber,
-      columnNumber: stackFrame?._originalColumnNumber,
-    }
-  })
-  expect(errorsToCheck).toMatchSnapshot()
-}
+import {
+  testCanvasRender,
+  testCanvasError,
+  testCanvasRenderInline,
+} from './ui-jsx-canvas.test-utils'
 
 describe('UiJsxCanvas render', () => {
   it('renders a canvas defined by a utopia storyboard component', () => {
@@ -307,10 +18,9 @@ describe('UiJsxCanvas render', () => {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <View data-uid={'bbb'}>hi</View>
+            <View style={{position: 'absolute'}} data-uid={'bbb'}>hi</View>
           </View>
         )
       }
@@ -319,10 +29,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -344,10 +53,9 @@ describe('UiJsxCanvas render', () => {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} title={props.title} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000'}} title={props.title} />
           </View>
         )
       }
@@ -356,10 +64,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -381,10 +88,9 @@ describe('UiJsxCanvas render', () => {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} title={props.title} />
+            <Card data-uid={'bbb'} style={{position: 'absolute', backgroundColor: '#000000'}} title={props.title} />
           </View>
         )
       }
@@ -393,10 +99,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -418,10 +123,9 @@ describe('UiJsxCanvas render', () => {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000' }} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
           </View>
         )
       }
@@ -430,10 +134,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -455,10 +158,9 @@ describe('UiJsxCanvas render', () => {
         return (
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid={'aaa'}
           >
-            <Card data-uid={'bbb'} style={{backgroundColor: '#000000'}} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
+            <Card data-uid={'bbb'} style={{ position: 'absolute', backgroundColor: '#000000' }} titles={[props.title, 'ignored', {title: 'and hello!'}]} />
           </View>
         )
       }
@@ -467,10 +169,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ height: 200, left: 59, width: 200, top: 79 }}
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
               data-uid={'scene-0'}
             />
           </Storyboard>
@@ -493,10 +194,9 @@ describe('UiJsxCanvas render', () => {
         <Storyboard data-uid={'${BakedInStoryboardUID}'}>
           <Scene
             static
-            style={{ left: 0, top: 0, width: 400, height: 400 }}
+            style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
             component={App}
-            layout={{ layoutSystem: 'pinSystem' }}
-            props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+            props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
             data-uid={'scene-aaa'}
           />
         </Storyboard>
@@ -525,10 +225,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -557,10 +256,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -590,10 +288,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -623,10 +320,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -656,10 +352,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -679,15 +374,13 @@ describe('UiJsxCanvas render', () => {
         return (
           <View style={{ ...props.style, backgroundColor: '#DDDDDD' }} data-uid={'6be'}>
             <View
-              style={{ backgroundColor: '#000000' }}
+              style={{ backgroundColor: '#000000', left: 10, top: 10, right: 10, height: 30 }}
               data-uid={'d03'}
-              layout={{ left: 10, top: 10, right: 10, height: 30 }}
             />
             {props.children}
             <View
-              style={{ backgroundColor: '#000000' }}
+              style={{ backgroundColor: '#000000', left: 10, top: 100, right: 10, height: 30 }}
               data-uid={'41e'}
-              layout={{ left: 10, top: 100, right: 10, height: 30 }}
             />
           </View>
         )
@@ -695,14 +388,12 @@ describe('UiJsxCanvas render', () => {
       export var App = (props) => {
         return (
           <View
-            layout={{ left: 0, top: 0, right: 0, bottom: 0 }}
             style={{ position: 'absolute', backgroundColor: 'lightgrey' }}
             data-uid={'aaa'}
           >
-            <Inner data-uid={'d59'} layout={{ left: 28, top: 27, width: 221, height: 348 }}>
+            <Inner data-uid={'d59'} style={{ left: 28, top: 27, width: 221, height: 348 }}>
               <View
-                style={{ backgroundColor: '#fff' }}
-                layout={{ left: 14, top: 21, width: 193, height: 244 }}
+                style={{ backgroundColor: '#fff', left: 14, top: 21, width: 193, height: 244 }}
                 data-uid={'dd5'}
               />
             </Inner>
@@ -714,10 +405,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -749,10 +439,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -779,10 +468,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -810,10 +498,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -842,10 +529,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -872,10 +558,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -907,10 +592,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -936,10 +620,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -984,10 +667,9 @@ describe('UiJsxCanvas render', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1015,10 +697,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -1052,10 +733,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1084,10 +764,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1116,10 +795,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1145,10 +823,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1177,10 +854,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1209,10 +885,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1238,10 +914,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1266,10 +942,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1298,10 +974,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1328,10 +1004,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1356,10 +1032,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1389,10 +1065,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1427,10 +1103,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1452,13 +1127,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
           data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
           style=\\"
-            position: relative;
-            width: 400px;
-            height: 400px;
-            left: 0;
-            top: 0;
+            position: absolute;
             background-color: rgba(255, 255, 255, 1);
             box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+            left: 0;
+            top: 0;
+            width: 400px;
+            height: 400px;
           \\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
@@ -1517,10 +1192,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -1542,13 +1216,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
           data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
           style=\\"
-            position: relative;
-            width: 400px;
-            height: 400px;
-            left: 0;
-            top: 0;
+            position: absolute;
             background-color: rgba(255, 255, 255, 1);
             box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+            left: 0;
+            top: 0;
+            width: 400px;
+            height: 400px;
           \\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
@@ -1572,20 +1246,19 @@ export var App = (props) => {
     <View
       data-uid="aaa"
       style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
     >
       <DatePicker data-uid="antd-date-picker" style={{ width: 123, height: 51, left: 113, top: 395 }} />
     </View>
   )
 }
 export var storyboard = (
-  <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid="storyboard">
+  <Storyboard  data-uid="storyboard">
     <Scene
       static
       data-uid="scene"
-      style={{ height: 812, left: 0, width: 375, top: 0 }}
+      style={{ position: 'absolute', height: 812, left: 0, width: 375, top: 0 }}
       component={App}
-      layout={{ layoutSystem: 'pinSystem' }}
       props={{ style: { bottom: 0, left: 0, right: 0, top: 0 } }}
     />
   </Storyboard>
@@ -1608,35 +1281,22 @@ export var storyboard = (
           data-utopia-valid-paths=\\"storyboard/scene:aaa storyboard/scene:aaa/antd-date-picker\\"
           style=\\"
             position: absolute;
-            width: 375px;
-            height: 812px;
-            left: 0;
-            top: 0;
             background-color: rgba(255, 255, 255, 1);
             box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+            height: 812px;
+            left: 0;
+            width: 375px;
+            top: 0;
           \\"
           data-uid=\\"storyboard\\"
         >
           <div
-            style=\\"
-              position: absolute;
-              left: 0;
-              top: 0;
-              right: 0;
-              bottom: 0;
-              background-color: #ffffff;
-            \\"
+            style=\\"left: 0; top: 0; right: 0; bottom: 0; background-color: #ffffff;\\"
             data-uid=\\"aaa\\"
           >
             <div
               class=\\"ant-picker\\"
-              style=\\"
-                position: absolute;
-                width: 123px;
-                height: 51px;
-                left: 113px;
-                top: 395px;
-              \\"
+              style=\\"width: 123px; height: 51px; left: 113px; top: 395px;\\"
               data-uid=\\"antd-date-picker\\"
             >
               <div class=\\"ant-picker-input\\">
@@ -1740,7 +1400,7 @@ export var App = (props) => {
         height: 812,
         backgroundColor: '#171111',
       }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
       data-uid={'aaa'}
     >
       <Grid data-uid={'03a'}>
@@ -1763,10 +1423,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 375, height: 812 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -1793,7 +1452,7 @@ export var Cat = (props) => {
   )
 }
 export var storyboard = (
-  <Storyboard data-uid={'${BakedInStoryboardUID}'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'${BakedInStoryboardUID}'} >
     <Scene
       data-label={'Scene 2'}
       component={Cat}
@@ -1835,7 +1494,7 @@ export var App = (props) => {
   )
 }
 export var storyboard = (
-  <Storyboard data-uid={'${BakedInStoryboardUID}'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'${BakedInStoryboardUID}'} >
     <Scene
       component={App}
       props={{}}
@@ -1867,7 +1526,7 @@ export var App = (props) => {
     <div
       data-uid={'aaa'}
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
     >{b(5)} - {a(5)}</div>
   )
 }
@@ -1881,7 +1540,7 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'${BakedInStoryboardUID}'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'${BakedInStoryboardUID}'} >
     <Scene
       data-uid={'scene'}
       component={App}
@@ -1909,14 +1568,14 @@ export var App = (props) => {
       <div
         data-uid={'bbb'}
         style={{ width: '100%', height: '100%', backgroundColor: '#EB1010' }}
-        layout={{ layoutSystem: 'pinSystem' }}
+        
       />
     </AppContext.Provider>
   )
 }
 
 export var storyboard = (
-  <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid={'ccc'}>
+  <Storyboard  data-uid={'ccc'}>
     <Scene
       data-uid={'ddd'}
       component={App}
@@ -1939,7 +1598,7 @@ export var App = (props) => {
     <div
       data-uid={'aaa'}
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      
     >
       Test
       <Thing data-uid={'bbb'} thing={<div data-uid={'ccc'}>test</div>} />
@@ -1952,7 +1611,7 @@ export var Thing = (props) => {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'eee'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid={'eee'} >
     <Scene
       data-uid={'fff'}
       component={App}
@@ -1981,10 +1640,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -2012,10 +1671,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -2045,10 +1704,10 @@ export var App = (props) => {
       <Storyboard data-uid={'${BakedInStoryboardUID}'}>
         <Scene
           static
-          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
           component={App}
-          layout={{ layoutSystem: 'pinSystem' }}
-          props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+          
+          props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
           data-uid={'scene-aaa'}
         />
       </Storyboard>
@@ -2078,10 +1737,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -2111,10 +1770,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -2145,10 +1804,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -2179,10 +1838,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -2207,10 +1866,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
         static
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
         component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
         data-uid={'scene-aaa'}
       />
     </Storyboard>
@@ -2234,10 +1892,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -2260,10 +1918,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
