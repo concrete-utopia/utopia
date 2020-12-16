@@ -70,13 +70,10 @@ export const PrettyKeys = (props: PrettyKeysProps) => {
   return (
     <span>
       {[...props.shortcut].map((keyb, index) => (
-        <span key={(keyb === " ") ? `space-${index}`: keyb} style={{ ...keyStyle }}>
+        <span key={keyb === ' ' ? `space-${index}` : keyb} style={{ ...keyStyle }}>
           {keyb}
         </span>
       ))}
     </span>
   )
 }
-
-
-
