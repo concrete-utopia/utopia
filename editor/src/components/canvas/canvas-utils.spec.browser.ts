@@ -21,6 +21,9 @@ import {
 
 const NewUID = 'catdog'
 
+const currentWindow = require('electron').remote.getCurrentWindow()
+currentWindow.setSize(1500, 1000)
+
 describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
   it('a simple TLWH pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
