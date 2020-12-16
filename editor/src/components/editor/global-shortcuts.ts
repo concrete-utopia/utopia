@@ -89,7 +89,6 @@ import {
   TOGGLE_BORDER_SHORTCUT,
   TOGGLE_CODE_EDITOR_SHORTCUT,
   TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT,
-  TOGGLE_DESIGNER_LAYOUT_REVERSED,
   TOGGLE_HIDDEN_SHORTCUT,
   TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT,
   TOGGLE_LEFT_MENU_SHORTCUT,
@@ -441,7 +440,6 @@ export function handleKeyDown(
             EditorActions.switchEditorMode(EditorModes.selectMode()),
             CanvasActions.clearDragState(false),
             EditorActions.clearHighlightedViews(),
-            EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
           ]
         } else if (editor.canvas.dragState != null && editor.canvas.dragState.start != null) {
           return [CanvasActions.clearDragState(false)]
@@ -587,7 +585,6 @@ export function handleKeyDown(
           EditorActions.switchEditorMode(EditorModes.selectMode()),
           CanvasActions.clearDragState(false),
           EditorActions.clearHighlightedViews(),
-          EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
         ]
         if (editor.selectedViews.length === 1) {
           const target = editor.selectedViews[0]
@@ -712,10 +709,6 @@ export function handleKeyDown(
       },
       [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: () => {
         return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
-      },
-      [TOGGLE_DESIGNER_LAYOUT_REVERSED]: () => {
-        // prevent opening new tab
-        return [EditorActions.toggleInterfaceDesignerLayoutReversed()]
       },
     })
   }

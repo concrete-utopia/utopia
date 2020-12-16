@@ -118,10 +118,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
 
-  const onClickNavigateTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.UINavigate)
-  }, [onClickTab])
-
   const onClickStructureTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.ProjectStructure)
   }, [onClickTab])
@@ -159,16 +155,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
 
-        <Tooltip title={'Navigator'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={selectedTab === LeftMenuTab.UINavigate}
-              menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.Project />}
-              onClick={onClickNavigateTab}
-            />
-          </span>
-        </Tooltip>
         <a target='_blank' rel='noopener noreferrer' href={previewURL}>
           <Tooltip title={'Launch External Preview'} placement={'right'}>
             <span>
