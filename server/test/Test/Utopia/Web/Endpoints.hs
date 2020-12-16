@@ -68,6 +68,11 @@ getCookieHeader cookieJarTVar = do
     cookieDetails <- sessionCookie
     return ("JSESSIONID=" <> (toS $ cookie_value cookieDetails))
 
+getSampleProject :: IO Value
+getSampleProject = do
+  maybeProjectContents <- decodeFileStrict "test/Test/Utopia/Web/SampleProject.json"
+  maybe (panic "No file found at server/test/Test/Utopia/Web/SampleProject.json") return maybeProjectContents
+
 getLoadedTitleAndContents :: LoadProjectResponse -> Maybe (Text, Value)
 getLoadedTitleAndContents ProjectLoaded{..} = Just (_title, _content)
 getLoadedTitleAndContents _                 = Nothing
@@ -115,8 +120,8 @@ saveProjectAssetClient = client (Proxy :: Proxy (AuthCookie :> SaveProjectAssetA
 deleteProjectAssetClient :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ClientM NoContent
 deleteProjectAssetClient = client (Proxy :: Proxy (AuthCookie :> DeleteProjectAssetAPI))
 
-loadProjectAssetClient :: ProjectIdWithSuffix -> Text -> [Text] -> (Request -> Request) -> ClientM Response
-loadProjectAssetClient = client (Proxy :: Proxy LoadProjectAssetAPI)
+loadProjectFileClient :: ProjectIdWithSuffix -> [Text] -> (Request -> Request) -> ClientM Response
+loadProjectFileClient = client (Proxy :: Proxy LoadProjectFileAPI)
 
 renameProjectAssetClient :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> Text -> ClientM NoContent
 renameProjectAssetClient = client (Proxy :: Proxy (AuthCookie :> RenameProjectAssetAPI))
@@ -150,14 +155,14 @@ updateAssetPathSpec =
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
         _ <- saveProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"] setBodyAsJPG
         _ <- renameProjectAssetClient cookieHeader projectId ["other", "image.jpg"] "assets/picture.jpg"
-        fromNewPath <- loadProjectAssetClient projectId "other" ["image.jpg"] identity
+        fromNewPath <- loadProjectFileClient projectId ["other", "image.jpg"] identity
         return (fromNewPath, projectId)
       -- Check the contents.
       (assetFromNewPath, savedProjectId) <- either throwIO return assetFromNewPathResult
       (responseBody assetFromNewPath) `shouldBe` (toS jpgBytes)
       -- Attempt to load the asset from the old path.
       assetFromOldPathResult <- withClientEnv clientEnv $ do
-        fromOldPath <- loadProjectAssetClient savedProjectId "assets" ["picture.jpg"] identity
+        fromOldPath <- loadProjectFileClient savedProjectId ["assets", "picture.jpg"] identity
         return fromOldPath
       case assetFromOldPathResult of
         (Left (FailureResponse response)) -> responseStatusCode response `shouldBe` notFound404
@@ -178,7 +183,7 @@ deleteAssetSpec =
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
         _ <- saveProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"] setBodyAsJPG
         _ <- deleteProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"]
-        loaded <- loadProjectAssetClient projectId "assets" ["picture.jpg"] identity
+        loaded <- loadProjectFileClient projectId ["assets", "picture.jpg"] identity
         return loaded
       case loadedFromPath of
         (Left (FailureResponse response)) -> responseStatusCode response `shouldBe` notFound404
@@ -279,6 +284,42 @@ routingSpec = around_ withServer $ do
       (projectId, firstLoad, secondLoad) <- either throwIO return loadedProjectResult
       (getLoadedTitleAndContents firstLoad) `shouldBe` (Just ("My Project", projectContents))
       secondLoad `shouldBe` (ProjectUnchanged $ toUrlPiece projectId)
+  describe "GET /project/{project_id}/{file_path} (using the sample project)" $ do
+    it "should return the contents of the file if it is a text file" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      projectContents <- getSampleProject
+      fileFromPathResult <- withClientEnv clientEnv $ do
+        _ <- authenticateClient (Just "logmein") (Just "")
+        cookieHeader <- getCookieHeader cookieJarTVar
+        createProjectResult <- createProjectClient
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        loadProjectFileClient projectId ["src", "index.js"] identity
+      isRight fileFromPathResult `shouldBe` True
+    it "should return 404 for a non existent file (using the sample project)" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      projectContents <- getSampleProject
+      fileFromPathResult <- withClientEnv clientEnv $ do
+        _ <- authenticateClient (Just "logmein") (Just "")
+        cookieHeader <- getCookieHeader cookieJarTVar
+        createProjectResult <- createProjectClient
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        loadProjectFileClient projectId ["src", "non-existent-file", "index.js"] identity
+      case fileFromPathResult of
+        (Left (FailureResponse response)) -> responseStatusCode response `shouldBe` notFound404
+        (Left _)                          -> expectationFailure "Unexpected response type."
+        (Right _)                         -> expectationFailure "Unexpected successful response."
+    it "should fallback to using the asset load logic" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      projectContents <- getSampleProject
+      fileFromPathResult <- withClientEnv clientEnv $ do
+        _ <- authenticateClient (Just "logmein") (Just "")
+        cookieHeader <- getCookieHeader cookieJarTVar
+        createProjectResult <- createProjectClient
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        _ <- saveProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"] setBodyAsJPG
+        loadProjectFileClient projectId ["assets", "picture.jpg"] identity
+      fileFromPath <- either throwIO return fileFromPathResult
+      (responseBody fileFromPath) `shouldBe` (toS jpgBytes)
   describe "POST /project" $ do
     it "should create a project if a request body is supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
