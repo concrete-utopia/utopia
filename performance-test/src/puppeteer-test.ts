@@ -1,7 +1,10 @@
+require('dotenv').config({path: 'src/.env'})
 import puppeteer from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
+
+
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
@@ -146,8 +149,8 @@ export const testScrollingPerformance = async function () {
 function uploadPNGtoAWS(testFile = createTestPng()) {
   AWS.config.update({
     region: 'eu-west-2',
-    "accessKeyId": "",
-    "secretAccessKey": "" })
+    "AWS_ACCESS_KEY_ID": process.env.AWS_ACCESS_KEY_ID,
+    "AWS_SECRET_ACCESS_KEY": process.env.AWS_SECRET_ACCESS_KEY})
 
     const metaData = testFile.split('.').pop();
     let s3 = new AWS.S3({apiVersion: '2006-03-01'});
@@ -166,14 +169,14 @@ function uploadPNGtoAWS(testFile = createTestPng()) {
         console.log("Error", err);
       } if (data) {
         console.log("Upload Success", data.Location)
-      }
+      } return URL = data.Location
     });
 }
 
-//uploadPNGtoAWS()
+const url = uploadPNGtoAWS()
 
   console.info(
-    `::set-output name=perf-result:: " ![TestFrameChart](https://frame-test-png.s3.eu-west-2.amazonaws.com/TestPic.png) ${totalFrameTimes}ms – average frame length: ${frameData.frameAvg}
+    `::set-output name=perf-result:: " ![TestFrameChart](${url}) ${totalFrameTimes}ms – average frame length: ${frameData.frameAvg}
      – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${frameData.percentile75} – Median: ${frameData.percentile50} – frame times: [${frameTimes.join(
       ',',
     )}]"`
