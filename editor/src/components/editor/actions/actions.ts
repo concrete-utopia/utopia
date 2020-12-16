@@ -306,7 +306,6 @@ import {
   ToggleCollapse,
   ToggleHidden,
   ToggleInterfaceDesignerCodeEditor,
-  ToggleInterfaceDesignerLayoutReversed,
   ToggleInterfaceDesignerAdditionalControls,
   TogglePane,
   ToggleProperty,
@@ -931,7 +930,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       codePaneWidth: currentEditor.interfaceDesigner.codePaneWidth,
       codePaneVisible: currentEditor.interfaceDesigner.codePaneVisible,
       restorableCodePaneWidth: currentEditor.interfaceDesigner.codePaneWidth,
-      layoutReversed: currentEditor.interfaceDesigner.layoutReversed,
       additionalControls: currentEditor.interfaceDesigner.additionalControls,
     },
     canvas: {
@@ -971,6 +969,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     },
     navigator: {
       minimised: currentEditor.navigator.minimised,
+      visible: currentEditor.navigator.visible,
       dropTargetHint: {
         target: null,
         type: null,
@@ -2140,6 +2139,14 @@ export const UPDATE_FNS = {
             minimised: !action.visible,
           },
         }
+      case 'navigatorPane':
+        return {
+          ...editor,
+          navigator: {
+            ...editor.navigator,
+            visible: !action.visible,
+          },
+        }
       case 'filebrowser':
         return {
           ...editor,
@@ -2273,6 +2280,14 @@ export const UPDATE_FNS = {
             minimised: !editor.navigator.minimised,
           },
         }
+      case 'navigatorPane':
+        return {
+          ...editor,
+          navigator: {
+            ...editor.navigator,
+            visible: !editor.navigator.visible,
+          },
+        }
       case 'inspector':
         return {
           ...editor,
@@ -2317,18 +2332,6 @@ export const UPDATE_FNS = {
       default:
         const _exhaustiveCheck: never = action.target
         return editor
-    }
-  },
-  TOGGLE_INTERFACEDESIGNER_LAYOUT_REVERSED: (
-    action: ToggleInterfaceDesignerLayoutReversed,
-    editor: EditorModel,
-  ): EditorModel => {
-    return {
-      ...editor,
-      interfaceDesigner: {
-        ...editor.interfaceDesigner,
-        layoutReversed: !editor.interfaceDesigner.layoutReversed,
-      },
     }
   },
   TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS: (

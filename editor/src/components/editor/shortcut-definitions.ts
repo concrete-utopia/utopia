@@ -87,7 +87,6 @@ export const TOGGLE_RIGHT_MENU_SHORTCUT = 'toggle-right-menu'
 export const TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT = 'toggle-designer-additional-controls'
 export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
 export const TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT = 'toggle-inspector-and-left-menu'
-export const TOGGLE_DESIGNER_LAYOUT_REVERSED = 'toggle-designer-layout-reversed'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -273,10 +272,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: shortcut(
     'Toggle the inspector and the left menu.',
     key('backslash', 'cmd'),
-  ),
-  [TOGGLE_DESIGNER_LAYOUT_REVERSED]: shortcut(
-    'Toggle designer layout reversed vertically.',
-    key('comma', 'cmd'),
   ),
 }
 

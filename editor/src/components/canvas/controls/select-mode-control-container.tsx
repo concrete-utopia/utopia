@@ -118,7 +118,6 @@ export class SelectModeControlContainer extends React.Component<
           let selectActions = [
             EditorActions.clearHighlightedViews(),
             EditorActions.selectComponents(updatedSelection, false),
-            EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
             EditorActions.setRightMenuTab(RightMenuTab.Inspector),
           ]
           this.props.dispatch(selectActions, 'canvas')

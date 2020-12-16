@@ -54,7 +54,6 @@ export interface LeftPaneProps {
 }
 
 export const enum LeftMenuTab {
-  UINavigate = 'ui-navigate',
   UIInsert = 'ui-insert',
   ProjectStructure = 'project-structure',
   ProjectSettings = 'project-settings',
@@ -82,12 +81,11 @@ export function updateLeftMenuExpanded(editorState: EditorState, expanded: boole
 
 export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): EditorState {
   switch (editorState.focusedPanel) {
+    case 'misccodeeditor':
+      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.ProjectStructure)
     case 'inspector':
     case 'canvas':
     case 'uicodeeditor':
-      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.UINavigate)
-    case 'misccodeeditor':
-      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.ProjectStructure)
     default:
       return editorState
   }
@@ -271,10 +269,6 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
     (store) => store.editor.leftMenu.selectedTab,
     'LeftPaneComponent selectedTab',
   )
-  const isValidToShowNavigator = useEditorState(
-    (store) => validToShowNavigator(store.editor),
-    'LeftPaneComponent isValidToShowNavigator',
-  )
   const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
 
   return (
@@ -305,33 +299,11 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
         }}
       >
         {selectedTab === LeftMenuTab.ProjectStructure ? <ProjectStructurePane /> : null}
-        {selectedTab === LeftMenuTab.UINavigate && isValidToShowNavigator ? (
-          <NavigatorComponent />
-        ) : null}
         {selectedTab === LeftMenuTab.ProjectSettings ? <ProjectSettingsPanel /> : null}
       </div>
     </div>
   )
 })
-
-function validToShowNavigator(editorState: EditorState): boolean {
-  const open = getOpenFile(editorState)
-  if (open == null) {
-    return false
-  } else {
-    switch (open.type) {
-      case 'TEXT_FILE':
-        return true
-      case 'IMAGE_FILE':
-      case 'DIRECTORY':
-      case 'ASSET_FILE':
-        return false
-      default:
-        const _exhaustiveCheck: never = open
-        throw new Error(`Unhandled type ${JSON.stringify(open)}`)
-    }
-  }
-}
 
 const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
   return (

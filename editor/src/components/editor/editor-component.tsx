@@ -24,13 +24,13 @@ import Utils from '../../utils/utils'
 import { StoryboardFilePath } from '../../core/model/storyboard-utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getCursorFromDragState } from '../canvas/canvas-utils'
-import { SplitViewCanvasRoot } from '../canvas/split-view-canvas-root'
+import { DesignPanelRoot } from '../canvas/design-panel-root'
 import { resizeLeftPane } from '../common/actions'
 import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { FileTabs } from '../filebrowser/file-tabs'
 import { Menubar } from '../menubar/menubar'
-import { LeftPaneComponent, LeftMenuTab } from '../navigator/left-pane'
+import { LeftPaneComponent, LeftMenuTab, LeftPaneDefaultWidth } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
 import { ReleaseNotesContent } from '../documentation/release-notes'
 import { EditorDispatch, LoginState } from './action-types'
@@ -163,10 +163,6 @@ export const EditorComponentInner = betterReactMemo(
       (store) => store.editor.leftMenu.expanded,
       'EditorComponentInner leftMenuExpanded',
     )
-    const leftMenuWidth = useEditorState(
-      (store) => store.editor.leftMenu.paneWidth,
-      'EditorComponentInner leftMenuWidth',
-    )
     const saveError = useEditorState(
       (store) => store.editor.saveError,
       'EditorComponentInner saveError',
@@ -186,18 +182,6 @@ export const EditorComponentInner = betterReactMemo(
         dispatch([resizeLeftPane(deltaWidth)])
       },
       [dispatch],
-    )
-
-    const onResizeStop = React.useCallback(
-      (
-        event: MouseEvent | TouchEvent,
-        direction: ResizeDirection,
-        elementRef: HTMLDivElement,
-        delta: NumberSize,
-      ) => {
-        updateDeltaWidth(delta.width)
-      },
-      [updateDeltaWidth],
     )
 
     const toggleLiveCanvas = React.useCallback(
@@ -268,21 +252,6 @@ export const EditorComponentInner = betterReactMemo(
             >
               <Menubar />
             </SimpleFlexColumn>
-            {leftMenuExpanded ? (
-              <ResizableFlexColumn
-                className='LeftPaneShell'
-                style={{
-                  height: '100% !important',
-                  overflowX: 'scroll',
-                  backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
-                }}
-                size={{ width: leftMenuWidth, height: '100%' }}
-                minWidth={5}
-                onResizeStop={onResizeStop}
-              >
-                <LeftPaneComponent />
-              </ResizableFlexColumn>
-            ) : null}
             <SimpleFlexRow
               className='editor-shell'
               style={{
@@ -343,6 +312,20 @@ export const EditorComponentInner = betterReactMemo(
                 </SimpleFlexRow>
               </SimpleFlexColumn>
               {/* insert more columns here */}
+              {leftMenuExpanded ? (
+                <div
+                  className='LeftPaneShell'
+                  style={{
+                    position: 'absolute',
+                    height: '100% !important',
+                    width: LeftPaneDefaultWidth,
+                    overflowX: 'scroll',
+                    backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
+                  }}
+                >
+                  <LeftPaneComponent />
+                </div>
+              ) : null}
               {previewVisible ? (
                 <ResizableFlexColumn
                   style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
@@ -379,7 +362,6 @@ export const EditorComponentInner = betterReactMemo(
         <ModalComponent />
         <ToastRenderer />
         <CanvasCursorComponent />
-        <HelpTriangle />
         {props.propertyControlsInfoSupported ? <PropertyControlsInfoComponent /> : null}
       </SimpleFlexRow>
     )
@@ -410,26 +392,6 @@ export function EditorComponent(props: EditorProps) {
     </DndProvider>
   )
 }
-
-const HelpTriangle = () => (
-  <div
-    style={{
-      position: 'absolute',
-      bottom: '16px',
-      right: '16px',
-      width: '50px',
-      height: '39px',
-    }}
-  >
-    <a href='https://github.com/concrete-utopia/utopia' target='_blank' rel='noopener noreferrer'>
-      <img
-        src='/static/brand/triangle-question-brandpurple-50x39@2x.png'
-        alt='help'
-        style={{ width: '50px', height: '39px' }}
-      />
-    </a>
-  </div>
-)
 
 function useRuntimeErrors(): {
   runtimeErrors: Array<RuntimeErrorInfo>
@@ -532,7 +494,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     return <UserConfiguration />
   } else {
     return (
-      <SplitViewCanvasRoot
+      <DesignPanelRoot
         isUiJsFileOpen={isUiJsFileOpen}
         runtimeErrors={runtimeErrors}
         onRuntimeError={onRuntimeError}
