@@ -11,6 +11,7 @@
   "dependencies": {
     "aws-sdk": "^2.810.0",
     "dotenv": "^8.2.0",
+    "move-file": "^2.0.0",
     "multer": "^1.4.2",
     "multer-s3": "^2.9.0",
     "plotly": "^1.0.6",

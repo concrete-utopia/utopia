@@ -3,13 +3,13 @@ import puppeteer from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
-
+const moveFile = require('move-file');
 
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
-const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
+const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
+// const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -91,7 +91,7 @@ export const testScrollingPerformance = async function () {
   }
   
     
-  function createTestPng(testResults = frameTimes, testFileName = "TestFrameGraph" ) {
+  function createTestPng(testResults = frameTimes, testFileName = "TestFrameGraph.png" ) {
     const plotly = require('plotly')("OmarDaSilva", "szS7pGItjmB7z50Ft3e9")
 
     const trace = {
@@ -143,6 +143,11 @@ export const testScrollingPerformance = async function () {
       var fileStream = fs.createWriteStream(testFileName);
       imageStream.pipe(fileStream);
   });
+  (async () => {
+    const path1 = path.resolve('TestFrameGraph.png')
+    const path2 = path.resolve('src')
+    await moveFile(path1, path2 + '/' + testFileName)
+  })();
   return testFileName
 }
 
@@ -169,15 +174,15 @@ function uploadPNGtoAWS(testFile = createTestPng()) {
         console.log("Error", err);
       } if (data) {
         console.log("Upload Success", data.Location)
-      } return URL = data.Location
+      }
     });
 }
 
-const url = uploadPNGtoAWS()
+uploadPNGtoAWS()
 
   console.info(
-    `::set-output name=perf-result:: " ![TestFrameChart](${url}) ${totalFrameTimes}ms – average frame length: ${frameData.frameAvg}
-     – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${frameData.percentile75} – Median: ${frameData.percentile50} – frame times: [${frameTimes.join(
+    `::set-output name=perf-result:: "![TestFrameChart](https://frame-test-png.s3.eu-west-2.amazonaws.com/TestFrameGraph.png) ${totalFrameTimes}ms – average frame length: ${frameData.frameAvg}
+      – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${frameData.percentile75} – Median: ${frameData.percentile50} – frame times: [${frameTimes.join(
       ',',
     )}]"`
   )
