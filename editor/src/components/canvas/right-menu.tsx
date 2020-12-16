@@ -119,7 +119,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
 
   const navigatorVisible = useEditorState(
     (store) => store.editor.navigator.visible,
-    'RightMenu rightMenuSelectedTab',
+    'RightMenu navigatorVisible',
   )
 
   const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
