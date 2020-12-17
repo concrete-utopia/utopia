@@ -46,7 +46,7 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
           >
             Padding
           </PropertyLabel>
-          <FlexPaddingControl specialSizeMeasurements={props.specialSizeMeasurements} />
+          <FlexPaddingControl />
         </GridRow>
       </>
     )
