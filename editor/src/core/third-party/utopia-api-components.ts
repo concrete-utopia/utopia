@@ -14,7 +14,7 @@ function createBasicUtopiaComponent(
 ): ComponentDescriptor {
   return componentDescriptor(
     {
-      'utopia-api': importDetails(null, [importAlias(baseVariable)], null),
+      'utopia-api': importDetails(null, [importAlias(baseVariable)], null, []),
     },
     jsxElement(jsxElementName(baseVariable, []), {}, []),
     name,

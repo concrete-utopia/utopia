@@ -103,7 +103,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       false,
       [],
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -143,7 +143,7 @@ export var whatever = () => <View data-uid={'aaa'}>
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
     const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -201,7 +201,7 @@ export function whatever(props) {
       false,
       [],
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -245,7 +245,7 @@ export function whatever() {
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
     const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -303,7 +303,7 @@ export default function whatever(props) {
       false,
       [],
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -347,7 +347,7 @@ export default function whatever() {
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
     const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -402,8 +402,8 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       false,
       [],
     )
-    const importsWithCake = addImport('cake', 'cake', [], null, sampleImportsForTests)
-    const importsWithStylecss = addImport('./style.css', null, [], null, importsWithCake)
+    const importsWithCake = addImport('cake', 'cake', [], null, [], sampleImportsForTests)
+    const importsWithStylecss = addImport('./style.css', null, [], null, [], importsWithCake)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         importsWithStylecss,
@@ -471,7 +471,14 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       false,
       [],
     )
-    const imports = addImport('cake', 'cake', [importAlias('cake2')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      'cake',
+      [importAlias('cake2')],
+      null,
+      [],
+      sampleImportsForTests,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -530,6 +537,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         null,
         [importAlias('cake', 'cake2')],
         null,
+        [],
         sampleImportsForTests,
       )
       const expectedResult = clearParseResultUniqueIDs(
@@ -604,7 +612,14 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         false,
         [],
       )
-      const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+      const imports = addImport(
+        'cake',
+        null,
+        [importAlias('cake')],
+        null,
+        [],
+        sampleImportsForTests,
+      )
       const expectedResult = clearParseResultUniqueIDs(
         parseSuccess(
           imports,
@@ -664,7 +679,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       false,
       [],
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -760,7 +775,7 @@ return { getSizing: getSizing, spacing: spacing };`
       }),
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -834,7 +849,7 @@ return { getSizing: getSizing };`
       }),
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -924,7 +939,7 @@ return { getSizing: getSizing };`
       }),
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -998,7 +1013,7 @@ return {  };`
       }),
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -1069,7 +1084,7 @@ return { spacing: spacing };`
       }),
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -1614,7 +1629,7 @@ return { count: count };`
       }),
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -1686,7 +1701,7 @@ return { use20: use20 };`
       }),
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -1810,7 +1825,7 @@ return { spacing: spacing };`
       }),
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -2134,7 +2149,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       false,
       [],
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -2174,7 +2189,7 @@ export var whatever = <View data-uid={'aaa'}>
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
     const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const expectedResult = parseSuccess(
       imports,
       [exported],
@@ -2250,7 +2265,7 @@ export var App = (props) => <View data-uid={'bbb'}>
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
     const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2322,7 +2337,7 @@ return { getSizing: getSizing, spacing: spacing };`
       }),
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2353,7 +2368,7 @@ return { getSizing: getSizing, spacing: spacing };`
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
     const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2462,7 +2477,7 @@ export var whatever = props => {
       false,
       [],
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2506,7 +2521,7 @@ export var whatever = props => {
       false,
       [],
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2595,7 +2610,7 @@ export var whatever = props => {
       false,
       [],
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2671,7 +2686,7 @@ export var whatever = props => {
 }
 return { test: test };`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const arbitraryBlock = arbitraryJSBlock(
       jsCode,
       transpiledJSCode,
@@ -2739,7 +2754,7 @@ return { test: test };`
   return n * 2;
 }
 return { test: test };`
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport('cake', null, [importAlias('cake')], null, [], sampleImportsForTests)
     const components = [
       clearTopLevelElementUniqueIDs(
         utopiaJSXComponent(

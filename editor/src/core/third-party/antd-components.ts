@@ -22,8 +22,8 @@ function createBasicComponent(
 ): ComponentDescriptor {
   return componentDescriptor(
     {
-      antd: importDetails(null, [importAlias(baseVariable)], null),
-      'antd/dist/antd.css': importDetails(null, [], null),
+      antd: importDetails(null, [importAlias(baseVariable)], null, []),
+      'antd/dist/antd.css': importDetails(null, [], null, []),
     },
     jsxElement(jsxElementName(baseVariable, propertyPathParts), {}, []),
     name,

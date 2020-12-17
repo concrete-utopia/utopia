@@ -264,6 +264,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
                         null,
                         [importAlias(exportVarName)],
                         null,
+                        [],
                       ),
                     },
                 null,

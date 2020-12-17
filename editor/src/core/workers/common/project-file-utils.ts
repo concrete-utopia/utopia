@@ -18,7 +18,7 @@ import { defaultIfNull } from '../../shared/optional-utils'
 import { ErrorMessage } from '../../shared/error-messages'
 
 import { printCode, printCodeOptions } from '../parser-printer/parser-printer'
-import { ArbitraryJSBlock, TopLevelElement } from '../../shared/element-template'
+import { ArbitraryJSBlock, Comment, TopLevelElement } from '../../shared/element-template'
 
 export function codeNeedsPrinting(revisionsState: RevisionsState): boolean {
   return revisionsState === RevisionsState.ParsedAhead
@@ -80,6 +80,7 @@ function mergeImportDetails(first: ImportDetails, second: ImportDetails): Import
     importedWithName: importedWithName,
     importedFromWithin: importedFromWithin,
     importedAs: importedAs,
+    leadingComments: first.leadingComments.concat(second.leadingComments),
   }
 }
 
@@ -113,6 +114,7 @@ export function addImport(
   importedWithName: string | null,
   importedFromWithin: Array<ImportAlias>,
   importedAs: string | null,
+  leadingComments: Array<Comment>,
   imports: Imports,
 ): Imports {
   const toAdd: Imports = {
@@ -120,6 +122,7 @@ export function addImport(
       importedWithName: importedWithName,
       importedFromWithin: importedFromWithin,
       importedAs: importedAs,
+      leadingComments: leadingComments,
     },
   }
   return mergeImports(imports, toAdd)

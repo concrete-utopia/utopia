@@ -82,6 +82,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               importedWithName: null,
               importedFromWithin: [],
               importedAs: 'React',
+              leadingComments: [],
             },
             'utopia-api': {
               importedWithName: null,
@@ -96,6 +97,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                 { name: 'jsx', alias: 'jsx' },
               ],
               importedAs: null,
+              leadingComments: [],
             },
             uuiui: {
               importedWithName: null,
@@ -137,6 +139,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                 { name: 'colorTheme', alias: 'colorTheme' },
               ],
               importedAs: null,
+              leadingComments: [],
             },
           },
           topLevelElements: [

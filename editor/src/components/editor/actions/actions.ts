@@ -3746,6 +3746,7 @@ export const UPDATE_FNS = {
         null,
         [importAlias(action.wrapper)],
         null,
+        [],
         success.imports,
       )
       return {
@@ -3830,6 +3831,7 @@ export const UPDATE_FNS = {
           null,
           [importAlias('animated')],
           null,
+          [],
           success.imports,
         )
         return {

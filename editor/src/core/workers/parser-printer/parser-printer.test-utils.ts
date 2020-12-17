@@ -185,6 +185,10 @@ export function testParseCode(contents: string): ParsedTextFile {
   return result
 }
 
+export function parseThenPrint(originalCode: string): string {
+  return parseModifyPrint(originalCode, (ps) => ps)
+}
+
 export function testParseThenPrint(originalCode: string, expectedFinalCode: string): void {
   return testParseModifyPrint(originalCode, expectedFinalCode, (ps) => ps)
 }
@@ -194,8 +198,16 @@ export function testParseModifyPrint(
   expectedFinalCode: string,
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
 ): void {
+  const printedCode = parseModifyPrint(originalCode, transform)
+  expect(printedCode).toEqual(expectedFinalCode)
+}
+
+function parseModifyPrint(
+  originalCode: string,
+  transform: (parseSuccess: ParseSuccess) => ParseSuccess,
+): string {
   const initialParseResult = testParseCode(originalCode)
-  foldParsedTextFile(
+  return foldParsedTextFile(
     (failure) => fail(failure),
     (initialParseSuccess) => {
       const transformed = transform(initialParseSuccess)
@@ -206,7 +218,7 @@ export function testParseModifyPrint(
         transformed.jsxFactoryFunction,
         transformed.exportsDetail,
       )
-      expect(printedCode).toEqual(expectedFinalCode)
+      return printedCode
     },
     (failure) => fail(failure),
     initialParseResult,
@@ -232,6 +244,7 @@ export const JustImportView: Imports = {
     importedAs: null,
     importedFromWithin: [importAlias('View')],
     importedWithName: null,
+    leadingComments: [],
   },
 }
 
@@ -240,11 +253,13 @@ export const JustImportViewAndReact: Imports = {
     importedAs: null,
     importedFromWithin: [importAlias('View')],
     importedWithName: null,
+    leadingComments: [],
   },
   react: {
     importedAs: null,
     importedFromWithin: [],
     importedWithName: 'React',
+    leadingComments: [],
   },
 }
 
@@ -753,7 +768,7 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
         }
       }, topLevelElements)
       const imports: Imports = allBaseVariables.reduce((workingImports, baseVariable) => {
-        return addImport('testlib', baseVariable, [], null, workingImports)
+        return addImport('testlib', baseVariable, [], null, [], workingImports)
       }, JustImportViewAndReact)
       return {
         imports: imports,

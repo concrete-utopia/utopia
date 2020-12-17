@@ -655,14 +655,15 @@ function printCodeImpl(
             ),
       )
 
-      importDeclarations.push(
-        TS.createImportDeclaration(
-          undefined,
-          undefined,
-          importClause,
-          TS.createStringLiteral(importOrigin),
-        ),
+      const importDeclaration = TS.createImportDeclaration(
+        undefined,
+        undefined,
+        importClause,
+        TS.createStringLiteral(importOrigin),
       )
+
+      addCommentsToNode(importDeclaration, importForClause.leadingComments)
+      importDeclarations.push(importDeclaration)
     }
 
     if (importForClause.importedAs != null) {
@@ -671,14 +672,16 @@ function printCodeImpl(
         undefined,
         TS.createNamespaceImport(TS.createIdentifier(importForClause.importedAs)),
       )
-      importDeclarations.push(
-        TS.createImportDeclaration(
-          undefined,
-          undefined,
-          wildcardClause,
-          TS.createStringLiteral(importOrigin),
-        ),
+
+      const importDeclaration = TS.createImportDeclaration(
+        undefined,
+        undefined,
+        wildcardClause,
+        TS.createStringLiteral(importOrigin),
       )
+
+      addCommentsToNode(importDeclaration, importForClause.leadingComments)
+      importDeclarations.push(importDeclaration)
     }
 
     if (
@@ -687,14 +690,15 @@ function printCodeImpl(
       importForClause.importedFromWithin.length === 0
     ) {
       // side-effect only import ( `import './style.css'` )
-      importDeclarations.push(
-        TS.createImportDeclaration(
-          undefined,
-          undefined,
-          undefined,
-          TS.createStringLiteral(importOrigin),
-        ),
+      const importDeclaration = TS.createImportDeclaration(
+        undefined,
+        undefined,
+        undefined,
+        TS.createStringLiteral(importOrigin),
       )
+
+      addCommentsToNode(importDeclaration, importForClause.leadingComments)
+      importDeclarations.push(importDeclaration)
     }
   })
 
@@ -978,8 +982,12 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     }, topLevelNodes)
 
     for (const topLevelElement of topLevelNodes) {
+      // Capture the comments so we can attach them to the node
+      const comments = getComments(sourceText, topLevelElement)
+
       // Handle export assignments: `export default App`
       if (TS.isExportAssignment(topLevelElement)) {
+        // TODO Attach comments
         const fromAssignment = detailsFromExportAssignment(sourceFile, topLevelElement)
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromAssignment, (toMerge) => {
@@ -991,6 +999,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         })
         // Handle export declarations.
       } else if (TS.isExportDeclaration(topLevelElement)) {
+        // TODO Attach comments
         const fromDeclaration = detailsFromExportDeclaration(sourceFile, topLevelElement)
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromDeclaration, (toMerge) => {
@@ -1007,8 +1016,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           const importFrom: string = topLevelElement.moduleSpecifier.text
           let importedFromWithin: Array<ImportAlias> = []
           let importedAs: string | null = null
-          // this import looks like `import Cat from './src/cats'`
-          const importedWithName = optionalMap((n) => n.getText(sourceFile), importClause?.name)
           // this import looks like `import { Cat, dog } from './src/home'`
           if (
             importClause?.namedBindings != null &&
@@ -1037,7 +1044,17 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             importedAs = importBindings.name.getText(sourceFile)
           }
           importedFromWithin.sort(compareImportAliasByName)
-          imports = addImport(importFrom, importedWithName, importedFromWithin, importedAs, imports)
+
+          // this import looks like `import Cat from './src/cats'`
+          const importedWithName = optionalMap((n) => n.getText(sourceFile), importClause?.name)
+          imports = addImport(
+            importFrom,
+            importedWithName,
+            importedFromWithin,
+            importedAs,
+            comments.leadingComments,
+            imports,
+          )
         }
       } else {
         const possibleDeclaration = looksLikeCanvasElements(sourceFile, topLevelElement)
@@ -1120,8 +1137,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             if (contents.elements.length === 1) {
               applyAndResetArbitraryNodes()
               const exported = isExported(topLevelElement)
-
-              const comments = getComments(sourceText, topLevelElement)
               const utopiaComponent = utopiaJSXComponent(
                 name,
                 isFunction,

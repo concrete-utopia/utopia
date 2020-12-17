@@ -229,6 +229,7 @@ function addStoryboardFileForComponent(
     null,
     [importAlias('Storyboard'), importAlias('Scene'), importAlias('jsx')],
     null,
+    [],
     {},
   )
   // Create the storyboard variable.
@@ -242,12 +243,20 @@ function addStoryboardFileForComponent(
         null,
         [importAlias(createFileWithComponent.toImport)],
         null,
+        [],
         imports,
       )
       break
     case 'DEFAULT_COMPONENT_TO_IMPORT':
       sceneElement = createSceneFromComponent('StoryboardComponent', 'scene-1')
-      imports = addImport(createFileWithComponent.path, 'StoryboardComponent', [], null, imports)
+      imports = addImport(
+        createFileWithComponent.path,
+        'StoryboardComponent',
+        [],
+        null,
+        [],
+        imports,
+      )
       break
     case 'UNEXPORTED_RENDERED_COMPONENT':
       sceneElement = createSceneFromComponent(createFileWithComponent.elementName, 'scene-1')
@@ -256,6 +265,7 @@ function addStoryboardFileForComponent(
         null,
         [importAlias(createFileWithComponent.elementName)],
         null,
+        [],
         imports,
       )
       // Modify the targeted file to export the component we're interested in.

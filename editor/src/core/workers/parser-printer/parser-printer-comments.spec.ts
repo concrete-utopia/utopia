@@ -1,6 +1,11 @@
 import { testPrintParsedTextFile } from '../../../components/canvas/ui-jsx.test-utils'
 import { Utils } from '../../../uuiui-deps'
-import { clearParseResultUniqueIDs, testParseCode } from './parser-printer.test-utils'
+import { forEachValue } from '../../shared/object-utils'
+import {
+  clearParseResultUniqueIDs,
+  parseThenPrint,
+  testParseCode,
+} from './parser-printer.test-utils'
 import { applyPrettier } from './prettier-utils'
 
 describe('parseCode', () => {
@@ -41,4 +46,83 @@ describe('parseCode', () => {
       ]
     `)
   })
+})
+
+describe('Parsing and printing code with comments', () => {
+  const comments = {
+    commentBeforeImports: '// Comment before imports',
+    commentInsideImports: '// Comment inside imports',
+    commentAfterImports: '// Comment after imports',
+    commentBeforeTopLevelJS: '// Comment before top level JS block',
+    commentInsideTopLevelJS: '// Comment inside top level JS block',
+    commentAfterTopLevelJS: '// Comment after top level JS block',
+    commentBeforeComponent: '// Comment before component',
+    commentInComponent: '// Comment in component',
+    commentAfterComponent: '// Comment after component',
+    commentBeforeInnerJS: '// Comment before inner JS',
+    commentInsideInnerJS: '// Comment inside inner JS',
+    commentAfterInnerJS: '// Comment after inner JS',
+    commentBeforeReturnStatement: '// Comment before return statement',
+    commentAtStartOfJSXAttribute: '/* Comment at start of JSX attribute */',
+    commentAtEndOfJSXAttribute: '/* Comment at end of JSX attribute */',
+    commentAtStartOfJSXExpression: '/* Comment at start of JSX expression */',
+    commentInsideJSXExpression: '/* Comment at inside JSX expression */',
+    commentAtEndOfJSXExpression: '/* Comment at end of JSX expression */',
+    commentBeforeExports: '// Comment before exports',
+    commentInsideExports: '// Comment inside exports',
+    commentAfterExports: '// Comment after exports',
+    finalLineComment: '// Final line comment',
+  }
+
+  const code = `
+    ${comments.commentBeforeImports}
+    import * as React from 'react'
+    ${comments.commentInsideImports}
+    import { Cat } from './honestly-not-dogs' ${comments.commentAfterImports}
+
+    ${comments.commentBeforeTopLevelJS}
+    function iAmAFunction() {
+      ${comments.commentInsideTopLevelJS}
+      return 1
+    } ${comments.commentAfterTopLevelJS}
+
+    ${comments.commentBeforeComponent}
+    var whatever = (props) => {
+      ${comments.commentInComponent}
+      
+      ${comments.commentBeforeInnerJS}
+      function iAmAnInnerFunction() {
+        ${comments.commentInsideInnerJS}
+        return 2
+      } ${comments.commentAfterInnerJS}
+
+      ${comments.commentBeforeReturnStatement}
+      return (
+        <div data-uid={'aaa'} someProp={${comments.commentAtStartOfJSXAttribute} 1000 ${comments.commentAtEndOfJSXAttribute}}>
+          {
+            ${comments.commentAtStartOfJSXExpression}
+            true ${comments.commentInsideJSXExpression}
+            ? <div/>
+            : <div/>
+            ${comments.commentAtEndOfJSXExpression}
+          }
+        </div>
+      )
+    } ${comments.commentAfterComponent}
+
+    ${comments.commentBeforeExports}
+    export const theFunction = iAmAFunction
+    ${comments.commentInsideExports}
+    export const theComponent = whatever ${comments.commentAfterExports}
+
+    ${comments.finalLineComment}
+  `
+
+  const parsedThenPrinted = parseThenPrint(code)
+
+  forEachValue((commentText) => {
+    it(`should retain the comment '${commentText}'`, () => {
+      expect(parsedThenPrinted.includes(commentText)).toBeTruthy()
+    })
+  }, comments)
 })
