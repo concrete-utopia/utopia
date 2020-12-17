@@ -34,6 +34,7 @@ describe('parseCode', () => {
       Array [
         Object {
           "comment": " Single-line comment.",
+          "rawText": "// Single-line comment.",
           "trailingNewLine": true,
           "type": "SINGLE_LINE_COMMENT",
         },
@@ -43,6 +44,11 @@ describe('parseCode', () => {
             Line
             Comment.
           ",
+          "rawText": "/*
+            Multi
+            Line
+            Comment.
+          */",
           "trailingNewLine": true,
           "type": "MULTI_LINE_COMMENT",
         },

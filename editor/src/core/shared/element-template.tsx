@@ -22,30 +22,42 @@ import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import { ParsedComments } from '../workers/parser-printer/parser-printer-comments'
 
-export interface MultiLineComment {
-  type: 'MULTI_LINE_COMMENT'
+interface BaseComment {
   comment: string
+  rawText: string
   trailingNewLine: boolean
 }
 
-export function multiLineComment(comment: string, trailingNewLine: boolean): MultiLineComment {
+export interface MultiLineComment extends BaseComment {
+  type: 'MULTI_LINE_COMMENT'
+}
+
+export function multiLineComment(
+  comment: string,
+  rawText: string,
+  trailingNewLine: boolean,
+): MultiLineComment {
   return {
     type: 'MULTI_LINE_COMMENT',
     comment: comment,
+    rawText: rawText,
     trailingNewLine: trailingNewLine,
   }
 }
 
-export interface SingleLineComment {
+export interface SingleLineComment extends BaseComment {
   type: 'SINGLE_LINE_COMMENT'
-  comment: string
-  trailingNewLine: boolean
 }
 
-export function singleLineComment(comment: string, trailingNewLine: boolean): SingleLineComment {
+export function singleLineComment(
+  comment: string,
+  rawText: string,
+  trailingNewLine: boolean,
+): SingleLineComment {
   return {
     type: 'SINGLE_LINE_COMMENT',
     comment: comment,
+    rawText: rawText,
     trailingNewLine: trailingNewLine,
   }
 }
@@ -690,6 +702,7 @@ export function arbitraryJSBlock(
   definedWithin: Array<string>,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
+  comments: ParsedComments,
 ): ArbitraryJSBlock {
   return {
     type: 'ARBITRARY_JS_BLOCK',
@@ -699,6 +712,7 @@ export function arbitraryJSBlock(
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
     uniqueID: UUID(),
+    comments: comments,
   }
 }
 
@@ -844,7 +858,7 @@ export interface UtopiaJSXComponent extends WithComments {
   usedInReactDOMRender: boolean
 }
 
-export interface ArbitraryJSBlock {
+export interface ArbitraryJSBlock extends WithComments {
   type: 'ARBITRARY_JS_BLOCK'
   javascript: string
   transpiledJavascript: string

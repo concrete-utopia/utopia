@@ -56,6 +56,7 @@ import {
   isIntrinsicElement,
   clearAttributesUniqueIDs,
   clearAttributesSourceMaps,
+  WithComments,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -84,6 +85,7 @@ import {
   JSX_CANVAS_LOOKUP_FUNCTION_NAME,
 } from './parser-printer-utils'
 import * as Hash from 'object-hash'
+import { emptyComments, ParsedComments } from './parser-printer-comments'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -1842,6 +1844,7 @@ export function parseArbitraryNodes(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
   rootLevel: boolean,
+  comments: ParsedComments,
 ): Either<string, WithParserMetadata<ArbitraryJSBlock>> {
   return parseOtherJavaScript(
     sourceFile,
@@ -1879,6 +1882,7 @@ export function parseArbitraryNodes(
             definedWithin,
             definedElsewhere,
             transpileResult.sourceMap,
+            comments,
           )
         },
         transpileEither,
@@ -1947,6 +1951,7 @@ export function parseOutFunctionContents(
           highlightBounds,
           alreadyExistingUIDs,
           false,
+          emptyComments,
         )
         if (isLeft(parseResult)) {
           return parseResult

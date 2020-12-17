@@ -19,7 +19,11 @@ import { ErrorMessage } from '../../shared/error-messages'
 
 import { printCode, printCodeOptions } from '../parser-printer/parser-printer'
 import { ArbitraryJSBlock, Comment, TopLevelElement } from '../../shared/element-template'
-import { parsedComments, ParsedComments } from '../parser-printer/parser-printer-comments'
+import {
+  mergeParsedComments,
+  parsedComments,
+  ParsedComments,
+} from '../parser-printer/parser-printer-comments'
 
 export function codeNeedsPrinting(revisionsState: RevisionsState): boolean {
   return revisionsState === RevisionsState.ParsedAhead
@@ -55,13 +59,6 @@ export function emptyImports(): Imports {
   return {}
 }
 
-function mergeComments(first: ParsedComments, second: ParsedComments): ParsedComments {
-  return parsedComments(
-    first.leadingComments.concat(second.leadingComments),
-    first.trailingComments.concat(second.trailingComments),
-  )
-}
-
 function mergeImportDetails(first: ImportDetails, second: ImportDetails): ImportDetails {
   let importedFromWithin: Array<ImportAlias> = [...first.importedFromWithin]
   fastForEach(second.importedFromWithin, (secondWithin) => {
@@ -88,7 +85,7 @@ function mergeImportDetails(first: ImportDetails, second: ImportDetails): Import
     importedWithName: importedWithName,
     importedFromWithin: importedFromWithin,
     importedAs: importedAs,
-    comments: mergeComments(first.comments, second.comments),
+    comments: mergeParsedComments(first.comments, second.comments),
   }
 }
 

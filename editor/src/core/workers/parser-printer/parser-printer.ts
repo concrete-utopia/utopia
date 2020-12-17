@@ -55,6 +55,7 @@ import {
   Comment,
   singleLineComment,
   multiLineComment,
+  WithComments,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -104,7 +105,13 @@ import { applyPrettier } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
-import { addCommentsToNode, emptyComments, getComments } from './parser-printer-comments'
+import {
+  addCommentsToNode,
+  emptyComments,
+  getComments,
+  mergeParsedComments,
+  ParsedComments,
+} from './parser-printer-comments'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -554,8 +561,15 @@ function optionallyCreateDotDotDotToken(createIt: boolean): TS.DotDotDotToken | 
   return createIt ? TS.createToken(TS.SyntaxKind.DotDotDotToken) : undefined
 }
 
+function printRawComment(comment: Comment): string {
+  return `${comment.rawText}${comment.trailingNewLine ? '\n' : ''}`
+}
+
 function printArbitraryJSBlock(block: ArbitraryJSBlock): TS.Node {
-  return TS.createUnparsedSourceFile(block.javascript)
+  const leadingComments = block.comments.leadingComments.map(printRawComment).join('\n')
+  const trailingComments = block.comments.trailingComments.map(printRawComment).join('\n')
+  const rawText = `${leadingComments}${block.javascript}${trailingComments}`
+  return TS.createUnparsedSourceFile(rawText)
 }
 
 export const printCode = memoize(printCodeImpl, {
@@ -925,6 +939,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     // handle them as a block of code.
     let arbitraryNodes: Array<TS.Node> = []
     let allArbitraryNodes: Array<TS.Node> = []
+    let arbitraryNodeComments: ParsedComments = emptyComments
 
     // Account for exported components.
     let detailOfExports: ExportsDetail = EmptyExportsDetail
@@ -944,6 +959,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           highlightBounds,
           alreadyExistingUIDs,
           true,
+          arbitraryNodeComments,
         )
         topLevelElements.push(
           mapEither((parsed) => {
@@ -954,6 +970,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         allArbitraryNodes = [...allArbitraryNodes, ...filteredArbitraryNodes]
       }
       arbitraryNodes = []
+      arbitraryNodeComments = emptyComments
     }
 
     const topLevelNodes = flatMapArray(
@@ -984,6 +1001,10 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     for (const topLevelElement of topLevelNodes) {
       // Capture the comments so we can attach them to the node
       const comments = getComments(sourceText, topLevelElement)
+      function pushArbitraryNode(node: TS.Node) {
+        arbitraryNodes.push(node)
+        arbitraryNodeComments = mergeParsedComments(arbitraryNodeComments, comments)
+      }
 
       // Handle export assignments: `export default App`
       if (TS.isExportAssignment(topLevelElement)) {
@@ -995,7 +1016,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         })
         // Unable to parse it so treat it as an arbitrary node.
         forEachLeft(fromAssignment, (exportDeclaration) => {
-          arbitraryNodes.push(exportDeclaration)
+          pushArbitraryNode(exportDeclaration)
         })
         // Handle export declarations.
       } else if (TS.isExportDeclaration(topLevelElement)) {
@@ -1007,7 +1028,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         })
         // Unable to parse it so treat it as an arbitrary node.
         forEachLeft(fromDeclaration, (exportDeclaration) => {
-          arbitraryNodes.push(exportDeclaration)
+          pushArbitraryNode(exportDeclaration)
         })
         // Handle imports.
       } else if (TS.isImportDeclaration(topLevelElement)) {
@@ -1127,7 +1148,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             )
           }
           if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
-            arbitraryNodes.push(topLevelElement)
+            pushArbitraryNode(topLevelElement)
           } else {
             highlightBounds = parsedContents.value.highlightBounds
             const contents = parsedContents.value.value
@@ -1163,11 +1184,11 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
 
               topLevelElements.push(right(utopiaComponent))
             } else {
-              arbitraryNodes.push(topLevelElement)
+              pushArbitraryNode(topLevelElement)
             }
           }
         } else {
-          arbitraryNodes.push(topLevelElement)
+          pushArbitraryNode(topLevelElement)
         }
       }
     }
@@ -1194,6 +1215,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         highlightBounds,
         alreadyExistingUIDs,
         true,
+        emptyComments,
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {
         combinedTopLevelArbitraryBlock = nodeParseSuccess.value

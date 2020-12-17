@@ -22,6 +22,13 @@ export function parsedComments(
   }
 }
 
+export function mergeParsedComments(first: ParsedComments, second: ParsedComments): ParsedComments {
+  return parsedComments(
+    first.leadingComments.concat(second.leadingComments),
+    first.trailingComments.concat(second.trailingComments),
+  )
+}
+
 function parseComment(
   sourceText: string,
   pos: number,
@@ -31,9 +38,17 @@ function parseComment(
 ): Comment {
   switch (commentKind) {
     case TS.SyntaxKind.SingleLineCommentTrivia:
-      return singleLineComment(sourceText.slice(pos + 2, end), hasTrailingNewLine)
+      return singleLineComment(
+        sourceText.slice(pos + 2, end),
+        sourceText.slice(pos, end),
+        hasTrailingNewLine,
+      )
     case TS.SyntaxKind.MultiLineCommentTrivia:
-      return multiLineComment(sourceText.slice(pos + 2, end - 2), hasTrailingNewLine)
+      return multiLineComment(
+        sourceText.slice(pos + 2, end - 2),
+        sourceText.slice(pos, end),
+        hasTrailingNewLine,
+      )
     default:
       const _exhaustiveCheck: never = commentKind
       throw new Error(`Unhandled comment kind ${commentKind}`)

@@ -84,6 +84,7 @@ export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercas
     return {
       type: 'SINGLE_LINE_COMMENT',
       comment: text,
+      rawText: text,
       trailingNewLine: false,
     }
   },
@@ -94,6 +95,7 @@ export const multiLineCommentArbitrary: Arbitrary<MultiLineComment> = lowercaseS
     return {
       type: 'MULTI_LINE_COMMENT',
       comment: text,
+      rawText: text,
       trailingNewLine: false,
     }
   },
@@ -507,7 +509,7 @@ export function jsxElementChildArbitrary(): Arbitrary<JSXElementChild> {
 }
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
-  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null))
+  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null, emptyComments))
 }
 
 export function arbitraryComments(): Arbitrary<ParsedComments> {

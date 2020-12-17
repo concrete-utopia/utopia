@@ -864,6 +864,7 @@ return { getSizing: getSizing, spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
     const imports = addImport(
@@ -945,6 +946,7 @@ return { getSizing: getSizing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
     const imports = addImport(
@@ -1042,6 +1044,7 @@ return { getSizing: getSizing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
     const imports = addImport(
@@ -1123,6 +1126,7 @@ return {  };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
     const imports = addImport(
@@ -1201,6 +1205,7 @@ return { spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
     const imports = addImport(
@@ -1266,6 +1271,7 @@ return { bgs: bgs, bg: bg };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1333,6 +1339,7 @@ return { greys: greys };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1398,6 +1405,7 @@ return { a: a, b: b };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1466,6 +1474,7 @@ return { a: a, b: b, c: c };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1538,6 +1547,7 @@ return { a: a };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1605,6 +1615,7 @@ return { a: a, b: b };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1673,6 +1684,7 @@ return { bg: bg };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1753,6 +1765,7 @@ return { count: count };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
     const imports = addImport(
@@ -1832,6 +1845,7 @@ return { use20: use20 };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
     const imports = addImport(
@@ -1892,6 +1906,7 @@ return { mySet: mySet };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1963,6 +1978,7 @@ return { spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
     const imports = addImport(
@@ -2047,6 +2063,7 @@ return { MyComp: MyComp };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const myCompAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab'),
@@ -2530,6 +2547,7 @@ return { getSizing: getSizing, spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
     const imports = addImport(
@@ -2943,6 +2961,7 @@ return { test: test };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3050,6 +3069,7 @@ return { test: test };`
               version: 3,
               file: 'code.tsx',
             }),
+            emptyComments,
           ),
           false,
           emptyComments,
@@ -3475,6 +3495,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
           version: 3,
           file: 'code.tsx',
         }),
+        emptyComments,
       ),
       false,
       emptyComments,
@@ -3670,6 +3691,7 @@ return {  };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa') }, [])
     const exported = utopiaJSXComponent(
@@ -3738,6 +3760,7 @@ return { result: result };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const innerBlock = jsxArbitraryBlock(
       'result',
@@ -3931,6 +3954,7 @@ return { a: a };`,
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
 
     const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa') }, [arbitraryBlock])
