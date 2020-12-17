@@ -171,7 +171,7 @@ module.exports = {
       from: {
         path: '^(src)',
         pathNot:
-          '\\.(spec|test|spec.browser|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$',
+          '\\.(spec|test|spec.browser|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
       },
       to: {
         dependencyTypes: ['npm-dev'],
