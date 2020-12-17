@@ -85,7 +85,12 @@ import {
   JSX_CANVAS_LOOKUP_FUNCTION_NAME,
 } from './parser-printer-utils'
 import * as Hash from 'object-hash'
-import { emptyComments, ParsedComments } from './parser-printer-comments'
+import {
+  emptyComments,
+  getComments,
+  mergeParsedComments,
+  ParsedComments,
+} from './parser-printer-comments'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -1941,6 +1946,13 @@ export function parseOutFunctionContents(
       let propsUsed: Array<string> = []
       let definedElsewhere: Array<string> = []
       if (possibleBlockExpressions.length > 0) {
+        const sourceText = sourceFile.getFullText()
+        const comments = possibleBlockExpressions.reduce(
+          (working: ParsedComments, next: TS.Statement) =>
+            mergeParsedComments(working, getComments(sourceText, next)),
+          emptyComments,
+        )
+
         const parseResult = parseArbitraryNodes(
           sourceFile,
           filename,
@@ -1951,7 +1963,7 @@ export function parseOutFunctionContents(
           highlightBounds,
           alreadyExistingUIDs,
           false,
-          emptyComments,
+          comments,
         )
         if (isLeft(parseResult)) {
           return parseResult

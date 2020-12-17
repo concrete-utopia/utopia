@@ -84,9 +84,6 @@ describe('Parsing and printing code with comments', () => {
   }
 
   const notYetSupported = [
-    'commentInComponent',
-    'commentBeforeInnerJS',
-    'commentAfterInnerJS',
     'commentBeforeReturnStatement',
     'commentAtStartOfJSXAttribute',
     'commentAtEndOfJSXAttribute',

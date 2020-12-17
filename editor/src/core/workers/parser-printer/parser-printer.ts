@@ -996,7 +996,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
 
       // Handle export assignments: `export default App`
       if (TS.isExportAssignment(topLevelElement)) {
-        // TODO Attach comments
         const fromAssignment = detailsFromExportAssignment(sourceFile, topLevelElement)
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromAssignment, (toMerge) => {
@@ -1008,7 +1007,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         })
         // Handle export declarations.
       } else if (TS.isExportDeclaration(topLevelElement)) {
-        // TODO Attach comments
         const fromDeclaration = detailsFromExportDeclaration(sourceFile, topLevelElement)
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromDeclaration, (toMerge) => {
