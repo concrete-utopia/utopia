@@ -65,7 +65,7 @@ export function useInspectorInfoForPropertyControl(
     ),
   )
 
-  const propertyStatus = calculatePropertyStatusForSelection(rawValues, realValues)
+  const propertyStatus = calculatePropertyStatusForSelection(rawValues, realValues, [])
   const controlStatus = getControlStatusFromPropertyStatus(propertyStatus)
   const controlStyles = getControlStyles(controlStatus)
   const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
