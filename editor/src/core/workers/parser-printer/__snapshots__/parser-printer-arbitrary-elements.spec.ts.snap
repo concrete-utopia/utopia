@@ -3,6 +3,10 @@
 exports[`JSX parser circularly referenced arbitrary blocks parse and produce a combined block 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
+    "comments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
     "definedElsewhere": Array [],
     "definedWithin": Array [
       "a",
@@ -143,11 +147,26 @@ return { a: a, b: b };",
   },
   "imports": Object {
     "react": Object {
+      "comments": Object {
+        "leadingComments": Array [
+          Object {
+            "comment": "* @jsx jsx ",
+            "rawText": "/** @jsx jsx */",
+            "trailingNewLine": true,
+            "type": "MULTI_LINE_COMMENT",
+          },
+        ],
+        "trailingComments": Array [],
+      },
       "importedAs": "React",
       "importedFromWithin": Array [],
       "importedWithName": null,
     },
     "utopia-api": Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
@@ -169,6 +188,10 @@ return { a: a, b: b };",
   "jsxFactoryFunction": "jsx",
   "topLevelElements": Array [
     Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "definedElsewhere": Array [
         "b",
       ],
@@ -261,8 +284,11 @@ return { a: a };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "isFunction": true,
-      "leadingComments": Array [],
       "name": "App",
       "param": Object {
         "boundParam": Object {
@@ -442,6 +468,10 @@ export var storyboard = (
       "usedInReactDOMRender": false,
     },
     Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "definedElsewhere": Array [
         "a",
       ],
@@ -534,8 +564,11 @@ return { b: b };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "isFunction": false,
-      "leadingComments": Array [],
       "name": "storyboard",
       "param": null,
       "propsUsed": Array [],
