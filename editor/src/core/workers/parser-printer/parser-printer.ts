@@ -104,7 +104,7 @@ import { applyPrettier } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
-import { addCommentsToNode, getComments } from './parser-printer-comments'
+import { addCommentsToNode, emptyComments, getComments } from './parser-printer-comments'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -486,7 +486,7 @@ function printUtopiaJSXComponent(
       elementNode = TS.createVariableStatement(modifiers, [varDec])
     }
 
-    addCommentsToNode(elementNode, element.leadingComments)
+    addCommentsToNode(elementNode, element.comments)
     return elementNode
   } else {
     throw new Error(
@@ -662,7 +662,7 @@ function printCodeImpl(
         TS.createStringLiteral(importOrigin),
       )
 
-      addCommentsToNode(importDeclaration, importForClause.leadingComments)
+      addCommentsToNode(importDeclaration, importForClause.comments)
       importDeclarations.push(importDeclaration)
     }
 
@@ -680,7 +680,7 @@ function printCodeImpl(
         TS.createStringLiteral(importOrigin),
       )
 
-      addCommentsToNode(importDeclaration, importForClause.leadingComments)
+      addCommentsToNode(importDeclaration, importForClause.comments)
       importDeclarations.push(importDeclaration)
     }
 
@@ -697,7 +697,7 @@ function printCodeImpl(
         TS.createStringLiteral(importOrigin),
       )
 
-      addCommentsToNode(importDeclaration, importForClause.leadingComments)
+      addCommentsToNode(importDeclaration, importForClause.comments)
       importDeclarations.push(importDeclaration)
     }
   })
@@ -1052,7 +1052,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             importedWithName,
             importedFromWithin,
             importedAs,
-            comments.leadingComments,
+            comments,
             imports,
           )
         }
@@ -1149,7 +1149,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
                 contents.elements[0].value,
                 contents.arbitraryJSBlock,
                 false,
-                comments.leadingComments,
+                comments,
               )
 
               const defaultExport = isDefaultExport(topLevelElement)
@@ -1216,7 +1216,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             topLevelElement.rootElement,
             topLevelElement.arbitraryJSBlock,
             true,
-            [],
+            emptyComments,
           )
         } else {
           return topLevelElement

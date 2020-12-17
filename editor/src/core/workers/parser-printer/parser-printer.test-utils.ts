@@ -77,6 +77,7 @@ import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
+import { emptyComments, parsedComments, ParsedComments } from './parser-printer-comments'
 
 export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercaseStringArbitrary().map(
   (text) => {
@@ -244,7 +245,7 @@ export const JustImportView: Imports = {
     importedAs: null,
     importedFromWithin: [importAlias('View')],
     importedWithName: null,
-    leadingComments: [],
+    comments: emptyComments,
   },
 }
 
@@ -253,13 +254,13 @@ export const JustImportViewAndReact: Imports = {
     importedAs: null,
     importedFromWithin: [importAlias('View')],
     importedWithName: null,
-    leadingComments: [],
+    comments: emptyComments,
   },
   react: {
     importedAs: null,
     importedFromWithin: [],
     importedWithName: 'React',
-    leadingComments: [],
+    comments: emptyComments,
   },
 }
 
@@ -509,15 +510,22 @@ export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
   return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null))
 }
 
+export function arbitraryComments(): Arbitrary<ParsedComments> {
+  return FastCheck.tuple(
+    FastCheck.array(commentArbitrary),
+    FastCheck.array(commentArbitrary),
+  ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
+}
+
 export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
   return FastCheck.tuple(
     lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
     FastCheck.boolean(),
     jsxElementArbitrary(3),
     arbitraryJSBlockArbitrary(),
-    FastCheck.array(commentArbitrary),
+    arbitraryComments(),
   )
-    .map(([name, isFunction, rootElement, jsBlock, leadingComments]) => {
+    .map(([name, isFunction, rootElement, jsBlock, comments]) => {
       return utopiaJSXComponent(
         name,
         isFunction,
@@ -526,7 +534,7 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
         rootElement,
         jsBlock,
         false,
-        leadingComments,
+        comments,
       )
     })
     .filter((component) => {
@@ -768,7 +776,7 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
         }
       }, topLevelElements)
       const imports: Imports = allBaseVariables.reduce((workingImports, baseVariable) => {
-        return addImport('testlib', baseVariable, [], null, [], workingImports)
+        return addImport('testlib', baseVariable, [], null, emptyComments, workingImports)
       }, JustImportViewAndReact)
       return {
         imports: imports,

@@ -20,6 +20,7 @@ import { ModifiableAttribute } from './jsx-attributes'
 import * as TP from './template-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
+import { ParsedComments } from '../workers/parser-printer/parser-printer-comments'
 
 export interface MultiLineComment {
   type: 'MULTI_LINE_COMMENT'
@@ -52,7 +53,7 @@ export function singleLineComment(comment: string, trailingNewLine: boolean): Si
 export type Comment = MultiLineComment | SingleLineComment
 
 export interface WithComments {
-  leadingComments: Array<Comment>
+  comments: ParsedComments
 }
 
 export interface JSXAttributeValue<T> {
@@ -668,7 +669,7 @@ export function utopiaJSXComponent(
   rootElement: JSXElementChild,
   jsBlock: ArbitraryJSBlock | null,
   usedInReactDOMRender: boolean,
-  leadingComments: Array<Comment>,
+  comments: ParsedComments,
 ): UtopiaJSXComponent {
   return {
     type: 'UTOPIA_JSX_COMPONENT',
@@ -679,7 +680,7 @@ export function utopiaJSXComponent(
     rootElement: rootElement,
     arbitraryJSBlock: jsBlock,
     usedInReactDOMRender: usedInReactDOMRender,
-    leadingComments: leadingComments,
+    comments: comments,
   }
 }
 

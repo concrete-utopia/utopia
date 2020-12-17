@@ -11,6 +11,7 @@ import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 
 import * as SampleTypeDefinitions from './sample-type-definitions.json'
 import { contentsToTree } from '../../../components/assets'
+import { emptyComments } from '../parser-printer/parser-printer-comments'
 
 describe('Typescript worker builds the project', () => {
   it('initializing a new project', (done) => {
@@ -82,7 +83,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               importedWithName: null,
               importedFromWithin: [],
               importedAs: 'React',
-              leadingComments: [],
+              comments: emptyComments,
             },
             'utopia-api': {
               importedWithName: null,
@@ -97,7 +98,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                 { name: 'jsx', alias: 'jsx' },
               ],
               importedAs: null,
-              leadingComments: [],
+              comments: emptyComments,
             },
             uuiui: {
               importedWithName: null,
@@ -139,7 +140,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                 { name: 'colorTheme', alias: 'colorTheme' },
               ],
               importedAs: null,
-              leadingComments: [],
+              comments: emptyComments,
             },
           },
           topLevelElements: [
@@ -227,7 +228,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               },
               arbitraryJSBlock: null,
               usedInReactDOMRender: false,
-              leadingComments: [],
+              comments: emptyComments,
             },
             convertScenesToUtopiaCanvasComponent([
               {

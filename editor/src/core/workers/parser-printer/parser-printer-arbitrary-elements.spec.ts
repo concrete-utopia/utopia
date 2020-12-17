@@ -30,6 +30,7 @@ import {
   testParseModifyPrint,
 } from './parser-printer.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
+import { emptyComments } from './parser-printer-comments'
 
 describe('JSX parser', () => {
   it('should add in uid attributes for elements', () => {
@@ -184,7 +185,7 @@ export var whatever = props => (
       jsxElement('div', { 'data-uid': jsxAttributeValue('abc') }, []),
       null,
       false,
-      [],
+      emptyComments,
     )
 
     const codeBlock = jsxArbitraryBlock(
@@ -208,7 +209,7 @@ export var whatever = props => (
       view,
       null,
       false,
-      [],
+      emptyComments,
     )
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -302,7 +303,7 @@ return { arr: arr };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -398,7 +399,7 @@ return { arr: arr };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -495,7 +496,7 @@ return { arr: arr };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -581,7 +582,7 @@ export var whatever = (props) => {
       view,
       null,
       false,
-      [],
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -678,7 +679,7 @@ return { arr: arr };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -764,7 +765,7 @@ export var whatever = (props) => {
       view,
       null,
       false,
-      [],
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -861,7 +862,7 @@ return { arr: arr };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(

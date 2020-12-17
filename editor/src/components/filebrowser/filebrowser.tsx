@@ -50,6 +50,7 @@ import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -264,7 +265,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
                         null,
                         [importAlias(exportVarName)],
                         null,
-                        [],
+                        emptyComments,
                       ),
                     },
                 null,

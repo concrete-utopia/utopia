@@ -19,6 +19,7 @@ import { ErrorMessage } from '../../shared/error-messages'
 
 import { printCode, printCodeOptions } from '../parser-printer/parser-printer'
 import { ArbitraryJSBlock, Comment, TopLevelElement } from '../../shared/element-template'
+import { parsedComments, ParsedComments } from '../parser-printer/parser-printer-comments'
 
 export function codeNeedsPrinting(revisionsState: RevisionsState): boolean {
   return revisionsState === RevisionsState.ParsedAhead
@@ -54,6 +55,13 @@ export function emptyImports(): Imports {
   return {}
 }
 
+function mergeComments(first: ParsedComments, second: ParsedComments): ParsedComments {
+  return parsedComments(
+    first.leadingComments.concat(second.leadingComments),
+    first.trailingComments.concat(second.trailingComments),
+  )
+}
+
 function mergeImportDetails(first: ImportDetails, second: ImportDetails): ImportDetails {
   let importedFromWithin: Array<ImportAlias> = [...first.importedFromWithin]
   fastForEach(second.importedFromWithin, (secondWithin) => {
@@ -80,7 +88,7 @@ function mergeImportDetails(first: ImportDetails, second: ImportDetails): Import
     importedWithName: importedWithName,
     importedFromWithin: importedFromWithin,
     importedAs: importedAs,
-    leadingComments: first.leadingComments.concat(second.leadingComments),
+    comments: mergeComments(first.comments, second.comments),
   }
 }
 
@@ -114,7 +122,7 @@ export function addImport(
   importedWithName: string | null,
   importedFromWithin: Array<ImportAlias>,
   importedAs: string | null,
-  leadingComments: Array<Comment>,
+  comments: ParsedComments,
   imports: Imports,
 ): Imports {
   const toAdd: Imports = {
@@ -122,7 +130,7 @@ export function addImport(
       importedWithName: importedWithName,
       importedFromWithin: importedFromWithin,
       importedAs: importedAs,
-      leadingComments: leadingComments,
+      comments: comments,
     },
   }
   return mergeImports(imports, toAdd)

@@ -1,5 +1,6 @@
 import * as TS from 'typescript'
 import { NormalisedFrame } from 'utopia-api'
+import { ParsedComments } from '../workers/parser-printer/parser-printer-comments'
 import {
   ArbitraryJSBlock,
   Comment,
@@ -97,13 +98,13 @@ export function importDetails(
   importedWithName: string | null,
   importedFromWithin: Array<ImportAlias>,
   importedAs: string | null,
-  leadingComments: Array<Comment>,
+  comments: ParsedComments,
 ): ImportDetails {
   return {
     importedWithName: importedWithName,
     importedFromWithin: importedFromWithin,
     importedAs: importedAs,
-    leadingComments: leadingComments,
+    comments: comments,
   }
 }
 
@@ -112,7 +113,7 @@ export function importDetailsEquals(first: ImportDetails, second: ImportDetails)
     first.importedWithName === second.importedWithName &&
     arrayEquals(first.importedFromWithin, second.importedFromWithin, importAliasEquals) &&
     first.importedAs === second.importedAs &&
-    first.leadingComments === second.leadingComments
+    first.comments === second.comments
   )
 }
 

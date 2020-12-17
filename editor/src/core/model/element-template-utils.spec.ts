@@ -15,6 +15,7 @@ import { getUtopiaID, guaranteeUniqueUids, removeJSXElementChild } from './eleme
 import * as TP from '../shared/template-path'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from './scene-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
@@ -93,7 +94,7 @@ describe('removeJSXElementChild', () => {
       jsxElement('View', { 'data-uid': jsxAttributeValue('aaa'), prop1: jsxAttributeValue(5) }, []),
       null,
       false,
-      [],
+      emptyComments,
     ),
     utopiaJSXComponent(
       'test2WithChildren',
@@ -111,7 +112,7 @@ describe('removeJSXElementChild', () => {
       ]),
       null,
       false,
-      [],
+      emptyComments,
     ),
   ]
   xit('removes a root element', () => {

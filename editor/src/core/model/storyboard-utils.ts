@@ -40,6 +40,7 @@ import {
 } from '../shared/project-file-types'
 import { fastForEach } from '../shared/utils'
 import { addImport, parseSuccess } from '../workers/common/project-file-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
@@ -229,7 +230,7 @@ function addStoryboardFileForComponent(
     null,
     [importAlias('Storyboard'), importAlias('Scene'), importAlias('jsx')],
     null,
-    [],
+    emptyComments,
     {},
   )
   // Create the storyboard variable.
@@ -243,7 +244,7 @@ function addStoryboardFileForComponent(
         null,
         [importAlias(createFileWithComponent.toImport)],
         null,
-        [],
+        emptyComments,
         imports,
       )
       break
@@ -254,7 +255,7 @@ function addStoryboardFileForComponent(
         'StoryboardComponent',
         [],
         null,
-        [],
+        emptyComments,
         imports,
       )
       break
@@ -265,7 +266,7 @@ function addStoryboardFileForComponent(
         null,
         [importAlias(createFileWithComponent.elementName)],
         null,
-        [],
+        emptyComments,
         imports,
       )
       // Modify the targeted file to export the component we're interested in.
@@ -323,7 +324,7 @@ function addStoryboardFileForComponent(
     storyboardElement,
     null,
     false,
-    [],
+    emptyComments,
   )
   // Add the component import.
   // Create the file.

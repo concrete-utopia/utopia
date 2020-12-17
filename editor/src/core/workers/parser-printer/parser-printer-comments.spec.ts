@@ -26,7 +26,10 @@ describe('parseCode', () => {
     ).formatted
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     expect(testPrintParsedTextFile(actualResult)).toEqual(code)
-    const leadingComments = Utils.path(['topLevelElements', 0, 'leadingComments'], actualResult)
+    const leadingComments = Utils.path(
+      ['topLevelElements', 0, 'comments', 'leadingComments'],
+      actualResult,
+    )
     expect(leadingComments).toMatchInlineSnapshot(`
       Array [
         Object {

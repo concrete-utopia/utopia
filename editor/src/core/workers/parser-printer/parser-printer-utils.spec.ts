@@ -11,6 +11,7 @@ import {
 } from '../../shared/element-template'
 import { guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import Utils from '../../../utils/utils'
+import { emptyComments } from './parser-printer-comments'
 
 describe('guaranteeUniqueUidsFromTopLevel', () => {
   it('creates an ID where there was none', () => {
@@ -22,7 +23,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       jsxElement('View', { 'data-uid': jsxAttributeValue('aa') }, []),
       null,
       false,
-      [],
+      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(Utils.path(['rootElement', 'props', 'data-uid'], fixedComponent)).toBeDefined()
@@ -40,7 +41,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ]),
       null,
       false,
-      [],
+      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     const child0UID = Utils.path(
@@ -64,7 +65,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       jsxElement('View', { 'data-uid': jsxAttributeFunctionCall('someFunction', []) }, []),
       null,
       false,
-      [],
+      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
 
@@ -88,7 +89,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ]),
       null,
       false,
-      [],
+      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(
@@ -108,7 +109,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ]),
       null,
       false,
-      [],
+      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(
@@ -131,7 +132,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ]),
       null,
       false,
-      [],
+      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(exampleComponent === fixedComponent).toBeFalsy()
