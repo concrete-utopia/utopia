@@ -599,14 +599,6 @@ function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): s
   return result
 }
 
-function createJsxPragma(jsxFactoryFunction: string | null): string {
-  if (jsxFactoryFunction == null) {
-    return ''
-  } else {
-    return `/** @jsx ${jsxFactoryFunction} */\n`
-  }
-}
-
 function produceExportDeclaration(detailOfExports: ExportsDetail) {
   let possibleExports: Array<TS.ExportSpecifier> = []
   for (const componentName of Object.keys(detailOfExports.namedExports)) {
@@ -737,11 +729,7 @@ function printCodeImpl(
     statementsToPrint.push(exportDeclaration)
   }
 
-  const printedCode = printStatements(statementsToPrint, printOptions.pretty)
-  const jsxPragma = createJsxPragma(jsxFactoryFunction)
-  // we just dumbly append the parsed jsx pragma to the top of the file, no matter where it was originally
-  const result = jsxPragma + printedCode
-  return result
+  return printStatements(statementsToPrint, printOptions.pretty)
 }
 
 interface PossibleCanvasContentsExpression {
