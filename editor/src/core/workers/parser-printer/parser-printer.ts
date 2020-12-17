@@ -457,7 +457,7 @@ function printUtopiaJSXComponent(
   detailOfExports: ExportsDetail,
 ): TS.Node {
   const asJSX = jsxElementToExpression(element.rootElement, imports, printOptions.stripUIDs)
-  if (TS.isJsxElement(asJSX) || TS.isJsxSelfClosingElement(asJSX)) {
+  if (TS.isJsxElement(asJSX) || TS.isJsxSelfClosingElement(asJSX) || TS.isJsxFragment(asJSX)) {
     let elementNode: TS.Node
     const modifiers = getModifersForComponent(element, detailOfExports)
     if (element.isFunction) {
