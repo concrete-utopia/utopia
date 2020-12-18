@@ -1,6 +1,6 @@
 import * as UtopiaAPI from 'utopia-api'
-import * as UUIUI from 'uuiui'
-import * as UUIUIDeps from 'uuiui-deps'
+import * as UUIUI from '../../../uuiui'
+import * as UUIUIDeps from '../../../uuiui-deps'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import * as EmotionReact from '@emotion/react'

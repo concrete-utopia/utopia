@@ -5,17 +5,6 @@ import * as pathParse from 'path-parse'
 import * as R from 'ramda'
 import * as React from 'react'
 import { ConnectableElement, ConnectDragPreview, useDrag, useDrop } from 'react-dnd'
-import {
-  Button,
-  colorTheme,
-  flexRowStyle,
-  Icn,
-  Icons,
-  OnClickOutsideHOC,
-  SimpleFlexRow,
-  StringInput,
-  UtopiaTheme,
-} from 'uuiui'
 import { codeFile, ProjectFileType } from '../../core/shared/project-file-types'
 import { parseClipboardData } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
@@ -32,6 +21,17 @@ import { last } from '../../core/shared/array-utils'
 import { FileResult } from '../../core/shared/file-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { fileResultUploadAction } from '../editor/image-insert'
+import {
+  Icn,
+  Icons,
+  flexRowStyle,
+  OnClickOutsideHOC,
+  StringInput,
+  colorTheme,
+  UtopiaTheme,
+  SimpleFlexRow,
+  Button,
+} from '../../uuiui'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean

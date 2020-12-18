@@ -1,16 +1,15 @@
 import * as React from 'react'
-import {
-  CheckboxInput,
-  FlexRow,
-  Icn,
-  InspectorSubsectionHeader,
-  NumberInput,
-  SquareButton,
-  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { isRight } from '../../../../../core/shared/either'
-import utils from '../../../../../utils/utils'
+import {
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+  NumberInput,
+  InspectorSubsectionHeader,
+  FlexRow,
+  SquareButton,
+  Icn,
+  CheckboxInput,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import {

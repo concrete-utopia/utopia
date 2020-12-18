@@ -1,5 +1,5 @@
 import styled from '@emotion/styled'
-import { transparent } from 'uuiui'
+import { transparent } from '../../../uuiui'
 
 export const InspectorControlLabelMini = styled.label({
   textAlign: 'center',

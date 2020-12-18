@@ -1,6 +1,5 @@
 import * as Chroma from 'chroma-js'
 import * as R from 'ramda'
-import { colorTheme, SimpleNumberInput, SimplePercentInput } from 'uuiui'
 import { WindowPoint } from '../../../core/shared/math-utils'
 import { ControlStyleDefaults, getControlStyles } from '../common/control-status'
 import {
@@ -17,6 +16,7 @@ import { inspectorEdgePadding } from '../sections/style-section/background-subse
 import { InspectorModal } from '../widgets/inspector-modal'
 import { StringControl } from './string-control'
 import React = require('react')
+import { colorTheme, SimpleNumberInput, SimplePercentInput } from '../../../uuiui'
 
 export interface ColorPickerProps extends ColorPickerInnerProps {
   closePopup: () => void

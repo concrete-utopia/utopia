@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { MapLike } from 'typescript'
-import { betterReactMemo } from 'uuiui-deps'
 // Inject the babel helpers into the global scope
 import '../../bundled-dependencies/babelHelpers'
 import * as TP from '../../core/shared/template-path'
@@ -66,7 +65,7 @@ import {
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
-import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}

@@ -1,7 +1,6 @@
 import * as React from 'react'
 
 import * as PP from '../../../../../core/shared/property-path'
-import { betterReactMemo } from 'uuiui-deps'
 import { OptionChainControl } from '../../../controls/option-chain-control'
 import {
   useInspectorLayoutInfo,
@@ -19,18 +18,19 @@ import {
   ControlStyles,
 } from '../../../common/control-status'
 import { LayoutSystem } from 'utopia-api'
-import {
-  ChainedNumberInput,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  SquareButton,
-  FunctionIcons,
-} from 'uuiui'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
   SpecialSizeMeasurements,
 } from '../../../../../core/shared/element-template'
+import {
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  ChainedNumberInput,
+  SquareButton,
+  FunctionIcons,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'

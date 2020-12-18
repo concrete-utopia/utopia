@@ -1,6 +1,4 @@
 import * as React from 'react'
-import { FlexColumn, Button, UtopiaTheme } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { filterOldPasses } from '../../core/workers/ts/ts-worker'
 import { EditorCanvas } from '../../templates/editor-canvas'
 import { ErrorRecord } from '../../third-party/react-error-overlay/containers/RuntimeError'
@@ -24,6 +22,8 @@ import { NO_OP } from '../../core/shared/utils'
 import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
 import { openFileTab } from '../editor/store/editor-tabs'
+import { FlexColumn, Button, UtopiaTheme } from '../../uuiui'
+import { betterReactMemo } from '../../uuiui-deps'
 
 interface CanvasWrapperComponentProps {
   runtimeErrors: Array<RuntimeErrorInfo>

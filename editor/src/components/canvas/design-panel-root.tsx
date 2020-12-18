@@ -1,8 +1,6 @@
 import { Resizable, ResizeDirection } from 're-resizable'
 import * as React from 'react'
-import { SimpleFlexRow, UtopiaStyles, UtopiaTheme } from 'uuiui'
 
-import { betterReactMemo } from 'uuiui-deps'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
 
@@ -16,6 +14,8 @@ import { InsertMenuPane, LeftPaneDefaultWidth } from '../navigator/left-pane'
 import { RightMenu, RightMenuTab } from './right-menu'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 import { NavigatorComponent } from '../navigator/navigator'
+import { SimpleFlexRow, UtopiaTheme, UtopiaStyles } from '../../uuiui'
+import { betterReactMemo } from '../../uuiui-deps'
 
 interface DesignPanelRootProps {
   isUiJsFileOpen: boolean

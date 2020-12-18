@@ -1,7 +1,5 @@
 import * as React from 'react'
 import { animated } from 'react-spring'
-import { FlexRow, Icn, InspectorSubsectionHeader, SquareButton, UtopiaTheme } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
@@ -37,7 +35,17 @@ import { LinearGradientBackgroundLayer } from './linear-gradient-layer'
 import { RadialGradientBackgroundLayer } from './radial-gradient-layer'
 import { SolidBackgroundLayer } from './solid-background-layer'
 import { URLBackgroundLayer } from './url-background-layer'
-import { useKeepReferenceEqualityIfPossible } from '../../../../../utils/react-performance'
+import {
+  betterReactMemo,
+  useKeepReferenceEqualityIfPossible,
+} from '../../../../../utils/react-performance'
+import {
+  UtopiaTheme,
+  InspectorSubsectionHeader,
+  FlexRow,
+  SquareButton,
+  Icn,
+} from '../../../../../uuiui'
 
 function insertBackgroundLayer(
   cssBackgroundLayers: CSSBackgroundLayers,

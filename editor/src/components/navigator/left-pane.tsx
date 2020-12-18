@@ -3,26 +3,25 @@ import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as React from 'react'
 import { Component as ReactComponent } from 'react'
-import {
-  colorTheme,
-  FlexColumn,
-  FlexRow,
-  PopupList,
-  Section,
-  SectionBodyArea,
-  SectionTitleRow,
-  Title,
-  UtopiaTheme,
-  Button,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { thumbnailURL } from '../../common/server'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
-import { isRight } from '../../core/shared/either'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
 import Utils from '../../utils/utils'
+import {
+  PopupList,
+  colorTheme,
+  UtopiaTheme,
+  FlexColumn,
+  Section,
+  SectionTitleRow,
+  FlexRow,
+  Title,
+  SectionBodyArea,
+  Button,
+} from '../../uuiui'
+import { betterReactMemo } from '../../uuiui-deps'
 import { CodeEditorTheme, CodeEditorThemeCollection } from '../code-editor/code-editor-themes'
 import { setFocus } from '../common/actions'
 import { EditorAction, EditorDispatch, LoginState } from '../editor/action-types'
@@ -44,7 +43,6 @@ import { GridRow } from '../inspector/widgets/grid-row'
 import { DependencyList } from './dependency-list'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
 import { GoogleFontsResourcesList } from './external-resources/google-fonts-resources-list'
-import { NavigatorComponent } from './navigator'
 
 export interface LeftPaneProps {
   editorState: EditorState

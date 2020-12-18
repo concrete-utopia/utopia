@@ -3,13 +3,18 @@ import { ValueType } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
-import { UNSAFE_getIconURL, InspectorSubsectionHeader, Section, UtopiaTheme } from 'uuiui'
-import { betterReactMemo, SelectOption, Utils, ControlStyles } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorElementInfo } from '../../../common/property-path-hooks'
 import { styleFn } from 'react-select/src/styles'
-import { CustomReactSelectInput } from '../../../controls/select-control'
+import { CustomReactSelectInput, SelectOption } from '../../../controls/select-control'
+import {
+  UtopiaTheme,
+  UNSAFE_getIconURL,
+  Section,
+  InspectorSubsectionHeader,
+} from '../../../../../uuiui'
+import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<SelectOption>> = () =>
   null

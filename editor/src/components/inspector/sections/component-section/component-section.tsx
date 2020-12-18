@@ -9,18 +9,6 @@ import {
   ObjectControlDescription,
   UnionControlDescription,
 } from 'utopia-api'
-import {
-  colorTheme,
-  FunctionIcons,
-  Icn,
-  InspectorSectionHeader,
-  PopupList,
-  SimpleFlexRow,
-  SquareButton,
-  Tooltip,
-  UtopiaTheme,
-} from 'uuiui'
-import { betterReactMemo, getControlStyles } from 'uuiui-deps'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import {
   getDescriptionUnsetOptionalFields,
@@ -32,9 +20,24 @@ import { foldEither } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
+import {
+  betterReactMemo,
+  useKeepReferenceEqualityIfPossible,
+} from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
 import { getParseErrorDetails, ParseError } from '../../../../utils/value-parser-utils'
+import {
+  Tooltip,
+  colorTheme,
+  UtopiaTheme,
+  InspectorSectionHeader,
+  SimpleFlexRow,
+  SquareButton,
+  Icn,
+  PopupList,
+  FunctionIcons,
+} from '../../../../uuiui'
+import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { showContextMenu } from '../../../editor/actions/action-creators'

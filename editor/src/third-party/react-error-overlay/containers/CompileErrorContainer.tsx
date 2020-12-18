@@ -17,8 +17,8 @@ import CodeBlock from '../components/CodeBlock'
 import generateAnsiHTML from '../utils/generateAnsiHTML'
 import { ErrorLocation } from '../utils/parseCompileError'
 import { ErrorMessage } from '../../../core/shared/error-messages'
-import { colorTheme } from 'uuiui'
 import { CursorPosition } from '../../../components/code-editor/code-editor-utils'
+import { colorTheme } from '../../../uuiui'
 
 type Props = {
   currentBuildErrorRecords: ErrorMessage[]

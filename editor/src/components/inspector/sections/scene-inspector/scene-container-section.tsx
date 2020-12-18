@@ -1,9 +1,7 @@
 import * as React from 'react'
-import { betterReactMemo } from 'uuiui-deps'
 import * as TP from '../../../../core/shared/template-path'
 import * as PP from '../../../../core/shared/property-path'
 import Utils from '../../../../utils/utils'
-import { useWrappedEmptyOrUnknownOnSubmitValue, CheckboxInput } from '../../../../uuiui'
 import { ControlStatus, ControlStyleDefaults, getControlStyles } from '../../common/control-status'
 import { cssEmptyValues, layoutEmptyValues } from '../../common/css-utils'
 import {
@@ -25,7 +23,6 @@ import {
 import { jsxAttributeValue, isJSXAttributeNotFound } from '../../../../core/shared/element-template'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { isPercentPin } from 'utopia-api'
 import { unsetSceneProp, setSceneProp } from '../../../editor/actions/action-creators'
 import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
 import {
@@ -35,6 +32,8 @@ import {
 import { GridRow } from '../../widgets/grid-row'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
 import { ChildWithPercentageSize } from '../../../common/size-warnings'
+import { useWrappedEmptyOrUnknownOnSubmitValue, CheckboxInput } from '../../../../uuiui'
+import { betterReactMemo } from '../../../../uuiui-deps'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 

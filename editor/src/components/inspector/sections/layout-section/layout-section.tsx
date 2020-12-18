@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { CanvasRectangle, LocalRectangle } from '../../../../core/shared/math-utils'
-import { betterReactMemo } from 'uuiui-deps'
 import { LayoutSystemSubsection } from './layout-system-subsection/layout-system-subsection'
 import { SelfLayoutSubsection } from './self-layout-subsection/self-layout-subsection'
 import { CSSPosition } from '../../common/css-utils'
@@ -8,6 +7,7 @@ import {
   DetectedLayoutSystem,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
+import { betterReactMemo } from '../../../../uuiui-deps'
 
 export interface ResolvedLayoutProps {
   frame: LocalRectangle | null

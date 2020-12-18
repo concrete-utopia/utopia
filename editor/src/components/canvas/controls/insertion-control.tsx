@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { CanvasVector, CanvasRectangle } from '../../../core/shared/math-utils'
+import { colorTheme } from '../../../uuiui'
 import { Outline } from './outline'
-import { colorTheme } from 'uuiui'
 
 export interface InsertionControlProps {
   frame: CanvasRectangle

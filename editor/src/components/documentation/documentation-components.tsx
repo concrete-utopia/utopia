@@ -3,7 +3,7 @@ import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import * as React from 'react'
-import { colorTheme, UtopiaStyles, SimpleFlexRow } from 'uuiui'
+import { colorTheme } from '../../uuiui'
 
 export const H1 = styled.h1({
   transform: 'rotateZ(-1deg) skew(-1deg, 0deg)',

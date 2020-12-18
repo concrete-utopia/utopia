@@ -1,16 +1,16 @@
 import { Frame, FramePin } from 'utopia-api'
-import { Utils } from 'uuiui-deps'
 import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
 import * as TP from '../../../core/shared/template-path'
 import { testInspectorInfo } from './inspector.test-utils'
 import { changePin, ElementFrameInfo, PinsInfo } from './layout-property-path-hooks'
+import { mapValues } from '../../../core/shared/object-utils'
 
 type SimplePinsInfo = { [key in LayoutPinnedProp]: FramePin | undefined }
 
 function pinsInfoForPins(pins: SimplePinsInfo): PinsInfo {
-  return Utils.mapValues((pin) => testInspectorInfo(pin), pins) as PinsInfo
+  return mapValues((pin) => testInspectorInfo(pin), pins) as PinsInfo
 }
 
 function frameForPins(pins: SimplePinsInfo): Frame {

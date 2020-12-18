@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { UtopiaStyles, FlexRow, SimpleFlexRow, SimpleFlexColumn, UtopiaTheme } from 'uuiui'
+import { UtopiaStyles, SimpleFlexRow, UtopiaTheme, SimpleFlexColumn } from '../../uuiui'
 
 /**
  *  - _Error_: High visibility

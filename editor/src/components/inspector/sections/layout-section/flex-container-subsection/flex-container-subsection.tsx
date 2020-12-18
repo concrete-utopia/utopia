@@ -2,7 +2,6 @@ import * as React from 'react'
 import { FlexWrap } from 'utopia-api'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { betterReactMemo } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
 import {
   FlexAlignContentControl,
@@ -16,6 +15,7 @@ import {
 import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 const flexGapProp = [createLayoutPropertyPath('FlexGap')]
 const alignItemsProp = [createLayoutPropertyPath('alignItems')]

@@ -1,7 +1,5 @@
 import React = require('react')
 import * as R from 'ramda'
-import { UtopiaTheme } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { UseSubmitValueFactory } from '../common/property-path-hooks'
 import { isRight } from '../../../core/shared/either'
 import { ControlStatus, ControlStyles } from '../common/control-status'
@@ -22,6 +20,8 @@ import {
 } from '../common/css-utils'
 import { BackgroundPicker } from '../sections/style-section/background-subsection/background-picker'
 import { StringControl } from './string-control'
+import { UtopiaTheme } from '../../../uuiui'
+import { betterReactMemo } from '../../../uuiui-deps'
 
 export interface BackgroundThumbnailControlProps {
   value: CSSBackgroundLayer

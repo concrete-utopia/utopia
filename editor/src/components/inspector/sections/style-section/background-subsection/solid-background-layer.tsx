@@ -1,6 +1,4 @@
 import * as React from 'react'
-import { CheckboxInput, SimplePercentInput } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { isRight } from '../../../../../core/shared/either'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'
@@ -28,6 +26,8 @@ import {
   BackgroundSolidOrGradientThumbnailControl,
   StringBackgroundColorControl,
 } from '../../../controls/background-solid-or-gradient-thumbnail-control'
+import { CheckboxInput, SimplePercentInput } from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 function getIndexedUpdateStringCSSBackgroundLayerSolidColor(index: number) {
   return function indexedUpdateStringCSSBackgroundLayerSolidColor(
