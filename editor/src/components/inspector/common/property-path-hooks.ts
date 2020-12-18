@@ -377,47 +377,35 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   isUnknown: boolean
   usesComputedFallback: boolean
 } {
-  const valueAsMaybe = eitherToMaybe(simpleValue)
+  const simpleValueAsMaybe = eitherToMaybe(simpleValue)
   const rawValueAsMaybe = eitherToMaybe(rawValue)
 
-  function finalValueFromReal(
-    isUnknown: boolean,
-  ): {
-    finalValue: ParsedPropertiesValues
-    isUnknown: boolean
-    usesComputedFallback: boolean
-  } {
-    const parsedRealValue = parseAnyParseableValue(property, realValue, null)
-    if (isRight(parsedRealValue)) {
-      return {
-        finalValue: parsedRealValue.value,
-        isUnknown: isUnknown,
-        usesComputedFallback: false,
-      }
+  const parsedValue = parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
+  const parsedRealValue = parseAnyParseableValue(property, realValue, null)
+  const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
+  if (isRight(parsedValue)) {
+    return {
+      finalValue: parsedValue.value,
+      isUnknown: isCSSUnknownFunctionParameters(parsedValue.value),
+      usesComputedFallback: false,
     }
-    const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
-    if (isRight(parsedComputedValue)) {
-      return {
-        finalValue: parsedComputedValue.value,
-        isUnknown: isUnknown,
-        usesComputedFallback: true,
-      }
+  } else if (isRight(parsedRealValue)) {
+    return {
+      finalValue: parsedRealValue.value,
+      isUnknown: simpleValueAsMaybe != null,
+      usesComputedFallback: false,
     }
-    return { finalValue: emptyValues[property], isUnknown: isUnknown, usesComputedFallback: false }
-  }
-
-  if (rawValueAsMaybe == null) {
-    return finalValueFromReal(false)
+  } else if (isRight(parsedComputedValue)) {
+    return {
+      finalValue: parsedComputedValue.value,
+      isUnknown: simpleValueAsMaybe != null,
+      usesComputedFallback: true,
+    }
   } else {
-    const parsedValue = parseAnyParseableValue(property, valueAsMaybe, rawValueAsMaybe)
-    if (isRight(parsedValue)) {
-      return {
-        finalValue: parsedValue.value,
-        isUnknown: isCSSUnknownFunctionParameters(parsedValue.value),
-        usesComputedFallback: false,
-      }
-    } else {
-      return finalValueFromReal(valueAsMaybe != null)
+    return {
+      finalValue: emptyValues[property],
+      isUnknown: simpleValueAsMaybe != null,
+      usesComputedFallback: false,
     }
   }
 }
