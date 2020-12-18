@@ -229,26 +229,19 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "definedElsewhere": Array [],
       "definedWithin": Array [
         "cakeFn",
-        "otherFn",
       ],
       "javascript": "function cakeFn(n) {
-  return n;
-}
-function otherFn(n) {
   return n;
 }",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
+        "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC",
         "names": Array [
           "function",
           "cakeFn",
           "n",
           "{",
           "return",
-          "
-",
-          "otherFn",
           "}",
         ],
         "sources": Array [
@@ -278,11 +271,61 @@ export var whatever = (props) => {
       "transpiledJavascript": "function cakeFn(n) {
   return n;
 }
-
+return { cakeFn: cakeFn };",
+      "type": "ARBITRARY_JS_BLOCK",
+      "uniqueID": "",
+    },
+    Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
+      "definedElsewhere": Array [],
+      "definedWithin": Array [
+        "otherFn",
+      ],
+      "javascript": "function otherFn(n) {
+  return n;
+}",
+      "sourceMap": Object {
+        "file": "code.tsx",
+        "mappings": "AAMCA,SAASC,OAATD,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
+        "names": Array [
+          "function",
+          "otherFn",
+          "n",
+          "{",
+          "return",
+          "}",
+        ],
+        "sources": Array [
+          "code.tsx",
+        ],
+        "sourcesContent": Array [
+          "import { cake } from 'cake'
+import * as React from 'react'
+import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+function cakeFn(n) {
+  return n
+}
 function otherFn(n) {
+  return n
+}
+export var whatever = (props) => {
+  return (
+    <View data-uid={'aaa'}>
+      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    </View>
+  )
+}
+",
+        ],
+        "version": 3,
+      },
+      "transpiledJavascript": "function otherFn(n) {
   return n;
 }
-return { cakeFn: cakeFn, otherFn: otherFn };",
+return { otherFn: otherFn };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
     },
@@ -304,6 +347,10 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         "type": "PARAM",
       },
       "propsUsed": Array [],
+      "returnStatementComments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "rootElement": Object {
         "children": Array [
           Object {
@@ -551,6 +598,10 @@ return { a: a };",
         "type": "PARAM",
       },
       "propsUsed": Array [],
+      "returnStatementComments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "rootElement": Object {
         "children": Array [],
         "name": Object {
@@ -802,6 +853,10 @@ return { a: a };",
         "type": "PARAM",
       },
       "propsUsed": Array [],
+      "returnStatementComments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "rootElement": Object {
         "children": Array [
           Object {

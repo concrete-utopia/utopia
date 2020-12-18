@@ -1137,6 +1137,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           }
           if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
             pushArbitraryNode(topLevelElement)
+            applyAndResetArbitraryNodes() // TODO Should we be doing this every time we push an arbitrary node?
           } else {
             highlightBounds = parsedContents.value.highlightBounds
             const contents = parsedContents.value.value

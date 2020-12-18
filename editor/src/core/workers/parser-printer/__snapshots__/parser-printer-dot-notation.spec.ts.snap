@@ -43,6 +43,10 @@ Array [
       "type": "PARAM",
     },
     "propsUsed": Array [],
+    "returnStatementComments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
     "rootElement": Object {
       "children": Array [
         Object {

@@ -856,19 +856,53 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       emptyComments,
       emptyComments,
     )
-    const jsCode = `function getSizing(n) {
+    const jsCode1 = `function getSizing(n) {
+  return 100 + n;
+}`
+    const transpiledJsCode1 = `function getSizing(n) {
+  return 100 + n;
+}
+return { getSizing: getSizing };`
+    const arbitraryBlock1 = arbitraryJSBlock(
+      jsCode1,
+      transpiledJsCode1,
+      ['getSizing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      emptyComments,
+    )
+    const jsCode2 = `var spacing = 20;`
+    const transpiledJsCode2 = `var spacing = 20;
+return { spacing: spacing };`
+    const arbitraryBlock2 = arbitraryJSBlock(
+      jsCode2,
+      transpiledJsCode2,
+      ['spacing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      emptyComments,
+    )
+    const combinedJsCode = `function getSizing(n) {
   return 100 + n;
 }
 var spacing = 20;`
-    const transpiledJsCode = `function getSizing(n) {
+    const transpiledcombinedJsCode = `function getSizing(n) {
   return 100 + n;
 }
 
 var spacing = 20;
 return { getSizing: getSizing, spacing: spacing };`
-    const arbitraryBlock = arbitraryJSBlock(
-      jsCode,
-      transpiledJsCode,
+    const combinedArbitraryBlock = arbitraryJSBlock(
+      combinedJsCode,
+      transpiledcombinedJsCode,
       ['getSizing', 'spacing'],
       [],
       expect.objectContaining({
@@ -878,7 +912,9 @@ return { getSizing: getSizing, spacing: spacing };`
       }),
       emptyComments,
     )
-    const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
+      clearTopLevelElementUniqueIDs,
+    )
     const imports = addImport(
       'cake',
       null,
@@ -892,7 +928,7 @@ return { getSizing: getSizing, spacing: spacing };`
       [...topLevelElements],
       expect.objectContaining({}),
       null,
-      clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      clearArbitraryJSBlockUniqueIDs(combinedArbitraryBlock),
       addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -2562,19 +2598,53 @@ export var App = (props) => <View data-uid={'bbb'}>
       emptyComments,
       emptyComments,
     )
-    const jsCode = `function getSizing(n) {
+    const jsCode1 = `function getSizing(n) {
+  return 100 + n;
+}`
+    const transpiledJSCode1 = `function getSizing(n) {
+  return 100 + n;
+}
+return { getSizing: getSizing };`
+    const arbitraryBlock1 = arbitraryJSBlock(
+      jsCode1,
+      transpiledJSCode1,
+      ['getSizing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      emptyComments,
+    )
+    const jsCode2 = `var spacing = 20;`
+    const transpiledJSCode2 = `var spacing = 20;
+return { spacing: spacing };`
+    const arbitraryBlock2 = arbitraryJSBlock(
+      jsCode2,
+      transpiledJSCode2,
+      ['spacing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      emptyComments,
+    )
+    const combinedJSCode = `function getSizing(n) {
   return 100 + n;
 }
 var spacing = 20;`
-    const transpiledJSCode = `function getSizing(n) {
+    const transpiledcombinedJSCode = `function getSizing(n) {
   return 100 + n;
 }
 
 var spacing = 20;
 return { getSizing: getSizing, spacing: spacing };`
-    const arbitraryBlock = arbitraryJSBlock(
-      jsCode,
-      transpiledJSCode,
+    const combinedArbitraryBlock = arbitraryJSBlock(
+      combinedJSCode,
+      transpiledcombinedJSCode,
       ['getSizing', 'spacing'],
       [],
       expect.objectContaining({
@@ -2584,7 +2654,9 @@ return { getSizing: getSizing, spacing: spacing };`
       }),
       emptyComments,
     )
-    const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
+      clearTopLevelElementUniqueIDs,
+    )
     const imports = addImport(
       'cake',
       null,
@@ -2607,7 +2679,7 @@ return { getSizing: getSizing, spacing: spacing };`
       [...topLevelElements],
       expect.objectContaining({}),
       null,
-      clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      clearArbitraryJSBlockUniqueIDs(combinedArbitraryBlock),
       detailOfExports,
     )
     expect(actualResult).toEqual(expectedResult)

@@ -12,6 +12,10 @@ Array [
     "name": "storyboard",
     "param": null,
     "propsUsed": Array [],
+    "returnStatementComments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
     "rootElement": Object {
       "children": Array [
         Object {
