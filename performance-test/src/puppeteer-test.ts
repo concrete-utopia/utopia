@@ -8,8 +8,8 @@ const moveFile = require('move-file')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
-const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
+const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
+// const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -39,7 +39,7 @@ function consoleDoneMessage(page: puppeteer.Page) {
 export const testScrollingPerformance = async function () {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: true,
+    headless: false,
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
@@ -143,7 +143,7 @@ async function createTestPng(
       text: 'Frame Time Test - percentile: solid lines left to right 25%, 50%, 75%',
       font: {
         family: 'Courier New, monospace',
-        size: 16,
+        size: 10,
       },
       xref: 'paper',
       x: 0.05,
@@ -163,12 +163,12 @@ async function createTestPng(
       tickcolor: '#000',
       title: {
         text:
-          'Xaxis: Frame Times (ms) - red: 60fps - black: 30fps - green: 15fps - yellow: 7.5fps - Scrolling Test (n=' +
+          'Xaxis: Frame Times (ms) - red:60fps, black:30fps, green:15fps, yellow:7.5fps - Scrolling Test (n=' +
           n +
           ' Results not shown)',
         font: {
           family: 'Courier New, monospace',
-          size: 10,
+          size: 8,
           color: '#7f7f7f',
         },
       },
@@ -300,7 +300,7 @@ async function createTestPng(
   }
   const imgOpts = {
     format: 'png',
-    width: 800,
+    width: 700,
     height: 500,
   }
   const figure = { data: [trace], layout: layout }
