@@ -39,7 +39,7 @@ function consoleDoneMessage(page: puppeteer.Page) {
 export const testScrollingPerformance = async function () {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: true,
+    headless: false,
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
