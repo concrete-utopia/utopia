@@ -135,6 +135,7 @@ export function convertScenesToUtopiaCanvasComponent(
     null,
     false,
     emptyComments,
+    emptyComments,
   )
 }
 

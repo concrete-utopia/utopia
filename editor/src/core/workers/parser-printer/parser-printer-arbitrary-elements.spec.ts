@@ -186,6 +186,7 @@ export var whatever = props => (
       null,
       false,
       emptyComments,
+      emptyComments,
     )
 
     const codeBlock = jsxArbitraryBlock(
@@ -209,6 +210,7 @@ export var whatever = props => (
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
@@ -304,6 +306,7 @@ return { arr: arr };`
       view,
       arbitraryBlock,
       false,
+      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -401,6 +404,7 @@ return { arr: arr };`
       view,
       arbitraryBlock,
       false,
+      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -500,6 +504,7 @@ return { arr: arr };`
       arbitraryBlock,
       false,
       emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -585,6 +590,7 @@ export var whatever = (props) => {
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -684,6 +690,7 @@ return { arr: arr };`
       arbitraryBlock,
       false,
       emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -769,6 +776,7 @@ export var whatever = (props) => {
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -867,6 +875,7 @@ return { arr: arr };`
       view,
       arbitraryBlock,
       false,
+      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)

@@ -95,6 +95,7 @@ describe('removeJSXElementChild', () => {
       null,
       false,
       emptyComments,
+      emptyComments,
     ),
     utopiaJSXComponent(
       'test2WithChildren',
@@ -112,6 +113,7 @@ describe('removeJSXElementChild', () => {
       ]),
       null,
       false,
+      emptyComments,
       emptyComments,
     ),
   ]

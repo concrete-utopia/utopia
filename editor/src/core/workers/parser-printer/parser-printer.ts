@@ -476,7 +476,9 @@ function printUtopiaJSXComponent(
         // not Statements but I will deny all knowledge of ever having done this.
         statements.push(printArbitraryJSBlock(element.arbitraryJSBlock) as any)
       }
-      statements.push(TS.createReturn(asJSX))
+      const returnStatement = TS.createReturn(asJSX)
+      addCommentsToNode(returnStatement, element.returnStatementComments)
+      statements.push(returnStatement)
       const bodyBlock = TS.createBlock(statements, true)
       const arrowFunction = TS.createArrowFunction(
         undefined,
@@ -1157,6 +1159,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
                 contents.arbitraryJSBlock,
                 false,
                 comments,
+                contents.returnStatementComments,
               )
 
               const defaultExport = isDefaultExport(topLevelElement)
@@ -1224,6 +1227,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             topLevelElement.rootElement,
             topLevelElement.arbitraryJSBlock,
             true,
+            emptyComments,
             emptyComments,
           )
         } else {

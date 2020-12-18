@@ -72,10 +72,11 @@ describe('Parsing and printing code with comments', () => {
     commentInsideInnerJS: '// Comment inside inner JS',
     commentAfterInnerJS: '// Comment after inner JS',
     commentBeforeReturnStatement: '// Comment before return statement',
+    commentAfterReturnStatement: '// Comment after return statement',
     commentAtStartOfJSXAttribute: '/* Comment at start of JSX attribute */',
     commentAtEndOfJSXAttribute: '/* Comment at end of JSX attribute */',
     commentAtStartOfJSXExpression: '/* Comment at start of JSX expression */',
-    commentInsideJSXExpression: '/* Comment at inside JSX expression */',
+    commentInsideJSXExpression: '/* Comment inside JSX expression */',
     commentAtEndOfJSXExpression: '/* Comment at end of JSX expression */',
     commentBeforeExports: '// Comment before exports',
     commentInsideExports: '// Comment inside exports',
@@ -84,7 +85,6 @@ describe('Parsing and printing code with comments', () => {
   }
 
   const notYetSupported = [
-    'commentBeforeReturnStatement',
     'commentAtStartOfJSXAttribute',
     'commentAtEndOfJSXAttribute',
     'commentAtStartOfJSXExpression',
@@ -107,7 +107,7 @@ describe('Parsing and printing code with comments', () => {
     ${comments.commentBeforeComponent}
     var whatever = (props) => {
       ${comments.commentInComponent}
-      
+
       ${comments.commentBeforeInnerJS}
       function iAmAnInnerFunction() {
         ${comments.commentInsideInnerJS}
@@ -125,7 +125,7 @@ describe('Parsing and printing code with comments', () => {
             ${comments.commentAtEndOfJSXExpression}
           }
         </div>
-      )
+      ) ${comments.commentAfterReturnStatement}
     } ${comments.commentAfterComponent}
 
     ${comments.commentBeforeExports}

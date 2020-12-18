@@ -526,8 +526,9 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
     jsxElementArbitrary(3),
     arbitraryJSBlockArbitrary(),
     arbitraryComments(),
+    arbitraryComments(),
   )
-    .map(([name, isFunction, rootElement, jsBlock, comments]) => {
+    .map(([name, isFunction, rootElement, jsBlock, comments, returnStatementComments]) => {
       return utopiaJSXComponent(
         name,
         isFunction,
@@ -537,6 +538,7 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
         jsBlock,
         false,
         comments,
+        returnStatementComments,
       )
     })
     .filter((component) => {

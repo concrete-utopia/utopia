@@ -103,6 +103,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const imports = addImport(
       'cake',
@@ -158,6 +159,7 @@ export var whatever = () => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const imports = addImport(
@@ -224,6 +226,7 @@ export function whatever(props) {
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const imports = addImport(
       'cake',
@@ -283,6 +286,7 @@ export function whatever() {
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const imports = addImport(
@@ -349,6 +353,7 @@ export default function whatever(props) {
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const imports = addImport(
       'cake',
@@ -408,6 +413,7 @@ export default function whatever() {
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const imports = addImport(
@@ -470,6 +476,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const importsWithCake = addImport(
@@ -554,6 +561,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const imports = addImport(
       'cake',
@@ -614,6 +622,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         view,
         null,
         false,
+        emptyComments,
         emptyComments,
       )
       const imports = addImport(
@@ -695,6 +704,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         null,
         false,
         emptyComments,
+        emptyComments,
       )
       const imports = addImport(
         'cake',
@@ -761,6 +771,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const imports = addImport(
@@ -842,6 +853,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const jsCode = `function getSizing(n) {
@@ -927,6 +939,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const jsCode = `export default function getSizing(n) {
@@ -1014,6 +1027,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const jsCode = `export function getSizing(n) {
@@ -1108,6 +1122,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const jsCode = `export default (n => {
   return 100 + n;
@@ -1191,6 +1206,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const transpiledJSCode = `var spacing = 20;
@@ -1282,6 +1298,7 @@ return { bgs: bgs, bg: bg };`
       arbitraryBlock,
       false,
       emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1350,6 +1367,7 @@ return { greys: greys };`
       arbitraryBlock,
       false,
       emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1415,6 +1433,7 @@ return { a: a, b: b };`
       view,
       arbitraryBlock,
       false,
+      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -1484,6 +1503,7 @@ return { a: a, b: b, c: c };`
       view,
       arbitraryBlock,
       false,
+      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -1558,6 +1578,7 @@ return { a: a };`
       arbitraryBlock,
       false,
       emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1625,6 +1646,7 @@ return { a: a, b: b };`
       view,
       arbitraryBlock,
       false,
+      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -1695,6 +1717,7 @@ return { bg: bg };`
       arbitraryBlock,
       false,
       emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1750,6 +1773,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const jsCode = `var count = 10;`
@@ -1832,6 +1856,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const transpiledJSCode = `var use20 = true;
 return { use20: use20 };`
@@ -1892,6 +1917,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const transpiledJSCode = `var mySet = new Set();
@@ -1964,6 +1990,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const transpiledJSCode = `var spacing = 20;
@@ -2080,6 +2107,7 @@ return { MyComp: MyComp };`
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const topLevelElements = [MyComp, exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -2166,6 +2194,7 @@ export var whatever = props => (
       null,
       false,
       emptyComments,
+      emptyComments,
     )
 
     const myCompAttributes: JSXAttributes = {
@@ -2182,6 +2211,7 @@ export var whatever = props => (
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
@@ -2312,6 +2342,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const imports = addImport(
       'cake',
@@ -2368,6 +2399,7 @@ export var whatever = <View data-uid={'aaa'}>
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const imports = addImport(
       'cake',
@@ -2416,6 +2448,7 @@ export var App = (props) => <View data-uid={'bbb'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const expectedResult = parseSuccess(
@@ -2468,6 +2501,7 @@ export var App = (props) => <View data-uid={'bbb'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const imports = addImport(
@@ -2525,6 +2559,7 @@ export var App = (props) => <View data-uid={'bbb'}>
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const jsCode = `function getSizing(n) {
@@ -2595,6 +2630,7 @@ return { getSizing: getSizing, spacing: spacing };`
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const imports = addImport(
@@ -2712,6 +2748,7 @@ export var whatever = props => {
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const imports = addImport(
       'cake',
@@ -2762,6 +2799,7 @@ export var whatever = props => {
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const imports = addImport(
@@ -2858,6 +2896,7 @@ export var whatever = props => {
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const imports = addImport(
@@ -3000,6 +3039,7 @@ return { test: test };`
             clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
             false,
             emptyComments,
+            emptyComments,
           ),
         ],
         expect.objectContaining({}),
@@ -3073,6 +3113,7 @@ return { test: test };`
           ),
           false,
           emptyComments,
+          emptyComments,
         ),
       ),
       clearTopLevelElementUniqueIDs(
@@ -3090,6 +3131,7 @@ return { test: test };`
           ),
           null,
           false,
+          emptyComments,
           emptyComments,
         ),
       ),
@@ -3160,6 +3202,7 @@ export var App = props => {
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3205,6 +3248,7 @@ export var App = props => {
       ),
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
@@ -3273,6 +3317,7 @@ export var App = props => {
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3331,6 +3376,7 @@ export var App = props => {
       ),
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'App')
@@ -3499,6 +3545,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
       ),
       false,
       emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3547,6 +3594,7 @@ export var App = props => {
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3592,6 +3640,7 @@ export var whatever = props => {
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const actualResult = printCode(
       printCodeOptions(false, true, true),
@@ -3633,6 +3682,7 @@ export var whatever = props => {
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const actualResult = printCode(
@@ -3702,6 +3752,7 @@ return {  };`
       view,
       arbitraryBlock,
       false,
+      emptyComments,
       emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
@@ -3783,6 +3834,7 @@ return { result: result };`
       view,
       arbitraryBlock,
       false,
+      emptyComments,
       emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
@@ -3866,6 +3918,7 @@ export var whatever = props => {
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
@@ -3967,6 +4020,7 @@ return { a: a };`,
       topLevelArbitraryBlock,
       false,
       emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3995,6 +4049,7 @@ export var whatever = props => {
       view,
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(

@@ -24,6 +24,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(Utils.path(['rootElement', 'props', 'data-uid'], fixedComponent)).toBeDefined()
@@ -41,6 +42,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ]),
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -66,6 +68,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
 
@@ -90,6 +93,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       null,
       false,
       emptyComments,
+      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(
@@ -109,6 +113,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ]),
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -132,6 +137,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ]),
       null,
       false,
+      emptyComments,
       emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]

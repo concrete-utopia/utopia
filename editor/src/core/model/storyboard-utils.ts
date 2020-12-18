@@ -325,6 +325,7 @@ function addStoryboardFileForComponent(
     null,
     false,
     emptyComments,
+    emptyComments,
   )
   // Add the component import.
   // Create the file.

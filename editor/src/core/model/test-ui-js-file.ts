@@ -242,6 +242,7 @@ const mainComponentForTests = utopiaJSXComponent(
   null,
   false,
   emptyComments,
+  emptyComments,
 )
 
 const scene = utopiaJSXComponent(
@@ -259,6 +260,7 @@ const scene = utopiaJSXComponent(
   ),
   null,
   false,
+  emptyComments,
   emptyComments,
 )
 
@@ -291,6 +293,7 @@ const TestStoryboard = utopiaJSXComponent(
   ]),
   null,
   false,
+  emptyComments,
   emptyComments,
 )
 
