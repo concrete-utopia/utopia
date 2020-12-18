@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/uuid": "^8.3.0",
     "aws-sdk": "^2.810.0",
     "dotenv": "^8.2.0",
     "move-file": "^2.0.0",
@@ -17,7 +18,8 @@
     "plotly": "^1.0.6",
     "puppeteer": "5.5.0",
     "ts-node": "9.1.1",
-    "typescript": "4.1.2"
+    "typescript": "4.1.2",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/puppeteer": "5.4.1"

@@ -1,10 +1,10 @@
-require('dotenv').config({path: 'src/.env'})
+require('dotenv').config({ path: 'src/.env' })
 import puppeteer from 'puppeteer'
+import { v4 } from 'uuid'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
-const moveFile = require('move-file');
-
+const moveFile = require('move-file')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
@@ -37,13 +37,12 @@ function consoleDoneMessage(page: puppeteer.Page) {
 }
 
 export const testScrollingPerformance = async function () {
-  
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: true, 
+    headless: true,
   })
   const page = await browser.newPage()
-  await page.setViewport({ width: 1500, height: 768});
+  await page.setViewport({ width: 1500, height: 768 })
   // page.on('console', (message) =>
   //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
   // )
@@ -83,111 +82,279 @@ export const testScrollingPerformance = async function () {
     lastFrameTimestamp = frameTimestamp
   })
 
+  let frameTimesarray = frameTimes.map((x) => Number(x.toFixed(1)))
+
   const frameData = {
-    frameAvg: totalFrameTimes / frameTimes.length,
-    percentile25: frameTimes.sort((a, b) => a - b)[Math.floor(frameTimes.length * 0.25)],
-    percentile50: frameTimes.sort((a, b) => a - b)[Math.floor(frameTimes.length * 0.50)],
-    percentile75: frameTimes.sort((a,b) => a- b)[Math.floor(frameTimeEvents.length * 0.75)]
+    frameAvg: totalFrameTimes / frameTimesarray.length,
+    percentile25: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimesarray.length * 0.25)],
+    percentile50: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimesarray.length * 0.5)],
+    percentile75: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
   }
-  
-    
-  function createTestPng(testResults = frameTimes, testFileName = "TestFrameGraph.png" ) {
-    const plotly = require('plotly')("OmarDaSilva", "szS7pGItjmB7z50Ft3e9")
 
-    const trace = {
-      x: testResults.sort((a,b) => a-b),
-      name: "Frame Times",
-      type: "histogram"
-    }
-    const layout = {
-      title: {
-        text: 'Frame Time Test',
-        font: {
-          family:'Courier New, monospace',
-          size:16
-        },
-        xref: 'paper',
-        x: 0.05,
-      },
-      xaxis: {
-        //range: [, 16.6],
-        title: {
-          text: 'Frame Times (ms)',
-          font: {
-            family: 'Courier New, monospace',
-            size: 12,
-            color: '#7f7f7f'
-          }
-        },
-      },
-      yaxis: {
-        title: {
-          text: 'Frequency',
-          font: {
-            family: 'Courier New, monospace',
-            size: 12,
-            color: '#7f7f7f'
-          }
-        }
-      }
-    };
-    const imgOpts = {
-      format: 'png',
-      width: 500,
-      height: 300
-    };
-    const figure = {'data': [trace], layout: layout};
-    plotly.getImage(figure, imgOpts, function (error: any, imageStream: any) {
-      if (error) return console.log (error);
-  
-      var fileStream = fs.createWriteStream(testFileName);
-      imageStream.pipe(fileStream);
-  });
-  (async () => {
-    const path1 = path.resolve('TestFrameGraph.png')
-    const path2 = path.resolve('src')
-    await moveFile(path1, path2 + '/' + testFileName)
-  })();
-  return testFileName
-}
+  const imageFileName = v4() + '.png'
 
-function uploadPNGtoAWS(testFile = createTestPng()) {
-  AWS.config.update({
-    region: 'eu-west-2',
-    "AWS_ACCESS_KEY_ID": process.env.AWS_ACCESS_KEY_ID,
-    "AWS_SECRET_ACCESS_KEY": process.env.AWS_SECRET_ACCESS_KEY})
-
-    const metaData = testFile.split('.').pop();
-    let s3 = new AWS.S3({apiVersion: '2006-03-01'});
-    let file = testFile;
-    const uploadParams = {Bucket: "frame-test-png", Key: testFile, Body: '', ContentType: 'image/png' , ACL: 'public-read'};
-
-    let filestream = fs.createReadStream(file);
-    filestream.on('error', function(err: any) {
-      console.log('File Error', err);
-    });
-    uploadParams.Body = filestream;
-    uploadParams.Key = path.basename(file);
-    
-    s3.upload(uploadParams, function (err: any, data: any) {
-      if (err) {
-        console.log("Error", err);
-      } if (data) {
-        console.log("Upload Success", data.Location)
-      }
-    });
-}
-
-uploadPNGtoAWS()
+  const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData)
+  const s3FileUrl = await uploadPNGtoAWS(fileURI)
 
   console.info(
-    `::set-output name=perf-result:: "![TestFrameChart](https://frame-test-png.s3.eu-west-2.amazonaws.com/TestFrameGraph.png) ${totalFrameTimes}ms – average frame length: ${frameData.frameAvg}
-      – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${frameData.percentile75} – Median: ${frameData.percentile50} – frame times: [${frameTimes.join(
-      ',',
-    )}]"`
+    `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) ${totalFrameTimes}ms – average frame length: ${
+      frameData.frameAvg
+    }
+      – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
+      frameData.percentile75
+    } – Median: ${frameData.percentile50} – frame times: [${frameTimes.join(',')}]"`,
   )
-
-
 }
 
+function valueOutsideCutoff(frameCutoff: Array<number>) {
+  let sum = 0
+  for (let i = 0; i < frameCutoff.length; i++) {
+    if (frameCutoff[i]! > 130) {
+      sum += 1
+    }
+  }
+  return sum
+}
 
+async function createTestPng(
+  frameTimesArray: Array<number>,
+  testFileName: string,
+  frameData: {
+    frameAvg: number
+    percentile25: number | undefined
+    percentile50: number | undefined
+    percentile75: number | undefined
+  },
+) {
+  const plotly = require('plotly')('OmarDaSilva', 'szS7pGItjmB7z50Ft3e9')
+
+  const n = valueOutsideCutoff(frameTimesArray).toString()
+
+  const trace = {
+    x: frameTimesArray.sort((a, b) => a - b),
+    name: 'Frame Times',
+    type: 'histogram',
+    xbins: {
+      size: 0.4,
+    },
+  }
+  const layout = {
+    title: {
+      text: 'Frame Time Test - percentile: solid lines left to right 25%, 50%, 75%',
+      font: {
+        family: 'Courier New, monospace',
+        size: 16,
+      },
+      xref: 'paper',
+      x: 0.05,
+    },
+    xaxis: {
+      type: 'ms',
+      showgrid: true,
+      zeroline: true,
+      showline: true,
+      range: [16, 134],
+      autotick: false,
+      ticks: 'outside',
+      tick0: 0,
+      dtick: 2,
+      ticklen: 4,
+      tickwidth: 2,
+      tickcolor: '#000',
+      title: {
+        text:
+          'Xaxis: Frame Times (ms) - red: 60fps - black: 30fps - green: 15fps - yellow: 7.5fps - Scrolling Test (n=' +
+          n +
+          ' Results not shown)',
+        font: {
+          family: 'Courier New, monospace',
+          size: 10,
+          color: '#7f7f7f',
+        },
+      },
+    }, // Fps lines
+    shapes: [
+      {
+        type: 'line',
+        xref: 'x',
+        yref: 'y',
+        x0: 16.6,
+        x1: 16.6,
+        y0: 0,
+        y1: 100,
+        line: {
+          color: 'rgb(245, 66, 66)',
+          width: 1,
+          dash: 'dash',
+        },
+      },
+      {
+        type: 'line',
+        xref: 'x',
+        yref: 'y',
+        x0: 33.33,
+        x1: 33.33,
+        y0: 0,
+        y1: 100,
+        line: {
+          color: 'rgb(168, 50, 149)',
+          width: 1,
+          dash: 'dash',
+        },
+      },
+      {
+        type: 'line',
+        xref: 'x',
+        yref: 'y',
+        x0: 66.6,
+        x1: 66.6,
+        y0: 0,
+        y1: 100,
+        line: {
+          color: 'rgb(26, 255, 0)',
+          width: 1,
+          dash: 'dash',
+        },
+      },
+      {
+        type: 'line',
+        xref: 'x',
+        yref: 'y',
+        x0: 133.3,
+        x1: 133.3,
+        y0: 0,
+        y1: 100,
+        line: {
+          color: 'rgb(255, 239, 0)',
+          width: 1,
+          dash: 'dash',
+        },
+      },
+      {
+        //Quartile25 Line below
+        type: 'line',
+        xref: 'x',
+        yref: 'y',
+        x0: frameData.percentile25,
+        x1: frameData.percentile25,
+        y0: 0,
+        y1: 100,
+        line: {
+          color: 'rgb(0, 0, 0)',
+          width: 1,
+          dash: 'solid',
+        },
+      },
+      {
+        //Quartile50 Line below
+        type: 'line',
+        xref: 'x',
+        yref: 'y',
+        x0: frameData.percentile50,
+        x1: frameData.percentile50,
+        y0: 0,
+        y1: 100,
+        line: {
+          color: 'rgb(0, 0, 0)',
+          width: 1,
+          dash: 'solid',
+        },
+      },
+      {
+        //Quartile75 Lines below
+        type: 'line',
+        xref: 'x',
+        yref: 'y',
+        x0: frameData.percentile75,
+        x1: frameData.percentile75,
+        y0: 0,
+        y1: 100,
+        line: {
+          color: 'rgb(0, 0, 0)',
+          width: 1,
+          dash: 'solid',
+        },
+      },
+    ],
+    yaxis: {
+      showgrid: true,
+      zeroline: true,
+      showline: true,
+      range: [0, 35],
+      autotick: false,
+      ticks: 'outside',
+      tick0: 0,
+      dtick: 5,
+      ticklen: 8,
+      tickwidth: 2,
+      tickcolor: '#000',
+      title: {
+        text: 'Frequency',
+        font: {
+          family: 'Courier New, monospace',
+          size: 10,
+          color: '#7f7f7f',
+        },
+      },
+    },
+  }
+  const imgOpts = {
+    format: 'png',
+    width: 800,
+    height: 500,
+  }
+  const figure = { data: [trace], layout: layout }
+
+  return new Promise<string>((resolve, reject) => {
+    plotly.getImage(figure, imgOpts, async function (error: any, imageStream: any) {
+      if (error) return console.log(error)
+
+      var fileStream = fs.createWriteStream(testFileName)
+      imageStream.pipe(fileStream)
+      const path1 = path.resolve(testFileName)
+      const path2 = path.resolve('src')
+      await moveFile(path1, path2 + '/' + testFileName)
+      resolve(path2 + '/' + testFileName)
+    })
+  })
+}
+
+async function uploadPNGtoAWS(testFile: string) {
+  AWS.config.update({
+    region: 'eu-west-2',
+    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+  })
+
+  const metaData = testFile.split('.').pop()
+  let s3 = new AWS.S3({ apiVersion: '2006-03-01' })
+  let file = testFile
+  const uploadParams = {
+    Bucket: 'frame-test-png',
+    Key: testFile,
+    Body: '',
+    ContentType: 'image/png',
+    ACL: 'public-read',
+  }
+
+  return new Promise<string>((resolve, reject) => {
+    let filestream = fs.createReadStream(file)
+    filestream.on('error', function (err: any) {
+      console.log('File Error', err)
+      reject(err)
+    })
+    uploadParams.Body = filestream
+    uploadParams.Key = path.basename(file)
+
+    s3.upload(uploadParams, function (err: any, data: any) {
+      if (err) {
+        console.log('Error', err)
+        reject(err)
+      }
+      if (data) {
+        console.log('Upload Success', data.Location)
+        resolve(data.Location)
+      }
+    })
+  })
+}
