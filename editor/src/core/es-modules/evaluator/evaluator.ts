@@ -21,7 +21,7 @@ function isEsModuleError(error: Error) {
 function transformToCommonJS(filePath: string, moduleCode: string): string {
   const plugins = [BabelTransformCommonJS]
   const result = Babel.transform(moduleCode, {
-    presets: ['es2015'],
+    presets: ['es2015', 'react'],
     plugins: plugins,
     sourceType: 'module',
     sourceFileName: filePath,
