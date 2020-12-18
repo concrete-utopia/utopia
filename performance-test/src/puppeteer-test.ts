@@ -103,7 +103,7 @@ export const testScrollingPerformance = async function () {
       – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
       frameData.percentile75
     } – Median: ${frameData.percentile50} – frame times: [${frameTimes
-      .sort((a, b) => b - a)
+      .sort((a, b) => a - b)
       .join(',')}]"`,
   )
 }
