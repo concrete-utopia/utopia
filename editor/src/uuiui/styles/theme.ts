@@ -239,7 +239,7 @@ const light = {
   inspectorControlledBackgroundColor: createUtopiColor('#0091FF', '', ''),
   inspectorControlledSegmentSelectorColor: createUtopiColor('#0091FF', '', ''),
   inspectorControlledSegmentTrackColor: createUtopiColor('#EDEDED', '', ''),
-  inspectorDetectedMainColor: lightBase.primary,
+  inspectorDetectedMainColor: createUtopiColor('hsl(0,0%,85%)', 'eg unset pins ', ''),
   inspectorDetectedSecondaryColor: createUtopiColor('hsl(0,0%,85%)', 'eg unset pins ', ''),
   inspectorDetectedBorderColor: lightControls.inputBorder,
   inspectorDetectedBackgroundColor: lightControls.inputBackground,
