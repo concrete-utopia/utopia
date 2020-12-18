@@ -375,31 +375,49 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
 ): {
   finalValue: ParsedPropertiesValues
   isUnknown: boolean
+  usesComputedFallback: boolean
 } {
   const valueAsMaybe = eitherToMaybe(simpleValue)
   const rawValueAsMaybe = eitherToMaybe(rawValue)
 
-  function finalValueFromReal(): ParsedPropertiesValues {
-    if (realValue == null) {
-      const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
-      return defaultEither(emptyValues[property], parsedComputedValue)
-    } else {
-      const parsedRealValue = parseAnyParseableValue(property, realValue, null)
-      return defaultEither(emptyValues[property], parsedRealValue)
+  function finalValueFromReal(
+    isUnknown: boolean,
+  ): {
+    finalValue: ParsedPropertiesValues
+    isUnknown: boolean
+    usesComputedFallback: boolean
+  } {
+    const parsedRealValue = parseAnyParseableValue(property, realValue, null)
+    if (isRight(parsedRealValue)) {
+      return {
+        finalValue: parsedRealValue.value,
+        isUnknown: isUnknown,
+        usesComputedFallback: false,
+      }
     }
+    const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
+    if (isRight(parsedComputedValue)) {
+      return {
+        finalValue: parsedComputedValue.value,
+        isUnknown: isUnknown,
+        usesComputedFallback: true,
+      }
+    }
+    return { finalValue: emptyValues[property], isUnknown: isUnknown, usesComputedFallback: false }
   }
 
   if (rawValueAsMaybe == null) {
-    return { finalValue: finalValueFromReal(), isUnknown: false }
+    return finalValueFromReal(false)
   } else {
     const parsedValue = parseAnyParseableValue(property, valueAsMaybe, rawValueAsMaybe)
     if (isRight(parsedValue)) {
       return {
         finalValue: parsedValue.value,
         isUnknown: isCSSUnknownFunctionParameters(parsedValue.value),
+        usesComputedFallback: false,
       }
     } else {
-      return { finalValue: finalValueFromReal(), isUnknown: valueAsMaybe != null }
+      return finalValueFromReal(valueAsMaybe != null)
     }
   }
 }
@@ -524,7 +542,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
         )
         const realValue: any = realValues[0]
         const computedValue = computedValues[0]
-        const { finalValue, isUnknown: pathIsUnknown } = parseFinalValue(
+        const { finalValue, isUnknown: pathIsUnknown, usesComputedFallback } = parseFinalValue(
           propKey,
           simpleValue,
           rawValue,
@@ -532,6 +550,8 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           computedValue,
         )
         isUnknown = isUnknown || pathIsUnknown
+        // setting the status to detected because it uses the fallback value
+        propertyStatus.detected = usesComputedFallback
         return finalValue
       } else {
         let firstFinalValue: ParsedPropertiesValues
@@ -542,7 +562,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           )
           const realValue: any = realValues[i]
           const computedValue = computedValues[i]
-          const { finalValue, isUnknown: pathIsUnknown } = parseFinalValue(
+          const { finalValue, isUnknown: pathIsUnknown, usesComputedFallback } = parseFinalValue(
             propKey,
             simpleValue,
             rawValue,
@@ -553,6 +573,8 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
             firstFinalValue = finalValue
           }
           isUnknown = isUnknown || pathIsUnknown
+          // setting the status to detected because it uses the fallback value
+          propertyStatus.detected = propertyStatus.detected || usesComputedFallback
         })
         return firstFinalValue
       }

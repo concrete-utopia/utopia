@@ -415,15 +415,12 @@ function isOverwritable(modifiableAttributeResult: GetModifiableAttributeResult)
 function calculatePropertyStatusPerProperty(
   modifiableAttributeResult: GetModifiableAttributeResult,
   realValue: unknown,
-  computedValues: string | null,
 ): SinglePropertyStatus {
-  const valueIsSet = isSet(modifiableAttributeResult, realValue)
-  const valueIsControlled = isControlled(modifiableAttributeResult, realValue)
   return {
-    set: valueIsSet,
-    controlled: valueIsControlled,
+    set: isSet(modifiableAttributeResult, realValue),
+    controlled: isControlled(modifiableAttributeResult, realValue),
     overwritable: isOverwritable(modifiableAttributeResult),
-    detected: !valueIsSet && !valueIsControlled && computedValues != null,
+    detected: false,
   }
 }
 
@@ -431,7 +428,6 @@ function calculatePropertyStatusPerProperty(
 export function calculatePropertyStatusForSelection(
   modifiableAttributeResult: ReadonlyArray<GetModifiableAttributeResult>,
   realValues: ReadonlyArray<unknown>,
-  computedValues: ReadonlyArray<string>,
 ): PropertyStatus {
   const selectionLength = modifiableAttributeResult.length
   const firstResult = modifiableAttributeResult[0]
@@ -447,13 +443,7 @@ export function calculatePropertyStatusForSelection(
   }
   if (selectionLength === 1) {
     return {
-      ...calculatePropertyStatusPerProperty(
-        firstResult,
-        realValues[0],
-        Array.isArray(computedValues) && computedValues.length > 0
-          ? computedValues[0] ?? null
-          : null,
-      ),
+      ...calculatePropertyStatusPerProperty(firstResult, realValues[0]),
       selectionLength,
       identical: true,
     }
@@ -494,7 +484,6 @@ export function calculateMultiPropertyStatusForSelection<
   realValues: {
     [key in PropertiesToControl]: {
       realValues: ReadonlyArray<unknown>
-      computedValues: ReadonlyArray<string>
     }
   },
 ): PropertyStatus {
@@ -505,8 +494,7 @@ export function calculateMultiPropertyStatusForSelection<
   keys.forEach((key) => {
     const attribute = multiselectAtProps[key as PropertiesToControl]
     const values = realValues[key as PropertiesToControl].realValues
-    const computedValues = realValues[key as PropertiesToControl].computedValues
-    propertyStatuses.push(calculatePropertyStatusForSelection(attribute, values, computedValues))
+    propertyStatuses.push(calculatePropertyStatusForSelection(attribute, values))
   })
 
   let identical = true
@@ -552,7 +540,7 @@ export function calculateMultiStringPropertyStatusForSelection(
   keys.forEach((key) => {
     const attribute = multiselectAtProps[key]
     const values = realValues[key].realValues
-    propertyStatuses.push(calculatePropertyStatusForSelection(attribute, values, []))
+    propertyStatuses.push(calculatePropertyStatusForSelection(attribute, values))
   })
 
   let identical = true
