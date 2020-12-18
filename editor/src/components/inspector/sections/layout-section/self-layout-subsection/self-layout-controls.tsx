@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { betterReactMemo } from 'uuiui-deps'
 import { OptionChainControl } from '../../../controls/option-chain-control'
-import { useInspectorLayoutInStyleInfo_UNSAFE } from '../../../common/property-path-hooks'
+import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { SelfLayoutTab } from './self-layout-subsection'
 import { getControlStyles } from '../../../common/control-status'
 
@@ -13,12 +13,9 @@ interface LayoutTypePickerProps {
 export const LayoutTypePicker = betterReactMemo(
   'LayoutTypePicker',
   ({ value, setActiveTab }: LayoutTypePickerProps) => {
-    const {
-      onSubmitValue,
-      onUnsetValues,
-      controlStatus,
-      controlStyles,
-    } = useInspectorLayoutInStyleInfo_UNSAFE('position')
+    const { onSubmitValue, onUnsetValues, controlStatus, controlStyles } = useInspectorStyleInfo(
+      'position',
+    )
     const changeSelectedType = React.useCallback(
       (newValue: SelfLayoutTab) => {
         setActiveTab(newValue)

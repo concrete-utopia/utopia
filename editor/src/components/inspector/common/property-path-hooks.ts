@@ -332,28 +332,6 @@ export function useInspectorStyleInfo<P extends ParsedCSSPropertiesKeys>(
   return useInspectorInfo([prop], transformValue, untransformValue, stylePropPathMappingFn)
 }
 
-// TODO: layout in style
-/** This allows functionality for editing Layout properties in style/css. This is marked
- *  as UNSAFE as the values that are read here are not to be trusted as the final values.
- *
- *  This is a stop-gap until we have everything in style.
- */
-export function useInspectorLayoutInStyleInfo_UNSAFE<
-  P extends Exclude<ParsedCSSPropertiesKeys, ParsedCSSPropertiesKeysNoLayout>
->(
-  prop: P,
-  transformValue: (parsedValues: ParsedValues<P>) => ParsedCSSProperties[P] = (parsedValues) =>
-    parsedValues[prop],
-  untransformValue: (transformedType: ParsedCSSProperties[P]) => Partial<ParsedValues<P>> = (
-    transformedType,
-  ) =>
-    ({
-      [prop]: transformedType,
-    } as Partial<ParsedValues<P>>),
-) {
-  return useInspectorInfo([prop], transformValue, untransformValue, stylePropPathMappingFn)
-}
-
 export function useInspectorContext() {
   const { onSubmitValue, onUnsetValue, selectedViewsRef } = React.useContext(
     InspectorCallbackContext,
