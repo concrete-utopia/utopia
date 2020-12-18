@@ -147,14 +147,9 @@ describe('Parsing and printing code with comments', () => {
   const parsedThenPrinted = parseThenPrint(code)
 
   forEachValue((commentText, commentKey) => {
-    if (notYetSupported.includes(commentKey)) {
-      xit(`should retain the comment '${commentText}'`, () => {
-        expect(parsedThenPrinted.includes(commentText)).toBeTruthy()
-      })
-    } else {
-      it(`should retain the comment '${commentText}'`, () => {
-        expect(parsedThenPrinted.includes(commentText)).toBeTruthy()
-      })
-    }
+    const testFn = notYetSupported.includes(commentKey) ? xit : it
+    testFn(`should retain the comment '${commentText}'`, () => {
+      expect(parsedThenPrinted.includes(commentText)).toBeTruthy()
+    })
   }, comments)
 })
