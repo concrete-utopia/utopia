@@ -2,7 +2,7 @@
 import { Interpolation, jsx } from '@emotion/react'
 import * as R from 'ramda'
 import * as React from 'react'
-import { IcnProps } from 'uuiui'
+import { IcnProps } from '../../../uuiui'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { OptionControl } from './option-control'
 

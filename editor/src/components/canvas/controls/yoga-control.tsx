@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { FlexStretch, Sides } from 'utopia-api'
-import { colorTheme } from 'uuiui'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import {
   getSceneMetadataOrElementInstanceMetadata,

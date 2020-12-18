@@ -5,7 +5,7 @@ applyUIDMonkeyPatch()
 import * as ReactDOM from 'react-dom'
 import * as ReactDOMServer from 'react-dom/server'
 import * as UtopiaAPI from 'utopia-api'
-import * as UUIUI from 'uuiui'
+import * as UUIUI from '../../uuiui'
 import * as ANTD from 'antd'
 
 import { FancyError } from '../../core/shared/code-exec-utils'

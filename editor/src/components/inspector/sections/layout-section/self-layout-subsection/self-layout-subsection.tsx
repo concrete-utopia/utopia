@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { InspectorSubsectionHeader } from 'uuiui'
-import { betterReactMemo, usePropControlledState } from 'uuiui-deps'
+import { InspectorSubsectionHeader } from '../../../../../uuiui'
+import { usePropControlledState, betterReactMemo } from '../../../../../uuiui-deps'
 import { CSSPosition } from '../../../common/css-utils'
 import { GridRow } from '../../../widgets/grid-row'
 import { FlexElementSubsection } from '../flex-element-subsection/flex-element-subsection'

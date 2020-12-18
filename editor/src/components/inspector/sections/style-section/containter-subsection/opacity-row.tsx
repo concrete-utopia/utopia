@@ -1,17 +1,16 @@
 import * as React from 'react'
 import * as PP from '../../../../../core/shared/property-path'
 import { PropertyLabel } from '../../../widgets/property-label'
+import { GridRow } from '../../../widgets/grid-row'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
+import { useWrappedEmptyOrUnknownOnSubmitValue, NumberInput } from '../../../../../uuiui'
 import {
   betterReactMemo,
   CSSUtils,
-  SliderControl,
   InspectorContextMenuItems,
   InspectorContextMenuWrapper,
-  Utils,
-} from 'uuiui-deps'
-import { GridRow } from '../../../widgets/grid-row'
-import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
-import { NumberInput, useWrappedEmptyOrUnknownOnSubmitValue } from 'uuiui'
+  SliderControl,
+} from '../../../../../uuiui-deps'
 
 const sliderControlOptions = {
   minimum: 0,

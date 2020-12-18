@@ -1,13 +1,5 @@
 import * as React from 'react'
 import {
-  FlexColumn,
-  Icons,
-  NumberInput,
-  SquareButton,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
-import {
   createLayoutPropertyPath,
   framePointForPinnedProp,
   LayoutFlexElementNumericProp,
@@ -26,6 +18,14 @@ import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls
 import { PropertyLabel } from '../../../widgets/property-label'
 import { ResolvedLayoutProps } from '../layout-section'
 import { SelfLayoutTab } from './self-layout-subsection'
+import {
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  NumberInput,
+  SquareButton,
+  Icons,
+  FlexColumn,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface PinsLayoutNumberControlProps {
   label: string

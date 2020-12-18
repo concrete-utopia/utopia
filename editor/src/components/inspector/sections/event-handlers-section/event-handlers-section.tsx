@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { betterReactMemo, InspectorContextMenuWrapper } from 'uuiui-deps'
 import * as PP from '../../../../core/shared/property-path'
 import { identity } from '../../../../core/shared/utils'
 import utils from '../../../../utils/utils'
@@ -8,9 +7,13 @@ import { DOMEventHandler, DOMEventHandlerNames } from '../../common/css-utils'
 import { ParsedValues, useInspectorInfo } from '../../common/property-path-hooks'
 import { GridRow } from '../../widgets/grid-row'
 import { isJSXAttributeOtherJavaScript } from '../../../../core/shared/element-template'
-import { InspectorSectionHeader, StringInput } from '../../../../uuiui'
 import { PropertyLabel } from '../../widgets/property-label'
-import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
+import {
+  betterReactMemo,
+  useKeepReferenceEqualityIfPossible,
+} from '../../../../utils/react-performance'
+import { StringInput, InspectorSectionHeader } from '../../../../uuiui'
+import { InspectorContextMenuWrapper } from '../../../../uuiui-deps'
 
 const ppCreate = (p: string) => PP.create([p])
 

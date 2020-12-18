@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { TemplatePath } from '../../../../core/shared/project-file-types'
 import * as TP from '../../../../core/shared/template-path'
-import { betterReactMemo } from 'uuiui-deps'
-import { FlexRow, Icons } from 'uuiui'
+import { FlexRow, Icons } from '../../../../uuiui'
+import { betterReactMemo } from '../../../../uuiui-deps'
 
 export interface ElementPathElement {
   name?: string

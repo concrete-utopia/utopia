@@ -1,9 +1,15 @@
 import * as OPI from 'object-path-immutable'
 import * as React from 'react'
 import { animated, SpringValue } from 'react-spring'
-import { FlexRow, Icn, InspectorSubsectionHeader, SquareButton, UtopiaTheme } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import utils from '../../../../../utils/utils'
+import {
+  FlexRow,
+  SquareButton,
+  Icn,
+  UtopiaTheme,
+  InspectorSubsectionHeader,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
   NumberInput,
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,

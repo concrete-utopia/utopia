@@ -22,7 +22,7 @@ import {
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
 import { filterScenes } from '../core/shared/template-path'
-import { betterReactMemo } from 'uuiui-deps'
+import { betterReactMemo } from '../uuiui-deps'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'

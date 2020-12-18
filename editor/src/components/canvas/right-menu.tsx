@@ -1,22 +1,22 @@
 import * as React from 'react'
 import { EditorState } from '../editor/store/editor-state'
-import {
-  SimpleFlexColumn,
-  Tooltip,
-  SimpleTile,
-  UtopiaStyles,
-  SquareButton,
-  UtopiaTheme,
-  IcnProps,
-  LargerIcons,
-  MenuIcons,
-} from 'uuiui'
-import { betterReactMemo, Utils } from 'uuiui-deps'
 import { isLiveMode } from '../editor/editor-modes'
 import { useEditorState } from '../editor/store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
 import { EditorAction } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
+import {
+  IcnProps,
+  SimpleTile,
+  UtopiaTheme,
+  SquareButton,
+  UtopiaStyles,
+  SimpleFlexColumn,
+  Tooltip,
+  LargerIcons,
+  MenuIcons,
+} from '../../uuiui'
+import { betterReactMemo, Utils } from '../../uuiui-deps'
 
 export const enum RightMenuTab {
   Insert = 'insert',

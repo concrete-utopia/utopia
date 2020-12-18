@@ -1,9 +1,9 @@
 import React = require('react')
 import ReactDOM = require('react-dom')
-import { OnClickOutsideHOC } from 'uuiui'
 import { useHandleCloseOnESCOrEnter } from '../common/inspector-utils'
 import { EditorID, PortalTargetID } from '../../../core/shared/utils'
 import ResizeObserver from 'resize-observer-polyfill'
+import { OnClickOutsideHOC } from '../../../uuiui'
 
 export type InspectorModalProps = {
   offsetX: number

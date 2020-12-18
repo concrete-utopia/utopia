@@ -4,22 +4,6 @@ import { ResizeDirection } from 're-resizable'
 import * as React from 'react'
 import { DndProvider } from 'react-dnd'
 import Backend from 'react-dnd-html5-backend'
-import {
-  Button,
-  colorTheme,
-  FlexRow,
-  LargerIcons,
-  ResizableFlexColumn,
-  SimpleFlexColumn,
-  SimpleFlexRow,
-  SquareButton,
-  Subdued,
-  TabComponent,
-  UtopiaTheme,
-  FlexColumn,
-  UtopiaStyles,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import Utils from '../../utils/utils'
 import { StoryboardFilePath } from '../../core/model/storyboard-utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
@@ -53,6 +37,19 @@ import {
   setPropertyControlsIFrameAvailable,
 } from '../../core/property-controls/property-controls-utils'
 import { isReleaseNotesTab, isUserConfigurationTab } from './store/editor-tabs'
+import {
+  SimpleFlexRow,
+  SimpleFlexColumn,
+  UtopiaTheme,
+  FlexRow,
+  ResizableFlexColumn,
+  colorTheme,
+  TabComponent,
+  LargerIcons,
+  Subdued,
+  FlexColumn,
+} from '../../uuiui'
+import { betterReactMemo } from '../../uuiui-deps'
 
 interface NumberSize {
   width: number

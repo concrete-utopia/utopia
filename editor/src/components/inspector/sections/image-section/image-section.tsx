@@ -1,6 +1,4 @@
 import * as React from 'react'
-import { colorTheme, InspectorSectionHeader } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import * as PP from '../../../../core/shared/property-path'
@@ -18,6 +16,8 @@ import {
 import { GridRow } from '../../widgets/grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
+import { colorTheme, InspectorSectionHeader } from '../../../../uuiui'
+import { betterReactMemo } from '../../../../uuiui-deps'
 
 const imgSrcProp = [PP.create(['src'])]
 const imgAltProp = [PP.create(['alt'])]

@@ -1,22 +1,21 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import {
-  colorTheme,
-  FlexColumn,
-  FlexRow,
-  FunctionIcons,
-  H1,
-  Icons,
-  OnClickOutsideHOC,
-  SectionActionSheet,
-  StringInput,
-  UtopiaStyles,
-  UtopiaTheme,
-  SquareButton,
-} from 'uuiui'
 import Utils from '../../../../utils/utils'
-import { ContextMenuWrapper, betterReactMemo } from 'uuiui-deps'
+import {
+  FlexColumn,
+  colorTheme,
+  FlexRow,
+  UtopiaTheme,
+  UtopiaStyles,
+  StringInput,
+  H1,
+  SectionActionSheet,
+  SquareButton,
+  FunctionIcons,
+  OnClickOutsideHOC,
+} from '../../../../uuiui'
+import { betterReactMemo, ContextMenuWrapper } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 

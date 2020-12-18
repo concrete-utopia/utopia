@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { colorTheme } from 'uuiui'
-import { FlexRow } from 'uuiui'
+import { FlexRow, colorTheme } from '../../uuiui'
 
 interface MiniMenuProps {
   className?: string

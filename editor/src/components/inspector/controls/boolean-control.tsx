@@ -2,7 +2,7 @@
 import * as React from 'react'
 import { jsx } from '@emotion/react'
 import { DEPRECATEDControlProps } from './control'
-import { CheckboxInput } from 'uuiui'
+import { CheckboxInput } from '../../../uuiui'
 
 export interface BooleanControlProps extends DEPRECATEDControlProps<boolean> {
   onMouseDown?: (e: React.MouseEvent<HTMLInputElement>) => void

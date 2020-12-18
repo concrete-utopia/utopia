@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { betterReactMemo, OnSubmitValue, OnSubmitValueOrUnknownOrEmpty } from 'uuiui-deps'
 import {
   CSSKeyword,
   CSSNumber,
@@ -10,7 +9,11 @@ import {
   parseCSSNumber,
   UnknownOrEmptyInput,
 } from '../../components/inspector/common/css-utils'
-import { InspectorControlProps } from '../../components/inspector/controls/control'
+import {
+  InspectorControlProps,
+  OnSubmitValue,
+  OnSubmitValueOrUnknownOrEmpty,
+} from '../../components/inspector/controls/control'
 import {
   KeywordControl,
   KeywordControlOptions,
@@ -18,6 +21,7 @@ import {
   ValidKeywords,
 } from '../../components/inspector/controls/keyword-control'
 import { isRight } from '../../core/shared/either'
+import { betterReactMemo } from '../../uuiui-deps'
 import { NumberInput, NumberInputOptions } from './number-input'
 
 function parseUnknownInputValueAsNumberOrKeyword(

@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { getControlStyles } from '../../common/control-status'
-import { PopupList } from 'uuiui'
 import { SelectOption } from '../../controls/select-control'
 import { JSXElementName, jsxElementName } from '../../../../core/shared/element-template'
-import { betterReactMemo } from 'uuiui-deps'
 import { GridRow } from '../../widgets/grid-row'
+import { PopupList } from '../../../../uuiui'
+import { betterReactMemo } from '../../../../uuiui-deps'
 
 export interface NameRowProps {
   onElementTypeChange: (value: JSXElementName) => void

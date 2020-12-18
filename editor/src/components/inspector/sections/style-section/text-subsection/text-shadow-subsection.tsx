@@ -1,10 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
 import { animated, SpringValue } from 'react-spring'
-import { Icn, useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue } from 'uuiui'
-import { NumberInput } from 'uuiui'
-import { InspectorSubsectionHeader } from 'uuiui'
-import { FlexRow } from 'uuiui'
 import { BooleanControl } from '../../../controls/boolean-control'
 import { ColorControl } from '../../../controls/color-control'
 import { ControlStatus, ControlStyles } from '../../../common/control-status'
@@ -24,11 +20,18 @@ import {
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { stopPropagation } from '../../../common/inspector-utils'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
-import { SquareButton } from 'uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import utils from '../../../../../utils/utils'
-import { betterReactMemo } from 'uuiui-deps'
+import {
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+  NumberInput,
+  SquareButton,
+  Icn,
+  InspectorSubsectionHeader,
+  FlexRow,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 function getIndexedToggleTextShadowEnabled(index: number) {
   return function indexedToggleTextShadowEnabled(

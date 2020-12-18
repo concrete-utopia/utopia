@@ -1,8 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
 import { useDrag, useDrop } from 'react-dnd'
-import { colorTheme, Icn, TabComponent } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import Utils from '../../utils/utils'
 import { ProjectContents } from '../../core/shared/project-file-types'
@@ -18,6 +16,8 @@ import {
   ProjectContentTreeRoot,
 } from '../assets'
 import { EditorTab, isOpenFileTab } from '../editor/store/editor-tabs'
+import { Icn, colorTheme, TabComponent } from '../../uuiui'
+import { betterReactMemo } from '../../uuiui-deps'
 
 function getKeyForEditorTab(editorTab: EditorTab): string {
   switch (editorTab.type) {
