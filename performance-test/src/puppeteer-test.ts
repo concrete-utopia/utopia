@@ -8,8 +8,8 @@ const moveFile = require('move-file')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
-// const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
+// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
+const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -39,7 +39,7 @@ function consoleDoneMessage(page: puppeteer.Page) {
 export const testScrollingPerformance = async function () {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: false,
+    headless: true,
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
@@ -102,7 +102,9 @@ export const testScrollingPerformance = async function () {
     }
       – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
       frameData.percentile75
-    } – Median: ${frameData.percentile50} – frame times: [${frameTimes.join(',')}]"`,
+    } – Median: ${frameData.percentile50} – frame times: [${frameTimes
+      .sort((a, b) => b - a)
+      .join(',')}]"`,
   )
 }
 
