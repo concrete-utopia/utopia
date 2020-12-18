@@ -96,7 +96,7 @@ export interface InspectorPropsContextData {
   selectedViews: Array<TemplatePath>
   editedMultiSelectedProps: readonly JSXAttributes[]
   targetPath: readonly string[]
-  realValues: ReadonlyArray<{ [key: string]: any }>
+  spiedProps: ReadonlyArray<{ [key: string]: any }>
   computedStyles: ReadonlyArray<ComputedStyle>
 }
 
@@ -110,7 +110,7 @@ export const InspectorPropsContext = createContext<InspectorPropsContextData>({
   selectedViews: [],
   editedMultiSelectedProps: [],
   targetPath: [],
-  realValues: [],
+  spiedProps: [],
   computedStyles: [],
 })
 
@@ -150,7 +150,7 @@ export interface InspectorInfo<T> {
   useSubmitValueFactory: UseSubmitValueFactory<T>
 }
 
-function getRealValues<P extends string | number>(
+function getSpiedValues<P extends string | number>(
   key: P,
   selectedProps: { [keyValue in P]: ReadonlyArray<any> },
 ): ReadonlyArray<any> {
@@ -179,7 +179,7 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
   [key in PropertiesToControl]: {
     simpleValues: ReadonlyArray<Either<string, any>>
     rawValues: ReadonlyArray<Either<string, ModifiableAttribute>>
-    realValues: ReadonlyArray<any>
+    spiedValues: ReadonlyArray<any>
     computedValues: ReadonlyArray<string>
   }
 } {
@@ -197,7 +197,7 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
           return {
             simpleValues: [left('No value')],
             rawValues: [left('Nothing selected')],
-            realValues: [undefined],
+            spiedValues: [undefined],
             computedValues: [],
           }
         }
@@ -206,13 +206,13 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
         const simpleValues = rawValues.map((rawValue) =>
           extractSimpleValueFromMultiSelectAttribute(rawValue),
         )
-        const realValues = getRealValues(key, selectedProps)
+        const spiedValues = getSpiedValues(key, selectedProps)
         const computedValues = getComputedStyleValues(key, selectedComputedStyles)
 
         return {
           simpleValues,
           rawValues,
-          realValues,
+          spiedValues,
           computedValues,
         }
       },
@@ -230,7 +230,7 @@ export function useInspectorInfoFromMultiselectMultiPropAttribute(
   [key in string]: {
     simpleValues: ReadonlyArray<Either<string, any>>
     rawValues: ReadonlyArray<Either<string, ModifiableAttribute>>
-    realValues: ReadonlyArray<any>
+    spiedValues: ReadonlyArray<any>
   }
 } {
   const multiselectLength = useContextSelector(InspectorPropsContext, (c) => {
@@ -247,7 +247,7 @@ export function useInspectorInfoFromMultiselectMultiPropAttribute(
           return {
             simpleValues: [left('No value')],
             rawValues: [left('Nothing selected')],
-            realValues: [undefined],
+            spiedValues: [undefined],
           }
         }
 
@@ -255,12 +255,12 @@ export function useInspectorInfoFromMultiselectMultiPropAttribute(
         const simpleValues = rawValues.map((rawValue) =>
           extractSimpleValueFromMultiSelectAttribute(rawValue),
         )
-        const realValues = getRealValues(key, selectedProps)
+        const spiedValues = getSpiedValues(key, selectedProps)
 
         return {
           simpleValues,
           rawValues,
-          realValues,
+          spiedValues,
         }
       },
     )
@@ -348,7 +348,7 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   property: PropertiesToControl,
   simpleValue: Either<string, any>,
   rawValue: Either<string, ModifiableAttribute>,
-  realValue: any,
+  spiedValue: any,
   computedValue: string | undefined,
 ): {
   finalValue: ParsedPropertiesValues
@@ -359,7 +359,7 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   const rawValueAsMaybe = eitherToMaybe(rawValue)
 
   const parsedValue = parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
-  const parsedRealValue = parseAnyParseableValue(property, realValue, null)
+  const parsedSpiedValue = parseAnyParseableValue(property, spiedValue, null)
   const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
   if (isRight(parsedValue)) {
     return {
@@ -367,9 +367,9 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
       isUnknown: isCSSUnknownFunctionParameters(parsedValue.value),
       usesComputedFallback: false,
     }
-  } else if (isRight(parsedRealValue)) {
+  } else if (isRight(parsedSpiedValue)) {
     return {
-      finalValue: parsedRealValue.value,
+      finalValue: parsedSpiedValue.value,
       isUnknown: simpleValueAsMaybe != null,
       usesComputedFallback: false,
     }
@@ -445,7 +445,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
       (contextData) => {
         const keyFn = (propKey: P) => propKey
         const mapFn = (propKey: P) => {
-          return contextData.realValues.map((props) => {
+          return contextData.spiedProps.map((props) => {
             return ObjectPath.get(
               props,
               PP.getElements(pathMappingFn(propKey, contextData.targetPath)),
@@ -496,7 +496,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     propKeys,
     (propKey) => propKey,
     (propKey) => {
-      const { simpleValues, rawValues, realValues, computedValues } = simpleAndRawValues[propKey]
+      const { simpleValues, rawValues, spiedValues, computedValues } = simpleAndRawValues[propKey]
       if (propertyStatus.identical) {
         const simpleValue: Either<string, any> = Utils.defaultIfNull(
           left('Simple value missing'),
@@ -506,13 +506,13 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           left('Raw value missing'),
           rawValues[0],
         )
-        const realValue: any = realValues[0]
+        const spiedValue: any = spiedValues[0]
         const computedValue = computedValues[0]
         const { finalValue, isUnknown: pathIsUnknown, usesComputedFallback } = parseFinalValue(
           propKey,
           simpleValue,
           rawValue,
-          realValue,
+          spiedValue,
           computedValue,
         )
         isUnknown = isUnknown || pathIsUnknown
@@ -526,13 +526,13 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
             left('Raw value missing'),
             rawValues[i],
           )
-          const realValue: any = realValues[i]
+          const spiedValue: any = spiedValues[i]
           const computedValue = computedValues[i]
           const { finalValue, isUnknown: pathIsUnknown, usesComputedFallback } = parseFinalValue(
             propKey,
             simpleValue,
             rawValue,
-            realValue,
+            spiedValue,
             computedValue,
           )
           if (i === 0) {
@@ -646,7 +646,7 @@ export function useInspectorInfoSimpleUntyped(
       (contextData) => {
         const keyFn = (propPath: PropertyPath) => PP.lastPart(propPath)
         const mapFn = (propPath: PropertyPath) => {
-          return contextData.realValues.map((props) => {
+          return contextData.spiedProps.map((props) => {
             return ObjectPath.get(props, PP.getElements(propPath))
           })
         }
@@ -671,10 +671,10 @@ export function useInspectorInfoSimpleUntyped(
     (propertyPath) => propertyPath.propertyElements[propertyPath.propertyElements.length - 1],
     (propertyPath) => {
       const property = propertyPath.propertyElements[propertyPath.propertyElements.length - 1]
-      const { simpleValues, realValues, rawValues } = simpleAndRawValues[property]
+      const { simpleValues, spiedValues, rawValues } = simpleAndRawValues[property]
       const simpleValue = optionalMap(eitherToMaybe, simpleValues[0])
-      if (realValues.length > 0) {
-        return realValues[0]
+      if (spiedValues.length > 0) {
+        return spiedValues[0]
       } else if (simpleValue != null) {
         return simpleValue
       } else {

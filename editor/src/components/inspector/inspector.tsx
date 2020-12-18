@@ -805,7 +805,7 @@ export const InspectorContextProvider = betterReactMemo<{
   }, 'InspectorContextProvider')
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
-  let newRealValues: Array<{ [key: string]: any }> = []
+  let newSpiedProps: Array<{ [key: string]: any }> = []
   let newComputedStyles: Array<ComputedStyle> = []
 
   Utils.fastForEach(selectedViews, (path) => {
@@ -833,14 +833,14 @@ export const InspectorContextProvider = betterReactMemo<{
         const jsxElement = findElementAtPath(path, rootComponents)
         const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
         newEditedMultiSelectedProps.push(jsxAttributes)
-        newRealValues.push(elementMetadata.props)
+        newSpiedProps.push(elementMetadata.props)
         newComputedStyles.push(elementMetadata.computedStyle)
       }
     }
   })
 
   const editedMultiSelectedProps = useKeepReferenceEqualityIfPossible(newEditedMultiSelectedProps)
-  const realValues = useKeepReferenceEqualityIfPossible(newRealValues)
+  const spiedProps = useKeepReferenceEqualityIfPossible(newSpiedProps)
   const computedStyles = useKeepReferenceEqualityIfPossible(newComputedStyles)
 
   const selectedViewsRef = usePropControlledRef_DANGEROUS(selectedViews)
@@ -909,7 +909,7 @@ export const InspectorContextProvider = betterReactMemo<{
           selectedViews: selectedViews,
           editedMultiSelectedProps: editedMultiSelectedProps,
           targetPath: props.targetPath,
-          realValues: realValues,
+          spiedProps: spiedProps,
           computedStyles: computedStyles,
         }}
       >
