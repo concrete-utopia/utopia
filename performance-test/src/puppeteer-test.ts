@@ -4,7 +4,7 @@ import { v4 } from 'uuid'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
-const moveFile = require('move-file')
+const moveFile = require('move-testFile')
 const yn = require('yn')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
@@ -333,7 +333,6 @@ async function uploadPNGtoAWS(testFile: string) {
   })
 
   let s3 = new AWS.S3({ apiVersion: '2006-03-01' })
-  let file = testFile
   const uploadParams = {
     Bucket: process.env.AWS_S3_BUCKET,
     Key: testFile,
@@ -343,14 +342,14 @@ async function uploadPNGtoAWS(testFile: string) {
   }
 
   return new Promise<string>((resolve, reject) => {
-    const path1 = path.resolve(file)
+    const path1 = path.resolve(testFile)
     let filestream = fs.createReadStream(path1)
     filestream.on('error', function (err: any) {
       console.log('File Error', err)
       reject(err)
     })
     uploadParams.Body = filestream
-    uploadParams.Key = path.basename(file)
+    uploadParams.Key = path.basename(testFile)
 
     s3.upload(uploadParams, function (err: any, data: any) {
       if (err) {
