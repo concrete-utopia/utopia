@@ -1,13 +1,13 @@
 import * as fastDeepEquals from 'fast-deep-equal'
-import * as React from 'react'
+import React = require('react')
 import {
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
   colorTheme,
   FlexRow,
   Icn,
   NumberInput,
   PopupList,
-  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
+} from '../../../../../uuiui'
 import { ControlStatus } from '../../../common/control-status'
 import {
   CSSBackgroundLayer,

@@ -1,10 +1,10 @@
 import * as React from 'react'
 
-import { betterReactMemo } from 'uuiui-deps'
-import { FlexRow, Tooltip } from 'uuiui'
 import { useInspectorWarningStatus } from '../../../common/property-path-hooks'
 import { WarningIcon } from '../../../../../uuiui/warning-icon'
 import { InfoBox } from '../../../../common/notices'
+import { Tooltip, FlexRow } from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 export const WarningSubsection = betterReactMemo('WarningSubsection', (props) => {
   const shouldShowWarning = useInspectorWarningStatus()

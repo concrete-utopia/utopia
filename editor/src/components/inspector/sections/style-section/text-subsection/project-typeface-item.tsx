@@ -1,11 +1,11 @@
 import * as React from 'react'
-import { betterReactMemo } from 'uuiui-deps'
 import {
   ExternalResources,
   useExternalResources,
   GoogleFontsResource,
 } from '../../../../../printer-parsers/html/external-resources-parser'
 import { FlexRow, Icons } from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 import { ProjectTypeface } from './font-family-select-popup'
 
 export function updateRemoveFontFamily(

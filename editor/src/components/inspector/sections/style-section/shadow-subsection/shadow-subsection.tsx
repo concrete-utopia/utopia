@@ -1,17 +1,17 @@
 import * as React from 'react'
 import { animated, SpringValue } from 'react-spring'
+import utils from '../../../../../utils/utils'
 import {
-  ChainedNumberInput,
-  CheckboxInput,
-  FlexRow,
-  Icn,
-  InspectorSubsectionHeader,
-  SquareButton,
   UtopiaTheme,
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
-import utils from '../../../../../utils/utils'
+  CheckboxInput,
+  ChainedNumberInput,
+  InspectorSubsectionHeader,
+  FlexRow,
+  SquareButton,
+  Icn,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 import { ContextMenuItem } from '../../../../context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues, removeRow } from '../../../common/context-menu-items'

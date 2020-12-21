@@ -16,12 +16,11 @@ import {
   EditorStore,
 } from '../../editor/store/editor-state'
 import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/element-template'
-import { betterReactMemo } from 'uuiui-deps'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
 import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
-import { useKeepDeepEqualityCall } from '../../../utils/react-performance'
+import { betterReactMemo, useKeepDeepEqualityCall } from '../../../utils/react-performance'
 
 interface NavigatorItemWrapperProps {
   index: number

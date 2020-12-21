@@ -1,15 +1,15 @@
 import * as React from 'react'
 import * as PP from '../../../../../core/shared/property-path'
 import { PropertyLabel } from '../../../widgets/property-label'
-import {
-  betterReactMemo,
-  InspectorContextMenuItems,
-  InspectorContextMenuWrapper,
-  SelectOption,
-} from 'uuiui-deps'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { GridRow } from '../../../widgets/grid-row'
 import { PopupList } from '../../../../../uuiui'
+import {
+  betterReactMemo,
+  SelectOption,
+  InspectorContextMenuItems,
+  InspectorContextMenuWrapper,
+} from '../../../../../uuiui-deps'
 
 const blendModeOptions = [
   { value: 'normal', label: 'Normal' },

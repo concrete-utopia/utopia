@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { VariableSizeList } from 'react-window'
-import { betterReactMemo, ControlStyles, OnSubmitValue, Utils } from 'uuiui-deps'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'
 import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
-import { FlexColumn, FlexRow, StringInput, UtopiaTheme } from '../../../../../uuiui'
+import { FlexColumn, UtopiaTheme, FlexRow, StringInput } from '../../../../../uuiui'
+import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
 import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-resources-list-search'
 import {
   cssFontStyleToWebFontStyle,
@@ -23,7 +23,7 @@ import {
   ParsedValues,
   UseSubmitValueFactory,
 } from '../../../common/property-path-hooks'
-import { InspectorModal } from '../../../widgets/inspector-modal'
+import { OnSubmitValue } from '../../../controls/control'
 import { FontFamilySelectPopupItem } from './font-family-select-popup-item'
 import { ProjectFontDividerItem } from './project-font-divider-item'
 import { ProjectFontHeaderItem } from './project-font-header-item'

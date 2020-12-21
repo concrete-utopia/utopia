@@ -42,8 +42,8 @@ import {
   useInspectorInfo,
   useInspectorStyleInfo,
 } from './property-path-hooks'
-import { betterReactMemo } from 'uuiui-deps'
 import { isParseSuccess, TemplatePath } from '../../../core/shared/project-file-types'
+import { betterReactMemo } from '../../../utils/react-performance'
 
 interface RenderTestHookProps<T> {
   value: T

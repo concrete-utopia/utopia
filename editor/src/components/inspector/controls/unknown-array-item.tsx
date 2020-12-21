@@ -1,6 +1,4 @@
 import * as React from 'react'
-import { CheckboxInput, FlexRow, FunctionIcons, SquareButton, Tooltip } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import {
   CSSUnknownArrayItem,
   EmptyInputValue,
@@ -13,6 +11,8 @@ import { stopPropagation } from '../common/inspector-utils'
 import { ControlStatus, ControlStyles } from '../common/control-status'
 import { PropertyRow } from '../widgets/property-row'
 import { StringControl } from './string-control'
+import { CheckboxInput, FlexRow, Tooltip } from '../../../uuiui'
+import { betterReactMemo } from '../../../uuiui-deps'
 
 interface FakeUnknownArrayItemProps {
   controlStatus: ControlStatus

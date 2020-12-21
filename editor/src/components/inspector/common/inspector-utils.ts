@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { colorTheme } from 'uuiui'
+import { colorTheme } from '../../../uuiui'
 import { OnSubmitValue } from '../controls/control'
 import { ControlStatus } from './control-status'
 import { CSSBackgroundLayer, CSSTransformItem, CSSUnknownArrayItem } from './css-utils'

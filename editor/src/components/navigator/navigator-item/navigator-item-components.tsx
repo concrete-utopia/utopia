@@ -1,12 +1,12 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { Button, colorTheme, Icons, SectionActionSheet } from 'uuiui'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'
 import { DropTargetType } from '../navigator'
+import { colorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
 
 interface NavigatorHintProps {
   isOver: boolean

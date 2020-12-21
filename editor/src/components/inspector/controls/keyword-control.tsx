@@ -2,12 +2,12 @@
 import { jsx } from '@emotion/react'
 import * as classNames from 'classnames'
 import * as React from 'react'
-import { StringInput } from 'uuiui'
-import { betterReactMemo, getControlStyles, OnSubmitValueOrUnknownOrEmpty } from 'uuiui-deps'
 import { Either, isRight, left, right } from '../../../core/shared/either'
+import { StringInput } from '../../../uuiui'
+import { betterReactMemo, getControlStyles } from '../../../uuiui-deps'
 import { cssKeyword, CSSKeyword, emptyInputValue, unknownInputValue } from '../common/css-utils'
 import { usePropControlledState } from '../common/inspector-utils'
-import { InspectorControlProps } from './control'
+import { InspectorControlProps, OnSubmitValueOrUnknownOrEmpty } from './control'
 
 export type ValidKeywords = Array<string> | 'all'
 

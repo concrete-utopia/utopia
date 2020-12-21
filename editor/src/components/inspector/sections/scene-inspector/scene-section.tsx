@@ -1,15 +1,6 @@
 import * as React from 'react'
 import { FramePoint, NormalisedFrame } from 'utopia-api'
 import {
-  InspectorSectionHeader,
-  InspectorSubsectionHeader,
-  NumberInput,
-  PopupList,
-  SimpleNumberInput,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
-import {
   InspectorInfo,
   useInspectorInfoSimpleUntyped,
   useInspectorLayoutInfo,
@@ -41,7 +32,18 @@ import { PropertyRow } from '../../widgets/property-row'
 import { ComponentSection } from '../component-section/component-section'
 import { pinLabels } from '../layout-section/self-layout-subsection/gigantic-size-pins-subsection'
 import { SceneContainerSections } from './scene-container-section'
-import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
+import {
+  betterReactMemo,
+  useKeepReferenceEqualityIfPossible,
+} from '../../../../utils/react-performance'
+import {
+  InspectorSectionHeader,
+  InspectorSubsectionHeader,
+  PopupList,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  SimpleNumberInput,
+  NumberInput,
+} from '../../../../uuiui'
 
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)

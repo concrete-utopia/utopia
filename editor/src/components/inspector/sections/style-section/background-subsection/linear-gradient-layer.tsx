@@ -1,12 +1,4 @@
 import * as React from 'react'
-import {
-  CheckboxInput,
-  FlexRow,
-  NumberInput,
-  PopupList,
-  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'
 import {
@@ -31,6 +23,14 @@ import {
   linearGradientSelectOption,
 } from './background-layer-helpers'
 import { BackgroundSolidOrGradientThumbnailControl } from '../../../controls/background-solid-or-gradient-thumbnail-control'
+import {
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+  CheckboxInput,
+  FlexRow,
+  PopupList,
+  NumberInput,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 export function getIndexedUpdateCSSBackgroundLayerLinearGradientAngle(index: number) {
   return function updateCSSBackgroundLayersLinearGradientAngle(

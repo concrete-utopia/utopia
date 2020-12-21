@@ -1,8 +1,7 @@
 import * as React from 'react'
-import { colorTheme, Section } from 'uuiui'
-import { FlexColumn } from 'uuiui'
+import { colorTheme, Section, FlexColumn } from '../../../uuiui'
+import { betterReactMemo } from '../../../uuiui-deps'
 import { TargetSelectorPanel, CSSTarget } from './header-section/target-selector'
-import { betterReactMemo } from 'uuiui-deps'
 
 export interface TargetSelectorSectionProps {
   targets: Array<CSSTarget>

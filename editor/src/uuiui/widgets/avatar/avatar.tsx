@@ -1,6 +1,6 @@
 import * as React from 'react'
+import { LoginState, User } from '../../../uuiui-deps'
 
-import { User, LoginState } from 'uuiui-deps'
 import { colorTheme } from '../../styles/theme'
 
 interface AvatarProps {

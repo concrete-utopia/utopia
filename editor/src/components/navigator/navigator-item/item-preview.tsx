@@ -1,11 +1,5 @@
 import * as React from 'react'
-import { Icn, IcnProps } from 'uuiui'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
-  ElementInstanceMetadata,
-  isJSXElement,
-  JSXElementName,
-} from '../../../core/shared/element-template'
+import { JSXElementName } from '../../../core/shared/element-template'
 import {
   isHTMLComponent,
   isViewAgainstImports,
@@ -16,7 +10,7 @@ import {
   isAnimatedElementAgainstImports,
 } from '../../../core/model/project-file-utils'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
-import { isLeft } from '../../../core/shared/either'
+import { IcnProps, Icn } from '../../../uuiui'
 
 interface ItemPreviewProps {
   isAutosizingView: boolean

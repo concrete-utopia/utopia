@@ -1,7 +1,5 @@
 import * as Chroma from 'chroma-js'
 import * as React from 'react'
-import { colorTheme, FlexColumn } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { ControlStyleDefaults } from '../../../common/control-status'
 import {
   CSSBackgroundLayers,
@@ -25,6 +23,8 @@ import {
 } from '../../../controls/color-picker'
 import { inspectorEdgePadding } from './background-picker'
 import { clampValue } from '../../../../../core/shared/math-utils'
+import { colorTheme, FlexColumn } from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface GradientStopProps {
   stop: CSSGradientStop

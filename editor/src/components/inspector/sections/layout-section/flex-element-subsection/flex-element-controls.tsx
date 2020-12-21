@@ -5,8 +5,8 @@ import { OptionChainOption, OptionChainControl } from '../../../controls/option-
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
-import { betterReactMemo } from 'uuiui-deps'
-import { ChainedNumberInput, useWrappedEmptyOrUnknownOnSubmitValue } from 'uuiui'
+import { useWrappedEmptyOrUnknownOnSubmitValue, ChainedNumberInput } from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 export const PositionControl = betterReactMemo('PositionControl', () => {
   const position = useInspectorLayoutInfo('position')

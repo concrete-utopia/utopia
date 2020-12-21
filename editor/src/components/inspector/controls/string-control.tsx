@@ -2,8 +2,8 @@
 import { jsx } from '@emotion/react'
 import * as classNames from 'classnames'
 import * as React from 'react'
-import { StringInput } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
+import { StringInput } from '../../../uuiui'
+import { betterReactMemo } from '../../../uuiui-deps'
 import { usePropControlledState } from '../common/inspector-utils'
 import { DEPRECATEDControlProps } from './control'
 

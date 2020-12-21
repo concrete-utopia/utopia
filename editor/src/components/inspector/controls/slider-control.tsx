@@ -1,7 +1,7 @@
 import Slider, { Marks } from 'rc-slider'
 import * as React from 'react'
+import { FlexRow, UtopiaTheme } from '../../../uuiui'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
-import { FlexRow, UtopiaTheme } from 'uuiui'
 
 export interface DEPRECATEDSliderControlOptions extends DEPRECATEDGenericControlOptions {
   minimum: number

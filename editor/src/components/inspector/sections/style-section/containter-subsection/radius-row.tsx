@@ -2,14 +2,6 @@
 import { jsx } from '@emotion/react'
 import { OptionsType } from 'react-select'
 import { FramePin } from 'utopia-api'
-import {
-  ChainedNumberInput,
-  NumberInput,
-  PopupList,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
-import { betterReactMemo, InspectorContextMenuItems } from 'uuiui-deps'
 import { isLeft, isRight, left, right } from '../../../../../core/shared/either'
 import utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -28,6 +20,14 @@ import {
 } from '../../../common/css-utils'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { GridRow } from '../../../widgets/grid-row'
+import {
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  PopupList,
+  ChainedNumberInput,
+  NumberInput,
+} from '../../../../../uuiui'
+import { betterReactMemo, InspectorContextMenuItems } from '../../../../../uuiui-deps'
 
 function updateRadiusType(
   newRadiusTypeValue: SelectOption,

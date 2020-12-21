@@ -3,16 +3,6 @@ import { Interpolation, jsx } from '@emotion/react'
 import * as classNames from 'classnames'
 import * as React from 'react'
 import {
-  betterReactMemo,
-  CSSCursor,
-  EitherUtils,
-  getControlStyles,
-  OnSubmitValue,
-  OnSubmitValueOrEmpty,
-  OnSubmitValueOrUnknownOrEmpty,
-  usePropControlledState,
-} from 'uuiui-deps'
-import {
   cssNumber,
   CSSNumber,
   cssNumberToString,
@@ -32,8 +22,20 @@ import {
   OnUnsetValues,
   SubmitValueFactoryReturn,
 } from '../../components/inspector/common/property-path-hooks'
-import { InspectorControlProps } from '../../components/inspector/controls/control'
+import {
+  InspectorControlProps,
+  OnSubmitValue,
+  OnSubmitValueOrEmpty,
+  OnSubmitValueOrUnknownOrEmpty,
+} from '../../components/inspector/controls/control'
 import { clampValue } from '../../core/shared/math-utils'
+import {
+  EitherUtils,
+  betterReactMemo,
+  getControlStyles,
+  usePropControlledState,
+  CSSCursor,
+} from '../../uuiui-deps'
 import { Icn, IcnProps } from '../icn'
 import { colorTheme, UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'

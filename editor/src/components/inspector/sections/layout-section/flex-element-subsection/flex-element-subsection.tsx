@@ -1,11 +1,11 @@
 import * as React from 'react'
 
 import { ControlStyleDefaults } from '../../../common/control-status'
-import { betterReactMemo } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
 import { PositionControl, MarginControl, AlignSelfControl } from './flex-element-controls'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 const marginProps = [
   createLayoutPropertyPath('marginLeft'),
