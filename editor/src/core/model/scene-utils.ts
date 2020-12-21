@@ -40,6 +40,7 @@ import {
 import { stripNulls } from '../shared/array-utils'
 import { isPercentPin } from 'utopia-api'
 import { UTOPIA_UID_KEY } from './utopia-constants'
+import { getUtopiaID } from './element-template-utils'
 
 export const EmptyScenePathForStoryboard = TP.scenePath([])
 
@@ -301,4 +302,27 @@ export function isDynamicSceneChildWidthHeightPercentage(
   const isDynamicScene = scene.sceneResizesContent
 
   return isDynamicScene && isSceneChildWidthHeightPercentage(scene, metadata)
+}
+
+export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string | null {
+  const possiblyStoryboard = openComponents.find(
+    (component) => component.name === BakedInStoryboardVariableName,
+  )
+  if (possiblyStoryboard != null) {
+    return getUtopiaID(possiblyStoryboard.rootElement)
+  }
+  return null
+}
+
+export function getStoryboardTemplatePath(
+  openComponents: UtopiaJSXComponent[],
+): StaticInstancePath | null {
+  const possiblyStoryboard = openComponents.find(
+    (component) => component.name === BakedInStoryboardVariableName,
+  )
+  if (possiblyStoryboard != null) {
+    const uid = getUtopiaID(possiblyStoryboard.rootElement)
+    return TP.staticInstancePath(EmptyScenePathForStoryboard, [uid])
+  }
+  return null
 }

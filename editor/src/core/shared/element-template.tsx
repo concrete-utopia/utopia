@@ -1121,28 +1121,29 @@ export type ElementsByUID = { [uid: string]: JSXElement }
 export function walkElement(
   element: JSXElementChild,
   parentPath: StaticElementPath,
-  forEach: (e: JSXElementChild, path: StaticElementPath) => void,
+  depth: number,
+  forEach: (e: JSXElementChild, path: StaticElementPath, depth: number) => void,
 ): void {
   switch (element.type) {
     case 'JSX_ELEMENT':
       const uidAttr = element.props['data-uid']
       if (isJSXAttributeValue(uidAttr) && typeof uidAttr.value === 'string') {
         const path = TP.appendToElementPath(parentPath, uidAttr.value)
-        forEach(element, path)
-        fastForEach(element.children, (child) => walkElement(child, path, forEach))
+        forEach(element, path, depth)
+        fastForEach(element.children, (child) => walkElement(child, path, depth + 1, forEach))
       }
       break
     case 'JSX_FRAGMENT':
-      forEach(element, parentPath)
-      fastForEach(element.children, (child) => walkElement(child, parentPath, forEach))
+      forEach(element, parentPath, depth)
+      fastForEach(element.children, (child) => walkElement(child, parentPath, depth + 1, forEach))
       break
     case 'JSX_TEXT_BLOCK':
-      forEach(element, parentPath)
+      forEach(element, parentPath, depth)
       break
     case 'JSX_ARBITRARY_BLOCK':
-      forEach(element, parentPath)
+      forEach(element, parentPath, depth)
       fastForEach(Object.keys(element.elementsWithin), (childKey) =>
-        walkElement(element.elementsWithin[childKey], parentPath, forEach),
+        walkElement(element.elementsWithin[childKey], parentPath, depth + 1, forEach),
       )
       break
     default:
@@ -1158,7 +1159,7 @@ export function walkElements(
   const emptyPath = ([] as any) as StaticElementPath // Oh my word
   fastForEach(topLevelElements, (rootComponent) => {
     if (isUtopiaJSXComponent(rootComponent)) {
-      walkElement(rootComponent.rootElement, emptyPath, forEach)
+      walkElement(rootComponent.rootElement, emptyPath, 0, forEach)
     }
   })
 }

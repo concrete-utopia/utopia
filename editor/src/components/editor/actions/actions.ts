@@ -412,7 +412,6 @@ import {
   addNewScene,
   removeScene,
   getNumberOfScenes,
-  getStoryboardTemplatePath,
   addSceneToJSXComponents,
   UserState,
   UserConfiguration,
@@ -428,6 +427,7 @@ import {
   fishOutUtopiaCanvasFromTopLevelElements,
   createSceneFromComponent,
   BakedInStoryboardVariableName,
+  getStoryboardTemplatePath,
 } from '../../../core/model/scene-utils'
 import { addUtopiaUtilsImportIfUsed } from '../import-utils'
 import { getFrameAndMultiplier } from '../../images'

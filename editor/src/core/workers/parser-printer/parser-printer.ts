@@ -1,11 +1,5 @@
 import * as React from 'react'
 import * as TS from 'typescript'
-import {
-  BakedInStoryboardVariableName,
-  convertTopLevelElementsBackToScenesAndTopLevelElements_FOR_PP_ONLY,
-  EmptyUtopiaCanvasComponent,
-  convertUtopiaCanvasComponentToScenes,
-} from '../../model/scene-utils'
 import { addUniquely, flatMapArray, uniq, uniqBy, sortBy } from '../../shared/array-utils'
 import { SafeFunction } from '../../shared/code-exec-utils'
 import {

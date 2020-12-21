@@ -51,6 +51,9 @@ import {
   SingleLineComment,
   MultiLineComment,
   Comment,
+  walkElement,
+  getJSXElementNameAsString,
+  isJSXElement,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -71,12 +74,17 @@ import {
   exportDetailModifier,
   ExportDetail,
   EmptyExportsDetail,
+  StaticElementPath,
+  isParseSuccess,
+  isTextFile,
+  ProjectFile,
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
 import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
+import { getUtopiaID } from '../../model/element-template-utils'
 
 export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercaseStringArbitrary().map(
   (text) => {
@@ -764,4 +772,46 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
       }
     })
   })
+}
+
+export function elementsStructure(topLevelElements: Array<TopLevelElement>): string {
+  let structureResults: Array<string> = []
+  for (const topLevelElement of topLevelElements) {
+    let elementResult: string = topLevelElement.type
+    if (isUtopiaJSXComponent(topLevelElement)) {
+      elementResult += ` - ${topLevelElement.name}`
+    }
+    structureResults.push(elementResult)
+    if (isUtopiaJSXComponent(topLevelElement)) {
+      const emptyPath = ([] as any) as StaticElementPath
+      walkElement(topLevelElement.rootElement, emptyPath, 1, (innerElement, path, depth) => {
+        let innerElementResult: string = ''
+        for (let index = 0; index < depth; index++) {
+          innerElementResult += '  '
+        }
+        innerElementResult += innerElement.type
+        if (isJSXElement(innerElement)) {
+          innerElementResult += ` - ${getJSXElementNameAsString(innerElement.name)} - ${getUtopiaID(
+            innerElement,
+          )}`
+        }
+        structureResults.push(innerElementResult)
+      })
+    }
+  }
+  return structureResults.join('\n')
+}
+
+export function forceParseSuccessFromFileOrFail(
+  file: ProjectFile | null | undefined,
+): ParseSuccess {
+  if (file != null && isTextFile(file)) {
+    if (isParseSuccess(file.fileContents.parsed)) {
+      return file.fileContents.parsed
+    } else {
+      fail(`Not a parse success ${file.fileContents.parsed}`)
+    }
+  } else {
+    fail(`Not a text file ${file}`)
+  }
 }

@@ -21,11 +21,7 @@ import {
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
-import {
-  createEditorStates,
-  createFakeMetadataForEditor,
-  forceParseSuccessFromFileOrFail,
-} from '../../../utils/test-utils'
+import { createEditorStates, createFakeMetadataForEditor } from '../../../utils/test-utils'
 import Utils from '../../../utils/utils'
 import { renameComponent, reparentComponents } from '../../navigator/actions'
 import * as TP from '../../../core/shared/template-path'
@@ -63,6 +59,7 @@ import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { getContentsTreeFileFromString } from '../../assets'
 import { openFileTab } from './editor-tabs'
+import { forceParseSuccessFromFileOrFail } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 
 const chaiExpect = Chai.expect
 

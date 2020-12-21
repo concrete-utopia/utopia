@@ -1,8 +1,10 @@
 import { printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from './prettier-utils'
-import { isRight } from '../../shared/either'
-import { testParseCode, clearParseResultUniqueIDs } from './parser-printer.test-utils'
-import { elementsStructure } from '../../../utils/test-utils'
+import {
+  testParseCode,
+  clearParseResultUniqueIDs,
+  elementsStructure,
+} from './parser-printer.test-utils'
 import { AwkwardFragmentsCode } from './parser-printer-fragments.test-utils'
 import { isParseSuccess } from '../../shared/project-file-types'
 
@@ -12,19 +14,21 @@ describe('JSX parser', () => {
     const parseResult = clearParseResultUniqueIDs(testParseCode(code))
     if (isParseSuccess(parseResult)) {
       expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-        "  JSX_ELEMENT - aaa
+        "UTOPIA_JSX_COMPONENT - App
+          JSX_ELEMENT - View - aaa
             JSX_TEXT_BLOCK
             JSX_FRAGMENT
-            JSX_ELEMENT - bbb
-              JSX_TEXT_BLOCK
-              JSX_FRAGMENT
-              JSX_ELEMENT - ccc
-              JSX_TEXT_BLOCK
+              JSX_ELEMENT - div - bbb
+                JSX_TEXT_BLOCK
+                JSX_FRAGMENT
+                  JSX_ELEMENT - div - ccc
+                JSX_TEXT_BLOCK
             JSX_TEXT_BLOCK
-            JSX_ELEMENT - ddd
+            JSX_ELEMENT - div - ddd
               JSX_TEXT_BLOCK
-          JSX_ELEMENT - eee
-            JSX_ELEMENT - fff"
+        UTOPIA_JSX_COMPONENT - storyboard
+          JSX_ELEMENT - Storyboard - eee
+            JSX_ELEMENT - Scene - fff"
       `)
 
       const printedCode = printCode(

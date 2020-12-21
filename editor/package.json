@@ -31,7 +31,8 @@
     "preinstall": "npm run install-utopia-api",
     "postinstall": "patch-package",
     "eslint-check": "eslint --quiet --config .eslintrc.js --ext .ts --ext .tsx src ../utopia-api/src ../website/src",
-    "parse-print-analysis": "npx ts-node --transpile-only ./src/scripts/parse-print-analysis.ts"
+    "parse-print-analysis": "npx -s sh ts-node --require ignore-styles --transpile-only ./src/scripts/parse-print-analysis.ts",
+    "parse-debug": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/parse-debug.ts"
   },
   "jest": {
     "testEnvironment": "jest-environment-jsdom-global",
@@ -260,6 +261,7 @@
     "got": "11.8.1",
     "html-webpack-plugin": "4.0.4",
     "husky": "3.1.0",
+    "ignore-styles": "5.0.1",
     "immutable": "3.8.1",
     "jStat": "1.5.3",
     "jest": "26.1.0",
