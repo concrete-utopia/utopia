@@ -52,6 +52,9 @@ import {
   propNamesForParam,
   JSXAttributeOtherJavaScript,
   jsxElementName,
+  Comment,
+  singleLineComment,
+  multiLineComment,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -101,6 +104,7 @@ import { applyPrettier } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
+import { addCommentsToNode, getComments } from './parser-printer-comments'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -453,7 +457,8 @@ function printUtopiaJSXComponent(
   detailOfExports: ExportsDetail,
 ): TS.Node {
   const asJSX = jsxElementToExpression(element.rootElement, imports, printOptions.stripUIDs)
-  if (TS.isJsxElement(asJSX) || TS.isJsxSelfClosingElement(asJSX)) {
+  if (TS.isJsxElement(asJSX) || TS.isJsxSelfClosingElement(asJSX) || TS.isJsxFragment(asJSX)) {
+    let elementNode: TS.Node
     const modifiers = getModifersForComponent(element, detailOfExports)
     if (element.isFunction) {
       const arrowParams = maybeToArray(element.param).map(printParam)
@@ -475,11 +480,14 @@ function printUtopiaJSXComponent(
         bodyBlock,
       )
       const varDec = TS.createVariableDeclaration(element.name, undefined, arrowFunction)
-      return TS.createVariableStatement(modifiers, [varDec])
+      elementNode = TS.createVariableStatement(modifiers, [varDec])
     } else {
       const varDec = TS.createVariableDeclaration(element.name, undefined, asJSX)
-      return TS.createVariableStatement(modifiers, [varDec])
+      elementNode = TS.createVariableStatement(modifiers, [varDec])
     }
+
+    addCommentsToNode(elementNode, element.leadingComments)
+    return elementNode
   } else {
     throw new Error(
       `Somehow ended up with the wrong type of root element ${JSON.stringify(element.rootElement)}`,
@@ -564,19 +572,10 @@ function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): s
     false,
     TS.ScriptKind.TS,
   )
-  const printFlags =
-    TS.ListFormat.Indented |
-    TS.ListFormat.MultiLine |
-    TS.ListFormat.SpaceBetweenBraces |
-    TS.ListFormat.MultiLineBlockStatements |
-    TS.ListFormat.PreferNewLine |
-    TS.ListFormat.MultiLineFunctionBodyStatements |
-    TS.ListFormat.MultiLineTypeLiteralMembers
-  const typescriptPrintedResult = printer.printList(
-    printFlags,
-    TS.createNodeArray(statements),
-    resultFile,
-  )
+  const printedParts = statements.map((statement) => {
+    return printer.printNode(TS.EmitHint.Unspecified, statement, resultFile)
+  })
+  const typescriptPrintedResult = printedParts.join('\n')
   let result: string
   if (shouldPrettify) {
     result = applyPrettier(typescriptPrintedResult, false).formatted
@@ -1122,6 +1121,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
               applyAndResetArbitraryNodes()
               const exported = isExported(topLevelElement)
 
+              const comments = getComments(sourceText, topLevelElement)
               const utopiaComponent = utopiaJSXComponent(
                 name,
                 isFunction,
@@ -1134,6 +1134,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
                 contents.elements[0].value,
                 contents.arbitraryJSBlock,
                 false,
+                comments.leadingComments,
               )
 
               const defaultExport = isDefaultExport(topLevelElement)
@@ -1200,6 +1201,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             topLevelElement.rootElement,
             topLevelElement.arbitraryJSBlock,
             true,
+            [],
           )
         } else {
           return topLevelElement

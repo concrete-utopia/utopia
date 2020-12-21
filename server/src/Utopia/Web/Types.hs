@@ -71,7 +71,7 @@ type EmptyProjectPageAPI = "p" :> BranchNameParam :> Get '[HTML] H.Html
 
 type ProjectPageAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> BranchNameParam :> Get '[HTML] H.Html
 
-type LoadProjectAssetAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
+type LoadProjectFileAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> CaptureAll "file_path" Text :> RawM
 
 type EmptyPreviewPageAPI = "share" :> BranchNameParam :> Get '[HTML] H.Html
 
@@ -103,7 +103,7 @@ type ShowcaseAPI = "v1" :> "showcase" :> Get '[JSON] ProjectListResponse
 
 type SetShowcaseAPI = "v1" :> "showcase" :> "overwrite" :> QueryParam' '[Required] "projects" Text :> Post '[JSON] NoContent
 
-type PreviewProjectAssetAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> Capture "first_path" Text :> CaptureAll "remaining_path" Text :> RawM
+type PreviewProjectFileAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> CaptureAll "file_path" Text :> RawM
 
 type RenameProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" ProjectIdWithSuffix :> CaptureAll "path" Text :> QueryParam' '[Required] "old_file_name" Text :> Put '[JSON] NoContent
 
@@ -178,8 +178,8 @@ type Unprotected = AuthenticateAPI
               :<|> ProjectMetadataEndpoint
               :<|> ShowcaseAPI
               :<|> SetShowcaseAPI
-              :<|> LoadProjectAssetAPI
-              :<|> PreviewProjectAssetAPI
+              :<|> LoadProjectFileAPI
+              :<|> PreviewProjectFileAPI
               :<|> LoadProjectThumbnailAPI
               :<|> MonitoringAPI
               :<|> ClearBranchAPI

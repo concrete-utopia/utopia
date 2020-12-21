@@ -1,3 +1,4 @@
+import { Interpolation, Theme } from '@emotion/react'
 import * as React from 'react'
 import {
   UtopiaComponentProps,
@@ -18,7 +19,9 @@ function filterFrameFromStyle(style: React.CSSProperties | undefined): React.CSS
 
 export interface ViewProps
   extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>,
-    UtopiaComponentProps {}
+    UtopiaComponentProps {
+  css?: Interpolation<Theme>
+}
 
 export const View: React.FunctionComponent<ViewProps> = (props: ViewProps) => {
   let { layout: passedLayout, 'data-uid': dataUid, 'data-label': dataLabel, ...divProps } = props

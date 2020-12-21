@@ -1,6 +1,49 @@
-import { extractImage } from '../../core/shared/file-utils'
-import { EditorDispatch } from './action-types'
+import { fileTypeFromFileName } from '../../core/model/project-file-utils'
+import { extractFile, extractImage, FileResult } from '../../core/shared/file-utils'
+import { codeFile } from '../../core/shared/project-file-types'
+import { EditorAction, EditorDispatch } from './action-types'
 import * as EditorActions from './actions/action-creators'
+
+async function fileUploadAction(file: File, targetPath: string): Promise<EditorAction> {
+  const fileResult = await extractFile(file)
+  return fileResultUploadAction(fileResult, targetPath)
+}
+
+export function fileResultUploadAction(fileResult: FileResult, targetPath: string): EditorAction {
+  switch (fileResult.type) {
+    case 'IMAGE_RESULT': {
+      const afterSave = EditorActions.saveImageReplace()
+      return EditorActions.saveAsset(
+        targetPath,
+        fileResult.fileType,
+        fileResult.base64Bytes,
+        fileResult.hash,
+        EditorActions.saveImageDetails(fileResult.size, afterSave),
+      )
+    }
+    case 'ASSET_RESULT': {
+      let fileType: string = ''
+      const splitPath = targetPath.split('.')
+      if (splitPath.length > 1) {
+        fileType = splitPath[splitPath.length - 1]
+      }
+      return EditorActions.saveAsset(
+        targetPath,
+        fileType,
+        fileResult.base64Bytes,
+        fileResult.hash,
+        null,
+      )
+    }
+    case 'TEXT_RESULT': {
+      return EditorActions.updateFile(targetPath, codeFile(fileResult.content, null), true)
+    }
+
+    default:
+      const _exhaustiveCheck: never = fileResult
+      throw new Error(`Unhandled type ${JSON.stringify(fileResult)}`)
+  }
+}
 
 function handleImageSelected(
   files: FileList | null,
@@ -9,26 +52,37 @@ function handleImageSelected(
 ) {
   if (files != null && files.length === 1) {
     const file = files[0]
-    extractImage(file)
-      .then((result) => {
-        const afterSave = createImageElement
-          ? EditorActions.saveImageSwitchMode()
-          : EditorActions.saveImageDoNothing()
-        const saveImageAction = EditorActions.saveAsset(
-          `assets/${result.filename}`,
-          file.type,
-          result.base64Bytes,
-          result.hash,
-          EditorActions.saveImageDetails(result.size, afterSave),
-        )
-        dispatch([saveImageAction], 'everyone')
+    const imageFilePath = `assets/${file.name}`
+    if (fileTypeFromFileName(file.name) === 'IMAGE_FILE') {
+      extractImage(file)
+        .then((result) => {
+          const afterSave = createImageElement
+            ? EditorActions.saveImageSwitchMode()
+            : EditorActions.saveImageDoNothing()
+          const saveImageAction = EditorActions.saveAsset(
+            imageFilePath,
+            file.type,
+            result.base64Bytes,
+            result.hash,
+            EditorActions.saveImageDetails(result.size, afterSave),
+          )
+          dispatch([saveImageAction], 'everyone')
+        })
+        .catch((failure) => {
+          console.error(failure)
+        })
+        .finally(() => {
+          removeFileDialogTrigger()
+        })
+    } else {
+      // FIXME Support inserting SVGs by adding an import statement
+      fileUploadAction(file, imageFilePath).then((saveFileAction) => {
+        const warningMessage = EditorActions.showToast({
+          message: `File saved to ${imageFilePath}`,
+        })
+        dispatch([saveFileAction, warningMessage], 'everyone')
       })
-      .catch((failure) => {
-        console.error(failure)
-      })
-      .finally(() => {
-        removeFileDialogTrigger()
-      })
+    }
   }
 }
 
@@ -64,10 +118,5 @@ function removeFileDialogTrigger() {
 
 export function insertImage(dispatch: EditorDispatch): void {
   const element = createFileDialogTrigger(dispatch, true)
-  element.click()
-}
-
-export function addImageToAssets(dispatch: EditorDispatch): void {
-  const element = createFileDialogTrigger(dispatch, false)
   element.click()
 }

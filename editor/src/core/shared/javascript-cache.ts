@@ -73,13 +73,9 @@ function resolveDefinedElsewhere(
   let definedElsewhereInfo: { [name: string]: any } = {}
 
   definedElsewhere.forEach((elsewhere) => {
-    let possibleValue = scope[elsewhere]
-    if (possibleValue != undefined || scope.hasOwnProperty(elsewhere)) {
-      definedElsewhereInfo[elsewhere] = possibleValue
-    }
-
-    possibleValue = requireResult[elsewhere]
-    if (possibleValue != undefined || requireResult.hasOwnProperty(elsewhere)) {
+    const glob: any = global as any
+    let possibleValue = glob[elsewhere]
+    if (possibleValue != undefined || glob.hasOwnProperty(elsewhere)) {
       definedElsewhereInfo[elsewhere] = possibleValue
     }
 
@@ -87,9 +83,13 @@ function resolveDefinedElsewhere(
       definedElsewhereInfo[elsewhere] = console
     }
 
-    const glob: any = global as any
-    possibleValue = glob[elsewhere]
-    if (possibleValue != undefined || glob.hasOwnProperty(elsewhere)) {
+    possibleValue = requireResult[elsewhere]
+    if (possibleValue != undefined || requireResult.hasOwnProperty(elsewhere)) {
+      definedElsewhereInfo[elsewhere] = possibleValue
+    }
+
+    possibleValue = scope[elsewhere]
+    if (possibleValue != undefined || scope.hasOwnProperty(elsewhere)) {
       definedElsewhereInfo[elsewhere] = possibleValue
     }
   })

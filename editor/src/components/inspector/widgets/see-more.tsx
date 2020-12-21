@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ToggleButton } from 'uuiui'
+import { ToggleButton } from '../../../uuiui'
 
 export const SeeMoreButton: React.FunctionComponent<{
   seeMoreVisible: boolean

@@ -1,9 +1,9 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import * as React from 'react'
-import { colorTheme, UtopiaStyles, SimpleFlexRow } from 'uuiui'
+import { colorTheme } from '../../uuiui'
 
 export const H1 = styled.h1({
   transform: 'rotateZ(-1deg) skew(-1deg, 0deg)',
@@ -69,8 +69,8 @@ export const PrettyKeys = (props: PrettyKeysProps) => {
 
   return (
     <span>
-      {[...props.shortcut].map((keyb) => (
-        <span key={keyb} style={{ ...keyStyle }}>
+      {[...props.shortcut].map((keyb, index) => (
+        <span key={keyb === ' ' ? `space-${index}` : keyb} style={{ ...keyStyle }}>
           {keyb}
         </span>
       ))}

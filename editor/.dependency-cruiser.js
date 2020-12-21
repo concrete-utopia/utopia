@@ -160,6 +160,19 @@ module.exports = {
       },
     },
     {
+      name: 'not-to-scripts',
+      comment:
+        'Prevent anything from the primary editor code from importing anything from the scripts folder.',
+      severity: 'error',
+      from: {
+        path: '^(src)',
+        pathNot: '^src/scripts/.*$',
+      },
+      to: {
+        path: 'src/scripts/.*$',
+      },
+    },
+    {
       name: 'not-to-dev-dep',
       severity: 'error',
       comment:
@@ -171,7 +184,7 @@ module.exports = {
       from: {
         path: '^(src)',
         pathNot:
-          '\\.(spec|test|spec.browser|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$',
+          '\\.(spec|test|spec.browser|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
       },
       to: {
         dependencyTypes: ['npm-dev'],

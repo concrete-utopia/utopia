@@ -268,7 +268,6 @@ export interface EditorState {
     codePaneWidth: number
     codePaneVisible: boolean
     restorableCodePaneWidth: number
-    layoutReversed: boolean
     additionalControls: boolean
   }
   canvas: {
@@ -314,6 +313,7 @@ export interface EditorState {
     dropTargetHint: DropTargetHint
     collapsedViews: TemplatePath[]
     renamingTarget: TemplatePath | null
+    visible: boolean
   }
   preview: {
     visible: boolean
@@ -1053,7 +1053,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     leftMenu: {
       selectedTab: LeftMenuTab.ProjectStructure,
-      expanded: true,
+      expanded: false,
       paneWidth: LeftPaneDefaultWidth,
     },
     rightMenu: {
@@ -1064,7 +1064,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       codePaneWidth: 500,
       codePaneVisible: true,
       restorableCodePaneWidth: 500,
-      layoutReversed: true,
       additionalControls: true,
     },
     canvas: {
@@ -1104,6 +1103,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     navigator: {
       minimised: false,
+      visible: true,
       dropTargetHint: {
         target: null,
         type: null,
@@ -1294,7 +1294,7 @@ export function editorModelFromPersistentModel(
     },
     leftMenu: {
       selectedTab: LeftMenuTab.ProjectStructure,
-      expanded: true,
+      expanded: false,
       paneWidth: LeftPaneDefaultWidth,
     },
     rightMenu: {
@@ -1305,7 +1305,6 @@ export function editorModelFromPersistentModel(
       codePaneWidth: 500,
       codePaneVisible: true,
       restorableCodePaneWidth: 500,
-      layoutReversed: true,
       additionalControls: true,
     },
     canvas: {
@@ -1368,6 +1367,7 @@ export function editorModelFromPersistentModel(
       collapsedViews: [],
       renamingTarget: null,
       minimised: persistentModel.navigator.minimised,
+      visible: true,
     },
     fileBrowser: {
       renamingTarget: null,

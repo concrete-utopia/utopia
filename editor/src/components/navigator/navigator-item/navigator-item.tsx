@@ -1,8 +1,6 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { colorTheme, FlexRow, IcnProps, Icons, Tooltip, UtopiaStyles, UtopiaTheme } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
 import { ElementOriginType, Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
@@ -17,7 +15,11 @@ import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { WarningIcon } from '../../../uuiui/warning-icon'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
-import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import {
+  betterReactMemo,
+  useKeepReferenceEqualityIfPossible,
+} from '../../../utils/react-performance'
+import { IcnProps, colorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
 
 interface ComputedLook {
   style: React.CSSProperties

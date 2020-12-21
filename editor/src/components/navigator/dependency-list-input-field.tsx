@@ -1,8 +1,7 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import CreatableSelect from 'react-select/creatable'
-import { FunctionIcons, StringInput, Tooltip } from 'uuiui'
 import Utils from '../../utils/utils'
 import {
   BasicSelectControl,
@@ -11,6 +10,7 @@ import {
 } from '../inspector/controls/select-control'
 import { top1000NPMPackagesOptions } from './top1000NPMPackagesOptions'
 import { getControlStyles } from '../inspector/common/control-status'
+import { Tooltip, StringInput, FunctionIcons } from '../../uuiui'
 
 interface DependencyListInputFieldProps {
   showVersionField: boolean

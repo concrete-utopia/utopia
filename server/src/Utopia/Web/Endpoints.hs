@@ -19,7 +19,10 @@ import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
 import           Data.CaseInsensitive
 import qualified Data.Text                       as T
+import           Data.Text.Encoding
 import           Data.Time
+import           Network.HTTP.Types.Header
+import           Network.HTTP.Types.Status
 import           Network.Wai
 import           Network.Wai.Middleware.Gzip
 import           Protolude
@@ -35,10 +38,12 @@ import qualified Text.Blaze.Html5.Attributes     as HA
 import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
+import           Utopia.Web.Executors.Common
 import           Utopia.Web.Proxy
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
+import           Utopia.Web.Utils.Files
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
 
@@ -280,9 +285,28 @@ deleteProjectEndpoint cookie (ProjectIdWithSuffix projectID _) = requireUser coo
   deleteProject sessionUser projectID
   return NoContent
 
-loadProjectAssetEndpoint :: ProjectIdWithSuffix -> Text -> [Text] -> ServerMonad Application
-loadProjectAssetEndpoint (ProjectIdWithSuffix projectID _) firstPart remainingPath = do
-  loadProjectAsset ([projectID, firstPart] ++ remainingPath)
+loadProjectFileContents :: Maybe DecodedProject -> [Text] -> Maybe Text
+loadProjectFileContents possibleProject filePath = do
+  let projectFilePath = projectContentsPathForFilePath filePath
+  let projectFileLookup = foldl' (\lensSoFar -> \pathPart -> lensSoFar . key pathPart) content projectFilePath
+  project <- possibleProject
+  contentFromLookup <- firstOf (projectFileLookup . _String) project
+  return contentFromLookup
+
+sendProjectFileContentsResponse :: [Text] -> Text -> (Response -> a) -> a
+sendProjectFileContentsResponse filePath contents = \sendResponse ->
+  let mimeType = getPathMimeType filePath
+      builtResponse = responseLBS ok200 [(hContentType, mimeType)] (BL.fromStrict $ encodeUtf8 contents)
+  in sendResponse builtResponse
+
+loadProjectFileEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad Application
+loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) filePath = do
+  let normalizedPath = normalizePath filePath
+  possibleProject <- loadProject projectID
+  let projectFileContents = loadProjectFileContents possibleProject normalizedPath
+  case projectFileContents of
+    Just fileContents -> return $ \_ -> sendProjectFileContentsResponse normalizedPath fileContents
+    Nothing -> loadProjectAsset ([projectID] ++ normalizedPath)
 
 saveProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ServerMonad Application
 saveProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser -> do
@@ -463,8 +487,8 @@ unprotected = authenticate
          :<|> getProjectMetadataEndpoint
          :<|> getShowcaseEndpoint
          :<|> setShowcaseEndpoint
-         :<|> loadProjectAssetEndpoint
-         :<|> loadProjectAssetEndpoint
+         :<|> loadProjectFileEndpoint
+         :<|> loadProjectFileEndpoint
          :<|> loadProjectThumbnailEndpoint
          :<|> monitoringEndpoint
          :<|> clearBranchCacheEndpoint

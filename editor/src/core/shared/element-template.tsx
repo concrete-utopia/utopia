@@ -2,7 +2,6 @@ import {
   PropertyPath,
   InstancePath,
   PropertyPathPart,
-  SceneContainer,
   ScenePath,
   StaticElementPath,
 } from './project-file-types'
@@ -21,6 +20,40 @@ import { ModifiableAttribute } from './jsx-attributes'
 import * as TP from './template-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
+
+export interface MultiLineComment {
+  type: 'MULTI_LINE_COMMENT'
+  comment: string
+  trailingNewLine: boolean
+}
+
+export function multiLineComment(comment: string, trailingNewLine: boolean): MultiLineComment {
+  return {
+    type: 'MULTI_LINE_COMMENT',
+    comment: comment,
+    trailingNewLine: trailingNewLine,
+  }
+}
+
+export interface SingleLineComment {
+  type: 'SINGLE_LINE_COMMENT'
+  comment: string
+  trailingNewLine: boolean
+}
+
+export function singleLineComment(comment: string, trailingNewLine: boolean): SingleLineComment {
+  return {
+    type: 'SINGLE_LINE_COMMENT',
+    comment: comment,
+    trailingNewLine: trailingNewLine,
+  }
+}
+
+export type Comment = MultiLineComment | SingleLineComment
+
+export interface WithComments {
+  leadingComments: Array<Comment>
+}
 
 export interface JSXAttributeValue<T> {
   type: 'ATTRIBUTE_VALUE'
@@ -635,6 +668,7 @@ export function utopiaJSXComponent(
   rootElement: JSXElementChild,
   jsBlock: ArbitraryJSBlock | null,
   usedInReactDOMRender: boolean,
+  leadingComments: Array<Comment>,
 ): UtopiaJSXComponent {
   return {
     type: 'UTOPIA_JSX_COMPONENT',
@@ -645,6 +679,7 @@ export function utopiaJSXComponent(
     rootElement: rootElement,
     arbitraryJSBlock: jsBlock,
     usedInReactDOMRender: usedInReactDOMRender,
+    leadingComments: leadingComments,
   }
 }
 
@@ -792,7 +827,7 @@ export function propNamesForParam(param: Param): Array<string> {
   }
 }
 
-export interface UtopiaJSXComponent {
+export interface UtopiaJSXComponent extends WithComments {
   type: 'UTOPIA_JSX_COMPONENT'
   name: string
   /**
@@ -1062,7 +1097,6 @@ export interface ComponentMetadata {
   templatePath: InstancePath
   rootElements: Array<InstancePath>
   component: string | null
-  container?: SceneContainer
   globalFrame: CanvasRectangle | null
   sceneResizesContent: boolean
   label?: string

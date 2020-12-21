@@ -1,19 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
-import {
-  ActionSheet,
-  FlexRow,
-  Icons,
-  Section,
-  SectionBodyArea,
-  SectionTitleRow,
-  SquareButton,
-  Title,
-  Button,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import {
   jsxAttributeValue,
   JSXElement,
@@ -49,7 +37,18 @@ import { FileBrowserItem } from './fileitem'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
-import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import {
+  Section,
+  SectionBodyArea,
+  Button,
+  SectionTitleRow,
+  FlexRow,
+  Title,
+  ActionSheet,
+  SquareButton,
+  Icons,
+} from '../../uuiui'
 
 export type FileBrowserItemType = 'file' | 'export'
 

@@ -1,5 +1,5 @@
+import { Interpolation } from '@emotion/react'
 import { createUtopiColor } from './utopi-color-helpers'
-import { ObjectInterpolation, css } from '@emotion/core'
 
 const base = {
   blue: createUtopiColor('#00ABFF', 'converted from P3 color space', 'blue'),
@@ -239,7 +239,7 @@ const light = {
   inspectorControlledBackgroundColor: createUtopiColor('#0091FF', '', ''),
   inspectorControlledSegmentSelectorColor: createUtopiColor('#0091FF', '', ''),
   inspectorControlledSegmentTrackColor: createUtopiColor('#EDEDED', '', ''),
-  inspectorDetectedMainColor: lightBase.primary,
+  inspectorDetectedMainColor: createUtopiColor('hsl(0,0%,85%)', 'eg unset pins ', ''),
   inspectorDetectedSecondaryColor: createUtopiColor('hsl(0,0%,85%)', 'eg unset pins ', ''),
   inspectorDetectedBorderColor: lightControls.inputBorder,
   inspectorDetectedBackgroundColor: lightControls.inputBackground,
@@ -439,7 +439,7 @@ export const UtopiaTheme = {
   },
 } as const
 
-const input: ObjectInterpolation<any> = {
+const input: Interpolation<any> = {
   borderRadius: '2px',
   border: '1px solid grey',
   backgroundColor: 'white',

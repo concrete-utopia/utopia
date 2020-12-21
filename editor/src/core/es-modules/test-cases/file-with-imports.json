@@ -20,6 +20,16 @@
       "isModule": false,
       "requires": []
     },
+    "/node_modules/mypackage/simple.css": {
+      "content": ".utopiaClass { background-color: red; }",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/mypackage/simple.svg": {
+      "content": "<svg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'><title>At Circle</title></svg>",
+      "isModule": false,
+      "requires": []
+    },
     "/node_modules/mypackage/package.json": {
       "content": "{\"name\": \"mypackage\", \"version\": \"0.0.1\", \"main\": \"web.cjs.js\"}",
       "isModule": false,

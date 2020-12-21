@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { ControlFontSize } from '../canvas-controls-frame'
-import { colorTheme } from 'uuiui'
 import { Size } from '../../../core/shared/math-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { ResizeDragState } from '../canvas-types'
@@ -15,6 +14,7 @@ import { determineElementsToOperateOnForDragging } from './select-mode/move-util
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
+import { colorTheme } from '../../../uuiui'
 
 interface SizeBoxLabelProps {
   visible: boolean

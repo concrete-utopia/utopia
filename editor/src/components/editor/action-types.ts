@@ -274,10 +274,6 @@ export type TogglePane = {
   target: EditorPanel | EditorPane
 }
 
-export type ToggleInterfaceDesignerLayoutReversed = {
-  action: 'TOGGLE_INTERFACEDESIGNER_LAYOUT_REVERSED'
-}
-
 export type ToggleInterfaceDesignerAdditionalControls = {
   action: 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS'
 }
@@ -821,7 +817,6 @@ export type EditorAction =
   | ShowModal
   | ResizeInterfaceDesignerCodePane
   | ToggleInterfaceDesignerCodeEditor
-  | ToggleInterfaceDesignerLayoutReversed
   | ToggleInterfaceDesignerAdditionalControls
   | SaveCurrentFile
   | SaveAsset

@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import useInterval from '@use-it/interval'
 import * as React from 'react'
@@ -16,17 +16,17 @@ import Select, {
 } from 'react-select'
 import { MenuPortalProps } from 'react-select/src/components/Menu'
 import { styleFn } from 'react-select/src/styles'
+import { Icn, IcnProps, IcnSpacer } from '../../icn'
+import { colorTheme, UtopiaTheme } from '../../styles/theme'
+import { FlexRow } from '../layout/flex-row'
+import { isOptionType } from '../../../utils/utils'
 import {
   betterReactMemo,
   CommonUtils,
   ControlStyles,
   getControlStyles,
   SelectOption,
-} from 'uuiui-deps'
-import { Icn, IcnProps, IcnSpacer } from '../../icn'
-import { colorTheme, UtopiaTheme } from '../../styles/theme'
-import { FlexRow } from '../layout/flex-row'
-import { isOptionType } from '../../../utils/utils'
+} from '../../../uuiui-deps'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 

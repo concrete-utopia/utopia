@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { betterReactMemo, InspectorContextMenuWrapper } from 'uuiui-deps'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
+import { betterReactMemo, InspectorContextMenuWrapper } from '../../../uuiui-deps'
 import { optionalAddOnUnsetValues } from '../common/context-menu-items'
 import { useInspectorInfoSimpleUntyped } from '../common/property-path-hooks'
 

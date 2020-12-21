@@ -143,10 +143,9 @@ describe('DOM Walker tests', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 375, height: 812 }}
+              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -189,10 +188,9 @@ describe('DOM Walker tests', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 375, height: 812 }}
+              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -235,10 +233,9 @@ describe('DOM Walker tests', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 375, height: 812 }}
+              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -267,10 +264,9 @@ describe('DOM Walker tests', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 375, height: 812 }}
+              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>
@@ -303,10 +299,9 @@ describe('DOM Walker tests', () => {
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
               static
-              style={{ left: 0, top: 0, width: 375, height: 812 }}
+              style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
               component={App}
-              layout={{ layoutSystem: 'pinSystem' }}
-              props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid={'scene-aaa'}
             />
           </Storyboard>

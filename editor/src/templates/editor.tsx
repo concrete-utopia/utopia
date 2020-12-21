@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
-import { updateCssVars, UtopiaStyles } from 'uuiui'
 import create from 'zustand'
 import {
   getProjectID,
@@ -91,6 +90,7 @@ import {
   isSendPreviewModel,
   isUpdatePropertyControlsInfo,
 } from '../components/editor/actions/actions'
+import { updateCssVars, UtopiaStyles } from '../uuiui'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()

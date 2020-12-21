@@ -14,7 +14,9 @@ To try the latest deployed version of the editor, go to https://utopia.app/proje
 Utopia runs in the browser! To run it, you'll need to run the server (locally) and webpack.
 
 ## Prerequisites
-- If using Windows you'll first need to set up the [Windows Subsystem for Linux (wsl)](https://docs.microsoft.com/en-us/windows/wsl/install-win10). All following steps and commands will assume you are using the wsl.
+
+- **If using Windows** you'll first need to set up the [Windows Subsystem for Linux (wsl)](https://docs.microsoft.com/en-us/windows/wsl/install-win10). All following steps and commands will assume you are using the wsl.
+- On **macOS** you need [brew](https://brew.sh/) and must run `brew install gmp` first
 - [nix-shell](https://nixos.org/download.html). If you are on macOS Catalina or later, you will be prompted to include an extra flag in the install script. If using Windows follow [this guide](https://nathan.gs/2019/04/12/nix-on-windows/). If you don't want to use nix, we have instructions [here](https://github.com/concrete-utopia/utopia#running-this-without-nix)
 - Recommended: [direnv](https://github.com/concrete-utopia/utopia#using-direnv-to-make-your-life-easier). If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands, and switching to nix will be a bit slower.
 

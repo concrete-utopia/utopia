@@ -1,7 +1,6 @@
 export type PreviewPanel = 'preview'
 
 export type LeftMenuPanel =
-  | 'navigator'
   | 'filebrowser'
   | 'dependencylist'
   | 'genericExternalResources'
@@ -15,12 +14,15 @@ export type InspectorPanel = 'inspector'
 
 export type CodeEditorPanel = 'uicodeeditor'
 
+export type NavigatorPanel = 'navigatorPane' | 'navigator'
+
 export type EditorPanel =
   | LeftMenuPanel
   | CenterPanel
   | CodeEditorPanel
   | InspectorPanel
   | PreviewPanel
+  | NavigatorPanel
 
 export type EditorPane = 'leftmenu' | 'center' | 'inspector' | 'preview' | 'rightmenu'
 
@@ -28,8 +30,6 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
   switch (panel) {
     case null:
       return null
-    case 'navigator':
-      return 'leftmenu'
     case 'filebrowser':
       return 'leftmenu'
     case 'dependencylist':
@@ -42,6 +42,10 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
       return 'rightmenu'
     case 'projectsettings':
       return 'leftmenu'
+    case 'navigator':
+      return 'center'
+    case 'navigatorPane':
+      return 'center'
     case 'canvas':
       return 'center'
     case 'misccodeeditor':

@@ -1,13 +1,5 @@
 import * as React from 'react'
 import {
-  FlexColumn,
-  Icons,
-  NumberInput,
-  SquareButton,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
-import {
   createLayoutPropertyPath,
   framePointForPinnedProp,
   LayoutFlexElementNumericProp,
@@ -26,6 +18,14 @@ import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls
 import { PropertyLabel } from '../../../widgets/property-label'
 import { ResolvedLayoutProps } from '../layout-section'
 import { SelfLayoutTab } from './self-layout-subsection'
+import {
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  NumberInput,
+  SquareButton,
+  Icons,
+  FlexColumn,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -263,10 +263,8 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
       case 'horizontal':
       case null:
         widthControl = flexLayoutNumberControl('W', 'FlexFlexBasis')
-        heightControl = flexLayoutNumberControl('H', 'FlexCrossBasis')
         break
       case 'vertical':
-        widthControl = flexLayoutNumberControl('W', 'FlexCrossBasis')
         heightControl = flexLayoutNumberControl('H', 'FlexFlexBasis')
         break
       default:
@@ -399,37 +397,39 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
   let secondXAxisControl: React.ReactElement = <div />
   let firstYAxisControl: React.ReactElement = <div />
   let secondYAxisControl: React.ReactElement = <div />
-  const centerXInfo = useInspectorLayoutInfo('PinnedCenterX')
-  const topInfo = useInspectorLayoutInfo('PinnedTop')
-  if (centerXInfo.value == null) {
-    // No CenterX value, just show top and bottom.
-    firstXAxisControl = pinsLayoutNumberControl(frame, 'PinnedTop')
-    secondXAxisControl = pinsLayoutNumberControl(frame, 'PinnedBottom')
-  } else {
-    // We have a CenterX value, so put that first and then top or bottom after it.
-    firstXAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterX')
-    if (topInfo.value == null) {
-      secondXAxisControl = pinsLayoutNumberControl(frame, 'PinnedBottom')
-    } else {
-      secondXAxisControl = pinsLayoutNumberControl(frame, 'PinnedTop')
-    }
-  }
+  // TODO LAYOUT update these when there are new ways to set centerX/centerY
+  // const centerXInfo = useInspectorLayoutInfo('PinnedCenterX')
+  // const topInfo = useInspectorLayoutInfo('PinnedTop')
+  // if (centerXInfo.value == null) {
+  // No CenterX value, just show top and bottom.
+  firstXAxisControl = pinsLayoutNumberControl(frame, 'PinnedTop')
+  secondXAxisControl = pinsLayoutNumberControl(frame, 'PinnedBottom')
+  // } else {
+  //   // We have a CenterX value, so put that first and then top or bottom after it.
+  //   firstXAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterX')
+  //   if (topInfo.value == null) {
+  //     secondXAxisControl = pinsLayoutNumberControl(frame, 'PinnedBottom')
+  //   } else {
+  //     secondXAxisControl = pinsLayoutNumberControl(frame, 'PinnedTop')
+  //   }
+  // }
 
-  const centerYInfo = useInspectorLayoutInfo('PinnedCenterY')
-  const leftInfo = useInspectorLayoutInfo('PinnedLeft')
-  if (centerYInfo.value == null) {
-    // No CenterY value, just show left and right.
-    firstYAxisControl = pinsLayoutNumberControl(frame, 'PinnedLeft')
-    secondYAxisControl = pinsLayoutNumberControl(frame, 'PinnedRight')
-  } else {
-    // We have a CenterY value, so put that first and then left or right after it.
-    firstYAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterY')
-    if (leftInfo.value == null) {
-      secondYAxisControl = pinsLayoutNumberControl(frame, 'PinnedRight')
-    } else {
-      secondYAxisControl = pinsLayoutNumberControl(frame, 'PinnedLeft')
-    }
-  }
+  // TODO LAYOUT update these when there are new ways to set centerX/centerY
+  // const centerYInfo = useInspectorLayoutInfo('PinnedCenterY')
+  // const leftInfo = useInspectorLayoutInfo('PinnedLeft')
+  // if (centerYInfo.value == null) {
+  // No CenterY value, just show left and right.
+  firstYAxisControl = pinsLayoutNumberControl(frame, 'PinnedLeft')
+  secondYAxisControl = pinsLayoutNumberControl(frame, 'PinnedRight')
+  // } else {
+  //   // We have a CenterY value, so put that first and then left or right after it.
+  //   firstYAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterY')
+  //   if (leftInfo.value == null) {
+  //     secondYAxisControl = pinsLayoutNumberControl(frame, 'PinnedRight')
+  //   } else {
+  //     secondYAxisControl = pinsLayoutNumberControl(frame, 'PinnedLeft')
+  //   }
+  // }
 
   return (
     <GridRow

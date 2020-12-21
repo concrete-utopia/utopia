@@ -1,12 +1,4 @@
 import * as React from 'react'
-import {
-  ChainedNumberInput,
-  CheckboxInput,
-  FlexRow,
-  PopupList,
-  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'
 import {
@@ -27,6 +19,14 @@ import {
   radialGradientSelectOption,
 } from './background-layer-helpers'
 import { BackgroundSolidOrGradientThumbnailControl } from '../../../controls/background-solid-or-gradient-thumbnail-control'
+import {
+  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
+  CheckboxInput,
+  FlexRow,
+  PopupList,
+  ChainedNumberInput,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface RadialGradientBackgroundLayerProps extends BackgroundLayerProps {
   value: CSSRadialGradientBackgroundLayer

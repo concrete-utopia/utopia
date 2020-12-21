@@ -4491,7 +4491,7 @@ const layoutEmptyValuesNew: LayoutPropertyTypes = {
   Width: undefined,
   Height: undefined,
 
-  FlexGapMain: 0,
+  FlexGap: 0,
   FlexFlexBasis: undefined,
   FlexCrossBasis: undefined,
 
@@ -4513,7 +4513,7 @@ const layoutParsersNew: LayoutParsersNew = {
   Width: parseFramePin,
   Height: parseFramePin,
 
-  FlexGapMain: isNumberParser,
+  FlexGap: isNumberParser,
   FlexFlexBasis: parseFramePin,
   FlexCrossBasis: parseFramePin,
 
@@ -4535,7 +4535,7 @@ const layoutPrintersNew: LayoutPrintersNew = {
   Width: jsxAttributeValue,
   Height: jsxAttributeValue,
 
-  FlexGapMain: jsxAttributeValue,
+  FlexGap: jsxAttributeValue,
   FlexFlexBasis: jsxAttributeValue,
   FlexCrossBasis: jsxAttributeValue,
 

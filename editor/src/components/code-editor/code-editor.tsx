@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { applyPrettier } from '../../core/workers/parser-printer/prettier-utils'
 import { ErrorMessage } from '../../core/shared/error-messages'
@@ -132,6 +132,29 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
     //this.autoSave()
   }
 
+  isCodeFile(fileName: string): boolean {
+    return ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.json'].some((extension) =>
+      fileName.endsWith(extension),
+    )
+  }
+
+  maybeApplyPrettier(
+    code: string,
+    cursorOffset: number,
+  ): {
+    formatted: string
+    cursorOffset: number
+  } {
+    if (this.isCodeFile(this.props.name)) {
+      return applyPrettier(code, true, cursorOffset)
+    } else {
+      return {
+        formatted: code,
+        cursorOffset: cursorOffset,
+      }
+    }
+  }
+
   onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const key = Keyboard.keyCharacterForCode(event.keyCode)
     const modifiers = modifiersForEvent(event.nativeEvent)
@@ -146,7 +169,7 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
           this.setState(
             (state) => {
               const rawOffset = cursorPositionToRawOffset(state.code, state.cursorPosition)
-              const prettierResult = applyPrettier(state.code, true, rawOffset)
+              const prettierResult = this.maybeApplyPrettier(state.code, rawOffset)
               const newCursorOffset = rawOffsetToCursorPosition(
                 prettierResult.formatted,
                 prettierResult.cursorOffset,

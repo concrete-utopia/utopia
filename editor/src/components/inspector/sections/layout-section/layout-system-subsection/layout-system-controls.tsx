@@ -1,7 +1,6 @@
 import * as React from 'react'
 
 import * as PP from '../../../../../core/shared/property-path'
-import { betterReactMemo } from 'uuiui-deps'
 import { OptionChainControl } from '../../../controls/option-chain-control'
 import {
   useInspectorLayoutInfo,
@@ -19,18 +18,19 @@ import {
   ControlStyles,
 } from '../../../common/control-status'
 import { LayoutSystem } from 'utopia-api'
-import {
-  ChainedNumberInput,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  SquareButton,
-  FunctionIcons,
-} from 'uuiui'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
   SpecialSizeMeasurements,
 } from '../../../../../core/shared/element-template'
+import {
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  ChainedNumberInput,
+  SquareButton,
+  FunctionIcons,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -163,102 +163,95 @@ export const paddingPropsToUnset = [
   createLayoutPropertyPath('paddingBottom'),
 ]
 
-interface FlexPaddingControlProps {
-  specialSizeMeasurements: SpecialSizeMeasurements
-}
+export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
+  const flexPaddingTop = useInspectorLayoutInfo('paddingTop')
+  const flexPaddingRight = useInspectorLayoutInfo('paddingRight')
+  const flexPaddingBottom = useInspectorLayoutInfo('paddingBottom')
+  const flexPaddingLeft = useInspectorLayoutInfo('paddingLeft')
 
-export const FlexPaddingControl = betterReactMemo(
-  'FlexPaddingControl',
-  (props: FlexPaddingControlProps) => {
-    const flexPaddingTop = useInspectorLayoutInfo('paddingTop', props.specialSizeMeasurements)
-    const flexPaddingRight = useInspectorLayoutInfo('paddingRight', props.specialSizeMeasurements)
-    const flexPaddingBottom = useInspectorLayoutInfo('paddingBottom', props.specialSizeMeasurements)
-    const flexPaddingLeft = useInspectorLayoutInfo('paddingLeft', props.specialSizeMeasurements)
+  const flexPaddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    flexPaddingTop.onSubmitValue,
+    flexPaddingTop.onUnsetValues,
+  )
+  const flexPaddingTopOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    flexPaddingTop.onTransientSubmitValue,
+    flexPaddingTop.onUnsetValues,
+  )
+  const flexPaddingRightOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    flexPaddingRight.onSubmitValue,
+    flexPaddingRight.onUnsetValues,
+  )
+  const flexPaddingRightOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    flexPaddingRight.onTransientSubmitValue,
+    flexPaddingRight.onUnsetValues,
+  )
+  const flexPaddingBottomOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    flexPaddingBottom.onSubmitValue,
+    flexPaddingBottom.onUnsetValues,
+  )
+  const flexPaddingBottomOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    flexPaddingBottom.onTransientSubmitValue,
+    flexPaddingBottom.onUnsetValues,
+  )
+  const flexPaddingLeftOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    flexPaddingLeft.onSubmitValue,
+    flexPaddingLeft.onUnsetValues,
+  )
+  const flexPaddingLeftOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    flexPaddingLeft.onTransientSubmitValue,
+    flexPaddingLeft.onUnsetValues,
+  )
 
-    const flexPaddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexPaddingTop.onSubmitValue,
-      flexPaddingTop.onUnsetValues,
-    )
-    const flexPaddingTopOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexPaddingTop.onTransientSubmitValue,
-      flexPaddingTop.onUnsetValues,
-    )
-    const flexPaddingRightOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexPaddingRight.onSubmitValue,
-      flexPaddingRight.onUnsetValues,
-    )
-    const flexPaddingRightOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexPaddingRight.onTransientSubmitValue,
-      flexPaddingRight.onUnsetValues,
-    )
-    const flexPaddingBottomOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexPaddingBottom.onSubmitValue,
-      flexPaddingBottom.onUnsetValues,
-    )
-    const flexPaddingBottomOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexPaddingBottom.onTransientSubmitValue,
-      flexPaddingBottom.onUnsetValues,
-    )
-    const flexPaddingLeftOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexPaddingLeft.onSubmitValue,
-      flexPaddingLeft.onUnsetValues,
-    )
-    const flexPaddingLeftOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexPaddingLeft.onTransientSubmitValue,
-      flexPaddingLeft.onUnsetValues,
-    )
-
-    return (
-      <ChainedNumberInput
-        idPrefix='flexPadding'
-        propsArray={[
-          {
-            value: flexPaddingTop.value,
-            DEPRECATED_labelBelow: 'T',
-            minimum: 0,
-            onSubmitValue: flexPaddingTopOnSubmitValue,
-            onTransientSubmitValue: flexPaddingTopOnTransientSubmitValue,
-            controlStatus: flexPaddingTop.controlStatus,
-            numberType: 'UnitlessPercent',
-          },
-          {
-            value: flexPaddingRight.value,
-            DEPRECATED_labelBelow: 'R',
-            minimum: 0,
-            onSubmitValue: flexPaddingRightOnSubmitValue,
-            onTransientSubmitValue: flexPaddingRightOnTransientSubmitValue,
-            controlStatus: flexPaddingRight.controlStatus,
-            numberType: 'UnitlessPercent',
-          },
-          {
-            value: flexPaddingBottom.value,
-            DEPRECATED_labelBelow: 'B',
-            minimum: 0,
-            onSubmitValue: flexPaddingBottomOnSubmitValue,
-            onTransientSubmitValue: flexPaddingBottomOnTransientSubmitValue,
-            controlStatus: flexPaddingBottom.controlStatus,
-            numberType: 'UnitlessPercent',
-          },
-          {
-            value: flexPaddingLeft.value,
-            DEPRECATED_labelBelow: 'L',
-            minimum: 0,
-            onSubmitValue: flexPaddingLeftOnSubmitValue,
-            onTransientSubmitValue: flexPaddingLeftOnTransientSubmitValue,
-            controlStatus: flexPaddingLeft.controlStatus,
-            numberType: 'UnitlessPercent',
-          },
-        ]}
-      />
-    )
-  },
-)
+  return (
+    <ChainedNumberInput
+      idPrefix='flexPadding'
+      propsArray={[
+        {
+          value: flexPaddingTop.value,
+          DEPRECATED_labelBelow: 'T',
+          minimum: 0,
+          onSubmitValue: flexPaddingTopOnSubmitValue,
+          onTransientSubmitValue: flexPaddingTopOnTransientSubmitValue,
+          controlStatus: flexPaddingTop.controlStatus,
+          numberType: 'UnitlessPercent',
+        },
+        {
+          value: flexPaddingRight.value,
+          DEPRECATED_labelBelow: 'R',
+          minimum: 0,
+          onSubmitValue: flexPaddingRightOnSubmitValue,
+          onTransientSubmitValue: flexPaddingRightOnTransientSubmitValue,
+          controlStatus: flexPaddingRight.controlStatus,
+          numberType: 'UnitlessPercent',
+        },
+        {
+          value: flexPaddingBottom.value,
+          DEPRECATED_labelBelow: 'B',
+          minimum: 0,
+          onSubmitValue: flexPaddingBottomOnSubmitValue,
+          onTransientSubmitValue: flexPaddingBottomOnTransientSubmitValue,
+          controlStatus: flexPaddingBottom.controlStatus,
+          numberType: 'UnitlessPercent',
+        },
+        {
+          value: flexPaddingLeft.value,
+          DEPRECATED_labelBelow: 'L',
+          minimum: 0,
+          onSubmitValue: flexPaddingLeftOnSubmitValue,
+          onTransientSubmitValue: flexPaddingLeftOnTransientSubmitValue,
+          controlStatus: flexPaddingLeft.controlStatus,
+          numberType: 'UnitlessPercent',
+        },
+      ]}
+    />
+  )
+})
 
 const layoutSystemConfigPropertyPaths = [
   createLayoutPropertyPath('LayoutSystem'),
   PP.create(['style', 'display']),
   createLayoutPropertyPath('flexDirection'),
-  createLayoutPropertyPath('FlexGapMain'),
+  createLayoutPropertyPath('FlexGap'),
   createLayoutPropertyPath('flexWrap'),
   createLayoutPropertyPath('justifyContent'),
   createLayoutPropertyPath('alignItems'),

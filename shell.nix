@@ -10,7 +10,7 @@ let
   release = (import ./release.nix {});
   pkgs = release.pkgs;
   lib = pkgs.lib;
-  node = pkgs.nodejs-12_x;
+  node = pkgs.nodejs-14_x;
   stdenv = pkgs.stdenv;
 
   cabal = pkgs.haskellPackages.cabal-install;
@@ -248,8 +248,7 @@ let
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${cabal}/bin/cabal new-build utopia-web
-      ${cabal}/bin/cabal new-install -f exe cabal-plan --overwrite-policy=always
-      cp --verbose $(cabal-plan list-bin exe:utopia-web) .
+      cp --verbose $(${pkgs.haskellPackages.cabal-plan}/bin/cabal-plan list-bin exe:utopia-web) .
     '')
     (pkgs.writeScriptBin "build-all" ''
       #!/usr/bin/env bash
@@ -274,7 +273,6 @@ let
     pkgs.cabal2nix
     pkgs.haskellPackages.stylish-haskell
     pkgs.haskellPackages.hpack
-    release.custom-cabal-plan
     pkgs.postgresql
     pkgs.redis
   ];

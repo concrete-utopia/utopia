@@ -1,9 +1,8 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
-import { colorTheme } from 'uuiui'
 import { EditorDispatch } from '../../editor/action-types'
 import { setCanvasAnimationsEnabled } from '../../editor/actions/action-creators'
 import { ControlFontSize } from '../canvas-controls-frame'
@@ -25,8 +24,8 @@ import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
 import { JSXMetadata } from '../../../core/shared/element-template'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { SizeBoxLabel } from './size-box-label'
+import { colorTheme } from '../../../uuiui'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor

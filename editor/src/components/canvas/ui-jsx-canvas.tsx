@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { MapLike } from 'typescript'
-import { betterReactMemo } from 'uuiui-deps'
 // Inject the babel helpers into the global scope
 import '../../bundled-dependencies/babelHelpers'
 import * as TP from '../../core/shared/template-path'
@@ -47,7 +46,6 @@ import {
 import { EditorDispatch } from '../editor/action-types'
 import { usePrevious } from '../editor/hook-utils'
 import { arrayEquals, fastForEach } from '../../core/shared/utils'
-import { unimportCSSFile } from '../../core/shared/css-style-loader'
 import { removeAll } from '../../core/shared/array-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
@@ -67,7 +65,8 @@ import {
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
-import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -219,11 +218,11 @@ export function pickUiJsxCanvasProps(
   }
 }
 
-function cssImportsFromImports(imports: Imports): Array<string> {
+function normalizedCssImportsFromImports(filePath: string, imports: Imports): Array<string> {
   let result: Array<string> = []
   Utils.fastForEach(Object.keys(imports), (importSource) => {
     if (importSource.endsWith('.css')) {
-      result.push(importSource)
+      result.push(normalizeName(filePath, importSource))
     }
   })
   result.sort()
@@ -263,15 +262,10 @@ export const UiJsxCanvas = betterReactMemo(
     // Handle the imports changing, this needs to run _before_ any require function
     // calls as it's modifying the underlying DOM elements. This is somewhat working
     // like useEffect, except that runs after everything has rendered.
-    const cssImports = useKeepReferenceEqualityIfPossible(cssImportsFromImports(imports))
-    const previousCSSImports = usePrevious(cssImports)
-
-    if (previousCSSImports != null && !arrayEquals(cssImports, previousCSSImports)) {
-      const removed = removeAll(previousCSSImports, cssImports)
-      fastForEach(removed, (toRemove) => {
-        unimportCSSFile(normalizeName(uiFilePath, toRemove))
-      })
-    }
+    const cssImports = useKeepReferenceEqualityIfPossible(
+      normalizedCssImportsFromImports(uiFilePath, imports),
+    )
+    unimportAllButTheseCSSFiles(cssImports)
 
     let topLevelComponentRendererComponents = React.useRef<MapLike<ComponentRendererComponent>>({})
 
@@ -313,7 +307,7 @@ export const UiJsxCanvas = betterReactMemo(
       Utils.fastForEach(topLevelElementsIncludingScenes, (topLevelElement) => {
         if (isUtopiaJSXComponent(topLevelElement)) {
           topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-          if (topLevelComponentRendererComponents.current[topLevelElement.name] == null) {
+          if (!(topLevelElement.name in topLevelComponentRendererComponents.current)) {
             topLevelComponentRendererComponents.current[
               topLevelElement.name
             ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
@@ -421,7 +415,6 @@ function useGetStoryboardRoot(
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements = {
     component: BakedInStoryboardVariableName,
     sceneResizesContent: false,
-    container: {} as any, // TODO BB Hack this is not safe at all, the code expects container props
     scenePath: EmptyScenePathForStoryboard,
     templatePath: TP.instancePath([], []),
     globalFrame: null,

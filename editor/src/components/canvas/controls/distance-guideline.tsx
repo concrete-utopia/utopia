@@ -2,9 +2,9 @@ import * as R from 'ramda'
 import * as React from 'react'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
-import { colorTheme } from 'uuiui'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import { Guideline, Guidelines, XAxisGuideline, YAxisGuideline } from '../guideline'
+import { colorTheme } from '../../../uuiui'
 
 const StrokeColor = colorTheme.canvasLayoutStroke.value
 const LineEndSegmentSize = 3.5

@@ -5,6 +5,7 @@ Array [
   Object {
     "arbitraryJSBlock": null,
     "isFunction": false,
+    "leadingComments": Array [],
     "name": "storyboard",
     "param": null,
     "propsUsed": Array [],
@@ -61,12 +62,6 @@ Array [
         "data-uid": Object {
           "type": "ATTRIBUTE_VALUE",
           "value": "utopia-storyboard-uid",
-        },
-        "layout": Object {
-          "type": "ATTRIBUTE_VALUE",
-          "value": Object {
-            "layoutSystem": "pinSystem",
-          },
         },
       },
       "type": "JSX_ELEMENT",

@@ -1,12 +1,4 @@
 import * as React from 'react'
-import {
-  FlexRow,
-  FunctionIcons,
-  SectionBodyArea,
-  SectionTitleRow,
-  SquareButton,
-  Title,
-} from 'uuiui'
 import { setFocus } from '../../../components/common/actions'
 import { isRight } from '../../../core/shared/either'
 import {
@@ -14,6 +6,14 @@ import {
   genericExternalResource,
   useExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
+import {
+  SectionTitleRow,
+  FlexRow,
+  Title,
+  SquareButton,
+  FunctionIcons,
+  SectionBodyArea,
+} from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'

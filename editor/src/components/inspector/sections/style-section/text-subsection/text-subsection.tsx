@@ -1,12 +1,5 @@
 import * as OPI from 'object-path-immutable'
 import * as React from 'react'
-import {
-  Icons,
-  InspectorSubsectionHeader,
-  NumberInput,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
   isJSXAttributeValue,
@@ -16,8 +9,17 @@ import {
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { filterScenes } from '../../../../../core/shared/template-path'
-import { useKeepShallowReferenceEquality } from '../../../../../utils/react-performance'
+import {
+  betterReactMemo,
+  useKeepShallowReferenceEquality,
+} from '../../../../../utils/react-performance'
 import utils from '../../../../../utils/utils'
+import {
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  InspectorSubsectionHeader,
+  Icons,
+  NumberInput,
+} from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
 import * as EditorActions from '../../../../editor/actions/action-creators'

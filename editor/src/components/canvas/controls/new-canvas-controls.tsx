@@ -1,3 +1,5 @@
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import * as TP from '../../../core/shared/template-path'
 import Utils from '../../../utils/utils'
@@ -13,12 +15,11 @@ import {
   getOpenUIJSFileKey,
 } from '../../editor/store/editor-state'
 import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
-import { CanvasPositions } from '../canvas-types'
+import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
 import { DeselectControl } from './deselect-control'
-import { colorTheme } from 'uuiui'
 import { TextEditor } from '../../editor/text-editor'
 import {
   setHighlightedView,
@@ -31,7 +32,6 @@ import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-te
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
-import { CSSCursor, betterReactMemo } from 'uuiui-deps'
 import { editor } from 'monaco-editor'
 import { isLiveMode, EditorModes } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
@@ -42,6 +42,8 @@ import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo } from '../../custom-code/code-file'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
+import { colorTheme } from '../../../uuiui'
+import { betterReactMemo } from '../../../uuiui-deps'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 

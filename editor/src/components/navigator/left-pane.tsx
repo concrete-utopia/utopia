@@ -1,28 +1,27 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as React from 'react'
 import { Component as ReactComponent } from 'react'
-import {
-  colorTheme,
-  FlexColumn,
-  FlexRow,
-  PopupList,
-  Section,
-  SectionBodyArea,
-  SectionTitleRow,
-  Title,
-  UtopiaTheme,
-  Button,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { thumbnailURL } from '../../common/server'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
-import { isRight } from '../../core/shared/either'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
 import Utils from '../../utils/utils'
+import {
+  PopupList,
+  colorTheme,
+  UtopiaTheme,
+  FlexColumn,
+  Section,
+  SectionTitleRow,
+  FlexRow,
+  Title,
+  SectionBodyArea,
+  Button,
+} from '../../uuiui'
+import { betterReactMemo } from '../../uuiui-deps'
 import { CodeEditorTheme, CodeEditorThemeCollection } from '../code-editor/code-editor-themes'
 import { setFocus } from '../common/actions'
 import { EditorAction, EditorDispatch, LoginState } from '../editor/action-types'
@@ -44,7 +43,6 @@ import { GridRow } from '../inspector/widgets/grid-row'
 import { DependencyList } from './dependency-list'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
 import { GoogleFontsResourcesList } from './external-resources/google-fonts-resources-list'
-import { NavigatorComponent } from './navigator'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -54,7 +52,6 @@ export interface LeftPaneProps {
 }
 
 export const enum LeftMenuTab {
-  UINavigate = 'ui-navigate',
   UIInsert = 'ui-insert',
   ProjectStructure = 'project-structure',
   ProjectSettings = 'project-settings',
@@ -82,12 +79,11 @@ export function updateLeftMenuExpanded(editorState: EditorState, expanded: boole
 
 export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): EditorState {
   switch (editorState.focusedPanel) {
+    case 'misccodeeditor':
+      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.ProjectStructure)
     case 'inspector':
     case 'canvas':
     case 'uicodeeditor':
-      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.UINavigate)
-    case 'misccodeeditor':
-      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.ProjectStructure)
     default:
       return editorState
   }
@@ -271,10 +267,6 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
     (store) => store.editor.leftMenu.selectedTab,
     'LeftPaneComponent selectedTab',
   )
-  const isValidToShowNavigator = useEditorState(
-    (store) => validToShowNavigator(store.editor),
-    'LeftPaneComponent isValidToShowNavigator',
-  )
   const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
 
   return (
@@ -305,33 +297,11 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
         }}
       >
         {selectedTab === LeftMenuTab.ProjectStructure ? <ProjectStructurePane /> : null}
-        {selectedTab === LeftMenuTab.UINavigate && isValidToShowNavigator ? (
-          <NavigatorComponent />
-        ) : null}
         {selectedTab === LeftMenuTab.ProjectSettings ? <ProjectSettingsPanel /> : null}
       </div>
     </div>
   )
 })
-
-function validToShowNavigator(editorState: EditorState): boolean {
-  const open = getOpenFile(editorState)
-  if (open == null) {
-    return false
-  } else {
-    switch (open.type) {
-      case 'TEXT_FILE':
-        return true
-      case 'IMAGE_FILE':
-      case 'DIRECTORY':
-      case 'ASSET_FILE':
-        return false
-      default:
-        const _exhaustiveCheck: never = open
-        throw new Error(`Unhandled type ${JSON.stringify(open)}`)
-    }
-  }
-}
 
 const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
   return (

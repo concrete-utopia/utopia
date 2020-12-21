@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
-import { colorTheme } from 'uuiui'
+import { colorTheme } from '../../../uuiui'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 
 interface HighlightControlProps {

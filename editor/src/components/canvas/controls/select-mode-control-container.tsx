@@ -118,7 +118,6 @@ export class SelectModeControlContainer extends React.Component<
           let selectActions = [
             EditorActions.clearHighlightedViews(),
             EditorActions.selectComponents(updatedSelection, false),
-            EditorActions.setLeftMenuTab(LeftMenuTab.UINavigate),
             EditorActions.setRightMenuTab(RightMenuTab.Inspector),
           ]
           this.props.dispatch(selectActions, 'canvas')
@@ -699,8 +698,14 @@ export class SelectModeControlContainer extends React.Component<
 
     return (
       <div
+        data-testid='select-mode-control-container-root'
         style={{
           pointerEvents: 'initial',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
         }}
         onContextMenu={this.onContextMenu}
       >

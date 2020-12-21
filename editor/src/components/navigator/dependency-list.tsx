@@ -1,14 +1,6 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
-import {
-  FlexRow,
-  FunctionIcons,
-  SectionBodyArea,
-  SectionTitleRow,
-  SquareButton,
-  Title,
-} from 'uuiui'
 import {
   requestedNpmDependency,
   RequestedNpmDependency,
@@ -32,6 +24,14 @@ import { packageJsonFileFromProjectContents } from '../editor/store/editor-state
 import { useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
+import {
+  SectionTitleRow,
+  FlexRow,
+  Title,
+  SquareButton,
+  FunctionIcons,
+  SectionBodyArea,
+} from '../../uuiui'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch

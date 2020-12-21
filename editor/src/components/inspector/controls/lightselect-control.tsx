@@ -1,10 +1,9 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { PopupList } from 'uuiui'
+import { FlexRow, PopupList } from '../../../uuiui'
 import { DEPRECATEDControlProps } from './control'
 import { SelectOption } from './select-control'
-import { FlexRow } from 'uuiui'
 
 // TODO stronger type for this control
 export const LightSelectControl: React.FunctionComponent<DEPRECATEDControlProps<any>> = ({

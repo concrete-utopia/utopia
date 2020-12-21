@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { colorTheme } from 'uuiui'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
@@ -14,6 +13,7 @@ import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
 import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { colorTheme } from '../../../uuiui'
 
 export function getSelectionColor(
   path: TemplatePath,

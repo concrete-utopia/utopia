@@ -2,11 +2,10 @@ import * as React from 'react'
 import { LoginState, isLoggedIn } from './action-types'
 import { auth0Url } from '../../common/env-vars'
 import { setRedirectUrl } from '../../common/persistence'
-import { colorTheme, SimpleFlexRow, UtopiaStyles, UtopiaTheme } from 'uuiui'
 import { useEditorState } from './store/store-hook'
-import { betterReactMemo } from 'uuiui-deps'
 
 import { NoticeLevel, NotificationBar } from '../common/notices'
+import { betterReactMemo } from '../../uuiui-deps'
 
 export const BrowserInfoBar = betterReactMemo('EditorOfflineBar', () => {
   return (

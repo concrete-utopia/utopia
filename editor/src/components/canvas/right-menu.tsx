@@ -1,21 +1,22 @@
 import * as React from 'react'
 import { EditorState } from '../editor/store/editor-state'
-import {
-  SimpleFlexColumn,
-  Tooltip,
-  SimpleTile,
-  UtopiaStyles,
-  SquareButton,
-  UtopiaTheme,
-  IcnProps,
-  LargerIcons,
-} from 'uuiui'
-import { betterReactMemo, Utils } from 'uuiui-deps'
 import { isLiveMode } from '../editor/editor-modes'
 import { useEditorState } from '../editor/store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
 import { EditorAction } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
+import {
+  IcnProps,
+  SimpleTile,
+  UtopiaTheme,
+  SquareButton,
+  UtopiaStyles,
+  SimpleFlexColumn,
+  Tooltip,
+  LargerIcons,
+  MenuIcons,
+} from '../../uuiui'
+import { betterReactMemo, Utils } from '../../uuiui-deps'
 
 export const enum RightMenuTab {
   Insert = 'insert',
@@ -116,6 +117,11 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
     'RightMenu rightMenuSelectedTab',
   )
 
+  const navigatorVisible = useEditorState(
+    (store) => store.editor.navigator.visible,
+    'RightMenu navigatorVisible',
+  )
+
   const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
   const isInspectorSelected = rightMenuSelectedTab === RightMenuTab.Inspector
 
@@ -183,6 +189,10 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
   )
 
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
+
+  const onClickNavigateTab = React.useCallback(() => {
+    dispatch([EditorActions.togglePanel('navigatorPane')])
+  }, [dispatch])
 
   return (
     <SimpleFlexColumn
@@ -290,6 +300,16 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               highlightSelected={false}
               icon={<LargerIcons.PreviewPane />}
               onClick={togglePreviewPaneVisible}
+            />
+          </span>
+        </Tooltip>
+        <Tooltip title={'Navigator'} placement={'right'}>
+          <span>
+            <RightMenuTile
+              selected={navigatorVisible}
+              highlightSelected={false}
+              icon={<MenuIcons.Project />}
+              onClick={onClickNavigateTab}
             />
           </span>
         </Tooltip>

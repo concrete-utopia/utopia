@@ -5,8 +5,8 @@ import { ColorPicker } from './color-picker'
 import { CSSColor, parseColor, cssColorToChromaColorOrDefault } from '../common/css-utils'
 import { StringControl } from './string-control'
 import { ControlStatus, ControlStyles } from '../common/control-status'
-import { UtopiaTheme } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
+import { UtopiaTheme } from '../../../uuiui'
+import { betterReactMemo } from '../../../uuiui-deps'
 
 export interface ColorControlProps {
   value: CSSColor

@@ -152,7 +152,6 @@ import type {
   ToggleHidden,
   ToggleInterfaceDesignerAdditionalControls,
   ToggleInterfaceDesignerCodeEditor,
-  ToggleInterfaceDesignerLayoutReversed,
   TogglePane,
   ToggleProperty,
   TransientActions,
@@ -506,12 +505,6 @@ export function resizeInterfaceDesignerCodePane(
 export function toggleInterfaceDesignerCodeEditor(): ToggleInterfaceDesignerCodeEditor {
   return {
     action: 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR',
-  }
-}
-
-export function toggleInterfaceDesignerLayoutReversed(): ToggleInterfaceDesignerLayoutReversed {
-  return {
-    action: 'TOGGLE_INTERFACEDESIGNER_LAYOUT_REVERSED',
   }
 }
 

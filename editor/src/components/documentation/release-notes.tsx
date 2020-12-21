@@ -1,9 +1,9 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import * as React from 'react'
-import { colorTheme, UtopiaStyles, SimpleFlexRow } from 'uuiui'
+import { colorTheme } from '../../uuiui'
 import { H1, H2, PrettyKeys, EM, CalloutPrimary, A } from './documentation-components'
 
 import { GettingStarted } from './getting-started'

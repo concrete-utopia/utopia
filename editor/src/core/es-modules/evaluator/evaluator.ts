@@ -1,5 +1,4 @@
 import { SafeFunction } from '../../shared/code-exec-utils'
-import { transformCssNodeModule } from '../../shared/css-style-loader'
 import * as Babel from '@babel/standalone'
 import * as BabelTransformCommonJS from '@babel/plugin-transform-modules-commonjs'
 
@@ -22,7 +21,7 @@ function isEsModuleError(error: Error) {
 function transformToCommonJS(filePath: string, moduleCode: string): string {
   const plugins = [BabelTransformCommonJS]
   const result = Babel.transform(moduleCode, {
-    presets: ['es2015'],
+    presets: ['es2015', 'react'],
     plugins: plugins,
     sourceType: 'module',
     sourceFileName: filePath,
@@ -79,16 +78,6 @@ function evaluateJs(
   return module
 }
 
-function evaluateCss(
-  filepath: string,
-  moduleCode: string,
-  partialModule: { exports: unknown },
-  requireFn: (toImport: string) => unknown,
-) {
-  const transpiledCode = transformCssNodeModule(filepath, moduleCode)
-  return evaluateJs(filepath, transpiledCode, partialModule, requireFn)
-}
-
 export function evaluator(
   filepath: string,
   moduleCode: string,
@@ -99,8 +88,6 @@ export function evaluator(
   switch (fileExtension) {
     case 'js':
       return evaluateJs(filepath, moduleCode, partialModule, requireFn)
-    case 'css':
-      return evaluateCss(filepath, moduleCode, partialModule, requireFn)
     default:
       throw new Error(`error evaluating file ${filepath} – unsupported file type ${fileExtension}`)
   }

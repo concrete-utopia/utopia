@@ -1,7 +1,6 @@
 import * as update from 'immutability-helper'
 import * as R from 'ramda'
 import * as React from 'react'
-import { UtopiaStyles } from 'uuiui'
 import { PROBABLY_ELECTRON, requireElectron } from '../common/env-vars'
 import { isAspectRatioLockedNew } from '../components/aspect-ratio'
 import CanvasActions from '../components/canvas/canvas-actions'
@@ -77,6 +76,7 @@ import {
 import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
+import { UtopiaStyles } from '../uuiui'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 

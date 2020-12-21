@@ -1,13 +1,13 @@
 /** @jsx jsx */
 import React from 'react'
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import { layout, FlexRow, FlexColumn, FlexWrappingList } from './home/components/layout'
 import { H2 } from './home/components/style'
 import { colors } from './home/components/theme'
 
-import { Global } from '@emotion/core'
+import { Global } from '@emotion/react'
 import { fetchProjectList, fetchShowcaseProjects } from './common/server'
 import { Redirect } from 'react-router-dom'
 import {

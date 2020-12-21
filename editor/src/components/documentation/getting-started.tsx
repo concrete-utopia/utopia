@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 // this is the expensive fully-loaded Prism. If you read this comment, and it's after the 7th of May, 2020,
@@ -10,7 +10,6 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { base16AteliersulphurpoolLight as syntaxTheme } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
 import * as React from 'react'
-import { colorTheme, UtopiaStyles, SimpleFlexRow, FlexRow, FlexColumn } from 'uuiui'
 import {
   H1,
   H2,
@@ -20,12 +19,13 @@ import {
   A,
   PMT,
 } from './documentation-components'
-import { betterReactMemo } from '../../uuiui-deps'
 import { ProjectListing } from '../../common/persistence'
 import { fetchProjectMetadata } from '../../common/server'
 import { stripNulls } from '../../core/shared/array-utils'
 import { projectURLForProject } from '../../core/shared/utils'
 import { EllipsisSpinner } from '../common/ellipsis-spinner'
+import { FlexRow, FlexColumn } from '../../uuiui'
+import { betterReactMemo } from '../../uuiui-deps'
 
 const codeString = `
 App.propertyControls = {

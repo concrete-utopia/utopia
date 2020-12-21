@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React from 'react'
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 export const H2 = styled.h2({

@@ -1,24 +1,24 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as React from 'react'
-import {
-  Avatar,
-  FlexColumn,
-  IcnProps,
-  LargerIcons,
-  MenuIcons,
-  SquareButton,
-  Tooltip,
-  UtopiaStyles,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { LoginState } from '../../common/user'
 import { useTriggerScrollPerformanceTest } from '../../core/model/performance-scripts'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { shareURLForProject } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import {
+  IcnProps,
+  SquareButton,
+  UtopiaStyles,
+  FlexColumn,
+  Tooltip,
+  MenuIcons,
+  LargerIcons,
+  Avatar,
+} from '../../uuiui'
+import { betterReactMemo } from '../../uuiui-deps'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { EditorState } from '../editor/store/editor-state'
@@ -118,10 +118,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
 
-  const onClickNavigateTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.UINavigate)
-  }, [onClickTab])
-
   const onClickStructureTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.ProjectStructure)
   }, [onClickTab])
@@ -159,16 +155,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
 
-        <Tooltip title={'Navigator'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={selectedTab === LeftMenuTab.UINavigate}
-              menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.Project />}
-              onClick={onClickNavigateTab}
-            />
-          </span>
-        </Tooltip>
         <a target='_blank' rel='noopener noreferrer' href={previewURL}>
           <Tooltip title={'Launch External Preview'} placement={'right'}>
             <span>

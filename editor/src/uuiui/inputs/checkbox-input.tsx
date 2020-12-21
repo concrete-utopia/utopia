@@ -1,14 +1,14 @@
 /** @jsx jsx */
 import composeRefs from '@seznam/compose-react-refs'
 import * as React from 'react'
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import {
   ControlStatus,
   getControlStyles,
   ControlStyles,
 } from '../../components/inspector/common/control-status'
 import { UtopiaTheme } from '../styles/theme'
-import { betterReactMemo } from 'uuiui-deps'
+import { betterReactMemo } from '../../uuiui-deps'
 
 export interface CheckboxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   controlStatus?: ControlStatus

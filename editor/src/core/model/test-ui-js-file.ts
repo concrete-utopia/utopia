@@ -238,6 +238,7 @@ const mainComponentForTests = utopiaJSXComponent(
   ),
   null,
   false,
+  [],
 )
 
 const scene = utopiaJSXComponent(
@@ -255,6 +256,7 @@ const scene = utopiaJSXComponent(
   ),
   null,
   false,
+  [],
 )
 
 const Scene0UID = 'scene-0'
@@ -286,6 +288,7 @@ const TestStoryboard = utopiaJSXComponent(
   ]),
   null,
   false,
+  [],
 )
 
 export const sampleJsxComponentWithScene = [mainComponentForTests, scene, TestStoryboard]

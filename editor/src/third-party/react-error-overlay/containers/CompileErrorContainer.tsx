@@ -7,7 +7,7 @@
 
 /* @flow */
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { PureComponent } from 'react'
 import ErrorOverlay from '../components/ErrorOverlay'
@@ -17,8 +17,8 @@ import CodeBlock from '../components/CodeBlock'
 import generateAnsiHTML from '../utils/generateAnsiHTML'
 import { ErrorLocation } from '../utils/parseCompileError'
 import { ErrorMessage } from '../../../core/shared/error-messages'
-import { colorTheme } from 'uuiui'
 import { CursorPosition } from '../../../components/code-editor/code-editor-utils'
+import { colorTheme } from '../../../uuiui'
 
 type Props = {
   currentBuildErrorRecords: ErrorMessage[]

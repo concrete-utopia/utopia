@@ -1,7 +1,5 @@
 import * as ObjectPath from 'object-path'
 import * as React from 'react'
-import { colorTheme, Icn, InspectorSectionHeader, UtopiaTheme } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
 import {
@@ -90,9 +88,11 @@ import { addStyleSheetToPage } from '../../core/shared/dom-utils'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import { arrayEquals } from '../../core/shared/utils'
 import {
+  betterReactMemo,
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
+import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme } from '../../uuiui'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -277,8 +277,6 @@ RenderedLayoutSection.displayName = 'RenderedLayoutSection'
 const nonDefaultPositionPaths: Array<PropertyPath> = [
   createLayoutPropertyPath('PinnedRight'),
   createLayoutPropertyPath('PinnedBottom'),
-  createLayoutPropertyPath('PinnedCenterX'),
-  createLayoutPropertyPath('PinnedCenterY'),
 ]
 
 export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: InspectorProps) => {

@@ -1,8 +1,7 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { FormButton } from 'uuiui'
-import { Dialog } from 'uuiui'
+import { Dialog, FormButton } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 

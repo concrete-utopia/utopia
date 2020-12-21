@@ -1,12 +1,10 @@
 /** @jsx jsx */
 import * as React from 'react'
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
-import { Icn, IcnProps } from 'uuiui'
-import { Tooltip } from 'uuiui'
 import { focusTextEditorIfPresent } from '../../editor/text-editor'
 import { ControlStyleDefaults } from '../common/control-status'
-import { UtopiaTheme } from 'uuiui'
+import { IcnProps, UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
 
 export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {
   icon?: IcnProps
