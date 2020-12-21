@@ -46,6 +46,7 @@ class ResizeControl extends React.Component<ResizeControlProps> {
   }
 
   onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation()
     if (event.buttons === 1) {
       const centerBasedResize = event.altKey
       const keepAspectRatio = event.shiftKey || this.props.elementAspectRatioLocked
@@ -157,6 +158,7 @@ class ResizeEdge extends React.Component<ResizeEdgeProps> {
       <div
         ref={this.reference}
         style={{
+          pointerEvents: 'initial',
           position: 'absolute',
           left: left,
           top: top,
@@ -201,6 +203,7 @@ const ResizeLines = (props: ResizeLinesProps) => {
       <div
         ref={reference}
         style={{
+          pointerEvents: 'initial',
           position: 'absolute',
           width: catchmentSize,
           height: catchmentSize,
@@ -337,6 +340,7 @@ class ResizePoint extends React.Component<ResizePointProps> {
       <React.Fragment>
         <div
           style={{
+            pointerEvents: 'initial',
             position: 'absolute',
             width: size,
             height: size,

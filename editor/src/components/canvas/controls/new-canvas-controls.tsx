@@ -44,6 +44,12 @@ import { PropertyControlsInfo } from '../../custom-code/code-file'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 import { colorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
+import {
+  pickIsDragging,
+  pickIsResizing,
+  pickSelectionEnabled,
+  useMaybeHighlightElement,
+} from './select-mode/select-mode-hooks'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -122,6 +128,7 @@ export const NewCanvasControls = betterReactMemo(
           }
           id='canvas-controls'
           style={{
+            pointerEvents: 'none',
             position: 'absolute',
             top: 0,
             left: 0,
@@ -220,35 +227,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     [setLocalSelectedViews, setLocalHighlightedViews],
   )
 
-  const selectionEnabled =
-    props.editor.canvas.selectionControlsVisible &&
-    !props.editor.keysPressed['z'] &&
-    props.editor.canvas.textEditor == null
-
   const componentMetadata = getMetadata(props.editor)
-  const { dispatch } = props
-  const isResizing =
-    props.editor.canvas.dragState != null &&
-    props.editor.canvas.dragState.type === 'RESIZE_DRAG_STATE' &&
-    props.editor.canvas.dragState.drag != null
-  const isDragging =
-    props.editor.canvas.dragState != null &&
-    props.editor.canvas.dragState.type === 'MOVE_DRAG_STATE' &&
-    props.editor.canvas.dragState.drag != null
-  const maybeHighlightOnHover = React.useCallback(
-    (target: TemplatePath): void => {
-      if (selectionEnabled && !isDragging && !isResizing) {
-        dispatch([setHighlightedView(target)], 'canvas')
-      }
-    },
-    [dispatch, selectionEnabled, isDragging, isResizing],
-  )
 
-  const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    if (selectionEnabled && !isDragging && !isResizing) {
-      dispatch([clearHighlightedViews()], 'canvas')
-    }
-  }, [selectionEnabled, isDragging, isResizing, dispatch])
+  const isResizing = pickIsResizing(props.editor.canvas.dragState)
+  const isDragging = pickIsDragging(props.editor.canvas.dragState)
+  const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
+
+  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews

@@ -179,13 +179,14 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
       <React.Fragment>
         <div
           className='role-component-selection-highlight'
-          onMouseOver={this.onMouseOver}
-          onMouseLeave={this.onMouseLeave}
-          onMouseDown={this.onMouseDown}
+          // onMouseOver={this.onMouseOver}
+          // onMouseLeave={this.onMouseLeave}
+          // onMouseDown={this.onMouseDown}
           onClick={this.onClick}
           onDragEnter={this.onDragEnter}
           onDragLeave={this.onDragLeave}
           style={{
+            pointerEvents: 'none',
             position: 'absolute',
             left: this.props.canvasOffset.x + this.props.frame.x - extraWidth / 2,
             top: this.props.canvasOffset.y + this.props.frame.y - extraHeight / 2,

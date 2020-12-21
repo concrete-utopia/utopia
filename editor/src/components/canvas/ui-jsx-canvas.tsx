@@ -67,6 +67,7 @@ import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-sc
 import { CanvasContainerID } from './canvas-types'
 import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
+import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -447,12 +448,17 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
   // eslint-disable-next-line react-hooks/rules-of-hooks
   let containerRef = props.walkDOM ? useDomWalker(props) : React.useRef<HTMLDivElement>(null)
 
+  const { onMouseOver, onMouseOut, onMouseDown } = useSelectAndHover()
+
   const { scale, offset } = props
   return (
     <div
       id={CanvasContainerID}
       key={'canvas-container'}
       ref={containerRef}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
+      onMouseDown={onMouseDown}
       style={{
         all: 'initial',
         position: 'absolute',

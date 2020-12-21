@@ -28,7 +28,7 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { JSXMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
-import { uniqBy } from '../../../core/shared/array-utils'
+import { getSelectableViews } from './select-mode/select-mode-hooks'
 
 export const SnappingThreshold = 5
 
@@ -245,79 +245,8 @@ export class SelectModeControlContainer extends React.Component<
     this.currentlyReparenting = false
   }
 
-  filterHiddenInstances = (paths: Array<TemplatePath>): Array<TemplatePath> => {
-    return paths.filter((path) =>
-      this.props.hiddenInstances.every((hidden) => !TP.pathsEqual(path, hidden)),
-    )
-  }
-
   isHighlighted = (path: TemplatePath) => {
     return this.props.highlightedViews.some((highlighted) => TP.pathsEqual(path, highlighted))
-  }
-
-  getSelectableViews(allElementsDirectlySelectable: boolean): TemplatePath[] {
-    let candidateViews: Array<TemplatePath>
-
-    if (allElementsDirectlySelectable) {
-      candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
-    } else {
-      const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-      let rootElementsToFilter: TemplatePath[] = []
-      let dynamicScenesWithFragmentRootViews: ScenePath[] = []
-      Utils.fastForEach(scenes, (path) => {
-        const scene = MetadataUtils.findSceneByTemplatePath(
-          this.props.componentMetadata.components,
-          path,
-        )
-        const rootElements = scene?.rootElements
-        if (
-          MetadataUtils.isSceneTreatedAsGroup(scene) &&
-          rootElements != null &&
-          rootElements.length > 1
-        ) {
-          rootElementsToFilter.push(...rootElements)
-          dynamicScenesWithFragmentRootViews.push(path)
-        }
-      })
-      const allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata).filter(
-        (rootPath) => {
-          return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
-        },
-      )
-      let siblings: Array<TemplatePath> = []
-      Utils.fastForEach(this.props.selectedViews, (view) => {
-        Utils.fastForEach(TP.allPaths(view), (ancestor) => {
-          const ancestorChildren = MetadataUtils.getImmediateChildren(
-            this.props.componentMetadata,
-            ancestor,
-          )
-
-          siblings.push(...ancestorChildren.map((child) => child.templatePath))
-        })
-      })
-
-      const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
-      const uniqueSelectableViews = uniqBy<TemplatePath>(selectableViews, TP.pathsEqual)
-
-      const selectableViewsFiltered = uniqueSelectableViews.filter((view) => {
-        // I kept the group-like behavior here that the user can't single-click select the parent group, even though it is a view now
-        const isGroup = MetadataUtils.isAutoSizingViewFromComponents(
-          this.props.componentMetadata,
-          view,
-        )
-        const isAncestorOfSelected = this.props.selectedViews.some((selectedView) =>
-          TP.isAncestorOf(selectedView, view, false),
-        )
-        if (isGroup && isAncestorOfSelected) {
-          return false
-        } else {
-          return true
-        }
-      })
-      candidateViews = selectableViewsFiltered
-    }
-
-    return this.filterHiddenInstances(candidateViews)
   }
 
   getClippedArea = (target: TemplatePath): CanvasRectangle | null => {
@@ -678,7 +607,12 @@ export class SelectModeControlContainer extends React.Component<
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
     const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
     let labelDirectlySelectable = true
-    let draggableViews = this.getSelectableViews(allElementsDirectlySelectable)
+    let draggableViews = getSelectableViews(
+      this.props.componentMetadata,
+      this.props.selectedViews,
+      this.props.hiddenInstances,
+      allElementsDirectlySelectable,
+    )
     if (!this.props.highlightsEnabled) {
       draggableViews = []
       labelDirectlySelectable = false
@@ -700,7 +634,7 @@ export class SelectModeControlContainer extends React.Component<
       <div
         data-testid='select-mode-control-container-root'
         style={{
-          pointerEvents: 'initial',
+          pointerEvents: 'none',
           position: 'absolute',
           left: 0,
           top: 0,
