@@ -5,11 +5,12 @@ const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
 const moveFile = require('move-file')
+const yn = require('yn')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/` //locally
-const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}` //server, whenever push to server make sure this line is active
+// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/`
+const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -39,7 +40,7 @@ function consoleDoneMessage(page: puppeteer.Page) {
 export const testScrollingPerformance = async function () {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: false,
+    headless: yn(process.env.HEADLESS),
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
@@ -128,7 +129,7 @@ async function createTestPng(
     percentile75: number | undefined
   },
 ) {
-  const plotly = require('plotly')('OmarDaSilva', 'szS7pGItjmB7z50Ft3e9')
+  const plotly = require('plotly')(process.env.PLOTLY_USERNAME, process.env.PLOTLY_API)
 
   const n = valueOutsideCutoff(frameTimesArray).toString()
 
@@ -314,7 +315,7 @@ async function createTestPng(
       var fileStream = fs.createWriteStream(testFileName)
       imageStream.pipe(fileStream)
       const path1 = path.resolve(testFileName)
-      const path2 = path.resolve('src')
+      const path2 = path.resolve('frameimages')
       await moveFile(path1, path2 + '/' + testFileName)
       resolve(path2 + '/' + testFileName)
     })
@@ -328,7 +329,6 @@ async function uploadPNGtoAWS(testFile: string) {
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
   })
 
-  const metaData = testFile.split('.').pop()
   let s3 = new AWS.S3({ apiVersion: '2006-03-01' })
   let file = testFile
   const uploadParams = {
@@ -340,7 +340,8 @@ async function uploadPNGtoAWS(testFile: string) {
   }
 
   return new Promise<string>((resolve, reject) => {
-    let filestream = fs.createReadStream(file)
+    const path1 = path.resolve(file)
+    let filestream = fs.createReadStream(path1)
     filestream.on('error', function (err: any) {
       console.log('File Error', err)
       reject(err)
