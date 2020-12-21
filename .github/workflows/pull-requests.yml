@@ -105,3 +105,26 @@ jobs:
         shell: bash
         run: |
           curl -s -o /dev/null -w "FLUSH STAGING HTTP RESPONSE CODE: %{http_code}" -X DELETE 'https://${{ secrets.STAGING_SERVER }}/internal/branch?branch_name=${{ steps.extract_branch.outputs.branch }}'
+      - name: Run Performance Test
+        id: run-performance-test
+        env:
+          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+          HEADLESS: 'true'
+          AWS_S3_BUCKET: ${{secrets.PERFORMANCE_GRAPHS_BUCKET}}
+          AWS_ACCESS_KEY_ID: ${{ secrets.PERFORMANCE_GRAPHS_ACCESS_KEY}}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.PERFORMANCE_GRAPHS_SECRET_KEY }}
+          AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
+          PERFORMANCE_GRAPHS_PLOTLY_USERNAME: ${{ secrets.PERFORMANCE_GRAPHS_PLOTLY_USERNAME}}
+          PERFORMANCE_GRAPHS_PLOTLY_API_KEY: ${{secrets.PERFORMANCE_GRAPHS_PLOTLY_API_KEY}}
+
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd performance-test; npm install --unsafe-perm; npm start"
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v1
+        if: ${{ success() || failure() }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            These are the results of the :racing_car: **SPEED TEST** that runs right after the test editor was deployed
+
+            ${{ steps.run-performance-test.outputs.perf-result }}
