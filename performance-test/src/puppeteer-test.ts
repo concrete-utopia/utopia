@@ -170,7 +170,7 @@ async function createTestPng(
       title: {
         text:
           'Xaxis: Frame Times (ms) - red:60fps, black:30fps, green:15fps, yellow:7.5fps - Scrolling Test (n=' +
-          n +
+          valueOutsideCutoff(frameTimesArray) +
           ' Results not shown)',
         font: {
           family: 'Courier New, monospace',
