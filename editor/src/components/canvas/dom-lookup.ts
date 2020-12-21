@@ -1,8 +1,18 @@
 import { last, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
-import { WindowPoint } from '../../core/shared/math-utils'
+import {
+  CanvasVector,
+  negate,
+  offsetPoint,
+  RawPoint,
+  roundPointToNearestHalf,
+  scaleVector,
+  windowPoint,
+  WindowPoint,
+} from '../../core/shared/math-utils'
 import { TemplatePath } from '../../core/shared/project-file-types'
 import * as TP from '../../core/shared/template-path'
+import { CanvasPositions } from './canvas-types'
 
 // eslint-disable-next-line no-restricted-globals
 export function findParentSceneValidPaths(target: Element): Array<string> | null {
@@ -55,4 +65,31 @@ export function getAllTargetsAtPoint(point: WindowPoint | null): Array<TemplateP
       return null
     }),
   )
+}
+
+export function windowToCanvasCoordinates(
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+  screenPoint: WindowPoint,
+): CanvasPositions {
+  const canvasWrapper = document.getElementById('canvas-root')
+
+  if (canvasWrapper != null) {
+    const canvasWrapperRect = canvasWrapper.getBoundingClientRect()
+    const canvasDivCoords = {
+      x: screenPoint.x - canvasWrapperRect.left,
+      y: screenPoint.y - canvasWrapperRect.top,
+    } as RawPoint
+    const inverseOffset = negate(canvasOffset)
+    const inverseScale = 1 / canvasScale
+    const pagePosition = scaleVector(canvasDivCoords, inverseScale)
+    const canvasPositionRaw = offsetPoint(pagePosition as any, inverseOffset)
+    return {
+      windowPosition: windowPoint({ x: screenPoint.x, y: screenPoint.y }),
+      canvasPositionRaw: canvasPositionRaw,
+      canvasPositionRounded: roundPointToNearestHalf(canvasPositionRaw),
+    }
+  } else {
+    throw new Error('calling screenToElementCoordinates() before being mounted')
+  }
 }

@@ -12,8 +12,9 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ScenePath, TemplatePath } from '../../../../core/shared/project-file-types'
 import * as TP from '../../../../core/shared/template-path'
-import { CanvasMousePositionRounded } from '../../../../templates/editor-canvas'
+import { NO_OP } from '../../../../core/shared/utils'
 import { KeysPressed } from '../../../../utils/keyboard'
+import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
@@ -30,6 +31,7 @@ import CanvasActions from '../../canvas-actions'
 import { DragState, moveDragState } from '../../canvas-types'
 import { createDuplicationNewUIDs, getOriginalCanvasFrames } from '../../canvas-utils'
 import { findFirstParentWithValidUID } from '../../dom-lookup'
+import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { selectElementsThatRespectLayout } from '../new-canvas-controls'
 
 const DRAG_START_TRESHOLD = 2
@@ -156,6 +158,7 @@ export function getSelectableViews(
 
 function useFindValidTarget(): (
   targetHtmlElement: HTMLElement,
+  allElementsDirectlySelectable: boolean,
 ) => {
   templatePath: TemplatePath
   selectionMode: 'singleclick' | 'doubleclick'
@@ -166,18 +169,12 @@ function useFindValidTarget(): (
       componentMetadata: store.editor.jsxMetadataKILLME,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
-      allElementsDirectlySelectable: store.editor.keysPressed.cmd ?? false,
     }
   })
 
   return React.useCallback(
-    (targetHtmlElement: HTMLElement) => {
-      const {
-        componentMetadata,
-        selectedViews,
-        hiddenInstances,
-        allElementsDirectlySelectable,
-      } = storeRef.current
+    (targetHtmlElement: HTMLElement, allElementsDirectlySelectable: boolean) => {
+      const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
         selectedViews,
@@ -305,7 +302,7 @@ function callbackAfterDragExceedsThreshold(
   window.addEventListener('mouseup', onMouseUp)
 }
 
-export function useSelectAndHover(): {
+export function useSelectModeSelectAndHover(): {
   onMouseOver: (event: React.MouseEvent<HTMLDivElement>) => void
   onMouseOut: () => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void
@@ -314,10 +311,11 @@ export function useSelectAndHover(): {
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
   const startDragState = useStartDragState()
+  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   const onMouseOver = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const validTemplatePath = findValidTarget(event.target as HTMLDivElement)
+      const validTemplatePath = findValidTarget(event.target as HTMLDivElement, event.metaKey)
       if (
         validTemplatePath != null &&
         validTemplatePath.selectionMode === 'singleclick' && // we only show highlights for single-click selectable elements
@@ -335,26 +333,74 @@ export function useSelectAndHover(): {
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const foundTarget = findValidTarget(event.target as HTMLDivElement)
+      const foundTarget = findValidTarget(event.target as HTMLDivElement, event.metaKey)
       if (foundTarget != null) {
         callbackAfterDragExceedsThreshold(
           event.nativeEvent,
           DRAG_START_TRESHOLD,
-          startDragState(foundTarget.templatePath, CanvasMousePositionRounded),
+          startDragState(
+            foundTarget.templatePath,
+            windowToCanvasCoordinates(windowPoint(point(event.clientX, event.clientY)))
+              .canvasPositionRounded,
+          ),
         )
 
         if (!foundTarget.isSelected) {
           const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
           if (foundTarget.selectionMode === 'singleclick' || doubleClick) {
-            dispatch([selectComponents([foundTarget.templatePath], false)])
+            dispatch([selectComponents([foundTarget.templatePath], event.shiftKey)])
           }
         }
       }
     },
-    [dispatch, findValidTarget, startDragState],
+    [dispatch, findValidTarget, startDragState, windowToCanvasCoordinates],
   )
 
   // TODO deselect control under the canvas
 
   return { onMouseOver, onMouseOut, onMouseDown }
+}
+
+function useInsertModeSelectAndHover(): {
+  onMouseOver: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onMouseOut: () => void
+  onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+} {
+  return useKeepShallowReferenceEquality({
+    onMouseOver: NO_OP,
+    onMouseOut: NO_OP,
+    onMouseDown: NO_OP,
+  })
+}
+
+function usePreviewModeSelectAndHover(): {
+  onMouseOver: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onMouseOut: () => void
+  onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+} {
+  return useKeepShallowReferenceEquality({
+    onMouseOver: NO_OP,
+    onMouseOut: NO_OP,
+    onMouseDown: NO_OP,
+  })
+}
+
+export function useSelectAndHover(): {
+  onMouseOver: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onMouseOut: () => void
+  onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+} {
+  const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
+  const selectModeCallbacks = useSelectModeSelectAndHover()
+  const insertModeCallbacks = useInsertModeSelectAndHover()
+  const previewModeCallbacks = usePreviewModeSelectAndHover()
+  if (modeType === 'select') {
+    return selectModeCallbacks
+  } else if (modeType === 'insert') {
+    return insertModeCallbacks
+  } else if (modeType === 'live') {
+    return previewModeCallbacks
+  } else {
+    throw new Error(`Unhandled editor mode ${modeType}`)
+  }
 }

@@ -181,6 +181,7 @@ export class MultiselectResizeControl extends React.Component<
           <>
             <SingleSelectResizeControls
               {...this.props}
+              key='resize-controls'
               obtainOriginalFrames={this.obtainOriginalFrames}
               onResizeStart={this.onResizeStart}
             />
@@ -224,6 +225,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
               metadata={this.props.componentMetadata}
               onResizeStart={this.props.onResizeStart}
               testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
+              key={`component-resize-control-${TP.toComponentId(view)}-${index}`}
             />
           </>
         )

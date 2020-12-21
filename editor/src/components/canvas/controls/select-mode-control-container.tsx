@@ -288,6 +288,7 @@ export class SelectModeControlContainer extends React.Component<
       return (
         <ComponentAreaControl
           key={`${TP.toComponentId(target)}-${index}-control`}
+          mouseEnabled={false}
           testID={`component-area-control-${TP.toComponentId(target)}-${index}`}
           componentMetadata={this.props.componentMetadata}
           target={target}
@@ -323,6 +324,7 @@ export class SelectModeControlContainer extends React.Component<
     return (
       <ComponentLabelControl
         key={`${TP.toComponentId(target)}-label`}
+        mouseEnabled={true}
         componentMetadata={this.props.componentMetadata}
         target={target}
         frame={frame}
@@ -359,6 +361,7 @@ export class SelectModeControlContainer extends React.Component<
     }
     return (
       <ComponentAreaControl
+        mouseEnabled={false}
         key={`${TP.toComponentId(target)}-non-selectable`}
         componentMetadata={this.props.componentMetadata}
         target={target}

@@ -18,6 +18,7 @@ import {
   singleResizeChange,
   EdgePosition,
 } from './canvas-types'
+import { wait } from '../../utils/test-utils'
 
 const NewUID = 'catdog'
 
@@ -1292,7 +1293,7 @@ describe('moveTemplate', () => {
           >
             <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
           </View>
-          <View data-uid={'eee'} style={{ position: 'absolute', backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }}/>
+          <View data-testid={'eee'} data-uid={'eee'} style={{ position: 'absolute', backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }}/>
         </View>
       `),
     )
@@ -1302,9 +1303,7 @@ describe('moveTemplate', () => {
       false,
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa/eee-2',
-    )
+    const areaControl = renderResult.renderedDOM.getByTestId('eee')
 
     const areaControlBounds = areaControl.getBoundingClientRect()
 
@@ -1381,7 +1380,7 @@ describe('moveTemplate', () => {
             data-uid={'bbb'}
           >
             <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
-            <View data-uid={'eee'} style={{ backgroundColor: '#00ff00', position: 'relative', flexBasis: 80, height: 80 }} />
+            <View data-testid={'eee'}  data-uid={'eee'} style={{ backgroundColor: '#00ff00', position: 'relative', flexBasis: 80, height: 80 }} />
           </View>
         </View>
       `),
@@ -1506,7 +1505,7 @@ describe('moveTemplate', () => {
           >
             <View data-uid={'ccc'} style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', top: 10, left: 15, width: 50, height: 60 }} />
           </View>
-          <View data-uid={'eee'} style={{ backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }} layout={{ layoutSystem: 'pinSystem' }}/>
+          <View data-testid={'eee'} data-uid={'eee'} style={{ backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }} layout={{ layoutSystem: 'pinSystem' }}/>
         </View>
       `),
     )
@@ -1516,9 +1515,7 @@ describe('moveTemplate', () => {
       false,
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa/eee-2',
-    )
+    const areaControl = renderResult.renderedDOM.getByTestId('eee')
 
     const areaControlBounds = areaControl.getBoundingClientRect()
 
@@ -1601,6 +1598,7 @@ describe('moveTemplate', () => {
           layout={{ layoutSystem: 'pinSystem', top: 10, left: 15, width: 50, height: 60 }}
         />
         <View
+          data-testid={'eee'}
           data-uid={'eee'}
           style={{ backgroundColor: '#00ff00', width: 80, height: 80, left: 100, top: 170 }}
           layout={{ layoutSystem: 'pinSystem' }}

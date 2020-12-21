@@ -14,6 +14,7 @@ import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { UtopiaTheme, colorTheme } from '../../../uuiui'
 
 interface ComponentAreaControlProps {
+  mouseEnabled: boolean
   target: TemplatePath
   frame: CanvasRectangle
   highlighted: boolean
@@ -179,14 +180,14 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
       <React.Fragment>
         <div
           className='role-component-selection-highlight'
-          // onMouseOver={this.onMouseOver}
-          // onMouseLeave={this.onMouseLeave}
-          // onMouseDown={this.onMouseDown}
+          onMouseOver={this.onMouseOver}
+          onMouseLeave={this.onMouseLeave}
+          onMouseDown={this.onMouseDown}
           onClick={this.onClick}
           onDragEnter={this.onDragEnter}
           onDragLeave={this.onDragLeave}
           style={{
-            pointerEvents: 'none',
+            pointerEvents: this.props.mouseEnabled ? 'initial' : 'none',
             position: 'absolute',
             left: this.props.canvasOffset.x + this.props.frame.x - extraWidth / 2,
             top: this.props.canvasOffset.y + this.props.frame.y - extraHeight / 2,
@@ -223,6 +224,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
           onDragLeave={labelSelectable ? this.onDragLeave : utils.NO_OP}
           className='roleComponentName'
           style={{
+            pointerEvents: this.props.mouseEnabled ? 'initial' : 'none',
             color: isInternalComponent
               ? colorTheme.component.value
               : colorTheme.subduedForeground.value,

@@ -446,9 +446,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   }
 
   const renderDeselectControl = () => {
-    return selectionEnabled ? (
-      <DeselectControl mode={props.editor.mode} dispatch={props.dispatch} />
-    ) : null
+    return selectionEnabled ? <DeselectControl /> : null
   }
 
   const textEditor =
