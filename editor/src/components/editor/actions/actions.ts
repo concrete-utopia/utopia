@@ -2157,7 +2157,7 @@ export const UPDATE_FNS = {
           ...editor,
           navigator: {
             ...editor.navigator,
-            position: action.visible ? 'left' : 'hidden',
+            position: action.visible ? 'right' : 'hidden',
           },
         }
       case 'filebrowser':
