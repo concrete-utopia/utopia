@@ -172,7 +172,7 @@ interface NewCanvasControlsInnerProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
 }
 
-const selectElementsThatRespectLayout = createSelector(
+export const selectElementsThatRespectLayout = createSelector(
   (store: EditorStore) => store.derived.navigatorTargets,
   (store) => store.editor.propertyControlsInfo,
   (store) => getOpenImportsFromState(store.editor),

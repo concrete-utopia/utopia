@@ -2,8 +2,17 @@ import * as React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { uniqBy } from '../../../../core/shared/array-utils'
 import { JSXMetadata } from '../../../../core/shared/element-template'
+import {
+  boundingRectangleArray,
+  CanvasPoint,
+  distance,
+  point,
+  WindowPoint,
+  windowPoint,
+} from '../../../../core/shared/math-utils'
 import { ScenePath, TemplatePath } from '../../../../core/shared/project-file-types'
 import * as TP from '../../../../core/shared/template-path'
+import { CanvasMousePositionRounded } from '../../../../templates/editor-canvas'
 import { KeysPressed } from '../../../../utils/keyboard'
 import utils from '../../../../utils/utils'
 import {
@@ -12,10 +21,18 @@ import {
   selectComponents,
   setHighlightedView,
 } from '../../../editor/actions/action-creators'
-import { EditorState } from '../../../editor/store/editor-state'
+import {
+  EditorState,
+  getOpenUtopiaJSXComponentsFromState,
+} from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { DragState } from '../../canvas-types'
+import CanvasActions from '../../canvas-actions'
+import { DragState, moveDragState } from '../../canvas-types'
+import { createDuplicationNewUIDs, getOriginalCanvasFrames } from '../../canvas-utils'
 import { findFirstParentWithValidUID } from '../../dom-lookup'
+import { selectElementsThatRespectLayout } from '../new-canvas-controls'
+
+const DRAG_START_TRESHOLD = 2
 
 export function pickIsResizing(dragState: DragState | null): boolean {
   return dragState != null && dragState.type === 'RESIZE_DRAG_STATE' && dragState.drag != null
@@ -193,6 +210,101 @@ function useFindValidTarget(): (
   )
 }
 
+function useStartDragState(): (
+  target: TemplatePath,
+  start: CanvasPoint | null,
+) => (event: MouseEvent) => void {
+  const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
+  const entireEditorStoreRef = useRefEditorState((store) => store)
+
+  return React.useCallback(
+    (target: TemplatePath, start: CanvasPoint | null) => (event: MouseEvent) => {
+      if (start == null) {
+        return
+      }
+
+      const componentMetadata = entireEditorStoreRef.current.editor.jsxMetadataKILLME
+      const selectedViews = entireEditorStoreRef.current.editor.selectedViews
+
+      const rootComponents = getOpenUtopiaJSXComponentsFromState(
+        entireEditorStoreRef.current.editor,
+      )
+
+      const elementsThatRespectLayout = selectElementsThatRespectLayout(
+        entireEditorStoreRef.current,
+      )
+
+      const duplicate = event.altKey
+      const duplicateNewUIDs = duplicate
+        ? createDuplicationNewUIDs(selectedViews, componentMetadata, rootComponents)
+        : null
+
+      const selection = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
+      const moveTargets = selection.filter(
+        (view) =>
+          TP.isScenePath(view) ||
+          elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
+      )
+
+      let originalFrames = getOriginalCanvasFrames(moveTargets, componentMetadata)
+      originalFrames = originalFrames.filter((f) => f.frame != null)
+
+      const selectionArea = boundingRectangleArray(
+        selectedViews.map((view) => {
+          return MetadataUtils.getFrameInCanvasCoords(view, componentMetadata)
+        }),
+      )
+
+      dispatch([
+        CanvasActions.createDragState(
+          moveDragState(
+            start,
+            null,
+            null,
+            originalFrames,
+            selectionArea,
+            !event.metaKey,
+            event.shiftKey,
+            duplicate,
+            event.metaKey,
+            duplicateNewUIDs,
+            start,
+            componentMetadata,
+            moveTargets,
+          ),
+        ),
+      ])
+    },
+    [dispatch, entireEditorStoreRef],
+  )
+}
+
+function callbackAfterDragExceedsThreshold(
+  startEvent: MouseEvent,
+  threshold: number,
+  callback: (event: MouseEvent) => void,
+) {
+  const startPoint = windowPoint(point(startEvent.clientX, startEvent.clientY))
+  function onMouseMove(event: MouseEvent) {
+    if (distance(startPoint, windowPoint(point(event.clientX, event.clientY))) > threshold) {
+      callback(event)
+      removeListeners()
+    }
+  }
+
+  function onMouseUp() {
+    removeListeners()
+  }
+
+  function removeListeners() {
+    window.removeEventListener('mousemove', onMouseMove)
+    window.removeEventListener('mouseup', onMouseUp)
+  }
+
+  window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('mouseup', onMouseUp)
+}
+
 export function useSelectAndHover(): {
   onMouseOver: (event: React.MouseEvent<HTMLDivElement>) => void
   onMouseOut: () => void
@@ -201,6 +313,7 @@ export function useSelectAndHover(): {
   const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
+  const startDragState = useStartDragState()
 
   const onMouseOver = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -224,6 +337,12 @@ export function useSelectAndHover(): {
     (event: React.MouseEvent<HTMLDivElement>) => {
       const foundTarget = findValidTarget(event.target as HTMLDivElement)
       if (foundTarget != null) {
+        callbackAfterDragExceedsThreshold(
+          event.nativeEvent,
+          DRAG_START_TRESHOLD,
+          startDragState(foundTarget.templatePath, CanvasMousePositionRounded),
+        )
+
         if (!foundTarget.isSelected) {
           const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
           if (foundTarget.selectionMode === 'singleclick' || doubleClick) {
@@ -232,10 +351,10 @@ export function useSelectAndHover(): {
         }
       }
     },
-    [dispatch, findValidTarget],
+    [dispatch, findValidTarget, startDragState],
   )
 
-  // TODO if mouse moves, enter drag mode
+  // TODO deselect control under the canvas
 
   return { onMouseOver, onMouseOut, onMouseDown }
 }
