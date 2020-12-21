@@ -38,9 +38,9 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     (store) => store.editor.interfaceDesigner,
     'DesignPanelRoot interfaceDesigner',
   )
-  const navigatorVisible = useEditorState(
-    (store) => store.editor.navigator.visible,
-    'DesignPanelRoot navigatorVisible',
+  const navigatorPosition = useEditorState(
+    (store) => store.editor.navigator.position,
+    'DesignPanelRoot navigatorPosition',
   )
 
   const isRightMenuExpanded = useEditorState(
@@ -80,6 +80,26 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     },
     [updateDeltaWidth, props.isUiJsFileOpen],
   )
+
+  const getNavigatorLeft = (): number | undefined => {
+    let position = undefined
+    switch (navigatorPosition) {
+      case 'left':
+        position = interfaceDesigner.codePaneWidth - LeftPaneDefaultWidth
+        break
+      case 'right':
+        position = interfaceDesigner.codePaneWidth
+        break
+    }
+    if (!interfaceDesigner.codePaneVisible) {
+      if (leftMenuExpanded) {
+        position = LeftPaneDefaultWidth
+      } else {
+        position = undefined
+      }
+    }
+    return position
+  }
 
   return (
     <SimpleFlexRow
@@ -131,33 +151,18 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
         >
           <CodeEditorWrapper />
         </Resizable>
-        {props.isUiJsFileOpen ? (
-          <SimpleFlexRow
-            style={{
-              position: 'relative',
-              overflowX: 'hidden',
-              justifyContent: 'stretch',
-              alignItems: 'stretch',
-              flexGrow: 1,
-            }}
-          >
-            <CanvasWrapperComponent {...props} />
-            {navigatorVisible && (
-              <NavigatorComponent
-                style={{
-                  position: 'absolute',
-                  height: '100%',
-                  left:
-                    leftMenuExpanded && !interfaceDesigner.codePaneVisible
-                      ? LeftPaneDefaultWidth
-                      : undefined,
-                  width: LeftPaneDefaultWidth,
-                }}
-              />
-            )}
-          </SimpleFlexRow>
-        ) : null}
+        {props.isUiJsFileOpen ? <CanvasWrapperComponent {...props} /> : null}
       </SimpleFlexRow>
+      {props.isUiJsFileOpen && navigatorPosition !== 'hidden' ? (
+        <NavigatorComponent
+          style={{
+            position: 'absolute',
+            height: '100%',
+            left: getNavigatorLeft(),
+            width: LeftPaneDefaultWidth,
+          }}
+        />
+      ) : null}
       {props.isUiJsFileOpen ? (
         <>
           <RightMenu visible={true} />

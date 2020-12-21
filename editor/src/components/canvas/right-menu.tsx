@@ -117,8 +117,8 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
     'RightMenu rightMenuSelectedTab',
   )
 
-  const navigatorVisible = useEditorState(
-    (store) => store.editor.navigator.visible,
+  const navigatorPosition = useEditorState(
+    (store) => store.editor.navigator.position,
     'RightMenu navigatorVisible',
   )
 
@@ -306,7 +306,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         <Tooltip title={'Navigator'} placement={'right'}>
           <span>
             <RightMenuTile
-              selected={navigatorVisible}
+              selected={navigatorPosition !== 'hidden'}
               highlightSelected={false}
               icon={<MenuIcons.Project />}
               onClick={onClickNavigateTab}
