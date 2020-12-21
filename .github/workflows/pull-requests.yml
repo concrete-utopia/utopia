@@ -112,8 +112,9 @@ jobs:
           HEADLESS: 'true'
           AWS_S3_BUCKET: ${{secrets.PERFORMANCE_GRAPHS_BUCKET}}
           AWS_ACCESS_KEY_ID: ${{ secrets.PERFORMANCE_GRAPHS_ACCESS_KEY}}
-          AWS_SECRET_ACCESS_KEY: ${{ PERFORMANCE_GRAPHS_SECRET_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.PERFORMANCE_GRAPHS_SECRET_KEY }}
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
+
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd performance-test; npm install --unsafe-perm; npm start"
       - name: Create comment
