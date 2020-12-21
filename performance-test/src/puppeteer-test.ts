@@ -129,7 +129,10 @@ async function createTestPng(
     percentile75: number | undefined
   },
 ) {
-  const plotly = require('plotly')('OmarDaSilva', 'hE7jUM0tDlgyByK5fdwH')
+  const plotly = require('plotly')(
+    process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME,
+    process.env.PERFORMANCE_GRAPHS_PLOTLY_API_KEY,
+  )
 
   const n = valueOutsideCutoff(frameTimesArray).toString()
 

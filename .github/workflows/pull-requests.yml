@@ -114,6 +114,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.PERFORMANCE_GRAPHS_ACCESS_KEY}}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PERFORMANCE_GRAPHS_SECRET_KEY }}
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
+          PERFORMANCE_GRAPHS_PLOTLY_USERNAME: ${{ secrets.PERFORMANCE_GRAPHS_PLOTLY_USERNAME}}
+          PERFORMANCE_GRAPHS_PLOTLY_API_KEY: ${{secrets.PERFORMANCE_GRAPHS_PLOTLY_API_KEY}}
 
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd performance-test; npm install --unsafe-perm; npm start"
