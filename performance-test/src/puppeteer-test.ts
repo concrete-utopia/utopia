@@ -9,8 +9,8 @@ const yn = require('yn')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/`
-// const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
+// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/`
+const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -40,7 +40,7 @@ function consoleDoneMessage(page: puppeteer.Page) {
 export const testScrollingPerformance = async function () {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: false, //yn(process.env.HEADLESS),
+    headless: yn(process.env.HEADLESS),
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
