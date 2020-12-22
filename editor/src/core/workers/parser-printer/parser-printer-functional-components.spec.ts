@@ -25,6 +25,7 @@ import {
   EmptyExportsDetail,
   isParseSuccess,
 } from '../../shared/project-file-types'
+import { emptyComments } from './parser-printer-comments'
 
 const codeWithBasicPropsObject = `import React from "react";
 import { View } from "utopia-api";
@@ -160,7 +161,8 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -199,7 +201,17 @@ describe('Parsing a function component with props', () => {
         ),
       ),
     )
-    const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null, false, [])
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      propsParam,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
@@ -222,7 +234,17 @@ describe('Parsing a function component with props', () => {
       [],
     )
     const propsParam = functionParam(false, regularParam('myProps', null))
-    const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null, false, [])
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      propsParam,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
@@ -257,7 +279,8 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -301,7 +324,8 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -340,7 +364,8 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -384,7 +409,8 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -424,7 +450,8 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -449,7 +476,17 @@ describe('Parsing a function component with props', () => {
     )
     const destructuredParam = functionParam(false, regularParam('prop', null))
     const propsParam = functionParam(false, destructuredArray([destructuredParam]))
-    const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null, false, [])
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      propsParam,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
@@ -481,7 +518,17 @@ describe('Parsing a function component with props', () => {
       ),
     )
     const propsParam = functionParam(false, destructuredArray([destructuredParam]))
-    const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null, false, [])
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      propsParam,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
@@ -511,7 +558,17 @@ describe('Parsing a function component with props', () => {
       false,
       destructuredArray([destructuredParam1, omittedParam(), destructuredParam2]),
     )
-    const exported = utopiaJSXComponent('whatever', true, propsParam, [], view, null, false, [])
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      propsParam,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
@@ -562,7 +619,8 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -633,7 +691,8 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(

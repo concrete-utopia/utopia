@@ -1,6 +1,13 @@
 import * as TS from 'typescript'
 import { NormalisedFrame } from 'utopia-api'
-import { ArbitraryJSBlock, TopLevelElement, UtopiaJSXComponent } from './element-template'
+import { ParsedComments } from '../workers/parser-printer/parser-printer-comments'
+import {
+  ArbitraryJSBlock,
+  Comment,
+  TopLevelElement,
+  UtopiaJSXComponent,
+  WithComments,
+} from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
@@ -81,7 +88,7 @@ export function importAliasEquals(first: ImportAlias, second: ImportAlias): bool
   return first.name === second.name && first.alias === second.alias
 }
 
-export interface ImportDetails {
+export interface ImportDetails extends WithComments {
   importedWithName: string | null // import name from './place'
   importedFromWithin: Array<ImportAlias> // import { name as alias } from './place'
   importedAs: string | null // import * as name from './place'
@@ -91,11 +98,13 @@ export function importDetails(
   importedWithName: string | null,
   importedFromWithin: Array<ImportAlias>,
   importedAs: string | null,
+  comments: ParsedComments,
 ): ImportDetails {
   return {
     importedWithName: importedWithName,
     importedFromWithin: importedFromWithin,
     importedAs: importedAs,
+    comments: comments,
   }
 }
 
@@ -103,7 +112,8 @@ export function importDetailsEquals(first: ImportDetails, second: ImportDetails)
   return (
     first.importedWithName === second.importedWithName &&
     arrayEquals(first.importedFromWithin, second.importedFromWithin, importAliasEquals) &&
-    first.importedAs === second.importedAs
+    first.importedAs === second.importedAs &&
+    first.comments === second.comments
   )
 }
 

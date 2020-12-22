@@ -51,6 +51,9 @@ import {
   SingleLineComment,
   MultiLineComment,
   Comment,
+  walkElement,
+  getJSXElementNameAsString,
+  isJSXElement,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -71,18 +74,25 @@ import {
   exportDetailModifier,
   ExportDetail,
   EmptyExportsDetail,
+  StaticElementPath,
+  isParseSuccess,
+  isTextFile,
+  ProjectFile,
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
 import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
+import { getUtopiaID } from '../../model/element-template-utils'
+import { emptyComments, parsedComments, ParsedComments } from './parser-printer-comments'
 
 export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercaseStringArbitrary().map(
   (text) => {
     return {
       type: 'SINGLE_LINE_COMMENT',
       comment: text,
+      rawText: text,
       trailingNewLine: false,
     }
   },
@@ -93,6 +103,7 @@ export const multiLineCommentArbitrary: Arbitrary<MultiLineComment> = lowercaseS
     return {
       type: 'MULTI_LINE_COMMENT',
       comment: text,
+      rawText: text,
       trailingNewLine: false,
     }
   },
@@ -185,6 +196,10 @@ export function testParseCode(contents: string): ParsedTextFile {
   return result
 }
 
+export function parseThenPrint(originalCode: string): string {
+  return parseModifyPrint(originalCode, (ps) => ps)
+}
+
 export function testParseThenPrint(originalCode: string, expectedFinalCode: string): void {
   return testParseModifyPrint(originalCode, expectedFinalCode, (ps) => ps)
 }
@@ -194,8 +209,16 @@ export function testParseModifyPrint(
   expectedFinalCode: string,
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
 ): void {
+  const printedCode = parseModifyPrint(originalCode, transform)
+  expect(printedCode).toEqual(expectedFinalCode)
+}
+
+function parseModifyPrint(
+  originalCode: string,
+  transform: (parseSuccess: ParseSuccess) => ParseSuccess,
+): string {
   const initialParseResult = testParseCode(originalCode)
-  foldParsedTextFile(
+  return foldParsedTextFile(
     (failure) => fail(failure),
     (initialParseSuccess) => {
       const transformed = transform(initialParseSuccess)
@@ -206,7 +229,7 @@ export function testParseModifyPrint(
         transformed.jsxFactoryFunction,
         transformed.exportsDetail,
       )
-      expect(printedCode).toEqual(expectedFinalCode)
+      return printedCode
     },
     (failure) => fail(failure),
     initialParseResult,
@@ -232,6 +255,7 @@ export const JustImportView: Imports = {
     importedAs: null,
     importedFromWithin: [importAlias('View')],
     importedWithName: null,
+    comments: emptyComments,
   },
 }
 
@@ -240,11 +264,13 @@ export const JustImportViewAndReact: Imports = {
     importedAs: null,
     importedFromWithin: [importAlias('View')],
     importedWithName: null,
+    comments: emptyComments,
   },
   react: {
     importedAs: null,
     importedFromWithin: [],
     importedWithName: 'React',
+    comments: emptyComments,
   },
 }
 
@@ -491,7 +517,14 @@ export function jsxElementChildArbitrary(): Arbitrary<JSXElementChild> {
 }
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
-  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null))
+  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null, emptyComments))
+}
+
+export function arbitraryComments(): Arbitrary<ParsedComments> {
+  return FastCheck.tuple(
+    FastCheck.array(commentArbitrary),
+    FastCheck.array(commentArbitrary),
+  ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
 }
 
 export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
@@ -500,9 +533,10 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
     FastCheck.boolean(),
     jsxElementArbitrary(3),
     arbitraryJSBlockArbitrary(),
-    FastCheck.array(commentArbitrary),
+    arbitraryComments(),
+    arbitraryComments(),
   )
-    .map(([name, isFunction, rootElement, jsBlock, leadingComments]) => {
+    .map(([name, isFunction, rootElement, jsBlock, comments, returnStatementComments]) => {
       return utopiaJSXComponent(
         name,
         isFunction,
@@ -511,7 +545,8 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
         rootElement,
         jsBlock,
         false,
-        leadingComments,
+        comments,
+        returnStatementComments,
       )
     })
     .filter((component) => {
@@ -753,7 +788,7 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
         }
       }, topLevelElements)
       const imports: Imports = allBaseVariables.reduce((workingImports, baseVariable) => {
-        return addImport('testlib', baseVariable, [], null, workingImports)
+        return addImport('testlib', baseVariable, [], null, emptyComments, workingImports)
       }, JustImportViewAndReact)
       return {
         imports: imports,
@@ -764,4 +799,46 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
       }
     })
   })
+}
+
+export function elementsStructure(topLevelElements: Array<TopLevelElement>): string {
+  let structureResults: Array<string> = []
+  for (const topLevelElement of topLevelElements) {
+    let elementResult: string = topLevelElement.type
+    if (isUtopiaJSXComponent(topLevelElement)) {
+      elementResult += ` - ${topLevelElement.name}`
+    }
+    structureResults.push(elementResult)
+    if (isUtopiaJSXComponent(topLevelElement)) {
+      const emptyPath = ([] as any) as StaticElementPath
+      walkElement(topLevelElement.rootElement, emptyPath, 1, (innerElement, path, depth) => {
+        let innerElementResult: string = ''
+        for (let index = 0; index < depth; index++) {
+          innerElementResult += '  '
+        }
+        innerElementResult += innerElement.type
+        if (isJSXElement(innerElement)) {
+          innerElementResult += ` - ${getJSXElementNameAsString(innerElement.name)} - ${getUtopiaID(
+            innerElement,
+          )}`
+        }
+        structureResults.push(innerElementResult)
+      })
+    }
+  }
+  return structureResults.join('\n')
+}
+
+export function forceParseSuccessFromFileOrFail(
+  file: ProjectFile | null | undefined,
+): ParseSuccess {
+  if (file != null && isTextFile(file)) {
+    if (isParseSuccess(file.fileContents.parsed)) {
+      return file.fileContents.parsed
+    } else {
+      fail(`Not a parse success ${file.fileContents.parsed}`)
+    }
+  } else {
+    fail(`Not a text file ${file}`)
+  }
 }

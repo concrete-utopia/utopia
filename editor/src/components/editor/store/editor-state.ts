@@ -116,6 +116,7 @@ import {
   BakedInStoryboardVariableName,
   EmptyScenePathForStoryboard,
   isDynamicSceneChildWidthHeightPercentage,
+  getStoryboardTemplatePath,
 } from '../../../core/model/scene-utils'
 
 import { RightMenuTab } from '../../canvas/right-menu'
@@ -1683,29 +1684,6 @@ export function reconstructJSXMetadata(editor: EditorState): JSXMetadata {
       uiFile.fileContents.parsed,
     )
   }
-}
-
-export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string | null {
-  const possiblyStoryboard = openComponents.find(
-    (component) => component.name === BakedInStoryboardVariableName,
-  )
-  if (possiblyStoryboard != null) {
-    return getUtopiaID(possiblyStoryboard.rootElement)
-  }
-  return null
-}
-
-export function getStoryboardTemplatePath(
-  openComponents: UtopiaJSXComponent[],
-): StaticInstancePath | null {
-  const possiblyStoryboard = openComponents.find(
-    (component) => component.name === BakedInStoryboardVariableName,
-  )
-  if (possiblyStoryboard != null) {
-    const uid = getUtopiaID(possiblyStoryboard.rootElement)
-    return staticInstancePath(EmptyScenePathForStoryboard, [uid])
-  }
-  return null
 }
 
 export function getStoryboardTemplatePathFromEditorState(

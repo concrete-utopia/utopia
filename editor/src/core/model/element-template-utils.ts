@@ -32,7 +32,7 @@ import {
 } from '../shared/uid-utils'
 import { fastForEach } from '../shared/utils'
 import { isUtopiaAPIComponent, getComponentsFromTopLevelElements } from './project-file-utils'
-import { getStoryboardTemplatePath } from '../../components/editor/store/editor-state'
+import { getStoryboardTemplatePath } from './scene-utils'
 
 function getAllUniqueUidsInner(
   components: Array<UtopiaJSXComponent>,

@@ -6,6 +6,7 @@ import {
 } from './third-party-types'
 import { jsxElement, jsxElementName } from '../shared/element-template'
 import { PropertyControls } from 'utopia-api'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 function createBasicUtopiaComponent(
   baseVariable: string,
@@ -14,7 +15,7 @@ function createBasicUtopiaComponent(
 ): ComponentDescriptor {
   return componentDescriptor(
     {
-      'utopia-api': importDetails(null, [importAlias(baseVariable)], null),
+      'utopia-api': importDetails(null, [importAlias(baseVariable)], null, emptyComments),
     },
     jsxElement(jsxElementName(baseVariable, []), {}, []),
     name,
