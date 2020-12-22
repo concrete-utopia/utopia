@@ -13,6 +13,7 @@ import {
 import { walkAttributes } from '../../core/shared/jsx-attributes'
 import { pluck } from '../../core/shared/array-utils'
 import { importAlias } from '../../core/shared/project-file-types'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 // Adds an import for `UtopiaUtils` to the current open file.
 export function addUtopiaUtilsImportIfUsed(editorState: EditorState): EditorState {
@@ -47,6 +48,7 @@ export function addUtopiaUtilsImportIfUsed(editorState: EditorState): EditorStat
           null,
           [importAlias('UtopiaUtils')],
           null,
+          emptyComments,
           parseSuccess.imports,
         )
 

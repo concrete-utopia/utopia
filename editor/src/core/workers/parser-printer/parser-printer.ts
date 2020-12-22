@@ -49,6 +49,7 @@ import {
   Comment,
   singleLineComment,
   multiLineComment,
+  WithComments,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -98,7 +99,13 @@ import { applyPrettier } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
-import { addCommentsToNode, getComments } from './parser-printer-comments'
+import {
+  addCommentsToNode,
+  emptyComments,
+  getComments,
+  mergeParsedComments,
+  ParsedComments,
+} from './parser-printer-comments'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -463,7 +470,9 @@ function printUtopiaJSXComponent(
         // not Statements but I will deny all knowledge of ever having done this.
         statements.push(printArbitraryJSBlock(element.arbitraryJSBlock) as any)
       }
-      statements.push(TS.createReturn(asJSX))
+      const returnStatement = TS.createReturn(asJSX)
+      addCommentsToNode(returnStatement, element.returnStatementComments)
+      statements.push(returnStatement)
       const bodyBlock = TS.createBlock(statements, true)
       const arrowFunction = TS.createArrowFunction(
         undefined,
@@ -480,7 +489,7 @@ function printUtopiaJSXComponent(
       elementNode = TS.createVariableStatement(modifiers, [varDec])
     }
 
-    addCommentsToNode(elementNode, element.leadingComments)
+    addCommentsToNode(elementNode, element.comments)
     return elementNode
   } else {
     throw new Error(
@@ -548,8 +557,15 @@ function optionallyCreateDotDotDotToken(createIt: boolean): TS.DotDotDotToken | 
   return createIt ? TS.createToken(TS.SyntaxKind.DotDotDotToken) : undefined
 }
 
+function printRawComment(comment: Comment): string {
+  return `${comment.rawText}${comment.trailingNewLine ? '\n' : ''}`
+}
+
 function printArbitraryJSBlock(block: ArbitraryJSBlock): TS.Node {
-  return TS.createUnparsedSourceFile(block.javascript)
+  const leadingComments = block.comments.leadingComments.map(printRawComment).join('\n')
+  const trailingComments = block.comments.trailingComments.map(printRawComment).join('\n')
+  const rawText = `${leadingComments}${block.javascript}${trailingComments}`
+  return TS.createUnparsedSourceFile(rawText)
 }
 
 export const printCode = memoize(printCodeImpl, {
@@ -577,14 +593,6 @@ function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): s
     result = typescriptPrintedResult
   }
   return result
-}
-
-function createJsxPragma(jsxFactoryFunction: string | null): string {
-  if (jsxFactoryFunction == null) {
-    return ''
-  } else {
-    return `/** @jsx ${jsxFactoryFunction} */\n`
-  }
 }
 
 function produceExportDeclaration(detailOfExports: ExportsDetail) {
@@ -649,14 +657,15 @@ function printCodeImpl(
             ),
       )
 
-      importDeclarations.push(
-        TS.createImportDeclaration(
-          undefined,
-          undefined,
-          importClause,
-          TS.createStringLiteral(importOrigin),
-        ),
+      const importDeclaration = TS.createImportDeclaration(
+        undefined,
+        undefined,
+        importClause,
+        TS.createStringLiteral(importOrigin),
       )
+
+      addCommentsToNode(importDeclaration, importForClause.comments)
+      importDeclarations.push(importDeclaration)
     }
 
     if (importForClause.importedAs != null) {
@@ -665,14 +674,16 @@ function printCodeImpl(
         undefined,
         TS.createNamespaceImport(TS.createIdentifier(importForClause.importedAs)),
       )
-      importDeclarations.push(
-        TS.createImportDeclaration(
-          undefined,
-          undefined,
-          wildcardClause,
-          TS.createStringLiteral(importOrigin),
-        ),
+
+      const importDeclaration = TS.createImportDeclaration(
+        undefined,
+        undefined,
+        wildcardClause,
+        TS.createStringLiteral(importOrigin),
       )
+
+      addCommentsToNode(importDeclaration, importForClause.comments)
+      importDeclarations.push(importDeclaration)
     }
 
     if (
@@ -681,14 +692,15 @@ function printCodeImpl(
       importForClause.importedFromWithin.length === 0
     ) {
       // side-effect only import ( `import './style.css'` )
-      importDeclarations.push(
-        TS.createImportDeclaration(
-          undefined,
-          undefined,
-          undefined,
-          TS.createStringLiteral(importOrigin),
-        ),
+      const importDeclaration = TS.createImportDeclaration(
+        undefined,
+        undefined,
+        undefined,
+        TS.createStringLiteral(importOrigin),
       )
+
+      addCommentsToNode(importDeclaration, importForClause.comments)
+      importDeclarations.push(importDeclaration)
     }
   })
 
@@ -713,11 +725,7 @@ function printCodeImpl(
     statementsToPrint.push(exportDeclaration)
   }
 
-  const printedCode = printStatements(statementsToPrint, printOptions.pretty)
-  const jsxPragma = createJsxPragma(jsxFactoryFunction)
-  // we just dumbly append the parsed jsx pragma to the top of the file, no matter where it was originally
-  const result = jsxPragma + printedCode
-  return result
+  return printStatements(statementsToPrint, printOptions.pretty)
 }
 
 interface PossibleCanvasContentsExpression {
@@ -915,6 +923,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     // handle them as a block of code.
     let arbitraryNodes: Array<TS.Node> = []
     let allArbitraryNodes: Array<TS.Node> = []
+    let arbitraryNodeComments: ParsedComments = emptyComments
 
     // Account for exported components.
     let detailOfExports: ExportsDetail = EmptyExportsDetail
@@ -934,6 +943,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           highlightBounds,
           alreadyExistingUIDs,
           true,
+          arbitraryNodeComments,
         )
         topLevelElements.push(
           mapEither((parsed) => {
@@ -944,6 +954,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         allArbitraryNodes = [...allArbitraryNodes, ...filteredArbitraryNodes]
       }
       arbitraryNodes = []
+      arbitraryNodeComments = emptyComments
     }
 
     const topLevelNodes = flatMapArray(
@@ -972,6 +983,13 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     }, topLevelNodes)
 
     for (const topLevelElement of topLevelNodes) {
+      // Capture the comments so we can attach them to the node
+      const comments = getComments(sourceText, topLevelElement)
+      function pushArbitraryNode(node: TS.Node) {
+        arbitraryNodes.push(node)
+        arbitraryNodeComments = mergeParsedComments(arbitraryNodeComments, comments)
+      }
+
       // Handle export assignments: `export default App`
       if (TS.isExportAssignment(topLevelElement)) {
         const fromAssignment = detailsFromExportAssignment(sourceFile, topLevelElement)
@@ -981,7 +999,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         })
         // Unable to parse it so treat it as an arbitrary node.
         forEachLeft(fromAssignment, (exportDeclaration) => {
-          arbitraryNodes.push(exportDeclaration)
+          pushArbitraryNode(exportDeclaration)
         })
         // Handle export declarations.
       } else if (TS.isExportDeclaration(topLevelElement)) {
@@ -992,7 +1010,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         })
         // Unable to parse it so treat it as an arbitrary node.
         forEachLeft(fromDeclaration, (exportDeclaration) => {
-          arbitraryNodes.push(exportDeclaration)
+          pushArbitraryNode(exportDeclaration)
         })
         // Handle imports.
       } else if (TS.isImportDeclaration(topLevelElement)) {
@@ -1001,8 +1019,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           const importFrom: string = topLevelElement.moduleSpecifier.text
           let importedFromWithin: Array<ImportAlias> = []
           let importedAs: string | null = null
-          // this import looks like `import Cat from './src/cats'`
-          const importedWithName = optionalMap((n) => n.getText(sourceFile), importClause?.name)
           // this import looks like `import { Cat, dog } from './src/home'`
           if (
             importClause?.namedBindings != null &&
@@ -1031,7 +1047,17 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             importedAs = importBindings.name.getText(sourceFile)
           }
           importedFromWithin.sort(compareImportAliasByName)
-          imports = addImport(importFrom, importedWithName, importedFromWithin, importedAs, imports)
+
+          // this import looks like `import Cat from './src/cats'`
+          const importedWithName = optionalMap((n) => n.getText(sourceFile), importClause?.name)
+          imports = addImport(
+            importFrom,
+            importedWithName,
+            importedFromWithin,
+            importedAs,
+            comments,
+            imports,
+          )
         }
       } else {
         const possibleDeclaration = looksLikeCanvasElements(sourceFile, topLevelElement)
@@ -1104,7 +1130,8 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             )
           }
           if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
-            arbitraryNodes.push(topLevelElement)
+            pushArbitraryNode(topLevelElement)
+            applyAndResetArbitraryNodes() // TODO Should we be doing this every time we push an arbitrary node?
           } else {
             highlightBounds = parsedContents.value.highlightBounds
             const contents = parsedContents.value.value
@@ -1114,8 +1141,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             if (contents.elements.length === 1) {
               applyAndResetArbitraryNodes()
               const exported = isExported(topLevelElement)
-
-              const comments = getComments(sourceText, topLevelElement)
               const utopiaComponent = utopiaJSXComponent(
                 name,
                 isFunction,
@@ -1128,7 +1153,8 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
                 contents.elements[0].value,
                 contents.arbitraryJSBlock,
                 false,
-                comments.leadingComments,
+                comments,
+                contents.returnStatementComments,
               )
 
               const defaultExport = isDefaultExport(topLevelElement)
@@ -1142,11 +1168,11 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
 
               topLevelElements.push(right(utopiaComponent))
             } else {
-              arbitraryNodes.push(topLevelElement)
+              pushArbitraryNode(topLevelElement)
             }
           }
         } else {
-          arbitraryNodes.push(topLevelElement)
+          pushArbitraryNode(topLevelElement)
         }
       }
     }
@@ -1173,6 +1199,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         highlightBounds,
         alreadyExistingUIDs,
         true,
+        emptyComments,
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {
         combinedTopLevelArbitraryBlock = nodeParseSuccess.value
@@ -1195,7 +1222,8 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             topLevelElement.rootElement,
             topLevelElement.arbitraryJSBlock,
             true,
-            [],
+            emptyComments,
+            emptyComments,
           )
         } else {
           return topLevelElement

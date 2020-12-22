@@ -477,6 +477,7 @@ import {
   finishCheckpointTimer,
 } from './action-creators'
 import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -3745,6 +3746,7 @@ export const UPDATE_FNS = {
         null,
         [importAlias(action.wrapper)],
         null,
+        emptyComments,
         success.imports,
       )
       return {
@@ -3829,6 +3831,7 @@ export const UPDATE_FNS = {
           null,
           [importAlias('animated')],
           null,
+          emptyComments,
           success.imports,
         )
         return {

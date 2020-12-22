@@ -41,6 +41,7 @@ import { stripNulls } from '../shared/array-utils'
 import { isPercentPin } from 'utopia-api'
 import { UTOPIA_UID_KEY } from './utopia-constants'
 import { getUtopiaID } from './element-template-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 export const EmptyScenePathForStoryboard = TP.scenePath([])
 
@@ -134,7 +135,8 @@ export function convertScenesToUtopiaCanvasComponent(
     ),
     null,
     false,
-    [],
+    emptyComments,
+    emptyComments,
   )
 }
 

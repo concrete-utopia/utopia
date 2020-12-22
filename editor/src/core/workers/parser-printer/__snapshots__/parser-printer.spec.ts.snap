@@ -68,6 +68,10 @@ export var App = (props) => {
 exports[`JSX parser parses back and forth as a function, with an arbitrary piece of JavaScript 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
+    "comments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
     "definedElsewhere": Array [],
     "definedWithin": Array [
       "cakeFn",
@@ -154,6 +158,10 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
   },
   "imports": Object {
     "cake": Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
@@ -164,11 +172,19 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "importedWithName": null,
     },
     "react": Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "importedAs": "React",
       "importedFromWithin": Array [],
       "importedWithName": null,
     },
     "utopia-api": Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
@@ -206,29 +222,26 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
   "jsxFactoryFunction": null,
   "topLevelElements": Array [
     Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "definedElsewhere": Array [],
       "definedWithin": Array [
         "cakeFn",
-        "otherFn",
       ],
       "javascript": "function cakeFn(n) {
-  return n;
-}
-function otherFn(n) {
   return n;
 }",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
+        "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC",
         "names": Array [
           "function",
           "cakeFn",
           "n",
           "{",
           "return",
-          "
-",
-          "otherFn",
           "}",
         ],
         "sources": Array [
@@ -258,18 +271,71 @@ export var whatever = (props) => {
       "transpiledJavascript": "function cakeFn(n) {
   return n;
 }
-
+return { cakeFn: cakeFn };",
+      "type": "ARBITRARY_JS_BLOCK",
+      "uniqueID": "",
+    },
+    Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
+      "definedElsewhere": Array [],
+      "definedWithin": Array [
+        "otherFn",
+      ],
+      "javascript": "function otherFn(n) {
+  return n;
+}",
+      "sourceMap": Object {
+        "file": "code.tsx",
+        "mappings": "AAMCA,SAASC,OAATD,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
+        "names": Array [
+          "function",
+          "otherFn",
+          "n",
+          "{",
+          "return",
+          "}",
+        ],
+        "sources": Array [
+          "code.tsx",
+        ],
+        "sourcesContent": Array [
+          "import { cake } from 'cake'
+import * as React from 'react'
+import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+function cakeFn(n) {
+  return n
+}
 function otherFn(n) {
+  return n
+}
+export var whatever = (props) => {
+  return (
+    <View data-uid={'aaa'}>
+      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    </View>
+  )
+}
+",
+        ],
+        "version": 3,
+      },
+      "transpiledJavascript": "function otherFn(n) {
   return n;
 }
-return { cakeFn: cakeFn, otherFn: otherFn };",
+return { otherFn: otherFn };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
     },
     Object {
       "arbitraryJSBlock": null,
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "isFunction": true,
-      "leadingComments": Array [],
       "name": "whatever",
       "param": Object {
         "boundParam": Object {
@@ -281,6 +347,10 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         "type": "PARAM",
       },
       "propsUsed": Array [],
+      "returnStatementComments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "rootElement": Object {
         "children": Array [
           Object {
@@ -369,6 +439,10 @@ export var whatever = (props) => {
 exports[`JSX parser parses fine with a circular dependency. 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
+    "comments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
     "definedElsewhere": Array [],
     "definedWithin": Array [
       "a",
@@ -434,11 +508,19 @@ return { a: a, b: b };",
   },
   "imports": Object {
     "react": Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "importedAs": "React",
       "importedFromWithin": Array [],
       "importedWithName": null,
     },
     "utopia-api": Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
@@ -452,6 +534,10 @@ return { a: a, b: b };",
   "jsxFactoryFunction": null,
   "topLevelElements": Array [
     Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "definedElsewhere": Array [
         "b",
       ],
@@ -496,8 +582,11 @@ return { a: a };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "isFunction": true,
-      "leadingComments": Array [],
       "name": "whatever",
       "param": Object {
         "boundParam": Object {
@@ -509,6 +598,10 @@ return { a: a };",
         "type": "PARAM",
       },
       "propsUsed": Array [],
+      "returnStatementComments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "rootElement": Object {
         "children": Array [],
         "name": Object {
@@ -529,6 +622,10 @@ return { a: a };",
       "usedInReactDOMRender": false,
     },
     Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "definedElsewhere": Array [
         "a",
       ],
@@ -579,6 +676,10 @@ return { b: b };",
 exports[`JSX parser parses the code when it has a JSX block with an object defined inside 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
+    "comments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
     "definedElsewhere": Array [],
     "definedWithin": Array [
       "a",
@@ -639,11 +740,19 @@ return { a: a };",
   },
   "imports": Object {
     "react": Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "importedAs": "React",
       "importedFromWithin": Array [],
       "importedWithName": null,
     },
     "utopia-api": Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
@@ -681,6 +790,10 @@ return { a: a };",
   "jsxFactoryFunction": null,
   "topLevelElements": Array [
     Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "definedElsewhere": Array [],
       "definedWithin": Array [
         "a",
@@ -724,8 +837,11 @@ return { a: a };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "isFunction": true,
-      "leadingComments": Array [],
       "name": "App",
       "param": Object {
         "boundParam": Object {
@@ -737,6 +853,10 @@ return { a: a };",
         "type": "PARAM",
       },
       "propsUsed": Array [],
+      "returnStatementComments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
       "rootElement": Object {
         "children": Array [
           Object {

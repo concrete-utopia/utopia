@@ -20,31 +20,44 @@ import { ModifiableAttribute } from './jsx-attributes'
 import * as TP from './template-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
+import { ParsedComments } from '../workers/parser-printer/parser-printer-comments'
 
-export interface MultiLineComment {
-  type: 'MULTI_LINE_COMMENT'
+interface BaseComment {
   comment: string
+  rawText: string
   trailingNewLine: boolean
 }
 
-export function multiLineComment(comment: string, trailingNewLine: boolean): MultiLineComment {
+export interface MultiLineComment extends BaseComment {
+  type: 'MULTI_LINE_COMMENT'
+}
+
+export function multiLineComment(
+  comment: string,
+  rawText: string,
+  trailingNewLine: boolean,
+): MultiLineComment {
   return {
     type: 'MULTI_LINE_COMMENT',
     comment: comment,
+    rawText: rawText,
     trailingNewLine: trailingNewLine,
   }
 }
 
-export interface SingleLineComment {
+export interface SingleLineComment extends BaseComment {
   type: 'SINGLE_LINE_COMMENT'
-  comment: string
-  trailingNewLine: boolean
 }
 
-export function singleLineComment(comment: string, trailingNewLine: boolean): SingleLineComment {
+export function singleLineComment(
+  comment: string,
+  rawText: string,
+  trailingNewLine: boolean,
+): SingleLineComment {
   return {
     type: 'SINGLE_LINE_COMMENT',
     comment: comment,
+    rawText: rawText,
     trailingNewLine: trailingNewLine,
   }
 }
@@ -52,7 +65,7 @@ export function singleLineComment(comment: string, trailingNewLine: boolean): Si
 export type Comment = MultiLineComment | SingleLineComment
 
 export interface WithComments {
-  leadingComments: Array<Comment>
+  comments: ParsedComments
 }
 
 export interface JSXAttributeValue<T> {
@@ -668,7 +681,8 @@ export function utopiaJSXComponent(
   rootElement: JSXElementChild,
   jsBlock: ArbitraryJSBlock | null,
   usedInReactDOMRender: boolean,
-  leadingComments: Array<Comment>,
+  comments: ParsedComments,
+  returnStatementComments: ParsedComments,
 ): UtopiaJSXComponent {
   return {
     type: 'UTOPIA_JSX_COMPONENT',
@@ -679,7 +693,8 @@ export function utopiaJSXComponent(
     rootElement: rootElement,
     arbitraryJSBlock: jsBlock,
     usedInReactDOMRender: usedInReactDOMRender,
-    leadingComments: leadingComments,
+    comments: comments,
+    returnStatementComments: returnStatementComments,
   }
 }
 
@@ -689,6 +704,7 @@ export function arbitraryJSBlock(
   definedWithin: Array<string>,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
+  comments: ParsedComments,
 ): ArbitraryJSBlock {
   return {
     type: 'ARBITRARY_JS_BLOCK',
@@ -698,6 +714,7 @@ export function arbitraryJSBlock(
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
     uniqueID: UUID(),
+    comments: comments,
   }
 }
 
@@ -841,9 +858,10 @@ export interface UtopiaJSXComponent extends WithComments {
   rootElement: JSXElementChild
   arbitraryJSBlock: ArbitraryJSBlock | null
   usedInReactDOMRender: boolean
+  returnStatementComments: ParsedComments
 }
 
-export interface ArbitraryJSBlock {
+export interface ArbitraryJSBlock extends WithComments {
   type: 'ARBITRARY_JS_BLOCK'
   javascript: string
   transpiledJavascript: string
