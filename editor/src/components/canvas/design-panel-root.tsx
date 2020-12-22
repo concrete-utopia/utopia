@@ -38,9 +38,12 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     (store) => store.editor.interfaceDesigner,
     'DesignPanelRoot interfaceDesigner',
   )
-  const navigatorVisible = useEditorState(
-    (store) => store.editor.navigator.visible,
-    'DesignPanelRoot navigatorVisible',
+  const [codeEditorResizingWidth, setCodeEditorResizingWidth] = React.useState<number | null>(
+    interfaceDesigner.codePaneWidth,
+  )
+  const navigatorPosition = useEditorState(
+    (store) => store.editor.navigator.position,
+    'DesignPanelRoot navigatorPosition',
   )
 
   const isRightMenuExpanded = useEditorState(
@@ -77,9 +80,52 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
       if (props.isUiJsFileOpen) {
         updateDeltaWidth(delta.width)
       }
+      setCodeEditorResizingWidth(null)
     },
     [updateDeltaWidth, props.isUiJsFileOpen],
   )
+
+  const onResize = React.useCallback(
+    (
+      event: MouseEvent | TouchEvent,
+      direction: ResizeDirection,
+      elementRef: HTMLDivElement,
+      delta: NumberSize,
+    ) => {
+      if (props.isUiJsFileOpen && navigatorPosition !== 'hidden') {
+        setCodeEditorResizingWidth(interfaceDesigner.codePaneWidth + delta.width)
+      }
+    },
+    [interfaceDesigner, navigatorPosition, props.isUiJsFileOpen],
+  )
+
+  const getNavigatorLeft = React.useMemo((): number | undefined => {
+    let position = undefined
+    const codeEditorCurrentWidth =
+      codeEditorResizingWidth != null ? codeEditorResizingWidth : interfaceDesigner.codePaneWidth
+    switch (navigatorPosition) {
+      case 'left':
+        position = codeEditorCurrentWidth - LeftPaneDefaultWidth
+        break
+      case 'right':
+        position = codeEditorCurrentWidth
+        break
+    }
+    if (!interfaceDesigner.codePaneVisible) {
+      if (leftMenuExpanded) {
+        position = LeftPaneDefaultWidth
+      } else {
+        position = undefined
+      }
+    }
+    return position
+  }, [
+    codeEditorResizingWidth,
+    interfaceDesigner.codePaneVisible,
+    interfaceDesigner.codePaneWidth,
+    leftMenuExpanded,
+    navigatorPosition,
+  ])
 
   return (
     <SimpleFlexRow
@@ -107,6 +153,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
           size={props.isUiJsFileOpen ? undefined : { width: '100%', height: '100%' }} // this hack practically disables the Resizable without having to re-mount the code editor iframe
           onResizeStop={onResizeStop}
+          onResize={onResize}
           enable={{
             top: false,
             right: props.isUiJsFileOpen,
@@ -131,33 +178,18 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
         >
           <CodeEditorWrapper />
         </Resizable>
-        {props.isUiJsFileOpen ? (
-          <SimpleFlexRow
-            style={{
-              position: 'relative',
-              overflowX: 'hidden',
-              justifyContent: 'stretch',
-              alignItems: 'stretch',
-              flexGrow: 1,
-            }}
-          >
-            <CanvasWrapperComponent {...props} />
-            {navigatorVisible && (
-              <NavigatorComponent
-                style={{
-                  position: 'absolute',
-                  height: '100%',
-                  left:
-                    leftMenuExpanded && !interfaceDesigner.codePaneVisible
-                      ? LeftPaneDefaultWidth
-                      : undefined,
-                  width: LeftPaneDefaultWidth,
-                }}
-              />
-            )}
-          </SimpleFlexRow>
-        ) : null}
+        {props.isUiJsFileOpen ? <CanvasWrapperComponent {...props} /> : null}
       </SimpleFlexRow>
+      {props.isUiJsFileOpen && navigatorPosition !== 'hidden' ? (
+        <NavigatorComponent
+          style={{
+            position: 'absolute',
+            height: '100%',
+            left: getNavigatorLeft,
+            width: LeftPaneDefaultWidth,
+          }}
+        />
+      ) : null}
       {props.isUiJsFileOpen ? (
         <>
           <RightMenu visible={true} />

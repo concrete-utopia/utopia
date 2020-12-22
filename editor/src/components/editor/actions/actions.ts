@@ -969,7 +969,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     },
     navigator: {
       minimised: currentEditor.navigator.minimised,
-      visible: currentEditor.navigator.visible,
+      position: currentEditor.navigator.position,
       dropTargetHint: {
         target: null,
         type: null,
@@ -1192,6 +1192,20 @@ function updateNavigatorCollapsedState(
       $set: collapsedWithChildrenSelected,
     },
   })
+}
+
+function getNavigatorPositionNextState(editor: EditorState): 'hidden' | 'left' | 'right' {
+  switch (editor.navigator.position) {
+    case 'hidden':
+      return 'right'
+    case 'left':
+      return 'hidden'
+    case 'right':
+      return editor.interfaceDesigner.codePaneVisible ? 'left' : 'hidden'
+    default:
+      const _exhaustiveCheck: never = editor.navigator.position
+      throw new Error(`Cannot update navigator position to ${editor.navigator.position}`)
+  }
 }
 
 interface ReplaceFilePathSuccess {
@@ -2144,7 +2158,7 @@ export const UPDATE_FNS = {
           ...editor,
           navigator: {
             ...editor.navigator,
-            visible: !action.visible,
+            position: action.visible ? 'right' : 'hidden',
           },
         }
       case 'filebrowser':
@@ -2285,7 +2299,7 @@ export const UPDATE_FNS = {
           ...editor,
           navigator: {
             ...editor.navigator,
-            visible: !editor.navigator.visible,
+            position: getNavigatorPositionNextState(editor),
           },
         }
       case 'inspector':
