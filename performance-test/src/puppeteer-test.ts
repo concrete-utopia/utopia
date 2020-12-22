@@ -159,7 +159,7 @@ async function createTestPng(
       showgrid: true,
       zeroline: true,
       showline: true,
-      range: [16, 134],
+      range: [0, 134],
       autotick: false,
       ticks: 'outside',
       tick0: 0,
@@ -286,7 +286,7 @@ async function createTestPng(
       showgrid: true,
       zeroline: true,
       showline: true,
-      range: [0, 35],
+      range: [0, 50],
       autotick: false,
       ticks: 'outside',
       tick0: 0,
@@ -306,8 +306,8 @@ async function createTestPng(
   }
   const imgOpts = {
     format: 'png',
-    width: 700,
-    height: 500,
+    width: 800,
+    height: 600,
   }
   const figure = { data: [trace], layout: layout }
 
@@ -326,7 +326,7 @@ async function createTestPng(
 }
 
 async function uploadPNGtoAWS(testFile: string) {
-  AWS.config.update({
+  AWS.config.update( 
     region: process.env.AWS_REGION,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
