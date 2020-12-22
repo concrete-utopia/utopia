@@ -120,7 +120,6 @@ import {
   getStoryboardTemplatePathFromEditorState,
   addSceneToJSXComponents,
   getNumberOfScenes,
-  getStoryboardUID,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -160,7 +159,11 @@ import {
 } from './guideline'
 import { addImport, mergeImports } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import { createSceneTemplatePath, PathForSceneStyle } from '../../core/model/scene-utils'
+import {
+  createSceneTemplatePath,
+  getStoryboardUID,
+  PathForSceneStyle,
+} from '../../core/model/scene-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'

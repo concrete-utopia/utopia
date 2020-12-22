@@ -120,5 +120,6 @@ server/utopia-web
 utopia-api/index.d.ts
 editor/src/components/editor/npm-dependency/utopia-api-typings.ts
 
-# Parse print analysis results.
+# Cache of projects for scripts.
 .parse-print-analysis
+.github-test-projects
