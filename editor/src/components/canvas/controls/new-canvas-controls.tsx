@@ -19,14 +19,7 @@ import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
-import { DeselectControl } from './deselect-control'
 import { TextEditor } from '../../editor/text-editor'
-import {
-  setHighlightedView,
-  clearHighlightedViews,
-  insertDroppedImage,
-  switchEditorMode,
-} from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
 import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -445,10 +438,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     }
   }
 
-  const renderDeselectControl = () => {
-    return selectionEnabled ? <DeselectControl /> : null
-  }
-
   const textEditor =
     props.editor.canvas.textEditor != null
       ? renderTextEditor(props.editor.canvas.textEditor.templatePath)
@@ -463,7 +452,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         height: '100%',
       }}
     >
-      {renderDeselectControl()}
       {renderModeControlContainer()}
       {renderHighlightControls()}
       {textEditor}
