@@ -1407,20 +1407,18 @@ describe('moveTemplate', () => {
       false,
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa/bbb-1',
-    )
-    const areaControlBounds = areaControl.getBoundingClientRect()
+    const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
     await act(async () => {
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent.keyDown(areaControl, { key: 'v', keyCode: 86 })
+      fireEvent.keyDown(canvasRoot, { key: 'v', keyCode: 86 })
       await dispatchDone
     })
 
     const insertModeMouseCatcher = renderResult.renderedDOM.getByTestId(
       'insert-target-utopia-storyboard-uid/scene-aaa:aaa/bbb',
     )
+    const areaControlBounds = insertModeMouseCatcher.getBoundingClientRect()
 
     await act(async () => {
       fireEvent(
@@ -1619,6 +1617,7 @@ describe('moveTemplate', () => {
           <View
             style={{ backgroundColor: '#0091FFAA', left: 55, top: 275, width: 200, height: 105 }}
             data-uid={'ccc'}
+            data-testid={'ccc'}
           />
         </View>
       `),
@@ -1630,9 +1629,7 @@ describe('moveTemplate', () => {
       false,
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa/ccc-2',
-    )
+    const areaControl = renderResult.renderedDOM.getByTestId('ccc')
     const areaControlBounds = areaControl.getBoundingClientRect()
 
     fireEvent(
@@ -1714,6 +1711,7 @@ describe('moveTemplate', () => {
           <View
             style={{ backgroundColor: '#0091FFAA', width: 200, height: 105, left: 95, top: 245 }}
             data-uid={'ccc'}
+            data-testid={'ccc'}
           />
         </View>
       `),

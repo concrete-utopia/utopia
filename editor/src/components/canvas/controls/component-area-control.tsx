@@ -198,7 +198,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             borderWidth: 0.5 / this.props.scale,
             borderRadius: showInvisibleIndicator ? borderRadius : 0,
           }}
-          data-testid={this.props.testID}
+          data-testid={this.props.mouseEnabled ? this.props.testID : undefined}
         />
       </React.Fragment>
     )
@@ -222,6 +222,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
           onMouseDown={labelSelectable ? this.onMouseDown : utils.NO_OP}
           onDragEnter={labelSelectable ? this.onDragEnter : utils.NO_OP}
           onDragLeave={labelSelectable ? this.onDragLeave : utils.NO_OP}
+          data-testid={this.props.mouseEnabled && labelSelectable ? this.props.testID : undefined}
           className='roleComponentName'
           style={{
             pointerEvents: this.props.mouseEnabled ? 'initial' : 'none',

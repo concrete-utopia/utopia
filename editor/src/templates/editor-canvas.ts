@@ -670,6 +670,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       {
         id: 'canvas-root',
         key: 'canvas-root',
+        'data-testid': 'canvas-root',
         style: {
           ...canvasLiveEditingStyle,
           transition: 'all .2s linear',

@@ -324,6 +324,7 @@ export class SelectModeControlContainer extends React.Component<
     return (
       <ComponentLabelControl
         key={`${TP.toComponentId(target)}-label`}
+        testID={`label-control-${TP.toComponentId(target)}`}
         mouseEnabled={true}
         componentMetadata={this.props.componentMetadata}
         target={target}
