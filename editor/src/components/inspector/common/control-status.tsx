@@ -370,13 +370,13 @@ export function getControlStatusFromPropertyStatus(status: PropertyStatus): Cont
 
 function isSet(
   modifiableAttributeResult: GetModifiableAttributeResult,
-  realValue: unknown,
+  spiedValue: unknown,
 ): boolean {
   if (isLeft(modifiableAttributeResult)) {
     return true
   } else {
     if (isJSXAttributeNotFound(modifiableAttributeResult.value)) {
-      return realValue != null
+      return spiedValue != null
     } else if (
       isJSXAttributeValue(modifiableAttributeResult.value) ||
       isPartOfJSXAttributeValue(modifiableAttributeResult.value)
@@ -390,13 +390,13 @@ function isSet(
 
 function isControlled(
   modifiableAttributeResult: GetModifiableAttributeResult,
-  realValue: unknown,
+  spiedValue: unknown,
 ): boolean {
   if (isLeft(modifiableAttributeResult)) {
     return true
   } else {
     if (isJSXAttributeNotFound(modifiableAttributeResult.value)) {
-      return realValue != null
+      return spiedValue != null
     } else if (
       isJSXAttributeValue(modifiableAttributeResult.value) ||
       isPartOfJSXAttributeValue(modifiableAttributeResult.value)
@@ -427,7 +427,7 @@ function calculatePropertyStatusPerProperty(
 // TODO MEMOIZE ME!
 export function calculatePropertyStatusForSelection(
   modifiableAttributeResult: ReadonlyArray<GetModifiableAttributeResult>,
-  realValues: ReadonlyArray<unknown>,
+  spiedValues: ReadonlyArray<unknown>,
 ): PropertyStatus {
   const selectionLength = modifiableAttributeResult.length
   const firstResult = modifiableAttributeResult[0]
@@ -443,7 +443,7 @@ export function calculatePropertyStatusForSelection(
   }
   if (selectionLength === 1) {
     return {
-      ...calculatePropertyStatusPerProperty(firstResult, realValues[0]),
+      ...calculatePropertyStatusPerProperty(firstResult, spiedValues[0]),
       selectionLength,
       identical: true,
     }
@@ -460,9 +460,9 @@ export function calculatePropertyStatusForSelection(
         identical = deepEqual(firstValue, attribute.value) // deepEqual here, for very large multiselection this might be bad
       }
       // if any property is controlled, set to true
-      controlled = controlled || isControlled(attribute, realValues[index])
+      controlled = controlled || isControlled(attribute, spiedValues[index])
       // if any property is set, set to true
-      set = set || isSet(attribute, realValues[index])
+      set = set || isSet(attribute, spiedValues[index])
       // if any property is not overwritable, set to false
       overwritable = overwritable && isOverwritable(attribute)
     })
@@ -483,7 +483,7 @@ export function calculateMultiPropertyStatusForSelection<
   multiselectAtProps: MultiselectAtProps<PropertiesToControl>,
   realValues: {
     [key in PropertiesToControl]: {
-      realValues: ReadonlyArray<unknown>
+      spiedValues: ReadonlyArray<unknown>
     }
   },
 ): PropertyStatus {
@@ -493,7 +493,7 @@ export function calculateMultiPropertyStatusForSelection<
     keys.length > 0 ? multiselectAtProps[keys[0] as PropertiesToControl].length : 0
   keys.forEach((key) => {
     const attribute = multiselectAtProps[key as PropertiesToControl]
-    const values = realValues[key as PropertiesToControl].realValues
+    const values = realValues[key as PropertiesToControl].spiedValues
     propertyStatuses.push(calculatePropertyStatusForSelection(attribute, values))
   })
 
@@ -530,7 +530,7 @@ export function calculateMultiStringPropertyStatusForSelection(
   multiselectAtProps: MultiselectAtStringProps,
   realValues: {
     [key in string]: {
-      realValues: ReadonlyArray<unknown>
+      spiedValues: ReadonlyArray<unknown>
     }
   },
 ): PropertyStatus {
@@ -539,7 +539,7 @@ export function calculateMultiStringPropertyStatusForSelection(
   const selectionLength = keys.length > 0 ? multiselectAtProps[keys[0]].length : 0
   keys.forEach((key) => {
     const attribute = multiselectAtProps[key]
-    const values = realValues[key].realValues
+    const values = realValues[key].spiedValues
     propertyStatuses.push(calculatePropertyStatusForSelection(attribute, values))
   })
 
