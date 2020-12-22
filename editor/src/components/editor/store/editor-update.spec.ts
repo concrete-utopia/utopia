@@ -63,6 +63,7 @@ import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { getContentsTreeFileFromString } from '../../assets'
 import { openFileTab } from './editor-tabs'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 const chaiExpect = Chai.expect
 
@@ -533,7 +534,7 @@ describe('INSERT_JSX_ELEMENT', () => {
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, parentPath, {
-      'utopia-api': importDetails(null, [importAlias('View')], null),
+      'utopia-api': importDetails(null, [importAlias('View')], null, emptyComments),
     })
     const updatedEditor = runLocalEditorAction(
       editor,
@@ -589,7 +590,7 @@ describe('INSERT_JSX_ELEMENT', () => {
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, null, {
-      'utopia-api': importDetails(null, [importAlias('View')], null),
+      'utopia-api': importDetails(null, [importAlias('View')], null, emptyComments),
     })
     const updatedEditor = runLocalEditorAction(
       editorWithNoHighlighted,

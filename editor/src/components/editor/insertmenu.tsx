@@ -62,6 +62,7 @@ import { getThirdPartyComponents } from '../../core/third-party/third-party-comp
 import { isBuiltInDependency } from '../../core/es-modules/package-manager/built-in-dependencies'
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
 import { PropertyControlsInfo } from '../custom-code/code-file'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import {
   FlexRow,
   UtopiaTheme,
@@ -184,22 +185,22 @@ const divComponentBeingInserted = componentBeingInserted({}, jsxElementName('div
 const imageComponentBeingInserted = componentBeingInserted({}, jsxElementName('img', []))
 
 const textComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
+  { 'utopia-api': importDetails(null, [importAlias('Text')], null, emptyComments) },
   jsxElementName('Text', []),
 )
 
 const ellipseComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
+  { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null, emptyComments) },
   jsxElementName('Ellipse', []),
 )
 
 const rectangleComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
+  { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null, emptyComments) },
   jsxElementName('Rectangle', []),
 )
 
 const animatedDivComponentBeingInserted = componentBeingInserted(
-  { 'react-spring': importDetails(null, [importAlias('animated')], null) },
+  { 'react-spring': importDetails(null, [importAlias('animated')], null, emptyComments) },
   jsxElementName('animated', ['div']),
 )
 
@@ -244,7 +245,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
         enableInsertModeForJSXElement(
           defaultTextElement(newUID),
           newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
+          { 'utopia-api': importDetails(null, [importAlias('Text')], null, emptyComments) },
           null,
         ),
       ],
@@ -259,7 +260,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
         enableInsertModeForJSXElement(
           defaultAnimatedDivElement(newUID),
           newUID,
-          { 'react-spring': importDetails(null, [importAlias('animated')], null) },
+          { 'react-spring': importDetails(null, [importAlias('animated')], null, emptyComments) },
           null,
         ),
       ],
@@ -274,7 +275,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
         enableInsertModeForJSXElement(
           defaultEllipseElement(newUID),
           newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
+          { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null, emptyComments) },
           null,
         ),
       ],
@@ -289,7 +290,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
         enableInsertModeForJSXElement(
           defaultRectangleElement(newUID),
           newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
+          { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null, emptyComments) },
           null,
         ),
       ],

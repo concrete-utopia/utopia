@@ -1,6 +1,7 @@
 import { jsxElement, utopiaJSXComponent } from '../../../core/shared/element-template'
 import * as TP from '../../../core/shared/template-path'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { addToComplexMap, emptyComplexMap } from '../../../utils/map'
 import {
   defaultElementWarnings,
@@ -20,7 +21,19 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
       [TP.instancePath(['scene'], ['aaa', 'bbb'])],
       [TP.instancePath(['scene'], ['aaa', 'ccc'])],
       transientFileState(
-        [utopiaJSXComponent('App', false, null, [], jsxElement('div', {}, []), null, false, [])],
+        [
+          utopiaJSXComponent(
+            'App',
+            false,
+            null,
+            [],
+            jsxElement('div', {}, []),
+            null,
+            false,
+            emptyComments,
+            emptyComments,
+          ),
+        ],
         emptyImports(),
       ),
     )
@@ -34,7 +47,19 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
       [TP.instancePath(['scene'], ['aaa', 'bbb'])],
       [TP.instancePath(['scene'], ['aaa', 'ccc'])],
       transientFileState(
-        [utopiaJSXComponent('App', false, null, [], jsxElement('div', {}, []), null, false, [])],
+        [
+          utopiaJSXComponent(
+            'App',
+            false,
+            null,
+            [],
+            jsxElement('div', {}, []),
+            null,
+            false,
+            emptyComments,
+            emptyComments,
+          ),
+        ],
         emptyImports(),
       ),
     )
@@ -42,7 +67,19 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
       [TP.instancePath(['scene'], ['aaa', 'bbb'])],
       [TP.instancePath(['scene'], ['aaa', 'ccc'])],
       transientFileState(
-        [utopiaJSXComponent('App', false, null, [], jsxElement('div', {}, []), null, false, [])],
+        [
+          utopiaJSXComponent(
+            'App',
+            false,
+            null,
+            [],
+            jsxElement('div', {}, []),
+            null,
+            false,
+            emptyComments,
+            emptyComments,
+          ),
+        ],
         emptyImports(),
       ),
     )
@@ -56,7 +93,19 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
       [TP.instancePath(['scene'], ['aaa', 'bbb'])],
       [TP.instancePath(['scene'], ['aaa', 'ccc'])],
       transientFileState(
-        [utopiaJSXComponent('App', false, null, [], jsxElement('span', {}, []), null, false, [])],
+        [
+          utopiaJSXComponent(
+            'App',
+            false,
+            null,
+            [],
+            jsxElement('span', {}, []),
+            null,
+            false,
+            emptyComments,
+            emptyComments,
+          ),
+        ],
         emptyImports(),
       ),
     )
@@ -64,7 +113,19 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
       [TP.instancePath(['scene'], ['aaa', 'ddd'])],
       [TP.instancePath(['scene'], ['aaa', 'ccc'])],
       transientFileState(
-        [utopiaJSXComponent('App', false, null, [], jsxElement('div', {}, []), null, false, [])],
+        [
+          utopiaJSXComponent(
+            'App',
+            false,
+            null,
+            [],
+            jsxElement('div', {}, []),
+            null,
+            false,
+            emptyComments,
+            emptyComments,
+          ),
+        ],
         emptyImports(),
       ),
     )
@@ -99,7 +160,8 @@ describe('DerivedStateKeepDeepEquality', () => {
                 jsxElement('div', {}, []),
                 null,
                 false,
-                [],
+                emptyComments,
+                emptyComments,
               ),
             ],
             emptyImports(),
@@ -137,7 +199,8 @@ describe('DerivedStateKeepDeepEquality', () => {
                 jsxElement('div', {}, []),
                 null,
                 false,
-                [],
+                emptyComments,
+                emptyComments,
               ),
             ],
             emptyImports(),
@@ -170,7 +233,8 @@ describe('DerivedStateKeepDeepEquality', () => {
                 jsxElement('div', {}, []),
                 null,
                 false,
-                [],
+                emptyComments,
+                emptyComments,
               ),
             ],
             emptyImports(),
@@ -208,7 +272,8 @@ describe('DerivedStateKeepDeepEquality', () => {
                 jsxElement('div', {}, []),
                 null,
                 false,
-                [],
+                emptyComments,
+                emptyComments,
               ),
             ],
             emptyImports(),
@@ -241,7 +306,8 @@ describe('DerivedStateKeepDeepEquality', () => {
                 jsxElement('div', {}, []),
                 null,
                 false,
-                [],
+                emptyComments,
+                emptyComments,
               ),
             ],
             emptyImports(),

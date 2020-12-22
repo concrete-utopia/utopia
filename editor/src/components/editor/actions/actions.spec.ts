@@ -73,6 +73,7 @@ import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { generateCodeResultCache } from '../../custom-code/code-file'
 import { contentsToTree, getContentsTreeFileFromString } from '../../assets'
 import { openFileTab } from '../store/editor-tabs'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 const chaiExpect = Chai.expect
 
 describe('SET_PROP', () => {
@@ -103,7 +104,8 @@ describe('SET_PROP', () => {
           ),
           null,
           false,
-          [],
+          emptyComments,
+          emptyComments,
         ),
       ],
       {},
@@ -195,7 +197,8 @@ describe('SET_CANVAS_FRAMES', () => {
       ),
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     ),
   ]
 
@@ -277,7 +280,8 @@ describe('moveTemplate', () => {
             element,
             null,
             false,
-            [],
+            emptyComments,
+            emptyComments,
           ),
         ),
         {},
@@ -785,7 +789,8 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     rootElement,
     null,
     false,
-    [],
+    emptyComments,
+    emptyComments,
   )
   const fileForUI = textFile(
     textFileContents(
