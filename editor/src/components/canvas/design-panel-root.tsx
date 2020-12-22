@@ -38,6 +38,9 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     (store) => store.editor.interfaceDesigner,
     'DesignPanelRoot interfaceDesigner',
   )
+  const [codeEditorResizingWidth, setCodeEditorResizingWidth] = React.useState<number | null>(
+    interfaceDesigner.codePaneWidth,
+  )
   const navigatorPosition = useEditorState(
     (store) => store.editor.navigator.position,
     'DesignPanelRoot navigatorPosition',
@@ -77,18 +80,35 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
       if (props.isUiJsFileOpen) {
         updateDeltaWidth(delta.width)
       }
+      setCodeEditorResizingWidth(null)
     },
     [updateDeltaWidth, props.isUiJsFileOpen],
   )
 
+  const onResize = React.useCallback(
+    (
+      event: MouseEvent | TouchEvent,
+      direction: ResizeDirection,
+      elementRef: HTMLDivElement,
+      delta: NumberSize,
+    ) => {
+      if (props.isUiJsFileOpen && navigatorPosition !== 'hidden') {
+        setCodeEditorResizingWidth(interfaceDesigner.codePaneWidth + delta.width)
+      }
+    },
+    [interfaceDesigner, navigatorPosition, props.isUiJsFileOpen],
+  )
+
   const getNavigatorLeft = (): number | undefined => {
     let position = undefined
+    const codeEditorCurrentWidth =
+      codeEditorResizingWidth != null ? codeEditorResizingWidth : interfaceDesigner.codePaneWidth
     switch (navigatorPosition) {
       case 'left':
-        position = interfaceDesigner.codePaneWidth - LeftPaneDefaultWidth
+        position = codeEditorCurrentWidth - LeftPaneDefaultWidth
         break
       case 'right':
-        position = interfaceDesigner.codePaneWidth
+        position = codeEditorCurrentWidth
         break
     }
     if (!interfaceDesigner.codePaneVisible) {
@@ -127,6 +147,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
           size={props.isUiJsFileOpen ? undefined : { width: '100%', height: '100%' }} // this hack practically disables the Resizable without having to re-mount the code editor iframe
           onResizeStop={onResizeStop}
+          onResize={onResize}
           enable={{
             top: false,
             right: props.isUiJsFileOpen,
