@@ -98,6 +98,7 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   selectComponent = (target: TemplatePath, isMultiselect: boolean): Array<TemplatePath> => {
+    // TODO BALAZS Remove this and unify with select-mode-hooks
     if (this.props.selectedViews.some((view) => TP.pathsEqual(target, view))) {
       return this.props.selectedViews
     } else {
@@ -134,6 +135,7 @@ export class SelectModeControlContainer extends React.Component<
     start: CanvasPoint,
     originalEvent: React.MouseEvent<HTMLDivElement>,
   ) => {
+    // TODO BALAZS Remove this and unify with select-mode-hooks
     if (
       // Only on left mouse down.
       originalEvent.buttons === 1 &&

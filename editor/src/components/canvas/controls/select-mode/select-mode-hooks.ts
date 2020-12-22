@@ -349,6 +349,7 @@ export function useSelectModeSelectAndHover(): {
           const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
           if (foundTarget.selectionMode === 'singleclick' || doubleClick) {
             dispatch([selectComponents([foundTarget.templatePath], event.shiftKey)])
+            // TODO BALAZS repeat the hack from select-mode-control-container which sets the selected views with a priority on the canvas controls first
           }
         }
       }
