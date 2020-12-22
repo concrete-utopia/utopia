@@ -26,6 +26,8 @@ import {
   emptyJsxMetadata,
   ElementInstanceMetadataMap,
   jsxMetadata,
+  getJSXElementNameAsString,
+  walkElement,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
@@ -46,6 +48,7 @@ import {
   ProjectFile,
   InstancePath,
   EmptyExportsDetail,
+  StaticElementPath,
 } from '../core/shared/project-file-types'
 import { right, eitherToMaybe, isLeft } from '../core/shared/either'
 import Utils from './utils'
@@ -311,39 +314,4 @@ export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout)
   })
-}
-
-export function elementsStructure(elements: Array<TopLevelElement>): string {
-  let structureResults: Array<string> = []
-  walkElements(elements, (element, path) => {
-    const isElement = isJSXElement(element)
-    // Adjustment to cater for things which are not elements
-    // appearing one level too high because they do not modify the
-    // path from walkElements.
-    const depth = path.length + (isElement ? 0 : 1)
-    let elementResult: string = ''
-    for (let index = 0; index < depth; index++) {
-      elementResult += '  '
-    }
-    elementResult += element.type
-    if (isJSXElement(element)) {
-      elementResult += ` - ${getUtopiaID(element)}`
-    }
-    structureResults.push(elementResult)
-  })
-  return structureResults.join('\n')
-}
-
-export function forceParseSuccessFromFileOrFail(
-  file: ProjectFile | null | undefined,
-): ParseSuccess {
-  if (file != null && isTextFile(file)) {
-    if (isParseSuccess(file.fileContents.parsed)) {
-      return file.fileContents.parsed
-    } else {
-      fail(`Not a parse success ${file.fileContents.parsed}`)
-    }
-  } else {
-    fail(`Not a text file ${file}`)
-  }
 }

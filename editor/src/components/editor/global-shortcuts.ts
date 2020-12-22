@@ -9,6 +9,7 @@ import {
 } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import * as TP from '../../core/shared/template-path'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
   KeyCharacter,
@@ -601,7 +602,9 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultRectangleElement(newUID),
               newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
+              {
+                'utopia-api': importDetails(null, [importAlias('Rectangle')], null, emptyComments),
+              },
               null,
             ),
           ]
@@ -617,7 +620,7 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
               newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
+              { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null, emptyComments) },
               null,
             ),
           ]
@@ -644,7 +647,7 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultTextElement(newUID),
               newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
+              { 'utopia-api': importDetails(null, [importAlias('Text')], null, emptyComments) },
               null,
             ),
           ]
@@ -660,7 +663,7 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultViewElement(newUID),
               newUID,
-              { 'utopia-api': importDetails(null, [importAlias('View')], null) },
+              { 'utopia-api': importDetails(null, [importAlias('View')], null, emptyComments) },
               null,
             ),
           ]

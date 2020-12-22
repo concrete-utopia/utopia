@@ -4,11 +4,18 @@ exports[`SWITCH_LAYOUT_SYSTEM switches from flex to pins correctly 1`] = `
 Array [
   Object {
     "arbitraryJSBlock": null,
+    "comments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
     "isFunction": true,
-    "leadingComments": Array [],
     "name": "App",
     "param": null,
     "propsUsed": Array [],
+    "returnStatementComments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
     "rootElement": Object {
       "children": Array [
         Object {
@@ -122,11 +129,18 @@ exports[`SWITCH_LAYOUT_SYSTEM switches from pins to flex correctly 1`] = `
 Array [
   Object {
     "arbitraryJSBlock": null,
+    "comments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
     "isFunction": true,
-    "leadingComments": Array [],
     "name": "App",
     "param": null,
     "propsUsed": Array [],
+    "returnStatementComments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
     "rootElement": Object {
       "children": Array [
         Object {

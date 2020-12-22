@@ -19,6 +19,7 @@ import {
 } from './scene-utils'
 import { scenePath } from '../shared/template-path'
 import { defaultSceneElement } from '../../components/editor/defaults'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const sampleIncludedElementTypes: Array<string> = [
   'Ellipse',
@@ -34,11 +35,13 @@ export const sampleDefaultImports = {
     importedWithName: null,
     importedFromWithin: [],
     importedAs: 'React',
+    comments: emptyComments,
   },
   'utopia-api': {
     importedWithName: null,
     importedFromWithin: [importAlias('UtopiaUtils')],
     importedAs: null,
+    comments: emptyComments,
   },
 }
 
@@ -46,7 +49,7 @@ export const sampleImportsForTests: Imports = mergeImports(
   sampleDefaultImports,
   sampleIncludedElementTypes.reduce<Imports>(
     (working, elementType) =>
-      addImport('utopia-api', null, [importAlias(elementType)], null, working),
+      addImport('utopia-api', null, [importAlias(elementType)], null, emptyComments, working),
     emptyImports(),
   ),
 )
@@ -238,7 +241,8 @@ const mainComponentForTests = utopiaJSXComponent(
   ),
   null,
   false,
-  [],
+  emptyComments,
+  emptyComments,
 )
 
 const scene = utopiaJSXComponent(
@@ -256,7 +260,8 @@ const scene = utopiaJSXComponent(
   ),
   null,
   false,
-  [],
+  emptyComments,
+  emptyComments,
 )
 
 const Scene0UID = 'scene-0'
@@ -288,7 +293,8 @@ const TestStoryboard = utopiaJSXComponent(
   ]),
   null,
   false,
-  [],
+  emptyComments,
+  emptyComments,
 )
 
 export const sampleJsxComponentWithScene = [mainComponentForTests, scene, TestStoryboard]

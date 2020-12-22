@@ -50,8 +50,8 @@ import { ControlProps } from './new-canvas-controls'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { RightMenuTab } from '../right-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
-import { getStoryboardTemplatePath } from '../../editor/store/editor-state'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
+import { getStoryboardTemplatePath } from '../../../core/model/scene-utils'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned

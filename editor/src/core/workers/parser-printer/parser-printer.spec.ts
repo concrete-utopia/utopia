@@ -60,6 +60,7 @@ import {
 } from './parser-printer.test-utils'
 import { InfiniteLoopError, InfiniteLoopMaxIterations } from './transform-prevent-infinite-loops'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
+import { emptyComments } from './parser-printer-comments'
 
 describe('JSX parser', () => {
   it('parses the code when it is a const', () => {
@@ -101,9 +102,17 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -142,8 +151,25 @@ export var whatever = () => <View data-uid={'aaa'}>
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      null,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -199,9 +225,17 @@ export function whatever(props) {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -244,8 +278,25 @@ export function whatever() {
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      null,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -301,9 +352,17 @@ export default function whatever(props) {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -346,8 +405,25 @@ export default function whatever() {
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', true, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      null,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -400,10 +476,25 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const importsWithCake = addImport('cake', 'cake', [], null, sampleImportsForTests)
-    const importsWithStylecss = addImport('./style.css', null, [], null, importsWithCake)
+    const importsWithCake = addImport(
+      'cake',
+      'cake',
+      [],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
+    const importsWithStylecss = addImport(
+      './style.css',
+      null,
+      [],
+      null,
+      emptyComments,
+      importsWithCake,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         importsWithStylecss,
@@ -469,9 +560,17 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const imports = addImport('cake', 'cake', [importAlias('cake2')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      'cake',
+      [importAlias('cake2')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -523,13 +622,15 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         view,
         null,
         false,
-        [],
+        emptyComments,
+        emptyComments,
       )
       const imports = addImport(
         'cake',
         null,
         [importAlias('cake', 'cake2')],
         null,
+        emptyComments,
         sampleImportsForTests,
       )
       const expectedResult = clearParseResultUniqueIDs(
@@ -602,9 +703,17 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         view,
         null,
         false,
-        [],
+        emptyComments,
+        emptyComments,
       )
-      const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+      const imports = addImport(
+        'cake',
+        null,
+        [importAlias('cake')],
+        null,
+        emptyComments,
+        sampleImportsForTests,
+      )
       const expectedResult = clearParseResultUniqueIDs(
         parseSuccess(
           imports,
@@ -662,9 +771,17 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -736,21 +853,56 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const jsCode = `function getSizing(n) {
+    const jsCode1 = `function getSizing(n) {
+  return 100 + n;
+}`
+    const transpiledJsCode1 = `function getSizing(n) {
+  return 100 + n;
+}
+return { getSizing: getSizing };`
+    const arbitraryBlock1 = arbitraryJSBlock(
+      jsCode1,
+      transpiledJsCode1,
+      ['getSizing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      emptyComments,
+    )
+    const jsCode2 = `var spacing = 20;`
+    const transpiledJsCode2 = `var spacing = 20;
+return { spacing: spacing };`
+    const arbitraryBlock2 = arbitraryJSBlock(
+      jsCode2,
+      transpiledJsCode2,
+      ['spacing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      emptyComments,
+    )
+    const combinedJsCode = `function getSizing(n) {
   return 100 + n;
 }
 var spacing = 20;`
-    const transpiledJsCode = `function getSizing(n) {
+    const transpiledcombinedJsCode = `function getSizing(n) {
   return 100 + n;
 }
 
 var spacing = 20;
 return { getSizing: getSizing, spacing: spacing };`
-    const arbitraryBlock = arbitraryJSBlock(
-      jsCode,
-      transpiledJsCode,
+    const combinedArbitraryBlock = arbitraryJSBlock(
+      combinedJsCode,
+      transpiledcombinedJsCode,
       ['getSizing', 'spacing'],
       [],
       expect.objectContaining({
@@ -758,15 +910,25 @@ return { getSizing: getSizing, spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
-    const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
+      clearTopLevelElementUniqueIDs,
+    )
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
       expect.objectContaining({}),
       null,
-      clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      clearArbitraryJSBlockUniqueIDs(combinedArbitraryBlock),
       addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -813,7 +975,8 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const jsCode = `export default function getSizing(n) {
   return 100 + n;
@@ -832,9 +995,17 @@ return { getSizing: getSizing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -892,7 +1063,8 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const jsCode = `export function getSizing(n) {
   switch (n) {
@@ -922,9 +1094,17 @@ return { getSizing: getSizing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -977,7 +1157,8 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const jsCode = `export default (n => {
   return 100 + n;
@@ -996,9 +1177,17 @@ return {  };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -1053,7 +1242,8 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const transpiledJSCode = `var spacing = 20;
 return { spacing: spacing };`
@@ -1067,9 +1257,17 @@ return { spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -1125,6 +1323,7 @@ return { bgs: bgs, bg: bg };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1134,7 +1333,8 @@ return { bgs: bgs, bg: bg };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1192,6 +1392,7 @@ return { greys: greys };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1201,7 +1402,8 @@ return { greys: greys };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1257,6 +1459,7 @@ return { a: a, b: b };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1266,7 +1469,8 @@ return { a: a, b: b };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1325,6 +1529,7 @@ return { a: a, b: b, c: c };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1334,7 +1539,8 @@ return { a: a, b: b, c: c };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1397,6 +1603,7 @@ return { a: a };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1406,7 +1613,8 @@ return { a: a };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1464,6 +1672,7 @@ return { a: a, b: b };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1473,7 +1682,8 @@ return { a: a, b: b };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1532,6 +1742,7 @@ return { bg: bg };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1541,7 +1752,8 @@ return { bg: bg };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1597,7 +1809,8 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const jsCode = `var count = 10;`
     const transpiledJSCode = `var count = 10;
@@ -1612,9 +1825,17 @@ return { count: count };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -1670,7 +1891,8 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const transpiledJSCode = `var use20 = true;
 return { use20: use20 };`
@@ -1684,9 +1906,17 @@ return { use20: use20 };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -1723,7 +1953,8 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const transpiledJSCode = `var mySet = new Set();
 return { mySet: mySet };`
@@ -1737,6 +1968,7 @@ return { mySet: mySet };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1794,7 +2026,8 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const transpiledJSCode = `var spacing = 20;
 return { spacing: spacing };`
@@ -1808,9 +2041,17 @@ return { spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       [...topLevelElements],
@@ -1885,6 +2126,7 @@ return { MyComp: MyComp };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const myCompAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab'),
@@ -1900,7 +2142,8 @@ return { MyComp: MyComp };`
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [MyComp, exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -1986,7 +2229,8 @@ export var whatever = props => (
       rootDiv,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
 
     const myCompAttributes: JSXAttributes = {
@@ -2003,7 +2247,8 @@ export var whatever = props => (
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
     const expectedResult = clearParseResultUniqueIDs(
@@ -2132,9 +2377,17 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
         imports,
@@ -2173,8 +2426,25 @@ export var whatever = <View data-uid={'aaa'}>
       [],
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      false,
+      null,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       [exported],
@@ -2206,7 +2476,17 @@ export var App = (props) => <View data-uid={'bbb'}>
       uniqueID: expect.any(String),
     }
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('bbb') }, [emptyBrackets])
-    const exported = utopiaJSXComponent('App', true, defaultPropsParam, [], view, null, false, [])
+    const exported = utopiaJSXComponent(
+      'App',
+      true,
+      defaultPropsParam,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
     const expectedResult = parseSuccess(
       sampleImportsForTests,
       [exported],
@@ -2249,8 +2529,25 @@ export var App = (props) => <View data-uid={'bbb'}>
       [],
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      false,
+      null,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2298,21 +2595,56 @@ export var App = (props) => <View data-uid={'bbb'}>
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const jsCode = `function getSizing(n) {
+    const jsCode1 = `function getSizing(n) {
+  return 100 + n;
+}`
+    const transpiledJSCode1 = `function getSizing(n) {
+  return 100 + n;
+}
+return { getSizing: getSizing };`
+    const arbitraryBlock1 = arbitraryJSBlock(
+      jsCode1,
+      transpiledJSCode1,
+      ['getSizing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      emptyComments,
+    )
+    const jsCode2 = `var spacing = 20;`
+    const transpiledJSCode2 = `var spacing = 20;
+return { spacing: spacing };`
+    const arbitraryBlock2 = arbitraryJSBlock(
+      jsCode2,
+      transpiledJSCode2,
+      ['spacing'],
+      [],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      emptyComments,
+    )
+    const combinedJSCode = `function getSizing(n) {
   return 100 + n;
 }
 var spacing = 20;`
-    const transpiledJSCode = `function getSizing(n) {
+    const transpiledcombinedJSCode = `function getSizing(n) {
   return 100 + n;
 }
 
 var spacing = 20;
 return { getSizing: getSizing, spacing: spacing };`
-    const arbitraryBlock = arbitraryJSBlock(
-      jsCode,
-      transpiledJSCode,
+    const combinedArbitraryBlock = arbitraryJSBlock(
+      combinedJSCode,
+      transpiledcombinedJSCode,
       ['getSizing', 'spacing'],
       [],
       expect.objectContaining({
@@ -2320,9 +2652,19 @@ return { getSizing: getSizing, spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
-    const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
+      clearTopLevelElementUniqueIDs,
+    )
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2337,7 +2679,7 @@ return { getSizing: getSizing, spacing: spacing };`
       [...topLevelElements],
       expect.objectContaining({}),
       null,
-      clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      clearArbitraryJSBlockUniqueIDs(combinedArbitraryBlock),
       detailOfExports,
     )
     expect(actualResult).toEqual(expectedResult)
@@ -2352,8 +2694,25 @@ return { getSizing: getSizing, spacing: spacing };`
       [],
     )
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [cake])
-    const exported = utopiaJSXComponent('whatever', false, null, [], view, null, false, [])
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const exported = utopiaJSXComponent(
+      'whatever',
+      false,
+      null,
+      [],
+      view,
+      null,
+      false,
+      emptyComments,
+      emptyComments,
+    )
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2460,9 +2819,17 @@ export var whatever = props => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2504,9 +2871,17 @@ export var whatever = props => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2593,9 +2968,17 @@ export var whatever = props => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2671,7 +3054,14 @@ export var whatever = props => {
 }
 return { test: test };`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const arbitraryBlock = arbitraryJSBlock(
       jsCode,
       transpiledJSCode,
@@ -2682,6 +3072,7 @@ return { test: test };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -2719,7 +3110,8 @@ return { test: test };`
             ),
             clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
             false,
-            [],
+            emptyComments,
+            emptyComments,
           ),
         ],
         expect.objectContaining({}),
@@ -2739,7 +3131,14 @@ return { test: test };`
   return n * 2;
 }
 return { test: test };`
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      emptyComments,
+      sampleImportsForTests,
+    )
     const components = [
       clearTopLevelElementUniqueIDs(
         utopiaJSXComponent(
@@ -2782,9 +3181,11 @@ return { test: test };`
               version: 3,
               file: 'code.tsx',
             }),
+            emptyComments,
           ),
           false,
-          [],
+          emptyComments,
+          emptyComments,
         ),
       ),
       clearTopLevelElementUniqueIDs(
@@ -2802,7 +3203,8 @@ return { test: test };`
           ),
           null,
           false,
-          [],
+          emptyComments,
+          emptyComments,
         ),
       ),
     ]
@@ -2871,7 +3273,8 @@ export var App = props => {
       ),
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -2917,7 +3320,8 @@ export var App = props => {
       ),
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -2984,7 +3388,8 @@ export var App = props => {
       ),
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3043,7 +3448,8 @@ export var App = props => {
       ),
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'App')
     const printedCode = printCode(
@@ -3207,9 +3613,11 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
           version: 3,
           file: 'code.tsx',
         }),
+        emptyComments,
       ),
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3257,7 +3665,8 @@ export var App = props => {
       ),
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3302,7 +3711,8 @@ export var whatever = props => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const actualResult = printCode(
       printCodeOptions(false, true, true),
@@ -3344,7 +3754,8 @@ export var whatever = props => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const actualResult = printCode(
       printCodeOptions(false, true, true),
@@ -3402,6 +3813,7 @@ return {  };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa') }, [])
     const exported = utopiaJSXComponent(
@@ -3412,7 +3824,8 @@ return {  };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3470,6 +3883,7 @@ return { result: result };`
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
     const innerBlock = jsxArbitraryBlock(
       'result',
@@ -3492,7 +3906,8 @@ return { result: result };`
       view,
       arbitraryBlock,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3575,7 +3990,8 @@ export var whatever = props => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3663,6 +4079,7 @@ return { a: a };`,
         version: 3,
         file: 'code.tsx',
       }),
+      emptyComments,
     )
 
     const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa') }, [arbitraryBlock])
@@ -3674,7 +4091,8 @@ return { a: a };`,
       view,
       topLevelArbitraryBlock,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(
@@ -3703,7 +4121,8 @@ export var whatever = props => {
       view,
       null,
       false,
-      [],
+      emptyComments,
+      emptyComments,
     )
     const expectedResult = clearParseResultUniqueIDs(
       parseSuccess(

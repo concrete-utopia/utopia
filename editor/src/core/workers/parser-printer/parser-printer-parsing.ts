@@ -56,6 +56,7 @@ import {
   isIntrinsicElement,
   clearAttributesUniqueIDs,
   clearAttributesSourceMaps,
+  WithComments,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -84,6 +85,12 @@ import {
   JSX_CANVAS_LOOKUP_FUNCTION_NAME,
 } from './parser-printer-utils'
 import * as Hash from 'object-hash'
+import {
+  emptyComments,
+  getComments,
+  mergeParsedComments,
+  ParsedComments,
+} from './parser-printer-comments'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -1842,6 +1849,7 @@ export function parseArbitraryNodes(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
   rootLevel: boolean,
+  comments: ParsedComments,
 ): Either<string, WithParserMetadata<ArbitraryJSBlock>> {
   return parseOtherJavaScript(
     sourceFile,
@@ -1879,6 +1887,7 @@ export function parseArbitraryNodes(
             definedWithin,
             definedElsewhere,
             transpileResult.sourceMap,
+            comments,
           )
         },
         transpileEither,
@@ -1891,15 +1900,18 @@ export function parseArbitraryNodes(
 export interface FunctionContents {
   arbitraryJSBlock: ArbitraryJSBlock | null
   elements: Array<SuccessfullyParsedElement>
+  returnStatementComments: ParsedComments
 }
 
 function functionContents(
   jsBlock: ArbitraryJSBlock | null,
   elements: Array<SuccessfullyParsedElement>,
+  returnStatementComments: ParsedComments,
 ): FunctionContents {
   return {
     arbitraryJSBlock: jsBlock,
     elements: elements,
+    returnStatementComments: returnStatementComments,
   }
 }
 
@@ -1908,7 +1920,7 @@ export function liftParsedElementsIntoFunctionContents(
 ): Either<string, WithParserMetadata<FunctionContents>> {
   return mapEither((parsed) => {
     return withParserMetadata(
-      functionContents(null, parsed.value),
+      functionContents(null, parsed.value, emptyComments),
       parsed.highlightBounds,
       parsed.propsUsed,
       parsed.definedElsewhere,
@@ -1927,6 +1939,7 @@ export function parseOutFunctionContents(
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<FunctionContents>> {
   let highlightBounds = existingHighlightBounds
+  const sourceText = sourceFile.getFullText()
   if (TS.isBlock(arrowFunctionBody)) {
     if (arrowFunctionBody.statements.length === 0) {
       return left('No body for component.')
@@ -1936,7 +1949,14 @@ export function parseOutFunctionContents(
       let jsBlock: ArbitraryJSBlock | null = null
       let propsUsed: Array<string> = []
       let definedElsewhere: Array<string> = []
+      const returnStatementComments = getComments(sourceText, possibleElement)
       if (possibleBlockExpressions.length > 0) {
+        const comments = possibleBlockExpressions.reduce(
+          (working: ParsedComments, next: TS.Statement) =>
+            mergeParsedComments(working, getComments(sourceText, next)),
+          emptyComments,
+        )
+
         const parseResult = parseArbitraryNodes(
           sourceFile,
           filename,
@@ -1947,6 +1967,7 @@ export function parseOutFunctionContents(
           highlightBounds,
           alreadyExistingUIDs,
           false,
+          comments,
         )
         if (isLeft(parseResult)) {
           return parseResult
@@ -1975,7 +1996,7 @@ export function parseOutFunctionContents(
       )
       return mapEither((parsed) => {
         return withParserMetadata(
-          functionContents(jsBlock, parsed.value),
+          functionContents(jsBlock, parsed.value, returnStatementComments),
           parsed.highlightBounds,
           propsUsed.concat(parsed.propsUsed),
           definedElsewhere.concat(parsed.definedElsewhere),
