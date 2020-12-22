@@ -99,7 +99,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     [interfaceDesigner, navigatorPosition, props.isUiJsFileOpen],
   )
 
-  const getNavigatorLeft = (): number | undefined => {
+  const getNavigatorLeft = React.useMemo((): number | undefined => {
     let position = undefined
     const codeEditorCurrentWidth =
       codeEditorResizingWidth != null ? codeEditorResizingWidth : interfaceDesigner.codePaneWidth
@@ -119,7 +119,13 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
       }
     }
     return position
-  }
+  }, [
+    codeEditorResizingWidth,
+    interfaceDesigner.codePaneVisible,
+    interfaceDesigner.codePaneWidth,
+    leftMenuExpanded,
+    navigatorPosition,
+  ])
 
   return (
     <SimpleFlexRow
@@ -179,7 +185,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           style={{
             position: 'absolute',
             height: '100%',
-            left: getNavigatorLeft(),
+            left: getNavigatorLeft,
             width: LeftPaneDefaultWidth,
           }}
         />
