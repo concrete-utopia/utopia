@@ -326,7 +326,7 @@ async function createTestPng(
 }
 
 async function uploadPNGtoAWS(testFile: string) {
-  AWS.config.update( 
+  AWS.config.update({
     region: process.env.AWS_REGION,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
