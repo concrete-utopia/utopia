@@ -4,7 +4,7 @@ import { v4 } from 'uuid'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
-const moveFile = require('move-testFile')
+const moveFile = require('move-file')
 const yn = require('yn')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
