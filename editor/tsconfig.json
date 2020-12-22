@@ -16,10 +16,6 @@
     "strict": true,
     "skipLibCheck": true,
     "baseUrl": ".",
-    "paths": {
-      "uuiui": ["src/uuiui"],
-      "uuiui-deps": ["src/uuiui-deps"]
-    },
     "resolveJsonModule": true
   },
   "exclude": ["node_modules"]

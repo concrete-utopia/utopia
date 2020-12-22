@@ -69,7 +69,6 @@ import {
   isJSXElement,
   JSXAttributes,
   UtopiaJSXComponent,
-  SpecialSizeMeasurements,
   ComputedStyle,
 } from '../../../core/shared/element-template'
 import {
@@ -97,7 +96,7 @@ export interface InspectorPropsContextData {
   selectedViews: Array<TemplatePath>
   editedMultiSelectedProps: readonly JSXAttributes[]
   targetPath: readonly string[]
-  realValues: ReadonlyArray<{ [key: string]: any }>
+  spiedProps: ReadonlyArray<{ [key: string]: any }>
   computedStyles: ReadonlyArray<ComputedStyle>
 }
 
@@ -111,7 +110,7 @@ export const InspectorPropsContext = createContext<InspectorPropsContextData>({
   selectedViews: [],
   editedMultiSelectedProps: [],
   targetPath: [],
-  realValues: [],
+  spiedProps: [],
   computedStyles: [],
 })
 
@@ -151,7 +150,7 @@ export interface InspectorInfo<T> {
   useSubmitValueFactory: UseSubmitValueFactory<T>
 }
 
-function getRealValues<P extends string | number>(
+function getSpiedValues<P extends string | number>(
   key: P,
   selectedProps: { [keyValue in P]: ReadonlyArray<any> },
 ): ReadonlyArray<any> {
@@ -180,7 +179,7 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
   [key in PropertiesToControl]: {
     simpleValues: ReadonlyArray<Either<string, any>>
     rawValues: ReadonlyArray<Either<string, ModifiableAttribute>>
-    realValues: ReadonlyArray<any>
+    spiedValues: ReadonlyArray<any>
     computedValues: ReadonlyArray<string>
   }
 } {
@@ -198,7 +197,7 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
           return {
             simpleValues: [left('No value')],
             rawValues: [left('Nothing selected')],
-            realValues: [undefined],
+            spiedValues: [undefined],
             computedValues: [],
           }
         }
@@ -207,13 +206,13 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
         const simpleValues = rawValues.map((rawValue) =>
           extractSimpleValueFromMultiSelectAttribute(rawValue),
         )
-        const realValues = getRealValues(key, selectedProps)
+        const spiedValues = getSpiedValues(key, selectedProps)
         const computedValues = getComputedStyleValues(key, selectedComputedStyles)
 
         return {
           simpleValues,
           rawValues,
-          realValues,
+          spiedValues,
           computedValues,
         }
       },
@@ -231,7 +230,7 @@ export function useInspectorInfoFromMultiselectMultiPropAttribute(
   [key in string]: {
     simpleValues: ReadonlyArray<Either<string, any>>
     rawValues: ReadonlyArray<Either<string, ModifiableAttribute>>
-    realValues: ReadonlyArray<any>
+    spiedValues: ReadonlyArray<any>
   }
 } {
   const multiselectLength = useContextSelector(InspectorPropsContext, (c) => {
@@ -248,7 +247,7 @@ export function useInspectorInfoFromMultiselectMultiPropAttribute(
           return {
             simpleValues: [left('No value')],
             rawValues: [left('Nothing selected')],
-            realValues: [undefined],
+            spiedValues: [undefined],
           }
         }
 
@@ -256,12 +255,12 @@ export function useInspectorInfoFromMultiselectMultiPropAttribute(
         const simpleValues = rawValues.map((rawValue) =>
           extractSimpleValueFromMultiSelectAttribute(rawValue),
         )
-        const realValues = getRealValues(key, selectedProps)
+        const spiedValues = getSpiedValues(key, selectedProps)
 
         return {
           simpleValues,
           rawValues,
-          realValues,
+          spiedValues,
         }
       },
     )
@@ -332,28 +331,6 @@ export function useInspectorStyleInfo<P extends ParsedCSSPropertiesKeys>(
   return useInspectorInfo([prop], transformValue, untransformValue, stylePropPathMappingFn)
 }
 
-// TODO: layout in style
-/** This allows functionality for editing Layout properties in style/css. This is marked
- *  as UNSAFE as the values that are read here are not to be trusted as the final values.
- *
- *  This is a stop-gap until we have everything in style.
- */
-export function useInspectorLayoutInStyleInfo_UNSAFE<
-  P extends Exclude<ParsedCSSPropertiesKeys, ParsedCSSPropertiesKeysNoLayout>
->(
-  prop: P,
-  transformValue: (parsedValues: ParsedValues<P>) => ParsedCSSProperties[P] = (parsedValues) =>
-    parsedValues[prop],
-  untransformValue: (transformedType: ParsedCSSProperties[P]) => Partial<ParsedValues<P>> = (
-    transformedType,
-  ) =>
-    ({
-      [prop]: transformedType,
-    } as Partial<ParsedValues<P>>),
-) {
-  return useInspectorInfo([prop], transformValue, untransformValue, stylePropPathMappingFn)
-}
-
 export function useInspectorContext() {
   const { onSubmitValue, onUnsetValue, selectedViewsRef } = React.useContext(
     InspectorCallbackContext,
@@ -371,36 +348,42 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   property: PropertiesToControl,
   simpleValue: Either<string, any>,
   rawValue: Either<string, ModifiableAttribute>,
-  realValue: any,
+  spiedValue: any,
   computedValue: string | undefined,
 ): {
   finalValue: ParsedPropertiesValues
   isUnknown: boolean
+  usesComputedFallback: boolean
 } {
-  const valueAsMaybe = eitherToMaybe(simpleValue)
+  const simpleValueAsMaybe = eitherToMaybe(simpleValue)
   const rawValueAsMaybe = eitherToMaybe(rawValue)
 
-  function finalValueFromReal(): ParsedPropertiesValues {
-    if (realValue == null) {
-      const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
-      return defaultEither(emptyValues[property], parsedComputedValue)
-    } else {
-      const parsedRealValue = parseAnyParseableValue(property, realValue, null)
-      return defaultEither(emptyValues[property], parsedRealValue)
+  const parsedValue = parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
+  const parsedSpiedValue = parseAnyParseableValue(property, spiedValue, null)
+  const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
+  if (isRight(parsedValue)) {
+    return {
+      finalValue: parsedValue.value,
+      isUnknown: isCSSUnknownFunctionParameters(parsedValue.value),
+      usesComputedFallback: false,
     }
-  }
-
-  if (rawValueAsMaybe == null) {
-    return { finalValue: finalValueFromReal(), isUnknown: false }
+  } else if (isRight(parsedSpiedValue)) {
+    return {
+      finalValue: parsedSpiedValue.value,
+      isUnknown: simpleValueAsMaybe != null,
+      usesComputedFallback: false,
+    }
+  } else if (isRight(parsedComputedValue)) {
+    return {
+      finalValue: parsedComputedValue.value,
+      isUnknown: simpleValueAsMaybe != null,
+      usesComputedFallback: true,
+    }
   } else {
-    const parsedValue = parseAnyParseableValue(property, valueAsMaybe, rawValueAsMaybe)
-    if (isRight(parsedValue)) {
-      return {
-        finalValue: parsedValue.value,
-        isUnknown: isCSSUnknownFunctionParameters(parsedValue.value),
-      }
-    } else {
-      return { finalValue: finalValueFromReal(), isUnknown: valueAsMaybe != null }
+    return {
+      finalValue: emptyValues[property],
+      isUnknown: simpleValueAsMaybe != null,
+      usesComputedFallback: false,
     }
   }
 }
@@ -462,7 +445,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
       (contextData) => {
         const keyFn = (propKey: P) => propKey
         const mapFn = (propKey: P) => {
-          return contextData.realValues.map((props) => {
+          return contextData.spiedProps.map((props) => {
             return ObjectPath.get(
               props,
               PP.getElements(pathMappingFn(propKey, contextData.targetPath)),
@@ -513,7 +496,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     propKeys,
     (propKey) => propKey,
     (propKey) => {
-      const { simpleValues, rawValues, realValues, computedValues } = simpleAndRawValues[propKey]
+      const { simpleValues, rawValues, spiedValues, computedValues } = simpleAndRawValues[propKey]
       if (propertyStatus.identical) {
         const simpleValue: Either<string, any> = Utils.defaultIfNull(
           left('Simple value missing'),
@@ -523,16 +506,18 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           left('Raw value missing'),
           rawValues[0],
         )
-        const realValue: any = realValues[0]
+        const spiedValue: any = spiedValues[0]
         const computedValue = computedValues[0]
-        const { finalValue, isUnknown: pathIsUnknown } = parseFinalValue(
+        const { finalValue, isUnknown: pathIsUnknown, usesComputedFallback } = parseFinalValue(
           propKey,
           simpleValue,
           rawValue,
-          realValue,
+          spiedValue,
           computedValue,
         )
         isUnknown = isUnknown || pathIsUnknown
+        // setting the status to detected because it uses the fallback value
+        propertyStatus.detected = usesComputedFallback
         return finalValue
       } else {
         let firstFinalValue: ParsedPropertiesValues
@@ -541,19 +526,21 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
             left('Raw value missing'),
             rawValues[i],
           )
-          const realValue: any = realValues[i]
+          const spiedValue: any = spiedValues[i]
           const computedValue = computedValues[i]
-          const { finalValue, isUnknown: pathIsUnknown } = parseFinalValue(
+          const { finalValue, isUnknown: pathIsUnknown, usesComputedFallback } = parseFinalValue(
             propKey,
             simpleValue,
             rawValue,
-            realValue,
+            spiedValue,
             computedValue,
           )
           if (i === 0) {
             firstFinalValue = finalValue
           }
           isUnknown = isUnknown || pathIsUnknown
+          // setting the status to detected because it uses the fallback value
+          propertyStatus.detected = propertyStatus.detected || usesComputedFallback
         })
         return firstFinalValue
       }
@@ -659,7 +646,7 @@ export function useInspectorInfoSimpleUntyped(
       (contextData) => {
         const keyFn = (propPath: PropertyPath) => PP.lastPart(propPath)
         const mapFn = (propPath: PropertyPath) => {
-          return contextData.realValues.map((props) => {
+          return contextData.spiedProps.map((props) => {
             return ObjectPath.get(props, PP.getElements(propPath))
           })
         }
@@ -684,10 +671,10 @@ export function useInspectorInfoSimpleUntyped(
     (propertyPath) => propertyPath.propertyElements[propertyPath.propertyElements.length - 1],
     (propertyPath) => {
       const property = propertyPath.propertyElements[propertyPath.propertyElements.length - 1]
-      const { simpleValues, realValues, rawValues } = simpleAndRawValues[property]
+      const { simpleValues, spiedValues, rawValues } = simpleAndRawValues[property]
       const simpleValue = optionalMap(eitherToMaybe, simpleValues[0])
-      if (realValues.length > 0) {
-        return realValues[0]
+      if (spiedValues.length > 0) {
+        return spiedValues[0]
       } else if (simpleValue != null) {
         return simpleValue
       } else {
@@ -753,7 +740,6 @@ export function useInspectorInfoSimpleUntyped(
 
 export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
   property: P,
-  specialSizeMeasurements?: SpecialSizeMeasurements,
 ): InspectorInfo<ParsedProperties[P]> {
   function transformValue(parsedValues: ParsedValues<P>): ParsedProperties[P] {
     return parsedValues[property]
@@ -768,58 +754,7 @@ export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
     untransformValue,
     createLayoutPropertyPath,
   )
-  if (
-    !inspectorInfo.propertyStatus.set &&
-    !inspectorInfo.propertyStatus.controlled &&
-    specialSizeMeasurements != null
-  ) {
-    const measuredValue = getValueFromSpecialSizeMeasurements(property, specialSizeMeasurements)
-    if (measuredValue != null) {
-      inspectorInfo.value = measuredValue
-      inspectorInfo.propertyStatus.detected = true
-      inspectorInfo.controlStatus = getControlStatusFromPropertyStatus(inspectorInfo.propertyStatus)
-    }
-  }
   return inspectorInfo
-}
-
-function getValueFromSpecialSizeMeasurements<P extends LayoutProp | StyleLayoutProp>(
-  property: P,
-  specialSizeMeasurements: SpecialSizeMeasurements,
-): ParsedProperties[P] | null {
-  // TODO: are there other properties in special size measurementes to extract?
-  let value: number | undefined = undefined
-  switch (property) {
-    case 'paddingLeft':
-      value = specialSizeMeasurements.padding.left
-      break
-    case 'paddingRight':
-      value = specialSizeMeasurements.padding.right
-      break
-    case 'paddingTop':
-      value = specialSizeMeasurements.padding.top
-      break
-    case 'paddingBottom':
-      value = specialSizeMeasurements.padding.bottom
-      break
-    case 'marginLeft':
-      value = specialSizeMeasurements.margin.left
-      break
-    case 'marginRight':
-      value = specialSizeMeasurements.margin.right
-      break
-    case 'marginTop':
-      value = specialSizeMeasurements.margin.top
-      break
-    case 'marginBottom':
-      value = specialSizeMeasurements.margin.bottom
-      break
-  }
-  if (value != null) {
-    // TODO: solve typing here properly
-    return cssNumber(value, null) as ParsedProperties[P]
-  }
-  return null
 }
 
 export function useIsSubSectionVisible(sectionName: string): boolean {

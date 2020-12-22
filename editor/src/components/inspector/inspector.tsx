@@ -1,7 +1,5 @@
 import * as ObjectPath from 'object-path'
 import * as React from 'react'
-import { colorTheme, Icn, InspectorSectionHeader, UtopiaTheme } from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
 import {
@@ -90,9 +88,11 @@ import { addStyleSheetToPage } from '../../core/shared/dom-utils'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import { arrayEquals } from '../../core/shared/utils'
 import {
+  betterReactMemo,
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
+import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme } from '../../uuiui'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -805,7 +805,7 @@ export const InspectorContextProvider = betterReactMemo<{
   }, 'InspectorContextProvider')
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
-  let newRealValues: Array<{ [key: string]: any }> = []
+  let newSpiedProps: Array<{ [key: string]: any }> = []
   let newComputedStyles: Array<ComputedStyle> = []
 
   Utils.fastForEach(selectedViews, (path) => {
@@ -833,14 +833,14 @@ export const InspectorContextProvider = betterReactMemo<{
         const jsxElement = findElementAtPath(path, rootComponents)
         const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
         newEditedMultiSelectedProps.push(jsxAttributes)
-        newRealValues.push(elementMetadata.props)
+        newSpiedProps.push(elementMetadata.props)
         newComputedStyles.push(elementMetadata.computedStyle)
       }
     }
   })
 
   const editedMultiSelectedProps = useKeepReferenceEqualityIfPossible(newEditedMultiSelectedProps)
-  const realValues = useKeepReferenceEqualityIfPossible(newRealValues)
+  const spiedProps = useKeepReferenceEqualityIfPossible(newSpiedProps)
   const computedStyles = useKeepReferenceEqualityIfPossible(newComputedStyles)
 
   const selectedViewsRef = usePropControlledRef_DANGEROUS(selectedViews)
@@ -909,7 +909,7 @@ export const InspectorContextProvider = betterReactMemo<{
           selectedViews: selectedViews,
           editedMultiSelectedProps: editedMultiSelectedProps,
           targetPath: props.targetPath,
-          realValues: realValues,
+          spiedProps: spiedProps,
           computedStyles: computedStyles,
         }}
       >

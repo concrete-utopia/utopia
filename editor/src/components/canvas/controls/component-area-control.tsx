@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { colorTheme, UtopiaTheme } from 'uuiui'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { JSXMetadata } from '../../../core/shared/element-template'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
@@ -12,6 +11,7 @@ import * as TP from '../../../core/shared/template-path'
 import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
+import { UtopiaTheme, colorTheme } from '../../../uuiui'
 
 interface ComponentAreaControlProps {
   target: TemplatePath

@@ -57,7 +57,7 @@ export function useInspectorInfoForPropertyControl(
     useContextSelector(
       InspectorPropsContext,
       (contextData) => {
-        return contextData.realValues.map((props) => {
+        return contextData.spiedProps.map((props) => {
           return ObjectPath.get(props, PP.getElements(propertyPath))
         })
       },
@@ -134,7 +134,7 @@ function useFirstRealValue(propertyPath: PropertyPath): unknown {
     useContextSelector(
       InspectorPropsContext,
       (contextData) => {
-        const firstElemProps = contextData.realValues[0] ?? {}
+        const firstElemProps = contextData.spiedProps[0] ?? {}
         return ObjectPath.get(firstElemProps, PP.getElements(propertyPath))
       },
       deepEqual,

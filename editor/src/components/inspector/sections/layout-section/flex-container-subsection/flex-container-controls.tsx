@@ -1,24 +1,24 @@
 import * as React from 'react'
 import { FlexAlignment, FlexJustifyContent, FlexWrap } from 'utopia-api'
-import {
-  PopupList,
-  SimpleNumberInput,
-  ChainedNumberInput,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-} from 'uuiui'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { FlexDirection } from 'utopia-api'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { SliderControl, DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { betterReactMemo, OnSubmitValueOrEmpty } from 'uuiui-deps'
 import { SelectOption } from '../../../controls/select-control'
 import { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { GridRow } from '../../../widgets/grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
+import {
+  PopupList,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  SimpleNumberInput,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
+import { OnSubmitValueOrEmpty } from '../../../controls/control'
 
 type uglyLabel =
   | 'left'

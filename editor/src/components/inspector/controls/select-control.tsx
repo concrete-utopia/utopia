@@ -4,13 +4,11 @@ import Select, { components, createFilter, InputProps } from 'react-select'
 import CreatableSelect, { Props as SelectProps } from 'react-select/creatable'
 import { IndicatorProps } from 'react-select/src/components/indicators'
 import Utils from '../../../utils/utils'
-import { Icn, IcnProps } from 'uuiui'
-import { colorTheme, UtopiaTheme } from 'uuiui'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { getControlStyles, ControlStatus, isControlledStatus } from '../common/control-status'
 import { ValueType } from 'react-select/src/types'
-import { Icons } from 'uuiui'
 import { PortalTargetID } from '../../../core/shared/utils'
+import { IcnProps, Icons, colorTheme, UtopiaTheme } from '../../../uuiui'
 
 export interface DEPRECATEDSelectControlOptions extends DEPRECATEDGenericControlOptions {
   creatable?: boolean

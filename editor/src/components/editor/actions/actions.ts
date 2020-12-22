@@ -11,7 +11,6 @@ import {
   NormalisedFrame,
   PropertyControls,
 } from 'utopia-api'
-import { colorTheme } from 'uuiui'
 import {
   SampleFileBuildResult,
   SampleFileBundledExportsInfo,

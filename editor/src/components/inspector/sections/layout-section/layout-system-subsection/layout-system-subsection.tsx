@@ -1,7 +1,5 @@
 import * as React from 'react'
-import { betterReactMemo } from 'uuiui-deps'
 import { GridRow } from '../../../widgets/grid-row'
-import { InspectorSubsectionHeader } from 'uuiui'
 import {
   LayoutSystemControl,
   FlexPaddingControl,
@@ -14,6 +12,8 @@ import {
   DetectedLayoutSystem,
   SpecialSizeMeasurements,
 } from '../../../../../core/shared/element-template'
+import { InspectorSubsectionHeader } from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface LayoutSystemSubsectionProps {
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -46,7 +46,7 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
           >
             Padding
           </PropertyLabel>
-          <FlexPaddingControl specialSizeMeasurements={props.specialSizeMeasurements} />
+          <FlexPaddingControl />
         </GridRow>
       </>
     )

@@ -1,8 +1,8 @@
 import * as React from 'react'
 
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
+import { colorTheme } from '../../../uuiui'
 import { GuidelineWithSnappingVector } from '../guideline'
-import { colorTheme } from 'uuiui'
 
 interface ResizeEdgeProps {
   canvasOffset: CanvasPoint

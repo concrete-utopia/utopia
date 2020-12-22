@@ -1,13 +1,7 @@
 import * as React from 'react'
 import * as EditorActions from '../../../editor/actions/action-creators'
-import { Button, colorTheme, UtopiaTheme } from 'uuiui'
-import { FlexRow } from 'uuiui'
-import { H2 } from 'uuiui'
-import { FlexColumn } from 'uuiui'
 import styled from '@emotion/styled'
-import { CheckboxInput } from 'uuiui'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { betterReactMemo } from '../../../../uuiui-deps'
 import {
   FeatureName,
   toggleFeatureEnabled,
@@ -15,6 +9,16 @@ import {
   AllFeatureNames,
 } from '../../../../utils/feature-switches'
 import { getOpenUIJSFile } from '../../../editor/store/editor-state'
+import {
+  FlexRow,
+  UtopiaTheme,
+  H2,
+  CheckboxInput,
+  FlexColumn,
+  colorTheme,
+  Button,
+} from '../../../../uuiui'
+import { betterReactMemo } from '../../../../uuiui-deps'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.medium,

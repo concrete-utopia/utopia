@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
 import { useEditorState } from '../../editor/store/store-hook'
-import { betterReactMemo } from 'uuiui-deps'
 import { ContextMenuItem, requireDispatch } from '../../context-menu-items'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
@@ -9,6 +8,7 @@ import { TemplatePath } from '../../../core/shared/project-file-types'
 import utils from '../../../utils/utils'
 import * as PP from '../../../core/shared/property-path'
 import { useInspectorContext } from './property-path-hooks'
+import { betterReactMemo } from '../../../uuiui-deps'
 
 export type InstanceContextMenuInstance = 'context-menu-instance-inspector'
 

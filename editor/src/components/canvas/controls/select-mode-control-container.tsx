@@ -698,8 +698,14 @@ export class SelectModeControlContainer extends React.Component<
 
     return (
       <div
+        data-testid='select-mode-control-container-root'
         style={{
           pointerEvents: 'initial',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
         }}
         onContextMenu={this.onContextMenu}
       >

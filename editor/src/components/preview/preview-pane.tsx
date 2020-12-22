@@ -1,19 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import {
-  Button,
-  colorTheme,
-  FlexColumn,
-  FlexRow,
-  Icn,
-  LargerIcons,
-  PopupList,
-  Subdued,
-  UtopiaTheme,
-  SquareButton,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
 import { DeviceInfo, deviceInfoList } from '../../common/devices'
 import { BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { useEditorState } from '../editor/store/store-hook'
@@ -24,6 +11,19 @@ import { eitherToMaybe } from '../../core/shared/either'
 import { shareURLForProject } from '../../core/shared/utils'
 import { getMainJSFilename } from '../../core/shared/project-contents-utils'
 import { ProjectContentTreeRoot } from '../assets'
+import {
+  FlexRow,
+  Button,
+  colorTheme,
+  FlexColumn,
+  UtopiaTheme,
+  SquareButton,
+  LargerIcons,
+  Subdued,
+  PopupList,
+  Icn,
+} from '../../uuiui'
+import { betterReactMemo } from '../../utils/react-performance'
 
 export const PreviewIframeId = 'preview-column-container'
 

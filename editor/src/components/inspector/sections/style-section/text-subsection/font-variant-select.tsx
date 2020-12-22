@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { OptionsType } from 'react-select'
-import { betterReactMemo } from 'uuiui-deps'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { identity } from '../../../../../core/shared/utils'
 import {
@@ -9,7 +8,8 @@ import {
   useExternalResources,
 } from '../../../../../printer-parsers/html/external-resources-parser'
 import utils from '../../../../../utils/utils'
-import { PopupList, Tooltip } from '../../../../../uuiui'
+import { Tooltip, PopupList } from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import {
   defaultWebFontWeightsAndStyles,

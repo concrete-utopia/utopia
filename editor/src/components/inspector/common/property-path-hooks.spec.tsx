@@ -42,8 +42,8 @@ import {
   useInspectorInfo,
   useInspectorStyleInfo,
 } from './property-path-hooks'
-import { betterReactMemo } from 'uuiui-deps'
 import { isParseSuccess, TemplatePath } from '../../../core/shared/project-file-types'
+import { betterReactMemo } from '../../../utils/react-performance'
 
 interface RenderTestHookProps<T> {
   value: T
@@ -228,7 +228,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
         style: jsxAttributeValue({ opacity: cssNumber(0.9) }),
       },
     ]
-    const realValues: Array<{ [key: string]: any }> = [
+    const spiedProps: Array<{ [key: string]: any }> = [
       {
         style: { opacity: { value: 0.9 } },
       },
@@ -244,7 +244,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
           selectedViews: [],
           editedMultiSelectedProps: propsWithOpacity,
           targetPath: ['myStyleOuter', 'myStyleInner'],
-          realValues: realValues,
+          spiedProps: spiedProps,
           computedStyles: computedStyles,
         }}
         callbackData={callbackData}
@@ -256,7 +256,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
           selectedViews: [],
           editedMultiSelectedProps: propsWithOpacity,
           targetPath: ['myStyleOuter', 'myStyleInner'],
-          realValues: realValues,
+          spiedProps: spiedProps,
           computedStyles: computedStyles,
         }}
         callbackData={callbackData}
@@ -269,7 +269,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const propsWithOpacity: JSXAttributes = {
       style: jsxAttributeValue({ opacity: 0.9 }),
     }
-    const realValues: Array<{ [key: string]: any }> = [
+    const spiedProps: Array<{ [key: string]: any }> = [
       {
         style: { opacity: 0.9 },
       },
@@ -285,7 +285,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
           selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
-          realValues: realValues,
+          spiedProps: spiedProps,
           computedStyles: computedStyles,
         }}
         callbackData={callbackData}
@@ -297,7 +297,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
           selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
-          realValues: realValues,
+          spiedProps: spiedProps,
           computedStyles: computedStyles,
         }}
         callbackData={callbackData}
@@ -317,12 +317,12 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
       // FIXME: This nests `jsxAttributeValue` inside a `jsxAttributeValue`.
       style: jsxAttributeValue({ opacity: opacityProp, otherProp: 'imdifferent' }),
     }
-    const realValues: Array<{ [key: string]: any }> = [
+    const spiedProps: Array<{ [key: string]: any }> = [
       {
         style: { opacity: 0.9, otherProp: 'dontcare' },
       },
     ]
-    const realValuesChanged: Array<{ [key: string]: any }> = [
+    const spiedPropsChanged: Array<{ [key: string]: any }> = [
       {
         style: { opacity: 0.9, otherProp: 'imdifferent' },
       },
@@ -345,7 +345,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
           selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['myStyleOuter', 'myStyleInner'],
-          realValues: realValues,
+          spiedProps: spiedProps,
           computedStyles: computedStyles,
         }}
         callbackData={callbackData}
@@ -357,7 +357,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
           selectedViews: [],
           editedMultiSelectedProps: [propsChangedOpacitySame],
           targetPath: ['myStyleOuter', 'myStyleInner'],
-          realValues: realValuesChanged,
+          spiedProps: spiedPropsChanged,
           computedStyles: computedStylesChanged,
         }}
         callbackData={callbackData}
@@ -375,12 +375,12 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const propsWithOpacityChanged: JSXAttributes = {
       style: jsxAttributeValue({ opacity: 0.5, otherProp: 'imdifferent' }),
     }
-    const realValues: Array<{ [key: string]: any }> = [
+    const spiedProps: Array<{ [key: string]: any }> = [
       {
         style: { opacity: 0.9, otherProp: 'dontcare' },
       },
     ]
-    const realValuesChanged: Array<{ [key: string]: any }> = [
+    const spiedPropsChanged: Array<{ [key: string]: any }> = [
       {
         style: { opacity: 0.5, otherProp: 'imdifferent' },
       },
@@ -403,7 +403,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
           selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacity],
           targetPath: ['style'],
-          realValues: realValues,
+          spiedProps: spiedProps,
           computedStyles: computedStyles,
         }}
         callbackData={callbackData}
@@ -417,7 +417,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
           selectedViews: [],
           editedMultiSelectedProps: [propsWithOpacityChanged],
           targetPath: ['style'],
-          realValues: realValuesChanged,
+          spiedProps: spiedPropsChanged,
           computedStyles: computedStylesChanged,
         }}
         callbackData={callbackData}
@@ -487,7 +487,7 @@ const makeInspectorHookContextProvider = (
   selectedViews: Array<TemplatePath>,
   multiselectAttributes: JSXAttributes[],
   targetPath: string[],
-  realValues: Array<{ [key: string]: any }>,
+  spiedProps: Array<{ [key: string]: any }>,
   computedStyles: Array<ComputedStyle>,
 ) => ({ children }: any) => (
   <InspectorPropsContext.Provider
@@ -495,7 +495,7 @@ const makeInspectorHookContextProvider = (
       selectedViews: selectedViews,
       editedMultiSelectedProps: multiselectAttributes,
       targetPath,
-      realValues: realValues,
+      spiedProps: spiedProps,
       computedStyles: computedStyles,
     }}
   >
@@ -511,7 +511,7 @@ function getBackgroundColorHookResult(
   const propses = backgroundColorExpressions.map(
     (expression) => getPropsForStyleProp(expression, ['myStyleOuter', 'myStyleInner'])!,
   )
-  const realValues = realInnerValues.map((realInnerValue) => {
+  const spiedProps = realInnerValues.map((realInnerValue) => {
     return targetPath.reduceRight((working, pathPart) => {
       return {
         [pathPart]: working,
@@ -519,7 +519,7 @@ function getBackgroundColorHookResult(
     }, realInnerValue)
   })
 
-  const contextProvider = makeInspectorHookContextProvider([], propses, targetPath, realValues, []) // FIXME This should be using computed styles
+  const contextProvider = makeInspectorHookContextProvider([], propses, targetPath, spiedProps, []) // FIXME This should be using computed styles
 
   const { result } = renderHook(
     () =>
@@ -788,7 +788,7 @@ describe('Integration Test: backgroundColor property', () => {
 describe('Integration Test: opacity property', () => {
   function getOpacityHookResult(
     opacityExpressions: Array<string>,
-    realValues: Array<any>,
+    spiedProps: Array<any>,
     computedStyles: Array<ComputedStyle>,
   ) {
     const propses = opacityExpressions.map(
@@ -801,7 +801,7 @@ describe('Integration Test: opacity property', () => {
           selectedViews: [],
           editedMultiSelectedProps: propses,
           targetPath: ['myStyleOuter', 'myStyleInner'],
-          realValues: realValues,
+          spiedProps: spiedProps,
           computedStyles: computedStyles,
         }}
       >
@@ -966,7 +966,7 @@ describe('Integration Test: opacity property', () => {
 describe('Integration Test: boxShadow property', () => {
   function getBoxShadowHookResult(
     boxShadowExpressions: Array<string>,
-    realValues: Array<any>,
+    spiedProps: Array<any>,
     computedStyles: Array<ComputedStyle>,
   ) {
     const props = boxShadowExpressions.map(
@@ -977,7 +977,7 @@ describe('Integration Test: boxShadow property', () => {
       [],
       props,
       ['myStyleOuter', 'myStyleInner'],
-      realValues,
+      spiedProps,
       computedStyles,
     )
 

@@ -2,15 +2,6 @@
 import { jsx } from '@emotion/react'
 import * as React from 'react'
 import {
-  colorTheme,
-  FlexRow,
-  Icn,
-  UtopiaStyles,
-  UtopiaTheme,
-  InspectorSubsectionHeader,
-} from 'uuiui'
-import { betterReactMemo } from 'uuiui-deps'
-import {
   JSXElementName,
   jsxElementName,
   jsxElementNameEquals,
@@ -72,6 +63,15 @@ import { isBuiltInDependency } from '../../core/es-modules/package-manager/built
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
 import { PropertyControlsInfo } from '../custom-code/code-file'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
+import {
+  FlexRow,
+  UtopiaTheme,
+  InspectorSubsectionHeader,
+  colorTheme,
+  Icn,
+  UtopiaStyles,
+} from '../../uuiui'
+import { betterReactMemo } from '../../uuiui-deps'
 
 interface CurrentFileComponent {
   componentName: string
