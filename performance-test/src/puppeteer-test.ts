@@ -93,12 +93,11 @@ export const testScrollingPerformance = async function () {
   }
 
   const imageFileName = v4() + '.png'
-
   const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData)
   const s3FileUrl = await uploadPNGtoAWS(fileURI)
 
   console.info(
-    `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) ${totalFrameTimes.toFixed(
+    `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) - Total Frame Times: ${totalFrameTimes.toFixed(
       1,
     )}ms – average frame length: ${frameData.frameAvg.toFixed(1)}
       – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
@@ -159,7 +158,7 @@ async function createTestPng(
       showgrid: true,
       zeroline: true,
       showline: true,
-      range: [16, 134],
+      range: [0, 134],
       autotick: false,
       ticks: 'outside',
       tick0: 0,
@@ -286,7 +285,7 @@ async function createTestPng(
       showgrid: true,
       zeroline: true,
       showline: true,
-      range: [0, 35],
+      range: [0, 50],
       autotick: false,
       ticks: 'outside',
       tick0: 0,
@@ -306,8 +305,8 @@ async function createTestPng(
   }
   const imgOpts = {
     format: 'png',
-    width: 700,
-    height: 500,
+    width: 800,
+    height: 600,
   }
   const figure = { data: [trace], layout: layout }
 
@@ -315,8 +314,16 @@ async function createTestPng(
     plotly.getImage(figure, imgOpts, async function (error: any, imageStream: any) {
       if (error) return console.log(error)
 
-      var fileStream = fs.createWriteStream(testFileName)
-      imageStream.pipe(fileStream)
+      var fileStream = await fs.createWriteStream(testFileName)
+
+      const writeStreamPromise = new Promise<void>((resolve, reject) => {
+        imageStream
+          .pipe(fileStream)
+          .on('finish', () => resolve())
+          .on('error', (error: any) => reject(error))
+      })
+
+      await writeStreamPromise
       const path1 = path.resolve(testFileName)
       const path2 = path.resolve('frameimages')
       await moveFile(path1, path2 + '/' + testFileName)
