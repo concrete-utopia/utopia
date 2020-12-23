@@ -101,15 +101,13 @@ export const testScrollingPerformance = async function () {
 
   const imageFileName = v4() + '.png'
   const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData)
+  const s3FileUrl = await uploadPNGtoAWS(fileURI)
 
-  setTimeout(function () {
-    const i = 0
-  }, 5000)
-
-  const s3FileUrl = uploadPNGtoAWS(fileURI)
+  const stats = fs.statSync(fileURI)
+  const fileSizeInBytes = stats.size
 
   console.info(
-    `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) ${totalFrameTimes.toFixed(
+    `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) - fileSizeInBytes: ${fileSizeInBytes} ${totalFrameTimes.toFixed(
       1,
     )}ms – average frame length: ${frameData.frameAvg.toFixed(1)}
       – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
