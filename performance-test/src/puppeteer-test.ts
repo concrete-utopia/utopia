@@ -92,22 +92,12 @@ export const testScrollingPerformance = async function () {
     percentile75: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
   }
 
-  //create file name
-  // const path2 = path.resolve('frameimages')
-  // const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData).then(() => {
-  //   const dirpath = path.resolve('frameimages')
-  //   fs.copyFileSync(path.resolve(dirpath + '/' + imageFileName), path.resolve(dirpath + '/' + 'test.png'))
-  // })
-
   const imageFileName = v4() + '.png'
   const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData)
   const s3FileUrl = await uploadPNGtoAWS(fileURI)
 
-  const stats = fs.statSync(fileURI)
-  const fileSizeInBytes = stats.size
-
   console.info(
-    `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) - fileSizeInBytes: ${fileSizeInBytes} ${totalFrameTimes.toFixed(
+    `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) - Total Frame Times: ${totalFrameTimes.toFixed(
       1,
     )}ms – average frame length: ${frameData.frameAvg.toFixed(1)}
       – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
@@ -325,7 +315,15 @@ async function createTestPng(
       if (error) return console.log(error)
 
       var fileStream = await fs.createWriteStream(testFileName)
-      await imageStream.pipe(fileStream)
+
+      const writeStreamPromise = new Promise<void>((resolve, reject) => {
+        imageStream
+          .pipe(fileStream)
+          .on('finish', () => resolve())
+          .on('error', (error: any) => reject(error))
+      })
+
+      await writeStreamPromise
       const path1 = path.resolve(testFileName)
       const path2 = path.resolve('frameimages')
       await moveFile(path1, path2 + '/' + testFileName)
