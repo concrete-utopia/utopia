@@ -92,8 +92,9 @@ export const testScrollingPerformance = async function () {
     percentile75: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
   }
 
-  const imageFileName = v4() + '.png'
+  //create file name
 
+  const imageFileName = v4() + '.png'
   const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData)
   const s3FileUrl = await uploadPNGtoAWS(fileURI)
 
@@ -315,8 +316,8 @@ async function createTestPng(
     plotly.getImage(figure, imgOpts, async function (error: any, imageStream: any) {
       if (error) return console.log(error)
 
-      var fileStream = fs.createWriteStream(testFileName)
-      imageStream.pipe(fileStream)
+      var fileStream = await fs.createWriteStream(testFileName)
+      await imageStream.pipe(fileStream)
       const path1 = path.resolve(testFileName)
       const path2 = path.resolve('frameimages')
       await moveFile(path1, path2 + '/' + testFileName)
