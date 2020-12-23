@@ -20,7 +20,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aa') }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aa', emptyComments) }, []),
       null,
       false,
       emptyComments,
@@ -36,9 +36,9 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('root') }, [
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('root', emptyComments) }, [
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, []),
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, []),
       ]),
       null,
       false,
@@ -50,12 +50,12 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ['rootElement', 'children', 0, 'props', 'data-uid'],
       fixedComponent,
     )
-    expect(child0UID).toEqual(jsxAttributeValue('aaa'))
+    expect(child0UID).toEqual(jsxAttributeValue('aaa', emptyComments))
     const child1UID = Utils.path(
       ['rootElement', 'children', 1, 'props', 'data-uid'],
       fixedComponent,
     )
-    expect(child1UID).not.toEqual(jsxAttributeValue('aaa'))
+    expect(child1UID).not.toEqual(jsxAttributeValue('aaa', emptyComments))
   })
 
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
@@ -86,9 +86,9 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('baa', emptyComments) }, [
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, []),
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aab', emptyComments) }, []),
       ]),
       null,
       false,
@@ -107,8 +107,8 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('baa', emptyComments) }, [
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, []),
         jsxElement('View', {} as any, []),
       ]),
       null,
@@ -128,10 +128,10 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       true,
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [
-          jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, []),
-          jsxElement('View', { 'data-uid': jsxAttributeValue('aac') }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('baa', emptyComments) }, [
+        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
+          jsxElement('View', { 'data-uid': jsxAttributeValue('aab', emptyComments) }, []),
+          jsxElement('View', { 'data-uid': jsxAttributeValue('aac', emptyComments) }, []),
         ]),
         jsxElement('View', {}, []),
       ]),

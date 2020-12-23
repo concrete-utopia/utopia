@@ -18,6 +18,7 @@ import * as EditorActions from './editor/actions/action-creators'
 import { EditorState, getOpenImportsFromState } from './editor/store/editor-state'
 import * as PP from '../core/shared/property-path'
 import { isInstancePath } from '../core/shared/template-path'
+import {emptyComments} from "../core/workers/parser-printer/parser-printer-comments";
 
 const ObjectPathImmutable: any = OPI
 
@@ -159,7 +160,7 @@ function actionForTextFormatting(
       return EditorActions.setProp_UNSAFE(
         target,
         propertyForTextFormatting(textFormatting),
-        jsxAttributeValue(newValue),
+        jsxAttributeValue(newValue, emptyComments),
       )
     })
   }

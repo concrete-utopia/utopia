@@ -9,7 +9,7 @@ import {
 import { applyPrettier } from './prettier-utils'
 
 describe('parseCode', () => {
-  xit('should parse a component with comments in front of it', () => {
+  it('should parse a component with comments in front of it', () => {
     const code = applyPrettier(
       `
     // Single-line comment.
@@ -86,14 +86,18 @@ describe('Parsing and printing code with comments', () => {
     commentInsideExports: '// Comment inside exports',
     commentAfterExports: '// Comment after exports',
     finalLineComment: '// Final line comment',
+    commentBeforeObjectKey: '/* Comment before object key */',
+    commentAfterObjectKey: '/* Comment after object key */',
+    commentBeforeObjectValue: '/* Comment before object value */',
+    commentAfterObjectValue: '/* Comment after object value */',
   }
 
-  const notYetSupported = [
-    'commentAtStartOfJSXAttribute',
-    'commentAtEndOfJSXAttribute',
-    'commentAtStartOfJSXExpression',
-    'commentInsideJSXExpression',
-    'commentAtEndOfJSXExpression',
+  const notYetSupported: Array<keyof typeof comments> = [
+    //'commentAtStartOfJSXAttribute',
+    //'commentAtEndOfJSXAttribute',
+    //'commentAtStartOfJSXExpression',
+    //'commentInsideJSXExpression',
+    //'commentAtEndOfJSXExpression',
     'finalLineComment',
   ]
 
@@ -124,7 +128,14 @@ describe('Parsing and printing code with comments', () => {
 
       ${comments.commentBeforeReturnStatement}
       return (
-        <div data-uid={'aaa'} someProp={${comments.commentAtStartOfJSXAttribute} 1000 ${comments.commentAtEndOfJSXAttribute}}>
+        <div
+          data-uid={'aaa'}
+          someProp={${comments.commentAtStartOfJSXAttribute} 1000 ${comments.commentAtEndOfJSXAttribute}}
+          someProp2={{
+            ${comments.commentBeforeObjectKey} someKey ${comments.commentAfterObjectKey} : ${comments.commentBeforeObjectValue} 'someValue' ${comments.commentAfterObjectValue},
+            someKey2: 'someValue2'
+          }}
+          >
           {
             ${comments.commentAtStartOfJSXExpression}
             true ${comments.commentInsideJSXExpression}

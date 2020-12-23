@@ -562,7 +562,7 @@ function switchAndUpdateFrames(
         withUpdatedLayoutSystem,
         target,
         (attributes) => {
-          return setJSXValueAtPath(attributes, styleDisplayPath, jsxAttributeValue('flex'))
+          return setJSXValueAtPath(attributes, styleDisplayPath, jsxAttributeValue('flex', emptyComments))
         },
       )
       break
@@ -603,7 +603,7 @@ function switchAndUpdateFrames(
           return setJSXValueAtPath(
             attributes,
             createLayoutPropertyPath('position'),
-            jsxAttributeValue('absolute'),
+            jsxAttributeValue('absolute', emptyComments),
           )
         },
       )
@@ -1825,7 +1825,7 @@ export const UPDATE_FNS = {
       propsTransform = (props) => unsetJSXValueAtPath(props, PathForSceneDataLabel)
     } else {
       propsTransform = (props) =>
-        setJSXValueAtPath(props, PathForSceneDataLabel, jsxAttributeValue(name))
+        setJSXValueAtPath(props, PathForSceneDataLabel, jsxAttributeValue(name, emptyComments))
     }
     if (TP.isScenePath(target)) {
       return modifyOpenSceneAtPath(
@@ -2413,8 +2413,8 @@ export const UPDATE_FNS = {
             const newSceneLabel = `Scene ${numberOfScenes}`
             const props = {
               ...currentValue.props,
-              'data-label': jsxAttributeValue(newSceneLabel),
-              'data-uid': jsxAttributeValue(newUID),
+              'data-label': jsxAttributeValue(newSceneLabel, emptyComments),
+              'data-uid': jsxAttributeValue(newUID, emptyComments),
             }
             const newSceneElement = {
               ...currentValue,
@@ -2813,7 +2813,7 @@ export const UPDATE_FNS = {
     const height = Utils.pathOr(undefined, ['imageDetails', 'imageSize', 'height'], action)
 
     const imageURL = imagePathURL(assetFilename)
-    const imageAttribute = jsxAttributeValue(imageURL)
+    const imageAttribute = jsxAttributeValue(imageURL, emptyComments)
 
     const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
     const newUID = generateUidWithExistingComponents(utopiaComponents)
@@ -2915,11 +2915,11 @@ export const UPDATE_FNS = {
           const imageElement = jsxElement(
             jsxElementName('img', []),
             {
-              alt: jsxAttributeValue(''),
+              alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
-              style: jsxAttributeValue({ width: width, height: height }),
-              'data-uid': jsxAttributeValue(newUID),
-              'data-aspect-ratio-locked': jsxAttributeValue(true),
+              style: jsxAttributeValue({width: width, height: height}, emptyComments),
+              'data-uid': jsxAttributeValue(newUID, emptyComments),
+              'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
             },
             [],
           )
@@ -2946,16 +2946,16 @@ export const UPDATE_FNS = {
           const imageElement = jsxElement(
             jsxElementName('img', []),
             {
-              alt: jsxAttributeValue(''),
+              alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
               style: jsxAttributeValue({
-                left: relativeFrame.x,
-                top: relativeFrame.y,
-                width: relativeFrame.width,
-                height: relativeFrame.height,
-              }),
-              'data-uid': jsxAttributeValue(newUID),
-              'data-aspect-ratio-locked': jsxAttributeValue(true),
+                  left: relativeFrame.x,
+                  top: relativeFrame.y,
+                  width: relativeFrame.width,
+                  height: relativeFrame.height,
+              }, emptyComments),
+              'data-uid': jsxAttributeValue(newUID, emptyComments),
+              'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
             },
             [],
           )
@@ -3000,21 +3000,21 @@ export const UPDATE_FNS = {
       const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
       const newUID = generateUidWithExistingComponents(utopiaComponents)
       const imageURL = imagePathURL(action.imagePath)
-      const imageSrcAttribute = jsxAttributeValue(imageURL)
+      const imageSrcAttribute = jsxAttributeValue(imageURL, emptyComments)
       const width = Utils.optionalMap((w) => w / 2, possiblyAnImage.width)
       const height = Utils.optionalMap((h) => h / 2, possiblyAnImage.height)
       const imageElement = jsxElement(
         jsxElementName('img', []),
         {
-          alt: jsxAttributeValue(''),
+          alt: jsxAttributeValue('', emptyComments),
           src: imageSrcAttribute,
           style: jsxAttributeValue({
-            width: width,
-            height: height,
-          }),
-          'data-uid': jsxAttributeValue(newUID),
-          'data-label': jsxAttributeValue('Image'),
-          'data-aspect-ratio-locked': jsxAttributeValue(true),
+              width: width,
+              height: height,
+          }, emptyComments),
+          'data-uid': jsxAttributeValue(newUID, emptyComments),
+          'data-label': jsxAttributeValue('Image', emptyComments),
+          'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
         },
         [],
       )
@@ -3706,7 +3706,7 @@ export const UPDATE_FNS = {
           const setResult = setJSXValueAtPath(
             attributesWithUnsetKey.value,
             newPropertyPath,
-            jsxAttributeValue(originalValue.value),
+            jsxAttributeValue(originalValue.value, emptyComments),
           )
           return setResult
         } else {
@@ -3879,7 +3879,7 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const locked = jsxAttributeValue(action.locked)
+        const locked = jsxAttributeValue(action.locked, emptyComments)
         const updatedProps = eitherToMaybe(
           setJSXValueAtPath(element.props, PP.create(['data-aspect-ratio-locked']), locked),
         )
@@ -3915,7 +3915,7 @@ export const UPDATE_FNS = {
     if (projectContent != null && isImageFile(projectContent)) {
       const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
       const newUID = generateUidWithExistingComponents(utopiaComponents)
-      const imageAttribute = jsxAttributeValue(imagePathURL(action.imagePath))
+      const imageAttribute = jsxAttributeValue(imagePathURL(action.imagePath), emptyComments)
       const size: Size = {
         width: projectContent.width ?? 100,
         height: projectContent.height ?? 100,
@@ -3933,16 +3933,16 @@ export const UPDATE_FNS = {
       const imageElement = jsxElement(
         jsxElementName('img', []),
         {
-          alt: jsxAttributeValue(''),
+          alt: jsxAttributeValue('', emptyComments),
           src: imageAttribute,
           style: jsxAttributeValue({
-            left: parentShiftX + frame.x,
-            top: parentShiftY + frame.y,
-            width: frame.width,
-            height: frame.height,
-          }),
-          'data-uid': jsxAttributeValue(newUID),
-          'data-aspect-ratio-locked': jsxAttributeValue(true),
+              left: parentShiftX + frame.x,
+              top: parentShiftY + frame.y,
+              width: frame.width,
+              height: frame.height,
+          }, emptyComments),
+          'data-uid': jsxAttributeValue(newUID, emptyComments),
+          'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
         },
         [],
       )
@@ -4008,11 +4008,11 @@ export const UPDATE_FNS = {
 
       if (pathToUpdate != null) {
         return setPropertyOnTarget(editor, target, (props) => {
-          return setJSXValueAtPath(props, pathToUpdate!, jsxAttributeValue(propsForPath))
+          return setJSXValueAtPath(props, pathToUpdate!, jsxAttributeValue(propsForPath, emptyComments))
         })
       } else {
         return setPropertyOnTarget(editor, target, (props) => {
-          const updatedProps = objectMap(jsxAttributeValue, defaultProps)
+          const updatedProps = objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps)
           updatedProps['data-uid'] = props['data-uid'] as JSXAttributeValue<string>
           return right(updatedProps)
         })

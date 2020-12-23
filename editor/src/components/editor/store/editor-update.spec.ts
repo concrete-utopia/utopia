@@ -528,7 +528,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
-      { 'data-uid': jsxAttributeValue('TestView') },
+      { 'data-uid': jsxAttributeValue('TestView', emptyComments) },
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, parentPath, {
@@ -584,7 +584,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
-      { 'data-uid': jsxAttributeValue('TestView') },
+      { 'data-uid': jsxAttributeValue('TestView', emptyComments) },
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, null, {

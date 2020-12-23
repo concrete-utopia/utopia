@@ -149,7 +149,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -183,7 +183,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -229,7 +229,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -262,7 +262,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -301,7 +301,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -347,7 +347,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -386,7 +386,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -431,7 +431,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -470,7 +470,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -506,7 +506,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -548,7 +548,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -588,7 +588,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -641,7 +641,7 @@ describe('Parsing a function component with props', () => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )

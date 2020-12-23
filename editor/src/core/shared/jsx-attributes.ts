@@ -28,6 +28,7 @@ import { objectMap } from './object-utils'
 import { PropertyPath } from './project-file-types'
 import * as PP from './property-path'
 import { fastForEach } from './utils'
+import {emptyComments} from "../workers/parser-printer/parser-printer-comments";
 
 export type AnyMap = { [key: string]: any }
 
@@ -43,15 +44,13 @@ export function dropKeyFromNestedObject(
   nestedObject: JSXAttributeNestedObject,
   key: string,
 ): JSXAttributeNestedObject {
-  return jsxAttributeNestedObject(
-    nestedObject.content.filter((prop) => {
-      if (isPropertyAssignment(prop)) {
-        return prop.key !== key
-      } else {
-        return true
-      }
-    }),
-  )
+  return jsxAttributeNestedObject(nestedObject.content.filter((prop) => {
+    if (isPropertyAssignment(prop)) {
+      return prop.key !== key
+    } else {
+      return true
+    }
+  }), emptyComments)
 }
 
 export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Either<string, any> {
@@ -377,7 +376,7 @@ export function getJSXAttributeAtPathInner(
 export function deeplyCreatedValue(path: PropertyPath, value: JSXAttribute): JSXAttribute {
   const elements = PP.getElements(path)
   return elements.reduceRight((acc: JSXAttribute, propName) => {
-    return jsxAttributeNestedObject([jsxPropertyAssignment(`${propName}`, acc)])
+    return jsxAttributeNestedObject([jsxPropertyAssignment(`${propName}`, acc, emptyComments)], emptyComments)
   }, value)
 }
 
@@ -411,11 +410,11 @@ export function setJSXValueInAttributeAtPath(
           if (typeof attributeKey === 'number') {
             let newArray: Array<JSXArrayElement> = [...attribute.content]
             if (lastPartOfPath) {
-              newArray[attributeKey] = jsxArrayValue(newAttrib)
+              newArray[attributeKey] = jsxArrayValue(newAttrib, emptyComments)
             } else {
               const existingAttribute = attribute.content[attributeKey]
               if (existingAttribute == null) {
-                newArray[attributeKey] = jsxArrayValue(deeplyCreatedValue(tailPath, newAttrib))
+                newArray[attributeKey] = jsxArrayValue(deeplyCreatedValue(tailPath, newAttrib), emptyComments)
               } else {
                 const updatedNestedAttribute = setJSXValueInAttributeAtPath(
                   existingAttribute.value,
@@ -426,19 +425,19 @@ export function setJSXValueInAttributeAtPath(
                 if (isLeft(updatedNestedAttribute)) {
                   return updatedNestedAttribute
                 } else {
-                  newArray[attributeKey] = jsxArrayValue(updatedNestedAttribute.value)
+                  newArray[attributeKey] = jsxArrayValue(updatedNestedAttribute.value, emptyComments)
                 }
               }
             }
 
-            return right(jsxAttributeNestedArray(newArray))
+            return right(jsxAttributeNestedArray(newArray, emptyComments))
           } else {
             // Convert the array to an object, which seems a little dubious.
             const newProps = attribute.content.map((attr, index) =>
-              jsxPropertyAssignment(`${index}`, attr.value),
+              jsxPropertyAssignment(`${index}`, attr.value, emptyComments),
             )
             return setJSXValueInAttributeAtPath(
-              jsxAttributeNestedObject(newProps),
+              jsxAttributeNestedObject(newProps, emptyComments),
               tailPath,
               newAttrib,
             )
@@ -451,7 +450,7 @@ export function setJSXValueInAttributeAtPath(
           const newProps = dropKeyFromNestedObject(attribute, key).content
           if (lastPartOfPath) {
             return right(
-              jsxAttributeNestedObject(newProps.concat(jsxPropertyAssignment(key, newAttrib))),
+              jsxAttributeNestedObject(newProps.concat(jsxPropertyAssignment(key, newAttrib, emptyComments)), emptyComments),
             )
           } else {
             const existingAttribute = nestedObjectValueForKey(attribute, key)
@@ -462,7 +461,7 @@ export function setJSXValueInAttributeAtPath(
 
             return mapEither(
               (updated) =>
-                jsxAttributeNestedObject(newProps.concat(jsxPropertyAssignment(key, updated))),
+                jsxAttributeNestedObject(newProps.concat(jsxPropertyAssignment(key, updated, emptyComments)), emptyComments),
               updatedNestedAttribute,
             )
           }
@@ -474,17 +473,13 @@ export function setJSXValueInAttributeAtPath(
             // we are good, the current value is an object, we can insert into it
             if (Array.isArray(currentValue)) {
               // let's turn the found value into an ATTRIBUTE_NESTED_ARRAY
-              const arrayifiedObject = jsxAttributeNestedArray(
-                currentValue.map((value) => jsxArrayValue(jsxAttributeValue(value))),
-              )
+              const arrayifiedObject = jsxAttributeNestedArray(currentValue.map((value) => jsxArrayValue(jsxAttributeValue(value, emptyComments), emptyComments)), emptyComments)
               return setJSXValueInAttributeAtPath(arrayifiedObject, path, newAttrib)
             } else {
               // let's turn the found object into a ATTRIBUTE_NESTED_OBJECT
-              const nestedOject = jsxAttributeNestedObject(
-                Object.keys(currentValue).map((k) =>
-                  jsxPropertyAssignment(k, jsxAttributeValue(currentValue[k])),
-                ),
-              )
+              const nestedOject = jsxAttributeNestedObject(Object.keys(currentValue).map((k) =>
+                  jsxPropertyAssignment(k, jsxAttributeValue(currentValue[k], emptyComments), emptyComments),
+              ), emptyComments)
               return setJSXValueInAttributeAtPath(nestedOject, path, newAttrib)
             }
           }
@@ -633,7 +628,7 @@ export function unsetJSXValueInAttributeAtPath(
             if (lastPartOfPath) {
               let newArray: Array<JSXArrayElement> = [...attribute.content]
               newArray.splice(attributeKey, 1)
-              return right(jsxAttributeNestedArray(newArray))
+              return right(jsxAttributeNestedArray(newArray, emptyComments))
             } else {
               const existingAttribute = attribute.content[attributeKey]
               if (existingAttribute == null) {
@@ -646,8 +641,8 @@ export function unsetJSXValueInAttributeAtPath(
                 )
                 return mapEither((updated) => {
                   let newArray: Array<JSXArrayElement> = [...attribute.content]
-                  newArray[attributeKey] = jsxArrayValue(updated)
-                  return jsxAttributeNestedArray(newArray)
+                  newArray[attributeKey] = jsxArrayValue(updated, emptyComments)
+                  return jsxAttributeNestedArray(newArray, emptyComments)
                 }, updatedNestedAttribute)
               }
             }
@@ -674,15 +669,15 @@ export function unsetJSXValueInAttributeAtPath(
               )
               return mapEither((updated) => {
                 let newProps: Array<JSXProperty> = [...attribute.content]
-                newProps[existingAttributeIndex] = jsxPropertyAssignment(key, updated)
-                return jsxAttributeNestedObject(newProps)
+                newProps[existingAttributeIndex] = jsxPropertyAssignment(key, updated, emptyComments)
+                return jsxAttributeNestedObject(newProps, emptyComments)
               }, updatedAttribute)
             }
           }
         case 'ATTRIBUTE_VALUE':
           const updatedValue = unsetValueAtPath(attribute.value, path)
           return mapEither((updated) => {
-            return jsxAttributeValue(updated)
+            return jsxAttributeValue(updated, emptyComments)
           }, updatedValue)
         default:
           const _exhaustiveCheck: never = attribute

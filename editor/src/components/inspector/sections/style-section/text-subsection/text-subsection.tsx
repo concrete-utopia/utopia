@@ -41,6 +41,7 @@ import { OptionControl } from '../../../controls/option-control'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
+import {emptyComments} from "../../../../../core/workers/parser-printer/parser-printer-comments";
 
 const ObjectPathImmutable: any = OPI
 
@@ -508,7 +509,7 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
             EditorActions.setProp_UNSAFE(
               path,
               PP.create(['textSizing']),
-              jsxAttributeValue('fixed'),
+              jsxAttributeValue('fixed', emptyComments),
             ),
           )
         }

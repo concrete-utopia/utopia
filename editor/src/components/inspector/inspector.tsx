@@ -93,6 +93,7 @@ import {
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
 import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme } from '../../uuiui'
+import {emptyComments} from "../../core/workers/parser-printer/parser-printer-comments";
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -675,7 +676,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       const actions = Utils.flatMapArray(
         (elem) =>
           updates.map((update) =>
-            setProp_UNSAFE(elem, update.path, jsxAttributeValue(update.value)),
+            setProp_UNSAFE(elem, update.path, jsxAttributeValue(update.value, emptyComments)),
           ),
         refElementsToTargetForUpdates.current,
       )
@@ -732,7 +733,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       const newPath = [...parent.path, label]
       const newPropertyPath = PP.create(newPath)
       const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
-        EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({})),
+        EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({}, emptyComments)),
       )
       dispatch(actions, 'everyone')
       setSelectedTarget(newPath)

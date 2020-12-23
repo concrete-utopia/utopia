@@ -47,6 +47,7 @@ import { EdgePosition } from '../../components/canvas/canvas-types'
 import { EditorState } from '../../components/editor/store/editor-state'
 import { getPropertyControlsForTarget } from '../property-controls/property-controls-utils'
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import {emptyComments} from "../workers/parser-printer/parser-printer-comments";
 
 export function targetRespectsLayout(
   target: TemplatePath,
@@ -77,7 +78,7 @@ export const PinLayoutHelpers = {
         return setJSXValueAtPath(
           workingProps,
           createLayoutPropertyPath(pinnedPropForFramePoint(frameProp)),
-          jsxAttributeValue(frame[frameProp]),
+          jsxAttributeValue(frame[frameProp], emptyComments),
         )
       },
       props,
@@ -94,7 +95,7 @@ export const PinLayoutHelpers = {
         return setJSXValueAtPath(
           updatedAttributes,
           createLayoutPropertyPath(pinnedPropForFramePoint(frameProp as FramePoint)),
-          jsxAttributeValue(frame[frameProp]),
+          jsxAttributeValue(frame[frameProp], emptyComments),
         )
       },
       props,
@@ -130,7 +131,7 @@ export const FlexLayoutHelpers = {
           let propsToSet: Array<ValueAtPath> = []
           function addPropToSet(path: PropertyPath, value: string | number | undefined): void {
             if (value != null) {
-              propsToSet.push({ path: path, value: jsxAttributeValue(value) })
+              propsToSet.push({ path: path, value: jsxAttributeValue(value, emptyComments) })
             }
           }
           if (flexBasis != null) {
@@ -173,7 +174,7 @@ export const FlexLayoutHelpers = {
         return setJSXValueAtPath(
           workingProps,
           createLayoutPropertyPath(propToSet),
-          jsxAttributeValue(pos[propToSet]),
+          jsxAttributeValue(pos[propToSet], emptyComments),
         )
       },
       props,
@@ -186,7 +187,7 @@ export const FlexLayoutHelpers = {
         return setJSXValueAtPath(
           workingProps,
           createLayoutPropertyPath(pinnedPropForFramePoint(propToSet)),
-          jsxAttributeValue(size[propToSet]),
+          jsxAttributeValue(size[propToSet], emptyComments),
         )
       },
       props,
@@ -199,7 +200,7 @@ export const FlexLayoutHelpers = {
     return setJSXValueAtPath(
       props,
       createLayoutPropertyPath('alignSelf'),
-      jsxAttributeValue(newValue),
+      jsxAttributeValue(newValue, emptyComments),
     )
   },
   getMainAxis(props: PropsOrJSXAttributes): Either<string, 'horizontal' | 'vertical'> {

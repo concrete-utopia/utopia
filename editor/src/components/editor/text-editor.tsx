@@ -29,6 +29,7 @@ import {
 import * as PP from '../../core/shared/property-path'
 import { jsxAttributeValue } from '../../core/shared/element-template'
 import { TextSizing } from 'utopia-api'
+import {emptyComments} from "../../core/workers/parser-printer/parser-printer-comments";
 
 export interface TextEditorProps {
   target: InstancePath
@@ -322,7 +323,7 @@ export class TextEditor extends ReactComponent<TextEditorProps, TextEditorState>
                 EditorActions.setProp_UNSAFE(
                   this.props.target,
                   PP.create(['textstyle', 'textAlignment']),
-                  jsxAttributeValue('left'),
+                  jsxAttributeValue('left', emptyComments),
                 ),
               ]),
             ],
@@ -338,7 +339,7 @@ export class TextEditor extends ReactComponent<TextEditorProps, TextEditorState>
                 EditorActions.setProp_UNSAFE(
                   this.props.target,
                   PP.create(['textstyle', 'textAlignment']),
-                  jsxAttributeValue('center'),
+                  jsxAttributeValue('center', emptyComments),
                 ),
               ]),
             ],
@@ -354,7 +355,7 @@ export class TextEditor extends ReactComponent<TextEditorProps, TextEditorState>
                 EditorActions.setProp_UNSAFE(
                   this.props.target,
                   PP.create(['textstyle', 'textAlignment']),
-                  jsxAttributeValue('right'),
+                  jsxAttributeValue('right', emptyComments),
                 ),
               ]),
             ],

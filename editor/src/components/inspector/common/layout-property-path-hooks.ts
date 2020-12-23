@@ -37,6 +37,7 @@ import {
 
 import React = require('react')
 import { usePropControlledRef_DANGEROUS } from './inspector-utils'
+import {emptyComments} from "../../../core/workers/parser-printer/parser-printer-comments";
 
 const HorizontalPinPreference = [
   FramePoint.Left,
@@ -387,7 +388,7 @@ export function usePinToggling(): UsePinTogglingResult {
         setProp_UNSAFE(
           path,
           createLayoutPropertyPath(pinnedPropForFramePoint(pin)),
-          jsxAttributeValue(value),
+          jsxAttributeValue(value, emptyComments),
         ),
       )
 
