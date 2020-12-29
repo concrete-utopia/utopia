@@ -1,7 +1,9 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
+import * as EditorActions from '../editor/actions/action-creators'
 import * as React from 'react'
 import { UtopiaStyles, SimpleFlexRow, UtopiaTheme, SimpleFlexColumn } from '../../uuiui'
+import { useEditorState } from '../editor/store/store-hook'
 
 /**
  *  - _Error_: High visibility
@@ -17,14 +19,16 @@ export interface Notice {
   message: React.ReactChild
   persistent?: boolean
   level?: NoticeLevel
+  id?: string
 }
 
 export function notice(
   message: React.ReactChild,
   persistent: boolean = false,
   level: NoticeLevel = 'INFO',
+  id?: string,
 ): Notice {
-  return { message: message, persistent: persistent, level: level }
+  return { message: message, persistent: persistent, level: level, id: id }
 }
 
 interface NoticeProps extends Notice {
@@ -53,29 +57,66 @@ export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
  * **Layout**: use as flex child with fixed height
  * **Level**: see NoticeLevel jsdoc
  */
-export const Toast: React.FunctionComponent<NoticeProps> = (props) => (
-  <div
-    key={'toast-item'}
-    className={'fadeout'}
-    style={{
-      ...getStylesForLevel(props.level || 'INFO'),
-      boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
-      borderRadius: 3,
-      overflowWrap: 'break-word',
-      wordWrap: 'break-word',
-      hyphens: 'auto',
-      whiteSpace: 'normal',
-      maxWidth: 400,
-      width: 400,
-      padding: 12,
-      fontWeight: 500,
-      letterSpacing: 0.2,
-      margin: '5px',
-    }}
-  >
-    {props.message}
-  </div>
-)
+export const Toast: React.FunctionComponent<NoticeProps> = (props) => {
+  const dispatch = useEditorState((store) => store.dispatch, 'Toast dispatch')
+  const deleteNotice = React.useCallback(() => {
+    if (typeof props.id !== 'undefined') {
+      dispatch([EditorActions.removeToast(props.id)])
+    }
+  }, [dispatch, props.id])
+
+  return (
+    <div
+      key={'toast-item'}
+      style={{
+        ...getStylesForLevel(props.level || 'INFO'),
+        boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
+        borderRadius: 3,
+        width: 270,
+        minHeight: 27,
+        overflow: 'hidden',
+        overflowWrap: 'break-word',
+        wordWrap: 'break-word',
+        hyphens: 'auto',
+        whiteSpace: 'normal',
+        margin: '5px',
+        display: 'flex',
+        alignItems: 'stretch',
+      }}
+    >
+      <div
+        style={{ flexGrow: 1, fontWeight: 500, padding: 8, display: 'flex', alignItems: 'center' }}
+        id='toast-message'
+      >
+        {props.message}
+      </div>
+
+      {typeof props.id !== 'undefined' ? (
+        <div
+          css={{
+            backgroundColor: 'hsl(0,0%,0%,3%)',
+            display: 'flex',
+            flex: '0 0 24px',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 14,
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: 'hsl(0,0%,0%,5%)',
+            },
+            '&:active': {
+              backgroundColor: 'hsl(0,0%,0%,6%)',
+            },
+          }}
+          onClick={deleteNotice}
+          id='toast-button'
+        >
+          ×
+        </div>
+      ) : null}
+    </div>
+  )
+}
 
 /**
  * Show information atop the editor

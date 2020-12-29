@@ -347,13 +347,14 @@ export interface ToggleCollapse {
   target: TemplatePath
 }
 
-export interface PushToast {
-  action: 'PUSH_TOAST'
+export interface AddToast {
+  action: 'ADD_TOAST'
   toast: Notice
 }
 
-export interface PopToast {
-  action: 'POP_TOAST'
+export interface RemoveToast {
+  action: 'REMOVE_TOAST'
+  id: string
 }
 
 export interface SetHighlightedView {
@@ -808,8 +809,8 @@ export type EditorAction =
   | SetRightMenuTab
   | SetRightMenuExpanded
   | ToggleCollapse
-  | PushToast
-  | PopToast
+  | AddToast
+  | RemoveToast
   | SetHighlightedView
   | ClearHighlightedViews
   | UpdateKeysPressed

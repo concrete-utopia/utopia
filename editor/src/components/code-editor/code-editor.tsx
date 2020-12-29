@@ -182,7 +182,7 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
             () => {
               this.save(this.state.code, true, {
                 message: 'File saved and formatted',
-                level: 'SUCCESS',
+                level: 'INFO',
               })
             },
           )

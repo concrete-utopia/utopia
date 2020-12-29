@@ -13,7 +13,7 @@ import Utils from '../../utils/utils'
 import { EditorPanel, setFocus } from '../common/actions'
 import { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import { clearSelection, pushToast } from '../editor/actions/action-creators'
+import { clearSelection, addToast } from '../editor/actions/action-creators'
 import {
   dependenciesFromPackageJson,
   findLatestVersion,
@@ -236,7 +236,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     this.props.editorDispatch(
       [
         EditorActions.setPackageStatus(packageName, 'error'),
-        pushToast({
+        addToast({
           message: `${packageName} couldn't be added. Check the console for details.`,
           level: 'ERROR',
           persistent: true,
@@ -292,7 +292,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
   addDependency = (packageName: string | null, packageVersion: string | null) => {
     this.props.editorDispatch(
       [
-        pushToast({
+        addToast({
           message: `Adding ${packageName} to your project.`,
           level: 'INFO',
         }),
@@ -303,7 +303,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     if (DefaultPackagesList.find((pkg) => pkg.name === packageName)) {
       this.props.editorDispatch(
         [
-          pushToast({
+          addToast({
             message: `${packageName} is already available as a default package, no need to add it again :)`,
             level: 'SUCCESS',
           }),
@@ -334,7 +334,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
           if (editedPackageVersion == null) {
             this.props.editorDispatch(
               [
-                pushToast({
+                addToast({
                   message: `No npm registry entry found for ${packageNameAndVersion}`,
                   level: 'ERROR',
                 }),
@@ -388,7 +388,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
         .catch((reason) => {
           this.props.editorDispatch(
             [
-              pushToast({
+              addToast({
                 message: `Couldn't fetch metadata for ${packageNameAndVersion}`,
                 level: 'ERROR',
               }),

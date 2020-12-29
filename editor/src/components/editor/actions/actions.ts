@@ -1,4 +1,5 @@
 import { produce } from 'immer'
+import { v4 as UUID } from 'uuid'
 import * as update from 'immutability-helper'
 import * as R from 'ramda'
 import * as React from 'react'
@@ -296,7 +297,7 @@ import {
   SetPropWithElementPath,
   SetSceneProp,
   SetStoredFontSettings,
-  PushToast,
+  AddToast,
   SetZIndex,
   ShowContextMenu,
   ShowModal,
@@ -331,7 +332,7 @@ import {
   SetSafeMode,
   SaveImageDetails,
   SetSaveError,
-  PopToast,
+  RemoveToast,
   InsertDroppedImage,
   ResetPropToDefault,
   UpdateNodeModulesContents,
@@ -464,7 +465,7 @@ import {
 } from '../store/store-deep-equality-instances'
 import {
   showToast,
-  popToast,
+  removeToast,
   setPropWithElementPath_UNSAFE,
   clearImageFileBlob,
   updateFile,
@@ -1334,7 +1335,7 @@ function toastOnGeneratedElementsTargeted(
   let result: EditorState = editor
   if (generatedElementsTargeted) {
     const showToastAction = showToast({ message: message })
-    result = UPDATE_FNS.PUSH_TOAST(showToastAction, result, dispatch)
+    result = UPDATE_FNS.ADD_TOAST(showToastAction, result, dispatch)
   }
 
   if (!generatedElementsTargeted || allowActionRegardless) {
@@ -1464,7 +1465,7 @@ export const UPDATE_FNS = {
         const updatedResult = foldEither(
           (failureMessage) => {
             const toastAction = showToast({ message: failureMessage, level: 'ERROR' })
-            return UPDATE_FNS.PUSH_TOAST(toastAction, editor, dispatch)
+            return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
           },
           (updated) => {
             return modifyOpenJsxElementAtPath(
@@ -1719,7 +1720,7 @@ export const UPDATE_FNS = {
         message: `Only one scene can be selected`,
         level: 'WARNING',
       })
-      return UPDATE_FNS.PUSH_TOAST(showToastAction, updatedEditor, dispatch)
+      return UPDATE_FNS.ADD_TOAST(showToastAction, updatedEditor, dispatch)
     }
   },
   CLEAR_SELECTION: (editor: EditorModel): EditorModel => {
@@ -1789,18 +1790,26 @@ export const UPDATE_FNS = {
       )
     }
   },
-  PUSH_TOAST: (action: PushToast, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
-    setTimeout(() => dispatch([popToast()], 'everyone'), 5500)
+  ADD_TOAST: (action: AddToast, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+    const uniqueToastId = UUID()
+
+    if (!action.toast.persistent) {
+      setTimeout(() => dispatch([removeToast(uniqueToastId)], 'everyone'), 5500)
+    }
+    const newToast: Notice = {
+      ...action.toast,
+      id: uniqueToastId,
+    }
 
     return {
       ...editor,
-      toasts: [...editor.toasts, action.toast],
+      toasts: [...editor.toasts, newToast],
     }
   },
-  POP_TOAST: (action: PopToast, editor: EditorModel): EditorModel => {
+  REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      toasts: editor.toasts.slice(1),
+      toasts: editor.toasts.filter((toast) => toast.id !== action.id),
     }
   },
   TOGGLE_HIDDEN: (action: ToggleHidden, editor: EditorModel): EditorModel => {
@@ -2456,7 +2465,7 @@ export const UPDATE_FNS = {
         message: `Unable to paste into a generated element.`,
         level: 'WARNING',
       })
-      return UPDATE_FNS.PUSH_TOAST(showToastAction, editor, dispatch)
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor, dispatch)
     }
   },
   COPY_SELECTION_TO_CLIPBOARD: (
@@ -2576,7 +2585,7 @@ export const UPDATE_FNS = {
 
     const shouldShowToast = targetWidth < hideWidth && priorWidth > minWidth
     const updatedEditor = shouldShowToast
-      ? UPDATE_FNS.PUSH_TOAST(
+      ? UPDATE_FNS.ADD_TOAST(
           showToast({ message: 'Code editor hidden. Use the menu or resize to get it back.' }),
           editor,
           dispatch,
@@ -2614,7 +2623,7 @@ export const UPDATE_FNS = {
 
     const updatedEditor = codeEditorVisibleAfter
       ? editor
-      : UPDATE_FNS.PUSH_TOAST(
+      : UPDATE_FNS.ADD_TOAST(
           showToast({ message: 'Code editor hidden. Use the menu or resize to get it back.' }),
           editor,
           dispatch,
@@ -2679,7 +2688,7 @@ export const UPDATE_FNS = {
     if (errorMessage != null) {
       console.error(errorMessage)
       const toastAction = showToast({ message: errorMessage!, level: 'WARNING' })
-      return UPDATE_FNS.PUSH_TOAST(toastAction, updatedEditor, dispatch)
+      return UPDATE_FNS.ADD_TOAST(toastAction, updatedEditor, dispatch)
     } else {
       return updatedEditor
     }
@@ -2989,7 +2998,7 @@ export const UPDATE_FNS = {
             level: 'WARNING',
             persistent: true,
           })
-          return UPDATE_FNS.PUSH_TOAST(toastAction, editor, dispatch)
+          return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
         }
         case 'SAVE_IMAGE_DO_NOTHING':
           return editor
@@ -3152,7 +3161,7 @@ export const UPDATE_FNS = {
         level: 'ERROR',
         persistent: true,
       })
-      return UPDATE_FNS.PUSH_TOAST(toastAction, editor, dispatch)
+      return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
     } else {
       const { projectContents, updatedFiles } = replaceFilePathResults
       const mainUIFile = getMainUIFromModel(editor)

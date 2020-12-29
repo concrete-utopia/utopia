@@ -99,7 +99,7 @@ export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
         const withToastAction =
           toast == null
             ? updateFileActions
-            : updateFileActions.concat(EditorActions.pushToast(toast))
+            : updateFileActions.concat(EditorActions.addToast(toast))
 
         const actions = manualSave
           ? withToastAction.concat(EditorActions.saveCurrentFile())

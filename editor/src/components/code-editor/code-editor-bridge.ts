@@ -4,7 +4,7 @@ import { fastForEach } from '../../core/shared/utils'
 import { SetFocus } from '../common/actions'
 import type {
   OpenEditorTab,
-  PushToast,
+  AddToast,
   SaveCurrentFile,
   SelectComponents,
   SendLinterRequestMessage,
@@ -21,7 +21,7 @@ export type CodeEditorAction =
   | SetHighlightedView
   | OpenEditorTab
   | UpdateFile
-  | PushToast
+  | AddToast
   | SaveCurrentFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorVisibility
@@ -58,7 +58,7 @@ function validateActions(actions: Array<CodeEditorAction>): void {
       case 'OPEN_FILE':
       case 'UPDATE_FILE':
       case 'SAVE_CURRENT_FILE':
-      case 'PUSH_TOAST':
+      case 'ADD_TOAST':
       case 'SET_CODE_EDITOR_BUILD_ERRORS':
       case 'SET_CODE_EDITOR_VISIBILITY':
       case 'SET_FOCUS':
