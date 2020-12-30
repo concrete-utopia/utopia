@@ -347,7 +347,6 @@ import {
   PropertyControlsIFrameReady,
   AddStoryboardFile,
   SendLinterRequestMessage,
-  DecrementCodeEditorFontSize,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -895,7 +894,10 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
   // FIXME Ask Team Components to check over these
   const poppedEditor = history.current.editor
   return {
-    currentFontSize: currentEditor.currentFontSize,
+    codeEditor: {
+      currentFontSize: currentEditor.codeEditor.currentFontSize,
+      codeEditorTheme: poppedEditor.codeEditor.codeEditorTheme,
+    },
     id: currentEditor.id,
     appID: currentEditor.appID,
     projectName: currentEditor.projectName,
@@ -1000,7 +1002,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     pasteTargetsToIgnore: poppedEditor.pasteTargetsToIgnore,
     codeEditorErrors: currentEditor.codeEditorErrors,
     parseOrPrintInFlight: false,
-    codeEditorTheme: poppedEditor.codeEditorTheme,
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
   }
@@ -2382,17 +2383,23 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     return {
       ...editor,
-      currentFontSize: editor.currentFontSize + 1,
+      codeEditor: {
+        currentFontSize: editor.codeEditor.currentFontSize + 1,
+        codeEditorTheme: editor.codeEditor.codeEditorTheme,
+      },
     }
   },
 
   DECREMENT_CODE_EDITOR_FONT_SIZE: (
-    action: DecrementCodeEditorFontSize,
+    action: IncrementCodeEditorFontSize,
     editor: EditorModel,
   ): EditorModel => {
     return {
       ...editor,
-      currentFontSize: editor.currentFontSize - 1,
+      codeEditor: {
+        currentFontSize: editor.codeEditor.currentFontSize - 1,
+        codeEditorTheme: editor.codeEditor.codeEditorTheme,
+      },
     }
   },
 
@@ -3939,7 +3946,10 @@ export const UPDATE_FNS = {
   SET_CODE_EDITOR_THEME: (action: SetCodeEditorTheme, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      codeEditorTheme: action.value,
+      codeEditor: {
+        currentFontSize: editor.codeEditor.currentFontSize,
+        codeEditorTheme: action.value,
+      },
     }
   },
   SET_SAFE_MODE: (action: SetSafeMode, editor: EditorModel): EditorModel => {

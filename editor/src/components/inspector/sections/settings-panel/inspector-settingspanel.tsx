@@ -73,7 +73,7 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
   )
 
   const currentFontSize = useEditorState(
-    (store) => store.editor.currentFontSize,
+    (store) => store.editor.codeEditor.currentFontSize,
     'SettingsPanel currentFontSize',
   )
 

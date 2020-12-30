@@ -146,7 +146,6 @@ import {
   JSXMetadataKeepDeepEquality,
 } from './store-deep-equality-instances'
 import { EditorTab, isOpenFileTab, releaseNotesTab } from './editor-tabs'
-import { number } from 'prop-types'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -225,7 +224,10 @@ export interface ConsoleLog {
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
-  currentFontSize: number
+  codeEditor: {
+    currentFontSize: number
+    codeEditorTheme: CodeEditorTheme
+  }
   id: string | null
   appID: string | null
   projectName: string
@@ -338,7 +340,6 @@ export interface EditorState {
   thumbnailLastGenerated: number
   pasteTargetsToIgnore: TemplatePath[]
   parseOrPrintInFlight: boolean
-  codeEditorTheme: CodeEditorTheme
   safeMode: boolean
   saveError: boolean
 }
@@ -1012,7 +1013,10 @@ export function createNewProjectName(): string {
 
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
-    currentFontSize: 12,
+    codeEditor: {
+      currentFontSize: 12,
+      codeEditorTheme: DefaultTheme,
+    },
     id: null,
     appID: null,
     projectName: createNewProjectName(),
@@ -1135,7 +1139,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     thumbnailLastGenerated: 0,
     pasteTargetsToIgnore: [],
     parseOrPrintInFlight: false,
-    codeEditorTheme: DefaultTheme,
     safeMode: false,
     saveError: false,
   }
@@ -1255,7 +1258,10 @@ export function editorModelFromPersistentModel(
     persistentModel.projectContents,
   )
   const editor: EditorState = {
-    currentFontSize: 12,
+    codeEditor: {
+      currentFontSize: 12,
+      codeEditorTheme: persistentModel.codeEditorTheme,
+    },
     id: null,
     appID: persistentModel.appID ?? null,
     projectName: createNewProjectName(),
@@ -1355,7 +1361,6 @@ export function editorModelFromPersistentModel(
     thumbnailLastGenerated: 0,
     pasteTargetsToIgnore: [],
     parseOrPrintInFlight: false,
-    codeEditorTheme: persistentModel.codeEditorTheme,
     safeMode: false,
     saveError: false,
     selectedFile: Utils.optionalMap((tab) => {
@@ -1395,7 +1400,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     openFiles: editor.openFiles,
     selectedFile: selectedFile,
     codeEditorErrors: editor.codeEditorErrors,
-    codeEditorTheme: editor.codeEditorTheme,
+    codeEditorTheme: editor.codeEditor.codeEditorTheme,
     fileBrowser: {
       minimised: editor.fileBrowser.minimised,
     },

@@ -96,10 +96,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.INSERT_SCENE(action, state)
     case 'INSERT_JSX_ELEMENT':
       return UPDATE_FNS.INSERT_JSX_ELEMENT(action, state)
-    case 'INCREMENT_CODE_EDITOR_FONT_SIZE':
-      return UPDATE_FNS.INCREMENT_CODE_EDITOR_FONT_SIZE(action, state)
-    case 'DECREMENT_CODE_EDITOR_FONT_SIZE':
-      return UPDATE_FNS.DECREMENT_CODE_EDITOR_FONT_SIZE(action, state)
     case 'SET_PANEL_VISIBILITY':
       return UPDATE_FNS.SET_PANEL_VISIBILITY(action, state)
     case 'TOGGLE_PANE':
