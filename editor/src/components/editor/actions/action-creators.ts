@@ -178,6 +178,7 @@ import type {
   WrapInView,
   IncrementCodeEditorFontSize,
   DecrementCodeEditorFontSize,
+  UpdateCodeEditorFontSize,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -526,6 +527,13 @@ export function incrementCodeEditorFontSize(): IncrementCodeEditorFontSize {
 export function decrementCodeEditorFontSize(): DecrementCodeEditorFontSize {
   return {
     action: 'DECREMENT_CODE_EDITOR_FONT_SIZE',
+  }
+}
+
+export function updateCodeEditorFontSize(fontSize: number): UpdateCodeEditorFontSize {
+  return {
+    action: 'UPDATE_CODE_EDITOR_FONT_SIZE',
+    fontSize: fontSize,
   }
 }
 

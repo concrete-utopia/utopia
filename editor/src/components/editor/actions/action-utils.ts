@@ -49,6 +49,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_CANVAS_ANIMATIONS_ENABLED':
     case 'INCREMENT_CODE_EDITOR_FONT_SIZE':
     case 'DECREMENT_CODE_EDITOR_FONT_SIZE':
+    case 'UPDATE_CODE_EDITOR_FONT_SIZE':
     case 'SET_NAVIGATOR_RENAMING_TARGET':
     case 'REDRAW_OLD_CANVAS_CONTROLS':
     case 'UPDATE_FRAME_DIMENSIONS':

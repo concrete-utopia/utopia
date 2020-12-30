@@ -102,6 +102,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.INCREMENT_CODE_EDITOR_FONT_SIZE(action, state)
     case 'DECREMENT_CODE_EDITOR_FONT_SIZE':
       return UPDATE_FNS.DECREMENT_CODE_EDITOR_FONT_SIZE(action, state)
+    case 'UPDATE_CODE_EDITOR_FONT_SIZE':
+      return UPDATE_FNS.UPDATE_CODE_EDITOR_FONT_SIZE(action, state)
     case 'TOGGLE_PANE':
       return UPDATE_FNS.TOGGLE_PANE(action, state)
     case 'RESIZE_INTERFACEDESIGNER_CODEPANE':
