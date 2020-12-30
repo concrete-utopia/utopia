@@ -797,10 +797,6 @@ function initMonacoStyle(themeName: CodeEditorTheme) {
   monaco.editor.setTheme(themeName)
 }
 
-function initMonacoFonts(fontSize: number) {
-  monaco.editor.updateOptions
-}
-
 function findModel(uri: string) {
   return monaco.editor.getModels().find((model) => model.uri.toString() == uri.toString())
 }
