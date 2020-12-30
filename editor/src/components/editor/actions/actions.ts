@@ -346,6 +346,7 @@ import {
   PropertyControlsIFrameReady,
   AddStoryboardFile,
   SendLinterRequestMessage,
+  IncrementCodeEditorFontSize,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -2371,7 +2372,15 @@ export const UPDATE_FNS = {
       },
     }
   },
-
+  INCREMENT_CODE_EDITOR_FONT_SIZE: (
+    action: IncrementCodeEditorFontSize,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      // TODO fill this in with the logic updating the font size
+    }
+  },
   OPEN_POPUP: (action: OpenPopup, editor: EditorModel): EditorModel => {
     return update(editor, {
       openPopupId: { $set: action.popupId },
