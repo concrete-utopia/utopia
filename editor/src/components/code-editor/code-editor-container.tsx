@@ -116,8 +116,8 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
           : null,
       allTemplatePaths: store.derived.navigatorTargets,
       focusedPanel: store.editor.focusedPanel,
-      codeEditorTheme: store.editor.codeEditorTheme,
-      fontSize: store.editor.currentFontSize,
+      codeEditorTheme: store.editor.codeEditor.codeEditorTheme,
+      fontSize: store.editor.codeEditor.currentFontSize,
       selectedViews: store.editor.selectedViews,
     }
   }, 'CodeEditorWrapper')
