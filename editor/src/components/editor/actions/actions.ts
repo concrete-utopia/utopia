@@ -2378,7 +2378,7 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     return {
       ...editor,
-      // TODO fill this in with the logic updating the font size
+      currentFontSize: editor.currentFontSize + 1,
     }
   },
   OPEN_POPUP: (action: OpenPopup, editor: EditorModel): EditorModel => {
