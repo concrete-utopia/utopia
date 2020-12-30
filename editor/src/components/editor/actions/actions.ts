@@ -347,6 +347,7 @@ import {
   PropertyControlsIFrameReady,
   AddStoryboardFile,
   SendLinterRequestMessage,
+  DecrementCodeEditorFontSize,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -2391,13 +2392,13 @@ export const UPDATE_FNS = {
   },
 
   DECREMENT_CODE_EDITOR_FONT_SIZE: (
-    action: IncrementCodeEditorFontSize,
+    action: DecrementCodeEditorFontSize,
     editor: EditorModel,
   ): EditorModel => {
     return {
       ...editor,
       codeEditor: {
-        currentFontSize: editor.codeEditor.currentFontSize - 1,
+        currentFontSize: Math.min(Math.max(editor.codeEditor.currentFontSize - 1, 1), 50),
         codeEditorTheme: editor.codeEditor.codeEditorTheme,
       },
     }
