@@ -17,13 +17,8 @@ import {
   FlexColumn,
   colorTheme,
   Button,
-  SquareButton,
-  fontSize,
-  NumberInput,
-  SimpleNumberInput,
 } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
-import { GridRow } from '../../widgets/grid-row'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.medium,
@@ -77,11 +72,6 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
     'SettingsPanel interfaceDesigner',
   )
 
-  const currentFontSize = useEditorState(
-    (store) => store.editor.codeEditor.currentFontSize,
-    'SettingsPanel currentFontSize',
-  )
-
   const openUiJsFile = useRefEditorState((store) => {
     return getOpenUIJSFile(store.editor)
   })
@@ -106,16 +96,6 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
     console.info('Latest metadata:', jsxMetadata.current)
   }, [jsxMetadata])
 
-  const increaseCodeEditorFontSize = React.useCallback(
-    () => dispatch([EditorActions.incrementCodeEditorFontSize()]),
-    [dispatch],
-  )
-
-  const decreaseCodeEditorFontSize = React.useCallback(
-    () => dispatch([EditorActions.decrementCodeEditorFontSize()]),
-    [dispatch],
-  )
-
   return (
     <FlexColumn
       style={{
@@ -135,24 +115,6 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
         />
         <label htmlFor='showCodeEditorLabel'>Show Code Editor</label>
       </StyledFlexRow>
-      <GridRow padded type='<---1fr--->|------172px-------|'>
-        <label htmlFor='fontSizeInput'>Font Size</label>
-        <FlexRow>
-          <SimpleNumberInput
-            value={currentFontSize}
-            onSubmitValue={decreaseCodeEditorFontSize}
-            onTransientSubmitValue={increaseCodeEditorFontSize}
-            onForcedSubmitValue={decreaseCodeEditorFontSize}
-          />
-          {/* <input id='fontSizeInput' value={currentFontSize} style={{ flexGrow: 1, gap: 4 }} /> */}
-          <SquareButton outline spotlight onClick={decreaseCodeEditorFontSize}>
-            -
-          </SquareButton>
-          <SquareButton outline spotlight onClick={increaseCodeEditorFontSize}>
-            +
-          </SquareButton>
-        </FlexRow>
-      </GridRow>
       <StyledFlexRow>
         <CheckboxInput
           style={{ marginRight: 8 }}

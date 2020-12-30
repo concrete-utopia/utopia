@@ -20,6 +20,8 @@ import {
   Title,
   SectionBodyArea,
   Button,
+  SimpleNumberInput,
+  SquareButton,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { CodeEditorTheme, CodeEditorThemeCollection } from '../code-editor/code-editor-themes'
@@ -457,6 +459,26 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
     dispatch([EditorActions.openEditorTab(userConfigurationTab(), null)], 'everyone')
   }, [dispatch])
 
+  const currentFontSize = useEditorState(
+    (store) => store.editor.codeEditor.currentFontSize,
+    'LeftPane currentFontSize',
+  )
+
+  const increaseCodeEditorFontSize = React.useCallback(
+    () => dispatch([EditorActions.incrementCodeEditorFontSize()]),
+    [dispatch],
+  )
+
+  const decreaseCodeEditorFontSize = React.useCallback(
+    () => dispatch([EditorActions.decrementCodeEditorFontSize()]),
+    [dispatch],
+  )
+
+  const updateCodeEditorFontSize = React.useCallback(
+    (value) => dispatch([EditorActions.updateCodeEditorFontSize(value)]),
+    [dispatch],
+  )
+
   return (
     <FlexColumn key='leftPaneProjectTab'>
       {projectId == null ? null : (
@@ -483,6 +505,23 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
                   thumbnailLastGenerated={thumbnailLastGenerated}
                 />
                 <ThemeSelector dispatch={dispatch} selectedTheme={codeEditorTheme} />
+                <GridRow padded type='<---1fr--->|------172px-------|'>
+                  <label htmlFor='fontSizeInput'>Font Size</label>
+                  <FlexRow style={{ gap: 4 }}>
+                    <SimpleNumberInput
+                      value={currentFontSize}
+                      onSubmitValue={updateCodeEditorFontSize}
+                      onTransientSubmitValue={updateCodeEditorFontSize}
+                      onForcedSubmitValue={updateCodeEditorFontSize}
+                    />
+                    <SquareButton spotlight onClick={decreaseCodeEditorFontSize}>
+                      -
+                    </SquareButton>
+                    <SquareButton spotlight onClick={increaseCodeEditorFontSize}>
+                      +
+                    </SquareButton>
+                  </FlexRow>
+                </GridRow>
               </div>
             )}
           </SectionBodyArea>
