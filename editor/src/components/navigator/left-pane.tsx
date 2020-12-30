@@ -407,7 +407,7 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
       userState: store.userState,
       focusedPanel: store.editor.focusedPanel,
       minimised: store.editor.projectSettings.minimised,
-      codeEditorTheme: store.editor.codeEditorTheme,
+      codeEditorTheme: store.editor.codeEditor.codeEditorTheme,
     }
   }, 'ProjectSettingsPanel')
 
