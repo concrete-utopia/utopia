@@ -17,8 +17,13 @@ import {
   FlexColumn,
   colorTheme,
   Button,
+  SquareButton,
+  fontSize,
+  NumberInput,
+  SimpleNumberInput,
 } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
+import { GridRow } from '../../widgets/grid-row'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.medium,
@@ -130,12 +135,24 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
         />
         <label htmlFor='showCodeEditorLabel'>Show Code Editor</label>
       </StyledFlexRow>
-      <StyledFlexRow>
-        <button onClick={decreaseCodeEditorFontSize}>-</button>
-        <br />
-        <button onClick={increaseCodeEditorFontSize}>+</button>
-        {currentFontSize}px
-      </StyledFlexRow>
+      <GridRow padded type='<---1fr--->|------172px-------|'>
+        <label htmlFor='fontSizeInput'>Font Size</label>
+        <FlexRow>
+          <SimpleNumberInput
+            value={currentFontSize}
+            onSubmitValue={decreaseCodeEditorFontSize}
+            onTransientSubmitValue={increaseCodeEditorFontSize}
+            onForcedSubmitValue={decreaseCodeEditorFontSize}
+          />
+          {/* <input id='fontSizeInput' value={currentFontSize} style={{ flexGrow: 1, gap: 4 }} /> */}
+          <SquareButton outline spotlight onClick={decreaseCodeEditorFontSize}>
+            -
+          </SquareButton>
+          <SquareButton outline spotlight onClick={increaseCodeEditorFontSize}>
+            +
+          </SquareButton>
+        </FlexRow>
+      </GridRow>
       <StyledFlexRow>
         <CheckboxInput
           style={{ marginRight: 8 }}
