@@ -291,6 +291,10 @@ export type IncrementCodeEditorFontSize = {
   action: 'INCREMENT_CODE_EDITOR_FONT_SIZE'
 }
 
+export type DecrementCodeEditorFontSize = {
+  action: 'DECREMENT_CODE_EDITOR_FONT_SIZE'
+}
+
 export interface OpenPopup {
   action: 'OPEN_POPUP'
   popupId: string
@@ -823,6 +827,8 @@ export type EditorAction =
   | ResizeInterfaceDesignerCodePane
   | ToggleInterfaceDesignerCodeEditor
   | ToggleInterfaceDesignerAdditionalControls
+  | IncrementCodeEditorFontSize
+  | DecrementCodeEditorFontSize
   | SaveCurrentFile
   | SaveAsset
   | ResetPins

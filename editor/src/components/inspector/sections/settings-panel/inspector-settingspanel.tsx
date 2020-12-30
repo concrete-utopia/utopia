@@ -101,6 +101,16 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
     console.info('Latest metadata:', jsxMetadata.current)
   }, [jsxMetadata])
 
+  const increaseCodeEditorFontSize = React.useCallback(
+    () => dispatch([EditorActions.incrementCodeEditorFontSize()]),
+    [dispatch],
+  )
+
+  const decreaseCodeEditorFontSize = React.useCallback(
+    () => dispatch([EditorActions.decrementCodeEditorFontSize()]),
+    [dispatch],
+  )
+
   return (
     <FlexColumn
       style={{
@@ -120,8 +130,12 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
         />
         <label htmlFor='showCodeEditorLabel'>Show Code Editor</label>
       </StyledFlexRow>
-      <button onClick={() => console.log('clicked')}>+</button>
-      {currentFontSize}px
+      <StyledFlexRow>
+        <button onClick={decreaseCodeEditorFontSize}>-</button>
+        <br />
+        <button onClick={increaseCodeEditorFontSize}>+</button>
+        {currentFontSize}px
+      </StyledFlexRow>
       <StyledFlexRow>
         <CheckboxInput
           style={{ marginRight: 8 }}

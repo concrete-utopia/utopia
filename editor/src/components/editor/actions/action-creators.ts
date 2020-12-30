@@ -176,6 +176,8 @@ import type {
   UpdateThumbnailGenerated,
   WrapInLayoutable,
   WrapInView,
+  IncrementCodeEditorFontSize,
+  DecrementCodeEditorFontSize,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -512,6 +514,18 @@ export function toggleInterfaceDesignerCodeEditor(): ToggleInterfaceDesignerCode
 export function toggleInterfaceDesignerAdditionalControls(): ToggleInterfaceDesignerAdditionalControls {
   return {
     action: 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS',
+  }
+}
+
+export function incrementCodeEditorFontSize(): IncrementCodeEditorFontSize {
+  return {
+    action: 'INCREMENT_CODE_EDITOR_FONT_SIZE',
+  }
+}
+
+export function decrementCodeEditorFontSize(): DecrementCodeEditorFontSize {
+  return {
+    action: 'DECREMENT_CODE_EDITOR_FONT_SIZE',
   }
 }
 

@@ -146,6 +146,7 @@ import {
   JSXMetadataKeepDeepEquality,
 } from './store-deep-equality-instances'
 import { EditorTab, isOpenFileTab, releaseNotesTab } from './editor-tabs'
+import { number } from 'prop-types'
 
 export interface OriginalPath {
   originalTP: TemplatePath

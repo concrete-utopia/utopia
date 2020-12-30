@@ -240,6 +240,7 @@ import {
   EditorDispatch,
   EditorModel,
   HideModal,
+  IncrementCodeEditorFontSize,
   InsertImageIntoUI,
   InsertJSXElement,
   InsertScene,
@@ -346,7 +347,7 @@ import {
   PropertyControlsIFrameReady,
   AddStoryboardFile,
   SendLinterRequestMessage,
-  IncrementCodeEditorFontSize,
+  DecrementCodeEditorFontSize,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -481,6 +482,7 @@ import {
 import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { number } from 'prop-types'
+import { Editor } from 'draft-js'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -1972,6 +1974,7 @@ export const UPDATE_FNS = {
       selectedViews: filterMultiSelectScenes(newSelectedViews),
     }
   },
+
   WRAP_IN_VIEW: (
     action: WrapInView,
     editorForAction: EditorModel,
@@ -2372,6 +2375,7 @@ export const UPDATE_FNS = {
       },
     }
   },
+
   INCREMENT_CODE_EDITOR_FONT_SIZE: (
     action: IncrementCodeEditorFontSize,
     editor: EditorModel,
@@ -2381,6 +2385,17 @@ export const UPDATE_FNS = {
       currentFontSize: editor.currentFontSize + 1,
     }
   },
+
+  DECREMENT_CODE_EDITOR_FONT_SIZE: (
+    action: DecrementCodeEditorFontSize,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      currentFontSize: editor.currentFontSize - 1,
+    }
+  },
+
   OPEN_POPUP: (action: OpenPopup, editor: EditorModel): EditorModel => {
     return update(editor, {
       openPopupId: { $set: action.popupId },
