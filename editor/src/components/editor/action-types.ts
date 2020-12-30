@@ -287,6 +287,10 @@ export type ToggleInterfaceDesignerCodeEditor = {
   action: 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR'
 }
 
+export type IncrementCodeEditorFontSize = {
+  action: 'INCREMENT_CODE_EDITOR_FONT_SIZE'
+}
+
 export interface OpenPopup {
   action: 'OPEN_POPUP'
   popupId: string

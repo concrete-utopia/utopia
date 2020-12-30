@@ -224,6 +224,7 @@ export interface ConsoleLog {
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
+  currentFontSize: number
   id: string | null
   appID: string | null
   projectName: string
@@ -1010,6 +1011,7 @@ export function createNewProjectName(): string {
 
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
+    currentFontSize: 12,
     id: null,
     appID: null,
     projectName: createNewProjectName(),
@@ -1252,6 +1254,7 @@ export function editorModelFromPersistentModel(
     persistentModel.projectContents,
   )
   const editor: EditorState = {
+    currentFontSize: 12,
     id: null,
     appID: persistentModel.appID ?? null,
     projectName: createNewProjectName(),

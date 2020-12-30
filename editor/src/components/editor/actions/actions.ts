@@ -479,6 +479,7 @@ import {
 } from './action-creators'
 import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { number } from 'prop-types'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -891,6 +892,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
   // FIXME Ask Team Components to check over these
   const poppedEditor = history.current.editor
   return {
+    currentFontSize: currentEditor.currentFontSize,
     id: currentEditor.id,
     appID: currentEditor.appID,
     projectName: currentEditor.projectName,

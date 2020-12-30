@@ -72,6 +72,11 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
     'SettingsPanel interfaceDesigner',
   )
 
+  const currentFontSize = useEditorState(
+    (store) => store.editor.currentFontSize,
+    'SettingsPanel currentFontSize',
+  )
+
   const openUiJsFile = useRefEditorState((store) => {
     return getOpenUIJSFile(store.editor)
   })
@@ -115,6 +120,8 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
         />
         <label htmlFor='showCodeEditorLabel'>Show Code Editor</label>
       </StyledFlexRow>
+      <button onClick={() => console.log('clicked')}>+</button>
+      {currentFontSize}px
       <StyledFlexRow>
         <CheckboxInput
           style={{ marginRight: 8 }}
